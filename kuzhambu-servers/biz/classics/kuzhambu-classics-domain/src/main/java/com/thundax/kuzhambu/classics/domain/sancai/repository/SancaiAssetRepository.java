@@ -85,6 +85,8 @@ public interface SancaiAssetRepository {
 
     SancaiShowcaseId insertShowcase(SancaiShowcase showcase);
 
+    SancaiShowcase getShowcaseById(SancaiShowcaseId id);
+
     int updateShowcase(SancaiShowcase showcase);
 
     int markShowcaseCompleted(SancaiShowcaseId id, StorageObjectId storageObjectId, int entryCount);
@@ -104,6 +106,8 @@ public interface SancaiAssetRepository {
     int markShowcaseFailed(SancaiShowcaseId id, String failureType, String failureMessage);
 
     int markShowcaseExpired(SancaiShowcaseId id);
+
+    int deleteShowcaseById(SancaiShowcaseId id);
 
     PageResult<SancaiShowcase> pageShowcases(String status, int pageNo, int pageSize);
 

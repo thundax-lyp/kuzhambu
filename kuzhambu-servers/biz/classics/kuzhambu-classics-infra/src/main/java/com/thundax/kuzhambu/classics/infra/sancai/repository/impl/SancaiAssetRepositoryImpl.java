@@ -273,6 +273,12 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
     }
 
     @Override
+    public SancaiShowcase getShowcaseById(SancaiShowcaseId id) {
+        return SancaiAssetPersistenceAssembler.toShowcaseDomain(
+                showcaseMapper.selectById(SancaiShowcaseIdCodec.toValue(id)));
+    }
+
+    @Override
     public int updateShowcase(SancaiShowcase showcase) {
         return showcaseMapper.updateById(SancaiAssetPersistenceAssembler.toShowcaseObject(showcase));
     }
@@ -333,6 +339,11 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
                 new LambdaUpdateWrapper<SancaiShowcaseDO>()
                         .eq(SancaiShowcaseDO::getId, SancaiShowcaseIdCodec.toValue(id))
                         .set(SancaiShowcaseDO::getStatus, SancaiShowcaseStatus.EXPIRED.value()));
+    }
+
+    @Override
+    public int deleteShowcaseById(SancaiShowcaseId id) {
+        return showcaseMapper.deleteById(SancaiShowcaseIdCodec.toValue(id));
     }
 
     @Override

@@ -493,7 +493,7 @@ class SancaiAssetAdminControllerTest {
                         return PageResult.of(1, 10, 1, List.of(showcase()));
                     }
                     if ("getShowcaseContent".equals(method.getName())) {
-                        assertEquals(StorageObjectId.of(7001L), args[0]);
+                        assertEquals(SancaiShowcaseId.of(1L), args[0]);
                         return showcaseContent();
                     }
                     throw new UnsupportedOperationException(method.getName());

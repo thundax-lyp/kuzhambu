@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Button, Card, Select } from "antd";
+import { Alert, App, Button, Card, Select, Tooltip } from "antd";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
@@ -19,7 +19,10 @@ import {
     hasClassicsContentPermission,
     type ClassicsBatchOperationRecord
 } from "@/pages/classics/common/classics-content-types";
-import type { ClassicsExportScopePayload } from "@/pages/classics/common/classics-export-types";
+import type {
+    ClassicsExportJobRecord,
+    ClassicsExportScopePayload
+} from "@/pages/classics/common/classics-export-types";
 import { WangqiDocumentList } from "./components/wangqi-document-list";
 import { WangqiDocumentModel } from "./components/wangqi-document-model";
 import { WangqiStorageFilePanel } from "./components/wangqi-storage-file-panel";
@@ -89,6 +92,17 @@ const buildInputPayloadJson = (document: WangqiDocumentRecord) => {
 
 const readDocumentTitle = (document: WangqiDocumentRecord) => {
     return document.title?.trim() || `王圻文档 ${document.id}`;
+};
+
+const buildSingleDocumentQaUrl = (document: WangqiDocumentRecord) => {
+    const search = new URLSearchParams({
+        contextContentId: String(document.id),
+        contextContentType: "WANGQI_DOCUMENT",
+        contextMode: "SINGLE_DOCUMENT",
+        title: readDocumentTitle(document)
+    });
+
+    return `/discovery/qa?${search.toString()}`;
 };
 
 const buildExportScopeJson = (document: WangqiDocumentRecord) => {
@@ -252,6 +266,13 @@ export const WangqiPage = () => {
         "export",
         hasPermission
     );
+    const canOpenDiscoveryQa = hasPermission("discovery:qa:view");
+    let singleDocumentQaDisabledReason: string | undefined;
+    if (activeDocument && !activeDocument.id) {
+        singleDocumentQaDisabledReason = "请先保存王圻文档";
+    } else if (!canOpenDiscoveryQa) {
+        singleDocumentQaDisabledReason = "缺少 Discovery 问答权限";
+    }
 
     const openBatchCandidateDrawer = () => {
         if (!canChangeDocumentVisibility) {
@@ -413,6 +434,16 @@ export const WangqiPage = () => {
             messageApi.error(error instanceof Error ? error.message : "导出提交失败");
         }
     });
+    const deleteExportMutation = useMutation({
+        mutationFn: exportService.deleteById,
+        onSuccess: async () => {
+            await invalidateExportJobs();
+            messageApi.success("导出记录已删除");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "导出记录删除失败");
+        }
+    });
     const createRefinementTaskMutation = useMutation({
         mutationFn: aiRefinementTaskService.createTask,
         onSuccess: async () => {
@@ -503,6 +534,38 @@ export const WangqiPage = () => {
             description: "删除后该文档、版本历史和关联引用会按后端流程清理。",
             okText: "删除",
             onConfirm: () => deleteMutation.mutateAsync(document.id)
+        });
+    };
+
+    const deleteExportJob = (job: ClassicsExportJobRecord) => {
+        if (!job.id) {
+            return;
+        }
+        confirm.danger({
+            title: "删除导出记录",
+            message: `确认删除导出任务 #${job.id}？`,
+            description:
+                "删除后该记录会从列表移除，并释放其导出产物引用；已无引用的文件对象会进入 Storage 删除流程。",
+            okText: "删除",
+            onConfirm: () => deleteExportMutation.mutateAsync(job.id as number)
+        });
+    };
+
+    const deleteExportJobs = (jobs: ClassicsExportJobRecord[]) => {
+        const ids = jobs.map((job) => job.id).filter((id): id is number => id != null);
+        if (!ids.length) {
+            return;
+        }
+        confirm.danger({
+            title: "批量删除导出记录",
+            message: `确认删除 ${ids.length} 条导出记录？`,
+            description: "批量删除逐条释放导出产物引用；单条仍被其他业务引用的文件不会被强制删除。",
+            okText: "删除",
+            onConfirm: async () => {
+                await Promise.all(ids.map((id) => exportService.deleteById(id)));
+                await invalidateExportJobs();
+                messageApi.success(`已删除 ${ids.length} 条导出记录`);
+            }
         });
     };
 
@@ -623,6 +686,18 @@ export const WangqiPage = () => {
         });
     };
 
+    const openSingleDocumentQa = (document: WangqiDocumentRecord) => {
+        if (!document.id) {
+            messageApi.warning("请先保存王圻文档后再发起单文档问答");
+            return;
+        }
+        if (!canOpenDiscoveryQa) {
+            messageApi.warning("当前账号缺少 Discovery 问答权限");
+            return;
+        }
+        window.open(buildSingleDocumentQaUrl(document), "_blank", "noopener,noreferrer");
+    };
+
     return (
         <>
             <KuzhambuListPage<WangqiDocumentRecord>
@@ -695,12 +770,18 @@ export const WangqiPage = () => {
                     <>
                         <ClassicsExportJobSection
                             items={exportJobs}
-                            loading={exportJobsQuery.isLoading || exportMutation.isPending}
+                            loading={
+                                exportJobsQuery.isLoading ||
+                                exportMutation.isPending ||
+                                deleteExportMutation.isPending
+                            }
                             onDownload={(job) => {
                                 if (job.downloadUrl) {
                                     window.open(job.downloadUrl, "_blank", "noopener,noreferrer");
                                 }
                             }}
+                            onDelete={canExportDocuments ? deleteExportJob : undefined}
+                            onBatchDelete={canExportDocuments ? deleteExportJobs : undefined}
                             onRefresh={() => {
                                 void invalidateExportJobs();
                             }}
@@ -825,13 +906,23 @@ export const WangqiPage = () => {
                                 size="small"
                                 title="AI 精修任务"
                                 extra={
-                                    <Button
-                                        type="primary"
-                                        onClick={() => createRefinementTask(activeDocument)}
-                                        loading={creatingRefinementCapability === "summary"}
-                                    >
-                                        创建摘要任务
-                                    </Button>
+                                    <Button.Group>
+                                        <Tooltip title={singleDocumentQaDisabledReason}>
+                                            <Button
+                                                disabled={!activeDocument.id || !canOpenDiscoveryQa}
+                                                onClick={() => openSingleDocumentQa(activeDocument)}
+                                            >
+                                                单文档问答
+                                            </Button>
+                                        </Tooltip>
+                                        <Button
+                                            type="primary"
+                                            onClick={() => createRefinementTask(activeDocument)}
+                                            loading={creatingRefinementCapability === "summary"}
+                                        >
+                                            创建摘要任务
+                                        </Button>
+                                    </Button.Group>
                                 }
                             >
                                 {refinementTasks.length ? (

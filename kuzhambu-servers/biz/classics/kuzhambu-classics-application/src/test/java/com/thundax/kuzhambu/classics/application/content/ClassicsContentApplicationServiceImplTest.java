@@ -297,14 +297,14 @@ class ClassicsContentApplicationServiceImplTest {
         verify(storageFacade).upload(uploadCaptor.capture());
         assertEquals("export.zip", uploadCaptor.getValue().getOriginalFilename());
         assertEquals("application/zip", uploadCaptor.getValue().getContentType());
-        assertEquals("USER", uploadCaptor.getValue().getOwnerType());
-        assertEquals("system", uploadCaptor.getValue().getOwnerId());
+        assertEquals("CLASSICS_CONTENT_EXPORT_JOB", uploadCaptor.getValue().getOwnerType());
+        assertEquals("export-job:900000000001", uploadCaptor.getValue().getOwnerId());
         ArgumentCaptor<BindStorageOwnerFacadeRequest> bindOwnerCaptor =
                 ArgumentCaptor.forClass(BindStorageOwnerFacadeRequest.class);
         verify(storageFacade).bindOwner(bindOwnerCaptor.capture());
         assertEquals(List.of(7001L), bindOwnerCaptor.getValue().getStorageObjectIds());
-        assertEquals("system", bindOwnerCaptor.getValue().getOwnerId());
-        assertEquals("USER", bindOwnerCaptor.getValue().getOwnerType());
+        assertEquals("export-job:900000000001", bindOwnerCaptor.getValue().getOwnerId());
+        assertEquals("CLASSICS_CONTENT_EXPORT_JOB", bindOwnerCaptor.getValue().getOwnerType());
         assertEquals(
                 "usage=CLASSICS_EXPORT_JOB;jobId=900000000001",
                 bindOwnerCaptor.getValue().getOwnerParams());
@@ -967,6 +967,11 @@ class ClassicsContentApplicationServiceImplTest {
 
         @Override
         public int markExportJobExpired(ClassicsContentExportJobId id) {
+            return 0;
+        }
+
+        @Override
+        public int deleteExportJobById(ClassicsContentExportJobId id) {
             return 0;
         }
 

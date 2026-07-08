@@ -241,6 +241,7 @@ vi.mock("@/pages/classics/common/classics-export-service", () => ({
         ],
         totalCount: 1
     })),
+    deleteById: vi.fn(async () => true),
     getContentUrl: vi.fn()
 }));
 
@@ -519,6 +520,7 @@ vi.mock("../services/sancai-entry-service", () => ({
         id: 2001,
         status: "REQUESTED"
     })),
+    deleteShowcase: vi.fn(async () => true),
     pageShowcases: vi.fn(async () => ({
         pageNo: 1,
         pageSize: 10,

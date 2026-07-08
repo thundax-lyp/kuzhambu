@@ -41,6 +41,16 @@ interface CapturedCall {
 }
 
 const capturedCalls: CapturedCall[] = [];
+let mockDocumentRecord = {
+    id: 400000000001,
+    title: "王圻文档",
+    summary: "记录王圻古籍条目。",
+    contentFormat: "MARKDOWN",
+    content: "## 王圻",
+    documentTime: "2026-01-01T00:00:00.000+00:00",
+    storageObjectId: 7001,
+    visibility: "PUBLIC"
+};
 
 const selectFirstRow = (table: HTMLElement) => {
     const checkbox = within(table).getAllByRole("checkbox")[1];
@@ -94,31 +104,11 @@ const installFetchMock = () => {
                 totalCount: 1,
                 count: 1,
                 totalPage: 1,
-                records: [
-                    {
-                        id: 400000000001,
-                        title: "王圻文档",
-                        summary: "记录王圻古籍条目。",
-                        contentFormat: "MARKDOWN",
-                        content: "## 王圻",
-                        documentTime: "2026-01-01T00:00:00.000+00:00",
-                        storageObjectId: 7001,
-                        visibility: "PUBLIC"
-                    }
-                ]
+                records: [mockDocumentRecord]
             });
         }
-        if (path.endsWith("/classics/wangqi/documents/400000000001/get")) {
-            return apiResponse({
-                id: 400000000001,
-                title: "王圻文档",
-                summary: "记录王圻古籍条目。",
-                contentFormat: "MARKDOWN",
-                content: "## 王圻",
-                documentTime: "2026-01-01T00:00:00.000+00:00",
-                storageObjectId: 7001,
-                visibility: "PUBLIC"
-            });
+        if (path.endsWith(`/classics/wangqi/documents/${mockDocumentRecord.id}/get`)) {
+            return apiResponse(mockDocumentRecord);
         }
         if (path.endsWith("/classics/wangqi/documents/timeline/list")) {
             return apiResponse([]);
@@ -212,12 +202,23 @@ describe("WangqiPage", () => {
     beforeEach(() => {
         queryClient = createTestQueryClient();
         capturedCalls.length = 0;
+        mockDocumentRecord = {
+            id: 400000000001,
+            title: "王圻文档",
+            summary: "记录王圻古籍条目。",
+            contentFormat: "MARKDOWN",
+            content: "## 王圻",
+            documentTime: "2026-01-01T00:00:00.000+00:00",
+            storageObjectId: 7001,
+            visibility: "PUBLIC"
+        };
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         replacePermissions([
             "classics:wangqi:view",
             "classics:wangqi:edit",
             "classics:sharing:edit",
-            "classics:content:export"
+            "classics:content:export",
+            "discovery:qa:view"
         ]);
         installFetchMock();
     });
@@ -272,6 +273,73 @@ describe("WangqiPage", () => {
                 locale: "zh-CN"
             })
         );
+    }, 30000);
+
+    it("opens single document QA from the document drawer", async () => {
+        const user = userEvent.setup();
+        const openSpy = vi.spyOn(window, "open").mockImplementation(() => null);
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <WangqiPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await user.click(await screen.findByRole("button", { name: "编辑王圻文档 王圻文档" }));
+        const qaButton = await screen.findByRole("button", { name: "单文档问答" });
+
+        expect(qaButton).toBeEnabled();
+        await user.click(qaButton);
+
+        expect(openSpy).toHaveBeenCalledWith(
+            "/discovery/qa?contextContentId=400000000001&contextContentType=WANGQI_DOCUMENT&contextMode=SINGLE_DOCUMENT&title=%E7%8E%8B%E5%9C%BB%E6%96%87%E6%A1%A3",
+            "_blank",
+            "noopener,noreferrer"
+        );
+    }, 30000);
+
+    it("disables single document QA when document id is missing", async () => {
+        const user = userEvent.setup();
+        mockDocumentRecord = {
+            ...mockDocumentRecord,
+            id: 0
+        };
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <WangqiPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await user.click(await screen.findByRole("button", { name: "编辑王圻文档 王圻文档" }));
+
+        expect(await screen.findByRole("button", { name: "单文档问答" })).toBeDisabled();
+    }, 30000);
+
+    it("disables single document QA without discovery QA permission", async () => {
+        const user = userEvent.setup();
+        replacePermissions([
+            "classics:wangqi:view",
+            "classics:wangqi:edit",
+            "classics:sharing:edit",
+            "classics:content:export"
+        ]);
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <WangqiPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await user.click(await screen.findByRole("button", { name: "编辑王圻文档 王圻文档" }));
+
+        expect(await screen.findByRole("button", { name: "单文档问答" })).toBeDisabled();
     }, 30000);
 
     it("creates batch shares from selected documents and shows item failures", async () => {

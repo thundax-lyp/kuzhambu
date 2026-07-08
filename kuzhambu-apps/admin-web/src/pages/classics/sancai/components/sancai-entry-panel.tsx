@@ -11,6 +11,7 @@ import * as shareService from "@/pages/classics/common/classics-share-service";
 import * as currentUserService from "@/service/current-user-service";
 import { ClassicsExportJobSection } from "@/pages/classics/common/components/classics-export-job-section";
 import { ClassicsShowcaseJobSection } from "@/pages/classics/common/components/classics-showcase-job-section";
+import type { ClassicsExportJobRecord } from "@/pages/classics/common/classics-export-types";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import { AiRefinementStreamPanel } from "@/pages/classics/common/components/ai-refinement-stream-panel";
 import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
@@ -28,6 +29,7 @@ import type {
     SancaiContentVersionRecord,
     SancaiEntryImageRecord,
     SancaiEntryRecord,
+    SancaiShowcaseRecord,
     SancaiVisualAssetRecord,
     SancaiVolumeRecord
 } from "../sancai-types";
@@ -188,6 +190,11 @@ export const SancaiEntryPanel = ({
     const canChangeEntryVisibility = hasClassicsContentPermission(
         "SANCAI_ENTRY",
         "edit",
+        hasPermission
+    );
+    const canManageGeneratedArtifacts = hasClassicsContentPermission(
+        "SANCAI_ENTRY",
+        "export",
         hasPermission
     );
     const refinementTasksQuery = useQuery({
@@ -475,6 +482,16 @@ export const SancaiEntryPanel = ({
             messageApi.error(error instanceof Error ? error.message : "导出提交失败");
         }
     });
+    const deleteExportMutation = useMutation({
+        mutationFn: exportService.deleteById,
+        onSuccess: async () => {
+            await invalidateExportJobs();
+            messageApi.success("导出记录已删除");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "导出记录删除失败");
+        }
+    });
     const showcaseEntryMutation = useMutation({
         mutationFn: (entry: SancaiEntryRecord) => {
             const title = `${readEntryTitle(entry)} 静态展示`;
@@ -499,6 +516,16 @@ export const SancaiEntryPanel = ({
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "静态展示提交失败");
+        }
+    });
+    const deleteShowcaseMutation = useMutation({
+        mutationFn: entryService.deleteShowcase,
+        onSuccess: async () => {
+            await invalidateShowcaseJobs();
+            messageApi.success("静态展示记录已删除");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "静态展示记录删除失败");
         }
     });
     const updateVisualAssetMutation = useMutation({
@@ -685,6 +712,67 @@ export const SancaiEntryPanel = ({
         }
         showcaseEntryMutation.mutate(entry);
     };
+    const deleteExportJob = (job: ClassicsExportJobRecord) => {
+        if (!job.id) {
+            return;
+        }
+        confirm.danger({
+            title: "删除导出记录",
+            message: `确认删除导出任务 #${job.id}？`,
+            description:
+                "删除后该记录会从列表移除，并释放其导出产物引用；已无引用的文件对象会进入 Storage 删除流程。",
+            okText: "删除",
+            onConfirm: () => deleteExportMutation.mutateAsync(job.id as number)
+        });
+    };
+    const deleteExportJobs = (jobs: ClassicsExportJobRecord[]) => {
+        const ids = jobs.map((job) => job.id).filter((id): id is number => id != null);
+        if (!ids.length) {
+            return;
+        }
+        confirm.danger({
+            title: "批量删除导出记录",
+            message: `确认删除 ${ids.length} 条导出记录？`,
+            description: "批量删除逐条释放导出产物引用；单条仍被其他业务引用的文件不会被强制删除。",
+            okText: "删除",
+            onConfirm: async () => {
+                await Promise.all(ids.map((id) => exportService.deleteById(id)));
+                await invalidateExportJobs();
+                messageApi.success(`已删除 ${ids.length} 条导出记录`);
+            }
+        });
+    };
+    const deleteShowcaseJob = (job: SancaiShowcaseRecord) => {
+        if (!job.id) {
+            return;
+        }
+        confirm.danger({
+            title: "删除静态展示记录",
+            message: `确认删除静态展示任务 #${job.id}？`,
+            description:
+                "删除后该记录会从列表移除，并释放静态展示产物引用；已无引用的文件对象会进入 Storage 删除流程。",
+            okText: "删除",
+            onConfirm: () => deleteShowcaseMutation.mutateAsync(job.id as number)
+        });
+    };
+    const deleteShowcaseJobs = (jobs: SancaiShowcaseRecord[]) => {
+        const ids = jobs.map((job) => job.id).filter((id): id is number => id != null);
+        if (!ids.length) {
+            return;
+        }
+        confirm.danger({
+            title: "批量删除静态展示记录",
+            message: `确认删除 ${ids.length} 条静态展示记录？`,
+            description:
+                "批量删除逐条释放静态展示产物引用；单条仍被其他业务引用的文件不会被强制删除。",
+            okText: "删除",
+            onConfirm: async () => {
+                await Promise.all(ids.map((id) => entryService.deleteShowcase(id)));
+                await invalidateShowcaseJobs();
+                messageApi.success(`已删除 ${ids.length} 条静态展示记录`);
+            }
+        });
+    };
     const editEntryTags = () => {
         tagPanelRef.current?.scrollIntoView({
             block: "start",
@@ -856,30 +944,42 @@ export const SancaiEntryPanel = ({
             ) : null}
             <ClassicsExportJobSection
                 items={exportJobs}
-                loading={exportsQuery.isLoading || exportEntryMutation.isPending}
+                loading={
+                    exportsQuery.isLoading ||
+                    exportEntryMutation.isPending ||
+                    deleteExportMutation.isPending
+                }
                 onDownload={(job) => {
                     if (job.downloadUrl) {
                         window.open(job.downloadUrl, "_blank", "noopener,noreferrer");
                     }
                 }}
+                onDelete={canManageGeneratedArtifacts ? deleteExportJob : undefined}
+                onBatchDelete={canManageGeneratedArtifacts ? deleteExportJobs : undefined}
                 onRefresh={() => {
                     void invalidateExportJobs();
                 }}
             />
             <ClassicsShowcaseJobSection
                 filtersVisible={false}
-                loading={showcasesQuery.isLoading || showcaseEntryMutation.isPending}
                 page={showcasesQuery.data}
                 onPreview={(job) => {
                     if (job.contentUrl) {
                         window.open(job.contentUrl, "_blank", "noopener,noreferrer");
                     }
                 }}
+                loading={
+                    showcasesQuery.isLoading ||
+                    showcaseEntryMutation.isPending ||
+                    deleteShowcaseMutation.isPending
+                }
                 onDownload={(job) => {
                     if (job.downloadUrl) {
                         window.open(job.downloadUrl, "_blank", "noopener,noreferrer");
                     }
                 }}
+                onDelete={canManageGeneratedArtifacts ? deleteShowcaseJob : undefined}
+                onBatchDelete={canManageGeneratedArtifacts ? deleteShowcaseJobs : undefined}
                 onRefresh={() => {
                     void invalidateShowcaseJobs();
                 }}

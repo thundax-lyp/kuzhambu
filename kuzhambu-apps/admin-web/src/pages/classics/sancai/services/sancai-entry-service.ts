@@ -313,6 +313,12 @@ export const pageShowcases = (query: SancaiShowcasePageQuery = {}) => {
     );
 };
 
+export const deleteShowcase = (id: number) => {
+    return postJson<boolean, { id: number }>(`${ASSET_SHOWCASES_PATH}/delete`, {
+        body: { id }
+    });
+};
+
 export const resetVersion = (entryId: number, versionId: number) => {
     return postJson<SancaiContentVersionRecord, SancaiVersionCommand>(
         `${ENTRIES_PATH}/versions/reset`,

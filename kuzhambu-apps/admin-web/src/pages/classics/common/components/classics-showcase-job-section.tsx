@@ -1,4 +1,5 @@
 import {
+    DeleteOutlined,
     DownloadOutlined,
     EyeOutlined,
     PlusOutlined,
@@ -6,6 +7,8 @@ import {
     SearchOutlined
 } from "@ant-design/icons";
 import { Alert, Button, DatePicker, Empty, Input, Select, Tag, Typography } from "antd";
+import type { Key } from "react";
+import { useMemo, useState } from "react";
 import type { Dayjs } from "dayjs";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
@@ -124,7 +127,9 @@ export interface ClassicsShowcaseJobSectionProps {
     filtersVisible?: boolean;
     keyword?: string;
     loading?: boolean;
+    onBatchDelete?: (jobs: ShowcaseJobItem[]) => void;
     onCreate?: () => void;
+    onDelete?: (job: ShowcaseJobItem) => void;
     onDownload: (job: ShowcaseJobItem) => void;
     onFilter?: () => void;
     onKeywordChange?: (value: string) => void;
@@ -147,7 +152,9 @@ export const ClassicsShowcaseJobSection = ({
     filtersVisible = true,
     keyword = "",
     loading = false,
+    onBatchDelete,
     onCreate,
+    onDelete,
     onDownload,
     onFilter = noop,
     onKeywordChange = noop,
@@ -163,7 +170,12 @@ export const ClassicsShowcaseJobSection = ({
     status = "ALL",
     visibilityRiskStatus = "ALL"
 }: ClassicsShowcaseJobSectionProps) => {
-    const records = page?.records ?? [];
+    const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
+    const records = useMemo(() => page?.records ?? [], [page?.records]);
+    const selectedJobs = useMemo(
+        () => records.filter((record) => record.id != null && selectedRowKeys.includes(record.id)),
+        [records, selectedRowKeys]
+    );
     const columns: KuzhambuTableProps<ShowcaseJobItem>["columns"] = [
         {
             title: "任务 ID",
@@ -246,29 +258,36 @@ export const ClassicsShowcaseJobSection = ({
             key: "actions",
             title: "操作",
             fixed: "right",
-            width: 150,
-            render: (_: unknown, record) => {
+            inlineLimit: 3,
+            options: (record) => {
                 const completed = isCompleted(record);
-                return (
-                    <KuzhambuSpace size={8} wrap={false}>
-                        <Button
-                            disabled={!completed || !record.contentUrl}
-                            icon={<EyeOutlined />}
-                            size="small"
-                            onClick={() => onPreview(record)}
-                        >
-                            预览
-                        </Button>
-                        <Button
-                            disabled={!completed || !record.downloadUrl}
-                            icon={<DownloadOutlined />}
-                            size="small"
-                            onClick={() => onDownload(record)}
-                        >
-                            下载
-                        </Button>
-                    </KuzhambuSpace>
-                );
+                return [
+                    {
+                        disabled: !completed || !record.contentUrl,
+                        icon: <EyeOutlined />,
+                        key: "preview",
+                        onClick: onPreview,
+                        text: "预览"
+                    },
+                    {
+                        disabled: !completed || !record.downloadUrl,
+                        icon: <DownloadOutlined />,
+                        key: "download",
+                        onClick: onDownload,
+                        text: "下载"
+                    },
+                    ...(onDelete
+                        ? [
+                              {
+                                  icon: <DeleteOutlined />,
+                                  key: "delete",
+                                  onClick: onDelete,
+                                  text: "删除",
+                                  type: "danger" as const
+                              }
+                          ]
+                        : [])
+                ];
             }
         }
     ];
@@ -278,6 +297,16 @@ export const ClassicsShowcaseJobSection = ({
             <div className="classics-showcase-job-section-head">
                 <Text strong>静态展示任务</Text>
                 <KuzhambuSpace size={8} wrap>
+                    {onBatchDelete ? (
+                        <Button
+                            danger
+                            disabled={!selectedJobs.length}
+                            icon={<DeleteOutlined />}
+                            onClick={() => onBatchDelete(selectedJobs)}
+                        >
+                            删除选中
+                        </Button>
+                    ) : null}
                     {onCreate ? (
                         <Button
                             type="primary"
@@ -347,7 +376,15 @@ export const ClassicsShowcaseJobSection = ({
                     total: page?.totalCount ?? page?.count ?? 0,
                     onChange: onPageChange
                 }}
-                rowKey={(record) => String(record.id ?? record.requestedAt ?? "showcase-job")}
+                rowKey={(record) => record.id ?? record.requestedAt ?? "showcase-job"}
+                rowSelection={
+                    onBatchDelete
+                        ? {
+                              selectedRowKeys,
+                              onChange: (nextKeys) => setSelectedRowKeys(nextKeys)
+                          }
+                        : undefined
+                }
                 scroll={{ x: 1560 }}
             />
         </section>

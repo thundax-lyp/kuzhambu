@@ -122,6 +122,11 @@ describe("classics export service request contracts", () => {
             status: "COMPLETED"
         });
 
+        await exportService.deleteById(9001);
+        expectLastCall("POST", "/classics/content/exports/delete", {
+            id: 9001
+        });
+
         expect(
             exportService.getContentUrl({
                 jobId: 9001

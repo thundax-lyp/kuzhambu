@@ -261,6 +261,13 @@ export const QaAdminPage = () => {
         });
     };
 
+    const copyAiCallId = () => {
+        if (!trace?.aiCallId || !navigator.clipboard) {
+            return;
+        }
+        void navigator.clipboard.writeText(String(trace.aiCallId));
+    };
+
     return (
         <main className="kuzhambu-page discovery-admin-page qa-admin-page">
             <section className="kuzhambu-page-panel">
@@ -652,6 +659,37 @@ export const QaAdminPage = () => {
                                     key: "providerRequestId",
                                     label: "Provider 请求号",
                                     children: trace?.providerRequestId ?? "-"
+                                },
+                                {
+                                    key: "aiCallId",
+                                    label: "AI 调用 ID",
+                                    children: (
+                                        <KuzhambuSpace size={8}>
+                                            <Text>{trace?.aiCallId ?? "-"}</Text>
+                                            <Button
+                                                disabled={!trace?.aiCallId}
+                                                onClick={copyAiCallId}
+                                                size="small"
+                                            >
+                                                复制
+                                            </Button>
+                                        </KuzhambuSpace>
+                                    )
+                                },
+                                {
+                                    key: "aiStatus",
+                                    label: "AI 状态",
+                                    children: trace?.aiStatus ?? "-"
+                                },
+                                {
+                                    key: "aiErrorType",
+                                    label: "AI 错误类型",
+                                    children: trace?.aiErrorType ?? "-"
+                                },
+                                {
+                                    key: "aiErrorMessage",
+                                    label: "AI 错误信息",
+                                    children: trace?.aiErrorMessage ?? "-"
                                 },
                                 {
                                     key: "latency",

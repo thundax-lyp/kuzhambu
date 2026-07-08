@@ -45,6 +45,7 @@ import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
 import com.thundax.kuzhambu.storage.facade.request.BindStorageOwnerFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.MarkStorageUsageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.request.RemoveStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.UnbindStorageOwnerFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
@@ -92,7 +93,8 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     private static final String SANCAI_IMAGE_CONTENT_PATH_SEPARATOR = "/";
     private static final String SANCAI_IMAGE_CONTENT_PATH_SUFFIX = "/content";
     private static final String IMAGE_OWNER_TYPE = "CLASSICS_SANCAI_ENTRY_IMAGE";
-    private static final String USER_OWNER_TYPE = "USER";
+    private static final String SHOWCASE_OWNER_TYPE = "CLASSICS_SANCAI_SHOWCASE";
+    private static final String SHOWCASE_OWNER_ID_PREFIX = "showcase:";
     private static final List<String> ALLOWED_IMAGE_SUFFIXES = List.of("jpg", "jpeg", "png", "gif", "webp");
 
     private final SancaiAssetRepository repository;
@@ -427,6 +429,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
                 markShowcaseFailed(showcaseId, SHOWCASE_FAILURE_STORAGE_FAILED, "三才静态展示产物保存失败");
                 return failedShowcaseJob(showcaseId, SHOWCASE_FAILURE_STORAGE_FAILED, "三才静态展示产物保存失败");
             }
+            bindShowcaseArtifactOwner(showcaseId, storageObjectId.value());
             int entryCount =
                     response.getSummary() == null || response.getSummary().getItemCount() == null
                             ? 0
@@ -465,6 +468,30 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
             throw new BizException("三才展示产物不存在");
         }
         return content;
+    }
+
+    @Override
+    public ClassicsStoredContentResult getShowcaseContent(SancaiShowcaseId showcaseId) {
+        SancaiShowcase showcase = repository.getShowcaseById(showcaseId);
+        if (showcase == null || showcase.getStorageObjectId() == null) {
+            throw new BizException("三才展示产物不存在");
+        }
+        return getShowcaseContent(showcase.getStorageObjectId());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteShowcase(SancaiShowcaseId showcaseId) {
+        if (showcaseId == null) {
+            return;
+        }
+        SancaiShowcase showcase = repository.getShowcaseById(showcaseId);
+        if (showcase == null) {
+            return;
+        }
+        unbindShowcaseArtifactOwner(showcaseId);
+        repository.deleteShowcaseById(showcaseId);
+        removeStorageObjectIfUnreferenced(showcase.getStorageObjectId());
     }
 
     @Override
@@ -696,9 +723,48 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
                 .originalFilename(filenameHint(showcaseId, artifact))
                 .contentType(artifact == null ? null : artifact.getContentType())
                 .sizeBytes((long) content.length)
-                .ownerType(USER_OWNER_TYPE)
-                .ownerId("system")
+                .ownerType(SHOWCASE_OWNER_TYPE)
+                .ownerId(showcaseOwnerId(showcaseId))
                 .build());
+    }
+
+    private void bindShowcaseArtifactOwner(SancaiShowcaseId showcaseId, Long storageObjectId) {
+        if (storageFacade == null || showcaseId == null || storageObjectId == null) {
+            return;
+        }
+        storageFacade.bindOwner(BindStorageOwnerFacadeRequest.builder()
+                .storageObjectIds(List.of(storageObjectId))
+                .ownerType(SHOWCASE_OWNER_TYPE)
+                .ownerId(showcaseOwnerId(showcaseId))
+                .ownerParams("usage=SANCAI_SHOWCASE;showcaseId=" + showcaseId.value())
+                .build());
+    }
+
+    private void unbindShowcaseArtifactOwner(SancaiShowcaseId showcaseId) {
+        if (storageFacade == null || showcaseId == null) {
+            return;
+        }
+        storageFacade.unbindOwner(UnbindStorageOwnerFacadeRequest.builder()
+                .ownerType(SHOWCASE_OWNER_TYPE)
+                .ownerId(showcaseOwnerId(showcaseId))
+                .build());
+    }
+
+    private void removeStorageObjectIfUnreferenced(StorageObjectId storageObjectId) {
+        if (storageFacade == null || storageObjectId == null || storageObjectId.value() == null) {
+            return;
+        }
+        try {
+            storageFacade.remove(RemoveStorageFacadeRequest.builder()
+                    .storageObjectId(storageObjectId.value())
+                    .build());
+        } catch (BizException ignored) {
+            // Shared Storage objects remain available while other references exist.
+        }
+    }
+
+    private static String showcaseOwnerId(SancaiShowcaseId showcaseId) {
+        return SHOWCASE_OWNER_ID_PREFIX + (showcaseId == null ? "unknown" : showcaseId.value());
     }
 
     private String filenameHint(SancaiShowcaseId showcaseId, WorkerRenderDtos.Artifact artifact) {

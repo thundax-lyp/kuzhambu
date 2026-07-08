@@ -493,8 +493,14 @@ class SancaiAssetApplicationServiceImplTest {
         assertEquals("showcase.html", uploadCaptor.getValue().getOriginalFilename());
         assertEquals("text/html; charset=utf-8", uploadCaptor.getValue().getContentType());
         assertEquals(28L, uploadCaptor.getValue().getSizeBytes());
-        assertEquals("USER", uploadCaptor.getValue().getOwnerType());
-        assertEquals("system", uploadCaptor.getValue().getOwnerId());
+        assertEquals("CLASSICS_SANCAI_SHOWCASE", uploadCaptor.getValue().getOwnerType());
+        assertEquals("showcase:9001", uploadCaptor.getValue().getOwnerId());
+        ArgumentCaptor<BindStorageOwnerFacadeRequest> bindCaptor =
+                ArgumentCaptor.forClass(BindStorageOwnerFacadeRequest.class);
+        verify(storageFacade).bindOwner(bindCaptor.capture());
+        assertEquals(List.of(7001L), bindCaptor.getValue().getStorageObjectIds());
+        assertEquals("CLASSICS_SANCAI_SHOWCASE", bindCaptor.getValue().getOwnerType());
+        assertEquals("showcase:9001", bindCaptor.getValue().getOwnerId());
     }
 
     @Test
