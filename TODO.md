@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery QA AI request assembly`：组装 Wangqi 单文档回答生成请求
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WANGQI-SINGLE-DOCUMENT-QA.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/service/impl/KnowledgeQaApplicationServiceImpl.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/command/ChatCompletionCommand.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/support/QaSourceAssembler.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/test/java/com/thundax/kuzhambu/discovery/application/qa/service/impl/KnowledgeQaApplicationServiceImplTest.java`
-    - 处理动作：用 Classics QA knowledge 快照组装 `promptMessagesJson`、`inputPayloadJson`、最近 3 轮消息和当前 Wangqi 文档来源。
-    - 验收点：测试断言 AI 请求包含 session、question、context、knowledge、recentMessages 和 sources 字段。
-    - 重要度：10/10
-
 - [ ] `Discovery QA AI invocation`：通过 AI facade 生成回答并落 Discovery 结果
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WANGQI-SINGLE-DOCUMENT-QA.md`

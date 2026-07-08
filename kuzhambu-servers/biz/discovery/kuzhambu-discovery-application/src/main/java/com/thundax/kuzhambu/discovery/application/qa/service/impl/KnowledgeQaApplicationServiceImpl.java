@@ -1,5 +1,12 @@
 package com.thundax.kuzhambu.discovery.application.qa.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
+import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
+import com.thundax.kuzhambu.classics.facade.dto.ClassicsQaKnowledgeFacadeDto;
+import com.thundax.kuzhambu.classics.facade.request.ClassicsQaKnowledgeFacadeRequest;
+import com.thundax.kuzhambu.classics.facade.response.ClassicsQaKnowledgeFacadeResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.knowledge.client.KnowledgeBaseClient;
@@ -38,7 +45,14 @@ import org.springframework.transaction.annotation.Transactional;
 @BizExceptionBoundary
 public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplicationService {
 
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final String DEFAULT_MODEL = "kuzhambu-qa";
+    private static final Long DEFAULT_AI_SERVICE_ID = 0L;
+    private static final String DEFAULT_AI_SERVICE_ROLE = "discovery-answer-generation";
+    private static final Long DEFAULT_AI_MODEL_ID = 0L;
+    private static final String DEFAULT_AI_MODEL_NAME = "discovery-default";
+    private static final Long DEFAULT_AI_PROMPT_VERSION_ID = 0L;
+    private static final String DEFAULT_LOCALE = "zh-CN";
     private static final String MESSAGE_ROLE_USER = "user";
     private static final String MESSAGE_ROLE_ASSISTANT = "assistant";
     private static final String ANSWER_STATUS_SUCCEEDED = "SUCCEEDED";
@@ -48,6 +62,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
     private static final String WANGQI_DOCUMENT_CONTEXT_TYPE = "WANGQI_DOCUMENT";
 
     private final KnowledgeBaseClient knowledgeBaseClient;
+    private final ClassicsFacade classicsFacade;
     private final QaSessionRepository qaSessionRepository;
     private final QaMessageRepository qaMessageRepository;
     private final QaSourceRepository qaSourceRepository;
@@ -58,6 +73,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
 
     public KnowledgeQaApplicationServiceImpl(
             KnowledgeBaseClient knowledgeBaseClient,
+            ClassicsFacade classicsFacade,
             QaSessionRepository qaSessionRepository,
             QaMessageRepository qaMessageRepository,
             QaSourceRepository qaSourceRepository,
@@ -66,6 +82,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             QaTraceAssembler qaTraceAssembler,
             DiscoveryKnowledgeEnhancementProvider discoveryKnowledgeEnhancementProvider) {
         this.knowledgeBaseClient = knowledgeBaseClient;
+        this.classicsFacade = classicsFacade;
         this.qaSessionRepository = qaSessionRepository;
         this.qaMessageRepository = qaMessageRepository;
         this.qaSourceRepository = qaSourceRepository;
@@ -95,6 +112,10 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         String question = extractLatestQuestion(command.getMessages());
         DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult enhancement =
                 discoveryKnowledgeEnhancementProvider.enhance(question);
+        DiscoveryAiFacadeRequest aiRequest = isWangqiSingleDocumentSession(session)
+                ? buildSingleDocumentAiRequest(command, session, model, question)
+                : null;
+        validateAiRequest(aiRequest);
         Date now = new Date();
         int contextTurnCount = contextTurnCount(command);
 
@@ -183,6 +204,32 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                 chatResult.raw());
     }
 
+    DiscoveryAiFacadeRequest buildSingleDocumentAiRequest(
+            ChatCompletionCommand command, QaSession session, String model, String question) {
+        ClassicsQaKnowledgeFacadeDto knowledge = requireSingleDocumentKnowledge(session);
+        List<Map<String, Object>> recentMessages = recentMessages(command.getMessages());
+        List<Map<String, Object>> sources = List.of(sourcePayload(knowledge));
+        Map<String, Object> context = contextPayload(session);
+        return DiscoveryAiFacadeRequest.builder()
+                .serviceId(DEFAULT_AI_SERVICE_ID)
+                .serviceRole(DEFAULT_AI_SERVICE_ROLE)
+                .modelId(DEFAULT_AI_MODEL_ID)
+                .modelName(StringUtils.defaultIfBlank(model, DEFAULT_AI_MODEL_NAME))
+                .promptVersionId(DEFAULT_AI_PROMPT_VERSION_ID)
+                .requestId(command.getRequestId())
+                .traceId(command.getTraceId())
+                .promptMessagesJson(writeJson(promptMessages(question, recentMessages)))
+                .promptVariablesJson(writeJson(Map.of("context", context, "sources", sources)))
+                .promptHash(null)
+                .inputPayloadJson(
+                        writeJson(inputPayload(command, session, question, knowledge, recentMessages, sources)))
+                .outputSchemaJson(writeJson(outputSchema()))
+                .stream(command.isStream())
+                .forceJson(true)
+                .locale(DEFAULT_LOCALE)
+                .build();
+    }
+
     private List<ChatCompletionResult.ChatCompletionSource> sourcesToResult(List<QaSource> sources) {
         if (sources == null || sources.isEmpty()) {
             return List.of();
@@ -210,6 +257,165 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                 chatResult.usage().promptTokens(),
                 chatResult.usage().completionTokens(),
                 chatResult.usage().totalTokens());
+    }
+
+    private ClassicsQaKnowledgeFacadeDto requireSingleDocumentKnowledge(QaSession session) {
+        ClassicsQaKnowledgeFacadeResponse response =
+                classicsFacade.getQaKnowledge(ClassicsQaKnowledgeFacadeRequest.builder()
+                        .contentType(session.getContextContentType())
+                        .contentId(String.valueOf(session.getContextContentId()))
+                        .build());
+        if (response == null || response.getKnowledge() == null) {
+            throw new BizException(
+                    "DISCOVERY-30013",
+                    "discovery.qa.single-document-context.not-found",
+                    "Single document context content does not exist");
+        }
+        return response.getKnowledge();
+    }
+
+    private List<Map<String, Object>> promptMessages(String question, List<Map<String, Object>> recentMessages) {
+        Map<String, Object> systemMessage = new LinkedHashMap<>();
+        systemMessage.put("role", "system");
+        systemMessage.put("content", "You are a Wangqi single-document QA assistant.");
+        List<Map<String, Object>> messages = new ArrayList<>();
+        messages.add(systemMessage);
+        messages.addAll(recentMessages);
+        if (recentMessages.stream()
+                .noneMatch(message -> MESSAGE_ROLE_USER.equals(message.get("role"))
+                        && StringUtils.equals(question, String.valueOf(message.get("content"))))) {
+            Map<String, Object> userMessage = new LinkedHashMap<>();
+            userMessage.put("role", MESSAGE_ROLE_USER);
+            userMessage.put("content", question);
+            messages.add(userMessage);
+        }
+        return messages;
+    }
+
+    private Map<String, Object> inputPayload(
+            ChatCompletionCommand command,
+            QaSession session,
+            String question,
+            ClassicsQaKnowledgeFacadeDto knowledge,
+            List<Map<String, Object>> recentMessages,
+            List<Map<String, Object>> sources) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("session", sessionPayload(session));
+        payload.put("question", question);
+        payload.put("context", contextPayload(session));
+        payload.put("knowledge", knowledgePayload(knowledge));
+        payload.put("recentMessages", recentMessages);
+        payload.put("sources", sources);
+        payload.put("requestId", command.getRequestId());
+        payload.put("traceId", command.getTraceId());
+        return payload;
+    }
+
+    private Map<String, Object> sessionPayload(QaSession session) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("sessionId", session.getSessionId());
+        payload.put("title", session.getTitle());
+        payload.put("scope", session.getScope());
+        return payload;
+    }
+
+    private Map<String, Object> contextPayload(QaSession session) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("contextMode", session.getContextMode());
+        payload.put("contextContentType", session.getContextContentType());
+        payload.put("contextContentId", session.getContextContentId());
+        return payload;
+    }
+
+    private Map<String, Object> knowledgePayload(ClassicsQaKnowledgeFacadeDto knowledge) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("sourceId", knowledge.getSourceId());
+        payload.put("contentType", knowledge.getContentType());
+        payload.put("contentId", knowledge.getContentId());
+        payload.put("knowledgeBase", knowledge.getKnowledgeBase());
+        payload.put("currentVersionNo", knowledge.getCurrentVersionNo());
+        payload.put("knowledgeRevision", knowledge.getKnowledgeRevision());
+        payload.put("visibility", knowledge.getVisibility());
+        payload.put("status", knowledge.getStatus());
+        payload.put("sourcePath", knowledge.getSourcePath());
+        payload.put("title", knowledge.getTitle());
+        payload.put("categoryPath", knowledge.getCategoryPath());
+        payload.put("summary", knowledge.getSummary());
+        payload.put("body", knowledge.getBody());
+        payload.put("originalText", knowledge.getOriginalText());
+        payload.put("translationText", knowledge.getTranslationText());
+        payload.put("originalExcerpts", knowledge.getOriginalExcerpts());
+        payload.put("tags", knowledge.getTags() == null ? List.of() : knowledge.getTags());
+        payload.put("qaPairs", knowledge.getQaPairs() == null ? List.of() : knowledge.getQaPairs());
+        return payload;
+    }
+
+    private Map<String, Object> sourcePayload(ClassicsQaKnowledgeFacadeDto knowledge) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("sourceId", knowledge.getSourceId());
+        payload.put("knowledgeBase", knowledge.getKnowledgeBase());
+        payload.put("contentType", knowledge.getContentType());
+        payload.put("contentId", knowledge.getContentId());
+        payload.put("title", knowledge.getTitle());
+        payload.put("snippet", StringUtils.defaultIfBlank(knowledge.getSummary(), knowledge.getBody()));
+        payload.put("sourcePath", knowledge.getSourcePath());
+        payload.put("currentVersionNo", knowledge.getCurrentVersionNo());
+        return payload;
+    }
+
+    private List<Map<String, Object>> recentMessages(List<ChatCompletionCommand.ChatMessage> messages) {
+        if (messages == null || messages.isEmpty()) {
+            return List.of();
+        }
+        List<Map<String, Object>> mapped = messages.stream()
+                .filter(Objects::nonNull)
+                .filter(message ->
+                        StringUtils.isNotBlank(message.getRole()) || StringUtils.isNotBlank(message.getContent()))
+                .map(message -> {
+                    Map<String, Object> payload = new LinkedHashMap<>();
+                    payload.put("role", message.getRole());
+                    payload.put("content", message.getContent());
+                    return payload;
+                })
+                .toList();
+        int fromIndex = Math.max(0, mapped.size() - 6);
+        return mapped.subList(fromIndex, mapped.size());
+    }
+
+    private Map<String, Object> outputSchema() {
+        Map<String, Object> schema = new LinkedHashMap<>();
+        schema.put("type", "object");
+        schema.put("required", List.of("answer", "sources"));
+        schema.put(
+                "properties",
+                Map.of(
+                        "answer", Map.of("type", "string"),
+                        "sources", Map.of("type", "array"),
+                        "finishReason", Map.of("type", "string")));
+        return schema;
+    }
+
+    private String writeJson(Object value) {
+        try {
+            return OBJECT_MAPPER.writeValueAsString(value);
+        } catch (JsonProcessingException exception) {
+            throw new BizException(
+                    "DISCOVERY-30016",
+                    "discovery.qa.ai-request-build-failed",
+                    "Discovery QA AI request build failed",
+                    exception);
+        }
+    }
+
+    private void validateAiRequest(DiscoveryAiFacadeRequest aiRequest) {
+        if (aiRequest == null) {
+            return;
+        }
+        if (StringUtils.isBlank(aiRequest.getPromptMessagesJson())
+                || StringUtils.isBlank(aiRequest.getInputPayloadJson())) {
+            throw new BizException(
+                    "DISCOVERY-30016", "discovery.qa.ai-request-build-failed", "Discovery QA AI request build failed");
+        }
     }
 
     private List<ChatCompletionResult.ChatCompletionChoice> choicesToResult(List<KnowledgeChatChoice> choices) {
@@ -431,6 +637,10 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
 
     private boolean isSingleDocumentSession(QaSession session) {
         return session != null && SINGLE_DOCUMENT_CONTEXT_MODE.equals(session.getContextMode());
+    }
+
+    private boolean isWangqiSingleDocumentSession(QaSession session) {
+        return isSingleDocumentSession(session) && WANGQI_DOCUMENT_CONTEXT_TYPE.equals(session.getContextContentType());
     }
 
     private String metadataString(Object value) {
