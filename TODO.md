@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `branch sync main`：收口前同步 main 分支代码
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`feat/knowledge-refinement-graph-loop`、`origin/main`
-    - 处理动作：在功能实现和定向测试补齐后同步 `origin/main` 到当前功能分支并解决冲突。
-    - 验收点：当前分支包含最新 `origin/main`，且没有无关冲突残留。
-    - 重要度：10/10
-
 - [ ] `Knowledge final validation`：同步 main 后运行最终验证
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
