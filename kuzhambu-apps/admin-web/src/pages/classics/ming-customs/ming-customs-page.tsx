@@ -273,6 +273,12 @@ export const MingCustomsPage = () => {
             })
         ]);
     }, [editorEntry?.id, queryClient]);
+
+    const invalidateMingCandidates = async () => {
+        await queryClient.invalidateQueries({
+            queryKey: ["ai", "candidates", "MING_CUSTOMS", editorEntry?.id]
+        });
+    };
     const invalidateExportJobs = async () => {
         await queryClient.invalidateQueries({
             queryKey: ["classics", "ming-customs", "exports", "jobs"]
@@ -866,6 +872,9 @@ export const MingCustomsPage = () => {
                                 onApplied={async () => {
                                     await invalidateMingCustoms();
                                 }}
+                                onRejected={async () => {
+                                    await invalidateMingCandidates();
+                                }}
                             />
                             <ClassicsContentTagPanel
                                 contentId={editorEntry.id}
@@ -873,6 +882,7 @@ export const MingCustomsPage = () => {
                                 onChanged={invalidateMingCustoms}
                             />
                             <ClassicsContentQaPanel
+                                panelTitle="明代习俗问答对"
                                 contentId={editorEntry.id}
                                 contentType="MING_CUSTOMS"
                                 onChanged={invalidateMingCustoms}

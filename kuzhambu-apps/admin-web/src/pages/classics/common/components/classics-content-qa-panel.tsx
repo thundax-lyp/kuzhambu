@@ -1,10 +1,11 @@
-import { EditOutlined, PlusOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import { App, Button, Card, Empty, Form, Input, Modal, Select } from "antd";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
 import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
+import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import * as contentService from "../classics-content-service";
 import type { ClassicsContentQaPairRecord, ClassicsContentType } from "../classics-content-types";
 import {
@@ -48,6 +49,7 @@ export const ClassicsContentQaPanel = ({
     panelTitle
 }: ClassicsContentQaPanelProps) => {
     const { message: messageApi } = App.useApp();
+    const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
     const [isEditorOpen, setIsEditorOpen] = useState(false);
     const [editingQaPair, setEditingQaPair] = useState<ClassicsContentQaPairRecord | undefined>(
@@ -121,6 +123,17 @@ export const ClassicsContentQaPanel = ({
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "排序失败");
+        }
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: (request: { id: number }) => contentService.deleteQaPair(request),
+        onSuccess: async () => {
+            await notifyChanged();
+            messageApi.success("问答对已删除");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "删除问答对失败");
         }
     });
 
@@ -202,6 +215,20 @@ export const ClassicsContentQaPanel = ({
         form.resetFields();
     };
 
+    const deleteQaPair = (qaPair: ClassicsContentQaPairRecord) => {
+        if (!qaPair.id) {
+            return;
+        }
+        const qaPairId = qaPair.id;
+
+        confirm.danger({
+            title: "确认删除问答对",
+            message: "删除后会生成新的正式版本。是否继续？",
+            okText: "删除",
+            onConfirm: () => deleteMutation.mutate({ id: qaPairId })
+        });
+    };
+
     if (qaPairsQuery.isError) {
         return <Empty description="问答列表加载失败" image={Empty.PRESENTED_IMAGE_SIMPLE} />;
     }
@@ -254,6 +281,16 @@ export const ClassicsContentQaPanel = ({
                                         onClick={() => openEdit(pair)}
                                     >
                                         编辑
+                                    </Button>
+                                    <Button
+                                        aria-label={`删除问答对 ${pair.id}`}
+                                        danger
+                                        icon={<DeleteOutlined />}
+                                        loading={deleteMutation.isPending}
+                                        size="small"
+                                        onClick={() => deleteQaPair(pair)}
+                                    >
+                                        删除
                                     </Button>
                                 </KuzhambuSpace>
                             )

@@ -308,6 +308,12 @@ export const WangqiPage = () => {
         ]);
     }, [activeDocument?.id, queryClient]);
 
+    const invalidateWangqiCandidates = async () => {
+        await queryClient.invalidateQueries({
+            queryKey: ["ai", "candidates", "WANGQI_DOCUMENT", activeDocument?.id]
+        });
+    };
+
     const invalidateRefinementTasks = async () => {
         await queryClient.invalidateQueries({
             queryKey: ["classics", "wangqi", "refinement", "tasks", activeDocument?.id]
@@ -892,6 +898,9 @@ export const WangqiPage = () => {
                                 onApplied={async () => {
                                     await invalidateWangqi();
                                 }}
+                                onRejected={async () => {
+                                    await invalidateWangqiCandidates();
+                                }}
                             />
                             <ClassicsContentTagPanel
                                 contentId={activeDocument.id}
@@ -899,6 +908,7 @@ export const WangqiPage = () => {
                                 onChanged={invalidateWangqi}
                             />
                             <ClassicsContentQaPanel
+                                panelTitle="王圻问答对"
                                 contentId={activeDocument.id}
                                 contentType="WANGQI_DOCUMENT"
                                 onChanged={invalidateWangqi}

@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `Admin Web QA controls`：补齐 Wangqi/Ming 问答对控件操作
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-QA-VERSION-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common/components/classics-content-qa-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/common/classics-content-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/classics-content-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/wangqi/wangqi-page.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/ming-customs/ming-customs-page.tsx`
-    - 处理动作：补齐问答对新增、编辑、删除、AI 应用和 AI 拒绝后的控件反馈与刷新行为。
-    - 验收点：`新增问答对`、`编辑`、`删除问答对 {id}`、`应用`、`拒绝` 操作符合 RUNBOOK 文案和刷新规则。
-    - 重要度：9/10
-
 - [ ] `Admin Web version snapshot display`：展示版本快照中的标签与问答对
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-QA-VERSION-GOVERNANCE.md`
