@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Portal Web Wangqi QA context`：锁定 Portal 单文档问答上下文
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WANGQI-SINGLE-DOCUMENT-QA.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/discovery/qa-page.tsx`、`kuzhambu-apps/portal-web/src/pages/discovery/qa-page.test.tsx`、`kuzhambu-apps/portal-web/e2e/discovery/qa.spec.ts`
-    - 处理动作：展示单文档上下文条、锁定上下文字段、透传首问和追问上下文，并补齐失败重试。
-    - 验收点：Portal 单测和 e2e 覆盖 URL 初始化、上下文展示、请求 payload、来源展示、刷新详情和失败重试。
-    - 重要度：10/10
-
 - [ ] `main sync`：收口前同步 main 分支代码
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
