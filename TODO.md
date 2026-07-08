@@ -19,14 +19,6 @@
     - 验收点：无对应域图表权限时该域 facade 没有调用记录，返回 summary 为 `null`。
     - 重要度：10/10
 
-- [ ] `operations dashboard overview application`：按字段权限裁剪 overview 结果
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-PERMISSION-CHARTS.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/dashboard/service/impl/OperationsDashboardApplicationServiceImpl.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/dashboard/result/OperationsDashboardOverviewResult.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/dashboard/service/impl/OperationsDashboardApplicationServiceImplTest.java`
-    - 处理动作：在 overview 编排中按权限快照装配授权字段并将未授权字段保持为 `null`。
-    - 验收点：只有 dashboard 权限时除周期外聚合字段均为 `null`，健康和任务仓储在无权时不被调用。
-    - 重要度：10/10
-
 - [ ] `operations dashboard interface`：保留 overview 响应 null 语义
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-PERMISSION-CHARTS.md`

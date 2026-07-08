@@ -24,6 +24,7 @@ import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDa
 import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult.TopQueryResult;
 import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult.TopTagResult;
 import com.thundax.kuzhambu.operations.application.dashboard.service.OperationsDashboardApplicationService;
+import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardPermissionResolver;
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardPermissionSnapshot;
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryGateway;
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryModels.OperationsCrossDomainSummary;
@@ -41,7 +42,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -63,12 +63,23 @@ public class OperationsDashboardApplicationServiceImpl implements OperationsDash
     private final HealthAlertRepository healthAlertRepository;
     private final LongTaskSnapshotRepository longTaskSnapshotRepository;
     private final OperationsDashboardSummaryGateway summaryGateway;
+    private final OperationsDashboardPermissionResolver permissionResolver;
+    private static final OperationsDashboardPermissionSnapshot FULL_PERMISSION_SNAPSHOT =
+            new OperationsDashboardPermissionSnapshot(true, true, true, true, true, true, true, true);
 
     public OperationsDashboardApplicationServiceImpl(
             HealthCheckRepository healthCheckRepository,
             LongTaskSnapshotRepository longTaskSnapshotRepository,
             OperationsDashboardSummaryGateway summaryGateway) {
-        this(healthCheckRepository, null, longTaskSnapshotRepository, summaryGateway);
+        this(healthCheckRepository, null, longTaskSnapshotRepository, summaryGateway, null);
+    }
+
+    public OperationsDashboardApplicationServiceImpl(
+            HealthCheckRepository healthCheckRepository,
+            LongTaskSnapshotRepository longTaskSnapshotRepository,
+            OperationsDashboardSummaryGateway summaryGateway,
+            OperationsDashboardPermissionResolver permissionResolver) {
+        this(healthCheckRepository, null, longTaskSnapshotRepository, summaryGateway, permissionResolver);
     }
 
     @Autowired
@@ -76,68 +87,88 @@ public class OperationsDashboardApplicationServiceImpl implements OperationsDash
             HealthCheckRepository healthCheckRepository,
             HealthAlertRepository healthAlertRepository,
             LongTaskSnapshotRepository longTaskSnapshotRepository,
-            OperationsDashboardSummaryGateway summaryGateway) {
+            OperationsDashboardSummaryGateway summaryGateway,
+            OperationsDashboardPermissionResolver permissionResolver) {
         this.healthCheckRepository = healthCheckRepository;
         this.healthAlertRepository = healthAlertRepository;
         this.longTaskSnapshotRepository = longTaskSnapshotRepository;
         this.summaryGateway = summaryGateway;
+        this.permissionResolver = permissionResolver;
     }
 
     @Override
     public OperationsDashboardOverviewResult overview(OperationsDashboardOverviewQuery query) {
         PeriodRange periodRange = resolvePeriodRange(query);
+        OperationsDashboardPermissionSnapshot permissions = resolvePermissions();
         OperationsCrossDomainSummary summary = summaryGateway.loadSummary(
-                periodRange.periodStart(),
-                periodRange.periodEnd(),
-                resolveBucketType(query, periodRange),
-                new OperationsDashboardPermissionSnapshot(true, true, true, true, true, true, true, true));
-        ClassicsSummaryFacadeResponse classicsSummary = summary.classicsSummary();
-        AiReportSummaryFacadeResponse aiSummary = summary.aiSummary();
-        DiscoverySummaryFacadeResponse discoverySummary = summary.discoverySummary();
-        KnowledgeSummaryFacadeResponse knowledgeSummary = summary.knowledgeSummary();
-        List<OperationsHealthSummaryResult> healthSummaries = healthCheckRepository.listLatestByComponent().stream()
-                .map(this::toHealthSummaryResult)
-                .collect(Collectors.toList());
-        List<HealthAlertRecord> openAlerts = openAlerts();
-        int runningTaskCount = countTasks(TASK_STATUS_RUNNING);
-        int failedTaskCount = countTasks(TASK_STATUS_FAILED);
+                periodRange.periodStart(), periodRange.periodEnd(), resolveBucketType(query, periodRange), permissions);
+        ClassicsSummaryFacadeResponse classicsSummary =
+                permissions.canLoadClassicsSummary() ? summary.classicsSummary() : null;
+        AiReportSummaryFacadeResponse aiSummary = permissions.canLoadAiSummary() ? summary.aiSummary() : null;
+        DiscoverySummaryFacadeResponse discoverySummary =
+                permissions.canLoadDiscoverySummary() ? summary.discoverySummary() : null;
+        KnowledgeSummaryFacadeResponse knowledgeSummary =
+                permissions.canLoadKnowledgeSummary() ? summary.knowledgeSummary() : null;
+        List<OperationsHealthSummaryResult> healthSummaries = permissions.canViewHealthSummary()
+                ? healthCheckRepository.listLatestByComponent().stream()
+                        .map(this::toHealthSummaryResult)
+                        .toList()
+                : null;
+        List<HealthAlertRecord> openAlerts = permissions.canViewHealthSummary() ? openAlerts() : null;
+        Integer runningTaskCount = permissions.canViewTaskSummary() ? countTasks(TASK_STATUS_RUNNING) : null;
+        Integer failedTaskCount = permissions.canViewTaskSummary() ? countTasks(TASK_STATUS_FAILED) : null;
+        List<TaskStatusSummaryResult> taskStatusSummaries = permissions.canViewTaskSummary()
+                ? List.of(
+                        new TaskStatusSummaryResult(TASK_STATUS_RUNNING, (long) runningTaskCount),
+                        new TaskStatusSummaryResult(TASK_STATUS_FAILED, (long) failedTaskCount))
+                : null;
         return new OperationsDashboardOverviewResult(
                 periodRange.periodStart(),
                 periodRange.periodEnd(),
-                classicsSummary.getContentCount(),
-                classicsSummary.getTranslatedContentCount(),
-                classicsSummary.getImageReadyContentCount(),
-                classicsSummary.getVisualAssetReadyContentCount(),
-                classicsSummary.getShareVisitCount(),
-                aiSummary.getInvocationCount(),
-                aiSummary.getSucceededInvocationCount(),
-                aiSummary.getFailedInvocationCount(),
-                toBigDecimal(aiSummary.getAvgLatencyMs()),
-                aiSummary.getTotalCostAmount(),
-                discoverySummary.getSearchCount(),
-                discoverySummary.getQaCount(),
-                toBigDecimal(discoverySummary.getAvgSearchLatencyMs()),
-                knowledgeSummary.getTagCoverageRate(),
-                unhealthyComponentCount(healthSummaries),
+                permissions.canViewClassicsContentSummary() ? classicsSummary.getContentCount() : null,
+                permissions.canViewClassicsContentSummary() ? classicsSummary.getTranslatedContentCount() : null,
+                permissions.canViewClassicsContentSummary() ? classicsSummary.getImageReadyContentCount() : null,
+                permissions.canViewClassicsContentSummary() ? classicsSummary.getVisualAssetReadyContentCount() : null,
+                permissions.canViewClassicsSharingSummary() ? classicsSummary.getShareVisitCount() : null,
+                permissions.canLoadAiSummary() ? aiSummary.getInvocationCount() : null,
+                permissions.canLoadAiSummary() ? aiSummary.getSucceededInvocationCount() : null,
+                permissions.canLoadAiSummary() ? aiSummary.getFailedInvocationCount() : null,
+                permissions.canLoadAiSummary() ? toBigDecimal(aiSummary.getAvgLatencyMs()) : null,
+                permissions.canLoadAiSummary() ? aiSummary.getTotalCostAmount() : null,
+                permissions.canViewDiscoverySearchSummary() ? discoverySummary.getSearchCount() : null,
+                permissions.canViewDiscoveryQaSummary() ? discoverySummary.getQaCount() : null,
+                permissions.canViewDiscoverySearchSummary()
+                        ? toBigDecimal(discoverySummary.getAvgSearchLatencyMs())
+                        : null,
+                permissions.canViewKnowledgeTaxonomySummary() ? knowledgeSummary.getTagCoverageRate() : null,
+                permissions.canViewHealthSummary() ? unhealthyComponentCount(healthSummaries) : null,
                 runningTaskCount,
                 failedTaskCount,
-                openAlerts.size(),
-                alertLevelCount(openAlerts, ALERT_LEVEL_CRITICAL),
-                alertLevelCount(openAlerts, ALERT_LEVEL_WARNING),
-                highestAlertLevel(openAlerts),
+                permissions.canViewHealthSummary() ? openAlerts.size() : null,
+                permissions.canViewHealthSummary() ? alertLevelCount(openAlerts, ALERT_LEVEL_CRITICAL) : null,
+                permissions.canViewHealthSummary() ? alertLevelCount(openAlerts, ALERT_LEVEL_WARNING) : null,
+                permissions.canViewHealthSummary() ? highestAlertLevel(openAlerts) : null,
                 latestAlert(openAlerts),
-                toContentGrowthSeries(classicsSummary.getContentGrowthSeries()),
-                toSearchTrendSeries(discoverySummary.getSearchTrendSeries()),
-                toQaTrendSeries(discoverySummary.getQaTrendSeries()),
-                toTagGrowthSeries(knowledgeSummary.getMonthlyNewTags()),
+                permissions.canViewClassicsContentSummary()
+                        ? toContentGrowthSeries(classicsSummary.getContentGrowthSeries())
+                        : null,
+                permissions.canViewDiscoverySearchSummary()
+                        ? toSearchTrendSeries(discoverySummary.getSearchTrendSeries())
+                        : null,
+                permissions.canViewDiscoveryQaSummary() ? toQaTrendSeries(discoverySummary.getQaTrendSeries()) : null,
+                permissions.canViewKnowledgeTaxonomySummary()
+                        ? toTagGrowthSeries(knowledgeSummary.getMonthlyNewTags())
+                        : null,
                 healthSummaries,
-                List.of(
-                        new TaskStatusSummaryResult(TASK_STATUS_RUNNING, (long) runningTaskCount),
-                        new TaskStatusSummaryResult(TASK_STATUS_FAILED, (long) failedTaskCount)),
-                toTopContents(classicsSummary.getTopContents()),
-                toTopQueries(discoverySummary.getTopQueries()),
-                toTopTags(knowledgeSummary.getTopTags()),
-                toTopAiCapabilities(aiSummary.getTopCapabilities()));
+                taskStatusSummaries,
+                permissions.canViewClassicsContentSummary() ? toTopContents(classicsSummary.getTopContents()) : null,
+                permissions.canViewDiscoverySearchSummary() ? toTopQueries(discoverySummary.getTopQueries()) : null,
+                permissions.canViewKnowledgeTaxonomySummary() ? toTopTags(knowledgeSummary.getTopTags()) : null,
+                permissions.canLoadAiSummary() ? toTopAiCapabilities(aiSummary.getTopCapabilities()) : null);
+    }
+
+    private OperationsDashboardPermissionSnapshot resolvePermissions() {
+        return permissionResolver == null ? FULL_PERMISSION_SNAPSHOT : permissionResolver.resolve();
     }
 
     private List<HealthAlertRecord> openAlerts() {
