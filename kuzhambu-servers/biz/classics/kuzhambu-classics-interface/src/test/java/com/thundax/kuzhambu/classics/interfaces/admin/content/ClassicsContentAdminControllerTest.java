@@ -87,13 +87,13 @@ class ClassicsContentAdminControllerTest {
         assertPostMapping(
                 ClassicsContentAdminController.class,
                 "changeAiCandidates",
-                "ai-candidates/batch/change",
+                "ai-candidates/batch/apply",
                 "classics:content:edit",
                 ClassicsContentRequest.AiCandidateBatchApplyRequest.class);
         assertPostMapping(
                 ClassicsContentAdminController.class,
                 "removeAiCandidates",
-                "ai-candidates/batch/remove",
+                "ai-candidates/batch/reject",
                 "classics:content:edit",
                 ClassicsContentRequest.AiCandidateBatchRejectRequest.class);
         assertGetMapping(

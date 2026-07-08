@@ -31,6 +31,8 @@ public final class ApiAnnotationArchitectureRuleSupport {
             "abort",
             "update",
             "change",
+            "apply",
+            "reject",
             "sort",
             "move",
             "upload",
