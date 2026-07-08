@@ -165,6 +165,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
 
     @Override
     public List<ClassicsContentTag> listTags(String contentType, ClassicsContentId contentId) {
+        requireTagScope(contentType, contentId);
         return repository.listTags(contentType, contentId, SortDirection.ASC);
     }
 
@@ -234,6 +235,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ClassicsContentTagId addTag(ContentTagCommand command) {
+        validateTagCommand(command, false);
         ClassicsContentId contentId = ClassicsContentId.of(command.getContentId());
         ClassicsContentType contentType = command.getContentType();
         int nextPriority = repository.maxTagPriority(command.getContentType().value(), contentId) + 1;
@@ -261,10 +263,17 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ClassicsContentTagId updateTag(ContentTagCommand command) {
+        validateTagCommand(command, true);
         ClassicsContentType contentType = command.getContentType();
         ClassicsContentId contentId = ClassicsContentId.of(command.getContentId());
         ClassicsContentTag existing =
                 repository.getTagById(command == null ? null : ClassicsContentTagId.of(command.getId()));
+        if (existing == null) {
+            throw new BizException("古籍内容标签不存在");
+        }
+        if (existing.getContentType() != contentType || !contentId.equals(existing.getContentId())) {
+            throw new BizException("古籍内容标签不属于当前内容");
+        }
         ClassicsContentTag tag = tagBindingSupport == null
                 ? command.toEntity()
                 : tagBindingSupport.bindManualTag(command, existing == null ? null : existing.getPriority());
@@ -284,7 +293,13 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteTag(ClassicsContentTagId id) {
+        if (id == null) {
+            throw new BizException("古籍内容标签 id 不能为空");
+        }
         ClassicsContentTag existing = repository.getTagById(id);
+        if (existing == null) {
+            return;
+        }
         repository.deleteTagById(
                 existing == null || existing.getContentType() == null
                         ? null
@@ -1272,6 +1287,40 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 storedObject.getContentType(),
                 storedObject.getSize(),
                 response.getInputStream());
+    }
+
+    private static void validateTagCommand(ContentTagCommand command, boolean requireId) {
+        if (command == null) {
+            throw new BizException("古籍内容标签参数不能为空");
+        }
+        if (requireId && command.getId() == null) {
+            throw new BizException("古籍内容标签 id 不能为空");
+        }
+        requireTagScope(
+                command.getContentType() == null
+                        ? null
+                        : command.getContentType().value(),
+                ClassicsContentId.of(command.getContentId()));
+        String tagName = StringUtils.trimToNull(command.getTagNameSnapshot());
+        if (tagName == null) {
+            throw new BizException("古籍内容标签名称不能为空");
+        }
+        command.setTagNameSnapshot(tagName);
+        if (command.getSource() == null) {
+            command.setSource(ClassicsContentSource.MANUAL);
+        }
+        if (command.getStatus() == null) {
+            command.setStatus(ClassicsContentTagStatus.ACTIVE);
+        }
+    }
+
+    private static void requireTagScope(String contentType, ClassicsContentId contentId) {
+        if (StringUtils.isBlank(contentType)) {
+            throw new BizException("古籍内容标签 contentType 不能为空");
+        }
+        if (contentId == null || contentId.value() == null) {
+            throw new BizException("古籍内容标签 contentId 不能为空");
+        }
     }
 
     private void updateTagPriorityOrThrow(ClassicsContentTagId id, int priority) {

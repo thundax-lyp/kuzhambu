@@ -217,7 +217,11 @@ public class SancaiAdminController {
     @SysLogger(value = "详情")
     @GetMapping("entries/{id}")
     public SancaiEntryResponse getEntry(@PathVariable Long id) {
-        return SancaiInterfaceAssembler.toResponse(service.getEntry(SancaiEntryIdCodec.toDomain(id)));
+        Long entryId = requireParameter(id, "id");
+        return SancaiInterfaceAssembler.toResponse(
+                service.getEntry(SancaiEntryIdCodec.toDomain(entryId)),
+                contentService.listTags(
+                        ClassicsContentType.SANCAI_ENTRY.value(), ClassicsContentIdCodec.toDomain(entryId)));
     }
 
     @Operation(summary = "新增三才图会条目", description = "classics:sancai:edit")
