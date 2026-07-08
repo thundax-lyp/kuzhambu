@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin cleanup validation`：完成前端定向验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-CLEANUP-TARGET-TYPES.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/cleanup/cleanup-page.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/cleanup/cleanup-page.test.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/cleanup/cleanup-service-contract.test.ts`、`kuzhambu-apps/admin-web`
-    - 处理动作：运行 admin-web 格式检查、lint 和 cleanup 页面定向测试。
-    - 验收点：`format:check`、`lint`、`cleanup-page.test.tsx` 和 `cleanup-service-contract.test.ts` 通过；若失败，记录失败命令、原因和剩余风险。
-    - 重要度：9/10
-
 - [ ] `Operations cleanup closeout`：同步 main 并完成文档与临时文件收口
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-OPERATIONS-CLEANUP-TARGET-TYPES.md`
