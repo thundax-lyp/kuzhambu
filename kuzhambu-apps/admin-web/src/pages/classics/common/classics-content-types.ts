@@ -55,6 +55,7 @@ export interface ClassicsContentTagRecord {
     tagNameSnapshot?: string | null;
     status?: string | null;
     source?: string | null;
+    priority?: number | null;
 }
 
 export interface ClassicsContentTagPayload extends ClassicsContentRef {
@@ -68,6 +69,10 @@ export interface ClassicsContentTagPayload extends ClassicsContentRef {
 export interface ClassicsContentTagSortPayload extends ClassicsContentRef {
     orderedIds: number[];
     sortDirection?: string | null;
+}
+
+export interface ClassicsContentTagDeletePayload {
+    id: number;
 }
 
 export interface ClassicsContentQaPairRecord {

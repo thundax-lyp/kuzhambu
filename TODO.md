@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ClassicsContentTagPanel`：接通前端通用标签删除闭环
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-ENTRY-TAGS.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common/classics-content-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/classics-content-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/components/classics-content-tag-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/common/classics-content-service-contract.test.ts`
-    - 处理动作：新增 `deleteTag({ id })` 服务和删除入参类型，让标签行“移除”按钮调用 `/classics/content/tags/delete`。
-    - 验收点：“移除”按钮保留 `danger`、`DeleteOutlined`、`aria-label="移除标签 {id}"` 和 pending loading，删除成功后刷新标签 query 并触发 `onChanged`。
-    - 重要度：9/10
-
 - [ ] `SancaiEntryPanel`：补齐详情抽屉标签展示和编辑入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-ENTRY-TAGS.md`
