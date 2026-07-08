@@ -19,14 +19,6 @@
     - 验收点：无对应域图表权限时该域 facade 没有调用记录，返回 summary 为 `null`。
     - 重要度：10/10
 
-- [ ] `operations dashboard interface`：保留 overview 响应 null 语义
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-PERMISSION-CHARTS.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/dashboard/assembler/OperationsDashboardInterfaceAssembler.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/dashboard/controller/response/OperationsDashboardOverviewResponse.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/test/java/com/thundax/kuzhambu/operations/interfaces/admin/dashboard/controller/OperationsDashboardAdminControllerTest.java`
-    - 处理动作：删除 interface assembler 的二次权限判断和空集合兜底。
-    - 验收点：application 返回 `null` 的 list 与 `latestAlert` 在 interface response 中仍为 `null`。
-    - 重要度：9/10
-
 - [ ] `admin-web operations dashboard requests`：裁剪 dashboard 前端权限能力与请求触发
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-PERMISSION-CHARTS.md`

@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.operations.interfaces.admin.dashboard.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -9,6 +11,7 @@ import static org.mockito.Mockito.when;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.operations.application.dashboard.query.OperationsDashboardOverviewQuery;
 import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult;
+import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult.AlertSummaryResult;
 import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult.TaskStatusSummaryResult;
 import com.thundax.kuzhambu.operations.application.dashboard.service.OperationsDashboardApplicationService;
 import com.thundax.kuzhambu.operations.application.health.result.OperationsHealthSummaryResult;
@@ -105,6 +108,80 @@ class OperationsDashboardAdminControllerTest {
                         && "CUSTOM".equals(query.getPeriodType())
                         && periodStart.equals(query.getPeriodStart())
                         && periodEnd.equals(query.getPeriodEnd())));
+    }
+
+    @Test
+    void overviewShouldKeepNullCollectionsFromApplicationResult() {
+        OperationsDashboardApplicationService service = mock(OperationsDashboardApplicationService.class);
+        OperationsDashboardAdminController controller = new OperationsDashboardAdminController(service);
+        Date periodStart = new Date(1_719_630_400_000L);
+        Date periodEnd = new Date(1_719_716_800_000L);
+        when(service.overview(argThat(query -> query != null && "WEEK".equals(query.getPeriodType()))))
+                .thenReturn(new OperationsDashboardOverviewResult(
+                        periodStart,
+                        periodEnd,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        "CRITICAL",
+                        new AlertSummaryResult(
+                                9001L,
+                                "admin-server",
+                                "CHECK_FAIL",
+                                "CRITICAL",
+                                "OPEN",
+                                "DOMAIN",
+                                9101L,
+                                "check failed",
+                                "recheck",
+                                "restart",
+                                "all",
+                                periodEnd,
+                                "unknown"),
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null));
+
+        OperationsDashboardOverviewRequest request = new OperationsDashboardOverviewRequest();
+        request.setPeriodType("WEEK");
+        var response = controller.overview(request);
+
+        assertEquals(periodStart, response.getPeriodStart());
+        assertEquals(periodEnd, response.getPeriodEnd());
+        assertEquals("CRITICAL", response.getHighestAlertLevel());
+        assertNotNull(response.getLatestAlert());
+        assertNull(response.getContentGrowthSeries());
+        assertNull(response.getSearchTrendSeries());
+        assertNull(response.getHealthSummaries());
+        assertNull(response.getTaskStatusSummaries());
+        assertNull(response.getTopContents());
+        assertNull(response.getTopQueries());
+        assertNull(response.getTopTags());
+        assertNull(response.getTopAiCapabilities());
     }
 
     private void assertRequestMapping(Class<?> type, String expectedPath) {
