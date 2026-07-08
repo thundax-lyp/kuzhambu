@@ -91,6 +91,10 @@ export interface ClassicsContentQaPairPayload extends ClassicsContentRef {
     source?: string | null;
 }
 
+export interface ClassicsContentQaPairDeletePayload {
+    id: number;
+}
+
 export interface ClassicsContentQaPairSortPayload {
     orderedIds: number[];
     sortDirection?: string | null;

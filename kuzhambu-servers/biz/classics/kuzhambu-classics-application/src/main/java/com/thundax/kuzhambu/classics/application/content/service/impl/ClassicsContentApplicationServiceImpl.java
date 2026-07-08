@@ -327,7 +327,8 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         qaPair.setId(null);
         qaPair.setPriority(repository.maxQaPairPriority() + 1);
         ClassicsContentQaPairId createdId = repository.insertQaPair(qaPair);
-        versionAndPublishContentSync(qaPair.getContentType(), qaPair.getContentId(), "手动更新问答对");
+        versionAndPublishContentSync(
+                qaPair.getContentType(), qaPair.getContentId(), ClassicsContentChangeType.QA_CHANGED, "新增问答对");
         return createdId;
     }
 
@@ -336,7 +337,8 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     public ClassicsContentQaPairId updateQaPair(ContentQaPairCommand command) {
         ClassicsContentQaPair qaPair = command.toEntity();
         repository.updateQaPair(qaPair);
-        versionAndPublishContentSync(qaPair.getContentType(), qaPair.getContentId(), "手动更新问答对");
+        versionAndPublishContentSync(
+                qaPair.getContentType(), qaPair.getContentId(), ClassicsContentChangeType.QA_CHANGED, "更新问答对");
         return qaPair.getId();
     }
 
@@ -410,6 +412,15 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             indexById.put(targetId.value(), i);
             indexById.put(currentId.value(), targetIndex);
         }
+
+        if (!currentQaPairs.isEmpty() && currentQaPairs.get(0) != null) {
+            ClassicsContentType contentType = currentQaPairs.get(0).getContentType();
+            ClassicsContentId contentId = currentQaPairs.get(0).getContentId();
+            Versionable content = loadContentForGovernance(contentType, contentId);
+            if (content != null) {
+                publishSearchSyncAfterCommit(content);
+            }
+        }
     }
 
     @Override
@@ -418,7 +429,8 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         ClassicsContentQaPair existing = repository.getQaPairById(id);
         repository.deleteQaPairById(id);
         if (existing != null && existing.getContentType() != null && existing.getContentId() != null) {
-            versionAndPublishContentSync(existing.getContentType(), existing.getContentId(), "手动删除问答对");
+            versionAndPublishContentSync(
+                    existing.getContentType(), existing.getContentId(), ClassicsContentChangeType.QA_CHANGED, "删除问答对");
         }
     }
 
@@ -526,14 +538,9 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 entry.setTranslationStatus(SancaiEntryTranslationStatus.READY);
                 touchContentUpdatedAt(ClassicsContentType.SANCAI_ENTRY, entry);
                 ensureUpdate(repository.updateSancaiEntryAiFields(entry), "更新三才内容失败");
-            } else if ("summary".equals(capability)) {
-                entry.setSummary(aiCandidatePayloadParser.parseText(command.getResultPayload()));
-                touchContentUpdatedAt(ClassicsContentType.SANCAI_ENTRY, entry);
-                ensureUpdate(repository.updateSancaiEntryAiFields(entry), "更新三才内容失败");
-            } else if ("tags".equals(capability)) {
-                applyTags(contentType, entry, aiCandidatePayloadParser.parseTags(command.getResultPayload()));
-            } else if ("qa".equals(capability)) {
-                applyQaPairs(contentType, entry, aiCandidatePayloadParser.parseQaPairs(command.getResultPayload()));
+            } else if ("summary".equals(capability) || "tags".equals(capability) || "qa".equals(capability)) {
+                applySummaryTagsAndQaFromAiCandidate(
+                        contentType, entry, capability, command.getResultPayload(), "更新三才内容失败");
             } else {
                 throw new BizException("不支持的 AI 候选能力: " + capability);
             }
@@ -548,14 +555,9 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             if (document == null) {
                 throw new BizException("王圻文档不存在: " + contentId.value());
             }
-            if ("summary".equals(capability)) {
-                document.setSummary(aiCandidatePayloadParser.parseText(command.getResultPayload()));
-                touchContentUpdatedAt(ClassicsContentType.WANGQI_DOCUMENT, document);
-                ensureUpdate(repository.updateWangqiDocumentAiFields(document), "更新王圻文档失败");
-            } else if ("tags".equals(capability)) {
-                applyTags(contentType, document, aiCandidatePayloadParser.parseTags(command.getResultPayload()));
-            } else if ("qa".equals(capability)) {
-                applyQaPairs(contentType, document, aiCandidatePayloadParser.parseQaPairs(command.getResultPayload()));
+            if ("summary".equals(capability) || "tags".equals(capability) || "qa".equals(capability)) {
+                applySummaryTagsAndQaFromAiCandidate(
+                        contentType, document, capability, command.getResultPayload(), "更新王圻文档失败");
             } else {
                 throw new BizException("不支持的 AI 候选能力: " + capability);
             }
@@ -565,14 +567,9 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             if (entry == null) {
                 throw new BizException("明代习俗不存在: " + contentId.value());
             }
-            if ("summary".equals(capability)) {
-                entry.setSummary(aiCandidatePayloadParser.parseText(command.getResultPayload()));
-                touchContentUpdatedAt(ClassicsContentType.MING_CUSTOMS, entry);
-                ensureUpdate(repository.updateMingCustomsEntryAiFields(entry), "更新明代习俗失败");
-            } else if ("tags".equals(capability)) {
-                applyTags(contentType, entry, aiCandidatePayloadParser.parseTags(command.getResultPayload()));
-            } else if ("qa".equals(capability)) {
-                applyQaPairs(contentType, entry, aiCandidatePayloadParser.parseQaPairs(command.getResultPayload()));
+            if ("summary".equals(capability) || "tags".equals(capability) || "qa".equals(capability)) {
+                applySummaryTagsAndQaFromAiCandidate(
+                        contentType, entry, capability, command.getResultPayload(), "更新明代习俗失败");
             } else {
                 throw new BizException("不支持的 AI 候选能力: " + capability);
             }
@@ -929,6 +926,73 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         }
     }
 
+    private void applySummaryTagsAndQaFromAiCandidate(
+            ClassicsContentType contentType,
+            Versionable content,
+            String capability,
+            String resultPayload,
+            String updateFailureMessage) {
+        String summary = resolveSummaryIfPresent(resultPayload);
+        List<String> tags = aiCandidatePayloadParser.parseTagsIfPresent(resultPayload);
+        List<AiCandidateQaPairPayload> qaPairs = aiCandidatePayloadParser.parseQaPairsIfPresent(resultPayload);
+
+        if (summary == null && tags.isEmpty() && qaPairs.isEmpty()) {
+            throw new BizException("AI候选内容为空");
+        }
+
+        if (summary != null) {
+            if (content instanceof SancaiEntry entry) {
+                entry.setSummary(summary);
+            } else if (content instanceof WangqiDocument document) {
+                document.setSummary(summary);
+            } else if (content instanceof MingCustomsEntry entry) {
+                entry.setSummary(summary);
+            }
+        }
+
+        if ("tags".equals(capability)) {
+            if (tags == null || tags.isEmpty()) {
+                throw new BizException("AI候选标签为空");
+            }
+            applyTags(contentType, content, tags);
+        } else if ("qa".equals(capability)) {
+            if (qaPairs == null || qaPairs.isEmpty()) {
+                throw new BizException("AI候选问答为空");
+            }
+            applyQaPairs(contentType, content, qaPairs);
+        } else {
+            if (!tags.isEmpty()) {
+                applyTags(contentType, content, tags);
+            }
+            if (!qaPairs.isEmpty()) {
+                applyQaPairs(contentType, content, qaPairs);
+            }
+        }
+
+        touchContentUpdatedAt(contentType, content);
+        if (content instanceof SancaiEntry entry) {
+            ensureUpdate(repository.updateSancaiEntryAiFields(entry), updateFailureMessage);
+        } else if (content instanceof WangqiDocument document) {
+            ensureUpdate(repository.updateWangqiDocumentAiFields(document), updateFailureMessage);
+        } else if (content instanceof MingCustomsEntry entry) {
+            ensureUpdate(repository.updateMingCustomsEntryAiFields(entry), updateFailureMessage);
+        }
+    }
+
+    private String resolveSummaryIfPresent(String resultPayload) {
+        try {
+            return aiCandidatePayloadParser.parseSummary(resultPayload);
+        } catch (BizException ex) {
+            if ("AI候选内容为空".equals(ex.getMessage())) {
+                return null;
+            }
+            if ("AI候选摘要格式错误".equals(ex.getMessage())) {
+                throw ex;
+            }
+            return null;
+        }
+    }
+
     private void markAiCandidateApplied(AiCandidateApplyContentCommand command) {
         aiFacade.markCandidateApplied(MarkAiCandidateAppliedFacadeRequest.builder()
                 .candidateId(command.getCandidateId())
@@ -1060,12 +1124,20 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
 
     private void versionAndPublishContentSync(
             ClassicsContentType contentType, ClassicsContentId contentId, String changeSummary) {
+        versionAndPublishContentSync(contentType, contentId, ClassicsContentChangeType.MANUAL_SAVE, changeSummary);
+    }
+
+    private void versionAndPublishContentSync(
+            ClassicsContentType contentType,
+            ClassicsContentId contentId,
+            ClassicsContentChangeType changeType,
+            String changeSummary) {
         Versionable content = loadContentForGovernance(contentType, contentId);
         if (content == null) {
             return;
         }
         touchContentUpdatedAt(contentType, content);
-        ensureVersioned(content, ClassicsContentChangeType.MANUAL_SAVE, changeSummary);
+        ensureVersioned(content, changeType, changeSummary);
         persistVersionMarkers(content);
         publishSearchSyncAfterCommit(content);
     }
@@ -1189,6 +1261,8 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         entry.setOriginalExcerpts(snapshot.originalExcerpts());
         entry.setVisibility(resolveMingCustomsVisibility(snapshot.visibility()));
         touchContentUpdatedAt(ClassicsContentType.MING_CUSTOMS, entry);
+        restoreMingCustomsTags(entry, snapshot);
+        restoreMingCustomsQaPairs(entry, snapshot);
         return entry;
     }
 
@@ -1207,6 +1281,120 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
 
     private MingCustomsVisibility resolveMingCustomsVisibility(String value) {
         return StringUtils.isBlank(value) ? null : MingCustomsVisibility.from(value);
+    }
+
+    private void restoreMingCustomsTags(MingCustomsEntry entry, MingCustomsVersionSnapshot snapshot) {
+        if (entry == null || snapshot == null || entry.contentId() == null) {
+            return;
+        }
+        repository
+                .listTags(ClassicsContentType.MING_CUSTOMS.value(), entry.contentId(), SortDirection.ASC)
+                .forEach(tag -> {
+                    removeTagRefIfExists(tag);
+                    repository.deleteTagById(ClassicsContentType.MING_CUSTOMS.value(), entry.contentId(), tag.getId());
+                });
+
+        if (snapshot.tags() == null) {
+            return;
+        }
+
+        for (int i = 0; i < snapshot.tags().size(); i++) {
+            insertMingTagFromSnapshot(snapshot.tags().get(i), entry, i + 1);
+        }
+    }
+
+    private void restoreMingCustomsQaPairs(MingCustomsEntry entry, MingCustomsVersionSnapshot snapshot) {
+        if (entry == null || entry.contentId() == null) {
+            return;
+        }
+        repository
+                .listQaPairs(ClassicsContentType.MING_CUSTOMS.value(), entry.contentId(), SortDirection.ASC)
+                .forEach(pair -> repository.deleteQaPairById(pair.getId()));
+
+        if (snapshot == null || snapshot.qaPairs() == null) {
+            return;
+        }
+        for (int i = 0; i < snapshot.qaPairs().size(); i++) {
+            insertMingQaPairFromSnapshot(snapshot.qaPairs().get(i), entry, i + 1);
+        }
+    }
+
+    private void insertMingTagFromSnapshot(
+            MingCustomsVersionSnapshot.MingCustomsTagSnapshot snapshot, MingCustomsEntry entry, int fallbackPriority) {
+        if (snapshot == null || entry == null || entry.contentId() == null) {
+            return;
+        }
+        int priority = snapshot.priority() == null ? fallbackPriority : snapshot.priority();
+        if (tagBindingSupport == null) {
+            ContentTagCommand command = new ContentTagCommand(
+                    null,
+                    ClassicsContentType.MING_CUSTOMS,
+                    entry.contentId().value(),
+                    snapshot.tagId(),
+                    snapshot.tagNameSnapshot(),
+                    parseSource(snapshot.source()),
+                    parseTagStatus(snapshot.status()));
+            ClassicsContentTag tag = command.toEntity();
+            tag.setPriority(priority);
+            tag.setId(null);
+            repository.insertTag(tag);
+            return;
+        }
+        if (snapshot.tagId() == null && StringUtils.isBlank(snapshot.tagNameSnapshot())) {
+            return;
+        }
+        ClassicsContentTag tag = commandForRestoredTag(snapshot, entry, priority);
+        if (tag == null) {
+            return;
+        }
+        repository.insertTag(tag);
+        tagBindingSupport.syncTagRef(tag);
+    }
+
+    private ClassicsContentTag commandForRestoredTag(
+            MingCustomsVersionSnapshot.MingCustomsTagSnapshot snapshot, MingCustomsEntry entry, int priority) {
+        ClassicsContentSource source = parseSource(snapshot.source());
+        ClassicsContentTagStatus status = parseTagStatus(snapshot.status());
+        ContentTagCommand command = new ContentTagCommand(
+                null,
+                ClassicsContentType.MING_CUSTOMS,
+                entry.contentId().value(),
+                snapshot.tagId(),
+                snapshot.tagNameSnapshot(),
+                source,
+                status);
+        if (snapshot.tagId() == null) {
+            return source == ClassicsContentSource.AI
+                    ? tagBindingSupport.bindAiTag(command, priority)
+                    : tagBindingSupport.bindManualTag(command, priority);
+        }
+        ClassicsContentTag tag = command.toEntity();
+        tag.setId(null);
+        tag.setPriority(priority);
+        return tag;
+    }
+
+    private void insertMingQaPairFromSnapshot(
+            MingCustomsVersionSnapshot.MingCustomsQaPairSnapshot snapshot,
+            MingCustomsEntry entry,
+            int fallbackPriority) {
+        if (snapshot == null || entry == null || entry.contentId() == null) {
+            return;
+        }
+        if (StringUtils.isBlank(snapshot.question()) && StringUtils.isBlank(snapshot.answer())) {
+            return;
+        }
+        ContentQaPairCommand command = new ContentQaPairCommand(
+                null,
+                ClassicsContentType.MING_CUSTOMS,
+                entry.contentId().value(),
+                snapshot.question(),
+                snapshot.answer(),
+                parseSource(snapshot.source()));
+        ClassicsContentQaPair qaPair = command.toEntity();
+        qaPair.setId(null);
+        qaPair.setPriority(snapshot.priority() == null ? fallbackPriority : snapshot.priority());
+        repository.insertQaPair(qaPair);
     }
 
     @Override
@@ -1372,6 +1560,20 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     }
 
     private String snapshotJson(Versionable content) {
+        if (content instanceof WangqiDocument) {
+            List<ClassicsContentTag> tags = repository.listTags(
+                    ClassicsContentType.WANGQI_DOCUMENT.value(), content.contentId(), SortDirection.ASC);
+            List<ClassicsContentQaPair> qaPairs = repository.listQaPairs(
+                    ClassicsContentType.WANGQI_DOCUMENT.value(), content.contentId(), SortDirection.ASC);
+            return snapshotAssembler.toSnapshotJson(content, tags, qaPairs);
+        }
+        if (content instanceof MingCustomsEntry) {
+            List<ClassicsContentTag> tags = repository.listTags(
+                    ClassicsContentType.MING_CUSTOMS.value(), content.contentId(), SortDirection.ASC);
+            List<ClassicsContentQaPair> qaPairs = repository.listQaPairs(
+                    ClassicsContentType.MING_CUSTOMS.value(), content.contentId(), SortDirection.ASC);
+            return snapshotAssembler.toSnapshotJson(content, tags, qaPairs);
+        }
         if (content instanceof SancaiEntry entry && sancaiAssetApplicationService != null) {
             List<SancaiEntryImage> images = sancaiAssetApplicationService.listImages(entry.getId());
             if (storageFacade == null) {
@@ -1381,6 +1583,21 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                     entry, images.stream().map(this::toImageResource).toList());
         }
         return snapshotAssembler.toSnapshotJson(content);
+    }
+
+    private void removeTagRefIfExists(ClassicsContentTag tag) {
+        if (tagBindingSupport == null || tag == null) {
+            return;
+        }
+        tagBindingSupport.removeTagRef(tag);
+    }
+
+    private static ClassicsContentSource parseSource(String value) {
+        return StringUtils.isBlank(value) ? ClassicsContentSource.MANUAL : ClassicsContentSource.valueOf(value);
+    }
+
+    private static ClassicsContentTagStatus parseTagStatus(String value) {
+        return StringUtils.isBlank(value) ? ClassicsContentTagStatus.ACTIVE : ClassicsContentTagStatus.valueOf(value);
     }
 
     private WorkerRenderDtos.WorkerRenderRequest renderRequest(

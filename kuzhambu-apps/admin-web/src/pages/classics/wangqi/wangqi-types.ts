@@ -36,6 +36,18 @@ export interface WangqiContentVersionRecord {
     changeSummary?: string | null;
 }
 
+export interface WangqiTagSnapshotRecord {
+    id?: number | null;
+    tagId?: number | null;
+    tagNameSnapshot?: string | null;
+}
+
+export interface WangqiQaPairSnapshotRecord {
+    id?: number | null;
+    question?: string | null;
+    answer?: string | null;
+}
+
 export interface WangqiVersionSnapshot {
     contentType?: string | null;
     contentId?: number | null;
@@ -47,4 +59,6 @@ export interface WangqiVersionSnapshot {
     documentTime?: string | null;
     storageObjectId?: number | null;
     visibility?: string | null;
+    tags?: WangqiTagSnapshotRecord[];
+    qaPairs?: WangqiQaPairSnapshotRecord[];
 }

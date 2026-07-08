@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.discovery.application.qa.support;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -78,5 +79,16 @@ class KnowledgeRevisionCalculatorTest {
         String revision2 = calculator.calculate(changed);
 
         assertNotEquals(revision1, revision2);
+    }
+
+    @Test
+    void shouldNotIncludeQaPairIdOrPriorityInRevisionPayload() {
+        KnowledgeDocument.Knowledge document = new KnowledgeDocument.Knowledge(
+                "三才", "天文 / 卷一", "源信息", "内容", "原文", "译文", "摘录", List.of("天文"), List.of(new QaPair("Q1", "A1")));
+        String revision = calculator.calculate(new KnowledgeDocument(
+                new KnowledgeDocument.Metadata("", "", "", "", 1, null, "", "", "", null), document));
+
+        assertFalse(revision.contains("\"id\""));
+        assertFalse(revision.contains("\"priority\""));
     }
 }

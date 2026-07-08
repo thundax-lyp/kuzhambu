@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.classics.application.report.result.ClassicsReportSum
 import com.thundax.kuzhambu.classics.application.search.result.ClassicsSearchSourceContent;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentSource;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentTagStatus;
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsContentGrowthPointFacadeDto;
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsPublicContentFacadeDto;
@@ -173,6 +174,9 @@ public class ClassicsFacadeAssembler {
         }
         return qaPairs.stream()
                 .filter(pair -> pair != null
+                        && pair.getSource() != null
+                        && (pair.getSource() == ClassicsContentSource.MANUAL
+                                || pair.getSource() == ClassicsContentSource.AI)
                         && StringUtils.isNotBlank(pair.getQuestion())
                         && StringUtils.isNotBlank(pair.getAnswer()))
                 .map(pair -> ClassicsQaKnowledgeFacadeDto.QaPair.builder()

@@ -608,6 +608,60 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     }
 
     @Test
+    void applyAiCandidateSummaryShouldApplySummaryTagsAndQaAndGenerateSingleVersion() {
+        FakeRepository repository = new FakeRepository();
+        WangqiDocument document = new WangqiDocument(
+                WangqiDocumentId.of(22L),
+                "title",
+                "old summary",
+                WangqiContentFormat.HTML,
+                "content",
+                new Date(),
+                null,
+                WangqiDocumentVisibility.PUBLIC);
+        repository.wangqiDocumentForAiApply = document;
+
+        AiFacade aiFacade = mockAiFacade(
+                request -> {
+                    assertEquals(22L, request.getCandidateId());
+                    assertEquals("WANGQI_DOCUMENT", request.getContentType());
+                    assertEquals(22L, request.getContentId());
+                    assertEquals("summary", request.getCapability());
+                    return pendingCandidate();
+                },
+                request -> {
+                    assertEquals(22L, request.getCandidateId());
+                    assertEquals("TEXT", request.getResultFormat());
+                    assertEquals(
+                            "{\"summary\":\"ok-summary\",\"tags\":[\"t1\",\"t2\"],\"qaPairs\":[{\"question\":\"q1\",\"answer\":\"a1\"}]}",
+                            request.getResultPayload());
+                    return candidateApplied();
+                });
+
+        ClassicsContentApplicationServiceImpl service = serviceWithAiFacade(repository, aiFacade);
+        AiCandidateApplyContentCommand command = applyCommand(
+                22L,
+                ClassicsContentType.WANGQI_DOCUMENT,
+                22L,
+                "summary",
+                "{\"summary\":\"ok-summary\",\"tags\":[\"t1\",\"t2\"],\"qaPairs\":[{\"question\":\"q1\",\"answer\":\"a1\"}]}");
+
+        AiCandidateApplyContentResult result = service.applyAiCandidate(command);
+
+        assertEquals(ClassicsContentType.WANGQI_DOCUMENT, result.getContentType());
+        assertEquals(22L, result.getContentId());
+        assertEquals(1L, result.getVersionId());
+        assertEquals(1, result.getVersionNo());
+        assertEquals("ok-summary", document.getSummary());
+        assertEquals(ClassicsContentChangeType.AI_APPLIED, repository.lastInsertedVersion.getChangeType());
+        assertEquals("AI 应用：摘要", repository.lastInsertedVersion.getChangeSummary());
+        assertEquals(1, repository.insertVersionCount);
+        assertEquals(1, repository.updateWangqiDocumentAiCount);
+        assertEquals(2, repository.tags.size());
+        assertEquals(1, repository.qaPairs.size());
+    }
+
+    @Test
     void applyAiCandidateQaShouldOnlyReplaceAiQaPairsAndCreateAiAppliedVersion() {
         FakeRepository repository = new FakeRepository();
         SancaiEntry entry = new SancaiEntry();
@@ -788,6 +842,29 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     }
 
     @Test
+    void rejectAiCandidatesShouldNotCreateVersion() {
+        FakeRepository repository = new FakeRepository();
+        AiFacade aiFacade = org.mockito.Mockito.mock(AiFacade.class);
+        when(aiFacade.requirePendingCandidate(any(RequirePendingAiCandidateFacadeRequest.class)))
+                .thenReturn(pendingCandidate());
+        when(aiFacade.rejectCandidate(any(RejectAiCandidateFacadeRequest.class)))
+                .thenReturn(candidateRejected());
+
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, null, null, null, aiFacade, null, null);
+
+        setPermissions(Set.of("classics:sancai:edit"));
+        try {
+            service.rejectAiCandidates(new AiCandidateBatchRejectContentCommand(
+                    List.of(rejectItem(11L, ClassicsContentType.SANCAI_ENTRY, 11L, "summary")), null, null));
+            assertEquals(0, repository.insertVersionCount);
+            assertEquals(0, repository.updateSancaiEntryAiCount);
+        } finally {
+            clearPermissions();
+        }
+    }
+
+    @Test
     void applyAiCandidatesShouldFailObjectMismatchWhenImageAnalysisObjectDoesNotMatch() {
         FakeRepository repository = new FakeRepository();
         SancaiEntry entry = new SancaiEntry();
@@ -917,6 +994,14 @@ class ClassicsContentApplicationServiceAiCandidateTest {
                 .candidateId(11L)
                 .status("APPLIED")
                 .appliedAt(Instant.now())
+                .build();
+    }
+
+    private static AiCandidateFacadeDto candidateRejected() {
+        return AiCandidateFacadeDto.builder()
+                .candidateId(11L)
+                .status("REJECTED")
+                .rejectedAt(Instant.now())
                 .build();
     }
 
