@@ -63,15 +63,15 @@
 - 备份恢复部署与执行器配套已形成：
   - 已完成专项设计文档、Docker Compose 挂载调整、`admin-starter` 下的备份/恢复/清理脚本、业务表白名单和校验输出格式。
 
-未完成：
-
-- 按权限裁剪聚合图表。
+- 按权限裁剪聚合图表已完成：
+  - 已完成后端 `operations dashboard` 跨域 summary 的权限域入参裁剪、字段级空值语义、以及 interface 层空语义透传；
+  - 已完成前端基于 `operations` 权限矩阵的图表/指标卡/排行/告警/入口/空态裁剪与查询触发控制。
 
 ## Requirement Coverage Matrix
 
 | 需求项 | 状态 | 已完成部分 | 未完成部分 | 责任域 |
 | --- | --- | --- | --- | --- |
-| 仪表盘与聚合展示 | 部分完成 | 已完成 `OperationsDashboardApplicationService`、`POST /api/operations/dashboard/overview`、`OperationsDashboardOverviewResponse`、`/operations/dashboard` 前端页面、周期切换、刷新、指标卡、趋势区、排行区、健康明细抽屉和运维入口；已通过 `OperationsDashboardSummaryGateway` 接入 Classics 内容/访问、AI 调用/成本/能力排行、Discovery 搜索/问答/平均搜索耗时、Knowledge 标签覆盖/增长/排行真实 summary | 按权限裁剪聚合图表仍未完成 | Operations, Admin Web |
+| 仪表盘与聚合展示 | 已完成 | 已完成 `OperationsDashboardApplicationService`、`POST /api/operations/dashboard/overview`、`OperationsDashboardOverviewResponse`、`/operations/dashboard` 前端页面、周期切换、刷新、指标卡、趋势区、排行区、健康明细抽屉和运维入口；已通过 `OperationsDashboardSummaryGateway` 接入 Classics 内容/访问、AI 调用/成本/能力排行、Discovery 搜索/问答/平均搜索耗时、Knowledge 标签覆盖/增长/排行真实 summary；已完成按 `operations` 权限的图表与入口裁剪 | 无 | Operations, Admin Web |
 | 报表 | 已完成 | 已完成周报/月报任务生成、HTML/PDF worker 渲染、Storage 产物回写、报表记录分页/详情查询、状态流转、独立 response、`operations:report:view` / `operations:report:generate` 权限控制，以及跨域 summary 聚合读取 | admin 页面接入与专属下载表现不在本矩阵范围内；后续如增加调度报表可另行扩展 | Operations |
 | 备份与恢复 | 已完成 | 已完成 `BackupRecord`、`RestoreRecord`、各自 persistence、手动备份执行、启动自动备份、每日 2:00 自动备份、恢复前 `PRE_RESTORE` 快照创建、恢复期间 Web 写阻断、`REAL` / `DRILL` 恢复台账、备份/恢复 `execute/page/detail` 接口、`admin-web` 备份恢复页面与详情字段、菜单与权限种子，以及脚本执行结果回写 | 无 | Operations |
 | 清理任务 | 部分完成 | `CleanupJob` / `CleanupItem` 已完成领域模型与持久化，应用层 `execute/page/detail` 与 admin 接口已上线，前端清理台账页已接通，`operations:cleanup:view/execute` 与页面基础回归测试已存在；当前真实执行覆盖过期备份、Classics 过期导出、过期分享和草稿分享，详情页可展示每条 cleanup item 的目标、状态、失败原因和处理时间；已完成 `kuzhambu.operations.cleanup.schedule` 调度配置、`OperationsCleanupScheduler` 默认每日 `03:30` 自动执行、启动清理默认关闭、按固定顺序执行四类 policy、单 policy disabled 跳过、单类型异常不阻断后续类型、自动任务 `requesterUserId = null` 识别为系统自动、admin 清理页自动/人工触发来源展示，以及 `.env.example` / `deploy/.env.example` 运行时样例；若清理目标涉及导出产物对象，其底层生命周期已可复用 Storage 自动 orphan 清理能力 | 更多目标类型扩展未闭环 | Operations |
@@ -90,7 +90,7 @@
 ### B2 Operations 剩余接口与入口
 
 状态：进行中  
-目标：健康细分页面和健康探针结果入口已补齐；后续接口与入口聚焦按权限裁剪聚合图表以及新增运行态动作的状态查询、结果追踪与权限约束。
+目标：健康细分页面和健康探针结果入口已补齐；后续聚焦新增运行态动作的状态查询、结果追踪与权限约束。
 
 ### B3 Cleanup 持久化补齐
 
@@ -106,3 +106,4 @@
 
 状态：进行中
 目标：cleanup 关键链路已补齐真实执行、调度化执行上下文、长期 policy、admin 自动/人工来源展示与详情 item 回归；health/task 看板消费、接口趋势、健康告警策略、失败来源联动、健康细分页、外部 HTTP 探针和页面失败提示已补齐契约；backup/restore 已覆盖自动备份、真实恢复、恢复演练、写阻断字段和失败原因可追溯能力；跨域 Dashboard 已接入真实 summary 并完成后端和 admin-web 定向验证。后续验证聚焦按权限裁剪聚合图表和新增运行态来源接入。
+目标：cleanup 关键链路已补齐真实执行、调度化执行上下文、长期 policy、admin 自动/人工来源展示与详情 item 回归；health/task 看板消费、接口趋势、健康告警策略、失败来源联动、健康细分页、外部 HTTP 探针和页面失败提示已补齐契约；backup/restore 已覆盖自动备份、真实恢复、恢复演练、写阻断字段和失败原因可追溯能力；跨域 Dashboard 已接入真实 summary 并完成后端和 admin-web 定向验证。

@@ -11,12 +11,4 @@
 
 ## 待审阅任务项
 
-- [ ] `operations dashboard readiness docs`：更新覆盖矩阵并清理临时 RUNBOOK
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-PERMISSION-CHARTS.md`
-    - 范围对象：`docs/40-readiness/OPERATIONS-IMPLEMENTATION-COVERAGE.md`、`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-PERMISSION-CHARTS.md`、`TODO.md`
-    - 处理动作：将按权限裁剪聚合图表标记为已完成并删除已完成 TODO 与临时 RUNBOOK。
-    - 验收点：Implementation Coverage 反映完成态，已关闭 TODO 从 `TODO.md` 删除，RUNBOOK 文件被清理。
-    - 重要度：10/10
-
 ## 待讨论项
