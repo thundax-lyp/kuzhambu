@@ -11,7 +11,14 @@ const apiResponse = (data: unknown) => ({
 });
 
 test.describe("classics ming customs page", () => {
+    const versionsListRequests: Array<Record<string, unknown>> = [];
+    const versionsGetRequests: Array<Record<string, unknown>> = [];
+    const versionsResetRequests: Array<Record<string, unknown>> = [];
+
     test.beforeEach(async ({ page }) => {
+        versionsListRequests.length = 0;
+        versionsGetRequests.length = 0;
+        versionsResetRequests.length = 0;
         await page.route("**/kuzhambu-admin-api/api/sys/current-user/info", async (route) => {
             await route.fulfill({
                 contentType: "application/json",
@@ -179,6 +186,103 @@ test.describe("classics ming customs page", () => {
                 });
             }
         );
+        await page.route(
+            "**/kuzhambu-admin-api/api/classics/ming-customs/versions/list",
+            async (route) => {
+                versionsListRequests.push(readRequestBody(route.request().postData()));
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify(
+                        apiResponse([
+                            {
+                                id: 9001,
+                                contentType: "MING_CUSTOMS",
+                                contentId: 500000000001,
+                                versionNo: 1,
+                                versionedAt: "2026-01-01T00:00:00.000+00:00",
+                                snapshotJson: JSON.stringify({
+                                    title: "旧标题",
+                                    category: "RITUAL",
+                                    chapter: "岁时礼仪",
+                                    section: "正旦",
+                                    summary: "旧版摘要",
+                                    contentFormat: "MARKDOWN",
+                                    content: "## 旧版",
+                                    originalExcerpts: "旧版摘录",
+                                    visibility: "PUBLIC"
+                                }),
+                                changeType: "HISTORY_RESTORED",
+                                changeSummary: "恢复历史版本 v1"
+                            }
+                        ])
+                    )
+                });
+            }
+        );
+        await page.route(
+            "**/kuzhambu-admin-api/api/classics/ming-customs/versions/get",
+            async (route) => {
+                const body = readRequestBody(route.request().postData());
+                versionsGetRequests.push(body);
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify(
+                        apiResponse({
+                            id: 9001,
+                            contentType: "MING_CUSTOMS",
+                            contentId: 500000000001,
+                            versionNo: 1,
+                            versionedAt: "2026-01-01T00:00:00.000+00:00",
+                            snapshotJson: JSON.stringify({
+                                title: "旧标题",
+                                category: "RITUAL",
+                                chapter: "岁时礼仪",
+                                section: "正旦",
+                                summary: "旧版摘要",
+                                contentFormat: "MARKDOWN",
+                                content: "## 旧版",
+                                originalExcerpts: "旧版摘录",
+                                visibility: "PUBLIC"
+                            }),
+                            changeType: "HISTORY_RESTORED",
+                            changeSummary: "恢复历史版本 v1"
+                        })
+                    )
+                });
+            }
+        );
+        await page.route(
+            "**/kuzhambu-admin-api/api/classics/ming-customs/versions/reset",
+            async (route) => {
+                const body = readRequestBody(route.request().postData());
+                versionsResetRequests.push(body);
+                await route.fulfill({
+                    contentType: "application/json",
+                    body: JSON.stringify(
+                        apiResponse({
+                            id: 9002,
+                            contentType: "MING_CUSTOMS",
+                            contentId: body.id,
+                            versionNo: 2,
+                            versionedAt: "2026-01-02T00:00:00.000+00:00",
+                            snapshotJson: JSON.stringify({
+                                title: "恢复后标题",
+                                category: "RITUAL",
+                                chapter: "岁时礼仪",
+                                section: "正旦",
+                                summary: "恢复后摘要",
+                                contentFormat: "MARKDOWN",
+                                content: "## 恢复正文",
+                                originalExcerpts: "恢复后摘录",
+                                visibility: "PUBLIC"
+                            }),
+                            changeType: "HISTORY_RESTORED",
+                            changeSummary: "恢复历史版本 v1"
+                        })
+                    )
+                });
+            }
+        );
         await page.route("**/kuzhambu-admin-api/api/classics/ming-customs/add", async (route) => {
             addRequests.push(readRequestBody(route.request().postData()));
             await route.fulfill({
@@ -321,5 +425,32 @@ test.describe("classics ming customs page", () => {
             .toEqual({
                 id: 500000000001
             });
+    });
+
+    test("restores selected ming customs version from history panel", async ({ page }) => {
+        await page.setViewportSize({ width: 1280, height: 800 });
+        await page.goto("/classics/ming-customs");
+
+        await page.getByRole("button", { name: "编辑明代习俗 岁时礼仪：元旦朝贺" }).click();
+        await expect(page.getByLabel("明代习俗版本历史面板")).toBeVisible();
+        await page.getByRole("button", { name: "查看明代习俗版本 1" }).click();
+        await expect(page.getByText("标题")).toBeVisible();
+        await expect(page.getByText("当前：岁时礼仪：元旦朝贺")).toBeVisible();
+        await expect(page.getByText("历史：旧标题")).toBeVisible();
+
+        await expect.poll(() => versionsListRequests.at(-1)).toEqual({ id: 500000000001 });
+        await expect
+            .poll(() => versionsGetRequests.at(-1))
+            .toMatchObject({ id: 500000000001, versionId: 9001 });
+
+        await page.getByRole("button", { name: "恢复明代习俗版本 1" }).click();
+        const confirmDialog = page.getByRole("dialog");
+        await expect(confirmDialog.getByText("确认恢复明代习俗历史版本")).toBeVisible();
+        await confirmDialog.getByRole("button", { name: /确认/ }).click();
+
+        await expect(page.getByText("明代习俗版本已恢复")).toBeVisible();
+        await expect
+            .poll(() => versionsResetRequests.at(-1))
+            .toEqual({ id: 500000000001, versionId: 9001 });
     });
 });
