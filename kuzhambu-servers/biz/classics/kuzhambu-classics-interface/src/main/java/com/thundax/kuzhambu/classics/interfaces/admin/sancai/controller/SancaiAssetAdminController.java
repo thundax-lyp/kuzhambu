@@ -5,7 +5,6 @@ import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImage
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageUploadCommand;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageContent;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
-import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryImageIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVisualAssetIdCodec;
@@ -232,6 +231,16 @@ public class SancaiAssetAdminController {
                 SancaiAssetInterfaceAssembler::toShowcaseResponse);
     }
 
+    @Operation(summary = "删除三才图会静态展示任务", description = "classics:sancai:edit")
+    @ApiImplicitParams({})
+    @HasPermission("classics:sancai:edit")
+    @SysLogger(value = "删除展示任务")
+    @PostMapping("showcases/delete")
+    public Boolean deleteShowcase(@Valid @RequestBody SancaiAssetRequest request) {
+        service.deleteShowcase(SancaiShowcaseId.of(requireLong(request == null ? null : request.getId(), "id")));
+        return true;
+    }
+
     @Operation(summary = "下载三才图会静态展示产物", description = "classics:sancai:view")
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:view")
@@ -248,7 +257,7 @@ public class SancaiAssetAdminController {
         }
         ClassicsStoredContentResult content;
         try {
-            content = service.getShowcaseContent(StorageObjectId.of(id));
+            content = service.getShowcaseContent(SancaiShowcaseId.of(id));
         } catch (BizException exception) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;

@@ -76,6 +76,8 @@ public interface ClassicsContentApplicationService {
 
     ClassicsStoredContentResult getExportJobContent(ClassicsContentExportJobId id);
 
+    void deleteExportJob(ClassicsContentExportJobId id);
+
     PageResult<ClassicsContentExportJob> pageExportJobs(
             String contentType, String exportKind, String status, PageQuery page);
 }

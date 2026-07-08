@@ -41,6 +41,12 @@ export const page = (request: ClassicsExportQuery = {}) => {
     });
 };
 
+export const deleteById = (jobId: number) => {
+    return postJson<boolean, { id: number }>(`${EXPORT_PATH}/delete`, {
+        body: { id: jobId }
+    });
+};
+
 export const getContentUrl = (request: ClassicsExportContentUrlCommand) => {
     const mode = request.mode || "preview";
     const search = mode === "download" ? "?download=true" : "";
