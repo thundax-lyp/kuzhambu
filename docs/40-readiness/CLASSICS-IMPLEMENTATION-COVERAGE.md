@@ -122,7 +122,7 @@
 | 标签云筛选 | 部分完成 | 通用标签模型、关键词云接口与状态筛选已实现；关键词云响应固定为 `List<KeywordCloudItem>`，字段为 `keyword` 和 `count` | 基于统一标签的真实标签云聚合、标签云权限过滤与输出限缩未实现 | Classics, Knowledge, System |
 | 批量修改公开或私有状态 | 已完成 | 可见性枚举与变更能力已具备；应用层已补齐批量结果和失败原因模型；统一后端入口已分发到 Ming Customs 应用服务，Admin Web 已支持当前页选中习俗批量公开/私有并展示失败明细；后端权限过滤与前端控件禁用已按 `classics:mingcustoms:edit` 对齐 | 无 | Classics, Admin Web, System |
 | 摘要、标签和问答对维护 | 部分完成 | 通用内容 tag/qa API 已可复用，摘要字段已覆盖；Admin Web 编辑页已接入 AI 候选确认面板、标签治理面板和问答对治理面板；通用标签写路径已接通 Knowledge 协作与内容引用同步 | 版本历史链路尚未覆盖明代习俗，问答对版本化确认仍未补齐 | Classics, Knowledge |
-| 版本历史、版本对比和历史恢复 | 部分完成 | 通用版本模型已建 | 版本对比接口与恢复生成策略未实现 | Classics |
+| 版本历史、版本对比和历史恢复 | 已完成 | 明代习俗已补齐版本列表/版本详情/历史恢复接口、版本归属校验与恢复追加式版本生成，前端已接入版本历史面板、字段级对比与恢复确认，恢复后支持列表与详情刷新 | 无 | Classics, Admin Web |
 | 分类、标签、筛选结果或选中条目导出 | 已完成 | 任务创建与导出参数已支持；Ming Customs 导出快照 payload 已接入 Render Worker，CSV/JSON/HTML/ZIP 产物可写入 Storage 并下载 | 无 | Classics, Worker, Storage |
 
 ### 跨知识库分享

@@ -9,22 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ming-customs-frontend-history-integration`: 接入明代习俗页面查询、恢复与刷新
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-MING-CUSTOMS-HISTORY-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/ming-customs/ming-customs-page.tsx`, `kuzhambu-apps/admin-web/src/pages/classics/ming-customs/ming-customs-page.css`, `kuzhambu-apps/admin-web/src/pages/classics/ming-customs/ming-customs-page.test.tsx`
-    - 处理动作：新增版本历史查询与详情查询状态管理、恢复 mutation 与刷新策略，并接入版本面板到明代习俗编辑弹窗。
-    - 验收点：编辑弹窗打开后自动加载历史版本；恢复确认后提示并触发约定 queryKey 刷新。
-    - 重要度：10/10
-
-- [ ] `ming-customs-frontend-history-e2e`: 补齐明代习俗版本历史 E2E 回归
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-MING-CUSTOMS-HISTORY-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/e2e/classics/ming-customs/ming-customs.spec.ts`
-    - 处理动作：补齐版本历史查看与恢复的端到端场景，覆盖恢复成功与版本对比展示。
-    - 验收点：端到端场景能复现版本查询、查看并执行恢复。
-    - 重要度：7/10
-
 ## 待审阅任务项
 
 ## 待讨论项
