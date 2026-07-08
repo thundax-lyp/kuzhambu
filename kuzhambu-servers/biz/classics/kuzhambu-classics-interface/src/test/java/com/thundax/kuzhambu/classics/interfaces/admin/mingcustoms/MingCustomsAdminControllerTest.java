@@ -2,12 +2,14 @@ package com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
@@ -22,12 +24,16 @@ import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.req
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.request.MingCustomsVersionRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsKeywordCloudItemResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsVersionResponse;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.web.bind.annotation.PostMapping;
 
 class MingCustomsAdminControllerTest {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -103,5 +109,114 @@ class MingCustomsAdminControllerTest {
         assertEquals("MANUAL_SAVE", response.getChangeType());
         assertEquals("手动保存", response.getChangeSummary());
         assertEquals("{\"contentType\":\"MING_CUSTOMS\",\"contentId\":500000000001}", response.getSnapshotJson());
+    }
+
+    @Test
+    void versionRoutesShouldKeepExpectedPathsAndPermissions() throws Exception {
+        Class<?> controllerType = MingCustomsAdminController.class;
+        assertPostMapping(controllerType, "listVersions", "versions/list", "classics:mingcustoms:view");
+        assertPostMapping(controllerType, "getVersion", "versions/get", "classics:mingcustoms:view");
+        assertPostMapping(controllerType, "resetVersion", "versions/reset", "classics:mingcustoms:edit");
+    }
+
+    @Test
+    void listVersionsShouldQueryByMingCustomsTypeAndEntryId() {
+        MingCustomsApplicationService service = mock(MingCustomsApplicationService.class);
+        ClassicsContentApplicationService contentService = mock(ClassicsContentApplicationService.class);
+        ClassicsContentId entryId = ClassicsContentId.of(500000000001L);
+        when(contentService.listVersions("MING_CUSTOMS", entryId))
+                .thenReturn(List.of(version(9001L, ClassicsContentType.MING_CUSTOMS, entryId)));
+        MingCustomsAdminController controller = new MingCustomsAdminController(service, contentService);
+
+        List<MingCustomsVersionResponse> versions = controller.listVersions(versionRequest());
+
+        assertEquals(1, versions.size());
+        assertEquals("MING_CUSTOMS", versions.get(0).getContentType());
+        assertEquals(1, versions.get(0).getVersionNo());
+        verify(contentService).listVersions("MING_CUSTOMS", entryId);
+    }
+
+    @Test
+    void getVersionShouldValidateOwnershipAndMapResult() {
+        MingCustomsApplicationService service = mock(MingCustomsApplicationService.class);
+        ClassicsContentApplicationService contentService = mock(ClassicsContentApplicationService.class);
+        when(contentService.getVersion(ClassicsContentVersionId.of(9001L)))
+                .thenReturn(version(9001L, ClassicsContentType.MING_CUSTOMS, ClassicsContentId.of(500000000001L)));
+        MingCustomsAdminController controller = new MingCustomsAdminController(service, contentService);
+
+        MingCustomsVersionResponse response = controller.getVersion(versionRequest());
+
+        assertEquals(9001L, response.getId());
+        verify(contentService).getVersion(ClassicsContentVersionId.of(9001L));
+    }
+
+    @Test
+    void resetVersionShouldValidateOwnershipAndCallRestore() {
+        MingCustomsApplicationService service = mock(MingCustomsApplicationService.class);
+        ClassicsContentApplicationService contentService = mock(ClassicsContentApplicationService.class);
+        when(contentService.getVersion(ClassicsContentVersionId.of(9001L)))
+                .thenReturn(version(9001L, ClassicsContentType.MING_CUSTOMS, ClassicsContentId.of(500000000001L)));
+        when(contentService.restoreHistoryVersion(ClassicsContentVersionId.of(9001L)))
+                .thenReturn(version(9002L, ClassicsContentType.MING_CUSTOMS, ClassicsContentId.of(500000000001L)));
+        MingCustomsAdminController controller = new MingCustomsAdminController(service, contentService);
+
+        MingCustomsVersionResponse response = controller.resetVersion(versionRequest());
+
+        assertEquals(9002L, response.getId());
+        verify(contentService).restoreHistoryVersion(ClassicsContentVersionId.of(9001L));
+    }
+
+    @Test
+    void getVersionShouldRejectNotMatchedOwnership() {
+        MingCustomsApplicationService service = mock(MingCustomsApplicationService.class);
+        ClassicsContentApplicationService contentService = mock(ClassicsContentApplicationService.class);
+        when(contentService.getVersion(ClassicsContentVersionId.of(9001L)))
+                .thenReturn(version(9001L, ClassicsContentType.WANGQI_DOCUMENT, ClassicsContentId.of(400000000001L)));
+        MingCustomsAdminController controller = new MingCustomsAdminController(service, contentService);
+
+        BizException exception = assertThrows(BizException.class, () -> controller.getVersion(versionRequest()));
+        assertEquals("历史版本不属于当前明代习俗条目", exception.getMessage());
+    }
+
+    @Test
+    void getVersionShouldThrowIfHistoryVersionNotFound() {
+        MingCustomsApplicationService service = mock(MingCustomsApplicationService.class);
+        ClassicsContentApplicationService contentService = mock(ClassicsContentApplicationService.class);
+        when(contentService.getVersion(ClassicsContentVersionId.of(9001L))).thenReturn(null);
+        MingCustomsAdminController controller = new MingCustomsAdminController(service, contentService);
+
+        BizException exception = assertThrows(BizException.class, () -> controller.getVersion(versionRequest()));
+        assertEquals("明代习俗历史版本不存在", exception.getMessage());
+    }
+
+    private static void assertPostMapping(
+            Class<?> controllerType, String methodName, String path, String expectedPermission) throws Exception {
+        Method method = controllerType.getMethod(methodName, MingCustomsVersionRequest.class);
+        PostMapping mapping = method.getAnnotation(PostMapping.class);
+        HasPermission permission = method.getAnnotation(HasPermission.class);
+        assertNotNull(mapping, methodName);
+        assertEquals(path, mapping.value()[0], methodName);
+        assertNotNull(permission, methodName);
+        assertEquals(expectedPermission, permission.value(), methodName);
+    }
+
+    private static MingCustomsVersionRequest versionRequest() {
+        MingCustomsVersionRequest request = new MingCustomsVersionRequest();
+        request.setId(500000000001L);
+        request.setVersionId(9001L);
+        return request;
+    }
+
+    private static ClassicsContentVersion version(
+            long id, ClassicsContentType contentType, ClassicsContentId contentId) {
+        return new ClassicsContentVersion(
+                ClassicsContentVersionId.of(id),
+                contentType,
+                contentId,
+                1,
+                new Date(1767225600000L),
+                "{\"contentType\":\"MING_CUSTOMS\",\"contentId\":500000000001}",
+                ClassicsContentChangeType.HISTORY_RESTORED,
+                "恢复历史版本 v1");
     }
 }
