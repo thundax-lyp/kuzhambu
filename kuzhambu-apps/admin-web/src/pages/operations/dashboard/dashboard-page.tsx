@@ -38,7 +38,7 @@ const periodOptions: Array<{ label: string; value: OperationsDashboardPeriodType
 interface OperationEntry {
     description: string;
     icon: ReactNode;
-    permission: string;
+    permissions: string[];
     testId: string;
     title: string;
     to: string;
@@ -50,7 +50,7 @@ const operationEntries: OperationEntry[] = [
         icon: <ClockCircleOutlined />,
         title: "任务台账",
         to: "/operations/tasks",
-        permission: "operations:task:view",
+        permissions: ["operations:task:view"],
         testId: "operations-entry-tasks"
     },
     {
@@ -58,7 +58,7 @@ const operationEntries: OperationEntry[] = [
         icon: <DatabaseOutlined />,
         title: "备份恢复",
         to: "/operations/backup-restore",
-        permission: "operations:backup:view",
+        permissions: ["operations:backup:view", "operations:restore:view"],
         testId: "operations-entry-backup-restore"
     },
     {
@@ -66,7 +66,7 @@ const operationEntries: OperationEntry[] = [
         icon: <AppstoreOutlined />,
         title: "清理维护",
         to: "/operations/cleanup",
-        permission: "operations:cleanup:view",
+        permissions: ["operations:cleanup:view"],
         testId: "operations-entry-cleanup"
     },
     {
@@ -74,7 +74,7 @@ const operationEntries: OperationEntry[] = [
         icon: <SecurityScanOutlined />,
         title: "系统日志",
         to: "/system/logs",
-        permission: "system:log:view",
+        permissions: ["system:log:view"],
         testId: "operations-entry-system-log"
     },
     {
@@ -82,7 +82,7 @@ const operationEntries: OperationEntry[] = [
         icon: <FileTextOutlined />,
         title: "审计日志",
         to: "/audit/logs",
-        permission: "audit:view",
+        permissions: ["audit:view"],
         testId: "operations-entry-audit-log"
     }
 ];
@@ -204,6 +204,20 @@ interface TrendPanelProps {
     title: string;
 }
 
+interface DashboardPermissionCapabilities {
+    canViewDashboard: boolean;
+    canViewClassicsContentSummary: boolean;
+    canViewClassicsSharingSummary: boolean;
+    canViewDiscoverySearchSummary: boolean;
+    canViewDiscoveryQaSummary: boolean;
+    canViewAiInvocationSummary: boolean;
+    canViewKnowledgeTaxonomySummary: boolean;
+    canViewHealthSummary: boolean;
+    canManageHealthAlert: boolean;
+    canViewTaskSummary: boolean;
+    hasAnyChartPermission: boolean;
+}
+
 const TrendPanel = ({ items, title }: TrendPanelProps) => {
     const records = items || [];
     const maxValue = Math.max(...records.map((record) => normalizeNumber(record.count)), 0);
@@ -269,11 +283,19 @@ const RankingList = ({ emptyText, items, title }: RankingListProps) => {
 export const OperationsDashboardPage = () => {
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
-    const canViewDashboard = hasPermission("operations:dashboard:view");
-    const canViewHealthPage = hasPermission("operations:health:view");
-    const canManageHealthAlert = hasPermission("operations:health:manage");
+    const permissions = resolveDashboardPermissionCapabilities();
+    const canViewDashboard = permissions.canViewDashboard;
+    const canViewHealthPage = permissions.canViewHealthSummary;
+    const canViewClassicsContentSummary = permissions.canViewClassicsContentSummary;
+    const canViewClassicsSharingSummary = permissions.canViewClassicsSharingSummary;
+    const canManageHealthAlert = permissions.canManageHealthAlert;
+    const canViewDiscoverySearchSummary = permissions.canViewDiscoverySearchSummary;
+    const canViewDiscoveryQaSummary = permissions.canViewDiscoveryQaSummary;
+    const canViewAiInvocationSummary = permissions.canViewAiInvocationSummary;
+    const canViewKnowledgeTaxonomySummary = permissions.canViewKnowledgeTaxonomySummary;
+    const canViewTaskSummary = permissions.canViewTaskSummary;
     const visibleOperationEntries = operationEntries.filter((entry) =>
-        hasPermission(entry.permission)
+        entry.permissions.some((permission) => hasPermission(permission))
     );
     const [periodType, setPeriodType] = useState<OperationsDashboardPeriodType>("WEEK");
     const [alertDrawerOpen, setAlertDrawerOpen] = useState(false);
@@ -294,7 +316,7 @@ export const OperationsDashboardPage = () => {
             service.getHealthTrend({
                 bucketType: periodType === "WEEK" ? "DAY" : "DAY"
             }),
-        enabled: canViewDashboard,
+        enabled: canViewDashboard && canViewHealthPage,
         retry: false
     });
 
@@ -305,7 +327,7 @@ export const OperationsDashboardPage = () => {
                 pageNo: 1,
                 pageSize: 20
             }),
-        enabled: canViewDashboard,
+        enabled: canViewDashboard && canViewHealthPage,
         retry: false
     });
 
@@ -340,54 +362,160 @@ export const OperationsDashboardPage = () => {
 
     const refreshDashboard = async () => {
         await queryClient.invalidateQueries({ queryKey: ["operations", "dashboard", "overview"] });
-        await queryClient.invalidateQueries({ queryKey: ["operations", "health", "trend"] });
-        await queryClient.invalidateQueries({ queryKey: ["operations", "health", "alerts"] });
+        if (canViewHealthPage) {
+            await queryClient.invalidateQueries({ queryKey: ["operations", "health", "trend"] });
+            await queryClient.invalidateQueries({ queryKey: ["operations", "health", "alerts"] });
+        }
     };
 
     const overview = dashboardQuery.data;
-    const healthSummaries = overview?.healthSummaries || [];
-    const healthTrend = trendQuery.data || [];
-    const healthAlerts = alertQuery.data?.records || [];
+    const healthSummaries = (canViewHealthPage ? overview?.healthSummaries : null) || [];
+    const healthTrend = canViewHealthPage ? trendQuery.data || [] : [];
+    const healthAlerts = canViewHealthPage ? alertQuery.data?.records || [] : [];
     const openHealthAlerts = healthAlerts.filter((alert) => alert.alertStatus !== "RECOVERED");
-    const latestOpenAlert = overview?.latestAlert || openHealthAlerts[0] || null;
+    const latestOpenAlert = canViewHealthPage
+        ? overview?.latestAlert || openHealthAlerts[0] || null
+        : null;
     const unhealthyCount = normalizeNumber(overview?.unhealthyComponentCount);
     const failedTaskCount = normalizeNumber(overview?.failedTaskCount);
     const runningTaskCount = normalizeNumber(overview?.runningTaskCount);
-    const activeAlertCount = normalizeNumber(overview?.activeAlertCount || openHealthAlerts.length);
-    const criticalAlertCount = normalizeNumber(
-        overview?.criticalAlertCount ||
-            openHealthAlerts.filter((alert) => alert.alertLevel === "CRITICAL").length
-    );
-    const selectedHealthAlerts = filterAlertsByComponent(
-        openHealthAlerts,
-        selectedHealth?.component
-    );
-    const isLoading = dashboardQuery.isLoading || trendQuery.isLoading || alertQuery.isLoading;
+    const activeAlertCount = canViewHealthPage
+        ? normalizeNumber(overview?.activeAlertCount || openHealthAlerts.length)
+        : 0;
+    const criticalAlertCount = canViewHealthPage
+        ? normalizeNumber(
+              overview?.criticalAlertCount ||
+                  openHealthAlerts.filter((alert) => alert.alertLevel === "CRITICAL").length
+          )
+        : 0;
+    const canRenderHealthAlertBanner =
+        canViewHealthPage && (openHealthAlerts.length > 0 || activeAlertCount > 0);
+    const hasHealthOverviewSummary = canViewHealthPage && overview?.latestAlert != null;
+    const canRenderHealthBanner = canRenderHealthAlertBanner || hasHealthOverviewSummary;
+    const visibleHealthSummaries = canViewHealthPage ? healthSummaries : [];
+    const visibleHealthAlerts = canViewHealthPage ? openHealthAlerts : [];
+
+    const selectedHealthAlertInfo =
+        selectedHealth != null
+            ? filterAlertsByComponent(visibleHealthAlerts, selectedHealth?.component)
+            : [];
+
+    const isLoading =
+        dashboardQuery.isLoading ||
+        (canViewHealthPage && (trendQuery.isLoading || alertQuery.isLoading));
 
     const topContents =
-        overview?.topContents?.map((item) => ({
-            label: item.title || `内容 #${item.contentId || "-"}`,
-            meta: item.contentType || "内容",
-            value: normalizeNumber(item.visitCount)
-        })) || [];
+        canViewClassicsContentSummary && overview?.topContents
+            ? overview.topContents.map((item) => ({
+                  label: item.title || `内容 #${item.contentId || "-"}`,
+                  meta: item.contentType || "内容",
+                  value: normalizeNumber(item.visitCount)
+              }))
+            : [];
     const topQueries =
-        overview?.topQueries?.map((item) => ({
-            label: item.queryText || "-",
-            meta: "搜索词",
-            value: normalizeNumber(item.count)
-        })) || [];
+        canViewDiscoverySearchSummary && overview?.topQueries
+            ? overview.topQueries.map((item) => ({
+                  label: item.queryText || "-",
+                  meta: "搜索词",
+                  value: normalizeNumber(item.count)
+              }))
+            : [];
     const topTags =
-        overview?.topTags?.map((item) => ({
-            label: item.tagName || "-",
-            meta: "标签覆盖",
-            value: normalizeNumber(item.contentRefCount)
-        })) || [];
+        canViewKnowledgeTaxonomySummary && overview?.topTags
+            ? overview.topTags.map((item) => ({
+                  label: item.tagName || "-",
+                  meta: "标签覆盖",
+                  value: normalizeNumber(item.contentRefCount)
+              }))
+            : [];
     const topAiCapabilities =
-        overview?.topAiCapabilities?.map((item) => ({
-            label: item.capability || "-",
-            meta: "AI 能力",
-            value: normalizeNumber(item.invocationCount)
-        })) || [];
+        canViewAiInvocationSummary && overview?.topAiCapabilities
+            ? overview.topAiCapabilities.map((item) => ({
+                  label: item.capability || "-",
+                  meta: "AI 能力",
+                  value: normalizeNumber(item.invocationCount)
+              }))
+            : [];
+
+    const shouldRenderContentMetricCard = canViewClassicsContentSummary;
+    const shouldRenderSearchQaMetricCard =
+        canViewDiscoverySearchSummary || canViewDiscoveryQaSummary;
+    const shouldRenderAiMetricCard = canViewAiInvocationSummary;
+    const shouldRenderHealthTaskMetricCard = canViewHealthPage || canViewTaskSummary;
+
+    const contentMetricSecondary = [
+        canViewClassicsContentSummary
+            ? `译文 ${formatNumber(overview?.translatedContentCount)}`
+            : null,
+        canViewClassicsContentSummary
+            ? `图像就绪 ${formatNumber(overview?.imageReadyContentCount)}`
+            : null,
+        canViewClassicsSharingSummary ? `分享访问 ${formatNumber(overview?.shareVisitCount)}` : null
+    ]
+        .filter((text): text is string => text != null)
+        .join("，");
+
+    let searchQaTitle = canViewDiscoveryQaSummary ? "问答" : "搜索";
+    let searchQaStatisticValue = formatNumber(
+        canViewDiscoverySearchSummary ? overview?.searchCount : overview?.qaCount
+    );
+    if (canViewDiscoverySearchSummary && canViewDiscoveryQaSummary) {
+        searchQaTitle = "搜索 / 问答";
+        searchQaStatisticValue = `${formatNumber(overview?.searchCount)} / ${formatNumber(
+            overview?.qaCount
+        )}`;
+    }
+    const searchQaSecondaryText = canViewDiscoverySearchSummary
+        ? `平均搜索延迟 ${formatLatency(overview?.avgSearchLatencyMs)}`
+        : "";
+
+    let healthTaskTitle = "";
+    if (canViewTaskSummary) {
+        healthTaskTitle = "失败任务";
+    } else if (canViewHealthPage) {
+        healthTaskTitle = "异常组件";
+    }
+    let healthTaskStatisticValue = "";
+    if (canViewHealthPage && canViewTaskSummary) {
+        healthTaskTitle = "异常组件 / 失败任务";
+        healthTaskStatisticValue = `${formatNumber(unhealthyCount)} / ${formatNumber(failedTaskCount)}`;
+    } else if (canViewHealthPage) {
+        healthTaskStatisticValue = formatNumber(unhealthyCount);
+    } else if (canViewTaskSummary) {
+        healthTaskStatisticValue = formatNumber(failedTaskCount);
+    }
+    const healthTaskSecondaryText = canViewTaskSummary
+        ? `运行中任务 ${formatNumber(runningTaskCount)}`
+        : "";
+
+    const shouldRenderContentTrendPanel = canViewClassicsContentSummary;
+    const shouldRenderSearchTrendPanel = canViewDiscoverySearchSummary;
+    const shouldRenderQaTrendPanel = canViewDiscoveryQaSummary;
+    const shouldRenderTagTrendPanel = canViewKnowledgeTaxonomySummary;
+    const shouldRenderTrendPanel =
+        shouldRenderContentTrendPanel ||
+        shouldRenderSearchTrendPanel ||
+        shouldRenderQaTrendPanel ||
+        shouldRenderTagTrendPanel;
+
+    const shouldRenderTopContentsRanking = canViewClassicsContentSummary;
+    const shouldRenderTopQueriesRanking = canViewDiscoverySearchSummary;
+    const shouldRenderTopTagsRanking = canViewKnowledgeTaxonomySummary;
+    const shouldRenderTopAiCapabilitiesRanking = canViewAiInvocationSummary;
+    const shouldRenderRankingSection =
+        shouldRenderTopContentsRanking ||
+        shouldRenderTopQueriesRanking ||
+        shouldRenderTopTagsRanking ||
+        shouldRenderTopAiCapabilitiesRanking;
+    const shouldRenderHealthSection = canViewHealthPage;
+    const shouldRenderAnyChartSections =
+        shouldRenderContentMetricCard ||
+        shouldRenderSearchQaMetricCard ||
+        shouldRenderAiMetricCard ||
+        shouldRenderHealthTaskMetricCard ||
+        shouldRenderTrendPanel ||
+        shouldRenderHealthSection ||
+        shouldRenderRankingSection;
 
     return (
         <KuzhambuPage
@@ -419,7 +547,7 @@ export const OperationsDashboardPage = () => {
                 <div className="operations-dashboard-content">
                     {isLoading && !overview ? <Spin size="large" /> : null}
 
-                    {openHealthAlerts.length || activeAlertCount ? (
+                    {canRenderHealthBanner ? (
                         <Alert
                             action={
                                 <Button size="small" onClick={() => setAlertDrawerOpen(true)}>
@@ -437,165 +565,247 @@ export const OperationsDashboardPage = () => {
                             type={criticalAlertCount > 0 ? "error" : "warning"}
                         />
                     ) : null}
+                    {shouldRenderAnyChartSections ? (
+                        <>
+                            <section className="operations-dashboard-metrics" aria-label="核心指标">
+                                {shouldRenderContentMetricCard ? (
+                                    <Card className="operations-dashboard-metric-card">
+                                        <Statistic
+                                            title="内容总量"
+                                            value={formatNumber(overview?.contentCount)}
+                                            prefix={<DatabaseOutlined />}
+                                        />
+                                        <Text type="secondary">{contentMetricSecondary}</Text>
+                                    </Card>
+                                ) : null}
+                                {shouldRenderSearchQaMetricCard ? (
+                                    <Card className="operations-dashboard-metric-card">
+                                        <Statistic
+                                            title={searchQaTitle}
+                                            value={searchQaStatisticValue}
+                                            prefix={<SearchOutlined />}
+                                        />
+                                        {searchQaSecondaryText ? (
+                                            <Text type="secondary">{searchQaSecondaryText}</Text>
+                                        ) : null}
+                                    </Card>
+                                ) : null}
+                                {shouldRenderAiMetricCard ? (
+                                    <Card className="operations-dashboard-metric-card">
+                                        <Statistic
+                                            title="AI 调用成功率"
+                                            value={formatNumber(
+                                                overview?.aiSucceededInvocationCount
+                                            )}
+                                            suffix={`/ ${formatNumber(overview?.aiInvocationCount)}`}
+                                            prefix={<CheckCircleOutlined />}
+                                        />
+                                        <Text type="secondary">
+                                            失败 {formatNumber(overview?.aiFailedInvocationCount)}
+                                            ，平均延迟 {formatLatency(overview?.aiAvgLatencyMs)}
+                                            ，成本 {formatNumber(overview?.aiTotalCostAmount)}
+                                        </Text>
+                                    </Card>
+                                ) : null}
+                                {shouldRenderHealthTaskMetricCard ? (
+                                    <Card className="operations-dashboard-metric-card">
+                                        <Statistic
+                                            title={healthTaskTitle}
+                                            value={healthTaskStatisticValue}
+                                            prefix={<WarningOutlined />}
+                                        />
+                                        {healthTaskSecondaryText ? (
+                                            <Text type="secondary">{healthTaskSecondaryText}</Text>
+                                        ) : null}
+                                    </Card>
+                                ) : null}
+                            </section>
 
-                    <section className="operations-dashboard-metrics" aria-label="核心指标">
-                        <Card className="operations-dashboard-metric-card">
-                            <Statistic
-                                title="内容总量"
-                                value={formatNumber(overview?.contentCount)}
-                                prefix={<DatabaseOutlined />}
-                            />
-                            <Text type="secondary">
-                                译文 {formatNumber(overview?.translatedContentCount)}，图像就绪{" "}
-                                {formatNumber(overview?.imageReadyContentCount)}，分享访问{" "}
-                                {formatNumber(overview?.shareVisitCount)}
-                            </Text>
-                        </Card>
-                        <Card className="operations-dashboard-metric-card">
-                            <Statistic
-                                title="搜索 / 问答"
-                                value={`${formatNumber(overview?.searchCount)} / ${formatNumber(overview?.qaCount)}`}
-                                prefix={<SearchOutlined />}
-                            />
-                            <Text type="secondary">
-                                平均搜索延迟 {formatLatency(overview?.avgSearchLatencyMs)}
-                            </Text>
-                        </Card>
-                        <Card className="operations-dashboard-metric-card">
-                            <Statistic
-                                title="AI 调用成功率"
-                                value={formatNumber(overview?.aiSucceededInvocationCount)}
-                                suffix={`/ ${formatNumber(overview?.aiInvocationCount)}`}
-                                prefix={<CheckCircleOutlined />}
-                            />
-                            <Text type="secondary">
-                                失败 {formatNumber(overview?.aiFailedInvocationCount)}，平均延迟{" "}
-                                {formatLatency(overview?.aiAvgLatencyMs)}，成本{" "}
-                                {formatNumber(overview?.aiTotalCostAmount)}
-                            </Text>
-                        </Card>
-                        <Card className="operations-dashboard-metric-card">
-                            <Statistic
-                                title="异常组件 / 失败任务"
-                                value={`${formatNumber(unhealthyCount)} / ${formatNumber(failedTaskCount)}`}
-                                prefix={<WarningOutlined />}
-                            />
-                            <Text type="secondary">
-                                运行中任务 {formatNumber(runningTaskCount)}
-                            </Text>
-                        </Card>
-                    </section>
+                            {shouldRenderTrendPanel ? (
+                                <section className="operations-dashboard-grid operations-dashboard-grid-two">
+                                    {shouldRenderContentTrendPanel ? (
+                                        <TrendPanel
+                                            items={overview?.contentGrowthSeries}
+                                            title="内容增长趋势"
+                                        />
+                                    ) : null}
+                                    {shouldRenderSearchTrendPanel ? (
+                                        <TrendPanel
+                                            items={overview?.searchTrendSeries}
+                                            title="搜索趋势"
+                                        />
+                                    ) : null}
+                                    {shouldRenderQaTrendPanel ? (
+                                        <TrendPanel
+                                            items={overview?.qaTrendSeries}
+                                            title="问答趋势"
+                                        />
+                                    ) : null}
+                                    {shouldRenderTagTrendPanel ? (
+                                        <TrendPanel
+                                            items={overview?.tagGrowthSeries}
+                                            title="标签增长趋势"
+                                        />
+                                    ) : null}
+                                </section>
+                            ) : null}
 
-                    <section className="operations-dashboard-grid operations-dashboard-grid-two">
-                        <TrendPanel items={overview?.contentGrowthSeries} title="内容增长趋势" />
-                        <TrendPanel items={overview?.searchTrendSeries} title="搜索趋势" />
-                    </section>
+                            {shouldRenderHealthSection ? (
+                                <section className="operations-dashboard-grid operations-dashboard-grid-two">
+                                    {canViewHealthPage ? (
+                                        <Card
+                                            className="operations-dashboard-section-card"
+                                            extra={
+                                                canViewHealthPage ? (
+                                                    <Link to="/operations/health">查看全部</Link>
+                                                ) : null
+                                            }
+                                            size="small"
+                                            title="健康巡检"
+                                        >
+                                            {visibleHealthSummaries.length ? (
+                                                <div className="operations-dashboard-health-list">
+                                                    {visibleHealthSummaries.map((summary) => {
+                                                        const summaryAlertCount =
+                                                            filterAlertsByComponent(
+                                                                visibleHealthAlerts,
+                                                                summary.component
+                                                            ).length;
+                                                        return (
+                                                            <button
+                                                                className="operations-dashboard-health-item"
+                                                                key={summary.checkId}
+                                                                onClick={() =>
+                                                                    setSelectedHealth(summary)
+                                                                }
+                                                                type="button"
+                                                            >
+                                                                <span>
+                                                                    <HeartOutlined />
+                                                                    <Text strong>
+                                                                        {summary.component ||
+                                                                            "未知组件"}
+                                                                    </Text>
+                                                                </span>
+                                                                {summaryAlertCount ? (
+                                                                    <KuzhambuTag type="danger">
+                                                                        告警{" "}
+                                                                        {formatNumber(
+                                                                            summaryAlertCount
+                                                                        )}
+                                                                    </KuzhambuTag>
+                                                                ) : null}
+                                                                <KuzhambuTag
+                                                                    type={statusTone(
+                                                                        summary.healthStatus
+                                                                    )}
+                                                                >
+                                                                    {summary.healthStatus ||
+                                                                        "UNKNOWN"}
+                                                                </KuzhambuTag>
+                                                                <Text type="secondary">
+                                                                    {formatLatency(
+                                                                        summary.latencyMs
+                                                                    )}
+                                                                </Text>
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            ) : (
+                                                <Empty
+                                                    description="暂无健康摘要"
+                                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                                />
+                                            )}
+                                        </Card>
+                                    ) : null}
+                                    {canViewHealthPage ? (
+                                        <Card
+                                            className="operations-dashboard-section-card"
+                                            size="small"
+                                            title="健康趋势"
+                                        >
+                                            {healthTrend.length ? (
+                                                <div className="operations-dashboard-health-trend">
+                                                    {healthTrend.map((bucket) => (
+                                                        <div key={bucket.bucket || "unknown"}>
+                                                            <Text>{bucket.bucket || "-"}</Text>
+                                                            <KuzhambuSpace size={6} wrap>
+                                                                <KuzhambuTag type="success">
+                                                                    UP{" "}
+                                                                    {formatNumber(bucket.upCount)}
+                                                                </KuzhambuTag>
+                                                                <KuzhambuTag type="warning">
+                                                                    DEGRADED{" "}
+                                                                    {formatNumber(
+                                                                        bucket.degradedCount
+                                                                    )}
+                                                                </KuzhambuTag>
+                                                                <KuzhambuTag type="danger">
+                                                                    DOWN{" "}
+                                                                    {formatNumber(bucket.downCount)}
+                                                                </KuzhambuTag>
+                                                                <Text type="secondary">
+                                                                    平均{" "}
+                                                                    {formatLatency(
+                                                                        bucket.avgLatencyMs
+                                                                    )}
+                                                                </Text>
+                                                            </KuzhambuSpace>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <Empty
+                                                    description="暂无健康趋势"
+                                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                                />
+                                            )}
+                                        </Card>
+                                    ) : null}
+                                </section>
+                            ) : null}
 
-                    <section className="operations-dashboard-grid operations-dashboard-grid-two">
-                        <Card
-                            className="operations-dashboard-section-card"
-                            extra={
-                                canViewHealthPage ? (
-                                    <Link to="/operations/health">查看全部</Link>
-                                ) : null
-                            }
-                            size="small"
-                            title="健康巡检"
-                        >
-                            {healthSummaries.length ? (
-                                <div className="operations-dashboard-health-list">
-                                    {healthSummaries.map((summary) => {
-                                        const summaryAlertCount = filterAlertsByComponent(
-                                            openHealthAlerts,
-                                            summary.component
-                                        ).length;
-                                        return (
-                                            <button
-                                                className="operations-dashboard-health-item"
-                                                key={summary.checkId}
-                                                onClick={() => setSelectedHealth(summary)}
-                                                type="button"
-                                            >
-                                                <span>
-                                                    <HeartOutlined />
-                                                    <Text strong>
-                                                        {summary.component || "未知组件"}
-                                                    </Text>
-                                                </span>
-                                                {summaryAlertCount ? (
-                                                    <KuzhambuTag type="danger">
-                                                        告警 {formatNumber(summaryAlertCount)}
-                                                    </KuzhambuTag>
-                                                ) : null}
-                                                <KuzhambuTag
-                                                    type={statusTone(summary.healthStatus)}
-                                                >
-                                                    {summary.healthStatus || "UNKNOWN"}
-                                                </KuzhambuTag>
-                                                <Text type="secondary">
-                                                    {formatLatency(summary.latencyMs)}
-                                                </Text>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            ) : (
-                                <Empty
-                                    description="暂无健康摘要"
-                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                />
-                            )}
-                        </Card>
-                        <Card
-                            className="operations-dashboard-section-card"
-                            size="small"
-                            title="健康趋势"
-                        >
-                            {healthTrend.length ? (
-                                <div className="operations-dashboard-health-trend">
-                                    {healthTrend.map((bucket) => (
-                                        <div key={bucket.bucket || "unknown"}>
-                                            <Text>{bucket.bucket || "-"}</Text>
-                                            <KuzhambuSpace size={6} wrap>
-                                                <KuzhambuTag type="success">
-                                                    UP {formatNumber(bucket.upCount)}
-                                                </KuzhambuTag>
-                                                <KuzhambuTag type="warning">
-                                                    DEGRADED {formatNumber(bucket.degradedCount)}
-                                                </KuzhambuTag>
-                                                <KuzhambuTag type="danger">
-                                                    DOWN {formatNumber(bucket.downCount)}
-                                                </KuzhambuTag>
-                                                <Text type="secondary">
-                                                    平均 {formatLatency(bucket.avgLatencyMs)}
-                                                </Text>
-                                            </KuzhambuSpace>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <Empty
-                                    description="暂无健康趋势"
-                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                />
-                            )}
-                        </Card>
-                    </section>
-
-                    <section className="operations-dashboard-grid operations-dashboard-grid-three">
-                        <RankingList
-                            emptyText="暂无内容排行"
-                            items={topContents}
-                            title="热门内容"
+                            {shouldRenderRankingSection ? (
+                                <section className="operations-dashboard-grid operations-dashboard-grid-three">
+                                    {shouldRenderTopContentsRanking ? (
+                                        <RankingList
+                                            emptyText="暂无内容排行"
+                                            items={topContents}
+                                            title="热门内容"
+                                        />
+                                    ) : null}
+                                    {shouldRenderTopQueriesRanking ? (
+                                        <RankingList
+                                            emptyText="暂无查询排行"
+                                            items={topQueries}
+                                            title="热门搜索"
+                                        />
+                                    ) : null}
+                                    {shouldRenderTopTagsRanking ? (
+                                        <RankingList
+                                            emptyText="暂无标签排行"
+                                            items={topTags}
+                                            title="标签覆盖"
+                                        />
+                                    ) : null}
+                                    {shouldRenderTopAiCapabilitiesRanking ? (
+                                        <RankingList
+                                            emptyText="暂无 AI 能力排行"
+                                            items={topAiCapabilities}
+                                            title="AI 能力"
+                                        />
+                                    ) : null}
+                                </section>
+                            ) : null}
+                        </>
+                    ) : (
+                        <Empty
+                            description="当前账号暂无可查看的看板图表"
+                            image={Empty.PRESENTED_IMAGE_SIMPLE}
                         />
-                        <RankingList emptyText="暂无查询排行" items={topQueries} title="热门搜索" />
-                        <RankingList emptyText="暂无标签排行" items={topTags} title="标签覆盖" />
-                        <RankingList
-                            emptyText="暂无 AI 能力排行"
-                            items={topAiCapabilities}
-                            title="AI 能力"
-                        />
-                    </section>
+                    )}
 
                     <section>
                         <Title level={5}>运维入口</Title>
@@ -630,8 +840,8 @@ export const OperationsDashboardPage = () => {
                         title="健康告警"
                     >
                         <div className="operations-dashboard-alert-list">
-                            {openHealthAlerts.length ? (
-                                openHealthAlerts.map((alert) => (
+                            {visibleHealthAlerts.length ? (
+                                visibleHealthAlerts.map((alert) => (
                                     <Card
                                         className="operations-dashboard-alert-card"
                                         key={alert.alertId}
@@ -753,8 +963,8 @@ export const OperationsDashboardPage = () => {
                                         查看全部告警
                                     </Button>
                                 </div>
-                                {selectedHealthAlerts.length ? (
-                                    selectedHealthAlerts.map((alert) => (
+                                {selectedHealthAlertInfo.length ? (
+                                    selectedHealthAlertInfo.map((alert) => (
                                         <Alert
                                             className="operations-dashboard-health-related-alert"
                                             description={alert.suggestion || "暂无处置建议"}
@@ -781,4 +991,37 @@ export const OperationsDashboardPage = () => {
             )}
         </KuzhambuPage>
     );
+};
+
+const resolveDashboardPermissionCapabilities = (): DashboardPermissionCapabilities => {
+    const hasAnyChartPermission =
+        hasPermission("classics:content:view") ||
+        hasPermission("classics:sancai:view") ||
+        hasPermission("classics:wangqi:view") ||
+        hasPermission("classics:mingcustoms:view") ||
+        hasPermission("classics:sharing:view") ||
+        hasPermission("discovery:search:view") ||
+        hasPermission("discovery:qa:view") ||
+        hasPermission("ai:invocation:view") ||
+        hasPermission("knowledge:taxonomy:view") ||
+        hasPermission("operations:health:view") ||
+        hasPermission("operations:task:view");
+
+    return {
+        canViewDashboard: hasPermission("operations:dashboard:view"),
+        canViewClassicsContentSummary:
+            hasPermission("classics:content:view") ||
+            hasPermission("classics:sancai:view") ||
+            hasPermission("classics:wangqi:view") ||
+            hasPermission("classics:mingcustoms:view"),
+        canViewClassicsSharingSummary: hasPermission("classics:sharing:view"),
+        canViewDiscoverySearchSummary: hasPermission("discovery:search:view"),
+        canViewDiscoveryQaSummary: hasPermission("discovery:qa:view"),
+        canViewAiInvocationSummary: hasPermission("ai:invocation:view"),
+        canViewKnowledgeTaxonomySummary: hasPermission("knowledge:taxonomy:view"),
+        canViewHealthSummary: hasPermission("operations:health:view"),
+        canManageHealthAlert: hasPermission("operations:health:manage"),
+        canViewTaskSummary: hasPermission("operations:task:view"),
+        hasAnyChartPermission
+    };
 };
