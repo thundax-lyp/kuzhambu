@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Operations cleanup backend validation`：完成后端定向验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-CLEANUP-TARGET-TYPES.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-domain`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application`、`kuzhambu-servers/biz/operations/kuzhambu-operations-infra`、`kuzhambu-servers/starter/kuzhambu-admin-starter`
-    - 处理动作：运行 RUNBOOK 指定的 Maven 后端格式检查、静态检查和定向测试。
-    - 验收点：`spotless:check`、`checkstyle:check` 和 cleanup 相关后端定向测试通过；若失败，记录失败命令、原因和剩余风险。
-    - 重要度：9/10
-
 - [ ] `Admin cleanup validation`：完成前端定向验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-CLEANUP-TARGET-TYPES.md`
