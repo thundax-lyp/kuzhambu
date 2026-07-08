@@ -93,7 +93,11 @@ const installFetchRecorder = () => {
                     {
                         id: 5001,
                         shareLinkId: 9001,
-                        accessResult: "ALLOWED"
+                        accessResult: "ALLOWED",
+                        clientSnapshot: JSON.stringify({
+                            accessType: "DETAIL_VIEW",
+                            privateAccess: false
+                        })
                     }
                 ]
             };
@@ -247,12 +251,12 @@ describe("classics share service request contracts", () => {
     it("updates share status by id", async () => {
         await shareService.updateStatus({
             id: 9001,
-            status: "REVOKED"
+            status: "ACTIVE"
         });
         expect(capturedCalls.at(-1)).toEqual({
             body: {
                 id: 9001,
-                status: "REVOKED"
+                status: "ACTIVE"
             },
             method: "POST",
             path: "/classics/shares/status/update"
@@ -260,7 +264,7 @@ describe("classics share service request contracts", () => {
     });
 
     it("loads access records for a share", async () => {
-        await shareService.pageAccessRecords({
+        const response = await shareService.pageAccessRecords({
             pageNo: 1,
             pageSize: 10,
             shareLinkId: 9001,
@@ -276,5 +280,8 @@ describe("classics share service request contracts", () => {
             method: "POST",
             path: "/classics/shares/access-records/page"
         });
+        expect(response.records[0].clientSnapshot).toBe(
+            '{"accessType":"DETAIL_VIEW","privateAccess":false}'
+        );
     });
 });

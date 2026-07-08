@@ -6,6 +6,15 @@ export type ClassicsShareTargetStatus = "AVAILABLE" | "CONTENT_DELETED";
 
 export type ClassicsShareVisibility = "PRIVATE" | "PUBLIC";
 
+export type ClassicsShareAccessType = "DETAIL_VIEW" | "RESOURCE_READ";
+
+export interface ClassicsShareAccessClientSnapshot {
+    accessType?: ClassicsShareAccessType | string | null;
+    download?: boolean | null;
+    privateAccess?: boolean | null;
+    storageObjectId?: number | null;
+}
+
 export interface ClassicsShareTargetRef {
     contentId: number;
     contentType: ClassicsShareContentType;

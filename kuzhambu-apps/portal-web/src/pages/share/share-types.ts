@@ -1,5 +1,5 @@
 export interface ClassicsShareSearchQuery {
-    contentType?: string | null;
+    contentType?: ClassicsShareContentType | string | null;
     issuedAfter?: string | null;
     issuedBefore?: string | null;
     pageNo?: number | null;
@@ -9,10 +9,10 @@ export interface ClassicsShareSearchQuery {
 
 export interface ClassicsSharePortalListItem {
     contentId?: number | null;
-    contentType?: string | null;
+    contentType?: ClassicsShareContentType | string | null;
     contentVersionId?: number | null;
     contentVersionNo?: number | null;
-    contentVisibilitySnapshot?: string | null;
+    contentVisibilitySnapshot?: ClassicsShareVisibility | string | null;
     expiresAt?: string | null;
     issuedAt?: string | null;
     priority?: number | null;
@@ -58,10 +58,10 @@ export interface ClassicsSharePortalImage {
 export interface ClassicsSharePortalTarget {
     contentId?: number | null;
     contentSnapshotJson?: string | null;
-    contentType?: string | null;
+    contentType?: ClassicsShareContentType | string | null;
     contentVersionId?: number | null;
     contentVersionNo?: number | null;
-    contentVisibilitySnapshot?: string | null;
+    contentVisibilitySnapshot?: ClassicsShareVisibility | string | null;
     priority?: number | null;
     images?: ClassicsSharePortalImage[] | null;
     storageObject?: ClassicsShareResource | null;
@@ -72,6 +72,12 @@ export interface ClassicsSharePortalTarget {
 export type ClassicsShareTargetStatus = "ACTIVE" | "AVAILABLE" | "CONTENT_DELETED";
 
 export type ClassicsShareResourceContentMode = "download" | "preview";
+
+export type ClassicsShareContentType = "MING_CUSTOMS" | "SANCAI_ENTRY" | "WANGQI_DOCUMENT";
+
+export type ClassicsShareVisibility = "PRIVATE" | "PUBLIC";
+
+export type ClassicsShareLinkStatus = "ACTIVE" | "EXPIRED" | "REVOKED";
 
 export interface ClassicsShareResourceContentUrlCommand {
     mode?: ClassicsShareResourceContentMode;
@@ -84,8 +90,8 @@ export interface ClassicsSharePortalResponse {
     expiresAt?: string | null;
     issuedAt?: string | null;
     loginRequired?: boolean | null;
-    status?: string | null;
+    status?: ClassicsShareLinkStatus | string | null;
     targets?: ClassicsSharePortalTarget[] | null;
     title?: string | null;
-    visibility?: string | null;
+    visibility?: ClassicsShareVisibility | string | null;
 }
