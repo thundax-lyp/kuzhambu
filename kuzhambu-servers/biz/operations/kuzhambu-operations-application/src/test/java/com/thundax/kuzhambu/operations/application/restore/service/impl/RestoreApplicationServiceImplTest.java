@@ -26,6 +26,9 @@ import com.thundax.kuzhambu.operations.domain.restore.model.entity.RestoreRecord
 import com.thundax.kuzhambu.operations.domain.restore.model.enums.RestoreMode;
 import com.thundax.kuzhambu.operations.domain.restore.model.valueobject.RestoreId;
 import com.thundax.kuzhambu.operations.domain.restore.repository.RestoreRepository;
+import com.thundax.kuzhambu.operations.domain.task.model.entity.LongTaskSnapshot;
+import com.thundax.kuzhambu.operations.domain.task.model.valueobject.LongTaskSnapshotId;
+import com.thundax.kuzhambu.operations.domain.task.repository.LongTaskSnapshotRepository;
 import java.nio.file.Path;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -70,6 +73,34 @@ class RestoreApplicationServiceImplTest {
         assertEquals(
                 "SUCCEEDED",
                 backupRepository.records.get(result.getPreRestoreBackupId()).getBackupStatus());
+    }
+
+    @Test
+    void executeShouldTrackRestoreResultInLongTaskSnapshot() {
+        InMemoryBackupRepository backupRepository = backupRepositoryWithSucceededSource();
+        InMemoryRestoreRepository restoreRepository = new InMemoryRestoreRepository();
+        InMemoryLongTaskSnapshotRepository taskRepository = new InMemoryLongTaskSnapshotRepository();
+        RestoreApplicationServiceImpl service = new RestoreApplicationServiceImpl(
+                restoreRepository,
+                backupRepository,
+                new SuccessfulRestoreScriptExecutor(),
+                new OperationsBackupExecutionGuard(),
+                new OperationsRestoreWriteBlocker(),
+                null,
+                taskRepository);
+
+        OperationsRestoreExecuteResult result = service.execute(
+                new OperationsRestoreExecuteCommand(BackupId.of(9001L), RestoreMode.REAL.value(), 1001L));
+
+        assertEquals(1, taskRepository.records.size());
+        LongTaskSnapshot snapshot = taskRepository.records.values().iterator().next();
+        assertEquals("operations", snapshot.getSourceDomain());
+        assertEquals("RESTORE", snapshot.getTaskType());
+        assertEquals("restore:" + result.getRestoreId().value(), snapshot.getTaskKey());
+        assertEquals("SUCCEEDED", snapshot.getTaskStatus());
+        assertEquals(1, snapshot.getSuccessCount());
+        assertEquals(0, snapshot.getFailedCount());
+        assertNotNull(snapshot.getCompletedAt());
     }
 
     @Test
@@ -126,6 +157,29 @@ class RestoreApplicationServiceImplTest {
                 "SUCCEEDED",
                 backupRepository.records.get(result.getPreRestoreBackupId()).getBackupStatus());
         verify(alertStrategy).recordRestoreFailed(result.getRestoreId().value(), 9001L, "restore failed");
+    }
+
+    @Test
+    void executeShouldTrackFailedRestoreInLongTaskSnapshot() {
+        InMemoryBackupRepository backupRepository = backupRepositoryWithSucceededSource();
+        InMemoryRestoreRepository restoreRepository = new InMemoryRestoreRepository();
+        InMemoryLongTaskSnapshotRepository taskRepository = new InMemoryLongTaskSnapshotRepository();
+        RestoreApplicationServiceImpl service = new RestoreApplicationServiceImpl(
+                restoreRepository,
+                backupRepository,
+                new FailedRestoreScriptExecutor(),
+                new OperationsBackupExecutionGuard(),
+                new OperationsRestoreWriteBlocker(),
+                null,
+                taskRepository);
+
+        service.execute(new OperationsRestoreExecuteCommand(BackupId.of(9001L), RestoreMode.REAL.value(), 1001L));
+
+        LongTaskSnapshot snapshot = taskRepository.records.values().iterator().next();
+        assertEquals("FAILED", snapshot.getTaskStatus());
+        assertEquals(0, snapshot.getSuccessCount());
+        assertEquals(1, snapshot.getFailedCount());
+        assertEquals("restore failed", snapshot.getFailureReason());
     }
 
     @Test
@@ -380,6 +434,41 @@ class RestoreApplicationServiceImplTest {
 
         @Override
         public int deleteById(RestoreId id) {
+            return records.remove(id.value()) == null ? 0 : 1;
+        }
+    }
+
+    private static final class InMemoryLongTaskSnapshotRepository implements LongTaskSnapshotRepository {
+        private long nextId = 9301L;
+        private final Map<Long, LongTaskSnapshot> records = new LinkedHashMap<>();
+
+        @Override
+        public LongTaskSnapshot getById(LongTaskSnapshotId id) {
+            return id == null ? null : records.get(id.value());
+        }
+
+        @Override
+        public PageResult<LongTaskSnapshot> page(
+                String sourceDomain, String taskType, String taskStatus, int pageNo, int pageSize) {
+            return PageResult.of(pageNo, pageSize, records.size(), List.copyOf(records.values()));
+        }
+
+        @Override
+        public LongTaskSnapshotId insert(LongTaskSnapshot snapshot) {
+            LongTaskSnapshotId id = LongTaskSnapshotId.of(nextId++);
+            snapshot.setId(id);
+            records.put(id.value(), snapshot);
+            return id;
+        }
+
+        @Override
+        public int update(LongTaskSnapshot snapshot) {
+            records.put(snapshot.getId().value(), snapshot);
+            return 1;
+        }
+
+        @Override
+        public int deleteById(LongTaskSnapshotId id) {
             return records.remove(id.value()) == null ? 0 : 1;
         }
     }

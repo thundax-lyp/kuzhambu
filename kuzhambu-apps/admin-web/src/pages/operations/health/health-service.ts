@@ -1,5 +1,8 @@
 import { postJson } from "@/api/http";
 import type {
+    OperationsHealthAlertLevel,
+    OperationsHealthAlertRecord,
+    OperationsHealthAlertStatus,
     OperationsHealthRecord,
     OperationsHealthStatus,
     OperationsPageRecord
@@ -18,8 +21,8 @@ export interface OperationsHealthPageQuery {
 
 export interface OperationsHealthAlertPageQuery {
     component?: string | null;
-    alertLevel?: "WARNING" | "CRITICAL" | null;
-    alertStatus?: "ACTIVE" | "ACKED" | "RECOVERED" | null;
+    alertLevel?: OperationsHealthAlertLevel | null;
+    alertStatus?: OperationsHealthAlertStatus | null;
     sourceRefType?: string | null;
     sourceRefId?: number | null;
     latestCheckId?: number | null;
@@ -34,4 +37,29 @@ export const getOperationsHealthPage = (query: OperationsHealthPageQuery = {}) =
             body: query
         }
     );
+};
+
+export interface OperationsHealthAlertActionCommand {
+    alertId: number;
+}
+
+export const getOperationsHealthAlerts = (query: OperationsHealthAlertPageQuery = {}) => {
+    return postJson<
+        OperationsPageRecord<OperationsHealthAlertRecord>,
+        OperationsHealthAlertPageQuery
+    >("/operations/health/alerts/page", {
+        body: query
+    });
+};
+
+export const confirmOperationsHealthAlert = (command: OperationsHealthAlertActionCommand) => {
+    return postJson<void, OperationsHealthAlertActionCommand>("/operations/health/alerts/ack", {
+        body: command
+    });
+};
+
+export const recoverOperationsHealthAlert = (command: OperationsHealthAlertActionCommand) => {
+    return postJson<void, OperationsHealthAlertActionCommand>("/operations/health/alerts/recover", {
+        body: command
+    });
 };

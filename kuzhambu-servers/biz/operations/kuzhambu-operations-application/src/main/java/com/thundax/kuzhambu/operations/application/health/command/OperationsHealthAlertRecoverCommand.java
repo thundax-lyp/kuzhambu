@@ -12,4 +12,5 @@ import lombok.Setter;
 @AllArgsConstructor
 public class OperationsHealthAlertRecoverCommand {
     private HealthAlertId alertId;
+    private Long recoveredByUserId;
 }
