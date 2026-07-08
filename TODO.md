@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `06 Operations application validation`：验证后端 application 行为
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RESTORE-ORCHESTRATION.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application`、`HealthAlertApplicationServiceImplTest.java`、`RestoreApplicationServiceImplTest.java`
-    - 处理动作：运行 Operations application 相关单元测试验证恢复编排和任务快照。
-    - 验收点：健康告警恢复编排测试和恢复任务快照测试通过。
-    - 重要度：10/10
-
 - [ ] `07 Operations interface validation`：验证后端 interface 契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RESTORE-ORCHESTRATION.md`
