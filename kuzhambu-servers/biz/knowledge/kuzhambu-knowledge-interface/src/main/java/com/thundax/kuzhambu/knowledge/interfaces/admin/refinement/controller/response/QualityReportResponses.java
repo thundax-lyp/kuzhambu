@@ -17,6 +17,9 @@ public final class QualityReportResponses {
         private List<IssueResponse> issues;
         private List<SourceDetailResponse> sourceDetails;
         private List<AnnotationResponse> annotations;
+        private Boolean stale;
+        private String staleReason;
+        private Long lastRefinementAppliedAt;
     }
 
     @Getter

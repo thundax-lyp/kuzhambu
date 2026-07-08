@@ -52,6 +52,9 @@ public final class KnowledgeQualityReportInterfaceAssembler {
                 .issues(mapIssues(result == null ? null : result.getIssues()))
                 .sourceDetails(mapSourceDetails(result == null ? null : result.getSourceDetails()))
                 .annotations(mapAnnotations(result == null ? null : result.getAnnotations()))
+                .stale(result == null ? null : result.getStale())
+                .staleReason(result == null ? null : result.getStaleReason())
+                .lastRefinementAppliedAt(result == null ? null : result.getLastRefinementAppliedAt())
                 .build();
     }
 
