@@ -3,6 +3,9 @@ package com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.assembler;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsContentFormat;
@@ -11,6 +14,7 @@ import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCu
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.request.MingCustomsRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsKeywordCloudItemResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsResponse;
+import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsVersionResponse;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import org.apache.commons.lang3.StringUtils;
 
@@ -78,6 +82,27 @@ public final class MingCustomsInterfaceAssembler {
                 : MingCustomsKeywordCloudItemResponse.builder()
                         .keyword(item.getKeyword())
                         .count(item.getCount())
+                        .build();
+    }
+
+    public static MingCustomsVersionResponse toVersionResponse(ClassicsContentVersion version) {
+        return version == null
+                ? MingCustomsVersionResponse.builder().build()
+                : MingCustomsVersionResponse.builder()
+                        .id(ClassicsContentVersionIdCodec.toValue(version.getId()))
+                        .contentType(
+                                version.getContentType() == null
+                                        ? null
+                                        : version.getContentType().value())
+                        .contentId(ClassicsContentIdCodec.toValue(version.getContentId()))
+                        .versionNo(version.getVersionNo())
+                        .versionedAt(version.getVersionedAt())
+                        .snapshotJson(version.getSnapshotJson())
+                        .changeType(
+                                version.getChangeType() == null
+                                        ? null
+                                        : version.getChangeType().value())
+                        .changeSummary(version.getChangeSummary())
                         .build();
     }
 
