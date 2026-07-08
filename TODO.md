@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Workers validation`：执行 Discovery AI usecase worker 验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WANGQI-SINGLE-DOCUMENT-QA.md`
-    - 范围对象：`kuzhambu-workers`
-    - 处理动作：在同步 `main` 后运行 Ruff format、Ruff check 和 Discovery AI usecase pytest。
-    - 验收点：Workers 格式、静态检查和 `tests/test_worker_e2e_ai_usecase_discovery.py` 通过。
-    - 重要度：8/10
-
 - [ ] `Implementation Coverage sync`：更新实现覆盖率文档
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WANGQI-SINGLE-DOCUMENT-QA.md`
