@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.classics.application.sancai.command.SancaiDraftComma
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiImageCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiShowcaseCommand;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageResource;
+import com.thundax.kuzhambu.classics.application.sancai.result.SancaiShowcaseJobResult;
 import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVisualAssetIdCodec;
@@ -37,17 +38,20 @@ public final class SancaiAssetInterfaceAssembler {
     }
 
     public static SancaiShowcaseCommand toShowcaseCommand(SancaiAssetRequest request) {
-        return new SancaiShowcaseCommand(
-                null,
+        SancaiShowcaseCommand command = new SancaiShowcaseCommand();
+        command.setStatus(
                 StringUtils.isBlank(request.getStatus())
                         ? SancaiShowcaseStatus.REQUESTED
-                        : SancaiShowcaseStatus.from(request.getStatus()),
-                request.getScopeJson(),
-                StorageObjectIdCodec.toDomain(request.getStorageObjectId()),
-                request.getEntryCount() == null ? 0 : request.getEntryCount(),
+                        : SancaiShowcaseStatus.from(request.getStatus()));
+        command.setScopeJson(request.getScopeJson());
+        command.setScopeTitle(request.getScopeTitle());
+        command.setEntryCount(request.getEntryCount() == null ? 0 : request.getEntryCount());
+        command.setVisibilityRiskStatus(
                 StringUtils.isBlank(request.getVisibilityRiskStatus())
                         ? null
                         : SancaiVisibilityRiskStatus.from(request.getVisibilityRiskStatus()));
+        command.setPrivateConfirmed(Boolean.TRUE.equals(request.getPrivateConfirmed()));
+        return command;
     }
 
     public static SancaiVisualAsset toVisualAsset(SancaiAssetRequest request) {
@@ -167,38 +171,80 @@ public final class SancaiAssetInterfaceAssembler {
     }
 
     public static SancaiAssetResponse toShowcaseResponse(SancaiShowcase showcase) {
+        Long showcaseId = showcase == null || showcase.getId() == null
+                ? null
+                : showcase.getId().value();
         Long storageObjectId = showcase == null || showcase.getStorageObjectId() == null
                 ? null
                 : showcase.getStorageObjectId().value();
+        boolean completed =
+                showcase != null && showcase.getStatus() == SancaiShowcaseStatus.COMPLETED && storageObjectId != null;
         return showcase == null
                 ? SancaiAssetResponse.builder().build()
                 : SancaiAssetResponse.builder()
-                        .id(showcase.getId() == null ? null : showcase.getId().value())
+                        .id(showcaseId)
                         .status(
                                 showcase.getStatus() == null
                                         ? null
                                         : showcase.getStatus().value())
                         .requestedAt(showcase.getRequestedAt())
+                        .completedAt(showcase.getCompletedAt())
                         .scopeJson(showcase.getScopeJson())
+                        .scopeTitle(showcase.getScopeTitle())
                         .storageObjectId(showcase.getStorageObjectId() == null ? null : storageObjectId)
                         .entryCount(showcase.getEntryCount())
+                        .assetCount(showcase.getAssetCount())
                         .visibilityRiskStatus(
                                 showcase.getVisibilityRiskStatus() == null
                                         ? null
                                         : showcase.getVisibilityRiskStatus().value())
-                        .contentUrl(showcaseUrl(storageObjectId))
-                        .downloadUrl(showcaseDownloadUrl(storageObjectId))
+                        .filename(showcase.getFilename())
+                        .contentType(showcase.getContentType())
+                        .sizeBytes(showcase.getSizeBytes())
+                        .sha256(showcase.getSha256())
+                        .failureType(showcase.getFailureType())
+                        .failureMessage(showcase.getFailureMessage())
+                        .contentUrl(completed ? showcaseUrl(showcaseId) : null)
+                        .downloadUrl(completed ? showcaseDownloadUrl(showcaseId) : null)
                         .build();
     }
 
-    private static String showcaseUrl(Long storageObjectId) {
-        return storageObjectId == null ? null : "/api/classics/sancai/assets/showcases/" + storageObjectId + "/content";
+    public static SancaiAssetResponse toShowcaseJobResponse(SancaiShowcaseJobResult result) {
+        Long showcaseId = result == null || result.getShowcaseId() == null
+                ? null
+                : result.getShowcaseId().value();
+        Long storageObjectId = result == null || result.getStorageObjectId() == null
+                ? null
+                : result.getStorageObjectId().value();
+        boolean completed =
+                result != null && result.getStatus() == SancaiShowcaseStatus.COMPLETED && storageObjectId != null;
+        return result == null
+                ? SancaiAssetResponse.builder().build()
+                : SancaiAssetResponse.builder()
+                        .id(showcaseId)
+                        .status(
+                                result.getStatus() == null
+                                        ? null
+                                        : result.getStatus().value())
+                        .storageObjectId(storageObjectId)
+                        .filename(result.getFilename())
+                        .sizeBytes(result.getSizeBytes())
+                        .sha256(result.getSha256())
+                        .failureType(result.getFailureType())
+                        .failureMessage(result.getFailureMessage())
+                        .contentUrl(completed ? showcaseUrl(showcaseId) : null)
+                        .downloadUrl(completed ? showcaseDownloadUrl(showcaseId) : null)
+                        .build();
     }
 
-    private static String showcaseDownloadUrl(Long storageObjectId) {
-        return storageObjectId == null
+    private static String showcaseUrl(Long showcaseId) {
+        return showcaseId == null ? null : "/api/classics/sancai/assets/showcases/" + showcaseId + "/content";
+    }
+
+    private static String showcaseDownloadUrl(Long showcaseId) {
+        return showcaseId == null
                 ? null
-                : "/api/classics/sancai/assets/showcases/" + storageObjectId + "/content?download=true";
+                : "/api/classics/sancai/assets/showcases/" + showcaseId + "/content?download=true";
     }
 
     private static String visualAssetContentUrl(
