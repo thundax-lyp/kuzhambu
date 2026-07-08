@@ -94,7 +94,7 @@ class KnowledgeTaxonomyReadApplicationServiceImplTest {
     @Test
     void querySynonymsShouldReturnReverseMatchesOnly() {
         SynonymRepository synonymRepository = mock(SynonymRepository.class);
-        when(synonymRepository.page(null, eq("礼制"), eq(SynonymStatus.ENABLED), eq(1), eq(10)))
+        when(synonymRepository.page(isNull(), eq("礼制"), eq(SynonymStatus.ENABLED), eq(1), eq(10)))
                 .thenReturn(PageResult.of(
                         1,
                         10,

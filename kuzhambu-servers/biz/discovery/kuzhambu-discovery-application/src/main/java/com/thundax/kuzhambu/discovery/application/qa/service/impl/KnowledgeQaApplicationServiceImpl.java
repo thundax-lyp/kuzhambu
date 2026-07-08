@@ -290,7 +290,9 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
     }
 
     private Map<String, Object> enrichedMetadata(
-            ChatCompletionCommand command, String question, DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult enhancement) {
+            ChatCompletionCommand command,
+            String question,
+            DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult enhancement) {
         Map<String, Object> metadata = new LinkedHashMap<>();
         if (command.getMetadata() != null) {
             metadata.putAll(command.getMetadata());
@@ -298,7 +300,9 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         if (StringUtils.isNotBlank(question)) {
             metadata.put("synonymQueryTerm", question);
         }
-        if (enhancement != null && enhancement.expandedSynonyms() != null && !enhancement.expandedSynonyms().isEmpty()) {
+        if (enhancement != null
+                && enhancement.expandedSynonyms() != null
+                && !enhancement.expandedSynonyms().isEmpty()) {
             metadata.put("expandedSynonyms", enhancement.expandedSynonyms());
         }
         if (StringUtils.isNotBlank(command.getRequestId())) {

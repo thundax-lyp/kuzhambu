@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.discovery.application.search.support;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -20,11 +21,9 @@ class DiscoveryKnowledgeEnhancementProviderTest {
     @Test
     void enhanceShouldQueryBidirectionalSynonyms() {
         KnowledgeFacade knowledgeFacade = mock(KnowledgeFacade.class);
-        when(knowledgeFacade.querySynonyms(KnowledgeSynonymQueryFacadeRequest.builder()
-                        .term("礼制")
-                        .direction("BIDIRECTIONAL")
-                        .limit(50)
-                        .build()))
+        when(knowledgeFacade.querySynonyms(argThat(request -> "礼制".equals(request.getTerm())
+                        && "BIDIRECTIONAL".equals(request.getDirection())
+                        && Integer.valueOf(50).equals(request.getLimit()))))
                 .thenReturn(KnowledgeSynonymQueryFacadeResponse.builder()
                         .term("礼制")
                         .normalizedTerm("礼制")
@@ -33,10 +32,14 @@ class DiscoveryKnowledgeEnhancementProviderTest {
                         .matches(List.of())
                         .expandedTerms(List.of("礼学", "典礼"))
                         .build());
-        when(knowledgeFacade.getTagHint(KnowledgeDiscoveryTermFacadeRequest.builder().term("礼制").build()))
+        when(knowledgeFacade.getTagHint(
+                        KnowledgeDiscoveryTermFacadeRequest.builder().term("礼制").build()))
                 .thenReturn(mock(KnowledgeTagHintFacadeResponse.class));
-        when(knowledgeFacade.listEntityHints(KnowledgeDiscoveryTermFacadeRequest.builder().term("礼制").build()))
-                .thenReturn(KnowledgeEntityHintsFacadeResponse.builder().entityHints(List.of()).build());
+        when(knowledgeFacade.listEntityHints(
+                        KnowledgeDiscoveryTermFacadeRequest.builder().term("礼制").build()))
+                .thenReturn(KnowledgeEntityHintsFacadeResponse.builder()
+                        .entityHints(List.of())
+                        .build());
 
         DiscoveryKnowledgeEnhancementProvider provider = new DiscoveryKnowledgeEnhancementProvider(knowledgeFacade);
         DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult enhancement = provider.enhance("礼制");
