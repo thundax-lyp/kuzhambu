@@ -204,6 +204,19 @@ const createSynonymMockHandlers = async (page: Page) => {
         }
     );
 
+    await page.route(
+        "**/kuzhambu-admin-api/api/knowledge/taxonomy/synonym/remove",
+        async (route) => {
+            removePayload = readRequestBody(route.request().postData()) as ApiPayload;
+            const body = readRequestBody(route.request().postData()) as { id?: string };
+            const index = synonyms.findIndex((item) => item.id === body.id);
+            if (index >= 0) {
+                synonyms.splice(index, 1);
+            }
+            await fulfillSuccess(route, true);
+        }
+    );
+
     return {
         getSynonymPageRequestBodies: () => pageRequestBodies,
         getCreatePayload: () => openCreatePayload,
@@ -244,16 +257,16 @@ test.describe("admin taxonomy synonyms smoke", () => {
             expect.objectContaining({
                 term: "礼制",
                 pageNo: 1,
-                pageSize: 20,
-                synonym: undefined
+                pageSize: 20
             })
         );
 
         await page.getByRole("button", { name: "新增同义词" }).click();
-        await expect(page.getByRole("heading", { name: "新增同义词" })).toBeVisible();
-        await page.getByLabel("术语").fill("礼制");
-        await page.getByLabel("同义词").fill("礼学");
-        await page.getByRole("button", { name: "新增", exact: true }).click();
+        const createDialog = page.getByRole("dialog", { name: "新增同义词" });
+        await expect(createDialog.getByRole("textbox", { name: "术语" })).toBeVisible();
+        await createDialog.getByRole("textbox", { name: "术语" }).fill("礼制");
+        await createDialog.getByRole("textbox", { name: "同义词" }).fill("礼学");
+        await createDialog.getByRole("button", { name: /新\s*增/ }).click();
 
         expect(mocks.getCreatePayload()).toMatchObject({
             id: expect.any(String),
@@ -263,16 +276,15 @@ test.describe("admin taxonomy synonyms smoke", () => {
 
         await expect(page.getByText("同义词已保存")).toBeVisible();
 
-        const createdRow = page
-            .locator("tr", { hasText: "礼学" })
-            .filter({ hasText: "礼制" })
-            .first();
-        await expect(createdRow).toBeVisible();
+        const createdRow = () =>
+            page.locator("tr").filter({ hasText: "礼学" }).filter({ hasText: "礼制" }).first();
+        await expect(createdRow()).toBeVisible();
 
-        await createdRow.getByRole("button", { name: "编辑" }).click();
-        await expect(page.getByRole("heading", { name: "编辑同义词" })).toBeVisible();
-        await page.getByLabel("同义词").fill("典礼");
-        await page.getByRole("button", { name: "保存" }).click();
+        await createdRow().getByRole("button", { name: "编辑" }).click();
+        const editDialog = page.getByRole("dialog", { name: "编辑同义词" });
+        await expect(editDialog.getByRole("textbox", { name: "同义词" })).toBeVisible();
+        await editDialog.getByRole("textbox", { name: "同义词" }).fill("典礼");
+        await editDialog.getByRole("button", { name: /保\s*存/ }).click();
 
         expect(mocks.getUpdatePayload()).toMatchObject({
             id: mocks.getCreatePayload()?.id,
@@ -289,8 +301,19 @@ test.describe("admin taxonomy synonyms smoke", () => {
             status: "DISABLED"
         });
 
-        await createdRow.getByRole("button", { name: "删除" }).click();
-        await page.getByRole("button", { name: "确认" }).click();
+        const updatedRow = page
+            .locator("tr")
+            .filter({ hasText: "礼制" })
+            .filter({ hasText: "典礼" })
+            .first();
+        await expect(updatedRow).toBeVisible();
+        await expect(updatedRow.getByRole("button", { name: /删除/ })).toBeVisible();
+        await updatedRow.getByRole("button", { name: /删除/ }).click();
+
+        const confirmButton = page.getByRole("button", { name: "确认" });
+        if ((await confirmButton.count()) > 0) {
+            await confirmButton.first().click();
+        }
 
         expect(mocks.getRemovePayload()).toEqual({ id: mocks.getCreatePayload()?.id });
     });

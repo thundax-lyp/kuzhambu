@@ -113,7 +113,7 @@ test.describe("portal discovery search smoke", () => {
         await expect(page.getByText("共 1 条命中")).toBeVisible();
         await expect(page.getByRole("heading", { name: "三才图会" })).toBeVisible();
         await expect(page.getByRole("heading", { name: "礼制条目" })).toBeVisible();
-        await expect(page.getByText("礼学", { exact: false })).toBeVisible();
+        await expect(page.locator("mark", { hasText: "礼学" }).first()).toBeVisible();
 
         await page.getByRole("link", { name: "礼制条目" }).click();
 
