@@ -33,6 +33,16 @@ import com.thundax.kuzhambu.operations.domain.cleanup.model.entity.CleanupJob;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.valueobject.CleanupItemId;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.valueobject.CleanupJobId;
 import com.thundax.kuzhambu.operations.domain.cleanup.repository.CleanupJobRepository;
+import com.thundax.kuzhambu.operations.domain.health.model.entity.HealthCheckRecord;
+import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthCheckId;
+import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthTrendBucket;
+import com.thundax.kuzhambu.operations.domain.health.repository.HealthCheckRepository;
+import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
+import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
+import com.thundax.kuzhambu.operations.domain.report.repository.ReportRepository;
+import com.thundax.kuzhambu.operations.domain.task.model.entity.LongTaskSnapshot;
+import com.thundax.kuzhambu.operations.domain.task.model.valueobject.LongTaskSnapshotId;
+import com.thundax.kuzhambu.operations.domain.task.repository.LongTaskSnapshotRepository;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -138,6 +148,84 @@ class CleanupApplicationServiceImplTest {
 
         assertEquals(90, classicsFacade.lastListRequest.getRetentionDays());
         assertEquals(5, classicsFacade.lastListRequest.getLimit());
+    }
+
+    @Test
+    void executeShouldCleanExpiredRuntimeTargetsAndPersistTargetTypes() {
+        InMemoryCleanupJobRepository repository = new InMemoryCleanupJobRepository();
+        InMemoryReportRepository reportRepository = new InMemoryReportRepository();
+        reportRepository.expiredReportIds = List.of(ReportId.of(301L));
+        reportRepository.records.put(301L, new ReportRecord());
+        CleanupApplicationServiceImpl service = new CleanupApplicationServiceImpl(
+                repository,
+                new InMemoryBackupRepository(),
+                reportRepository,
+                new InMemoryHealthCheckRepository(),
+                new InMemoryLongTaskSnapshotRepository(),
+                new FakeClassicsFacade(),
+                null);
+
+        OperationsCleanupDetailResult result =
+                service.execute(new OperationsCleanupExecuteCommand("EXPIRED_REPORT", 1001L));
+
+        assertEquals("SUCCEEDED", result.getCleanupStatus());
+        assertEquals(1, result.getSuccessCount());
+        CleanupItem item = repository.listItemsByJobId(result.getCleanupId()).get(0);
+        assertEquals("report", item.getTargetType());
+        assertEquals(301L, item.getTargetId());
+        assertEquals(false, reportRepository.records.containsKey(301L));
+    }
+
+    @Test
+    void executeShouldPersistFailureReasonForRuntimeTargetDeleteMiss() {
+        InMemoryCleanupJobRepository repository = new InMemoryCleanupJobRepository();
+        InMemoryLongTaskSnapshotRepository longTaskRepository = new InMemoryLongTaskSnapshotRepository();
+        longTaskRepository.expiredSnapshotIds = List.of(LongTaskSnapshotId.of(501L));
+        CleanupApplicationServiceImpl service = new CleanupApplicationServiceImpl(
+                repository,
+                new InMemoryBackupRepository(),
+                new InMemoryReportRepository(),
+                new InMemoryHealthCheckRepository(),
+                longTaskRepository,
+                new FakeClassicsFacade(),
+                null);
+
+        OperationsCleanupDetailResult result =
+                service.execute(new OperationsCleanupExecuteCommand("EXPIRED_LONG_TASK", 1001L));
+
+        assertEquals("FAILED", result.getCleanupStatus());
+        CleanupItem item = repository.listItemsByJobId(result.getCleanupId()).get(0);
+        assertEquals("long-task", item.getTargetType());
+        assertEquals("FAILED", item.getItemStatus());
+        assertEquals("TARGET_NOT_FOUND", item.getFailureReason());
+    }
+
+    @Test
+    void executeScheduledShouldApplyRetentionAndLimitToHealthCheckTargets() {
+        InMemoryCleanupJobRepository repository = new InMemoryCleanupJobRepository();
+        InMemoryHealthCheckRepository healthCheckRepository = new InMemoryHealthCheckRepository();
+        healthCheckRepository.expiredCheckIds = List.of(HealthCheckId.of(401L), HealthCheckId.of(402L));
+        healthCheckRepository.records.put(401L, new HealthCheckRecord());
+        healthCheckRepository.records.put(402L, new HealthCheckRecord());
+        CleanupApplicationServiceImpl service = new CleanupApplicationServiceImpl(
+                repository,
+                new InMemoryBackupRepository(),
+                new InMemoryReportRepository(),
+                healthCheckRepository,
+                new InMemoryLongTaskSnapshotRepository(),
+                new FakeClassicsFacade(),
+                null);
+
+        OperationsCleanupDetailResult result = service.executeScheduled(
+                new OperationsCleanupExecuteCommand("EXPIRED_HEALTH_CHECK", null, new Date(1_719_630_400_000L), 30, 1));
+
+        assertEquals("SUCCEEDED", result.getCleanupStatus());
+        assertEquals(1, result.getTotalCount());
+        assertEquals(1, healthCheckRepository.lastLimit);
+        assertEquals(new Date(1_717_038_400_000L), healthCheckRepository.lastCheckedBefore);
+        assertEquals(
+                "health-check",
+                repository.listItemsByJobId(result.getCleanupId()).get(0).getTargetType());
     }
 
     @Test
@@ -357,6 +445,149 @@ class CleanupApplicationServiceImplTest {
                     .supported(true)
                     .itemResults(new ArrayList<>(executionResults))
                     .build();
+        }
+    }
+
+    private static final class InMemoryReportRepository implements ReportRepository {
+        private final Map<Long, ReportRecord> records = new LinkedHashMap<>();
+        private List<ReportId> expiredReportIds = List.of();
+
+        @Override
+        public ReportRecord getById(ReportId id) {
+            return id == null ? null : records.get(id.value());
+        }
+
+        @Override
+        public PageResult<ReportRecord> page(
+                String reportType,
+                String format,
+                String reportStatus,
+                Long requesterUserId,
+                Date periodStart,
+                Date periodEnd,
+                int pageNo,
+                int pageSize) {
+            return PageResult.of(pageNo, pageSize, records.size(), List.copyOf(records.values()));
+        }
+
+        @Override
+        public ReportId insert(ReportRecord record) {
+            ReportId id = ReportId.of((long) records.size() + 1L);
+            records.put(id.value(), record);
+            return id;
+        }
+
+        @Override
+        public int update(ReportRecord record) {
+            return 0;
+        }
+
+        @Override
+        public int deleteById(ReportId id) {
+            return id != null && records.remove(id.value()) != null ? 1 : 0;
+        }
+
+        @Override
+        public List<ReportId> listExpiredReportIds(Date requestedBefore, int limit) {
+            return expiredReportIds.stream().limit(limit).toList();
+        }
+    }
+
+    private static final class InMemoryHealthCheckRepository implements HealthCheckRepository {
+        private final Map<Long, HealthCheckRecord> records = new LinkedHashMap<>();
+        private List<HealthCheckId> expiredCheckIds = List.of();
+        private Date lastCheckedBefore;
+        private int lastLimit;
+
+        @Override
+        public HealthCheckRecord getById(HealthCheckId id) {
+            return id == null ? null : records.get(id.value());
+        }
+
+        @Override
+        public List<HealthCheckRecord> listLatestByComponent() {
+            return List.copyOf(records.values());
+        }
+
+        @Override
+        public PageResult<HealthCheckRecord> page(
+                String component,
+                String healthStatus,
+                String probeSource,
+                String probeTarget,
+                Date checkedAtStart,
+                Date checkedAtEnd,
+                int pageNo,
+                int pageSize) {
+            return PageResult.of(pageNo, pageSize, records.size(), List.copyOf(records.values()));
+        }
+
+        @Override
+        public List<HealthTrendBucket> listTrend(
+                String component, String probeSource, Date periodStart, Date periodEnd, String bucketType) {
+            return List.of();
+        }
+
+        @Override
+        public HealthCheckId insert(HealthCheckRecord record) {
+            HealthCheckId id = HealthCheckId.of((long) records.size() + 1L);
+            records.put(id.value(), record);
+            return id;
+        }
+
+        @Override
+        public int update(HealthCheckRecord record) {
+            return 0;
+        }
+
+        @Override
+        public int deleteById(HealthCheckId id) {
+            return id != null && records.remove(id.value()) != null ? 1 : 0;
+        }
+
+        @Override
+        public List<HealthCheckId> listExpiredCheckIds(Date checkedBefore, int limit) {
+            lastCheckedBefore = checkedBefore;
+            lastLimit = limit;
+            return expiredCheckIds.stream().limit(limit).toList();
+        }
+    }
+
+    private static final class InMemoryLongTaskSnapshotRepository implements LongTaskSnapshotRepository {
+        private final Map<Long, LongTaskSnapshot> records = new LinkedHashMap<>();
+        private List<LongTaskSnapshotId> expiredSnapshotIds = List.of();
+
+        @Override
+        public LongTaskSnapshot getById(LongTaskSnapshotId id) {
+            return id == null ? null : records.get(id.value());
+        }
+
+        @Override
+        public PageResult<LongTaskSnapshot> page(
+                String sourceDomain, String taskType, String taskStatus, int pageNo, int pageSize) {
+            return PageResult.of(pageNo, pageSize, records.size(), List.copyOf(records.values()));
+        }
+
+        @Override
+        public LongTaskSnapshotId insert(LongTaskSnapshot snapshot) {
+            LongTaskSnapshotId id = LongTaskSnapshotId.of((long) records.size() + 1L);
+            records.put(id.value(), snapshot);
+            return id;
+        }
+
+        @Override
+        public int update(LongTaskSnapshot snapshot) {
+            return 0;
+        }
+
+        @Override
+        public int deleteById(LongTaskSnapshotId id) {
+            return id != null && records.remove(id.value()) != null ? 1 : 0;
+        }
+
+        @Override
+        public List<LongTaskSnapshotId> listExpiredSnapshotIds(Date snapshotBefore, int limit) {
+            return expiredSnapshotIds.stream().limit(limit).toList();
         }
     }
 }

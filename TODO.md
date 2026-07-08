@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Operations cleanup application`：补 cleanup 运行态执行闭环
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-CLEANUP-TARGET-TYPES.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/cleanup/service/impl/CleanupApplicationServiceImpl.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/cleanup/service/impl/CleanupApplicationServiceImplTest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/cleanup/support/OperationsCleanupSchedulePropertiesTest.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/cleanup/support/OperationsCleanupSchedulerTest.java`
-    - 处理动作：在 cleanup application 中发现并删除三类运行态目标并补对应测试。
-    - 验收点：运行态目标成功删除会写入对应 item target type，删除未命中会写入 `TARGET_NOT_FOUND`，调度器按 7 类顺序执行且单 policy 失败不阻断后续 policy。
-    - 重要度：10/10
-
 - [ ] `Operations cleanup infra tests`：补运行态目标查询测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-CLEANUP-TARGET-TYPES.md`
