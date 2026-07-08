@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.operations.interfaces.admin.dashboard.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -105,6 +106,67 @@ class OperationsDashboardAdminControllerTest {
                         && "CUSTOM".equals(query.getPeriodType())
                         && periodStart.equals(query.getPeriodStart())
                         && periodEnd.equals(query.getPeriodEnd())));
+    }
+
+    @Test
+    void overviewShouldKeepNullCollectionsFromApplicationResult() {
+        OperationsDashboardApplicationService service = mock(OperationsDashboardApplicationService.class);
+        OperationsDashboardAdminController controller = new OperationsDashboardAdminController(service);
+        Date periodStart = new Date(1_719_630_400_000L);
+        Date periodEnd = new Date(1_719_716_800_000L);
+        when(service.overview(argThat(query -> query != null && "WEEK".equals(query.getPeriodType()))))
+                .thenReturn(new OperationsDashboardOverviewResult(
+                        periodStart,
+                        periodEnd,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        "CRITICAL",
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null));
+
+        OperationsDashboardOverviewRequest request = new OperationsDashboardOverviewRequest();
+        request.setPeriodType("WEEK");
+        var response = controller.overview(request);
+
+        assertEquals(periodStart, response.getPeriodStart());
+        assertEquals(periodEnd, response.getPeriodEnd());
+        assertEquals("CRITICAL", response.getHighestAlertLevel());
+        assertNull(response.getLatestAlert());
+        assertNull(response.getContentGrowthSeries());
+        assertNull(response.getSearchTrendSeries());
+        assertNull(response.getHealthSummaries());
+        assertNull(response.getTaskStatusSummaries());
+        assertNull(response.getTopContents());
+        assertNull(response.getTopQueries());
+        assertNull(response.getTopTags());
+        assertNull(response.getTopAiCapabilities());
     }
 
     private void assertRequestMapping(Class<?> type, String expectedPath) {

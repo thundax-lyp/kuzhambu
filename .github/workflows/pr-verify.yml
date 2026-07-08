@@ -250,7 +250,7 @@ jobs:
             - name: Verify affected backend formatting
               if: needs.detect-changes.outputs.backend_full_changed != 'true'
               working-directory: kuzhambu-servers
-              run: mvn -q -pl "$BACKEND_PROJECTS" -am -amd spotless:check
+              run: mvn -q -pl "$BACKEND_PROJECTS" -am spotless:check
               env:
                   BACKEND_PROJECTS: ${{ needs.detect-changes.outputs.backend_projects }}
 
@@ -262,7 +262,7 @@ jobs:
             - name: Verify affected backend style
               if: needs.detect-changes.outputs.backend_full_changed != 'true'
               working-directory: kuzhambu-servers
-              run: mvn -q -pl "$BACKEND_PROJECTS" -am -amd checkstyle:check
+              run: mvn -q -pl "$BACKEND_PROJECTS" -am checkstyle:check
               env:
                   BACKEND_PROJECTS: ${{ needs.detect-changes.outputs.backend_projects }}
 
@@ -274,9 +274,7 @@ jobs:
             - name: Verify affected backend tests
               if: needs.detect-changes.outputs.backend_full_changed != 'true'
               working-directory: kuzhambu-servers
-              run: mvn -q -pl "$BACKEND_PROJECTS" -am -amd test
-              env:
-                  BACKEND_PROJECTS: ${{ needs.detect-changes.outputs.backend_projects }}
+              run: mvn -q test
 
     verify-apps:
         name: Verify Frontend

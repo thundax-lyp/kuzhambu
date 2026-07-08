@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.ai.facade.response.AiReportSummaryFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsSummaryFacadeResponse;
 import com.thundax.kuzhambu.discovery.facade.response.DiscoverySummaryFacadeResponse;
 import com.thundax.kuzhambu.knowledge.facade.response.KnowledgeSummaryFacadeResponse;
+import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardPermissionSnapshot;
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryGateway;
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryModels.OperationsCrossDomainSummary;
 import com.thundax.kuzhambu.operations.application.report.support.OperationsReportSupportModels.OperationsReportSection;
@@ -27,6 +28,7 @@ class DefaultOperationsReportMetricsGatewayTest {
     @Test
     void loadSectionsShouldWrapSharedSummaryAndResolveWeekBucketForMonthlyReport() {
         OperationsDashboardSummaryGateway summaryGateway = mock(OperationsDashboardSummaryGateway.class);
+        OperationsDashboardPermissionSnapshot permissions = permissionSnapshotWithAllPrivileges();
         ClassicsSummaryFacadeResponse classicsSummary =
                 ClassicsSummaryFacadeResponse.builder().contentCount(12L).build();
         DiscoverySummaryFacadeResponse discoverySummary =
@@ -44,7 +46,7 @@ class DefaultOperationsReportMetricsGatewayTest {
                 .totalCostAmount(new BigDecimal("8.88"))
                 .build();
         when(summaryGateway.loadSummary(
-                        monthlyRecord().getPeriodStart(), monthlyRecord().getPeriodEnd(), "WEEK"))
+                        monthlyRecord().getPeriodStart(), monthlyRecord().getPeriodEnd(), "WEEK", permissions))
                 .thenReturn(new OperationsCrossDomainSummary(
                         classicsSummary, aiSummary, discoverySummary, knowledgeSummary));
         DefaultOperationsReportMetricsGateway gateway = new DefaultOperationsReportMetricsGateway(summaryGateway);
@@ -61,14 +63,15 @@ class DefaultOperationsReportMetricsGatewayTest {
         assertEquals("knowledgeSummary", sections.get(3).getSectionKey());
         assertSame(knowledgeSummary, sections.get(3).getPayload().get("summary"));
         verify(summaryGateway)
-                .loadSummary(monthlyRecord().getPeriodStart(), monthlyRecord().getPeriodEnd(), "WEEK");
+                .loadSummary(monthlyRecord().getPeriodStart(), monthlyRecord().getPeriodEnd(), "WEEK", permissions);
     }
 
     @Test
     void loadSectionsShouldResolveDayBucketForNonMonthlyReport() {
         OperationsDashboardSummaryGateway summaryGateway = mock(OperationsDashboardSummaryGateway.class);
+        OperationsDashboardPermissionSnapshot permissions = permissionSnapshotWithAllPrivileges();
         when(summaryGateway.loadSummary(
-                        weeklyRecord().getPeriodStart(), weeklyRecord().getPeriodEnd(), "DAY"))
+                        weeklyRecord().getPeriodStart(), weeklyRecord().getPeriodEnd(), "DAY", permissions))
                 .thenReturn(new OperationsCrossDomainSummary(
                         ClassicsSummaryFacadeResponse.builder().build(),
                         AiReportSummaryFacadeResponse.builder().build(),
@@ -79,7 +82,11 @@ class DefaultOperationsReportMetricsGatewayTest {
         gateway.loadSections(weeklyRecord());
 
         verify(summaryGateway)
-                .loadSummary(weeklyRecord().getPeriodStart(), weeklyRecord().getPeriodEnd(), "DAY");
+                .loadSummary(weeklyRecord().getPeriodStart(), weeklyRecord().getPeriodEnd(), "DAY", permissions);
+    }
+
+    private static OperationsDashboardPermissionSnapshot permissionSnapshotWithAllPrivileges() {
+        return new OperationsDashboardPermissionSnapshot(true, true, true, true, true, true, true, true);
     }
 
     private static ReportRecord monthlyRecord() {

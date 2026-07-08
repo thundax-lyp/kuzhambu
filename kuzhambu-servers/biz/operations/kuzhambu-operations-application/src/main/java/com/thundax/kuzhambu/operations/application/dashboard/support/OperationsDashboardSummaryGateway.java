@@ -5,5 +5,6 @@ import java.util.Date;
 
 public interface OperationsDashboardSummaryGateway {
 
-    OperationsCrossDomainSummary loadSummary(Date periodStart, Date periodEnd, String bucketType);
+    OperationsCrossDomainSummary loadSummary(
+            Date periodStart, Date periodEnd, String bucketType, OperationsDashboardPermissionSnapshot permissions);
 }

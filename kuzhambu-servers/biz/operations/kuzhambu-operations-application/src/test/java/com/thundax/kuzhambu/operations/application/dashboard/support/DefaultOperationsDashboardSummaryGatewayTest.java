@@ -5,7 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.ai.facade.AiFacade;
@@ -30,7 +32,7 @@ import org.mockito.ArgumentCaptor;
 class DefaultOperationsDashboardSummaryGatewayTest {
 
     @Test
-    void loadSummaryShouldCallAllDomainFacadesOnce() {
+    void loadSummaryShouldCallEnabledFacadesOnce() {
         ClassicsFacade classicsFacade = mock(ClassicsFacade.class);
         AiFacade aiFacade = mock(AiFacade.class);
         DiscoveryFacade discoveryFacade = mock(DiscoveryFacade.class);
@@ -51,8 +53,10 @@ class DefaultOperationsDashboardSummaryGatewayTest {
                 classicsFacade, aiFacade, discoveryFacade, knowledgeFacade);
         Date periodStart = Date.from(Instant.parse("2026-06-01T00:00:00Z"));
         Date periodEnd = Date.from(Instant.parse("2026-06-30T23:59:59Z"));
+        OperationsDashboardPermissionSnapshot permissions =
+                new OperationsDashboardPermissionSnapshot(true, true, true, true, true, true, true, true);
 
-        OperationsCrossDomainSummary result = gateway.loadSummary(periodStart, periodEnd, "WEEK");
+        OperationsCrossDomainSummary result = gateway.loadSummary(periodStart, periodEnd, "WEEK", permissions);
 
         assertSame(classicsSummary, result.classicsSummary());
         assertSame(aiSummary, result.aiSummary());
@@ -85,13 +89,98 @@ class DefaultOperationsDashboardSummaryGatewayTest {
     }
 
     @Test
-    void loadSummaryShouldRejectMissingDomainSummary() {
+    void loadSummaryShouldSkipDisabledDomainFacades() {
+        ClassicsFacade classicsFacade = mock(ClassicsFacade.class);
+        AiFacade aiFacade = mock(AiFacade.class);
+        DiscoveryFacade discoveryFacade = mock(DiscoveryFacade.class);
+        KnowledgeFacade knowledgeFacade = mock(KnowledgeFacade.class);
+        DefaultOperationsDashboardSummaryGateway gateway = new DefaultOperationsDashboardSummaryGateway(
+                classicsFacade, aiFacade, discoveryFacade, knowledgeFacade);
+        OperationsDashboardPermissionSnapshot permissions =
+                new OperationsDashboardPermissionSnapshot(false, false, false, false, false, false, false, false);
+
+        OperationsCrossDomainSummary result = gateway.loadSummary(
+                Date.from(Instant.parse("2026-06-01T00:00:00Z")),
+                Date.from(Instant.parse("2026-06-30T23:59:59Z")),
+                "DAY",
+                permissions);
+
+        assertSame(null, result.classicsSummary());
+        assertSame(null, result.aiSummary());
+        assertSame(null, result.discoverySummary());
+        assertSame(null, result.knowledgeSummary());
+        verifyNoInteractions(classicsFacade, aiFacade, discoveryFacade, knowledgeFacade);
+    }
+
+    @Test
+    void loadSummaryShouldOnlyCallDiscoveryFacadeForDiscoveryPermission() {
+        ClassicsFacade classicsFacade = mock(ClassicsFacade.class);
+        AiFacade aiFacade = mock(AiFacade.class);
+        DiscoveryFacade discoveryFacade = mock(DiscoveryFacade.class);
+        KnowledgeFacade knowledgeFacade = mock(KnowledgeFacade.class);
+        when(discoveryFacade.summary(any()))
+                .thenReturn(
+                        DiscoverySummaryFacadeResponse.builder().searchCount(6L).build());
+        DefaultOperationsDashboardSummaryGateway gateway = new DefaultOperationsDashboardSummaryGateway(
+                classicsFacade, aiFacade, discoveryFacade, knowledgeFacade);
+        OperationsDashboardPermissionSnapshot permissions =
+                new OperationsDashboardPermissionSnapshot(false, false, true, false, false, false, false, false);
+
+        OperationsCrossDomainSummary result = gateway.loadSummary(
+                Date.from(Instant.parse("2026-06-01T00:00:00Z")),
+                Date.from(Instant.parse("2026-06-30T23:59:59Z")),
+                "DAY",
+                permissions);
+
+        assertSame(6L, result.discoverySummary().getSearchCount());
+        assertSame(null, result.classicsSummary());
+        assertSame(null, result.aiSummary());
+        assertSame(null, result.knowledgeSummary());
+        verify(discoveryFacade).summary(any());
+        verify(classicsFacade, never()).summary(any());
+        verify(aiFacade, never()).summary(any());
+        verify(knowledgeFacade, never()).summary(any());
+    }
+
+    @Test
+    void loadSummaryShouldSkipCrossDomainFacadesWhenNoChartPermission() {
+        ClassicsFacade classicsFacade = mock(ClassicsFacade.class);
+        AiFacade aiFacade = mock(AiFacade.class);
+        DiscoveryFacade discoveryFacade = mock(DiscoveryFacade.class);
+        KnowledgeFacade knowledgeFacade = mock(KnowledgeFacade.class);
+        DefaultOperationsDashboardSummaryGateway gateway = new DefaultOperationsDashboardSummaryGateway(
+                classicsFacade, aiFacade, discoveryFacade, knowledgeFacade);
+        OperationsDashboardPermissionSnapshot permissions =
+                new OperationsDashboardPermissionSnapshot(false, false, false, false, false, false, false, true);
+
+        OperationsCrossDomainSummary result = gateway.loadSummary(
+                Date.from(Instant.parse("2026-06-01T00:00:00Z")),
+                Date.from(Instant.parse("2026-06-30T23:59:59Z")),
+                "DAY",
+                permissions);
+
+        assertSame(null, result.classicsSummary());
+        assertSame(null, result.aiSummary());
+        assertSame(null, result.discoverySummary());
+        assertSame(null, result.knowledgeSummary());
+        verifyNoInteractions(classicsFacade, aiFacade, discoveryFacade, knowledgeFacade);
+    }
+
+    @Test
+    void loadSummaryShouldRejectMissingEnabledDomainSummary() {
         ClassicsFacade classicsFacade = mock(ClassicsFacade.class);
         when(classicsFacade.summary(any())).thenReturn(null);
-
+        OperationsDashboardPermissionSnapshot permissions =
+                new OperationsDashboardPermissionSnapshot(true, false, false, false, false, false, false, false);
         DefaultOperationsDashboardSummaryGateway gateway = new DefaultOperationsDashboardSummaryGateway(
                 classicsFacade, mock(AiFacade.class), mock(DiscoveryFacade.class), mock(KnowledgeFacade.class));
 
-        assertThrows(NullPointerException.class, () -> gateway.loadSummary(null, null, "DAY"));
+        assertThrows(
+                NullPointerException.class,
+                () -> gateway.loadSummary(
+                        Date.from(Instant.parse("2026-06-01T00:00:00Z")),
+                        Date.from(Instant.parse("2026-06-30T23:59:59Z")),
+                        "DAY",
+                        permissions));
     }
 }

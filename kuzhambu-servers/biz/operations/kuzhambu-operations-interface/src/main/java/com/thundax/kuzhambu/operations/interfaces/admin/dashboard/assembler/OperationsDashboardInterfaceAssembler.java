@@ -1,7 +1,5 @@
 package com.thundax.kuzhambu.operations.interfaces.admin.dashboard.assembler;
 
-import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
-import com.thundax.kuzhambu.common.security.permission.PrefixPermissionMatcher;
 import com.thundax.kuzhambu.operations.application.dashboard.query.OperationsDashboardOverviewQuery;
 import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult;
 import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult.AlertSummaryResult;
@@ -24,9 +22,6 @@ import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.respon
 import java.util.List;
 
 public final class OperationsDashboardInterfaceAssembler {
-
-    private static final String HEALTH_VIEW_PERMISSION = "operations:health:view";
-    private static final PrefixPermissionMatcher PERMISSION_MATCHER = new PrefixPermissionMatcher();
 
     private OperationsDashboardInterfaceAssembler() {}
 
@@ -66,44 +61,44 @@ public final class OperationsDashboardInterfaceAssembler {
                 .criticalAlertCount(result.getCriticalAlertCount())
                 .warningAlertCount(result.getWarningAlertCount())
                 .highestAlertLevel(result.getHighestAlertLevel())
-                .latestAlert(canViewHealthAlerts() ? toResponse(result.getLatestAlert()) : null)
+                .latestAlert(toResponse(result.getLatestAlert()))
                 .contentGrowthSeries(toBucketResponses(result.getContentGrowthSeries()))
                 .searchTrendSeries(toBucketResponses(result.getSearchTrendSeries()))
                 .qaTrendSeries(toBucketResponses(result.getQaTrendSeries()))
                 .tagGrowthSeries(toBucketResponses(result.getTagGrowthSeries()))
                 .healthSummaries(
                         result.getHealthSummaries() == null
-                                ? List.of()
+                                ? null
                                 : result.getHealthSummaries().stream()
                                         .map(OperationsHealthInterfaceAssembler::toResponse)
                                         .toList())
                 .taskStatusSummaries(
                         result.getTaskStatusSummaries() == null
-                                ? List.of()
+                                ? null
                                 : result.getTaskStatusSummaries().stream()
                                         .map(OperationsDashboardInterfaceAssembler::toResponse)
                                         .toList())
                 .topContents(
                         result.getTopContents() == null
-                                ? List.of()
+                                ? null
                                 : result.getTopContents().stream()
                                         .map(OperationsDashboardInterfaceAssembler::toResponse)
                                         .toList())
                 .topQueries(
                         result.getTopQueries() == null
-                                ? List.of()
+                                ? null
                                 : result.getTopQueries().stream()
                                         .map(OperationsDashboardInterfaceAssembler::toResponse)
                                         .toList())
                 .topTags(
                         result.getTopTags() == null
-                                ? List.of()
+                                ? null
                                 : result.getTopTags().stream()
                                         .map(OperationsDashboardInterfaceAssembler::toResponse)
                                         .toList())
                 .topAiCapabilities(
                         result.getTopAiCapabilities() == null
-                                ? List.of()
+                                ? null
                                 : result.getTopAiCapabilities().stream()
                                         .map(OperationsDashboardInterfaceAssembler::toResponse)
                                         .toList())
@@ -112,7 +107,7 @@ public final class OperationsDashboardInterfaceAssembler {
 
     private static List<BucketCountResponse> toBucketResponses(List<BucketCountResult> results) {
         if (results == null) {
-            return List.of();
+            return null;
         }
         return results.stream()
                 .map(OperationsDashboardInterfaceAssembler::toResponse)
@@ -138,12 +133,6 @@ public final class OperationsDashboardInterfaceAssembler {
                 .lastTriggeredAt(result.getLastTriggeredAt())
                 .failureReason(result.getFailureReason())
                 .build();
-    }
-
-    private static boolean canViewHealthAlerts() {
-        return KuzhambuContextHolder.currentAuthorities().stream()
-                .anyMatch(permission ->
-                        "super".equals(permission) || PERMISSION_MATCHER.matches(permission, HEALTH_VIEW_PERMISSION));
     }
 
     private static BucketCountResponse toResponse(BucketCountResult result) {

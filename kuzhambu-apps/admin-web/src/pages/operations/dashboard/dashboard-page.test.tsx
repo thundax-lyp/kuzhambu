@@ -200,6 +200,7 @@ describe("OperationsDashboardPage", () => {
         renderPage();
 
         expect(screen.getByText("暂无可访问的运维入口")).toBeInTheDocument();
+        expect(screen.getByText("当前账号暂无可查看的看板图表")).toBeInTheDocument();
     }, 30000);
 
     it("navigates to system logs page when system log entry is clicked", async () => {
@@ -237,8 +238,13 @@ describe("OperationsDashboardPage", () => {
     it("renders dashboard controls and data", async () => {
         replacePermissions([
             "operations:dashboard:view",
+            "classics:content:view",
+            "classics:sharing:view",
+            "discovery:search:view",
             "operations:health:view",
-            "operations:task:view"
+            "operations:task:view",
+            "ai:invocation:view",
+            "knowledge:taxonomy:view"
         ]);
 
         renderPage();
@@ -271,6 +277,7 @@ describe("OperationsDashboardPage", () => {
     }, 30000);
 
     it("requests overview again when period control changes", async () => {
+        replacePermissions(["operations:dashboard:view", "classics:content:view"]);
         renderPage();
 
         await screen.findByText("热门内容");
@@ -282,6 +289,11 @@ describe("OperationsDashboardPage", () => {
     }, 30000);
 
     it("refreshes overview and health trend when refresh button is clicked", async () => {
+        replacePermissions([
+            "operations:dashboard:view",
+            "classics:content:view",
+            "operations:health:view"
+        ]);
         renderPage();
 
         await screen.findByText("热门内容");
@@ -293,7 +305,22 @@ describe("OperationsDashboardPage", () => {
         });
     }, 30000);
 
+    it("only refreshes overview when refresh button is clicked without health permission", async () => {
+        replacePermissions(["operations:dashboard:view", "classics:content:view"]);
+        renderPage();
+
+        await screen.findByText("热门内容");
+        fireEvent.click(screen.getByRole("button", { name: /刷新/ }));
+
+        await waitFor(() => {
+            expect(service.getDashboardOverview).toHaveBeenCalledTimes(2);
+            expect(service.getHealthTrend).not.toHaveBeenCalled();
+            expect(service.getHealthAlerts).not.toHaveBeenCalled();
+        });
+    }, 30000);
+
     it("opens health detail drawer from health list item", async () => {
+        replacePermissions(["operations:dashboard:view", "operations:health:view"]);
         renderPage();
 
         fireEvent.click(await screen.findByText("admin-server"));
@@ -308,6 +335,7 @@ describe("OperationsDashboardPage", () => {
     }, 30000);
 
     it("renders empty related alerts for health detail without component alerts", async () => {
+        replacePermissions(["operations:dashboard:view", "operations:health:view"]);
         vi.mocked(service.getDashboardOverview).mockResolvedValue({
             healthSummaries: [
                 {
@@ -331,6 +359,7 @@ describe("OperationsDashboardPage", () => {
     }, 30000);
 
     it("opens health alert drawer and hides management buttons without manage permission", async () => {
+        replacePermissions(["operations:dashboard:view", "operations:health:view"]);
         renderPage();
 
         fireEvent.click(await screen.findByRole("button", { name: "查看告警" }));
@@ -370,6 +399,15 @@ describe("OperationsDashboardPage", () => {
     }, 30000);
 
     it("renders real empty states when overview arrays are empty", async () => {
+        replacePermissions([
+            "operations:dashboard:view",
+            "classics:content:view",
+            "classics:sharing:view",
+            "discovery:search:view",
+            "knowledge:taxonomy:view",
+            "ai:invocation:view",
+            "operations:health:view"
+        ]);
         vi.mocked(service.getDashboardOverview).mockResolvedValue({
             contentGrowthSeries: [],
             searchTrendSeries: [],
@@ -404,6 +442,74 @@ describe("OperationsDashboardPage", () => {
             expect(service.getHealthTrend).not.toHaveBeenCalled();
         });
     }, 30000);
+
+    it("does not request health trend or alert data without operations:health:view", async () => {
+        replacePermissions(["operations:dashboard:view"]);
+
+        renderPage();
+
+        expect(await screen.findByText("当前账号暂无可查看的看板图表")).toBeInTheDocument();
+        expect(screen.queryByRole("button", { name: "查看告警" })).not.toBeInTheDocument();
+        await waitFor(() => {
+            expect(service.getDashboardOverview).toHaveBeenCalledWith({ periodType: "WEEK" });
+            expect(service.getHealthTrend).not.toHaveBeenCalled();
+            expect(service.getHealthAlerts).not.toHaveBeenCalled();
+        });
+    });
+
+    it("only shows search metric card and trend for discovery:search view", async () => {
+        replacePermissions(["operations:dashboard:view", "discovery:search:view"]);
+
+        renderPage();
+
+        expect(await screen.findByText("搜索")).toBeInTheDocument();
+        expect(screen.getByText("搜索趋势")).toBeInTheDocument();
+        expect(screen.getByText("热门搜索")).toBeInTheDocument();
+        expect(screen.queryByText("问答")).not.toBeInTheDocument();
+        expect(screen.queryByText("问答趋势")).not.toBeInTheDocument();
+    }, 30000);
+
+    it("only shows qa metric card and trend for discovery:qa view", async () => {
+        replacePermissions(["operations:dashboard:view", "discovery:qa:view"]);
+
+        renderPage();
+
+        expect(await screen.findByText("问答")).toBeInTheDocument();
+        expect(screen.getByText("问答趋势")).toBeInTheDocument();
+        expect(screen.queryByText("搜索 / 问答")).not.toBeInTheDocument();
+        expect(screen.queryByText("搜索趋势")).not.toBeInTheDocument();
+        expect(screen.queryByText("热门搜索")).not.toBeInTheDocument();
+    }, 30000);
+
+    it("only shows knowledge trend and ranking for knowledge:taxonomy view", async () => {
+        replacePermissions(["operations:dashboard:view", "knowledge:taxonomy:view"]);
+
+        renderPage();
+
+        expect(await screen.findByText("标签覆盖")).toBeInTheDocument();
+        expect(screen.getByText("标签增长趋势")).toBeInTheDocument();
+        expect(screen.queryByText("内容总量")).not.toBeInTheDocument();
+        expect(screen.queryByText("AI 调用成功率")).not.toBeInTheDocument();
+        expect(screen.queryByText("搜索 / 问答")).not.toBeInTheDocument();
+    }, 30000);
+
+    it("renders empty chart section only with non-graph content sharing permission", async () => {
+        replacePermissions(["operations:dashboard:view", "classics:sharing:view"]);
+
+        renderPage();
+
+        expect(await screen.findByText("当前账号暂无可查看的看板图表")).toBeInTheDocument();
+        expect(screen.getByText("暂无可访问的运维入口")).toBeInTheDocument();
+    }, 30000);
+
+    it("shows backup entry when only restore permission is granted", () => {
+        replacePermissions(["operations:dashboard:view", "operations:restore:view"]);
+
+        renderPage();
+
+        expect(screen.getByText("备份恢复")).toBeInTheDocument();
+        expect(screen.queryByText("任务台账")).not.toBeInTheDocument();
+    });
 });
 
 const renderPage = () => {
