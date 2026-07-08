@@ -37,7 +37,7 @@
 - 王圻文档 Admin Web 管理闭环已完成：后台菜单和 `/classics/wangqi` 路由可进入真实页面，支持文档分页、关键词和可见性筛选、时间线视图、详情阅读、新增、编辑、删除、原始文件上传和读取、版本历史、版本字段对比和历史恢复。
 - 王圻文档初始化数据、后端接口契约、前端服务契约、页面单测、Playwright 页面闭环和 dev.env Admin API 冒烟均已通过；删除 Wangqi 文档会删除版本历史、解绑 Storage owner，并将当前原始文件对象回落为未引用状态。
 - Storage 文件读取和预览最小闭环已接入 Classics：Admin Storage/Wangqi/Sancai 使用鉴权资源 URL，Wangqi 原始文件和 Sancai 图片通过业务域接口读取，Portal 分享详情动态装配资源对象，分享资源读取会校验分享链接和快照内资源 ID。
-- Classics 通用内容标签闭环已接通后端运行时：手工标签新增/更新/删除会先解析或创建 Knowledge 统一标签，再同步 Knowledge 内容引用；AI 标签确认会先清理旧 AI 引用，再经 Knowledge 协作语义回写统一标签和引用投影；标签排序已收敛为 `contentType + contentId` 作用域。
+- Classics 通用内容标签闭环已接通后端运行时：手工标签新增/更新/删除会先解析或创建 Knowledge 统一标签，再同步 Knowledge 内容引用；AI 标签确认会先清理旧 AI 引用，再经 Knowledge 协作语义回写统一标签和引用投影；标签排序已收敛为 `contentType + contentId` 作用域；通用标签接口已补齐 `contentType/contentId/tagNameSnapshot/id/orderedIds` 入参治理和 `tags/delete` 删除路由。
 - Classics 标签闭环核心路径已补齐后端测试，覆盖手工标签绑定、AI 标签确认同步、删除标签同步和按内容排序请求映射。
 - 三类内容页面已接入 AI 候选确认面板：当前支持按内容读取 `PENDING` 候选、前端编辑 payload、应用候选、拒绝候选，并在应用后刷新摘要/标签/问答对或主内容详情；后端已接通 `summary / translate / tags / qa` 候选应用到正式内容、版本追加和 AI 候选状态回写。
 - 三类内容页面已接入需求文档要求的“内容上下文内联 AI 精修”中的任务型入口，但当前能力并不对称：Sancai 页面可创建 `translate` 与 `summary` 任务，Wangqi 与 Ming Customs 页面只接入 `summary` 任务；三页都已接入任务轮询，并在 `SUCCEEDED/PARTIAL` 后刷新详情或治理面板。
@@ -78,8 +78,8 @@
 | 门类治理 CRUD | 已完成 | 门类列表、详情、保存和删除接口已实现；Admin Web 已支持新增、编辑和删除空门类；新增门类不输入 `priority`，由后端追加到末尾；删除有关联卷的门类由后端业务规则拦截 | 无 | Classics, Admin Web |
 | 门类和卷稳定排序 | 已完成 | `priority` 规则、schema 约束、service 排序参数与稳定排序 API 已支持；Admin Web 已提供门类独立排序表单，保存时提交 orderedIds | 无 | Classics, Admin Web |
 | 条目查看、创建、编辑、删除 | 已完成 | 条目查询、详情、保存、删除接口与运行时代码已到位；Admin Web 已完成列表进入详情、编辑保存和列表刷新闭环；三类内容删除后会同步关联分享目标为 `CONTENT_DELETED`，并按剩余可用目标重算分享风险态 | 无 | Classics, Admin Web, Portal Web |
-| 编辑标题、门类、卷、原文、译文和标签 | 部分完成 | 条目编辑核心字段（标题/门类/卷/正文等）与保存链路已实现；Admin Web 已支持标题、原文、译文、摘要、公开状态编辑保存；后端通用标签新增、更新、删除已接入 Knowledge 协作语义 | 标签前端编辑入口和更细的入参治理规则仍待补齐；门类/卷迁移不纳入本轮页面闭环 | Classics, Admin Web, Knowledge |
-| 展示原文、译文、标签、配图和状态 | 部分完成 | 条目详情、标签列表、配图列表均已提供独立接口；Admin Web 已展示条目列表状态、详情编辑核心文本字段、当前使用图片预览/下载入口，以及视觉资产历史列表、当前版本摘要和原图/生成图预览下载入口 | 标签仍未在三才条目详情内聚合展示；更复杂的视觉资产批量治理仍未闭环 | Classics, Admin Web |
+| 编辑标题、门类、卷、原文、译文和标签 | 部分完成 | 条目编辑核心字段（标题/门类/卷/正文等）与保存链路已实现；Admin Web 已支持标题、原文、译文、摘要、公开状态编辑保存；后端通用标签新增、更新、删除已接入 Knowledge 协作语义；Sancai 条目详情抽屉已提供“编辑标签”入口，可定位到同抽屉标签治理面板完成新增、编辑、排序和移除；通用标签接口已补齐必要入参治理 | 门类/卷迁移不纳入本轮页面闭环 | Classics, Admin Web, Knowledge |
+| 展示原文、译文、标签、配图和状态 | 已完成 | 条目详情、标签列表、配图列表均已提供接口；Sancai 条目详情响应已聚合返回 `tags`；Admin Web 已在详情上下文展示原文、译文、标签、条目状态、当前使用图片预览/下载入口、视觉资产历史列表、当前版本摘要和原图/生成图预览下载入口；标签新增、编辑、排序、移除后会刷新详情聚合标签 | 无 | Classics, Admin Web |
 | 多张配图、缩略预览、放大浏览 | 已完成 | 图片保存、列表、类型、Storage 对象引用、业务上传、业务读取、删除、当前图切换和同条目排序已落地；Admin Web 已提供配图列表管理、缩略预览、放大浏览抽屉、下载和当前图选择；分享快照与 Portal 分享详情保留多图并按 `priority ASC` 展示缩略图切换主图；Workers 静态展示按多图稳定渲染并标记当前图 | 无 | Classics, Storage, Admin Web, Portal Web, Worker |
 | 区分原始配图和视觉资产生成图 | 已完成 | `image_type`、图片模型、资产模型与保存入口已实现；Admin Web 已区分展示视觉资产原图与生成图，并分别提供预览/下载入口；`image_gen` 结果会新建 visual asset version 并绑定正式 Storage 对象 | 无 | Classics, Admin Web |
 | 从条目上下文进入视觉资产工作流 | 已完成 | 资产草稿、图片、展示任务接口与服务可用；Admin Web 已在条目详情弹窗中接入视觉资产历史列表、当前版本切换、权重与描述字段维护、原图/生成图预览下载，以及 `image_analysis / fusion / visual / image_gen` 的页面内任务入口、任务状态轮询、流式过程展示、失败提示与重试入口；后端已接通候选读取/应用/拒绝和 `image_gen` 候选应用后的版本化落库与页面展示 | 无 | Classics, Admin Web, AI |

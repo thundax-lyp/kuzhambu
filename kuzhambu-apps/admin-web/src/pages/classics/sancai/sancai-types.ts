@@ -1,3 +1,5 @@
+import type { ClassicsContentTagRecord } from "@/pages/classics/common/classics-content-types";
+
 export interface SancaiCategoryRecord {
     id: number;
     title?: string | null;
@@ -34,6 +36,7 @@ export interface SancaiEntryRecord {
     currentVersionedAt?: string | null;
     contentUpdatedAt?: string | null;
     versionDirty?: boolean;
+    tags?: ClassicsContentTagRecord[];
 }
 
 export interface SancaiEntryImageRecord {

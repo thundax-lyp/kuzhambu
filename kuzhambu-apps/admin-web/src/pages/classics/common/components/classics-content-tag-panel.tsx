@@ -126,6 +126,17 @@ export const ClassicsContentTagPanel = ({
         }
     });
 
+    const deleteMutation = useMutation({
+        mutationFn: contentService.deleteTag,
+        onSuccess: async () => {
+            await notifyChanged();
+            messageApi.success("标签已移除");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "移除标签失败");
+        }
+    });
+
     const sortMutation = useMutation({
         mutationFn: contentService.sortTags,
         onSuccess: async () => {
@@ -164,15 +175,10 @@ export const ClassicsContentTagPanel = ({
     };
 
     const markRemoved = async (tag: ClassicsContentTagRecord) => {
-        await updateMutation.mutateAsync({
-            contentId,
-            contentType,
-            id: tag.id,
-            tagId: tag.tagId,
-            tagNameSnapshot: tag.tagNameSnapshot || "",
-            source: tag.source || "MANUAL",
-            status: "REMOVED"
-        });
+        if (!tag.id) {
+            return;
+        }
+        await deleteMutation.mutateAsync({ id: tag.id });
     };
 
     const submitTag = async () => {
@@ -286,6 +292,7 @@ export const ClassicsContentTagPanel = ({
                                         aria-label={`移除标签 ${tag.id}`}
                                         danger
                                         icon={<DeleteOutlined />}
+                                        loading={deleteMutation.isPending}
                                         size="small"
                                         onClick={() => markRemoved(tag)}
                                     >
