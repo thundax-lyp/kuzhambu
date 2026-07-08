@@ -101,6 +101,57 @@
 }
 ```
 
+## Access Statistics
+
+Portal 分享只记录成功访问。过期、撤销、不存在、权限不足和资源不存在请求不累加访问次数，也不写成功访问记录。
+
+成功公开详情浏览：
+
+- 入口：`GET /api/portal/classics/shares/{shareToken}`。
+- 条件：分享存在、`status = ACTIVE`、未过期、`visibility = PUBLIC`。
+- 写入：`classics_share_link.access_count + 1`。
+- 写入访问记录：`share_link_id = 当前分享链接 ID`、`share_target_id = null`、`access_result = ALLOWED`。
+- `client_snapshot`：
+
+```json
+{
+  "accessType": "DETAIL_VIEW",
+  "privateAccess": false
+}
+```
+
+成功私有详情浏览：
+
+- 入口：`GET /api/portal/classics/private-shares/{shareToken}`。
+- 条件：分享存在、`status = ACTIVE`、未过期、`visibility = PRIVATE`，且当前用户是创建者或具备 `classics:sharing:view` 权限。
+- 写入：`classics_share_link.access_count + 1`。
+- 写入访问记录：`share_link_id = 当前分享链接 ID`、`share_target_id = null`、`access_result = ALLOWED`。
+- `client_snapshot`：
+
+```json
+{
+  "accessType": "DETAIL_VIEW",
+  "privateAccess": true
+}
+```
+
+成功资源读取：
+
+- 入口：公开资源读取或私有资源读取 URL。
+- 条件：分享存在、`status = ACTIVE`、未过期、资源属于当前分享快照，且私有分享通过权限校验。
+- 写入：`classics_share_link.access_count + 1`。
+- 写入访问记录：`share_link_id = 当前分享链接 ID`、`share_target_id = 命中的分享目标 ID`、`access_result = ALLOWED`。
+- `client_snapshot`：
+
+```json
+{
+  "accessType": "RESOURCE_READ",
+  "privateAccess": false,
+  "storageObjectId": 300000000001,
+  "download": true
+}
+```
+
 ## Not Found Rule
 
 Portal 侧对过期、撤销、不存在的 `shareToken` 统一返回 404，不区分原因，避免泄露分享链接存在性。

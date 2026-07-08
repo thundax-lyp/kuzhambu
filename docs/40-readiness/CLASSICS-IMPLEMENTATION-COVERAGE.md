@@ -37,11 +37,11 @@
 - 王圻文档 Admin Web 管理闭环已完成：后台菜单和 `/classics/wangqi` 路由可进入真实页面，支持文档分页、关键词和可见性筛选、时间线视图、详情阅读、新增、编辑、删除、原始文件上传和读取、版本历史、版本字段对比和历史恢复。
 - 王圻文档初始化数据、后端接口契约、前端服务契约、页面单测、Playwright 页面闭环和 dev.env Admin API 冒烟均已通过；删除 Wangqi 文档会删除版本历史、解绑 Storage owner，并将当前原始文件对象回落为未引用状态。
 - Storage 文件读取和预览最小闭环已接入 Classics：Admin Storage/Wangqi/Sancai 使用鉴权资源 URL，Wangqi 原始文件和 Sancai 图片通过业务域接口读取，Portal 分享详情动态装配资源对象，分享资源读取会校验分享链接和快照内资源 ID。
-- Classics 通用内容标签闭环已接通后端运行时：手工标签新增/更新/删除会先解析或创建 Knowledge 统一标签，再同步 Knowledge 内容引用；AI 标签确认会先清理旧 AI 引用，再经 Knowledge 协作语义回写统一标签和引用投影；标签排序已收敛为 `contentType + contentId` 作用域。
+- Classics 通用内容标签闭环已接通后端运行时：手工标签新增/更新/删除会先解析或创建 Knowledge 统一标签，再同步 Knowledge 内容引用；AI 标签确认会先清理旧 AI 引用，再经 Knowledge 协作语义回写统一标签和引用投影；标签排序已收敛为 `contentType + contentId` 作用域；通用标签接口已补齐 `contentType/contentId/tagNameSnapshot/id/orderedIds` 入参治理和 `tags/delete` 删除路由。
 - Classics 标签闭环核心路径已补齐后端测试，覆盖手工标签绑定、AI 标签确认同步、删除标签同步和按内容排序请求映射。
 - 三类内容页面已接入 AI 候选确认面板：当前支持按内容读取 `PENDING` 候选、前端编辑 payload、应用候选、拒绝候选，并在应用后刷新摘要/标签/问答对或主内容详情；后端已接通 `summary / translate / tags / qa` 候选应用到正式内容、版本追加和 AI 候选状态回写。
 - 三类内容页面已接入需求文档要求的“内容上下文内联 AI 精修”中的任务型入口，但当前能力并不对称：Sancai 页面可创建 `translate` 与 `summary` 任务，Wangqi 与 Ming Customs 页面只接入 `summary` 任务；三页都已接入任务轮询，并在 `SUCCEEDED/PARTIAL` 后刷新详情或治理面板。
-- 分享后台管理闭环已完成：分享分页列表、详情、状态更新与访问记录查询接口在 admin 侧完成闭环；Wangqi/MingCustoms/Sancai 可通过页面完成单条分享入口、批量分享入口与管理入口联动；Portal 仍复用现有 `shareToken` 读取语义，`ACTIVE` 可读，`EXPIRED/REVOKED` 维持现有错误态。
+- 分享后台管理闭环已完成：分享分页列表、详情、状态更新与访问记录查询接口在 admin 侧完成闭环；Wangqi/MingCustoms/Sancai 可通过页面完成单条分享入口、批量分享入口与管理入口联动；Portal 复用现有 `shareToken` 读取语义，`ACTIVE` 可读，`EXPIRED/REVOKED` 维持统一不可访问错误态；未过期 `REVOKED` 分享可由 Admin 恢复为 `ACTIVE`。
 - Classics 批量操作结果模型已落地到 Java application/interface 和 Admin Web service contract，当前已覆盖批量分享与批量公开/私有状态修改的成功数、失败数和每条失败原因展示；统一入口 `POST /api/classics/content/visibility/change` 已分发到三类内容应用服务，三类 Admin Web 页面已提供当前页多选批量公开/私有入口。
 - 导出和静态展示任务治理闭环收口：三类内容页面分别完成导出任务列表/创建闭环与状态可见性展示；Sancai 的静态展示列表与下载状态在页面内已收口。
 - 三才图会视觉资产 AI 闭环已补齐：页面内已接入 `image_analysis / fusion / visual / image_gen` 单条任务入口、任务状态轮询、失败提示与重试入口；候选区已接通按 `objectId` 限定的候选读取、编辑、应用、拒绝和刷新联动；`image_gen` 候选应用后的 `artifact -> Storage -> 新 version -> 页面预览/下载` 链路已稳定。
@@ -51,7 +51,8 @@
 - Classics/System 权限过滤闭环已补齐：三类内容的 view/edit/export/share 权限在后端查询、详情、批量状态、分享和导出入口形成一致约束；Admin Web 三类 Classics 页面会按同一权限口径禁用分享、导出、批量公开和批量私有控件，并继续展示 `PERMISSION_DENIED` 批量失败项。
 - Classics 清理入口已对接 Operations cleanup：应用层可发现并清理过期导出任务、过期分享链接和草稿分享链接；导出清理会将任务标记为过期，分享/草稿清理会将分享记录标记为过期，底层产物对象生命周期继续复用 Storage 自动 orphan 清理。
 - Classics 删除内容与分享安全闭环已完成：三类内容删除后会将关联分享目标同步为 `CONTENT_DELETED`，按剩余可用目标重算 `classics_share_link.visibility_risk_status`，并且不再把已删除目标计入资源读取、公开列表和风险态。
-- 结合需求文档、设计文档和代码现状，Classics 当前已实现“内容维护 + 候选确认 + 任务型 AI 入口 + 三才视觉资产流式候选展示 + 批量视觉资产治理 + 导出/批量分享治理 + 删除分享安全闭环 + 批量公开/私有分享访问 + 批量公开/私有状态修改 + 细粒度权限过滤 + 清理协作 + 跨内容批量候选治理”的主干闭环。
+- Classics 分享治理闭环已完成：单链接多目标创建会按 `contentType + contentId` 拦截重复目标，Admin 和 Portal 均按后端 target 顺序展示多内容；访问统计已覆盖公开详情浏览、私有详情浏览和资源读取三类成功访问，失败访问不累加。
+- 结合需求文档、设计文档和代码现状，Classics 当前已实现“内容维护 + 候选确认 + 任务型 AI 入口 + 三才视觉资产流式候选展示 + 批量视觉资产治理 + 导出/批量分享治理 + 删除分享安全闭环 + 单链接多内容分享 + 批量公开/私有分享访问 + 分享恢复治理 + 分享访问统计 + 批量公开/私有状态修改 + 细粒度权限过滤 + 清理协作 + 跨内容批量候选治理”的主干闭环。
 
 未完成：
 
@@ -63,6 +64,9 @@
 - 2026-07-07：`cd kuzhambu-servers && mvn -pl biz/ai/kuzhambu-ai-interface,biz/ai/kuzhambu-ai-application,biz/ai/kuzhambu-ai-infra -am spotless:apply && mvn spotless:check && mvn checkstyle:check && mvn -pl biz/ai/kuzhambu-ai-interface,biz/ai/kuzhambu-ai-application,biz/ai/kuzhambu-ai-infra,biz/classics/kuzhambu-classics-application -am test` 通过。
 - 2026-07-07：`cd kuzhambu-apps && npm run format:check && npm run lint && npm --workspace kuzhambu-admin-web run build` 通过。
 - 2026-07-07：`npm --workspace kuzhambu-admin-web run test -- --maxWorkers=1` 通过，45 个 test files / 153 tests 全绿；原始 `npm --workspace kuzhambu-admin-web run test` 在全量并发下出现非本任务用例 30 秒超时波动，失败用例单独复跑通过。
+- 2026-07-08：`cd kuzhambu-servers && mvn -pl biz/classics/kuzhambu-classics-application -am test` 通过，覆盖 sharing 应用服务恢复规则、多目标去重、详情访问统计和资源访问统计。
+- 2026-07-08：`cd kuzhambu-apps && pnpm --filter kuzhambu-admin-web run test -- src/pages/classics/sharing/sharing-page.test.tsx src/pages/classics/common/classics-share-service-contract.test.ts` 通过，Admin Web 55 个 test files / 222 tests 全绿。
+- 2026-07-08：`cd kuzhambu-apps && pnpm --filter @kuzhambu/portal-web run test -- src/pages/share/share-form.test.tsx src/pages/share/share-service.test.ts src/pages/share/share-page.test.tsx` 通过，Portal Web 13 个 test files / 49 tests 全绿。
 
 ## Requirement Coverage Matrix
 
@@ -74,8 +78,8 @@
 | 门类治理 CRUD | 已完成 | 门类列表、详情、保存和删除接口已实现；Admin Web 已支持新增、编辑和删除空门类；新增门类不输入 `priority`，由后端追加到末尾；删除有关联卷的门类由后端业务规则拦截 | 无 | Classics, Admin Web |
 | 门类和卷稳定排序 | 已完成 | `priority` 规则、schema 约束、service 排序参数与稳定排序 API 已支持；Admin Web 已提供门类独立排序表单，保存时提交 orderedIds | 无 | Classics, Admin Web |
 | 条目查看、创建、编辑、删除 | 已完成 | 条目查询、详情、保存、删除接口与运行时代码已到位；Admin Web 已完成列表进入详情、编辑保存和列表刷新闭环；三类内容删除后会同步关联分享目标为 `CONTENT_DELETED`，并按剩余可用目标重算分享风险态 | 无 | Classics, Admin Web, Portal Web |
-| 编辑标题、门类、卷、原文、译文和标签 | 部分完成 | 条目编辑核心字段（标题/门类/卷/正文等）与保存链路已实现；Admin Web 已支持标题、原文、译文、摘要、公开状态编辑保存；后端通用标签新增、更新、删除已接入 Knowledge 协作语义 | 标签前端编辑入口和更细的入参治理规则仍待补齐；门类/卷迁移不纳入本轮页面闭环 | Classics, Admin Web, Knowledge |
-| 展示原文、译文、标签、配图和状态 | 部分完成 | 条目详情、标签列表、配图列表均已提供独立接口；Admin Web 已展示条目列表状态、详情编辑核心文本字段、当前使用图片预览/下载入口，以及视觉资产历史列表、当前版本摘要和原图/生成图预览下载入口 | 标签仍未在三才条目详情内聚合展示；更复杂的视觉资产批量治理仍未闭环 | Classics, Admin Web |
+| 编辑标题、门类、卷、原文、译文和标签 | 部分完成 | 条目编辑核心字段（标题/门类/卷/正文等）与保存链路已实现；Admin Web 已支持标题、原文、译文、摘要、公开状态编辑保存；后端通用标签新增、更新、删除已接入 Knowledge 协作语义；Sancai 条目详情抽屉已提供“编辑标签”入口，可定位到同抽屉标签治理面板完成新增、编辑、排序和移除；通用标签接口已补齐必要入参治理 | 门类/卷迁移不纳入本轮页面闭环 | Classics, Admin Web, Knowledge |
+| 展示原文、译文、标签、配图和状态 | 已完成 | 条目详情、标签列表、配图列表均已提供接口；Sancai 条目详情响应已聚合返回 `tags`；Admin Web 已在详情上下文展示原文、译文、标签、条目状态、当前使用图片预览/下载入口、视觉资产历史列表、当前版本摘要和原图/生成图预览下载入口；标签新增、编辑、排序、移除后会刷新详情聚合标签 | 无 | Classics, Admin Web |
 | 多张配图、缩略预览、放大浏览 | 已完成 | 图片保存、列表、类型、Storage 对象引用、业务上传、业务读取、删除、当前图切换和同条目排序已落地；Admin Web 已提供配图列表管理、缩略预览、放大浏览抽屉、下载和当前图选择；分享快照与 Portal 分享详情保留多图并按 `priority ASC` 展示缩略图切换主图；Workers 静态展示按多图稳定渲染并标记当前图 | 无 | Classics, Storage, Admin Web, Portal Web, Worker |
 | 区分原始配图和视觉资产生成图 | 已完成 | `image_type`、图片模型、资产模型与保存入口已实现；Admin Web 已区分展示视觉资产原图与生成图，并分别提供预览/下载入口；`image_gen` 结果会新建 visual asset version 并绑定正式 Storage 对象 | 无 | Classics, Admin Web |
 | 从条目上下文进入视觉资产工作流 | 已完成 | 资产草稿、图片、展示任务接口与服务可用；Admin Web 已在条目详情弹窗中接入视觉资产历史列表、当前版本切换、权重与描述字段维护、原图/生成图预览下载，以及 `image_analysis / fusion / visual / image_gen` 的页面内任务入口、任务状态轮询、流式过程展示、失败提示与重试入口；后端已接通候选读取/应用/拒绝和 `image_gen` 候选应用后的版本化落库与页面展示 | 无 | Classics, Admin Web, AI |
@@ -131,12 +135,12 @@
 | --- | --- | --- | --- | --- |
 | 选择三类内容生成分享链接 | 已完成 | 分享链接创建、状态变更与目标写入服务链路已实现，目标含内容快照字段；Wangqi/MingCustoms/Sancai 页面已提供单内容分享入口和当前页多选批量分享入口，Portal 分享详情可展示固化快照和资源预览 | 无 | Classics, Admin Web, Portal Web |
 | 分享后台管理（列表、详情、状态、访问记录） | 已完成 | 分享分页列表/详情、状态更新、访问记录分页查询与 Admin Web 页面闭环已完成，支持目标快照与状态来源校验；批量创建出的 `ACTIVE/EXPIRED/REVOKED` 分享记录仍可复用现有状态更新行为 | 无 | Classics, Admin Web, System |
-| 单链接多个内容 | 部分完成 | 目标关系支持一对多，创建流程可写入多个 target；Portal 详情按 target 展示多内容快照和资源对象 | target 重复去重与回写策略未实现 | Classics, Portal Web |
+| 单链接多个内容 | 已完成 | 目标关系支持一对多，创建流程可写入多个 target；同一分享链接内按 `contentType + contentId` 拦截重复目标；Admin 详情保留多 target 行和删除状态；Portal 详情按后端顺序展示多个只读内容卡片、资源对象和删除占位 | 无 | Classics, Admin Web, Portal Web |
 | 批量创建分享链接 | 已完成 | 后端已提供批量分享创建接口，每个 target 创建独立 share link 和 share target；返回成功数、失败数和每条失败原因；Admin Web 三类内容页已接入当前页多选批量分享并展示聚合结果；Portal Web 复用现有读取状态语义 | 无 | Classics, Admin Web, Portal Web |
-| 分享链接公开或私有 | 部分完成 | 可见性字段与管理接口（创建/状态变更）已实现；批量分享创建沿用 `privateContentConfirmed` 私有内容确认语义；Portal 公开分享访问无需登录；私有分享已按创建者或 `classics:sharing:view` 管理权限开放详情和资源读取，未登录时由 Portal Web 展示登录引导；过期、撤销、不存在统一按不可访问处理 | 管理侧恢复策略未实现 | Classics, System, Portal Web |
-| 过期时间、撤销和恢复 | 部分完成 | 过期时间与状态更新字段已实现；过期分享和草稿分享已可被 Operations cleanup 发现并标记为过期 | 恢复/恢复到位自动流未实现 | Classics |
+| 分享链接公开或私有 | 已完成 | 可见性字段与管理接口（创建/状态变更）已实现；批量分享创建沿用 `privateContentConfirmed` 私有内容确认语义；Portal 公开分享访问无需登录；私有分享已按创建者或 `classics:sharing:view` 管理权限开放详情和资源读取，未登录时由 Portal Web 展示登录引导；过期、撤销、不存在统一按不可访问处理；恢复分享不改变公开或私有可见性 | 无 | Classics, Admin Web, System, Portal Web |
+| 过期时间、撤销和恢复 | 已完成 | 过期时间与状态更新字段已实现；过期分享和草稿分享已可被 Operations cleanup 发现并标记为过期；Admin 可撤销 `ACTIVE` 分享，也可将未过期 `REVOKED` 分享恢复为 `ACTIVE`；恢复不改变 `visibility`、`expiresAt`、`shareToken`、`token_hash`、目标快照或目标顺序；`EXPIRED` 和已过期 `REVOKED` 不可恢复 | 无 | Classics, Admin Web |
 | 只读访问页 | 已完成 | Portal 已提供公开分享列表、详情和分享资源读取端点；Portal Web 已提供首页、分享列表和分享详情路由，展示固化快照、Wangqi 原始文件资源和 Sancai 图片资源 | 无 | Classics, System, Portal Web |
-| 访问统计 | 部分完成 | 访问记录实体与应用服务接口（写入/分页查询）已实现；分享资源读取成功会写入访问记录 | 分享详情浏览统计和对外统计 API 未接通 | Classics |
+| 访问统计 | 已完成 | 访问记录实体与应用服务接口（写入/分页查询）已实现；公开详情浏览、私有详情浏览和资源读取成功都会累加 `classics_share_link.access_count` 并写入 `classics_share_access_record`；详情浏览记录 `share_target_id = null` 且 `client_snapshot.accessType = DETAIL_VIEW`，资源读取记录写入命中 target 和 `RESOURCE_READ`；失败访问不统计；Admin 访问记录表可展示详情浏览和资源读取类型 | 无 | Classics, Admin Web, Portal Web |
 | 分享完整内容快照 | 已完成 | 分享创建时先确保正式内容版本，再将 `classics_content_version.snapshot_json` 固化到 `classics_share_target.content_snapshot_json`；target 记录 `content_version_id/content_version_no`；三类正式版本快照 schema 已沉淀到 `docs/20-interfaces/CLASSICS-CONTENT-VERSION-SNAPSHOT-INTERFACE.md`；Sancai 快照包含全部图片资源 ID，使用 `currentUsed` 标识当前图，Portal 响应层动态补资源对象 | 无 | Classics |
 | 私有内容分享确认文案 | 已完成 | 分享创建与状态模型已支持风险状态表达，确认文案由前端按风险状态渲染 | 无 | Classics |
 | 目标被删除后占位展示 | 已完成 | 三类内容删除会触发分享目标状态同步和风险态重算；Admin Web 分享详情保留目标行、标题快照、内容类型、内容 ID 和“内容已删除”状态；Portal Web 分享详情保留原顺序标题占位并隐藏正文、图片、文件和预览/下载控件；Portal 公开分享列表防御过滤 `CONTENT_DELETED` 目标 | 无 | Classics, Admin Web, Portal Web |

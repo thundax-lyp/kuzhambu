@@ -33,6 +33,20 @@ describe("classics share service", () => {
         expect(getJsonSpy).toHaveBeenCalledWith("/portal/classics/shares/abc-123");
     });
 
+    it("getPrivateShare calls private share endpoint with access token", async () => {
+        const getJsonWithAccessTokenSpy = vi
+            .spyOn(http, "getJsonWithAccessToken")
+            .mockResolvedValue({ title: "私有分享", visibility: "PRIVATE" });
+
+        const response = await shareService.getPrivateShare("private-token", "access-token");
+
+        expect(response.visibility).toBe("PRIVATE");
+        expect(getJsonWithAccessTokenSpy).toHaveBeenCalledWith(
+            "/portal/classics/private-shares/private-token",
+            "access-token"
+        );
+    });
+
     it("getAccessibleShare reads private share when public response requires login and token exists", async () => {
         window.localStorage.setItem("kuzhambu.admin.accessToken", "admin-token");
         const getJsonSpy = vi.spyOn(http, "getJson").mockResolvedValue({ loginRequired: true });
@@ -60,7 +74,7 @@ describe("classics share service", () => {
         expect(getJsonWithAccessTokenSpy).not.toHaveBeenCalled();
     });
 
-    it("passes through active batch-created share payload without adding portal-only fields", async () => {
+    it("passes through active batch-created multi-target share payload without adding portal-only fields", async () => {
         vi.spyOn(http, "getJson").mockResolvedValue({
             status: "ACTIVE",
             targets: [
@@ -73,6 +87,18 @@ describe("classics share service", () => {
                     contentVisibilitySnapshot: "PUBLIC",
                     targetStatus: "ACTIVE",
                     titleSnapshot: "王圻文档"
+                },
+                {
+                    contentId: 300000000001,
+                    contentSnapshotJson: JSON.stringify({ title: "天地", images: [] }),
+                    contentType: "SANCAI_ENTRY",
+                    contentVersionId: 8102,
+                    contentVersionNo: 3,
+                    contentVisibilitySnapshot: "PUBLIC",
+                    images: [],
+                    priority: 2,
+                    targetStatus: "ACTIVE",
+                    titleSnapshot: "天地"
                 }
             ],
             title: "王圻批量分享 - 王圻文档",
@@ -81,6 +107,7 @@ describe("classics share service", () => {
 
         const response = await shareService.getShare("active-token");
 
+        expect(response.targets).toHaveLength(2);
         expect(response).toEqual({
             status: "ACTIVE",
             targets: [
@@ -93,6 +120,18 @@ describe("classics share service", () => {
                     contentVisibilitySnapshot: "PUBLIC",
                     targetStatus: "ACTIVE",
                     titleSnapshot: "王圻文档"
+                },
+                {
+                    contentId: 300000000001,
+                    contentSnapshotJson: JSON.stringify({ title: "天地", images: [] }),
+                    contentType: "SANCAI_ENTRY",
+                    contentVersionId: 8102,
+                    contentVersionNo: 3,
+                    contentVisibilitySnapshot: "PUBLIC",
+                    images: [],
+                    priority: 2,
+                    targetStatus: "ACTIVE",
+                    titleSnapshot: "天地"
                 }
             ],
             title: "王圻批量分享 - 王圻文档",
@@ -221,6 +260,23 @@ describe("classics share service", () => {
         expect(buildApiUrlSpy).toHaveBeenCalledWith(
             "/portal/classics/private-shares/abc-123/resources/9001/content",
             { download: undefined, token: "admin-token" }
+        );
+    });
+
+    it("getShareResourceContentUrl keeps private resource endpoint without token when unauthenticated", () => {
+        const buildApiUrlSpy = vi.spyOn(http, "buildApiUrl");
+        buildApiUrlSpy.mockReturnValue("http://example.com/private-login");
+
+        shareService.getShareResourceContentUrl({
+            mode: "download",
+            privateAccess: true,
+            shareToken: "private-token",
+            storageObjectId: 9002
+        });
+
+        expect(buildApiUrlSpy).toHaveBeenCalledWith(
+            "/portal/classics/private-shares/private-token/resources/9002/content",
+            { download: "true", token: undefined }
         );
     });
 });

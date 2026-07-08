@@ -143,6 +143,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     }
 
     private ShareLinkCreateResult createLink(ShareLinkCreateCommand command, boolean allowPrivateContent) {
+        ensureUniqueTargets(command == null ? null : command.getTargets());
         requireSharePermission(
                 command.getTargets(), command.getOperatorPermissions(), command.getVisibility(), allowPrivateContent);
         String shareToken = shareTokenGenerator.generate();
@@ -236,6 +237,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public SharePortalResult getPortalShare(String shareToken) {
         ClassicsShareLink link = repository.getLinkByTokenHash(shareTokenHasher.hash(shareToken));
         if (isPrivatePortalShareRequiringAuth(link)) {
@@ -244,17 +246,22 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         if (!isPortalVisible(link)) {
             throw shareContentNotFound();
         }
-        return toPortalResult(link);
+        SharePortalResult result = toPortalResult(link);
+        recordAllowedDetailAccess(link.getId(), false);
+        return result;
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public SharePortalResult getPrivatePortalShare(
             String shareToken, Long currentUserId, Set<String> currentPermissions) {
         ClassicsShareLink link = repository.getLinkByTokenHash(shareTokenHasher.hash(shareToken));
         if (!isPrivatePortalVisible(link, currentUserId, currentPermissions)) {
             throw shareContentNotFound();
         }
-        return toPortalResult(link);
+        SharePortalResult result = toPortalResult(link);
+        recordAllowedDetailAccess(link.getId(), true);
+        return result;
     }
 
     @Override
@@ -307,7 +314,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         if (content == null) {
             throw shareContentNotFound();
         }
-        recordAllowedResourceAccess(link.getId(), matchedTarget.getId(), storageObjectId);
+        recordAllowedResourceAccess(link.getId(), matchedTarget.getId(), storageObjectId, download, privateAccess);
         return content;
     }
 
@@ -431,7 +438,15 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void changeStatus(ShareLinkStatusCommand command) {
-        repository.updateLinkStatus(command.getId(), command.getStatus().value());
+        if (command == null || command.getId() == null || command.getStatus() == null) {
+            throw shareContentNotFound();
+        }
+        if (command.getStatus() == ClassicsShareLinkStatus.ACTIVE) {
+            ensureRestorable(command.getId());
+        }
+        if (repository.updateLinkStatus(command.getId(), command.getStatus().value()) != 1) {
+            throw shareContentNotFound();
+        }
     }
 
     @Override
@@ -611,12 +626,25 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     }
 
     private void recordAllowedResourceAccess(
-            ClassicsShareLinkId shareLinkId, ClassicsShareTargetId shareTargetId, Long storageObjectId) {
+            ClassicsShareLinkId shareLinkId,
+            ClassicsShareTargetId shareTargetId,
+            Long storageObjectId,
+            boolean download,
+            boolean privateAccess) {
         ClassicsShareAccessRecord record = new ClassicsShareAccessRecord();
         record.setShareLinkId(shareLinkId);
         record.setShareTargetId(shareTargetId);
         record.setAccessResult(ClassicsShareAccessResult.ALLOWED);
-        record.setClientSnapshot("resourceStorageObjectId=" + storageObjectId);
+        record.setClientSnapshot(resourceAccessSnapshot(storageObjectId, download, privateAccess));
+        recordAccess(record);
+    }
+
+    private void recordAllowedDetailAccess(ClassicsShareLinkId shareLinkId, boolean privateAccess) {
+        ClassicsShareAccessRecord record = new ClassicsShareAccessRecord();
+        record.setShareLinkId(shareLinkId);
+        record.setShareTargetId(null);
+        record.setAccessResult(ClassicsShareAccessResult.ALLOWED);
+        record.setClientSnapshot(detailAccessSnapshot(privateAccess));
         recordAccess(record);
     }
 
@@ -667,6 +695,26 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
             if (content != null && visibilityOf(content) != ClassicsSharedContentVisibility.PUBLIC) {
                 throw privateContentCannotBePublicShared();
             }
+        }
+    }
+
+    private static void ensureUniqueTargets(List<ShareTargetCreateCommand> targets) {
+        if (targets == null || targets.isEmpty()) {
+            return;
+        }
+        Set<String> targetKeys = new HashSet<>();
+        for (ShareTargetCreateCommand target : targets) {
+            String key = targetKey(target);
+            if (key != null && !targetKeys.add(key)) {
+                throw duplicateShareTarget();
+            }
+        }
+    }
+
+    private void ensureRestorable(ClassicsShareLinkId id) {
+        ClassicsShareLink link = repository.getLinkById(id);
+        if (link == null || link.getStatus() != ClassicsShareLinkStatus.REVOKED || isExpired(link)) {
+            throw shareLinkCannotRestore();
         }
     }
 
@@ -818,8 +866,42 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         return node == null || !node.canConvertToLong() ? null : node.asLong();
     }
 
+    private static String detailAccessSnapshot(boolean privateAccess) {
+        ObjectNode snapshot = OBJECT_MAPPER.createObjectNode();
+        snapshot.put("accessType", "DETAIL_VIEW");
+        snapshot.put("privateAccess", privateAccess);
+        return snapshot.toString();
+    }
+
+    private static String resourceAccessSnapshot(Long storageObjectId, boolean download, boolean privateAccess) {
+        ObjectNode snapshot = OBJECT_MAPPER.createObjectNode();
+        snapshot.put("accessType", "RESOURCE_READ");
+        snapshot.put("privateAccess", privateAccess);
+        if (storageObjectId == null) {
+            snapshot.putNull("storageObjectId");
+        } else {
+            snapshot.put("storageObjectId", storageObjectId);
+        }
+        snapshot.put("download", download);
+        return snapshot.toString();
+    }
+
+    private static boolean isExpired(ClassicsShareLink link) {
+        return link != null
+                && link.getExpiresAt() != null
+                && !link.getExpiresAt().after(new Date());
+    }
+
     private static BizException shareContentNotFound() {
         return new BizException("分享内容不存在或不支持版本标定");
+    }
+
+    private static BizException duplicateShareTarget() {
+        return new BizException("重复分享目标");
+    }
+
+    private static BizException shareLinkCannotRestore() {
+        return new BizException("分享链接不可恢复");
     }
 
     private static BizException privateShareAuthRequired() {

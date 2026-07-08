@@ -42,6 +42,7 @@ vi.mock("@/pages/classics/common/classics-content-service", () => ({
             }
         ]
     })),
+    deleteTag: vi.fn(),
     listQaPairs: vi.fn(async () => [
         {
             id: 6001,

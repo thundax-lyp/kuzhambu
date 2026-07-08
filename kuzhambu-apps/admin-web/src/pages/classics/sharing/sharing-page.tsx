@@ -13,6 +13,7 @@ import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import * as shareService from "@/pages/classics/common/classics-share-service";
 import type { ClassicsShareQuery } from "@/pages/classics/common/classics-share-service";
 import type {
+    ClassicsShareAccessClientSnapshot,
     ClassicsShareAccessRecord,
     ClassicsShareContentType,
     ClassicsShareLinkStatus,
@@ -72,16 +73,6 @@ const shareStatusTone: Record<string, ShareStatusTone> = {
 const shareTargetStatusTone: Record<string, ShareStatusTone> = {
     AVAILABLE: "success",
     CONTENT_DELETED: "danger"
-};
-
-const readShareStatusLabel = (status?: ClassicsShareLinkStatus | string | null) => {
-    return (
-        {
-            ACTIVE: "生效",
-            EXPIRED: "已过期",
-            REVOKED: "已撤销"
-        }[status || ""] || "未知"
-    );
 };
 
 const toOptionalQueryValue = (value: string) => {
@@ -146,13 +137,16 @@ const isDeletedShareTarget = (target?: ClassicsShareTargetRecord | null) => {
     return target?.targetStatus === "CONTENT_DELETED";
 };
 
-const toShareLinkStatus = (
-    status?: ClassicsShareLinkStatus | string | null
-): ClassicsShareLinkStatus | undefined => {
-    if (status === "ACTIVE" || status === "EXPIRED" || status === "REVOKED") {
-        return status;
+const isExpiredAt = (expiresAt?: string | null) => {
+    if (!expiresAt) {
+        return false;
     }
-    return undefined;
+    const timestamp = Date.parse(expiresAt);
+    return Number.isNaN(timestamp) ? false : timestamp <= Date.now();
+};
+
+const canRestoreShare = (share?: ClassicsShareRecord | null) => {
+    return share?.status === "REVOKED" && !isExpiredAt(share.expiresAt);
 };
 
 const readVisibilityLabel = (visibility?: ClassicsShareVisibility | string | null) => {
@@ -168,15 +162,29 @@ const readShareTypeByTargets = (targets?: ClassicsShareTargetRecord[] | null) =>
     return shareTypeLabel(targets?.[0]?.contentType);
 };
 
-const resolveNextShareStatus = (status?: ClassicsShareLinkStatus | string | null) => {
-    return status === "ACTIVE" ? "REVOKED" : "ACTIVE";
+const parseAccessClientSnapshot = (
+    snapshot?: string | null
+): ClassicsShareAccessClientSnapshot | null => {
+    if (!snapshot) {
+        return null;
+    }
+    try {
+        return JSON.parse(snapshot) as ClassicsShareAccessClientSnapshot;
+    } catch {
+        return null;
+    }
 };
 
-const statusOptions = [
-    { label: "生效", value: "ACTIVE" },
-    { label: "已过期", value: "EXPIRED" },
-    { label: "已撤销", value: "REVOKED" }
-];
+const readAccessTypeLabel = (snapshot?: string | null) => {
+    const accessType = parseAccessClientSnapshot(snapshot)?.accessType;
+    if (accessType === "DETAIL_VIEW") {
+        return "详情浏览";
+    }
+    if (accessType === "RESOURCE_READ") {
+        return "资源读取";
+    }
+    return "未知";
+};
 
 export const SharingPage = () => {
     const { message: messageApi } = App.useApp();
@@ -279,14 +287,40 @@ export const SharingPage = () => {
         share: ClassicsShareRecord,
         status: ClassicsShareLinkStatus | string
     ) => {
+        const isRestore = status === "ACTIVE";
         confirm.danger({
-            title: "更新分享状态",
-            message: `确认将「${share.title || `分享 ${share.id}`}」更新为 ${readShareStatusLabel(
-                status
-            )}？`,
-            okText: "更新",
+            title: isRestore ? "恢复分享" : "撤销分享",
+            message: isRestore
+                ? `确认恢复「${share.title || `分享 ${share.id}`}」？恢复后同一分享链接将重新可访问。`
+                : `确认撤销「${share.title || `分享 ${share.id}`}」？撤销后 Portal 将不可访问该分享。`,
+            okText: isRestore ? "恢复" : "撤销",
             onConfirm: () => updateStatusMutation.mutateAsync({ id: share.id, status })
         });
+    };
+
+    const readShareStatusActions = (share: ClassicsShareRecord) => {
+        if (share.status === "ACTIVE") {
+            return [
+                {
+                    key: "revoke",
+                    text: "撤销",
+                    ariaLabel: `撤销 ${shareRecordLabel(share)}`,
+                    type: "danger" as const,
+                    onClick: () => confirmUpdateStatus(share, "REVOKED")
+                }
+            ];
+        }
+        if (canRestoreShare(share)) {
+            return [
+                {
+                    key: "restore",
+                    text: "恢复",
+                    ariaLabel: `恢复 ${shareRecordLabel(share)}`,
+                    onClick: () => confirmUpdateStatus(share, "ACTIVE")
+                }
+            ];
+        }
+        return [];
     };
 
     const targetRecords = useMemo(() => detailRecord?.targets || [], [detailRecord?.targets]);
@@ -346,24 +380,20 @@ export const SharingPage = () => {
         },
         {
             key: "actions",
-            options: (share) => [
-                {
-                    key: "detail",
-                    text: "查看",
-                    ariaLabel: `查看 ${shareRecordLabel(share)}`,
-                    onClick: openShareDetail
-                },
-                { type: "divider" },
-                {
-                    key: "status",
-                    text: "更改状态",
-                    ariaLabel: `更改 ${shareRecordLabel(share)} 状态`,
-                    onClick: () => {
-                        const nextStatus = resolveNextShareStatus(share.status);
-                        confirmUpdateStatus(share, nextStatus);
-                    }
-                }
-            ]
+            options: (share) => {
+                const statusActions = readShareStatusActions(share);
+                return [
+                    {
+                        key: "detail",
+                        text: "查看",
+                        ariaLabel: `查看 ${shareRecordLabel(share)}`,
+                        onClick: openShareDetail
+                    },
+                    ...(statusActions.length
+                        ? [{ type: "divider" as const }, ...statusActions]
+                        : [])
+                ];
+            }
         }
     ];
 
@@ -410,6 +440,13 @@ export const SharingPage = () => {
             render: formatDateTime
         },
         {
+            title: "访问类型",
+            dataIndex: "clientSnapshot",
+            key: "accessType",
+            width: 120,
+            render: readAccessTypeLabel
+        },
+        {
             title: "结果",
             dataIndex: "accessResult",
             key: "accessResult",
@@ -417,10 +454,11 @@ export const SharingPage = () => {
             render: (result?: string | null) => <Tag>{result || "UNKNOWN"}</Tag>
         },
         {
-            title: "客户端快照",
-            dataIndex: "clientSnapshot",
-            key: "clientSnapshot",
-            render: (value?: string | null) => value || "-"
+            title: "目标 ID",
+            dataIndex: "shareTargetId",
+            key: "shareTargetId",
+            width: 120,
+            render: (shareTargetId?: number | null) => shareTargetId ?? "-"
         }
     ];
 
@@ -584,19 +622,31 @@ export const SharingPage = () => {
                     </Descriptions>
 
                     <KuzhambuSpace align="end">
-                        <Select<ClassicsShareLinkStatus>
-                            value={toShareLinkStatus(detailRecord?.status)}
-                            placeholder="更新状态"
-                            aria-label="更新状态"
-                            style={{ width: 180 }}
-                            onChange={(status) => {
-                                if (!detailRecord?.id) {
-                                    return;
-                                }
-                                confirmUpdateStatus(detailRecord, status);
-                            }}
-                            options={statusOptions}
-                        />
+                        {detailRecord?.status === "ACTIVE" ? (
+                            <Button
+                                danger
+                                onClick={() => {
+                                    if (!detailRecord) {
+                                        return;
+                                    }
+                                    confirmUpdateStatus(detailRecord, "REVOKED");
+                                }}
+                            >
+                                撤销
+                            </Button>
+                        ) : null}
+                        {canRestoreShare(detailRecord) ? (
+                            <Button
+                                onClick={() => {
+                                    if (!detailRecord) {
+                                        return;
+                                    }
+                                    confirmUpdateStatus(detailRecord, "ACTIVE");
+                                }}
+                            >
+                                恢复
+                            </Button>
+                        ) : null}
                         <Button
                             icon={<FileSearchOutlined />}
                             onClick={() => {

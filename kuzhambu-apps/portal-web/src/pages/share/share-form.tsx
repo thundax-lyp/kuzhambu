@@ -16,7 +16,7 @@ import type {
 
 const CONTENT_TYPE_LABELS = new Map([
     ["SANCAI_ENTRY", "三才图会"],
-    ["WANGQI_DOCUMENT", "万启文档"],
+    ["WANGQI_DOCUMENT", "王圻文档"],
     ["MING_CUSTOMS", "明代民俗"]
 ]);
 
@@ -317,8 +317,9 @@ const renderShareTargetCard = (
     const deleted = isDeletedTarget(target);
     return (
         <Card
+            aria-label={`${readTargetTitle(target, index)}内容卡片`}
             className={cn("portal-share-target", deleted && "portal-share-target-deleted")}
-            key={`${target.contentType}-${target.contentId}-${target.priority}`}
+            key={`${target.contentType}-${target.contentId}-${target.priority}-${index}`}
         >
             <header>
                 <div>

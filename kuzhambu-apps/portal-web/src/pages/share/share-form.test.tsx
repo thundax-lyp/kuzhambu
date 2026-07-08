@@ -38,6 +38,7 @@ describe("ShareForm", () => {
     afterEach(() => {
         cleanup();
         window.localStorage.clear();
+        vi.clearAllMocks();
         vi.restoreAllMocks();
     });
 
@@ -69,9 +70,86 @@ describe("ShareForm", () => {
         expect(
             await screen.findByRole("heading", { name: "王圻批量分享 - 王圻文档" })
         ).toBeTruthy();
-        expect(await screen.findByText("王圻文档")).toBeTruthy();
+        expect(await screen.findByRole("heading", { name: "王圻文档" })).toBeTruthy();
         expect(await screen.findByText("ACTIVE")).toBeTruthy();
         expect(await screen.findByText("可用")).toBeTruthy();
+    });
+
+    it("renders one share link as multiple readonly content cards with deleted placeholder", async () => {
+        vi.mocked(shareService.getShareResourceContentUrl).mockReturnValue(
+            "http://localhost/wangqi-resource"
+        );
+        vi.mocked(shareService.getAccessibleShare).mockResolvedValue({
+            issuedAt: "2026-01-01T00:00:00.000+08:00",
+            status: "ACTIVE",
+            targets: [
+                {
+                    contentId: 400000000001,
+                    contentSnapshotJson: JSON.stringify({
+                        content: "王圻正文",
+                        summary: "王圻摘要"
+                    }),
+                    contentType: "WANGQI_DOCUMENT",
+                    contentVersionId: 8101,
+                    contentVersionNo: 1,
+                    contentVisibilitySnapshot: "PUBLIC",
+                    storageObject: {
+                        originalFilename: "wangqi.pdf",
+                        storageObjectId: 7001
+                    },
+                    targetStatus: "ACTIVE",
+                    titleSnapshot: "王圻文档"
+                },
+                {
+                    contentId: 300000000001,
+                    contentSnapshotJson: JSON.stringify({
+                        originalText: "天地玄黄",
+                        summary: "三才摘要"
+                    }),
+                    contentType: "SANCAI_ENTRY",
+                    contentVersionId: 9101,
+                    contentVersionNo: 2,
+                    contentVisibilitySnapshot: "PUBLIC",
+                    targetStatus: "ACTIVE",
+                    titleSnapshot: "三才条目"
+                },
+                {
+                    contentId: 500000000001,
+                    contentSnapshotJson: JSON.stringify({ summary: "不应展示" }),
+                    contentType: "MING_CUSTOMS",
+                    contentVersionId: 9201,
+                    contentVersionNo: 4,
+                    contentVisibilitySnapshot: "PUBLIC",
+                    targetStatus: "CONTENT_DELETED",
+                    titleSnapshot: "已删除民俗"
+                }
+            ],
+            title: "多内容分享",
+            visibility: "PUBLIC"
+        });
+
+        renderShareForm("multi-token");
+
+        const targets = await screen.findByLabelText("分享快照");
+        expect(within(targets).getByLabelText("王圻文档内容卡片")).toBeTruthy();
+        expect(within(targets).getByLabelText("三才条目内容卡片")).toBeTruthy();
+        expect(within(targets).getByLabelText("已删除民俗内容卡片")).toBeTruthy();
+        expect(within(targets).getByText("王圻摘要")).toBeTruthy();
+        expect(within(targets).getByText("三才摘要")).toBeTruthy();
+        expect(within(targets).getByText("内容已删除，分享仅保留标题快照。")).toBeTruthy();
+        expect(within(targets).queryByText("不应展示")).toBeNull();
+        expect(shareService.getShareResourceContentUrl).toHaveBeenCalledWith({
+            mode: "preview",
+            privateAccess: false,
+            shareToken: "multi-token",
+            storageObjectId: 7001
+        });
+        expect(shareService.getShareResourceContentUrl).toHaveBeenCalledWith({
+            mode: "download",
+            privateAccess: false,
+            shareToken: "multi-token",
+            storageObjectId: 7001
+        });
     });
 
     it("renders sancai share images from share resources with thumbnail switching", async () => {

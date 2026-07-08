@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `main sync`：收口前同步 main 分支代码
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`feat/wangqi-single-doc-qa` 分支
-    - 处理动作：在最终收口前从 `main` 同步最新代码并处理冲突。
-    - 验收点：功能分支包含最新 `main` 代码且工作区无非任务冲突。
-    - 重要度：9/10
-
 - [ ] `Java validation`：执行 Java 后端相关验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WANGQI-SINGLE-DOCUMENT-QA.md`

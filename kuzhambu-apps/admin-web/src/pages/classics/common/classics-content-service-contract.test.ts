@@ -7,6 +7,7 @@ import type {
     ClassicsContentQaPairCommand,
     ClassicsContentQaPairSortCommand,
     ClassicsContentTagCommand,
+    ClassicsContentTagDeleteCommand,
     ClassicsContentTagSortCommand
 } from "@/pages/classics/common/classics-content-service";
 
@@ -218,6 +219,13 @@ describe("classics content service request contracts", () => {
 
         await contentService.updateTag(updateTagCommand);
         expectLastCall("POST", "/classics/content/tags/update", updateTagCommand);
+
+        const deleteTagCommand: ClassicsContentTagDeleteCommand = {
+            id: 7001
+        };
+
+        await contentService.deleteTag(deleteTagCommand);
+        expectLastCall("POST", "/classics/content/tags/delete", deleteTagCommand);
 
         const sortTagCommand: ClassicsContentTagSortCommand = {
             contentType: "SANCAI_ENTRY",

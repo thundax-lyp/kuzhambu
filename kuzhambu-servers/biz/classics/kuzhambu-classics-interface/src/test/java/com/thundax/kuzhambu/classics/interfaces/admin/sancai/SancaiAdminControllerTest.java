@@ -14,10 +14,15 @@ import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryStatu
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeCommand;
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
+import com.thundax.kuzhambu.classics.domain.common.model.valueobject.KnowledgeTagId;
+import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentSource;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentTagStatus;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
@@ -271,6 +276,17 @@ class SancaiAdminControllerTest {
                         .currentVersionedAt(new java.util.Date(1_000L))
                         .contentUpdatedAt(new java.util.Date(1_000L))
                         .versionDirty(false)
+                        .tags(List.of(com.thundax.kuzhambu.classics.interfaces.admin.content.controller.response
+                                .ClassicsContentResponse.builder()
+                                .id(7001L)
+                                .contentType("SANCAI_ENTRY")
+                                .contentId(3001L)
+                                .tagId(8001L)
+                                .tagNameSnapshot("天文")
+                                .source("MANUAL")
+                                .status("ACTIVE")
+                                .priority(1)
+                                .build()))
                         .build(),
                 "id",
                 "volumeId",
@@ -289,7 +305,8 @@ class SancaiAdminControllerTest {
                 "currentVersionNo",
                 "currentVersionedAt",
                 "contentUpdatedAt",
-                "versionDirty");
+                "versionDirty",
+                "tags");
         assertJsonFields(
                 SancaiEntryVersionResponse.builder()
                         .id(9001L)
@@ -369,7 +386,9 @@ class SancaiAdminControllerTest {
                 "天地", controller.pageEntries(pageRequest).getRecords().get(0).getTitle());
         assertEquals("天地", controller.listEntries(pageRequest).get(0).getTitle());
 
-        assertEquals("天地", controller.getEntry(3001L).getTitle());
+        SancaiEntryResponse detail = controller.getEntry(3001L);
+        assertEquals("天地", detail.getTitle());
+        assertEquals("天文", detail.getTags().get(0).getTagNameSnapshot());
 
         SancaiEntryRequest entryRequest = new SancaiEntryRequest();
         entryRequest.setId(3001L);
@@ -553,6 +572,20 @@ class SancaiAdminControllerTest {
                         assertEquals(ClassicsContentType.SANCAI_ENTRY.value(), args[0]);
                         assertEquals(ClassicsContentId.of(3001L), args[1]);
                         return List.of(version(9001L, 3001L, 1, ClassicsContentChangeType.MANUAL_SAVE));
+                    }
+                    if ("listTags".equals(method.getName())) {
+                        assertEquals(ClassicsContentType.SANCAI_ENTRY.value(), args[0]);
+                        assertEquals(ClassicsContentId.of(3001L), args[1]);
+                        ClassicsContentTag tag = new ClassicsContentTag();
+                        tag.setId(ClassicsContentTagId.of(7001L));
+                        tag.setContentType(ClassicsContentType.SANCAI_ENTRY);
+                        tag.setContentId(ClassicsContentId.of(3001L));
+                        tag.setTagId(KnowledgeTagId.of(8001L));
+                        tag.setTagNameSnapshot("天文");
+                        tag.setSource(ClassicsContentSource.MANUAL);
+                        tag.setStatus(ClassicsContentTagStatus.ACTIVE);
+                        tag.setPriority(1);
+                        return List.of(tag);
                     }
                     if ("getVersion".equals(method.getName())) {
                         assertEquals(ClassicsContentVersionId.of(9001L), args[0]);
