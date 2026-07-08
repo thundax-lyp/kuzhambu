@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `03 Operations restore task snapshot`：恢复执行结果写入任务台账
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RESTORE-ORCHESTRATION.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/restore/service/impl/RestoreApplicationServiceImpl.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/test/java/com/thundax/kuzhambu/operations/application/restore/service/impl/RestoreApplicationServiceImplTest.java`
-    - 处理动作：恢复创建后写入任务快照，恢复完成后更新同一任务快照。
-    - 验收点：恢复成功和失败均能在任务台账中查询到 `sourceDomain=operations`、`taskType=RESTORE`、`taskKey=restore:<restoreId>` 的结果快照。
-    - 重要度：10/10
-
 - [ ] `04 Admin Web operations health service`：补齐健康告警服务契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RESTORE-ORCHESTRATION.md`

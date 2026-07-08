@@ -25,6 +25,9 @@ import com.thundax.kuzhambu.operations.domain.restore.model.enums.RestoreMode;
 import com.thundax.kuzhambu.operations.domain.restore.model.enums.RestoreStatus;
 import com.thundax.kuzhambu.operations.domain.restore.model.valueobject.RestoreId;
 import com.thundax.kuzhambu.operations.domain.restore.repository.RestoreRepository;
+import com.thundax.kuzhambu.operations.domain.task.model.entity.LongTaskSnapshot;
+import com.thundax.kuzhambu.operations.domain.task.model.valueobject.LongTaskSnapshotId;
+import com.thundax.kuzhambu.operations.domain.task.repository.LongTaskSnapshotRepository;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -40,6 +43,11 @@ import org.springframework.stereotype.Service;
 public class RestoreApplicationServiceImpl implements RestoreApplicationService {
 
     private static final long RETENTION_MILLIS = 30L * 24 * 60 * 60 * 1000;
+    private static final String TASK_SOURCE_DOMAIN = "operations";
+    private static final String TASK_TYPE_RESTORE = "RESTORE";
+    private static final String TASK_STATUS_RUNNING = "RUNNING";
+    private static final String TASK_STATUS_SUCCEEDED = "SUCCEEDED";
+    private static final String TASK_STATUS_FAILED = "FAILED";
 
     private final RestoreRepository restoreRepository;
     private final BackupRepository backupRepository;
@@ -47,6 +55,7 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
     private final OperationsBackupExecutionGuard executionGuard;
     private final OperationsRestoreWriteBlocker writeBlocker;
     private final OperationsHealthAlertStrategy healthAlertStrategy;
+    private final LongTaskSnapshotRepository longTaskSnapshotRepository;
 
     public RestoreApplicationServiceImpl(
             RestoreRepository restoreRepository,
@@ -54,7 +63,24 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
             OperationsBackupScriptExecutor scriptExecutor,
             OperationsBackupExecutionGuard executionGuard,
             OperationsRestoreWriteBlocker writeBlocker) {
-        this(restoreRepository, backupRepository, scriptExecutor, executionGuard, writeBlocker, null);
+        this(restoreRepository, backupRepository, scriptExecutor, executionGuard, writeBlocker, null, null);
+    }
+
+    public RestoreApplicationServiceImpl(
+            RestoreRepository restoreRepository,
+            BackupRepository backupRepository,
+            OperationsBackupScriptExecutor scriptExecutor,
+            OperationsBackupExecutionGuard executionGuard,
+            OperationsRestoreWriteBlocker writeBlocker,
+            OperationsHealthAlertStrategy healthAlertStrategy) {
+        this(
+                restoreRepository,
+                backupRepository,
+                scriptExecutor,
+                executionGuard,
+                writeBlocker,
+                healthAlertStrategy,
+                null);
     }
 
     @Autowired
@@ -64,13 +90,15 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
             OperationsBackupScriptExecutor scriptExecutor,
             OperationsBackupExecutionGuard executionGuard,
             OperationsRestoreWriteBlocker writeBlocker,
-            OperationsHealthAlertStrategy healthAlertStrategy) {
+            OperationsHealthAlertStrategy healthAlertStrategy,
+            LongTaskSnapshotRepository longTaskSnapshotRepository) {
         this.restoreRepository = restoreRepository;
         this.backupRepository = backupRepository;
         this.scriptExecutor = scriptExecutor;
         this.executionGuard = executionGuard;
         this.writeBlocker = writeBlocker;
         this.healthAlertStrategy = healthAlertStrategy;
+        this.longTaskSnapshotRepository = longTaskSnapshotRepository;
     }
 
     @Override
@@ -145,6 +173,7 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
                 null);
         RestoreId restoreId = restoreRepository.insert(restoreRecord);
         restoreRecord.setId(restoreId);
+        LongTaskSnapshot taskSnapshot = createRestoreTaskSnapshot(restoreRecord);
 
         boolean writeBlockEnabled = false;
         try {
@@ -169,6 +198,7 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
             }
             restoreRecord.setCompletedAt(new Date());
             restoreRepository.update(restoreRecord);
+            updateRestoreTaskSnapshot(taskSnapshot, restoreRecord);
         }
         if (RestoreStatus.FAILED.value().equals(restoreRecord.getRestoreStatus())) {
             recordRestoreFailure(restoreRecord);
@@ -181,6 +211,48 @@ public class RestoreApplicationServiceImpl implements RestoreApplicationService 
             healthAlertStrategy.recordRestoreFailed(
                     record.getId().value(), record.getBackupId(), record.getFailureReason());
         }
+    }
+
+    private LongTaskSnapshot createRestoreTaskSnapshot(RestoreRecord record) {
+        if (longTaskSnapshotRepository == null || record == null || record.getId() == null) {
+            return null;
+        }
+        Date snapshotAt = new Date();
+        LongTaskSnapshot snapshot = new LongTaskSnapshot(
+                null,
+                TASK_SOURCE_DOMAIN,
+                TASK_TYPE_RESTORE,
+                taskKey(record.getId()),
+                TASK_STATUS_RUNNING,
+                1,
+                0,
+                0,
+                null,
+                record.getRequesterUserId(),
+                record.getStartedAt(),
+                null,
+                snapshotAt);
+        LongTaskSnapshotId snapshotId = longTaskSnapshotRepository.insert(snapshot);
+        snapshot.setId(snapshotId);
+        return snapshot;
+    }
+
+    private void updateRestoreTaskSnapshot(LongTaskSnapshot snapshot, RestoreRecord record) {
+        if (longTaskSnapshotRepository == null || snapshot == null || record == null) {
+            return;
+        }
+        boolean succeeded = RestoreStatus.SUCCEEDED.value().equals(record.getRestoreStatus());
+        snapshot.setTaskStatus(succeeded ? TASK_STATUS_SUCCEEDED : TASK_STATUS_FAILED);
+        snapshot.setSuccessCount(succeeded ? 1 : 0);
+        snapshot.setFailedCount(succeeded ? 0 : 1);
+        snapshot.setFailureReason(record.getFailureReason());
+        snapshot.setCompletedAt(record.getCompletedAt());
+        snapshot.setSnapshotAt(new Date());
+        longTaskSnapshotRepository.update(snapshot);
+    }
+
+    private String taskKey(RestoreId restoreId) {
+        return "restore:" + restoreId.value();
     }
 
     private void executeRestoreScript(RestoreMode restoreMode, String sourceBaseName, String preRestoreTimestamp) {
