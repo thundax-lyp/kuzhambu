@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `admin-web operations dashboard entries`：按多权限规则裁剪运维入口卡
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-PERMISSION-CHARTS.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-page.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/dashboard/dashboard-page.test.tsx`
-    - 处理动作：把 `OperationEntry.permission` 改为 `permissions` 并按任一权限展示入口。
-    - 验收点：只有 `operations:restore:view` 时展示“备份恢复”，无入口权限时展示现有空入口状态。
-    - 重要度：8/10
-
 - [ ] `admin-web operations dashboard charts`：按权限裁剪指标卡、趋势图和排行
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-DASHBOARD-PERMISSION-CHARTS.md`
