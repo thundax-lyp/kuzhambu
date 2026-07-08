@@ -197,7 +197,7 @@ class MingCustomsAdminControllerTest {
         assertNotNull(mapping, methodName);
         assertEquals(path, mapping.value()[0], methodName);
         assertNotNull(permission, methodName);
-        assertEquals(expectedPermission, permission.value(), methodName);
+        assertEquals(List.of(expectedPermission), List.of(permission.value()), methodName);
     }
 
     private static MingCustomsVersionRequest versionRequest() {

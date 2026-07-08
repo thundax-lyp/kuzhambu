@@ -214,6 +214,7 @@ class ClassicsContentApplicationServiceImplTest {
         restoredFrom.setContentId(ClassicsContentId.of(100L));
         restoredFrom.setSnapshotJson("{bad json");
         repository.versionById = restoredFrom;
+        repository.mingCustomsEntryForAiApply = mingCustomsEntry(100L);
         ClassicsContentApplicationServiceImpl service =
                 new ClassicsContentApplicationServiceImpl(repository, null, null, null, null, null, null, null, null);
 
