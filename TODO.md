@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `08 Admin Web health validation`：验证前端健康告警页面
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RESTORE-ORCHESTRATION.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/health/health-page.test.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/health/health-service-contract.test.ts`、`kuzhambu-apps/admin-web`
-    - 处理动作：运行健康页相关 Vitest、format、lint 和 build 验证。
-    - 验收点：健康页测试、服务契约测试、format:check、lint 和 build 通过；若存在非本任务既有失败，记录失败文件和原因。
-    - 重要度：10/10
-
 - [ ] `09 Main branch sync`：同步 main 分支最新代码
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
