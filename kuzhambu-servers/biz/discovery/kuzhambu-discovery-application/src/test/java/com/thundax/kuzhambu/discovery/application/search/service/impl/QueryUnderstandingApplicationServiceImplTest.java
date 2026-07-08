@@ -42,7 +42,7 @@ class QueryUnderstandingApplicationServiceImplTest {
         AiFacade aiFacade = mock(AiFacade.class);
         when(enhancementProvider.enhance("礼制"))
                 .thenReturn(new DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult(
-                        List.of("礼学"),
+                        List.of("礼学", "典礼"),
                         null,
                         List.of(new QueryUnderstandingResult.RecognizedEntityResult("礼制", "TAG", "礼制"))));
         when(payloadBuilder.buildPromptMessagesJson(any(), any(), any())).thenReturn("[]");
@@ -83,7 +83,7 @@ class QueryUnderstandingApplicationServiceImplTest {
         assertEquals("礼制", result.getNormalizedQueryText());
         assertEquals("礼制 礼学", result.getRewrittenQueryText());
         assertEquals("NATURAL_LANGUAGE_SEARCH", result.getIntent());
-        assertEquals(List.of("礼学"), result.getExpandedSynonyms());
+        assertEquals(List.of("礼学", "典礼"), result.getExpandedSynonyms());
         assertEquals("SUCCEEDED", captor.getValue().getUnderstandingStatus());
         assertEquals("礼制", captor.getValue().getNormalizedQueryText());
     }
