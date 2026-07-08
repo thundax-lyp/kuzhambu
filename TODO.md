@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `01 Operations health command/interface`：透传健康告警恢复操作者
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RESTORE-ORCHESTRATION.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/health/command/OperationsHealthAlertRecoverCommand.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/health/assembler/OperationsHealthAlertInterfaceAssembler.java`
-    - 处理动作：在告警恢复 command 中携带当前 admin 用户 ID，且不从请求体接收操作者。
-    - 验收点：`OperationsHealthAlertRecoverCommand.recoveredByUserId` 能由 interface assembler 从当前 admin subject 写入。
-    - 重要度：8/10
-
 - [ ] `02 Operations health recovery application`：编排健康告警自动恢复动作
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-RESTORE-ORCHESTRATION.md`

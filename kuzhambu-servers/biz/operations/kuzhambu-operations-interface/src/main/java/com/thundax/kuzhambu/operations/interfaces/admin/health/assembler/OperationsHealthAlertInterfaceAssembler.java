@@ -40,7 +40,7 @@ public final class OperationsHealthAlertInterfaceAssembler {
         if (request == null || request.getAlertId() == null) {
             return null;
         }
-        return new OperationsHealthAlertRecoverCommand(HealthAlertId.of(request.getAlertId()));
+        return new OperationsHealthAlertRecoverCommand(HealthAlertId.of(request.getAlertId()), currentAdminUserId());
     }
 
     public static OperationsHealthAlertPageResponse toResponse(OperationsHealthAlertPageResult result) {
