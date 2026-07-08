@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin cleanup page`：补全部 cleanup type 的页面展示与人工操作
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-CLEANUP-TARGET-TYPES.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/cleanup/cleanup-page.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/cleanup/cleanup-page.test.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/cleanup/cleanup-service-contract.test.ts`
-    - 处理动作：在 Admin cleanup 页面清理类型筛选和人工补偿执行控件中补齐三类新增 cleanup type。
-    - 验收点：`清理类型` 与 `执行清理类型` 控件展示全部 7 类，选择新增类型会弹出确认，失败行、失败项抽屉和告警跳转保持可用。
-    - 重要度：8/10
-
 - [ ] `Operations cleanup backend validation`：完成后端定向验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-CLEANUP-TARGET-TYPES.md`

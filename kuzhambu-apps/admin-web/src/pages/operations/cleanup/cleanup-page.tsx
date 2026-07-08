@@ -53,7 +53,10 @@ const cleanupTypeOptions = [
     { label: "过期备份", value: "EXPIRED_BACKUP" },
     { label: "过期导出", value: "EXPIRED_EXPORT" },
     { label: "过期分享", value: "EXPIRED_SHARE" },
-    { label: "过期草稿", value: "EXPIRED_DRAFT" }
+    { label: "过期草稿", value: "EXPIRED_DRAFT" },
+    { label: "过期报表", value: "EXPIRED_REPORT" },
+    { label: "过期健康检查", value: "EXPIRED_HEALTH_CHECK" },
+    { label: "过期长任务快照", value: "EXPIRED_LONG_TASK" }
 ];
 
 const cleanupStatusOptions = [

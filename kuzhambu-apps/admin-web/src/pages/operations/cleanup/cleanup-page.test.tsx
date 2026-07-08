@@ -177,12 +177,12 @@ describe("CleanupPage", () => {
             </QueryClientProvider>
         );
 
-        await openSelectAndChoose("执行清理类型", "过期导出");
+        await openSelectAndChoose("执行清理类型", "过期健康检查");
 
         expect(confirmDanger).toHaveBeenCalledWith(
             expect.objectContaining({
                 title: "执行清理任务",
-                message: "确认人工补偿执行 EXPIRED_EXPORT 清理吗？",
+                message: "确认人工补偿执行 EXPIRED_HEALTH_CHECK 清理吗？",
                 description: "自动调度是主路径，本操作仅用于人工补偿；执行中请勿重复提交。",
                 okText: "确认执行"
             })
