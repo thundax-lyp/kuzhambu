@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.knowledge.interfaces.admin.graph.assembler;
 
+import com.thundax.kuzhambu.knowledge.application.graph.command.RegenerateGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
@@ -105,6 +106,17 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
 
     public static GraphExtractionTaskId toSourceTaskId(GraphExtractionRequests.RegenerateRequest request) {
         return request == null ? null : GraphExtractionTaskId.ofNullable(request.getSourceTaskId());
+    }
+
+    public static RegenerateGraphExtractionCommand toRegenerateCommand(
+            GraphExtractionRequests.RegenerateRequest request) {
+        return new RegenerateGraphExtractionCommand(
+                request == null ? null : request.getTaskType(),
+                toSourceTaskId(request),
+                request == null ? null : request.getTriggerSource(),
+                request == null ? null : request.getSelectionScopeJson(),
+                request == null ? null : request.getReplaceUnconfirmedOnly(),
+                request == null ? null : request.getRequestedBy());
     }
 
     public static GraphExtractionResponses.TaskResponse toResponse(GraphExtractionTaskResult result) {

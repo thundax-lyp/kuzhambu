@@ -130,6 +130,9 @@ public final class GraphExtractionRequests {
         @JsonProperty("sourceTaskId")
         private Long sourceTaskId;
 
+        @JsonProperty("triggerSource")
+        private String triggerSource;
+
         @JsonProperty("selectionScopeJson")
         private String selectionScopeJson;
 

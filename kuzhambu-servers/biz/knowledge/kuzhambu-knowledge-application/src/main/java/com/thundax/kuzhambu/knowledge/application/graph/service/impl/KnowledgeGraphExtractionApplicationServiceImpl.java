@@ -19,6 +19,7 @@ import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.application.graph.command.RegenerateGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestLineageExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
@@ -68,6 +69,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
     private static final String STATUS_APPLIED = "APPLIED";
     private static final String STATUS_CANCELLED = "CANCELLED";
     private static final String STATUS_PARTIAL = "PARTIAL";
+    private static final String TRIGGER_SOURCE_REGENERATE = "REGENERATE";
 
     private final GraphExtractionTaskRepository repository;
     private final GraphVersionRepository graphVersionRepository;
@@ -254,29 +256,49 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             String selectionScopeJson,
             Boolean replaceUnconfirmedOnly,
             Long requestedBy) {
+        return regenerateTask(new RegenerateGraphExtractionCommand(
+                taskType,
+                sourceTaskId,
+                TRIGGER_SOURCE_REGENERATE,
+                selectionScopeJson,
+                replaceUnconfirmedOnly,
+                requestedBy));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public GraphExtractionTaskResult regenerateTask(RegenerateGraphExtractionCommand command) {
+        GraphExtractionTaskId sourceTaskId = command == null ? null : command.getSourceTaskId();
         GraphExtractionTask sourceTask = repository.getByTaskId(sourceTaskId);
         if (sourceTask == null) {
             throw new BizException(
                     "Knowledge graph source task not found: " + (sourceTaskId == null ? null : sourceTaskId.value()));
         }
         validateRegenerateSourceTask(sourceTask);
-        String resolvedTaskType = StringUtils.defaultIfBlank(taskType, sourceTask.getTaskType());
+        String commandTaskType = command == null ? null : command.getTaskType();
+        String commandTriggerSource = command == null ? null : command.getTriggerSource();
+        String commandSelectionScopeJson = command == null ? null : command.getSelectionScopeJson();
+        Boolean commandReplaceUnconfirmedOnly = command == null ? null : command.getReplaceUnconfirmedOnly();
+        Long commandRequestedBy = command == null ? null : command.getRequestedBy();
+        String resolvedTaskType = StringUtils.defaultIfBlank(commandTaskType, sourceTask.getTaskType());
         if (!StringUtils.equals(resolvedTaskType, sourceTask.getTaskType())) {
             throw new BizException("Knowledge graph regenerate task type does not match source task");
         }
+        Boolean replaceUnconfirmedOnly =
+                commandReplaceUnconfirmedOnly == null ? Boolean.TRUE : commandReplaceUnconfirmedOnly;
         String requestId = nextEventId("graph-regenerate");
         String traceId = nextEventId("graph-trace");
         return requestTasks(
                 resolvedTaskType,
                 sourceTask.getScopeType(),
                 sourceTask.getScopeJson(),
-                "REGENERATE",
-                StringUtils.defaultIfBlank(selectionScopeJson, sourceTask.getSelectionScopeJson()),
-                replaceUnconfirmedOnly != null ? replaceUnconfirmedOnly : sourceTask.getReplaceUnconfirmedOnly(),
+                StringUtils.defaultIfBlank(commandTriggerSource, TRIGGER_SOURCE_REGENERATE),
+                StringUtils.defaultIfBlank(commandSelectionScopeJson, sourceTask.getSelectionScopeJson()),
+                replaceUnconfirmedOnly,
                 sourceTaskId == null ? null : sourceTaskId.value(),
                 sourceTask.getSourceContentType(),
                 sourceTask.getSourceContentId(),
-                requestedBy == null ? sourceTask.getRequestedBy() : requestedBy,
+                commandRequestedBy == null ? sourceTask.getRequestedBy() : commandRequestedBy,
                 null,
                 null,
                 sourceTask.getModelId(),

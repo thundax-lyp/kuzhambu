@@ -121,11 +121,7 @@ public class KnowledgeGraphExtractionController {
     public GraphExtractionResponses.TaskResponse regenerateTask(
             @Valid @RequestBody GraphExtractionRequests.RegenerateRequest request) {
         return KnowledgeGraphExtractionInterfaceAssembler.toResponse(extractionService.regenerateTask(
-                request == null ? null : request.getTaskType(),
-                KnowledgeGraphExtractionInterfaceAssembler.toSourceTaskId(request),
-                request == null ? null : request.getSelectionScopeJson(),
-                request == null ? null : request.getReplaceUnconfirmedOnly(),
-                request == null ? null : request.getRequestedBy()));
+                KnowledgeGraphExtractionInterfaceAssembler.toRegenerateCommand(request)));
     }
 
     @Operation(summary = "取消批量抽取任务", description = "knowledge:graph:edit")
