@@ -78,8 +78,11 @@ public final class ClassicsContentInterfaceAssembler {
                                 tag.getContentId() == null
                                         ? null
                                         : tag.getContentId().value())
+                        .tagId(tag.getTagId() == null ? null : tag.getTagId().value())
                         .tagNameSnapshot(tag.getTagNameSnapshot())
+                        .source(tag.getSource() == null ? null : tag.getSource().value())
                         .status(tag.getStatus() == null ? null : tag.getStatus().value())
+                        .priority(tag.getPriority())
                         .build();
     }
 

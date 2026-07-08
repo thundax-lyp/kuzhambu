@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ClassicsContentTag`：治理通用内容标签接口入参和删除语义
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-ENTRY-TAGS.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/content/controller/ClassicsContentAdminController.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/content/assembler/ClassicsContentInterfaceAssembler.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/content/controller/response/ClassicsContentResponse.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/impl/ClassicsContentApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/content/ClassicsContentAdminControllerTest.java`
-    - 处理动作：补齐标签响应 `tagId/source/priority`，校验 `contentType/contentId/tagNameSnapshot/id/orderedIds`，新增 `POST /api/classics/content/tags/delete` 并清理 Knowledge 引用投影。
-    - 验收点：缺参请求返回参数错误，更新不能迁移绑定归属，删除标签会移除 Classics 绑定和 Knowledge 内容引用。
-    - 重要度：10/10
-
 - [ ] `ClassicsContentTagPanel`：接通前端通用标签删除闭环
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-ENTRY-TAGS.md`

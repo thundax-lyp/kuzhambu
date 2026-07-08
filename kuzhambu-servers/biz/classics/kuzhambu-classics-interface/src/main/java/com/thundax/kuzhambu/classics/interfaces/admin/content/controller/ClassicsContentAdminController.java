@@ -68,6 +68,8 @@ public class ClassicsContentAdminController {
     private static final Set<String> BATCH_VISIBILITY_CONTENT_TYPES =
             Set.of("SANCAI_ENTRY", "WANGQI_DOCUMENT", "MING_CUSTOMS");
     private static final Set<String> BATCH_VISIBILITIES = Set.of("PUBLIC", "PRIVATE");
+    private static final Set<String> CONTENT_TAG_CONTENT_TYPES =
+            Set.of("SANCAI_ENTRY", "WANGQI_DOCUMENT", "MING_CUSTOMS");
 
     private final ClassicsContentApplicationService service;
     private final SancaiApplicationService sancaiService;
@@ -91,8 +93,9 @@ public class ClassicsContentAdminController {
     @SysLogger(value = "标签列表")
     @GetMapping("tags")
     public List<ClassicsContentResponse> listTags(@RequestParam String contentType, @RequestParam Long contentId) {
-        ClassicsContentId contentIdValue = ClassicsContentIdCodec.toDomain(contentId);
-        return service.listTags(contentType, contentIdValue).stream()
+        String validContentType = validContentTagType(contentType);
+        ClassicsContentId contentIdValue = ClassicsContentIdCodec.toDomain(requireParameter(contentId, "contentId"));
+        return service.listTags(validContentType, contentIdValue).stream()
                 .map(ClassicsContentInterfaceAssembler::toTagResponse)
                 .toList();
     }
@@ -103,6 +106,7 @@ public class ClassicsContentAdminController {
     @SysLogger(value = "新增标签")
     @PostMapping("tags/add")
     public ClassicsContentResponse addTag(@Valid @RequestBody ClassicsContentRequest request) {
+        validateTagMutationRequest(request, false);
         ClassicsContentTagId id = service.addTag(ClassicsContentInterfaceAssembler.toTagCommand(request));
         return ClassicsContentResponse.builder()
                 .id(id == null ? null : id.value())
@@ -115,10 +119,22 @@ public class ClassicsContentAdminController {
     @SysLogger(value = "更新标签")
     @PostMapping("tags/update")
     public ClassicsContentResponse updateTag(@Valid @RequestBody ClassicsContentRequest request) {
+        validateTagMutationRequest(request, true);
         ClassicsContentTagId id = service.updateTag(ClassicsContentInterfaceAssembler.toTagCommand(request));
         return ClassicsContentResponse.builder()
                 .id(id == null ? null : id.value())
                 .build();
+    }
+
+    @Operation(summary = "删除古籍内容标签", description = "classics:content:edit")
+    @ApiImplicitParams({})
+    @HasPermission("classics:content:edit")
+    @SysLogger(value = "删除标签")
+    @PostMapping("tags/delete")
+    public Boolean deleteTag(@Valid @RequestBody ClassicsContentRequest request) {
+        service.deleteTag(
+                ClassicsContentTagIdCodec.toDomain(requireParameter(request == null ? null : request.getId(), "id")));
+        return true;
     }
 
     @Operation(summary = "排序古籍内容标签", description = "classics:content:edit")
@@ -127,9 +143,11 @@ public class ClassicsContentAdminController {
     @SysLogger(value = "标签排序")
     @PostMapping("tags/sort")
     public Boolean sortTags(@Valid @RequestBody ClassicsContentTagSortRequest request) {
+        String contentType = validContentTagType(request == null ? null : request.getContentType());
+        Long contentId = requireParameter(request == null ? null : request.getContentId(), "contentId");
         service.sortTags(new ContentTagSortCommand(
-                request == null ? null : request.getContentType(),
-                ClassicsContentIdCodec.toDomain(request == null ? null : request.getContentId()),
+                contentType,
+                ClassicsContentIdCodec.toDomain(contentId),
                 RequestListHelper.map(
                         RequestListHelper.presentUnique(
                                 request == null ? null : request.getOrderedIds(),
@@ -329,6 +347,37 @@ public class ClassicsContentAdminController {
         String value = StringUtils.trimToNull(visibility);
         if (!BATCH_VISIBILITIES.contains(value)) {
             throw AdminResponseExceptions.invalidParameter("visibility");
+        }
+        return value;
+    }
+
+    private static void validateTagMutationRequest(ClassicsContentRequest request, boolean requireId) {
+        if (request == null) {
+            throw AdminResponseExceptions.invalidParameter("request");
+        }
+        if (requireId) {
+            requireParameter(request.getId(), "id");
+        }
+        request.setContentType(validContentTagType(request.getContentType()));
+        requireParameter(request.getContentId(), "contentId");
+        String tagName = StringUtils.trimToNull(request.getTagNameSnapshot());
+        if (tagName == null) {
+            throw AdminResponseExceptions.invalidParameter("tagNameSnapshot");
+        }
+        request.setTagNameSnapshot(tagName);
+    }
+
+    private static String validContentTagType(String contentType) {
+        String value = StringUtils.trimToNull(contentType);
+        if (!CONTENT_TAG_CONTENT_TYPES.contains(value)) {
+            throw AdminResponseExceptions.invalidParameter("contentType");
+        }
+        return value;
+    }
+
+    private static Long requireParameter(Long value, String name) {
+        if (value == null) {
+            throw AdminResponseExceptions.invalidParameter(name);
         }
         return value;
     }
