@@ -13,6 +13,8 @@ import com.thundax.kuzhambu.operations.domain.task.repository.LongTaskSnapshotRe
 import com.thundax.kuzhambu.operations.infra.task.persistence.assembler.LongTaskSnapshotPersistenceAssembler;
 import com.thundax.kuzhambu.operations.infra.task.persistence.dataobject.LongTaskSnapshotDO;
 import com.thundax.kuzhambu.operations.infra.task.persistence.mapper.LongTaskSnapshotMapper;
+import java.util.Date;
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 
@@ -79,6 +81,22 @@ public class LongTaskSnapshotRepositoryImpl implements LongTaskSnapshotRepositor
                 .eq(LongTaskSnapshotDO::getSnapshotId, LongTaskSnapshotIdCodec.toValue(id)));
     }
 
+    @Override
+    public List<LongTaskSnapshotId> listExpiredSnapshotIds(Date snapshotBefore, int limit) {
+        return mapper
+                .selectObjs(new QueryWrapper<LongTaskSnapshotDO>()
+                        .select("snapshot_id")
+                        .le(snapshotBefore != null, "snapshot_at", snapshotBefore)
+                        .ne("task_status", "RUNNING")
+                        .orderByAsc("snapshot_at")
+                        .orderByAsc("snapshot_id")
+                        .last("LIMIT " + limit))
+                .stream()
+                .map(LongTaskSnapshotRepositoryImpl::longValue)
+                .map(LongTaskSnapshotId::of)
+                .toList();
+    }
+
     private QueryWrapper<LongTaskSnapshotDO> buildPageWrapper(String sourceDomain, String taskType, String taskStatus) {
         QueryWrapper<LongTaskSnapshotDO> wrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(sourceDomain)) {
@@ -93,5 +111,12 @@ public class LongTaskSnapshotRepositoryImpl implements LongTaskSnapshotRepositor
         wrapper.orderByDesc("snapshot_at");
         wrapper.orderByDesc("snapshot_id");
         return wrapper;
+    }
+
+    private static Long longValue(Object value) {
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        return Long.valueOf(String.valueOf(value));
     }
 }
