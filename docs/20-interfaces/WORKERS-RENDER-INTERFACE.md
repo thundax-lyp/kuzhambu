@@ -280,6 +280,102 @@ Workers 只负责生成文件内容和摘要，不负责导出记录状态、不
 - 图片或视觉资产引用的临时可读内容。
 - 是否包含私有内容的确认结果。
 
+`input.payload` 目标结构：
+
+```json
+{
+  "metadata": {
+    "title": "三才图会静态展示",
+    "generatedAt": "2026-07-08T10:00:00+08:00",
+    "generatedBy": "admin",
+    "templateVersion": "sancai-showcase-v1",
+    "locale": "zh-CN"
+  },
+  "scope": {
+    "scopeType": "FILTERED_RESULT",
+    "scopeTitle": "天地门公开条目",
+    "categoryIds": [1],
+    "volumeIds": [11],
+    "entryIds": [1001, 1002],
+    "filters": {
+      "keyword": "天地",
+      "lifecycleStatus": "PUBLISHED",
+      "visibility": "PUBLIC"
+    }
+  },
+  "visibilityRisk": {
+    "status": "PUBLIC_ONLY",
+    "privateConfirmed": false
+  },
+  "catalogs": [
+    {
+      "id": 1,
+      "title": "天地",
+      "entryCount": 2,
+      "imageEntryCount": 1,
+      "thumbnailResourceId": "asset-1001-original"
+    }
+  ],
+  "volumes": [
+    {
+      "id": 11,
+      "categoryId": 1,
+      "title": "卷一",
+      "priority": 1
+    }
+  ],
+  "entries": [
+    {
+      "id": 1001,
+      "categoryId": 1,
+      "volumeId": 11,
+      "title": "天地",
+      "originalText": "原文",
+      "translationText": "译文",
+      "tags": ["天文"],
+      "images": [
+        {
+          "resourceId": "asset-1001-original",
+          "imageType": "ORIGINAL",
+          "caption": "原图",
+          "currentUsed": false,
+          "priority": 1
+        }
+      ],
+      "visualAsset": {
+        "resourceId": "asset-1001-current",
+        "visualDescription": "视觉描述",
+        "currentUsed": true
+      }
+    }
+  ],
+  "assets": [
+    {
+      "resourceId": "asset-1001-original",
+      "temporaryUrl": "https://internal-temp-resource",
+      "filename": "1001.png",
+      "contentType": "image/png",
+      "sha256": "sha256:..."
+    }
+  ],
+  "options": {
+    "enableSearch": true,
+    "enableFilters": true,
+    "enableBrowseModeSwitch": true,
+    "offlineOpen": true,
+    "printable": true
+  }
+}
+```
+
+字段规则：
+
+- `catalogs` 是正式目录字段；`catalog` 仅作为旧测试输入兼容字段。
+- `entries[].images[].resourceId` 必须能在 `assets[].resourceId` 中找到对应资源；找不到时 worker 展示占位，不中断整页生成。
+- `assets[].temporaryUrl` 只允许作为本次渲染的临时可读资源，worker 读取后必须内联为 data URL，不得把临时 URL 写入 HTML。
+- `RenderSummary.metadata` 必须返回 `catalogCount`、`volumeCount`、`assetCount`、`visibilityRiskStatus`。
+- 成功产物固定为单个 HTML 文件，`contentType` 固定为 `text/html; charset=utf-8`。
+
 模板必须支持离线打开、浏览器打印和 PDF 生成。
 
 ## Operations Report

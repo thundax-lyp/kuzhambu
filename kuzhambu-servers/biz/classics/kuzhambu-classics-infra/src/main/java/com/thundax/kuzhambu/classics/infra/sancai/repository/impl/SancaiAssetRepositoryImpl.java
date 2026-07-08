@@ -285,17 +285,60 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
 
     @Override
     public int markShowcaseCompleted(SancaiShowcaseId id, StorageObjectId storageObjectId, int entryCount) {
-        return showcaseMapper.markShowcaseCompleted(
-                SancaiShowcaseIdCodec.toValue(id),
-                SancaiShowcaseStatus.COMPLETED.value(),
-                StorageObjectIdCodec.toValue(storageObjectId),
-                entryCount);
+        return markShowcaseCompleted(id, storageObjectId, entryCount, 0, null, null, null, null);
+    }
+
+    @Override
+    public int markShowcaseCompleted(
+            SancaiShowcaseId id,
+            StorageObjectId storageObjectId,
+            int entryCount,
+            int assetCount,
+            String filename,
+            String contentType,
+            Long sizeBytes,
+            String sha256) {
+        return showcaseMapper.update(
+                null,
+                new LambdaUpdateWrapper<SancaiShowcaseDO>()
+                        .eq(SancaiShowcaseDO::getId, SancaiShowcaseIdCodec.toValue(id))
+                        .set(SancaiShowcaseDO::getStatus, SancaiShowcaseStatus.COMPLETED.value())
+                        .set(SancaiShowcaseDO::getCompletedAt, new Date())
+                        .set(SancaiShowcaseDO::getStorageObjectId, StorageObjectIdCodec.toValue(storageObjectId))
+                        .set(SancaiShowcaseDO::getEntryCount, entryCount)
+                        .set(SancaiShowcaseDO::getAssetCount, assetCount)
+                        .set(SancaiShowcaseDO::getFilename, filename)
+                        .set(SancaiShowcaseDO::getContentType, contentType)
+                        .set(SancaiShowcaseDO::getSizeBytes, sizeBytes)
+                        .set(SancaiShowcaseDO::getSha256, sha256)
+                        .set(SancaiShowcaseDO::getFailureType, null)
+                        .set(SancaiShowcaseDO::getFailureMessage, null));
     }
 
     @Override
     public int markShowcaseFailed(SancaiShowcaseId id) {
-        return showcaseMapper.markShowcaseStatus(
-                SancaiShowcaseIdCodec.toValue(id), SancaiShowcaseStatus.FAILED.value());
+        return markShowcaseFailed(id, null, null);
+    }
+
+    @Override
+    public int markShowcaseFailed(SancaiShowcaseId id, String failureType, String failureMessage) {
+        return showcaseMapper.update(
+                null,
+                new LambdaUpdateWrapper<SancaiShowcaseDO>()
+                        .eq(SancaiShowcaseDO::getId, SancaiShowcaseIdCodec.toValue(id))
+                        .set(SancaiShowcaseDO::getStatus, SancaiShowcaseStatus.FAILED.value())
+                        .set(SancaiShowcaseDO::getCompletedAt, new Date())
+                        .set(SancaiShowcaseDO::getFailureType, failureType)
+                        .set(SancaiShowcaseDO::getFailureMessage, failureMessage));
+    }
+
+    @Override
+    public int markShowcaseExpired(SancaiShowcaseId id) {
+        return showcaseMapper.update(
+                null,
+                new LambdaUpdateWrapper<SancaiShowcaseDO>()
+                        .eq(SancaiShowcaseDO::getId, SancaiShowcaseIdCodec.toValue(id))
+                        .set(SancaiShowcaseDO::getStatus, SancaiShowcaseStatus.EXPIRED.value()));
     }
 
     @Override
@@ -305,15 +348,62 @@ public class SancaiAssetRepositoryImpl implements SancaiAssetRepository {
 
     @Override
     public PageResult<SancaiShowcase> pageShowcases(String status, int pageNo, int pageSize) {
+        return pageShowcases(null, status, null, null, null, pageNo, pageSize);
+    }
+
+    @Override
+    public PageResult<SancaiShowcase> pageShowcases(
+            String keyword,
+            String status,
+            String visibilityRiskStatus,
+            Date requestedAtStart,
+            Date requestedAtEnd,
+            int pageNo,
+            int pageSize) {
         LambdaQueryWrapper<SancaiShowcaseDO> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(StringUtils.isNotBlank(status), SancaiShowcaseDO::getStatus, status)
+                .eq(
+                        StringUtils.isNotBlank(visibilityRiskStatus),
+                        SancaiShowcaseDO::getVisibilityRiskStatus,
+                        visibilityRiskStatus)
+                .ge(requestedAtStart != null, SancaiShowcaseDO::getRequestedAt, requestedAtStart)
+                .le(requestedAtEnd != null, SancaiShowcaseDO::getRequestedAt, requestedAtEnd)
                 .orderByDesc(SancaiShowcaseDO::getRequestedAt);
+        appendKeyword(wrapper, keyword);
         Page<SancaiShowcaseDO> dataPage = showcaseMapper.selectPage(new Page<>(pageNo, pageSize), wrapper);
         return PageResult.of(
                 (int) dataPage.getCurrent(),
                 (int) dataPage.getSize(),
                 dataPage.getTotal(),
                 SancaiAssetPersistenceAssembler.toShowcaseDomainList(dataPage.getRecords()));
+    }
+
+    private static void appendKeyword(LambdaQueryWrapper<SancaiShowcaseDO> wrapper, String keyword) {
+        String normalizedKeyword = StringUtils.trimToNull(keyword);
+        if (normalizedKeyword == null) {
+            return;
+        }
+        Long idKeyword = parseLong(normalizedKeyword);
+        wrapper.and(condition -> {
+            if (idKeyword != null) {
+                condition.eq(SancaiShowcaseDO::getId, idKeyword).or();
+            }
+            condition
+                    .like(SancaiShowcaseDO::getScopeTitle, normalizedKeyword)
+                    .or()
+                    .like(SancaiShowcaseDO::getFilename, normalizedKeyword);
+        });
+    }
+
+    private static Long parseLong(String value) {
+        if (!StringUtils.isNumeric(value)) {
+            return null;
+        }
+        try {
+            return Long.valueOf(value);
+        } catch (NumberFormatException exception) {
+            return null;
+        }
     }
 
     private static int maxPriority(List<Object> values) {

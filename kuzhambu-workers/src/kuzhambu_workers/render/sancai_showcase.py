@@ -1,6 +1,9 @@
+from base64 import b64encode
 from hashlib import sha256
 from html import escape
+from mimetypes import guess_type
 from pathlib import Path
+from urllib.request import urlopen
 
 from kuzhambu_workers.core.errors import WorkerError, WorkerErrorType
 from kuzhambu_workers.render.classics_export import RenderedArtifact
@@ -18,15 +21,20 @@ def render_sancai_showcase(request: RenderRequest) -> RenderedArtifact:
 
     payload = request.input.payload
     metadata = payload.get("metadata", {})
-    catalog = _list_payload(payload, "catalog")
+    catalog = _catalog_payload(payload)
+    volumes = _list_payload(payload, "volumes")
     entries = _list_payload(payload, "entries")
     assets = _list_payload(payload, "assets")
+    asset_lookup = _asset_lookup(assets)
     html = _render_html(
         title=str(metadata.get("title") or payload.get("title") or "Sancai Showcase"),
         metadata=metadata,
         catalog=catalog,
+        volumes=volumes,
         entries=entries,
         assets=assets,
+        asset_lookup=asset_lookup,
+        visibility_risk=_visibility_risk(payload),
     ).encode("utf-8")
 
     return RenderedArtifact(
@@ -41,10 +49,18 @@ def render_sancai_showcase(request: RenderRequest) -> RenderedArtifact:
             warnings=[],
             metadata={
                 "catalogCount": len(catalog),
+                "volumeCount": len(volumes),
                 "assetCount": len(assets),
+                "visibilityRiskStatus": _visibility_risk(payload),
             },
         ),
     )
+
+
+def _catalog_payload(payload: dict) -> list[dict]:
+    if "catalogs" in payload:
+        return _list_payload(payload, "catalogs")
+    return _list_payload(payload, "catalog")
 
 
 def _list_payload(payload: dict, key: str) -> list[dict]:
@@ -59,13 +75,56 @@ def _list_payload(payload: dict, key: str) -> list[dict]:
     return [item if isinstance(item, dict) else {"text": str(item)} for item in raw]
 
 
+def _visibility_risk(payload: dict) -> str:
+    visibility_risk = payload.get("visibilityRisk", {})
+    if isinstance(visibility_risk, dict):
+        return str(visibility_risk.get("status") or "PUBLIC_ONLY")
+    return "PUBLIC_ONLY"
+
+
+def _asset_lookup(assets: list[dict]) -> dict[str, dict]:
+    lookup: dict[str, dict] = {}
+    for asset in assets:
+        resource_id = str(asset.get("resourceId") or asset.get("id") or "")
+        if not resource_id:
+            continue
+        lookup[resource_id] = {
+            "src": _asset_data_url(asset),
+            "contentType": str(asset.get("contentType") or ""),
+            "filename": str(asset.get("filename") or asset.get("name") or resource_id),
+        }
+    return lookup
+
+
+def _asset_data_url(asset: dict) -> str:
+    temporary_url = str(asset.get("temporaryUrl") or "")
+    if not temporary_url:
+        return ""
+    try:
+        with urlopen(temporary_url, timeout=5) as response:
+            data = response.read()
+            content_type = (
+                str(asset.get("contentType") or "")
+                or response.headers.get_content_type()
+                or guess_type(str(asset.get("filename") or ""))[0]
+                or "application/octet-stream"
+            )
+    except Exception:
+        return ""
+    encoded = b64encode(data).decode("ascii")
+    return f"data:{content_type};base64,{encoded}"
+
+
 def _render_html(
     *,
     title: str,
     metadata: dict,
     catalog: list[dict],
+    volumes: list[dict],
     entries: list[dict],
     assets: list[dict],
+    asset_lookup: dict[str, dict],
+    visibility_risk: str,
 ) -> str:
     template = (Path(__file__).parent / "templates" / "sancai_showcase.html").read_text(
         encoding="utf-8"
@@ -74,8 +133,12 @@ def _render_html(
         template.replace("{{ title }}", escape(title))
         .replace("{{ metadata }}", _metadata_html(metadata))
         .replace("{{ catalog }}", _catalog_html(catalog))
-        .replace("{{ entries }}", _entries_html(entries))
+        .replace("{{ catalog_options }}", _catalog_options_html(catalog))
+        .replace("{{ volumes }}", _volumes_html(volumes))
+        .replace("{{ volume_options }}", _volume_options_html(volumes))
+        .replace("{{ entries }}", _entries_html(entries, asset_lookup))
         .replace("{{ assets }}", _assets_html(assets))
+        .replace("{{ visibility_risk }}", escape(visibility_risk))
     )
 
 
@@ -88,24 +151,83 @@ def _metadata_html(metadata: dict) -> str:
 
 def _catalog_html(catalog: list[dict]) -> str:
     return "\n".join(
-        f"<li>{escape(str(item.get('label') or item.get('title') or item.get('id') or 'Untitled'))}"
+        "<li>"
+        f'<button type="button" data-catalog="{escape(str(item.get("id") or ""), quote=True)}">'
+        f"{escape(str(item.get('label') or item.get('title') or item.get('id') or 'Untitled'))}"
+        "</button>"
+        f"<small>{escape(str(item.get('entryCount') or ''))}</small>"
         "</li>"
         for item in catalog
     )
 
 
-def _entries_html(entries: list[dict]) -> str:
+def _catalog_options_html(catalog: list[dict]) -> str:
     return "\n".join(
-        "<article>"
+        f'<option value="{escape(str(item.get("id") or ""), quote=True)}">'
+        f"{escape(str(item.get('label') or item.get('title') or item.get('id') or 'Untitled'))}"
+        "</option>"
+        for item in catalog
+    )
+
+
+def _volumes_html(volumes: list[dict]) -> str:
+    return "\n".join(
+        "<li>"
+        f'<button type="button" data-volume="{escape(str(item.get("id") or ""), quote=True)}">'
+        f"{escape(str(item.get('title') or item.get('id') or 'Untitled'))}"
+        "</button>"
+        "</li>"
+        for item in volumes
+    )
+
+
+def _volume_options_html(volumes: list[dict]) -> str:
+    return "\n".join(
+        f'<option value="{escape(str(item.get("id") or ""), quote=True)}">'
+        f"{escape(str(item.get('title') or item.get('id') or 'Untitled'))}"
+        "</option>"
+        for item in volumes
+    )
+
+
+def _entries_html(entries: list[dict], asset_lookup: dict[str, dict]) -> str:
+    return "\n".join(
+        "<article "
+        f'data-title="{escape(str(entry.get("title") or ""), quote=True)}" '
+        f'data-body="{escape(_entry_search_text(entry), quote=True)}" '
+        f'data-category="{escape(str(entry.get("categoryId") or ""), quote=True)}" '
+        f'data-volume="{escape(str(entry.get("volumeId") or ""), quote=True)}">'
         f"<h2>{escape(str(entry.get('title') or entry.get('id') or 'Untitled'))}</h2>"
-        f"<p>{escape(str(entry.get('text') or entry.get('body') or ''))}</p>"
-        f"{_entry_images(entry)}"
+        f"{_entry_text_html(entry)}"
+        f"{_entry_images(entry, asset_lookup)}"
         "</article>"
         for entry in entries
     )
 
 
-def _entry_images(entry: dict) -> str:
+def _entry_search_text(entry: dict) -> str:
+    return " ".join(
+        str(entry.get(key) or "")
+        for key in ["title", "text", "body", "originalText", "translationText"]
+    )
+
+
+def _entry_text_html(entry: dict) -> str:
+    original = str(entry.get("originalText") or entry.get("text") or entry.get("body") or "")
+    translation = str(entry.get("translationText") or "")
+    tags = entry.get("tags") if isinstance(entry.get("tags"), list) else []
+    tag_html = "".join(f"<span>{escape(str(tag))}</span>" for tag in tags)
+    visual_asset = entry.get("visualAsset") if isinstance(entry.get("visualAsset"), dict) else {}
+    visual_text = str(visual_asset.get("visualDescription") or "")
+    return (
+        f'<p class="entry-original">{escape(original)}</p>'
+        f'<p class="entry-translation">{escape(translation)}</p>'
+        f'<div class="entry-tags">{tag_html}</div>'
+        f'<p class="entry-visual">{escape(visual_text)}</p>'
+    )
+
+
+def _entry_images(entry: dict, asset_lookup: dict[str, dict]) -> str:
     images = entry.get("images", [])
     if not isinstance(images, list):
         return _missing_image_html()
@@ -114,7 +236,7 @@ def _entry_images(entry: dict) -> str:
         return _missing_image_html()
     return "".join(
         f'<figure class="entry-image" data-current="{_current_flag(image)}">'
-        f"{_image_content_html(image)}"
+        f"{_image_content_html(image, asset_lookup)}"
         f"<figcaption>{escape(str(image.get('caption') or ''))}</figcaption>"
         "</figure>"
         for image in sorted(image_items, key=_image_sort_key)
@@ -134,8 +256,9 @@ def _current_flag(image: dict) -> str:
     return "true" if image.get("currentUsed") is True else "false"
 
 
-def _image_content_html(image: dict) -> str:
-    src = str(image.get("src") or "")
+def _image_content_html(image: dict, asset_lookup: dict[str, dict]) -> str:
+    resource_id = str(image.get("resourceId") or "")
+    src = str(asset_lookup.get(resource_id, {}).get("src") or image.get("src") or "")
     if not src:
         return '<div class="image-placeholder">图片资源暂缺</div>'
     return (
@@ -154,8 +277,20 @@ def _missing_image_html() -> str:
 
 
 def _assets_html(assets: list[dict]) -> str:
+    def asset_label(asset: dict) -> str:
+        return str(
+            asset.get("filename")
+            or asset.get("name")
+            or asset.get("resourceId")
+            or asset.get("id")
+            or "asset"
+        )
+
     return "\n".join(
-        f"<li>{escape(str(asset.get('name') or asset.get('id') or 'asset'))}</li>"
+        "<li>"
+        f"{escape(asset_label(asset))}"
+        f"<small>{escape(str(asset.get('contentType') or ''))}</small>"
+        "</li>"
         for asset in assets
     )
 

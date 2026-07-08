@@ -11,10 +11,7 @@ import * as shareService from "@/pages/classics/common/classics-share-service";
 import * as currentUserService from "@/service/current-user-service";
 import { ClassicsExportJobSection } from "@/pages/classics/common/components/classics-export-job-section";
 import { ClassicsShowcaseJobSection } from "@/pages/classics/common/components/classics-showcase-job-section";
-import type {
-    ClassicsExportJobRecord,
-    ClassicsShowcaseJobRecord
-} from "@/pages/classics/common/classics-export-types";
+import type { ClassicsExportJobRecord } from "@/pages/classics/common/classics-export-types";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import { AiRefinementStreamPanel } from "@/pages/classics/common/components/ai-refinement-stream-panel";
 import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
@@ -32,6 +29,7 @@ import type {
     SancaiContentVersionRecord,
     SancaiEntryImageRecord,
     SancaiEntryRecord,
+    SancaiShowcaseRecord,
     SancaiVisualAssetRecord,
     SancaiVolumeRecord
 } from "../sancai-types";
@@ -242,7 +240,6 @@ export const SancaiEntryPanel = ({
             }),
         retry: false
     });
-    const showcaseJobs = showcasesQuery.data?.records || [];
     let modelKey = "empty";
     if (isCreating) {
         modelKey = "create";
@@ -499,6 +496,7 @@ export const SancaiEntryPanel = ({
         mutationFn: (entry: SancaiEntryRecord) => {
             const title = `${readEntryTitle(entry)} 静态展示`;
             return entryService.requestShowcase({
+                scopeTitle: title,
                 scopeJson: JSON.stringify({
                     title,
                     entries: [
@@ -509,7 +507,6 @@ export const SancaiEntryPanel = ({
                         }
                     ]
                 }),
-                entryCount: 1,
                 visibilityRiskStatus: "PUBLIC_ONLY"
             });
         },
@@ -745,7 +742,7 @@ export const SancaiEntryPanel = ({
             }
         });
     };
-    const deleteShowcaseJob = (job: ClassicsShowcaseJobRecord) => {
+    const deleteShowcaseJob = (job: SancaiShowcaseRecord) => {
         if (!job.id) {
             return;
         }
@@ -758,7 +755,7 @@ export const SancaiEntryPanel = ({
             onConfirm: () => deleteShowcaseMutation.mutateAsync(job.id as number)
         });
     };
-    const deleteShowcaseJobs = (jobs: ClassicsShowcaseJobRecord[]) => {
+    const deleteShowcaseJobs = (jobs: SancaiShowcaseRecord[]) => {
         const ids = jobs.map((job) => job.id).filter((id): id is number => id != null);
         if (!ids.length) {
             return;
@@ -964,7 +961,13 @@ export const SancaiEntryPanel = ({
                 }}
             />
             <ClassicsShowcaseJobSection
-                items={showcaseJobs}
+                filtersVisible={false}
+                page={showcasesQuery.data}
+                onPreview={(job) => {
+                    if (job.contentUrl) {
+                        window.open(job.contentUrl, "_blank", "noopener,noreferrer");
+                    }
+                }}
                 loading={
                     showcasesQuery.isLoading ||
                     showcaseEntryMutation.isPending ||

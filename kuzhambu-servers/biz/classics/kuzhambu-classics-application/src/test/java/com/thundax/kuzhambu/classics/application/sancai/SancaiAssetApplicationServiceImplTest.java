@@ -22,9 +22,11 @@ import com.thundax.kuzhambu.classics.domain.common.client.WorkerRenderClient;
 import com.thundax.kuzhambu.classics.domain.common.client.dto.WorkerRenderDtos;
 import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiShowcase;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVisualAsset;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageType;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiShowcaseStatus;
+import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisualAssetStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId;
@@ -449,7 +451,21 @@ class SancaiAssetApplicationServiceImplTest {
                 null));
 
         assertEquals(9001L, result.value());
-        verify(repository).markShowcaseCompleted(showcaseId, StorageObjectId.of(7001L), 2);
+        ArgumentCaptor<SancaiShowcase> showcaseCaptor = ArgumentCaptor.forClass(SancaiShowcase.class);
+        verify(repository).insertShowcase(showcaseCaptor.capture());
+        assertNull(showcaseCaptor.getValue().getStorageObjectId());
+        verify(repository).updateShowcase(showcaseCaptor.getValue());
+        assertEquals(SancaiShowcaseStatus.PROCESSING, showcaseCaptor.getValue().getStatus());
+        verify(repository)
+                .markShowcaseCompleted(
+                        showcaseId,
+                        StorageObjectId.of(7001L),
+                        2,
+                        0,
+                        "showcase.html",
+                        "text/html; charset=utf-8",
+                        28L,
+                        null);
         ArgumentCaptor<WorkerRenderDtos.WorkerRenderRequest> renderCaptor =
                 ArgumentCaptor.forClass(WorkerRenderDtos.WorkerRenderRequest.class);
         verify(workerRenderClient).renderSancaiShowcase(renderCaptor.capture());
@@ -505,8 +521,23 @@ class SancaiAssetApplicationServiceImplTest {
                 new SancaiShowcaseCommand(null, SancaiShowcaseStatus.REQUESTED, "{\"title\":\"demo\"}", null, 0, null));
 
         assertEquals(9001L, result.value());
-        verify(repository).markShowcaseFailed(showcaseId);
+        verify(repository).markShowcaseFailed(showcaseId, "RENDER_OUTPUT_FAILURE", "三才静态展示渲染失败");
         verify(storageFacade, times(0)).upload(org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    void requestShowcaseShouldRejectPrivateScopeWithoutConfirmation() {
+        SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
+        SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(repository, null, null, null);
+        SancaiShowcaseCommand command =
+                new SancaiShowcaseCommand(null, SancaiShowcaseStatus.REQUESTED, "{\"title\":\"demo\"}", null, 0, null);
+        command.setVisibilityRiskStatus(SancaiVisibilityRiskStatus.CONTAINS_PRIVATE);
+        command.setPrivateConfirmed(false);
+
+        BizException exception = assertThrows(BizException.class, () -> service.requestShowcase(command));
+
+        assertEquals("包含私有内容的静态展示生成必须先确认风险", exception.getMessage());
+        verify(repository, never()).insertShowcase(org.mockito.ArgumentMatchers.any());
     }
 
     private static WorkerRenderDtos.WorkerRenderResponse successRenderResponse() {

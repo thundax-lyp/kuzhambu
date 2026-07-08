@@ -1,3 +1,5 @@
+from base64 import b64encode
+
 import pytest
 
 from kuzhambu_workers.core.errors import WorkerError
@@ -21,6 +23,68 @@ def test_sancai_showcase_renders_offline_html() -> None:
     assert 'src="original.png"' in html
     assert 'data-current="true"><img src="original.png"' in html
     assert "暂无配图" in html
+
+
+def test_sancai_showcase_inlines_assets_and_reports_metadata(tmp_path) -> None:
+    image_path = tmp_path / "entry.png"
+    image_path.write_bytes(b"image-bytes")
+    request = _request("HTML")
+    request.input.payload.pop("catalog")
+    request.input.payload["catalogs"] = [{"id": 1, "title": "天地", "entryCount": 1}]
+    request.input.payload["volumes"] = [{"id": 11, "categoryId": 1, "title": "卷一"}]
+    request.input.payload["visibilityRisk"] = {
+        "status": "CONTAINS_PRIVATE",
+        "privateConfirmed": True,
+    }
+    request.input.payload["assets"] = [
+        {
+            "resourceId": "asset-entry-original",
+            "temporaryUrl": image_path.as_uri(),
+            "filename": "entry.png",
+            "contentType": "image/png",
+            "sha256": "sha256:sample",
+        }
+    ]
+    request.input.payload["entries"] = [
+        {
+            "id": 1001,
+            "categoryId": 1,
+            "volumeId": 11,
+            "title": "天地",
+            "originalText": "原文",
+            "translationText": "译文",
+            "tags": ["天文"],
+            "images": [
+                {
+                    "resourceId": "asset-entry-original",
+                    "imageType": "ORIGINAL",
+                    "caption": "原图",
+                    "currentUsed": True,
+                    "priority": 1,
+                }
+            ],
+            "visualAsset": {
+                "resourceId": "asset-entry-current",
+                "visualDescription": "视觉描述",
+                "currentUsed": True,
+            },
+        }
+    ]
+
+    artifact = render_sancai_showcase(request)
+    html = artifact.data.decode("utf-8")
+
+    assert f"data:image/png;base64,{b64encode(b'image-bytes').decode('ascii')}" in html
+    assert str(image_path.as_uri()) not in html
+    assert "搜索条目标题、正文或译文" in html
+    assert "全部门类" in html
+    assert "全部卷" in html
+    assert "紧凑浏览" in html
+    assert artifact.summary.itemCount == 1
+    assert artifact.summary.metadata["catalogCount"] == 1
+    assert artifact.summary.metadata["volumeCount"] == 1
+    assert artifact.summary.metadata["assetCount"] == 1
+    assert artifact.summary.metadata["visibilityRiskStatus"] == "CONTAINS_PRIVATE"
 
 
 def test_sancai_showcase_rejects_non_html_output() -> None:

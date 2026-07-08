@@ -1,12 +1,57 @@
 .classics-showcase-job-section {
-    margin-bottom: 16px;
-    padding: 10px 12px;
-    border: 1px dashed var(--line-subtle);
-    border-radius: 8px;
+    display: grid;
+    min-width: 0;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line-subtle);
 }
 
 .classics-showcase-job-section-head {
-    margin-bottom: 8px;
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.classics-showcase-job-section-filters {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) 150px 170px minmax(260px, 330px) auto;
+    gap: 10px;
+    align-items: center;
+    min-width: 0;
+}
+
+.classics-showcase-job-section-filters .ant-picker,
+.classics-showcase-job-section-filters .ant-select,
+.classics-showcase-job-section-filters .ant-input-search {
+    width: 100%;
+}
+
+.classics-showcase-job-section-alert {
+    margin: 0;
+}
+
+.classics-showcase-job-table {
+    min-width: 0;
+}
+
+@media (max-width: 1180px) {
+    .classics-showcase-job-section-filters {
+        grid-template-columns: minmax(220px, 1fr) 150px 170px;
+    }
+}
+
+@media (max-width: 760px) {
+    .classics-showcase-job-section-head {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .classics-showcase-job-section-filters {
+        grid-template-columns: 1fr;
+    }
 }
 
 .classics-showcase-job-section-filters {

@@ -17,9 +17,18 @@ public class SancaiShowcaseDO {
     private Long id;
 
     private Date requestedAt;
+    private Date completedAt;
     private String status;
     private String scopeJson;
+    private String scopeTitle;
     private Long storageObjectId;
     private Integer entryCount;
+    private Integer assetCount;
     private String visibilityRiskStatus;
+    private String filename;
+    private String contentType;
+    private Long sizeBytes;
+    private String sha256;
+    private String failureType;
+    private String failureMessage;
 }
