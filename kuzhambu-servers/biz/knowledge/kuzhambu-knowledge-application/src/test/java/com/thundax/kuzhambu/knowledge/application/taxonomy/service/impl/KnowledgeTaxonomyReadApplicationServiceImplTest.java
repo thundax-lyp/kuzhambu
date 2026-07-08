@@ -57,6 +57,152 @@ class KnowledgeTaxonomyReadApplicationServiceImplTest {
     }
 
     @Test
+    void querySynonymsShouldReturnForwardMatchesOnly() {
+        SynonymRepository synonymRepository = mock(SynonymRepository.class);
+        when(synonymRepository.page(eq("礼制"), isNull(), eq(SynonymStatus.ENABLED), eq(1), eq(10)))
+                .thenReturn(PageResult.of(
+                        1,
+                        10,
+                        1,
+                        List.of(new Synonym(SynonymId.of(1L), SynonymId.of(1L), "礼制", "礼学", SynonymStatus.ENABLED))));
+        when(synonymRepository.page(isNull(), eq("礼制"), eq(SynonymStatus.ENABLED), eq(1), eq(10)))
+                .thenReturn(PageResult.of(
+                        1,
+                        10,
+                        1,
+                        List.of(new Synonym(SynonymId.of(2L), SynonymId.of(2L), "礼法", "礼制", SynonymStatus.ENABLED))));
+
+        KnowledgeTaxonomyReadApplicationServiceImpl service = new KnowledgeTaxonomyReadApplicationServiceImpl(
+                synonymRepository,
+                mock(TagRepository.class),
+                mock(TagAliasRepository.class),
+                mock(TagContentRefRepository.class));
+
+        var result = service.querySynonyms("礼制", "FORWARD", 10);
+
+        assertEquals("礼制", result.getNormalizedTerm());
+        assertEquals("FORWARD", result.getDirection());
+        assertEquals(10, result.getLimit());
+        assertEquals(1, result.getMatches().size());
+        assertEquals("礼制", result.getMatches().get(0).getSourceTerm());
+        assertEquals("礼学", result.getMatches().get(0).getTargetTerm());
+        assertEquals("礼制", result.getMatches().get(0).getMatchedTerm());
+        assertEquals("礼学", result.getMatches().get(0).getExpandedTerm());
+        assertEquals("FORWARD", result.getMatches().get(0).getDirection());
+    }
+
+    @Test
+    void querySynonymsShouldReturnReverseMatchesOnly() {
+        SynonymRepository synonymRepository = mock(SynonymRepository.class);
+        when(synonymRepository.page(isNull(), eq("礼制"), eq(SynonymStatus.ENABLED), eq(1), eq(10)))
+                .thenReturn(PageResult.of(
+                        1,
+                        10,
+                        1,
+                        List.of(new Synonym(SynonymId.of(1L), SynonymId.of(1L), "典礼", "礼制", SynonymStatus.ENABLED))));
+        when(synonymRepository.page(eq("礼制"), isNull(), eq(SynonymStatus.ENABLED), eq(1), eq(10)))
+                .thenReturn(PageResult.of(
+                        1,
+                        10,
+                        1,
+                        List.of(new Synonym(SynonymId.of(2L), SynonymId.of(2L), "礼制", "礼学", SynonymStatus.ENABLED))));
+
+        KnowledgeTaxonomyReadApplicationServiceImpl service = new KnowledgeTaxonomyReadApplicationServiceImpl(
+                synonymRepository,
+                mock(TagRepository.class),
+                mock(TagAliasRepository.class),
+                mock(TagContentRefRepository.class));
+
+        var result = service.querySynonyms("礼制", "REVERSE", 10);
+
+        assertEquals("礼制", result.getNormalizedTerm());
+        assertEquals("REVERSE", result.getDirection());
+        assertEquals(10, result.getLimit());
+        assertEquals(1, result.getMatches().size());
+        assertEquals("典礼", result.getMatches().get(0).getSourceTerm());
+        assertEquals("礼制", result.getMatches().get(0).getTargetTerm());
+        assertEquals("礼制", result.getMatches().get(0).getMatchedTerm());
+        assertEquals("典礼", result.getMatches().get(0).getExpandedTerm());
+        assertEquals("REVERSE", result.getMatches().get(0).getDirection());
+    }
+
+    @Test
+    void querySynonymsShouldMergeBidirectionalMatchesWithDeduplication() {
+        SynonymRepository synonymRepository = mock(SynonymRepository.class);
+        when(synonymRepository.page(eq("礼制"), isNull(), eq(SynonymStatus.ENABLED), eq(1), eq(50)))
+                .thenReturn(PageResult.of(
+                        1,
+                        50,
+                        3,
+                        List.of(
+                                new Synonym(SynonymId.of(1L), SynonymId.of(1L), "礼制", "礼学", SynonymStatus.ENABLED),
+                                new Synonym(SynonymId.of(2L), SynonymId.of(2L), "礼制", "典礼", SynonymStatus.ENABLED),
+                                new Synonym(SynonymId.of(3L), SynonymId.of(3L), "礼法", "礼制", SynonymStatus.ENABLED))));
+        when(synonymRepository.page(isNull(), eq("礼制"), eq(SynonymStatus.ENABLED), eq(1), eq(50)))
+                .thenReturn(PageResult.of(
+                        1,
+                        50,
+                        2,
+                        List.of(
+                                new Synonym(SynonymId.of(4L), SynonymId.of(4L), "典礼", "礼制", SynonymStatus.ENABLED),
+                                new Synonym(SynonymId.of(5L), SynonymId.of(5L), "礼法", "礼制", SynonymStatus.ENABLED))));
+
+        KnowledgeTaxonomyReadApplicationServiceImpl service = new KnowledgeTaxonomyReadApplicationServiceImpl(
+                synonymRepository,
+                mock(TagRepository.class),
+                mock(TagAliasRepository.class),
+                mock(TagContentRefRepository.class));
+
+        var result = service.querySynonyms("礼制", "BIDIRECTIONAL", null);
+
+        assertEquals("礼制", result.getNormalizedTerm());
+        assertEquals("BIDIRECTIONAL", result.getDirection());
+        assertEquals(50, result.getLimit());
+        assertEquals(3, result.getMatches().size());
+        assertEquals("礼学", result.getMatches().get(0).getExpandedTerm());
+        assertEquals("典礼", result.getMatches().get(1).getExpandedTerm());
+        assertEquals("礼法", result.getMatches().get(2).getExpandedTerm());
+        assertEquals("FORWARD", result.getMatches().get(0).getDirection());
+        assertEquals("FORWARD", result.getMatches().get(1).getDirection());
+        assertEquals("REVERSE", result.getMatches().get(2).getDirection());
+    }
+
+    @Test
+    void querySynonymsShouldClampLimitAndIgnoreBlankExpandedTerm() {
+        SynonymRepository synonymRepository = mock(SynonymRepository.class);
+        when(synonymRepository.page(eq("礼制"), isNull(), eq(SynonymStatus.ENABLED), eq(1), eq(50)))
+                .thenReturn(PageResult.of(
+                        1,
+                        50,
+                        2,
+                        List.of(
+                                new Synonym(SynonymId.of(1L), SynonymId.of(1L), "礼制", "   ", SynonymStatus.ENABLED),
+                                new Synonym(SynonymId.of(2L), SynonymId.of(2L), "礼制", "礼学", SynonymStatus.ENABLED))));
+        when(synonymRepository.page(isNull(), eq("礼制"), eq(SynonymStatus.ENABLED), eq(1), eq(50)))
+                .thenReturn(PageResult.of(
+                        1,
+                        50,
+                        1,
+                        List.of(new Synonym(SynonymId.of(3L), SynonymId.of(3L), "礼制", "礼制", SynonymStatus.ENABLED))));
+
+        KnowledgeTaxonomyReadApplicationServiceImpl service = new KnowledgeTaxonomyReadApplicationServiceImpl(
+                synonymRepository,
+                mock(TagRepository.class),
+                mock(TagAliasRepository.class),
+                mock(TagContentRefRepository.class));
+
+        var result = service.querySynonyms("礼制", "BIDIRECTIONAL", 100);
+
+        assertEquals(50, result.getLimit());
+        assertEquals(1, result.getMatches().size());
+        assertEquals("礼学", result.getMatches().get(0).getExpandedTerm());
+
+        var blankResult = service.querySynonyms("   ", "BIDIRECTIONAL", 10);
+        assertEquals(null, blankResult.getNormalizedTerm());
+        assertTrue(blankResult.getMatches().isEmpty());
+    }
+
+    @Test
     void getTagHintShouldResolveAliasToTargetTag() {
         TagRepository tagRepository = mock(TagRepository.class);
         TagAliasRepository tagAliasRepository = mock(TagAliasRepository.class);

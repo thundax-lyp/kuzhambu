@@ -13,6 +13,7 @@ import com.thundax.kuzhambu.discovery.application.qa.result.ChatCompletionResult
 import com.thundax.kuzhambu.discovery.application.qa.service.KnowledgeQaApplicationService;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaSourceAssembler;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaTraceAssembler;
+import com.thundax.kuzhambu.discovery.application.search.support.DiscoveryKnowledgeEnhancementProvider;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaMessage;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaRetrievalTrace;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
@@ -53,6 +54,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
     private final QaRetrievalTraceRepository qaRetrievalTraceRepository;
     private final QaSourceAssembler qaSourceAssembler;
     private final QaTraceAssembler qaTraceAssembler;
+    private final DiscoveryKnowledgeEnhancementProvider discoveryKnowledgeEnhancementProvider;
 
     public KnowledgeQaApplicationServiceImpl(
             KnowledgeBaseClient knowledgeBaseClient,
@@ -61,7 +63,8 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             QaSourceRepository qaSourceRepository,
             QaRetrievalTraceRepository qaRetrievalTraceRepository,
             QaSourceAssembler qaSourceAssembler,
-            QaTraceAssembler qaTraceAssembler) {
+            QaTraceAssembler qaTraceAssembler,
+            DiscoveryKnowledgeEnhancementProvider discoveryKnowledgeEnhancementProvider) {
         this.knowledgeBaseClient = knowledgeBaseClient;
         this.qaSessionRepository = qaSessionRepository;
         this.qaMessageRepository = qaMessageRepository;
@@ -69,6 +72,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         this.qaRetrievalTraceRepository = qaRetrievalTraceRepository;
         this.qaSourceAssembler = qaSourceAssembler;
         this.qaTraceAssembler = qaTraceAssembler;
+        this.discoveryKnowledgeEnhancementProvider = discoveryKnowledgeEnhancementProvider;
     }
 
     @Override
@@ -89,6 +93,8 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
 
         String model = resolveModel(command, session);
         String question = extractLatestQuestion(command.getMessages());
+        DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult enhancement =
+                discoveryKnowledgeEnhancementProvider.enhance(question);
         Date now = new Date();
         int contextTurnCount = contextTurnCount(command);
 
@@ -109,7 +115,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         Long questionMessagePk = qaMessageRepository.save(questionMessage);
         questionMessage.setId(questionMessagePk);
         questionMessage.setMessageId(questionMessagePk);
-        KnowledgeChatRequest providerRequest = toKnowledgeChatRequest(command, session, model);
+        KnowledgeChatRequest providerRequest = toKnowledgeChatRequest(command, session, model, question, enhancement);
 
         KnowledgeChatResult chatResult = null;
         String failureReason = null;
@@ -259,16 +265,6 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         return StringUtils.defaultString(firstChoice.message().content(), null);
     }
 
-    private KnowledgeChatRequest toKnowledgeChatRequest(
-            ChatCompletionCommand command, QaSession session, String model) {
-        return new KnowledgeChatRequest(
-                model,
-                toKnowledgeMessages(command.getMessages()),
-                command.isStream(),
-                enrichedMetadata(command),
-                enrichedOptions(command, session));
-    }
-
     private String resolveModel(ChatCompletionCommand command, QaSession session) {
         if (StringUtils.isNotBlank(command.getModel())) {
             return command.getModel();
@@ -279,10 +275,35 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         return DEFAULT_MODEL;
     }
 
-    private Map<String, Object> enrichedMetadata(ChatCompletionCommand command) {
+    private KnowledgeChatRequest toKnowledgeChatRequest(
+            ChatCompletionCommand command,
+            QaSession session,
+            String model,
+            String question,
+            DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult enhancement) {
+        return new KnowledgeChatRequest(
+                model,
+                toKnowledgeMessages(command.getMessages()),
+                command.isStream(),
+                enrichedMetadata(command, question, enhancement),
+                enrichedOptions(command, session));
+    }
+
+    private Map<String, Object> enrichedMetadata(
+            ChatCompletionCommand command,
+            String question,
+            DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult enhancement) {
         Map<String, Object> metadata = new LinkedHashMap<>();
         if (command.getMetadata() != null) {
             metadata.putAll(command.getMetadata());
+        }
+        if (StringUtils.isNotBlank(question)) {
+            metadata.put("synonymQueryTerm", question);
+        }
+        if (enhancement != null
+                && enhancement.expandedSynonyms() != null
+                && !enhancement.expandedSynonyms().isEmpty()) {
+            metadata.put("expandedSynonyms", enhancement.expandedSynonyms());
         }
         if (StringUtils.isNotBlank(command.getRequestId())) {
             metadata.putIfAbsent("requestId", command.getRequestId());

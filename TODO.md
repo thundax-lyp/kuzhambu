@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `09 Main branch sync`：同步 main 分支最新代码
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`feat/operations-restore-orchestration`
-    - 处理动作：在功能与最小验证通过后同步 `main` 最新代码并解决仅与本任务相关的冲突。
-    - 验收点：当前分支基于最新 `main`，同步后相关验证仍通过。
-    - 重要度：9/10
-
 - [ ] `10 Operations Implementation Coverage`：更新实现覆盖说明
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-OPERATIONS-RESTORE-ORCHESTRATION.md`
