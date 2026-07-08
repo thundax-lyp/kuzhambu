@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.classics.application.content;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -47,6 +48,8 @@ import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsCo
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsContentFormat;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
@@ -163,6 +166,96 @@ class ClassicsContentApplicationServiceImplTest {
         assertEquals(restoredVersion.getId(), sancaiRepository.restoredEntry.getCurrentVersionId());
         assertEquals(restoredVersion.getVersionNo(), sancaiRepository.restoredEntry.getCurrentVersionNo());
         assertNotNull(sancaiRepository.restoredEntry.getCurrentVersionedAt());
+    }
+
+    @Test
+    void restoreHistoryVersionShouldRestoreMingCustomsEntryFieldsAndPublishUpsert() {
+        FakeRepository repository = new FakeRepository();
+        ClassicsContentVersion restoredFrom = existingVersion(11L, 1, new Date(2_000L));
+        restoredFrom.setContentType(ClassicsContentType.MING_CUSTOMS);
+        restoredFrom.setContentId(ClassicsContentId.of(100L));
+        restoredFrom.setSnapshotJson(mingCustomsSnapshotJson());
+        repository.versionById = restoredFrom;
+        repository.insertedVersions.add(restoredFrom);
+        repository.mingCustomsEntryForAiApply = mingCustomsEntry(100L);
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, null, null, null, null, null, publishSupport);
+
+        ClassicsContentVersion restoredVersion = service.restoreHistoryVersion(ClassicsContentVersionId.of(11L));
+
+        assertEquals(ClassicsContentChangeType.HISTORY_RESTORED, restoredVersion.getChangeType());
+        assertEquals("恢复历史版本 v1", restoredVersion.getChangeSummary());
+        assertEquals(2, restoredVersion.getVersionNo());
+        assertEquals(2, repository.insertedVersions.size());
+        MingCustomsEntry restoredEntry = repository.mingCustomsEntryForAiApply;
+        assertEquals(100L, restoredEntry.getId().value());
+        assertEquals("复原标题", restoredEntry.getTitle());
+        assertEquals("复原分类", restoredEntry.getCategory());
+        assertEquals("复原卷", restoredEntry.getChapter());
+        assertEquals("复原节", restoredEntry.getSection());
+        assertEquals("复原摘要", restoredEntry.getSummary());
+        assertEquals(MingCustomsContentFormat.MARKDOWN, restoredEntry.getContentFormat());
+        assertEquals("复原正文", restoredEntry.getContent());
+        assertEquals("复原原文", restoredEntry.getOriginalExcerpts());
+        assertEquals(MingCustomsVisibility.PUBLIC, restoredEntry.getVisibility());
+        assertEquals(restoredVersion.getId(), restoredEntry.getCurrentVersionId());
+        assertEquals(restoredVersion.getVersionNo(), restoredEntry.getCurrentVersionNo());
+        assertNotNull(restoredEntry.getCurrentVersionedAt());
+        assertNotEquals(1L, restoredEntry.getContentUpdatedAt().getTime());
+        verify(publishSupport).publishUpsertAfterCommit(ClassicsContentType.MING_CUSTOMS, "100", 2);
+    }
+
+    @Test
+    void restoreHistoryVersionShouldThrowWhenMingCustomsSnapshotCannotBeParsed() {
+        FakeRepository repository = new FakeRepository();
+        ClassicsContentVersion restoredFrom = existingVersion(12L, 1, new Date(2_000L));
+        restoredFrom.setContentType(ClassicsContentType.MING_CUSTOMS);
+        restoredFrom.setContentId(ClassicsContentId.of(100L));
+        restoredFrom.setSnapshotJson("{bad json");
+        repository.versionById = restoredFrom;
+        ClassicsContentApplicationServiceImpl service =
+                new ClassicsContentApplicationServiceImpl(repository, null, null, null, null, null, null, null, null);
+
+        BizException exception =
+                assertThrows(BizException.class, () -> service.restoreHistoryVersion(ClassicsContentVersionId.of(12L)));
+
+        assertEquals("历史版本快照不可解析", exception.getMessage());
+    }
+
+    @Test
+    void restoreHistoryVersionShouldThrowWhenMingCustomsSnapshotNotBelonging() {
+        FakeRepository repository = new FakeRepository();
+        ClassicsContentVersion restoredFrom = existingVersion(13L, 1, new Date(2_000L));
+        restoredFrom.setContentType(ClassicsContentType.MING_CUSTOMS);
+        restoredFrom.setContentId(ClassicsContentId.of(100L));
+        restoredFrom.setSnapshotJson(mingCustomsSnapshotJsonWithDifferentContentId());
+        repository.versionById = restoredFrom;
+        repository.mingCustomsEntryForAiApply = mingCustomsEntry(100L);
+        ClassicsContentApplicationServiceImpl service =
+                new ClassicsContentApplicationServiceImpl(repository, null, null, null, null, null, null, null, null);
+
+        BizException exception =
+                assertThrows(BizException.class, () -> service.restoreHistoryVersion(ClassicsContentVersionId.of(13L)));
+
+        assertEquals("历史版本快照不属于当前明代习俗条目", exception.getMessage());
+    }
+
+    @Test
+    void restoreHistoryVersionShouldThrowWhenMingCustomsEntryNotFound() {
+        FakeRepository repository = new FakeRepository();
+        ClassicsContentVersion restoredFrom = existingVersion(14L, 1, new Date(2_000L));
+        restoredFrom.setContentType(ClassicsContentType.MING_CUSTOMS);
+        restoredFrom.setContentId(ClassicsContentId.of(100L));
+        restoredFrom.setSnapshotJson(mingCustomsSnapshotJson());
+        repository.versionById = restoredFrom;
+        ClassicsContentApplicationServiceImpl service =
+                new ClassicsContentApplicationServiceImpl(repository, null, null, null, null, null, null, null, null);
+
+        BizException exception =
+                assertThrows(BizException.class, () -> service.restoreHistoryVersion(ClassicsContentVersionId.of(14L)));
+
+        assertEquals("明代习俗不存在", exception.getMessage());
     }
 
     @Test
@@ -646,6 +739,60 @@ class ClassicsContentApplicationServiceImplTest {
                 """;
     }
 
+    private static String mingCustomsSnapshotJson() {
+        return """
+                {
+                  "contentType": "MING_CUSTOMS",
+                  "contentId": 100,
+                  "contentUpdatedAt": "2026-06-20T10:00:00Z",
+                  "title": "复原标题",
+                  "category": "复原分类",
+                  "chapter": "复原卷",
+                  "section": "复原节",
+                  "summary": "复原摘要",
+                  "contentFormat": "MARKDOWN",
+                  "content": "复原正文",
+                  "originalExcerpts": "复原原文",
+                  "visibility": "PUBLIC"
+                }
+                """;
+    }
+
+    private static String mingCustomsSnapshotJsonWithDifferentContentId() {
+        return """
+                {
+                  "contentType": "MING_CUSTOMS",
+                  "contentId": 200,
+                  "contentUpdatedAt": "2026-06-20T10:00:00Z",
+                  "title": "复原标题",
+                  "category": "复原分类",
+                  "chapter": "复原卷",
+                  "section": "复原节",
+                  "summary": "复原摘要",
+                  "contentFormat": "MARKDOWN",
+                  "content": "复原正文",
+                  "originalExcerpts": "复原原文",
+                  "visibility": "PUBLIC"
+                }
+                """;
+    }
+
+    private static MingCustomsEntry mingCustomsEntry(Long id) {
+        MingCustomsEntry entry = new MingCustomsEntry();
+        entry.setId(com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId.of(id));
+        entry.setTitle("旧标题");
+        entry.setCategory("旧分类");
+        entry.setChapter("旧卷");
+        entry.setSection("旧节");
+        entry.setSummary("旧摘要");
+        entry.setContentFormat(MingCustomsContentFormat.TEXT);
+        entry.setContent("旧正文");
+        entry.setOriginalExcerpts("旧原文");
+        entry.setVisibility(MingCustomsVisibility.PRIVATE);
+        entry.setContentUpdatedAt(new Date(1_000L));
+        return entry;
+    }
+
     private static SancaiEntry publicSancaiEntry(Long id) {
         SancaiEntry entry = baseSancaiEntry(id);
         entry.setLifecycleStatus(SancaiEntryLifecycleStatus.PUBLISHED);
@@ -681,6 +828,8 @@ class ClassicsContentApplicationServiceImplTest {
         private ClassicsContentVersion versionById;
         private SancaiEntry sancaiEntryForAiApply;
         private SancaiEntry sancaiEntryVersionMarker;
+        private MingCustomsEntry mingCustomsEntryForAiApply;
+        private MingCustomsEntry mingCustomsEntryVersionMarker;
         private ClassicsContentTagId insertedTagId;
         private int nextTagPriority;
         private ClassicsContentQaPair qaPairById;
@@ -850,12 +999,18 @@ class ClassicsContentApplicationServiceImplTest {
 
         @Override
         public MingCustomsEntry getMingCustomsEntryForAiApply(ClassicsContentId contentId) {
-            return null;
+            return mingCustomsEntryForAiApply;
         }
 
         @Override
         public int updateMingCustomsEntryAiFields(MingCustomsEntry entry) {
             return 0;
+        }
+
+        @Override
+        public int updateMingCustomsEntryVersionMarkers(MingCustomsEntry entry) {
+            this.mingCustomsEntryVersionMarker = entry;
+            return 1;
         }
 
         @Override
