@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.knowledge.application.taxonomy.service;
 
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoveryEntityHintResult;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoverySynonymQueryResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoverySynonymExpandResult;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoverySynonymQueryResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoveryTagHintResult;
 import java.util.List;
 

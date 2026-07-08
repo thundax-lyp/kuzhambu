@@ -61,7 +61,9 @@ public class KnowledgeTaxonomyReadApplicationServiceImpl implements KnowledgeTax
         List<DiscoverySynonymMatchResult> matches = new ArrayList<>();
         if (DIRECTION_FORWARD.equals(normalizedDirection) || DIRECTION_BIDIRECTIONAL.equals(normalizedDirection)) {
             collectSynonyms(
-                    synonymRepository.page(normalizedTerm, null, SynonymStatus.ENABLED, 1, adjustedLimit).getRecords(),
+                    synonymRepository
+                            .page(normalizedTerm, null, SynonymStatus.ENABLED, 1, adjustedLimit)
+                            .getRecords(),
                     normalizedTerm,
                     DIRECTION_FORWARD,
                     expandedTerms,
@@ -87,9 +89,10 @@ public class KnowledgeTaxonomyReadApplicationServiceImpl implements KnowledgeTax
         DiscoverySynonymQueryResult queryResult = querySynonyms(term, DIRECTION_BIDIRECTIONAL, null);
         List<String> expandedTerms = queryResult.getMatches() == null
                 ? List.of()
-                : queryResult.getMatches().stream().map(DiscoverySynonymMatchResult::getExpandedTerm).toList();
-        return new DiscoverySynonymExpandResult(
-                queryResult.getTerm(), queryResult.getNormalizedTerm(), expandedTerms);
+                : queryResult.getMatches().stream()
+                        .map(DiscoverySynonymMatchResult::getExpandedTerm)
+                        .toList();
+        return new DiscoverySynonymExpandResult(queryResult.getTerm(), queryResult.getNormalizedTerm(), expandedTerms);
     }
 
     @Override
@@ -114,11 +117,7 @@ public class KnowledgeTaxonomyReadApplicationServiceImpl implements KnowledgeTax
                 ? 0L
                 : (long) tagContentRefRepository.countByTagId(targetTag.getTagId());
         return new DiscoveryTagHintResult(
-                term,
-                normalizedTerm,
-                targetTag == null ? null : targetTag.getName(),
-                alias.getName(),
-                contentRefCount);
+                term, normalizedTerm, targetTag == null ? null : targetTag.getName(), alias.getName(), contentRefCount);
     }
 
     @Override
@@ -174,11 +173,7 @@ public class KnowledgeTaxonomyReadApplicationServiceImpl implements KnowledgeTax
 
             if (expandedTerms.add(normalizedExpandedTerm)) {
                 matches.add(new DiscoverySynonymMatchResult(
-                        sourceTerm,
-                        targetTerm,
-                        matchedTerm,
-                        normalizedExpandedTerm,
-                        direction));
+                        sourceTerm, targetTerm, matchedTerm, normalizedExpandedTerm, direction));
             }
         }
     }

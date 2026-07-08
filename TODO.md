@@ -49,14 +49,6 @@
     - 验收点：QA 单测断言 provider request metadata 包含 `synonymQueryTerm` 和 `expandedSynonyms`，Portal 响应不透出词典明细。
     - 重要度：10/10
 
-- [ ] `Knowledge synonym direction tests`：补方向查询核心规则单测
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-SYNONYM-SMOKE-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/taxonomy/service/impl/KnowledgeTaxonomyReadApplicationServiceImplTest.java`
-    - 处理动作：为 Knowledge 同义词正向、反向、双向、limit 和空白输入规则补单测。
-    - 验收点：测试覆盖 `FORWARD`、`REVERSE`、`BIDIRECTIONAL`、limit 收窄、去重和空输入结果。
-    - 重要度：9/10
-
 - [ ] `Admin Web taxonomy e2e`：补后台同义词治理 Playwright 冒烟
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-SYNONYM-SMOKE-CLOSURE.md`

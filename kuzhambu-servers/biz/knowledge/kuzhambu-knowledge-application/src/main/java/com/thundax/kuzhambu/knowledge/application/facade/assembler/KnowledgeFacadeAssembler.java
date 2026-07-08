@@ -15,8 +15,8 @@ import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagSource;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagId;
 import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeCategoryDistributionFacadeDto;
 import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeEntityHintFacadeDto;
-import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeSynonymMatchFacadeDto;
 import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeMonthlyNewTagFacadeDto;
+import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeSynonymMatchFacadeDto;
 import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeTopTagFacadeDto;
 import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeContentTagRefFacadeRequest;
 import com.thundax.kuzhambu.knowledge.facade.request.KnowledgeRemoveContentTagRefFacadeRequest;
@@ -68,11 +68,12 @@ public class KnowledgeFacadeAssembler {
                 .direction(result.getDirection())
                 .limit(result.getLimit())
                 .matches(toSynonymMatchFacadeDtos(result.getMatches()))
-                .expandedTerms(result.getMatches() == null
-                        ? Collections.emptyList()
-                        : result.getMatches().stream()
-                                .map(DiscoverySynonymMatchResult::getExpandedTerm)
-                                .toList())
+                .expandedTerms(
+                        result.getMatches() == null
+                                ? Collections.emptyList()
+                                : result.getMatches().stream()
+                                        .map(DiscoverySynonymMatchResult::getExpandedTerm)
+                                        .toList())
                 .build();
     }
 

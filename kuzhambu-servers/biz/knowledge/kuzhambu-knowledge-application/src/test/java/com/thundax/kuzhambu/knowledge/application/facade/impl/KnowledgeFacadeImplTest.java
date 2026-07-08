@@ -12,8 +12,8 @@ import com.thundax.kuzhambu.knowledge.application.report.service.KnowledgeReport
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoveryEntityHintResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoverySynonymExpandResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoverySynonymMatchResult;
-import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoveryTagHintResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoverySynonymQueryResult;
+import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoveryTagHintResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.service.KnowledgeTaxonomyReadApplicationService;
 import com.thundax.kuzhambu.knowledge.domain.service.KnowledgeTagBindingDomainService;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.Tag;
@@ -86,7 +86,8 @@ class KnowledgeFacadeImplTest {
                         "礼制",
                         "BIDIRECTIONAL",
                         50,
-                        List.of(new DiscoverySynonymMatchResult("礼制", "礼学", "礼制", "礼学", "FORWARD"),
+                        List.of(
+                                new DiscoverySynonymMatchResult("礼制", "礼学", "礼制", "礼学", "FORWARD"),
                                 new DiscoverySynonymMatchResult("典礼", "礼制", "礼制", "典礼", "REVERSE"))));
         KnowledgeFacadeImpl facade = newFacade(
                 mock(KnowledgeReportApplicationService.class),
