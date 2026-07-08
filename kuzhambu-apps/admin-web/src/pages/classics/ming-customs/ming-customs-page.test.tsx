@@ -19,6 +19,27 @@ vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => 
     })
 }));
 
+vi.mock("@/pages/classics/common/components/ai-candidate-panel", () => {
+    const aiCandidatePanelMock = ({
+        onApplied,
+        onRejected
+    }: {
+        onApplied?: () => void;
+        onRejected?: () => void;
+    }) => {
+        return (
+            <div>
+                <button onClick={onApplied}>mock-ai-applied</button>
+                <button onClick={onRejected}>mock-ai-rejected</button>
+            </div>
+        );
+    };
+
+    return {
+        AiCandidatePanel: aiCandidatePanelMock
+    };
+});
+
 vi.mock("@/service/current-user-service", () => ({
     getCurrentUserInfo: vi.fn(() => Promise.resolve({ id: 99, loginName: "admin", name: "Admin" }))
 }));
@@ -535,6 +556,76 @@ describe("MingCustomsPage", () => {
         });
     }, 30000);
 
+    it("refreshes detail and tags/qa/versions after ai candidate apply", async () => {
+        const user = userEvent.setup();
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <MingCustomsPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await user.click(
+            await screen.findByRole("button", { name: "编辑明代习俗 岁时礼仪：元旦朝贺" })
+        );
+        capturedCalls.length = 0;
+        await user.click(await screen.findByRole("button", { name: "mock-ai-applied" }));
+
+        await waitFor(() => {
+            expect(
+                capturedCalls.some(
+                    (call) =>
+                        call.path.includes("/classics/ming-customs/500000000001") &&
+                        call.path.startsWith("/classics/ming-customs")
+                )
+            ).toBeTruthy();
+            expect(
+                capturedCalls.some(
+                    (call) =>
+                        call.path.includes("/classics/content/tags") &&
+                        call.path.includes("contentType=MING_CUSTOMS")
+                )
+            ).toBeTruthy();
+            expect(
+                capturedCalls.some(
+                    (call) =>
+                        call.path.includes("/classics/content/qa-pairs") &&
+                        call.path.includes("contentType=MING_CUSTOMS")
+                )
+            ).toBeTruthy();
+        });
+    }, 30000);
+
+    it("only refreshes candidate list after ai candidate reject", async () => {
+        const user = userEvent.setup();
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <MingCustomsPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await user.click(
+            await screen.findByRole("button", { name: "编辑明代习俗 岁时礼仪：元旦朝贺" })
+        );
+        capturedCalls.length = 0;
+        await user.click(await screen.findByRole("button", { name: "mock-ai-rejected" }));
+
+        await waitFor(() => {
+            expect(
+                capturedCalls.some((call) => call.path.includes("/ai/invocation/candidate/list"))
+            ).toBeTruthy();
+        });
+
+        expect(
+            capturedCalls.every((call) => call.path.includes("/ai/invocation/candidate/list"))
+        ).toBeTruthy();
+    }, 30000);
+
     it("renders ming customs version history panel with snapshot compare", () => {
         const version: MingCustomsContentVersionRecord = {
             id: 500000000003,
@@ -551,7 +642,31 @@ describe("MingCustomsPage", () => {
                 contentFormat: "MARKDOWN",
                 content: "旧版正文",
                 originalExcerpts: "旧版摘录",
-                visibility: "PUBLIC"
+                visibility: "PUBLIC",
+                tags: [
+                    {
+                        id: 9001,
+                        tagId: 11001,
+                        tagNameSnapshot: "礼制"
+                    },
+                    {
+                        id: 9002,
+                        tagId: 11002,
+                        tagNameSnapshot: "朝仪"
+                    }
+                ],
+                qaPairs: [
+                    {
+                        id: 8001,
+                        question: "问：元旦朝贺是什么？",
+                        answer: "元旦朝贺是祭祖和祭社的重要礼节。"
+                    },
+                    {
+                        id: 8002,
+                        question: "问：参与者有哪些？",
+                        answer: "家族长辈与主祭人。"
+                    }
+                ]
             })
         };
 
@@ -583,6 +698,15 @@ describe("MingCustomsPage", () => {
         expect(screen.getByRole("button", { name: "恢复明代习俗版本 12" })).toBeInTheDocument();
         expect(screen.getByText(/历史：旧版摘要/)).toBeInTheDocument();
         expect(screen.getByText(/当前：新版摘要/)).toBeInTheDocument();
+        expect(screen.getByText("确认标签")).toBeInTheDocument();
+        expect(screen.getByText("礼制")).toBeInTheDocument();
+        expect(screen.getByText("朝仪")).toBeInTheDocument();
+        expect(
+            screen.getByText("Q: 问：元旦朝贺是什么？；A: 元旦朝贺是祭祖和祭社的重要礼节。")
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText("Q: 问：参与者有哪些？；A: 家族长辈与主祭人。")
+        ).toBeInTheDocument();
     });
 
     it("disables reset when ming customs version snapshot invalid", () => {

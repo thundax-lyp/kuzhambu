@@ -6,6 +6,29 @@ import { clearPermissions, replacePermissions } from "@/auth/permission-storage"
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import * as currentUserService from "@/service/current-user-service";
 import { WangqiPage } from "./wangqi-page";
+import { WangqiVersionHistoryPanel } from "./components/wangqi-version-history-panel";
+import type { WangqiContentVersionRecord } from "./wangqi-types";
+
+vi.mock("@/pages/classics/common/components/ai-candidate-panel", () => {
+    const aiCandidatePanelMock = ({
+        onApplied,
+        onRejected
+    }: {
+        onApplied?: () => void;
+        onRejected?: () => void;
+    }) => {
+        return (
+            <div>
+                <button onClick={onApplied}>mock-ai-applied</button>
+                <button onClick={onRejected}>mock-ai-rejected</button>
+            </div>
+        );
+    };
+
+    return {
+        AiCandidatePanel: aiCandidatePanelMock
+    };
+});
 
 vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => ({
     useKuzhambuConfirm: () => ({
@@ -111,6 +134,25 @@ const installFetchMock = () => {
             return apiResponse(mockDocumentRecord);
         }
         if (path.endsWith("/classics/wangqi/documents/timeline/list")) {
+            return apiResponse([]);
+        }
+        if (
+            path.endsWith(
+                "/classics/wangqi/documents/" + String(mockDocumentRecord.id) + "/versions/list"
+            )
+        ) {
+            return apiResponse([]);
+        }
+        if (
+            path.includes("/classics/content/tags") &&
+            path.includes("contentType=WANGQI_DOCUMENT")
+        ) {
+            return apiResponse([]);
+        }
+        if (
+            path.includes("/classics/content/qa-pairs") &&
+            path.includes("contentType=WANGQI_DOCUMENT")
+        ) {
             return apiResponse([]);
         }
         if (path.endsWith("/classics/shares/batch/create")) {
@@ -466,4 +508,134 @@ describe("WangqiPage", () => {
             path: "/classics/content/ai-candidates/batch/reject"
         });
     }, 30000);
+
+    it("refreshes detail and tags/qa/version after ai candidate apply", async () => {
+        const user = userEvent.setup();
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <WangqiPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await user.click(await screen.findByRole("button", { name: "编辑王圻文档 王圻文档" }));
+        capturedCalls.length = 0;
+        await user.click(await screen.findByRole("button", { name: "mock-ai-applied" }));
+
+        await waitFor(() => {
+            expect(
+                capturedCalls.some((call) => call.path.includes("/classics/content/qa-pairs"))
+            ).toBeTruthy();
+            expect(
+                capturedCalls.some(
+                    (call) =>
+                        call.path.includes("/classics/content/tags") &&
+                        call.path.includes("contentType=WANGQI_DOCUMENT")
+                )
+            ).toBeTruthy();
+            expect(
+                capturedCalls.some((call) => call.path.includes("/classics/wangqi/documents/"))
+            ).toBeTruthy();
+        });
+    }, 30000);
+
+    it("only refreshes candidate list after ai candidate reject", async () => {
+        const user = userEvent.setup();
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <WangqiPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await user.click(await screen.findByRole("button", { name: "编辑王圻文档 王圻文档" }));
+        capturedCalls.length = 0;
+        await user.click(await screen.findByRole("button", { name: "mock-ai-rejected" }));
+
+        await waitFor(() => {
+            expect(
+                capturedCalls.some((call) => call.path.includes("/ai/invocation/candidate/list"))
+            ).toBeTruthy();
+        });
+
+        expect(
+            capturedCalls.every((call) => call.path.includes("/ai/invocation/candidate/list"))
+        ).toBeTruthy();
+    }, 30000);
+
+    it("renders wangqi version history panel with confirmed tags and qa snapshots", () => {
+        const version: WangqiContentVersionRecord = {
+            id: 400000000003,
+            versionNo: 6,
+            changeType: "AI_APPLIED",
+            changeSummary: "更新快照",
+            versionedAt: "2026-06-01T00:00:00.000+00:00",
+            snapshotJson: JSON.stringify({
+                title: "快照标题",
+                summary: "快照摘要",
+                contentFormat: "MARKDOWN",
+                content: "快照正文",
+                documentTime: "明年正月初一",
+                storageObjectId: 7001,
+                visibility: "PUBLIC",
+                tags: [
+                    {
+                        id: 5001,
+                        tagId: 6001,
+                        tagNameSnapshot: "文献"
+                    },
+                    {
+                        id: 5002,
+                        tagId: 6002,
+                        tagNameSnapshot: "校勘"
+                    }
+                ],
+                qaPairs: [
+                    {
+                        id: 7001,
+                        question: "什么是经文注释？",
+                        answer: "为文献加注释与解释。"
+                    },
+                    {
+                        id: 7002,
+                        question: "应用来源有哪些？",
+                        answer: "来自专家校对。"
+                    }
+                ]
+            })
+        };
+
+        render(
+            <WangqiVersionHistoryPanel
+                currentDocument={{
+                    id: 400000000001,
+                    title: "正文标题",
+                    summary: "正文摘要",
+                    contentFormat: "MARKDOWN",
+                    content: "正文正文",
+                    documentTime: "2026-01-01",
+                    storageObjectId: 7001,
+                    visibility: "PUBLIC"
+                }}
+                versions={[version]}
+                selectedVersion={version}
+                detailLoading={false}
+                listLoading={false}
+                onSelectVersion={vi.fn()}
+                onResetVersion={vi.fn()}
+            />
+        );
+
+        expect(screen.getByText("确认标签")).toBeInTheDocument();
+        expect(screen.getByText("文献")).toBeInTheDocument();
+        expect(screen.getByText("校勘")).toBeInTheDocument();
+        expect(
+            screen.getByText("Q: 什么是经文注释？；A: 为文献加注释与解释。")
+        ).toBeInTheDocument();
+        expect(screen.getByText("Q: 应用来源有哪些？；A: 来自专家校对。")).toBeInTheDocument();
+    });
 });

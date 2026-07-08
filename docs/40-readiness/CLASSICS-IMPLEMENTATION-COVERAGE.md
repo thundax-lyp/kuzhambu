@@ -53,6 +53,7 @@
 - Classics 删除内容与分享安全闭环已完成：三类内容删除后会将关联分享目标同步为 `CONTENT_DELETED`，按剩余可用目标重算 `classics_share_link.visibility_risk_status`，并且不再把已删除目标计入资源读取、公开列表和风险态。
 - Classics 分享治理闭环已完成：单链接多目标创建会按 `contentType + contentId` 拦截重复目标，Admin 和 Portal 均按后端 target 顺序展示多内容；访问统计已覆盖公开详情浏览、私有详情浏览和资源读取三类成功访问，失败访问不累加。
 - Wangqi 单文档问答入口已完成：Admin Web Wangqi 详情抽屉提供 `单文档问答` 按钮，按文档 ID 与 Discovery QA 权限控制可用态，跳转 Portal QA 时固定透传 `SINGLE_DOCUMENT + WANGQI_DOCUMENT + contextContentId + title` 上下文。
+- Classics common QA、Wangqi 编辑页和明代习俗编辑页的问答对版本化治理闭环已完成：手工新增/编辑/删除问答对会生成正式版本，AI 候选一次确认应用只生成一个 `AI_APPLIED` 版本，版本快照已包含 `tags/qaPairs`，编辑页已补齐问答对治理控件、AI 应用/拒绝刷新语义和版本快照展示，Discovery QA Knowledge Base 只读同步仅消费当前公开正式内容。
 - 结合需求文档、设计文档和代码现状，Classics 当前已实现“内容维护 + 候选确认 + 任务型 AI 入口 + Wangqi 单文档问答入口 + 三才视觉资产流式候选展示 + 批量视觉资产治理 + 导出/批量分享治理 + 删除分享安全闭环 + 单链接多内容分享 + 批量公开/私有分享访问 + 分享恢复治理 + 分享访问统计 + 批量公开/私有状态修改 + 细粒度权限过滤 + 清理协作 + 跨内容批量候选治理”的主干闭环。
 
 未完成：
@@ -69,6 +70,7 @@
 - 2026-07-08：`cd kuzhambu-apps && pnpm --filter kuzhambu-admin-web run test -- src/pages/classics/sharing/sharing-page.test.tsx src/pages/classics/common/classics-share-service-contract.test.ts` 通过，Admin Web 55 个 test files / 222 tests 全绿。
 - 2026-07-08：`cd kuzhambu-apps && pnpm --filter @kuzhambu/portal-web run test -- src/pages/share/share-form.test.tsx src/pages/share/share-service.test.ts src/pages/share/share-page.test.tsx` 通过，Portal Web 13 个 test files / 49 tests 全绿。
 - 2026-07-08：`cd kuzhambu-apps && pnpm --filter ./admin-web run test -- src/pages/classics/wangqi/wangqi-page.test.tsx src/pages/discovery/qa-admin/qa-admin-page.test.tsx` 通过，Admin Web 55 个 test files / 228 tests 全绿，覆盖 Wangqi 单文档问答入口和 QA trace AI 字段展示。
+- 2026-07-08：Classics QA 版本治理收口后，已补齐 Admin Web 问答对控件、版本快照展示和服务契约测试；最终验证命令与结果见本轮任务收口记录。
 
 ## Requirement Coverage Matrix
 
@@ -89,7 +91,7 @@
 | 图片理解、信息融合、权重调节、视觉描述、AI 生图入口 | 已完成 | 视觉资产字段建模完成，三才视觉资产已接入图片理解/视觉描述/信息融合/AI 生图的任务与候选确认链路，`textWeight`、`imageWeight`、`imageAnalysisMarkdown`、`fusionDescription`、`visualDescription`、`generationParamsJson` 已可保存并按字段边界写回；`image_analysis / image_gen` 已支持流式过程卡片和失败重试；`image_gen` 候选应用已接通 `artifact -> Storage -> 新 version -> 页面预览/下载` 闭环，失败提示与重试入口已在页面内收口 | 无 | Classics, AI |
 | 视觉资产历史和当前使用版本选择 | 已完成 | 视觉资产持久化、列表查询、当前版本切换服务、Admin API 和 Admin Web 已接通；条目详情内可查看历史版本、切换当前使用版本并保存基础字段 | 无 | Classics, Admin Web |
 | 多选条目批量视觉资产处理 | 已完成 | Admin Web 已支持多选条目批量发起图片理解与视觉资产处理任务，并展示成功数、失败数、失败原因、运行中状态和取消入口；后端已提供批量创建、分页、取消、失败聚合和已完成结果保留语义 | 无 | Classics, AI |
-| 摘要、标签和问答对内联维护 | 部分完成 | 主表摘要、通用内容 tag/qa CRUD 已实现；手工标签绑定、删除标签同步和 AI 标签确认回写已接通 Knowledge 内容引用闭环；三才图会、王圻文档、明代习俗页面已接入 `summary / tags / qa` 内联维护入口，含 AI 候选应用后的刷新联动 | 候选预览与更多确认入口仍未完整对齐 | Classics, Knowledge, AI |
+| 摘要、标签和问答对内联维护 | 已完成 | 主表摘要、通用内容 tag/qa CRUD 已实现；手工标签绑定、删除标签同步和 AI 标签确认回写已接通 Knowledge 内容引用闭环；三才图会、王圻文档、明代习俗页面已接入 `summary / tags / qa` 内联维护入口，AI 候选一次确认应用按最终态生成单个正式版本，问答对排序不生成版本，版本快照已纳入 `tags/qaPairs`，Discovery QA 同步仅消费当前公开正式内容 | 无 | Classics, Knowledge, AI |
 | 分页、筛选、当前卷搜索和多选 | 部分完成 | 条目分页、筛选、卷过滤、排序查询已实现；Admin Web 已支持门类/卷筛选、关键词搜索、生命周期筛选、分页、pageSize 切换、批量视觉资产任务、批量分享和当前页多选批量公开/私有，并展示批量操作成功数、失败数和失败原因；权限不足时相关分享、导出、批量公开/私有控件已禁用 | 更多跨页多选策略未完成 | Classics, Admin Web |
 | 生命周期：草稿、发布、归档、恢复 | 已完成 | 状态枚举、合法流转校验、Admin 生命周期变更接口、版本快照、搜索同步和 Admin Web 单条目发布/归档/恢复控件已闭环；发布、归档、恢复成功后会刷新列表、详情和版本历史，权限不足时相关控件禁用 | 无 | Classics, Admin Web |
 | 公开和私有可见性管理 | 已完成 | 条目可见性字段、变更能力已落地；Admin Web 已支持单条目公开状态编辑保存和当前页多选批量公开/私有；Java interface 已通过统一入口分发到三类内容应用服务，并返回批量结果和失败明细；后端按三类内容 edit 权限过滤批量状态修改，前端按同一口径禁用控件 | 无；本轮不重算历史分享快照，`classics_share_target.content_visibility_snapshot` 继续表示创建分享时的内容可见性快照 | Classics, Admin Web, System |
@@ -107,7 +109,7 @@
 | 文档查看、创建、编辑、删除 | 已完成 | 文档分页、详情、时间线、保存、删除接口与服务已实现；Admin Web 已支持列表进入详情、新增、编辑、删除和列表刷新闭环；dev.env Admin API 冒烟已通过 | 无 | Classics, Admin Web |
 | 原始文件关联和替换 | 已完成 | `storage_object_id` 已设计并入参到位；Wangqi 业务接口已支持原始文件上传、元数据查询和资源流读取；上传会绑定 Storage 归属和引用，替换会追加版本；删除文档会解绑 Storage owner，并将当前对象回落为未引用状态 | 无 | Classics, Storage, Admin Web |
 | 全文阅读和内容安全展示 | 已完成 | 文本内容/时间字段及阅读接口已实现；Admin Web 详情编辑页已提供正文预览，并复用统一富文本清洗控件展示 Markdown/HTML 内容 | 无 | Classics, Admin Web |
-| 摘要、标签和问答对展示维护 | 部分完成 | 文档摘要、通用标签/问答对模型与 API 已实现；Admin Web 编辑页已接入标签治理面板和问答对治理面板；通用标签写路径已接通 Knowledge 协作与内容引用同步 | 问答对版本化确认链路与更多治理约束未补齐 | Classics, Knowledge |
+| 摘要、标签和问答对展示维护 | 已完成 | 文档摘要、通用标签/问答对模型与 API 已实现；Admin Web 编辑页已接入标签治理面板和问答对治理面板；问答对手工新增/编辑/删除和 AI 候选应用都会进入正式版本治理，版本历史面板可展示 `确认标签` 与 `确认问答` 快照，通用标签写路径已接通 Knowledge 协作与内容引用同步 | 无 | Classics, Knowledge |
 | AI 摘要、标签、问答对生成入口和候选确认 | 部分完成 | Admin Web 编辑页已接入 AI 候选确认面板，可读取 `PENDING` 候选、编辑 payload、应用或拒绝候选；后端已接通候选应用后的正文摘要/标签/问答对写回、版本追加与 AI 候选状态回写 | AI 触发生成入口、流式过程展示和候选来源侧任务治理未实现 | Classics, AI |
 | 文档搜索和时间线浏览 | 已完成 | 文档搜索与时间线接口已实现；时间线支持关键词、可见性和排序入参；Admin Web 已提供列表搜索、筛选和时间线查询闭环 | 无 | Classics, Admin Web |
 | 列表标题、标签预览、摘要预览和时间信息 | 已完成 | 详情字段和查询可返回标题、摘要、时间、可见性、版本状态等信息；Admin Web 已展示列表摘要和时间信息 | 无 | Classics, Admin Web |
@@ -127,7 +129,7 @@
 | Markdown 安全渲染 | 已完成 | `content_format` 与内容字段模型可追踪；Admin Web 已封装富文本展示控件，使用 Markdown/HTML 渲染与内容清洗策略展示正文 | 无 | Classics, Admin Web |
 | 标签云筛选 | 部分完成 | 通用标签模型、关键词云接口与状态筛选已实现；关键词云响应固定为 `List<KeywordCloudItem>`，字段为 `keyword` 和 `count` | 基于统一标签的真实标签云聚合、标签云权限过滤与输出限缩未实现 | Classics, Knowledge, System |
 | 批量修改公开或私有状态 | 已完成 | 可见性枚举与变更能力已具备；应用层已补齐批量结果和失败原因模型；统一后端入口已分发到 Ming Customs 应用服务，Admin Web 已支持当前页选中习俗批量公开/私有并展示失败明细；后端权限过滤与前端控件禁用已按 `classics:mingcustoms:edit` 对齐 | 无 | Classics, Admin Web, System |
-| 摘要、标签和问答对维护 | 部分完成 | 通用内容 tag/qa API 已可复用，摘要字段已覆盖；Admin Web 编辑页已接入 AI 候选确认面板、标签治理面板和问答对治理面板；通用标签写路径已接通 Knowledge 协作与内容引用同步 | 版本历史链路尚未覆盖明代习俗，问答对版本化确认仍未补齐 | Classics, Knowledge |
+| 摘要、标签和问答对维护 | 已完成 | 通用内容 tag/qa API 已可复用，摘要字段已覆盖；Admin Web 编辑页已接入 AI 候选确认面板、标签治理面板和问答对治理面板；问答对手工新增/编辑/删除和 AI 候选应用都会进入正式版本治理，明代习俗版本历史面板已展示 `确认标签` 与 `确认问答` 快照，通用标签写路径已接通 Knowledge 协作与内容引用同步 | 无 | Classics, Knowledge |
 | 版本历史、版本对比和历史恢复 | 已完成 | 明代习俗已补齐版本列表/版本详情/历史恢复接口、版本归属校验与恢复追加式版本生成，前端已接入版本历史面板、字段级对比与恢复确认，恢复后支持列表与详情刷新 | 无 | Classics, Admin Web |
 | 分类、标签、筛选结果或选中条目导出 | 已完成 | 任务创建与导出参数已支持；Ming Customs 导出快照 payload 已接入 Render Worker，CSV/JSON/HTML/ZIP 产物可写入 Storage 并下载 | 无 | Classics, Worker, Storage |
 
