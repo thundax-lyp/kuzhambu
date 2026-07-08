@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `SancaiEntryTags`：运行本轮最小验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-SANCAI-ENTRY-TAGS.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application`、`kuzhambu-apps/admin-web`
-    - 处理动作：运行 RUNBOOK 中列出的后端 Maven 格式化/测试、Admin Web 格式化、定向 Vitest 和 lint。
-    - 验收点：后端相关测试通过，`classics-content-service-contract.test.ts` 和 `sancai-entry-panel.test.tsx` 通过，Admin Web lint 通过。
-    - 重要度：8/10
-
 - [ ] `feat/sancai-entry-tags`：同步 main 最新代码
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-SANCAI-ENTRY-TAGS.md`
