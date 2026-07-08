@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `kuzhambu-classics-*`、`admin-web`：完成窄范围验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-CLASSICS-EXPORT-SHOWCASE-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-domain`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface`、`kuzhambu-apps/admin-web`
-    - 处理动作：执行本任务影响范围内的格式化检查、静态检查和测试。
-    - 验收点：后端 `mvn -pl biz/classics/kuzhambu-classics-domain,biz/classics/kuzhambu-classics-application,biz/classics/kuzhambu-classics-infra,biz/classics/kuzhambu-classics-interface,biz/storage/kuzhambu-storage-domain -am spotless:check checkstyle:check test` 通过；前端 `pnpm --filter ./admin-web run format:check && pnpm --filter ./admin-web run lint && pnpm --filter ./admin-web run test` 通过。
-    - 重要度：10/10
-
 - [ ] `main`、`feat/classics-export-showcase-governance`：同步最新 main 分支代码
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/PR-RULES.md`、`docs/00-governance/TODO-RULES.md`
