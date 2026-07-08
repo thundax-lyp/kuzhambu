@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Java validation`：执行 Java 后端相关验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WANGQI-SINGLE-DOCUMENT-QA.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery`、`kuzhambu-servers/biz/ai`、`kuzhambu-servers/biz/classics/kuzhambu-classics-facade`
-    - 处理动作：在同步 `main` 后运行后端 formatter、Spotless、Checkstyle 和相关 Maven 测试。
-    - 验收点：Java 格式、静态检查和相关测试通过。
-    - 重要度：10/10
-
 - [ ] `Frontend validation`：执行 Admin Web 和 Portal Web 相关验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WANGQI-SINGLE-DOCUMENT-QA.md`
