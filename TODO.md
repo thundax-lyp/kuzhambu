@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Admin classics/sharing 服务契约`：补齐分享状态和访问记录前端类型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARING-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common/classics-share-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/classics-share-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/classics-share-service-contract.test.ts`
-    - 处理动作：补齐 Admin 分享服务对恢复状态更新、多 target 详情和 `clientSnapshot.accessType` 的类型与契约测试。
-    - 验收点：状态更新 payload 可表达 `status: "ACTIVE"`，访问记录响应可读取 `DETAIL_VIEW` 和 `RESOURCE_READ`。
-    - 重要度：9/10
-
 - [ ] `Admin classics/sharing 页面`：实现恢复按钮、多目标详情和访问类型展示
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARING-GOVERNANCE.md`
