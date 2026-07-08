@@ -273,8 +273,22 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: "20"
-                  cache: npm
-                  cache-dependency-path: kuzhambu-apps/package-lock.json
+
+            - name: Enable Corepack
+              run: corepack enable
+
+            - name: Resolve pnpm store path
+              id: pnpm-store
+              working-directory: kuzhambu-apps
+              run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+            - name: Cache pnpm store
+              uses: actions/cache@v4
+              with:
+                  path: ${{ steps.pnpm-store.outputs.path }}
+                  key: ${{ runner.os }}-pnpm-store-${{ hashFiles('kuzhambu-apps/pnpm-lock.yaml') }}
+                  restore-keys: |
+                      ${{ runner.os }}-pnpm-store-
 
             - name: Verify frontend package manifests
               run: |
@@ -284,37 +298,37 @@ jobs:
 
             - name: Install frontend dependencies
               working-directory: kuzhambu-apps
-              run: npm ci
+              run: pnpm install --frozen-lockfile
 
             - name: Verify admin frontend formatting
               if: needs.detect-changes.outputs.apps_admin_changed == 'true'
               working-directory: kuzhambu-apps
-              run: npm --workspace admin-web run format:check
+              run: pnpm --filter ./admin-web run format:check
 
             - name: Verify admin frontend lint
               if: needs.detect-changes.outputs.apps_admin_changed == 'true'
               working-directory: kuzhambu-apps
-              run: npm --workspace admin-web run lint
+              run: pnpm --filter ./admin-web run lint
 
             - name: Verify admin frontend tests
               if: needs.detect-changes.outputs.apps_admin_changed == 'true'
               working-directory: kuzhambu-apps
-              run: npm --workspace admin-web run test
+              run: pnpm --filter ./admin-web run test
 
             - name: Verify portal frontend formatting
               if: needs.detect-changes.outputs.apps_portal_changed == 'true'
               working-directory: kuzhambu-apps
-              run: npm --workspace portal-web run format:check
+              run: pnpm --filter ./portal-web run format:check
 
             - name: Verify portal frontend lint
               if: needs.detect-changes.outputs.apps_portal_changed == 'true'
               working-directory: kuzhambu-apps
-              run: npm --workspace portal-web run lint
+              run: pnpm --filter ./portal-web run lint
 
             - name: Verify portal frontend tests
               if: needs.detect-changes.outputs.apps_portal_changed == 'true'
               working-directory: kuzhambu-apps
-              run: npm --workspace portal-web run test
+              run: pnpm --filter ./portal-web run test
 
     verify-workers:
         name: Verify Python Workers

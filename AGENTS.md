@@ -47,22 +47,22 @@ mvn checkstyle:check
 
 After applying formatting, inspect `git diff` and keep only task-related file changes. If `spotless:check` still fails, treat it as an unexpected issue and inspect the formatter scope, configuration, or affected files before continuing.
 
-Frontend apps use npm workspaces under `kuzhambu-apps/`:
+Frontend apps use pnpm workspaces under `kuzhambu-apps/`:
 
 ```sh
 cd kuzhambu-apps
-npm run format:check
-npm run lint
-npm run build
-npm run test
+pnpm run format:check
+pnpm run lint
+pnpm run build
+pnpm run test
 ```
 
 Before any frontend build or package step, first run the narrowest relevant formatter on the files touched by the task, then run Prettier formatting checks and lint:
 
 ```sh
-npm --workspace ... run format
-npm run format:check
-npm run lint
+pnpm --filter ... run format
+pnpm run format:check
+pnpm run lint
 ```
 
 After applying formatting, inspect `git diff` and keep only task-related file changes. If `format:check` still fails, treat it as an unexpected issue and inspect the formatter scope, configuration, or affected files before continuing.

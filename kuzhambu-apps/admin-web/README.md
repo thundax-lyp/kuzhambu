@@ -17,15 +17,15 @@ Kuzhambu 后台管理前端工程，对接 `kuzhambu-admin-api`。
 ## 开发命令
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
 ```bash
-npm run lint
-npm run format:check
-npm run test
-npm run build
+pnpm run lint
+pnpm run format:check
+pnpm run test
+pnpm run build
 ```
 
 默认开发服务端口为 `5173`，后台接口代理目标通过 `.env` 中的 `VITE_ADMIN_API_BASE_URL` 配置。
