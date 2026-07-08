@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `SancaiAssetInterfaceAssembler.java`、`SancaiAssetApplicationServiceImplTest.java`：改为记录 id 展示 URL 并锁定测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-EXPORT-SHOWCASE-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/assembler/SancaiAssetInterfaceAssembler.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/sancai/SancaiAssetApplicationServiceImplTest.java`
-    - 处理动作：将静态展示 `contentUrl`、`downloadUrl` 改为使用 `classics_sancai_showcase.id`，并更新 owner 绑定断言。
-    - 验收点：响应 URL 不暴露 `storage_object_id`；测试断言 `CLASSICS_SANCAI_SHOWCASE + showcase:{id}` 绑定。
-    - 重要度：8/10
-
 - [ ] `classics-export-service.ts` 等 4 文件：补齐导出记录删除服务与列表控件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-EXPORT-SHOWCASE-GOVERNANCE.md`
