@@ -78,10 +78,12 @@ class SancaiRepositoryTest {
         assertTrue(repositorySource.contains(".set(SancaiShowcaseDO::getFailureType, failureType)"));
         assertTrue(repositorySource.contains(".set(SancaiShowcaseDO::getFailureMessage, failureMessage)"));
         assertTrue(repositorySource.contains("appendKeyword(wrapper, keyword)"));
-        assertTrue(repositorySource.contains(".like(SancaiShowcaseDO::getScopeTitle, keyword)"));
-        assertTrue(repositorySource.contains(".like(SancaiShowcaseDO::getFilename, keyword)"));
-        assertTrue(repositorySource.contains(".ge(SancaiShowcaseDO::getRequestedAt, requestedAtStart)"));
-        assertTrue(repositorySource.contains(".le(SancaiShowcaseDO::getRequestedAt, requestedAtEnd)"));
+        assertTrue(repositorySource.contains(".like(SancaiShowcaseDO::getScopeTitle, normalizedKeyword)"));
+        assertTrue(repositorySource.contains(".like(SancaiShowcaseDO::getFilename, normalizedKeyword)"));
+        assertTrue(repositorySource.contains(
+                ".ge(requestedAtStart != null, SancaiShowcaseDO::getRequestedAt, requestedAtStart)"));
+        assertTrue(repositorySource.contains(
+                ".le(requestedAtEnd != null, SancaiShowcaseDO::getRequestedAt, requestedAtEnd)"));
         assertTrue(repositorySource.contains(".orderByDesc(SancaiShowcaseDO::getRequestedAt)"));
     }
 
