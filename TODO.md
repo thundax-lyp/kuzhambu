@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Portal share 服务契约`：补齐多目标和私有分享读取类型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARING-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-apps/portal-web/src/pages/share/share-service.ts`、`kuzhambu-apps/portal-web/src/pages/share/share-types.ts`、`kuzhambu-apps/portal-web/src/pages/share/share-service.test.ts`
-    - 处理动作：补齐 Portal 分享服务对公开详情、私有详情、多 target 响应和资源 URL 的契约。
-    - 验收点：公开详情、私有详情和资源读取 URL 均保持正确 endpoint，多 target 响应类型能被页面消费。
-    - 重要度：9/10
-
 - [ ] `Portal share 页面`：实现多目标只读内容卡片和删除占位
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SHARING-GOVERNANCE.md`
