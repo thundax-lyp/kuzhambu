@@ -76,7 +76,7 @@ const installFetchRecorder = () => {
                 };
             }
 
-            if (path === "/classics/content/ai-candidates/batch/change") {
+            if (path === "/classics/content/ai-candidates/batch/apply") {
                 return {
                     failureCount: 1,
                     failures: [
@@ -104,7 +104,7 @@ const installFetchRecorder = () => {
                 };
             }
 
-            if (path === "/classics/content/ai-candidates/batch/remove") {
+            if (path === "/classics/content/ai-candidates/batch/reject") {
                 return {
                     failureCount: 0,
                     failures: [],
@@ -315,7 +315,7 @@ describe("classics content service request contracts", () => {
 
         const response = await contentService.applyAiCandidatesBatch(command);
 
-        expectLastCall("POST", "/classics/content/ai-candidates/batch/change", command);
+        expectLastCall("POST", "/classics/content/ai-candidates/batch/apply", command);
         expect(response.successCount).toBe(1);
         expect(response.successes[0]).toEqual({
             candidateId: 7001,
@@ -360,7 +360,7 @@ describe("classics content service request contracts", () => {
 
         const response = await contentService.rejectAiCandidatesBatch(command);
 
-        expectLastCall("POST", "/classics/content/ai-candidates/batch/remove", command);
+        expectLastCall("POST", "/classics/content/ai-candidates/batch/reject", command);
         expect(response.successCount).toBe(2);
         expect(response.successes[0]).toEqual({
             candidateId: 8001,

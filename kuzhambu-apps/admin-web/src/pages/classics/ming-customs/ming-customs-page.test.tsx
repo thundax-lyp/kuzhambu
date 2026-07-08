@@ -219,7 +219,7 @@ const installFetchMock = () => {
                 }
             ]);
         }
-        if (path.endsWith("/classics/content/ai-candidates/batch/change")) {
+        if (path.endsWith("/classics/content/ai-candidates/batch/apply")) {
             return apiResponse({
                 failureCount: 1,
                 failures: [
@@ -446,7 +446,7 @@ describe("MingCustomsPage", () => {
                 ]
             },
             method: "POST",
-            path: "/classics/content/ai-candidates/batch/change"
+            path: "/classics/content/ai-candidates/batch/apply"
         });
     }, 30000);
 });
