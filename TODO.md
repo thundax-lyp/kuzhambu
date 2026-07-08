@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `main`、`feat/classics-export-showcase-governance`：同步最新 main 分支代码
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/PR-RULES.md`、`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`main`、`feat/classics-export-showcase-governance`
-    - 处理动作：在功能实现与首轮验证完成后，将最新 `main` 同步到当前 feature 分支并处理冲突。
-    - 验收点：当前 feature 分支包含最新 `main`；冲突文件只保留本任务相关判断；若同步影响 Classics/Admin/Storage/Worker 相关范围，重新执行对应窄范围验证。
-    - 重要度：9/10
-
 - [ ] `CLASSICS-IMPLEMENTATION-COVERAGE.md`：更新 Classics 实现覆盖表
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-CLASSICS-EXPORT-SHOWCASE-GOVERNANCE.md`

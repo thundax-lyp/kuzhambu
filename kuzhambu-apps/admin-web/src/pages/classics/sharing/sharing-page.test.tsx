@@ -125,10 +125,35 @@ const installFetchMock = () => {
             return apiResponse({
                 pageNo: 1,
                 pageSize: 20,
-                totalCount: 0,
-                count: 0,
-                totalPage: 0,
-                records: []
+                totalCount: 2,
+                count: 2,
+                totalPage: 1,
+                records: [
+                    {
+                        id: 700000000001,
+                        shareLinkId: 900000000001,
+                        shareTargetId: null,
+                        accessedAt: "2026-01-02T00:00:00.000+00:00",
+                        accessResult: "ALLOWED",
+                        clientSnapshot: JSON.stringify({
+                            accessType: "DETAIL_VIEW",
+                            privateAccess: false
+                        })
+                    },
+                    {
+                        id: 700000000002,
+                        shareLinkId: 900000000001,
+                        shareTargetId: 800000000001,
+                        accessedAt: "2026-01-02T01:00:00.000+00:00",
+                        accessResult: "ALLOWED",
+                        clientSnapshot: JSON.stringify({
+                            accessType: "RESOURCE_READ",
+                            privateAccess: false,
+                            storageObjectId: 600000000001,
+                            download: true
+                        })
+                    }
+                ]
             });
         }
         if (path.endsWith("/classics/shares/900000000001")) {
@@ -193,7 +218,7 @@ describe("SharingPage", () => {
         expect(await screen.findByText("王圻批量分享 - 王圻文档")).toBeInTheDocument();
     }, 30000);
 
-    it("keeps batch-created shares manageable by existing status update actions", async () => {
+    it("keeps batch-created shares manageable by revoke and restore actions", async () => {
         const user = userEvent.setup();
 
         render(
@@ -210,33 +235,29 @@ describe("SharingPage", () => {
 
         await user.click(
             screen.getByRole("button", {
-                name: "更改 王圻批量分享 - 王圻文档-王圻文档 状态"
+                name: "撤销 王圻批量分享 - 王圻文档-王圻文档"
             })
         );
         await user.click(
             screen.getByRole("button", {
-                name: "更改 三才批量分享 - 天地-三才条目 状态"
+                name: "恢复 明代习俗批量分享 - 元旦朝贺-明人志异"
             })
         );
-        await user.click(
-            screen.getByRole("button", {
-                name: "更改 明代习俗批量分享 - 元旦朝贺-明人志异 状态"
+        expect(
+            screen.queryByRole("button", {
+                name: "恢复 三才批量分享 - 天地-三才条目"
             })
-        );
+        ).not.toBeInTheDocument();
 
         await waitFor(() => {
             const statusCalls = capturedCalls.filter((call) =>
                 call.path.endsWith("/classics/shares/status/update")
             );
-            expect(statusCalls).toHaveLength(3);
+            expect(statusCalls).toHaveLength(2);
             expect(statusCalls.map((call) => call.body)).toEqual([
                 {
                     id: 900000000001,
                     status: "REVOKED"
-                },
-                {
-                    id: 900000000002,
-                    status: "ACTIVE"
                 },
                 {
                     id: 900000000003,
@@ -268,6 +289,9 @@ describe("SharingPage", () => {
         expect(await screen.findByText("关联内容")).toBeInTheDocument();
         expect(await screen.findByText("已删除王圻文档")).toBeInTheDocument();
         expect(await screen.findByText("内容已删除")).toBeInTheDocument();
+        expect(await screen.findByText("详情浏览")).toBeInTheDocument();
+        expect(await screen.findByText("资源读取")).toBeInTheDocument();
+        expect(await screen.findByText("800000000001")).toBeInTheDocument();
         expect(
             screen.queryByRole("button", { name: /打开已删除王圻文档/ })
         ).not.toBeInTheDocument();
