@@ -92,6 +92,10 @@ public final class DiscoveryQaAdminInterfaceAssembler {
                 .latencyMs(result.getLatencyMs())
                 .failureReason(result.getFailureReason())
                 .raw(result.getRaw())
+                .aiCallId(result.getAiCallId())
+                .aiStatus(result.getAiStatus())
+                .aiErrorType(result.getAiErrorType())
+                .aiErrorMessage(result.getAiErrorMessage())
                 .retrievedAt(result.getRetrievedAt())
                 .build();
     }

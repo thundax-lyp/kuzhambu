@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Discovery QA trace admin API`：返回 QA trace 的 AI 调用追踪字段
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WANGQI-SINGLE-DOCUMENT-QA.md`
-    - 范围对象：`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/result/QaTraceResult.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-application/src/main/java/com/thundax/kuzhambu/discovery/application/qa/support/QaTraceAssembler.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/admin/qa/controller/response/DiscoveryQaAdminResponses.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/main/java/com/thundax/kuzhambu/discovery/interfaces/admin/qa/assembler/DiscoveryQaAdminInterfaceAssembler.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-interface/src/test/java/com/thundax/kuzhambu/discovery/interfaces/admin/qa/controller/DiscoveryQaAdminControllerTest.java`
-    - 处理动作：把 `aiCallId`、`aiStatus`、`aiErrorType`、`aiErrorMessage` 从 trace entity 映射到 Admin trace response。
-    - 验收点：Admin QA trace 接口响应包含 AI 调用追踪字段并有 controller 测试断言。
-    - 重要度：9/10
-
 - [ ] `Discovery QA single-document session`：校验 Wangqi 单文档会话上下文
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WANGQI-SINGLE-DOCUMENT-QA.md`

@@ -70,6 +70,10 @@ public class QaTraceAssembler {
                 trace.getLatencyMs(),
                 trace.getFailureReason(),
                 trace.getRaw(),
+                trace.getAiCallId(),
+                trace.getAiStatus(),
+                trace.getAiErrorType(),
+                trace.getAiErrorMessage(),
                 trace.getRetrievedAt());
     }
 
