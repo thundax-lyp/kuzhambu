@@ -86,8 +86,52 @@ html[data-theme="dark"] .ming-customs-keyword-cloud-item {
     min-height: 72px;
 }
 
+.ming-customs-version-history-panel {
+    margin-top: 12px;
+}
+
+.ming-customs-version-history-panel-grid {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.2fr);
+    gap: 12px;
+}
+
+.ming-customs-version-history-list,
+.ming-customs-version-history-detail {
+    min-width: 0;
+    min-height: 220px;
+    padding: 12px;
+    background: rgba(148, 111, 67, 0.06);
+    border: 1px solid rgba(148, 111, 67, 0.16);
+    border-radius: 8px;
+}
+
+.ming-customs-version-history-list-item {
+    align-items: flex-start;
+    padding-inline: 0;
+}
+
+.ming-customs-version-history-detail-stack {
+    width: 100%;
+}
+
+.ming-customs-version-compare .ant-descriptions-item-label {
+    width: 132px;
+    color: #7f5833;
+    font-weight: 700;
+}
+
+.ming-customs-version-compare .is-changed .ant-descriptions-item-label {
+    color: #a85a1d;
+    background: rgba(148, 111, 67, 0.12);
+}
+
 @media (max-width: 760px) {
     .ming-customs-model-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .ming-customs-version-history-panel-grid {
         grid-template-columns: minmax(0, 1fr);
     }
 }
