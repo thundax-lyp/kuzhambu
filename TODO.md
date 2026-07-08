@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `Knowledge Implementation Coverage`：更新 Knowledge 实现覆盖状态
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`docs/40-readiness/KNOWLEDGE-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：将 Knowledge 精修与图谱联动闭环、最终验证命令和剩余缺口同步到 Implementation Coverage。
-    - 验收点：Coverage 记录精修应用、图谱重生成引导、版本定位和质量报告重算已完成。
-    - 重要度：9/10
-
 - [ ] `RUNBOOK cleanup`：清理 Knowledge 精修图谱联动 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
