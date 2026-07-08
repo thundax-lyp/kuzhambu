@@ -115,6 +115,8 @@ public interface ClassicsContentRepository {
 
     int markExportJobExpired(ClassicsContentExportJobId id);
 
+    int deleteExportJobById(ClassicsContentExportJobId id);
+
     default List<ClassicsContentExportJobId> listExpiredExportJobIds(Date now, int limit) {
         return List.of();
     }

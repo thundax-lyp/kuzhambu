@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `StorageOwnerType.java`、`ClassicsContentApplicationService.java`、`ClassicsContentRepository.java`：补齐 Storage owner 与导出删除契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-EXPORT-SHOWCASE-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-servers/biz/storage/kuzhambu-storage-domain/src/main/java/com/thundax/kuzhambu/storage/domain/object/model/enums/StorageOwnerType.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/service/ClassicsContentApplicationService.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/content/repository/ClassicsContentRepository.java`
-    - 处理动作：新增 Classics 导出/静态展示专属 Storage owner 枚举，并声明导出记录删除服务与仓储方法。
-    - 验收点：存在 `CLASSICS_CONTENT_EXPORT_JOB`、`CLASSICS_SANCAI_SHOWCASE`、`deleteExportJob(ClassicsContentExportJobId id)`、`deleteExportJobById(ClassicsContentExportJobId id)`；未修改 Operations cleanup 与 Storage orphan 清理策略。
-    - 重要度：10/10
-
 - [ ] `ClassicsContentApplicationServiceImpl.java` 等 5 文件：实现导出记录主动删除闭环
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-EXPORT-SHOWCASE-GOVERNANCE.md`
