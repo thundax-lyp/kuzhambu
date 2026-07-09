@@ -44,13 +44,13 @@ class PromptRepositoryIT {
         String normalized = dataSql.replaceAll("\\s+", " ");
 
         assertTrue(normalized.contains("INSERT INTO `ai_service_config`"));
-        assertTrue(normalized.contains("( 900001, 'PRIMARY', 'ctyun', 'https://worker-ai.local/mock'"));
+        assertTrue(normalized.contains("( 900001, 'PRIMARY', 'OPENAI_COMPATIBLE', 'https://ai.wdit.com.cn/v1'"));
         assertTrue(normalized.contains(
                 "930106, 'classics', 'translate', 'Classics Translate', 'Classics translate template', 'ACTIVE', 1"));
         assertTrue(normalized.contains(
                 "930101, 'classics', 'summary', 'Classics Summary', 'Classics summary template', 'ACTIVE', 1"));
         assertTrue(normalized.contains("900101, 900001, 'CTYUN-CX-Qwen3.5-397B-A17B'"));
-        assertTrue(normalized.contains("900102, 900001, 'CTYUN-CX-DeepSeek-V3.1'"));
+        assertTrue(normalized.contains("900102, 900001, 'CTYUN-bot-DeepSeek-V3.2-pro'"));
         assertTrue(normalized.contains("(910105, 'classics', 'translate', 900102"));
         assertTrue(normalized.contains("(920107, 'classics', 'translate', 1, NULL"));
 

@@ -34,7 +34,7 @@ INSERT INTO `ai_service_config` (
     `enabled`, `status`, `last_checked_at`, `configured_at`
 ) VALUES
     (
-        900001, 'PRIMARY', 'ctyun', 'https://worker-ai.local/mock', NULL,
+        900001, 'PRIMARY', 'OPENAI_COMPATIBLE', 'https://ai.wdit.com.cn/v1', NULL,
         1, 'AVAILABLE', '2026-02-27 04:00:00.000', '2026-02-27 04:00:00.000'
     )
 ON DUPLICATE KEY UPDATE
@@ -57,10 +57,10 @@ INSERT INTO `ai_model` (
         'KB_HTML image_analysis sample model for classics AI tests.', 1, '2026-02-27 04:00:00.000'
     ),
     (
-        900102, 900001, 'CTYUN-CX-DeepSeek-V3.1', 'CTYUN DeepSeek V3.1',
+        900102, 900001, 'CTYUN-bot-DeepSeek-V3.2-pro', 'CTYUN DeepSeek V3.2 Pro',
         '["text", "structured_output", "streaming_text"]',
         '{"temperature": 0.2, "max_tokens": 4096}',
-        'KB_HTML image_analysis sample model for text and structured AI tests.', 1, '2026-02-27 04:00:00.000'
+        'Default OpenAI-compatible LLM from local server configuration.', 1, '2026-02-27 04:00:00.000'
     )
 ON DUPLICATE KEY UPDATE
     `service_id` = VALUES(`service_id`),
