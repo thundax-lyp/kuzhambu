@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ai-menu-route`：补齐 AI 治理菜单、路由和图标
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-ADMIN-GOVERNANCE.md`
-    - 范围对象：`db/data-source/system.json`、`db/data/system.sql`、`kuzhambu-apps/admin-web/src/router/index.tsx`、`kuzhambu-apps/admin-web/src/layouts/admin-layout.tsx`、`kuzhambu-servers/starter/kuzhambu-admin-starter/src/test/java/com/thundax/kuzhambu/starter/admin/AdminStarterArchitectureTest.java`
-    - 处理动作：补齐 AI 一级菜单下 6 个治理页面入口并注册前端路由。
-    - 验收点：`/ai/services`、`/ai/models`、`/ai/capability-mappings`、`/ai/prompts`、`/ai/invocations`、`/ai/action-status` 均可从菜单进入且图标不显示配置错误。
-    - 重要度：10/10
-
 - [ ] `ai-services-page`：实现 AI 服务配置页
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-ADMIN-GOVERNANCE.md`
