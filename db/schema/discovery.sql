@@ -80,6 +80,29 @@ CREATE TABLE IF NOT EXISTS `discovery_search_log` (
     KEY `idx_discovery_search_log_operator` (`operator_id`, `created_at`),
     KEY `idx_discovery_search_log_intent` (`intent_type`, `created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='搜索日志表';
+
+CREATE TABLE IF NOT EXISTS `discovery_query_understanding` (
+    `id` bigint NOT NULL,
+    `query_understanding_id` varchar(64) NOT NULL,
+    `search_log_id` varchar(64) DEFAULT NULL,
+    `query_text` varchar(512) NOT NULL,
+    `normalized_query_text` varchar(512) DEFAULT NULL,
+    `rewritten_query_text` varchar(1024) DEFAULT NULL,
+    `intent_type` varchar(32) DEFAULT NULL,
+    `recognized_entities_json` text DEFAULT NULL,
+    `expanded_synonyms_json` text DEFAULT NULL,
+    `understanding_status` varchar(32) NOT NULL,
+    `failure_code` varchar(64) DEFAULT NULL,
+    `failure_message` varchar(1024) DEFAULT NULL,
+    `request_id` varchar(128) DEFAULT NULL,
+    `trace_id` varchar(128) DEFAULT NULL,
+    `created_at` datetime(3) NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_discovery_query_understanding_id` (`query_understanding_id`),
+    KEY `idx_discovery_query_understanding_log` (`search_log_id`),
+    KEY `idx_discovery_query_understanding_status` (`understanding_status`, `created_at`),
+    KEY `idx_discovery_query_understanding_intent` (`intent_type`, `created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='查询理解记录表';
 SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `discovery_qa_session` (

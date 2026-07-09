@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `DISCOVERY-QUALITY-003`：执行 Discovery Search 质量冒烟并归档证据
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QUALITY-SMOKE.md`
-    - 范围对象：`discovery-search` 索引、`/api/discovery/search-admin/*`、`/api/portal/discovery/search/*`、`discovery_search_log`、`discovery_search_click`
-    - 处理动作：按 RUNBOOK 验证 ES health、索引重建、Portal 检索高亮、结果深链、点击日志和 Admin 搜索分析
-    - 验收点：证据包包含 ES、rebuild、search response、click、Admin log、DB 查询和页面截图，所有 Search stop condition 均未触发
-    - 重要度：10/10
-
 - [ ] `DISCOVERY-QUALITY-004`：执行 Discovery QA 来源跳转冒烟并归档证据
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QUALITY-SMOKE.md`
