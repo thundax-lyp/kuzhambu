@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `8 更新覆盖矩阵`：同步 Operations Implementation Coverage
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-OPERATIONS-REPORTS-ADMIN.md`
-    - 范围对象：`docs/40-readiness/OPERATIONS-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：更新 Operations 报表条目，记录 `/operations/reports` 管理页和 Operations 专属下载代理已形成闭环。
-    - 验收点：Coverage 文档准确反映 admin-web 报表管理页、生成/列表/详情/失败原因、HTML/PDF 下载代理和权限闭环。
-    - 重要度：9/10
-
 - [ ] `9 清理 RUNBOOK 与 TODO`：完成临时文档和任务面板收口
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`

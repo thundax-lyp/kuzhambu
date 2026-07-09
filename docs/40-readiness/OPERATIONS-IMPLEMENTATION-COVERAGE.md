@@ -56,9 +56,11 @@
 - 报表闭环已形成当前阶段可运行交付：
   - `report` 已完成 domain + persistence，并补齐 `requestId`、`traceId`、`templateVersion`、`artifactFilename` 字段。
   - `kuzhambu-operations-application` 已完成 `generate/page/detail` 应用服务、任务执行单元、状态流转、worker 调用、Storage 产物回写。
-  - `kuzhambu-operations-interface` 已完成 admin `generate/page/detail` 接口、独立 `XxxResponse`、`operations:report:view` / `operations:report:generate` 权限约束。
+  - `kuzhambu-operations-application` 已通过 `StorageFacade.open(OpenStorageFacadeRequest)` 提供报表产物读取能力，读取 owner 口径与现有报表上传一致为 `ownerType=USER`、`ownerId=system`，并在应用层校验报表存在、`reportStatus=SUCCEEDED` 和 `storageObjectId` 非空。
+  - `kuzhambu-operations-interface` 已完成 admin `generate/page/detail` 接口、Operations 专属 `GET /api/operations/report/{reportId}/content?download=true` 下载代理、独立 `XxxResponse`、`operations:report:view` / `operations:report:generate` 权限约束；下载入口返回 `Content-Type`、`Content-Length`、`Content-Disposition` 和文件流，不要求业务外层持有 Storage 权限。
+  - `admin-web` 已完成 `/operations/reports` 管理页、`operations-report` 菜单入口、路由接入、筛选控件、周报/月报生成控件、记录列表、详情抽屉、失败原因展示、运行中轮询、HTML/PDF 下载按钮和 Operations 下载 URL 封装。
   - `Classics / AI / Discovery / Knowledge` 已提供按统一 summary 规格暴露的 `@LayerPublicApi` 聚合读取入口，周报按日、月报按周的 bucket 规则已固化到代码。
-  - 已存在 application / infra / interface / 跨域 summary 对应测试，报表链路具备基本验证闭环。
+  - 已存在 application / infra / interface / 跨域 summary、admin-web service/page 和 Operations E2E 对应测试，报表链路具备页面到下载代理的验证闭环。
 - 备份恢复闭环已形成当前阶段可运行交付：
   - `backup`、`restore` 已完成 domain + persistence + application + interface + admin page + 菜单权限种子数据。
   - `kuzhambu-operations-application` 已完成手动备份执行、启动自动备份、每日 2:00 自动备份调度、恢复前 `PRE_RESTORE` 快照创建、备份/恢复分页与详情查询，以及脚本执行结果回写台账。
@@ -82,7 +84,7 @@
 | 需求项 | 状态 | 已完成部分 | 未完成部分 | 责任域 |
 | --- | --- | --- | --- | --- |
 | 仪表盘与聚合展示 | 已完成 | 已完成 `OperationsDashboardApplicationService`、`POST /api/operations/dashboard/overview`、`OperationsDashboardOverviewResponse`、`/operations/dashboard` 前端页面、周期切换、刷新、指标卡、趋势区、排行区、健康明细抽屉和运维入口；已通过 `OperationsDashboardSummaryGateway` 接入 Classics 内容/访问、AI 调用/成本/能力排行、Discovery 搜索/问答/平均搜索耗时、Knowledge 标签覆盖/增长/排行真实 summary；已完成按 `operations` 权限的图表与入口裁剪 | 无 | Operations, Admin Web |
-| 报表 | 已完成 | 已完成周报/月报任务生成、HTML/PDF worker 渲染、Storage 产物回写、报表记录分页/详情查询、状态流转、独立 response、`operations:report:view` / `operations:report:generate` 权限控制，以及跨域 summary 聚合读取 | admin 页面接入与专属下载表现不在本矩阵范围内；后续如增加调度报表可另行扩展 | Operations |
+| 报表 | 已完成 | 已完成周报/月报任务生成、HTML/PDF worker 渲染、Storage 产物回写、报表记录分页/详情查询、状态流转、独立 response、`operations:report:view` / `operations:report:generate` 权限控制、跨域 summary 聚合读取、Operations 专属下载代理 `GET /api/operations/report/{reportId}/content?download=true`、`/operations/reports` 管理页、菜单路由、筛选、生成、列表、详情抽屉、失败原因展示、运行中轮询和 HTML/PDF 下载按钮；admin-web 仅调用 Operations 下载 URL，不直接暴露 Storage 读取入口 | 后续如增加调度报表可另行扩展 | Operations, Admin Web |
 | 备份与恢复 | 已完成 | 已完成 `BackupRecord`、`RestoreRecord`、各自 persistence、手动备份执行、启动自动备份、每日 2:00 自动备份、恢复前 `PRE_RESTORE` 快照创建、恢复期间 Web 写阻断、`REAL` / `DRILL` 恢复台账、备份/恢复 `execute/page/detail` 接口、`admin-web` 备份恢复页面与详情字段、菜单与权限种子，以及脚本执行结果回写 | 无 | Operations |
 | 清理任务 | 已完成 | `CleanupJob` / `CleanupItem` 已完成领域模型与持久化，应用层 `execute/page/detail` 与 admin 接口已上线，前端清理台账页已接通，`operations:cleanup:view/execute` 与页面回归测试已存在；真实执行覆盖过期备份、Classics 过期导出、过期分享、草稿分享、过期报表、过期健康检查和过期长任务快照；详情页可展示每条 cleanup item 的目标、状态、失败原因和处理时间；已完成 `kuzhambu.operations.cleanup.schedule` 调度配置、`OperationsCleanupScheduler` 默认每日 `03:30` 自动执行、启动清理默认关闭、按固定顺序执行七类 policy、单 policy disabled 跳过、单类型异常不阻断后续类型、自动任务 `requesterUserId = null` 识别为系统自动、admin 清理页自动/人工触发来源展示，以及 `.env.example` / `deploy/.env.example` 运行时样例；若清理目标涉及导出产物对象，其底层生命周期已可复用 Storage 自动 orphan 清理能力 | 无 | Operations |
 | 健康检查与运行状态 | 已完成 | `HealthCheckRecord`、`LongTaskSnapshot` 已完成 domain + persistence + application + interface；健康记录已包含 `probeSource`、`probeTarget`、`detailsJson`，并支持按 `component`、`healthStatus`、`probeSource`、`probeTarget`、`checkedAtStart`、`checkedAtEnd` 细分页筛选；已具备本地健康采集器、配置化 HTTP 外部探针、健康摘要、组件分页、健康趋势、长任务分页与详情查询；`operations_health_alert`、`HealthAlertRecord`、`OperationsHealthAlertStrategy`、`HealthAlertApplicationService`、`OperationsHealthAlertAdminController` 已完成健康告警策略、异常状态记录、确认、恢复、自动恢复动作编排和按 `latestCheckId` 查询关联告警接口；`RUN_MANUAL_BACKUP` 可触发备份台账写入，`RUN_RESTORE` 可触发恢复台账和长任务快照写入；长任务、备份、恢复、清理失败已联动告警来源和失败原因；`admin-web` 看板已消费健康摘要/趋势/告警，任务、备份恢复和清理页面已展示失败提示与告警入口，`/operations/health` 已提供健康细分页筛选控件、结果表格、诊断 JSON 抽屉、关联告警抽屉、`确认` 按钮、`恢复` 按钮、权限禁用态和恢复二次确认，菜单种子已补齐 `operations:health:view` 权限入口 | 无 | Operations, Admin Web |
