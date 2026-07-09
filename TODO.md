@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `2 后端下载 HTTP 入口`：新增 Operations 报表下载 controller 入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORTS-ADMIN.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/main/java/com/thundax/kuzhambu/operations/interfaces/admin/report/controller/OperationsReportAdminController.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-interface/src/test/java/com/thundax/kuzhambu/operations/interfaces/admin/report/controller/OperationsReportAdminControllerTest.java`
-    - 处理动作：新增 `GET /api/operations/report/{reportId}/content?download=true` 并把应用层下载结果写回 `HttpServletResponse`。
-    - 验收点：接口权限为 `operations:report:view`，controller 不注入 Storage 类型，响应包含 `Content-Type`、`Content-Length`、`Content-Disposition` 和文件流。
-    - 重要度：10/10
-
 - [ ] `3 前端报表 service`：新增 admin-web 报表类型与接口封装
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORTS-ADMIN.md`
