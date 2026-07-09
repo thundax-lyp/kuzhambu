@@ -7,6 +7,7 @@ import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { AiCandidateBatchDrawer } from "@/pages/classics/common/components/ai-candidate-batch-drawer";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
+import type { AiRefinementTaskCapability } from "@/pages/classics/common/ai-refinement-task-types";
 import * as contentService from "@/pages/classics/common/classics-content-service";
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
@@ -64,11 +65,20 @@ const createEventId = (prefix: string) => {
     return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 };
 
-const buildPromptMessagesJson = (document: WangqiDocumentRecord) => {
+const WANGQI_REFINEMENT_PROMPT: Record<AiRefinementTaskCapability, string> = {
+    summary: "你是古籍整理助理。请基于输入文稿生成简洁、准确、可直接回填到后台的中文摘要。",
+    tags: "你是古籍标签治理助理。请基于输入文稿提取稳定、短小、适合后台统一标签库复用的中文标签。",
+    qa: "你是古籍问答治理助理。请基于输入文稿生成可用于知识库检索的中文问答对。"
+};
+
+const buildPromptMessagesJson = (
+    document: WangqiDocumentRecord,
+    capability: AiRefinementTaskCapability
+) => {
     return JSON.stringify([
         {
             role: "system",
-            content: "你是古籍整理助理。请基于输入文稿生成简洁、准确、可直接回填到后台的中文摘要。"
+            content: WANGQI_REFINEMENT_PROMPT[capability]
         },
         {
             role: "user",
@@ -153,9 +163,8 @@ export const WangqiPage = () => {
     );
     const [batchVisibilityResult, setBatchVisibilityResult] =
         useState<ClassicsBatchOperationRecord | null>(null);
-    const [creatingRefinementCapability, setCreatingRefinementCapability] = useState<
-        "summary" | null
-    >(null);
+    const [creatingRefinementCapability, setCreatingRefinementCapability] =
+        useState<AiRefinementTaskCapability | null>(null);
     const handledSucceededTaskIdsRef = useRef<Set<number>>(new Set());
 
     const hasActiveFilters = Boolean(
@@ -217,8 +226,7 @@ export const WangqiPage = () => {
                 pageNo: 1,
                 pageSize: 10,
                 contentType: "WANGQI_DOCUMENT",
-                contentId: activeDocument?.id,
-                capability: "summary"
+                contentId: activeDocument?.id
             }),
         enabled: editorOpen && editorMode === "edit" && Boolean(activeDocument?.id),
         retry: false,
@@ -663,19 +671,22 @@ export const WangqiPage = () => {
         exportMutation.mutate(document);
     };
 
-    const createRefinementTask = (document: WangqiDocumentRecord) => {
+    const createRefinementTask = (
+        document: WangqiDocumentRecord,
+        capability: AiRefinementTaskCapability
+    ) => {
         const requestedBy = currentUserQuery.data?.id;
         if (!requestedBy) {
             messageApi.warning("当前用户信息未加载完成，请稍后重试");
             return;
         }
         if (!document.content?.trim()) {
-            messageApi.warning("正文为空，无法创建摘要精修任务");
+            messageApi.warning("正文为空，无法创建 AI 精修任务");
             return;
         }
-        setCreatingRefinementCapability("summary");
+        setCreatingRefinementCapability(capability);
         createRefinementTaskMutation.mutate({
-            capability: "summary",
+            capability,
             scope: "classics",
             contentType: "WANGQI_DOCUMENT",
             contentId: document.id,
@@ -683,10 +694,10 @@ export const WangqiPage = () => {
             serviceRole: DEFAULT_REFINEMENT_SERVICE_ROLE,
             modelId: DEFAULT_REFINEMENT_MODEL_ID,
             modelName: DEFAULT_REFINEMENT_MODEL_NAME,
-            requestId: createEventId("wangqi-summary-request"),
-            traceId: createEventId("wangqi-summary-trace"),
-            promptMessagesJson: buildPromptMessagesJson(document),
-            promptVariablesJson: JSON.stringify({ title: document.title || null }),
+            requestId: createEventId(`wangqi-${capability}-request`),
+            traceId: createEventId(`wangqi-${capability}-trace`),
+            promptMessagesJson: buildPromptMessagesJson(document, capability),
+            promptVariablesJson: JSON.stringify({ capability, title: document.title || null }),
             inputPayloadJson: buildInputPayloadJson(document),
             locale: "zh-CN"
         });
@@ -923,10 +934,28 @@ export const WangqiPage = () => {
                                         </Tooltip>
                                         <Button
                                             type="primary"
-                                            onClick={() => createRefinementTask(activeDocument)}
+                                            onClick={() =>
+                                                createRefinementTask(activeDocument, "summary")
+                                            }
                                             loading={creatingRefinementCapability === "summary"}
                                         >
                                             创建摘要任务
+                                        </Button>
+                                        <Button
+                                            onClick={() =>
+                                                createRefinementTask(activeDocument, "tags")
+                                            }
+                                            loading={creatingRefinementCapability === "tags"}
+                                        >
+                                            创建标签任务
+                                        </Button>
+                                        <Button
+                                            onClick={() =>
+                                                createRefinementTask(activeDocument, "qa")
+                                            }
+                                            loading={creatingRefinementCapability === "qa"}
+                                        >
+                                            创建问答任务
                                         </Button>
                                     </Button.Group>
                                 }

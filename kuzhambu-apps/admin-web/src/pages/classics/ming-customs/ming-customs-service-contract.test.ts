@@ -151,6 +151,20 @@ describe("ming customs service request contracts", () => {
         await service.listKeywordCloud();
         expectLastCall("GET", "/classics/ming-customs/keyword-cloud", undefined);
 
+        await service.listTagCloud({
+            category: "RITUAL",
+            keyword: "元旦",
+            visibility: "PUBLIC"
+        });
+        expectLastCall(
+            "GET",
+            "/classics/ming-customs/tag-cloud?category=RITUAL&keyword=%E5%85%83%E6%97%A6&visibility=PUBLIC",
+            undefined
+        );
+
+        await service.listTagCloud();
+        expectLastCall("GET", "/classics/ming-customs/tag-cloud", undefined);
+
         const options = await service.listCategoryOptions();
         expectLastCall("POST", "/sys/dict/page", {
             pageNo: 1,

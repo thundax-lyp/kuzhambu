@@ -242,6 +242,7 @@ describe("WangqiPage", () => {
     let queryClient: QueryClient;
 
     beforeEach(() => {
+        vi.clearAllMocks();
         queryClient = createTestQueryClient();
         capturedCalls.length = 0;
         mockDocumentRecord = {
@@ -286,7 +287,7 @@ describe("WangqiPage", () => {
         expect(await screen.findByText("王圻文档")).toBeInTheDocument();
     }, 30000);
 
-    it("creates summary refinement task from the document drawer", async () => {
+    it("creates summary tags and qa refinement tasks from the document drawer", async () => {
         const user = userEvent.setup();
 
         render(
@@ -299,22 +300,55 @@ describe("WangqiPage", () => {
 
         await user.click(await screen.findByRole("button", { name: "编辑王圻文档 王圻文档" }));
         await user.click(await screen.findByRole("button", { name: "创建摘要任务" }));
+        await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(1));
+        await user.click(await screen.findByRole("button", { name: "创建标签任务" }));
+        await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(2));
+        await user.click(await screen.findByRole("button", { name: "创建问答任务" }));
+        await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(3));
 
         expect(currentUserService.getCurrentUserInfo).toHaveBeenCalled();
-        expect(aiRefinementTaskService.createTask).toHaveBeenCalled();
-        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).toEqual(
-            expect.objectContaining({
-                capability: "summary",
-                scope: "classics",
-                contentType: "WANGQI_DOCUMENT",
-                contentId: 400000000001,
-                requestedBy: 99,
-                serviceRole: "PRIMARY",
-                modelId: 1,
-                modelName: "gpt-5.5",
-                locale: "zh-CN"
-            })
+        const calls = vi
+            .mocked(aiRefinementTaskService.createTask)
+            .mock.calls.map(([payload]) => payload);
+        expect(calls.map((payload) => payload.capability)).toEqual(["summary", "tags", "qa"]);
+        calls.forEach((payload) => {
+            expect(payload).toEqual(
+                expect.objectContaining({
+                    scope: "classics",
+                    contentType: "WANGQI_DOCUMENT",
+                    contentId: 400000000001,
+                    requestedBy: 99,
+                    serviceRole: "PRIMARY",
+                    modelId: 1,
+                    modelName: "gpt-5.5",
+                    locale: "zh-CN"
+                })
+            );
+            expect(payload.requestId).toContain(`wangqi-${payload.capability}-request`);
+            expect(payload.traceId).toContain(`wangqi-${payload.capability}-trace`);
+        });
+    }, 30000);
+
+    it("does not create refinement task when document content is empty", async () => {
+        const user = userEvent.setup();
+        mockDocumentRecord = {
+            ...mockDocumentRecord,
+            content: ""
+        };
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <WangqiPage />
+                </AntdApp>
+            </QueryClientProvider>
         );
+
+        await user.click(await screen.findByRole("button", { name: "编辑王圻文档 王圻文档" }));
+        await user.click(await screen.findByRole("button", { name: "创建标签任务" }));
+
+        expect(aiRefinementTaskService.createTask).not.toHaveBeenCalled();
+        expect(await screen.findByText("正文为空，无法创建 AI 精修任务")).toBeInTheDocument();
     }, 30000);
 
     it("opens single document QA from the document drawer", async () => {

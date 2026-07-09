@@ -50,6 +50,7 @@ const menuIconMap: Record<string, ReactNode> = {
     operations: <AppstoreOutlined />,
     "operations-dashboard": <AppstoreOutlined />,
     "operations-task": <FileTextOutlined />,
+    "operations-report": <FileTextOutlined />,
     "operations-backup-restore": <FileTextOutlined />,
     "operations-cleanup": <FileTextOutlined />,
     users: <TeamOutlined />,
@@ -99,6 +100,10 @@ const getOpenKeys = (pathname: string) => {
 
     if (pathname.startsWith("/ai/")) {
         openKeys.push("/ai");
+    }
+
+    if (pathname.startsWith("/operations/")) {
+        openKeys.push("/operations");
     }
 
     return openKeys;

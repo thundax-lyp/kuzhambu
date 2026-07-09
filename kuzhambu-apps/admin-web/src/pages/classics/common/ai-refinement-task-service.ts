@@ -28,6 +28,8 @@ const RETRYABLE_STATUSES = new Set(["FAILED", "PARTIAL", "CANCELLED"]);
 const CAPABILITY_LABELS: Record<string, string> = {
     translate: "译文",
     summary: "摘要",
+    tags: "标签",
+    qa: "问答",
     image_analysis: "图片理解",
     fusion: "信息融合",
     visual: "视觉描述",

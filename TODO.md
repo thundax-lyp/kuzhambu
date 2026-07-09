@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `branch-main-sync`：同步 main 分支代码
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：当前分支 `feat/ai-admin-governance` 与 `main`
-    - 处理动作：完成实现任务后同步 `main` 最新代码到当前分支并解决冲突。
-    - 验收点：当前分支包含 `main` 最新代码，冲突已解决，且后续最终验证基于同步后的代码执行。
-    - 重要度：10/10
-
 - [ ] `ai-admin-verification`：执行 AI 治理后台闭环验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-ADMIN-GOVERNANCE.md`

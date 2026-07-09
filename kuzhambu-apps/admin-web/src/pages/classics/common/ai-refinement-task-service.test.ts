@@ -144,6 +144,13 @@ describe("AI refinement task service request contracts", () => {
         });
     });
 
+    it("labels tags and qa capabilities as retryable task types", () => {
+        expect(aiRefinementTaskService.getTaskCapabilityLabel("tags")).toBe("标签");
+        expect(aiRefinementTaskService.getTaskCapabilityLabel("qa")).toBe("问答");
+        expect(aiRefinementTaskService.getTaskRetryable("FAILED", "tags")).toBe(true);
+        expect(aiRefinementTaskService.getTaskRetryable("PARTIAL", "qa")).toBe(true);
+    });
+
     it("gets task by id", async () => {
         await aiRefinementTaskService.getTask({ taskId: 7001 });
 

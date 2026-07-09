@@ -96,6 +96,38 @@ def completed_event(
     )
 
 
+def delta_event(
+    request_id: str,
+    trace_id: str,
+    timestamp: str,
+    delta: str,
+) -> StreamEvent:
+    return stream_event(
+        StreamEventType.DELTA,
+        request_id=request_id,
+        trace_id=trace_id,
+        stage="model_stream",
+        timestamp=timestamp,
+        delta={"text": delta},
+    )
+
+
+def usage_event(
+    request_id: str,
+    trace_id: str,
+    timestamp: str,
+    usage: dict[str, Any],
+) -> StreamEvent:
+    return stream_event(
+        StreamEventType.USAGE,
+        request_id=request_id,
+        trace_id=trace_id,
+        stage="usage",
+        timestamp=timestamp,
+        usage=usage,
+    )
+
+
 def final_state_extra(
     *,
     status: str,
