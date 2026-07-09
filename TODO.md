@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web mingcustoms tag cloud tests`：补齐明代习俗标签云前端契约和页面测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-TAIL-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/ming-customs/ming-customs-service-contract.test.ts`、`kuzhambu-apps/admin-web/src/pages/classics/ming-customs/ming-customs-page.test.tsx`
-    - 处理动作：覆盖 `listTagCloud` 查询参数、打开标签云、点击标签筛选和清除标签筛选。
-    - 验收点：页面请求体包含或清除 `tagId/tagNameSnapshot`，且不再通过旧 `tagName` 承载新标签云筛选。
-    - 重要度：9/10
-
 - [ ] `admin-web sancai current-page selection`：明确三才图会当前页多选交互
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-TAIL-CLOSURE.md`

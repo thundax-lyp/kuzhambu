@@ -149,6 +149,16 @@ const installFetchMock = () => {
             return apiResponse([]);
         }
 
+        if (path.startsWith("/classics/ming-customs/tag-cloud")) {
+            return apiResponse([
+                {
+                    tagId: 700000000001,
+                    tagNameSnapshot: "礼制",
+                    count: 3
+                }
+            ]);
+        }
+
         if (path.endsWith("/sys/dict/page")) {
             return apiResponse({
                 pageNo: 1,
@@ -393,6 +403,70 @@ describe("MingCustomsPage", () => {
 
         expect(await screen.findByRole("heading", { name: "明代习俗" })).toBeInTheDocument();
         expect(await screen.findByText("岁时礼仪：元旦朝贺")).toBeInTheDocument();
+    }, 30000);
+
+    it("filters list by tag cloud selection and clears selected tag filter", async () => {
+        const user = userEvent.setup();
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <MingCustomsPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await screen.findByText("岁时礼仪：元旦朝贺");
+        capturedCalls.length = 0;
+
+        await user.click(screen.getByRole("button", { name: "标签云" }));
+        expect(await screen.findByRole("dialog", { name: "明代习俗标签云" })).toBeInTheDocument();
+        await user.click(await screen.findByRole("button", { name: "筛选标签 礼制，3 条" }));
+
+        await waitFor(() => {
+            expect(
+                capturedCalls.some(
+                    (call) =>
+                        call.method === "POST" &&
+                        call.path === "/classics/ming-customs/page" &&
+                        (
+                            call.body as {
+                                tagId?: number;
+                                tagNameSnapshot?: string;
+                                tagName?: string;
+                            }
+                        ).tagId === 700000000001 &&
+                        (
+                            call.body as {
+                                tagId?: number;
+                                tagNameSnapshot?: string;
+                                tagName?: string;
+                            }
+                        ).tagNameSnapshot === "礼制" &&
+                        !("tagName" in (call.body as Record<string, unknown>))
+                )
+            ).toBeTruthy();
+        });
+        expect(await screen.findByText(/当前标签筛选：礼制/)).toBeInTheDocument();
+
+        capturedCalls.length = 0;
+        await user.click(screen.getByRole("button", { name: "清除标签筛选" }));
+
+        await waitFor(() => {
+            expect(
+                capturedCalls.some((call) => {
+                    const body = call.body as Record<string, unknown>;
+                    return (
+                        call.method === "POST" &&
+                        call.path === "/classics/ming-customs/page" &&
+                        !("tagId" in body) &&
+                        !("tagNameSnapshot" in body) &&
+                        !("tagName" in body)
+                    );
+                })
+            ).toBeTruthy();
+        });
+        expect(screen.queryByText(/当前标签筛选：礼制/)).not.toBeInTheDocument();
     }, 30000);
 
     it("creates summary tags and qa refinement tasks from the entry drawer", async () => {
