@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `04-admin-ai-governance-pages`：04 Admin AI 治理页面控件验收
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-RUNTIME-ACCEPTANCE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/ai/services/services-page.tsx`、`kuzhambu-apps/admin-web/src/pages/ai/model-configs/model-configs-page.tsx`、`kuzhambu-apps/admin-web/src/pages/ai/capability-mappings/capability-mappings-page.tsx`、`kuzhambu-apps/admin-web/src/pages/ai/prompts/prompts-page.tsx`、`kuzhambu-apps/admin-web/src/pages/ai/action-status/action-status-page.tsx`
-    - 处理动作：按 RUNBOOK 验收服务卡片、模型表单、能力映射表单、提示词编辑器、变量校验控件和动作状态筛选刷新控件。
-    - 验收点：每个页面控件触发对应 API，表单校验、保存成功、保存失败、刷新、筛选和错误展示均有证据。
-    - 重要度：9/10
-
 - [ ] `05-admin-classics-summary-invocation`：05 Admin Classics summary 精修和调用统计页面验收
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-RUNTIME-ACCEPTANCE.md`
