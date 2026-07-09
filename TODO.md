@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `06-ai-runtime-smoke-evidence`：06 沉淀 AI 运行时冒烟证据
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-RUNTIME-ACCEPTANCE.md`
-    - 范围对象：`docs/40-readiness/AI-RUNTIME-SMOKE-EVIDENCE.md`、`docs/30-designs/RUNBOOK-AI-RUNTIME-ACCEPTANCE.md`
-    - 处理动作：新增脱敏冒烟证据文档，记录 RUNBOOK 要求的真实运行证据。
-    - 验收点：证据文档包含 worker health、登录脱敏 token、配置、模型检测、映射、提示词变量、动作状态、任务终态和调用统计摘要，且不包含 API Key、完整 token、完整 prompt 或业务敏感输入。
-    - 重要度：10/10
-
 - [ ] `07-ai-runtime-verification`：07 执行 AI 验收验证命令
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-RUNTIME-ACCEPTANCE.md`
