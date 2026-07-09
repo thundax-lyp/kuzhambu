@@ -31,19 +31,28 @@ CREATE TABLE IF NOT EXISTS `discovery_search_query_log` (
     KEY `idx_discovery_search_query_log_intent` (`intent`, `searched_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='搜索查询日志表';
 
-CREATE TABLE IF NOT EXISTS `discovery_search_click_log` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `click_id` bigint NOT NULL,
-    `query_id` bigint NOT NULL,
-    `user_id` bigint DEFAULT NULL,
-    `content_type` varchar(32) NOT NULL,
-    `content_id` bigint NOT NULL,
-    `result_rank` int NOT NULL DEFAULT 0,
-    `clicked_at` datetime(3) NOT NULL,
+CREATE TABLE IF NOT EXISTS `discovery_search_click` (
+    `id` bigint NOT NULL,
+    `search_click_id` varchar(64) NOT NULL,
+    `search_log_id` varchar(64) NOT NULL,
+    `content_domain` varchar(64) DEFAULT NULL,
+    `content_type` varchar(64) NOT NULL,
+    `content_id` varchar(64) NOT NULL,
+    `content_title` varchar(256) DEFAULT NULL,
+    `result_group_key` varchar(64) DEFAULT NULL,
+    `result_rank` int DEFAULT NULL,
+    `group_rank` int DEFAULT NULL,
+    `target_path` varchar(512) DEFAULT NULL,
+    `operator_type` varchar(32) DEFAULT NULL,
+    `operator_id` varchar(64) DEFAULT NULL,
+    `request_id` varchar(128) DEFAULT NULL,
+    `trace_id` varchar(128) DEFAULT NULL,
+    `created_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_discovery_search_click_log_id` (`click_id`),
-    KEY `idx_discovery_search_click_log_query` (`query_id`, `clicked_at`),
-    KEY `idx_discovery_search_click_log_content` (`content_type`, `content_id`)
+    UNIQUE KEY `uk_discovery_search_click_id` (`search_click_id`),
+    KEY `idx_discovery_search_click_log` (`search_log_id`, `created_at`),
+    KEY `idx_discovery_search_click_content` (`content_type`, `content_id`),
+    KEY `idx_discovery_search_click_operator` (`operator_id`, `created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='搜索点击日志表';
 
 CREATE TABLE IF NOT EXISTS `discovery_search_log` (

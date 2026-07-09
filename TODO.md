@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `DISCOVERY-QUALITY-002`：对齐 Discovery Search 点击日志 schema
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QUALITY-SMOKE.md`
-    - 范围对象：`db/schema/discovery.sql`、`db/data/discovery.sql`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/search/persistence/dataobject/SearchClickDO.java`、`kuzhambu-servers/biz/discovery/kuzhambu-discovery-infra/src/main/java/com/thundax/kuzhambu/discovery/infra/search/persistence/mapper/SearchClickMapper.java`
-    - 处理动作：确认运行态 `discovery_search_click` 表与 schema seed 的字段、索引和示例数据一致
-    - 验收点：schema、seed、DO 和 mapper 使用同一张点击日志表，Search click 冒烟不会因表名或字段不一致阻断
-    - 重要度：9/10
-
 - [ ] `DISCOVERY-QUALITY-003`：执行 Discovery Search 质量冒烟并归档证据
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QUALITY-SMOKE.md`

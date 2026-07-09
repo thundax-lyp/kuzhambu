@@ -28,23 +28,82 @@ INSERT INTO `discovery_search_query_log` (
     `result_count` = VALUES(`result_count`),
     `searched_at` = VALUES(`searched_at`);
 
-INSERT INTO `discovery_search_click_log` (
-    `click_id`, `query_id`, `user_id`, `content_type`, `content_id`, `result_rank`, `clicked_at`
+INSERT INTO `discovery_search_log` (
+    `search_log_id`, `query_text`, `normalized_query_text`, `display_query_text`, `intent_type`,
+    `search_scopes_json`, `result_total_count`, `group_total_count`, `search_latency_ms`, `search_status`,
+    `failure_code`, `failure_message`, `operator_type`, `operator_id`, `request_id`, `trace_id`, `created_at`
+) VALUES (
+    'sample-search-log-1001',
+    '世系图',
+    '世系图',
+    '世系图',
+    'KEYWORD_SEARCH',
+    '{"knowledgeBases":["SANCAI_ENTRY"]}',
+    1,
+    1,
+    123,
+    'SUCCEEDED',
+    NULL,
+    NULL,
+    'USER',
+    '2',
+    'seed-request-1001',
+    'seed-trace-1001',
+    '2026-02-27 04:10:00.000'
+) ON DUPLICATE KEY UPDATE
+    `query_text` = VALUES(`query_text`),
+    `normalized_query_text` = VALUES(`normalized_query_text`),
+    `display_query_text` = VALUES(`display_query_text`),
+    `intent_type` = VALUES(`intent_type`),
+    `search_scopes_json` = VALUES(`search_scopes_json`),
+    `result_total_count` = VALUES(`result_total_count`),
+    `group_total_count` = VALUES(`group_total_count`),
+    `search_latency_ms` = VALUES(`search_latency_ms`),
+    `search_status` = VALUES(`search_status`),
+    `failure_code` = VALUES(`failure_code`),
+    `failure_message` = VALUES(`failure_message`),
+    `operator_type` = VALUES(`operator_type`),
+    `operator_id` = VALUES(`operator_id`),
+    `request_id` = VALUES(`request_id`),
+    `trace_id` = VALUES(`trace_id`),
+    `created_at` = VALUES(`created_at`);
+
+INSERT INTO `discovery_search_click` (
+    `id`, `search_click_id`, `search_log_id`, `content_domain`, `content_type`, `content_id`,
+    `content_title`, `result_group_key`, `result_rank`, `group_rank`, `target_path`,
+    `operator_type`, `operator_id`, `request_id`, `trace_id`, `created_at`
 ) VALUES (
     1101,
-    1001,
-    2,
+    '1101',
+    'sample-search-log-1001',
+    'CLASSICS',
     'SANCAI_ENTRY',
-    300000000604,
+    '300000000604',
+    '上古帝王及世系图',
+    'SANCAI_ENTRY',
     1,
+    1,
+    '/classics/sancai/300000000604',
+    'USER',
+    '2',
+    'seed-request-1101',
+    'seed-trace-1101',
     '2026-02-27 04:10:30.000'
 ) ON DUPLICATE KEY UPDATE
-    `query_id` = VALUES(`query_id`),
-    `user_id` = VALUES(`user_id`),
+    `search_log_id` = VALUES(`search_log_id`),
+    `content_domain` = VALUES(`content_domain`),
     `content_type` = VALUES(`content_type`),
     `content_id` = VALUES(`content_id`),
+    `content_title` = VALUES(`content_title`),
+    `result_group_key` = VALUES(`result_group_key`),
     `result_rank` = VALUES(`result_rank`),
-    `clicked_at` = VALUES(`clicked_at`);
+    `group_rank` = VALUES(`group_rank`),
+    `target_path` = VALUES(`target_path`),
+    `operator_type` = VALUES(`operator_type`),
+    `operator_id` = VALUES(`operator_id`),
+    `request_id` = VALUES(`request_id`),
+    `trace_id` = VALUES(`trace_id`),
+    `created_at` = VALUES(`created_at`);
 
 INSERT INTO `discovery_qa_session` (
     `session_id`, `owner_type`, `owner_id`, `title`, `scope`, `context_mode`,

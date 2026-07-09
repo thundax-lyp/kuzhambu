@@ -427,11 +427,6 @@ discovery-quality-smoke-YYYYMMDD-HHMM/
 
 本 RUNBOOK 不修复 schema 或代码问题。执行中如发现运行态表结构与 `db/schema/discovery.sql` 不一致，单独创建 schema 对齐任务处理。
 
-已知需独立确认：
-
-- 运行时代码使用 `discovery_search_click`。
-- `db/schema/discovery.sql` 当前仍保留旧 `discovery_search_click_log`。
-
 ## Final Pass Criteria
 
 本 RUNBOOK 只有同时满足以下条件才算通过：
