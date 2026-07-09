@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ai-invocation-query`：补齐 AI 调用记录查询能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-ADMIN-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-domain/src/main/java/com/thundax/kuzhambu/ai/domain/invocation/repository/AiInvocationRepository.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/invocation/persistence/mapper/AiInvocationMapper.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/invocation/repository/impl/AiInvocationRepositoryImpl.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/test/java/com/thundax/kuzhambu/ai/infra/invocation/repository/impl/AiInvocationRepositoryIT.java`
-    - 处理动作：补齐调用记录筛选分页和 summary 聚合读取能力。
-    - 验收点：可按 `scope`、`capability`、`contentType`、`contentId`、`status`、`serviceRole`、`modelName`、`fallbackUsed`、`requestedAt` 范围读取调用记录，并可聚合统计调用数、失败数、耗时、成本和能力排行。
-    - 重要度：10/10
-
 - [ ] `ai-invocation-admin-api`：暴露 AI 调用记录管理端接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-ADMIN-GOVERNANCE.md`
