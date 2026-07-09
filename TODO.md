@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `1 后端下载用例`：新增 Operations 报表下载应用用例
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORTS-ADMIN.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/report/service/ReportApplicationService.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/report/service/impl/ReportApplicationServiceImpl.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/report/query/OperationsReportDetailQuery.java`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application/src/main/java/com/thundax/kuzhambu/operations/application/report/result/OperationsReportDownloadResult.java`
-    - 处理动作：新增 `download(OperationsReportDetailQuery query)` 用例并通过 `StorageFacade.open(OpenStorageFacadeRequest)` 读取报表产物。
-    - 验收点：报表不存在、未成功或缺少 `storageObjectId` 时返回 Operations 业务错误，成功时返回 `reportId`、`format`、`artifactFilename`、`contentType`、`contentLength`、`storageOriginalFilename`、`inputStream`。
-    - 重要度：10/10
-
 - [ ] `2 后端下载 HTTP 入口`：新增 Operations 报表下载 controller 入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORTS-ADMIN.md`

@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.operations.application.report.command.OperationsRepo
 import com.thundax.kuzhambu.operations.application.report.query.OperationsReportDetailQuery;
 import com.thundax.kuzhambu.operations.application.report.query.OperationsReportPageQuery;
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportDetailResult;
+import com.thundax.kuzhambu.operations.application.report.result.OperationsReportDownloadResult;
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportGenerateResult;
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportPageResult;
 import com.thundax.kuzhambu.operations.application.report.service.ReportApplicationService;
@@ -15,23 +16,39 @@ import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
 import com.thundax.kuzhambu.operations.domain.report.model.enums.ReportStatus;
 import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
 import com.thundax.kuzhambu.operations.domain.report.repository.ReportRepository;
+import com.thundax.kuzhambu.storage.facade.StorageFacade;
+import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
+import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
+import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 @BizExceptionBoundary
 public class ReportApplicationServiceImpl implements ReportApplicationService {
 
+    private static final String REPORT_STORAGE_OWNER_TYPE = "USER";
+    private static final String REPORT_STORAGE_OWNER_ID = "system";
+
     private final ReportRepository reportRepository;
     private final OperationsReportTaskExecutor taskExecutor;
+    private final StorageFacade storageFacade;
 
     public ReportApplicationServiceImpl(ReportRepository reportRepository, OperationsReportTaskExecutor taskExecutor) {
+        this(reportRepository, taskExecutor, null);
+    }
+
+    @Autowired
+    public ReportApplicationServiceImpl(
+            ReportRepository reportRepository, OperationsReportTaskExecutor taskExecutor, StorageFacade storageFacade) {
         this.reportRepository = reportRepository;
         this.taskExecutor = taskExecutor;
+        this.storageFacade = storageFacade;
     }
 
     @Override
@@ -81,6 +98,29 @@ public class ReportApplicationServiceImpl implements ReportApplicationService {
     public OperationsReportDetailResult detail(OperationsReportDetailQuery query) {
         ReportRecord record = reportRepository.getById(query == null ? null : query.getReportId());
         return toDetailResult(record);
+    }
+
+    @Override
+    public OperationsReportDownloadResult download(OperationsReportDetailQuery query) {
+        ReportRecord record = reportRepository.getById(query == null ? null : query.getReportId());
+        validateDownloadRecord(record);
+        OpenStorageFacadeResponse content = storageFacade.open(OpenStorageFacadeRequest.builder()
+                .storageObjectId(record.getStorageObjectId())
+                .ownerType(REPORT_STORAGE_OWNER_TYPE)
+                .ownerId(REPORT_STORAGE_OWNER_ID)
+                .build());
+        if (content == null || content.getInputStream() == null) {
+            throw new IllegalStateException("Operations report artifact content is not readable.");
+        }
+        StorageObjectFacadeDto storedObject = content.getStoredObject();
+        return new OperationsReportDownloadResult(
+                record.getId(),
+                record.getFormat(),
+                record.getArtifactFilename(),
+                storedObject == null ? null : storedObject.getContentType(),
+                storedObject == null ? null : storedObject.getSize(),
+                storedObject == null ? null : storedObject.getOriginalFilename(),
+                content.getInputStream());
     }
 
     private OperationsReportPageResult toPageResult(ReportRecord record) {
@@ -143,6 +183,21 @@ public class ReportApplicationServiceImpl implements ReportApplicationService {
         }
         if (command.getPeriodStart().after(command.getPeriodEnd())) {
             throw new IllegalArgumentException("Operations report periodStart must not be after periodEnd.");
+        }
+    }
+
+    private void validateDownloadRecord(ReportRecord record) {
+        if (record == null) {
+            throw new IllegalArgumentException("Operations report does not exist.");
+        }
+        if (record.getReportStatus() != ReportStatus.SUCCEEDED) {
+            throw new IllegalStateException("Operations report artifact is not ready.");
+        }
+        if (record.getStorageObjectId() == null) {
+            throw new IllegalStateException("Operations report artifact storage object is missing.");
+        }
+        if (storageFacade == null) {
+            throw new IllegalStateException("Operations report storage facade is not available.");
         }
     }
 
