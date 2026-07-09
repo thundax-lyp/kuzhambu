@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.ai.infra.invocation.persistence.dataobject.AiCandida
 import java.util.List;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
@@ -19,7 +20,9 @@ public interface AiInvocationMapper extends BaseMapper<AiCallRecordDO> {
               and (#{requestedAtEnd} is null or requested_at <= #{requestedAtEnd})
             order by requested_at desc
             """)
-    List<AiCallRecordDO> selectCallRecords(java.time.Instant requestedAtStart, java.time.Instant requestedAtEnd);
+    List<AiCallRecordDO> selectCallRecords(
+            @Param("requestedAtStart") java.time.Instant requestedAtStart,
+            @Param("requestedAtEnd") java.time.Instant requestedAtEnd);
 
     @Select(
             """
@@ -38,18 +41,18 @@ public interface AiInvocationMapper extends BaseMapper<AiCallRecordDO> {
             limit #{pageSize} offset #{offset}
             """)
     List<AiCallRecordDO> selectCallRecordsPage(
-            String scope,
-            String capability,
-            String contentType,
-            Long contentId,
-            String status,
-            String serviceRole,
-            String modelName,
-            Boolean fallbackUsed,
-            java.time.Instant requestedAtStart,
-            java.time.Instant requestedAtEnd,
-            Integer offset,
-            Integer pageSize);
+            @Param("scope") String scope,
+            @Param("capability") String capability,
+            @Param("contentType") String contentType,
+            @Param("contentId") Long contentId,
+            @Param("status") String status,
+            @Param("serviceRole") String serviceRole,
+            @Param("modelName") String modelName,
+            @Param("fallbackUsed") Boolean fallbackUsed,
+            @Param("requestedAtStart") java.time.Instant requestedAtStart,
+            @Param("requestedAtEnd") java.time.Instant requestedAtEnd,
+            @Param("offset") Integer offset,
+            @Param("pageSize") Integer pageSize);
 
     @Select(
             """
@@ -66,16 +69,16 @@ public interface AiInvocationMapper extends BaseMapper<AiCallRecordDO> {
               and (#{requestedAtEnd} is null or requested_at <= #{requestedAtEnd})
             """)
     long countCallRecords(
-            String scope,
-            String capability,
-            String contentType,
-            Long contentId,
-            String status,
-            String serviceRole,
-            String modelName,
-            Boolean fallbackUsed,
-            java.time.Instant requestedAtStart,
-            java.time.Instant requestedAtEnd);
+            @Param("scope") String scope,
+            @Param("capability") String capability,
+            @Param("contentType") String contentType,
+            @Param("contentId") Long contentId,
+            @Param("status") String status,
+            @Param("serviceRole") String serviceRole,
+            @Param("modelName") String modelName,
+            @Param("fallbackUsed") Boolean fallbackUsed,
+            @Param("requestedAtStart") java.time.Instant requestedAtStart,
+            @Param("requestedAtEnd") java.time.Instant requestedAtEnd);
 
     @Select(
             """
@@ -88,11 +91,11 @@ public interface AiInvocationMapper extends BaseMapper<AiCallRecordDO> {
             order by requested_at desc
             """)
     List<AiCallRecordDO> selectCallRecordsForSummary(
-            String scope,
-            String capability,
-            String serviceRole,
-            java.time.Instant requestedAtStart,
-            java.time.Instant requestedAtEnd);
+            @Param("scope") String scope,
+            @Param("capability") String capability,
+            @Param("serviceRole") String serviceRole,
+            @Param("requestedAtStart") java.time.Instant requestedAtStart,
+            @Param("requestedAtEnd") java.time.Instant requestedAtEnd);
 
     @Select("select * from ai_candidate where candidate_id = #{candidateId}")
     AiCandidateDO selectCandidate(Long candidateId);
@@ -108,7 +111,11 @@ public interface AiInvocationMapper extends BaseMapper<AiCallRecordDO> {
             order by requested_at desc
             """)
     List<AiCandidateDO> selectCandidates(
-            String contentType, Long contentId, Long objectId, String capability, String status);
+            @Param("contentType") String contentType,
+            @Param("contentId") Long contentId,
+            @Param("objectId") Long objectId,
+            @Param("capability") String capability,
+            @Param("status") String status);
 
     @Insert(
             """

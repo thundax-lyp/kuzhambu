@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `03-ai-backend-invocation-stats`：03 后端精修任务、调用记录和统计验收
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-RUNTIME-ACCEPTANCE.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/refinement/controller/AiRefinementTaskController.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/invocation/controller/AiInvocationController.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/invocation/command/AiInvokeCommand.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/invocation/result/AiInvokeResult.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/invocation/persistence/mapper/AiInvocationMapper.java`
-    - 处理动作：创建 `classics + summary` 精修任务并验收任务终态、调用统计、调用分页和数据库追溯。
-    - 验收点：`ai_refinement_task.call_id`、`ai_call_record.call_id`、`ai_candidate.call_id` 可互相追溯，调用详情包含模型、提示词版本、耗时、失败阶段和降级标记。
-    - 重要度：10/10
-
 - [ ] `04-admin-ai-governance-pages`：04 Admin AI 治理页面控件验收
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-RUNTIME-ACCEPTANCE.md`
