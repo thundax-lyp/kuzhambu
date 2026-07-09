@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `kuzhambu-workers/src/kuzhambu_workers/api/ai_routes.py`：02 写入 artifact 并返回 SSE final-state
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-GEN.md`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/api/ai_routes.py`、`kuzhambu-workers/src/kuzhambu_workers/schemas/ai.py`
-    - 处理动作：移除 `image_gen` 硬编码 unsupported 分支，将图片结果写入 `RequestArtifactStore` 并映射为 `ArtifactReference`。
-    - 验收点：同步响应和 SSE `completed.extra.artifactReference` 均包含 `artifactId`、`downloadPath`、`contentType`、`filename`、`sizeBytes`、`sha256`、`expiresAt`，且 `result` 为 `null`。
-    - 重要度：10/10
-
 - [ ] `kuzhambu-workers/tests`：03 锁定 Classics image-gen 成功契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-GEN.md`
