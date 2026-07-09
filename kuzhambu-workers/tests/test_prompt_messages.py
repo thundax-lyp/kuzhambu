@@ -1,7 +1,7 @@
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 
 from kuzhambu_workers.ai.model_adapters import prepare_openai_compatible_invocation
-from kuzhambu_workers.ai.prompt_messages import build_langchain_messages
+from kuzhambu_workers.ai.prompt_messages import build_langchain_messages, build_openai_messages
 from kuzhambu_workers.ai.structured_output import (
     output_schema_payload,
     structured_output_instruction,
@@ -25,6 +25,19 @@ def test_build_langchain_messages_uses_rendered_prompt_messages() -> None:
         "user prompt",
         "assistant answer",
         "tool result",
+    ]
+
+
+def test_build_openai_messages_uses_rendered_prompt_messages() -> None:
+    request = AiInvokeRequest.model_validate(_request_payload())
+
+    messages = build_openai_messages(request.prompt)
+
+    assert messages == [
+        {"role": "system", "content": "system prompt"},
+        {"role": "user", "content": "user prompt"},
+        {"role": "assistant", "content": "assistant answer"},
+        {"role": "tool", "content": "tool result"},
     ]
 
 

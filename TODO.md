@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `02 kuzhambu-workers OpenAI-compatible sync client`：实现同步 `/chat/completions` 调用
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-REAL-AI-LOOP.md`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/ai/openai_compatible.py`、`kuzhambu-workers/src/kuzhambu_workers/ai/usage.py`、`kuzhambu-workers/src/kuzhambu_workers/ai/prompt_messages.py`、`kuzhambu-workers/tests/test_ai_openai_compatible.py`
-    - 处理动作：用 `httpx` 实现 OpenAI-compatible 同步请求、响应解析和 usage 映射。
-    - 验收点：请求 URL、headers、body、provider content、provider usage、timeout、429、4xx、5xx 和连接失败均有 mocked transport 测试覆盖。
-    - 重要度：10/10
-
 - [ ] `03 kuzhambu-workers structured output`：实现结构化输出约束和解析
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-REAL-AI-LOOP.md`
