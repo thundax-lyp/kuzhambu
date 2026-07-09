@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `5 前端路由菜单 E2E`：接入 Operations 报表管理路由、菜单与端到端验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORTS-ADMIN.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/router/index.tsx`、`kuzhambu-apps/admin-web/src/layouts/admin-layout.tsx`、`kuzhambu-apps/admin-web/e2e/layout/admin-layout.spec.ts`、`kuzhambu-apps/admin-web/e2e/operations/reports/reports.spec.ts`、`kuzhambu-apps/admin-web/e2e/operations/dashboard/dashboard.spec.ts`
-    - 处理动作：注册 `/operations/reports` 路由、`operations-report` 菜单图标和 E2E 菜单 mock。
-    - 验收点：E2E 覆盖菜单进入、生成、列表刷新、详情、失败原因和 Operations 下载 URL，且不产生 `.menu-icon-config-error`。
-    - 重要度：9/10
-
 - [ ] `6 同步 main 分支`：吸收最新 main 代码
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`

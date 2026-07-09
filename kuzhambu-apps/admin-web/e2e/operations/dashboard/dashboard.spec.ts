@@ -74,6 +74,13 @@ const mockShellApis = async (page: Page, permissions: string[]) => {
                         displayParams: '{"icon":"operations-task"}'
                     },
                     {
+                        id: "operations-report",
+                        parentId: "operations",
+                        name: "报表管理",
+                        url: "/operations/reports",
+                        displayParams: '{"icon":"operations-report"}'
+                    },
+                    {
                         id: "operations-backup-restore",
                         parentId: "operations",
                         name: "备份恢复",

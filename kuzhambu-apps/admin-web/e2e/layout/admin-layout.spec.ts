@@ -284,6 +284,18 @@ test.describe("admin layout", () => {
                             name: "三才图会",
                             url: "/classics/sancai",
                             displayParams: '{"icon":"sancai"}'
+                        },
+                        {
+                            id: "30",
+                            name: "运维",
+                            displayParams: '{"icon":"operations"}'
+                        },
+                        {
+                            id: "31",
+                            parentId: "30",
+                            name: "报表管理",
+                            url: "/operations/reports",
+                            displayParams: '{"icon":"operations-report"}'
                         }
                     ]
                 })
@@ -296,7 +308,33 @@ test.describe("admin layout", () => {
                     code: "COMMON-00000",
                     message: "success",
                     data: {
-                        perms: ["sys:user:view"]
+                        perms: ["sys:user:view", "operations:report:view"]
+                    }
+                })
+            });
+        });
+        await page.route("**/kuzhambu-admin-api/api/operations/report/page", async (route) => {
+            await route.fulfill({
+                contentType: "application/json",
+                body: JSON.stringify({
+                    code: "COMMON-00000",
+                    message: "success",
+                    data: {
+                        pageNo: 1,
+                        pageSize: 20,
+                        totalCount: 1,
+                        records: [
+                            {
+                                reportId: 9001,
+                                reportType: "WEEKLY",
+                                format: "PDF",
+                                periodStart: "2026-07-01T00:00:00.000Z",
+                                periodEnd: "2026-07-07T23:59:59.000Z",
+                                reportStatus: "SUCCEEDED",
+                                storageObjectId: 7001,
+                                requestedAt: "2026-07-08T01:00:00.000Z"
+                            }
+                        ]
                     }
                 })
             });
@@ -461,6 +499,12 @@ test.describe("admin layout", () => {
         await page.getByRole("menuitem", { name: "三才图会" }).click();
         await expect(page).toHaveURL(/\/classics\/sancai$/);
         await expect(page.getByRole("heading", { name: "三才图会" })).toBeVisible();
+
+        await page.getByRole("menuitem", { name: "运维" }).click();
+        await page.getByRole("menuitem", { name: "报表管理" }).click();
+        await expect(page).toHaveURL(/\/operations\/reports$/);
+        await expect(page.getByRole("heading", { name: "报表管理" })).toBeVisible();
+        await expect(page.locator(".menu-icon-config-error")).toHaveCount(0);
     });
 
     test("keeps the workspace content within the expanded and collapsed desktop widths", async ({

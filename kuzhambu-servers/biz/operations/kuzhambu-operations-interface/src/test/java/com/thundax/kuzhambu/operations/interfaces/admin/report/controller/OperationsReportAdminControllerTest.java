@@ -63,7 +63,7 @@ class OperationsReportAdminControllerTest {
     }
 
     @Test
-    void endpointsShouldDelegateToApplicationService() {
+    void endpointsShouldDelegateToApplicationService() throws Exception {
         ReportApplicationService service = mock(ReportApplicationService.class);
         OperationsReportAdminController controller = new OperationsReportAdminController(service);
         when(service.generate(any())).thenReturn(new OperationsReportGenerateResult(ReportId.of(9001L), "PENDING"));
