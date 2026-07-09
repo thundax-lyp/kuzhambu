@@ -25,8 +25,14 @@ public final class AiRefinementResponses {
         @JsonProperty(value = "callId")
         private Long callId;
 
+        @JsonProperty(value = "callIdText")
+        private String callIdText;
+
         @JsonProperty(value = "candidateId")
         private Long candidateId;
+
+        @JsonProperty(value = "candidateIdText")
+        private String candidateIdText;
 
         @JsonProperty(value = "status")
         private String status;
@@ -65,6 +71,9 @@ public final class AiRefinementResponses {
         @JsonProperty(value = "taskId")
         private Long taskId;
 
+        @JsonProperty(value = "taskIdText")
+        private String taskIdText;
+
         @JsonProperty(value = "status")
         private String status;
 
@@ -90,6 +99,9 @@ public final class AiRefinementResponses {
 
         @JsonProperty(value = "taskId")
         private Long taskId;
+
+        @JsonProperty(value = "taskIdText")
+        private String taskIdText;
 
         @JsonProperty(value = "status")
         private String status;
@@ -133,8 +145,14 @@ public final class AiRefinementResponses {
         @JsonProperty(value = "callId")
         private Long callId;
 
+        @JsonProperty(value = "callIdText")
+        private String callIdText;
+
         @JsonProperty(value = "candidateId")
         private Long candidateId;
+
+        @JsonProperty(value = "candidateIdText")
+        private String candidateIdText;
 
         @Schema(description = "失败阶段；当 status=FAILED 或 PARTIAL 时必须返回页面可读阶段标识")
         @JsonProperty(value = "failureStage")
@@ -203,6 +221,9 @@ public final class AiRefinementResponses {
 
         @JsonProperty(value = "taskId")
         private Long taskId;
+
+        @JsonProperty(value = "taskIdText")
+        private String taskIdText;
 
         @JsonProperty(value = "status")
         private String status;

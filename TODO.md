@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `05-admin-classics-summary-invocation`：05 Admin Classics summary 精修和调用统计页面验收
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-RUNTIME-ACCEPTANCE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common/ai-refinement-task-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/ai-candidate-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/components/ai-candidate-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/ai/invocations/invocations-page.tsx`
-    - 处理动作：在三才图会条目详情触发 summary 精修，验收任务状态、候选面板、调用统计和调用详情。
-    - 验收点：前端任务状态、候选结果和调用统计能用同一 `taskId`、`candidateId`、`callId` 串联。
-    - 重要度：9/10
-
 - [ ] `06-ai-runtime-smoke-evidence`：06 沉淀 AI 运行时冒烟证据
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-RUNTIME-ACCEPTANCE.md`

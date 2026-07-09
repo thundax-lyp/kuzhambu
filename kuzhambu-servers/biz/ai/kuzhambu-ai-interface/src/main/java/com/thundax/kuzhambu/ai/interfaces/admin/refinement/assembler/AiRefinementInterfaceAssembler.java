@@ -49,7 +49,9 @@ public final class AiRefinementInterfaceAssembler {
         }
         return AiRefinementResponses.CandidateResultResponse.builder()
                 .callId(result.getCallId())
+                .callIdText(longText(result.getCallId()))
                 .candidateId(result.getCandidateId())
+                .candidateIdText(longText(result.getCandidateId()))
                 .status(result.getStatus())
                 .capability(result.getCapability())
                 .failureStage(result.getFailureStage())
@@ -66,6 +68,7 @@ public final class AiRefinementInterfaceAssembler {
         }
         return AiRefinementResponses.TaskDetailResponse.builder()
                 .taskId(task.getTaskId())
+                .taskIdText(longText(task.getTaskId()))
                 .status(task.getStatus())
                 .scope(task.getScope())
                 .capability(task.getCapability())
@@ -80,7 +83,9 @@ public final class AiRefinementInterfaceAssembler {
                 .requestId(task.getRequestId())
                 .traceId(task.getTraceId())
                 .callId(task.getCallId())
+                .callIdText(longText(task.getCallId()))
                 .candidateId(task.getCandidateId())
+                .candidateIdText(longText(task.getCandidateId()))
                 .failureStage(task.getFailureStage())
                 .errorType(task.getErrorType())
                 .errorMessage(task.getErrorMessage())
@@ -100,6 +105,7 @@ public final class AiRefinementInterfaceAssembler {
         }
         return AiRefinementResponses.TaskAcceptedResponse.builder()
                 .taskId(task.getTaskId())
+                .taskIdText(longText(task.getTaskId()))
                 .status(task.getStatus())
                 .capability(task.getCapability())
                 .contentType(task.getContentType())
@@ -114,6 +120,7 @@ public final class AiRefinementInterfaceAssembler {
         }
         return AiRefinementResponses.TaskCancelResponse.builder()
                 .taskId(task.getTaskId())
+                .taskIdText(longText(task.getTaskId()))
                 .status(task.getStatus())
                 .cancelledAt(task.getCancelledAt())
                 .build();
@@ -133,5 +140,9 @@ public final class AiRefinementInterfaceAssembler {
                 .pageNo(pageNo)
                 .pageSize(pageSize)
                 .build();
+    }
+
+    private static String longText(Long value) {
+        return value == null ? null : String.valueOf(value);
     }
 }

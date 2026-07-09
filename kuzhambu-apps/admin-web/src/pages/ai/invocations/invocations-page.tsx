@@ -56,6 +56,8 @@ const STATUS_OPTIONS = [
 
 const defaultPeriod: DateRangeValue = [dayjs().subtract(7, "day"), dayjs()];
 
+const readCallId = (call: AiCallRecord) => call.callIdText || String(call.callId);
+
 const rangeToIso = (range?: DateRangeValue) => ({
     start: range?.[0]?.toISOString() || null,
     end: range?.[1]?.toISOString() || null
@@ -236,8 +238,9 @@ export const InvocationsPage = () => {
     const callColumns: ColumnsType<AiCallRecord> = [
         {
             title: "callId",
-            dataIndex: "callId",
-            key: "callId"
+            dataIndex: "callIdText",
+            key: "callId",
+            render: (_, record) => readCallId(record)
         },
         {
             title: "scope",
@@ -465,7 +468,7 @@ export const InvocationsPage = () => {
 
                 <Table<AiCallRecord>
                     aria-label="AI 调用记录"
-                    rowKey="callId"
+                    rowKey={readCallId}
                     className="invocations-table"
                     columns={callColumns}
                     dataSource={callPage?.records || []}
