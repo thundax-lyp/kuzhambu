@@ -9,13 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `1. 后端保存迁移`：实现 Sancai 条目保存时的目标卷校验和跨卷迁移
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-EDIT-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/sancai/service/impl/SancaiApplicationServiceImpl.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/sancai/repository/SancaiRepository.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sancai/repository/impl/SancaiRepositoryImpl.java`
-    - 处理动作：校验新增和更新的 `volumeId`，跨卷时更新 `volume_id`、追加 `priority` 并生成正式版本。
-    - 验收点：目标卷不存在时报错，跨卷保存后条目归属目标卷且同卷保存保留原排序。
-    - 重要度：10/10
 - [ ] `2. 前端目录数据传递`：把门类和卷目录数据传入 Sancai 条目编辑抽屉
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-EDIT-CLOSURE.md`

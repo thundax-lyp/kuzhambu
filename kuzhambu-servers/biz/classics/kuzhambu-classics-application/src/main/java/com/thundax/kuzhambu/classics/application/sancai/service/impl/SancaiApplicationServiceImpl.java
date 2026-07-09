@@ -422,6 +422,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         if (command == null) {
             return null;
         }
+        requireExistingVolume(command.getVolumeId());
         SancaiEntry entry = toEntry(command);
         entry.setPriority(repository.maxEntryPriority() + 1);
         entry.setContentUpdatedAt(new Date());
@@ -438,7 +439,14 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         if (command == null || command.getId() == null) {
             return null;
         }
+        SancaiEntry currentEntry = repository.getEntryById(SancaiEntryIdCodec.toDomain(command.getId()));
+        if (currentEntry == null) {
+            throw new BizException("三才图会条目不存在");
+        }
+        SancaiVolumeId targetVolumeId = requireExistingVolume(command.getVolumeId());
         SancaiEntry entry = toEntry(command);
+        boolean volumeChanged = !sameVolumeId(currentEntry.getVolumeId(), targetVolumeId);
+        entry.setPriority(volumeChanged ? repository.maxEntryPriority() + 1 : currentEntry.getPriority());
         entry.setContentUpdatedAt(new Date());
         if (repository.updateEntry(entry) != 1) {
             throw new BizException("三才图会条目不存在");
@@ -655,6 +663,21 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         volume.setTitle(command.getTitle().trim());
         volume.setVolumeType(command.getVolumeType());
         return volume;
+    }
+
+    private SancaiVolumeId requireExistingVolume(Long volumeId) {
+        if (volumeId == null) {
+            throw invalidVolume("volumeId");
+        }
+        SancaiVolumeId targetVolumeId = SancaiVolumeIdCodec.toDomain(volumeId);
+        if (repository.getVolumeById(targetVolumeId) == null) {
+            throw volumeNotFound();
+        }
+        return targetVolumeId;
+    }
+
+    private static boolean sameVolumeId(SancaiVolumeId left, SancaiVolumeId right) {
+        return left != null && left.equals(right);
     }
 
     private static SancaiEntry toEntry(SancaiEntryCommand command) {
