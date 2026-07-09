@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics mingcustoms backend tests`：补齐明代习俗统一标签云后端测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-TAIL-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/mingcustoms/MingCustomsApplicationServiceImplTest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/test/java/com/thundax/kuzhambu/classics/infra/mingcustoms/repository/impl/MingCustomsRepositoryTest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/mingcustoms/MingCustomsAdminControllerTest.java`
-    - 处理动作：覆盖明代习俗 `tagId/tagNameSnapshot` 筛选、`COUNT(DISTINCT content_id)` 聚合、权限过滤和 Admin API 字段映射。
-    - 验收点：相关测试能证明统一标签云不会统计无权查看的私有习俗。
-    - 重要度：9/10
-
 - [ ] `admin-web classics ai task buttons`：补齐王圻和明代习俗 AI 标签与问答任务入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-TAIL-CLOSURE.md`
