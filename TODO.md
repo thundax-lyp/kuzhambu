@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `04 kuzhambu-workers LangGraph invoke`：接入真实同步 graph 执行
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-REAL-AI-LOOP.md`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/ai/graphs/basic.py`、`kuzhambu-workers/src/kuzhambu_workers/ai/graphs/text.py`、`kuzhambu-workers/src/kuzhambu_workers/api/ai_routes.py`、`kuzhambu-workers/tests/test_ai_routes.py`、`kuzhambu-workers/tests/test_ai_usecase_routes_knowledge.py`
-    - 处理动作：移除 AI placeholder 生成路径并让同步 route/usecase 通过 LangGraph 调用真实模型。
-    - 验收点：生产 AI 代码无 placeholder 命中，`/internal/ai/invoke` 返回真实 provider content，`usage.latencyMs` 非默认值，`image_gen` 返回稳定不支持错误。
-    - 重要度：10/10
-
 - [ ] `05 kuzhambu-workers AI SSE`：接入真实流式 graph 执行
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-REAL-AI-LOOP.md`
