@@ -49,6 +49,11 @@ public class AiCapabilityRepositoryImpl implements AiCapabilityRepository {
     }
 
     @Override
+    public List<AiCapabilityMapping> listMappings(String scope, String capability, Boolean enabled) {
+        return toMappingDomainList(aiCapabilityMapper.selectMappings(scope, capability, enabled));
+    }
+
+    @Override
     public List<AiCapabilityMapping> listMappingsByModelId(Long modelId) {
         return toMappingDomainList(aiCapabilityMapper.selectMappingsByModelId(modelId));
     }
@@ -74,6 +79,11 @@ public class AiCapabilityRepositoryImpl implements AiCapabilityRepository {
     @Override
     public AiActionStatus getActionStatus(String scope, String capability) {
         return toActionStatusDomain(aiCapabilityMapper.selectActionStatus(scope, capability));
+    }
+
+    @Override
+    public List<AiActionStatus> listActionStatuses(String scope, String capability, Boolean available) {
+        return toActionStatusDomainList(aiCapabilityMapper.selectActionStatuses(scope, capability, available));
     }
 
     @Override
@@ -186,6 +196,17 @@ public class AiCapabilityRepositoryImpl implements AiCapabilityRepository {
                 Boolean.TRUE.equals(dataObject.getAvailable()),
                 dataObject.getUnavailableReason(),
                 dataObject.getCheckedAt());
+    }
+
+    private List<AiActionStatus> toActionStatusDomainList(List<AiActionStatusDO> dataObjects) {
+        List<AiActionStatus> statuses = new ArrayList<>();
+        if (dataObjects == null) {
+            return statuses;
+        }
+        for (AiActionStatusDO dataObject : dataObjects) {
+            statuses.add(toActionStatusDomain(dataObject));
+        }
+        return statuses;
     }
 
     private List<String> toStringList(String json) {

@@ -1,0 +1,51 @@
+.invocations-page {
+    min-height: 100%;
+}
+
+.invocations-filter-card,
+.invocations-section-card {
+    margin-bottom: 16px;
+}
+
+.invocations-filter-form {
+    row-gap: 12px;
+}
+
+.invocations-filter-control {
+    min-width: 160px;
+}
+
+.invocations-metrics {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.invocations-table {
+    margin-top: 16px;
+}
+
+.invocations-warnings {
+    max-height: 220px;
+    overflow: auto;
+    padding: 12px;
+    margin: 0;
+    border: 1px solid #d9d9d9;
+    border-radius: 6px;
+    background: #f7f7f7;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+@media (max-width: 1200px) {
+    .invocations-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    .invocations-metrics {
+        grid-template-columns: 1fr;
+    }
+}

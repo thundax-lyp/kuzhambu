@@ -13,6 +13,8 @@ public interface AiCapabilityRepository {
 
     AiCapabilityMapping getMapping(String scope, String capability);
 
+    List<AiCapabilityMapping> listMappings(String scope, String capability, Boolean enabled);
+
     List<AiCapabilityMapping> listMappingsByModelId(Long modelId);
 
     Long saveMapping(AiCapabilityMapping mapping);
@@ -20,6 +22,8 @@ public interface AiCapabilityRepository {
     int updateMapping(AiCapabilityMapping mapping);
 
     AiActionStatus getActionStatus(String scope, String capability);
+
+    List<AiActionStatus> listActionStatuses(String scope, String capability, Boolean available);
 
     Long saveActionStatus(AiActionStatus actionStatus);
 

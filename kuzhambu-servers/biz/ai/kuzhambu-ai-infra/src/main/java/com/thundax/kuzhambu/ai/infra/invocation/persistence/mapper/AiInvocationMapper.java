@@ -21,6 +21,79 @@ public interface AiInvocationMapper extends BaseMapper<AiCallRecordDO> {
             """)
     List<AiCallRecordDO> selectCallRecords(java.time.Instant requestedAtStart, java.time.Instant requestedAtEnd);
 
+    @Select(
+            """
+            select * from ai_call_record
+            where (#{scope} is null or scope = #{scope})
+              and (#{capability} is null or capability = #{capability})
+              and (#{contentType} is null or content_type = #{contentType})
+              and (#{contentId} is null or content_id = #{contentId})
+              and (#{status} is null or status = #{status})
+              and (#{serviceRole} is null or service_role = #{serviceRole})
+              and (#{modelName} is null or model_name like concat('%', #{modelName}, '%'))
+              and (#{fallbackUsed} is null or fallback_used = #{fallbackUsed})
+              and (#{requestedAtStart} is null or requested_at >= #{requestedAtStart})
+              and (#{requestedAtEnd} is null or requested_at <= #{requestedAtEnd})
+            order by requested_at desc
+            limit #{pageSize} offset #{offset}
+            """)
+    List<AiCallRecordDO> selectCallRecordsPage(
+            String scope,
+            String capability,
+            String contentType,
+            Long contentId,
+            String status,
+            String serviceRole,
+            String modelName,
+            Boolean fallbackUsed,
+            java.time.Instant requestedAtStart,
+            java.time.Instant requestedAtEnd,
+            Integer offset,
+            Integer pageSize);
+
+    @Select(
+            """
+            select count(1) from ai_call_record
+            where (#{scope} is null or scope = #{scope})
+              and (#{capability} is null or capability = #{capability})
+              and (#{contentType} is null or content_type = #{contentType})
+              and (#{contentId} is null or content_id = #{contentId})
+              and (#{status} is null or status = #{status})
+              and (#{serviceRole} is null or service_role = #{serviceRole})
+              and (#{modelName} is null or model_name like concat('%', #{modelName}, '%'))
+              and (#{fallbackUsed} is null or fallback_used = #{fallbackUsed})
+              and (#{requestedAtStart} is null or requested_at >= #{requestedAtStart})
+              and (#{requestedAtEnd} is null or requested_at <= #{requestedAtEnd})
+            """)
+    long countCallRecords(
+            String scope,
+            String capability,
+            String contentType,
+            Long contentId,
+            String status,
+            String serviceRole,
+            String modelName,
+            Boolean fallbackUsed,
+            java.time.Instant requestedAtStart,
+            java.time.Instant requestedAtEnd);
+
+    @Select(
+            """
+            select * from ai_call_record
+            where (#{scope} is null or scope = #{scope})
+              and (#{capability} is null or capability = #{capability})
+              and (#{serviceRole} is null or service_role = #{serviceRole})
+              and (#{requestedAtStart} is null or requested_at >= #{requestedAtStart})
+              and (#{requestedAtEnd} is null or requested_at <= #{requestedAtEnd})
+            order by requested_at desc
+            """)
+    List<AiCallRecordDO> selectCallRecordsForSummary(
+            String scope,
+            String capability,
+            String serviceRole,
+            java.time.Instant requestedAtStart,
+            java.time.Instant requestedAtEnd);
+
     @Select("select * from ai_candidate where candidate_id = #{candidateId}")
     AiCandidateDO selectCandidate(Long candidateId);
 

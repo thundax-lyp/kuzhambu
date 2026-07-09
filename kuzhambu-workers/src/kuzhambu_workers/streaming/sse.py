@@ -1,6 +1,6 @@
 import json
 
-from kuzhambu_workers.schemas.stream import StreamEvent
+from kuzhambu_workers.schemas.stream import StreamEvent, StreamEventType
 
 
 def encode_sse(event: StreamEvent) -> str:
@@ -9,6 +9,8 @@ def encode_sse(event: StreamEvent) -> str:
 
 def _event_data(event: StreamEvent) -> str:
     data = event.model_dump(mode="json", exclude={"event", "extra"}, exclude_none=True)
+    if event.event == StreamEventType.COMPLETED and event.result is None:
+        data["result"] = None
     extra = event.extra if isinstance(event.extra, dict) else {}
     if isinstance(extra, dict):
         if extra:

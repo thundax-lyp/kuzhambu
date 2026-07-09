@@ -10,6 +10,8 @@ import com.thundax.kuzhambu.ai.infra.invocation.persistence.dataobject.AiCallRec
 import com.thundax.kuzhambu.ai.infra.invocation.persistence.dataobject.AiCandidateDO;
 import com.thundax.kuzhambu.ai.infra.invocation.persistence.mapper.AiInvocationMapper;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
+import com.thundax.kuzhambu.common.core.page.PageQuery;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -72,6 +74,56 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
     @Override
     public List<AiCallRecord> listCallRecords(Instant requestedAtStart, Instant requestedAtEnd) {
         return toCallDomainList(aiInvocationMapper.selectCallRecords(requestedAtStart, requestedAtEnd));
+    }
+
+    @Override
+    public PageResult<AiCallRecord> pageCallRecords(
+            String scope,
+            String capability,
+            String contentType,
+            Long contentId,
+            String status,
+            String serviceRole,
+            String modelName,
+            Boolean fallbackUsed,
+            Instant requestedAtStart,
+            Instant requestedAtEnd,
+            int pageNo,
+            int pageSize) {
+        PageQuery pageQuery = new PageQuery(pageNo, pageSize);
+        int offset = (pageQuery.getPageNo() - 1) * pageQuery.getPageSize();
+        long total = aiInvocationMapper.countCallRecords(
+                scope,
+                capability,
+                contentType,
+                contentId,
+                status,
+                serviceRole,
+                modelName,
+                fallbackUsed,
+                requestedAtStart,
+                requestedAtEnd);
+        List<AiCallRecordDO> records = aiInvocationMapper.selectCallRecordsPage(
+                scope,
+                capability,
+                contentType,
+                contentId,
+                status,
+                serviceRole,
+                modelName,
+                fallbackUsed,
+                requestedAtStart,
+                requestedAtEnd,
+                offset,
+                pageQuery.getPageSize());
+        return PageResult.of(pageQuery.getPageNo(), pageQuery.getPageSize(), total, toCallDomainList(records));
+    }
+
+    @Override
+    public List<AiCallRecord> listCallRecords(
+            String scope, String capability, String serviceRole, Instant requestedAtStart, Instant requestedAtEnd) {
+        return toCallDomainList(aiInvocationMapper.selectCallRecordsForSummary(
+                scope, capability, serviceRole, requestedAtStart, requestedAtEnd));
     }
 
     @Override

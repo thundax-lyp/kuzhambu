@@ -40,6 +40,10 @@ public class AiWorkerModelConfigResolver {
             throw new IllegalArgumentException("AI service config not found: serviceRole=%s, serviceId=%s"
                     .formatted(command.getServiceRole(), command.getServiceId()));
         }
+        if (!serviceConfig.isAvailable()) {
+            throw new IllegalArgumentException("AI service is unavailable: serviceRole=%s, serviceId=%s"
+                    .formatted(serviceConfig.getServiceRole(), serviceConfig.getServiceId()));
+        }
 
         if (model.getServiceId() != null
                 && serviceConfig.getServiceId() != null
@@ -85,6 +89,9 @@ public class AiWorkerModelConfigResolver {
         AiModel model = modelService.get(command.getModelId());
         if (model == null) {
             throw new IllegalArgumentException("AI model not found: " + command.getModelId());
+        }
+        if (!model.isEnabled()) {
+            throw new IllegalArgumentException("AI model is disabled: " + command.getModelId());
         }
         return model;
     }

@@ -1,0 +1,27 @@
+.model-configs-page {
+    min-height: 100%;
+}
+
+.model-configs-filter-card {
+    margin-bottom: 16px;
+}
+
+.model-configs-filter-form {
+    row-gap: 12px;
+}
+
+.model-configs-filter-control {
+    min-width: 180px;
+}
+
+.model-configs-search {
+    width: 240px;
+}
+
+.model-configs-table {
+    width: 100%;
+}
+
+.model-configs-form {
+    padding-top: 4px;
+}

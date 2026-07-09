@@ -62,6 +62,13 @@ const menuIconMap: Record<string, ReactNode> = {
     logs: <AuditOutlined />,
     audit: <AuditOutlined />,
     "audit-logs": <AuditOutlined />,
+    ai: <ApiOutlined />,
+    "ai-service": <CloudServerOutlined />,
+    "ai-model": <ApiOutlined />,
+    "ai-capability": <SafetyCertificateOutlined />,
+    "ai-prompt": <BookOutlined />,
+    "ai-invocation": <AuditOutlined />,
+    "ai-action-status": <SafetyCertificateOutlined />,
     classics: <BookOutlined />,
     sancai: <BookOutlined />,
     storage: <CloudServerOutlined />,
@@ -89,6 +96,10 @@ const getOpenKeys = (pathname: string) => {
 
     if (pathname.startsWith("/classics/")) {
         openKeys.push("/classics");
+    }
+
+    if (pathname.startsWith("/ai/")) {
+        openKeys.push("/ai");
     }
 
     if (pathname.startsWith("/operations/")) {
