@@ -232,7 +232,10 @@ export const PromptsPage = () => {
                 currentVersion?.messageTemplatesJson,
                 EMPTY_JSON_ARRAY
             ),
-            variablesSnapshotJson: variablesToJson(variablesQuery.data || []),
+            variablesSnapshotJson:
+                variablesQuery.data && variablesQuery.data.length > 0
+                    ? variablesToJson(variablesQuery.data)
+                    : formatJsonText(currentVersion?.variablesSnapshotJson, EMPTY_JSON_ARRAY),
             outputSchemaJson: formatJsonText(currentVersion?.outputSchemaJson, EMPTY_JSON_OBJECT),
             changeSummary: ""
         });

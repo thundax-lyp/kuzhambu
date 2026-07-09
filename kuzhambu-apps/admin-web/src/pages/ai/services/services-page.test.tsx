@@ -104,15 +104,43 @@ describe("ServicesPage", () => {
         fireEvent.click(screen.getByRole("button", { name: /保存/ }));
 
         await waitFor(() => {
-            expect(service.changeServiceConfig).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    serviceId: 1001,
-                    serviceRole: "PRIMARY",
-                    encryptedApiKey: null
-                }),
-                expect.anything()
-            );
+            expect(service.changeServiceConfig).toHaveBeenCalled();
         });
+        const request = vi.mocked(service.changeServiceConfig).mock.calls[0]?.[0];
+        expect(request).toEqual(
+            expect.objectContaining({
+                serviceId: 1001,
+                serviceRole: "PRIMARY"
+            })
+        );
+        expect(request).not.toHaveProperty("encryptedApiKey");
+    });
+
+    it("opens editor for missing backup service", async () => {
+        vi.mocked(service.listGovernanceServices).mockResolvedValue([records[0]]);
+        renderPage();
+        await screen.findByText("https://api.primary.example");
+
+        fireEvent.click(screen.getByRole("button", { name: /配置/ }));
+        expect(await screen.findByDisplayValue("BACKUP")).toBeInTheDocument();
+        fireEvent.change(screen.getByLabelText("baseUrl"), {
+            target: { value: "https://api.backup.example" }
+        });
+        fireEvent.click(screen.getByRole("button", { name: /保存/ }));
+
+        await waitFor(() => {
+            expect(service.changeServiceConfig).toHaveBeenCalled();
+        });
+        const request = vi.mocked(service.changeServiceConfig).mock.calls[0]?.[0];
+        expect(request).toEqual(
+            expect.objectContaining({
+                serviceId: null,
+                serviceRole: "BACKUP",
+                baseUrl: "https://api.backup.example",
+                enabled: true,
+                status: "UNAVAILABLE"
+            })
+        );
     });
 
     it("disables edit actions without edit permission", async () => {
@@ -120,6 +148,6 @@ describe("ServicesPage", () => {
         renderPage();
 
         await screen.findByText("PRIMARY 主服务");
-        expect(screen.getAllByRole("button", { name: /编辑/ })[0]).toBeDisabled();
+        expect(screen.getAllByRole("button", { name: /编辑|配置/ })[0]).toBeDisabled();
     });
 });

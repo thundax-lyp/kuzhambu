@@ -10,7 +10,7 @@ import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { KuzhambuTagType } from "@/components/kuzhambu-tag";
 import * as service from "./services-service";
 import type { AiServiceConfigChangeCommand } from "./services-service";
-import type { AiServiceConfigRecord } from "./services-types";
+import type { AiServiceConfigRecord, AiServiceRole } from "./services-types";
 import "./services-page.css";
 
 type ServiceFormValues = AiServiceConfigChangeCommand;
@@ -51,7 +51,7 @@ export const ServicesPage = () => {
     const [form] = Form.useForm<ServiceFormValues>();
     const canViewConfig = hasPermission("ai:config:view");
     const canEditConfig = hasPermission("ai:config:edit");
-    const [editingService, setEditingService] = useState<AiServiceConfigRecord | null>(null);
+    const [editorOpen, setEditorOpen] = useState(false);
 
     const servicesQuery = useQuery({
         queryKey: ["ai", "services"],
@@ -68,7 +68,8 @@ export const ServicesPage = () => {
         mutationFn: service.changeServiceConfig,
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: ["ai", "services"] });
-            setEditingService(null);
+            setEditorOpen(false);
+            form.resetFields();
             message.success("服务配置已保存");
         },
         onError: (error) => {
@@ -83,24 +84,26 @@ export const ServicesPage = () => {
         }
     }, [message, servicesQuery.error, servicesQuery.isError]);
 
-    const openEditor = (record: AiServiceConfigRecord) => {
-        setEditingService(record);
+    const openEditor = (role: AiServiceRole, record?: AiServiceConfigRecord) => {
         form.setFieldsValue({
-            serviceId: record.serviceId,
-            serviceRole: record.serviceRole,
-            apiSource: record.apiSource,
-            baseUrl: record.baseUrl,
+            serviceId: record?.serviceId || null,
+            serviceRole: record?.serviceRole || role,
+            apiSource: record?.apiSource || API_SOURCE_OPTIONS[0],
+            baseUrl: record?.baseUrl || "",
             encryptedApiKey: null,
-            enabled: record.enabled,
-            status: record.status
+            enabled: record?.enabled ?? true,
+            status: record?.status || "UNAVAILABLE"
         });
+        setEditorOpen(true);
     };
 
     const submitForm = async () => {
         const values = await form.validateFields();
+        const { encryptedApiKey, ...restValues } = values;
+        const trimmedApiKey = encryptedApiKey?.trim();
         await saveMutation.mutateAsync({
-            ...values,
-            encryptedApiKey: values.encryptedApiKey?.trim() || null
+            ...restValues,
+            ...(trimmedApiKey ? { encryptedApiKey: trimmedApiKey } : {})
         });
     };
 
@@ -132,10 +135,10 @@ export const ServicesPage = () => {
                             extra={
                                 <Button
                                     icon={<EditOutlined />}
-                                    disabled={!record || !canEditConfig}
-                                    onClick={() => record && openEditor(record)}
+                                    disabled={!canEditConfig}
+                                    onClick={() => openEditor(role, record)}
                                 >
-                                    编辑
+                                    {record ? "编辑" : "配置"}
                                 </Button>
                             }
                         >
@@ -177,13 +180,23 @@ export const ServicesPage = () => {
             </section>
 
             <KuzhambuDrawer
-                open={Boolean(editingService)}
+                open={editorOpen}
                 title="编辑 AI 服务"
                 size="middle"
-                onClose={() => setEditingService(null)}
+                onClose={() => {
+                    setEditorOpen(false);
+                    form.resetFields();
+                }}
                 footer={
                     <KuzhambuSpace>
-                        <Button onClick={() => setEditingService(null)}>取消</Button>
+                        <Button
+                            onClick={() => {
+                                setEditorOpen(false);
+                                form.resetFields();
+                            }}
+                        >
+                            取消
+                        </Button>
                         <Button
                             type="primary"
                             icon={<SaveOutlined />}

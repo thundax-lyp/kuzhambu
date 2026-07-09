@@ -127,6 +127,9 @@ public class AiCapabilityApplicationServiceImpl implements AiCapabilityApplicati
                 || mapping.getModelId() == null) {
             throw new BizException("Capability mapping scope, capability and modelId are required");
         }
+        if (!mapping.isEnabled()) {
+            return;
+        }
         AiCapability capability = aiCapabilityRepository.getCapability(mapping.getCapability());
         AiModel model = aiModelRepository.getModelByModelId(mapping.getModelId());
         if (!mapping.canUse(capability, model)) {

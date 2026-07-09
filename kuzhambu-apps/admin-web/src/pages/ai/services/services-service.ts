@@ -2,7 +2,7 @@ import { postJson } from "@/api/http";
 import type { AiServiceConfigRecord, AiServiceRole } from "./services-types";
 
 export interface AiServiceConfigChangeCommand {
-    serviceId: number;
+    serviceId?: number | null;
     serviceRole: AiServiceRole;
     apiSource: string;
     baseUrl: string;

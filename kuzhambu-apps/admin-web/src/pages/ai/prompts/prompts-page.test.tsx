@@ -161,6 +161,19 @@ describe("PromptsPage", () => {
         });
     });
 
+    it("falls back to current version variables when variable registry is empty", async () => {
+        vi.mocked(service.listPromptVariables).mockResolvedValue([]);
+        renderPage();
+
+        await screen.findByText("版本编辑");
+        await screen.findByText("摘要生成 / summary");
+        fireEvent.click(screen.getByRole("button", { name: /查\s*询/ }));
+
+        await waitFor(() => {
+            expect(screen.getByDisplayValue(/"variableName": "title"/)).toBeInTheDocument();
+        });
+    });
+
     it("opens suggestion preview before applying as new version", async () => {
         renderPage();
 

@@ -139,6 +139,26 @@ describe("CapabilityMappingsPage", () => {
         });
     });
 
+    it("sends disabled mapping state from row action", async () => {
+        renderPage();
+        await screen.findByText("摘要生成");
+
+        fireEvent.click(screen.getByRole("button", { name: /禁\s*用/ }));
+
+        await waitFor(() => {
+            expect(service.changeCapabilityMapping).toHaveBeenCalledWith(
+                {
+                    mappingId: 3001,
+                    scope: "classics",
+                    capability: "summary",
+                    modelId: 2001,
+                    enabled: false
+                },
+                expect.anything()
+            );
+        });
+    });
+
     it("disables edit actions without edit permission", async () => {
         replacePermissions(["ai:config:view"]);
         renderPage();
