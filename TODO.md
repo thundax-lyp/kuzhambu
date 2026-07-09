@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `03-graph-results-e2e`：补齐正式图谱结果 Playwright 冒烟
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-RUNTIME-VALIDATION-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/e2e/knowledge/graph-results/graph-results.spec.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-results/graph-results-page.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-results/components/graph-version-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-results/components/graph-version-detail.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-results/components/graph-entity-detail.tsx`
-    - 处理动作：覆盖版本列表、版本详情、正式实体、正式关系和世系结果下钻的控件操作与请求 payload 断言
-    - 验收点：`pnpm --filter ./admin-web run e2e -- e2e/knowledge/graph-results/graph-results.spec.ts` 通过
-    - 重要度：9/10
-
 - [ ] `04-lineage-e2e`：补齐世系图 Playwright 冒烟
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-RUNTIME-VALIDATION-CLOSURE.md`
