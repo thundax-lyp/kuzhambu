@@ -8,6 +8,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
@@ -15,7 +16,7 @@ import org.apache.ibatis.annotations.Update;
 public interface PromptMapper extends BaseMapper<PromptTemplateDO> {
 
     @Select("select * from ai_prompt_template where scope = #{scope} and capability = #{capability}")
-    PromptTemplateDO selectTemplateByScope(String scope, String capability);
+    PromptTemplateDO selectTemplateByScope(@Param("scope") String scope, @Param("capability") String capability);
 
     @Insert(
             """
@@ -43,10 +44,10 @@ public interface PromptMapper extends BaseMapper<PromptTemplateDO> {
             set current_key = concat(#{templateId}, ':current')
             where template_id = #{templateId} and version_no = #{versionNo}
             """)
-    int markCurrentVersion(Long templateId, int versionNo);
+    int markCurrentVersion(@Param("templateId") Long templateId, @Param("versionNo") int versionNo);
 
     @Update("update ai_prompt_template set current_version_no = #{versionNo} where template_id = #{templateId}")
-    int updateTemplateCurrentVersion(Long templateId, int versionNo);
+    int updateTemplateCurrentVersion(@Param("templateId") Long templateId, @Param("versionNo") int versionNo);
 
     @Select("select * from ai_prompt_variable where template_id = #{templateId} order by priority asc")
     List<PromptVariableDO> selectVariables(Long templateId);

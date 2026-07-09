@@ -43,8 +43,9 @@ public class PreAuthSessionRepositoryImpl implements PreAuthSessionRepository {
     private StatefulRedisConnection<String, String> redisConnection;
 
     public PreAuthSessionRepositoryImpl(
-            @Value("${spring.data.redis.url:${spring.redis.url:redis://127.0.0.1:6379/0}}") String redisUrl) {
-        this.redisClient = RedisClient.create(redisUrl);
+            @Value("${spring.data.redis.url:${spring.redis.url:redis://127.0.0.1:6379/0}}") String redisUrl,
+            @Value("${spring.redis.password:}") String redisPassword) {
+        this.redisClient = AuthRedisClientFactory.create(redisUrl, redisPassword);
     }
 
     @Override

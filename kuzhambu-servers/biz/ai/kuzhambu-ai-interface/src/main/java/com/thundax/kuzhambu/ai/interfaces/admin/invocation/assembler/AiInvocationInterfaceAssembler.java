@@ -37,6 +37,7 @@ public final class AiInvocationInterfaceAssembler {
         AiUsageSnapshot usage = AiUsageSnapshot.orEmpty(record.getUsage());
         return AiInvocationResponses.CallRecordResponse.builder()
                 .callId(record.getCallId())
+                .callIdText(longText(record.getCallId()))
                 .batchId(record.getBatchId())
                 .scope(record.getScope())
                 .capability(record.getCapability())
@@ -117,7 +118,9 @@ public final class AiInvocationInterfaceAssembler {
         }
         return AiInvocationResponses.CandidateResponse.builder()
                 .candidateId(candidate.getCandidateId())
+                .candidateIdText(longText(candidate.getCandidateId()))
                 .callId(candidate.getCallId())
+                .callIdText(longText(candidate.getCallId()))
                 .batchId(candidate.getBatchId())
                 .capability(candidate.getCapability())
                 .contentType(candidate.getContentType())
@@ -169,5 +172,9 @@ public final class AiInvocationInterfaceAssembler {
     public static BigDecimal cost(AiCallRecord record) {
         return AiUsageSnapshot.orEmpty(record == null ? null : record.getUsage())
                 .getCostAmount();
+    }
+
+    private static String longText(Long value) {
+        return value == null ? null : String.valueOf(value);
     }
 }

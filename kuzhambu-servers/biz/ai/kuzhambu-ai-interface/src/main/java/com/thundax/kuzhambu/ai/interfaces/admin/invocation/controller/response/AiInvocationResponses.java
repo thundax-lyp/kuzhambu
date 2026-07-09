@@ -36,6 +36,9 @@ public final class AiInvocationResponses {
         @JsonProperty(value = "callId")
         private Long callId;
 
+        @JsonProperty(value = "callIdText")
+        private String callIdText;
+
         @JsonProperty(value = "batchId")
         private Long batchId;
 
@@ -174,8 +177,14 @@ public final class AiInvocationResponses {
         @JsonProperty(value = "candidateId")
         private Long candidateId;
 
+        @JsonProperty(value = "candidateIdText")
+        private String candidateIdText;
+
         @JsonProperty(value = "callId")
         private Long callId;
+
+        @JsonProperty(value = "callIdText")
+        private String callIdText;
 
         @JsonProperty(value = "batchId")
         private Long batchId;

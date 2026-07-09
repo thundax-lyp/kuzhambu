@@ -20,13 +20,13 @@ public class AuditLogAspect {
     static final String SERVICE_METHOD_POINTCUT = "execution(public * com.thundax.kuzhambu..service..*.*(..))";
 
     private final AuditApplicationService auditService;
-    private final AuditObjectLoaderRegistry loaderRegistry;
-    private final AuditSnapshotAssemblerRegistry assemblerRegistry;
+    private final com.thundax.kuzhambu.common.audit.runtime.AuditObjectLoaderRegistry loaderRegistry;
+    private final com.thundax.kuzhambu.common.audit.runtime.AuditSnapshotAssemblerRegistry assemblerRegistry;
 
     public AuditLogAspect(
             AuditApplicationService auditService,
-            AuditObjectLoaderRegistry loaderRegistry,
-            AuditSnapshotAssemblerRegistry assemblerRegistry) {
+            com.thundax.kuzhambu.common.audit.runtime.AuditObjectLoaderRegistry loaderRegistry,
+            com.thundax.kuzhambu.common.audit.runtime.AuditSnapshotAssemblerRegistry assemblerRegistry) {
         this.auditService = auditService;
         this.loaderRegistry = loaderRegistry;
         this.assemblerRegistry = assemblerRegistry;
@@ -77,8 +77,8 @@ public class AuditLogAspect {
         if (StringUtils.isBlank(objectId)) {
             return null;
         }
-        AuditObjectLoader loader = loaderRegistry.get(objectType);
-        AuditSnapshotAssembler assembler = assemblerRegistry.get(objectType);
+        com.thundax.kuzhambu.common.audit.runtime.AuditObjectLoader loader = loaderRegistry.get(objectType);
+        com.thundax.kuzhambu.common.audit.runtime.AuditSnapshotAssembler assembler = assemblerRegistry.get(objectType);
         if (loader == null || assembler == null) {
             return null;
         }

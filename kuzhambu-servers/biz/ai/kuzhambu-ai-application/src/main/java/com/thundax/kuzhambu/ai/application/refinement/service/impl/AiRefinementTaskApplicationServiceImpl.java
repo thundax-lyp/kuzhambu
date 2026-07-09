@@ -20,6 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +29,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 @BizExceptionBoundary
 public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskApplicationService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AiRefinementTaskApplicationServiceImpl.class);
 
     private static final String CONTENT_TYPE_SANCAI_ENTRY = "SANCAI_ENTRY";
     private static final String CAPABILITY_IMAGE_ANALYSIS = "image_analysis";
@@ -73,7 +77,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         task.setRequestedAt(now);
         Long taskId = taskRepository.saveTask(task);
         task.setTaskId(taskId);
-        CompletableFuture.runAsync(() -> executeTask(taskId, command));
+        CompletableFuture.runAsync(() -> executeTaskSafely(taskId, command));
         return task;
     }
 
@@ -135,6 +139,15 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         return task;
     }
 
+    private void executeTaskSafely(Long taskId, AiRefinementRequestCommand command) {
+        try {
+            executeTask(taskId, command);
+        } catch (RuntimeException exception) {
+            LOGGER.warn("AI refinement task execution failed unexpectedly, taskId={}", taskId, exception);
+            markFailedAfterUnexpectedException(taskId, exception);
+        }
+    }
+
     private void executeTask(Long taskId, AiRefinementRequestCommand command) {
         AiRefinementTask task = taskRepository.getTask(taskId);
         if (task == null || STATUS_CANCELLED.equals(task.getStatus())) {
@@ -167,6 +180,32 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         applyResult(latestTask, result);
         taskRepository.updateTask(latestTask);
         publishTerminalEvent(taskId, latestTask, result);
+    }
+
+    private void markFailedAfterUnexpectedException(Long taskId, RuntimeException exception) {
+        AiRefinementTask task = taskRepository.getTask(taskId);
+        if (task == null || isTerminal(task.getStatus())) {
+            return;
+        }
+        task.setFailureStage("INTERNAL_EXECUTION");
+        task.setErrorType("INTERNAL_FAILURE");
+        task.setErrorMessage(exception.getMessage());
+        task.setCompletedAt(Instant.now());
+        task.setStatus(STATUS_FAILED);
+        taskRepository.updateTask(task);
+        publishTerminalEvent(
+                taskId,
+                task,
+                new AiCandidateResult(
+                        task.getCallId(),
+                        task.getCandidateId(),
+                        STATUS_FAILED,
+                        task.getCapability(),
+                        task.getFailureStage(),
+                        task.getResultFormat(),
+                        task.getResultPreview(),
+                        task.getErrorType(),
+                        task.getErrorMessage()));
     }
 
     private AiCandidateResult invoke(Long taskId, AiRefinementRequestCommand command, boolean streamEnabled) {

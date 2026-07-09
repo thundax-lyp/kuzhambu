@@ -30,6 +30,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 })
 @SpringBootApplication(
         scanBasePackages = {
+            "com.thundax.kuzhambu.starter.admin",
             "com.thundax.kuzhambu.common",
             "com.thundax.kuzhambu.system.application",
             "com.thundax.kuzhambu.system.infra",
@@ -48,6 +49,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
             "com.thundax.kuzhambu.ai.application",
             "com.thundax.kuzhambu.ai.infra",
             "com.thundax.kuzhambu.ai.interfaces.admin",
+            "com.thundax.kuzhambu.discovery.domain",
             "com.thundax.kuzhambu.discovery.application",
             "com.thundax.kuzhambu.discovery.infra",
             "com.thundax.kuzhambu.discovery.interfaces.admin"

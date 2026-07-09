@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 @Mapper
@@ -23,13 +24,13 @@ public interface AiRefinementTaskMapper extends BaseMapper<AiRefinementTaskDO> {
             limit #{pageSize} offset #{offset}
             """)
     List<AiRefinementTaskDO> selectTasks(
-            String capability,
-            String status,
-            String contentType,
-            Long contentId,
-            Long requestedBy,
-            Integer offset,
-            Integer pageSize);
+            @Param("capability") String capability,
+            @Param("status") String status,
+            @Param("contentType") String contentType,
+            @Param("contentId") Long contentId,
+            @Param("requestedBy") Long requestedBy,
+            @Param("offset") Integer offset,
+            @Param("pageSize") Integer pageSize);
 
     @Select(
             """
@@ -40,7 +41,12 @@ public interface AiRefinementTaskMapper extends BaseMapper<AiRefinementTaskDO> {
               and (#{contentId} is null or content_id = #{contentId})
               and (#{requestedBy} is null or requested_by = #{requestedBy})
             """)
-    long countTasks(String capability, String status, String contentType, Long contentId, Long requestedBy);
+    long countTasks(
+            @Param("capability") String capability,
+            @Param("status") String status,
+            @Param("contentType") String contentType,
+            @Param("contentId") Long contentId,
+            @Param("requestedBy") Long requestedBy);
 
     @Select("select * from ai_refinement_task where task_id = #{taskId}")
     AiRefinementTaskDO selectTask(Long taskId);

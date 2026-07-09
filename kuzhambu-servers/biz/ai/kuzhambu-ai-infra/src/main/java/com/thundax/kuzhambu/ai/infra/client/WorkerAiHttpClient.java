@@ -237,6 +237,7 @@ public class WorkerAiHttpClient implements WorkerAiClient {
         String signature =
                 signatureSupport.sign("POST", path, timestamp, requestId, body, properties.getInternalSecret());
         return HttpRequest.newBuilder(uri(path))
+                .version(HttpClient.Version.HTTP_1_1)
                 .timeout(Duration.ofMillis(properties.getTimeoutMs()))
                 .header("Content-Type", "application/json; charset=utf-8")
                 .header("Accept", "application/json, text/event-stream")
@@ -253,6 +254,7 @@ public class WorkerAiHttpClient implements WorkerAiClient {
         String timestamp = String.valueOf(System.currentTimeMillis());
         String signature = signatureSupport.sign("GET", path, timestamp, requestId, "", properties.getInternalSecret());
         return HttpRequest.newBuilder(uri(path))
+                .version(HttpClient.Version.HTTP_1_1)
                 .timeout(Duration.ofMillis(properties.getTimeoutMs()))
                 .header("Accept", "application/octet-stream")
                 .header("X-Kuzhambu-Service", properties.getServiceName())

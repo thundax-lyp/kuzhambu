@@ -16,6 +16,7 @@ export interface AiCallSummaryRecord {
 
 export interface AiCallRecord {
     callId: number;
+    callIdText?: string | null;
     batchId?: number | null;
     scope?: string | null;
     capability?: string | null;
