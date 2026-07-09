@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `docs/40-readiness/WORKERS-IMPLEMENTATION-COVERAGE.md`：08 更新 workers Implementation Coverage
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-GEN.md`
-    - 范围对象：`docs/40-readiness/WORKERS-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：同步记录 `CLASSICS_SANCAI_IMAGE_GEN` 已支持真实图片生成、artifact 写入和 SSE final-state 的实现覆盖状态。
-    - 验收点：覆盖文档不再把该能力描述为 unsupported，且与实际测试结果一致。
-    - 重要度：7/10
-
 - [ ] `docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-GEN.md`：09 清理 RUNBOOK 并收窄 TODO
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
