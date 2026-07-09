@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web classics final validation`：运行 Classics 管理台最终验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-TAIL-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common`、`kuzhambu-apps/admin-web/src/pages/classics/wangqi`、`kuzhambu-apps/admin-web/src/pages/classics/ming-customs`、`kuzhambu-apps/admin-web/src/pages/classics/sancai`
-    - 处理动作：同步 `origin/main` 后执行 admin-web format、lint、相关页面测试和 build。
-    - 验收点：admin-web 格式检查、lint、聚焦测试和 build 均通过，失败项已修复或明确记录阻塞原因。
-    - 重要度：10/10
-
 - [ ] `classics requirements coverage closure`：更新 Classics 需求和 Implementation Coverage
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-TAIL-CLOSURE.md`
