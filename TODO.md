@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `04-lineage-e2e`：补齐世系图 Playwright 冒烟
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-RUNTIME-VALIDATION-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/e2e/knowledge/lineage/lineage.spec.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/lineage-page.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/components/lineage-filter-bar.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/components/lineage-canvas.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/lineage/components/lineage-detail-panel.tsx`
-    - 处理动作：覆盖版本、搜索、节点类型、关系类型、确认状态、深度、刷新、重置和画布节点/关系详情联动
-    - 验收点：`pnpm --filter ./admin-web run e2e -- e2e/knowledge/lineage/lineage.spec.ts` 通过
-    - 重要度：9/10
-
 - [ ] `05-refinement-e2e`：补齐图谱精修 Playwright 冒烟
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-RUNTIME-VALIDATION-CLOSURE.md`
