@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `kuzhambu-workers/tests`：03 锁定 Classics image-gen 成功契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-GEN.md`
-    - 范围对象：`kuzhambu-workers/tests/test_ai_usecase_routes_classics.py`、`kuzhambu-workers/tests/test_ai_routes.py`、`kuzhambu-workers/tests/test_graph_registry.py`
-    - 处理动作：更新 `CLASSICS_SANCAI_IMAGE_GEN` 测试，从失败契约改为成功 `completed` 和 artifact 下载契约。
-    - 验收点：测试断言 SSE 包含 `started` 和 `completed`、不包含 `error`，并可通过 `downloadPath` 使用 HMAC 下载图片且校验响应头、bytes 和 sha256。
-    - 重要度：10/10
-
 - [ ] `kuzhambu-workers/tests`：04 锁定图片生成失败分类
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-GEN.md`
