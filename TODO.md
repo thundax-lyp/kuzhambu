@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `09 docs/40-readiness/WORKERS-IMPLEMENTATION-COVERAGE.md`：更新 Workers Implementation Coverage
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`docs/40-readiness/WORKERS-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：记录 workers 真实 AI 执行闭环、验证命令和剩余缺口。
-    - 验收点：Implementation Coverage 准确反映同步、SSE、结构化输出、错误归一化、usage/latency 的实现状态和验证结果。
-    - 重要度：8/10
-
 - [ ] `10 RUNBOOK-WORKERS-REAL-AI-LOOP`：清理临时 RUNBOOK 和 TODO 收口
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
