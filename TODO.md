@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `07-ai-runtime-verification`：07 执行 AI 验收验证命令
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-RUNTIME-ACCEPTANCE.md`
-    - 范围对象：`kuzhambu-servers/pom.xml`、`kuzhambu-apps/package.json`、`kuzhambu-apps/admin-web/package.json`、`kuzhambu-workers/pyproject.toml`
-    - 处理动作：运行 RUNBOOK 窄集验证并记录结果。
-    - 验收点：窄集验证命令、结果和任何失败归因记录到 readiness 证据或 PR 描述。
-    - 重要度：9/10
-
 - [ ] `08-sync-main-before-close`：08 收口前同步 main 分支代码
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/PR-RULES.md`

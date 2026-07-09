@@ -202,3 +202,15 @@ The AI governance runtime acceptance loop is evidenced end to end:
 - Prompt variables pass complete validation and fail missing-required validation.
 - A real Sancai summary refinement task completes through Java `WorkerAiClient` to workers.
 - Task, call record, candidate, invocation summary, and Admin UI can be correlated by `requestId`, `traceId`, `taskId`, `callId`, and `candidateId`.
+
+## Verification
+
+Narrow validation executed on 2026-07-09:
+
+| Area | Command | Result |
+| --- | --- | --- |
+| Java AI interface reactor | `cd kuzhambu-servers && mvn -pl biz/ai/kuzhambu-ai-interface -am spotless:check checkstyle:check -DskipTests package` | Passed, reactor `BUILD SUCCESS` |
+| Frontend apps | `cd kuzhambu-apps && pnpm run format:check && pnpm run lint && pnpm run build` | Passed; Vite emitted existing chunk-size advisory only |
+| Workers | `cd kuzhambu-workers && .venv/bin/python -m ruff format --check . && .venv/bin/python -m ruff check .` | Passed |
+
+Tests were intentionally not run in this step; final test execution is reserved for the closing verification task.
