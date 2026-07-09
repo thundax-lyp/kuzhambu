@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ai-services-page`：实现 AI 服务配置页
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-ADMIN-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/ai/services/services-page.tsx`、`kuzhambu-apps/admin-web/src/pages/ai/services/services-service.ts`、`kuzhambu-apps/admin-web/src/pages/ai/services/services-types.ts`、`kuzhambu-apps/admin-web/src/pages/ai/services/services-page.css`、`kuzhambu-apps/admin-web/src/pages/ai/services/services-page.test.tsx`
-    - 处理动作：实现主服务和备用服务的查看、编辑、启停和保存。
-    - 验收点：页面展示 `PRIMARY` 与 `BACKUP` 配置卡，Drawer 保存不展示明文 AI Key，并按 `ai:config:edit` 控制操作。
-    - 重要度：9/10
-
 - [ ] `ai-models-page`：实现 AI 模型配置页
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-ADMIN-GOVERNANCE.md`

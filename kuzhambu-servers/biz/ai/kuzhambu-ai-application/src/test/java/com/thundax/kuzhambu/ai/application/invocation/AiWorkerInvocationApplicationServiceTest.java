@@ -15,6 +15,7 @@ import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import java.lang.reflect.Proxy;
 import java.util.Collections;
@@ -255,6 +256,33 @@ class AiWorkerInvocationApplicationServiceTest {
         @Override
         public List<AiCallRecord> listCallRecords(
                 java.time.Instant requestedAtStart, java.time.Instant requestedAtEnd) {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public PageResult<AiCallRecord> pageCallRecords(
+                String scope,
+                String capability,
+                String contentType,
+                Long contentId,
+                String status,
+                String serviceRole,
+                String modelName,
+                Boolean fallbackUsed,
+                java.time.Instant requestedAtStart,
+                java.time.Instant requestedAtEnd,
+                int pageNo,
+                int pageSize) {
+            return PageResult.of(pageNo, pageSize, 0, Collections.emptyList());
+        }
+
+        @Override
+        public List<AiCallRecord> listCallRecords(
+                String scope,
+                String capability,
+                String serviceRole,
+                java.time.Instant requestedAtStart,
+                java.time.Instant requestedAtEnd) {
             return Collections.emptyList();
         }
 
