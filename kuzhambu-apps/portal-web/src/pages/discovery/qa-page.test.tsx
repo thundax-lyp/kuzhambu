@@ -108,7 +108,7 @@ describe("DiscoveryQaPage", () => {
             lastMessageAt: null,
             openedAt: 1699999999000,
             scope: "PORTAL",
-            sessionId: 2001,
+            sessionId: "2001",
             status: "OPEN",
             title: "知识中心问答"
         });
@@ -140,7 +140,7 @@ describe("DiscoveryQaPage", () => {
                     titleSnapshot: "礼器条目"
                 }
             ],
-            sessionId: 2001
+            sessionId: "2001"
         });
 
         const { container, root } = renderPage();
@@ -170,7 +170,7 @@ describe("DiscoveryQaPage", () => {
         expect(mocks.createQaChatCompletion.mock.calls[0]?.[0]).toMatchObject({
             model: "kuzhambu-qa",
             messages: [{ content: "礼器是什么？", role: "user" }],
-            metadata: { contextContentId: null, contextContentType: null, sessionId: 2001 },
+            metadata: { contextContentId: null, contextContentType: null, sessionId: "2001" },
             stream: false
         });
         expect(container.textContent).toContain("礼器常见于典章与礼仪条目。");
@@ -232,7 +232,7 @@ describe("DiscoveryQaPage", () => {
             lastMessageAt: null,
             openedAt: 1699999999000,
             scope: "PORTAL",
-            sessionId: 3002,
+            sessionId: "3002",
             status: "OPEN",
             title: "王圻官制"
         });
@@ -245,7 +245,7 @@ describe("DiscoveryQaPage", () => {
                     finishReason: "stop"
                 }
             ],
-            sessionId: 3002
+            sessionId: "3002"
         });
 
         const { container, root } = renderPage(
@@ -274,7 +274,7 @@ describe("DiscoveryQaPage", () => {
                 contextContentId: 3001,
                 contextContentType: "WANGQI_DOCUMENT",
                 contextMode: "SINGLE_DOCUMENT",
-                sessionId: 3002
+                sessionId: "3002"
             }
         });
 
@@ -289,14 +289,14 @@ describe("DiscoveryQaPage", () => {
                 {
                     lastMessageAt: 1700000000000,
                     scope: "PORTAL",
-                    sessionId: 5001,
+                    sessionId: "5001",
                     status: "OPEN",
                     title: "待删除会话"
                 }
             ]
         });
         mocks.getQaSession.mockResolvedValue({
-            sessionId: 5001,
+            sessionId: "5001",
             status: "OPEN",
             title: "待删除会话"
         });
@@ -322,7 +322,7 @@ describe("DiscoveryQaPage", () => {
         expect(confirmSpy).toHaveBeenCalledWith("确认删除会话 5001？");
         expect(mocks.deleteQaSession.mock.calls[0]?.[0]).toEqual({
             ownerUserId: 1001,
-            sessionId: 5001
+            sessionId: "5001"
         });
         expect(container.textContent).toContain("会话 5001 已删除");
         expect(container.textContent).toContain("已选会话 未选择");
@@ -338,14 +338,14 @@ describe("DiscoveryQaPage", () => {
             items: [
                 {
                     scope: "PORTAL",
-                    sessionId: 5002,
+                    sessionId: "5002",
                     status: "OPEN",
                     title: "可导出会话"
                 }
             ]
         });
         mocks.getQaSession.mockResolvedValue({
-            sessionId: 5002,
+            sessionId: "5002",
             status: "OPEN",
             title: "可导出会话"
         });
@@ -354,14 +354,14 @@ describe("DiscoveryQaPage", () => {
                 exportId: 7001,
                 exportStatus: "SUCCEEDED",
                 filename: "discovery-qa-session-5002-7001.csv",
-                sessionId: 5002,
+                sessionId: "5002",
                 storageObjectId: 8001
             })
             .mockResolvedValueOnce({
                 exportId: 7002,
                 exportStatus: "FAILED",
                 failureReason: "storage unavailable",
-                sessionId: 5002
+                sessionId: "5002"
             });
 
         const { container, root } = renderPage();
@@ -383,7 +383,7 @@ describe("DiscoveryQaPage", () => {
         expect(mocks.exportQaSession.mock.calls[0]?.[0]).toEqual({
             format: "CSV",
             ownerUserId: 1001,
-            sessionId: 5002
+            sessionId: "5002"
         });
         expect(container.textContent).toContain("导出成功：discovery-qa-session-5002-7001.csv");
         expect(container.textContent).toContain("对象号 8001");
@@ -410,7 +410,7 @@ describe("DiscoveryQaPage", () => {
                     lastMessageAt: 1700000000000,
                     openedAt: 1699999998000,
                     scope: "PORTAL",
-                    sessionId: 5001,
+                    sessionId: "5001",
                     status: "OPEN",
                     title: "古籍问答"
                 }
@@ -420,7 +420,7 @@ describe("DiscoveryQaPage", () => {
             contextContentId: 2002,
             contextContentType: "SANCAI_ENTRY",
             contextMode: "GENERAL",
-            sessionId: 5001,
+            sessionId: "5001",
             status: "OPEN",
             title: "古籍问答"
         });
@@ -434,7 +434,7 @@ describe("DiscoveryQaPage", () => {
                         finishReason: "stop"
                     }
                 ],
-                sessionId: 5001
+                sessionId: "5001"
             })
             .mockResolvedValueOnce({
                 answerStatus: "SUCCEEDED",
@@ -445,7 +445,7 @@ describe("DiscoveryQaPage", () => {
                         finishReason: "stop"
                     }
                 ],
-                sessionId: 5001
+                sessionId: "5001"
             });
 
         const { container, root } = renderPage();
@@ -476,7 +476,7 @@ describe("DiscoveryQaPage", () => {
                 contextContentId: 2002,
                 contextContentType: "SANCAI_ENTRY",
                 contextMode: "GENERAL",
-                sessionId: 5001
+                sessionId: "5001"
             }
         });
 
@@ -492,7 +492,7 @@ describe("DiscoveryQaPage", () => {
                 contextContentId: 2002,
                 contextContentType: "SANCAI_ENTRY",
                 contextMode: "GENERAL",
-                sessionId: 5001
+                sessionId: "5001"
             }
         });
 
@@ -506,7 +506,7 @@ describe("DiscoveryQaPage", () => {
             items: []
         });
         mocks.getQaSession.mockResolvedValue({
-            sessionId: 2002,
+            sessionId: "2002",
             status: "OPEN",
             title: "知识中心问答"
         });
@@ -517,7 +517,7 @@ describe("DiscoveryQaPage", () => {
             lastMessageAt: null,
             openedAt: 1699999999000,
             scope: "PORTAL",
-            sessionId: 2002,
+            sessionId: "2002",
             status: "OPEN",
             title: "知识中心问答"
         });
@@ -532,7 +532,7 @@ describe("DiscoveryQaPage", () => {
                         finishReason: "stop"
                     }
                 ],
-                sessionId: 2002,
+                sessionId: "2002",
                 sources: [
                     {
                         contentId: 1001,
@@ -579,7 +579,7 @@ describe("DiscoveryQaPage", () => {
             items: [
                 {
                     scope: "PORTAL",
-                    sessionId: 6001,
+                    sessionId: "6001",
                     status: "OPEN",
                     title: "可刷新会话"
                 }
@@ -588,13 +588,13 @@ describe("DiscoveryQaPage", () => {
         mocks.getQaSession
             .mockResolvedValueOnce({
                 lastMessageAt: 1700000000000,
-                sessionId: 6001,
+                sessionId: "6001",
                 status: "OPEN",
                 title: "可刷新会话"
             })
             .mockResolvedValueOnce({
                 lastMessageAt: 1700000100000,
-                sessionId: 6001,
+                sessionId: "6001",
                 status: "OPEN",
                 title: "可刷新会话"
             });
@@ -634,12 +634,12 @@ describe("DiscoveryQaPage", () => {
             pageSize: 10,
             scope: "PORTAL"
         });
-        await qaService.getQaSession({ ownerUserId: 1001, sessionId: 2001 });
-        await qaService.deleteQaSession({ ownerUserId: 1001, sessionId: 2001 });
-        await qaService.exportQaSession({ format: "CSV", ownerUserId: 1001, sessionId: 2001 });
+        await qaService.getQaSession({ ownerUserId: 1001, sessionId: "2001" });
+        await qaService.deleteQaSession({ ownerUserId: 1001, sessionId: "2001" });
+        await qaService.exportQaSession({ format: "CSV", ownerUserId: 1001, sessionId: "2001" });
         await qaService.createQaChatCompletion({
             messages: [{ content: "礼器是什么？", role: "user" }],
-            metadata: { sessionId: 2001 },
+            metadata: { sessionId: "2001" },
             model: "kuzhambu-qa",
             stream: false
         });

@@ -16,7 +16,7 @@ export interface DiscoveryQaOpenSessionResponse {
     lastMessageAt?: number | null;
     openedAt?: number | null;
     scope?: string | null;
-    sessionId?: number | null;
+    sessionId?: string | null;
     status?: string | null;
     title?: string | null;
 }
@@ -37,18 +37,18 @@ export interface DiscoveryQaSessionPageResponse {
 
 export interface DiscoveryQaGetSessionRequest {
     ownerUserId?: number | null;
-    sessionId: number;
+    sessionId: string;
 }
 
 export interface DiscoveryQaDeleteSessionRequest {
     ownerUserId?: number | null;
-    sessionId: number;
+    sessionId: string;
 }
 
 export interface DiscoveryQaExportSessionRequest {
     format?: string | null;
     ownerUserId?: number | null;
-    sessionId: number;
+    sessionId: string;
 }
 
 export interface DiscoveryQaExportSessionResponse {
@@ -60,7 +60,7 @@ export interface DiscoveryQaExportSessionResponse {
     filename?: string | null;
     format?: string | null;
     requestedAt?: number | null;
-    sessionId?: number | null;
+    sessionId?: string | null;
     storageObjectId?: number | null;
 }
 
@@ -73,7 +73,7 @@ export interface QaChatCompletionMetadata {
     contextContentId?: number | null;
     contextContentType?: string | null;
     contextMode?: string | null;
-    sessionId: number;
+    sessionId: string;
 }
 
 export interface DiscoveryQaChatCompletionRequest {
@@ -116,9 +116,9 @@ export interface DiscoveryQaChatCompletionResponse {
     failureReason?: string | null;
     id?: string | null;
     model?: string | null;
-    questionMessageId?: number | null;
-    answerMessageId?: number | null;
-    sessionId?: number | null;
+    questionMessageId?: string | null;
+    answerMessageId?: string | null;
+    sessionId?: string | null;
     choices?: QaChatCompletionChoice[] | null;
     sources?: DiscoveryQaChatCompletionSource[] | null;
 }

@@ -10,26 +10,26 @@ import type {
 } from "./qa-admin-types";
 
 export interface DiscoveryQaSessionGetCommand {
-    sessionId: number;
+    sessionId: string;
 }
 
 export interface DiscoveryQaSessionDeleteCommand {
     requesterUserId?: number | null;
-    sessionId: number;
+    sessionId: string;
 }
 
 export interface DiscoveryQaSessionExportCommand {
     format?: string | null;
     requesterUserId?: number | null;
-    sessionId: number;
+    sessionId: string;
 }
 
 export interface DiscoveryQaSourceListCommand {
-    messageId: number;
+    messageId: string;
 }
 
 export interface DiscoveryQaTraceGetCommand {
-    traceId: number;
+    traceId: string;
 }
 
 export interface KnowledgeRebuildCommand {

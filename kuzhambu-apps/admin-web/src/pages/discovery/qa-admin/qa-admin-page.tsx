@@ -105,7 +105,7 @@ export const QaAdminPage = () => {
     const deleteSessionMutation = useMutation({
         mutationFn: service.deleteQaSession,
         onSuccess: () => {
-            const deletedSessionId = parseNumber(sessionId);
+            const deletedSessionId = parseString(sessionId);
             setSessionDetail((current) => ({
                 ...(current ?? {}),
                 sessionId: current?.sessionId ?? deletedSessionId,
@@ -232,7 +232,7 @@ export const QaAdminPage = () => {
     };
 
     const deleteCurrentSession = () => {
-        const nextSessionId = parseNumber(sessionId);
+        const nextSessionId = parseString(sessionId);
         if (nextSessionId === null) {
             return;
         }
@@ -249,7 +249,7 @@ export const QaAdminPage = () => {
     };
 
     const exportCurrentSession = () => {
-        const nextSessionId = parseNumber(sessionId);
+        const nextSessionId = parseString(sessionId);
         if (nextSessionId === null) {
             return;
         }
@@ -440,11 +440,14 @@ export const QaAdminPage = () => {
                             </label>
                             <Button
                                 loading={sessionMutation.isPending}
-                                onClick={() =>
-                                    sessionMutation.mutate({
-                                        sessionId: Number.parseInt(sessionId, 10)
-                                    })
-                                }
+                                onClick={() => {
+                                    const nextSessionId = parseString(sessionId);
+                                    if (nextSessionId) {
+                                        sessionMutation.mutate({
+                                            sessionId: nextSessionId
+                                        });
+                                    }
+                                }}
                                 type="primary"
                             >
                                 加载会话
@@ -566,11 +569,14 @@ export const QaAdminPage = () => {
                             </label>
                             <Button
                                 loading={sourceMutation.isPending}
-                                onClick={() =>
-                                    sourceMutation.mutate({
-                                        messageId: Number.parseInt(messageId, 10)
-                                    })
-                                }
+                                onClick={() => {
+                                    const nextMessageId = parseString(messageId);
+                                    if (nextMessageId) {
+                                        sourceMutation.mutate({
+                                            messageId: nextMessageId
+                                        });
+                                    }
+                                }}
                                 type="primary"
                             >
                                 加载来源
@@ -620,11 +626,14 @@ export const QaAdminPage = () => {
                             </label>
                             <Button
                                 loading={traceMutation.isPending}
-                                onClick={() =>
-                                    traceMutation.mutate({
-                                        traceId: Number.parseInt(traceId, 10)
-                                    })
-                                }
+                                onClick={() => {
+                                    const nextTraceId = parseString(traceId);
+                                    if (nextTraceId) {
+                                        traceMutation.mutate({
+                                            traceId: nextTraceId
+                                        });
+                                    }
+                                }}
                                 type="primary"
                             >
                                 加载轨迹

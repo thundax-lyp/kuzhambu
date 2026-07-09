@@ -59,45 +59,45 @@ describe("discovery admin service contracts", () => {
             }
         });
 
-        await qaService.getQaSession({ sessionId: 2001 });
+        await qaService.getQaSession({ sessionId: "2001" });
         expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/session/get", {
             body: {
-                sessionId: 2001
+                sessionId: "2001"
             }
         });
 
-        await qaService.deleteQaSession({ requesterUserId: 1001, sessionId: 2001 });
+        await qaService.deleteQaSession({ requesterUserId: 1001, sessionId: "2001" });
         expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/session/delete", {
             body: {
                 requesterUserId: 1001,
-                sessionId: 2001
+                sessionId: "2001"
             }
         });
 
         await qaService.createQaSessionExport({
             format: "CSV",
             requesterUserId: 1001,
-            sessionId: 2001
+            sessionId: "2001"
         });
         expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/session/export", {
             body: {
                 format: "CSV",
                 requesterUserId: 1001,
-                sessionId: 2001
+                sessionId: "2001"
             }
         });
 
-        await qaService.listQaSources({ messageId: 4001 });
+        await qaService.listQaSources({ messageId: "4001" });
         expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/source/list", {
             body: {
-                messageId: 4001
+                messageId: "4001"
             }
         });
 
-        await qaService.getQaTrace({ traceId: 9001 });
+        await qaService.getQaTrace({ traceId: "9001" });
         expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/trace/get", {
             body: {
-                traceId: 9001
+                traceId: "9001"
             }
         });
 
