@@ -2,10 +2,12 @@ import json
 from time import time
 from typing import Any
 
-import pytest
 from fastapi.testclient import TestClient
 
-from kuzhambu_workers.ai.openai_compatible import OpenAiChatCompletionResult
+from kuzhambu_workers.ai.openai_compatible import (
+    OpenAiChatCompletionChunk,
+    OpenAiChatCompletionResult,
+)
 from kuzhambu_workers.api.ai_routes import invoke_ai_graph
 from kuzhambu_workers.core.security import sign_request
 from kuzhambu_workers.main import app
@@ -42,10 +44,22 @@ def test_ai_invoke_returns_success(monkeypatch) -> None:
     assert payload["usage"]["latencyMs"] == 12
 
 
-@pytest.mark.skip(reason="streaming route is implemented by the SSE task")
 def test_ai_stream_returns_started_and_completed(monkeypatch) -> None:
     monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
     monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
+    monkeypatch.setattr(
+        "kuzhambu_workers.api.ai_routes.iter_chat_completion_chunks",
+        lambda request: iter(
+            [
+                OpenAiChatCompletionChunk(delta="hello", usage=None, finish_reason=None),
+                OpenAiChatCompletionChunk(
+                    delta="",
+                    usage=UsageSummary(latencyMs=12, inputTokens=3, outputTokens=4),
+                    finish_reason="stop",
+                ),
+            ]
+        ),
+    )
     body = _body("summary", stream=True, operation="CLASSICS_SANCAI_SUMMARY")
 
     response = TestClient(app).post(
@@ -63,7 +77,9 @@ def test_ai_stream_returns_started_and_completed(monkeypatch) -> None:
     assert '"failureStage":null' in text
     assert '"fallbackUsed":false' in text
     assert '"format":"TEXT"' in text
-    assert "[CLASSICS_SANCAI_SUMMARY]" in text
+    assert "event: delta" in text
+    assert "event: usage" in text
+    assert "hello" in text
 
 
 def test_ai_invoke_rejects_bad_signature(monkeypatch) -> None:

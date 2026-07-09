@@ -1,3 +1,4 @@
+import json
 from collections.abc import Iterator
 from dataclasses import dataclass
 from typing import Any
@@ -9,6 +10,7 @@ from kuzhambu_workers.ai.errors import (
     model_provider_unavailable,
     model_rate_limited,
     model_request_rejected,
+    model_stream_chunk_invalid,
     model_timeout,
     model_transport_error,
 )
@@ -214,5 +216,117 @@ def _first_choice(payload: dict[str, Any]) -> dict[str, Any]:
     return first
 
 
-def iter_chat_completion_chunks() -> Iterator[OpenAiChatCompletionChunk]:
-    raise NotImplementedError("streaming is implemented by the SSE task")
+def iter_chat_completion_chunks(
+    request: AiInvokeRequest,
+    *,
+    client: httpx.Client | None = None,
+) -> Iterator[OpenAiChatCompletionChunk]:
+    invocation = prepare_openai_compatible_invocation(request.modelConfig)
+    chat_request = build_chat_completion_request(request, stream=True)
+    body = _request_body(chat_request)
+    headers = _request_headers(request.modelConfig.apiKey)
+    start_ms = monotonic_ms()
+    try:
+        if client is not None:
+            with client.stream(
+                "POST",
+                invocation.chat_completions_url,
+                json=body,
+                headers=headers,
+                timeout=invocation.timeout_ms / 1000,
+            ) as response:
+                yield from _iter_response_chunks(response, start_ms)
+            return
+        with httpx.Client(timeout=invocation.timeout_ms / 1000) as owned_client:
+            with owned_client.stream(
+                "POST",
+                invocation.chat_completions_url,
+                json=body,
+                headers=headers,
+            ) as response:
+                yield from _iter_response_chunks(response, start_ms)
+    except httpx.TimeoutException as exc:
+        raise model_timeout(detail={"errorClass": type(exc).__name__}) from exc
+    except httpx.RequestError as exc:
+        raise model_transport_error(
+            "模型服务流式请求失败。",
+            detail={"errorClass": type(exc).__name__},
+        ) from exc
+
+
+def _iter_response_chunks(
+    response: httpx.Response,
+    start_ms: int,
+) -> Iterator[OpenAiChatCompletionChunk]:
+    _raise_for_provider_status(response)
+    saw_usage = False
+    for line in response.iter_lines():
+        chunk = _parse_stream_line(line, start_ms)
+        if chunk is None:
+            continue
+        saw_usage = saw_usage or chunk.usage is not None
+        yield chunk
+    if not saw_usage:
+        yield OpenAiChatCompletionChunk(
+            delta="",
+            usage=UsageSummary(latencyMs=elapsed_ms(start_ms)),
+            finish_reason=None,
+        )
+
+
+def _parse_stream_line(line: str, start_ms: int) -> OpenAiChatCompletionChunk | None:
+    stripped = line.strip()
+    if not stripped or not stripped.startswith("data:"):
+        return None
+    data = stripped.removeprefix("data:").strip()
+    if data == "[DONE]":
+        return None
+    try:
+        payload = json.loads(data)
+    except json.JSONDecodeError as exc:
+        raise model_stream_chunk_invalid() from exc
+    except ValueError as exc:
+        raise model_stream_chunk_invalid() from exc
+    if not isinstance(payload, dict):
+        raise model_stream_chunk_invalid()
+    return _stream_chunk_from_payload(payload, start_ms)
+
+
+def _stream_chunk_from_payload(
+    payload: dict[str, Any],
+    start_ms: int,
+) -> OpenAiChatCompletionChunk:
+    delta = ""
+    finish_reason: str | None = None
+    choices = payload.get("choices")
+    if isinstance(choices, list) and choices:
+        first = choices[0]
+        if not isinstance(first, dict):
+            raise model_stream_chunk_invalid()
+        delta = _stream_delta(first)
+        raw_finish_reason = first.get("finish_reason")
+        if isinstance(raw_finish_reason, str):
+            finish_reason = raw_finish_reason
+    elif choices not in (None, []):
+        raise model_stream_chunk_invalid()
+
+    usage = None
+    if "usage" in payload:
+        usage = usage_from_provider(payload.get("usage"), latency_ms=elapsed_ms(start_ms))
+    if not delta and finish_reason is None and usage is None:
+        raise model_stream_chunk_invalid()
+    return OpenAiChatCompletionChunk(delta=delta, usage=usage, finish_reason=finish_reason)
+
+
+def _stream_delta(choice: dict[str, Any]) -> str:
+    delta = choice.get("delta")
+    if delta is None:
+        return ""
+    if not isinstance(delta, dict):
+        raise model_stream_chunk_invalid()
+    content = delta.get("content")
+    if content is None:
+        return ""
+    if not isinstance(content, str):
+        raise model_stream_chunk_invalid()
+    return content

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `05 kuzhambu-workers AI SSE`：接入真实流式 graph 执行
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-REAL-AI-LOOP.md`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/ai/openai_compatible.py`、`kuzhambu-workers/src/kuzhambu_workers/api/ai_routes.py`、`kuzhambu-workers/src/kuzhambu_workers/streaming/events.py`、`kuzhambu-workers/tests/test_ai_streaming_model.py`、`kuzhambu-workers/tests/test_ai_usecase_routes_discovery.py`
-    - 处理动作：把 provider stream chunk 转换为 workers SSE `delta`、`usage`、`completed` 或 `error` 事件。
-    - 验收点：`/internal/ai/stream` 和 stream usecase 输出真实 `started`、`delta`、`usage`、`completed`，非法 chunk 只输出 `error` 且不输出 `completed`。
-    - 重要度：10/10
-
 - [ ] `06 kuzhambu-workers AI e2e`：补齐端到端和契约回归
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-REAL-AI-LOOP.md`

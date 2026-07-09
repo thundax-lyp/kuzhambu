@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import ValidationError
 
 from kuzhambu_workers.ai.graph_registry import GraphRegistry
+from kuzhambu_workers.ai.openai_compatible import iter_chat_completion_chunks
 from kuzhambu_workers.core.config import load_settings
 from kuzhambu_workers.core.errors import WorkerError, WorkerErrorType, protocol_failure
 from kuzhambu_workers.core.security import verify_internal_request
@@ -20,7 +21,13 @@ from kuzhambu_workers.schemas.ai import (
 )
 from kuzhambu_workers.schemas.common import UsageSummary, WorkerErrorPayload, WorkerStatus
 from kuzhambu_workers.schemas.stream import StreamEventType
-from kuzhambu_workers.streaming.events import final_state_extra, started_event, stream_event
+from kuzhambu_workers.streaming.events import (
+    delta_event,
+    final_state_extra,
+    started_event,
+    stream_event,
+    usage_event,
+)
 from kuzhambu_workers.streaming.sse import encode_sse
 
 router = APIRouter(prefix="/internal/ai", tags=["AI Debug"])
@@ -147,10 +154,38 @@ def stream_ai_graph(
         timestamp = _now()
         yield encode_sse(started_event(request.requestId, request.traceId, timestamp))
         try:
-            raw_result = registry.invoke(request)
-            result = _coerce_text_payload(request, raw_result)
-            usage = _usage_from_graph_result(raw_result)
-            artifact_reference = _artifact_reference_from_result(result)
+            deltas: list[str] = []
+            usage = UsageSummary()
+            for chunk in iter_chat_completion_chunks(request):
+                if chunk.delta:
+                    deltas.append(chunk.delta)
+                    yield encode_sse(
+                        delta_event(
+                            request.requestId,
+                            request.traceId,
+                            _now(),
+                            chunk.delta,
+                        )
+                    )
+                if chunk.usage is not None:
+                    usage = chunk.usage
+                    yield encode_sse(
+                        usage_event(
+                            request.requestId,
+                            request.traceId,
+                            _now(),
+                            usage.model_dump(mode="json"),
+                        )
+                    )
+            result = AiResult(format=_stream_result_format(request), payload="".join(deltas))
+            result = _coerce_text_payload(
+                request,
+                {
+                    "format": result.format.value,
+                    "payload": result.payload,
+                    "usage": usage.model_dump(mode="json"),
+                },
+            )
             yield encode_sse(
                 stream_event(
                     StreamEventType.COMPLETED,
@@ -158,15 +193,13 @@ def stream_ai_graph(
                     trace_id=request.traceId,
                     stage="completed",
                     timestamp=_now(),
-                    result=None
-                    if artifact_reference is not None
-                    else result.model_dump(mode="json"),
+                    result=result.model_dump(mode="json"),
                     usage=usage.model_dump(mode="json"),
                     extra=final_state_extra(
                         status=WorkerStatus.SUCCEEDED.value,
                         failure_stage=None,
                         fallback_used=False,
-                        artifact_reference=artifact_reference,
+                        artifact_reference=None,
                     ),
                 )
             )
@@ -182,7 +215,7 @@ def stream_ai_graph(
                     error=error.model_dump(mode="json"),
                     extra=final_state_extra(
                         status=WorkerStatus.FAILED.value,
-                        failure_stage=_failure_stage(exc),
+                        failure_stage=_stream_failure_stage(exc),
                         fallback_used=False,
                         artifact_reference=None,
                         error_type=error.type,
@@ -192,6 +225,12 @@ def stream_ai_graph(
             )
 
     return StreamingResponse(events(), media_type="text/event-stream")
+
+
+def _stream_result_format(request: AiInvokeRequest) -> ResultFormat:
+    if request.capability.value in {"image_analysis", "fusion"}:
+        return ResultFormat.MARKDOWN
+    return ResultFormat.TEXT
 
 
 def _coerce_text_payload(
@@ -236,6 +275,12 @@ def _failure_stage(exc: Exception) -> FailureStage:
     if exc.error_type == WorkerErrorType.OUTPUT_FORMAT_FAILURE:
         return FailureStage.WORKER_RESULT
     return FailureStage.WORKER_REQUEST
+
+
+def _stream_failure_stage(exc: Exception) -> FailureStage:
+    if isinstance(exc, WorkerError) and exc.code == "MODEL_STREAM_CHUNK_INVALID":
+        return FailureStage.WORKER_STREAM
+    return _failure_stage(exc)
 
 
 def _parse_request(body: bytes) -> AiInvokeRequest | JSONResponse:
