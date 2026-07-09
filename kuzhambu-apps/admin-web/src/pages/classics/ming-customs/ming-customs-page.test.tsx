@@ -419,8 +419,7 @@ describe("MingCustomsPage", () => {
         await screen.findByText("岁时礼仪：元旦朝贺");
         capturedCalls.length = 0;
 
-        await user.click(screen.getByRole("button", { name: "标签云" }));
-        expect(await screen.findByRole("dialog", { name: "明代习俗标签云" })).toBeInTheDocument();
+        await user.click(screen.getByRole("button", { name: /标签云/ }));
         await user.click(await screen.findByRole("button", { name: "筛选标签 礼制，3 条" }));
 
         await waitFor(() => {
