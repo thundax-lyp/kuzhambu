@@ -4,10 +4,12 @@ from time import time
 import pytest
 from fastapi.testclient import TestClient
 
+from kuzhambu_workers.ai.openai_compatible import OpenAiChatCompletionResult
 from kuzhambu_workers.ai.usecase_registry import USECASES, AiUsecaseDomain
 from kuzhambu_workers.core.security import sign_request
 from kuzhambu_workers.main import app
 from kuzhambu_workers.schemas.ai import AiCapability
+from kuzhambu_workers.schemas.common import UsageSummary
 
 PLATFORM_USECASES = tuple(
     usecase for usecase in USECASES if usecase.domain == AiUsecaseDomain.PLATFORM
@@ -18,6 +20,10 @@ PLATFORM_USECASES = tuple(
 def test_platform_usecase_routes_accept_matching_request(monkeypatch, usecase) -> None:
     monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
     monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
+    monkeypatch.setattr(
+        "kuzhambu_workers.ai.graphs.basic.invoke_chat_completion",
+        lambda request: _model_result(_model_content(request.capability)),
+    )
     body = _body(operation=usecase.operation, capability=usecase.capability.value)
 
     response = TestClient(app).post(
@@ -87,3 +93,17 @@ def _headers(body: bytes, path: str) -> dict[str, str]:
         "X-Kuzhambu-Timestamp": timestamp,
         "X-Kuzhambu-Signature": signature,
     }
+
+
+def _model_content(capability: AiCapability) -> str:
+    if capability == AiCapability.PROMPT_SUGGESTION:
+        return '{"suggestions":[]}'
+    return "platform answer"
+
+
+def _model_result(content: str) -> OpenAiChatCompletionResult:
+    return OpenAiChatCompletionResult(
+        content=content,
+        usage=UsageSummary(latencyMs=12, inputTokens=3, outputTokens=4),
+        raw_finish_reason="stop",
+    )

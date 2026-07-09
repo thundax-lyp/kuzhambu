@@ -3,13 +3,28 @@ from time import time
 
 from fastapi.testclient import TestClient
 
+from kuzhambu_workers.ai.openai_compatible import OpenAiChatCompletionChunk
 from kuzhambu_workers.core.security import sign_request
 from kuzhambu_workers.main import app
+from kuzhambu_workers.schemas.common import UsageSummary
 
 
 def test_worker_e2e_discovery_answer_generation_stream_usecase(monkeypatch) -> None:
     monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
     monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
+    monkeypatch.setattr(
+        "kuzhambu_workers.api.ai_routes.iter_chat_completion_chunks",
+        lambda request: iter(
+            [
+                OpenAiChatCompletionChunk(delta="answer", usage=None, finish_reason=None),
+                OpenAiChatCompletionChunk(
+                    delta="",
+                    usage=UsageSummary(latencyMs=12, inputTokens=3, outputTokens=4),
+                    finish_reason="stop",
+                ),
+            ]
+        ),
+    )
     path = "/internal/ai/discovery/answer-generation/stream"
     body = _body(
         operation="DISCOVERY_ANSWER_GENERATION_STREAM",
@@ -23,6 +38,8 @@ def test_worker_e2e_discovery_answer_generation_stream_usecase(monkeypatch) -> N
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("text/event-stream")
     assert "event: started" in response.text
+    assert "event: delta" in response.text
+    assert "event: usage" in response.text
     assert "event: completed" in response.text
     assert '"status":"SUCCEEDED"' in response.text
     assert '"format":"TEXT"' in response.text
