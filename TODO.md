@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ai-implementation-coverage`：更新 AI Implementation Coverage
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`docs/40-readiness/AI-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：同步记录 AI 管理端治理闭环的最终覆盖状态和验证结果。
-    - 验收点：覆盖矩阵明确标注服务配置、模型配置、能力映射、提示词版本、调用统计和动作状态页面已完成。
-    - 重要度：8/10
-
 - [ ] `runbook-cleanup`：清理 AI 治理 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
