@@ -48,6 +48,12 @@ public class MingCustomsRequest extends PageRequest {
     @JsonProperty("tagName")
     private String tagName;
 
+    @JsonProperty("tagId")
+    private Long tagId;
+
+    @JsonProperty("tagNameSnapshot")
+    private String tagNameSnapshot;
+
     @JsonProperty("sortDirection")
     private String sortDirection;
 }

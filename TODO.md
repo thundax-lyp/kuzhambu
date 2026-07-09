@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics mingcustoms admin tag cloud api`：暴露明代习俗标签云 Admin API 契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-TAIL-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/mingcustoms/controller/request/MingCustomsRequest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/mingcustoms/controller/response/MingCustomsTagCloudItemResponse.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/mingcustoms/assembler/MingCustomsInterfaceAssembler.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/main/java/com/thundax/kuzhambu/classics/interfaces/admin/mingcustoms/controller/MingCustomsAdminController.java`
-    - 处理动作：为明代习俗分页请求映射 `tagId/tagNameSnapshot` 并新增 `GET /api/classics/ming-customs/tag-cloud` 响应 `tagId/tagNameSnapshot/count`。
-    - 验收点：分页接口可接收统一标签筛选字段，标签云接口返回稳定字段并注入当前用户权限。
-    - 重要度：9/10
-
 - [ ] `classics mingcustoms backend tests`：补齐明代习俗统一标签云后端测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-TAIL-CLOSURE.md`

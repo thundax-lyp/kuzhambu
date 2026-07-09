@@ -17,6 +17,7 @@ import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.req
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.request.MingCustomsVersionRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsKeywordCloudItemResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsResponse;
+import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsTagCloudItemResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsVersionResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
@@ -138,6 +139,22 @@ public class MingCustomsAdminController {
             @RequestParam(value = "visibility", required = false) String visibility) {
         return service.listKeywordCloud(visibility).stream()
                 .map(MingCustomsInterfaceAssembler::toKeywordCloudResponse)
+                .toList();
+    }
+
+    @Operation(summary = "查询明代习俗标签云", description = "classics:mingcustoms:view")
+    @ApiImplicitParams({})
+    @HasPermission("classics:mingcustoms:view")
+    @SysLogger(value = "标签云")
+    @GetMapping("tag-cloud")
+    public List<MingCustomsTagCloudItemResponse> listTagCloud(
+            @RequestParam(value = "category", required = false) String category,
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "visibility", required = false) String visibility) {
+        MingCustomsPageQuery query = MingCustomsInterfaceAssembler.toTagCloudQuery(category, keyword, visibility);
+        query.setOperatorPermissions(KuzhambuContextHolder.currentAuthorities());
+        return service.listTagCloud(query).stream()
+                .map(MingCustomsInterfaceAssembler::toTagCloudResponse)
                 .toList();
     }
 
