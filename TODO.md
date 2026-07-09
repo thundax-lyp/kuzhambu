@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics mingcustoms repository tag cloud`：实现明代习俗统一标签云仓储口径
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-TAIL-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/mingcustoms/model/valueobject/MingCustomsTagCloudItem.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-domain/src/main/java/com/thundax/kuzhambu/classics/domain/mingcustoms/repository/MingCustomsRepository.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/mingcustoms/repository/impl/MingCustomsRepositoryImpl.java`
-    - 处理动作：从 `classics_content_tag` 聚合 `MING_CUSTOMS` 的 ACTIVE 统一标签云并支持 `tagId/tagNameSnapshot` 列表筛选。
-    - 验收点：标签云统计只来自 `classics_content_tag`，并受 `category/keyword/visibility` 过滤影响。
-    - 重要度：10/10
-
 - [ ] `classics mingcustoms admin tag cloud api`：暴露明代习俗标签云 Admin API 契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-TAIL-CLOSURE.md`

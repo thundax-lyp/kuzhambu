@@ -18,13 +18,21 @@ public interface MingCustomsRepository {
             String category,
             String keyword,
             String tagName,
+            Long tagId,
+            String tagNameSnapshot,
             String visibility,
             SortDirection sortDirection,
             int pageNo,
             int pageSize);
 
     List<MingCustomsEntry> list(
-            String category, String keyword, String tagName, String visibility, SortDirection sortDirection);
+            String category,
+            String keyword,
+            String tagName,
+            Long tagId,
+            String tagNameSnapshot,
+            String visibility,
+            SortDirection sortDirection);
 
     MingCustomsEntryId insert(MingCustomsEntry entry);
 

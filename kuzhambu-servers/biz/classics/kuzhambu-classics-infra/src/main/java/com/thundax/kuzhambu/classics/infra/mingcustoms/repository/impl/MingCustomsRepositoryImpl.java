@@ -49,21 +49,14 @@ public class MingCustomsRepositoryImpl implements MingCustomsRepository {
             String category,
             String keyword,
             String tagName,
+            Long tagId,
+            String tagNameSnapshot,
             String visibility,
             SortDirection sortDirection,
             int pageNo,
             int pageSize) {
-        LambdaQueryWrapper<MingCustomsEntryDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(StringUtils.isNotBlank(category), MingCustomsEntryDO::getCategory, category)
-                .eq(StringUtils.isNotBlank(visibility), MingCustomsEntryDO::getVisibility, visibility)
-                .and(StringUtils.isNotBlank(keyword), item -> item.like(MingCustomsEntryDO::getTitle, keyword)
-                        .or()
-                        .like(MingCustomsEntryDO::getSummary, keyword)
-                        .or()
-                        .like(MingCustomsEntryDO::getContent, keyword)
-                        .or()
-                        .like(MingCustomsEntryDO::getOriginalExcerpts, keyword))
-                .orderBy(true, sortDirection != SortDirection.DESC, MingCustomsEntryDO::getId);
+        LambdaQueryWrapper<MingCustomsEntryDO> wrapper =
+                entryWrapper(category, keyword, tagName, tagId, tagNameSnapshot, visibility, sortDirection);
         Page<MingCustomsEntryDO> dataPage = entryMapper.selectPage(new Page<>(pageNo, pageSize), wrapper);
         return PageResult.of(
                 (int) dataPage.getCurrent(),
@@ -74,9 +67,15 @@ public class MingCustomsRepositoryImpl implements MingCustomsRepository {
 
     @Override
     public List<MingCustomsEntry> list(
-            String category, String keyword, String tagName, String visibility, SortDirection sortDirection) {
-        return MingCustomsPersistenceAssembler.toEntryDomainList(
-                entryMapper.selectList(entryWrapper(category, keyword, tagName, visibility, sortDirection)));
+            String category,
+            String keyword,
+            String tagName,
+            Long tagId,
+            String tagNameSnapshot,
+            String visibility,
+            SortDirection sortDirection) {
+        return MingCustomsPersistenceAssembler.toEntryDomainList(entryMapper.selectList(
+                entryWrapper(category, keyword, tagName, tagId, tagNameSnapshot, visibility, sortDirection)));
     }
 
     @Override
@@ -192,15 +191,28 @@ public class MingCustomsRepositoryImpl implements MingCustomsRepository {
 
     @Override
     public List<MingCustomsTagCloudItem> listTagCloud(String category, String keyword, String visibility) {
-        return List.of();
+        return entryMapper.selectTagCloud(category, keyword, visibility).stream()
+                .map(MingCustomsRepositoryImpl::toTagCloudItem)
+                .toList();
     }
 
     private static MingCustomsKeywordCloudItem toKeywordCloudItem(Map<String, Object> row) {
         return new MingCustomsKeywordCloudItem(String.valueOf(row.get("keyword")), toLong(row.get("count")));
     }
 
+    private static MingCustomsTagCloudItem toTagCloudItem(Map<String, Object> row) {
+        return new MingCustomsTagCloudItem(
+                nullableLong(row.get("tagId")), String.valueOf(row.get("tagNameSnapshot")), toLong(row.get("count")));
+    }
+
     private LambdaQueryWrapper<MingCustomsEntryDO> entryWrapper(
-            String category, String keyword, String tagName, String visibility, SortDirection sortDirection) {
+            String category,
+            String keyword,
+            String tagName,
+            Long tagId,
+            String tagNameSnapshot,
+            String visibility,
+            SortDirection sortDirection) {
         LambdaQueryWrapper<MingCustomsEntryDO> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(StringUtils.isNotBlank(category), MingCustomsEntryDO::getCategory, category)
                 .eq(StringUtils.isNotBlank(visibility), MingCustomsEntryDO::getVisibility, visibility)
@@ -212,7 +224,36 @@ public class MingCustomsRepositoryImpl implements MingCustomsRepository {
                         .or()
                         .like(MingCustomsEntryDO::getOriginalExcerpts, keyword))
                 .orderBy(true, sortDirection != SortDirection.DESC, MingCustomsEntryDO::getId);
+        applyTagFilter(wrapper, tagName, tagId, tagNameSnapshot);
         return wrapper;
+    }
+
+    private void applyTagFilter(
+            LambdaQueryWrapper<MingCustomsEntryDO> wrapper, String tagName, Long tagId, String tagNameSnapshot) {
+        if (tagId != null) {
+            wrapper.exists(
+                    "select 1 from classics_content_tag tag"
+                            + " where tag.content_type = 'MING_CUSTOMS'"
+                            + " and tag.status = 'ACTIVE'"
+                            + " and tag.content_id = id"
+                            + " and tag.tag_id = {0}",
+                    tagId);
+            return;
+        }
+        String effectiveTagName = StringUtils.defaultIfBlank(tagNameSnapshot, tagName);
+        if (StringUtils.isNotBlank(effectiveTagName)) {
+            wrapper.exists(
+                    "select 1 from classics_content_tag tag"
+                            + " where tag.content_type = 'MING_CUSTOMS'"
+                            + " and tag.status = 'ACTIVE'"
+                            + " and tag.content_id = id"
+                            + " and tag.tag_name_snapshot = {0}",
+                    effectiveTagName);
+        }
+    }
+
+    private static Long nullableLong(Object value) {
+        return value == null ? null : toLong(value);
     }
 
     private static Long toLong(Object value) {

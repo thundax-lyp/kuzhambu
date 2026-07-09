@@ -68,8 +68,8 @@ public class ClassicsReportApplicationServiceImpl implements ClassicsReportAppli
                 SortDirection.ASC);
         List<WangqiDocument> publicWangqiDocuments =
                 wangqiDocumentRepository.listTimeline(null, WangqiDocumentVisibility.PUBLIC.value(), SortDirection.ASC);
-        List<MingCustomsEntry> publicMingCustomsEntries =
-                mingCustomsRepository.list(null, null, null, MingCustomsVisibility.PUBLIC.value(), SortDirection.ASC);
+        List<MingCustomsEntry> publicMingCustomsEntries = mingCustomsRepository.list(
+                null, null, null, null, null, MingCustomsVisibility.PUBLIC.value(), SortDirection.ASC);
 
         long translatedContentCount = publicSancaiEntries.stream()
                 .filter(entry -> entry != null && entry.getTranslationStatus() == SancaiEntryTranslationStatus.READY)
