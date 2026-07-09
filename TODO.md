@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics requirements coverage closure`：更新 Classics 需求和 Implementation Coverage
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-TAIL-CLOSURE.md`
-    - 范围对象：`docs/10-requirements/CLASSICS-REQUIREMENTS.md`、`docs/40-readiness/CLASSICS-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：把三才多选降级、王圻和明代习俗 AI 标签/问答入口、明代习俗统一标签云记录为最终完成口径。
-    - 验收点：coverage 不再保留上述尾项的 `部分完成` 或 `未完成` 状态，并记录本轮验证结果。
-    - 重要度：10/10
-
 - [ ] `classics runbook cleanup`：清理 Classics 尾项收口 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
