@@ -14,6 +14,7 @@ from kuzhambu_workers.ai.errors import (
 )
 from kuzhambu_workers.ai.model_adapters import prepare_openai_compatible_invocation
 from kuzhambu_workers.ai.prompt_messages import build_openai_messages
+from kuzhambu_workers.ai.structured_output import openai_response_format
 from kuzhambu_workers.ai.usage import elapsed_ms, monotonic_ms, usage_from_provider
 from kuzhambu_workers.schemas.ai import AiInvokeRequest
 from kuzhambu_workers.schemas.common import UsageSummary
@@ -93,11 +94,14 @@ def build_chat_completion_request(
     response_format: dict[str, str] | None = None,
 ) -> OpenAiChatCompletionRequest:
     invocation = prepare_openai_compatible_invocation(request.modelConfig)
+    effective_response_format = response_format
+    if effective_response_format is None:
+        effective_response_format = openai_response_format(request)
     return OpenAiChatCompletionRequest(
         model=invocation.model_name,
         messages=build_openai_messages(request.prompt),
         stream=stream,
-        response_format=response_format,
+        response_format=effective_response_format,
         parameters=invocation.parameters,
     )
 

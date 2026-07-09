@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `03 kuzhambu-workers structured output`：实现结构化输出约束和解析
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-REAL-AI-LOOP.md`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/ai/structured_output.py`、`kuzhambu-workers/src/kuzhambu_workers/ai/openai_compatible.py`、`kuzhambu-workers/src/kuzhambu_workers/schemas/ai.py`、`kuzhambu-workers/tests/test_ai_structured_output.py`、`kuzhambu-workers/tests/test_graph_registry.py`
-    - 处理动作：固定 JSON 输出约束、JSON parse 和 Knowledge payload shape。
-    - 验收点：结构化 capability 自动发送 JSON 约束，非法 JSON 和非法 Knowledge 字段返回稳定 `OUTPUT_FORMAT_FAILURE`，`GraphRegistry` 不再断言 placeholder。
-    - 重要度：10/10
-
 - [ ] `04 kuzhambu-workers LangGraph invoke`：接入真实同步 graph 执行
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-REAL-AI-LOOP.md`

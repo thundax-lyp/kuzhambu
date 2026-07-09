@@ -29,18 +29,6 @@ def test_registry_invokes_text_graph_for_classics_translate() -> None:
     )
 
 
-def test_registry_returns_structured_placeholder_for_structured_capability() -> None:
-    registry = GraphRegistry.build_default()
-    request = AiInvokeRequest.model_validate(_request_payload("tags"))
-
-    result = registry.invoke(request)
-
-    assert result == {
-        "format": "STRUCTURED",
-        "payload": {"capability": "tags", "placeholder": True},
-    }
-
-
 @pytest.mark.parametrize(
     ("capability", "expected_keys"),
     [
