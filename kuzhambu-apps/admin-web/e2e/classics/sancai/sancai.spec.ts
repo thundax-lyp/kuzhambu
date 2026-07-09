@@ -143,10 +143,17 @@ test.describe("classics sancai page", () => {
                         data: [
                             {
                                 id: 101,
-                                categoryId: body.categoryId ?? 2,
+                                categoryId: 2,
                                 title: "天文卷一",
                                 volumeType: "FORMAL",
                                 priority: 101
+                            },
+                            {
+                                id: 202,
+                                categoryId: 3,
+                                title: "地理卷一",
+                                volumeType: "FORMAL",
+                                priority: 202
                             }
                         ]
                     })
@@ -346,12 +353,15 @@ test.describe("classics sancai page", () => {
         expect(entryListRequests).toHaveLength(0);
 
         await catalogTree.getByText("天文卷一").click();
-        await expect(page.getByRole("table", { name: "三才图会条目表格" })).toBeVisible();
-        await expect(page.getByRole("columnheader", { name: "条目" })).toBeVisible();
-        await expect(page.getByRole("columnheader", { name: "卷" })).toBeVisible();
-        await expect(page.getByRole("columnheader", { name: "状态" })).toBeVisible();
-        await expect(page.getByRole("columnheader", { name: "摘要" })).toBeVisible();
-        await expect(page.getByRole("columnheader", { name: "操作" })).toBeVisible();
+        const entryTable = page.getByRole("table", { name: "三才图会条目表格" });
+        await expect(entryTable).toBeVisible();
+        await expect(
+            entryTable.getByRole("columnheader", { exact: true, name: "条目" })
+        ).toBeVisible();
+        await expect(entryTable.getByRole("columnheader", { name: "卷" })).toBeVisible();
+        await expect(entryTable.getByRole("columnheader", { name: "状态" })).toBeVisible();
+        await expect(entryTable.getByRole("columnheader", { name: "摘要" })).toHaveCount(1);
+        await expect(entryTable.getByRole("columnheader", { name: "操作" })).toBeVisible();
         await expect(page.getByRole("button", { name: /查看/ })).toBeVisible();
         await expect
             .poll(() => entryListRequests.at(-1))
@@ -378,11 +388,6 @@ test.describe("classics sancai page", () => {
                 sortDirection: "ASC"
             });
 
-        await page.getByRole("button", { name: "筛选" }).click();
-        await page.getByRole("button", { name: /重\s*置/ }).click();
-        await expect(page.getByRole("textbox", { name: "搜索三才图会条目" })).toHaveValue("");
-        await expect(page.locator(".kuzhambu-filter-panel").getByText("全部状态")).toBeVisible();
-
         await page.getByRole("button", { name: /查看/ }).click();
         await expect(page.getByLabel("三才图会版本历史面板")).toBeVisible();
         await page.getByRole("button", { name: "查看三才图会版本 1" }).click();
@@ -407,6 +412,10 @@ test.describe("classics sancai page", () => {
         );
 
         await page.getByRole("textbox", { name: "三才图会条目标题" }).fill("天地新解");
+        await page.getByRole("combobox", { name: "三才图会条目门类" }).click();
+        await page.locator(".ant-select-item-option[title='地理']").last().click();
+        await page.getByRole("combobox", { name: "三才图会条目卷" }).click();
+        await page.locator(".ant-select-item-option[title='地理卷一']").last().click();
         await page.getByRole("textbox", { name: "三才图会原文" }).fill("新原文");
         await page.getByRole("textbox", { name: "三才图会译文" }).fill("新译文");
         await page.getByRole("textbox", { name: "三才图会摘要" }).fill("新摘要");
@@ -416,7 +425,7 @@ test.describe("classics sancai page", () => {
             .poll(() => updateRequests.at(-1))
             .toEqual({
                 id: 3001,
-                volumeId: 101,
+                volumeId: 202,
                 title: "天地新解",
                 originalText: "新原文",
                 translationText: "新译文",

@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -23,6 +24,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentC
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryRefinementStatus;
@@ -50,6 +52,7 @@ class SancaiApplicationServiceImplTest {
         ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
         SancaiApplicationServiceImpl service =
                 new SancaiApplicationServiceImpl(repository, contentApplicationService, publishSupport, null);
+        when(repository.getVolumeById(SancaiVolumeId.of(2001L))).thenReturn(volume(2001L));
         when(repository.maxEntryPriority()).thenReturn(9);
         when(repository.insertEntry(any())).thenReturn(SancaiEntryId.of(1001L));
         versionEntryOnEnsure(contentApplicationService, 3);
@@ -66,12 +69,99 @@ class SancaiApplicationServiceImplTest {
         ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
         SancaiApplicationServiceImpl service =
                 new SancaiApplicationServiceImpl(repository, contentApplicationService, publishSupport, null);
+        SancaiEntry entry = existingEntry(1002L, SancaiEntryLifecycleStatus.DRAFT, SancaiEntryVisibility.PRIVATE);
+        entry.setPriority(12);
+        when(repository.getEntryById(SancaiEntryId.of(1002L))).thenReturn(entry);
+        when(repository.getVolumeById(SancaiVolumeId.of(2001L))).thenReturn(volume(2001L));
         when(repository.updateEntry(any())).thenReturn(1);
         versionEntryOnEnsure(contentApplicationService, 4);
 
         service.updateEntry(privateDraftCommand(1002L));
 
         verify(publishSupport).publishDeleteAfterCommit(ClassicsContentType.SANCAI_ENTRY, "1002", 4);
+    }
+
+    @Test
+    void updateEntryShouldMoveAcrossVolumeAndAppendPriority() {
+        SancaiRepository repository = mock(SancaiRepository.class);
+        ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
+        SancaiApplicationServiceImpl service =
+                new SancaiApplicationServiceImpl(repository, contentApplicationService, publishSupport, null);
+        SancaiEntry currentEntry =
+                existingEntry(1010L, SancaiEntryLifecycleStatus.PUBLISHED, SancaiEntryVisibility.PUBLIC);
+        currentEntry.setPriority(12);
+        when(repository.getEntryById(SancaiEntryId.of(1010L))).thenReturn(currentEntry);
+        when(repository.getVolumeById(SancaiVolumeId.of(3002L))).thenReturn(volume(3002L));
+        when(repository.maxEntryPriority()).thenReturn(99);
+        when(repository.updateEntry(any())).thenReturn(1);
+        versionEntryOnEnsure(contentApplicationService, 9);
+
+        service.updateEntry(publicCommand(1010L, 3002L));
+
+        ArgumentCaptor<SancaiEntry> entryCaptor = ArgumentCaptor.forClass(SancaiEntry.class);
+        verify(repository, times(2)).updateEntry(entryCaptor.capture());
+        SancaiEntry savedEntry = entryCaptor.getAllValues().get(0);
+        assertEquals(SancaiVolumeId.of(3002L), savedEntry.getVolumeId());
+        assertEquals(100, savedEntry.getPriority());
+        verify(contentApplicationService).ensureVersioned(savedEntry, ClassicsContentChangeType.MANUAL_SAVE, "手动保存");
+        verify(publishSupport).publishUpsertAfterCommit(ClassicsContentType.SANCAI_ENTRY, "1010", 9);
+    }
+
+    @Test
+    void updateEntryShouldKeepPriorityWhenVolumeUnchanged() {
+        SancaiRepository repository = mock(SancaiRepository.class);
+        ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
+        SancaiApplicationServiceImpl service =
+                new SancaiApplicationServiceImpl(repository, contentApplicationService, publishSupport, null);
+        SancaiEntry currentEntry =
+                existingEntry(1011L, SancaiEntryLifecycleStatus.PUBLISHED, SancaiEntryVisibility.PUBLIC);
+        currentEntry.setPriority(44);
+        when(repository.getEntryById(SancaiEntryId.of(1011L))).thenReturn(currentEntry);
+        when(repository.getVolumeById(SancaiVolumeId.of(2001L))).thenReturn(volume(2001L));
+        when(repository.updateEntry(any())).thenReturn(1);
+        versionEntryOnEnsure(contentApplicationService, 10);
+
+        service.updateEntry(publicCommand(1011L));
+
+        ArgumentCaptor<SancaiEntry> entryCaptor = ArgumentCaptor.forClass(SancaiEntry.class);
+        verify(repository, times(2)).updateEntry(entryCaptor.capture());
+        assertEquals(44, entryCaptor.getAllValues().get(0).getPriority());
+        verify(repository, never()).maxEntryPriority();
+    }
+
+    @Test
+    void updateEntryShouldRejectMissingTargetVolume() {
+        SancaiRepository repository = mock(SancaiRepository.class);
+        ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
+        SancaiApplicationServiceImpl service =
+                new SancaiApplicationServiceImpl(repository, contentApplicationService, publishSupport, null);
+        SancaiEntry currentEntry =
+                existingEntry(1012L, SancaiEntryLifecycleStatus.PUBLISHED, SancaiEntryVisibility.PUBLIC);
+        when(repository.getEntryById(SancaiEntryId.of(1012L))).thenReturn(currentEntry);
+        when(repository.getVolumeById(SancaiVolumeId.of(9090L))).thenReturn(null);
+
+        assertThrows(BizException.class, () -> service.updateEntry(publicCommand(1012L, 9090L)));
+
+        verify(repository, never()).updateEntry(any());
+        verify(contentApplicationService, never()).ensureVersioned(any(), any(), any());
+    }
+
+    @Test
+    void addEntryShouldRejectMissingTargetVolume() {
+        SancaiRepository repository = mock(SancaiRepository.class);
+        ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
+        SancaiApplicationServiceImpl service =
+                new SancaiApplicationServiceImpl(repository, contentApplicationService, publishSupport, null);
+        when(repository.getVolumeById(SancaiVolumeId.of(9091L))).thenReturn(null);
+
+        assertThrows(BizException.class, () -> service.addEntry(publicCommand(null, 9091L)));
+
+        verify(repository, never()).insertEntry(any());
+        verify(contentApplicationService, never()).ensureVersioned(any(), any(), any());
     }
 
     @Test
@@ -300,10 +390,20 @@ class SancaiApplicationServiceImplTest {
         return entry;
     }
 
+    private static SancaiVolume volume(long id) {
+        SancaiVolume volume = new SancaiVolume();
+        volume.setId(SancaiVolumeId.of(id));
+        return volume;
+    }
+
     private static SancaiEntryCommand publicCommand(Long id) {
+        return publicCommand(id, 2001L);
+    }
+
+    private static SancaiEntryCommand publicCommand(Long id, Long volumeId) {
         return new SancaiEntryCommand(
                 id,
-                2001L,
+                volumeId,
                 "条目",
                 "原文",
                 "译文",

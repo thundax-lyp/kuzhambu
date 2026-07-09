@@ -65,7 +65,7 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 | Column | Type | Key | Requirement Source |
 | --- | --- | --- | --- |
 | `id` | `bigint` | PK, AUTO_INCREMENT | 条目实体身份 |
-| `volume_id` | `bigint` | KEY | 条目归属卷，支持三级浏览和编辑归属 |
+| `volume_id` | `bigint` | KEY | 条目归属卷，支持三级浏览和编辑归属；编辑迁移时更新为目标卷 ID |
 | `title` | `varchar(255)` |  | 条目标题展示、编辑、搜索 |
 | `original_text` | `longtext` |  | 原文展示和编辑 |
 | `translation_text` | `longtext` |  | 译文展示和编辑 |
@@ -76,13 +76,13 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 | `image_status` | `varchar(16)` | KEY(translation_status, image_status, visual_asset_status, refinement_status) | 按配图状态筛选 |
 | `visual_asset_status` | `varchar(16)` | KEY(translation_status, image_status, visual_asset_status, refinement_status) | 按视觉资产状态筛选 |
 | `refinement_status` | `varchar(16)` | KEY(translation_status, image_status, visual_asset_status, refinement_status) | 按完善状态筛选 |
-| `priority` | `int` | UK | 条目列表稳定排序 |
+| `priority` | `int` | UK | 条目列表稳定排序；跨卷迁移时写入当前全局最大 `priority + 1` |
 | `current_version_id` | `bigint` | KEY | 当前正式内容版本标定 |
 | `current_version_no` | `int` |  | 当前正式内容版本号展示和差异判断 |
 | `current_versioned_at` | `datetime(3)` |  | 当前正式内容版本生成时间 |
 | `content_updated_at` | `datetime(3)` |  | 内容语义更新时间，用于判断未版本化变更 |
 
-约束：`id` 主键；`priority` 唯一。索引：`current_version_id`、`volume_id`、`(lifecycle_status, visibility)`、`(translation_status, image_status, visual_asset_status, refinement_status)`。
+约束：`id` 主键；`priority` 唯一。索引：`current_version_id`、`volume_id`、`(lifecycle_status, visibility)`、`(translation_status, image_status, visual_asset_status, refinement_status)`。同卷编辑保留原 `priority`；跨卷迁移使用当前全局最大 `priority + 1`，使条目进入目标卷列表末尾。
 
 ### classics_sancai_entry_draft
 

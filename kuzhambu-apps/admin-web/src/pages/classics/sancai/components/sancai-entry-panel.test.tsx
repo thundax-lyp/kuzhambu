@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App as AntdApp } from "antd";
@@ -553,6 +553,20 @@ const renderEntryPanel = () => {
         <QueryClientProvider client={client}>
             <AntdApp>
                 <SancaiEntryPanel
+                    categories={[
+                        {
+                            categoryType: "FORMAL",
+                            id: 2,
+                            priority: 10,
+                            title: "天文"
+                        },
+                        {
+                            categoryType: "FORMAL",
+                            id: 3,
+                            priority: 20,
+                            title: "地理"
+                        }
+                    ]}
                     categoryId={2}
                     isCatalogLoading={false}
                     refreshVersion={0}
@@ -563,6 +577,12 @@ const renderEntryPanel = () => {
                             id: 101,
                             title: "天文卷一",
                             volumeType: "MAIN"
+                        },
+                        {
+                            categoryId: 3,
+                            id: 202,
+                            title: "地理卷一",
+                            volumeType: "MAIN"
                         }
                     ]}
                 />
@@ -571,6 +591,13 @@ const renderEntryPanel = () => {
     );
 
     return client;
+};
+
+const openSelectAndChoose = async (label: string, optionText: string) => {
+    const select = await screen.findByRole("combobox", { name: label });
+    fireEvent.mouseDown(select);
+    const options = await screen.findAllByText(optionText);
+    await userEvent.click(options.at(-1)!);
 };
 
 describe("SancaiEntryPanel sharing", () => {
@@ -704,6 +731,46 @@ describe("SancaiEntryPanel sharing", () => {
         expect(await within(entryTable).findByRole("button", { name: "发布 地理" })).toBeEnabled();
         expect(within(entryTable).getByRole("button", { name: "归档 天地" })).toBeEnabled();
         expect(within(entryTable).getByRole("button", { name: "恢复发布 人物" })).toBeEnabled();
+    }, 30000);
+
+    it("moves an edited entry to the selected category volume", async () => {
+        const user = userEvent.setup();
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByRole("link", { name: "打开条目 天地" }));
+        await screen.findByRole("textbox", { name: "三才图会条目标题" });
+        await waitFor(() => {
+            expect(screen.getAllByText("天文卷一").length).toBeGreaterThan(1);
+        });
+
+        await openSelectAndChoose("三才图会条目门类", "地理");
+        vi.mocked(entryService.update).mockClear();
+        await user.click(screen.getByRole("button", { name: "保存三才图会条目" }));
+        expect(entryService.update).not.toHaveBeenCalled();
+        expect(await screen.findByText("请选择卷")).toBeInTheDocument();
+
+        await openSelectAndChoose("三才图会条目卷", "地理卷一");
+        await user.click(screen.getByRole("button", { name: "保存三才图会条目" }));
+
+        await waitFor(() => {
+            expect(entryService.update).toHaveBeenCalled();
+        });
+        expect(vi.mocked(entryService.update).mock.calls.at(-1)?.at(0)).toEqual({
+            id: 3001,
+            volumeId: 202,
+            title: "天地",
+            originalText: "天地玄黄",
+            translationText: "译文",
+            summary: "天地摘要",
+            lifecycleStatus: "PUBLISHED",
+            visibility: "PUBLIC",
+            translationStatus: "READY",
+            imageStatus: "READY",
+            visualAssetStatus: "READY",
+            refinementStatus: "COMPLETE"
+        });
     }, 30000);
 
     it("publishes a draft entry after confirmation", async () => {

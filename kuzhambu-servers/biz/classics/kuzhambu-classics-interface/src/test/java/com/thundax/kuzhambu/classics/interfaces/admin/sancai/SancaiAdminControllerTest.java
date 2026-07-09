@@ -408,6 +408,19 @@ class SancaiAdminControllerTest {
     }
 
     @Test
+    void updateEntryShouldPassTargetVolumeIdToApplication() {
+        SancaiAdminController controller = new SancaiAdminController(updateEntryService(), contentService());
+        SancaiEntryRequest entryRequest = new SancaiEntryRequest();
+        entryRequest.setId(3001L);
+        entryRequest.setVolumeId(202L);
+        entryRequest.setTitle("迁移条目");
+        entryRequest.setLifecycleStatus("PUBLISHED");
+        entryRequest.setVisibility("PUBLIC");
+
+        assertEquals(3001L, controller.updateEntry(entryRequest).getId());
+    }
+
+    @Test
     void versionMethodsShouldUseContentContracts() {
         SancaiAdminController controller = new SancaiAdminController(sancaiService(), contentService());
         SancaiEntryVersionRequest request = new SancaiEntryVersionRequest();
@@ -558,6 +571,24 @@ class SancaiAdminControllerTest {
                     if ("deleteEntry".equals(method.getName())) {
                         assertEquals(SancaiEntryId.of(3001L), args[0]);
                         return null;
+                    }
+                    throw new UnsupportedOperationException(method.getName());
+                });
+    }
+
+    private static SancaiApplicationService updateEntryService() {
+        return (SancaiApplicationService) Proxy.newProxyInstance(
+                SancaiApplicationService.class.getClassLoader(),
+                new Class<?>[] {SancaiApplicationService.class},
+                (proxy, method, args) -> {
+                    if ("updateEntry".equals(method.getName())) {
+                        SancaiEntryCommand command = (SancaiEntryCommand) args[0];
+                        assertEquals(3001L, command.getId());
+                        assertEquals(202L, command.getVolumeId());
+                        assertEquals("迁移条目", command.getTitle());
+                        assertEquals(SancaiEntryLifecycleStatus.PUBLISHED, command.getLifecycleStatus());
+                        assertEquals(SancaiEntryVisibility.PUBLIC, command.getVisibility());
+                        return SancaiEntryId.of(3001L);
                     }
                     throw new UnsupportedOperationException(method.getName());
                 });

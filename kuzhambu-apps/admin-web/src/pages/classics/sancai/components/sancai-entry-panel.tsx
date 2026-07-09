@@ -26,6 +26,7 @@ import { SancaiVersionHistoryPanel } from "./sancai-version-history-panel";
 import { useSancaiEntryPanelState } from "../hooks/use-sancai-entry-panel-state";
 import * as entryService from "../services/sancai-entry-service";
 import type {
+    SancaiCategoryRecord,
     SancaiContentVersionRecord,
     SancaiEntryImageRecord,
     SancaiEntryRecord,
@@ -72,6 +73,7 @@ const formatImageSize = (size?: number | null) => {
 };
 
 interface SancaiEntryPanelProps {
+    categories?: SancaiCategoryRecord[];
     categoryId: number | null;
     defaultCreateOpen?: boolean;
     isCatalogLoading: boolean;
@@ -83,6 +85,7 @@ interface SancaiEntryPanelProps {
 }
 
 export const SancaiEntryPanel = ({
+    categories = [],
     categoryId,
     defaultCreateOpen = false,
     isCatalogLoading,
@@ -110,6 +113,14 @@ export const SancaiEntryPanel = ({
     const [imageUploadCurrentUsed, setImageUploadCurrentUsed] = useState(true);
     const candidatePanelRef = useRef<HTMLDivElement | null>(null);
     const tagPanelRef = useRef<HTMLDivElement | null>(null);
+    const categoryOptions = useMemo(
+        () =>
+            categories.map((category) => ({
+                label: category.title?.trim() || `门类 ${category.id}`,
+                value: category.id
+            })),
+        [categories]
+    );
     const currentUserQuery = useQuery({
         queryKey: ["sys", "current-user", "info"],
         queryFn: currentUserService.getCurrentUserInfo,
@@ -397,7 +408,7 @@ export const SancaiEntryPanel = ({
             setIsModelOpen(false);
             setEditingEntry(null);
             setSelectedVersionId(null);
-            messageApi.success("三才图会条目已保存");
+            messageApi.success("三才图会条目已保存，归属卷已更新");
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "保存失败");
@@ -622,12 +633,12 @@ export const SancaiEntryPanel = ({
 
     const submitEntry = (form: SancaiEntryFormValues) => {
         if (isCreating) {
-            if (!volumeId) {
+            if (!form.volumeId) {
                 messageApi.warning("请先选择卷目");
                 return;
             }
             addEntryMutation.mutate({
-                volumeId,
+                volumeId: form.volumeId,
                 title: form.title,
                 originalText: form.originalText,
                 translationText: form.translationText,
@@ -646,7 +657,7 @@ export const SancaiEntryPanel = ({
         }
         updateEntryMutation.mutate({
             id: selectedEntry.id,
-            volumeId: selectedEntry.volumeId,
+            volumeId: form.volumeId,
             title: form.title,
             originalText: form.originalText,
             translationText: form.translationText,
@@ -1018,6 +1029,7 @@ export const SancaiEntryPanel = ({
             />
             <SancaiEntryModel
                 key={modelKey}
+                categoryOptions={categoryOptions}
                 entry={selectedEntry}
                 entryTags={
                     selectedEntry?.tags?.map((tag) => tag.tagNameSnapshot || "") ?? entryTagNames
@@ -1025,8 +1037,11 @@ export const SancaiEntryPanel = ({
                 isSubmitting={addEntryMutation.isPending || updateEntryMutation.isPending}
                 isSwitchingVisualAsset={changeCurrentVisualAssetMutation.isPending}
                 isUpdatingVisualAsset={updateVisualAssetMutation.isPending}
+                initialCategoryId={categoryId}
+                initialVolumeId={volumeId}
                 mode={isCreating ? "create" : "edit"}
                 open={isModelOpen && !isLoading}
+                volumes={volumes}
                 onCancel={closeModel}
                 onEditTags={editEntryTags}
                 onSubmit={submitEntry}

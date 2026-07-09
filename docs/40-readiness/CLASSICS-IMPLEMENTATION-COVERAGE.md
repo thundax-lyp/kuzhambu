@@ -27,7 +27,7 @@
 - 导出和静态展示已打通 worker 渲染并写入 Storage；当前已接入导出任务下载门禁与过期控制（过期禁读、前端状态显示）、记录级 Storage owner 绑定、业务侧主动删除和批量管理策略；静态展示内容回源已收敛为按 `classics_sancai_showcase.id` 读取记录后再读取 `storage_object_id`。
 - 分享访问首版支持正式版本绑定和快照字段入库能力（`content_version_id`、`content_version_no`、`title_snapshot`、`content_snapshot_json`）。
 - Admin/Portal starter 已扫描 Classics 的 application/infra/interface 包，启动路径与装配可用。
-- 三才图会 Admin Web 最小闭环已完成：后台菜单和 `/classics/sancai` 路由可进入真实页面，支持门类 CRUD、门类独立排序表单、门类/卷目并列列表、条目列表、搜索、生命周期筛选、分页、详情打开、标题/原文/译文/摘要/公开状态编辑和保存，以及版本历史、版本字段对比和历史恢复。
+- 三才图会 Admin Web 最小闭环已完成：后台菜单和 `/classics/sancai` 路由可进入真实页面，支持门类 CRUD、门类独立排序表单、门类/卷目并列列表、条目列表、搜索、生命周期筛选、分页、详情打开、标题/门类/卷/原文/译文/摘要/公开状态编辑和保存，以及版本历史、版本字段对比和历史恢复。
 - 三才图会门类、卷和条目治理状态已统一到运行时可解析的业务枚举口径，覆盖当前 schema 默认值、初始化数据和 dev 数据库取值。
 - 三才图会 Admin Web 已用 Playwright 验证接口闭环和页面闭环，覆盖 categories list/detail/save/delete/sort、volumes、entries/page、entries/{id}、entries/save、entries/versions/list、entries/versions/get、entries/versions/reset 请求体。
 - 明代习俗 Admin Web 最小闭环已完成：后台菜单和 `/classics/ming-customs` 路由可进入真实页面，支持标题/分类/可见性/时间筛选、基于统一标签的标签云、分页、详情打开、新增、编辑、删除和分享入口。
@@ -90,7 +90,7 @@
 | 门类治理 CRUD | 已完成 | 门类列表、详情、保存和删除接口已实现；Admin Web 已支持新增、编辑和删除空门类；新增门类不输入 `priority`，由后端追加到末尾；删除有关联卷的门类由后端业务规则拦截 | 无 | Classics, Admin Web |
 | 门类和卷稳定排序 | 已完成 | `priority` 规则、schema 约束、service 排序参数与稳定排序 API 已支持；Admin Web 已提供门类独立排序表单，保存时提交 orderedIds | 无 | Classics, Admin Web |
 | 条目查看、创建、编辑、删除 | 已完成 | 条目查询、详情、保存、删除接口与运行时代码已到位；Admin Web 已完成列表进入详情、编辑保存和列表刷新闭环；三类内容删除后会同步关联分享目标为 `CONTENT_DELETED`，并按剩余可用目标重算分享风险态 | 无 | Classics, Admin Web, Portal Web |
-| 编辑标题、门类、卷、原文、译文和标签 | 部分完成 | 条目编辑核心字段（标题/门类/卷/正文等）与保存链路已实现；Admin Web 已支持标题、原文、译文、摘要、公开状态编辑保存；后端通用标签新增、更新、删除已接入 Knowledge 协作语义；Sancai 条目详情抽屉已提供“编辑标签”入口，可定位到同抽屉标签治理面板完成新增、编辑、排序和移除；通用标签接口已补齐必要入参治理 | 门类/卷迁移不纳入本轮页面闭环 | Classics, Admin Web, Knowledge |
+| 编辑标题、门类、卷、原文、译文和标签 | 已完成 | 条目编辑核心字段（标题/门类/卷/正文等）与保存链路已实现；后端保存会校验目标卷存在，跨卷迁移更新 `classics_sancai_entry.volume_id`，并将 `priority` 写为当前全局最大 `priority + 1`，同卷编辑保留原排序；保存会生成正式版本且版本快照包含迁移后的 `volumeId`；Admin Web 编辑抽屉已支持标题、门类 Select、卷 Select、原文、译文、摘要和公开状态编辑保存，门类切换会清空不匹配的卷，未选卷禁止提交，保存后刷新列表、详情和版本；后端通用标签新增、更新、删除已接入 Knowledge 协作语义；Sancai 条目详情抽屉已提供“编辑标签”入口，可定位到同抽屉标签治理面板完成新增、编辑、排序和移除；通用标签接口已补齐必要入参治理 | 无 | Classics, Admin Web, Knowledge |
 | 展示原文、译文、标签、配图和状态 | 已完成 | 条目详情、标签列表、配图列表均已提供接口；Sancai 条目详情响应已聚合返回 `tags`；Admin Web 已在详情上下文展示原文、译文、标签、条目状态、当前使用图片预览/下载入口、视觉资产历史列表、当前版本摘要和原图/生成图预览下载入口；标签新增、编辑、排序、移除后会刷新详情聚合标签 | 无 | Classics, Admin Web |
 | 多张配图、缩略预览、放大浏览 | 已完成 | 图片保存、列表、类型、Storage 对象引用、业务上传、业务读取、删除、当前图切换和同条目排序已落地；Admin Web 已提供配图列表管理、缩略预览、放大浏览抽屉、下载和当前图选择；分享快照与 Portal 分享详情保留多图并按 `priority ASC` 展示缩略图切换主图；Workers 静态展示按多图稳定渲染并标记当前图 | 无 | Classics, Storage, Admin Web, Portal Web, Worker |
 | 区分原始配图和视觉资产生成图 | 已完成 | `image_type`、图片模型、资产模型与保存入口已实现；Admin Web 已区分展示视觉资产原图与生成图，并分别提供预览/下载入口；`image_gen` 结果会新建 visual asset version 并绑定正式 Storage 对象 | 无 | Classics, Admin Web |
