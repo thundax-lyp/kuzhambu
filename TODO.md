@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `10 RUNBOOK-WORKERS-REAL-AI-LOOP`：清理临时 RUNBOOK 和 TODO 收口
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`docs/30-designs/RUNBOOK-WORKERS-REAL-AI-LOOP.md`、`TODO.md`
-    - 处理动作：任务关闭时删除临时 RUNBOOK 并删除或收窄已完成 TODO。
-    - 验收点：PR 收口前无已完成任务残留，临时 RUNBOOK 已删除或仅保留仍未关闭范围。
-    - 重要度：10/10
-
 ## 待审阅任务项
 
 ## 待讨论项
