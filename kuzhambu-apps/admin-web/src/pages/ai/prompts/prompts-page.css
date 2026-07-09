@@ -1,3 +1,75 @@
 .prompts-page {
-    padding: 24px;
+    min-height: 100%;
+}
+
+.prompts-filter-card {
+    margin-bottom: 16px;
+}
+
+.prompts-filter-form {
+    row-gap: 12px;
+}
+
+.prompts-filter-control {
+    min-width: 180px;
+}
+
+.prompts-workbench {
+    display: grid;
+    grid-template-columns: minmax(240px, 0.8fr) minmax(420px, 1.6fr) minmax(320px, 1fr);
+    gap: 16px;
+    align-items: start;
+}
+
+.prompts-template-card,
+.prompts-editor-card,
+.prompts-version-card {
+    min-width: 0;
+}
+
+.prompts-editor-form {
+    display: grid;
+    gap: 12px;
+}
+
+.prompts-editor-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.prompts-compare-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.prompts-version-detail {
+    display: grid;
+    gap: 8px;
+}
+
+.prompts-version-detail pre {
+    max-height: 260px;
+    overflow: auto;
+    padding: 12px;
+    margin: 0 0 12px;
+    border: 1px solid #d9d9d9;
+    border-radius: 6px;
+    background: #f7f7f7;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+@media (max-width: 1200px) {
+    .prompts-workbench {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 760px) {
+    .prompts-editor-grid,
+    .prompts-compare-grid {
+        grid-template-columns: 1fr;
+    }
 }

@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ai-prompts-page`：实现 AI 提示词版本页
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-ADMIN-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/ai/prompts/prompts-page.tsx`、`kuzhambu-apps/admin-web/src/pages/ai/prompts/prompts-service.ts`、`kuzhambu-apps/admin-web/src/pages/ai/prompts/prompts-types.ts`、`kuzhambu-apps/admin-web/src/pages/ai/prompts/prompts-page.css`、`kuzhambu-apps/admin-web/src/pages/ai/prompts/prompts-page.test.tsx`
-    - 处理动作：实现模板保存、变量校验、版本列表、版本对比、回滚和优化建议确认应用。
-    - 验收点：保存或回滚后刷新当前版本、变量列表和动作状态，优化建议必须确认后才应用为新版本。
-    - 重要度：10/10
-
 - [ ] `ai-invocations-page`：实现 AI 调用统计页
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-ADMIN-GOVERNANCE.md`
