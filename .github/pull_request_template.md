@@ -1,4 +1,4 @@
-## Summary
+## Business Closure
 
 -
 
@@ -6,10 +6,9 @@
 
 -
 
-## Verification
+## Verification Evidence
 
 - [ ] PR workflow: governance files
-- [ ] PR workflow: servers changed -> `mvn -q clean`
 - [ ] PR workflow: servers changed -> `mvn -q spotless:check`
 - [ ] PR workflow: servers changed -> `mvn -q checkstyle:check`
 - [ ] PR workflow: servers changed -> `mvn -q test`
@@ -22,12 +21,26 @@
 - [ ] PR workflow: apps changed -> `pnpm run lint`
 - [ ] PR workflow: apps changed -> `pnpm test`
 - [ ] PR workflow: db changed -> SQL seed checks
+- [ ] Manual/runtime smoke:
 
-## Documentation And TODO
+## Not Covered
 
-- [ ] 文档已同步，或本 PR 不涉及文档口径变化。
-- [ ] `TODO.md` 已清空或收窄为剩余未完成任务。
-- [ ] `RUNBOOK` 已清理，或仍有明确剩余用途。
+-
+
+## Cross-domain Impact
+
+- [ ] 无跨域影响
+- [ ] 有跨域影响，说明如下：
+
+说明：
+
+## Documentation And RUNBOOK Closure
+
+- [ ] 需求 / 接口 / readiness / governance 文档已同步。
+- [ ] 本 PR 不涉及文档口径变化，原因：
+- [ ] 临时 RUNBOOK 已删除。
+- [ ] RUNBOOK 证据已沉淀到：
+- [ ] 本 PR 未涉及 RUNBOOK。
 
 ## Risks
 

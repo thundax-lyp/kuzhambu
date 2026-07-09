@@ -40,4 +40,17 @@
 
 ## RUNBOOK Boundary
 
-`RUNBOOK` 是复杂任务的执行手册，适用于跨模块清理、迁移、删除或重构。任务关闭时，应清理 RUNBOOK 及残留引用。
+`RUNBOOK` 是复杂任务的临时执行手册，适用于跨模块清理、迁移、删除、重构、运行时验收或业务闭环收口。
+
+`RUNBOOK` 不是需求真相源，不替代 `docs/10-requirements/`、`docs/20-interfaces/`、`docs/40-readiness/` 或治理文档。任务执行过程中可以用 RUNBOOK 记录范围拆解、执行顺序、验证命令和临时风险，但长期规则必须沉淀到 `docs/00-governance/`，完成状态必须沉淀到 `docs/40-readiness/`。
+
+RUNBOOK 固定包含：
+
+- `Purpose`：说明本次执行目标。
+- `Scope`：说明纳入本次闭环的模块、页面、接口或文档。
+- `Non-goals`：说明明确不纳入本次闭环的事项。
+- `Plan`：列出可执行步骤。
+- `Verification`：列出需要运行或记录的验证。
+- `Closure`：说明任务完成后要删除 RUNBOOK，或把证据沉淀到哪个 readiness/evidence 文档。
+
+任务关闭时，必须清理 RUNBOOK 及残留引用；如果 RUNBOOK 中存在仍有长期价值的结论，必须先迁移到对应需求、接口、readiness 或治理文档，再删除临时 RUNBOOK。

@@ -13,19 +13,21 @@
 - GitHub Pull Request workflow
 - PR workflow 显式验证步骤
 - PR 标题和描述要求
-- 文档、TODO 和 RUNBOOK 收口要求
+- 文档和 RUNBOOK 收口要求
+- 阶段性交付的业务完成点、验证证据、未覆盖项和跨域影响说明
 
 不在范围内：
 
 - 不定义发布流程
 - 不定义分支保护配置的 GitHub UI 操作
 - 不伪造没有构建系统模块的验证命令
+- 不定义本地并发开发方式；开发者可以使用多个 clone、worktree 或其他本地组织方式，但 PR 仍必须满足本文档的交付边界
 
 ## 3. Bounded Context
 
 Commit 是工程判断记录，可以表示阶段任务中的中间判断。
 
-PR 是阶段性交付边界。PR 合并前必须完整、可编译、可测试，并完成文档、TODO 和 RUNBOOK 收口。
+PR 是阶段性交付边界。PR 合并前必须完整、可编译、可测试，并完成文档和 RUNBOOK 收口。
 
 PR 合并前固定执行 `.github/workflows/pr-verify.yml`。workflow 必须显式声明治理文件检查，并按变更目录触发后端 Maven 验证、前端 package manifest 校验、前端 Prettier 检查、前端 ESLint 检查、前端 Vitest、worker manifest 校验、workers ruff 检查和 workers pytest no-capture 验证；不得用一个 shell 脚本隐藏 PR 必过项。
 
@@ -34,7 +36,6 @@ PR 合并前固定执行 `.github/workflows/pr-verify.yml`。workflow 必须显�
 - `.github/workflows/pr-verify.yml`: GitHub PR 触发入口。
 - `scripts/verify-all.sh`: 本地辅助 verify 编排入口，不作为 PR workflow 的必过入口。
 - `.github/pull_request_template.md`: PR 描述模板。
-- `docs/00-governance/TODO-RULES.md`: TODO、commit、PR 和 verify protocol 的主规则。
 
 ## 5. Global Constraints
 
@@ -42,7 +43,10 @@ PR 合并前固定执行 `.github/workflows/pr-verify.yml`。workflow 必须显�
 - PR 合并前必须通过统一 verify workflow。
 - PR 标题固定使用 `Type(scope): 中文说明`。
 - PR 描述固定使用 `.github/pull_request_template.md`。
-- PR 必须完成阶段任务对应的文档、TODO 和 RUNBOOK 收口。
+- PR 必须完成阶段任务对应的文档和 RUNBOOK 收口。
+- PR 应尽量只承载一个可验收业务闭环；如果同一 PR 跨多个业务域，必须在 PR 描述中说明不可拆分原因、跨域影响和额外验证范围。
+- PR 必须明确记录业务完成点、验证证据、未覆盖项、跨域影响、文档与 RUNBOOK 收口状态。
+- `PR-RULES.md` 增加 PR 描述必填信息时，必须同步更新 `.github/pull_request_template.md`。
 - workflow 必须直接展示 PR 必过验证步骤；新增项目验证能力时必须同步接入 `.github/workflows/pr-verify.yml`。
 - 本地辅助脚本可以复用同等验证能力，但不得成为 PR workflow 唯一可见入口。
 - PR 自动验证只包含已自动化 testcase；未自动化 testcase 不得伪装为 PR 必过项。
@@ -62,11 +66,13 @@ PR 合并前固定执行 `.github/workflows/pr-verify.yml`。workflow 必须显�
 
 PR 描述固定包含：
 
-- `Summary`: 说明本 PR 完成的阶段性交付。
-- `Scope`: 说明主要改动范围。
-- `Verification`: 记录已运行验证命令和结果。
-- `Documentation And TODO`: 确认文档、TODO 和 RUNBOOK 收口状态。
-- `Risks`: 说明剩余风险、未自动化验证或未完成任务。
+- `Business Closure`: 说明本 PR 形成的业务完成点；如果只是治理、验证或文档收口，也必须说明完成的交付边界。
+- `Scope`: 说明主要改动范围，并说明是否跨业务域。
+- `Verification Evidence`: 记录已运行验证命令、结果和人工或运行时冒烟证据；未自动化验证不得伪装为 workflow 必过项。
+- `Not Covered`: 说明本 PR 未覆盖、未自动化或刻意不纳入的事项；没有未覆盖项时明确写 `无`。
+- `Cross-domain Impact`: 说明是否影响其他业务域、facade、接口、权限、菜单、配置、Storage owner、AI final-state、Workers usecase、Operations summary 等跨域契约。
+- `Documentation And RUNBOOK Closure`: 确认需求、接口、readiness、治理文档是否同步；确认临时 RUNBOOK 已删除，或证据已沉淀到指定 readiness/evidence 文档。
+- `Risks`: 说明剩余风险、运行时依赖或上线前仍需关注的事项。
 
 ## 7. Key Flow
 
