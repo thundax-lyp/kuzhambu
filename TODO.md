@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `runbook-cleanup`：清理 AI 治理 RUNBOOK
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`docs/30-designs/RUNBOOK-AI-ADMIN-GOVERNANCE.md`
-    - 处理动作：任务完成并同步覆盖文档后删除临时 RUNBOOK。
-    - 验收点：PR 收口前仓库不再保留已完成任务的临时 RUNBOOK。
-    - 重要度：8/10
-
 ## 待审阅任务项
 
 ## 待讨论项
