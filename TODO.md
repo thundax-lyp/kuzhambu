@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `4 前端报表页面`：实现 `/operations/reports` 页面控件和交互
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORTS-ADMIN.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/reports/reports-page.tsx`、`kuzhambu-apps/admin-web/src/pages/operations/reports/reports-page.css`、`kuzhambu-apps/admin-web/src/pages/operations/reports/reports-page.test.tsx`
-    - 处理动作：实现标题区、筛选区、生成区、记录列表、详情抽屉、下载按钮和运行中 5 秒轮询。
-    - 验收点：页面测试覆盖筛选控件、生成控件、权限禁用、失败原因、详情抽屉、下载按钮可见性和运行中轮询。
-    - 重要度：10/10
-
 - [ ] `5 前端路由菜单 E2E`：接入 Operations 报表管理路由、菜单与端到端验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORTS-ADMIN.md`
