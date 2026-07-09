@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `07-runtime-evidence`：执行 Knowledge 运行时验证并记录 evidence
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-RUNTIME-VALIDATION-CLOSURE.md`
-    - 范围对象：`docs/40-readiness/KNOWLEDGE-RUNTIME-SMOKE-EVIDENCE.md`、`kuzhambu-servers/pom.xml`、`kuzhambu-workers/pyproject.toml`、`kuzhambu-apps/admin-web/package.json`
-    - 处理动作：运行 RUNBOOK 中后端、Workers、Admin Web 统一验证命令，并把环境、命令、结果和关键断言写入 evidence
-    - 验收点：`KNOWLEDGE-RUNTIME-SMOKE-EVIDENCE.md` 记录后端、Workers、Admin Web 验证均通过且包含 Knowledge Playwright 关键断言
-    - 重要度：10/10
-
 - [ ] `08-main-coverage-runbook-closure`：同步 main 并完成 Knowledge 验收文档收口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-RUNTIME-VALIDATION-CLOSURE.md`
