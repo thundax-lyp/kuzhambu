@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from typing import Any, cast
 
 from kuzhambu_workers.ai.graphs.basic import build_basic_graph
+from kuzhambu_workers.ai.graphs.image_generation import build_image_generation_graph
 from kuzhambu_workers.ai.graphs.text import build_text_graph
 from kuzhambu_workers.core.errors import unsupported_capability
 from kuzhambu_workers.schemas.ai import AiCapability, AiInvokeRequest
@@ -27,8 +28,10 @@ class GraphRegistry:
     @classmethod
     def build_default(cls) -> "GraphRegistry":
         text_graph = build_text_graph()
+        graphs = {capability: build_basic_graph() for capability in AiCapability}
+        graphs[AiCapability.IMAGE_GEN] = build_image_generation_graph()
         return cls(
-            graphs={capability: build_basic_graph() for capability in AiCapability},
+            graphs=graphs,
             classics_text_graphs={operation: text_graph for operation in CLASSICS_TEXT_USECASES},
         )
 
