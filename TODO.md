@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `02-ai-backend-mapping-prompt-status`：02 后端能力映射、提示词变量和动作状态验收
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-RUNTIME-ACCEPTANCE.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/capability/command/AiCapabilityMappingSaveCommand.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/prompt/command/PromptTemplateSaveCommand.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/capability/persistence/mapper/AiCapabilityMapper.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/prompt/persistence/mapper/PromptMapper.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/prompt/controller/PromptController.java`
-    - 处理动作：验收 `classics + summary` 正例映射、缺标签模型负例、提示词保存、变量成功/失败校验和动作状态刷新。
-    - 验收点：`ai_capability_mapping`、`ai_prompt_template`、`ai_prompt_version`、`ai_prompt_variable`、`ai_action_status` 字段与 RUNBOOK 要求一致。
-    - 重要度：10/10
-
 - [ ] `03-ai-backend-invocation-stats`：03 后端精修任务、调用记录和统计验收
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-RUNTIME-ACCEPTANCE.md`
