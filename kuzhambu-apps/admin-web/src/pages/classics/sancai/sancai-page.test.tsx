@@ -51,6 +51,8 @@ const readFetchUrl = (input: RequestInfo | URL) => {
 
 const showcasePageRequests: unknown[] = [];
 const showcaseCreateRequests: unknown[] = [];
+let mockCategories = [{ categoryType: "FORMAL", id: 2, title: "天文" }];
+let mockVolumes = [{ categoryId: 2, id: 101, title: "天文卷一", volumeType: "MAIN" }];
 
 const parseJsonBody = (init?: RequestInit) => {
     if (typeof init?.body !== "string") {
@@ -74,7 +76,7 @@ const installFetchMock = () => {
         const path = readFetchUrl(input).replace("/kuzhambu-admin-api/api", "");
 
         if (path.endsWith("/classics/sancai/categories/list")) {
-            return apiResponse([{ categoryType: "FORMAL", id: 2, title: "天文" }]);
+            return apiResponse(mockCategories);
         }
         if (path.endsWith("/classics/sancai/categories/types")) {
             return apiResponse([
@@ -85,7 +87,7 @@ const installFetchMock = () => {
             return apiResponse([{ label: "正式卷目", type: "SANCAI_VOLUME_TYPE", value: "MAIN" }]);
         }
         if (path.endsWith("/classics/sancai/volumes/list")) {
-            return apiResponse([{ categoryId: 2, id: 101, title: "天文卷一", volumeType: "MAIN" }]);
+            return apiResponse(mockVolumes);
         }
         if (path.endsWith("/classics/sancai/entries/page")) {
             return apiResponse({
@@ -304,6 +306,8 @@ describe("SancaiPage", () => {
         queryClient.clear();
         showcasePageRequests.length = 0;
         showcaseCreateRequests.length = 0;
+        mockCategories = [{ categoryType: "FORMAL", id: 2, title: "天文" }];
+        mockVolumes = [{ categoryId: 2, id: 101, title: "天文卷一", volumeType: "MAIN" }];
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         installFetchMock();
     });
@@ -330,6 +334,14 @@ describe("SancaiPage", () => {
 
     it("switches to the entry panel with the selected catalog context", async () => {
         const user = userEvent.setup();
+        mockCategories = [
+            { categoryType: "FORMAL", id: 2, title: "天文" },
+            { categoryType: "FORMAL", id: 3, title: "地理" }
+        ];
+        mockVolumes = [
+            { categoryId: 2, id: 101, title: "天文卷一", volumeType: "MAIN" },
+            { categoryId: 3, id: 202, title: "地理卷一", volumeType: "MAIN" }
+        ];
 
         render(
             <QueryClientProvider client={queryClient}>
@@ -348,7 +360,7 @@ describe("SancaiPage", () => {
         const entryPanel = await screen.findByLabelText("三才图会条目面板");
         expect(within(entryPanel).getByText("category:2")).toBeInTheDocument();
         expect(within(entryPanel).getByText("volume:101")).toBeInTheDocument();
-        expect(within(entryPanel).getByText("volumes:1")).toBeInTheDocument();
+        expect(within(entryPanel).getByText("volumes:2")).toBeInTheDocument();
         expect(within(entryPanel).getByText("refresh:0")).toBeInTheDocument();
         expect(within(entryPanel).getByText("keyword:none")).toBeInTheDocument();
         expect(within(entryPanel).getByText("status:none")).toBeInTheDocument();

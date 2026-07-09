@@ -396,7 +396,7 @@ export const SancaiPage = () => {
                 lifecycleStatus={appliedLifecycleStatus}
                 refreshVersion={refreshVersion}
                 volumeId={selectedVolume.id}
-                volumes={visibleVolumes}
+                volumes={volumes}
             />
         );
     }

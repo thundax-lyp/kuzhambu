@@ -229,11 +229,13 @@ describe("sancai service request contracts", () => {
 
         await entryService.update({
             id: 3001,
-            ...entryCommand
+            ...entryCommand,
+            volumeId: 202
         });
         expectLastCall("POST", "/classics/sancai/entries/update", {
             id: 3001,
-            ...entryCommand
+            ...entryCommand,
+            volumeId: 202
         });
 
         await entryService.changeLifecycleStatus({

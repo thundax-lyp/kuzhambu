@@ -9,13 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `5. 前端迁移测试`：锁定 Sancai 编辑抽屉门类卷选择和保存请求
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-EDIT-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.test.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-service-contract.test.ts`、`kuzhambu-apps/admin-web/e2e/classics/sancai/sancai.spec.ts`
-    - 处理动作：补充编辑抽屉默认门类卷、切换门类清空卷、选择新卷保存和 service 请求体测试。
-    - 验收点：前端测试能证明用户选择目标卷后 update 请求携带新 `volumeId`，E2E 条件稳定时覆盖卷 A 到卷 B 迁移。
-    - 重要度：9/10
 - [ ] `6. 文档矩阵收口`：同步 Sancai 条目迁移需求、设计和 implementation coverage
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-EDIT-CLOSURE.md`
