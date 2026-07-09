@@ -21,6 +21,8 @@ public interface AiCapabilityRepository {
 
     AiActionStatus getActionStatus(String scope, String capability);
 
+    List<AiActionStatus> listActionStatuses(String scope, String capability, Boolean available);
+
     Long saveActionStatus(AiActionStatus actionStatus);
 
     int updateActionStatus(AiActionStatus actionStatus);

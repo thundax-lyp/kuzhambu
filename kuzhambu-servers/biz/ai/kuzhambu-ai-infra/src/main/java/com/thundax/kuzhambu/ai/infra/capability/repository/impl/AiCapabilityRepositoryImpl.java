@@ -77,6 +77,11 @@ public class AiCapabilityRepositoryImpl implements AiCapabilityRepository {
     }
 
     @Override
+    public List<AiActionStatus> listActionStatuses(String scope, String capability, Boolean available) {
+        return toActionStatusDomainList(aiCapabilityMapper.selectActionStatuses(scope, capability, available));
+    }
+
+    @Override
     public Long saveActionStatus(AiActionStatus actionStatus) {
         AiActionStatusDO dataObject = toActionStatusObject(actionStatus);
         if (dataObject.getActionStatusId() == null) {
@@ -186,6 +191,17 @@ public class AiCapabilityRepositoryImpl implements AiCapabilityRepository {
                 Boolean.TRUE.equals(dataObject.getAvailable()),
                 dataObject.getUnavailableReason(),
                 dataObject.getCheckedAt());
+    }
+
+    private List<AiActionStatus> toActionStatusDomainList(List<AiActionStatusDO> dataObjects) {
+        List<AiActionStatus> statuses = new ArrayList<>();
+        if (dataObjects == null) {
+            return statuses;
+        }
+        for (AiActionStatusDO dataObject : dataObjects) {
+            statuses.add(toActionStatusDomain(dataObject));
+        }
+        return statuses;
     }
 
     private List<String> toStringList(String json) {

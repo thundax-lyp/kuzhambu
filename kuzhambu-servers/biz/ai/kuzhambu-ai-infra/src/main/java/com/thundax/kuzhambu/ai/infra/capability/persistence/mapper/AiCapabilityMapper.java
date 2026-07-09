@@ -43,6 +43,25 @@ public interface AiCapabilityMapper extends BaseMapper<AiCapabilityDO> {
     @Select("select * from ai_action_status where scope = #{scope} and capability = #{capability}")
     AiActionStatusDO selectActionStatus(String scope, String capability);
 
+    @Select(
+            """
+            <script>
+            select * from ai_action_status
+            where 1 = 1
+            <if test="scope != null and scope != ''">
+                and scope = #{scope}
+            </if>
+            <if test="capability != null and capability != ''">
+                and capability = #{capability}
+            </if>
+            <if test="available != null">
+                and available = #{available}
+            </if>
+            order by scope asc, capability asc
+            </script>
+            """)
+    List<AiActionStatusDO> selectActionStatuses(String scope, String capability, Boolean available);
+
     @Insert(
             """
             insert into ai_action_status

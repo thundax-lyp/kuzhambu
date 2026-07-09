@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ai-action-status-query`：补齐 AI 动作状态批量读取能力
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-ADMIN-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-domain/src/main/java/com/thundax/kuzhambu/ai/domain/capability/repository/AiCapabilityRepository.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/capability/persistence/mapper/AiCapabilityMapper.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/capability/repository/impl/AiCapabilityRepositoryImpl.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/test/java/com/thundax/kuzhambu/ai/infra/capability/repository/impl/AiCapabilityRepositoryIT.java`
-    - 处理动作：补齐按 `scope`、`capability`、`available` 查询 `ai_action_status` 列表的能力。
-    - 验收点：动作状态列表可按三个筛选条件读取，且不新增数据库表字段。
-    - 重要度：9/10
-
 - [ ] `ai-action-status-admin-api`：暴露 AI 动作状态批量读取接口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-ADMIN-GOVERNANCE.md`
