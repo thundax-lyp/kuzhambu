@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics backend final validation`：运行 Classics 后端最终验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-TAIL-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-domain`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application`、`kuzhambu-servers/biz/classics/kuzhambu-classics-infra`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface`
-    - 处理动作：同步 `origin/main` 后执行 Classics 后端 Maven formatter、Spotless、Checkstyle 和受影响模块测试。
-    - 验收点：后端格式化、静态检查和测试均通过，失败项已修复或明确记录阻塞原因。
-    - 重要度：10/10
-
 - [ ] `admin-web classics final validation`：运行 Classics 管理台最终验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-TAIL-CLOSURE.md`
