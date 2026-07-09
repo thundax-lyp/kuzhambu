@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `DISCOVERY-QUALITY-001`：确认 Discovery 搜索运行质量 RUNBOOK 与固定数据
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QUALITY-SMOKE.md`
-    - 范围对象：`docs/30-designs/RUNBOOK-DISCOVERY-QUALITY-SMOKE.md`
-    - 处理动作：审核并锁定预发环境、固定测试数据、provider 预检、ES green 门槛和证据归档口径
-    - 验收点：RUNBOOK 可直接执行，且不包含中间状态、Portal 登录依赖或本地环境作为最终证据来源
-    - 重要度：9/10
-
 - [ ] `DISCOVERY-QUALITY-002`：对齐 Discovery Search 点击日志 schema
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-DISCOVERY-QUALITY-SMOKE.md`
