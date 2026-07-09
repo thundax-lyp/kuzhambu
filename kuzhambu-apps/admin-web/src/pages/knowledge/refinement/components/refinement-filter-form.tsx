@@ -1,4 +1,5 @@
 import { Button, Form, Input, Select } from "antd";
+import { useEffect } from "react";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { RefinementTaskPageQuery } from "../refinement-types";
 
@@ -13,8 +14,19 @@ export const RefinementFilterForm = ({
     value,
     onChange
 }: RefinementFilterFormProps) => {
+    const [form] = Form.useForm<RefinementTaskPageQuery>();
+    const resetValues: RefinementTaskPageQuery = {
+        pageNo: 1,
+        pageSize: value.pageSize
+    };
+
+    useEffect(() => {
+        form.setFieldsValue(value);
+    }, [form, value]);
+
     return (
         <Form
+            form={form}
             layout="inline"
             initialValues={value}
             onFinish={(values) =>
@@ -58,12 +70,15 @@ export const RefinementFilterForm = ({
                         筛选
                     </Button>
                     <Button
-                        onClick={() =>
-                            onChange({
-                                pageNo: 1,
-                                pageSize: value.pageSize
-                            })
-                        }
+                        onClick={() => {
+                            form.setFieldsValue({
+                                taskType: undefined,
+                                sourceCategoryCode: undefined,
+                                sourceContentType: undefined,
+                                status: undefined
+                            });
+                            onChange(resetValues);
+                        }}
                     >
                         重置
                     </Button>
