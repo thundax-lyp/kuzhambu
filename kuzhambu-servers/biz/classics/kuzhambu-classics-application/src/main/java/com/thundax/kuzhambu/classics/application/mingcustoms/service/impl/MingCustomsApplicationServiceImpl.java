@@ -19,6 +19,7 @@ import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsV
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordCloudItem;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordId;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsTagCloudItem;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.repository.MingCustomsRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
@@ -67,13 +68,12 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         if (hasPermissionContext(query) && !canView(query.getOperatorPermissions())) {
             return PageResult.of(page.getPageNo(), page.getPageSize(), 0, List.of());
         }
+        MingCustomsVisibility visibility = resolveReadableVisibility(query);
         return repository.page(
                 query == null ? null : query.getCategory(),
                 query == null ? null : query.getKeyword(),
                 query == null ? null : query.getTagName(),
-                query == null || query.getVisibility() == null
-                        ? null
-                        : query.getVisibility().value(),
+                visibility == null ? null : visibility.value(),
                 query == null ? SortDirection.ASC : query.getSortDirection(),
                 page.getPageNo(),
                 page.getPageSize());
@@ -278,6 +278,18 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         return repository.listKeywordCloud(visibility);
     }
 
+    @Override
+    public List<MingCustomsTagCloudItem> listTagCloud(MingCustomsPageQuery query) {
+        if (hasPermissionContext(query) && !canView(query.getOperatorPermissions())) {
+            return List.of();
+        }
+        MingCustomsVisibility visibility = resolveReadableVisibility(query);
+        return repository.listTagCloud(
+                query == null ? null : query.getCategory(),
+                query == null ? null : query.getKeyword(),
+                visibility == null ? null : visibility.value());
+    }
+
     private void updatePriorityOrThrow(MingCustomsKeywordId id, int priority) {
         MingCustomsKeyword keyword = new MingCustomsKeyword();
         keyword.setId(id);
@@ -376,8 +388,22 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         return ClassicsContentPermissionSupport.canView(ClassicsContentType.MING_CUSTOMS, operatorPermissions);
     }
 
+    private static boolean canViewPrivate(Set<String> operatorPermissions) {
+        return ClassicsContentPermissionSupport.canViewPrivate(ClassicsContentType.MING_CUSTOMS, operatorPermissions);
+    }
+
     private static boolean canEdit(Set<String> operatorPermissions) {
         return ClassicsContentPermissionSupport.canEdit(ClassicsContentType.MING_CUSTOMS, operatorPermissions);
+    }
+
+    private static MingCustomsVisibility resolveReadableVisibility(MingCustomsPageQuery query) {
+        if (query == null) {
+            return null;
+        }
+        if (!hasPermissionContext(query) || canViewPrivate(query.getOperatorPermissions())) {
+            return query.getVisibility();
+        }
+        return MingCustomsVisibility.PUBLIC;
     }
 
     private static BizException permissionDenied() {

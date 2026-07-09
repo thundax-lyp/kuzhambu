@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustoms
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordCloudItem;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordId;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsTagCloudItem;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.util.List;
@@ -43,4 +44,6 @@ public interface MingCustomsApplicationService {
     void deleteKeyword(MingCustomsKeywordId id);
 
     List<MingCustomsKeywordCloudItem> listKeywordCloud(String visibility);
+
+    List<MingCustomsTagCloudItem> listTagCloud(MingCustomsPageQuery query);
 }

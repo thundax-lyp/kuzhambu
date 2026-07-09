@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics mingcustoms application query`：补齐明代习俗标签筛选查询模型和权限收敛
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-TAIL-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/content/support/ClassicsContentPermissionSupport.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/mingcustoms/query/MingCustomsPageQuery.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/mingcustoms/service/MingCustomsApplicationService.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/main/java/com/thundax/kuzhambu/classics/application/mingcustoms/service/impl/MingCustomsApplicationServiceImpl.java`
-    - 处理动作：新增 `tagId/tagNameSnapshot` 查询字段并让明代习俗列表和标签云复用同一私有内容可见性收敛逻辑。
-    - 验收点：无私有查看能力时列表和标签云均排除私有习俗，有私有查看能力时 `visibility` 按请求生效。
-    - 重要度：10/10
-
 - [ ] `classics mingcustoms repository tag cloud`：实现明代习俗统一标签云仓储口径
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-TAIL-CLOSURE.md`

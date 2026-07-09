@@ -12,6 +12,7 @@ import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustoms
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordCloudItem;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordId;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsTagCloudItem;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.repository.MingCustomsRepository;
 import com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.assembler.MingCustomsPersistenceAssembler;
 import com.thundax.kuzhambu.classics.infra.mingcustoms.persistence.dataobject.MingCustomsEntryDO;
@@ -187,6 +188,11 @@ public class MingCustomsRepositoryImpl implements MingCustomsRepository {
         return keywordMapper.selectMaps(wrapper).stream()
                 .map(MingCustomsRepositoryImpl::toKeywordCloudItem)
                 .toList();
+    }
+
+    @Override
+    public List<MingCustomsTagCloudItem> listTagCloud(String category, String keyword, String visibility) {
+        return List.of();
     }
 
     private static MingCustomsKeywordCloudItem toKeywordCloudItem(Map<String, Object> row) {
