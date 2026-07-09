@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web classics ai task buttons`：补齐王圻和明代习俗 AI 标签与问答任务入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-TAIL-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common/ai-refinement-task-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/common/ai-refinement-task-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/wangqi/wangqi-page.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/ming-customs/ming-customs-page.tsx`
-    - 处理动作：在王圻和明代习俗详情的 `AI 精修任务` 卡片新增 `创建标签任务` 和 `创建问答任务` 并统一 `summary/tags/qa` payload 与按钮 loading。
-    - 验收点：三个按钮分别创建 `summary/tags/qa` 任务，成功后刷新任务列表，空正文和用户信息未加载时不发请求。
-    - 重要度：10/10
-
 - [ ] `admin-web classics ai task tests`：补齐王圻和明代习俗 AI 任务入口前端测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-TAIL-CLOSURE.md`
