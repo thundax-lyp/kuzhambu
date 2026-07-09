@@ -11,6 +11,7 @@ import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportDetailResult;
+import com.thundax.kuzhambu.operations.application.report.result.OperationsReportDownloadResult;
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportGenerateResult;
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportPageResult;
 import com.thundax.kuzhambu.operations.application.report.service.ReportApplicationService;
@@ -18,10 +19,13 @@ import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.request.OperationsReportDetailRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.request.OperationsReportGenerateRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.request.OperationsReportPageRequest;
+import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -48,10 +52,18 @@ class OperationsReportAdminControllerTest {
                 "detail",
                 "operations:report:view",
                 OperationsReportDetailRequest.class);
+        assertGetMapping(
+                OperationsReportAdminController.class,
+                "content",
+                "{reportId}/content",
+                "operations:report:view",
+                Long.class,
+                Boolean.class,
+                jakarta.servlet.http.HttpServletResponse.class);
     }
 
     @Test
-    void endpointsShouldDelegateToApplicationService() {
+    void endpointsShouldDelegateToApplicationService() throws Exception {
         ReportApplicationService service = mock(ReportApplicationService.class);
         OperationsReportAdminController controller = new OperationsReportAdminController(service);
         when(service.generate(any())).thenReturn(new OperationsReportGenerateResult(ReportId.of(9001L), "PENDING"));
@@ -90,6 +102,15 @@ class OperationsReportAdminControllerTest {
                         1001L,
                         new Date(1_718_086_500_000L),
                         new Date(1_718_086_600_000L)));
+        when(service.download(any()))
+                .thenReturn(new OperationsReportDownloadResult(
+                        ReportId.of(9001L),
+                        "PDF",
+                        "weekly-report.pdf",
+                        "application/pdf",
+                        11L,
+                        "storage-report.pdf",
+                        new ByteArrayInputStream("pdf-content".getBytes())));
 
         OperationsReportGenerateRequest generateRequest = new OperationsReportGenerateRequest();
         generateRequest.setReportType("WEEKLY");
@@ -116,6 +137,15 @@ class OperationsReportAdminControllerTest {
         assertEquals(9001L, detailResponse.getReportId());
         assertEquals("req-1", detailResponse.getRequestId());
 
+        MockHttpServletResponse contentResponse = new MockHttpServletResponse();
+        controller.content(9001L, true, contentResponse);
+        assertEquals("application/pdf", contentResponse.getContentType());
+        assertEquals(11, contentResponse.getContentLength());
+        assertEquals("pdf-content", contentResponse.getContentAsString());
+        assertEquals(
+                "attachment; filename=\"weekly-report.pdf\"; filename*=UTF-8''weekly-report.pdf",
+                contentResponse.getHeader("Content-Disposition"));
+
         verify(service)
                 .generate(argThat(command -> command != null
                         && "WEEKLY".equals(command.getReportType())
@@ -132,6 +162,10 @@ class OperationsReportAdminControllerTest {
                 .detail(argThat(query -> query != null
                         && query.getReportId() != null
                         && query.getReportId().value().equals(9001L)));
+        verify(service)
+                .download(argThat(query -> query != null
+                        && query.getReportId() != null
+                        && query.getReportId().value().equals(9001L)));
     }
 
     private void assertRequestMapping(Class<?> type, String expectedPath) {
@@ -144,6 +178,16 @@ class OperationsReportAdminControllerTest {
             throws Exception {
         Method method = type.getDeclaredMethod(methodName, parameters);
         PostMapping mapping = method.getAnnotation(PostMapping.class);
+        assertEquals(expectedPath, mapping.value()[0]);
+        HasPermission permission = method.getAnnotation(HasPermission.class);
+        assertEquals(List.of(expectedPermission), List.of(permission.value()));
+    }
+
+    private void assertGetMapping(
+            Class<?> type, String methodName, String expectedPath, String expectedPermission, Class<?>... parameters)
+            throws Exception {
+        Method method = type.getDeclaredMethod(methodName, parameters);
+        GetMapping mapping = method.getAnnotation(GetMapping.class);
         assertEquals(expectedPath, mapping.value()[0]);
         HasPermission permission = method.getAnnotation(HasPermission.class);
         assertEquals(List.of(expectedPermission), List.of(permission.value()));

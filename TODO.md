@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `main`：06 同步 main 分支代码并处理冲突
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：当前分支 `feat/classics-sancai-image-gen`、上游 `origin/main`
-    - 处理动作：实现和首轮验证通过后同步最新 `main` 分支代码，并按任务范围处理可能冲突。
-    - 验收点：当前分支包含最新 `origin/main`，冲突已解决，且没有引入任务外变更。
-    - 重要度：8/10
-
 - [ ] `kuzhambu-workers`：07 同步 main 后复跑最终验证
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`

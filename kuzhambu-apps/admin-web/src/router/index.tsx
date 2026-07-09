@@ -17,6 +17,7 @@ import { BackupRestorePage } from "../pages/operations/backup-restore/backup-res
 import { CleanupPage } from "../pages/operations/cleanup/cleanup-page";
 import { OperationsDashboardPage } from "../pages/operations/dashboard/dashboard-page";
 import { OperationsHealthPage } from "../pages/operations/health/health-page";
+import { OperationsReportsPage } from "../pages/operations/reports/reports-page";
 import { OperationsTasksPage } from "../pages/operations/tasks/tasks-page";
 import { RefinementPage } from "../pages/knowledge/refinement/refinement-page";
 import { TaxonomyPage } from "../pages/knowledge/taxonomy/taxonomy-page";
@@ -146,6 +147,10 @@ const router = createBrowserRouter(
                         {
                             path: "operations/tasks",
                             element: <OperationsTasksPage />
+                        },
+                        {
+                            path: "operations/reports",
+                            element: <OperationsReportsPage />
                         },
                         {
                             path: "operations/backup-restore",

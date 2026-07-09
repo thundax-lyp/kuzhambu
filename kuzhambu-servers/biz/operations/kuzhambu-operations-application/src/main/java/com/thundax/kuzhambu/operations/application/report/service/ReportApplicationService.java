@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.operations.application.report.command.OperationsRepo
 import com.thundax.kuzhambu.operations.application.report.query.OperationsReportDetailQuery;
 import com.thundax.kuzhambu.operations.application.report.query.OperationsReportPageQuery;
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportDetailResult;
+import com.thundax.kuzhambu.operations.application.report.result.OperationsReportDownloadResult;
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportGenerateResult;
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportPageResult;
 
@@ -16,4 +17,6 @@ public interface ReportApplicationService {
     PageResult<OperationsReportPageResult> page(OperationsReportPageQuery query, PageQuery pageQuery);
 
     OperationsReportDetailResult detail(OperationsReportDetailQuery query);
+
+    OperationsReportDownloadResult download(OperationsReportDetailQuery query);
 }
