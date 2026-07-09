@@ -3,7 +3,9 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-li
 import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
 import { queryClient } from "@/query/query-client";
+import { SancaiEntryList } from "./components/sancai-entry-list";
 import { SancaiPage } from "./sancai-page";
+import type { SancaiEntryRecord } from "./sancai-types";
 
 const { mockSancaiEntryPanel } = vi.hoisted(() => ({
     mockSancaiEntryPanel: (props: {
@@ -255,6 +257,48 @@ const installFetchMock = () => {
     });
 };
 
+const buildEntry = (id: number, title: string): SancaiEntryRecord =>
+    ({
+        id,
+        volumeId: 101,
+        title,
+        originalText: `${title}原文`,
+        translationText: `${title}译文`,
+        summary: `${title}摘要`,
+        lifecycleStatus: "PUBLISHED",
+        visibility: "PUBLIC",
+        translationStatus: "READY",
+        imageStatus: "READY",
+        visualAssetStatus: "READY",
+        refinementStatus: "COMPLETE",
+        currentVersionId: 9001,
+        currentVersionNo: 1,
+        currentVersionedAt: "2026-06-20T01:00:00.000+08:00",
+        contentUpdatedAt: "2026-06-20T01:00:00.000+08:00",
+        versionDirty: false
+    }) as SancaiEntryRecord;
+
+const renderEntryList = (entries: SancaiEntryRecord[]) =>
+    render(
+        <QueryClientProvider client={queryClient}>
+            <AntdApp>
+                <SancaiEntryList
+                    entries={entries}
+                    isLoading={false}
+                    volumes={[{ id: 101, title: "天文卷一" } as never]}
+                    onBatchCandidateGovernance={vi.fn()}
+                    onChangeLifecycleStatus={vi.fn()}
+                    onDelete={vi.fn()}
+                    onExport={vi.fn()}
+                    onShare={vi.fn()}
+                    onShowcase={vi.fn()}
+                    onSort={vi.fn()}
+                    onView={vi.fn()}
+                />
+            </AntdApp>
+        </QueryClientProvider>
+    );
+
 describe("SancaiPage", () => {
     beforeEach(() => {
         queryClient.clear();
@@ -418,5 +462,49 @@ describe("SancaiPage", () => {
             status: "PUBLIC_ONLY",
             privateConfirmed: false
         });
+    }, 30000);
+
+    it("keeps entry batch selection scoped to the current page entries", async () => {
+        const user = userEvent.setup();
+        const firstPageEntries = [buildEntry(3001, "天地")];
+        const secondPageEntries = [buildEntry(3002, "山川")];
+
+        const { rerender } = renderEntryList(firstPageEntries);
+        const table = await screen.findByLabelText("三才图会条目表格");
+
+        expect(screen.getByText("当前页已选 0 条")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "批量图片理解" })).toBeDisabled();
+
+        const rowCheckbox = within(table).getAllByRole("checkbox")[1];
+        await user.click(rowCheckbox.closest("label") ?? rowCheckbox);
+
+        expect(await screen.findByText("当前页已选 1 条")).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "批量图片理解" })).not.toBeDisabled();
+
+        rerender(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <SancaiEntryList
+                        entries={secondPageEntries}
+                        isLoading={false}
+                        volumes={[{ id: 101, title: "天文卷一" } as never]}
+                        onBatchCandidateGovernance={vi.fn()}
+                        onChangeLifecycleStatus={vi.fn()}
+                        onDelete={vi.fn()}
+                        onExport={vi.fn()}
+                        onShare={vi.fn()}
+                        onShowcase={vi.fn()}
+                        onSort={vi.fn()}
+                        onView={vi.fn()}
+                    />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText("当前页已选 0 条")).toBeInTheDocument();
+        });
+        expect(screen.getByRole("button", { name: "批量图片理解" })).toBeDisabled();
+        expect(screen.getByText("山川")).toBeInTheDocument();
     }, 30000);
 });

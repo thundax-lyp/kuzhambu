@@ -21,6 +21,7 @@ import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustoms
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsContentFormat;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsTagCloudItem;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.repository.MingCustomsRepository;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
@@ -88,7 +89,39 @@ class MingCustomsApplicationServiceImplTest {
 
         assertEquals(0, result.getTotalCount());
         assertEquals(0, result.getRecords().size());
-        verify(repository, never()).page(any(), any(), any(), any(), any(), anyInt(), anyInt());
+        verify(repository, never()).page(any(), any(), any(), any(), any(), any(), any(), anyInt(), anyInt());
+    }
+
+    @Test
+    void tagCloudShouldReturnEmptyWhenPermissionContextLacksMingCustomsView() {
+        MingCustomsRepository repository = mock(MingCustomsRepository.class);
+        MingCustomsApplicationServiceImpl service = new MingCustomsApplicationServiceImpl(repository, null, null, null);
+        MingCustomsPageQuery query = new MingCustomsPageQuery();
+        query.setOperatorPermissions(Set.of("classics:content:view"));
+
+        List<MingCustomsTagCloudItem> result = service.listTagCloud(query);
+
+        assertEquals(0, result.size());
+        verify(repository, never()).listTagCloud(any(), any(), any());
+    }
+
+    @Test
+    void tagCloudShouldResolveVisibilityBeforeRepositoryQuery() {
+        MingCustomsRepository repository = mock(MingCustomsRepository.class);
+        MingCustomsApplicationServiceImpl service = new MingCustomsApplicationServiceImpl(repository, null, null, null);
+        MingCustomsPageQuery query = new MingCustomsPageQuery();
+        query.setCategory("礼俗");
+        query.setKeyword("祭祀");
+        query.setOperatorPermissions(Set.of("classics:mingcustoms:view"));
+        when(repository.listTagCloud("礼俗", "祭祀", null))
+                .thenReturn(List.of(new MingCustomsTagCloudItem(7001L, "祭祀", 2L)));
+
+        List<MingCustomsTagCloudItem> result = service.listTagCloud(query);
+
+        assertEquals(1, result.size());
+        assertEquals(7001L, result.get(0).getTagId());
+        assertEquals("祭祀", result.get(0).getTagNameSnapshot());
+        verify(repository).listTagCloud("礼俗", "祭祀", null);
     }
 
     @Test

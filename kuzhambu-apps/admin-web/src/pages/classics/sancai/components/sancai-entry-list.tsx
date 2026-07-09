@@ -157,7 +157,10 @@ export const SancaiEntryList = ({
 }: SancaiEntryListProps) => {
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
-    const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([]);
+    const [selectedRowsState, setSelectedRowsState] = useState<{
+        keys: number[];
+        scopeKey: string;
+    }>({ keys: [], scopeKey: "" });
     const [activeBatchId, setActiveBatchId] = useState<number | null>(null);
     const [batchShareResult, setBatchShareResult] = useState<ClassicsBatchOperationRecord | null>(
         null
@@ -233,6 +236,17 @@ export const SancaiEntryList = ({
         }
     });
 
+    const currentPageSelectionScopeKey = useMemo(
+        () => entries.map((entry) => entry.id).join("|"),
+        [entries]
+    );
+    const selectedRowKeys = useMemo(
+        () =>
+            selectedRowsState.scopeKey === currentPageSelectionScopeKey
+                ? selectedRowsState.keys
+                : [],
+        [currentPageSelectionScopeKey, selectedRowsState.keys, selectedRowsState.scopeKey]
+    );
     const selectedEntries = useMemo(
         () => entries.filter((entry) => selectedRowKeys.includes(entry.id)),
         [entries, selectedRowKeys]
@@ -244,7 +258,7 @@ export const SancaiEntryList = ({
 
     const startBatch = (capability: "image_analysis" | "visual") => {
         if (!selectedEntries.length) {
-            messageApi.warning("请先选择要批量处理的条目");
+            messageApi.warning("请先选择当前页要批量处理的条目");
             return;
         }
         createBatchMutation.mutate({
@@ -261,7 +275,7 @@ export const SancaiEntryList = ({
             return;
         }
         if (!selectedEntries.length) {
-            messageApi.warning("请先选择要批量分享的条目");
+            messageApi.warning("请先选择当前页要批量分享的条目");
             return;
         }
         createBatchShareMutation.mutate({
@@ -282,7 +296,7 @@ export const SancaiEntryList = ({
             return;
         }
         if (!selectedEntries.length) {
-            messageApi.warning("请先选择要批量修改可见性的条目");
+            messageApi.warning("请先选择当前页要批量修改可见性的条目");
             return;
         }
         changeVisibilityBatchMutation.mutate({
@@ -298,7 +312,7 @@ export const SancaiEntryList = ({
             return;
         }
         if (!selectedEntries.length) {
-            messageApi.warning("请先选择要批量治理的条目");
+            messageApi.warning("请先选择当前页要批量治理的条目");
             return;
         }
         onBatchCandidateGovernance(selectedEntries);
@@ -413,6 +427,7 @@ export const SancaiEntryList = ({
                 style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}
             >
                 <KuzhambuSpace wrap>
+                    <Text type="secondary">当前页已选 {selectedEntries.length} 条</Text>
                     <Button
                         disabled={!selectedEntries.length}
                         loading={createBatchMutation.isPending}
@@ -525,7 +540,11 @@ export const SancaiEntryList = ({
                 }}
                 rowSelection={{
                     selectedRowKeys,
-                    onChange: (keys) => setSelectedRowKeys(keys.map((key) => Number(key)))
+                    onChange: (keys) =>
+                        setSelectedRowsState({
+                            keys: keys.map((key) => Number(key)),
+                            scopeKey: currentPageSelectionScopeKey
+                        })
                 }}
                 rowKey="id"
                 size="middle"

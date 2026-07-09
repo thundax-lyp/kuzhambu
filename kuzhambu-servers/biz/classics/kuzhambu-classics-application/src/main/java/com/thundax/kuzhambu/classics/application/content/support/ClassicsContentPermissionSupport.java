@@ -29,6 +29,10 @@ public final class ClassicsContentPermissionSupport {
         return hasPermission(permissions, viewPermission(contentType));
     }
 
+    public static boolean canViewPrivate(ClassicsContentType contentType, Set<String> permissions) {
+        return canView(contentType, permissions);
+    }
+
     public static boolean canEdit(ClassicsContentType contentType, Set<String> permissions) {
         return hasPermission(permissions, editPermission(contentType));
     }

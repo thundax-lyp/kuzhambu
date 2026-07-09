@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `6 同步 main 分支`：吸收最新 main 代码
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：当前分支 `feat/operations-reports-admin`、上游分支 `origin/main`
-    - 处理动作：在功能实现和测试更新完成后同步最新 `main` 分支代码。
-    - 验收点：当前分支包含最新 `origin/main`，同步后没有未解决冲突或无关回退。
-    - 重要度：10/10
-
 - [ ] `7 验证后端前端`：执行 Operations 报表闭环验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORTS-ADMIN.md`
