@@ -13,7 +13,7 @@
 - GitHub Pull Request workflow
 - PR workflow 显式验证步骤
 - PR 标题和描述要求
-- 文档和 RUNBOOK 收口要求
+- 文档、TODO 和 RUNBOOK 收口要求
 - 阶段性交付的业务完成点、验证证据、未覆盖项和跨域影响说明
 
 不在范围内：
@@ -27,7 +27,7 @@
 
 Commit 是工程判断记录，可以表示阶段任务中的中间判断。
 
-PR 是阶段性交付边界。PR 合并前必须完整、可编译、可测试，并完成文档和 RUNBOOK 收口。
+PR 是阶段性交付边界。PR 合并前必须完整、可编译、可测试，并完成文档、TODO 和 RUNBOOK 收口。
 
 PR 合并前固定执行 `.github/workflows/pr-verify.yml`。workflow 必须显式声明治理文件检查，并按变更目录触发后端 Maven 验证、前端 package manifest 校验、前端 Prettier 检查、前端 ESLint 检查、前端 Vitest、worker manifest 校验、workers ruff 检查和 workers pytest no-capture 验证；不得用一个 shell 脚本隐藏 PR 必过项。
 
@@ -36,6 +36,7 @@ PR 合并前固定执行 `.github/workflows/pr-verify.yml`。workflow 必须显�
 - `.github/workflows/pr-verify.yml`: GitHub PR 触发入口。
 - `scripts/verify-all.sh`: 本地辅助 verify 编排入口，不作为 PR workflow 的必过入口。
 - `.github/pull_request_template.md`: PR 描述模板。
+- `docs/00-governance/TODO-RULES.md`: TODO 清理、收窄和 PR 收口规则。
 
 ## 5. Global Constraints
 
@@ -43,9 +44,9 @@ PR 合并前固定执行 `.github/workflows/pr-verify.yml`。workflow 必须显�
 - PR 合并前必须通过统一 verify workflow。
 - PR 标题固定使用 `Type(scope): 中文说明`。
 - PR 描述固定使用 `.github/pull_request_template.md`。
-- PR 必须完成阶段任务对应的文档和 RUNBOOK 收口。
+- PR 必须完成阶段任务对应的文档、TODO 和 RUNBOOK 收口；TODO 清理或收窄的具体规则以 `TODO-RULES.md` 为准。
 - PR 应尽量只承载一个可验收业务闭环；如果同一 PR 跨多个业务域，必须在 PR 描述中说明不可拆分原因、跨域影响和额外验证范围。
-- PR 必须明确记录业务完成点、验证证据、未覆盖项、跨域影响、文档与 RUNBOOK 收口状态。
+- PR 必须明确记录业务完成点、验证证据、未覆盖项、跨域影响、文档、TODO 与 RUNBOOK 收口状态。
 - `PR-RULES.md` 增加 PR 描述必填信息时，必须同步更新 `.github/pull_request_template.md`。
 - workflow 必须直接展示 PR 必过验证步骤；新增项目验证能力时必须同步接入 `.github/workflows/pr-verify.yml`。
 - 本地辅助脚本可以复用同等验证能力，但不得成为 PR workflow 唯一可见入口。
@@ -71,7 +72,7 @@ PR 描述固定包含：
 - `Verification Evidence`: 记录已运行验证命令、结果和人工或运行时冒烟证据；未自动化验证不得伪装为 workflow 必过项。
 - `Not Covered`: 说明本 PR 未覆盖、未自动化或刻意不纳入的事项；没有未覆盖项时明确写 `无`。
 - `Cross-domain Impact`: 说明是否影响其他业务域、facade、接口、权限、菜单、配置、Storage owner、AI final-state、Workers usecase、Operations summary 等跨域契约。
-- `Documentation And RUNBOOK Closure`: 确认需求、接口、readiness、治理文档是否同步；确认临时 RUNBOOK 已删除，或证据已沉淀到指定 readiness/evidence 文档。
+- `Documentation, TODO And RUNBOOK Closure`: 确认需求、接口、readiness、治理文档是否同步；确认相关 TODO 已按 `TODO-RULES.md` 清理或收窄；确认临时 RUNBOOK 已删除，或证据已沉淀到指定 readiness/evidence 文档。
 - `Risks`: 说明剩余风险、运行时依赖或上线前仍需关注的事项。
 
 ## 7. Key Flow
