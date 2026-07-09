@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `01 kuzhambu-workers AI model config`：补齐模型配置校验和错误归一化
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-REAL-AI-LOOP.md`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/ai/model_adapters.py`、`kuzhambu-workers/src/kuzhambu_workers/ai/errors.py`、`kuzhambu-workers/src/kuzhambu_workers/core/errors.py`、`kuzhambu-workers/tests/test_ai_error_mapping.py`、`kuzhambu-workers/tests/test_prompt_messages.py`
-    - 处理动作：实现 OpenAI-compatible invocation 校验和模型错误映射。
-    - 验收点：`apiSource`、`baseUrl`、`apiKey`、`modelName`、`parameters` 校验稳定，错误 code、`retryable` 和 redaction 测试通过。
-    - 重要度：10/10
-
 - [ ] `02 kuzhambu-workers OpenAI-compatible sync client`：实现同步 `/chat/completions` 调用
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-REAL-AI-LOOP.md`

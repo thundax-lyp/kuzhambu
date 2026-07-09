@@ -35,6 +35,7 @@ def test_model_adapter_uses_request_model_config_only() -> None:
 
     assert invocation.model_name == "model"
     assert invocation.base_url == "https://model.example/v1"
+    assert invocation.chat_completions_url == "https://model.example/v1/chat/completions"
     assert invocation.parameters == {"temperature": 0.2}
     assert invocation.timeout_ms == 60000
     assert invocation.supports_streaming is True
