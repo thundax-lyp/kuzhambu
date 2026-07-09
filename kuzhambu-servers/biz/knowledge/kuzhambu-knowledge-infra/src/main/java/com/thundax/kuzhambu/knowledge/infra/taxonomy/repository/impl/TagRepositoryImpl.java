@@ -156,10 +156,12 @@ public class TagRepositoryImpl implements TagRepository {
     private QueryWrapper<TagDO> buildQueryWrapper(
             String name, TagCategoryId categoryId, TagStatus status, TagSource source, TagReviewStatus reviewStatus) {
         QueryWrapper<TagDO> wrapper = new QueryWrapper<>();
+        String statusValue = status == null ? null : status.value();
+        String reviewStatusValue = reviewStatus == null ? null : reviewStatus.value();
         wrapper.eq(StringUtils.isNotBlank(name), "name", name)
                 .eq(categoryId != null, "category_id", TagCategoryIdCodec.toValue(categoryId))
-                .eq(status != null, "status", status.value())
-                .eq(reviewStatus != null, "review_status", reviewStatus.value())
+                .eq(statusValue != null, "status", statusValue)
+                .eq(reviewStatusValue != null, "review_status", reviewStatusValue)
                 .orderByDesc("created_at")
                 .orderByAsc("id");
         applySourceFilter(wrapper, source);

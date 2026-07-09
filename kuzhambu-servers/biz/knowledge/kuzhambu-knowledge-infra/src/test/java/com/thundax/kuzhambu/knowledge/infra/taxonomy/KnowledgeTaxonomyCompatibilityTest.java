@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.knowledge.infra.taxonomy;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -44,6 +46,17 @@ class KnowledgeTaxonomyCompatibilityTest {
         ArgumentCaptor<TagDO> captor = ArgumentCaptor.forClass(TagDO.class);
         verify(mapper).insert(captor.capture());
         assertEquals("AI_EXTRACTED", captor.getValue().getSource());
+    }
+
+    @Test
+    void getByNameShouldAllowEmptyOptionalFilters() {
+        TagMapper mapper = mock(TagMapper.class);
+        TagRepositoryImpl repository = new TagRepositoryImpl(mapper);
+
+        Tag tag = repository.getByName("礼制");
+
+        assertNull(tag);
+        verify(mapper).selectOne(any());
     }
 
     @Test
