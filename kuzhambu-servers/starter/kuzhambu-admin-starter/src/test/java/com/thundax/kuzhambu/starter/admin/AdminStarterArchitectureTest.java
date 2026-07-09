@@ -67,6 +67,7 @@ class AdminStarterArchitectureTest extends AbstractArchitectureTest {
                         "com.thundax.kuzhambu.ai.infra.model.persistence.mapper",
                         "com.thundax.kuzhambu.ai.infra.prompt.persistence.mapper",
                         "com.thundax.kuzhambu.ai.infra.refinement.persistence.mapper",
+                        "com.thundax.kuzhambu.discovery.infra.qa.persistence.mapper",
                         "com.thundax.kuzhambu.discovery.infra.search.persistence.mapper");
     }
 
