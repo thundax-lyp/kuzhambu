@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `01-admin-web-vitest`：修复 Admin Web 全量 Vitest 超时
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-RUNTIME-VALIDATION-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/app.test.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/graph-extraction-page.test.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.test.tsx`、`kuzhambu-apps/admin-web/src/test/setup.ts`
-    - 处理动作：修复菜单权限、图谱抽取页面和 Sancai 面板测试中的异步等待与 mock 状态问题
-    - 验收点：`cd kuzhambu-apps && pnpm --filter ./admin-web run test` 通过
-    - 重要度：10/10
-
 - [ ] `02-graph-extraction-e2e`：补齐图谱抽取 Playwright 冒烟
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-RUNTIME-VALIDATION-CLOSURE.md`
