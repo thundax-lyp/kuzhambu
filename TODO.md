@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `06 kuzhambu-workers AI e2e`：补齐端到端和契约回归
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-REAL-AI-LOOP.md`
-    - 范围对象：`kuzhambu-workers/tests/test_worker_e2e_ai.py`、`kuzhambu-workers/tests/test_worker_e2e_ai_usecase_classics.py`、`kuzhambu-workers/tests/test_worker_e2e_ai_usecase_discovery.py`、`kuzhambu-workers/tests/test_worker_e2e_ai_usecase_security.py`、`kuzhambu-workers/tests/test_openapi.py`
-    - 处理动作：用 mocked provider 锁定 AI route、usecase route、SSE、security 和 OpenAPI 不回归。
-    - 验收点：E2E 不依赖真实 API Key 或外网，HMAC、path allowlist 和 OpenAPI usecase path 测试通过。
-    - 重要度：9/10
-
 - [ ] `07 feat/workers-real-ai-loop`：同步 main 分支代码
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`

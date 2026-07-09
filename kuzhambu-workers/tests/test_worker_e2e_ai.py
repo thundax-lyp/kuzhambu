@@ -3,13 +3,35 @@ from time import time
 
 from fastapi.testclient import TestClient
 
+from kuzhambu_workers.ai.openai_compatible import (
+    OpenAiChatCompletionChunk,
+    OpenAiChatCompletionResult,
+)
 from kuzhambu_workers.core.security import sign_request
 from kuzhambu_workers.main import app
+from kuzhambu_workers.schemas.common import UsageSummary
 
 
 def test_worker_e2e_ai_invoke_and_stream(monkeypatch) -> None:
     monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
     monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
+    monkeypatch.setattr(
+        "kuzhambu_workers.ai.graphs.text.invoke_chat_completion",
+        lambda request: _model_result("summary"),
+    )
+    monkeypatch.setattr(
+        "kuzhambu_workers.api.ai_routes.iter_chat_completion_chunks",
+        lambda request: iter(
+            [
+                OpenAiChatCompletionChunk(delta="answer", usage=None, finish_reason=None),
+                OpenAiChatCompletionChunk(
+                    delta="",
+                    usage=UsageSummary(latencyMs=12, inputTokens=3, outputTokens=4),
+                    finish_reason="stop",
+                ),
+            ]
+        ),
+    )
     client = TestClient(app)
     invoke_body = _body("summary", stream=False, operation="CLASSICS_SANCAI_SUMMARY")
 
@@ -34,6 +56,8 @@ def test_worker_e2e_ai_invoke_and_stream(monkeypatch) -> None:
 
     assert stream_response.status_code == 200
     assert "event: started" in stream_response.text
+    assert "event: delta" in stream_response.text
+    assert "event: usage" in stream_response.text
     assert "event: completed" in stream_response.text
     assert '"status":"SUCCEEDED"' in stream_response.text
 
@@ -76,3 +100,11 @@ def _headers(body: bytes, path: str) -> dict[str, str]:
         "X-Kuzhambu-Timestamp": timestamp,
         "X-Kuzhambu-Signature": signature,
     }
+
+
+def _model_result(content: str) -> OpenAiChatCompletionResult:
+    return OpenAiChatCompletionResult(
+        content=content,
+        usage=UsageSummary(latencyMs=12, inputTokens=3, outputTokens=4),
+        raw_finish_reason="stop",
+    )

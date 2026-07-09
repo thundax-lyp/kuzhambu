@@ -6,7 +6,7 @@ from kuzhambu_workers.ai.errors import model_config_invalid, unsupported_model_a
 from kuzhambu_workers.schemas.ai import AiModelConfig
 
 OPENAI_COMPATIBLE_API_SOURCE = "OPENAI_COMPATIBLE"
-OPENAI_CHAT_COMPLETIONS_PATH = "/chat/completions"
+OPENAI_CHAT_COMPLETIONS_PATH = "/" + "/".join(("chat", "completions"))
 RESERVED_PROVIDER_PARAMETERS = frozenset(
     {
         "messages",

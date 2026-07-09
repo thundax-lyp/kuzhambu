@@ -108,7 +108,7 @@ def delta_event(
         trace_id=trace_id,
         stage="model_stream",
         timestamp=timestamp,
-        delta=delta,
+        delta={"text": delta},
     )
 
 

@@ -9,7 +9,12 @@ from pydantic import ValidationError
 from kuzhambu_workers.ai.graph_registry import GraphRegistry
 from kuzhambu_workers.ai.openai_compatible import iter_chat_completion_chunks
 from kuzhambu_workers.core.config import load_settings
-from kuzhambu_workers.core.errors import WorkerError, WorkerErrorType, protocol_failure
+from kuzhambu_workers.core.errors import (
+    WorkerError,
+    WorkerErrorType,
+    protocol_failure,
+    unsupported_capability,
+)
 from kuzhambu_workers.core.security import verify_internal_request
 from kuzhambu_workers.schemas.ai import (
     AiInvokeRequest,
@@ -154,6 +159,8 @@ def stream_ai_graph(
         timestamp = _now()
         yield encode_sse(started_event(request.requestId, request.traceId, timestamp))
         try:
+            if request.capability.value == "image_gen":
+                raise unsupported_capability(request.capability.value)
             deltas: list[str] = []
             usage = UsageSummary()
             for chunk in iter_chat_completion_chunks(request):
@@ -271,6 +278,8 @@ def _worker_error_payload(exc: Exception) -> dict[str, Any]:
 
 def _failure_stage(exc: Exception) -> FailureStage:
     if not isinstance(exc, WorkerError):
+        return FailureStage.WORKER_RESULT
+    if exc.code.startswith("WORKER_RESULT"):
         return FailureStage.WORKER_RESULT
     if exc.error_type == WorkerErrorType.OUTPUT_FORMAT_FAILURE:
         return FailureStage.WORKER_RESULT
