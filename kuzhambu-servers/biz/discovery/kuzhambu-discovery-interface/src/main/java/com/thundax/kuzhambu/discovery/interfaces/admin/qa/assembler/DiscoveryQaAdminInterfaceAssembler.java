@@ -8,6 +8,7 @@ import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionExportResul
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSourceResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaTraceResult;
 import com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.response.DiscoveryQaAdminResponses;
+import com.thundax.kuzhambu.discovery.interfaces.common.DiscoveryInterfaceIdCodec;
 import java.util.List;
 
 public final class DiscoveryQaAdminInterfaceAssembler {
@@ -22,7 +23,7 @@ public final class DiscoveryQaAdminInterfaceAssembler {
             return null;
         }
         return DiscoveryQaAdminResponses.QaSessionDetailResponse.builder()
-                .sessionId(result.getSessionId())
+                .sessionId(DiscoveryInterfaceIdCodec.toStringValue(result.getSessionId()))
                 .ownerUserId(result.getOwnerUserId())
                 .title(result.getTitle())
                 .scope(result.getScope())
@@ -43,10 +44,10 @@ public final class DiscoveryQaAdminInterfaceAssembler {
             return null;
         }
         return DiscoveryQaAdminResponses.QaSessionExportResponse.builder()
-                .exportId(result.getExportId())
-                .sessionId(result.getSessionId())
+                .exportId(DiscoveryInterfaceIdCodec.toStringValue(result.getExportId()))
+                .sessionId(DiscoveryInterfaceIdCodec.toStringValue(result.getSessionId()))
                 .format(result.getFormat())
-                .storageObjectId(result.getStorageObjectId())
+                .storageObjectId(DiscoveryInterfaceIdCodec.toStringValue(result.getStorageObjectId()))
                 .exportStatus(result.getExportStatus())
                 .failureReason(result.getFailureReason())
                 .requestedAt(result.getRequestedAt())
@@ -62,7 +63,7 @@ public final class DiscoveryQaAdminInterfaceAssembler {
         }
         return results.stream()
                 .map(result -> DiscoveryQaAdminResponses.QaSourceResponse.builder()
-                        .sourceId(result.getSourceId())
+                        .sourceId(DiscoveryInterfaceIdCodec.toStringValue(result.getSourceId()))
                         .contentType(result.getContentType())
                         .contentId(result.getContentId())
                         .knowledgeBase(result.getKnowledgeBase())
@@ -81,8 +82,8 @@ public final class DiscoveryQaAdminInterfaceAssembler {
             return null;
         }
         return DiscoveryQaAdminResponses.QaTraceResponse.builder()
-                .traceId(result.getTraceId())
-                .messageId(result.getMessageId())
+                .traceId(DiscoveryInterfaceIdCodec.toStringValue(result.getTraceId()))
+                .messageId(DiscoveryInterfaceIdCodec.toStringValue(result.getMessageId()))
                 .rawQuestion(result.getRawQuestion())
                 .provider(result.getProvider())
                 .externalKnowledgeBaseId(result.getExternalKnowledgeBaseId())
@@ -92,7 +93,7 @@ public final class DiscoveryQaAdminInterfaceAssembler {
                 .latencyMs(result.getLatencyMs())
                 .failureReason(result.getFailureReason())
                 .raw(result.getRaw())
-                .aiCallId(result.getAiCallId())
+                .aiCallId(DiscoveryInterfaceIdCodec.toStringValue(result.getAiCallId()))
                 .aiStatus(result.getAiStatus())
                 .aiErrorType(result.getAiErrorType())
                 .aiErrorMessage(result.getAiErrorMessage())
@@ -142,8 +143,8 @@ public final class DiscoveryQaAdminInterfaceAssembler {
         }
         return results.stream()
                 .map(result -> DiscoveryQaAdminResponses.QaMessageResponse.builder()
-                        .messageId(result.getMessageId())
-                        .sessionId(result.getSessionId())
+                        .messageId(DiscoveryInterfaceIdCodec.toStringValue(result.getMessageId()))
+                        .sessionId(DiscoveryInterfaceIdCodec.toStringValue(result.getSessionId()))
                         .role(result.getRole())
                         .content(result.getContent())
                         .messageStatus(result.getMessageStatus())

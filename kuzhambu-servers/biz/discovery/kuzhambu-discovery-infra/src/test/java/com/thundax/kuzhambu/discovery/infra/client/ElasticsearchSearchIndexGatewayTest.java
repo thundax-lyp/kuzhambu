@@ -207,6 +207,34 @@ class ElasticsearchSearchIndexGatewayTest {
     }
 
     @Test
+    void searchShouldUseMatchCriteriaForChineseKeyword() {
+        DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
+        ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
+        @SuppressWarnings("unchecked")
+        SearchHits<DiscoverySearchDocument> searchHits = mock(SearchHits.class);
+        ArgumentCaptor<CriteriaQuery> queryCaptor = ArgumentCaptor.forClass(CriteriaQuery.class);
+        when(searchHits.getSearchHits()).thenReturn(List.of());
+        when(operations.search(
+                        queryCaptor.capture(),
+                        eq(DiscoverySearchDocument.class),
+                        any(org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.class)))
+                .thenReturn(searchHits);
+        ElasticsearchSearchIndexGateway gateway =
+                new ElasticsearchSearchIndexGateway(properties, operations, new DiscoverySearchDocumentAssembler());
+
+        gateway.search(new SearchKeyword("三才", "三才", "三才"), new SearchScope(), 1, 20);
+
+        Set<Criteria.OperationKey> operationKeys = flattenCriteria(
+                        queryCaptor.getValue().getCriteria())
+                .stream()
+                .flatMap(criteria -> criteria.getQueryCriteriaEntries().stream())
+                .map(Criteria.CriteriaEntry::getKey)
+                .collect(Collectors.toSet());
+        assertTrue(operationKeys.contains(Criteria.OperationKey.MATCHES));
+        assertTrue(!operationKeys.contains(Criteria.OperationKey.CONTAINS));
+    }
+
+    @Test
     void rebuildIndexShouldSaveAssembledDocuments() {
         DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
         ElasticsearchOperations operations = mock(ElasticsearchOperations.class);

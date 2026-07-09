@@ -15,6 +15,7 @@ import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 public final class DiscoverySearchPortalInterfaceAssembler {
 
@@ -39,8 +40,8 @@ public final class DiscoverySearchPortalInterfaceAssembler {
                 request.getPageSize() == null ? 20 : request.getPageSize(),
                 PORTAL_OPERATOR_TYPE,
                 null,
-                null,
-                null);
+                newRequestId(),
+                newTraceId());
     }
 
     public static SearchClickCreateCommand toCommand(DiscoverySearchClickRequest request) {
@@ -59,8 +60,8 @@ public final class DiscoverySearchPortalInterfaceAssembler {
                 request.getTargetPath(),
                 PORTAL_OPERATOR_TYPE,
                 null,
-                null,
-                null);
+                newRequestId(),
+                newTraceId());
     }
 
     public static DiscoverySearchResponse toResponse(SearchLogResult result) {
@@ -138,5 +139,13 @@ public final class DiscoverySearchPortalInterfaceAssembler {
                     fieldName + " must be ISO-8601 format",
                     exception);
         }
+    }
+
+    private static String newRequestId() {
+        return UUID.randomUUID().toString();
+    }
+
+    private static String newTraceId() {
+        return UUID.randomUUID().toString();
     }
 }

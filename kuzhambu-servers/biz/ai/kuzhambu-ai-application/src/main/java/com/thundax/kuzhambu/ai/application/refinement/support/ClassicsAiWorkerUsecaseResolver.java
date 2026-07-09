@@ -2,7 +2,9 @@ package com.thundax.kuzhambu.ai.application.refinement.support;
 
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import java.util.Map;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ClassicsAiWorkerUsecaseResolver {
 
     private static final Map<String, Map<String, ClassicsAiWorkerUsecaseSpec>> SUPPORTED_USECASES = Map.of(

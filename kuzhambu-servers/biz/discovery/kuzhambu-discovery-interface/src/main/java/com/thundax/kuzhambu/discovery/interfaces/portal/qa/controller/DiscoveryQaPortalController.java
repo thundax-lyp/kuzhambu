@@ -5,6 +5,7 @@ import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.discovery.application.qa.service.KnowledgeQaApplicationService;
 import com.thundax.kuzhambu.discovery.application.qa.service.QaApplicationService;
+import com.thundax.kuzhambu.discovery.interfaces.common.DiscoveryInterfaceIdCodec;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.assembler.DiscoveryQaPortalInterfaceAssembler;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.controller.request.DiscoveryQaRequests;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.controller.response.DiscoveryQaResponses;
@@ -55,7 +56,7 @@ public class DiscoveryQaPortalController {
     public DiscoveryQaResponses.QaSessionDetailResponse getSession(
             @Valid @RequestBody DiscoveryQaRequests.QaSessionGetRequest request) {
         return DiscoveryQaPortalInterfaceAssembler.toSessionDetailResponse(qaApplicationService.getPortalSessionDetail(
-                request.getSessionId(),
+                DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId()),
                 DiscoveryQaPortalInterfaceAssembler.ownerType(),
                 DiscoveryQaPortalInterfaceAssembler.ownerId(request.getOwnerUserId())));
     }

@@ -57,10 +57,13 @@ public class JetCacheConfiguration {
                 return;
             }
             String jetcacheUri = environment.getProperty("jetcache.remote.default.uri");
-            String springRedisUrl = environment.getProperty("spring.redis.url");
+            String springRedisUrl = environment.getProperty("spring.data.redis.url");
+            if (!StringUtils.hasText(springRedisUrl)) {
+                springRedisUrl = environment.getProperty("spring.redis.url");
+            }
             if (!StringUtils.hasText(jetcacheUri) && !StringUtils.hasText(springRedisUrl)) {
                 throw new IllegalStateException(
-                        "Missing Redis configuration. Configure jetcache.remote.default.uri or spring.redis.url.");
+                        "Missing Redis configuration. Configure jetcache.remote.default.uri or spring.data.redis.url.");
             }
         }
     }

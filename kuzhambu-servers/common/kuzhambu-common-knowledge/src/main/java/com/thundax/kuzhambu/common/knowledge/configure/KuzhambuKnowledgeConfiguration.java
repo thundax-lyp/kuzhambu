@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.common.knowledge.configure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.knowledge.client.KnowledgeBaseClient;
+import com.thundax.kuzhambu.common.knowledge.support.DisabledKnowledgeBaseClient;
 import com.thundax.kuzhambu.common.knowledge.support.FastGptKnowledgeBaseClient;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.ObjectProvider;
@@ -15,10 +16,10 @@ import org.springframework.util.StringUtils;
 
 @Configuration
 @EnableConfigurationProperties(KuzhambuKnowledgeProperties.class)
-@ConditionalOnProperty(prefix = "kuzhambu.knowledge", name = "enabled", havingValue = "true")
 public class KuzhambuKnowledgeConfiguration {
 
     @Bean
+    @ConditionalOnProperty(prefix = "kuzhambu.knowledge", name = "enabled", havingValue = "true")
     public KuzhambuKnowledgeConfigurationValidator kuzhambuKnowledgeConfigurationValidator(
             KuzhambuKnowledgeProperties properties) {
         return new KuzhambuKnowledgeConfigurationValidator(properties);
@@ -31,6 +32,7 @@ public class KuzhambuKnowledgeConfiguration {
             name = "provider",
             havingValue = "fastgpt",
             matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "kuzhambu.knowledge", name = "enabled", havingValue = "true")
     public KnowledgeBaseClient fastGptKnowledgeBaseClient(
             KuzhambuKnowledgeProperties properties, ObjectProvider<ObjectMapper> objectMappers) {
         KuzhambuKnowledgeProperties.FastGpt fastGpt = properties.getFastgpt();
@@ -42,6 +44,17 @@ public class KuzhambuKnowledgeConfiguration {
                         .build(),
                 objectMappers.getIfAvailable(ObjectMapper::new),
                 fastGpt);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(KnowledgeBaseClient.class)
+    @ConditionalOnProperty(
+            prefix = "kuzhambu.knowledge",
+            name = "enabled",
+            havingValue = "false",
+            matchIfMissing = true)
+    public KnowledgeBaseClient disabledKnowledgeBaseClient() {
+        return new DisabledKnowledgeBaseClient();
     }
 
     public static class KuzhambuKnowledgeConfigurationValidator implements InitializingBean {

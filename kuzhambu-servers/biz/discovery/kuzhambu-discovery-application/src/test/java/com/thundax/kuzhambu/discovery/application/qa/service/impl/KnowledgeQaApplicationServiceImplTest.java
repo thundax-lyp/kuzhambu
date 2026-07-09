@@ -23,6 +23,7 @@ import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.knowledge.client.KnowledgeBaseClient;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatRequest;
 import com.thundax.kuzhambu.discovery.application.qa.command.ChatCompletionCommand;
+import com.thundax.kuzhambu.discovery.application.qa.result.ChatCompletionResult;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaSourceAssembler;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaTraceAssembler;
 import com.thundax.kuzhambu.discovery.application.search.support.DiscoveryKnowledgeEnhancementProvider;
@@ -216,6 +217,54 @@ class KnowledgeQaApplicationServiceImplTest {
         assertEquals("FAILED", traceCaptor.getValue().getAiStatus());
         assertEquals("WORKER_STREAM", traceCaptor.getValue().getAiErrorType());
         assertEquals("stream interrupted", traceCaptor.getValue().getAiErrorMessage());
+    }
+
+    @Test
+    void chatCompletionShouldPersistFailedKnowledgeAnswerAndTrace() {
+        KnowledgeBaseClient knowledgeBaseClient = mock(KnowledgeBaseClient.class);
+        ClassicsFacade classicsFacade = mock(ClassicsFacade.class);
+        AiFacade aiFacade = mock(AiFacade.class);
+        QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
+        QaMessageRepository messageRepository = mock(QaMessageRepository.class);
+        QaSourceRepository sourceRepository = mock(QaSourceRepository.class);
+        QaRetrievalTraceRepository traceRepository = mock(QaRetrievalTraceRepository.class);
+        DiscoveryKnowledgeEnhancementProvider enhancementProvider = mock(DiscoveryKnowledgeEnhancementProvider.class);
+        KnowledgeQaApplicationServiceImpl service = new KnowledgeQaApplicationServiceImpl(
+                knowledgeBaseClient,
+                classicsFacade,
+                aiFacade,
+                sessionRepository,
+                messageRepository,
+                sourceRepository,
+                traceRepository,
+                new QaSourceAssembler(),
+                new QaTraceAssembler(),
+                enhancementProvider);
+        when(sessionRepository.getBySessionId(5001L)).thenReturn(openSession());
+        when(messageRepository.save(any(QaMessage.class))).thenReturn(6001L, 6002L);
+        when(enhancementProvider.enhance("什么是三才？"))
+                .thenReturn(new DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult(
+                        List.of("天地人"), null, List.of()));
+        when(knowledgeBaseClient.chat(any(KnowledgeChatRequest.class)))
+                .thenThrow(new IllegalStateException("System not embedding model"));
+        when(traceRepository.save(any(QaRetrievalTrace.class))).thenReturn(6203L);
+
+        ChatCompletionResult result = service.chatCompletion(command());
+
+        assertEquals("FAILED", result.getAnswerStatus());
+        assertEquals("System not embedding model", result.getFailureReason());
+        ArgumentCaptor<QaMessage> messageCaptor = ArgumentCaptor.forClass(QaMessage.class);
+        verify(messageRepository, org.mockito.Mockito.times(2)).save(messageCaptor.capture());
+        assertEquals("什么是三才？", messageCaptor.getAllValues().get(0).getContent());
+        QaMessage failedMessage = messageCaptor.getAllValues().get(1);
+        assertEquals("assistant", failedMessage.getRole());
+        assertEquals("", failedMessage.getContent());
+        assertEquals("FAILED", failedMessage.getAnswerStatus());
+        assertEquals("System not embedding model", failedMessage.getFailureReason());
+        verify(sourceRepository, never()).save(any(QaSource.class));
+        ArgumentCaptor<QaRetrievalTrace> traceCaptor = ArgumentCaptor.forClass(QaRetrievalTrace.class);
+        verify(traceRepository).save(traceCaptor.capture());
+        assertEquals("System not embedding model", traceCaptor.getValue().getFailureReason());
     }
 
     @Test

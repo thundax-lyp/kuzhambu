@@ -59,7 +59,7 @@ describe("QaAdminPage", () => {
         });
         mocks.getQaSession.mockResolvedValue({
             ownerUserId: 1001,
-            sessionId: 2001,
+            sessionId: "2001",
             title: "礼器问答",
             status: "OPEN",
             scope: "PORTAL",
@@ -68,7 +68,7 @@ describe("QaAdminPage", () => {
             openedAt: 1700000000000,
             messages: [
                 {
-                    messageId: 4001,
+                    messageId: "4001",
                     role: "USER",
                     content: "礼器在哪里出现？",
                     messageStatus: "SUCCEEDED"
@@ -80,7 +80,7 @@ describe("QaAdminPage", () => {
             aiErrorMessage: null,
             aiErrorType: null,
             aiStatus: "SUCCEEDED",
-            traceId: 9001,
+            traceId: "9001",
             provider: "FASTGPT",
             externalKnowledgeBaseId: "kb-1",
             externalKnowledgeItemIds: "item-1,item-2",
@@ -96,7 +96,7 @@ describe("QaAdminPage", () => {
                 contentType: "SANCAI_ENTRY",
                 knowledgeBase: "kuzhambu-qa",
                 score: 0.91,
-                sourceId: 5001,
+                sourceId: "5001",
                 sourceRank: 1,
                 sourceStatus: "AVAILABLE",
                 snippet: "礼器，礼之所用也。",
@@ -135,7 +135,7 @@ describe("QaAdminPage", () => {
             exportId: 7001,
             exportStatus: "SUCCEEDED",
             filename: "discovery-qa-session-2001-7001.csv",
-            sessionId: 2001,
+            sessionId: "2001",
             storageObjectId: 8001
         });
     });
@@ -229,7 +229,7 @@ describe("QaAdminPage", () => {
     it("disables AI call id copy when trace has no AI call id", async () => {
         const user = userEvent.setup();
         mocks.getQaTrace.mockResolvedValueOnce({
-            traceId: 9002,
+            traceId: "9002",
             provider: "FASTGPT",
             raw: null
         });
@@ -255,7 +255,7 @@ describe("QaAdminPage", () => {
         await waitFor(() => {
             expect(mocks.deleteQaSession.mock.calls[0]?.[0]).toEqual({
                 requesterUserId: 1001,
-                sessionId: 2001
+                sessionId: "2001"
             });
         });
         expect(confirmSpy).toHaveBeenCalledWith("确认删除会话 2001？");
@@ -267,7 +267,7 @@ describe("QaAdminPage", () => {
             expect(mocks.createQaSessionExport.mock.calls[0]?.[0]).toEqual({
                 format: "CSV",
                 requesterUserId: 1001,
-                sessionId: 2001
+                sessionId: "2001"
             });
         });
         expect(

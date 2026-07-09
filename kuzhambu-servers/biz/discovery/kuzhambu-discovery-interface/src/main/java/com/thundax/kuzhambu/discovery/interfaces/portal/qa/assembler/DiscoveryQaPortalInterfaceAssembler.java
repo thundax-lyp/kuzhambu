@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.discovery.application.qa.result.QaMessageResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionExportResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionResult;
+import com.thundax.kuzhambu.discovery.interfaces.common.DiscoveryInterfaceIdCodec;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.controller.request.DiscoveryQaRequests;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.controller.response.DiscoveryQaResponses;
 import java.math.BigDecimal;
@@ -50,7 +51,7 @@ public final class DiscoveryQaPortalInterfaceAssembler {
             return null;
         }
         return new ChatCompletionCommand(
-                request.getSessionId(),
+                DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId()),
                 request.getModel(),
                 request.getMessages() == null
                         ? List.of()
@@ -71,7 +72,10 @@ public final class DiscoveryQaPortalInterfaceAssembler {
             return null;
         }
         return new DeleteQaSessionCommand(
-                request.getSessionId(), ownerType(), ownerId(request.getOwnerUserId()), false);
+                DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId()),
+                ownerType(),
+                ownerId(request.getOwnerUserId()),
+                false);
     }
 
     public static ExportQaSessionCommand toExportSessionCommand(DiscoveryQaRequests.QaSessionExportRequest request) {
@@ -79,7 +83,7 @@ public final class DiscoveryQaPortalInterfaceAssembler {
             return null;
         }
         return new ExportQaSessionCommand(
-                request.getSessionId(),
+                DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId()),
                 request.getOwnerUserId(),
                 ownerType(),
                 ownerId(request.getOwnerUserId()),
@@ -113,7 +117,7 @@ public final class DiscoveryQaPortalInterfaceAssembler {
             return null;
         }
         DiscoveryQaResponses.OpenSessionResponse response = new DiscoveryQaResponses.OpenSessionResponse();
-        response.setSessionId(result.getSessionId());
+        response.setSessionId(DiscoveryInterfaceIdCodec.toStringValue(result.getSessionId()));
         response.setOwnerUserId(result.getOwnerUserId());
         response.setTitle(result.getTitle());
         response.setScope(result.getScope());
@@ -173,10 +177,10 @@ public final class DiscoveryQaPortalInterfaceAssembler {
             return null;
         }
         DiscoveryQaResponses.QaSessionExportResponse response = new DiscoveryQaResponses.QaSessionExportResponse();
-        response.setExportId(result.getExportId());
-        response.setSessionId(result.getSessionId());
+        response.setExportId(DiscoveryInterfaceIdCodec.toStringValue(result.getExportId()));
+        response.setSessionId(DiscoveryInterfaceIdCodec.toStringValue(result.getSessionId()));
         response.setFormat(result.getFormat());
-        response.setStorageObjectId(result.getStorageObjectId());
+        response.setStorageObjectId(DiscoveryInterfaceIdCodec.toStringValue(result.getStorageObjectId()));
         response.setExportStatus(result.getExportStatus());
         response.setFailureReason(result.getFailureReason());
         response.setRequestedAt(result.getRequestedAt());
@@ -191,9 +195,9 @@ public final class DiscoveryQaPortalInterfaceAssembler {
             return null;
         }
         DiscoveryQaResponses.ChatCompletionsResponse response = new DiscoveryQaResponses.ChatCompletionsResponse();
-        response.setSessionId(result.getSessionId());
-        response.setQuestionMessageId(result.getQuestionMessageId());
-        response.setAnswerMessageId(result.getAnswerMessageId());
+        response.setSessionId(DiscoveryInterfaceIdCodec.toStringValue(result.getSessionId()));
+        response.setQuestionMessageId(DiscoveryInterfaceIdCodec.toStringValue(result.getQuestionMessageId()));
+        response.setAnswerMessageId(DiscoveryInterfaceIdCodec.toStringValue(result.getAnswerMessageId()));
         response.setQuestion(result.getQuestion());
         response.setAnswer(getFirstChoiceAnswer(result.getChoices()));
         response.setAnswerStatus(result.getAnswerStatus());
@@ -218,7 +222,7 @@ public final class DiscoveryQaPortalInterfaceAssembler {
     }
 
     private static void fillSessionResponse(DiscoveryQaResponses.QaSessionResponse response, QaSessionResult result) {
-        response.setSessionId(result.getSessionId());
+        response.setSessionId(DiscoveryInterfaceIdCodec.toStringValue(result.getSessionId()));
         response.setOwnerUserId(result.getOwnerUserId());
         response.setTitle(result.getTitle());
         response.setScope(result.getScope());
@@ -232,8 +236,8 @@ public final class DiscoveryQaPortalInterfaceAssembler {
 
     private static DiscoveryQaResponses.QaMessageResponse toMessageResponse(QaMessageResult result) {
         DiscoveryQaResponses.QaMessageResponse response = new DiscoveryQaResponses.QaMessageResponse();
-        response.setMessageId(result.getMessageId());
-        response.setSessionId(result.getSessionId());
+        response.setMessageId(DiscoveryInterfaceIdCodec.toStringValue(result.getMessageId()));
+        response.setSessionId(DiscoveryInterfaceIdCodec.toStringValue(result.getSessionId()));
         response.setRole(result.getRole());
         response.setContent(result.getContent());
         response.setMessageStatus(result.getMessageStatus());

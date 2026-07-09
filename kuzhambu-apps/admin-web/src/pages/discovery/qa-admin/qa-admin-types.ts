@@ -38,13 +38,13 @@ export interface ProviderTraceRecord {
     externalKnowledgeItemIds?: string | null;
     failureReason?: string | null;
     latencyMs?: number | null;
-    messageId?: number | null;
+    messageId?: string | null;
     provider?: string | null;
     providerRequestId?: string | null;
     raw?: string | null;
     rawQuestion?: string | null;
     retrievedAt?: string | null;
-    traceId?: number | null;
+    traceId?: string | null;
 }
 
 export interface DiscoveryQaSessionMessageRecord {
@@ -52,11 +52,11 @@ export interface DiscoveryQaSessionMessageRecord {
     content?: string | null;
     contextTurnCount?: number | null;
     failureReason?: string | null;
-    messageId?: number | null;
+    messageId?: string | null;
     messageStatus?: string | null;
     role?: string | null;
     sentAt?: string | null;
-    sessionId?: number | null;
+    sessionId?: string | null;
 }
 
 export interface DiscoveryQaSessionDetailRecord {
@@ -68,7 +68,7 @@ export interface DiscoveryQaSessionDetailRecord {
     openedAt?: number | null;
     ownerUserId?: number | null;
     scope?: string | null;
-    sessionId?: number | null;
+    sessionId?: string | null;
     status?: string | null;
     title?: string | null;
 }
@@ -82,7 +82,7 @@ export interface DiscoveryQaSessionExportRecord {
     filename?: string | null;
     format?: string | null;
     requestedAt?: number | null;
-    sessionId?: number | null;
+    sessionId?: string | null;
     storageObjectId?: number | null;
 }
 
@@ -93,7 +93,7 @@ export interface DiscoveryQaSourceRecord {
     locationLabel?: string | null;
     score?: number | null;
     snippet?: string | null;
-    sourceId?: number | null;
+    sourceId?: string | null;
     sourceRank?: number | null;
     sourceStatus?: string | null;
     titleSnapshot?: string | null;

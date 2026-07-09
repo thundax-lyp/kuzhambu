@@ -5,6 +5,7 @@ import com.thundax.kuzhambu.discovery.infra.search.persistence.dataobject.Search
 import java.util.Date;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 @Mapper
@@ -17,5 +18,6 @@ public interface SearchLogMapper extends BaseMapper<SearchLogDO> {
               and (#{createdAtEnd} is null or created_at <= #{createdAtEnd})
             order by created_at desc
             """)
-    List<SearchLogDO> selectByCreatedAtRange(Date createdAtStart, Date createdAtEnd);
+    List<SearchLogDO> selectByCreatedAtRange(
+            @Param("createdAtStart") Date createdAtStart, @Param("createdAtEnd") Date createdAtEnd);
 }

@@ -811,7 +811,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                 null,
                 sessionId,
                 MESSAGE_ROLE_ASSISTANT,
-                null,
+                "",
                 ANSWER_STATUS_FAILED,
                 model,
                 contextTurnCount,

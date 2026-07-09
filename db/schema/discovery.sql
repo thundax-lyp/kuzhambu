@@ -31,19 +31,28 @@ CREATE TABLE IF NOT EXISTS `discovery_search_query_log` (
     KEY `idx_discovery_search_query_log_intent` (`intent`, `searched_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='搜索查询日志表';
 
-CREATE TABLE IF NOT EXISTS `discovery_search_click_log` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `click_id` bigint NOT NULL,
-    `query_id` bigint NOT NULL,
-    `user_id` bigint DEFAULT NULL,
-    `content_type` varchar(32) NOT NULL,
-    `content_id` bigint NOT NULL,
-    `result_rank` int NOT NULL DEFAULT 0,
-    `clicked_at` datetime(3) NOT NULL,
+CREATE TABLE IF NOT EXISTS `discovery_search_click` (
+    `id` bigint NOT NULL,
+    `search_click_id` varchar(64) NOT NULL,
+    `search_log_id` varchar(64) NOT NULL,
+    `content_domain` varchar(64) DEFAULT NULL,
+    `content_type` varchar(64) NOT NULL,
+    `content_id` varchar(64) NOT NULL,
+    `content_title` varchar(256) DEFAULT NULL,
+    `result_group_key` varchar(64) DEFAULT NULL,
+    `result_rank` int DEFAULT NULL,
+    `group_rank` int DEFAULT NULL,
+    `target_path` varchar(512) DEFAULT NULL,
+    `operator_type` varchar(32) DEFAULT NULL,
+    `operator_id` varchar(64) DEFAULT NULL,
+    `request_id` varchar(128) DEFAULT NULL,
+    `trace_id` varchar(128) DEFAULT NULL,
+    `created_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_discovery_search_click_log_id` (`click_id`),
-    KEY `idx_discovery_search_click_log_query` (`query_id`, `clicked_at`),
-    KEY `idx_discovery_search_click_log_content` (`content_type`, `content_id`)
+    UNIQUE KEY `uk_discovery_search_click_id` (`search_click_id`),
+    KEY `idx_discovery_search_click_log` (`search_log_id`, `created_at`),
+    KEY `idx_discovery_search_click_content` (`content_type`, `content_id`),
+    KEY `idx_discovery_search_click_operator` (`operator_id`, `created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='搜索点击日志表';
 
 CREATE TABLE IF NOT EXISTS `discovery_search_log` (
@@ -71,6 +80,29 @@ CREATE TABLE IF NOT EXISTS `discovery_search_log` (
     KEY `idx_discovery_search_log_operator` (`operator_id`, `created_at`),
     KEY `idx_discovery_search_log_intent` (`intent_type`, `created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='搜索日志表';
+
+CREATE TABLE IF NOT EXISTS `discovery_query_understanding` (
+    `id` bigint NOT NULL,
+    `query_understanding_id` varchar(64) NOT NULL,
+    `search_log_id` varchar(64) DEFAULT NULL,
+    `query_text` varchar(512) NOT NULL,
+    `normalized_query_text` varchar(512) DEFAULT NULL,
+    `rewritten_query_text` varchar(1024) DEFAULT NULL,
+    `intent_type` varchar(32) DEFAULT NULL,
+    `recognized_entities_json` text DEFAULT NULL,
+    `expanded_synonyms_json` text DEFAULT NULL,
+    `understanding_status` varchar(32) NOT NULL,
+    `failure_code` varchar(64) DEFAULT NULL,
+    `failure_message` varchar(1024) DEFAULT NULL,
+    `request_id` varchar(128) DEFAULT NULL,
+    `trace_id` varchar(128) DEFAULT NULL,
+    `created_at` datetime(3) NOT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_discovery_query_understanding_id` (`query_understanding_id`),
+    KEY `idx_discovery_query_understanding_log` (`search_log_id`),
+    KEY `idx_discovery_query_understanding_status` (`understanding_status`, `created_at`),
+    KEY `idx_discovery_query_understanding_intent` (`intent_type`, `created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='查询理解记录表';
 SET NAMES utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `discovery_qa_session` (
@@ -87,9 +119,9 @@ CREATE TABLE IF NOT EXISTS `discovery_qa_session` (
     `opened_at` datetime(3) NOT NULL,
     `last_message_at` datetime(3) DEFAULT NULL,
     `removed_at` datetime(3) DEFAULT NULL,
+    `knowledge_base_name` varchar(128) NOT NULL DEFAULT 'kuzhambu-qa',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_discovery_qa_session_id` (`session_id`),
-    `knowledge_base_name` varchar(128) NOT NULL DEFAULT 'kuzhambu-qa',
     KEY `idx_discovery_qa_session_owner` (`owner_type`, `owner_id`, `last_message_at`),
     KEY `idx_discovery_qa_session_context` (`context_content_type`, `context_content_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='问答会话表';

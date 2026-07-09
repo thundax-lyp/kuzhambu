@@ -96,44 +96,44 @@ class DiscoveryQaAdminControllerTest {
     void requestAndResponseJsonFieldsShouldRemainStable() throws Exception {
         DiscoveryQaAdminRequests.QaSessionGetRequest sessionGetRequest = OBJECT_MAPPER.readValue(
                 """
-                        {"sessionId":5001}
+                        {"sessionId":"5001"}
                         """,
                 DiscoveryQaAdminRequests.QaSessionGetRequest.class);
-        assertEquals(5001L, sessionGetRequest.getSessionId());
+        assertEquals("5001", sessionGetRequest.getSessionId());
         assertJsonFields(sessionGetRequest, "sessionId");
 
         DiscoveryQaAdminRequests.QaSessionDeleteRequest sessionDeleteRequest = OBJECT_MAPPER.readValue(
                 """
-                        {"sessionId":5001}
+                        {"sessionId":"5001"}
                         """,
                 DiscoveryQaAdminRequests.QaSessionDeleteRequest.class);
-        assertEquals(5001L, sessionDeleteRequest.getSessionId());
+        assertEquals("5001", sessionDeleteRequest.getSessionId());
         assertJsonFields(sessionDeleteRequest, "sessionId");
 
         DiscoveryQaAdminRequests.QaSessionExportRequest sessionExportRequest = OBJECT_MAPPER.readValue(
                 """
-                        {"sessionId":5001,"requesterUserId":1001,"format":"CSV"}
+                        {"sessionId":"5001","requesterUserId":1001,"format":"CSV"}
                         """,
                 DiscoveryQaAdminRequests.QaSessionExportRequest.class);
-        assertEquals(5001L, sessionExportRequest.getSessionId());
+        assertEquals("5001", sessionExportRequest.getSessionId());
         assertEquals(1001L, sessionExportRequest.getRequesterUserId());
         assertEquals("CSV", sessionExportRequest.getFormat());
         assertJsonFields(sessionExportRequest, "sessionId", "requesterUserId", "format");
 
         DiscoveryQaAdminRequests.QaSourceListRequest sourceListRequest = OBJECT_MAPPER.readValue(
                 """
-                        {"messageId":7002}
+                        {"messageId":"7002"}
                         """,
                 DiscoveryQaAdminRequests.QaSourceListRequest.class);
-        assertEquals(7002L, sourceListRequest.getMessageId());
+        assertEquals("7002", sourceListRequest.getMessageId());
         assertJsonFields(sourceListRequest, "messageId");
 
         DiscoveryQaAdminRequests.QaTraceGetRequest traceGetRequest = OBJECT_MAPPER.readValue(
                 """
-                        {"traceId":8001}
+                        {"traceId":"8001"}
                         """,
                 DiscoveryQaAdminRequests.QaTraceGetRequest.class);
-        assertEquals(8001L, traceGetRequest.getTraceId());
+        assertEquals("8001", traceGetRequest.getTraceId());
         assertJsonFields(traceGetRequest, "traceId");
 
         DiscoveryQaAdminRequests.KnowledgeSyncRequest syncRequest = OBJECT_MAPPER.readValue(
@@ -177,24 +177,24 @@ class DiscoveryQaAdminControllerTest {
 
         DiscoveryQaAdminRequests.QaSessionGetRequest sessionRequest =
                 new DiscoveryQaAdminRequests.QaSessionGetRequest();
-        sessionRequest.setSessionId(5001L);
+        sessionRequest.setSessionId("5001");
         var sessionResponse = controller.getSession(sessionRequest);
-        assertEquals(5001L, sessionResponse.getSessionId());
+        assertEquals("5001", sessionResponse.getSessionId());
         assertEquals(1_718_000_200_000L, sessionResponse.getRemovedAt());
 
         DiscoveryQaAdminRequests.QaSessionDeleteRequest deleteRequest =
                 new DiscoveryQaAdminRequests.QaSessionDeleteRequest();
-        deleteRequest.setSessionId(5001L);
+        deleteRequest.setSessionId("5001");
         controller.deleteSession(deleteRequest);
 
         DiscoveryQaAdminRequests.QaSessionExportRequest exportRequest =
                 new DiscoveryQaAdminRequests.QaSessionExportRequest();
-        exportRequest.setSessionId(5001L);
+        exportRequest.setSessionId("5001");
         exportRequest.setRequesterUserId(1001L);
         exportRequest.setFormat("CSV");
         var exportResponse = controller.exportSession(exportRequest);
-        assertEquals(7001L, exportResponse.getExportId());
-        assertEquals(8001L, exportResponse.getStorageObjectId());
+        assertEquals("7001", exportResponse.getExportId());
+        assertEquals("8001", exportResponse.getStorageObjectId());
         assertEquals("SUCCEEDED", exportResponse.getExportStatus());
         assertEquals(1_718_000_000_000L, exportResponse.getRequestedAt());
         assertEquals(1_718_000_001_000L, exportResponse.getCompletedAt());
@@ -202,17 +202,17 @@ class DiscoveryQaAdminControllerTest {
         assertEquals("text/csv; charset=UTF-8", exportResponse.getContentType());
 
         DiscoveryQaAdminRequests.QaSourceListRequest sourceRequest = new DiscoveryQaAdminRequests.QaSourceListRequest();
-        sourceRequest.setMessageId(7002L);
+        sourceRequest.setMessageId("7002");
         var sources = controller.listSources(sourceRequest);
         assertEquals(1, sources.size());
-        assertEquals(9001L, sources.get(0).getSourceId());
+        assertEquals("9001", sources.get(0).getSourceId());
 
         DiscoveryQaAdminRequests.QaTraceGetRequest traceRequest = new DiscoveryQaAdminRequests.QaTraceGetRequest();
-        traceRequest.setTraceId(8001L);
+        traceRequest.setTraceId("8001");
         var traceResponse = controller.getTrace(traceRequest);
         assertNotNull(traceResponse);
-        assertEquals(8001L, traceResponse.getTraceId());
-        assertEquals(9001L, traceResponse.getAiCallId());
+        assertEquals("8001", traceResponse.getTraceId());
+        assertEquals("9001", traceResponse.getAiCallId());
         assertEquals("SUCCEEDED", traceResponse.getAiStatus());
         assertEquals("WORKER_PROTOCOL_FAILURE", traceResponse.getAiErrorType());
         assertEquals("worker returned invalid response", traceResponse.getAiErrorMessage());

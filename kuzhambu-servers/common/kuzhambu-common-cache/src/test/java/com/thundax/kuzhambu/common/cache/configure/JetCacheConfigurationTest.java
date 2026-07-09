@@ -48,6 +48,15 @@ public class JetCacheConfigurationTest {
     }
 
     @Test
+    public void shouldAcceptSpringDataRedisUrlConfiguration() throws Exception {
+        MockEnvironment environment = new MockEnvironment()
+                .withProperty("jetcache.remote.default.type", "redis.lettuce")
+                .withProperty("spring.data.redis.url", "redis://127.0.0.1:6379/0");
+
+        new JetCacheConfiguration.RedisConfigurationValidator(environment).afterPropertiesSet();
+    }
+
+    @Test
     public void shouldRejectMissingRedisUriConfiguration() throws Exception {
         MockEnvironment environment =
                 new MockEnvironment().withProperty("jetcache.remote.default.type", "redis.lettuce");
