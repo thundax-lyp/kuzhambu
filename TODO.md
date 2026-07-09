@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ai-invocation-admin-api`：暴露 AI 调用记录管理端接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-ADMIN-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/invocation/controller/AiInvocationController.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/invocation/controller/request/AiInvocationRequests.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/invocation/controller/response/AiInvocationResponses.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/invocation/assembler/AiInvocationInterfaceAssembler.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/test/java/com/thundax/kuzhambu/ai/interfaces/admin/invocation/controller/AiInvocationControllerTest.java`
-    - 处理动作：新增 `POST /api/ai/invocation/call/page` 和 `POST /api/ai/invocation/call/summary`。
-    - 验收点：两个接口使用 `ai:invocation:view` 权限，返回字段与 RUNBOOK 的 `CallRecordResponse`、`CallSummaryResponse` 一致。
-    - 重要度：10/10
-
 - [ ] `ai-action-status-query`：补齐 AI 动作状态批量读取能力
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-ADMIN-GOVERNANCE.md`

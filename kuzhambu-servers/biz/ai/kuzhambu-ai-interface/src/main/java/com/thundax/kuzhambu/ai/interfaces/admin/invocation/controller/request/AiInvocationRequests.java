@@ -3,11 +3,13 @@ package com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.thundax.kuzhambu.common.web.request.PageRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
+import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -25,6 +27,80 @@ public final class AiInvocationRequests {
         @NotNull
         @JsonProperty(value = "callId")
         private Long callId;
+    }
+
+    @Getter
+    @Setter
+    @Schema(name = "AiCallRecordPageRequest", description = "AI调用记录分页请求")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class CallRecordPageRequest extends PageRequest {
+
+        @Size(max = 64)
+        @JsonProperty(value = "scope")
+        private String scope;
+
+        @Size(max = 64)
+        @JsonProperty(value = "capability")
+        private String capability;
+
+        @Size(max = 64)
+        @JsonProperty(value = "contentType")
+        private String contentType;
+
+        @JsonProperty(value = "contentId")
+        private Long contentId;
+
+        @Size(max = 32)
+        @JsonProperty(value = "status")
+        private String status;
+
+        @Size(max = 32)
+        @JsonProperty(value = "serviceRole")
+        private String serviceRole;
+
+        @Size(max = 128)
+        @JsonProperty(value = "modelName")
+        private String modelName;
+
+        @JsonProperty(value = "fallbackUsed")
+        private Boolean fallbackUsed;
+
+        @JsonProperty(value = "requestedAtStart")
+        private Instant requestedAtStart;
+
+        @JsonProperty(value = "requestedAtEnd")
+        private Instant requestedAtEnd;
+    }
+
+    @Getter
+    @Setter
+    @Schema(name = "AiCallSummaryRequest", description = "AI调用统计请求")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class CallSummaryRequest implements Serializable {
+
+        @JsonProperty(value = "periodStart")
+        private Instant periodStart;
+
+        @JsonProperty(value = "periodEnd")
+        private Instant periodEnd;
+
+        @Size(max = 32)
+        @JsonProperty(value = "bucketType")
+        private String bucketType;
+
+        @Size(max = 64)
+        @JsonProperty(value = "scope")
+        private String scope;
+
+        @Size(max = 64)
+        @JsonProperty(value = "capability")
+        private String capability;
+
+        @Size(max = 32)
+        @JsonProperty(value = "serviceRole")
+        private String serviceRole;
     }
 
     @Getter

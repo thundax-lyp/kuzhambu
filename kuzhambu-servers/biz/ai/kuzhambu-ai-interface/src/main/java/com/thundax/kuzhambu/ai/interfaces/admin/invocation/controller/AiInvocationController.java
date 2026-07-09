@@ -8,11 +8,16 @@ import com.thundax.kuzhambu.ai.interfaces.admin.invocation.assembler.AiInvocatio
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.AiInvocationResponses.BatchJobResponse;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.AiInvocationResponses.CallRecordResponse;
+import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.AiInvocationResponses.CallSummaryResponse;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.AiInvocationResponses.CandidateResponse;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.AiInvocationResponses.IdResponse;
+import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
+import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
+import com.thundax.kuzhambu.common.web.response.PageResponse;
+import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -50,6 +55,49 @@ public class AiInvocationController {
     @PostMapping(value = "call/get")
     public CallRecordResponse getCallRecord(@Valid @RequestBody AiInvocationRequests.CallIdRequest request) {
         return AiInvocationInterfaceAssembler.toResponse(invocationRepository.getCallRecord(request.getCallId()));
+    }
+
+    @Operation(summary = "分页查询AI调用记录", description = "ai:invocation:view")
+    @ApiImplicitParams({})
+    @HasPermission(value = "ai:invocation:view")
+    @SysLogger(value = "调用分页")
+    @PostMapping(value = "call/page")
+    public PageResponse<CallRecordResponse> pageCallRecords(
+            @Valid @RequestBody AiInvocationRequests.CallRecordPageRequest request) {
+        PageQuery pageQuery = PageInterfaceAssembler.toPageQuery(request);
+        return PageResponseHelper.fromPageResult(
+                invocationRepository.pageCallRecords(
+                        request.getScope(),
+                        request.getCapability(),
+                        request.getContentType(),
+                        request.getContentId(),
+                        request.getStatus(),
+                        request.getServiceRole(),
+                        request.getModelName(),
+                        request.getFallbackUsed(),
+                        request.getRequestedAtStart(),
+                        request.getRequestedAtEnd(),
+                        pageQuery.getPageNo(),
+                        pageQuery.getPageSize()),
+                AiInvocationInterfaceAssembler::toResponse);
+    }
+
+    @Operation(summary = "统计AI调用记录", description = "ai:invocation:view")
+    @ApiImplicitParams({})
+    @HasPermission(value = "ai:invocation:view")
+    @SysLogger(value = "调用统计")
+    @PostMapping(value = "call/summary")
+    public CallSummaryResponse summarizeCallRecords(
+            @Valid @RequestBody AiInvocationRequests.CallSummaryRequest request) {
+        return AiInvocationInterfaceAssembler.toSummaryResponse(
+                request.getPeriodStart(),
+                request.getPeriodEnd(),
+                invocationRepository.listCallRecords(
+                        request.getScope(),
+                        request.getCapability(),
+                        request.getServiceRole(),
+                        request.getPeriodStart(),
+                        request.getPeriodEnd()));
     }
 
     @Operation(summary = "获取AI候选", description = "ai:invocation:view")
