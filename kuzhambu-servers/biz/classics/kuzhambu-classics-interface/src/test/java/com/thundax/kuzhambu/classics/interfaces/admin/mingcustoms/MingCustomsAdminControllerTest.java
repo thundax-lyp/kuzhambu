@@ -18,11 +18,13 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentT
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordCloudItem;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsTagCloudItem;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.assembler.MingCustomsInterfaceAssembler;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.MingCustomsAdminController;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.request.MingCustomsRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.request.MingCustomsVersionRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsKeywordCloudItemResponse;
+import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsTagCloudItemResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsVersionResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
@@ -33,6 +35,7 @@ import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
 class MingCustomsAdminControllerTest {
@@ -71,11 +74,34 @@ class MingCustomsAdminControllerTest {
         MingCustomsRequest request = new MingCustomsRequest();
         request.setPageNo(1);
         request.setPageSize(20);
+        request.setTagId(7001L);
+        request.setTagNameSnapshot("祭祀");
 
         controller.page(request);
 
         ArgumentCaptor<MingCustomsPageQuery> queryCaptor = ArgumentCaptor.forClass(MingCustomsPageQuery.class);
         verify(service).page(queryCaptor.capture(), any(PageQuery.class));
+        assertNotNull(queryCaptor.getValue().getOperatorPermissions());
+        assertEquals(7001L, queryCaptor.getValue().getTagId());
+        assertEquals("祭祀", queryCaptor.getValue().getTagNameSnapshot());
+    }
+
+    @Test
+    void tagCloudShouldReturnStableTagFieldsAndAttachOperatorPermissions() {
+        MingCustomsApplicationService service = mock(MingCustomsApplicationService.class);
+        when(service.listTagCloud(any())).thenReturn(List.of(new MingCustomsTagCloudItem(7001L, "祭祀", 3L)));
+        MingCustomsAdminController controller = new MingCustomsAdminController(service);
+
+        List<MingCustomsTagCloudItemResponse> responses = controller.listTagCloud("礼俗", "祭祀", "PUBLIC");
+
+        assertEquals(1, responses.size());
+        assertEquals(7001L, responses.get(0).getTagId());
+        assertEquals("祭祀", responses.get(0).getTagNameSnapshot());
+        assertEquals(3L, responses.get(0).getCount());
+        ArgumentCaptor<MingCustomsPageQuery> queryCaptor = ArgumentCaptor.forClass(MingCustomsPageQuery.class);
+        verify(service).listTagCloud(queryCaptor.capture());
+        assertEquals("礼俗", queryCaptor.getValue().getCategory());
+        assertEquals("祭祀", queryCaptor.getValue().getKeyword());
         assertNotNull(queryCaptor.getValue().getOperatorPermissions());
     }
 
@@ -114,6 +140,7 @@ class MingCustomsAdminControllerTest {
     @Test
     void versionRoutesShouldKeepExpectedPathsAndPermissions() throws Exception {
         Class<?> controllerType = MingCustomsAdminController.class;
+        assertGetMapping(controllerType, "listTagCloud", "tag-cloud", "classics:mingcustoms:view");
         assertPostMapping(controllerType, "listVersions", "versions/list", "classics:mingcustoms:view");
         assertPostMapping(controllerType, "getVersion", "versions/get", "classics:mingcustoms:view");
         assertPostMapping(controllerType, "resetVersion", "versions/reset", "classics:mingcustoms:edit");
@@ -193,6 +220,17 @@ class MingCustomsAdminControllerTest {
             Class<?> controllerType, String methodName, String path, String expectedPermission) throws Exception {
         Method method = controllerType.getMethod(methodName, MingCustomsVersionRequest.class);
         PostMapping mapping = method.getAnnotation(PostMapping.class);
+        HasPermission permission = method.getAnnotation(HasPermission.class);
+        assertNotNull(mapping, methodName);
+        assertEquals(path, mapping.value()[0], methodName);
+        assertNotNull(permission, methodName);
+        assertEquals(List.of(expectedPermission), List.of(permission.value()), methodName);
+    }
+
+    private static void assertGetMapping(
+            Class<?> controllerType, String methodName, String path, String expectedPermission) throws Exception {
+        Method method = controllerType.getMethod(methodName, String.class, String.class, String.class);
+        GetMapping mapping = method.getAnnotation(GetMapping.class);
         HasPermission permission = method.getAnnotation(HasPermission.class);
         assertNotNull(mapping, methodName);
         assertEquals(path, mapping.value()[0], methodName);

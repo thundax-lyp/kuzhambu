@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Button, Card, Select } from "antd";
+import { Alert, App, Badge, Button, Card, Select } from "antd";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
@@ -7,6 +7,7 @@ import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { AiCandidateBatchDrawer } from "@/pages/classics/common/components/ai-candidate-batch-drawer";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
+import type { AiRefinementTaskCapability } from "@/pages/classics/common/ai-refinement-task-types";
 import { ClassicsExportJobSection } from "@/pages/classics/common/components/classics-export-job-section";
 import * as contentService from "@/pages/classics/common/classics-content-service";
 import * as exportService from "@/pages/classics/common/classics-export-service";
@@ -23,13 +24,17 @@ import type {
     ClassicsExportJobRecord,
     ClassicsExportScopePayload
 } from "@/pages/classics/common/classics-export-types";
-import { MingCustomsKeywordCloud } from "./components/ming-customs-keyword-cloud";
+import { MingCustomsTagCloud } from "./components/ming-customs-keyword-cloud";
 import { MingCustomsList } from "./components/ming-customs-list";
 import { MingCustomsModel } from "./components/ming-customs-model";
 import { MingCustomsVersionHistoryPanel } from "./components/ming-customs-version-history-panel";
 import * as service from "./ming-customs-service";
 import type { MingCustomsCommand, MingCustomsQuery } from "./ming-customs-service";
-import type { MingCustomsContentVersionRecord, MingCustomsRecord } from "./ming-customs-types";
+import type {
+    MingCustomsContentVersionRecord,
+    MingCustomsRecord,
+    MingCustomsTagCloudItem
+} from "./ming-customs-types";
 import "./ming-customs-page.css";
 
 type MingCustomsVisibilityFilter = "ALL" | "PUBLIC" | "PRIVATE";
@@ -49,11 +54,20 @@ const createEventId = (prefix: string) => {
     return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 };
 
-const buildPromptMessagesJson = (entry: MingCustomsRecord) => {
+const MING_CUSTOMS_REFINEMENT_PROMPT: Record<AiRefinementTaskCapability, string> = {
+    summary: "你是明代风俗整理助理。请基于输入条目提炼准确、紧凑、便于后台回填的中文摘要。",
+    tags: "你是明代风俗标签治理助理。请基于输入条目提取稳定、短小、适合后台统一标签库复用的中文标签。",
+    qa: "你是明代风俗问答治理助理。请基于输入条目生成可用于知识库检索的中文问答对。"
+};
+
+const buildPromptMessagesJson = (
+    entry: MingCustomsRecord,
+    capability: AiRefinementTaskCapability
+) => {
     return JSON.stringify([
         {
             role: "system",
-            content: "你是明代风俗整理助理。请基于输入条目提炼准确、紧凑、便于后台回填的中文摘要。"
+            content: MING_CUSTOMS_REFINEMENT_PROMPT[capability]
         },
         {
             role: "user",
@@ -108,6 +122,12 @@ interface MingCustomsFilters {
     visibility: MingCustomsVisibilityFilter;
 }
 
+interface MingCustomsSelectedTagFilter {
+    count?: number | null;
+    tagId?: number | null;
+    tagNameSnapshot: string;
+}
+
 const DEFAULT_MING_CUSTOMS_FILTERS: MingCustomsFilters = {
     category: "",
     sortDirection: "DESC",
@@ -134,6 +154,9 @@ export const MingCustomsPage = () => {
     });
     const [searchText, setSearchText] = useState("");
     const [filters, setFilters] = useState<MingCustomsFilters>(DEFAULT_MING_CUSTOMS_FILTERS);
+    const [selectedTagFilter, setSelectedTagFilter] = useState<MingCustomsSelectedTagFilter | null>(
+        null
+    );
     const [editorMode, setEditorMode] = useState<"create" | "edit">("create");
     const [editorOpen, setEditorOpen] = useState(false);
     const [editingEntry, setEditingEntry] = useState<MingCustomsRecord | null>(null);
@@ -148,13 +171,13 @@ export const MingCustomsPage = () => {
     );
     const [batchVisibilityResult, setBatchVisibilityResult] =
         useState<ClassicsBatchOperationRecord | null>(null);
-    const [creatingRefinementCapability, setCreatingRefinementCapability] = useState<
-        "summary" | null
-    >(null);
+    const [creatingRefinementCapability, setCreatingRefinementCapability] =
+        useState<AiRefinementTaskCapability | null>(null);
     const [selectedVersionId, setSelectedVersionId] = useState<number | null>(null);
     const handledSucceededTaskIdsRef = useRef<Set<number>>(new Set());
     const hasActiveFilters = Boolean(
         filters.category ||
+        selectedTagFilter ||
         filters.visibility !== "ALL" ||
         filters.sortDirection !== DEFAULT_MING_CUSTOMS_FILTERS.sortDirection
     );
@@ -215,8 +238,7 @@ export const MingCustomsPage = () => {
                 pageNo: 1,
                 pageSize: 10,
                 contentType: "MING_CUSTOMS",
-                contentId: editingEntry?.id,
-                capability: "summary"
+                contentId: editingEntry?.id
             }),
         enabled: editorOpen && editorMode === "edit" && Boolean(editingEntry?.id),
         retry: false,
@@ -263,6 +285,7 @@ export const MingCustomsPage = () => {
         await Promise.all([
             queryClient.invalidateQueries({ queryKey: ["ming-customs", "page"] }),
             queryClient.invalidateQueries({ queryKey: ["ming-customs", "keyword-cloud"] }),
+            queryClient.invalidateQueries({ queryKey: ["ming-customs", "tag-cloud"] }),
             queryClient.invalidateQueries({ queryKey: ["ming-customs", "detail"] }),
             queryClient.invalidateQueries({
                 queryKey: ["classics", "content", "tags", "MING_CUSTOMS"]
@@ -439,6 +462,8 @@ export const MingCustomsPage = () => {
             category: filters.category || undefined,
             visibility: readVisibilityValue(filters.visibility),
             sortDirection: filters.sortDirection,
+            tagId: selectedTagFilter?.tagId ?? undefined,
+            tagNameSnapshot: selectedTagFilter?.tagNameSnapshot || undefined,
             pageNo: DEFAULT_PAGE_NO
         }));
     };
@@ -448,17 +473,35 @@ export const MingCustomsPage = () => {
         setQuery((currentQuery) => ({
             ...currentQuery,
             category: undefined,
+            tagId: undefined,
+            tagNameSnapshot: undefined,
             visibility: undefined,
             sortDirection: DEFAULT_MING_CUSTOMS_FILTERS.sortDirection,
             pageNo: DEFAULT_PAGE_NO
         }));
+        setSelectedTagFilter(null);
     };
 
-    const selectKeyword = (keyword: string) => {
-        setSearchText(keyword);
+    const selectTag = (item: MingCustomsTagCloudItem) => {
+        setSelectedTagFilter({
+            count: item.count,
+            tagId: item.tagId ?? null,
+            tagNameSnapshot: item.tagNameSnapshot
+        });
         setQuery((currentQuery) => ({
             ...currentQuery,
-            keyword,
+            tagId: item.tagId ?? undefined,
+            tagNameSnapshot: item.tagNameSnapshot,
+            pageNo: DEFAULT_PAGE_NO
+        }));
+    };
+
+    const clearTagFilter = () => {
+        setSelectedTagFilter(null);
+        setQuery((currentQuery) => ({
+            ...currentQuery,
+            tagId: undefined,
+            tagNameSnapshot: undefined,
             pageNo: DEFAULT_PAGE_NO
         }));
     };
@@ -612,19 +655,22 @@ export const MingCustomsPage = () => {
         });
     };
 
-    const createRefinementTask = (entry: MingCustomsRecord) => {
+    const createRefinementTask = (
+        entry: MingCustomsRecord,
+        capability: AiRefinementTaskCapability
+    ) => {
         const requestedBy = currentUserQuery.data?.id;
         if (!requestedBy) {
             messageApi.warning("当前用户信息未加载完成，请稍后重试");
             return;
         }
         if (!entry.content?.trim() && !entry.originalExcerpts?.trim()) {
-            messageApi.warning("正文与原文摘录均为空，无法创建摘要精修任务");
+            messageApi.warning("正文与原文摘录均为空，无法创建 AI 精修任务");
             return;
         }
-        setCreatingRefinementCapability("summary");
+        setCreatingRefinementCapability(capability);
         createRefinementTaskMutation.mutate({
-            capability: "summary",
+            capability,
             scope: "classics",
             contentType: "MING_CUSTOMS",
             contentId: entry.id,
@@ -632,10 +678,10 @@ export const MingCustomsPage = () => {
             serviceRole: DEFAULT_REFINEMENT_SERVICE_ROLE,
             modelId: DEFAULT_REFINEMENT_MODEL_ID,
             modelName: DEFAULT_REFINEMENT_MODEL_NAME,
-            requestId: createEventId("ming-customs-summary-request"),
-            traceId: createEventId("ming-customs-summary-trace"),
-            promptMessagesJson: buildPromptMessagesJson(entry),
-            promptVariablesJson: JSON.stringify({ title: entry.title || null }),
+            requestId: createEventId(`ming-customs-${capability}-request`),
+            traceId: createEventId(`ming-customs-${capability}-trace`),
+            promptMessagesJson: buildPromptMessagesJson(entry, capability),
+            promptVariablesJson: JSON.stringify({ capability, title: entry.title || null }),
             inputPayloadJson: buildInputPayloadJson(entry),
             locale: "zh-CN"
         });
@@ -738,15 +784,39 @@ export const MingCustomsPage = () => {
                 onFilterReset={resetFilters}
                 onAdd={openCreateEditor}
                 pageActions={
-                    <MingCustomsKeywordCloud
+                    <MingCustomsTagCloud
+                        category={query.category}
+                        keyword={query.keyword}
                         visibility={query.visibility}
-                        onSelect={selectKeyword}
+                        onSelect={selectTag}
                     />
                 }
                 searchValue={searchText}
                 onSearchChange={searchMingCustoms}
                 content={
                     <>
+                        {selectedTagFilter ? (
+                            <Alert
+                                showIcon
+                                type="info"
+                                style={{ marginBottom: 12 }}
+                                message={
+                                    <span>
+                                        当前标签筛选：{selectedTagFilter.tagNameSnapshot}
+                                        <Badge
+                                            count={selectedTagFilter.count ?? 0}
+                                            color="var(--ming-customs-accent-color)"
+                                            style={{ marginLeft: 8 }}
+                                        />
+                                    </span>
+                                }
+                                action={
+                                    <Button size="small" onClick={clearTagFilter}>
+                                        清除标签筛选
+                                    </Button>
+                                }
+                            />
+                        ) : null}
                         {exportJobsQuery.isError ? (
                             <Alert
                                 type="warning"
@@ -896,13 +966,31 @@ export const MingCustomsPage = () => {
                                 size="small"
                                 title="AI 精修任务"
                                 extra={
-                                    <Button
-                                        type="primary"
-                                        onClick={() => createRefinementTask(editorEntry)}
-                                        loading={creatingRefinementCapability === "summary"}
-                                    >
-                                        创建摘要任务
-                                    </Button>
+                                    <Button.Group>
+                                        <Button
+                                            type="primary"
+                                            onClick={() =>
+                                                createRefinementTask(editorEntry, "summary")
+                                            }
+                                            loading={creatingRefinementCapability === "summary"}
+                                        >
+                                            创建摘要任务
+                                        </Button>
+                                        <Button
+                                            onClick={() =>
+                                                createRefinementTask(editorEntry, "tags")
+                                            }
+                                            loading={creatingRefinementCapability === "tags"}
+                                        >
+                                            创建标签任务
+                                        </Button>
+                                        <Button
+                                            onClick={() => createRefinementTask(editorEntry, "qa")}
+                                            loading={creatingRefinementCapability === "qa"}
+                                        >
+                                            创建问答任务
+                                        </Button>
+                                    </Button.Group>
                                 }
                             >
                                 {refinementTasks.length ? (

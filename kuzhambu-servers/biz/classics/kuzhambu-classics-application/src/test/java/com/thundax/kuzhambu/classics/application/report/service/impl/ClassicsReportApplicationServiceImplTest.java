@@ -70,7 +70,8 @@ class ClassicsReportApplicationServiceImplTest {
                                 date(1_718_086_400_000L))));
         when(wangqiDocumentRepository.listTimeline(null, WangqiDocumentVisibility.PUBLIC.value(), SortDirection.ASC))
                 .thenReturn(List.of(wangqiDocument("王圻图谱", date(1_718_086_400_000L))));
-        when(mingCustomsRepository.list(null, null, null, MingCustomsVisibility.PUBLIC.value(), SortDirection.ASC))
+        when(mingCustomsRepository.list(
+                        null, null, null, null, null, MingCustomsVisibility.PUBLIC.value(), SortDirection.ASC))
                 .thenReturn(List.of(mingCustomsEntry("明礼汇编", date(1_718_172_800_000L))));
 
         PageResult<ClassicsShareLink> sharePage = new PageResult<>();

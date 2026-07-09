@@ -1,6 +1,8 @@
 export type AiRefinementTaskStatus =
     "PENDING" | "RUNNING" | "SUCCEEDED" | "FAILED" | "PARTIAL" | "CANCELLED" | string;
 
+export type AiRefinementTaskCapability = "summary" | "tags" | "qa";
+
 export interface AiRefinementTaskRecord {
     taskId: number;
     status: AiRefinementTaskStatus;

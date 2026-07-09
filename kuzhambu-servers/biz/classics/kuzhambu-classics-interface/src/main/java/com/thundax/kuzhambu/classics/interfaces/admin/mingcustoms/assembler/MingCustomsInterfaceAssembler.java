@@ -11,9 +11,11 @@ import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustoms
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsContentFormat;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordCloudItem;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsTagCloudItem;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.request.MingCustomsRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsKeywordCloudItemResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsResponse;
+import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsTagCloudItemResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.response.MingCustomsVersionResponse;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import org.apache.commons.lang3.StringUtils;
@@ -26,11 +28,15 @@ public final class MingCustomsInterfaceAssembler {
                 request.getCategory(),
                 request.getKeyword(),
                 request.getTagName(),
+                request.getTagId(),
+                request.getTagNameSnapshot(),
                 visibility(request.getVisibility()),
-                StringUtils.isBlank(request.getSortDirection())
-                        ? SortDirection.ASC
-                        : SortDirection.valueOf(
-                                request.getSortDirection().trim().toUpperCase()));
+                sortDirection(request.getSortDirection()),
+                null);
+    }
+
+    public static MingCustomsPageQuery toTagCloudQuery(String category, String keyword, String visibility) {
+        return new MingCustomsPageQuery(category, keyword, null, null, null, visibility(visibility), null, null);
     }
 
     public static MingCustomsCommand toCommand(MingCustomsRequest request) {
@@ -85,6 +91,16 @@ public final class MingCustomsInterfaceAssembler {
                         .build();
     }
 
+    public static MingCustomsTagCloudItemResponse toTagCloudResponse(MingCustomsTagCloudItem item) {
+        return item == null
+                ? MingCustomsTagCloudItemResponse.builder().build()
+                : MingCustomsTagCloudItemResponse.builder()
+                        .tagId(item.getTagId())
+                        .tagNameSnapshot(item.getTagNameSnapshot())
+                        .count(item.getCount())
+                        .build();
+    }
+
     public static MingCustomsVersionResponse toVersionResponse(ClassicsContentVersion version) {
         return version == null
                 ? MingCustomsVersionResponse.builder().build()
@@ -108,5 +124,11 @@ public final class MingCustomsInterfaceAssembler {
 
     private static MingCustomsVisibility visibility(String value) {
         return StringUtils.isBlank(value) ? null : MingCustomsVisibility.from(value);
+    }
+
+    private static SortDirection sortDirection(String value) {
+        return StringUtils.isBlank(value)
+                ? SortDirection.ASC
+                : SortDirection.valueOf(value.trim().toUpperCase());
     }
 }

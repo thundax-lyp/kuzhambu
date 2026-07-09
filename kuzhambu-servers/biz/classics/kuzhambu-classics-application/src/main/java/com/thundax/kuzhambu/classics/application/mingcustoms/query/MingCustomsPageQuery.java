@@ -16,6 +16,8 @@ public class MingCustomsPageQuery {
     private String category;
     private String keyword;
     private String tagName;
+    private Long tagId;
+    private String tagNameSnapshot;
     private MingCustomsVisibility visibility;
     private SortDirection sortDirection = SortDirection.ASC;
     private Set<String> operatorPermissions;
@@ -26,6 +28,6 @@ public class MingCustomsPageQuery {
             String tagName,
             MingCustomsVisibility visibility,
             SortDirection sortDirection) {
-        this(category, keyword, tagName, visibility, sortDirection, null);
+        this(category, keyword, tagName, null, null, visibility, sortDirection, null);
     }
 }
