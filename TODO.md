@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `05-refinement-e2e`：补齐图谱精修 Playwright 冒烟
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-RUNTIME-VALIDATION-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/e2e/knowledge/refinement/refinement.spec.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/refinement-page.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/components/refinement-filter-form.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/components/refinement-entity-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/refinement/components/refinement-quality-annotation-drawer.tsx`
-    - 处理动作：覆盖任务筛选、打开任务、实体草稿编辑、确认、质量标注和应用精修联动
-    - 验收点：`pnpm --filter ./admin-web run e2e -- e2e/knowledge/refinement/refinement.spec.ts` 通过
-    - 重要度：9/10
-
 - [ ] `06-quality-report-e2e`：补齐质量报告 Playwright 冒烟
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-RUNTIME-VALIDATION-CLOSURE.md`
