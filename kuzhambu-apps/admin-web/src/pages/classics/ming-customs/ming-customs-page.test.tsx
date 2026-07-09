@@ -75,6 +75,18 @@ interface CapturedCall {
 }
 
 const capturedCalls: CapturedCall[] = [];
+let mockMingCustomsRecord = {
+    id: 500000000001,
+    title: "岁时礼仪：元旦朝贺",
+    category: "RITUAL",
+    chapter: "岁时礼仪",
+    section: "正旦",
+    summary: "记录明代正旦朝贺与家族拜礼。",
+    contentFormat: "MARKDOWN",
+    content: "## 正旦",
+    originalExcerpts: "正旦朝贺。",
+    visibility: "PUBLIC"
+};
 
 const selectFirstRow = (table: HTMLElement) => {
     const checkbox = within(table).getAllByRole("checkbox")[1];
@@ -129,20 +141,7 @@ const installFetchMock = () => {
                 totalCount: 1,
                 count: 1,
                 totalPage: 1,
-                records: [
-                    {
-                        id: 500000000001,
-                        title: "岁时礼仪：元旦朝贺",
-                        category: "RITUAL",
-                        chapter: "岁时礼仪",
-                        section: "正旦",
-                        summary: "记录明代正旦朝贺与家族拜礼。",
-                        contentFormat: "MARKDOWN",
-                        content: "## 正旦",
-                        originalExcerpts: "正旦朝贺。",
-                        visibility: "PUBLIC"
-                    }
-                ]
+                records: [mockMingCustomsRecord]
             });
         }
 
@@ -178,18 +177,7 @@ const installFetchMock = () => {
             });
         }
         if (path.endsWith("/classics/ming-customs/500000000001")) {
-            return apiResponse({
-                id: 500000000001,
-                title: "岁时礼仪：元旦朝贺",
-                category: "RITUAL",
-                chapter: "岁时礼仪",
-                section: "正旦",
-                summary: "记录明代正旦朝贺与家族拜礼。",
-                contentFormat: "MARKDOWN",
-                content: "## 正旦",
-                originalExcerpts: "正旦朝贺。",
-                visibility: "PUBLIC"
-            });
+            return apiResponse(mockMingCustomsRecord);
         }
         if (path.endsWith("/classics/ming-customs/versions/list")) {
             return apiResponse([
@@ -357,8 +345,21 @@ describe("MingCustomsPage", () => {
     let queryClient: QueryClient;
 
     beforeEach(() => {
+        vi.clearAllMocks();
         queryClient = createTestQueryClient();
         capturedCalls.length = 0;
+        mockMingCustomsRecord = {
+            id: 500000000001,
+            title: "岁时礼仪：元旦朝贺",
+            category: "RITUAL",
+            chapter: "岁时礼仪",
+            section: "正旦",
+            summary: "记录明代正旦朝贺与家族拜礼。",
+            contentFormat: "MARKDOWN",
+            content: "## 正旦",
+            originalExcerpts: "正旦朝贺。",
+            visibility: "PUBLIC"
+        };
         confirmDangerMock.mockClear();
         confirmDangerMock.mockImplementation((options: { onConfirm?: () => void }) =>
             options.onConfirm?.()
@@ -394,7 +395,7 @@ describe("MingCustomsPage", () => {
         expect(await screen.findByText("岁时礼仪：元旦朝贺")).toBeInTheDocument();
     }, 30000);
 
-    it("creates summary refinement task from the entry drawer", async () => {
+    it("creates summary tags and qa refinement tasks from the entry drawer", async () => {
         const user = userEvent.setup();
 
         render(
@@ -409,22 +410,60 @@ describe("MingCustomsPage", () => {
             await screen.findByRole("button", { name: "编辑明代习俗 岁时礼仪：元旦朝贺" })
         );
         await user.click(await screen.findByRole("button", { name: "创建摘要任务" }));
+        await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(1));
+        await user.click(await screen.findByRole("button", { name: "创建标签任务" }));
+        await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(2));
+        await user.click(await screen.findByRole("button", { name: "创建问答任务" }));
+        await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(3));
 
         expect(currentUserService.getCurrentUserInfo).toHaveBeenCalled();
-        expect(aiRefinementTaskService.createTask).toHaveBeenCalled();
-        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).toEqual(
-            expect.objectContaining({
-                capability: "summary",
-                scope: "classics",
-                contentType: "MING_CUSTOMS",
-                contentId: 500000000001,
-                requestedBy: 99,
-                serviceRole: "PRIMARY",
-                modelId: 1,
-                modelName: "gpt-5.5",
-                locale: "zh-CN"
-            })
+        const calls = vi
+            .mocked(aiRefinementTaskService.createTask)
+            .mock.calls.map(([payload]) => payload);
+        expect(calls.map((payload) => payload.capability)).toEqual(["summary", "tags", "qa"]);
+        calls.forEach((payload) => {
+            expect(payload).toEqual(
+                expect.objectContaining({
+                    scope: "classics",
+                    contentType: "MING_CUSTOMS",
+                    contentId: 500000000001,
+                    requestedBy: 99,
+                    serviceRole: "PRIMARY",
+                    modelId: 1,
+                    modelName: "gpt-5.5",
+                    locale: "zh-CN"
+                })
+            );
+            expect(payload.requestId).toContain(`ming-customs-${payload.capability}-request`);
+            expect(payload.traceId).toContain(`ming-customs-${payload.capability}-trace`);
+        });
+    }, 30000);
+
+    it("does not create refinement task when entry text is empty", async () => {
+        const user = userEvent.setup();
+        mockMingCustomsRecord = {
+            ...mockMingCustomsRecord,
+            content: "",
+            originalExcerpts: ""
+        };
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <MingCustomsPage />
+                </AntdApp>
+            </QueryClientProvider>
         );
+
+        await user.click(
+            await screen.findByRole("button", { name: "编辑明代习俗 岁时礼仪：元旦朝贺" })
+        );
+        await user.click(await screen.findByRole("button", { name: "创建问答任务" }));
+
+        expect(aiRefinementTaskService.createTask).not.toHaveBeenCalled();
+        expect(
+            await screen.findByText("正文与原文摘录均为空，无法创建 AI 精修任务")
+        ).toBeInTheDocument();
     }, 30000);
 
     it("creates batch shares from selected entries and shows item failures", async () => {

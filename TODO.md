@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web classics ai task tests`：补齐王圻和明代习俗 AI 任务入口前端测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-TAIL-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/common/ai-refinement-task-service.test.ts`、`kuzhambu-apps/admin-web/src/pages/classics/wangqi/wangqi-page.test.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/ming-customs/ming-customs-page.test.tsx`
-    - 处理动作：覆盖 `tags/qa` 能力文案、可重试判断，以及王圻和明代习俗三个 AI 任务按钮的请求字段。
-    - 验收点：测试断言 `contentType/contentId/capability/requestId` 正确，且正文为空时不会调用创建任务接口。
-    - 重要度：9/10
-
 - [ ] `admin-web mingcustoms tag cloud controls`：实现明代习俗标签云控件和列表筛选联动
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-TAIL-CLOSURE.md`
