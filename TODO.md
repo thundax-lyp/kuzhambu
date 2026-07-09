@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `09-ai-runtime-final-coverage-cleanup`：09 同步全量验证、更新覆盖清单并清理 RUNBOOK
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`docs/40-readiness/AI-IMPLEMENTATION-COVERAGE.md`、`docs/40-readiness/AI-RUNTIME-SMOKE-EVIDENCE.md`、`docs/30-designs/RUNBOOK-AI-RUNTIME-ACCEPTANCE.md`、`TODO.md`
-    - 处理动作：同步 main 后运行 PR 前全量验证，更新 AI Implementation Coverage，保留 readiness 证据，删除临时 RUNBOOK，并从 TODO 中删除已完成任务。
-    - 验收点：全量验证结果已记录，AI coverage 反映运行时验收结果，PR 收口时无仍有价值的临时 RUNBOOK，TODO 只保留未完成任务。
-    - 重要度：10/10
-
 ## 待审阅任务项
 
 ## 待讨论项

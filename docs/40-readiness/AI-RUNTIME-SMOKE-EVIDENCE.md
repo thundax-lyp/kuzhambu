@@ -214,3 +214,11 @@ Narrow validation executed on 2026-07-09:
 | Workers | `cd kuzhambu-workers && .venv/bin/python -m ruff format --check . && .venv/bin/python -m ruff check .` | Passed |
 
 Tests were intentionally not run in this step; final test execution is reserved for the closing verification task.
+
+Final validation executed on 2026-07-09 after syncing `origin/main`:
+
+| Area | Command | Result |
+| --- | --- | --- |
+| Java servers | `cd kuzhambu-servers && mvn spotless:check checkstyle:check test` | Passed, 58 reactor modules `SUCCESS` |
+| Frontend apps | `cd kuzhambu-apps && pnpm run format:check && pnpm run lint && pnpm run build && pnpm run test` | Passed; `admin-web` 64 test files / 279 tests, `portal-web` 13 test files / 50 tests |
+| Workers | `cd kuzhambu-workers && .venv/bin/python -m ruff format --check . && .venv/bin/python -m ruff check . && .venv/bin/python -m pytest -p no:capture` | Passed; 242 tests passed, 1 upstream `StarletteDeprecationWarning` |

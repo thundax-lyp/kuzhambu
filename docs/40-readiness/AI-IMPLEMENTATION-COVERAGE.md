@@ -25,6 +25,7 @@
 - Classics 三才图会视觉资产 `image_analysis / image_gen` 已接通 `task/stream` 展示闭环：Java 后端通过 `/api/ai/refinement/task/stream?taskId=...` 代理 worker SSE，Admin Web 展示增量过程、最终任务结果刷新候选区，stream error 可在任务快照刷新前直接重试。
 - Knowledge 标签候选抽取已通过 `TaxonomyApplicationService#extractTags` 接入 `KNOWLEDGE_TAG_EXTRACTION`，并在标签治理入口形成人工审核应用闭环。
 - AI 管理端治理闭环已完成：Admin Web 已提供服务配置、模型配置、能力映射、提示词版本、调用统计、动作状态 6 个页面；后端补齐调用记录分页、调用统计汇总、动作状态批量读取等 Admin 契约；菜单权限由 `db/data-source/system.json` 生成 `db/data/system.sql` 并通过一致性校验。
+- AI 运行时验收闭环已完成：`docs/40-readiness/AI-RUNTIME-SMOKE-EVIDENCE.md` 记录了 remote Docker、workers health、Admin 登录、PRIMARY 服务配置、模型检测、`classics + summary` 能力映射、提示词变量校验、动作状态刷新、三才摘要精修任务、候选结果、调用统计和 Admin 页面操作证据。
 - 本轮未新增 AI schema 字段；流式展示复用 `ai_refinement_task.stream_enabled / candidate_id / result_format / result_preview / failure_stage / error_type / error_message` 等既有字段，前端事件结构使用 `eventType / eventId / stage / deltaText / resultFormat / resultPayload / failureStage / errorType / errorMessage / status`。
 
 未完成：
@@ -40,8 +41,10 @@
 - 2026-07-08：`cd kuzhambu-servers && mvn -pl biz/discovery/kuzhambu-discovery-interface,biz/discovery/kuzhambu-discovery-infra,biz/ai/kuzhambu-ai-interface,biz/ai/kuzhambu-ai-infra,biz/classics/kuzhambu-classics-facade -am -Dsurefire.failIfNoSpecifiedTests=false test` 通过，覆盖 Discovery QA、AI facade/application/infra 和 Classics facade 相关测试。
 - 2026-07-08：`cd kuzhambu-workers && .venv/bin/python -m ruff format --check . && .venv/bin/python -m ruff check . && .venv/bin/python -m pytest -p no:capture tests/test_worker_e2e_ai_usecase_discovery.py` 通过，覆盖 Discovery answer-generation worker usecase 契约。
 - 2026-07-09：`node scripts/generate-system-data-sql.ts --check` 通过，确认 AI 菜单权限 `system.json -> system.sql` 生成结果一致。
-- 2026-07-09：`cd kuzhambu-servers && mvn spotless:check && mvn checkstyle:check && mvn test` 通过。
-- 2026-07-09：`cd kuzhambu-apps && pnpm run format:check && pnpm run lint && pnpm run test && pnpm run build` 通过；其中 `admin-web` 为 64 个 test files / 275 tests，`portal-web` 为 13 个 test files / 50 tests。
+- 2026-07-09：`cd kuzhambu-servers && mvn spotless:check checkstyle:check test` 通过，58 个 reactor modules 全部 `SUCCESS`。
+- 2026-07-09：`cd kuzhambu-apps && pnpm run format:check && pnpm run lint && pnpm run build && pnpm run test` 通过；其中 `admin-web` 为 64 个 test files / 279 tests，`portal-web` 为 13 个 test files / 50 tests。
+- 2026-07-09：`cd kuzhambu-workers && .venv/bin/python -m ruff format --check . && .venv/bin/python -m ruff check . && .venv/bin/python -m pytest -p no:capture` 通过，242 tests passed，存在 1 个上游 `StarletteDeprecationWarning`。
+- 2026-07-09：`docs/40-readiness/AI-RUNTIME-SMOKE-EVIDENCE.md` 已沉淀运行时验收证据；`classics + summary` 真实任务 `taskId=863100086391930880`、`callId=863100086496788480`、`candidateId=863100086928801792` 可串联任务、候选、调用统计和 Admin UI。
 
 ## 管理端治理闭环
 
