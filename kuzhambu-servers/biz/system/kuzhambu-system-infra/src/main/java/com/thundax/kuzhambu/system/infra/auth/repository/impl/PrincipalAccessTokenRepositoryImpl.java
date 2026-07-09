@@ -49,7 +49,8 @@ public class PrincipalAccessTokenRepositoryImpl implements PrincipalAccessTokenR
     @CreateCache(name = CACHE_SECTION, cacheType = CacheType.BOTH)
     private Cache<String, Object> cache;
 
-    public PrincipalAccessTokenRepositoryImpl(@Value("${spring.redis.url:redis://127.0.0.1:6379/0}") String redisUrl) {
+    public PrincipalAccessTokenRepositoryImpl(
+            @Value("${spring.data.redis.url:${spring.redis.url:redis://127.0.0.1:6379/0}}") String redisUrl) {
         this.redisClient = RedisClient.create(redisUrl);
     }
 
