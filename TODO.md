@@ -9,13 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `6. 文档矩阵收口`：同步 Sancai 条目迁移需求、设计和 implementation coverage
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-EDIT-CLOSURE.md`
-    - 范围对象：`docs/10-requirements/CLASSICS-REQUIREMENTS.md`、`docs/30-designs/CLASSICS-DESIGN.md`、`docs/40-readiness/CLASSICS-IMPLEMENTATION-COVERAGE.md`
-    - 处理动作：补充迁移规则和排序策略，并将 coverage 中对应项从 `部分完成` 收口为 `已完成`。
-    - 验收点：需求、设计和 coverage 对“编辑标题、门类、卷、原文、译文和标签”的口径一致且未完成部分为 `无`。
-    - 重要度：8/10
 - [ ] `7. 格式和验证`：运行后端、前端和文档检查
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-EDIT-CLOSURE.md`
