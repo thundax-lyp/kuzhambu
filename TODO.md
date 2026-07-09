@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web mingcustoms tag cloud controls`：实现明代习俗标签云控件和列表筛选联动
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-TAIL-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/ming-customs/ming-customs-types.ts`、`kuzhambu-apps/admin-web/src/pages/classics/ming-customs/ming-customs-service.ts`、`kuzhambu-apps/admin-web/src/pages/classics/ming-customs/components/ming-customs-keyword-cloud.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/ming-customs/ming-customs-page.tsx`
-    - 处理动作：将明代习俗主入口改为 `标签云`，点击标签写入 `tagId/tagNameSnapshot` 筛选并提供 `清除标签筛选` 控件。
-    - 验收点：标签云 Drawer、标签 item、Badge、当前标签提示和清除按钮均按 RUNBOOK 文案与操作生效。
-    - 重要度：10/10
-
 - [ ] `admin-web mingcustoms tag cloud tests`：补齐明代习俗标签云前端契约和页面测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-TAIL-CLOSURE.md`

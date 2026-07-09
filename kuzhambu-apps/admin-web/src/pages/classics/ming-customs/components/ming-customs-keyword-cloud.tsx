@@ -4,9 +4,12 @@ import { TagsOutlined } from "@ant-design/icons";
 import { Badge, Button, Empty } from "antd";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import * as service from "../ming-customs-service";
+import type { MingCustomsTagCloudItem } from "../ming-customs-types";
 
-export interface MingCustomsKeywordCloudProps {
-    onSelect: (keyword: string) => void;
+export interface MingCustomsTagCloudProps {
+    category?: string | null;
+    keyword?: string | null;
+    onSelect: (item: MingCustomsTagCloudItem) => void;
     visibility?: string | null;
 }
 
@@ -17,29 +20,34 @@ const readWeight = (count: number, maxCount: number) => {
     return 1 + Math.min(count / maxCount, 1) * 0.42;
 };
 
-export const MingCustomsKeywordCloud = ({ onSelect, visibility }: MingCustomsKeywordCloudProps) => {
+export const MingCustomsTagCloud = ({
+    category,
+    keyword,
+    onSelect,
+    visibility
+}: MingCustomsTagCloudProps) => {
     const [open, setOpen] = useState(false);
-    const keywordCloudQuery = useQuery({
-        queryKey: ["ming-customs", "keyword-cloud", visibility],
-        queryFn: () => service.listKeywordCloud(visibility),
+    const tagCloudQuery = useQuery({
+        queryKey: ["ming-customs", "tag-cloud", category, keyword, visibility],
+        queryFn: () => service.listTagCloud({ category, keyword, visibility }),
         enabled: open,
         retry: false
     });
-    const items = keywordCloudQuery.data || [];
+    const items = tagCloudQuery.data || [];
     const maxCount = Math.max(...items.map((item) => item.count), 0);
 
     return (
         <>
             <Button icon={<TagsOutlined />} onClick={() => setOpen(true)}>
-                关键词云
+                标签云
             </Button>
             <KuzhambuDrawer
-                aria-label="明代习俗关键词云"
+                aria-label="明代习俗标签云"
                 destroyOnHidden
-                loading={keywordCloudQuery.isLoading}
+                loading={tagCloudQuery.isLoading}
                 open={open}
                 size="middle"
-                title="关键词云"
+                title="标签云"
                 onClose={() => setOpen(false)}
                 footer={
                     <Button type="primary" onClick={() => setOpen(false)}>
@@ -51,17 +59,17 @@ export const MingCustomsKeywordCloud = ({ onSelect, visibility }: MingCustomsKey
                     <div className="ming-customs-keyword-cloud-body">
                         {items.map((item) => (
                             <button
-                                key={item.keyword}
+                                key={`${item.tagId ?? "name"}-${item.tagNameSnapshot}`}
                                 type="button"
                                 className="ming-customs-keyword-cloud-item"
                                 style={{ fontSize: `${readWeight(item.count, maxCount)}rem` }}
-                                aria-label={`筛选关键词 ${item.keyword}，${item.count} 次`}
+                                aria-label={`筛选标签 ${item.tagNameSnapshot}，${item.count} 条`}
                                 onClick={() => {
                                     setOpen(false);
-                                    onSelect(item.keyword);
+                                    onSelect(item);
                                 }}
                             >
-                                <span>{item.keyword}</span>
+                                <span>{item.tagNameSnapshot}</span>
                                 <Badge
                                     count={item.count}
                                     color="var(--ming-customs-accent-color)"
@@ -70,7 +78,7 @@ export const MingCustomsKeywordCloud = ({ onSelect, visibility }: MingCustomsKey
                         ))}
                     </div>
                 ) : (
-                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无关键词" />
+                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无标签" />
                 )}
             </KuzhambuDrawer>
         </>

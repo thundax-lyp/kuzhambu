@@ -4,7 +4,8 @@ import type { Page, PageQuery } from "@/types/page";
 import type {
     MingCustomsContentVersionRecord,
     MingCustomsKeywordCloudItem,
-    MingCustomsRecord
+    MingCustomsRecord,
+    MingCustomsTagCloudItem
 } from "./ming-customs-types";
 
 const CATEGORY_DICT_TYPE = "CLASSICS_MING_CUSTOMS_CATEGORY";
@@ -14,6 +15,8 @@ export type MingCustomsQuery = PageQuery<{
     category?: string | null;
     visibility?: string | null;
     tagName?: string | null;
+    tagId?: number | null;
+    tagNameSnapshot?: string | null;
     sortDirection?: "ASC" | "DESC" | null;
 }>;
 
@@ -27,6 +30,12 @@ export interface MingCustomsCommand {
     contentFormat?: string | null;
     content?: string | null;
     originalExcerpts?: string | null;
+    visibility?: string | null;
+}
+
+export interface MingCustomsTagCloudQuery {
+    keyword?: string | null;
+    category?: string | null;
     visibility?: string | null;
 }
 
@@ -73,6 +82,24 @@ export const listKeywordCloud = (visibility?: string | null) => {
         ? `/classics/ming-customs/keyword-cloud?${queryString}`
         : "/classics/ming-customs/keyword-cloud";
     return getJson<MingCustomsKeywordCloudItem[]>(path);
+};
+
+export const listTagCloud = (query: MingCustomsTagCloudQuery = {}) => {
+    const searchParams = new URLSearchParams();
+    if (query.category) {
+        searchParams.set("category", query.category);
+    }
+    if (query.keyword) {
+        searchParams.set("keyword", query.keyword);
+    }
+    if (query.visibility) {
+        searchParams.set("visibility", query.visibility);
+    }
+    const queryString = searchParams.toString();
+    const path = queryString
+        ? `/classics/ming-customs/tag-cloud?${queryString}`
+        : "/classics/ming-customs/tag-cloud";
+    return getJson<MingCustomsTagCloudItem[]>(path);
 };
 
 export const listVersions = (entryId: number) => {

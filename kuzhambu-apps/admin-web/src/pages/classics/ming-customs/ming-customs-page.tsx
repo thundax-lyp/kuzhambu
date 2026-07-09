@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Button, Card, Select } from "antd";
+import { Alert, App, Badge, Button, Card, Select } from "antd";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
@@ -24,13 +24,17 @@ import type {
     ClassicsExportJobRecord,
     ClassicsExportScopePayload
 } from "@/pages/classics/common/classics-export-types";
-import { MingCustomsKeywordCloud } from "./components/ming-customs-keyword-cloud";
+import { MingCustomsTagCloud } from "./components/ming-customs-keyword-cloud";
 import { MingCustomsList } from "./components/ming-customs-list";
 import { MingCustomsModel } from "./components/ming-customs-model";
 import { MingCustomsVersionHistoryPanel } from "./components/ming-customs-version-history-panel";
 import * as service from "./ming-customs-service";
 import type { MingCustomsCommand, MingCustomsQuery } from "./ming-customs-service";
-import type { MingCustomsContentVersionRecord, MingCustomsRecord } from "./ming-customs-types";
+import type {
+    MingCustomsContentVersionRecord,
+    MingCustomsRecord,
+    MingCustomsTagCloudItem
+} from "./ming-customs-types";
 import "./ming-customs-page.css";
 
 type MingCustomsVisibilityFilter = "ALL" | "PUBLIC" | "PRIVATE";
@@ -118,6 +122,12 @@ interface MingCustomsFilters {
     visibility: MingCustomsVisibilityFilter;
 }
 
+interface MingCustomsSelectedTagFilter {
+    count?: number | null;
+    tagId?: number | null;
+    tagNameSnapshot: string;
+}
+
 const DEFAULT_MING_CUSTOMS_FILTERS: MingCustomsFilters = {
     category: "",
     sortDirection: "DESC",
@@ -144,6 +154,9 @@ export const MingCustomsPage = () => {
     });
     const [searchText, setSearchText] = useState("");
     const [filters, setFilters] = useState<MingCustomsFilters>(DEFAULT_MING_CUSTOMS_FILTERS);
+    const [selectedTagFilter, setSelectedTagFilter] = useState<MingCustomsSelectedTagFilter | null>(
+        null
+    );
     const [editorMode, setEditorMode] = useState<"create" | "edit">("create");
     const [editorOpen, setEditorOpen] = useState(false);
     const [editingEntry, setEditingEntry] = useState<MingCustomsRecord | null>(null);
@@ -164,6 +177,7 @@ export const MingCustomsPage = () => {
     const handledSucceededTaskIdsRef = useRef<Set<number>>(new Set());
     const hasActiveFilters = Boolean(
         filters.category ||
+        selectedTagFilter ||
         filters.visibility !== "ALL" ||
         filters.sortDirection !== DEFAULT_MING_CUSTOMS_FILTERS.sortDirection
     );
@@ -271,6 +285,7 @@ export const MingCustomsPage = () => {
         await Promise.all([
             queryClient.invalidateQueries({ queryKey: ["ming-customs", "page"] }),
             queryClient.invalidateQueries({ queryKey: ["ming-customs", "keyword-cloud"] }),
+            queryClient.invalidateQueries({ queryKey: ["ming-customs", "tag-cloud"] }),
             queryClient.invalidateQueries({ queryKey: ["ming-customs", "detail"] }),
             queryClient.invalidateQueries({
                 queryKey: ["classics", "content", "tags", "MING_CUSTOMS"]
@@ -447,6 +462,8 @@ export const MingCustomsPage = () => {
             category: filters.category || undefined,
             visibility: readVisibilityValue(filters.visibility),
             sortDirection: filters.sortDirection,
+            tagId: selectedTagFilter?.tagId ?? undefined,
+            tagNameSnapshot: selectedTagFilter?.tagNameSnapshot || undefined,
             pageNo: DEFAULT_PAGE_NO
         }));
     };
@@ -456,17 +473,35 @@ export const MingCustomsPage = () => {
         setQuery((currentQuery) => ({
             ...currentQuery,
             category: undefined,
+            tagId: undefined,
+            tagNameSnapshot: undefined,
             visibility: undefined,
             sortDirection: DEFAULT_MING_CUSTOMS_FILTERS.sortDirection,
             pageNo: DEFAULT_PAGE_NO
         }));
+        setSelectedTagFilter(null);
     };
 
-    const selectKeyword = (keyword: string) => {
-        setSearchText(keyword);
+    const selectTag = (item: MingCustomsTagCloudItem) => {
+        setSelectedTagFilter({
+            count: item.count,
+            tagId: item.tagId ?? null,
+            tagNameSnapshot: item.tagNameSnapshot
+        });
         setQuery((currentQuery) => ({
             ...currentQuery,
-            keyword,
+            tagId: item.tagId ?? undefined,
+            tagNameSnapshot: item.tagNameSnapshot,
+            pageNo: DEFAULT_PAGE_NO
+        }));
+    };
+
+    const clearTagFilter = () => {
+        setSelectedTagFilter(null);
+        setQuery((currentQuery) => ({
+            ...currentQuery,
+            tagId: undefined,
+            tagNameSnapshot: undefined,
             pageNo: DEFAULT_PAGE_NO
         }));
     };
@@ -749,15 +784,39 @@ export const MingCustomsPage = () => {
                 onFilterReset={resetFilters}
                 onAdd={openCreateEditor}
                 pageActions={
-                    <MingCustomsKeywordCloud
+                    <MingCustomsTagCloud
+                        category={query.category}
+                        keyword={query.keyword}
                         visibility={query.visibility}
-                        onSelect={selectKeyword}
+                        onSelect={selectTag}
                     />
                 }
                 searchValue={searchText}
                 onSearchChange={searchMingCustoms}
                 content={
                     <>
+                        {selectedTagFilter ? (
+                            <Alert
+                                showIcon
+                                type="info"
+                                style={{ marginBottom: 12 }}
+                                message={
+                                    <span>
+                                        当前标签筛选：{selectedTagFilter.tagNameSnapshot}
+                                        <Badge
+                                            count={selectedTagFilter.count ?? 0}
+                                            color="var(--ming-customs-accent-color)"
+                                            style={{ marginLeft: 8 }}
+                                        />
+                                    </span>
+                                }
+                                action={
+                                    <Button size="small" onClick={clearTagFilter}>
+                                        清除标签筛选
+                                    </Button>
+                                }
+                            />
+                        ) : null}
                         {exportJobsQuery.isError ? (
                             <Alert
                                 type="warning"
