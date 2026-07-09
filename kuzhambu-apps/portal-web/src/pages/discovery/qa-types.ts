@@ -82,6 +82,7 @@ export interface DiscoveryQaChatCompletionRequest {
     model: string;
     options?: Record<string, unknown> | null;
     requestId?: string | null;
+    sessionId: string;
     stream: boolean;
     traceId?: string | null;
 }

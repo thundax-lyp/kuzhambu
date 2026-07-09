@@ -154,6 +154,7 @@ test.describe("portal discovery qa smoke", () => {
                     content: "礼学和礼制有什么关系？"
                 }
             ],
+            sessionId: "7001",
             metadata: {
                 sessionId: "7001",
                 contextMode: "GENERAL"
@@ -206,6 +207,7 @@ test.describe("portal discovery qa smoke", () => {
         await expect
             .poll(() => mocks.getChatPayload())
             .toMatchObject({
+                sessionId: "7001",
                 metadata: {
                     contextContentId: 3001,
                     contextContentType: "WANGQI_DOCUMENT",

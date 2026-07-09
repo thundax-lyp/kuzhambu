@@ -394,6 +394,7 @@ export const DiscoveryQaPage = () => {
                 model: FIXED_MODEL,
                 options: {},
                 requestId: parseString(form.requestId),
+                sessionId,
                 stream: false,
                 traceId: parseString(form.traceId)
             });

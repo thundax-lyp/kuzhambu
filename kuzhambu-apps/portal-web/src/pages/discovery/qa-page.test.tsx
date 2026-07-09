@@ -171,6 +171,7 @@ describe("DiscoveryQaPage", () => {
             model: "kuzhambu-qa",
             messages: [{ content: "礼器是什么？", role: "user" }],
             metadata: { contextContentId: null, contextContentType: null, sessionId: "2001" },
+            sessionId: "2001",
             stream: false
         });
         expect(container.textContent).toContain("礼器常见于典章与礼仪条目。");
@@ -270,6 +271,7 @@ describe("DiscoveryQaPage", () => {
             title: "王圻官制"
         });
         expect(mocks.createQaChatCompletion.mock.calls[0]?.[0]).toMatchObject({
+            sessionId: "3002",
             metadata: {
                 contextContentId: 3001,
                 contextContentType: "WANGQI_DOCUMENT",
@@ -472,6 +474,7 @@ describe("DiscoveryQaPage", () => {
         expect(mocks.openQaSession).not.toHaveBeenCalled();
         expect(mocks.createQaChatCompletion).toHaveBeenCalledTimes(1);
         expect(mocks.createQaChatCompletion.mock.calls[0]?.[0]).toMatchObject({
+            sessionId: "5001",
             metadata: {
                 contextContentId: 2002,
                 contextContentType: "SANCAI_ENTRY",
@@ -488,6 +491,7 @@ describe("DiscoveryQaPage", () => {
 
         expect(mocks.createQaChatCompletion).toHaveBeenCalledTimes(2);
         expect(mocks.createQaChatCompletion.mock.calls[1]![0]).toMatchObject({
+            sessionId: "5001",
             metadata: {
                 contextContentId: 2002,
                 contextContentType: "SANCAI_ENTRY",
@@ -641,6 +645,7 @@ describe("DiscoveryQaPage", () => {
             messages: [{ content: "礼器是什么？", role: "user" }],
             metadata: { sessionId: "2001" },
             model: "kuzhambu-qa",
+            sessionId: "2001",
             stream: false
         });
 
