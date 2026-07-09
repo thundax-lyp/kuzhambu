@@ -4,10 +4,12 @@ from time import time
 import pytest
 from fastapi.testclient import TestClient
 
+from kuzhambu_workers.ai.openai_compatible import OpenAiChatCompletionResult
 from kuzhambu_workers.ai.usecase_registry import USECASES, AiUsecaseDomain
 from kuzhambu_workers.core.security import sign_request
 from kuzhambu_workers.main import app
 from kuzhambu_workers.schemas.ai import AiCapability
+from kuzhambu_workers.schemas.common import UsageSummary
 
 KNOWLEDGE_USECASES = tuple(
     usecase for usecase in USECASES if usecase.domain == AiUsecaseDomain.KNOWLEDGE
@@ -18,6 +20,10 @@ KNOWLEDGE_USECASES = tuple(
 def test_knowledge_usecase_routes_accept_matching_request(monkeypatch, usecase) -> None:
     monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
     monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
+    monkeypatch.setattr(
+        "kuzhambu_workers.ai.graphs.basic.invoke_chat_completion",
+        lambda request: _model_result(_structured_content(request.capability)),
+    )
     body = _body(operation=usecase.operation, capability=usecase.capability.value)
 
     response = TestClient(app).post(
@@ -100,3 +106,21 @@ def _expected_payload_keys(capability: AiCapability) -> set[str] | None:
     if capability == AiCapability.LINEAGE_EXTRACTION:
         return {"nodes", "relations", "sourceSnippets", "warnings"}
     return None
+
+
+def _structured_content(capability: AiCapability) -> str:
+    if capability == AiCapability.RELATION_EXTRACTION:
+        return '{"entities":[],"relations":[],"sourceSnippets":[],"warnings":[]}'
+    if capability == AiCapability.KNOWLEDGE_GRAPH:
+        return '{"entities":[],"relations":[],"entryRefs":[],"warnings":[]}'
+    if capability == AiCapability.LINEAGE_EXTRACTION:
+        return '{"nodes":[],"relations":[],"sourceSnippets":[],"warnings":[]}'
+    return '{"items":[]}'
+
+
+def _model_result(content: str) -> OpenAiChatCompletionResult:
+    return OpenAiChatCompletionResult(
+        content=content,
+        usage=UsageSummary(latencyMs=12, inputTokens=3, outputTokens=4),
+        raw_finish_reason="stop",
+    )

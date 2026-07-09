@@ -4,10 +4,15 @@ from time import time
 import pytest
 from fastapi.testclient import TestClient
 
+from kuzhambu_workers.ai.openai_compatible import (
+    OpenAiChatCompletionChunk,
+    OpenAiChatCompletionResult,
+)
 from kuzhambu_workers.ai.usecase_registry import USECASES, AiUsecaseDomain
 from kuzhambu_workers.core.security import sign_request
 from kuzhambu_workers.main import app
 from kuzhambu_workers.schemas.ai import AiCapability
+from kuzhambu_workers.schemas.common import UsageSummary
 
 IMAGE_ANALYSIS_PATH = "/internal/ai/classics/sancai/image-analysis"
 IMAGE_ANALYSIS_OPERATION = "CLASSICS_SANCAI_IMAGE_ANALYSIS"
@@ -25,6 +30,27 @@ CLASSICS_USECASES = tuple(
 def test_classics_usecase_routes_accept_matching_request(monkeypatch, usecase) -> None:
     monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
     monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
+    monkeypatch.setattr(
+        "kuzhambu_workers.ai.graphs.basic.invoke_chat_completion",
+        lambda request: _model_result(_model_content(request.capability)),
+    )
+    monkeypatch.setattr(
+        "kuzhambu_workers.ai.graphs.text.invoke_chat_completion",
+        lambda request: _model_result("classics answer"),
+    )
+    monkeypatch.setattr(
+        "kuzhambu_workers.api.ai_routes.iter_chat_completion_chunks",
+        lambda request: iter(
+            [
+                OpenAiChatCompletionChunk(delta="classics", usage=None, finish_reason=None),
+                OpenAiChatCompletionChunk(
+                    delta="",
+                    usage=UsageSummary(latencyMs=12, inputTokens=3, outputTokens=4),
+                    finish_reason="stop",
+                ),
+            ]
+        ),
+    )
     body = _body(
         operation=usecase.operation,
         capability=usecase.capability.value,
@@ -38,9 +64,16 @@ def test_classics_usecase_routes_accept_matching_request(monkeypatch, usecase) -
     )
 
     assert response.status_code == 200
+    if usecase.capability == AiCapability.IMAGE_GEN:
+        assert "event: error" in response.text
+        assert "event: completed" not in response.text
+        assert '"errorType":"UNSUPPORTED_CAPABILITY"' in response.text
+        return
     if usecase.stream:
         assert response.headers["content-type"].startswith("text/event-stream")
         assert "event: started" in response.text
+        assert "event: delta" in response.text
+        assert "event: usage" in response.text
         assert "event: completed" in response.text
         assert f'"format":"{usecase.output.value}"' in response.text
     else:
@@ -74,6 +107,19 @@ def test_classics_usecase_route_rejects_capability_mismatch(monkeypatch) -> None
 def test_classics_image_analysis_route_contract_is_stable(monkeypatch) -> None:
     monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
     monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
+    monkeypatch.setattr(
+        "kuzhambu_workers.api.ai_routes.iter_chat_completion_chunks",
+        lambda request: iter(
+            [
+                OpenAiChatCompletionChunk(delta="markdown", usage=None, finish_reason=None),
+                OpenAiChatCompletionChunk(
+                    delta="",
+                    usage=UsageSummary(latencyMs=12, inputTokens=3, outputTokens=4),
+                    finish_reason="stop",
+                ),
+            ]
+        ),
+    )
     body = _body(
         operation=IMAGE_ANALYSIS_OPERATION,
         capability=AiCapability.IMAGE_ANALYSIS.value,
@@ -111,18 +157,21 @@ def test_classics_image_gen_route_contract_is_stable(monkeypatch) -> None:
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("text/event-stream")
     assert "event: started" in response.text
-    assert "event: completed" in response.text
-    assert '"status":"SUCCEEDED"' in response.text
-    assert '"failureStage":null' in response.text
+    assert "event: error" in response.text
+    assert "event: completed" not in response.text
+    assert '"status":"FAILED"' in response.text
+    assert '"failureStage":"WORKER_REQUEST"' in response.text
     assert '"fallbackUsed":false' in response.text
-    assert '"format":"ARTIFACT"' in response.text
-    assert '"artifactType":"IMAGE"' in response.text
-    assert '"encoding":"SSE_ARTIFACT_CHUNK"' in response.text
+    assert '"errorType":"UNSUPPORTED_CAPABILITY"' in response.text
 
 
 def test_classics_fusion_route_contract_is_stable(monkeypatch) -> None:
     monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
     monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
+    monkeypatch.setattr(
+        "kuzhambu_workers.ai.graphs.basic.invoke_chat_completion",
+        lambda request: _model_result("fusion markdown"),
+    )
     body = _body(
         operation=FUSION_OPERATION,
         capability=AiCapability.FUSION.value,
@@ -224,3 +273,21 @@ def _headers(body: bytes, path: str, *, service: str) -> dict[str, str]:
         "X-Kuzhambu-Timestamp": timestamp,
         "X-Kuzhambu-Signature": signature,
     }
+
+
+def _model_result(content: str) -> OpenAiChatCompletionResult:
+    return OpenAiChatCompletionResult(
+        content=content,
+        usage=UsageSummary(latencyMs=12, inputTokens=3, outputTokens=4),
+        raw_finish_reason="stop",
+    )
+
+
+def _model_content(capability: AiCapability) -> str:
+    if capability in {
+        AiCapability.TAGS,
+        AiCapability.QA,
+        AiCapability.SPLIT,
+    }:
+        return '{"items":[]}'
+    return "classics answer"

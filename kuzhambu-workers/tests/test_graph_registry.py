@@ -1,10 +1,10 @@
-import json
-
 import pytest
 
 from kuzhambu_workers.ai.graph_registry import CANONICAL_CAPABILITIES, GraphRegistry
+from kuzhambu_workers.ai.openai_compatible import OpenAiChatCompletionResult
 from kuzhambu_workers.core.errors import WorkerError
 from kuzhambu_workers.schemas.ai import AiCapability, AiInvokeRequest
+from kuzhambu_workers.schemas.common import UsageSummary
 
 
 def test_registry_contains_all_canonical_capabilities() -> None:
@@ -14,7 +14,11 @@ def test_registry_contains_all_canonical_capabilities() -> None:
     assert set(CANONICAL_CAPABILITIES) == {capability.value for capability in AiCapability}
 
 
-def test_registry_invokes_text_graph_for_classics_translate() -> None:
+def test_registry_invokes_text_graph_for_classics_translate(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "kuzhambu_workers.ai.graphs.text.invoke_chat_completion",
+        lambda request: _model_result(f"[{request.operation}] hello"),
+    )
     registry = GraphRegistry.build_default()
     request = AiInvokeRequest.model_validate(
         _request_payload("translate", operation="CLASSICS_SANCAI_TRANSLATE")
@@ -23,22 +27,7 @@ def test_registry_invokes_text_graph_for_classics_translate() -> None:
     result = registry.invoke(request)
 
     assert result["format"] == "TEXT"
-    assert (
-        json.loads(result["payload"])["choices"][0]["message"]["content"]
-        == "[CLASSICS_SANCAI_TRANSLATE] hello"
-    )
-
-
-def test_registry_returns_structured_placeholder_for_structured_capability() -> None:
-    registry = GraphRegistry.build_default()
-    request = AiInvokeRequest.model_validate(_request_payload("tags"))
-
-    result = registry.invoke(request)
-
-    assert result == {
-        "format": "STRUCTURED",
-        "payload": {"capability": "tags", "placeholder": True},
-    }
+    assert result["payload"] == "[CLASSICS_SANCAI_TRANSLATE] hello"
 
 
 @pytest.mark.parametrize(
@@ -50,9 +39,14 @@ def test_registry_returns_structured_placeholder_for_structured_capability() -> 
     ],
 )
 def test_registry_returns_stable_payload_shape_for_knowledge_capabilities(
+    monkeypatch,
     capability: str,
     expected_keys: set[str],
 ) -> None:
+    monkeypatch.setattr(
+        "kuzhambu_workers.ai.graphs.basic.invoke_chat_completion",
+        lambda request: _model_result(_knowledge_content(request.capability)),
+    )
     registry = GraphRegistry.build_default()
     request = AiInvokeRequest.model_validate(_request_payload(capability))
 
@@ -70,6 +64,24 @@ def test_registry_rejects_unregistered_capability() -> None:
         registry.invoke(request)
 
     assert raised.value.code == "UNSUPPORTED_CAPABILITY"
+
+
+def _model_result(content: str) -> OpenAiChatCompletionResult:
+    return OpenAiChatCompletionResult(
+        content=content,
+        usage=UsageSummary(latencyMs=12, inputTokens=3, outputTokens=4),
+        raw_finish_reason="stop",
+    )
+
+
+def _knowledge_content(capability: AiCapability) -> str:
+    if capability == AiCapability.RELATION_EXTRACTION:
+        return '{"entities":[],"relations":[],"sourceSnippets":[],"warnings":[]}'
+    if capability == AiCapability.KNOWLEDGE_GRAPH:
+        return '{"entities":[],"relations":[],"entryRefs":[],"warnings":[]}'
+    if capability == AiCapability.LINEAGE_EXTRACTION:
+        return '{"nodes":[],"relations":[],"sourceSnippets":[],"warnings":[]}'
+    return '{"items":[]}'
 
 
 def _request_payload(capability: str, *, operation: str = "TEST") -> dict:

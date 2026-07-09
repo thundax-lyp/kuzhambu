@@ -4,10 +4,15 @@ from time import time
 import pytest
 from fastapi.testclient import TestClient
 
+from kuzhambu_workers.ai.openai_compatible import (
+    OpenAiChatCompletionChunk,
+    OpenAiChatCompletionResult,
+)
 from kuzhambu_workers.ai.usecase_registry import USECASES, AiUsecaseDomain
 from kuzhambu_workers.core.security import sign_request
 from kuzhambu_workers.main import app
 from kuzhambu_workers.schemas.ai import AiCapability
+from kuzhambu_workers.schemas.common import UsageSummary
 
 DISCOVERY_USECASES = tuple(
     usecase for usecase in USECASES if usecase.domain == AiUsecaseDomain.DISCOVERY
@@ -27,6 +32,23 @@ DISCOVERY_QA_FORBIDDEN_PATH_PARTS = (
 def test_discovery_usecase_routes_accept_matching_request(monkeypatch, usecase) -> None:
     monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
     monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
+    monkeypatch.setattr(
+        "kuzhambu_workers.ai.graphs.basic.invoke_chat_completion",
+        lambda request: _model_result(_model_content(request.capability)),
+    )
+    monkeypatch.setattr(
+        "kuzhambu_workers.api.ai_routes.iter_chat_completion_chunks",
+        lambda request: iter(
+            [
+                OpenAiChatCompletionChunk(delta="answer", usage=None, finish_reason=None),
+                OpenAiChatCompletionChunk(
+                    delta="",
+                    usage=UsageSummary(latencyMs=12, inputTokens=3, outputTokens=4),
+                    finish_reason="stop",
+                ),
+            ]
+        ),
+    )
     body = _body(
         operation=usecase.operation,
         capability=usecase.capability.value,
@@ -43,6 +65,8 @@ def test_discovery_usecase_routes_accept_matching_request(monkeypatch, usecase) 
     if usecase.stream:
         assert response.headers["content-type"].startswith("text/event-stream")
         assert "event: started" in response.text
+        assert "event: delta" in response.text
+        assert "event: usage" in response.text
         assert "event: completed" in response.text
         assert f'"format":"{usecase.output.value}"' in response.text
     else:
@@ -89,6 +113,10 @@ def test_discovery_answer_path_rejects_stream_request(monkeypatch) -> None:
 def test_discovery_answer_path_accepts_single_document_context(monkeypatch) -> None:
     monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
     monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
+    monkeypatch.setattr(
+        "kuzhambu_workers.ai.graphs.basic.invoke_chat_completion",
+        lambda request: _model_result("answer"),
+    )
     path = "/internal/ai/discovery/answer-generation"
     body = _body(
         operation="DISCOVERY_ANSWER_GENERATION",
@@ -172,3 +200,17 @@ def _headers(body: bytes, path: str) -> dict[str, str]:
         "X-Kuzhambu-Timestamp": timestamp,
         "X-Kuzhambu-Signature": signature,
     }
+
+
+def _model_content(capability: AiCapability) -> str:
+    if capability == AiCapability.QUERY_UNDERSTANDING:
+        return '{"items":[]}'
+    return "answer"
+
+
+def _model_result(content: str) -> OpenAiChatCompletionResult:
+    return OpenAiChatCompletionResult(
+        content=content,
+        usage=UsageSummary(latencyMs=12, inputTokens=3, outputTokens=4),
+        raw_finish_reason="stop",
+    )

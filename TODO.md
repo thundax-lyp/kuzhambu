@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `branch sync main`：同步 main 分支最新代码并处理冲突
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/PR-RULES.md`
-    - 范围对象：`feat/classics-tail-closure` 分支、`origin/main`
-    - 处理动作：在功能实现和聚焦测试补齐后同步 `origin/main` 到当前分支并处理任务相关冲突。
-    - 验收点：当前分支包含最新 `origin/main`，同步后工作树只保留本任务相关改动。
-    - 重要度：9/10
-
 - [ ] `classics backend final validation`：运行 Classics 后端最终验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-TAIL-CLOSURE.md`
