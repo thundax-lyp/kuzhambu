@@ -152,23 +152,20 @@ test.describe("operations reports", () => {
             "/kuzhambu-admin-api/api/operations/report/9001/content?download=true"
         );
 
-        await page
-            .getByText("生成周期")
-            .locator("..")
-            .locator("input")
-            .first()
-            .fill("2026-07-01 00:00:00");
-        await page
-            .getByText("生成周期")
-            .locator("..")
-            .locator("input")
-            .nth(1)
-            .fill("2026-07-07 23:59:59");
-        await page.keyboard.press("Tab");
+        const generatePeriodInputs = page.getByLabel("生成周期");
+        await generatePeriodInputs.first().click();
+        await generatePeriodInputs.first().fill("2026-07-01 00:00:00");
+        await generatePeriodInputs.first().press("Enter");
+        await generatePeriodInputs.nth(1).fill("2026-07-07 23:59:59");
+        await generatePeriodInputs.nth(1).press("Enter");
+        await expect(page.getByRole("button", { name: /提交生成/ })).toBeEnabled();
         await page.getByRole("button", { name: /提交生成/ }).click();
         await expect.poll(() => generatedBody).not.toBeNull();
 
-        await page.getByRole("button", { name: "详情" }).nth(1).click();
+        await page
+            .getByRole("button", { name: /详\s*情/ })
+            .nth(1)
+            .click();
         await expect(page.getByText("报表生成失败")).toBeVisible();
         await expect(page.getByText("req-9002")).toBeVisible();
     });

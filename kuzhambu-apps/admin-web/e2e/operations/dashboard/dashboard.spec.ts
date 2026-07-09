@@ -199,7 +199,7 @@ test.describe("operations dashboard entries", () => {
         await page.goto("/operations/dashboard");
 
         await expect(page.getByRole("heading", { name: "运营看板" })).toBeVisible();
-        await expect(page.getByText("系统日志")).not.toBeVisible();
-        await expect(page.getByText("审计日志")).not.toBeVisible();
+        await expect(page.getByTestId("operations-entry-system-log")).toHaveCount(0);
+        await expect(page.getByTestId("operations-entry-audit-log")).toHaveCount(0);
     });
 });

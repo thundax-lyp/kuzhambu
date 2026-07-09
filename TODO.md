@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `7 验证后端前端`：执行 Operations 报表闭环验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORTS-ADMIN.md`
-    - 范围对象：`kuzhambu-servers/biz/operations/kuzhambu-operations-interface`、`kuzhambu-servers/biz/operations/kuzhambu-operations-application`、`kuzhambu-apps/admin-web`
-    - 处理动作：执行后端下载代理与 admin-web 报表页面相关格式化、静态检查、单元测试、构建和 E2E 验证。
-    - 验收点：验证命令有明确通过结果；如有失败，TODO 收窄为剩余失败项且不删除未完成任务。
-    - 重要度：10/10
-
 - [ ] `8 更新覆盖矩阵`：同步 Operations Implementation Coverage
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-OPERATIONS-REPORTS-ADMIN.md`
