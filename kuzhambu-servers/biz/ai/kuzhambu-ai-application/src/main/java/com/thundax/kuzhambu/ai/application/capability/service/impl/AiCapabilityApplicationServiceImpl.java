@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiActionStatus;
 import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiCapability;
 import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiCapabilityMapping;
 import com.thundax.kuzhambu.ai.domain.capability.repository.AiCapabilityRepository;
+import com.thundax.kuzhambu.ai.domain.config.model.entity.AiServiceConfig;
 import com.thundax.kuzhambu.ai.domain.model.model.entity.AiModel;
 import com.thundax.kuzhambu.ai.domain.model.repository.AiModelRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
@@ -23,6 +24,7 @@ public class AiCapabilityApplicationServiceImpl implements AiCapabilityApplicati
 
     private static final String ACTION_UNAVAILABLE_NO_MAPPING = "No enabled capability mapping";
     private static final String ACTION_UNAVAILABLE_MODEL_MISMATCH = "Mapped model does not satisfy capability tags";
+    private static final String ACTION_UNAVAILABLE_SERVICE = "Mapped service is unavailable";
 
     private final AiCapabilityRepository aiCapabilityRepository;
     private final AiModelRepository aiModelRepository;
@@ -78,6 +80,21 @@ public class AiCapabilityApplicationServiceImpl implements AiCapabilityApplicati
         List<AiCapabilityMapping> mappings = aiCapabilityRepository.listMappingsByModelId(modelId);
         if (mappings != null && !mappings.isEmpty()) {
             throw new BizException("Model is still used by AI capability mappings: " + modelId);
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void refreshActionStatusesByModelId(Long modelId) {
+        if (modelId == null) {
+            return;
+        }
+        List<AiCapabilityMapping> mappings = aiCapabilityRepository.listMappingsByModelId(modelId);
+        if (mappings == null || mappings.isEmpty()) {
+            return;
+        }
+        for (AiCapabilityMapping mapping : mappings) {
+            refreshActionStatus(mapping.getScope(), mapping.getCapability());
         }
     }
 
@@ -150,6 +167,13 @@ public class AiCapabilityApplicationServiceImpl implements AiCapabilityApplicati
         if (!mapping.canUse(capability, model)) {
             return AiActionStatus.unavailable(
                     actionStatusId, scope, capabilityName, ACTION_UNAVAILABLE_MODEL_MISMATCH, checkedAt);
+        }
+        AiServiceConfig serviceConfig = model.getServiceId() == null
+                ? null
+                : aiModelRepository.getServiceConfigByServiceId(model.getServiceId());
+        if (serviceConfig == null || !serviceConfig.isAvailable()) {
+            return AiActionStatus.unavailable(
+                    actionStatusId, scope, capabilityName, ACTION_UNAVAILABLE_SERVICE, checkedAt);
         }
         return AiActionStatus.available(actionStatusId, scope, capabilityName, checkedAt);
     }

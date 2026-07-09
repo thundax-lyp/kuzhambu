@@ -22,6 +22,7 @@ class AiCapabilityApplicationServiceImplTest {
     void saveMappingShouldAllowDisabledMappingWithMismatchedTags() {
         FakeCapabilityRepository capabilityRepository = new FakeCapabilityRepository();
         FakeModelRepository modelRepository = new FakeModelRepository();
+        modelRepository.model.setCapabilityTags(List.of("embedding"));
         AiCapabilityApplicationServiceImpl service =
                 new AiCapabilityApplicationServiceImpl(capabilityRepository, modelRepository);
         AiCapabilityMappingSaveCommand command = new AiCapabilityMappingSaveCommand();
@@ -42,10 +43,54 @@ class AiCapabilityApplicationServiceImplTest {
         assertThat(actionStatus.getUnavailableReason()).isEqualTo("No enabled capability mapping");
     }
 
+    @Test
+    void refreshActionStatusShouldRejectDisabledMappedModel() {
+        FakeCapabilityRepository capabilityRepository = new FakeCapabilityRepository();
+        capabilityRepository.setMapping(enabledMapping());
+        FakeModelRepository modelRepository = new FakeModelRepository();
+        modelRepository.model.setEnabled(false);
+        AiCapabilityApplicationServiceImpl service =
+                new AiCapabilityApplicationServiceImpl(capabilityRepository, modelRepository);
+
+        AiActionStatusResult actionStatus = service.refreshActionStatus("classics", "summary");
+
+        assertThat(actionStatus.isAvailable()).isFalse();
+        assertThat(actionStatus.getUnavailableReason()).isEqualTo("Mapped model does not satisfy capability tags");
+    }
+
+    @Test
+    void refreshActionStatusShouldRejectUnavailableMappedService() {
+        FakeCapabilityRepository capabilityRepository = new FakeCapabilityRepository();
+        capabilityRepository.setMapping(enabledMapping());
+        FakeModelRepository modelRepository = new FakeModelRepository();
+        modelRepository.serviceConfig.setStatus("UNAVAILABLE");
+        AiCapabilityApplicationServiceImpl service =
+                new AiCapabilityApplicationServiceImpl(capabilityRepository, modelRepository);
+
+        AiActionStatusResult actionStatus = service.refreshActionStatus("classics", "summary");
+
+        assertThat(actionStatus.isAvailable()).isFalse();
+        assertThat(actionStatus.getUnavailableReason()).isEqualTo("Mapped service is unavailable");
+    }
+
+    private static AiCapabilityMapping enabledMapping() {
+        AiCapabilityMapping mapping = new AiCapabilityMapping();
+        mapping.setMappingId(3001L);
+        mapping.setScope("classics");
+        mapping.setCapability("summary");
+        mapping.setModelId(2001L);
+        mapping.setEnabled(true);
+        return mapping;
+    }
+
     private static class FakeCapabilityRepository implements AiCapabilityRepository {
 
         private AiCapabilityMapping mapping;
         private AiActionStatus actionStatus;
+
+        private void setMapping(AiCapabilityMapping mapping) {
+            this.mapping = mapping;
+        }
 
         @Override
         public AiCapability getCapability(String capability) {
@@ -111,9 +156,23 @@ class AiCapabilityApplicationServiceImplTest {
 
     private static class FakeModelRepository implements AiModelRepository {
 
+        private final AiModel model = new AiModel(
+                1L,
+                2001L,
+                1001L,
+                "gpt-4o",
+                "GPT 4o",
+                List.of("chat", "long-context"),
+                "{}",
+                "matched model",
+                true,
+                null);
+        private final AiServiceConfig serviceConfig = new AiServiceConfig(
+                1L, 1001L, "PRIMARY", "OPENAI", "https://api.example", "encrypted", true, "AVAILABLE", null, null);
+
         @Override
         public AiServiceConfig getServiceConfigByServiceId(Long serviceId) {
-            return null;
+            return serviceConfig;
         }
 
         @Override
@@ -128,17 +187,8 @@ class AiCapabilityApplicationServiceImplTest {
 
         @Override
         public AiModel getModelByModelId(Long modelId) {
-            return new AiModel(
-                    1L,
-                    modelId,
-                    1001L,
-                    "embedding-only",
-                    "Embedding",
-                    List.of("embedding"),
-                    "{}",
-                    "mismatched model",
-                    true,
-                    null);
+            model.setModelId(modelId);
+            return model;
         }
 
         @Override

@@ -20,6 +20,8 @@ public interface AiCapabilityApplicationService {
 
     void assertModelCanBeDeleted(Long modelId);
 
+    void refreshActionStatusesByModelId(Long modelId);
+
     AiActionStatusResult getActionStatus(String scope, String capability);
 
     List<AiActionStatusResult> listActionStatuses(String scope, String capability, Boolean available);

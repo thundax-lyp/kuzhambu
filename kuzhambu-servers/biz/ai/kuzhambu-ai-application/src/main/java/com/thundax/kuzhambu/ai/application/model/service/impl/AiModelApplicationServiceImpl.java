@@ -65,7 +65,11 @@ public class AiModelApplicationServiceImpl implements AiModelApplicationService 
         if (model == null) {
             return 0;
         }
-        return aiModelRepository.updateModel(model);
+        int affectedRows = aiModelRepository.updateModel(model);
+        if (affectedRows > 0) {
+            aiCapabilityApplicationService.refreshActionStatusesByModelId(model.getModelId());
+        }
+        return affectedRows;
     }
 
     @Override
