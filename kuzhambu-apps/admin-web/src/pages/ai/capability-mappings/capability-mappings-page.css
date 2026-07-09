@@ -1,0 +1,36 @@
+.capability-mappings-page {
+    min-height: 100%;
+}
+
+.capability-mappings-filter-card {
+    margin-bottom: 16px;
+}
+
+.capability-mappings-filter-form {
+    row-gap: 12px;
+}
+
+.capability-mappings-filter-control {
+    min-width: 180px;
+}
+
+.capability-mappings-table {
+    width: 100%;
+}
+
+.capability-mappings-form {
+    padding-top: 4px;
+}
+
+.capability-mappings-match {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.capability-mappings-match-row {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 12px;
+    align-items: center;
+}

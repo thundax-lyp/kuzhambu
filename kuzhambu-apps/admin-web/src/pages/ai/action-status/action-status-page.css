@@ -1,0 +1,19 @@
+.action-status-page {
+    min-height: 100%;
+}
+
+.action-status-filter-card {
+    margin-bottom: 16px;
+}
+
+.action-status-filter-form {
+    row-gap: 12px;
+}
+
+.action-status-filter-control {
+    min-width: 180px;
+}
+
+.action-status-table {
+    width: 100%;
+}

@@ -13,6 +13,7 @@ import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapsh
 import com.thundax.kuzhambu.ai.infra.invocation.persistence.dataobject.AiCallRecordDO;
 import com.thundax.kuzhambu.ai.infra.invocation.persistence.dataobject.AiCandidateDO;
 import com.thundax.kuzhambu.ai.infra.invocation.persistence.mapper.AiInvocationMapper;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
@@ -145,6 +146,72 @@ class AiInvocationRepositoryIT {
         assertEquals("REJECTED", loadedCandidate.getStatus());
         assertEquals(1, loadedCandidates.size());
         assertEquals(7101L, loadedCandidates.get(0).getCandidateId());
+    }
+
+    @Test
+    void repositoryShouldPageCallRecordsWithFilters() {
+        AiInvocationMapper mapper = mock(AiInvocationMapper.class);
+        AiInvocationRepositoryImpl repository = new AiInvocationRepositoryImpl(mapper);
+        Instant start = Instant.parse("2026-01-01T00:00:00Z");
+        Instant end = Instant.parse("2026-01-02T00:00:00Z");
+        AiCallRecordDO dataObject = new AiCallRecordDO();
+        dataObject.setCallId(7002L);
+        dataObject.setScope("classics");
+        dataObject.setCapability("summary");
+        dataObject.setContentType("SANCAI_ENTRY");
+        dataObject.setContentId(9002L);
+        dataObject.setStatus("SUCCEEDED");
+        dataObject.setServiceRole("PRIMARY");
+        dataObject.setModelName("gpt-summary");
+        dataObject.setFallbackUsed(false);
+        dataObject.setRequestedAt(start);
+
+        when(mapper.countCallRecords(
+                        "classics", "summary", "SANCAI_ENTRY", 9002L, "SUCCEEDED", "PRIMARY", "gpt", false, start, end))
+                .thenReturn(1L);
+        when(mapper.selectCallRecordsPage(
+                        "classics",
+                        "summary",
+                        "SANCAI_ENTRY",
+                        9002L,
+                        "SUCCEEDED",
+                        "PRIMARY",
+                        "gpt",
+                        false,
+                        start,
+                        end,
+                        20,
+                        20))
+                .thenReturn(List.of(dataObject));
+
+        PageResult<AiCallRecord> page = repository.pageCallRecords(
+                "classics", "summary", "SANCAI_ENTRY", 9002L, "SUCCEEDED", "PRIMARY", "gpt", false, start, end, 2, 20);
+
+        assertEquals(2, page.getPageNo());
+        assertEquals(20, page.getPageSize());
+        assertEquals(1L, page.getTotalCount());
+        assertEquals(1, page.getRecords().size());
+        assertEquals(7002L, page.getRecords().get(0).getCallId());
+    }
+
+    @Test
+    void repositoryShouldListCallRecordsForSummaryWithFilters() {
+        AiInvocationMapper mapper = mock(AiInvocationMapper.class);
+        AiInvocationRepositoryImpl repository = new AiInvocationRepositoryImpl(mapper);
+        Instant start = Instant.parse("2026-01-01T00:00:00Z");
+        Instant end = Instant.parse("2026-01-02T00:00:00Z");
+        AiCallRecordDO dataObject = new AiCallRecordDO();
+        dataObject.setCallId(7003L);
+        dataObject.setCapability("tags");
+
+        when(mapper.selectCallRecordsForSummary("classics", "tags", "BACKUP", start, end))
+                .thenReturn(List.of(dataObject));
+
+        List<AiCallRecord> records = repository.listCallRecords("classics", "tags", "BACKUP", start, end);
+
+        assertEquals(1, records.size());
+        assertEquals(7003L, records.get(0).getCallId());
+        assertEquals("tags", records.get(0).getCapability());
     }
 
     private static String readRequiredSql(String path) throws IOException {

@@ -17,6 +17,8 @@ public interface AiModelApplicationService {
 
     int delete(Long modelId);
 
+    AiModelCheckRecord check(Long modelId);
+
     Long recordCheck(AiModelCheckCommand command);
 
     List<AiModelCheckRecord> listCheckRecords(Long modelId);

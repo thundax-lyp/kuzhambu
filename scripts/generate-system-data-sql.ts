@@ -36,6 +36,7 @@ type UserSeed = {
 };
 
 type MenuSeed = {
+  id?: number;
   name: string;
   perms?: string[];
   priority: number;
@@ -158,8 +159,19 @@ const buildUsers = (users: UserSeed[]) => {
 
 const flattenTree = <T extends object>(nodes: Array<TreeNode<T>>) => {
   const records: Array<TreeRecord<T>> = [];
+  const explicitIds = new Set<number>();
+  collectExplicitIds(nodes, explicitIds);
   let index = 1;
   let position = 1;
+
+  const nextId = () => {
+    while (explicitIds.has(index)) {
+      index += 1;
+    }
+    const id = index;
+    index += 1;
+    return id;
+  };
 
   const visit = (
     node: TreeNode<T>,
@@ -168,8 +180,7 @@ const flattenTree = <T extends object>(nodes: Array<TreeNode<T>>) => {
   ) => {
     const name = readName(node);
     const path = parentPath ? `${parentPath}/${name}` : name;
-    const id = index;
-    index += 1;
+    const id = readExplicitId(node) ?? nextId();
     const lft = position;
     position += 1;
     for (const child of node.children ?? []) {
@@ -186,6 +197,33 @@ const flattenTree = <T extends object>(nodes: Array<TreeNode<T>>) => {
   }
 
   return records.sort((a, b) => a.lft - b.lft);
+};
+
+const collectExplicitIds = <T extends object>(
+  nodes: Array<TreeNode<T>>,
+  explicitIds: Set<number>,
+) => {
+  for (const node of nodes) {
+    const explicitId = readExplicitId(node);
+    if (explicitId !== null) {
+      if (explicitIds.has(explicitId)) {
+        throw new Error(`Duplicate explicit id: ${explicitId}`);
+      }
+      explicitIds.add(explicitId);
+    }
+    collectExplicitIds(node.children ?? [], explicitIds);
+  }
+};
+
+const readExplicitId = (node: object) => {
+  const id = (node as { id?: unknown }).id;
+  if (id === undefined) {
+    return null;
+  }
+  if (!Number.isInteger(id) || Number(id) <= 0) {
+    throw new Error("Tree node id must be a positive integer.");
+  }
+  return Number(id);
 };
 
 const readName = (node: object) => {

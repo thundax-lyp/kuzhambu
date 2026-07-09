@@ -2,7 +2,7 @@
 
 ## Purpose
 
-本文档记录 AI 精修能力在 Java 与 Workers 的当前接入状态，用于跟踪后续闭环进度。
+本文档记录 AI 精修能力、管理端治理能力在 Java、Workers 与 Admin Web 的当前接入状态，用于跟踪后续闭环进度。
 
 ## Status Definition
 
@@ -24,11 +24,12 @@
 - AI 域当前已形成“治理入口 -> Workers 执行 -> 候选结果/任务台账 -> Classics 页面消费”的闭环；三才图会视觉资产已接通 `image_analysis / fusion / visual / image_gen` 的单条任务、批量任务、候选治理、失败重试和正式版本写回。
 - Classics 三才图会视觉资产 `image_analysis / image_gen` 已接通 `task/stream` 展示闭环：Java 后端通过 `/api/ai/refinement/task/stream?taskId=...` 代理 worker SSE，Admin Web 展示增量过程、最终任务结果刷新候选区，stream error 可在任务快照刷新前直接重试。
 - Knowledge 标签候选抽取已通过 `TaxonomyApplicationService#extractTags` 接入 `KNOWLEDGE_TAG_EXTRACTION`，并在标签治理入口形成人工审核应用闭环。
+- AI 管理端治理闭环已完成：Admin Web 已提供服务配置、模型配置、能力映射、提示词版本、调用统计、动作状态 6 个页面；后端补齐调用记录分页、调用统计汇总、动作状态批量读取等 Admin 契约；菜单权限由 `db/data-source/system.json` 生成 `db/data/system.sql` 并通过一致性校验。
 - 本轮未新增 AI schema 字段；流式展示复用 `ai_refinement_task.stream_enabled / candidate_id / result_format / result_preview / failure_stage / error_type / error_message` 等既有字段，前端事件结构使用 `eventType / eventId / stage / deltaText / resultFormat / resultPayload / failureStage / errorType / errorMessage / status`。
 
 未完成：
 
-- Platform 两类能力已补齐 Java 调用入口；当前无 AI Worker 能力等待 Java 治理入口闭环。
+- 当前无 AI Worker 能力等待 Java 治理入口闭环；管理端治理类需求已从后端能力推进到 Admin Web 可操作页面。
 
 ## Recent Validation
 
@@ -38,6 +39,20 @@
 - 2026-07-07：`npm --workspace kuzhambu-admin-web run test -- --maxWorkers=1` 通过，45 个 test files / 153 tests 全绿；原始 `npm --workspace kuzhambu-admin-web run test` 在全量并发下出现非本任务用例 30 秒超时波动，失败用例单独复跑通过。
 - 2026-07-08：`cd kuzhambu-servers && mvn -pl biz/discovery/kuzhambu-discovery-interface,biz/discovery/kuzhambu-discovery-infra,biz/ai/kuzhambu-ai-interface,biz/ai/kuzhambu-ai-infra,biz/classics/kuzhambu-classics-facade -am -Dsurefire.failIfNoSpecifiedTests=false test` 通过，覆盖 Discovery QA、AI facade/application/infra 和 Classics facade 相关测试。
 - 2026-07-08：`cd kuzhambu-workers && .venv/bin/python -m ruff format --check . && .venv/bin/python -m ruff check . && .venv/bin/python -m pytest -p no:capture tests/test_worker_e2e_ai_usecase_discovery.py` 通过，覆盖 Discovery answer-generation worker usecase 契约。
+- 2026-07-09：`node scripts/generate-system-data-sql.ts --check` 通过，确认 AI 菜单权限 `system.json -> system.sql` 生成结果一致。
+- 2026-07-09：`cd kuzhambu-servers && mvn spotless:check && mvn checkstyle:check && mvn test` 通过。
+- 2026-07-09：`cd kuzhambu-apps && pnpm run format:check && pnpm run lint && pnpm run test && pnpm run build` 通过；其中 `admin-web` 为 64 个 test files / 275 tests，`portal-web` 为 13 个 test files / 50 tests。
+
+## 管理端治理闭环
+
+| page | route | primary files | backend contract | status | note |
+| --- | --- | --- | --- | --- | --- |
+| 服务配置 | `/ai/services` | `kuzhambu-apps/admin-web/src/pages/ai/services/services-page.tsx` | `/api/ai/config/service/*` | 已完成 | 支持 PRIMARY/BACKUP 查看、编辑、启停；不展示明文 API Key |
+| 模型配置 | `/ai/models` | `kuzhambu-apps/admin-web/src/pages/ai/model-configs/model-configs-page.tsx` | `/api/ai/config/model/*` | 已完成 | 支持模型新增、编辑、启停、删除、检测和检测历史 |
+| 能力映射 | `/ai/capability-mappings` | `kuzhambu-apps/admin-web/src/pages/ai/capability-mappings/capability-mappings-page.tsx` | `/api/ai/config/capability/mapping/*` | 已完成 | 支持 scope + capability 到模型的映射配置和标签匹配提示 |
+| 提示词版本 | `/ai/prompts` | `kuzhambu-apps/admin-web/src/pages/ai/prompts/prompts-page.tsx` | `/api/ai/prompt/*` | 已完成 | 支持模板查询、版本编辑、变量预览、版本查看、对比、回滚和优化建议预览 |
+| 调用统计 | `/ai/invocations` | `kuzhambu-apps/admin-web/src/pages/ai/invocations/invocations-page.tsx` | `/api/ai/invocation/call/summary`、`/api/ai/invocation/call/page` | 已完成 | 支持周期统计、能力排行、调用记录分页和调用详情 |
+| 动作状态 | `/ai/action-status` | `kuzhambu-apps/admin-web/src/pages/ai/action-status/action-status-page.tsx` | `/api/ai/config/action/status/list`、`/api/ai/config/action/status/refresh` | 已完成 | 支持 scope/capability/available 筛选、单条刷新和批量刷新 |
 
 ## 已完成
 

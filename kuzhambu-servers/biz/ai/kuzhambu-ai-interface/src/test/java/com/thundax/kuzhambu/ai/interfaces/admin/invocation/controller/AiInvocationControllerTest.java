@@ -5,17 +5,24 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.thundax.kuzhambu.ai.application.batch.service.AiBatchJobApplicationService;
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainService;
+import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests.CallRecordPageRequest;
+import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests.CallSummaryRequest;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests.CandidateListRequest;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests.CandidateMarkAppliedRequest;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests.CandidateRejectRequest;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.AiInvocationResponses.CandidateResponse;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,6 +33,18 @@ class AiInvocationControllerTest {
     @Test
     void routesShouldKeepCandidateManagementApiPathsAndPermissions() throws Exception {
         assertRequestMapping(AiInvocationController.class, "/api/ai/invocation");
+        assertPostMapping(
+                AiInvocationController.class,
+                "pageCallRecords",
+                "call/page",
+                "ai:invocation:view",
+                CallRecordPageRequest.class);
+        assertPostMapping(
+                AiInvocationController.class,
+                "summarizeCallRecords",
+                "call/summary",
+                "ai:invocation:view",
+                CallSummaryRequest.class);
         assertPostMapping(
                 AiInvocationController.class,
                 "listCandidates",
@@ -108,6 +127,100 @@ class AiInvocationControllerTest {
         request.setStatus("PENDING");
 
         assertTrue(controller.listCandidates(request).isEmpty());
+    }
+
+    @Test
+    void pageCallRecordsShouldPassFiltersToRepository() {
+        AiInvocationRepository repository = new FakeRepository() {
+            @Override
+            public PageResult<AiCallRecord> pageCallRecords(
+                    String scope,
+                    String capability,
+                    String contentType,
+                    Long contentId,
+                    String status,
+                    String serviceRole,
+                    String modelName,
+                    Boolean fallbackUsed,
+                    Instant requestedAtStart,
+                    Instant requestedAtEnd,
+                    int pageNo,
+                    int pageSize) {
+                assertEquals("classics", scope);
+                assertEquals("summary", capability);
+                assertEquals("ENTRY", contentType);
+                assertEquals(1001L, contentId);
+                assertEquals("FAILED", status);
+                assertEquals("PRIMARY", serviceRole);
+                assertEquals("gpt", modelName);
+                assertEquals(Boolean.TRUE, fallbackUsed);
+                assertEquals(Instant.parse("2026-07-01T00:00:00Z"), requestedAtStart);
+                assertEquals(Instant.parse("2026-07-02T00:00:00Z"), requestedAtEnd);
+                assertEquals(2, pageNo);
+                assertEquals(5, pageSize);
+                return PageResult.of(2, 5, 1, List.of(failedCallRecord()));
+            }
+        };
+        AiInvocationController controller = new AiInvocationController(repository, noBatchService(), noDomainService());
+
+        CallRecordPageRequest request = new CallRecordPageRequest();
+        request.setScope("classics");
+        request.setCapability("summary");
+        request.setContentType("ENTRY");
+        request.setContentId(1001L);
+        request.setStatus("FAILED");
+        request.setServiceRole("PRIMARY");
+        request.setModelName("gpt");
+        request.setFallbackUsed(Boolean.TRUE);
+        request.setRequestedAtStart(Instant.parse("2026-07-01T00:00:00Z"));
+        request.setRequestedAtEnd(Instant.parse("2026-07-02T00:00:00Z"));
+        request.setPageNo(2);
+        request.setPageSize(5);
+
+        var response = controller.pageCallRecords(request);
+
+        assertEquals(2, response.getPageNo());
+        assertEquals(1, response.getCount());
+        assertEquals("FAILED", response.getRecords().get(0).getStatus());
+        assertEquals("PRIMARY", response.getRecords().get(0).getServiceRole());
+    }
+
+    @Test
+    void summarizeCallRecordsShouldAggregateRepositoryRecords() {
+        AiInvocationRepository repository = new FakeRepository() {
+            @Override
+            public List<AiCallRecord> listCallRecords(
+                    String scope,
+                    String capability,
+                    String serviceRole,
+                    Instant requestedAtStart,
+                    Instant requestedAtEnd) {
+                assertEquals("classics", scope);
+                assertEquals("summary", capability);
+                assertEquals("PRIMARY", serviceRole);
+                assertEquals(Instant.parse("2026-07-01T00:00:00Z"), requestedAtStart);
+                assertEquals(Instant.parse("2026-07-02T00:00:00Z"), requestedAtEnd);
+                return List.of(succeededCallRecord(), failedCallRecord());
+            }
+        };
+        AiInvocationController controller = new AiInvocationController(repository, noBatchService(), noDomainService());
+
+        CallSummaryRequest request = new CallSummaryRequest();
+        request.setScope("classics");
+        request.setCapability("summary");
+        request.setServiceRole("PRIMARY");
+        request.setPeriodStart(Instant.parse("2026-07-01T00:00:00Z"));
+        request.setPeriodEnd(Instant.parse("2026-07-02T00:00:00Z"));
+
+        var response = controller.summarizeCallRecords(request);
+
+        assertEquals(2L, response.getInvocationCount());
+        assertEquals(1L, response.getSucceededInvocationCount());
+        assertEquals(1L, response.getFailedInvocationCount());
+        assertEquals(150L, response.getAvgLatencyMs());
+        assertEquals(new BigDecimal("0.30"), response.getTotalCostAmount());
+        assertEquals("summary", response.getTopCapabilities().get(0).getCapability());
+        assertEquals(2L, response.getTopCapabilities().get(0).getInvocationCount());
     }
 
     @Test
@@ -264,6 +377,27 @@ class AiInvocationControllerTest {
         return candidate;
     }
 
+    private static AiCallRecord succeededCallRecord() {
+        AiCallRecord record = new AiCallRecord();
+        record.setScope("classics");
+        record.setCapability("summary");
+        record.setServiceRole("PRIMARY");
+        record.setStatus("SUCCEEDED");
+        record.setUsage(new AiUsageSnapshot(100, 10, 20, new BigDecimal("0.10")));
+        return record;
+    }
+
+    private static AiCallRecord failedCallRecord() {
+        AiCallRecord record = new AiCallRecord();
+        record.setScope("classics");
+        record.setCapability("summary");
+        record.setServiceRole("PRIMARY");
+        record.setStatus("FAILED");
+        record.setFallbackUsed(true);
+        record.setUsage(new AiUsageSnapshot(200, 30, 40, new BigDecimal("0.20")));
+        return record;
+    }
+
     private static InvocationHandler noOpInvocationHandler(String name) {
         return (proxy, method, args) -> {
             throw new UnsupportedOperationException(name + " should not be called in this test: " + method.getName());
@@ -308,6 +442,33 @@ class AiInvocationControllerTest {
         @Override
         public List<com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord> listCallRecords(
                 java.time.Instant requestedAtStart, java.time.Instant requestedAtEnd) {
+            return java.util.Collections.emptyList();
+        }
+
+        @Override
+        public PageResult<AiCallRecord> pageCallRecords(
+                String scope,
+                String capability,
+                String contentType,
+                Long contentId,
+                String status,
+                String serviceRole,
+                String modelName,
+                Boolean fallbackUsed,
+                java.time.Instant requestedAtStart,
+                java.time.Instant requestedAtEnd,
+                int pageNo,
+                int pageSize) {
+            return PageResult.of(pageNo, pageSize, 0, java.util.Collections.emptyList());
+        }
+
+        @Override
+        public List<AiCallRecord> listCallRecords(
+                String scope,
+                String capability,
+                String serviceRole,
+                java.time.Instant requestedAtStart,
+                java.time.Instant requestedAtEnd) {
             return java.util.Collections.emptyList();
         }
 

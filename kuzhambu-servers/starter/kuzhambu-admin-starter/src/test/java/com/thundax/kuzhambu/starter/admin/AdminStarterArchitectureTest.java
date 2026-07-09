@@ -115,6 +115,28 @@ class AdminStarterArchitectureTest extends AbstractArchitectureTest {
                 .contains("'/operations/health'");
     }
 
+    @Test
+    void systemSeedShouldExposeAiGovernanceMenus() throws IOException {
+        Path repoRoot = findRepoRoot();
+        String systemJson = Files.readString(repoRoot.resolve("db/data-source/system.json"));
+        String systemSql = Files.readString(repoRoot.resolve("db/data/system.sql"));
+
+        Assertions.assertThat(systemJson)
+                .contains("\"url\": \"/ai/services\"")
+                .contains("\"url\": \"/ai/models\"")
+                .contains("\"url\": \"/ai/capability-mappings\"")
+                .contains("\"url\": \"/ai/prompts\"")
+                .contains("\"url\": \"/ai/invocations\"")
+                .contains("\"url\": \"/ai/action-status\"");
+        Assertions.assertThat(systemSql)
+                .contains("'/ai/services'")
+                .contains("'/ai/models'")
+                .contains("'/ai/capability-mappings'")
+                .contains("'/ai/prompts'")
+                .contains("'/ai/invocations'")
+                .contains("'/ai/action-status'");
+    }
+
     private String loadApplicationYaml() throws IOException {
         try (InputStream inputStream = KuzhambuAdminApplication.class.getResourceAsStream("/application.yml")) {
             Assertions.assertThat(inputStream).isNotNull();

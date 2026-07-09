@@ -14,11 +14,17 @@ public interface AiCapabilityApplicationService {
 
     AiCapabilityMapping getMapping(String scope, String capability);
 
+    List<AiCapabilityMapping> listMappings(String scope, String capability, Boolean enabled);
+
     Long saveMapping(AiCapabilityMappingSaveCommand command);
 
     void assertModelCanBeDeleted(Long modelId);
 
+    void refreshActionStatusesByModelId(Long modelId);
+
     AiActionStatusResult getActionStatus(String scope, String capability);
+
+    List<AiActionStatusResult> listActionStatuses(String scope, String capability, Boolean available);
 
     AiActionStatusResult refreshActionStatus(String scope, String capability);
 }

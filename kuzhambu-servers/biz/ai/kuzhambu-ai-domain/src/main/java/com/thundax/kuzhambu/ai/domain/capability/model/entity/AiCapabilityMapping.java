@@ -25,6 +25,9 @@ public class AiCapabilityMapping {
         if (!enabled || capabilityDefinition == null || model == null) {
             return false;
         }
+        if (!model.isEnabled()) {
+            return false;
+        }
         return capabilityDefinition.isSatisfiedBy(model.getCapabilityTags());
     }
 }

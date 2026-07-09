@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.common.core.exception.DomainException;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
@@ -161,6 +162,29 @@ class AiCandidateDomainServiceTest {
         @Override
         public List<com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord> listCallRecords(
                 java.time.Instant requestedAtStart, java.time.Instant requestedAtEnd) {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public PageResult<com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord> pageCallRecords(
+                String scope,
+                String capability,
+                String contentType,
+                Long contentId,
+                String status,
+                String serviceRole,
+                String modelName,
+                Boolean fallbackUsed,
+                Instant requestedAtStart,
+                Instant requestedAtEnd,
+                int pageNo,
+                int pageSize) {
+            return PageResult.of(pageNo, pageSize, 0, Collections.emptyList());
+        }
+
+        @Override
+        public List<com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord> listCallRecords(
+                String scope, String capability, String serviceRole, Instant requestedAtStart, Instant requestedAtEnd) {
             return Collections.emptyList();
         }
 

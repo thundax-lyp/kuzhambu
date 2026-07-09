@@ -239,6 +239,28 @@ public final class AiConfigRequests {
 
     @Getter
     @Setter
+    @Schema(name = "AiActionStatusListRequest", description = "AI动作状态列表请求")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class ActionStatusListRequest implements Serializable {
+
+        @Size(max = 64)
+        @Schema(name = "scope", description = "业务范围")
+        @JsonProperty(value = "scope")
+        private String scope;
+
+        @Size(max = 64)
+        @Schema(name = "capability", description = "能力编码")
+        @JsonProperty(value = "capability")
+        private String capability;
+
+        @Schema(name = "available", description = "是否可用")
+        @JsonProperty(value = "available")
+        private Boolean available;
+    }
+
+    @Getter
+    @Setter
     @Schema(name = "AiCapabilityMappingSaveRequest", description = "AI能力映射保存请求")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)

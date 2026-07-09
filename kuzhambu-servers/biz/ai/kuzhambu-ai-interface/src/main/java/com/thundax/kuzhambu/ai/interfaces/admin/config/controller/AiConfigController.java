@@ -123,6 +123,15 @@ public class AiConfigController {
         return true;
     }
 
+    @Operation(summary = "检测AI模型", description = "ai:config:edit")
+    @ApiImplicitParams({})
+    @HasPermission(value = "ai:config:edit")
+    @SysLogger(value = "模型检测")
+    @PostMapping(value = "model/check")
+    public ModelCheckRecordResponse checkModel(@Valid @RequestBody AiConfigRequests.ModelIdRequest request) {
+        return AiConfigInterfaceAssembler.toResponse(modelService.check(request.getModelId()));
+    }
+
     @Operation(summary = "记录AI模型检测结果", description = "ai:config:edit")
     @ApiImplicitParams({})
     @HasPermission(value = "ai:config:edit")
@@ -177,6 +186,20 @@ public class AiConfigController {
                 capabilityService.getMapping(request.getScope(), request.getCapability()));
     }
 
+    @Operation(summary = "获取AI能力映射列表", description = "ai:config:view")
+    @ApiImplicitParams({})
+    @HasPermission(value = "ai:config:view")
+    @SysLogger(value = "能力映射列表")
+    @PostMapping(value = "capability/mapping/list")
+    public List<CapabilityMappingResponse> listMappings(
+            @Valid @RequestBody AiConfigRequests.CapabilityQueryRequest request) {
+        return capabilityService
+                .listMappings(request.getScope(), request.getCapability(), request.getEnabled())
+                .stream()
+                .map(AiConfigInterfaceAssembler::toResponse)
+                .collect(Collectors.toList());
+    }
+
     @Operation(summary = "保存AI能力映射", description = "ai:config:edit")
     @ApiImplicitParams({})
     @HasPermission(value = "ai:config:edit")
@@ -196,6 +219,20 @@ public class AiConfigController {
     public ActionStatusResponse getActionStatus(@Valid @RequestBody AiConfigRequests.CapabilityQueryRequest request) {
         return AiConfigInterfaceAssembler.toResponse(
                 capabilityService.getActionStatus(request.getScope(), request.getCapability()));
+    }
+
+    @Operation(summary = "获取AI动作状态列表", description = "ai:config:view")
+    @ApiImplicitParams({})
+    @HasPermission(value = "ai:config:view")
+    @SysLogger(value = "动作状态列表")
+    @PostMapping(value = "action/status/list")
+    public List<ActionStatusResponse> listActionStatuses(
+            @Valid @RequestBody AiConfigRequests.ActionStatusListRequest request) {
+        return capabilityService
+                .listActionStatuses(request.getScope(), request.getCapability(), request.getAvailable())
+                .stream()
+                .map(AiConfigInterfaceAssembler::toResponse)
+                .collect(Collectors.toList());
     }
 
     @Operation(summary = "刷新AI动作状态", description = "ai:config:edit")

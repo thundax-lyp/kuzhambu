@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -53,8 +54,23 @@ public final class AiInvocationResponses {
         @JsonProperty(value = "objectId")
         private Long objectId;
 
+        @JsonProperty(value = "serviceRole")
+        private String serviceRole;
+
+        @JsonProperty(value = "modelId")
+        private Long modelId;
+
         @JsonProperty(value = "modelName")
         private String modelName;
+
+        @JsonProperty(value = "promptVersionId")
+        private Long promptVersionId;
+
+        @JsonProperty(value = "requestId")
+        private String requestId;
+
+        @JsonProperty(value = "traceId")
+        private String traceId;
 
         @JsonProperty(value = "status")
         private String status;
@@ -80,6 +96,12 @@ public final class AiInvocationResponses {
         @JsonProperty(value = "costAmount")
         private BigDecimal costAmount;
 
+        @JsonProperty(value = "failureStage")
+        private String failureStage;
+
+        @JsonProperty(value = "resultFormat")
+        private String resultFormat;
+
         @JsonProperty(value = "errorType")
         private String errorType;
 
@@ -94,6 +116,52 @@ public final class AiInvocationResponses {
 
         @JsonProperty(value = "completedAt")
         private Instant completedAt;
+    }
+
+    @Getter
+    @Builder
+    @Schema(name = "AiCallSummaryResponse", description = "AI调用统计响应")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class CallSummaryResponse implements Serializable {
+
+        @JsonProperty(value = "periodStart")
+        private Instant periodStart;
+
+        @JsonProperty(value = "periodEnd")
+        private Instant periodEnd;
+
+        @JsonProperty(value = "invocationCount")
+        private Long invocationCount;
+
+        @JsonProperty(value = "succeededInvocationCount")
+        private Long succeededInvocationCount;
+
+        @JsonProperty(value = "failedInvocationCount")
+        private Long failedInvocationCount;
+
+        @JsonProperty(value = "avgLatencyMs")
+        private Long avgLatencyMs;
+
+        @JsonProperty(value = "totalCostAmount")
+        private BigDecimal totalCostAmount;
+
+        @JsonProperty(value = "topCapabilities")
+        private List<TopCapabilityResponse> topCapabilities;
+    }
+
+    @Getter
+    @Builder
+    @Schema(name = "AiTopCapabilityResponse", description = "AI能力调用排行响应")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class TopCapabilityResponse implements Serializable {
+
+        @JsonProperty(value = "capability")
+        private String capability;
+
+        @JsonProperty(value = "invocationCount")
+        private Long invocationCount;
     }
 
     @Getter

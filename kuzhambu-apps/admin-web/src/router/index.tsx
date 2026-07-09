@@ -1,5 +1,11 @@
 import { Navigate, RouterProvider, createBrowserRouter } from "react-router-dom";
 import { AdminLayout } from "../layouts/admin-layout";
+import { ActionStatusPage } from "../pages/ai/action-status/action-status-page";
+import { CapabilityMappingsPage } from "../pages/ai/capability-mappings/capability-mappings-page";
+import { InvocationsPage } from "../pages/ai/invocations/invocations-page";
+import { ModelsPage } from "../pages/ai/model-configs/model-configs-page";
+import { PromptsPage } from "../pages/ai/prompts/prompts-page";
+import { ServicesPage } from "../pages/ai/services/services-page";
 import { AuditLogPage } from "../pages/audit/audit-log/audit-log-page";
 import { LoginPage } from "../pages/auth/login/login-page";
 import { QaAdminPage } from "../pages/discovery/qa-admin/qa-admin-page";
@@ -87,6 +93,30 @@ const router = createBrowserRouter(
                         {
                             path: "audit/logs",
                             element: <AuditLogPage />
+                        },
+                        {
+                            path: "ai/services",
+                            element: <ServicesPage />
+                        },
+                        {
+                            path: "ai/models",
+                            element: <ModelsPage />
+                        },
+                        {
+                            path: "ai/capability-mappings",
+                            element: <CapabilityMappingsPage />
+                        },
+                        {
+                            path: "ai/prompts",
+                            element: <PromptsPage />
+                        },
+                        {
+                            path: "ai/invocations",
+                            element: <InvocationsPage />
+                        },
+                        {
+                            path: "ai/action-status",
+                            element: <ActionStatusPage />
                         },
                         {
                             path: "classics/sancai",
