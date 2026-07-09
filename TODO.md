@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `kuzhambu-workers`：07 同步 main 后复跑最终验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/ai`、`kuzhambu-workers/src/kuzhambu_workers/api/ai_routes.py`、`kuzhambu-workers/tests/test_ai_usecase_routes_classics.py`、`kuzhambu-workers/tests/test_ai_routes.py`、`kuzhambu-workers/tests/test_graph_registry.py`
-    - 处理动作：同步 `main` 后复跑 Ruff format check、Ruff lint 和相关 pytest。
-    - 验收点：最终验证通过，且同步 `main` 未破坏 image-gen artifact 和 SSE final-state 契约。
-    - 重要度：9/10
-
 - [ ] `docs/40-readiness/WORKERS-IMPLEMENTATION-COVERAGE.md`：08 更新 workers Implementation Coverage
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-GEN.md`
