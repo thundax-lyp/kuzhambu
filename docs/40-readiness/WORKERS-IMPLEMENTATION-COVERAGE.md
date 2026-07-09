@@ -1,67 +1,45 @@
 # Workers Implementation Coverage
 
-## Purpose
+## Status
 
-本文档记录 Worker 能力与 Java/AI usecase 对接状态，用于核对 worker 能力覆盖面与接入完整性。
+- 当前状态：已完成
+- 覆盖范围：AI usecase 路由、graph registry、OpenAI-compatible 调用、SSE final-state、临时 artifact、render worker。
+- 真相源：`docs/10-requirements/WORKERS-REQUIREMENTS.md`、`docs/20-interfaces/WORKERS-AI-INTERFACE.md`、`docs/20-interfaces/WORKERS-RENDER-INTERFACE.md`、本文件。
 
-本清单只回答“worker 侧路由与 usecase 是否已注册并可被调用”，不直接代表对应 Java 业务域已经把该能力接入到最终页面或业务闭环。
+## Scope Boundary
 
-## Status Definition
+本文件只判断 worker 侧路由、registry、协议和测试是否完成。Java 业务域是否消费对应能力，以 AI / Classics / Knowledge / Discovery 各自 coverage 为准。
 
-- `已完成`：对应调用路径与 worker usecase 已在代码与路由层确认接通。
-- `未完成`：worker 能力存在但调用链、路由、权限或注册尚未闭环。
-- `外部依赖`：能力边界不属于本域，或由其他模块完成。
+## Completion Summary
 
-## Current Baseline
+- Classics、Discovery、Knowledge、Platform 的 AI usecase 已注册并可通过 `GraphRegistry.invoke` 调用。
+- Workers AI graph 已切换为真实 OpenAI-compatible `/chat/completions` 调用。
+- 同步响应和 SSE `completed/error` 已统一输出 `failureStage`、`fallbackUsed`、`artifactReference`。
+- 结构化 JSON 输出、Knowledge payload 归一、provider usage、`latencyMs` 和模型错误归一化已完成。
+- 临时 artifact 下载入口 `GET /internal/artifacts/{artifactId}` 已完成，并提供 12 小时清理策略。
+- `CLASSICS_SANCAI_IMAGE_GEN` 已支持图片生成、artifact 写入、SSE final-state 和内部下载校验。
+- Classics export render 已覆盖 Wangqi / Ming Customs 的 CSV、JSON、HTML、ZIP 快照输出。
+- Sancai showcase render 已固定 payload，并支持同步和 stream HTML artifact。
 
-已完成：
+## Open Items
 
-- Classics、Discovery、Knowledge、Platform 的 usecase 已完成 worker 注册与调用链可追溯确认。
-- 关键入口 `workerPath/operation` 已与 `kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke` 对齐。
-- `Workers Implementation Coverage` 与各业务域 coverage 的口径不同：此处的 `已完成` 表示 worker 侧服务路径和 registry 已就绪；Java 侧是否已消费仍以 `AI / Classics / Knowledge / Discovery` 各自的 coverage 为准。
-- Workers 已补齐统一最终态协议：同步响应与 SSE `completed/error` 都输出 `failureStage / fallbackUsed / artifactReference`。
-- Workers AI graph 已从 placeholder 执行切换为真实 OpenAI-compatible `/chat/completions` 调用，覆盖同步文本/Markdown、SSE delta 转发、结构化 JSON 解析、Knowledge payload shape 归一、provider usage 映射、本地 `latencyMs` 和模型错误归一化。
-- Workers 已补齐 `GET /internal/artifacts/{artifactId}` 临时产物下载入口，并提供超过 `12` 小时 artifact 的后台清理任务。
-- Workers 设计文档要求的 graph registry、按 usecase 路由分发、统一最终态协议和临时 artifact 下载入口，当前都能在 `ai_routes.py`、`graph_registry.py`、`usecase_registry.py` 与对应测试中找到实现落点。
-- 三才图会视觉资产相关 workers 能力已补齐稳定测试：`fusion` 路由契约、`image_analysis` stream final-state、三类视觉 usecase 注册元信息、`image_gen` 真实图片生成协议、临时 artifact 写入、`completed.extra.artifactReference` final-state，以及 artifact 下载响应头、bytes 和 sha256 校验均已覆盖。
-- Classics export render worker 已补齐 Wangqi / Ming Customs 快照 payload 回归：CSV、JSON、HTML、ZIP 均稳定保留 `items[].id`、`items[].title`、`items[].text`，route contract 继续返回可下载 inline artifact。
-- Sancai showcase render worker 已收口为固定 payload：`templateVersion`、`scope`、`items[]`、`catalogs[]`、`generatedAt`、`visibilityRiskStatus`；同步与 stream 路由只输出 `text/html` artifact，HTML 内联多图资源元数据，`completed.artifact` 保留 `summary.totalItems`、`summary.catalogCount` 和 `summary.visibilityRiskStatus`。
+- 无当前 worker 阻塞项。
+- 新增 Java 业务 usecase 时必须同步补 Workers registry、路由测试和对应业务域 coverage。
 
-## Recent Validation
+## Validation Evidence
 
-- 2026-07-08：`cd kuzhambu-workers && .venv/bin/python -m ruff format . && .venv/bin/python -m ruff format --check . && .venv/bin/python -m ruff check . && .venv/bin/python -m pytest -p no:capture` 通过，201 tests 全绿，覆盖 `sancai-showcase` payload、非 HTML 拒绝、summary 元数据、图片资源占位和 stream `completed.artifact`。
-- 2026-07-09：`cd kuzhambu-workers && .venv/bin/python -m ruff format . && .venv/bin/python -m ruff format --check . && .venv/bin/python -m ruff check . && .venv/bin/python -m pytest -p no:capture` 通过，236 tests 全绿，覆盖真实 OpenAI-compatible 同步调用、SSE delta/usage/completed/error、结构化输出解析、模型错误归一化、provider usage 和 `latencyMs`。
-- 2026-07-09：`cd kuzhambu-workers && .venv/bin/python -m ruff format --check src/kuzhambu_workers/ai src/kuzhambu_workers/api/ai_routes.py tests/test_ai_usecase_routes_classics.py tests/test_ai_routes.py tests/test_graph_registry.py && .venv/bin/python -m ruff check src/kuzhambu_workers/ai src/kuzhambu_workers/api/ai_routes.py tests/test_ai_usecase_routes_classics.py tests/test_ai_routes.py tests/test_graph_registry.py && .venv/bin/python -m pytest -p no:capture tests/test_ai_usecase_routes_classics.py tests/test_ai_routes.py tests/test_graph_registry.py` 通过，40 tests 全绿，覆盖 `CLASSICS_SANCAI_IMAGE_GEN` 真实图片生成、artifact 写入、SSE `completed.extra.artifactReference`、内部下载校验和失败分类。
+- 2026-07-09：Workers 全量 `ruff format --check`、`ruff check`、`pytest -p no:capture` 通过，242 tests passed。
+- 2026-07-09：图片生成定向测试 40 tests 全绿，覆盖 artifact、SSE final-state、下载校验和失败分类。
 
 ## Requirement Coverage Matrix
 
-| domain | contentType | capability | operation | workerPath | stream | workerEntry | status | note |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| classics | SANCAI_ENTRY | translate | CLASSICS_SANCAI_TRANSLATE | /internal/ai/classics/sancai/translate | false | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | 路由与 graph 注册器协同提供 usecase 调用 |
-| classics | SANCAI_ENTRY | translate | CLASSICS_SANCAI_TRANSLATE_BATCH_ITEM | /internal/ai/classics/sancai/translate-batch-item | false | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | 路由与 graph 注册器协同提供 usecase 调用 |
-| classics | SANCAI_ENTRY | summary | CLASSICS_SANCAI_SUMMARY | /internal/ai/classics/sancai/summary | false | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | 路由与 graph 注册器协同提供 usecase 调用 |
-| classics | SANCAI_ENTRY | tags | CLASSICS_SANCAI_TAGS | /internal/ai/classics/sancai/tags | false | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | 路由与 graph 注册器协同提供 usecase 调用 |
-| classics | SANCAI_ENTRY | qa | CLASSICS_SANCAI_QA | /internal/ai/classics/sancai/qa | false | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | 路由与 graph 注册器协同提供 usecase 调用 |
-| classics | SANCAI_ENTRY | image_analysis | CLASSICS_SANCAI_IMAGE_ANALYSIS | /internal/ai/classics/sancai/image-analysis | true | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | 路由与 graph 注册器协同提供 usecase 调用 |
-| classics | SANCAI_ENTRY | fusion | CLASSICS_SANCAI_FUSION | /internal/ai/classics/sancai/fusion | false | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | 路由与 graph 注册器协同提供 usecase 调用 |
-| classics | SANCAI_ENTRY | visual | CLASSICS_SANCAI_VISUAL_DESCRIPTION | /internal/ai/classics/sancai/visual-description | false | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | 路由与 graph 注册器协同提供 usecase 调用 |
-| classics | SANCAI_ENTRY | image_gen | CLASSICS_SANCAI_IMAGE_GEN | /internal/ai/classics/sancai/image-gen | true | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | OpenAI-compatible 图片生成写入临时 artifact，SSE `completed.extra.artifactReference` 返回内部下载路径，Java AI 域可下载后转存 Storage |
-| classics | SANCAI_ENTRY | split | CLASSICS_SANCAI_SPLIT | /internal/ai/classics/sancai/split | false | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | 路由与 graph 注册器协同提供 usecase 调用 |
-| classics | SANCAI_ENTRY | showcase_render | CLASSICS_SANCAI_SHOWCASE_RENDER | /internal/render/sancai-showcase | false | kuzhambu_workers.render.routes:render_sancai_showcase | 已完成 | 固定 `templateVersion/scope/items/catalogs/generatedAt/visibilityRiskStatus` payload，返回 `text/html` artifact |
-| classics | SANCAI_ENTRY | showcase_render | CLASSICS_SANCAI_SHOWCASE_RENDER_STREAM | /internal/render/sancai-showcase/stream | true | kuzhambu_workers.render.routes:stream_sancai_showcase | 已完成 | stream `completed.artifact` 携带 HTML artifact 与 summary 元数据 |
-| classics | WANGQI_DOCUMENT | summary | CLASSICS_WANGQI_SUMMARY | /internal/ai/classics/wangqi/summary | false | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | 路由与 graph 注册器协同提供 usecase 调用 |
-| classics | WANGQI_DOCUMENT | tags | CLASSICS_WANGQI_TAGS | /internal/ai/classics/wangqi/tags | false | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | 路由与 graph 注册器协同提供 usecase 调用 |
-| classics | WANGQI_DOCUMENT | qa | CLASSICS_WANGQI_QA | /internal/ai/classics/wangqi/qa | false | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | 路由与 graph 注册器协同提供 usecase 调用 |
-| classics | MING_CUSTOMS | summary | CLASSICS_MING_CUSTOMS_SUMMARY | /internal/ai/classics/ming-customs/summary | false | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | 路由与 graph 注册器协同提供 usecase 调用 |
-| classics | MING_CUSTOMS | tags | CLASSICS_MING_CUSTOMS_TAGS | /internal/ai/classics/ming-customs/tags | false | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | 路由与 graph 注册器协同提供 usecase 调用 |
-| classics | MING_CUSTOMS | qa | CLASSICS_MING_CUSTOMS_QA | /internal/ai/classics/ming-customs/qa | false | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | 路由与 graph 注册器协同提供 usecase 调用 |
-| discovery | - | query_understanding | DISCOVERY_QUERY_UNDERSTANDING | /internal/ai/discovery/query-understanding | false | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | usecase 已在 registry 预期列表中注册 |
-| discovery | - | query_understanding | DISCOVERY_QUERY_REWRITE | /internal/ai/discovery/query-rewrite | false | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | usecase 已在 registry 预期列表中注册 |
-| discovery | - | answer_generation | DISCOVERY_ANSWER_GENERATION | /internal/ai/discovery/answer-generation | false | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | usecase 已在 registry 预期列表中注册 |
-| discovery | - | answer_generation | DISCOVERY_ANSWER_GENERATION_STREAM | /internal/ai/discovery/answer-generation/stream | true | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | usecase 已在 registry 预期列表中注册 |
-| knowledge | - | relation_extraction | KNOWLEDGE_RELATION_EXTRACTION | /internal/ai/knowledge/relation-extraction | false | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | usecase 已在 registry 预期列表中注册 |
-| knowledge | - | knowledge_graph | KNOWLEDGE_GRAPH_EXTRACTION | /internal/ai/knowledge/graph-extraction | false | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | usecase 已在 registry 预期列表中注册 |
-| knowledge | - | lineage_extraction | KNOWLEDGE_LINEAGE_EXTRACTION | /internal/ai/knowledge/lineage-extraction | false | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | usecase 已在 registry 预期列表中注册 |
-| knowledge | - | tags | KNOWLEDGE_TAG_EXTRACTION | /internal/ai/knowledge/tag-extraction | false | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | usecase 已在 registry 预期列表中注册 |
-| platform | - | prompt_suggestion | PLATFORM_PROMPT_SUGGESTION | /internal/ai/platform/prompt-suggestion | false | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | usecase 已在 registry 预期列表中注册 |
-| platform | - | version_summary | PLATFORM_VERSION_SUMMARY | /internal/ai/platform/version-summary | false | kuzhambu_workers.ai.graph_registry:GraphRegistry.invoke | 已完成 | usecase 已在 registry 预期列表中注册 |
+| 域 | 能力范围 | 状态 | 说明 |
+| --- | --- | --- | --- |
+| Classics | 三才文本精修 | 已完成 | translate、summary、tags、qa、split 已注册 |
+| Classics | 三才视觉资产 | 已完成 | image_analysis、fusion、visual、image_gen 已注册 |
+| Classics | Wangqi / Ming Customs 精修 | 已完成 | summary、tags、qa 已注册 |
+| Classics | export render | 已完成 | Wangqi、Ming Customs 导出渲染已覆盖 |
+| Classics | Sancai showcase render | 已完成 | 同步与 stream HTML artifact 已覆盖 |
+| Discovery | 查询理解和问答 | 已完成 | query-understanding、query-rewrite、answer-generation、stream 已注册 |
+| Knowledge | 图谱抽取 | 已完成 | relation、graph、lineage、tag extraction 已注册 |
+| Platform | Prompt 和版本摘要 | 已完成 | prompt suggestion、version summary 已注册 |
