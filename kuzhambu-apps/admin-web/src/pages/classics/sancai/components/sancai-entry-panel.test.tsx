@@ -698,17 +698,25 @@ describe("SancaiEntryPanel sharing", () => {
         renderEntryPanel();
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
-        expect(await within(entryTable).findByText("天地")).toBeInTheDocument();
-        expect(within(entryTable).getByRole("button", { name: "分享 天地" })).toBeDisabled();
-        expect(within(entryTable).getByRole("button", { name: "导出 天地" })).toBeDisabled();
-        expect(within(entryTable).getByRole("button", { name: "归档 天地" })).toBeDisabled();
-        expect(within(entryTable).getByRole("button", { name: "发布 地理" })).toBeDisabled();
-        expect(within(entryTable).getByRole("button", { name: "恢复发布 人物" })).toBeDisabled();
-        expect(screen.getByRole("button", { name: "批量分享" })).toBeDisabled();
-        expect(screen.getByRole("button", { name: "批量公开" })).toBeDisabled();
-        expect(screen.getByRole("button", { name: "批量私有" })).toBeDisabled();
-        expect(screen.getByRole("button", { name: "批量候选治理" })).toBeDisabled();
-    }, 90000);
+        const readEntryButton = (label: string) =>
+            entryTable.querySelector<HTMLButtonElement>(`button[aria-label="${label}"]`);
+        const readButtonByText = (text: string) =>
+            [...document.querySelectorAll<HTMLButtonElement>("button")].find(
+                (button) => button.textContent?.trim() === text
+            );
+
+        await waitFor(() => {
+            expect(readEntryButton("分享 天地")).toBeDisabled();
+        });
+        expect(readEntryButton("导出 天地")).toBeDisabled();
+        expect(readEntryButton("归档 天地")).toBeDisabled();
+        expect(readEntryButton("发布 地理")).toBeDisabled();
+        expect(readEntryButton("恢复发布 人物")).toBeDisabled();
+        expect(readButtonByText("批量分享")).toBeDisabled();
+        expect(readButtonByText("批量公开")).toBeDisabled();
+        expect(readButtonByText("批量私有")).toBeDisabled();
+        expect(readButtonByText("批量候选治理")).toBeDisabled();
+    });
 
     it("opens batch candidate governance drawer from selected entries", async () => {
         const user = userEvent.setup();
@@ -860,9 +868,10 @@ describe("SancaiEntryPanel sharing", () => {
             contentId: 3001,
             objectId: 5002,
             requestedBy: 99,
+            serviceId: 900001,
             serviceRole: "PRIMARY",
-            modelId: 1,
-            modelName: "gpt-5.5",
+            modelId: 900101,
+            modelName: "CTYUN-CX-Qwen3.5-397B-A17B",
             locale: "zh-CN"
         });
     }, 30000);
@@ -1366,9 +1375,10 @@ describe("SancaiEntryPanel sharing", () => {
             contentType: "SANCAI_ENTRY",
             contentId: 3001,
             requestedBy: 99,
+            serviceId: 900001,
             serviceRole: "PRIMARY",
-            modelId: 1,
-            modelName: "gpt-5.5",
+            modelId: 900102,
+            modelName: "CTYUN-bot-DeepSeek-V3.2-pro",
             locale: "zh-CN"
         });
     }, 30000);

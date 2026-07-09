@@ -1,4 +1,4 @@
-export type AiServiceRole = "PRIMARY" | "BACKUP";
+export type AiServiceRole = "PRIMARY" | "BACKUP" | "TEXT2IMAGE";
 
 export interface AiServiceConfigRecord {
     serviceId: number;

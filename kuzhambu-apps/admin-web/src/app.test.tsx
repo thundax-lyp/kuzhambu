@@ -52,6 +52,7 @@ describe("App", () => {
     });
 
     it("renders the admin dashboard route", async () => {
+        const user = userEvent.setup({ delay: null });
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
             const url = String(input);
@@ -195,11 +196,12 @@ describe("App", () => {
         expect(hasPermission("sys:role:edit")).toBe(false);
         expect(await screen.findByText("古籍管理")).toBeInTheDocument();
         expect(await screen.findByText("知识管理")).toBeInTheDocument();
-        await userEvent.click(await screen.findByRole("menuitem", { name: /知识管理/ }));
+        await user.click(await screen.findByRole("menuitem", { name: /知识管理/ }));
         expect(await screen.findByText("世系图浏览")).toBeInTheDocument();
     });
 
     it("loads permissions as part of successful login", async () => {
+        const user = userEvent.setup({ delay: null });
         const loginExpireAt = Date.now() + 5 * 60 * 1000;
         vi.spyOn(globalThis, "fetch").mockImplementation((input, init) => {
             const url = String(input);
@@ -315,10 +317,10 @@ describe("App", () => {
 
         render(<App />);
 
-        await userEvent.type(await screen.findByPlaceholderText("请输入后台账号"), "developer");
-        await userEvent.type(screen.getByPlaceholderText("请输入密码"), "kuzhambu");
-        await userEvent.type(screen.getByPlaceholderText("验证码"), "1234");
-        await userEvent.click(screen.getByRole("button", { name: /登\s*录/ }));
+        await user.type(await screen.findByPlaceholderText("请输入后台账号"), "developer");
+        await user.type(screen.getByPlaceholderText("请输入密码"), "kuzhambu");
+        await user.type(screen.getByPlaceholderText("验证码"), "1234");
+        await user.click(screen.getByRole("button", { name: /登\s*录/ }));
 
         expect(
             await screen.findByRole("heading", { name: "仪表盘" }, { timeout: 5000 })
@@ -342,6 +344,7 @@ describe("App", () => {
     }, 30000);
 
     it("logs out and returns to the login route", async () => {
+        const user = userEvent.setup({ delay: null });
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
             const url = String(input);
@@ -408,8 +411,8 @@ describe("App", () => {
 
         render(<App />);
 
-        await userEvent.click(await screen.findByRole("button", { name: /Developer/ }));
-        await userEvent.click(await screen.findByRole("menuitem", { name: /退出登录/ }));
+        await user.click(await screen.findByRole("button", { name: /Developer/ }));
+        await user.click(await screen.findByRole("menuitem", { name: /退出登录/ }));
 
         expect(globalThis.fetch).toHaveBeenCalledWith(
             "/kuzhambu-admin-api/api/auth/session/logout",

@@ -19,6 +19,18 @@ from kuzhambu_workers.schemas.ai import AiInvokeRequest, AiMessage
 from kuzhambu_workers.schemas.common import UsageSummary
 
 IMAGE_GENERATIONS_PATH = "/" + "/".join(("images", "generations"))
+IMAGE_GENERATION_RESERVED_PROVIDER_PARAMETERS = frozenset({"model", "messages"})
+IMAGE_GENERATION_OPTIONAL_PROVIDER_PARAMETERS = (
+    "response_format",
+    "n",
+    "size",
+    "quality",
+    "style",
+    "output_format",
+    "background",
+    "stream",
+    "watermark",
+)
 SUPPORTED_IMAGE_CONTENT_TYPES = {
     "image/png": "sancai-image.png",
     "image/jpeg": "sancai-image.jpg",
@@ -45,7 +57,10 @@ def generate_image(
     *,
     client: httpx.Client | None = None,
 ) -> GeneratedImageArtifact:
-    invocation = prepare_openai_compatible_invocation(request.modelConfig)
+    invocation = prepare_openai_compatible_invocation(
+        request.modelConfig,
+        reserved_provider_parameters=IMAGE_GENERATION_RESERVED_PROVIDER_PARAMETERS,
+    )
     body = _request_body(request, invocation.model_name, invocation.parameters)
     headers = _request_headers(request.modelConfig.apiKey)
     start_ms = monotonic_ms()
@@ -82,7 +97,7 @@ def _request_body(
         "response_format": "b64_json",
         "n": 1,
     }
-    for field_name in ("size", "quality", "style", "output_format", "background"):
+    for field_name in IMAGE_GENERATION_OPTIONAL_PROVIDER_PARAMETERS:
         if field_name in parameters:
             body[field_name] = parameters[field_name]
     return body

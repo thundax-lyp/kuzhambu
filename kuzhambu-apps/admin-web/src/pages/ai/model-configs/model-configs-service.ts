@@ -4,6 +4,7 @@ import type {
     AiModelRecord,
     AiModelServiceRecord
 } from "./model-configs-types";
+import type { AiServiceRole } from "../services/services-types";
 
 export interface AiModelListQuery {
     serviceId?: number | null;
@@ -57,21 +58,22 @@ export const listModelCheckRecords = (modelId: number) => {
     });
 };
 
-export const getModelServiceByRole = (serviceRole: "PRIMARY" | "BACKUP") => {
-    return postJson<AiModelServiceRecord, { serviceRole: "PRIMARY" | "BACKUP" }>(
+export const getModelServiceByRole = (serviceRole: string) => {
+    return postJson<AiModelServiceRecord, { serviceRole: AiServiceRole }>(
         "/ai/config/service/get-by-role",
         {
-            body: { serviceRole }
+            body: { serviceRole: serviceRole as AiServiceRole }
         }
     );
 };
 
 export const listModelServices = async () => {
-    const [primary, backup] = await Promise.all([
+    const [primary, backup, text2image] = await Promise.all([
         getModelServiceByRole("PRIMARY"),
-        getModelServiceByRole("BACKUP")
+        getModelServiceByRole("BACKUP"),
+        getModelServiceByRole("TEXT2IMAGE")
     ]);
-    return [primary, backup].filter((record): record is AiModelServiceRecord =>
+    return [primary, backup, text2image].filter((record): record is AiModelServiceRecord =>
         Boolean(record?.serviceId)
     );
 };
