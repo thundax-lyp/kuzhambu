@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ai-invocations-page`：实现 AI 调用统计页
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-ADMIN-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/ai/invocations/invocations-page.tsx`、`kuzhambu-apps/admin-web/src/pages/ai/invocations/invocations-service.ts`、`kuzhambu-apps/admin-web/src/pages/ai/invocations/invocations-types.ts`、`kuzhambu-apps/admin-web/src/pages/ai/invocations/invocations-page.css`、`kuzhambu-apps/admin-web/src/pages/ai/invocations/invocations-page.test.tsx`
-    - 处理动作：实现调用 summary、能力排行、调用记录分页和详情 Drawer。
-    - 验收点：页面可按周期和筛选条件展示调用数、成功数、失败数、平均耗时、成本、能力排行和调用详情。
-    - 重要度：9/10
-
 - [ ] `ai-action-status-page`：实现 AI 动作状态页
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-ADMIN-GOVERNANCE.md`
