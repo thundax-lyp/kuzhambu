@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `07 feat/workers-real-ai-loop`：同步 main 分支代码
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：当前分支 `feat/workers-real-ai-loop`
-    - 处理动作：完成 AI 实现和 E2E 回归后，同步 `origin/main` 到当前功能分支并处理冲突。
-    - 验收点：当前分支包含最新 `origin/main`，同步后的 workers 验证仍通过。
-    - 重要度：9/10
-
 - [ ] `08 kuzhambu-workers final validation`：运行同步 main 后的全量验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-REAL-AI-LOOP.md`
