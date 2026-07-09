@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `admin-web sancai current-page selection`：明确三才图会当前页多选交互
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-TAIL-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-list.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.test.tsx`
-    - 处理动作：把三才图会批量动作和选中数量提示统一为当前页已选口径。
-    - 验收点：页面出现 `当前页已选 N 条`，批量动作不暗示跨页勾选，分页或筛选变化不依赖旧页选中项。
-    - 重要度：8/10
-
 - [ ] `branch sync main`：同步 main 分支最新代码并处理冲突
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/PR-RULES.md`
