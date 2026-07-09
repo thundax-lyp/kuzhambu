@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `kuzhambu-workers/src/kuzhambu_workers/ai`：01 实现图片生成模型适配和 graph
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-GEN.md`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/ai/image_generation.py`、`kuzhambu-workers/src/kuzhambu_workers/ai/graphs/image_generation.py`、`kuzhambu-workers/src/kuzhambu_workers/ai/graph_registry.py`
-    - 处理动作：新增 OpenAI-compatible 图片生成适配、`image_gen` graph，并将 `AiCapability.IMAGE_GEN` 注册到 graph registry。
-    - 验收点：`CLASSICS_SANCAI_IMAGE_GEN` 能从模型响应解析图片 bytes、MIME、文件名和 usage，未知 capability 仍返回 `UNSUPPORTED_CAPABILITY`。
-    - 重要度：10/10
-
 - [ ] `kuzhambu-workers/src/kuzhambu_workers/api/ai_routes.py`：02 写入 artifact 并返回 SSE final-state
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-GEN.md`
