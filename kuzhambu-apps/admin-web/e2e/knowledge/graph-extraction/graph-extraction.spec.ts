@@ -192,7 +192,7 @@ test.describe("admin graph extraction smoke", () => {
 
         await expect(page.getByRole("heading", { name: "知识抽取任务" })).toBeVisible();
         await expect(page.getByText("8008")).toBeVisible();
-        await expect(page.getByText("QUALITY_REPORT")).toBeVisible();
+        await expect(page.getByRole("cell", { name: "QUALITY_REPORT" })).toBeVisible();
 
         await page.getByRole("textbox", { name: "来源内容类型" }).fill("SANCAI_ENTRY");
         await page.getByRole("spinbutton", { name: "来源内容 ID" }).fill("1001");
@@ -232,11 +232,18 @@ test.describe("admin graph extraction smoke", () => {
             });
         await expect(page.getByText("最近创建任务")).toBeVisible();
 
-        await page.getByRole("button", { name: "查看" }).first().click();
+        await page
+            .getByLabel("知识抽取任务表格")
+            .locator("button")
+            .filter({ hasText: /查\s*看/ })
+            .first()
+            .click({ force: true });
         await expect.poll(() => mocks.getDetailPayload()).toEqual({ taskId: 8008 });
-        await expect(page.getByText('{"sourceContentIds":[1001,1002]}')).toBeVisible();
-        await expect(page.getByText("6001")).toBeVisible();
-        await expect(page.getByText("7001")).toBeVisible();
+        await expect(page.getByLabel("抽取任务详情")).toContainText(
+            '{"sourceContentIds":[1001,1002]}'
+        );
+        await expect(page.getByLabel("抽取任务详情")).toContainText("6001");
+        await expect(page.getByLabel("抽取任务详情")).toContainText("7001");
 
         await page.getByRole("button", { name: "应用候选结果" }).click();
         await expect.poll(() => mocks.getApplyPayload()).toEqual({ taskId: 8008 });

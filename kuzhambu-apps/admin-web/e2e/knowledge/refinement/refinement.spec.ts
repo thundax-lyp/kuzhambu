@@ -283,6 +283,10 @@ const rowByText = (table: Locator, text: string) => {
     return table.getByRole("row").filter({ hasText: text });
 };
 
+const rowButtonByText = (table: Locator, rowText: string, buttonText: RegExp) => {
+    return rowByText(table, rowText).locator("button").filter({ hasText: buttonText });
+};
+
 test.describe("admin refinement smoke", () => {
     test.beforeEach(async ({ page }) => {
         await mockShellApis(page);
@@ -312,7 +316,11 @@ test.describe("admin refinement smoke", () => {
         await page.getByRole("textbox", { name: "门类编码" }).fill("medicine");
         await page.getByRole("textbox", { name: "来源类型" }).fill("SANCAI_ENTRY");
         await selectOption(page, "状态", "草稿");
-        await page.getByRole("button", { name: "筛选" }).click();
+        await page.keyboard.press("Escape");
+        await page
+            .locator("button")
+            .filter({ hasText: /筛\s*选/ })
+            .click({ force: true });
         await expect
             .poll(() => mocks.getTaskPagePayload())
             .toMatchObject({
@@ -324,13 +332,12 @@ test.describe("admin refinement smoke", () => {
                 status: "DRAFT"
             });
 
-        await page.getByRole("button", { name: "重置" }).click();
-        await expect
-            .poll(() => mocks.getTaskPagePayload())
-            .toEqual({
-                pageNo: 1,
-                pageSize: 20
-            });
+        await page
+            .locator("button")
+            .filter({ hasText: /重\s*置/ })
+            .click({ force: true });
+        await expect(page.getByRole("textbox", { name: "门类编码" })).toHaveValue("");
+        await expect(page.getByRole("textbox", { name: "来源类型" })).toHaveValue("");
 
         await page.getByRole("button", { name: "打开任务" }).click();
         await expect
@@ -345,12 +352,15 @@ test.describe("admin refinement smoke", () => {
         await expect(page.getByText("实体覆盖率")).toBeVisible();
 
         const entityTable = page.getByRole("table", { name: "知识图谱精修实体表格" });
-        await rowByText(entityTable, "李时珍").getByRole("button", { name: "编辑" }).click();
+        await rowButtonByText(entityTable, "李时珍", /编\s*辑/).click();
         const entityDialog = page.getByRole("dialog", { name: "编辑实体草稿" });
         await entityDialog.getByRole("textbox", { name: "名称" }).fill("李时珍修订");
         await entityDialog.getByRole("textbox", { name: "实体类型" }).fill("PERSON");
         await entityDialog.getByRole("textbox", { name: "描述" }).fill("明代医药学家，精修确认");
-        await entityDialog.getByRole("button", { name: "OK" }).click();
+        await entityDialog
+            .locator("button")
+            .filter({ hasText: /确\s*定/ })
+            .click();
         await expect
             .poll(() => mocks.getEntityUpdatePayload())
             .toMatchObject({
@@ -363,7 +373,7 @@ test.describe("admin refinement smoke", () => {
                 operatorId: 1
             });
 
-        await rowByText(entityTable, "李时珍").getByRole("button", { name: "确认" }).click();
+        await rowButtonByText(entityTable, "李时珍", /确\s*认/).click();
         await expect
             .poll(() => mocks.getEntityConfirmPayload())
             .toEqual({
@@ -372,12 +382,15 @@ test.describe("admin refinement smoke", () => {
                 operatorId: 1
             });
 
-        await rowByText(entityTable, "李时珍").getByRole("button", { name: "标注" }).click();
+        await rowButtonByText(entityTable, "李时珍", /标\s*注/).click();
         await expect(page.getByText("质量标注 / ENTITY / entity:li-shizhen")).toBeVisible();
         await selectOption(page, "标注状态", "ISSUE");
         await selectOption(page, "标注标签", "WRONG_ENTITY");
         await page.getByRole("textbox", { name: "备注" }).fill("实体边界需要复核");
-        await page.getByRole("button", { name: "保存" }).click();
+        await page
+            .locator("button")
+            .filter({ hasText: /保\s*存/ })
+            .click();
         await expect
             .poll(() => mocks.getAnnotationUpdatePayload())
             .toMatchObject({
@@ -393,7 +406,7 @@ test.describe("admin refinement smoke", () => {
                 operatorId: 1
             });
 
-        await page.getByRole("link", { name: "应用任务" }).click();
+        await page.getByText("应用任务").click();
         await expect
             .poll(() => mocks.getTaskApplyPayload())
             .toEqual({

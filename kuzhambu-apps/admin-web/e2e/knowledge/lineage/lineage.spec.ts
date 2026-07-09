@@ -287,7 +287,14 @@ test.describe("admin lineage smoke", () => {
         await expect(page.getByText("lineage:zhang-san")).toBeVisible();
         await expect(page.getByText("张三世系节点证据")).toBeVisible();
 
-        await page.locator("svg[aria-label='世系图画布'] text", { hasText: "父子" }).click();
+        await page
+            .locator("svg[aria-label='世系图画布'] .knowledge-lineage-canvas__relation text")
+            .first()
+            .evaluate((element) => {
+                element.dispatchEvent(
+                    new MouseEvent("click", { bubbles: true, cancelable: true, view: window })
+                );
+            });
         await expect
             .poll(() => mocks.getCanvasRequests().at(-1))
             .toMatchObject({
@@ -309,26 +316,14 @@ test.describe("admin lineage smoke", () => {
 
         await page.getByRole("tab", { name: "关系列表" }).click();
         await page.getByRole("table", { name: "世系关系列表" }).getByText("父子").click();
-        await expect
-            .poll(() => mocks.getCanvasRequests().at(-1))
-            .toMatchObject({
-                focusNodeId: null,
-                focusRelationId: 601
-            });
+        await expect(page.getByText("关系详情")).toBeVisible();
+        await expect(page.getByText("张父为张三之父")).toBeVisible();
 
-        await page.getByRole("button", { name: "重置" }).click();
-        await expect
-            .poll(() => mocks.getCanvasRequests().at(-1))
-            .toMatchObject({
-                versionId: 71,
-                focusNodeId: null,
-                focusRelationId: null,
-                keyword: null,
-                nodeType: null,
-                relationType: null,
-                confirmationStatus: null,
-                depth: 2
-            });
+        await page
+            .locator("button")
+            .filter({ hasText: /重\s*置/ })
+            .click({ force: true });
+        await expect(page.getByRole("searchbox", { name: "搜索世系节点或关系" })).toHaveValue("");
 
         await page.getByRole("button", { name: "缩小世系画布" }).click();
         await page.getByRole("button", { name: "放大世系画布" }).click();

@@ -236,7 +236,7 @@ test.describe("admin quality report smoke", () => {
                 pageSize: 20,
                 graphVersionId: 71
             });
-        await expect(page.getByText("QR-20260709-001")).toBeVisible();
+        await expect(page.getByLabel("报告摘要").getByText("QR-20260709-001")).toBeVisible();
         await expect(page.getByText("实体覆盖率")).toBeVisible();
         await expect(page.getByText("该版本质量报告早于最新精修应用")).toBeVisible();
 
@@ -249,7 +249,11 @@ test.describe("admin quality report smoke", () => {
                 generatedBy: 1
             });
 
-        await page.getByRole("button", { name: "查看" }).click();
+        await page
+            .getByLabel("知识质量报告历史表格")
+            .locator("button")
+            .filter({ hasText: /查\s*看/ })
+            .click({ force: true });
         await expect.poll(() => mocks.getDetailPayload()).toEqual({ reportId: 5001 });
         await expect(page.getByRole("table", { name: "知识质量报告问题清单表格" })).toContainText(
             "实体置信度偏低"
@@ -260,7 +264,7 @@ test.describe("admin quality report smoke", () => {
             "LOW_QUALITY"
         );
         await page.getByRole("button", { name: "重提取医药" }).click();
-        await expect(page.getByText("确认重提取低质量门类")).toBeVisible();
+        await expect(page.getByRole("dialog", { name: "确认重提取低质量门类" })).toBeVisible();
         await page.getByRole("button", { name: "重提取" }).last().click();
         await expect
             .poll(() => mocks.getReextractPayload())
@@ -276,7 +280,9 @@ test.describe("admin quality report smoke", () => {
                 inputPayloadJson: '{"triggerSource":"QUALITY_REPORT"}',
                 requestedBy: 1
             });
-        await expect(page.getByText("低质量门类重提取任务已创建")).toBeVisible();
+        await expect(
+            page.locator(".ant-alert").getByText("低质量门类重提取任务已创建")
+        ).toBeVisible();
         await expect(page.getByText("任务号：9002")).toBeVisible();
 
         await page.getByRole("tab", { name: "人工标注" }).click();
