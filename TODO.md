@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `02-graph-extraction-e2e`：补齐图谱抽取 Playwright 冒烟
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-RUNTIME-VALIDATION-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/e2e/knowledge/graph-extraction/graph-extraction.spec.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/components/graph-extraction-create.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/components/graph-extraction-task-table.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/components/graph-extraction-task-detail.tsx`
-    - 处理动作：覆盖任务创建、详情、应用、重生成和批次取消的控件操作与请求 payload 断言
-    - 验收点：`pnpm --filter ./admin-web run e2e -- e2e/knowledge/graph-extraction/graph-extraction.spec.ts` 通过
-    - 重要度：10/10
-
 - [ ] `03-graph-results-e2e`：补齐正式图谱结果 Playwright 冒烟
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-RUNTIME-VALIDATION-CLOSURE.md`
