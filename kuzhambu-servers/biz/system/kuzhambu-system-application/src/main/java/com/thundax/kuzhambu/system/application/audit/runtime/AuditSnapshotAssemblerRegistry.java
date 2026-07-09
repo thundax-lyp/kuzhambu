@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component("systemAuditSnapshotAssemblerRegistry")
 public class AuditSnapshotAssemblerRegistry {
 
     private final Map<String, AuditSnapshotAssembler> assemblers = new LinkedHashMap<>();

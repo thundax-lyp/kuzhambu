@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component("systemAuditObjectLoaderRegistry")
 public class AuditObjectLoaderRegistry {
 
     private final Map<String, AuditObjectLoader> loaders = new HashMap<>();
