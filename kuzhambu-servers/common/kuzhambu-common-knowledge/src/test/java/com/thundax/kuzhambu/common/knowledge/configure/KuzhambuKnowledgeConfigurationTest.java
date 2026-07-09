@@ -1,9 +1,11 @@
 package com.thundax.kuzhambu.common.knowledge.configure;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.thundax.kuzhambu.common.knowledge.client.KnowledgeBaseClient;
+import com.thundax.kuzhambu.common.knowledge.model.base.KnowledgeBaseListRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -15,7 +17,14 @@ public class KuzhambuKnowledgeConfigurationTest {
 
     @Test
     public void shouldNotCreateKnowledgeClientWhenDisabled() {
-        contextRunner.run(context -> assertFalse(context.containsBean("fastGptKnowledgeBaseClient")));
+        contextRunner.run(context -> {
+            assertFalse(context.containsBean("fastGptKnowledgeBaseClient"));
+            KnowledgeBaseClient client = context.getBean(KnowledgeBaseClient.class);
+            assertFalse(client.health().available());
+            assertThrows(
+                    IllegalStateException.class,
+                    () -> client.listKnowledgeBases(new KnowledgeBaseListRequest(1, 20, "Discovery")));
+        });
     }
 
     @Test
