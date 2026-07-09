@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `kuzhambu-workers`：05 运行 workers 窄范围格式化和最小验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-GEN.md`
-    - 范围对象：`kuzhambu-workers/src/kuzhambu_workers/ai`、`kuzhambu-workers/src/kuzhambu_workers/api/ai_routes.py`、`kuzhambu-workers/tests/test_ai_usecase_routes_classics.py`、`kuzhambu-workers/tests/test_ai_routes.py`、`kuzhambu-workers/tests/test_graph_registry.py`
-    - 处理动作：运行窄范围 Ruff format 后执行 Ruff check 和相关 pytest。
-    - 验收点：相关格式化、lint 和 pytest 命令通过，且 `git diff` 不包含任务外文件改动。
-    - 重要度：9/10
-
 - [ ] `main`：06 同步 main 分支代码并处理冲突
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
