@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `08 kuzhambu-workers final validation`：运行同步 main 后的全量验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-WORKERS-REAL-AI-LOOP.md`
-    - 范围对象：`kuzhambu-workers/`
-    - 处理动作：在同步 `origin/main` 后执行 workers formatter、Ruff lint、pytest 和 placeholder/sensitive-field 复核命令。
-    - 验收点：`ruff format --check`、`ruff check`、`pytest -p no:capture` 全部通过，placeholder 搜索无生产残留，敏感字段搜索只保留合法 redaction 断言。
-    - 重要度：10/10
-
 - [ ] `09 docs/40-readiness/WORKERS-IMPLEMENTATION-COVERAGE.md`：更新 Workers Implementation Coverage
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
