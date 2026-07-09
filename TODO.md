@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `classics runbook cleanup`：清理 Classics 尾项收口 RUNBOOK
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/TODO-RULES.md`
-    - 范围对象：`docs/30-designs/RUNBOOK-CLASSICS-TAIL-CLOSURE.md`、`TODO.md`
-    - 处理动作：在 PR 收口前删除已完成且无剩余价值的 RUNBOOK，并按完成情况清理或收窄 TODO。
-    - 验收点：RUNBOOK 文件已删除，TODO.md 不保留已完成任务，剩余任务仅表达真实未完成内容。
-    - 重要度：10/10
-
 ## 待审阅任务项
 
 ## 待讨论项
