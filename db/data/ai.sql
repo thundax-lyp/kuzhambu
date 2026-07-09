@@ -44,7 +44,7 @@ INSERT INTO `ai_service_config` (
 ON DUPLICATE KEY UPDATE
     `api_source` = VALUES(`api_source`),
     `base_url` = VALUES(`base_url`),
-    `encrypted_api_key` = VALUES(`encrypted_api_key`),
+    `encrypted_api_key` = COALESCE(VALUES(`encrypted_api_key`), `encrypted_api_key`),
     `enabled` = VALUES(`enabled`),
     `status` = VALUES(`status`),
     `last_checked_at` = VALUES(`last_checked_at`),

@@ -48,6 +48,8 @@ class PromptRepositoryIT {
         assertTrue(normalized.contains(
                 "900002, 'TEXT2IMAGE', 'OPENAI_COMPATIBLE', 'https://ark.cn-beijing.volces.com/api/v3'"));
         assertTrue(normalized.contains(
+                "`encrypted_api_key` = COALESCE(VALUES(`encrypted_api_key`), `encrypted_api_key`)"));
+        assertTrue(normalized.contains(
                 "930106, 'classics', 'translate', 'Classics Translate', 'Classics translate template', 'ACTIVE', 1"));
         assertTrue(normalized.contains(
                 "930101, 'classics', 'summary', 'Classics Summary', 'Classics summary template', 'ACTIVE', 1"));
