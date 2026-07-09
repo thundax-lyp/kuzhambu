@@ -9,13 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `7. 格式和验证`：运行后端、前端和文档检查
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-EDIT-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/`、`kuzhambu-apps/`、`TODO.md`、`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-EDIT-CLOSURE.md`
-    - 处理动作：运行 RUNBOOK 指定的 Maven、pnpm 和 `git diff --check` 验证。
-    - 验收点：相关格式、静态检查、单测和构建通过，或失败原因明确记录为非本任务既有问题。
-    - 重要度：10/10
 - [ ] `8. 同步 main 并最终收口`：同步 main 分支代码、清理 RUNBOOK 和 TODO
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`、`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-EDIT-CLOSURE.md`
