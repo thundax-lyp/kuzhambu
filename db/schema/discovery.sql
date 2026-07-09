@@ -119,9 +119,9 @@ CREATE TABLE IF NOT EXISTS `discovery_qa_session` (
     `opened_at` datetime(3) NOT NULL,
     `last_message_at` datetime(3) DEFAULT NULL,
     `removed_at` datetime(3) DEFAULT NULL,
+    `knowledge_base_name` varchar(128) NOT NULL DEFAULT 'kuzhambu-qa',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_discovery_qa_session_id` (`session_id`),
-    `knowledge_base_name` varchar(128) NOT NULL DEFAULT 'kuzhambu-qa',
     KEY `idx_discovery_qa_session_owner` (`owner_type`, `owner_id`, `last_message_at`),
     KEY `idx_discovery_qa_session_context` (`context_content_type`, `context_content_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='问答会话表';
