@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ai-models-page`：实现 AI 模型配置页
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-ADMIN-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/ai/models/models-page.tsx`、`kuzhambu-apps/admin-web/src/pages/ai/models/models-service.ts`、`kuzhambu-apps/admin-web/src/pages/ai/models/models-types.ts`、`kuzhambu-apps/admin-web/src/pages/ai/models/models-page.css`、`kuzhambu-apps/admin-web/src/pages/ai/models/models-page.test.tsx`
-    - 处理动作：实现模型筛选、列表、新增、编辑、启停、删除、检测和检测历史。
-    - 验收点：模型表格和 Drawer 控件符合 RUNBOOK，删除被映射模型时展示后端原因。
-    - 重要度：9/10
-
 - [ ] `ai-capability-mappings-page`：实现 AI 能力映射页
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-ADMIN-GOVERNANCE.md`

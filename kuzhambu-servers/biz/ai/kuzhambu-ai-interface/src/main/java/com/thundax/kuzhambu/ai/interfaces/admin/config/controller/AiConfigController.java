@@ -123,6 +123,15 @@ public class AiConfigController {
         return true;
     }
 
+    @Operation(summary = "检测AI模型", description = "ai:config:edit")
+    @ApiImplicitParams({})
+    @HasPermission(value = "ai:config:edit")
+    @SysLogger(value = "模型检测")
+    @PostMapping(value = "model/check")
+    public ModelCheckRecordResponse checkModel(@Valid @RequestBody AiConfigRequests.ModelIdRequest request) {
+        return AiConfigInterfaceAssembler.toResponse(modelService.check(request.getModelId()));
+    }
+
     @Operation(summary = "记录AI模型检测结果", description = "ai:config:edit")
     @ApiImplicitParams({})
     @HasPermission(value = "ai:config:edit")
