@@ -4,7 +4,9 @@ import com.thundax.kuzhambu.common.core.exception.DomainException;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchKeyword;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchScope;
 import java.util.Collections;
+import org.springframework.stereotype.Service;
 
+@Service
 public class SearchDomainService {
 
     private static final int FIRST_PAGE_NO = 1;

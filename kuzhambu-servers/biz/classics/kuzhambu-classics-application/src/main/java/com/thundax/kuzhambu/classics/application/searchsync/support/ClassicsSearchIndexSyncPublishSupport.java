@@ -6,9 +6,11 @@ import com.thundax.kuzhambu.classics.facade.dto.ClassicsSearchIndexSyncEventFaca
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsSearchIndexSyncMessageFacadeDto;
 import java.util.Date;
 import java.util.UUID;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+@Component
 public class ClassicsSearchIndexSyncPublishSupport {
 
     private final ClassicsSearchIndexSyncPublisher publisher;

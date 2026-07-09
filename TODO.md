@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `01-ai-backend-config-model`：01 后端服务配置和模型检测契约验收
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-RUNTIME-ACCEPTANCE.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/config/controller/AiConfigController.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-application/src/main/java/com/thundax/kuzhambu/ai/application/model/command/AiModelCheckCommand.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/model/persistence/mapper/AiModelMapper.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/model/persistence/dataobject/AiServiceConfigDO.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-infra/src/main/java/com/thundax/kuzhambu/ai/infra/model/persistence/dataobject/AiModelCheckRecordDO.java`
-    - 处理动作：验收 PRIMARY/BACKUP 服务配置读写、PRIMARY 模型登记、模型检测和检测历史。
-    - 验收点：服务配置响应不暴露明文 API Key，`ai_service_config`、`ai_model`、`ai_model_check_record` 字段与 RUNBOOK 要求一致。
-    - 重要度：10/10
-
 - [ ] `02-ai-backend-mapping-prompt-status`：02 后端能力映射、提示词变量和动作状态验收
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-RUNTIME-ACCEPTANCE.md`

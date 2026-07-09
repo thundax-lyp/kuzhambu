@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.ai.infra.capability.persistence.dataobject.AiCapabil
 import java.util.List;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
@@ -14,7 +15,7 @@ import org.apache.ibatis.annotations.Update;
 public interface AiCapabilityMapper extends BaseMapper<AiCapabilityDO> {
 
     @Select("select * from ai_capability_mapping where scope = #{scope} and capability = #{capability}")
-    AiCapabilityMappingDO selectMapping(String scope, String capability);
+    AiCapabilityMappingDO selectMapping(@Param("scope") String scope, @Param("capability") String capability);
 
     @Select(
             """
@@ -33,7 +34,8 @@ public interface AiCapabilityMapper extends BaseMapper<AiCapabilityDO> {
             order by scope asc, capability asc
             </script>
             """)
-    List<AiCapabilityMappingDO> selectMappings(String scope, String capability, Boolean enabled);
+    List<AiCapabilityMappingDO> selectMappings(
+            @Param("scope") String scope, @Param("capability") String capability, @Param("enabled") Boolean enabled);
 
     @Select("select * from ai_capability_mapping where model_id = #{modelId}")
     List<AiCapabilityMappingDO> selectMappingsByModelId(Long modelId);
@@ -60,7 +62,7 @@ public interface AiCapabilityMapper extends BaseMapper<AiCapabilityDO> {
     int updateMapping(AiCapabilityMappingDO dataObject);
 
     @Select("select * from ai_action_status where scope = #{scope} and capability = #{capability}")
-    AiActionStatusDO selectActionStatus(String scope, String capability);
+    AiActionStatusDO selectActionStatus(@Param("scope") String scope, @Param("capability") String capability);
 
     @Select(
             """
@@ -79,7 +81,10 @@ public interface AiCapabilityMapper extends BaseMapper<AiCapabilityDO> {
             order by scope asc, capability asc
             </script>
             """)
-    List<AiActionStatusDO> selectActionStatuses(String scope, String capability, Boolean available);
+    List<AiActionStatusDO> selectActionStatuses(
+            @Param("scope") String scope,
+            @Param("capability") String capability,
+            @Param("available") Boolean available);
 
     @Insert(
             """
