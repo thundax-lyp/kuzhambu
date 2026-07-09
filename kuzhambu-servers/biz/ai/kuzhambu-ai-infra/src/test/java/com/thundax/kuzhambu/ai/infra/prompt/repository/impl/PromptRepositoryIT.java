@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.ai.infra.prompt.repository.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -44,9 +45,11 @@ class PromptRepositoryIT {
         String normalized = dataSql.replaceAll("\\s+", " ");
 
         assertTrue(normalized.contains("INSERT INTO `ai_service_config`"));
-        assertTrue(normalized.contains("( 900001, 'PRIMARY', 'OPENAI_COMPATIBLE', 'https://ai.wdit.com.cn/v1'"));
-        assertTrue(normalized.contains(
-                "900002, 'TEXT2IMAGE', 'OPENAI_COMPATIBLE', 'https://ark.cn-beijing.volces.com/api/v3'"));
+        assertTrue(normalized.contains("( 900001, 'PRIMARY', 'OPENAI_COMPATIBLE', ''"));
+        assertTrue(normalized.contains("900002, 'TEXT2IMAGE', 'OPENAI_COMPATIBLE', ''"));
+        assertFalse(normalized.contains("https://ai.wdit.com.cn/v1"));
+        assertFalse(normalized.contains("https://ark.cn-beijing.volces.com/api/v3"));
+        assertTrue(normalized.contains("`base_url` = COALESCE(NULLIF(VALUES(`base_url`), ''), `base_url`)"));
         assertTrue(normalized.contains(
                 "`encrypted_api_key` = COALESCE(VALUES(`encrypted_api_key`), `encrypted_api_key`)"));
         assertTrue(normalized.contains(

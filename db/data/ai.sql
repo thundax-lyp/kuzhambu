@@ -34,16 +34,16 @@ INSERT INTO `ai_service_config` (
     `enabled`, `status`, `last_checked_at`, `configured_at`
 ) VALUES
     (
-        900001, 'PRIMARY', 'OPENAI_COMPATIBLE', 'https://ai.wdit.com.cn/v1', NULL,
+        900001, 'PRIMARY', 'OPENAI_COMPATIBLE', '', NULL,
         1, 'AVAILABLE', '2026-02-27 04:00:00.000', '2026-02-27 04:00:00.000'
     ),
     (
-        900002, 'TEXT2IMAGE', 'OPENAI_COMPATIBLE', 'https://ark.cn-beijing.volces.com/api/v3', NULL,
+        900002, 'TEXT2IMAGE', 'OPENAI_COMPATIBLE', '', NULL,
         1, 'AVAILABLE', '2026-02-27 04:00:00.000', '2026-02-27 04:00:00.000'
     )
 ON DUPLICATE KEY UPDATE
     `api_source` = VALUES(`api_source`),
-    `base_url` = VALUES(`base_url`),
+    `base_url` = COALESCE(NULLIF(VALUES(`base_url`), ''), `base_url`),
     `encrypted_api_key` = COALESCE(VALUES(`encrypted_api_key`), `encrypted_api_key`),
     `enabled` = VALUES(`enabled`),
     `status` = VALUES(`status`),
