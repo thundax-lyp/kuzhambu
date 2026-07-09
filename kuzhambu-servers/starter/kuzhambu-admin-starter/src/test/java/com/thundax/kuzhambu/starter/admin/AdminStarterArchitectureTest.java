@@ -41,6 +41,7 @@ class AdminStarterArchitectureTest extends AbstractArchitectureTest {
                         "com.thundax.kuzhambu.storage.application",
                         "com.thundax.kuzhambu.storage.infra",
                         "com.thundax.kuzhambu.storage.interfaces.admin",
+                        "com.thundax.kuzhambu.knowledge.domain",
                         "com.thundax.kuzhambu.knowledge.application",
                         "com.thundax.kuzhambu.knowledge.infra",
                         "com.thundax.kuzhambu.knowledge.interfaces.admin",

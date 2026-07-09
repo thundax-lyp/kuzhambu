@@ -33,6 +33,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
             "com.thundax.kuzhambu.classics.application",
             "com.thundax.kuzhambu.classics.infra",
             "com.thundax.kuzhambu.classics.interfaces.admin",
+            "com.thundax.kuzhambu.knowledge.domain",
             "com.thundax.kuzhambu.knowledge.application",
             "com.thundax.kuzhambu.knowledge.infra",
             "com.thundax.kuzhambu.knowledge.interfaces.admin",
