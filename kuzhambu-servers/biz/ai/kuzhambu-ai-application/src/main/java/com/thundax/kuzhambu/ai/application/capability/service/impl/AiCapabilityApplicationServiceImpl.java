@@ -52,6 +52,11 @@ public class AiCapabilityApplicationServiceImpl implements AiCapabilityApplicati
     }
 
     @Override
+    public List<AiCapabilityMapping> listMappings(String scope, String capability, Boolean enabled) {
+        return aiCapabilityRepository.listMappings(scope, capability, enabled);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public Long saveMapping(AiCapabilityMappingSaveCommand command) {
         if (command == null) {

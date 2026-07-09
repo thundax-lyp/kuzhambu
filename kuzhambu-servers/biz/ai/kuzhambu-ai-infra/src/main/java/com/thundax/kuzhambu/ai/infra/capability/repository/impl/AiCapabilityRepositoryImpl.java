@@ -49,6 +49,11 @@ public class AiCapabilityRepositoryImpl implements AiCapabilityRepository {
     }
 
     @Override
+    public List<AiCapabilityMapping> listMappings(String scope, String capability, Boolean enabled) {
+        return toMappingDomainList(aiCapabilityMapper.selectMappings(scope, capability, enabled));
+    }
+
+    @Override
     public List<AiCapabilityMapping> listMappingsByModelId(Long modelId) {
         return toMappingDomainList(aiCapabilityMapper.selectMappingsByModelId(modelId));
     }

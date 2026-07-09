@@ -14,6 +14,8 @@ public interface AiCapabilityApplicationService {
 
     AiCapabilityMapping getMapping(String scope, String capability);
 
+    List<AiCapabilityMapping> listMappings(String scope, String capability, Boolean enabled);
+
     Long saveMapping(AiCapabilityMappingSaveCommand command);
 
     void assertModelCanBeDeleted(Long modelId);

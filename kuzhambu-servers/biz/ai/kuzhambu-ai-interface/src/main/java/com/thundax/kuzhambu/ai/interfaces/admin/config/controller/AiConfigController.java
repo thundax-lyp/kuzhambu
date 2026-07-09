@@ -186,6 +186,20 @@ public class AiConfigController {
                 capabilityService.getMapping(request.getScope(), request.getCapability()));
     }
 
+    @Operation(summary = "获取AI能力映射列表", description = "ai:config:view")
+    @ApiImplicitParams({})
+    @HasPermission(value = "ai:config:view")
+    @SysLogger(value = "能力映射列表")
+    @PostMapping(value = "capability/mapping/list")
+    public List<CapabilityMappingResponse> listMappings(
+            @Valid @RequestBody AiConfigRequests.CapabilityQueryRequest request) {
+        return capabilityService
+                .listMappings(request.getScope(), request.getCapability(), request.getEnabled())
+                .stream()
+                .map(AiConfigInterfaceAssembler::toResponse)
+                .collect(Collectors.toList());
+    }
+
     @Operation(summary = "保存AI能力映射", description = "ai:config:edit")
     @ApiImplicitParams({})
     @HasPermission(value = "ai:config:edit")

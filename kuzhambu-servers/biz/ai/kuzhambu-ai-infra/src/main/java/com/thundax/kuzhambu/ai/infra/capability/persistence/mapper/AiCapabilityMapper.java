@@ -16,6 +16,25 @@ public interface AiCapabilityMapper extends BaseMapper<AiCapabilityDO> {
     @Select("select * from ai_capability_mapping where scope = #{scope} and capability = #{capability}")
     AiCapabilityMappingDO selectMapping(String scope, String capability);
 
+    @Select(
+            """
+            <script>
+            select * from ai_capability_mapping
+            where 1 = 1
+            <if test="scope != null and scope != ''">
+                and scope = #{scope}
+            </if>
+            <if test="capability != null and capability != ''">
+                and capability = #{capability}
+            </if>
+            <if test="enabled != null">
+                and enabled = #{enabled}
+            </if>
+            order by scope asc, capability asc
+            </script>
+            """)
+    List<AiCapabilityMappingDO> selectMappings(String scope, String capability, Boolean enabled);
+
     @Select("select * from ai_capability_mapping where model_id = #{modelId}")
     List<AiCapabilityMappingDO> selectMappingsByModelId(Long modelId);
 

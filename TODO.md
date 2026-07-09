@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ai-capability-mappings-page`：实现 AI 能力映射页
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-ADMIN-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/ai/capability-mappings/capability-mappings-page.tsx`、`kuzhambu-apps/admin-web/src/pages/ai/capability-mappings/capability-mappings-service.ts`、`kuzhambu-apps/admin-web/src/pages/ai/capability-mappings/capability-mappings-types.ts`、`kuzhambu-apps/admin-web/src/pages/ai/capability-mappings/capability-mappings-page.css`、`kuzhambu-apps/admin-web/src/pages/ai/capability-mappings/capability-mappings-page.test.tsx`
-    - 处理动作：实现 `scope + capability -> modelId` 映射配置和启停。
-    - 验收点：Drawer 只展示启用模型选项，并展示模型能力标签与能力所需标签的匹配提示。
-    - 重要度：9/10
-
 - [ ] `ai-prompts-page`：实现 AI 提示词版本页
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-ADMIN-GOVERNANCE.md`

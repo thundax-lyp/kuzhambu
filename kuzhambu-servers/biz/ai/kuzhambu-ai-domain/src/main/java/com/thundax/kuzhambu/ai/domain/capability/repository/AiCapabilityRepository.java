@@ -13,6 +13,8 @@ public interface AiCapabilityRepository {
 
     AiCapabilityMapping getMapping(String scope, String capability);
 
+    List<AiCapabilityMapping> listMappings(String scope, String capability, Boolean enabled);
+
     List<AiCapabilityMapping> listMappingsByModelId(Long modelId);
 
     Long saveMapping(AiCapabilityMapping mapping);
