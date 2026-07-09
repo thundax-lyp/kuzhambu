@@ -9,13 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `4. 后端迁移测试`：锁定 Sancai 跨卷迁移和接口透传行为
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-EDIT-CLOSURE.md`
-    - 范围对象：`kuzhambu-servers/biz/classics/kuzhambu-classics-application/src/test/java/com/thundax/kuzhambu/classics/application/sancai/SancaiApplicationServiceImplTest.java`、`kuzhambu-servers/biz/classics/kuzhambu-classics-interface/src/test/java/com/thundax/kuzhambu/classics/interfaces/admin/sancai/SancaiAdminControllerTest.java`
-    - 处理动作：补充更新条目跨卷、同卷排序保留、目标卷不存在和 update 请求 `volumeId` 透传测试。
-    - 验收点：后端测试能证明迁移更新 `volume_id`、追加 `priority` 并生成正式版本。
-    - 重要度：9/10
 - [ ] `5. 前端迁移测试`：锁定 Sancai 编辑抽屉门类卷选择和保存请求
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-EDIT-CLOSURE.md`
