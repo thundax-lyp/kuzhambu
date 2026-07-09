@@ -194,6 +194,15 @@ export const PromptsPage = () => {
         }));
     }, [capabilitiesQuery.data]);
 
+    useEffect(() => {
+        if (!filterForm.getFieldValue("scope")) {
+            filterForm.setFieldValue("scope", SCOPE_OPTIONS[0]?.value);
+        }
+        if (capabilityOptions.length > 0 && !filterForm.getFieldValue("capability")) {
+            filterForm.setFieldValue("capability", capabilityOptions[0].value);
+        }
+    }, [capabilityOptions, filterForm]);
+
     const variableRows = useMemo(() => {
         const parsedVariables = toVariableRows(variablesSnapshotJson);
         if (parsedVariables.length > 0) {
@@ -479,7 +488,12 @@ export const PromptsPage = () => {
             }
         >
             <Card className="prompts-filter-card">
-                <Form form={filterForm} layout="inline" className="prompts-filter-form">
+                <Form
+                    form={filterForm}
+                    layout="inline"
+                    className="prompts-filter-form"
+                    initialValues={{ scope: SCOPE_OPTIONS[0]?.value }}
+                >
                     <Form.Item
                         label="scope"
                         name="scope"

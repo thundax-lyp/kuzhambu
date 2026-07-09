@@ -1,6 +1,6 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { App } from "antd";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { replacePermissions } from "@/auth/permission-storage";
 import { queryClient } from "@/query/query-client";
 import { PromptsPage } from "./prompts-page";
@@ -151,24 +151,22 @@ describe("PromptsPage", () => {
     it("queries template and renders variables", async () => {
         renderPage();
 
-        fireEvent.mouseDown(screen.getByLabelText("筛选 scope"));
-        fireEvent.click(await screen.findByText("classics"));
-        fireEvent.mouseDown(screen.getByLabelText("筛选 capability"));
-        fireEvent.click(await screen.findByText("摘要生成 / summary"));
-        fireEvent.click(screen.getByRole("button", { name: "查询" }));
+        await screen.findByText("版本编辑");
+        await screen.findByText("摘要生成 / summary");
+        fireEvent.click(screen.getByRole("button", { name: /查\s*询/ }));
 
         expect(await screen.findByText("摘要提示词")).toBeInTheDocument();
-        expect(await screen.findByText("title")).toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.getByDisplayValue(/"variableName": "title"/)).toBeInTheDocument();
+        });
     });
 
     it("opens suggestion preview before applying as new version", async () => {
         renderPage();
 
-        fireEvent.mouseDown(screen.getByLabelText("筛选 scope"));
-        fireEvent.click(await screen.findByText("classics"));
-        fireEvent.mouseDown(screen.getByLabelText("筛选 capability"));
-        fireEvent.click(await screen.findByText("摘要生成 / summary"));
-        fireEvent.click(screen.getByRole("button", { name: "查询" }));
+        await screen.findByText("版本编辑");
+        await screen.findByText("摘要生成 / summary");
+        fireEvent.click(screen.getByRole("button", { name: /查\s*询/ }));
         await screen.findByText("摘要提示词");
 
         fireEvent.click(screen.getByRole("button", { name: /生成优化建议/ }));

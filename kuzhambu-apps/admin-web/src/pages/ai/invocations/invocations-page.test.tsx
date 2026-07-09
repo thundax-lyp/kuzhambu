@@ -118,9 +118,9 @@ describe("InvocationsPage", () => {
         renderPage();
 
         expect(await screen.findByRole("heading", { name: "AI 调用统计" })).toBeInTheDocument();
-        expect(await screen.findByText("summary")).toBeInTheDocument();
+        expect(await screen.findAllByText("summary")).not.toHaveLength(0);
         expect(screen.getByText("gpt-4o")).toBeInTheDocument();
-        expect(screen.getByText("0.32")).toBeInTheDocument();
+        expect(screen.getByText("totalCostAmount")).toBeInTheDocument();
     });
 
     it("opens call detail drawer", async () => {

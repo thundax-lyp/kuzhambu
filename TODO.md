@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ai-action-status-page`：实现 AI 动作状态页
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-ADMIN-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/ai/action-status/action-status-page.tsx`、`kuzhambu-apps/admin-web/src/pages/ai/action-status/action-status-service.ts`、`kuzhambu-apps/admin-web/src/pages/ai/action-status/action-status-types.ts`、`kuzhambu-apps/admin-web/src/pages/ai/action-status/action-status-page.css`、`kuzhambu-apps/admin-web/src/pages/ai/action-status/action-status-page.test.tsx`
-    - 处理动作：实现动作状态矩阵、不可用原因展示、单项刷新和刷新全部。
-    - 验收点：页面按 `scope`、`capability`、`available` 筛选动作状态，无 `ai:config:edit` 时禁用刷新操作。
-    - 重要度：9/10
-
 - [ ] `branch-main-sync`：同步 main 分支代码
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`

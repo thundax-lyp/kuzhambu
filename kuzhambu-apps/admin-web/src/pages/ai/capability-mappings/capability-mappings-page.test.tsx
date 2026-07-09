@@ -126,13 +126,16 @@ describe("CapabilityMappingsPage", () => {
         fireEvent.click(await screen.findByRole("button", { name: /保存/ }));
 
         await waitFor(() => {
-            expect(service.changeCapabilityMapping).toHaveBeenCalledWith({
-                mappingId: 3001,
-                scope: "classics",
-                capability: "summary",
-                modelId: 2001,
-                enabled: true
-            });
+            expect(service.changeCapabilityMapping).toHaveBeenCalledWith(
+                {
+                    mappingId: 3001,
+                    scope: "classics",
+                    capability: "summary",
+                    modelId: 2001,
+                    enabled: true
+                },
+                expect.anything()
+            );
         });
     });
 
@@ -143,6 +146,6 @@ describe("CapabilityMappingsPage", () => {
         await screen.findByText("摘要生成");
         expect(screen.getByRole("button", { name: /新增映射/ })).toBeDisabled();
         expect(screen.getByRole("button", { name: /配置模型/ })).toBeDisabled();
-        expect(screen.getByRole("button", { name: /禁用/ })).toBeDisabled();
+        expect(screen.getByRole("button", { name: /禁\s*用/ })).toBeDisabled();
     });
 });
