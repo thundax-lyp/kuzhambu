@@ -13,9 +13,9 @@ from kuzhambu_workers.core.errors import (
     WorkerError,
     WorkerErrorType,
     protocol_failure,
-    unsupported_capability,
 )
 from kuzhambu_workers.core.security import verify_internal_request
+from kuzhambu_workers.render.artifact_store import RequestArtifactStore
 from kuzhambu_workers.schemas.ai import (
     AiInvokeRequest,
     AiInvokeResponse,
@@ -128,7 +128,7 @@ def invoke_ai_graph(
         raw_result = registry.invoke(request)
         result = _coerce_text_payload(request, raw_result)
         usage = _usage_from_graph_result(raw_result)
-        artifact_reference = _artifact_reference_from_result(result)
+        artifact_reference = _artifact_reference_from_result(request, result)
         response = AiInvokeResponse(
             requestId=request.requestId,
             traceId=request.traceId,
@@ -160,7 +160,33 @@ def stream_ai_graph(
         yield encode_sse(started_event(request.requestId, request.traceId, timestamp))
         try:
             if request.capability.value == "image_gen":
-                raise unsupported_capability(request.capability.value)
+                raw_result = registry.invoke(request)
+                result = _coerce_text_payload(request, raw_result)
+                usage = _usage_from_graph_result(raw_result)
+                artifact_reference = _artifact_reference_from_result(request, result)
+                if artifact_reference is None:
+                    raise protocol_failure(
+                        "WORKER_RESULT_INVALID",
+                        "图片生成结果缺少 artifactReference。",
+                    )
+                yield encode_sse(
+                    stream_event(
+                        StreamEventType.COMPLETED,
+                        request_id=request.requestId,
+                        trace_id=request.traceId,
+                        stage="completed",
+                        timestamp=_now(),
+                        result=None,
+                        usage=usage.model_dump(mode="json"),
+                        extra=final_state_extra(
+                            status=WorkerStatus.SUCCEEDED.value,
+                            failure_stage=None,
+                            fallback_used=False,
+                            artifact_reference=artifact_reference,
+                        ),
+                    )
+                )
+                return
             deltas: list[str] = []
             usage = UsageSummary()
             for chunk in iter_chat_completion_chunks(request):
@@ -392,7 +418,10 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
 
 
-def _artifact_reference_from_result(result: AiResult) -> ArtifactReference | None:
+def _artifact_reference_from_result(
+    request: AiInvokeRequest,
+    result: AiResult,
+) -> ArtifactReference | None:
     if result.format != ResultFormat.ARTIFACT:
         return None
     payload = result.payload
@@ -407,5 +436,61 @@ def _artifact_reference_from_result(result: AiResult) -> ArtifactReference | Non
         "sha256",
         "expiresAt",
     }.issubset(payload):
-        return None
+        return _artifact_reference_from_image_result(request, payload)
     return ArtifactReference.model_validate(payload)
+
+
+def _artifact_reference_from_image_result(
+    request: AiInvokeRequest,
+    payload: dict[str, Any],
+) -> ArtifactReference:
+    data = payload.get("data")
+    content_type = payload.get("contentType")
+    filename = payload.get("filename")
+    if not isinstance(data, bytes):
+        raise protocol_failure(
+            "WORKER_RESULT_INVALID",
+            "图片生成结果缺少图片 bytes。",
+        )
+    if not isinstance(content_type, str) or not content_type.strip():
+        raise protocol_failure(
+            "WORKER_RESULT_INVALID",
+            "图片生成结果缺少 contentType。",
+        )
+    if not isinstance(filename, str) or not filename.strip():
+        raise protocol_failure(
+            "WORKER_RESULT_INVALID",
+            "图片生成结果缺少 filename。",
+        )
+    settings = load_settings()
+    if len(data) > settings.max_artifact_bytes:
+        raise WorkerError(
+            WorkerErrorType.IMAGE_INPUT_FAILURE,
+            "IMAGE_ARTIFACT_TOO_LARGE",
+            "图片生成结果超过 workers artifact 大小限制。",
+            detail={
+                "sizeBytes": len(data),
+                "maxArtifactBytes": settings.max_artifact_bytes,
+            },
+        )
+    store = RequestArtifactStore(
+        request.requestId,
+        settings.temp_dir,
+        settings.artifact_chunk_bytes,
+        settings.artifact_ttl_hours,
+    )
+    metadata = store.put_bytes(
+        data=data,
+        format=ResultFormat.ARTIFACT.value,
+        filename=filename,
+        content_type=content_type,
+    )
+    return ArtifactReference(
+        artifactId=metadata.artifact_id,
+        downloadPath=metadata.download_path,
+        contentType=metadata.content_type,
+        filename=metadata.filename,
+        sizeBytes=metadata.size_bytes,
+        sha256=metadata.sha256,
+        expiresAt=metadata.expires_at,
+    )
