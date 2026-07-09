@@ -408,7 +408,7 @@ export const SancaiEntryPanel = ({
             setIsModelOpen(false);
             setEditingEntry(null);
             setSelectedVersionId(null);
-            messageApi.success("三才图会条目已保存");
+            messageApi.success("三才图会条目已保存，归属卷已更新");
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "保存失败");
@@ -633,12 +633,12 @@ export const SancaiEntryPanel = ({
 
     const submitEntry = (form: SancaiEntryFormValues) => {
         if (isCreating) {
-            if (!volumeId) {
+            if (!form.volumeId) {
                 messageApi.warning("请先选择卷目");
                 return;
             }
             addEntryMutation.mutate({
-                volumeId,
+                volumeId: form.volumeId,
                 title: form.title,
                 originalText: form.originalText,
                 translationText: form.translationText,
@@ -657,7 +657,7 @@ export const SancaiEntryPanel = ({
         }
         updateEntryMutation.mutate({
             id: selectedEntry.id,
-            volumeId: selectedEntry.volumeId,
+            volumeId: form.volumeId,
             title: form.title,
             originalText: form.originalText,
             translationText: form.translationText,
@@ -1037,8 +1037,11 @@ export const SancaiEntryPanel = ({
                 isSubmitting={addEntryMutation.isPending || updateEntryMutation.isPending}
                 isSwitchingVisualAsset={changeCurrentVisualAssetMutation.isPending}
                 isUpdatingVisualAsset={updateVisualAssetMutation.isPending}
+                initialCategoryId={categoryId}
+                initialVolumeId={volumeId}
                 mode={isCreating ? "create" : "edit"}
                 open={isModelOpen && !isLoading}
+                volumes={volumes}
                 onCancel={closeModel}
                 onEditTags={editEntryTags}
                 onSubmit={submitEntry}

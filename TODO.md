@@ -9,13 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `3. 前端门类卷控件`：在 Sancai 条目编辑抽屉补齐门类和卷选择交互
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-EDIT-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-form-values.ts`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-model.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/services/sancai-entry-service.ts`
-    - 处理动作：新增表单态 `categoryId`、`volumeId`，添加门类 `Select` 和卷 `Select`，保存时提交目标 `volumeId`。
-    - 验收点：切换门类会过滤并必要时清空卷，未选卷不能提交，保存请求包含目标 `volumeId`。
-    - 重要度：10/10
 - [ ] `4. 后端迁移测试`：锁定 Sancai 跨卷迁移和接口透传行为
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-EDIT-CLOSURE.md`

@@ -6,7 +6,7 @@ import {
     UploadOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Empty, Image, Input, Switch, Tag, Typography, Upload } from "antd";
+import { App, Button, Empty, Image, Input, Select, Switch, Tag, Typography, Upload } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
@@ -84,6 +84,8 @@ interface SancaiEntryModelProps {
     categoryOptions?: Array<{ label: string; value: number }>;
     entryTags?: string[];
     entry: SancaiEntryRecord | undefined;
+    initialCategoryId?: number | null;
+    initialVolumeId?: number | null;
     isSubmitting: boolean;
     isSwitchingVisualAsset?: boolean;
     isUpdatingVisualAsset?: boolean;
@@ -100,12 +102,16 @@ interface SancaiEntryModelProps {
     ) => void;
     creatingVisualAssetCapability?: SancaiVisualAssetRefinementCapability | null;
     onSelectedVisualAssetChange?: (asset: SancaiVisualAssetRecord | null) => void;
+    volumes?: Array<{ categoryId?: number | null; id: number; title?: string | null }>;
 }
 
 export const SancaiEntryModel = ({
     afterForm,
+    categoryOptions = [],
     entryTags,
     entry,
+    initialCategoryId = null,
+    initialVolumeId = null,
     isSubmitting,
     isSwitchingVisualAsset = false,
     isUpdatingVisualAsset = false,
@@ -118,11 +124,14 @@ export const SancaiEntryModel = ({
     onUpdateVisualAsset,
     onCreateVisualAssetTask,
     creatingVisualAssetCapability = null,
-    onSelectedVisualAssetChange
+    onSelectedVisualAssetChange,
+    volumes = []
 }: SancaiEntryModelProps) => {
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
-    const [form, setForm] = useState<SancaiEntryFormValues>(() => toEntryFormValues(entry));
+    const [form, setForm] = useState<SancaiEntryFormValues>(() =>
+        toEntryFormValues(entry, volumes, initialCategoryId, initialVolumeId)
+    );
     const entryId = mode === "edit" ? entry?.id : undefined;
     const imagesQuery = useQuery({
         queryKey: ["classics", "sancai", "entries", "images", entryId],
@@ -155,6 +164,16 @@ export const SancaiEntryModel = ({
     const activeTags = useMemo(
         () => [...new Set((entryTags || []).map((tag) => tag.trim()).filter(Boolean))],
         [entryTags]
+    );
+    const volumeOptions = useMemo(
+        () =>
+            volumes
+                .filter((volume) => volume.categoryId === form.categoryId)
+                .map((volume) => ({
+                    label: volume.title?.trim() || `卷 ${volume.id}`,
+                    value: volume.id
+                })),
+        [form.categoryId, volumes]
     );
     const currentVisualAsset = useMemo(
         () => selectCurrentVisualAsset(visualAssets),
@@ -269,6 +288,24 @@ export const SancaiEntryModel = ({
         }
         onCreateVisualAssetTask(capability, selectedVisualAsset);
     };
+    const changeCategory = (categoryId: number | null) => {
+        setForm((currentForm) => {
+            const currentVolume = volumes.find((volume) => volume.id === currentForm.volumeId);
+            const volumeStillMatches = currentVolume?.categoryId === categoryId;
+            return {
+                ...currentForm,
+                categoryId,
+                volumeId: volumeStillMatches ? currentForm.volumeId : null
+            };
+        });
+    };
+    const submitForm = () => {
+        if (!form.volumeId) {
+            messageApi.warning("请选择卷");
+            return;
+        }
+        onSubmit(form);
+    };
     const uploadImageMutation = useMutation({
         mutationFn: (file: File) => {
             if (!entryId) {
@@ -314,7 +351,7 @@ export const SancaiEntryModel = ({
                         aria-label={mode === "create" ? "保存新增三才图会条目" : "保存三才图会条目"}
                         type="primary"
                         loading={isSubmitting}
-                        onClick={() => onSubmit(form)}
+                        onClick={submitForm}
                     >
                         保存
                     </Button>
@@ -332,6 +369,32 @@ export const SancaiEntryModel = ({
                             setForm((currentForm) => ({
                                 ...currentForm,
                                 title: event.target.value
+                            }))
+                        }
+                    />
+                </label>
+                <label className="sancai-form-field">
+                    <Text strong>门类</Text>
+                    <Select
+                        aria-label="三才图会条目门类"
+                        placeholder="选择门类"
+                        options={categoryOptions}
+                        value={form.categoryId ?? undefined}
+                        onChange={(value) => changeCategory(value ?? null)}
+                    />
+                </label>
+                <label className="sancai-form-field">
+                    <Text strong>卷</Text>
+                    <Select
+                        aria-label="三才图会条目卷"
+                        disabled={!form.categoryId}
+                        placeholder="选择卷"
+                        options={volumeOptions}
+                        value={form.volumeId ?? undefined}
+                        onChange={(value) =>
+                            setForm((currentForm) => ({
+                                ...currentForm,
+                                volumeId: value ?? null
                             }))
                         }
                     />
