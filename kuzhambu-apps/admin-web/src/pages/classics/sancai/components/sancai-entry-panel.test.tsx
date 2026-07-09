@@ -868,9 +868,10 @@ describe("SancaiEntryPanel sharing", () => {
             contentId: 3001,
             objectId: 5002,
             requestedBy: 99,
+            serviceId: 900001,
             serviceRole: "PRIMARY",
-            modelId: 1,
-            modelName: "gpt-5.5",
+            modelId: 900101,
+            modelName: "CTYUN-CX-Qwen3.5-397B-A17B",
             locale: "zh-CN"
         });
     }, 30000);
@@ -1374,9 +1375,10 @@ describe("SancaiEntryPanel sharing", () => {
             contentType: "SANCAI_ENTRY",
             contentId: 3001,
             requestedBy: 99,
+            serviceId: 900001,
             serviceRole: "PRIMARY",
-            modelId: 1,
-            modelName: "gpt-5.5",
+            modelId: 900102,
+            modelName: "CTYUN-bot-DeepSeek-V3.2-pro",
             locale: "zh-CN"
         });
     }, 30000);
