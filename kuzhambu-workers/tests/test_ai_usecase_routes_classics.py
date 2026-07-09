@@ -11,6 +11,7 @@ from kuzhambu_workers.ai.openai_compatible import (
     OpenAiChatCompletionResult,
 )
 from kuzhambu_workers.ai.usecase_registry import USECASES, AiUsecaseDomain
+from kuzhambu_workers.core.errors import WorkerError, WorkerErrorType
 from kuzhambu_workers.core.security import sign_request
 from kuzhambu_workers.main import app
 from kuzhambu_workers.schemas.ai import AiCapability
@@ -204,6 +205,75 @@ def test_classics_image_gen_route_contract_is_stable(monkeypatch, tmp_path) -> N
     assert download_response.headers["X-Kuzhambu-Artifact-Sha256"] == artifact["sha256"]
 
 
+@pytest.mark.parametrize(
+    ("error_type", "error_code"),
+    [
+        (WorkerErrorType.MODEL_TRANSPORT_FAILURE, "MODEL_PROVIDER_UNAVAILABLE"),
+        (WorkerErrorType.MODEL_SEMANTIC_FAILURE, "IMAGE_OUTPUT_EMPTY"),
+        (WorkerErrorType.OUTPUT_FORMAT_FAILURE, "IMAGE_BASE64_INVALID"),
+        (WorkerErrorType.IMAGE_INPUT_FAILURE, "IMAGE_BYTES_INVALID"),
+    ],
+)
+def test_classics_image_gen_route_maps_failures(
+    monkeypatch, tmp_path, error_type, error_code
+) -> None:
+    monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
+    monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
+    monkeypatch.setenv("KUZHAMBU_WORKER_TEMP_DIR", str(tmp_path))
+    monkeypatch.setattr(
+        "kuzhambu_workers.ai.graphs.image_generation.generate_image",
+        lambda request: _raise_worker_error(error_type, error_code),
+    )
+    body = _body(
+        operation=IMAGE_GEN_OPERATION,
+        capability=AiCapability.IMAGE_GEN.value,
+        stream=True,
+    )
+
+    response = TestClient(app).post(
+        IMAGE_GEN_PATH,
+        content=body,
+        headers=_headers(body, IMAGE_GEN_PATH, service="kuzhambu-ai"),
+    )
+
+    assert response.status_code == 200
+    assert "event: error" in response.text
+    assert "event: completed" not in response.text
+    assert f'"errorType":"{error_type.value}"' in response.text
+    assert f'"code":"{error_code}"' in response.text
+    assert "process-only" not in response.text
+    assert "system" not in response.text
+    assert str(tmp_path) not in response.text
+
+
+def test_classics_image_gen_route_rejects_oversized_artifact(monkeypatch, tmp_path) -> None:
+    monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
+    monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
+    monkeypatch.setenv("KUZHAMBU_WORKER_TEMP_DIR", str(tmp_path))
+    monkeypatch.setenv("KUZHAMBU_WORKER_MAX_ARTIFACT_BYTES", str(len(PNG_1X1) - 1))
+    monkeypatch.setattr(
+        "kuzhambu_workers.ai.graphs.image_generation.generate_image",
+        lambda request: _generated_image(),
+    )
+    body = _body(
+        operation=IMAGE_GEN_OPERATION,
+        capability=AiCapability.IMAGE_GEN.value,
+        stream=True,
+    )
+
+    response = TestClient(app).post(
+        IMAGE_GEN_PATH,
+        content=body,
+        headers=_headers(body, IMAGE_GEN_PATH, service="kuzhambu-ai"),
+    )
+
+    assert response.status_code == 200
+    assert "event: error" in response.text
+    assert "event: completed" not in response.text
+    assert '"errorType":"IMAGE_INPUT_FAILURE"' in response.text
+    assert '"code":"IMAGE_ARTIFACT_TOO_LARGE"' in response.text
+
+
 def test_classics_fusion_route_contract_is_stable(monkeypatch) -> None:
     monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
     monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
@@ -358,4 +428,13 @@ def _generated_image() -> GeneratedImageArtifact:
         content_type="image/png",
         filename="sancai-image.png",
         usage=UsageSummary(latencyMs=12, inputTokens=3, outputTokens=4),
+    )
+
+
+def _raise_worker_error(error_type: WorkerErrorType, code: str) -> None:
+    raise WorkerError(
+        error_type,
+        code,
+        "图片生成失败。",
+        detail={"providerStatus": 500},
     )

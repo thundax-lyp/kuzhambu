@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `kuzhambu-workers/tests`：04 锁定图片生成失败分类
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-GEN.md`
-    - 范围对象：`kuzhambu-workers/tests/test_ai_usecase_routes_classics.py`、`kuzhambu-workers/tests/test_ai_routes.py`
-    - 处理动作：补充模型超时、5xx、空图片、非法 base64、非法 MIME 和超大图片的失败分类测试。
-    - 验收点：失败流只发送 `error` 不发送 `completed`，错误类型分别归一为 `MODEL_TRANSPORT_FAILURE`、`MODEL_SEMANTIC_FAILURE`、`OUTPUT_FORMAT_FAILURE` 或 `IMAGE_INPUT_FAILURE`，且响应不泄露密钥、完整 prompt 或临时路径。
-    - 重要度：9/10
-
 - [ ] `kuzhambu-workers`：05 运行 workers 窄范围格式化和最小验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-IMAGE-GEN.md`
