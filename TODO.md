@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `08-sync-main-before-close`：08 收口前同步 main 分支代码
-    - 任务类型：执行任务
-    - 依据文档：`docs/00-governance/PR-RULES.md`
-    - 范围对象：`feat/ai-runtime-acceptance-runbook`、`origin/main`
-    - 处理动作：在收口前拉取远端并将当前分支同步到最新 `origin/main`。
-    - 验收点：`git status --short --branch` 显示当前分支基于最新 `origin/main`，且无合并冲突。
-    - 重要度：8/10
-
 - [ ] `09-ai-runtime-final-coverage-cleanup`：09 同步全量验证、更新覆盖清单并清理 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
