@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `3 前端报表 service`：新增 admin-web 报表类型与接口封装
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORTS-ADMIN.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/operations/reports/reports-types.ts`、`kuzhambu-apps/admin-web/src/pages/operations/reports/reports-service.ts`、`kuzhambu-apps/admin-web/src/pages/operations/reports/reports-service-contract.test.ts`
-    - 处理动作：定义报表 record/detail/command/query 类型并封装 `generateReport`、`pageReports`、`getReportDetail`、`toReportDownloadUrl`。
-    - 验收点：service 契约测试锁定 `/operations/report/generate`、`/operations/report/page`、`/operations/report/detail` 和 `/operations/report/{reportId}/content?download=true`。
-    - 重要度：9/10
-
 - [ ] `4 前端报表页面`：实现 `/operations/reports` 页面控件和交互
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-OPERATIONS-REPORTS-ADMIN.md`
