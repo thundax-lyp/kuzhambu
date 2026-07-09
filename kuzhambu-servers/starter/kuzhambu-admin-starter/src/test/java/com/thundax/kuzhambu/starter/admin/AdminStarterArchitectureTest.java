@@ -45,6 +45,10 @@ class AdminStarterArchitectureTest extends AbstractArchitectureTest {
                         "com.thundax.kuzhambu.knowledge.application",
                         "com.thundax.kuzhambu.knowledge.infra",
                         "com.thundax.kuzhambu.knowledge.interfaces.admin",
+                        "com.thundax.kuzhambu.ai.domain",
+                        "com.thundax.kuzhambu.ai.application",
+                        "com.thundax.kuzhambu.ai.infra",
+                        "com.thundax.kuzhambu.ai.interfaces.admin",
                         "com.thundax.kuzhambu.discovery.application",
                         "com.thundax.kuzhambu.discovery.infra",
                         "com.thundax.kuzhambu.discovery.interfaces.admin");
@@ -57,6 +61,12 @@ class AdminStarterArchitectureTest extends AbstractArchitectureTest {
                         "com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper",
                         "com.thundax.kuzhambu.knowledge.infra.refinement.persistence.mapper",
                         "com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.mapper",
+                        "com.thundax.kuzhambu.ai.infra.batch.persistence.mapper",
+                        "com.thundax.kuzhambu.ai.infra.capability.persistence.mapper",
+                        "com.thundax.kuzhambu.ai.infra.invocation.persistence.mapper",
+                        "com.thundax.kuzhambu.ai.infra.model.persistence.mapper",
+                        "com.thundax.kuzhambu.ai.infra.prompt.persistence.mapper",
+                        "com.thundax.kuzhambu.ai.infra.refinement.persistence.mapper",
                         "com.thundax.kuzhambu.discovery.infra.search.persistence.mapper");
     }
 
