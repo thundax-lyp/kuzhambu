@@ -99,7 +99,7 @@
 
 | 需求项             | 状态   | 已完成部分                                                                                                                                                                                  | 未完成部分                                                   | 责任域    |
 | ------------------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | --------- |
-| 当前阶段运行时验证 | 已完成 | 已完成 Search / QA runtime、索引同步、搜索高亮、搜索分析、Portal 搜索状态、王圻单文档问答上下文和 Workers 契约闭环；相关 Java / 前端 / workers 静态检查、构建和阶段性测试已跑通，Playwright 冒烟与 Knowledge 方向查询链路同步证据见 `KNOWLEDGE-RUNTIME-SMOKE-EVIDENCE.md` | 无 | Discovery |
+| 当前阶段运行时验证 | 已完成 | 已完成 Search / QA runtime、索引同步、搜索高亮、搜索分析、Portal 搜索状态、王圻单文档问答上下文和 Workers 契约闭环；相关 Java / 前端 / workers 静态检查、构建和阶段性测试已跑通，Playwright 冒烟与 Knowledge 方向查询链路同步证据见 `KNOWLEDGE-RUNTIME-SMOKE-EVIDENCE.md`；Discovery QA dev 冒烟证据归档于 `/tmp/discovery-quality-qa-20260709153738/`，已覆盖 health、Portal session/chat、Admin source/trace 和 DB 三表读取 | FastGPT dev 环境当前无 embedding，且 `chat/completions` 返回 provider 400，QA 来源跳转未通过 | Discovery |
 
 ## Unfinished Focus
 
@@ -119,4 +119,5 @@
 - Search 当前增量同步采用 `afterCommit` 直接发 MQ，不采用 outbox；当数据库提交成功但 MQ 发送失败时，仍需依赖重试或 Admin `rebuild` 做恢复。
 - 本地 Elasticsearch 虽已验证 HTTPS 地址和认证可达，但当前集群健康状态不是绿态；若后续索引重建或检索异常，需要继续排查未分配分片与证书信任配置。
 - Discovery QA 知识同步依赖外部 Knowledge Base provider；provider 不可用时需要依靠同步失败原因、provider trace 和 Admin 重建入口排查。
+- Discovery QA dev FastGPT 当前已写入 OpenAPI key、appId、LLM 和分词配置，且 Portal/Admin/DB 均能以字符串读取 `sessionId`、`messageId`、`traceId`；但当前环境没有 embedding 模型，FastGPT `chat/completions` 对本轮 app 返回 400，来源列表为空，QA 来源跳转冒烟不得标记通过。
 - Discovery QA CSV 导出依赖 Storage 上传链路；Storage 不可用时导出记录会标记 `FAILED` 并返回失败原因，需要由 Admin 侧排查 Storage 和对象权限配置。

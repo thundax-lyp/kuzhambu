@@ -304,14 +304,15 @@ export QA_SESSION_ID=$(printf '%s' "$SESSION_JSON" | jq -r '.data.sessionId')
 CHAT_JSON=$(curl -fsS -X POST "$PORTAL_API/portal/discovery/qa/chat/completions" \
   -H "Content-Type: application/json" \
   -d "{
+    \"sessionId\":\"$QA_SESSION_ID\",
     \"model\":\"kuzhambu-qa\",
     \"stream\":false,
-    \"metadata\":{\"sessionId\":$QA_SESSION_ID},
+    \"metadata\":{\"sessionId\":\"$QA_SESSION_ID\"},
     \"messages\":[{\"role\":\"user\",\"content\":\"礼制和礼学有什么关系？\"}]
   }")
 
 printf '%s\n' "$CHAT_JSON" | jq .
-export QA_MESSAGE_ID=$(printf '%s' "$CHAT_JSON" | jq -r '.data.choices[0].message.messageId')
+export QA_MESSAGE_ID=$(printf '%s' "$CHAT_JSON" | jq -r '.data.answerMessageId')
 export QA_SOURCE_PATH=$(printf '%s' "$CHAT_JSON" | jq -r '.data.sources[0].sourcePath')
 ```
 
@@ -331,12 +332,12 @@ export QA_SOURCE_PATH=$(printf '%s' "$CHAT_JSON" | jq -r '.data.sources[0].sourc
 curl -fsS -X POST "$ADMIN_API/discovery/qa-admin/session/get" \
   -H "Access-Token: $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
-  -d "{\"sessionId\":$QA_SESSION_ID}" | jq .
+  -d "{\"sessionId\":\"$QA_SESSION_ID\"}" | jq .
 
 curl -fsS -X POST "$ADMIN_API/discovery/qa-admin/source/list" \
   -H "Access-Token: $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
-  -d "{\"messageId\":$QA_MESSAGE_ID}" | jq .
+  -d "{\"messageId\":\"$QA_MESSAGE_ID\"}" | jq .
 ```
 
 从 Admin Web `discovery/qa-admin` 打开同一会话，记录：
