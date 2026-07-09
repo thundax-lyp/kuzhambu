@@ -198,6 +198,20 @@ public class AiConfigController {
                 capabilityService.getActionStatus(request.getScope(), request.getCapability()));
     }
 
+    @Operation(summary = "获取AI动作状态列表", description = "ai:config:view")
+    @ApiImplicitParams({})
+    @HasPermission(value = "ai:config:view")
+    @SysLogger(value = "动作状态列表")
+    @PostMapping(value = "action/status/list")
+    public List<ActionStatusResponse> listActionStatuses(
+            @Valid @RequestBody AiConfigRequests.ActionStatusListRequest request) {
+        return capabilityService
+                .listActionStatuses(request.getScope(), request.getCapability(), request.getAvailable())
+                .stream()
+                .map(AiConfigInterfaceAssembler::toResponse)
+                .collect(Collectors.toList());
+    }
+
     @Operation(summary = "刷新AI动作状态", description = "ai:config:edit")
     @ApiImplicitParams({})
     @HasPermission(value = "ai:config:edit")

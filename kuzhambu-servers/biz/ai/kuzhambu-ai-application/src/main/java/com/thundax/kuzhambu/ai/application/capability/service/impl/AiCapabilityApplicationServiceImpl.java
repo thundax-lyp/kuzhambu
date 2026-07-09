@@ -85,6 +85,13 @@ public class AiCapabilityApplicationServiceImpl implements AiCapabilityApplicati
     }
 
     @Override
+    public List<AiActionStatusResult> listActionStatuses(String scope, String capability, Boolean available) {
+        return aiCapabilityRepository.listActionStatuses(scope, capability, available).stream()
+                .map(AiActionStatusResult::from)
+                .toList();
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public AiActionStatusResult refreshActionStatus(String scope, String capability) {
         if (isBlank(scope) || isBlank(capability)) {

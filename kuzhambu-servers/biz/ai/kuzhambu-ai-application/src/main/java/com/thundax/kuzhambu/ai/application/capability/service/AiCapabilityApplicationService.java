@@ -20,5 +20,7 @@ public interface AiCapabilityApplicationService {
 
     AiActionStatusResult getActionStatus(String scope, String capability);
 
+    List<AiActionStatusResult> listActionStatuses(String scope, String capability, Boolean available);
+
     AiActionStatusResult refreshActionStatus(String scope, String capability);
 }

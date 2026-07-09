@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `ai-action-status-admin-api`：暴露 AI 动作状态批量读取接口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-AI-ADMIN-GOVERNANCE.md`
-    - 范围对象：`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/config/controller/AiConfigController.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/config/controller/request/AiConfigRequests.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/config/controller/response/AiConfigResponses.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/main/java/com/thundax/kuzhambu/ai/interfaces/admin/config/assembler/AiConfigInterfaceAssembler.java`、`kuzhambu-servers/biz/ai/kuzhambu-ai-interface/src/test/java/com/thundax/kuzhambu/ai/interfaces/admin/config/controller/AiConfigControllerTest.java`
-    - 处理动作：新增 `POST /api/ai/config/action/status/list`。
-    - 验收点：接口使用 `ai:config:view` 权限，返回 `scope`、`capability`、`available`、`unavailableReason`、`checkedAt`。
-    - 重要度：9/10
-
 - [ ] `ai-menu-route`：补齐 AI 治理菜单、路由和图标
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-AI-ADMIN-GOVERNANCE.md`
