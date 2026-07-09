@@ -26,6 +26,7 @@ import { SancaiVersionHistoryPanel } from "./sancai-version-history-panel";
 import { useSancaiEntryPanelState } from "../hooks/use-sancai-entry-panel-state";
 import * as entryService from "../services/sancai-entry-service";
 import type {
+    SancaiCategoryRecord,
     SancaiContentVersionRecord,
     SancaiEntryImageRecord,
     SancaiEntryRecord,
@@ -72,6 +73,7 @@ const formatImageSize = (size?: number | null) => {
 };
 
 interface SancaiEntryPanelProps {
+    categories?: SancaiCategoryRecord[];
     categoryId: number | null;
     defaultCreateOpen?: boolean;
     isCatalogLoading: boolean;
@@ -83,6 +85,7 @@ interface SancaiEntryPanelProps {
 }
 
 export const SancaiEntryPanel = ({
+    categories = [],
     categoryId,
     defaultCreateOpen = false,
     isCatalogLoading,
@@ -110,6 +113,14 @@ export const SancaiEntryPanel = ({
     const [imageUploadCurrentUsed, setImageUploadCurrentUsed] = useState(true);
     const candidatePanelRef = useRef<HTMLDivElement | null>(null);
     const tagPanelRef = useRef<HTMLDivElement | null>(null);
+    const categoryOptions = useMemo(
+        () =>
+            categories.map((category) => ({
+                label: category.title?.trim() || `门类 ${category.id}`,
+                value: category.id
+            })),
+        [categories]
+    );
     const currentUserQuery = useQuery({
         queryKey: ["sys", "current-user", "info"],
         queryFn: currentUserService.getCurrentUserInfo,
@@ -1018,6 +1029,7 @@ export const SancaiEntryPanel = ({
             />
             <SancaiEntryModel
                 key={modelKey}
+                categoryOptions={categoryOptions}
                 entry={selectedEntry}
                 entryTags={
                     selectedEntry?.tags?.map((tag) => tag.tagNameSnapshot || "") ?? entryTagNames

@@ -9,13 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `2. 前端目录数据传递`：把门类和卷目录数据传入 Sancai 条目编辑抽屉
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-EDIT-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/classics/sancai/sancai-page.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-panel.tsx`、`kuzhambu-apps/admin-web/src/pages/classics/sancai/components/sancai-entry-model.tsx`
-    - 处理动作：从页面向条目面板和编辑抽屉传递 `categories`、`volumes` 和 `categoryOptions`。
-    - 验收点：编辑抽屉不重复请求目录数据，门类选项能显示门类标题。
-    - 重要度：9/10
 - [ ] `3. 前端门类卷控件`：在 Sancai 条目编辑抽屉补齐门类和卷选择交互
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-CLASSICS-SANCAI-EDIT-CLOSURE.md`

@@ -81,6 +81,7 @@ const resolveStorageUrl = (url?: string | null) => {
 
 interface SancaiEntryModelProps {
     afterForm?: ReactNode;
+    categoryOptions?: Array<{ label: string; value: number }>;
     entryTags?: string[];
     entry: SancaiEntryRecord | undefined;
     isSubmitting: boolean;

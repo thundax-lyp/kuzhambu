@@ -388,6 +388,7 @@ export const SancaiPage = () => {
         panelContent = (
             <SancaiEntryPanel
                 key={`entry-${selectedVolume.id}-${createIntent.version}`}
+                categories={categories}
                 categoryId={selectedCategory?.id ?? null}
                 defaultCreateOpen={createIntent.target === "entry" && createIntent.version > 0}
                 isCatalogLoading={isLoading}
