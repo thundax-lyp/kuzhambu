@@ -15,7 +15,12 @@ import "./services-page.css";
 
 type ServiceFormValues = AiServiceConfigChangeCommand;
 
-const SERVICE_ROLES = ["PRIMARY", "BACKUP"] as const;
+const SERVICE_ROLES = ["PRIMARY", "BACKUP", "TEXT2IMAGE"] as const;
+const SERVICE_ROLE_TITLES = {
+    PRIMARY: "PRIMARY 主服务",
+    BACKUP: "BACKUP 备用服务",
+    TEXT2IMAGE: "TEXT2IMAGE 文生图服务"
+} as const;
 const API_SOURCE_OPTIONS = ["OPENAI", "AZURE_OPENAI", "LOCAL", "OTHER"];
 const STATUS_OPTIONS = ["AVAILABLE", "UNAVAILABLE", "CHECKING"];
 
@@ -112,7 +117,7 @@ export const ServicesPage = () => {
             className="services-page"
             eyebrow="AI"
             title="AI 服务配置"
-            description="管理主服务和备用服务连接状态"
+            description="管理主服务、备用服务和文生图服务连接状态"
             actions={
                 <Tooltip title="刷新">
                     <Button
@@ -131,7 +136,7 @@ export const ServicesPage = () => {
                         <Card
                             key={role}
                             className="services-card"
-                            title={role === "PRIMARY" ? "PRIMARY 主服务" : "BACKUP 备用服务"}
+                            title={SERVICE_ROLE_TITLES[role]}
                             extra={
                                 <Button
                                     icon={<EditOutlined />}

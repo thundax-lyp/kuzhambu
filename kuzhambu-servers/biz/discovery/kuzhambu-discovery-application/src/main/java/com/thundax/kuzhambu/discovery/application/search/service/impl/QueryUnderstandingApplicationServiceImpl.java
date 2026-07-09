@@ -91,8 +91,22 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
             return result;
         } catch (RuntimeException exception) {
             queryUnderstandingRepository.save(toFailedEntity(query, normalizedQueryText, enhancement, exception));
-            throw exception;
+            return toDefaultResult(normalizedQueryText, enhancement, query);
         }
+    }
+
+    private QueryUnderstandingResult toDefaultResult(
+            String normalizedQueryText,
+            DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult enhancement,
+            SearchQuery query) {
+        return new QueryUnderstandingResult(
+                normalizedQueryText,
+                normalizedQueryText,
+                SearchIntentType.KEYWORD_SEARCH.value(),
+                safeList(enhancement.expandedSynonyms()),
+                safeList(enhancement.recognizedEntities()),
+                query.getRequestId(),
+                query.getTraceId());
     }
 
     private QueryUnderstandingResult toResult(

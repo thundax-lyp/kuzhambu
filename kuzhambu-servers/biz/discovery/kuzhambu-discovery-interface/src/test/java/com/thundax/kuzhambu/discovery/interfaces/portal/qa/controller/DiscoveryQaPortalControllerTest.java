@@ -101,7 +101,7 @@ class DiscoveryQaPortalControllerTest {
         DiscoveryQaRequests.ChatCompletionsRequest chatCompletionRequest = OBJECT_MAPPER.readValue(
                 """
                 {
-                  "sessionId": 5001,
+                  "sessionId": "5001",
                   "model": "kuzhambu-qa",
                   "messages": [
                     {"role": "user", "content": "黄帝是谁"},
@@ -115,7 +115,7 @@ class DiscoveryQaPortalControllerTest {
                 }
                 """,
                 DiscoveryQaRequests.ChatCompletionsRequest.class);
-        assertEquals(5001L, chatCompletionRequest.getSessionId());
+        assertEquals("5001", chatCompletionRequest.getSessionId());
         assertJsonFields(chatCompletionRequest, "sessionId", "model", "messages", "requestId", "traceId");
 
         DiscoveryQaRequests.QaSessionPageRequest pageRequest = OBJECT_MAPPER.readValue(
@@ -134,35 +134,35 @@ class DiscoveryQaPortalControllerTest {
         DiscoveryQaRequests.QaSessionGetRequest getRequest = OBJECT_MAPPER.readValue(
                 """
                 {
-                  "sessionId": 5001,
+                  "sessionId": "5001",
                   "ownerUserId": 1001
                 }
                 """,
                 DiscoveryQaRequests.QaSessionGetRequest.class);
-        assertEquals(5001L, getRequest.getSessionId());
+        assertEquals("5001", getRequest.getSessionId());
         assertJsonFields(getRequest, "sessionId", "ownerUserId");
 
         DiscoveryQaRequests.QaSessionDeleteRequest deleteRequest = OBJECT_MAPPER.readValue(
                 """
                 {
-                  "sessionId": 5001,
+                  "sessionId": "5001",
                   "ownerUserId": 1001
                 }
                 """,
                 DiscoveryQaRequests.QaSessionDeleteRequest.class);
-        assertEquals(5001L, deleteRequest.getSessionId());
+        assertEquals("5001", deleteRequest.getSessionId());
         assertJsonFields(deleteRequest, "sessionId", "ownerUserId");
 
         DiscoveryQaRequests.QaSessionExportRequest exportRequest = OBJECT_MAPPER.readValue(
                 """
                 {
-                  "sessionId": 5001,
+                  "sessionId": "5001",
                   "ownerUserId": 1001,
                   "format": "CSV"
                 }
                 """,
                 DiscoveryQaRequests.QaSessionExportRequest.class);
-        assertEquals(5001L, exportRequest.getSessionId());
+        assertEquals("5001", exportRequest.getSessionId());
         assertEquals("CSV", exportRequest.getFormat());
         assertJsonFields(exportRequest, "sessionId", "ownerUserId", "format");
     }
@@ -204,7 +204,7 @@ class DiscoveryQaPortalControllerTest {
                         && command.getOwnerUserId().equals(1001L)
                         && "黄帝问答".equals(command.getTitle())
                         && "GLOBAL".equals(command.getScope())));
-        assertEquals(9001L, response.getSessionId());
+        assertEquals("9001", response.getSessionId());
         assertEquals("黄帝问答", response.getTitle());
     }
 
@@ -265,7 +265,7 @@ class DiscoveryQaPortalControllerTest {
         assertEquals(1, response.getPageNo());
         assertEquals(20, response.getPageSize());
         assertEquals(1L, response.getCount());
-        assertEquals(5001L, response.getRecords().get(0).getSessionId());
+        assertEquals("5001", response.getRecords().get(0).getSessionId());
     }
 
     @Test
@@ -275,14 +275,14 @@ class DiscoveryQaPortalControllerTest {
         DiscoveryQaPortalController controller =
                 new DiscoveryQaPortalController(service, knowledgeQaApplicationService);
         DiscoveryQaRequests.QaSessionGetRequest request = new DiscoveryQaRequests.QaSessionGetRequest();
-        request.setSessionId(5001L);
+        request.setSessionId("5001");
         request.setOwnerUserId(1001L);
         when(service.getPortalSessionDetail(5001L, "USER", "1001")).thenReturn(sessionDetailResult());
 
         var response = controller.getSession(request);
 
         verify(service).getPortalSessionDetail(5001L, "USER", "1001");
-        assertEquals(5001L, response.getSessionId());
+        assertEquals("5001", response.getSessionId());
         assertEquals(1, response.getMessages().size());
         assertEquals("黄帝是谁", response.getMessages().get(0).getContent());
     }
@@ -294,7 +294,7 @@ class DiscoveryQaPortalControllerTest {
         DiscoveryQaPortalController controller =
                 new DiscoveryQaPortalController(service, knowledgeQaApplicationService);
         DiscoveryQaRequests.QaSessionDeleteRequest request = new DiscoveryQaRequests.QaSessionDeleteRequest();
-        request.setSessionId(5001L);
+        request.setSessionId("5001");
         request.setOwnerUserId(1001L);
 
         controller.deleteSession(request);
@@ -309,7 +309,7 @@ class DiscoveryQaPortalControllerTest {
         DiscoveryQaPortalController controller =
                 new DiscoveryQaPortalController(service, knowledgeQaApplicationService);
         DiscoveryQaRequests.QaSessionExportRequest request = new DiscoveryQaRequests.QaSessionExportRequest();
-        request.setSessionId(5001L);
+        request.setSessionId("5001");
         request.setOwnerUserId(1001L);
         request.setFormat("CSV");
         when(service.exportSession(any()))
@@ -328,10 +328,10 @@ class DiscoveryQaPortalControllerTest {
         var response = controller.exportSession(request);
 
         verify(service).exportSession(argThat(command -> matchesExportCommand(command)));
-        assertEquals(7001L, response.getExportId());
-        assertEquals(5001L, response.getSessionId());
+        assertEquals("7001", response.getExportId());
+        assertEquals("5001", response.getSessionId());
         assertEquals("CSV", response.getFormat());
-        assertEquals(8001L, response.getStorageObjectId());
+        assertEquals("8001", response.getStorageObjectId());
         assertEquals("SUCCEEDED", response.getExportStatus());
         assertEquals(1_718_000_000_000L, response.getRequestedAt());
         assertEquals(1_718_000_001_000L, response.getCompletedAt());
@@ -346,7 +346,7 @@ class DiscoveryQaPortalControllerTest {
         DiscoveryQaPortalController controller =
                 new DiscoveryQaPortalController(service, knowledgeQaApplicationService);
         DiscoveryQaRequests.ChatCompletionsRequest request = new DiscoveryQaRequests.ChatCompletionsRequest();
-        request.setSessionId(5001L);
+        request.setSessionId("5001");
         request.setModel("kuzhambu-qa");
         request.setMessages(List.of(message("user", "黄帝是谁"), message("assistant", "上古帝王")));
         request.setStream(false);

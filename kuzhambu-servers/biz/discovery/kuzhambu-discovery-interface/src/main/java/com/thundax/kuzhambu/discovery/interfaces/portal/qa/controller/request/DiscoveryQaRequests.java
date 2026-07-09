@@ -90,8 +90,8 @@ public final class DiscoveryQaRequests {
 
         @Schema(name = "sessionId", description = "会话号")
         @JsonProperty(value = "sessionId")
-        @NotNull(message = "\"会话号\"不能为空")
-        private Long sessionId;
+        @NotBlank(message = "\"会话号\"不能为空")
+        private String sessionId;
 
         @Schema(name = "ownerUserId", description = "拥有者用户号")
         @JsonProperty(value = "ownerUserId")
@@ -108,8 +108,8 @@ public final class DiscoveryQaRequests {
 
         @Schema(name = "sessionId", description = "会话号")
         @JsonProperty(value = "sessionId")
-        @NotNull(message = "\"会话号\"不能为空")
-        private Long sessionId;
+        @NotBlank(message = "\"会话号\"不能为空")
+        private String sessionId;
 
         @Schema(name = "ownerUserId", description = "拥有者用户号")
         @JsonProperty(value = "ownerUserId")
@@ -126,8 +126,8 @@ public final class DiscoveryQaRequests {
 
         @Schema(name = "sessionId", description = "会话号")
         @JsonProperty(value = "sessionId")
-        @NotNull(message = "\"会话号\"不能为空")
-        private Long sessionId;
+        @NotBlank(message = "\"会话号\"不能为空")
+        private String sessionId;
 
         @Schema(name = "ownerUserId", description = "拥有者用户号")
         @JsonProperty(value = "ownerUserId")
@@ -148,8 +148,8 @@ public final class DiscoveryQaRequests {
 
         @Schema(name = "sessionId", description = "会话号")
         @JsonProperty(value = "sessionId")
-        @NotNull(message = "\"会话号\"不能为空")
-        private Long sessionId;
+        @NotBlank(message = "\"会话号\"不能为空")
+        private String sessionId;
 
         @Schema(name = "model", description = "知识库名")
         @JsonProperty(value = "model")

@@ -41,7 +41,7 @@ interface QaTimelineMessage {
     retryQuestion?: string;
 }
 
-type QaTimeline = Record<number, QaTimelineMessage[]>;
+type QaTimeline = Record<string, QaTimelineMessage[]>;
 
 const DEFAULT_SESSION_SIZE = 20;
 const FIXED_MODEL = "kuzhambu-qa";
@@ -119,8 +119,8 @@ const getSessionList = (ownerUserId: number | null) => {
     });
 };
 
-const toSessionId = (value?: number | null): number | null => {
-    return typeof value === "number" ? value : null;
+const toSessionId = (value?: string | null): string | null => {
+    return typeof value === "string" && value.trim().length ? value : null;
 };
 
 const sessionTitle = (session?: DiscoveryQaOpenSessionResponse) => {
@@ -164,7 +164,7 @@ const isUnavailableSource = (source: DiscoveryQaChatCompletionSource) => {
     return source.sourceStatus?.toUpperCase() === "UNAVAILABLE" || !source.sourceId;
 };
 
-const toSessionQuery = (sessionId: number): DiscoveryQaGetSessionRequest => {
+const toSessionQuery = (sessionId: string): DiscoveryQaGetSessionRequest => {
     return { ownerUserId: null, sessionId };
 };
 
@@ -181,7 +181,7 @@ export const DiscoveryQaPage = () => {
     const [searchParams] = useSearchParams();
     const [form, setForm] = useState<QaFormState>(() => toInitialFormState(searchParams));
     const [operationMessage, setOperationMessage] = useState<string | null>(null);
-    const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
+    const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
     const [timelineBySession, setTimelineBySession] = useState<QaTimeline>({});
     const ownerUserId = parseNumber(form.ownerUserId);
 
@@ -291,7 +291,7 @@ export const DiscoveryQaPage = () => {
     };
 
     const updateTimeline = (
-        sessionId: number,
+        sessionId: string,
         messageId: string,
         patch: Partial<QaTimelineMessage>
     ) => {
@@ -312,7 +312,7 @@ export const DiscoveryQaPage = () => {
         });
     };
 
-    const appendMessage = (sessionId: number, message: QaTimelineMessage) => {
+    const appendMessage = (sessionId: string, message: QaTimelineMessage) => {
         setTimelineBySession((current) => ({
             ...current,
             [sessionId]: [...(current[sessionId] ?? []), message]
@@ -341,7 +341,7 @@ export const DiscoveryQaPage = () => {
 
     const sendQuestion = async (
         questionText: string,
-        sessionId: number,
+        sessionId: string,
         existingMessageId?: string
     ) => {
         const assistantMessageId = existingMessageId ?? createTimelineMessageId();
@@ -394,6 +394,7 @@ export const DiscoveryQaPage = () => {
                 model: FIXED_MODEL,
                 options: {},
                 requestId: parseString(form.requestId),
+                sessionId,
                 stream: false,
                 traceId: parseString(form.traceId)
             });
@@ -454,7 +455,7 @@ export const DiscoveryQaPage = () => {
         await sendQuestion(targetMessage.retryQuestion, selectedSessionId, messageId);
     };
 
-    const handleSelectSession = (sessionId: number) => {
+    const handleSelectSession = (sessionId: string) => {
         setOperationMessage(null);
         setSelectedSessionId(sessionId);
     };

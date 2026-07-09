@@ -59,12 +59,12 @@
 - Portal Web 图谱浏览已支持 `overview -> category -> detail` 三层 URL 状态、门类下钻、实体下钻和 breadcrumb 返回导航。
 - Portal Web 图谱浏览已接入只读可视化画布，支持鸟瞰层固定 14 门类节点、门类层实体关系节点、详情层单实体关系节点、缩放/平移/minimap 控件，以及节点点击下钻。
 - Portal Web 世系图只读浏览已支持默认最新已应用版本、URL query 恢复、筛选、筛选清除、画布节点/关系点击和只读详情面板。
+- Knowledge 运行时验证已完成收口：Java Servers、Python Workers、Admin Web format/lint/build/test、Knowledge Playwright 6 个页面冒烟均通过，详见 `KNOWLEDGE-RUNTIME-SMOKE-EVIDENCE.md`。
 
-部分完成：
-
-- 当前已完成 Knowledge / AI 后端专项测试、workers 契约测试、Admin Web `format:check` / `lint` / `build`、Knowledge 页面定向测试和菜单 SQL 生成校验；Admin Web 全量 `test` 当前存在超时阻塞，尚未补充本阶段 Playwright 闭环与跨服务联调冒烟记录。
+部分完成：无。
 
 未完成：无。
+
 
 ## Requirement Coverage Matrix
 
@@ -128,7 +128,7 @@
 
 | 需求项             | 状态     | 已完成部分                                                                                                                                                                   | 未完成部分                           | 责任域                            |
 | ------------------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ | --------------------------------- |
-| 当前阶段运行时验证 | 部分完成 | 本阶段已通过 `mvn -pl biz/knowledge/kuzhambu-knowledge-application,biz/knowledge/kuzhambu-knowledge-interface -am spotless:check checkstyle:check test`、`pnpm --filter ./admin-web run format:check`、`pnpm --filter ./admin-web run lint`、`pnpm --filter ./admin-web run build` 和 Knowledge 四页定向 `vitest run`。 | `pnpm --filter ./admin-web run test` 在当前环境有 4 个超时失败：`src/app.test.tsx` 两个 app 级用例、`src/pages/knowledge/graph-extraction/graph-extraction-page.test.tsx` 的 page shell 用例、`src/pages/classics/sancai/components/sancai-entry-panel.test.tsx` 的权限用例；需独立治理全量前端测试稳定性。 | Knowledge, Admin Web |
+| 当前阶段运行时验证 | 已完成 | 已通过 `mvn -pl biz/knowledge,biz/ai -am spotless:check checkstyle:check test`、Workers `ruff format --check` / `ruff check` / `pytest`、Admin Web `format:check` / `lint` / `build` / `test`，以及 Knowledge Playwright 6 个页面冒烟；验证证据记录在 `KNOWLEDGE-RUNTIME-SMOKE-EVIDENCE.md`。 | 无 | Knowledge, AI, Workers, Admin Web |
 
 ## Unfinished Focus
 
@@ -145,7 +145,6 @@
 ## Residual Risks
 
 - 菜单种子重生成后 `system_menu` 的树编号和自增值已随节点数收缩变化，后续若依赖固定菜单 ID，需要以当前生成结果为准重新校对。
-- taxonomy 页面、精修工作台和正式结果页目前以页面级查询和抽屉交互为主；后续再改权限、字段或接口返回时，建议补前端契约测试和 Playwright 冒烟。
+- taxonomy 页面、图谱抽取、正式结果、世系图、精修工作台和质量报告已补齐 Knowledge Playwright 冒烟；后续再改权限、字段或接口返回时，建议同步更新对应前端契约测试与 Playwright 断言。
 - 同义词、标签和实体提示已接通 Discovery 搜索 / 问答主链路，后续主要关注命中质量与提示规则调优。
 - 当前已补齐 Portal 只读入口、图谱分层浏览、图谱可视化画布、固定 14 门类空位、独立世系图只读画布、图谱抽取批量闭环、人工质量报告闭环和低质量门类一键触发重提取；后续扩展到更多触发来源或世系专用重提取前，仍需先明确触发边界与回放策略。
-- Admin Web 全量 Vitest 当前存在超时阻塞；本阶段 Knowledge 相关四页定向测试已通过，后续需单独治理全量套件中的 app 级慢用例、graph-extraction page shell 超时和 Sancai 权限用例超时。

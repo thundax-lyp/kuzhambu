@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.thundax.kuzhambu.discovery.infra.search.persistence.dataobject.SearchClickDO;
 import java.util.Date;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 @Mapper
@@ -15,5 +16,5 @@ public interface SearchClickMapper extends BaseMapper<SearchClickDO> {
             where (#{createdAtStart} is null or created_at >= #{createdAtStart})
               and (#{createdAtEnd} is null or created_at <= #{createdAtEnd})
             """)
-    Long countByCreatedAtRange(Date createdAtStart, Date createdAtEnd);
+    Long countByCreatedAtRange(@Param("createdAtStart") Date createdAtStart, @Param("createdAtEnd") Date createdAtEnd);
 }

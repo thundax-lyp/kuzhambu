@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thundax.kuzhambu.common.web.request.PageRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
@@ -96,8 +97,8 @@ public final class DiscoveryQaAdminRequests {
 
         @Schema(name = "sessionId", description = "会话号")
         @JsonProperty(value = "sessionId")
-        @NotNull(message = "\"会话号\"不能为空")
-        private Long sessionId;
+        @NotBlank(message = "\"会话号\"不能为空")
+        private String sessionId;
     }
 
     @Getter
@@ -109,8 +110,8 @@ public final class DiscoveryQaAdminRequests {
 
         @Schema(name = "sessionId", description = "会话号")
         @JsonProperty(value = "sessionId")
-        @NotNull(message = "\"会话号\"不能为空")
-        private Long sessionId;
+        @NotBlank(message = "\"会话号\"不能为空")
+        private String sessionId;
     }
 
     @Getter
@@ -122,8 +123,8 @@ public final class DiscoveryQaAdminRequests {
 
         @Schema(name = "sessionId", description = "会话号")
         @JsonProperty(value = "sessionId")
-        @NotNull(message = "\"会话号\"不能为空")
-        private Long sessionId;
+        @NotBlank(message = "\"会话号\"不能为空")
+        private String sessionId;
 
         @Schema(name = "requesterUserId", description = "请求用户号")
         @JsonProperty(value = "requesterUserId")
@@ -143,8 +144,8 @@ public final class DiscoveryQaAdminRequests {
 
         @Schema(name = "messageId", description = "消息号")
         @JsonProperty(value = "messageId")
-        @NotNull(message = "\"消息号\"不能为空")
-        private Long messageId;
+        @NotBlank(message = "\"消息号\"不能为空")
+        private String messageId;
     }
 
     @Getter
@@ -156,7 +157,7 @@ public final class DiscoveryQaAdminRequests {
 
         @Schema(name = "traceId", description = "轨迹号")
         @JsonProperty(value = "traceId")
-        @NotNull(message = "\"轨迹号\"不能为空")
-        private Long traceId;
+        @NotBlank(message = "\"轨迹号\"不能为空")
+        private String traceId;
     }
 }

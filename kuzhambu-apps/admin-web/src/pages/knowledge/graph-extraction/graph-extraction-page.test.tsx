@@ -71,14 +71,23 @@ describe("GraphExtractionPage", () => {
         );
 
         expect(await screen.findByRole("heading", { name: "知识抽取任务" })).toBeInTheDocument();
+        await waitFor(() => {
+            expect(serviceMocks.pageTasks).toHaveBeenCalledWith({
+                pageNo: 1,
+                pageSize: 20
+            });
+        });
         expect(await screen.findByText("8008")).toBeInTheDocument();
         expect(screen.getAllByText("1001").length).toBeGreaterThan(0);
         expect(screen.getByText("QUALITY_REPORT")).toBeInTheDocument();
 
         fireEvent.click(screen.getByRole("button", { name: /查\s*看/u }));
 
+        await waitFor(() => {
+            expect(serviceMocks.getTaskDetail).toHaveBeenCalledWith({ taskId: 8008 });
+        });
         expect(await screen.findByText('{"sourceContentIds":[1001,1002]}')).toBeInTheDocument();
-    }, 45000);
+    });
 
     it("submits refinement handoff regenerate payload from search params", async () => {
         window.history.pushState(
@@ -112,5 +121,5 @@ describe("GraphExtractionPage", () => {
                 selectionScopeJson: '{"sourceContentIds":[1001]}'
             });
         });
-    }, 30000);
+    });
 });

@@ -24,7 +24,7 @@ public final class DiscoveryQaResponses {
 
         @Schema(name = "sessionId", description = "会话号")
         @JsonProperty(value = "sessionId")
-        private Long sessionId;
+        private String sessionId;
 
         @Schema(name = "ownerUserId", description = "拥有者用户号")
         @JsonProperty(value = "ownerUserId")
@@ -72,7 +72,7 @@ public final class DiscoveryQaResponses {
 
         @Schema(name = "sessionId", description = "会话号")
         @JsonProperty(value = "sessionId")
-        private Long sessionId;
+        private String sessionId;
 
         @Schema(name = "ownerUserId", description = "拥有者用户号")
         @JsonProperty(value = "ownerUserId")
@@ -132,11 +132,11 @@ public final class DiscoveryQaResponses {
 
         @Schema(name = "exportId", description = "导出号")
         @JsonProperty(value = "exportId")
-        private Long exportId;
+        private String exportId;
 
         @Schema(name = "sessionId", description = "会话号")
         @JsonProperty(value = "sessionId")
-        private Long sessionId;
+        private String sessionId;
 
         @Schema(name = "format", description = "导出格式")
         @JsonProperty(value = "format")
@@ -144,7 +144,7 @@ public final class DiscoveryQaResponses {
 
         @Schema(name = "storageObjectId", description = "Storage 对象号")
         @JsonProperty(value = "storageObjectId")
-        private Long storageObjectId;
+        private String storageObjectId;
 
         @Schema(name = "exportStatus", description = "导出状态")
         @JsonProperty(value = "exportStatus")
@@ -180,11 +180,11 @@ public final class DiscoveryQaResponses {
 
         @Schema(name = "messageId", description = "消息号")
         @JsonProperty(value = "messageId")
-        private Long messageId;
+        private String messageId;
 
         @Schema(name = "sessionId", description = "会话号")
         @JsonProperty(value = "sessionId")
-        private Long sessionId;
+        private String sessionId;
 
         @Schema(name = "role", description = "角色")
         @JsonProperty(value = "role")
@@ -224,15 +224,15 @@ public final class DiscoveryQaResponses {
 
         @Schema(name = "sessionId", description = "会话号")
         @JsonProperty(value = "sessionId")
-        private Long sessionId;
+        private String sessionId;
 
         @Schema(name = "questionMessageId", description = "用户消息号")
         @JsonProperty(value = "questionMessageId")
-        private Long questionMessageId;
+        private String questionMessageId;
 
         @Schema(name = "answerMessageId", description = "回答消息号")
         @JsonProperty(value = "answerMessageId")
-        private Long answerMessageId;
+        private String answerMessageId;
 
         @Schema(name = "question", description = "问题")
         @JsonProperty(value = "question")

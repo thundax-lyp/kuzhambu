@@ -34,13 +34,17 @@ INSERT INTO `ai_service_config` (
     `enabled`, `status`, `last_checked_at`, `configured_at`
 ) VALUES
     (
-        900001, 'PRIMARY', 'ctyun', 'https://worker-ai.local/mock', NULL,
+        900001, 'PRIMARY', 'OPENAI_COMPATIBLE', '', NULL,
+        1, 'AVAILABLE', '2026-02-27 04:00:00.000', '2026-02-27 04:00:00.000'
+    ),
+    (
+        900002, 'TEXT2IMAGE', 'OPENAI_COMPATIBLE', '', NULL,
         1, 'AVAILABLE', '2026-02-27 04:00:00.000', '2026-02-27 04:00:00.000'
     )
 ON DUPLICATE KEY UPDATE
     `api_source` = VALUES(`api_source`),
-    `base_url` = VALUES(`base_url`),
-    `encrypted_api_key` = VALUES(`encrypted_api_key`),
+    `base_url` = COALESCE(NULLIF(VALUES(`base_url`), ''), `base_url`),
+    `encrypted_api_key` = COALESCE(VALUES(`encrypted_api_key`), `encrypted_api_key`),
     `enabled` = VALUES(`enabled`),
     `status` = VALUES(`status`),
     `last_checked_at` = VALUES(`last_checked_at`),
@@ -57,10 +61,17 @@ INSERT INTO `ai_model` (
         'KB_HTML image_analysis sample model for classics AI tests.', 1, '2026-02-27 04:00:00.000'
     ),
     (
-        900102, 900001, 'CTYUN-CX-DeepSeek-V3.1', 'CTYUN DeepSeek V3.1',
+        900102, 900001, 'CTYUN-bot-DeepSeek-V3.2-pro', 'CTYUN DeepSeek V3.2 Pro',
         '["text", "structured_output", "streaming_text"]',
         '{"temperature": 0.2, "max_tokens": 4096}',
-        'KB_HTML image_analysis sample model for text and structured AI tests.', 1, '2026-02-27 04:00:00.000'
+        'Default OpenAI-compatible LLM from local server configuration.', 1, '2026-02-27 04:00:00.000'
+    ),
+    (
+        900201, 900002, 'doubao-seedream-5-0-pro-260628', 'Doubao Seedream 5.0 Pro',
+        '["image_gen"]',
+        '{"response_format": "url", "size": "2K", "stream": false, "watermark": true}',
+        'Default OpenAI-compatible text-to-image model from local server configuration.',
+        1, '2026-02-27 04:00:00.000'
     )
 ON DUPLICATE KEY UPDATE
     `service_id` = VALUES(`service_id`),
@@ -78,7 +89,8 @@ INSERT INTO `ai_capability_mapping` (
     (910102, 'classics', 'tags', 900102, 1, '2026-02-27 04:00:00.000'),
     (910105, 'classics', 'translate', 900102, 1, '2026-02-27 04:00:00.000'),
     (910103, 'classics', 'qa', 900102, 1, '2026-02-27 04:00:00.000'),
-    (910104, 'classics', 'image_analysis', 900101, 1, '2026-02-27 04:00:00.000')
+    (910104, 'classics', 'image_analysis', 900101, 1, '2026-02-27 04:00:00.000'),
+    (910106, 'classics', 'image_gen', 900201, 1, '2026-02-27 04:00:00.000')
 ON DUPLICATE KEY UPDATE
     `model_id` = VALUES(`model_id`),
     `enabled` = VALUES(`enabled`),
@@ -91,6 +103,7 @@ INSERT INTO `ai_action_status` (
     (920102, 'classics', 'tags', 1, NULL, '2026-02-27 04:00:00.000'),
     (920103, 'classics', 'qa', 1, NULL, '2026-02-27 04:00:00.000'),
     (920104, 'classics', 'image_analysis', 1, NULL, '2026-02-27 04:00:00.000'),
+    (920106, 'classics', 'image_gen', 1, NULL, '2026-02-27 04:00:00.000'),
     (920107, 'classics', 'translate', 1, NULL, '2026-02-27 04:00:00.000')
 ON DUPLICATE KEY UPDATE
     `available` = VALUES(`available`),

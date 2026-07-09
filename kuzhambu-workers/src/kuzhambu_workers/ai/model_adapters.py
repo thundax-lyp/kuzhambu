@@ -27,12 +27,16 @@ class ModelInvocation:
     supports_streaming: bool
 
 
-def prepare_openai_compatible_invocation(model_config: AiModelConfig) -> ModelInvocation:
+def prepare_openai_compatible_invocation(
+    model_config: AiModelConfig,
+    *,
+    reserved_provider_parameters: frozenset[str] = RESERVED_PROVIDER_PARAMETERS,
+) -> ModelInvocation:
     _validate_api_source(model_config)
     base_url = _validated_base_url(model_config)
     model_name = _validated_required_field("modelName", model_config.modelName)
     _validated_required_field("apiKey", model_config.apiKey)
-    parameters = _validated_parameters(model_config)
+    parameters = _validated_parameters(model_config, reserved_provider_parameters)
     timeout_ms = _validated_timeout_ms(model_config)
     return ModelInvocation(
         model_name=model_name,
@@ -74,8 +78,11 @@ def _validated_required_field(field_name: str, value: str) -> str:
     )
 
 
-def _validated_parameters(model_config: AiModelConfig) -> dict[str, Any]:
-    conflicts = sorted(set(model_config.parameters).intersection(RESERVED_PROVIDER_PARAMETERS))
+def _validated_parameters(
+    model_config: AiModelConfig,
+    reserved_provider_parameters: frozenset[str],
+) -> dict[str, Any]:
+    conflicts = sorted(set(model_config.parameters).intersection(reserved_provider_parameters))
     if conflicts:
         raise model_config_invalid(
             "modelConfig.parameters 不得覆盖 provider payload 核心字段。",

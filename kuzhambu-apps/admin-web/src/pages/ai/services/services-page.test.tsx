@@ -1,6 +1,6 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { App } from "antd";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { replacePermissions } from "@/auth/permission-storage";
 import { queryClient } from "@/query/query-client";
 import { ServicesPage } from "./services-page";
@@ -58,6 +58,17 @@ const records = [
         status: "UNAVAILABLE",
         lastCheckedAt: null,
         configuredAt: "2026-07-01T00:00:00.000Z"
+    },
+    {
+        serviceId: 1003,
+        serviceRole: "TEXT2IMAGE" as const,
+        apiSource: "OPENAI_COMPATIBLE",
+        baseUrl: "https://ark.example/api/v3",
+        apiKeyConfigured: true,
+        enabled: true,
+        status: "AVAILABLE",
+        lastCheckedAt: "2026-07-01T01:00:00.000Z",
+        configuredAt: "2026-07-01T00:00:00.000Z"
     }
 ];
 
@@ -84,14 +95,16 @@ describe("ServicesPage", () => {
         vi.clearAllMocks();
     });
 
-    it("renders primary and backup service cards", async () => {
+    it("renders configured service cards", async () => {
         renderPage();
 
         expect(await screen.findByRole("heading", { name: "AI 服务配置" })).toBeInTheDocument();
         expect(screen.getByText("PRIMARY 主服务")).toBeInTheDocument();
         expect(screen.getByText("BACKUP 备用服务")).toBeInTheDocument();
+        expect(screen.getByText("TEXT2IMAGE 文生图服务")).toBeInTheDocument();
         expect(await screen.findByText("https://api.primary.example")).toBeInTheDocument();
         expect(screen.getByText("https://api.backup.example")).toBeInTheDocument();
+        expect(screen.getByText("https://ark.example/api/v3")).toBeInTheDocument();
         expect(screen.queryByText("encrypted-api-key")).not.toBeInTheDocument();
     });
 
@@ -121,7 +134,9 @@ describe("ServicesPage", () => {
         renderPage();
         await screen.findByText("https://api.primary.example");
 
-        fireEvent.click(screen.getByRole("button", { name: /配置/ }));
+        const backupCard = screen.getByText("BACKUP 备用服务").closest(".ant-card");
+        expect(backupCard).not.toBeNull();
+        fireEvent.click(within(backupCard as HTMLElement).getByRole("button", { name: /配置/ }));
         expect(await screen.findByDisplayValue("BACKUP")).toBeInTheDocument();
         fireEvent.change(screen.getByLabelText("baseUrl"), {
             target: { value: "https://api.backup.example" }

@@ -1,3 +1,5 @@
+import type { AiServiceRole } from "../services/services-types";
+
 export interface AiModelRecord {
     modelId: number;
     serviceId: number;
@@ -24,7 +26,7 @@ export interface AiModelCheckRecord {
 
 export interface AiModelServiceRecord {
     serviceId: number;
-    serviceRole: "PRIMARY" | "BACKUP";
+    serviceRole: AiServiceRole;
     apiSource: string;
     baseUrl: string;
     enabled: boolean;

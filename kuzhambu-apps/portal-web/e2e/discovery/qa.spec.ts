@@ -41,7 +41,7 @@ const createQaMockHandlers = async (page: Page) => {
             lastMessageAt: 1700001000000,
             openedAt: 1700000000000,
             scope: "PORTAL",
-            sessionId: 7001,
+            sessionId: "7001",
             status: "OPEN",
             title: openSessionPayload.title ?? "知识中心问答"
         });
@@ -55,7 +55,7 @@ const createQaMockHandlers = async (page: Page) => {
             lastMessageAt: 1700001000000,
             openedAt: 1700000000000,
             scope: "PORTAL",
-            sessionId: 7001,
+            sessionId: "7001",
             status: "OPEN",
             title: openSessionPayload?.title ?? "知识中心问答"
         });
@@ -77,9 +77,9 @@ const createQaMockHandlers = async (page: Page) => {
             ],
             id: "chat-1",
             model: "kuzhambu-qa",
-            questionMessageId: 1,
-            answerMessageId: 2,
-            sessionId: 7001,
+            questionMessageId: "1",
+            answerMessageId: "2",
+            sessionId: "7001",
             sources: [
                 {
                     contentId: 1001,
@@ -105,7 +105,7 @@ const createQaMockHandlers = async (page: Page) => {
             filename: "discovery-qa-session-7001.csv",
             format: "CSV",
             requestedAt: Date.now() - 1000,
-            sessionId: 7001,
+            sessionId: "7001",
             storageObjectId: 9001
         });
     });
@@ -154,8 +154,9 @@ test.describe("portal discovery qa smoke", () => {
                     content: "礼学和礼制有什么关系？"
                 }
             ],
+            sessionId: "7001",
             metadata: {
-                sessionId: 7001,
+                sessionId: "7001",
                 contextMode: "GENERAL"
             }
         });
@@ -167,12 +168,12 @@ test.describe("portal discovery qa smoke", () => {
         await page.getByRole("button", { name: /导出 CSV/ }).click();
         expect(mocks.getExportPayload()).toMatchObject({
             format: "CSV",
-            sessionId: 7001
+            sessionId: "7001"
         });
 
         await page.getByRole("button", { name: /删除会话/ }).click();
         await expect(mocks.getDeletePayload()).toMatchObject({
-            sessionId: 7001,
+            sessionId: "7001",
             ownerUserId: 1001
         });
 
@@ -206,11 +207,12 @@ test.describe("portal discovery qa smoke", () => {
         await expect
             .poll(() => mocks.getChatPayload())
             .toMatchObject({
+                sessionId: "7001",
                 metadata: {
                     contextContentId: 3001,
                     contextContentType: "WANGQI_DOCUMENT",
                     contextMode: "SINGLE_DOCUMENT",
-                    sessionId: 7001
+                    sessionId: "7001"
                 }
             });
     });

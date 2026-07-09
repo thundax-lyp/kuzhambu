@@ -15,6 +15,16 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
     "com.thundax.kuzhambu.classics.infra.sancai.persistence.mapper",
     "com.thundax.kuzhambu.classics.infra.content.persistence.mapper",
     "com.thundax.kuzhambu.classics.infra.sharing.persistence.mapper",
+    "com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper",
+    "com.thundax.kuzhambu.knowledge.infra.refinement.persistence.mapper",
+    "com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.mapper",
+    "com.thundax.kuzhambu.ai.infra.batch.persistence.mapper",
+    "com.thundax.kuzhambu.ai.infra.capability.persistence.mapper",
+    "com.thundax.kuzhambu.ai.infra.invocation.persistence.mapper",
+    "com.thundax.kuzhambu.ai.infra.model.persistence.mapper",
+    "com.thundax.kuzhambu.ai.infra.prompt.persistence.mapper",
+    "com.thundax.kuzhambu.ai.infra.refinement.persistence.mapper",
+    "com.thundax.kuzhambu.discovery.infra.qa.persistence.mapper",
     "com.thundax.kuzhambu.discovery.infra.search.persistence.mapper"
 })
 @SpringBootApplication(
@@ -29,6 +39,14 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
             "com.thundax.kuzhambu.classics.application",
             "com.thundax.kuzhambu.classics.infra",
             "com.thundax.kuzhambu.classics.interfaces.portal",
+            "com.thundax.kuzhambu.classics.interfaces.admin.searchsync.mq",
+            "com.thundax.kuzhambu.knowledge.domain",
+            "com.thundax.kuzhambu.knowledge.application",
+            "com.thundax.kuzhambu.knowledge.infra",
+            "com.thundax.kuzhambu.knowledge.interfaces.portal",
+            "com.thundax.kuzhambu.ai.domain",
+            "com.thundax.kuzhambu.ai.application",
+            "com.thundax.kuzhambu.ai.infra",
             "com.thundax.kuzhambu.discovery.application",
             "com.thundax.kuzhambu.discovery.infra",
             "com.thundax.kuzhambu.discovery.interfaces.portal"

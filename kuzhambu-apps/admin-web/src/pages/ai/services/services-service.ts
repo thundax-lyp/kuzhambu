@@ -30,11 +30,12 @@ export const changeServiceConfig = (request: AiServiceConfigChangeCommand) => {
 };
 
 export const listGovernanceServices = async () => {
-    const [primary, backup] = await Promise.all([
+    const [primary, backup, text2image] = await Promise.all([
         getServiceByRole("PRIMARY"),
-        getServiceByRole("BACKUP")
+        getServiceByRole("BACKUP"),
+        getServiceByRole("TEXT2IMAGE")
     ]);
-    return [primary, backup].filter((service): service is AiServiceConfigRecord =>
+    return [primary, backup, text2image].filter((service): service is AiServiceConfigRecord =>
         Boolean(service?.serviceId)
     );
 };

@@ -16,6 +16,7 @@ import com.thundax.kuzhambu.discovery.application.qa.service.QaApplicationServic
 import com.thundax.kuzhambu.discovery.interfaces.admin.qa.assembler.DiscoveryQaAdminInterfaceAssembler;
 import com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.request.DiscoveryQaAdminRequests;
 import com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.response.DiscoveryQaAdminResponses;
+import com.thundax.kuzhambu.discovery.interfaces.common.DiscoveryInterfaceIdCodec;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -85,7 +86,7 @@ public class DiscoveryQaAdminController {
     public DiscoveryQaAdminResponses.QaSessionDetailResponse getSession(
             @Valid @RequestBody DiscoveryQaAdminRequests.QaSessionGetRequest request) {
         return DiscoveryQaAdminInterfaceAssembler.toSessionDetailResponse(
-                qaApplicationService.getSessionDetail(request.getSessionId()));
+                qaApplicationService.getSessionDetail(DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId())));
     }
 
     @Operation(summary = "删除会话", description = "Discovery QA Admin 软删除会话")
@@ -112,8 +113,8 @@ public class DiscoveryQaAdminController {
     @PostMapping("source/list")
     public List<DiscoveryQaAdminResponses.QaSourceResponse> listSources(
             @Valid @RequestBody DiscoveryQaAdminRequests.QaSourceListRequest request) {
-        return DiscoveryQaAdminInterfaceAssembler.toSourceResponses(
-                qaApplicationService.listSourcesByMessageId(request.getMessageId()));
+        return DiscoveryQaAdminInterfaceAssembler.toSourceResponses(qaApplicationService.listSourcesByMessageId(
+                DiscoveryInterfaceIdCodec.toLongValue(request.getMessageId())));
     }
 
     @Operation(summary = "获取检索轨迹", description = "Discovery QA 检索轨迹")
@@ -123,7 +124,7 @@ public class DiscoveryQaAdminController {
     public DiscoveryQaAdminResponses.QaTraceResponse getTrace(
             @Valid @RequestBody DiscoveryQaAdminRequests.QaTraceGetRequest request) {
         return DiscoveryQaAdminInterfaceAssembler.toTraceResponse(
-                qaApplicationService.getTraceByTraceId(request.getTraceId()));
+                qaApplicationService.getTraceByTraceId(DiscoveryInterfaceIdCodec.toLongValue(request.getTraceId())));
     }
 
     private static SyncKnowledgeContentCommand toSyncContentCommand(
@@ -150,13 +151,17 @@ public class DiscoveryQaAdminController {
 
     private static DeleteQaSessionCommand toDeleteSessionCommand(
             DiscoveryQaAdminRequests.QaSessionDeleteRequest request) {
-        return new DeleteQaSessionCommand(request == null ? null : request.getSessionId(), null, null, true);
+        return new DeleteQaSessionCommand(
+                request == null ? null : DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId()),
+                null,
+                null,
+                true);
     }
 
     private static ExportQaSessionCommand toExportSessionCommand(
             DiscoveryQaAdminRequests.QaSessionExportRequest request) {
         return new ExportQaSessionCommand(
-                request == null ? null : request.getSessionId(),
+                request == null ? null : DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId()),
                 request == null ? null : request.getRequesterUserId(),
                 null,
                 null,

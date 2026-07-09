@@ -89,7 +89,7 @@ class QueryUnderstandingApplicationServiceImplTest {
     }
 
     @Test
-    void understandShouldPersistFailureWhenAiFails() {
+    void understandShouldPersistFailureAndReturnDefaultResultWhenAiFails() {
         QueryUnderstandingRepository repository = mock(QueryUnderstandingRepository.class);
         DiscoveryKnowledgeEnhancementProvider enhancementProvider = mock(DiscoveryKnowledgeEnhancementProvider.class);
         QueryUnderstandingPayloadBuilder payloadBuilder = mock(QueryUnderstandingPayloadBuilder.class);
@@ -123,11 +123,14 @@ class QueryUnderstandingApplicationServiceImplTest {
                 "req-1",
                 "trace-1");
 
-        BizException exception = assertThrows(BizException.class, () -> service.understand(query));
+        QueryUnderstandingResult result = service.understand(query);
         ArgumentCaptor<QueryUnderstanding> captor = ArgumentCaptor.forClass(QueryUnderstanding.class);
 
         verify(repository).save(captor.capture());
-        assertEquals("DISCOVERY-29999", exception.getCode());
+        assertEquals("礼制", result.getNormalizedQueryText());
+        assertEquals("礼制", result.getRewrittenQueryText());
+        assertEquals("KEYWORD_SEARCH", result.getIntent());
+        assertEquals(List.of("礼学"), result.getExpandedSynonyms());
         assertEquals("FAILED", captor.getValue().getUnderstandingStatus());
         assertEquals("DISCOVERY-29999", captor.getValue().getFailureCode());
     }

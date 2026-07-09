@@ -197,9 +197,9 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
             return new Criteria();
         }
         return new Criteria("title")
-                .contains(keyword)
-                .or(new Criteria("summary").contains(keyword))
-                .or(new Criteria("bodyText").contains(keyword));
+                .matches(keyword)
+                .or(new Criteria("summary").matches(keyword))
+                .or(new Criteria("bodyText").matches(keyword));
     }
 
     private Criteria appendInFilter(Criteria criteria, String fieldName, List<String> values) {
