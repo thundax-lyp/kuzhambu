@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `06-quality-report-e2e`：补齐质量报告 Playwright 冒烟
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-RUNTIME-VALIDATION-CLOSURE.md`
-    - 范围对象：`kuzhambu-apps/admin-web/e2e/knowledge/quality-report/quality-report.spec.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/quality-report/quality-report-page.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/quality-report/components/quality-report-generate-form.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/quality-report/components/quality-report-summary.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/quality-report/components/quality-report-source-table.tsx`
-    - 处理动作：覆盖报告生成、最新报告、历史报告、报告详情和低质量门类重提取入口
-    - 验收点：`pnpm --filter ./admin-web run e2e -- e2e/knowledge/quality-report/quality-report.spec.ts` 通过
-    - 重要度：9/10
-
 - [ ] `07-runtime-evidence`：执行 Knowledge 运行时验证并记录 evidence
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-RUNTIME-VALIDATION-CLOSURE.md`
