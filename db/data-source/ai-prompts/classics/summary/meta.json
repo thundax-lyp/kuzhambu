@@ -1,0 +1,59 @@
+{
+  "templateId": 930101,
+  "promptVersionId": 940101,
+  "variableIdStart": 960101,
+  "scope": "classics",
+  "capability": "summary",
+  "suite": "classics-default-v1",
+  "name": "Classics Default Summary",
+  "description": "古籍内容默认摘要提示词。",
+  "status": "ACTIVE",
+  "versionNo": 1,
+  "current": true,
+  "variables": [
+    {
+      "name": "contentType",
+      "required": true,
+      "description": "内容类型",
+      "priority": 960101
+    },
+    {
+      "name": "title",
+      "required": false,
+      "description": "标题",
+      "priority": 960102
+    },
+    {
+      "name": "categoryPath",
+      "required": false,
+      "description": "门类或卷册路径",
+      "priority": 960103
+    },
+    {
+      "name": "originalText",
+      "required": false,
+      "description": "原文",
+      "priority": 960104
+    },
+    {
+      "name": "translationText",
+      "required": false,
+      "description": "已有译文",
+      "priority": 960105
+    },
+    {
+      "name": "bodyText",
+      "required": false,
+      "description": "正文或补充内容",
+      "priority": 960106
+    },
+    {
+      "name": "existingSummary",
+      "required": false,
+      "description": "已有摘要",
+      "priority": 960107
+    }
+  ],
+  "outputSchema": { "type": "text" },
+  "changeSummary": "Initial classics default summary prompt."
+}

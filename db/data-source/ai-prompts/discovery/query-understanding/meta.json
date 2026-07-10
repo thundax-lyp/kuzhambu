@@ -1,0 +1,45 @@
+{
+  "templateId": 930104,
+  "promptVersionId": 940104,
+  "variableIdStart": 961001,
+  "scope": "discovery",
+  "capability": "query_understanding",
+  "suite": "discovery-default-v1",
+  "name": "Discovery Default Query Understanding",
+  "description": "知识发现默认查询理解提示词。",
+  "status": "ACTIVE",
+  "versionNo": 1,
+  "current": true,
+  "variables": [
+    {
+      "name": "query",
+      "required": true,
+      "description": "用户原始查询",
+      "priority": 961001
+    },
+    {
+      "name": "availableScopes",
+      "required": false,
+      "description": "可用检索范围",
+      "priority": 961002
+    }
+  ],
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "normalizedQueryText": { "type": "string" },
+      "rewrittenQueryText": { "type": "string" },
+      "expandedSynonyms": { "type": "array", "items": { "type": "string" } },
+      "recognizedEntities": { "type": "array", "items": { "type": "string" } },
+      "intentType": { "type": "string" }
+    },
+    "required": [
+      "normalizedQueryText",
+      "rewrittenQueryText",
+      "expandedSynonyms",
+      "recognizedEntities",
+      "intentType"
+    ]
+  },
+  "changeSummary": "Initial discovery default query understanding prompt."
+}

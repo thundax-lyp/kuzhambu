@@ -1,0 +1,43 @@
+{
+  "templateId": 930105,
+  "promptVersionId": 940105,
+  "variableIdStart": 961101,
+  "scope": "discovery",
+  "capability": "answer_generation",
+  "suite": "discovery-default-v1",
+  "name": "Discovery Default Answer Generation",
+  "description": "知识发现默认来源融合回答提示词。",
+  "status": "ACTIVE",
+  "versionNo": 1,
+  "current": true,
+  "variables": [
+    {
+      "name": "question",
+      "required": true,
+      "description": "用户问题",
+      "priority": 961101
+    },
+    {
+      "name": "sources",
+      "required": true,
+      "description": "检索来源列表",
+      "priority": 961102
+    },
+    {
+      "name": "answerStyle",
+      "required": false,
+      "description": "回答风格约束",
+      "priority": 961103
+    }
+  ],
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "answer": { "type": "string" },
+      "answerStatus": { "type": "string" },
+      "sourceSummaries": { "type": "array", "items": { "type": "string" } }
+    },
+    "required": ["answer", "answerStatus", "sourceSummaries"]
+  },
+  "changeSummary": "Initial discovery default answer generation prompt."
+}

@@ -1,0 +1,12 @@
+用户问题：{{question}}
+回答风格：{{answerStyle}}
+
+检索来源：
+{{sources}}
+
+请返回 JSON：
+{
+  "answer": "回答正文",
+  "answerStatus": "ANSWERED",
+  "sourceSummaries": ["来源摘要"]
+}

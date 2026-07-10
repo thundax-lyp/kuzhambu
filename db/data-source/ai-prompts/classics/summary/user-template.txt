@@ -1,0 +1,17 @@
+内容类型：{{contentType}}
+标题：{{title}}
+分类路径：{{categoryPath}}
+
+原文：
+{{originalText}}
+
+已有译文：
+{{translationText}}
+
+正文：
+{{bodyText}}
+
+已有摘要：
+{{existingSummary}}
+
+请生成一段中文摘要。若已有摘要质量较好，可以在保留事实的基础上压缩和润色；若内容为空或不足，请直接说明“暂无足够内容可摘要”。

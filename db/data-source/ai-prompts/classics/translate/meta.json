@@ -1,0 +1,41 @@
+{
+  "templateId": 930106,
+  "promptVersionId": 940106,
+  "variableIdStart": 960201,
+  "scope": "classics",
+  "capability": "translate",
+  "suite": "classics-default-v1",
+  "name": "Classics Default Translate",
+  "description": "古籍文言文默认现代中文翻译提示词。",
+  "status": "ACTIVE",
+  "versionNo": 1,
+  "current": true,
+  "variables": [
+    {
+      "name": "contentType",
+      "required": true,
+      "description": "内容类型",
+      "priority": 960201
+    },
+    {
+      "name": "title",
+      "required": false,
+      "description": "标题",
+      "priority": 960202
+    },
+    {
+      "name": "contextPath",
+      "required": false,
+      "description": "卷册或上下文路径",
+      "priority": 960203
+    },
+    {
+      "name": "sourceText",
+      "required": true,
+      "description": "待翻译原文",
+      "priority": 960204
+    }
+  ],
+  "outputSchema": { "type": "text" },
+  "changeSummary": "Initial classics default translate prompt."
+}
