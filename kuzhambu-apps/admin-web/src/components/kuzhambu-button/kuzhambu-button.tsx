@@ -10,11 +10,17 @@ export interface KuzhambuButtonProps extends Omit<
     testId: string;
 }
 
+const shouldExposeTestId = () => {
+    return !import.meta.env.PROD || import.meta.env.VITE_EXPOSE_TEST_ID === "true";
+};
+
 export const KuzhambuButton = forwardRef<
     HTMLAnchorElement | HTMLButtonElement,
     KuzhambuButtonProps
 >(({ ariaLabel, testId, ...props }, ref) => {
-    return <Button {...props} ref={ref} aria-label={ariaLabel} data-testid={testId} />;
+    const testIdProps = shouldExposeTestId() ? { "data-testid": testId } : {};
+
+    return <Button {...props} {...testIdProps} ref={ref} aria-label={ariaLabel} />;
 });
 
 KuzhambuButton.displayName = "KuzhambuButton";
