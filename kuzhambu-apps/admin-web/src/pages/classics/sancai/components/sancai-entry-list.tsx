@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Button, Empty, Skeleton, Tag, Typography } from "antd";
+import { Alert, App, Empty, Skeleton, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
@@ -425,51 +426,61 @@ export const SancaiEntryList = ({
             >
                 <KuzhambuSpace wrap>
                     <Text type="secondary">当前页已选 {selectedEntries.length} 条</Text>
-                    <Button
+                    <KuzhambuButton
+                        name="图片理解"
                         disabled={!selectedEntries.length}
                         loading={createBatchMutation.isPending}
                         onClick={() => startBatch("image_analysis")}
                     >
                         图片理解
-                    </Button>
-                    <Button
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="视觉处理"
                         disabled={!selectedEntries.length}
                         loading={createBatchMutation.isPending}
                         onClick={() => startBatch("visual")}
                     >
                         视觉处理
-                    </Button>
-                    <Button
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="分享"
                         disabled={!selectedEntries.length || !canShareEntries}
                         loading={createBatchShareMutation.isPending}
                         onClick={startBatchShare}
                     >
                         分享
-                    </Button>
-                    <Button
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="公开"
                         disabled={!selectedEntries.length || !canChangeEntryVisibility}
                         loading={changeVisibilityBatchMutation.isPending}
                         onClick={() => changeBatchVisibility("PUBLIC")}
                     >
                         公开
-                    </Button>
-                    <Button
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="私有"
                         disabled={!selectedEntries.length || !canChangeEntryVisibility}
                         loading={changeVisibilityBatchMutation.isPending}
                         onClick={() => changeBatchVisibility("PRIVATE")}
                     >
                         私有
-                    </Button>
-                    <Button
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="候选治理"
                         disabled={!selectedEntries.length || !canChangeEntryVisibility}
                         onClick={openBatchCandidateGovernance}
                     >
                         候选治理
-                    </Button>
+                    </KuzhambuButton>
                 </KuzhambuSpace>
                 <KuzhambuSpace wrap>
-                    <Button onClick={onRefresh}>刷新</Button>
-                    <Button onClick={onOpenExportJobs}>任务</Button>
+                    <KuzhambuButton name="刷新" onClick={onRefresh}>
+                        刷新
+                    </KuzhambuButton>
+                    <KuzhambuButton name="任务" onClick={onOpenExportJobs}>
+                        任务
+                    </KuzhambuButton>
                     {activeBatch ? (
                         <>
                             <Text type="secondary">
@@ -481,7 +492,8 @@ export const SancaiEntryList = ({
                                 {activeBatch.failedCount ?? 0} / 取消{" "}
                                 {activeBatch.cancelledCount ?? 0}
                             </Text>
-                            <Button
+                            <KuzhambuButton
+                                name="取消批量任务"
                                 disabled={!canCancelBatch}
                                 loading={cancelBatchMutation.isPending}
                                 onClick={() => {
@@ -491,7 +503,7 @@ export const SancaiEntryList = ({
                                 }}
                             >
                                 取消批量任务
-                            </Button>
+                            </KuzhambuButton>
                         </>
                     ) : null}
                 </KuzhambuSpace>

@@ -627,7 +627,7 @@ describe("SancaiEntryPanel sharing", () => {
         const entryTable = await screen.findByLabelText("三才图会条目表格");
         const rowCheckbox = within(entryTable).getAllByRole("checkbox")[1];
         await user.click(rowCheckbox);
-        await user.click(screen.getByRole("button", { name: /^分\s*享$/ }));
+        await user.click(screen.getByRole("button", { name: "分享" }));
 
         await waitFor(() => {
             expect(shareService.createBatch).toHaveBeenCalled();
@@ -656,7 +656,7 @@ describe("SancaiEntryPanel sharing", () => {
         const entryTable = await screen.findByLabelText("三才图会条目表格");
         const rowCheckbox = within(entryTable).getAllByRole("checkbox")[1];
         await user.click(rowCheckbox);
-        await user.click(screen.getByRole("button", { name: /^私\s*有$/ }));
+        await user.click(screen.getByRole("button", { name: "私有" }));
 
         await waitFor(() => {
             expect(contentService.changeVisibilityBatch).toHaveBeenCalled();
@@ -1333,7 +1333,7 @@ describe("SancaiEntryPanel sharing", () => {
             });
         });
 
-        await user.click(screen.getByRole("button", { name: /^任\s*务$/ }));
+        await user.click(screen.getByRole("button", { name: "任务" }));
         expect(await screen.findByText("导出任务")).toBeInTheDocument();
         const exportSection = screen.getByText("任务列表").closest("section") as HTMLElement;
         expect(
@@ -1400,7 +1400,7 @@ describe("SancaiEntryPanel sharing", () => {
 
         renderEntryPanel();
 
-        await user.click(await screen.findByRole("button", { name: /^任\s*务$/ }));
+        await user.click(await screen.findByRole("button", { name: "任务" }));
         const exportSection = (await screen
             .findByText("任务列表")
             .then((node) => node.closest("section"))) as HTMLElement;
