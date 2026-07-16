@@ -504,7 +504,7 @@ export const BackupRestorePage = () => {
 
     return (
         <main className="kuzhambu-page backup-restore-page">
-            <section className="kuzhambu-page-panel">
+            <section>
                 <header className="kuzhambu-page-header">
                     <div>
                         <Text className="kuzhambu-page-eyebrow">Operations / Backup Restore</Text>

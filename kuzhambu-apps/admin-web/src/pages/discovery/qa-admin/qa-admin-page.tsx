@@ -270,7 +270,7 @@ export const QaAdminPage = () => {
 
     return (
         <main className="kuzhambu-page discovery-admin-page qa-admin-page">
-            <section className="kuzhambu-page-panel">
+            <section>
                 <header className="kuzhambu-page-header">
                     <div>
                         <Text className="kuzhambu-page-eyebrow">Discovery / QA Admin</Text>

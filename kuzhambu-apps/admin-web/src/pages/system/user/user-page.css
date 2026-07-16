@@ -80,8 +80,8 @@ html[data-theme="dark"] .user-page {
 }
 
 .user-page {
-    --kuzhambu-page-panel-overflow: visible;
-    --kuzhambu-page-panel-padding: 20px 22px 0;
+    --kuzhambu-page-overflow: visible;
+    --kuzhambu-page-padding: 20px 0 0;
 }
 
 .user-page-actions {

@@ -3,12 +3,12 @@
     --kuzhambu-page-copy: var(--text-secondary);
     --kuzhambu-page-ink: var(--text-primary);
     --kuzhambu-page-header-margin-bottom: 10px;
-    --kuzhambu-page-panel-overflow: hidden;
-    --kuzhambu-page-panel-padding: 20px 22px 18px;
+    --kuzhambu-page-overflow: hidden;
+    --kuzhambu-page-padding: 20px 0 18px;
     display: grid;
     min-width: 0;
-    padding: var(--kuzhambu-page-panel-padding);
-    overflow: var(--kuzhambu-page-panel-overflow);
+    padding: var(--kuzhambu-page-padding);
+    overflow: var(--kuzhambu-page-overflow);
     color: var(--kuzhambu-page-ink);
 }
 
@@ -50,7 +50,7 @@
 
 @media (max-width: 760px) {
     .kuzhambu-page {
-        padding: 16px;
+        padding: 16px 0;
     }
 
     .kuzhambu-page-header {

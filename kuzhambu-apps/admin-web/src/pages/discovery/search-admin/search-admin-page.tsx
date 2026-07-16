@@ -89,7 +89,7 @@ export const SearchAdminPage = () => {
 
     return (
         <main className="kuzhambu-page discovery-admin-page search-admin-page">
-            <section className="kuzhambu-page-panel">
+            <section>
                 <header className="kuzhambu-page-header">
                     <div>
                         <Text className="kuzhambu-page-eyebrow">Discovery / Search Admin</Text>

@@ -1,6 +1,6 @@
 .sancai-page {
-    --kuzhambu-page-panel-overflow: visible;
-    --kuzhambu-page-panel-padding: 20px 22px 0;
+    --kuzhambu-page-overflow: visible;
+    --kuzhambu-page-padding: 20px 0 0;
     --sancai-ink: var(--text-primary);
     --sancai-copy: var(--text-secondary);
     --sancai-panel: color-mix(in srgb, var(--surface-panel) 92%, transparent);
