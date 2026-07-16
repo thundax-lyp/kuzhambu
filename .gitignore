@@ -48,3 +48,5 @@ deploy/.env
 /logs/
 /kuzhambu-servers/starter/kuzhambu-admin-starter/logs/
 /kuzhambu-servers/starter/kuzhambu-portal-starter/logs/
+/kuzhambu-servers/starter/kuzhambu-admin-starter/storage/
+/kuzhambu-servers/starter/kuzhambu-portal-starter/storage/
