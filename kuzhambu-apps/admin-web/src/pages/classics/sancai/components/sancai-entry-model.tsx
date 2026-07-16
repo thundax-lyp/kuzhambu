@@ -449,7 +449,7 @@ export const SancaiEntryModel = ({
                     />
                 </Form.Item>
                 {entryId ? (
-                    <Form.Item label="图片" className="sancai-entry-model-form-item-top">
+                    <Form.Item label="图片">
                         <div className="sancai-entry-image-field">
                             {currentImage && previewUrl ? (
                                 <div className="sancai-entry-image-frame">
