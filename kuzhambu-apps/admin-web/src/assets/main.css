@@ -27,8 +27,8 @@
     color: var(--text-primary);
     background: var(--surface-page);
     font-family:
-        "Avenir Next", "LXGW WenKai", "STKaiti", "KaiTi", "PingFang SC", "Microsoft YaHei",
-        sans-serif;
+        Georgia, "Times New Roman", "Songti SC", "Noto Serif SC", "Source Han Serif SC", SimSun,
+        serif;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
