@@ -240,7 +240,6 @@ const renderEntryList = (entries: SancaiEntryRecord[]) =>
                     onChangeLifecycleStatus={vi.fn()}
                     onDelete={vi.fn()}
                     onExport={vi.fn()}
-                    onOpenExportJobs={vi.fn()}
                     onRefresh={vi.fn()}
                     onShare={vi.fn()}
                     onSort={vi.fn()}
@@ -311,6 +310,13 @@ describe("SancaiPage", () => {
         expect(within(entryPanel).getByText("refresh:0")).toBeInTheDocument();
         expect(within(entryPanel).getByText("keyword:none")).toBeInTheDocument();
         expect(within(entryPanel).getByText("status:none")).toBeInTheDocument();
+
+        const refreshButton = screen.getByRole("button", { name: "刷新三才图会数据" });
+        const taskButton = screen.getByRole("button", { name: "任务" });
+        expect(
+            refreshButton.compareDocumentPosition(taskButton) & Node.DOCUMENT_POSITION_FOLLOWING
+        ).toBeTruthy();
+        expect(taskButton.querySelector(".anticon-schedule")).toBeInTheDocument();
     }, 30000);
 
     it("keeps entry batch selection scoped to the current page entries", async () => {
@@ -341,7 +347,6 @@ describe("SancaiPage", () => {
                         onChangeLifecycleStatus={vi.fn()}
                         onDelete={vi.fn()}
                         onExport={vi.fn()}
-                        onOpenExportJobs={vi.fn()}
                         onRefresh={vi.fn()}
                         onShare={vi.fn()}
                         onSort={vi.fn()}

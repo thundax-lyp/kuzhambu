@@ -27,7 +27,6 @@ interface SancaiEntryListProps {
     onChangeLifecycleStatus: (entry: SancaiEntryRecord, action: SancaiEntryLifecycleAction) => void;
     onDelete: (entry: SancaiEntryRecord) => void;
     onExport: (entry: SancaiEntryRecord) => void;
-    onOpenExportJobs: () => void;
     onRefresh: () => void;
     onShare: (entry: SancaiEntryRecord) => void;
     onBatchCandidateGovernance: (entries: SancaiEntryRecord[]) => void;
@@ -150,7 +149,6 @@ export const SancaiEntryList = ({
     onChangeLifecycleStatus,
     onDelete,
     onExport,
-    onOpenExportJobs,
     onRefresh,
     onShare,
     onBatchCandidateGovernance,
@@ -477,9 +475,6 @@ export const SancaiEntryList = ({
                 <KuzhambuSpace wrap>
                     <KuzhambuButton name="刷新" onClick={onRefresh}>
                         刷新
-                    </KuzhambuButton>
-                    <KuzhambuButton name="任务" onClick={onOpenExportJobs}>
-                        任务
                     </KuzhambuButton>
                     {activeBatch ? (
                         <>

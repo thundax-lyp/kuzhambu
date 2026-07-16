@@ -75,24 +75,28 @@ interface SancaiEntryPanelProps {
     categories?: SancaiCategoryRecord[];
     categoryId: number | null;
     defaultCreateOpen?: boolean;
+    exportJobsDrawerOpen?: boolean;
     isCatalogLoading: boolean;
     keyword?: string | null;
     lifecycleStatus?: string | null;
     refreshVersion: number;
     volumeId: number | null;
     volumes: SancaiVolumeRecord[];
+    onExportJobsDrawerOpenChange?: (open: boolean) => void;
 }
 
 export const SancaiEntryPanel = ({
     categories = [],
     categoryId,
     defaultCreateOpen = false,
+    exportJobsDrawerOpen,
     isCatalogLoading,
     keyword,
     lifecycleStatus,
     refreshVersion,
     volumeId,
-    volumes
+    volumes,
+    onExportJobsDrawerOpenChange
 }: SancaiEntryPanelProps) => {
     const { message: messageApi, modal: modalApi } = App.useApp();
     const confirm = useKuzhambuConfirm();
@@ -107,7 +111,7 @@ export const SancaiEntryPanel = ({
         {}
     );
     const [batchCandidateDrawerOpen, setBatchCandidateDrawerOpen] = useState(false);
-    const [exportJobsDrawerOpen, setExportJobsDrawerOpen] = useState(false);
+    const [internalExportJobsDrawerOpen, setInternalExportJobsDrawerOpen] = useState(false);
     const [imageUploadTitle, setImageUploadTitle] = useState("");
     const [imageUploadType, setImageUploadType] = useState("ORIGINAL");
     const [imageUploadCurrentUsed, setImageUploadCurrentUsed] = useState(true);
@@ -837,6 +841,9 @@ export const SancaiEntryPanel = ({
             sortDirection: "ASC"
         });
     };
+    const isExportJobsDrawerOpen = exportJobsDrawerOpen ?? internalExportJobsDrawerOpen;
+    const setExportJobsOpen = onExportJobsDrawerOpenChange ?? setInternalExportJobsDrawerOpen;
+
     return (
         <>
             {entriesQuery.isError ? (
@@ -855,7 +862,6 @@ export const SancaiEntryPanel = ({
                 onChangeLifecycleStatus={changeLifecycleStatus}
                 onDelete={deleteEntry}
                 onExport={exportEntry}
-                onOpenExportJobs={() => setExportJobsDrawerOpen(true)}
                 onRefresh={() => {
                     void entriesQuery.refetch();
                 }}
@@ -866,10 +872,10 @@ export const SancaiEntryPanel = ({
             />
             <KuzhambuDrawer
                 destroyOnClose={false}
-                open={exportJobsDrawerOpen}
+                open={isExportJobsDrawerOpen}
                 size="large"
                 title="导出任务"
-                onClose={() => setExportJobsDrawerOpen(false)}
+                onClose={() => setExportJobsOpen(false)}
             >
                 {exportsQuery.isError ? (
                     <Alert

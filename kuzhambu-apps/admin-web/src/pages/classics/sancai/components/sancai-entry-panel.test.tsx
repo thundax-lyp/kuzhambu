@@ -518,7 +518,7 @@ vi.mock("../services/sancai-entry-service", () => ({
     }))
 }));
 
-const renderEntryPanel = () => {
+const renderEntryPanel = ({ exportJobsDrawerOpen = false } = {}) => {
     const client = new QueryClient({
         defaultOptions: {
             queries: {
@@ -546,6 +546,7 @@ const renderEntryPanel = () => {
                         }
                     ]}
                     categoryId={2}
+                    exportJobsDrawerOpen={exportJobsDrawerOpen}
                     isCatalogLoading={false}
                     refreshVersion={0}
                     volumeId={101}
@@ -1315,7 +1316,7 @@ describe("SancaiEntryPanel sharing", () => {
     it("creates export job and shows download section", async () => {
         const user = userEvent.setup();
 
-        renderEntryPanel();
+        renderEntryPanel({ exportJobsDrawerOpen: true });
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
         await user.click(await within(entryTable).findByRole("button", { name: "导出 天地" }));
@@ -1333,9 +1334,9 @@ describe("SancaiEntryPanel sharing", () => {
             });
         });
 
-        await user.click(screen.getByRole("button", { name: "任务" }));
-        expect(await screen.findByText("导出任务")).toBeInTheDocument();
-        const exportSection = screen.getByText("任务列表").closest("section") as HTMLElement;
+        const exportSection = (await screen
+            .findByText("任务列表")
+            .then((node) => node.closest("section"))) as HTMLElement;
         expect(
             await within(exportSection).findByRole("button", { name: /下\s*载/ })
         ).toBeInTheDocument();
@@ -1369,8 +1370,6 @@ describe("SancaiEntryPanel sharing", () => {
     }, 30000);
 
     it("shows expired export task as disabled download", async () => {
-        const user = userEvent.setup();
-
         vi.mocked(exportService.page).mockResolvedValueOnce({
             pageNo: 1,
             pageSize: 10,
@@ -1398,9 +1397,8 @@ describe("SancaiEntryPanel sharing", () => {
             totalCount: 1
         });
 
-        renderEntryPanel();
+        renderEntryPanel({ exportJobsDrawerOpen: true });
 
-        await user.click(await screen.findByRole("button", { name: "任务" }));
         const exportSection = (await screen
             .findByText("任务列表")
             .then((node) => node.closest("section"))) as HTMLElement;

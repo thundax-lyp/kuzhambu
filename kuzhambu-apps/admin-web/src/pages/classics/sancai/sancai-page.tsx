@@ -1,4 +1,10 @@
-import { FilterOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
+import {
+    FilterOutlined,
+    PlusOutlined,
+    ReloadOutlined,
+    ScheduleOutlined,
+    SearchOutlined
+} from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
 import { Alert, Input, Select, Splitter } from "antd";
 import { useMemo, useState } from "react";
@@ -100,6 +106,7 @@ export const SancaiPage = () => {
     const [refreshVersion, setRefreshVersion] = useState(0);
     const [keyword, setKeyword] = useState("");
     const [appliedKeyword, setAppliedKeyword] = useState<string | null>(null);
+    const [exportJobsDrawerOpen, setExportJobsDrawerOpen] = useState(false);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [lifecycleStatus, setLifecycleStatus] = useState("ALL");
     const [appliedLifecycleStatus, setAppliedLifecycleStatus] = useState<string | null>(null);
@@ -235,12 +242,14 @@ export const SancaiPage = () => {
                 categories={categories}
                 categoryId={selectedCategory?.id ?? null}
                 defaultCreateOpen={createIntent.target === "entry" && createIntent.version > 0}
+                exportJobsDrawerOpen={exportJobsDrawerOpen}
                 isCatalogLoading={isLoading}
                 keyword={appliedKeyword}
                 lifecycleStatus={appliedLifecycleStatus}
                 refreshVersion={refreshVersion}
                 volumeId={selectedVolume.id}
                 volumes={volumes}
+                onExportJobsDrawerOpenChange={setExportJobsDrawerOpen}
             />
         );
     }
@@ -287,6 +296,15 @@ export const SancaiPage = () => {
                     >
                         刷新
                     </KuzhambuButton>
+                    {selectedVolume ? (
+                        <KuzhambuButton
+                            name="任务"
+                            icon={<ScheduleOutlined />}
+                            onClick={() => setExportJobsDrawerOpen(true)}
+                        >
+                            任务
+                        </KuzhambuButton>
+                    ) : null}
                     {enableAdd ? (
                         <KuzhambuButton
                             name={String(addText)}
