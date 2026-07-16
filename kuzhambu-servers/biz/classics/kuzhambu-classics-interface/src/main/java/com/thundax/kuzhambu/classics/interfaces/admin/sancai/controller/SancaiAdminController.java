@@ -97,7 +97,7 @@ public class SancaiAdminController {
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "门类详情")
     @GetMapping("categories/{id}")
-    public SancaiCategoryResponse getCategory(@PathVariable Long id) {
+    public SancaiCategoryResponse getCategory(@PathVariable("id") Long id) {
         return SancaiInterfaceAssembler.toResponse(service.getCategory(SancaiCategoryIdCodec.toDomain(id)));
     }
 
@@ -152,7 +152,7 @@ public class SancaiAdminController {
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "卷详情")
     @GetMapping("volumes/{id}")
-    public SancaiVolumeResponse getVolume(@PathVariable Long id) {
+    public SancaiVolumeResponse getVolume(@PathVariable("id") Long id) {
         return SancaiInterfaceAssembler.toResponse(service.getVolume(SancaiVolumeIdCodec.toDomain(id)));
     }
 
@@ -216,7 +216,7 @@ public class SancaiAdminController {
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "详情")
     @GetMapping("entries/{id}")
-    public SancaiEntryResponse getEntry(@PathVariable Long id) {
+    public SancaiEntryResponse getEntry(@PathVariable("id") Long id) {
         Long entryId = requireParameter(id, "id");
         return SancaiInterfaceAssembler.toResponse(
                 service.getEntry(SancaiEntryIdCodec.toDomain(entryId)),

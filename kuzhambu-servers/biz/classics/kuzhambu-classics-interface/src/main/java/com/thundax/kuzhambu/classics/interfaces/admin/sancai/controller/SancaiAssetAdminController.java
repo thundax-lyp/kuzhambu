@@ -68,7 +68,7 @@ public class SancaiAssetAdminController {
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "最新草稿")
     @GetMapping("drafts/latest/{entryId}")
-    public SancaiAssetResponse latestDraft(@PathVariable Long entryId) {
+    public SancaiAssetResponse latestDraft(@PathVariable("entryId") Long entryId) {
         return SancaiAssetInterfaceAssembler.toDraftResponse(
                 service.getLatestDraft(SancaiEntryIdCodec.toDomain(entryId)));
     }
@@ -89,7 +89,7 @@ public class SancaiAssetAdminController {
     @SysLogger(value = "图片上传")
     @PostMapping(value = "images/{entryId}/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public SancaiAssetResponse uploadImage(
-            @PathVariable Long entryId,
+            @PathVariable("entryId") Long entryId,
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "imageType", required = false) String imageType,
@@ -117,7 +117,7 @@ public class SancaiAssetAdminController {
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "图片列表")
     @GetMapping("images/{entryId}")
-    public List<SancaiAssetResponse> listImages(@PathVariable Long entryId) {
+    public List<SancaiAssetResponse> listImages(@PathVariable("entryId") Long entryId) {
         return service.listImages(SancaiEntryIdCodec.toDomain(entryId)).stream()
                 .map(SancaiAssetInterfaceAssembler::toImageResponse)
                 .toList();
@@ -177,8 +177,8 @@ public class SancaiAssetAdminController {
     @SysLogger(value = "图片读取")
     @GetMapping("images/{entryId}/{imageId}/content")
     public void downloadImage(
-            @PathVariable Long entryId,
-            @PathVariable Long imageId,
+            @PathVariable("entryId") Long entryId,
+            @PathVariable("imageId") Long imageId,
             @RequestParam(value = "download", required = false) Boolean download,
             HttpServletResponse response)
             throws IOException {
@@ -209,7 +209,7 @@ public class SancaiAssetAdminController {
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "视觉资产列表")
     @GetMapping("visual-assets/{entryId}")
-    public List<SancaiAssetResponse> listVisualAssets(@PathVariable Long entryId) {
+    public List<SancaiAssetResponse> listVisualAssets(@PathVariable("entryId") Long entryId) {
         return service.listVisualAssets(SancaiEntryIdCodec.toDomain(entryId)).stream()
                 .map(SancaiAssetInterfaceAssembler::toVisualAssetResponse)
                 .toList();
@@ -221,8 +221,8 @@ public class SancaiAssetAdminController {
     @SysLogger(value = "视觉资产原图读取")
     @GetMapping("visual-assets/{entryId}/{visualAssetId}/source-content")
     public void downloadVisualAssetSourceContent(
-            @PathVariable Long entryId,
-            @PathVariable Long visualAssetId,
+            @PathVariable("entryId") Long entryId,
+            @PathVariable("visualAssetId") Long visualAssetId,
             @RequestParam(value = "download", required = false) Boolean download,
             HttpServletResponse response)
             throws IOException {
@@ -235,8 +235,8 @@ public class SancaiAssetAdminController {
     @SysLogger(value = "视觉资产生成图读取")
     @GetMapping("visual-assets/{entryId}/{visualAssetId}/generated-content")
     public void downloadVisualAssetGeneratedContent(
-            @PathVariable Long entryId,
-            @PathVariable Long visualAssetId,
+            @PathVariable("entryId") Long entryId,
+            @PathVariable("visualAssetId") Long visualAssetId,
             @RequestParam(value = "download", required = false) Boolean download,
             HttpServletResponse response)
             throws IOException {

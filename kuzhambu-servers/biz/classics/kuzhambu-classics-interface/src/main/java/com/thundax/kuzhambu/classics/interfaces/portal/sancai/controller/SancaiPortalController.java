@@ -62,7 +62,7 @@ public class SancaiPortalController {
     }
 
     @GetMapping("entries/{id}")
-    public SancaiPortalEntryResponse getEntry(@PathVariable Long id) {
+    public SancaiPortalEntryResponse getEntry(@PathVariable("id") Long id) {
         SancaiEntry entry = service.getEntry(SancaiEntryIdCodec.toDomain(id));
         if (!SancaiPortalInterfaceAssembler.isPublicPublished(entry)) {
             throw new BizException("三才图会条目不存在或不可公开访问");
