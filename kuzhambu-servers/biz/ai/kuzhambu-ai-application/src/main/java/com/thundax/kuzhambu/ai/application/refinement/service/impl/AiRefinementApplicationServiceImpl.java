@@ -126,11 +126,10 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
         if (modelConfigResolver == null || command == null) {
             return;
         }
-        if (isBlank(command.getServiceRole()) && command.getServiceId() == null) {
-            return;
-        }
         var resolved = modelConfigResolver.resolve(command);
+        command.setServiceId(resolved.serviceId());
         command.setServiceRole(resolved.serviceRole());
+        command.setModelId(resolved.modelId());
         command.setModelName(resolved.modelName());
     }
 
@@ -141,8 +140,6 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
                 || isBlank(command.getTraceId())
                 || isBlank(command.getContentType())
                 || command.getContentId() == null
-                || command.getModelId() == null
-                || isBlank(command.getModelName())
                 || isBlank(command.getPromptMessagesJson())
                 || isBlank(command.getInputPayloadJson())) {
             throw new BizException("AI refinement request is incomplete");

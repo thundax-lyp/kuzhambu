@@ -39,6 +39,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 class ClassicsSharingPortalControllerTest {
@@ -61,10 +62,11 @@ class ClassicsSharingPortalControllerTest {
 
         Method list =
                 ClassicsSharingPortalController.class.getDeclaredMethod("list", ClassicsSharePortalSearchRequest.class);
-        assertEquals(0, list.getAnnotation(GetMapping.class).value().length);
+        assertEquals("list", list.getAnnotation(PostMapping.class).value()[0]);
 
-        Method get = ClassicsSharingPortalController.class.getDeclaredMethod("get", String.class);
-        assertEquals("{shareToken}", get.getAnnotation(GetMapping.class).value()[0]);
+        Method get =
+                ClassicsSharingPortalController.class.getDeclaredMethod("get", ClassicsSharePortalSearchRequest.class);
+        assertEquals("get", get.getAnnotation(PostMapping.class).value()[0]);
 
         Method content = ClassicsSharingPortalController.class.getDeclaredMethod(
                 "content", String.class, Long.class, Boolean.class, HttpServletResponse.class);
@@ -75,15 +77,16 @@ class ClassicsSharingPortalControllerTest {
         RequestMapping privateMapping =
                 ClassicsSharingPrivatePortalController.class.getAnnotation(RequestMapping.class);
         assertEquals("/api/portal/classics/private-shares", privateMapping.value()[0]);
-        Method privateGet = ClassicsSharingPrivatePortalController.class.getDeclaredMethod("get", String.class);
-        assertEquals("{shareToken}", privateGet.getAnnotation(GetMapping.class).value()[0]);
+        Method privateGet = ClassicsSharingPrivatePortalController.class.getDeclaredMethod(
+                "get", ClassicsSharePortalSearchRequest.class);
+        assertEquals("get", privateGet.getAnnotation(PostMapping.class).value()[0]);
     }
 
     @Test
     void detailResponseShouldUseShareTokenAndExposeSnapshotDto() throws Exception {
         ClassicsSharingPortalController controller = new ClassicsSharingPortalController(sharingService());
 
-        ClassicsSharePortalResponse response = controller.get("share-token");
+        ClassicsSharePortalResponse response = controller.get(shareRequest("share-token"));
 
         assertEquals("公开分享", response.getTitle());
         assertEquals("SANCAI_ENTRY", response.getTargets().get(0).getContentType());
@@ -121,7 +124,7 @@ class ClassicsSharingPortalControllerTest {
     void publicDetailShouldReturnLoginRequiredResponseForPrivateShare() {
         ClassicsSharingPortalController controller = new ClassicsSharingPortalController(sharingService());
 
-        ClassicsSharePortalResponse response = controller.get("private-token");
+        ClassicsSharePortalResponse response = controller.get(shareRequest("private-token"));
 
         assertEquals("PRIVATE", response.getVisibility());
         assertTrue(response.getLoginRequired());
@@ -133,7 +136,7 @@ class ClassicsSharingPortalControllerTest {
         ClassicsSharingPrivatePortalController controller =
                 new ClassicsSharingPrivatePortalController(sharingService());
 
-        ClassicsSharePortalResponse response = controller.get("private-token");
+        ClassicsSharePortalResponse response = controller.get(shareRequest("private-token"));
 
         assertEquals("PRIVATE", response.getVisibility());
         assertFalse(response.getLoginRequired());
@@ -341,6 +344,12 @@ class ClassicsSharingPortalControllerTest {
                 + "\"images\":[{\"imageId\":8002,\"storageObjectId\":7001,"
                 + "\"originalFilename\":\"三才图.png\",\"contentType\":\"image/png\",\"size\":9,"
                 + "\"imageType\":\"ORIGINAL\",\"title\":\"插图\",\"currentUsed\":true,\"priority\":1}]}";
+    }
+
+    private static ClassicsSharePortalSearchRequest shareRequest(String shareToken) {
+        ClassicsSharePortalSearchRequest request = new ClassicsSharePortalSearchRequest();
+        request.setShareToken(shareToken);
+        return request;
     }
 
     private static void assertJsonFields(JsonNode json, String... expectedFields) {

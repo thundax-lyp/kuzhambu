@@ -32,6 +32,8 @@ import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.respons
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
+import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
+import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
@@ -39,6 +41,7 @@ import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -88,20 +91,33 @@ public class ClassicsContentAdminController {
     }
 
     @Operation(summary = "查询古籍内容标签", description = "classics:content:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:content:view")
     @SysLogger(value = "标签列表")
-    @GetMapping("tags")
-    public List<ClassicsContentResponse> listTags(@RequestParam String contentType, @RequestParam Long contentId) {
-        String validContentType = validContentTagType(contentType);
-        ClassicsContentId contentIdValue = ClassicsContentIdCodec.toDomain(requireParameter(contentId, "contentId"));
+    @PostMapping("tags/list")
+    public List<ClassicsContentResponse> listTags(@Valid @RequestBody ClassicsContentRequest request) {
+        String validContentType = validContentTagType(request == null ? null : request.getContentType());
+        ClassicsContentId contentIdValue = ClassicsContentIdCodec.toDomain(
+                requireParameter(request == null ? null : request.getContentId(), "contentId"));
         return service.listTags(validContentType, contentIdValue).stream()
                 .map(ClassicsContentInterfaceAssembler::toTagResponse)
                 .toList();
     }
 
     @Operation(summary = "新增古籍内容标签", description = "classics:content:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:content:edit")
     @SysLogger(value = "新增标签")
     @PostMapping("tags/add")
@@ -114,7 +130,13 @@ public class ClassicsContentAdminController {
     }
 
     @Operation(summary = "更新古籍内容标签", description = "classics:content:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:content:edit")
     @SysLogger(value = "更新标签")
     @PostMapping("tags/update")
@@ -127,7 +149,13 @@ public class ClassicsContentAdminController {
     }
 
     @Operation(summary = "删除古籍内容标签", description = "classics:content:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:content:edit")
     @SysLogger(value = "删除标签")
     @PostMapping("tags/delete")
@@ -138,7 +166,13 @@ public class ClassicsContentAdminController {
     }
 
     @Operation(summary = "排序古籍内容标签", description = "classics:content:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:content:edit")
     @SysLogger(value = "标签排序")
     @PostMapping("tags/sort")
@@ -159,19 +193,32 @@ public class ClassicsContentAdminController {
     }
 
     @Operation(summary = "查询古籍内容问答", description = "classics:content:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:content:view")
     @SysLogger(value = "问答列表")
-    @GetMapping("qa-pairs")
-    public List<ClassicsContentResponse> listQaPairs(@RequestParam String contentType, @RequestParam Long contentId) {
-        ClassicsContentId contentIdValue = ClassicsContentIdCodec.toDomain(contentId);
-        return service.listQaPairs(contentType, contentIdValue).stream()
+    @PostMapping("qa-pairs/list")
+    public List<ClassicsContentResponse> listQaPairs(@Valid @RequestBody ClassicsContentRequest request) {
+        ClassicsContentId contentIdValue = ClassicsContentIdCodec.toDomain(
+                requireParameter(request == null ? null : request.getContentId(), "contentId"));
+        return service.listQaPairs(request == null ? null : request.getContentType(), contentIdValue).stream()
                 .map(ClassicsContentInterfaceAssembler::toQaResponse)
                 .toList();
     }
 
     @Operation(summary = "新增古籍内容问答", description = "classics:content:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:content:edit")
     @SysLogger(value = "新增问答")
     @PostMapping("qa-pairs/add")
@@ -183,7 +230,13 @@ public class ClassicsContentAdminController {
     }
 
     @Operation(summary = "应用AI候选到内容", description = "classics:content:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:content:edit")
     @SysLogger(value = "AI候选应用")
     @PostMapping("ai-candidates/change")
@@ -195,7 +248,13 @@ public class ClassicsContentAdminController {
     }
 
     @Operation(summary = "批量应用AI候选到内容", description = "classics:content:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:content:edit")
     @SysLogger(value = "AI候选批量应用")
     @PostMapping("ai-candidates/batch/apply")
@@ -207,7 +266,13 @@ public class ClassicsContentAdminController {
     }
 
     @Operation(summary = "批量拒绝AI候选", description = "classics:content:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:content:edit")
     @SysLogger(value = "AI候选批量拒绝")
     @PostMapping("ai-candidates/batch/reject")
@@ -219,7 +284,13 @@ public class ClassicsContentAdminController {
     }
 
     @Operation(summary = "批量修改古籍内容可见性", description = "classics:content:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:content:edit")
     @SysLogger(value = "批量可见性")
     @PostMapping("visibility/change")
@@ -235,7 +306,13 @@ public class ClassicsContentAdminController {
     }
 
     @Operation(summary = "更新古籍内容问答", description = "classics:content:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:content:edit")
     @SysLogger(value = "更新问答")
     @PostMapping("qa-pairs/update")
@@ -247,7 +324,13 @@ public class ClassicsContentAdminController {
     }
 
     @Operation(summary = "删除古籍内容问答", description = "classics:content:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:content:edit")
     @SysLogger(value = "删除问答")
     @PostMapping("qa-pairs/delete")
@@ -258,7 +341,13 @@ public class ClassicsContentAdminController {
     }
 
     @Operation(summary = "排序古籍内容问答", description = "classics:content:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:content:edit")
     @SysLogger(value = "问答排序")
     @PostMapping("qa-pairs/sort")
@@ -275,7 +364,13 @@ public class ClassicsContentAdminController {
     }
 
     @Operation(summary = "创建古籍内容导出任务", description = "classics:content:export")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:content:export")
     @SysLogger(value = "创建导出任务")
     @PostMapping("exports/create")
@@ -296,7 +391,13 @@ public class ClassicsContentAdminController {
     }
 
     @Operation(summary = "分页查询古籍内容导出任务", description = "classics:content:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:content:view")
     @SysLogger(value = "导出任务列表")
     @PostMapping("exports/page")
@@ -309,7 +410,13 @@ public class ClassicsContentAdminController {
     }
 
     @Operation(summary = "删除古籍内容导出任务", description = "classics:content:export")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:content:export")
     @SysLogger(value = "删除导出任务")
     @PostMapping("exports/delete")
@@ -320,9 +427,16 @@ public class ClassicsContentAdminController {
     }
 
     @Operation(summary = "下载古籍内容导出文件", description = "classics:content:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:content:view")
     @SysLogger(value = "导出文件下载")
+    @PostJsonApiExempt(reason = "文件内容需要浏览器直链预览或下载")
     @GetMapping("exports/{jobId}/content")
     public void downloadExportContent(
             @PathVariable("jobId") Long jobId,

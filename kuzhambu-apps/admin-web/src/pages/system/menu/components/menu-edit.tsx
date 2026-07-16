@@ -1,8 +1,9 @@
-import { Button, Form, Input, InputNumber, Select } from "antd";
+import { Form, Input, InputNumber, Select } from "antd";
 import { useEffect } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import type { MenuSaveCommand } from "../menu-service";
 import type { MenuNode } from "../menu-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { TextArea } = Input;
 
@@ -89,10 +90,12 @@ export const MenuEdit = ({ open, menu, parentOptions, saving, onClose, onSave }:
             onClose={onClose}
             footer={
                 <div className="menu-edit-footer">
-                    <Button onClick={onClose}>取消</Button>
-                    <Button type="primary" loading={saving} onClick={saveMenu}>
+                    <KuzhambuButton name="取消" onClick={onClose}>
+                        取消
+                    </KuzhambuButton>
+                    <KuzhambuButton name="保存" type="primary" loading={saving} onClick={saveMenu}>
                         保存
-                    </Button>
+                    </KuzhambuButton>
                 </div>
             }
         >

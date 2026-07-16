@@ -8,7 +8,6 @@ from kuzhambu_workers.schemas.common import UsageSummary, WorkerErrorPayload, Wo
 
 class RenderType(str, Enum):
     CLASSICS_EXPORT = "CLASSICS_EXPORT"
-    SANCAI_SHOWCASE = "SANCAI_SHOWCASE"
     OPERATIONS_REPORT = "OPERATIONS_REPORT"
 
 

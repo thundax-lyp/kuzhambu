@@ -1,5 +1,5 @@
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Button, Empty, Typography } from "antd";
+import { Alert, App, Empty, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
@@ -12,6 +12,7 @@ import { type AiCandidateCapability, type AiCandidateRecord } from "../ai-candid
 import type { ClassicsBatchOperationRecord, ClassicsContentType } from "../classics-content-types";
 import type { ClassicsAiCandidateBatchApplyCommand } from "../classics-content-service";
 import { AiCandidatePayloadEditor } from "./ai-candidate-payload-editor";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 
@@ -417,31 +418,36 @@ export const AiCandidateBatchDrawer = ({
             onClose={closeDrawer}
             footer={
                 <KuzhambuSpace style={{ display: "flex", justifyContent: "flex-end" }}>
-                    <Button onClick={closeDrawer}>关闭</Button>
-                    <Button
+                    <KuzhambuButton name="关闭" onClick={closeDrawer}>
+                        关闭
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="刷新候选"
                         loading={applyBatchMutation.isPending || rejectBatchMutation.isPending}
                         onClick={() => {
                             void refreshCandidates();
                         }}
                     >
                         刷新候选
-                    </Button>
-                    <Button
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="批量应用"
                         type="primary"
                         loading={applyBatchMutation.isPending}
                         disabled={!canEdit}
                         onClick={applyCandidates}
                     >
                         批量应用
-                    </Button>
-                    <Button
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="批量拒绝"
                         danger
                         loading={rejectBatchMutation.isPending}
                         disabled={!canEdit}
                         onClick={rejectCandidates}
                     >
                         批量拒绝
-                    </Button>
+                    </KuzhambuButton>
                 </KuzhambuSpace>
             }
         >

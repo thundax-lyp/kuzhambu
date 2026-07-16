@@ -1,4 +1,4 @@
-import { Modal } from "antd";
+import { KuzhambuModal } from "@/components/kuzhambu-modal";
 import type { RefinementEntityRecord } from "../refinement-types";
 
 interface RefinementEntityDeleteModalProps {
@@ -17,7 +17,7 @@ export const RefinementEntityDeleteModal = ({
     onConfirm
 }: RefinementEntityDeleteModalProps) => {
     return (
-        <Modal
+        <KuzhambuModal
             title="删除实体草稿"
             open={open}
             confirmLoading={deleting}
@@ -25,6 +25,6 @@ export const RefinementEntityDeleteModal = ({
             onOk={onConfirm}
         >
             确认删除实体草稿“{entity?.name || entity?.entityKey || "-"}”？
-        </Modal>
+        </KuzhambuModal>
     );
 };

@@ -43,7 +43,7 @@ export const page = (request: WangqiDocumentQuery = {}) => {
 };
 
 export const get = (id: number) => {
-    return postJson<WangqiDocumentRecord, WangqiDocumentCommand>(`${DOCUMENTS_PATH}/${id}/get`, {
+    return postJson<WangqiDocumentRecord, WangqiDocumentCommand>(`${DOCUMENTS_PATH}/get`, {
         body: { id }
     });
 };
@@ -86,7 +86,7 @@ export const uploadSourceFile = (documentId: number, file: File) => {
 
 export const getSourceFile = (documentId: number) => {
     return postJson<WangqiSourceFileRecord, WangqiDocumentCommand>(
-        `${DOCUMENTS_PATH}/${documentId}/source-file/get`,
+        `${DOCUMENTS_PATH}/source-file/get`,
         {
             body: { id: documentId }
         }

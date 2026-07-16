@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { buildApiUrl, getJson, postJson } from "./http";
+import { buildApiUrl, getJson, postJson, postJsonWithAccessToken } from "./http";
 
 describe("portal web http utilities", () => {
     afterEach(() => {
@@ -106,6 +106,51 @@ describe("portal web http utilities", () => {
                 }),
                 headers: {
                     Accept: "application/json",
+                    "Content-Type": "application/json"
+                },
+                method: "POST"
+            }
+        );
+    });
+
+    it("postJsonWithAccessToken sends access token header", async () => {
+        vi.spyOn(globalThis, "fetch").mockImplementation(
+            async () =>
+                new Response(
+                    JSON.stringify({
+                        code: "COMMON-00000",
+                        data: {
+                            visibility: "PRIVATE"
+                        },
+                        message: "ok"
+                    }),
+                    {
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        status: 200
+                    }
+                )
+        );
+
+        const data = await postJsonWithAccessToken<{ visibility: string }, { shareToken: string }>(
+            "/portal/classics/private-shares/get",
+            { shareToken: "private-token" },
+            "access-token"
+        );
+
+        expect(data).toEqual({
+            visibility: "PRIVATE"
+        });
+        expect(globalThis.fetch).toHaveBeenCalledWith(
+            "/kuzhambu-api/api/portal/classics/private-shares/get",
+            {
+                body: JSON.stringify({
+                    shareToken: "private-token"
+                }),
+                headers: {
+                    Accept: "application/json",
+                    "Access-Token": "access-token",
                     "Content-Type": "application/json"
                 },
                 method: "POST"

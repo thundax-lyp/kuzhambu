@@ -5,7 +5,7 @@ import {
     ReloadOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Tag, Typography } from "antd";
+import { App, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
 import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
@@ -17,6 +17,7 @@ import { DepartmentEdit } from "./components/department-edit";
 import * as service from "./department-service";
 import type { DepartmentMoveCommand, DepartmentSaveCommand } from "./department-service";
 import type { DepartmentNode, DepartmentTableNode } from "./department-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./department-page.css";
 
 const { Text } = Typography;
@@ -326,17 +327,22 @@ export const DepartmentPage = () => {
                 subjectName="部门"
                 pageActions={
                     <>
-                        <Button icon={<ReloadOutlined />} onClick={() => departmentQuery.refetch()}>
+                        <KuzhambuButton
+                            name="刷新"
+                            icon={<ReloadOutlined />}
+                            onClick={() => departmentQuery.refetch()}
+                        >
                             刷新
-                        </Button>
+                        </KuzhambuButton>
                         {canEditDepartment ? (
-                            <Button
+                            <KuzhambuButton
+                                name="新增部门"
                                 type="primary"
                                 icon={<PlusOutlined />}
                                 onClick={openCreateEditor}
                             >
                                 新增部门
-                            </Button>
+                            </KuzhambuButton>
                         ) : null}
                     </>
                 }

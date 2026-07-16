@@ -1,5 +1,5 @@
 import { QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
 import { queryClient } from "@/query/query-client";
@@ -49,41 +49,22 @@ const readFetchUrl = (input: RequestInfo | URL) => {
     return input.url;
 };
 
-const showcasePageRequests: unknown[] = [];
-const showcaseCreateRequests: unknown[] = [];
 let mockCategories = [{ categoryType: "FORMAL", id: 2, title: "天文" }];
 let mockVolumes = [{ categoryId: 2, id: 101, title: "天文卷一", volumeType: "MAIN" }];
 
-const parseJsonBody = (init?: RequestInit) => {
-    if (typeof init?.body !== "string") {
-        return null;
-    }
-    return JSON.parse(init.body);
-};
-
-const selectDropdownOption = async (user: ReturnType<typeof userEvent.setup>, text: string) => {
-    const option = await screen
-        .findAllByText(text)
-        .then((nodes) =>
-            nodes.find((node) => node.classList.contains("ant-select-item-option-content"))
-        );
-    expect(option).toBeTruthy();
-    await user.click(option as HTMLElement);
-};
-
 const installFetchMock = () => {
-    vi.spyOn(globalThis, "fetch").mockImplementation((input, init) => {
+    vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
         const path = readFetchUrl(input).replace("/kuzhambu-admin-api/api", "");
 
         if (path.endsWith("/classics/sancai/categories/list")) {
             return apiResponse(mockCategories);
         }
-        if (path.endsWith("/classics/sancai/categories/types")) {
+        if (path.endsWith("/classics/sancai/categories/types/list")) {
             return apiResponse([
                 { label: "正式门类", type: "SANCAI_CATEGORY_TYPE", value: "FORMAL" }
             ]);
         }
-        if (path.endsWith("/classics/sancai/volumes/types")) {
+        if (path.endsWith("/classics/sancai/volumes/types/list")) {
             return apiResponse([{ label: "正式卷目", type: "SANCAI_VOLUME_TYPE", value: "MAIN" }]);
         }
         if (path.endsWith("/classics/sancai/volumes/list")) {
@@ -121,40 +102,7 @@ const installFetchMock = () => {
                 }
             ]);
         }
-        if (path.endsWith("/classics/sancai/assets/showcases/page")) {
-            showcasePageRequests.push(parseJsonBody(init));
-            return apiResponse({
-                pageNo: 1,
-                pageSize: 20,
-                totalPage: 1,
-                count: 1,
-                totalCount: 1,
-                records: [
-                    {
-                        id: 2001,
-                        status: "COMPLETED",
-                        requestedAt: "2026-06-21T10:30:00.000+08:00",
-                        completedAt: "2026-06-21T10:31:00.000+08:00",
-                        scopeTitle: "全部三才图会公开条目",
-                        entryCount: 3,
-                        assetCount: 2,
-                        visibilityRiskStatus: "PUBLIC_ONLY",
-                        filename: "sancai-showcase.html",
-                        sizeBytes: 2048,
-                        contentUrl: "/showcases/2001.html",
-                        downloadUrl: "/downloads/showcase.html"
-                    }
-                ]
-            });
-        }
-        if (path.endsWith("/classics/sancai/assets/showcases/request")) {
-            showcaseCreateRequests.push(parseJsonBody(init));
-            return apiResponse({
-                id: 2002,
-                status: "REQUESTED"
-            });
-        }
-        if (path.endsWith("/classics/sancai/entries/3001")) {
+        if (path.endsWith("/classics/sancai/entries/get")) {
             return apiResponse({
                 id: 3001,
                 volumeId: 101,
@@ -175,7 +123,7 @@ const installFetchMock = () => {
                 versionDirty: false
             });
         }
-        if (path.endsWith("/classics/sancai/assets/images/3001")) {
+        if (path.endsWith("/classics/sancai/assets/images/list")) {
             return apiResponse([
                 {
                     currentUsed: true,
@@ -190,7 +138,7 @@ const installFetchMock = () => {
                 }
             ]);
         }
-        if (path.endsWith("/classics/sancai/assets/visual-assets/3001")) {
+        if (path.endsWith("/classics/sancai/assets/visual-assets/list")) {
             return apiResponse([
                 {
                     id: 5002,
@@ -245,10 +193,10 @@ const installFetchMock = () => {
                 pageSize: 20
             });
         }
-        if (path.includes("/classics/content/tags?")) {
+        if (path.endsWith("/classics/content/tags/list")) {
             return apiResponse([]);
         }
-        if (path.includes("/classics/content/qa-pairs?")) {
+        if (path.endsWith("/classics/content/qa-pairs/list")) {
             return apiResponse([]);
         }
         if (path.endsWith("/ai/invocation/candidate/list")) {
@@ -292,8 +240,8 @@ const renderEntryList = (entries: SancaiEntryRecord[]) =>
                     onChangeLifecycleStatus={vi.fn()}
                     onDelete={vi.fn()}
                     onExport={vi.fn()}
+                    onRefresh={vi.fn()}
                     onShare={vi.fn()}
-                    onShowcase={vi.fn()}
                     onSort={vi.fn()}
                     onView={vi.fn()}
                 />
@@ -304,8 +252,6 @@ const renderEntryList = (entries: SancaiEntryRecord[]) =>
 describe("SancaiPage", () => {
     beforeEach(() => {
         queryClient.clear();
-        showcasePageRequests.length = 0;
-        showcaseCreateRequests.length = 0;
         mockCategories = [{ categoryType: "FORMAL", id: 2, title: "天文" }];
         mockVolumes = [{ categoryId: 2, id: 101, title: "天文卷一", volumeType: "MAIN" }];
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
@@ -364,116 +310,13 @@ describe("SancaiPage", () => {
         expect(within(entryPanel).getByText("refresh:0")).toBeInTheDocument();
         expect(within(entryPanel).getByText("keyword:none")).toBeInTheDocument();
         expect(within(entryPanel).getByText("status:none")).toBeInTheDocument();
-    }, 30000);
 
-    it("renders showcase jobs and opens preview or download urls", async () => {
-        const openSpy = vi.spyOn(window, "open").mockImplementation(() => null);
-        const user = userEvent.setup();
-
-        render(
-            <QueryClientProvider client={queryClient}>
-                <AntdApp>
-                    <SancaiPage />
-                </AntdApp>
-            </QueryClientProvider>
-        );
-
-        const showcaseSection = await screen.findByLabelText("静态展示任务");
+        const refreshButton = screen.getByRole("button", { name: "刷新三才图会数据" });
+        const taskButton = screen.getByRole("button", { name: "任务" });
         expect(
-            await within(showcaseSection).findByText("全部三才图会公开条目")
-        ).toBeInTheDocument();
-        expect(
-            await within(showcaseSection).findByText("sancai-showcase.html · 2.0 KB")
-        ).toBeInTheDocument();
-
-        await user.click(await within(showcaseSection).findByRole("button", { name: /预\s*览/ }));
-        await user.click(await within(showcaseSection).findByRole("button", { name: /下\s*载/ }));
-
-        expect(openSpy).toHaveBeenCalledWith(
-            "/showcases/2001.html",
-            "_blank",
-            "noopener,noreferrer"
-        );
-        expect(openSpy).toHaveBeenCalledWith(
-            "/downloads/showcase.html",
-            "_blank",
-            "noopener,noreferrer"
-        );
-    }, 30000);
-
-    it("filters showcase jobs by keyword, status, and visibility risk", async () => {
-        const user = userEvent.setup();
-
-        render(
-            <QueryClientProvider client={queryClient}>
-                <AntdApp>
-                    <SancaiPage />
-                </AntdApp>
-            </QueryClientProvider>
-        );
-
-        const showcaseSection = await screen.findByLabelText("静态展示任务");
-        await user.type(within(showcaseSection).getByLabelText("搜索静态展示任务"), "天地");
-        fireEvent.mouseDown(within(showcaseSection).getByLabelText("静态展示任务状态"));
-        await selectDropdownOption(user, "已完成");
-        fireEvent.mouseDown(within(showcaseSection).getByLabelText("静态展示可见性风险"));
-        await selectDropdownOption(user, "仅公开内容");
-        await user.click(within(showcaseSection).getByRole("button", { name: /筛\s*选/ }));
-
-        await waitFor(() => {
-            expect(showcasePageRequests.at(-1)).toMatchObject({
-                keyword: "天地",
-                pageNo: 1,
-                pageSize: 20,
-                status: "COMPLETED",
-                visibilityRiskStatus: "PUBLIC_ONLY"
-            });
-        });
-    }, 30000);
-
-    it("creates a public showcase job with the current catalog scope", async () => {
-        const user = userEvent.setup();
-
-        render(
-            <QueryClientProvider client={queryClient}>
-                <AntdApp>
-                    <SancaiPage />
-                </AntdApp>
-            </QueryClientProvider>
-        );
-
-        const showcaseSection = await screen.findByLabelText("静态展示任务");
-        await user.click(within(showcaseSection).getByRole("button", { name: /生成静态展示/ }));
-
-        await waitFor(() => {
-            expect(showcaseCreateRequests).toHaveLength(1);
-        });
-        const request = showcaseCreateRequests[0] as {
-            privateConfirmed?: boolean;
-            scopeJson?: string;
-            scopeTitle?: string;
-            visibilityRiskStatus?: string;
-        };
-        expect(request).toMatchObject({
-            privateConfirmed: false,
-            scopeTitle: "全部三才图会公开条目",
-            visibilityRiskStatus: "PUBLIC_ONLY"
-        });
-        const scope = JSON.parse(request.scopeJson || "{}");
-        expect(scope.scope).toMatchObject({
-            scopeType: "ALL_PUBLIC",
-            categoryIds: [2],
-            volumeIds: [101],
-            filters: {
-                keyword: null,
-                lifecycleStatus: "PUBLISHED",
-                visibility: "PUBLIC"
-            }
-        });
-        expect(scope.visibilityRisk).toMatchObject({
-            status: "PUBLIC_ONLY",
-            privateConfirmed: false
-        });
+            refreshButton.compareDocumentPosition(taskButton) & Node.DOCUMENT_POSITION_FOLLOWING
+        ).toBeTruthy();
+        expect(taskButton.querySelector(".anticon-schedule")).toBeInTheDocument();
     }, 30000);
 
     it("keeps entry batch selection scoped to the current page entries", async () => {
@@ -485,13 +328,13 @@ describe("SancaiPage", () => {
         const table = await screen.findByLabelText("三才图会条目表格");
 
         expect(screen.getByText("当前页已选 0 条")).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "批量图片理解" })).toBeDisabled();
+        expect(screen.getByRole("button", { name: "图片理解" })).toBeDisabled();
 
         const rowCheckbox = within(table).getAllByRole("checkbox")[1];
         await user.click(rowCheckbox.closest("label") ?? rowCheckbox);
 
         expect(await screen.findByText("当前页已选 1 条")).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "批量图片理解" })).not.toBeDisabled();
+        expect(screen.getByRole("button", { name: "图片理解" })).not.toBeDisabled();
 
         rerender(
             <QueryClientProvider client={queryClient}>
@@ -504,8 +347,8 @@ describe("SancaiPage", () => {
                         onChangeLifecycleStatus={vi.fn()}
                         onDelete={vi.fn()}
                         onExport={vi.fn()}
+                        onRefresh={vi.fn()}
                         onShare={vi.fn()}
-                        onShowcase={vi.fn()}
                         onSort={vi.fn()}
                         onView={vi.fn()}
                     />
@@ -516,7 +359,7 @@ describe("SancaiPage", () => {
         await waitFor(() => {
             expect(screen.getByText("当前页已选 0 条")).toBeInTheDocument();
         });
-        expect(screen.getByRole("button", { name: "批量图片理解" })).toBeDisabled();
+        expect(screen.getByRole("button", { name: "图片理解" })).toBeDisabled();
         expect(screen.getByText("山川")).toBeInTheDocument();
     }, 30000);
 });

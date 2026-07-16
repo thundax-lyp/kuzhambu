@@ -1,0 +1,11 @@
+用户查询：{{query}}
+可用检索范围：{{availableScopes}}
+
+请返回 JSON：
+{
+  "normalizedQueryText": "规范化查询",
+  "rewrittenQueryText": "适合检索的改写查询",
+  "expandedSynonyms": ["同义词"],
+  "recognizedEntities": ["实体"],
+  "intentType": "KEYWORD_SEARCH"
+}

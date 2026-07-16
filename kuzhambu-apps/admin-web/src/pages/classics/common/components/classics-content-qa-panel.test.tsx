@@ -100,8 +100,8 @@ const installFetchMock = () => {
         });
 
         if (
-            path.includes("/classics/content/qa-pairs") &&
-            path.includes("contentType=WANGQI_DOCUMENT")
+            path.endsWith("/classics/content/qa-pairs/list") &&
+            body?.contentType === "WANGQI_DOCUMENT"
         ) {
             return apiResponse([
                 {

@@ -62,7 +62,7 @@ def test_worker_e2e_rejects_business_service_on_ai_usecase_path(monkeypatch) -> 
 
 def test_worker_e2e_render_stream_error_terminates_without_completed(monkeypatch) -> None:
     _configure(monkeypatch, "kuzhambu-classics")
-    body = _render_body("SANCAI_SHOWCASE", "HTML")
+    body = _render_body("OPERATIONS_REPORT", "HTML")
 
     response = TestClient(app).post(
         "/internal/render/classics-export/stream",

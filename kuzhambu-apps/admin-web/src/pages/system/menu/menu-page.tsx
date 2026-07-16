@@ -1,6 +1,6 @@
 import { MenuOutlined, PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Typography } from "antd";
+import { App, Typography } from "antd";
 import { useMemo, useState } from "react";
 import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
@@ -13,16 +13,27 @@ import { MenuEdit } from "./components/menu-edit";
 import * as service from "./menu-service";
 import type { MenuMoveCommand, MenuSaveCommand } from "./menu-service";
 import type { MenuNode, MenuTableNode } from "./menu-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./menu-page.css";
 
 const { Text } = Typography;
 
 const DEFAULT_COLUMN_WIDTHS = {
+    action: 132,
     name: 260,
+    sort: 28,
     url: 260,
     perms: 240,
     display: 96
 };
+
+const TABLE_SCROLL_X =
+    DEFAULT_COLUMN_WIDTHS.name +
+    DEFAULT_COLUMN_WIDTHS.url +
+    DEFAULT_COLUMN_WIDTHS.perms +
+    DEFAULT_COLUMN_WIDTHS.display +
+    DEFAULT_COLUMN_WIDTHS.action +
+    DEFAULT_COLUMN_WIDTHS.sort;
 
 const buildMenuTree = (menus: MenuNode[]) => {
     const nodeMap = new Map<string, MenuTableNode>();
@@ -297,6 +308,7 @@ export const MenuPage = () => {
             )
         },
         {
+            inlineLimit: 3,
             key: "actions",
             options: (menu) => [
                 {
@@ -343,17 +355,22 @@ export const MenuPage = () => {
                 subjectName="菜单"
                 pageActions={
                     <>
-                        <Button icon={<ReloadOutlined />} onClick={() => menuQuery.refetch()}>
+                        <KuzhambuButton
+                            name="刷新"
+                            icon={<ReloadOutlined />}
+                            onClick={() => menuQuery.refetch()}
+                        >
                             刷新
-                        </Button>
+                        </KuzhambuButton>
                         {canEditMenu ? (
-                            <Button
+                            <KuzhambuButton
+                                name="新增菜单"
                                 type="primary"
                                 icon={<PlusOutlined />}
                                 onClick={openCreateEditor}
                             >
                                 新增菜单
-                            </Button>
+                            </KuzhambuButton>
                         ) : null}
                     </>
                 }
@@ -363,7 +380,7 @@ export const MenuPage = () => {
                 dataSource={menuTree}
                 loading={menuQuery.isFetching || moveMutation.isPending}
                 pagination={false}
-                scroll={{ x: 1064 }}
+                scroll={{ x: TABLE_SCROLL_X }}
                 expandable={{
                     defaultExpandAllRows: true,
                     expandedRowKeys: actualExpandedRowKeys,

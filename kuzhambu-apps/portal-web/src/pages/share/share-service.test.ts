@@ -8,8 +8,8 @@ describe("classics share service", () => {
         vi.restoreAllMocks();
     });
 
-    it("listShares forwards query parameters to getJson", async () => {
-        const getJsonSpy = vi.spyOn(http, "getJson").mockResolvedValue({
+    it("listShares forwards query parameters to postJson", async () => {
+        const postJsonSpy = vi.spyOn(http, "postJson").mockResolvedValue({
             pageNo: 1,
             pageSize: 20,
             records: [],
@@ -20,62 +20,71 @@ describe("classics share service", () => {
         const query = { title: "test", pageNo: 1 };
         await shareService.listShares(query);
 
-        expect(getJsonSpy).toHaveBeenCalledWith("/portal/classics/shares", query);
+        expect(postJsonSpy).toHaveBeenCalledWith("/portal/classics/shares/list", query);
     });
 
-    it("getShare calls getJson with share token path", async () => {
-        const getJsonSpy = vi
-            .spyOn(http, "getJson")
+    it("getShare calls postJson with share token body", async () => {
+        const postJsonSpy = vi
+            .spyOn(http, "postJson")
             .mockResolvedValue({ title: "分享详情", targets: null });
 
         await shareService.getShare("abc-123");
 
-        expect(getJsonSpy).toHaveBeenCalledWith("/portal/classics/shares/abc-123");
+        expect(postJsonSpy).toHaveBeenCalledWith("/portal/classics/shares/get", {
+            shareToken: "abc-123"
+        });
     });
 
     it("getPrivateShare calls private share endpoint with access token", async () => {
-        const getJsonWithAccessTokenSpy = vi
-            .spyOn(http, "getJsonWithAccessToken")
+        const postJsonWithAccessTokenSpy = vi
+            .spyOn(http, "postJsonWithAccessToken")
             .mockResolvedValue({ title: "私有分享", visibility: "PRIVATE" });
 
         const response = await shareService.getPrivateShare("private-token", "access-token");
 
         expect(response.visibility).toBe("PRIVATE");
-        expect(getJsonWithAccessTokenSpy).toHaveBeenCalledWith(
-            "/portal/classics/private-shares/private-token",
+        expect(postJsonWithAccessTokenSpy).toHaveBeenCalledWith(
+            "/portal/classics/private-shares/get",
+            { shareToken: "private-token" },
             "access-token"
         );
     });
 
     it("getAccessibleShare reads private share when public response requires login and token exists", async () => {
         window.localStorage.setItem("kuzhambu.admin.accessToken", "admin-token");
-        const getJsonSpy = vi.spyOn(http, "getJson").mockResolvedValue({ loginRequired: true });
-        const getJsonWithAccessTokenSpy = vi
-            .spyOn(http, "getJsonWithAccessToken")
+        const postJsonSpy = vi.spyOn(http, "postJson").mockResolvedValue({ loginRequired: true });
+        const postJsonWithAccessTokenSpy = vi
+            .spyOn(http, "postJsonWithAccessToken")
             .mockResolvedValue({ title: "私有分享", visibility: "PRIVATE" });
 
         const response = await shareService.getAccessibleShare("private-token");
 
         expect(response.title).toBe("私有分享");
-        expect(getJsonSpy).toHaveBeenCalledWith("/portal/classics/shares/private-token");
-        expect(getJsonWithAccessTokenSpy).toHaveBeenCalledWith(
-            "/portal/classics/private-shares/private-token",
+        expect(postJsonSpy).toHaveBeenCalledWith("/portal/classics/shares/get", {
+            shareToken: "private-token"
+        });
+        expect(postJsonWithAccessTokenSpy).toHaveBeenCalledWith(
+            "/portal/classics/private-shares/get",
+            { shareToken: "private-token" },
             "admin-token"
         );
     });
 
     it("getAccessibleShare keeps login-required response when no token exists", async () => {
-        vi.spyOn(http, "getJson").mockResolvedValue({ loginRequired: true, visibility: "PRIVATE" });
-        const getJsonWithAccessTokenSpy = vi.spyOn(http, "getJsonWithAccessToken");
+        vi.spyOn(http, "postJson").mockResolvedValue({
+            loginRequired: true,
+            visibility: "PRIVATE"
+        });
+        const postJsonWithAccessTokenSpy = vi.spyOn(http, "postJsonWithAccessToken");
 
         const response = await shareService.getAccessibleShare("private-token");
 
         expect(response.loginRequired).toBe(true);
-        expect(getJsonWithAccessTokenSpy).not.toHaveBeenCalled();
+        expect(postJsonWithAccessTokenSpy).not.toHaveBeenCalled();
     });
 
     it("passes through active batch-created multi-target share payload without adding portal-only fields", async () => {
-        vi.spyOn(http, "getJson").mockResolvedValue({
+        vi.spyOn(http, "postJson").mockResolvedValue({
             status: "ACTIVE",
             targets: [
                 {
@@ -140,7 +149,7 @@ describe("classics share service", () => {
     });
 
     it("keeps sancai image resource urls and non-current images in share payload", async () => {
-        vi.spyOn(http, "getJson").mockResolvedValue({
+        vi.spyOn(http, "postJson").mockResolvedValue({
             status: "ACTIVE",
             targets: [
                 {
@@ -202,7 +211,7 @@ describe("classics share service", () => {
         "keeps %s share rejection in the existing getShare error path",
         async (status) => {
             const error = new Error(`share ${status.toLowerCase()}`);
-            vi.spyOn(http, "getJson").mockRejectedValue(error);
+            vi.spyOn(http, "postJson").mockRejectedValue(error);
 
             await expect(shareService.getShare(`${status.toLowerCase()}-token`)).rejects.toThrow(
                 error.message

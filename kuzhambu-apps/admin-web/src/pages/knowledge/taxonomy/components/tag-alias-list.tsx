@@ -1,9 +1,10 @@
-import { Button, Empty, Form, Input, Popconfirm, Typography } from "antd";
+import { Empty, Form, Input, Popconfirm, Typography } from "antd";
 import { useMemo } from "react";
 import { KuzhambuList, KuzhambuListItem } from "@/components/kuzhambu-list";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { TagAliasCreateCommand, TagAliasRemoveCommand } from "../taxonomy-service";
 import type { TagAliasRecord } from "../taxonomy-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 
@@ -117,9 +118,14 @@ export const TagAliasList = ({
                         />
                     </Form.Item>
                     <Form.Item style={{ marginBottom: 0 }}>
-                        <Button type="primary" loading={saving} onClick={() => void createAlias()}>
+                        <KuzhambuButton
+                            name="新增别名"
+                            type="primary"
+                            loading={saving}
+                            onClick={() => void createAlias()}
+                        >
                             新增别名
-                        </Button>
+                        </KuzhambuButton>
                     </Form.Item>
                 </Form>
             ) : null}
@@ -143,13 +149,14 @@ export const TagAliasList = ({
                                               cancelText="取消"
                                               onConfirm={() => onRemove({ id: alias.id })}
                                           >
-                                              <Button
+                                              <KuzhambuButton
+                                                  name="删除"
                                                   type="link"
                                                   danger
                                                   loading={removingAliasId === alias.id}
                                               >
                                                   删除
-                                              </Button>
+                                              </KuzhambuButton>
                                           </Popconfirm>
                                       ]
                                     : undefined

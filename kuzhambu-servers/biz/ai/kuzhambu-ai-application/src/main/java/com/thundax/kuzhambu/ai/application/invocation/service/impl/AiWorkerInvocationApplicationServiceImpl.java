@@ -183,8 +183,6 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
                 || isBlank(command.getCapability())
                 || isBlank(command.getRequestId())
                 || isBlank(command.getTraceId())
-                || command.getModelId() == null
-                || isBlank(command.getModelName())
                 || isBlank(command.getPromptMessagesJson())
                 || isBlank(command.getInputPayloadJson())) {
             throw new BizException("AI invoke command is incomplete");

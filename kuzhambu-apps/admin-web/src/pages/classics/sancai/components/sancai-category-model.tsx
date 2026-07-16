@@ -1,10 +1,10 @@
-import { Button, Input, Modal, Select, Typography } from "antd";
+import { Form, Input, Select } from "antd";
 import { useState } from "react";
+import { KuzhambuModal } from "@/components/kuzhambu-modal";
 import type { DictItem } from "@/types/dict";
 import { toCategoryFormValues, type SancaiCategoryFormValues } from "./sancai-form-values";
 import type { SancaiCategoryRecord } from "../sancai-types";
-
-const { Text } = Typography;
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 interface SancaiCategoryModelProps {
     category: SancaiCategoryRecord | null;
@@ -30,30 +30,37 @@ export const SancaiCategoryModel = ({
     );
 
     return (
-        <Modal
+        <KuzhambuModal
             title={category ? "编辑门类" : "新增门类"}
             open
             footer={
                 <div className="sancai-modal-footer">
-                    <Button onClick={onCancel}>取消</Button>
-                    <Button
-                        aria-label={
+                    <KuzhambuButton name="取消" onClick={onCancel}>
+                        取消
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name={String(
                             category ? `保存门类 ${readTitle(category, "门类")}` : "保存新增门类"
-                        }
+                        )}
                         loading={isSubmitting}
                         type="primary"
                         onClick={() => onSubmit(form)}
                     >
                         保存
-                    </Button>
+                    </KuzhambuButton>
                 </div>
             }
             destroyOnHidden
             onCancel={onCancel}
         >
-            <div className="sancai-category-editor" aria-label={category ? "编辑门类" : "新增门类"}>
-                <label className="sancai-form-field">
-                    <Text strong>门类标题</Text>
+            <Form
+                aria-label={category ? "编辑门类" : "新增门类"}
+                className="sancai-category-editor sancai-editor-form"
+                component="div"
+                labelCol={{ flex: "72px" }}
+                layout="horizontal"
+            >
+                <Form.Item label="门类标题">
                     <Input
                         aria-label="三才图会门类标题"
                         placeholder="门类标题"
@@ -65,9 +72,8 @@ export const SancaiCategoryModel = ({
                             }))
                         }
                     />
-                </label>
-                <label className="sancai-form-field">
-                    <Text strong>门类类型</Text>
+                </Form.Item>
+                <Form.Item label="门类类型">
                     <Select
                         aria-label="三才图会门类类型"
                         value={form.categoryType}
@@ -79,8 +85,8 @@ export const SancaiCategoryModel = ({
                             }))
                         }
                     />
-                </label>
-            </div>
-        </Modal>
+                </Form.Item>
+            </Form>
+        </KuzhambuModal>
     );
 };

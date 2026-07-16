@@ -1,0 +1,8 @@
+内容类型：{{contentType}}
+标题：{{title}}
+上下文：{{contextPath}}
+
+原文：
+{{sourceText}}
+
+请翻译为现代中文。

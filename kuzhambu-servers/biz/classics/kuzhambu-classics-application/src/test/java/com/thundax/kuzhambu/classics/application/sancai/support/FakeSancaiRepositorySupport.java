@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.classics.application.sancai.support;
 
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategoryOverview;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiCategoryId;
@@ -25,6 +26,11 @@ public abstract class FakeSancaiRepositorySupport implements SancaiRepository {
 
     @Override
     public List<SancaiCategory> listCategories(SortDirection sortDirection) {
+        return List.of();
+    }
+
+    @Override
+    public List<SancaiCategoryOverview> listCategoryOverviews(SortDirection sortDirection) {
         return List.of();
     }
 

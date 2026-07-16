@@ -9,6 +9,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 @Getter
 @Setter
 public class ClassicsSharePortalSearchRequest {
+    private String shareToken;
     private String contentType;
     private String title;
 

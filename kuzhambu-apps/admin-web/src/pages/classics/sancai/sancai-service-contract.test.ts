@@ -91,7 +91,7 @@ describe("sancai service request contracts", () => {
 
     it("sends category service requests with domain function names", async () => {
         await categoryService.listTypes();
-        expectLastCall("GET", "/classics/sancai/categories/types", undefined);
+        expectLastCall("POST", "/classics/sancai/categories/types/list", undefined);
 
         await categoryService.list();
         expectLastCall("POST", "/classics/sancai/categories/list", undefined);
@@ -133,7 +133,7 @@ describe("sancai service request contracts", () => {
 
     it("sends volume service requests with domain function names", async () => {
         await volumeService.listTypes();
-        expectLastCall("GET", "/classics/sancai/volumes/types", undefined);
+        expectLastCall("POST", "/classics/sancai/volumes/types/list", undefined);
 
         await volumeService.list({
             categoryId: 2
@@ -222,7 +222,9 @@ describe("sancai service request contracts", () => {
         });
 
         await entryService.get(3001);
-        expectLastCall("GET", "/classics/sancai/entries/3001", undefined);
+        expectLastCall("POST", "/classics/sancai/entries/get", {
+            id: 3001
+        });
 
         await entryService.add(entryCommand);
         expectLastCall("POST", "/classics/sancai/entries/add", entryCommand);
@@ -262,7 +264,9 @@ describe("sancai service request contracts", () => {
         });
 
         await entryService.listImages(3001);
-        expectLastCall("GET", "/classics/sancai/assets/images/3001", undefined);
+        expectLastCall("POST", "/classics/sancai/assets/images/list", {
+            entryId: 3001
+        });
 
         await entryService.deleteImage({
             entryId: 3001,
@@ -294,7 +298,9 @@ describe("sancai service request contracts", () => {
         });
 
         await entryService.listVisualAssets(3001);
-        expectLastCall("GET", "/classics/sancai/assets/visual-assets/3001", undefined);
+        expectLastCall("POST", "/classics/sancai/assets/visual-assets/list", {
+            entryId: 3001
+        });
 
         await entryService.uploadImage({
             currentUsed: true,
@@ -304,8 +310,9 @@ describe("sancai service request contracts", () => {
             replaceImageId: 8001,
             title: "sancai.png"
         });
-        expectLastCall("POST", "/classics/sancai/assets/images/3001/upload", {
+        expectLastCall("POST", "/classics/sancai/assets/images/upload", {
             currentUsed: "true",
+            entryId: "3001",
             file: "sancai.png",
             imageType: "ORIGINAL",
             replaceImageId: "8001",
@@ -391,35 +398,6 @@ describe("sancai service request contracts", () => {
         expectLastCall("POST", "/classics/sancai/entries/versions/reset", {
             id: 3001,
             versionId: 9001
-        });
-
-        const requestShowcaseScope = JSON.stringify({
-            title: "天地静态展示",
-            entries: [{ id: 3001 }]
-        });
-        await entryService.requestShowcase({
-            scopeJson: requestShowcaseScope,
-            visibilityRiskStatus: "PUBLIC_ONLY"
-        });
-        expectLastCall("POST", "/classics/sancai/assets/showcases/request", {
-            scopeJson: requestShowcaseScope,
-            visibilityRiskStatus: "PUBLIC_ONLY"
-        });
-
-        await entryService.pageShowcases({
-            pageNo: 1,
-            pageSize: 10,
-            status: "COMPLETED"
-        });
-        expectLastCall("POST", "/classics/sancai/assets/showcases/page", {
-            pageNo: 1,
-            pageSize: 10,
-            status: "COMPLETED"
-        });
-
-        await entryService.deleteShowcase(30001);
-        expectLastCall("POST", "/classics/sancai/assets/showcases/delete", {
-            id: 30001
         });
 
         await entryService.createRefinementBatch({

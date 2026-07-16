@@ -1,4 +1,5 @@
 import type { ClassicsContentTagRecord } from "@/pages/classics/common/classics-content-types";
+import type { DictItem } from "@/types/dict";
 
 export interface SancaiCategoryRecord {
     id: number;
@@ -7,6 +8,8 @@ export interface SancaiCategoryRecord {
     priority?: number | null;
 }
 
+export type SancaiCategoryTypeRecord = DictItem;
+
 export interface SancaiVolumeRecord {
     id: number;
     categoryId?: number | null;
@@ -14,6 +17,8 @@ export interface SancaiVolumeRecord {
     volumeType?: string | null;
     priority?: number | null;
 }
+
+export type SancaiVolumeTypeRecord = DictItem;
 
 export type SancaiEntryLifecycleStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 
@@ -102,29 +107,6 @@ export interface SancaiContentVersionRecord {
     snapshotJson?: string | null;
     changeType?: string | null;
     changeSummary?: string | null;
-}
-
-export type SancaiShowcaseStatus = "REQUESTED" | "PROCESSING" | "COMPLETED" | "FAILED" | "EXPIRED";
-
-export interface SancaiShowcaseRecord {
-    id?: number | null;
-    requestedAt?: string | null;
-    completedAt?: string | null;
-    status?: SancaiShowcaseStatus | null;
-    scopeJson?: string | null;
-    scopeTitle?: string | null;
-    storageObjectId?: number | null;
-    entryCount?: number | null;
-    assetCount?: number | null;
-    visibilityRiskStatus?: string | null;
-    filename?: string | null;
-    contentType?: string | null;
-    sizeBytes?: number | null;
-    sha256?: string | null;
-    failureType?: string | null;
-    failureMessage?: string | null;
-    contentUrl?: string | null;
-    downloadUrl?: string | null;
 }
 
 export interface SancaiVersionSnapshot {

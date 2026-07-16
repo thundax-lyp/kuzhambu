@@ -6,31 +6,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageSortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageUploadCommand;
-import com.thundax.kuzhambu.classics.application.sancai.command.SancaiShowcaseCommand;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageContent;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageResource;
-import com.thundax.kuzhambu.classics.application.sancai.result.SancaiShowcaseJobResult;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
 import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryDraft;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
-import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiShowcase;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVisualAsset;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageType;
-import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiShowcaseStatus;
-import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisualAssetStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryDraftId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiShowcaseId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisualAssetId;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiAssetAdminController;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiAssetRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntryImageSortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiAssetResponse;
-import com.thundax.kuzhambu.common.core.page.PageQuery;
-import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
@@ -38,7 +30,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -59,12 +50,12 @@ class SancaiAssetAdminControllerTest {
                 "drafts/update",
                 "classics:sancai:edit",
                 SancaiAssetRequest.class);
-        assertGetMapping(
+        assertPostMapping(
                 SancaiAssetAdminController.class,
                 "latestDraft",
-                "drafts/latest/{entryId}",
+                "drafts/latest",
                 "classics:sancai:view",
-                Long.class);
+                SancaiAssetRequest.class);
         assertPostMapping(
                 SancaiAssetAdminController.class,
                 "updateImage",
@@ -74,7 +65,7 @@ class SancaiAssetAdminControllerTest {
         assertMultipartPostMapping(
                 SancaiAssetAdminController.class,
                 "uploadImage",
-                "images/{entryId}/upload",
+                "images/upload",
                 "classics:sancai:edit",
                 Long.class,
                 MultipartFile.class,
@@ -91,8 +82,12 @@ class SancaiAssetAdminControllerTest {
                 Long.class,
                 Boolean.class,
                 HttpServletResponse.class);
-        assertGetMapping(
-                SancaiAssetAdminController.class, "listImages", "images/{entryId}", "classics:sancai:view", Long.class);
+        assertPostMapping(
+                SancaiAssetAdminController.class,
+                "listImages",
+                "images/list",
+                "classics:sancai:view",
+                SancaiAssetRequest.class);
         assertPostMapping(
                 SancaiAssetAdminController.class,
                 "deleteImage",
@@ -113,22 +108,10 @@ class SancaiAssetAdminControllerTest {
                 SancaiEntryImageSortRequest.class);
         assertPostMapping(
                 SancaiAssetAdminController.class,
-                "requestShowcase",
-                "showcases/request",
-                "classics:sancai:edit",
-                SancaiAssetRequest.class);
-        assertPostMapping(
-                SancaiAssetAdminController.class,
-                "pageShowcases",
-                "showcases/page",
-                "classics:sancai:view",
-                SancaiAssetRequest.class);
-        assertGetMapping(
-                SancaiAssetAdminController.class,
                 "listVisualAssets",
-                "visual-assets/{entryId}",
+                "visual-assets/list",
                 "classics:sancai:view",
-                Long.class);
+                SancaiAssetRequest.class);
         assertGetMapping(
                 SancaiAssetAdminController.class,
                 "downloadVisualAssetSourceContent",
@@ -159,14 +142,6 @@ class SancaiAssetAdminControllerTest {
                 "visual-assets/current/change",
                 "classics:sancai:edit",
                 SancaiAssetRequest.class);
-        assertGetMapping(
-                SancaiAssetAdminController.class,
-                "downloadShowcaseContent",
-                "showcases/{id}/content",
-                "classics:sancai:view",
-                Long.class,
-                Boolean.class,
-                HttpServletResponse.class);
     }
 
     @Test
@@ -234,63 +209,11 @@ class SancaiAssetAdminControllerTest {
     }
 
     @Test
-    void pageShowcasesShouldReturnShowcaseContract() {
-        SancaiAssetRequest request = new SancaiAssetRequest();
-        request.setKeyword("天地");
-        request.setStatus("COMPLETED");
-        request.setVisibilityRiskStatus("PUBLIC_ONLY");
-        request.setRequestedAtStart(new Date(1680000000000L));
-        request.setRequestedAtEnd(new Date(1700000000000L));
-        request.setPageNo(1);
-        request.setPageSize(10);
-
-        var page = controller().pageShowcases(request);
-
-        assertEquals(1, page.getRecords().size());
-        assertEquals(1L, page.getRecords().get(0).getId());
-        assertEquals("COMPLETED", page.getRecords().get(0).getStatus());
-        assertEquals("{}", page.getRecords().get(0).getScopeJson());
-        assertEquals("天地门公开条目", page.getRecords().get(0).getScopeTitle());
-        assertEquals(7001L, page.getRecords().get(0).getStorageObjectId());
-        assertEquals(3, page.getRecords().get(0).getEntryCount());
-        assertEquals(2, page.getRecords().get(0).getAssetCount());
-        assertEquals("PUBLIC_ONLY", page.getRecords().get(0).getVisibilityRiskStatus());
-        assertEquals("showcase.html", page.getRecords().get(0).getFilename());
-        assertEquals("text/html; charset=utf-8", page.getRecords().get(0).getContentType());
-        assertEquals(1024L, page.getRecords().get(0).getSizeBytes());
-        assertEquals("sha256:abc", page.getRecords().get(0).getSha256());
-        assertEquals(
-                "/api/classics/sancai/assets/showcases/1/content",
-                page.getRecords().get(0).getContentUrl());
-        assertEquals(
-                "/api/classics/sancai/assets/showcases/1/content?download=true",
-                page.getRecords().get(0).getDownloadUrl());
-    }
-
-    @Test
-    void requestShowcaseShouldPassCreateContractFields() {
-        SancaiAssetRequest request = new SancaiAssetRequest();
-        request.setScopeJson("{\"scope\":{\"scopeType\":\"FILTERED_RESULT\"}}");
-        request.setScopeTitle("天地门公开条目");
-        request.setVisibilityRiskStatus("CONTAINS_PRIVATE");
-        request.setPrivateConfirmed(true);
-        request.setStorageObjectId(9999L);
-
-        SancaiAssetResponse response = controller().requestShowcase(request);
-
-        assertEquals(9001L, response.getId());
-        assertEquals("COMPLETED", response.getStatus());
-        assertEquals(7001L, response.getStorageObjectId());
-        assertEquals("showcase.html", response.getFilename());
-        assertEquals(1024L, response.getSizeBytes());
-        assertEquals("sha256:abc", response.getSha256());
-        assertEquals("/api/classics/sancai/assets/showcases/9001/content", response.getContentUrl());
-        assertEquals("/api/classics/sancai/assets/showcases/9001/content?download=true", response.getDownloadUrl());
-    }
-
-    @Test
     void visualAssetApisShouldReturnVisualAssetContract() {
-        List<SancaiAssetResponse> listResponse = controller().listVisualAssets(3001L);
+        SancaiAssetRequest request = new SancaiAssetRequest();
+        request.setEntryId(3001L);
+
+        List<SancaiAssetResponse> listResponse = controller().listVisualAssets(request);
         assertEquals(1, listResponse.size());
         SancaiAssetResponse item = listResponse.get(0);
         assertEquals(5001L, item.getVisualAssetId());
@@ -339,27 +262,6 @@ class SancaiAssetAdminControllerTest {
         useRequest.setEntryId(3001L);
         useRequest.setVisualAssetId(5001L);
         assertEquals(true, controller().changeCurrentVisualAsset(useRequest));
-    }
-
-    @Test
-    void downloadShowcaseContentShouldSupportInlineAndAttachment() throws Exception {
-        SancaiAssetAdminController controller = controller();
-        MockHttpServletResponse inlineResponse = new MockHttpServletResponse();
-
-        controller.downloadShowcaseContent(1L, false, inlineResponse);
-
-        assertEquals("application/json", inlineResponse.getContentType());
-        assertEquals(8, inlineResponse.getContentLength());
-        assertTrue(inlineResponse.getHeader("Content-Disposition").startsWith("inline;"));
-        assertEquals("demo-json", inlineResponse.getContentAsString());
-
-        MockHttpServletResponse attachmentResponse = new MockHttpServletResponse();
-        controller.downloadShowcaseContent(1L, true, attachmentResponse);
-
-        String disposition = attachmentResponse.getHeader("Content-Disposition");
-        assertTrue(disposition.startsWith("attachment;"));
-        assertTrue(disposition.contains("filename=\"showcase.json\""));
-        assertTrue(disposition.contains("filename*=UTF-8''showcase.json"));
     }
 
     @Test
@@ -462,40 +364,6 @@ class SancaiAssetAdminControllerTest {
                         assertEquals(SancaiVisualAssetId.of(5001L), args[1]);
                         return generatedContent();
                     }
-                    if ("requestShowcaseJob".equals(method.getName())) {
-                        SancaiShowcaseCommand command = (SancaiShowcaseCommand) args[0];
-                        assertEquals("{\"scope\":{\"scopeType\":\"FILTERED_RESULT\"}}", command.getScopeJson());
-                        assertEquals("天地门公开条目", command.getScopeTitle());
-                        assertEquals(SancaiVisibilityRiskStatus.CONTAINS_PRIVATE, command.getVisibilityRiskStatus());
-                        assertEquals(true, command.isPrivateConfirmed());
-                        assertEquals(null, command.getStorageObjectId());
-                        return new SancaiShowcaseJobResult(
-                                SancaiShowcaseId.of(9001L),
-                                SancaiShowcaseStatus.COMPLETED,
-                                StorageObjectId.of(7001L),
-                                "showcase.html",
-                                1024L,
-                                "sha256:abc",
-                                null,
-                                null);
-                    }
-                    if ("pageShowcases".equals(method.getName())) {
-                        assertEquals(6, args.length);
-                        if ("天地".equals(args[0])) {
-                            assertEquals("COMPLETED", args[1]);
-                            assertEquals("PUBLIC_ONLY", args[2]);
-                            assertEquals(new Date(1680000000000L), args[3]);
-                            assertEquals(new Date(1700000000000L), args[4]);
-                        }
-                        PageQuery pageQuery = (PageQuery) args[5];
-                        assertEquals(1, pageQuery.getPageNo());
-                        assertTrue(pageQuery.getPageSize() == 10 || pageQuery.getPageSize() == 20);
-                        return PageResult.of(1, 10, 1, List.of(showcase()));
-                    }
-                    if ("getShowcaseContent".equals(method.getName())) {
-                        assertEquals(SancaiShowcaseId.of(1L), args[0]);
-                        return showcaseContent();
-                    }
                     throw new UnsupportedOperationException(method.getName());
                 });
     }
@@ -526,30 +394,6 @@ class SancaiAssetAdminControllerTest {
     private static ClassicsStoredContentResult storedContent() {
         return new ClassicsStoredContentResult(
                 7001L, "三才图.png", "image/png", 9L, new ByteArrayInputStream("image-bin".getBytes()));
-    }
-
-    private static SancaiShowcase showcase() {
-        SancaiShowcase showcase = new SancaiShowcase();
-        showcase.setId(SancaiShowcaseId.of(1L));
-        showcase.setRequestedAt(new Date(1690000000000L));
-        showcase.setCompletedAt(new Date(1690003600000L));
-        showcase.setStatus(SancaiShowcaseStatus.COMPLETED);
-        showcase.setScopeJson("{}");
-        showcase.setScopeTitle("天地门公开条目");
-        showcase.setStorageObjectId(StorageObjectId.of(7001L));
-        showcase.setEntryCount(3);
-        showcase.setAssetCount(2);
-        showcase.setVisibilityRiskStatus(SancaiVisibilityRiskStatus.PUBLIC_ONLY);
-        showcase.setFilename("showcase.html");
-        showcase.setContentType("text/html; charset=utf-8");
-        showcase.setSizeBytes(1024L);
-        showcase.setSha256("sha256:abc");
-        return showcase;
-    }
-
-    private static ClassicsStoredContentResult showcaseContent() {
-        return new ClassicsStoredContentResult(
-                7001L, "showcase.json", "application/json", 8L, new ByteArrayInputStream("demo-json".getBytes()));
     }
 
     private static ClassicsStoredContentResult generatedContent() {

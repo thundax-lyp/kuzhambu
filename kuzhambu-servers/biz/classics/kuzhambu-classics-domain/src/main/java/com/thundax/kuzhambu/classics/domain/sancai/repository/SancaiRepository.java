@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.classics.domain.sancai.repository;
 
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategoryOverview;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiCategoryId;
@@ -17,6 +18,8 @@ public interface SancaiRepository {
     SancaiCategory getCategoryById(SancaiCategoryId id);
 
     List<SancaiCategory> listCategories(SortDirection sortDirection);
+
+    List<SancaiCategoryOverview> listCategoryOverviews(SortDirection sortDirection);
 
     int maxCategoryPriority();
 

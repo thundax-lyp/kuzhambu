@@ -7,9 +7,12 @@ import com.thundax.kuzhambu.ai.interfaces.admin.refinement.assembler.AiRefinemen
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.request.AiRefinementRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.response.AiRefinementResponses;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
+import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -41,7 +44,13 @@ public class AiRefinementTaskController {
     }
 
     @Operation(summary = "创建AI精修任务", description = "ai:refinement:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:refinement:edit")
     @SysLogger(value = "任务创建")
     @PostMapping(value = "add")
@@ -52,7 +61,13 @@ public class AiRefinementTaskController {
     }
 
     @Operation(summary = "获取AI精修任务", description = "ai:refinement:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:refinement:view")
     @SysLogger(value = "任务详情")
     @PostMapping(value = "get")
@@ -62,9 +77,16 @@ public class AiRefinementTaskController {
     }
 
     @Operation(summary = "订阅AI精修任务流式过程", description = "ai:refinement:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:refinement:view")
     @SysLogger(value = "任务流式过程")
+    @PostJsonApiExempt(reason = "SSE 事件流必须使用浏览器可直接建立的 GET 流式连接")
     @GetMapping(value = "stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamTask(@RequestParam(value = "taskId") Long taskId) {
         SseEmitter emitter = new SseEmitter(600_000L);
@@ -80,7 +102,13 @@ public class AiRefinementTaskController {
     }
 
     @Operation(summary = "分页查询AI精修任务", description = "ai:refinement:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:refinement:view")
     @SysLogger(value = "任务分页")
     @PostMapping(value = "page")
@@ -98,7 +126,13 @@ public class AiRefinementTaskController {
     }
 
     @Operation(summary = "取消AI精修任务", description = "ai:refinement:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:refinement:edit")
     @SysLogger(value = "任务取消")
     @PostMapping(value = "cancel")
@@ -109,7 +143,13 @@ public class AiRefinementTaskController {
     }
 
     @Operation(summary = "创建AI精修批量任务", description = "ai:refinement:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:refinement:edit")
     @SysLogger(value = "批量任务创建")
     @PostMapping(value = "batch/create")
@@ -126,7 +166,13 @@ public class AiRefinementTaskController {
     }
 
     @Operation(summary = "获取AI精修批量任务", description = "ai:refinement:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:refinement:view")
     @SysLogger(value = "批量任务详情")
     @PostMapping(value = "batch/get")
@@ -136,7 +182,13 @@ public class AiRefinementTaskController {
     }
 
     @Operation(summary = "取消AI精修批量任务", description = "ai:refinement:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:refinement:edit")
     @SysLogger(value = "批量任务取消")
     @PostMapping(value = "batch/cancel")

@@ -20,11 +20,14 @@ import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
+import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
+import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -60,7 +63,13 @@ public class WangqiDocumentAdminController {
     }
 
     @Operation(summary = "分页查询王圻文档", description = "classics:wangqi:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:wangqi:view")
     @SysLogger(value = "分页查询")
     @PostMapping("page")
@@ -73,17 +82,29 @@ public class WangqiDocumentAdminController {
     }
 
     @Operation(summary = "查看王圻文档", description = "classics:wangqi:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:wangqi:view")
     @SysLogger(value = "详情")
-    @PostMapping("{id}/get")
+    @PostMapping("get")
     public WangqiDocumentResponse get(@Valid @RequestBody WangqiDocumentRequest request) {
         return WangqiDocumentInterfaceAssembler.toResponse(
                 service.get(WangqiDocumentIdCodec.toDomain(request.getId())));
     }
 
     @Operation(summary = "查询王圻时间线", description = "classics:wangqi:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:wangqi:view")
     @SysLogger(value = "时间线")
     @PostMapping("timeline/list")
@@ -96,7 +117,13 @@ public class WangqiDocumentAdminController {
     }
 
     @Operation(summary = "新增王圻文档", description = "classics:wangqi:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:wangqi:edit")
     @SysLogger(value = "新增")
     @PostMapping("add")
@@ -108,7 +135,13 @@ public class WangqiDocumentAdminController {
     }
 
     @Operation(summary = "更新王圻文档", description = "classics:wangqi:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:wangqi:edit")
     @SysLogger(value = "更新")
     @PostMapping("update")
@@ -120,7 +153,13 @@ public class WangqiDocumentAdminController {
     }
 
     @Operation(summary = "删除王圻文档", description = "classics:wangqi:delete")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:wangqi:delete")
     @SysLogger(value = "删除")
     @PostMapping("delete")
@@ -129,9 +168,16 @@ public class WangqiDocumentAdminController {
     }
 
     @Operation(summary = "上传王圻原始文件", description = "classics:wangqi:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:wangqi:edit")
     @SysLogger(value = "原始文件上传")
+    @PostJsonApiExempt(reason = "文件上传必须使用 multipart/form-data 承载文件流")
     @PostMapping(value = "{id}/source-file/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public WangqiDocumentSourceFileResponse uploadSourceFile(
             @PathVariable("id") Long id, @RequestParam("file") MultipartFile file) {
@@ -149,19 +195,32 @@ public class WangqiDocumentAdminController {
     }
 
     @Operation(summary = "查看王圻原始文件", description = "classics:wangqi:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:wangqi:view")
     @SysLogger(value = "原始文件详情")
-    @PostMapping("{id}/source-file/get")
+    @PostMapping("source-file/get")
     public WangqiDocumentSourceFileResponse getSourceFile(@Valid @RequestBody WangqiDocumentRequest request) {
         return WangqiDocumentInterfaceAssembler.toSourceFileResponse(
                 service.getSourceFile(WangqiDocumentIdCodec.toDomain(request.getId())));
     }
 
     @Operation(summary = "读取王圻原始文件内容", description = "classics:wangqi:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:wangqi:view")
     @SysLogger(value = "原始文件读取")
+    @PostJsonApiExempt(reason = "文件内容需要浏览器直链预览或下载")
     @GetMapping("{id}/source-file/content")
     public void downloadSourceFile(
             @PathVariable("id") Long id,
@@ -189,7 +248,13 @@ public class WangqiDocumentAdminController {
     }
 
     @Operation(summary = "查询王圻文档版本", description = "classics:wangqi:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:wangqi:view")
     @SysLogger(value = "版本列表")
     @PostMapping("versions/list")
@@ -203,7 +268,13 @@ public class WangqiDocumentAdminController {
     }
 
     @Operation(summary = "查看王圻文档版本", description = "classics:wangqi:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:wangqi:view")
     @SysLogger(value = "版本详情")
     @PostMapping("versions/get")
@@ -213,7 +284,13 @@ public class WangqiDocumentAdminController {
     }
 
     @Operation(summary = "恢复王圻文档版本", description = "classics:wangqi:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:wangqi:edit")
     @SysLogger(value = "版本恢复")
     @PostMapping("versions/reset")

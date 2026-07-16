@@ -1,11 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Alert, Button, Card, Empty } from "antd";
+import { App, Alert, Card, Empty } from "antd";
 import { useCallback, useMemo, useState } from "react";
 import { KuzhambuList, KuzhambuListItem } from "@/components/kuzhambu-list";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import * as aiCandidateService from "../ai-candidate-service";
 import type { AiCandidateCapability, AiCandidateRecord } from "../ai-candidate-types";
 import { AiCandidatePayloadEditor } from "./ai-candidate-payload-editor";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 type CandidateContentType = "SANCAI_ENTRY" | "WANGQI_DOCUMENT" | "MING_CUSTOMS";
 
 interface AiCandidatePanelProps {
@@ -242,7 +243,8 @@ export const AiCandidatePanel = ({
                                 onSubmitEnabledChange={updateCandidateSubmitEnabled}
                             />
                             <KuzhambuSpace wrap>
-                                <Button
+                                <KuzhambuButton
+                                    name="应用"
                                     disabled={
                                         applyingCandidateId === candidate.candidateId ||
                                         !canApply(candidate)
@@ -251,8 +253,9 @@ export const AiCandidatePanel = ({
                                     onClick={() => apply(candidate)}
                                 >
                                     应用
-                                </Button>
-                                <Button
+                                </KuzhambuButton>
+                                <KuzhambuButton
+                                    name="拒绝"
                                     disabled={
                                         rejectingCandidateId === candidate.candidateId ||
                                         rejectMutation.isPending
@@ -260,7 +263,7 @@ export const AiCandidatePanel = ({
                                     onClick={() => reject(candidate)}
                                 >
                                     拒绝
-                                </Button>
+                                </KuzhambuButton>
                             </KuzhambuSpace>
                         </KuzhambuSpace>
                     </KuzhambuListItem>

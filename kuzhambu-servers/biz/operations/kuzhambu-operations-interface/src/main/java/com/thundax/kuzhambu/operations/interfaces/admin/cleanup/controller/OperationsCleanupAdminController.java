@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.operations.interfaces.admin.cleanup.controller;
 
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
@@ -15,6 +16,8 @@ import com.thundax.kuzhambu.operations.interfaces.admin.cleanup.controller.reque
 import com.thundax.kuzhambu.operations.interfaces.admin.cleanup.controller.response.OperationsCleanupDetailResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.cleanup.controller.response.OperationsCleanupExecuteResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.cleanup.controller.response.OperationsCleanupPageResponse;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -38,6 +41,13 @@ public class OperationsCleanupAdminController {
     @HasPermission("operations:cleanup:execute")
     @IgnoreSysLogger
     @PostMapping("execute")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public OperationsCleanupExecuteResponse execute(@Valid @RequestBody OperationsCleanupExecuteRequest request) {
         return OperationsCleanupInterfaceAssembler.toResponse(
                 cleanupApplicationService.execute(OperationsCleanupInterfaceAssembler.toCommand(request)));
@@ -47,6 +57,13 @@ public class OperationsCleanupAdminController {
     @HasPermission("operations:cleanup:view")
     @IgnoreSysLogger
     @PostMapping("page")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public PageResponse<OperationsCleanupPageResponse> page(@Valid @RequestBody OperationsCleanupPageRequest request) {
         return PageResponseHelper.fromPageResult(
                 cleanupApplicationService.page(
@@ -59,6 +76,13 @@ public class OperationsCleanupAdminController {
     @HasPermission("operations:cleanup:view")
     @IgnoreSysLogger
     @PostMapping("detail")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public OperationsCleanupDetailResponse detail(@Valid @RequestBody OperationsCleanupDetailRequest request) {
         return OperationsCleanupInterfaceAssembler.toDetailResponse(
                 cleanupApplicationService.detail(OperationsCleanupInterfaceAssembler.toQuery(request)));

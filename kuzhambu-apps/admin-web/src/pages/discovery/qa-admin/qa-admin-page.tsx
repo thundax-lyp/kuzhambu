@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Button, Card, Descriptions, Input, Table, Tag, Typography } from "antd";
+import { Card, Descriptions, Input, Table, Tag, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useState } from "react";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
@@ -10,6 +10,7 @@ import type {
     KnowledgeSyncItemRecord,
     ProviderTraceRecord
 } from "./qa-admin-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./qa-admin-page.css";
 
 const { Text, Title } = Typography;
@@ -192,7 +193,8 @@ export const QaAdminPage = () => {
             key: "action",
             width: 120,
             render: (_, record) => (
-                <Button
+                <KuzhambuButton
+                    name="同步"
                     loading={syncMutation.isPending}
                     onClick={() =>
                         syncMutation.mutate({
@@ -204,7 +206,7 @@ export const QaAdminPage = () => {
                     size="small"
                 >
                     同步
-                </Button>
+                </KuzhambuButton>
             )
         }
     ];
@@ -270,7 +272,7 @@ export const QaAdminPage = () => {
 
     return (
         <main className="kuzhambu-page discovery-admin-page qa-admin-page">
-            <section className="kuzhambu-page-panel">
+            <section>
                 <header className="kuzhambu-page-header">
                     <div>
                         <Text className="kuzhambu-page-eyebrow">Discovery / QA Admin</Text>
@@ -285,20 +287,22 @@ export const QaAdminPage = () => {
                     <Card title="知识库健康" size="small">
                         <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
                             <KuzhambuSpace wrap>
-                                <Button
+                                <KuzhambuButton
+                                    name="刷新健康"
                                     loading={healthQuery.isFetching}
                                     onClick={() => void healthQuery.refetch()}
                                     type="primary"
                                 >
                                     刷新健康
-                                </Button>
-                                <Button
+                                </KuzhambuButton>
+                                <KuzhambuButton
+                                    name="重建知识库"
                                     danger
                                     loading={rebuildMutation.isPending}
                                     onClick={() => rebuildMutation.mutate({})}
                                 >
                                     重建知识库
-                                </Button>
+                                </KuzhambuButton>
                             </KuzhambuSpace>
                             <Descriptions
                                 bordered
@@ -381,19 +385,21 @@ export const QaAdminPage = () => {
                                         style={{ width: 120 }}
                                     />
                                 </label>
-                                <Button
+                                <KuzhambuButton
+                                    name="查询同步"
                                     loading={syncPageMutation.isPending}
                                     onClick={loadSyncItems}
                                     type="primary"
                                 >
                                     查询同步
-                                </Button>
-                                <Button
+                                </KuzhambuButton>
+                                <KuzhambuButton
+                                    name="同步内容"
                                     loading={syncMutation.isPending}
                                     onClick={syncCurrentContent}
                                 >
                                     同步内容
-                                </Button>
+                                </KuzhambuButton>
                             </KuzhambuSpace>
                             <Table
                                 aria-label="知识同步表格"
@@ -438,7 +444,8 @@ export const QaAdminPage = () => {
                                     style={{ width: 180 }}
                                 />
                             </label>
-                            <Button
+                            <KuzhambuButton
+                                name="加载会话"
                                 loading={sessionMutation.isPending}
                                 onClick={() => {
                                     const nextSessionId = parseString(sessionId);
@@ -451,20 +458,22 @@ export const QaAdminPage = () => {
                                 type="primary"
                             >
                                 加载会话
-                            </Button>
-                            <Button
+                            </KuzhambuButton>
+                            <KuzhambuButton
+                                name="删除会话"
                                 danger
                                 loading={deleteSessionMutation.isPending}
                                 onClick={deleteCurrentSession}
                             >
                                 删除会话
-                            </Button>
-                            <Button
+                            </KuzhambuButton>
+                            <KuzhambuButton
+                                name="导出 CSV"
                                 loading={exportSessionMutation.isPending}
                                 onClick={exportCurrentSession}
                             >
                                 导出 CSV
-                            </Button>
+                            </KuzhambuButton>
                         </KuzhambuSpace>
 
                         {sessionOperationText ? (
@@ -567,7 +576,8 @@ export const QaAdminPage = () => {
                                     style={{ width: 220 }}
                                 />
                             </label>
-                            <Button
+                            <KuzhambuButton
+                                name="加载来源"
                                 loading={sourceMutation.isPending}
                                 onClick={() => {
                                     const nextMessageId = parseString(messageId);
@@ -580,7 +590,7 @@ export const QaAdminPage = () => {
                                 type="primary"
                             >
                                 加载来源
-                            </Button>
+                            </KuzhambuButton>
                         </KuzhambuSpace>
 
                         <KuzhambuSpace
@@ -624,7 +634,8 @@ export const QaAdminPage = () => {
                                     style={{ width: 220 }}
                                 />
                             </label>
-                            <Button
+                            <KuzhambuButton
+                                name="加载轨迹"
                                 loading={traceMutation.isPending}
                                 onClick={() => {
                                     const nextTraceId = parseString(traceId);
@@ -637,7 +648,7 @@ export const QaAdminPage = () => {
                                 type="primary"
                             >
                                 加载轨迹
-                            </Button>
+                            </KuzhambuButton>
                         </KuzhambuSpace>
 
                         <Descriptions
@@ -675,13 +686,14 @@ export const QaAdminPage = () => {
                                     children: (
                                         <KuzhambuSpace size={8}>
                                             <Text>{trace?.aiCallId ?? "-"}</Text>
-                                            <Button
+                                            <KuzhambuButton
+                                                name="复制"
                                                 disabled={!trace?.aiCallId}
                                                 onClick={copyAiCallId}
                                                 size="small"
                                             >
                                                 复制
-                                            </Button>
+                                            </KuzhambuButton>
                                         </KuzhambuSpace>
                                     )
                                 },

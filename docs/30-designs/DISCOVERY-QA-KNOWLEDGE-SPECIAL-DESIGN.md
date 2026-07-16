@@ -43,7 +43,7 @@ Classics content change -> Discovery Server -> kuzhambu-common-knowledge -> Know
 
 不进入问答：
 
-- 私有、未发布、已归档内容。
+- 私有、未发布、已下线内容。
 - 草稿、历史版本、导出任务、展示生成记录。
 - 图片、Storage 对象、排序、内部状态、主键、类型码等技术字段。
 - 未确认 AI 候选问答对。

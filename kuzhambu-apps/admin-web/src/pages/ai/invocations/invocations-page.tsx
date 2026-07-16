@@ -2,7 +2,6 @@ import { EyeOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
 import {
     App,
-    Button,
     Card,
     DatePicker,
     Descriptions,
@@ -27,6 +26,7 @@ import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from "@/types/p
 import * as service from "./invocations-service";
 import type { AiCallRecordPageQuery, AiInvocationSummaryQuery } from "./invocations-service";
 import type { AiCallRecord, AiTopCapabilityRecord } from "./invocations-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./invocations-page.css";
 
 const { RangePicker } = DatePicker;
@@ -311,9 +311,13 @@ export const InvocationsPage = () => {
         {
             key: "actions",
             render: (_, record) => (
-                <Button icon={<EyeOutlined />} onClick={() => setSelectedCall(record)}>
+                <KuzhambuButton
+                    name="详情"
+                    icon={<EyeOutlined />}
+                    onClick={() => setSelectedCall(record)}
+                >
                     详情
-                </Button>
+                </KuzhambuButton>
             )
         }
     ];
@@ -326,8 +330,8 @@ export const InvocationsPage = () => {
             description="查看调用指标、能力排行、调用记录和详情"
             actions={
                 <Tooltip title="刷新">
-                    <Button
-                        aria-label="刷新"
+                    <KuzhambuButton
+                        name="刷新"
                         icon={<ReloadOutlined />}
                         loading={summaryResult.isFetching || callsResult.isFetching}
                         onClick={() => {
@@ -379,9 +383,13 @@ export const InvocationsPage = () => {
                         />
                     </Form.Item>
                     <Form.Item>
-                        <Button type="primary" onClick={() => void refreshSummary()}>
+                        <KuzhambuButton
+                            name="刷新"
+                            type="primary"
+                            onClick={() => void refreshSummary()}
+                        >
                             刷新
-                        </Button>
+                        </KuzhambuButton>
                     </Form.Item>
                 </Form>
             </Card>
@@ -458,10 +466,16 @@ export const InvocationsPage = () => {
                     </Form.Item>
                     <Form.Item>
                         <KuzhambuSpace>
-                            <Button type="primary" onClick={() => void searchCalls()}>
+                            <KuzhambuButton
+                                name="查询"
+                                type="primary"
+                                onClick={() => void searchCalls()}
+                            >
                                 查询
-                            </Button>
-                            <Button onClick={resetCalls}>重置</Button>
+                            </KuzhambuButton>
+                            <KuzhambuButton name="重置" onClick={resetCalls}>
+                                重置
+                            </KuzhambuButton>
                         </KuzhambuSpace>
                     </Form.Item>
                 </Form>

@@ -1,7 +1,8 @@
-import { Button, Table, Tag } from "antd";
+import { Table, Tag } from "antd";
 import { KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
 import type { ColumnsType } from "antd/es/table";
 import type { RefinementRelationRecord } from "../refinement-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 interface RefinementRelationTableProps {
     canEdit?: boolean;
@@ -43,21 +44,35 @@ export const RefinementRelationTable = ({
             key: "actions",
             render: (_, relation) => (
                 <KuzhambuSpaceCompact>
-                    <Button disabled={!canEdit} onClick={() => onEdit(relation)}>
+                    <KuzhambuButton
+                        name="编辑"
+                        disabled={!canEdit}
+                        onClick={() => onEdit(relation)}
+                    >
                         编辑
-                    </Button>
-                    <Button
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="确认"
                         disabled={!canEdit || relation.confirmationStatus === "MANUAL_CONFIRMED"}
                         onClick={() => onConfirm(relation)}
                     >
                         确认
-                    </Button>
-                    <Button disabled={!canEdit} onClick={() => onAnnotate(relation)}>
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="标注"
+                        disabled={!canEdit}
+                        onClick={() => onAnnotate(relation)}
+                    >
                         标注
-                    </Button>
-                    <Button danger disabled={!canEdit} onClick={() => onDelete(relation)}>
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="删除"
+                        danger
+                        disabled={!canEdit}
+                        onClick={() => onDelete(relation)}
+                    >
                         删除
-                    </Button>
+                    </KuzhambuButton>
                 </KuzhambuSpaceCompact>
             )
         }
@@ -66,9 +81,9 @@ export const RefinementRelationTable = ({
     return (
         <>
             <div className="knowledge-refinement-section-actions">
-                <Button disabled={!canEdit} type="primary" onClick={onAdd}>
+                <KuzhambuButton name="新增关系" disabled={!canEdit} type="primary" onClick={onAdd}>
                     新增关系
-                </Button>
+                </KuzhambuButton>
             </div>
             <Table<RefinementRelationRecord>
                 aria-label="知识图谱精修关系表格"

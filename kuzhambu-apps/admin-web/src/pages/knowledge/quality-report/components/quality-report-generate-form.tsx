@@ -1,5 +1,6 @@
-import { Button, InputNumber } from "antd";
+import { InputNumber } from "antd";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 interface QualityReportGenerateFormProps {
     disabled?: boolean;
@@ -27,14 +28,15 @@ export const QualityReportGenerateForm = ({
                 value={graphVersionId}
                 onChange={onChange}
             />
-            <Button
+            <KuzhambuButton
+                name={String(submitLabel)}
                 disabled={disabled || !graphVersionId}
                 loading={loading}
                 type="primary"
                 onClick={onGenerate}
             >
                 {submitLabel}
-            </Button>
+            </KuzhambuButton>
         </KuzhambuSpace>
     );
 };

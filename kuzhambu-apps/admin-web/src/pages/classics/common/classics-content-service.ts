@@ -1,4 +1,4 @@
-import { getJson, postJson } from "@/api/http";
+import { postJson } from "@/api/http";
 import type { AiCandidateApplyPayload } from "./ai-candidate-types";
 import type {
     ClassicsBatchOperationRecord,
@@ -34,18 +34,13 @@ export type ClassicsAiCandidateBatchRejectCommand = {
     items: ClassicsAiCandidateBatchRejectItemPayload[];
 };
 
-const buildTagsListPath = ({ contentType, contentId }: ClassicsContentListQuery) => {
-    const search = new URLSearchParams({ contentType, contentId: String(contentId) }).toString();
-    return `${CLASSICS_CONTENT_PATH}/tags?${search}`;
-};
-
-const buildQaPairsListPath = ({ contentType, contentId }: ClassicsContentListQuery) => {
-    const search = new URLSearchParams({ contentType, contentId: String(contentId) }).toString();
-    return `${CLASSICS_CONTENT_PATH}/qa-pairs?${search}`;
-};
-
 export const listTags = (query: ClassicsContentListQuery) => {
-    return getJson<ClassicsContentTagRecord[]>(buildTagsListPath(query));
+    return postJson<ClassicsContentTagRecord[], ClassicsContentListQuery>(
+        `${CLASSICS_CONTENT_PATH}/tags/list`,
+        {
+            body: query
+        }
+    );
 };
 
 export const addTag = (request: ClassicsContentTagCommand) => {
@@ -82,7 +77,12 @@ export const sortTags = (request: ClassicsContentTagSortCommand) => {
 };
 
 export const listQaPairs = (query: ClassicsContentListQuery) => {
-    return getJson<ClassicsContentQaPairRecord[]>(buildQaPairsListPath(query));
+    return postJson<ClassicsContentQaPairRecord[], ClassicsContentListQuery>(
+        `${CLASSICS_CONTENT_PATH}/qa-pairs/list`,
+        {
+            body: query
+        }
+    );
 };
 
 export const addQaPair = (request: ClassicsContentQaPairCommand) => {

@@ -13,7 +13,6 @@ from kuzhambu_workers.render.artifact_store import RequestArtifactStore
 from kuzhambu_workers.render.browser_pool import BrowserPool
 from kuzhambu_workers.render.classics_export import RenderedArtifact, render_classics_export
 from kuzhambu_workers.render.operations_report import render_operations_report
-from kuzhambu_workers.render.sancai_showcase import render_sancai_showcase
 from kuzhambu_workers.schemas.common import (
     UsageSummary,
     WorkerErrorPayload,
@@ -36,9 +35,6 @@ router = APIRouter(prefix="/internal/render", tags=["Render"])
 CLASSICS_EXPORT_NOTICE = (
     "Classics 导出 usecase 接口。调用方必须先完成权限过滤、风险确认和内容快照准备。"
 )
-SANCAI_SHOWCASE_NOTICE = (
-    "三才图会静态展示 usecase 接口。调用方必须传入完整展示快照，workers 不回查业务数据。"
-)
 OPERATIONS_REPORT_NOTICE = "Operations 报表 usecase 接口。调用方必须传入已聚合的报表快照。"
 
 
@@ -50,16 +46,6 @@ OPERATIONS_REPORT_NOTICE = "Operations 报表 usecase 接口。调用方必须�
 )
 async def classics_export(request: Request) -> JSONResponse:
     return await _invoke(request, RenderType.CLASSICS_EXPORT)
-
-
-@router.post(
-    "/sancai-showcase",
-    response_model=None,
-    summary="Sancai showcase",
-    description=SANCAI_SHOWCASE_NOTICE,
-)
-async def sancai_showcase(request: Request) -> JSONResponse:
-    return await _invoke(request, RenderType.SANCAI_SHOWCASE)
 
 
 @router.post(
@@ -80,16 +66,6 @@ async def operations_report(request: Request) -> JSONResponse:
 )
 async def classics_export_stream(request: Request) -> StreamingResponse | JSONResponse:
     return await _stream(request, RenderType.CLASSICS_EXPORT)
-
-
-@router.post(
-    "/sancai-showcase/stream",
-    response_model=None,
-    summary="Sancai showcase stream",
-    description=SANCAI_SHOWCASE_NOTICE,
-)
-async def sancai_showcase_stream(request: Request) -> StreamingResponse | JSONResponse:
-    return await _stream(request, RenderType.SANCAI_SHOWCASE)
 
 
 @router.post(
@@ -257,8 +233,6 @@ def _verify(
 async def _render(request: RenderRequest, settings: WorkerSettings) -> RenderedArtifact:
     if request.renderType == RenderType.CLASSICS_EXPORT:
         return render_classics_export(request)
-    if request.renderType == RenderType.SANCAI_SHOWCASE:
-        return render_sancai_showcase(request)
     if request.renderType == RenderType.OPERATIONS_REPORT:
         if request.output.format == RenderOutputFormat.PDF:
             pool = BrowserPool(

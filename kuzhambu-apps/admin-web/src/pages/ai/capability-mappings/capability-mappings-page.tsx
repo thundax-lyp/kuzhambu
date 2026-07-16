@@ -1,6 +1,6 @@
 import { EditOutlined, PlusOutlined, ReloadOutlined, SaveOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Button, Card, Form, Select, Switch, Table, Tag, Tooltip } from "antd";
+import { Alert, App, Card, Form, Select, Switch, Table, Tag, Tooltip } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useEffect, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
@@ -17,6 +17,7 @@ import type {
     AiCapabilityModelRecord,
     AiCapabilityRecord
 } from "./capability-mappings-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./capability-mappings-page.css";
 
 type MappingFormValues = AiCapabilityMappingChangeCommand;
@@ -281,19 +282,21 @@ export const CapabilityMappingsPage = () => {
             key: "actions",
             render: (_, record) => (
                 <KuzhambuSpaceCompact>
-                    <Button
+                    <KuzhambuButton
+                        name="配置模型"
                         icon={<EditOutlined />}
                         disabled={!canEditConfig}
                         onClick={() => openEdit(record)}
                     >
                         配置模型
-                    </Button>
-                    <Button
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name={String(record.enabled ? "禁用" : "启用")}
                         disabled={!canEditConfig}
                         onClick={() => void changeEnabled(record, !record.enabled)}
                     >
                         {record.enabled ? "禁用" : "启用"}
-                    </Button>
+                    </KuzhambuButton>
                 </KuzhambuSpaceCompact>
             )
         }
@@ -308,8 +311,8 @@ export const CapabilityMappingsPage = () => {
             actions={
                 <KuzhambuSpace>
                     <Tooltip title="刷新">
-                        <Button
-                            aria-label="刷新"
+                        <KuzhambuButton
+                            name="刷新"
                             icon={<ReloadOutlined />}
                             loading={
                                 mappingsQuery.isFetching ||
@@ -319,14 +322,15 @@ export const CapabilityMappingsPage = () => {
                             onClick={() => void invalidateMappings()}
                         />
                     </Tooltip>
-                    <Button
+                    <KuzhambuButton
+                        name="新增映射"
                         type="primary"
                         icon={<PlusOutlined />}
                         disabled={!canEditConfig}
                         onClick={openCreate}
                     >
                         新增映射
-                    </Button>
+                    </KuzhambuButton>
                 </KuzhambuSpace>
             }
         >
@@ -378,7 +382,9 @@ export const CapabilityMappingsPage = () => {
                         />
                     </Form.Item>
                     <Form.Item>
-                        <Button onClick={() => setQuery({})}>重置</Button>
+                        <KuzhambuButton name="重置" onClick={() => setQuery({})}>
+                            重置
+                        </KuzhambuButton>
                     </Form.Item>
                 </Form>
             </Card>
@@ -404,8 +410,11 @@ export const CapabilityMappingsPage = () => {
                 onClose={() => setDrawerOpen(false)}
                 footer={
                     <KuzhambuSpace>
-                        <Button onClick={() => setDrawerOpen(false)}>取消</Button>
-                        <Button
+                        <KuzhambuButton name="取消" onClick={() => setDrawerOpen(false)}>
+                            取消
+                        </KuzhambuButton>
+                        <KuzhambuButton
+                            name="保存"
                             type="primary"
                             icon={<SaveOutlined />}
                             disabled={!canEditConfig}
@@ -413,7 +422,7 @@ export const CapabilityMappingsPage = () => {
                             onClick={() => void submitForm()}
                         >
                             保存
-                        </Button>
+                        </KuzhambuButton>
                     </KuzhambuSpace>
                 }
             >

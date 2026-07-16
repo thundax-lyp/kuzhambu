@@ -1,6 +1,7 @@
-import { Button, Table, Tag } from "antd";
+import { Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import type { QualityAnnotationRecord } from "../refinement-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 interface RefinementQualityAnnotationTableProps {
     annotations: QualityAnnotationRecord[];
@@ -39,7 +40,11 @@ export const RefinementQualityAnnotationTable = ({
         {
             title: "操作",
             key: "actions",
-            render: (_, annotation) => <Button onClick={() => onEdit(annotation)}>标注</Button>
+            render: (_, annotation) => (
+                <KuzhambuButton name="标注" onClick={() => onEdit(annotation)}>
+                    标注
+                </KuzhambuButton>
+            )
         }
     ];
 

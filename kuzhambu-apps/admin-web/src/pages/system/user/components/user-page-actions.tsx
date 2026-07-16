@@ -1,6 +1,7 @@
 import { FilterOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
-import { Button, Input } from "antd";
+import { Input } from "antd";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 interface UserPageActionsProps {
     canCreateUser: boolean;
@@ -36,21 +37,27 @@ export const UserPageActions = ({
             value={searchText}
             onChange={(event) => onSearch(event.target.value)}
         />
-        <Button
+        <KuzhambuButton
+            name="筛选"
             className={filterOpen || filterActive ? "user-page-filter-active" : ""}
             icon={<FilterOutlined />}
             aria-expanded={filterOpen}
             onClick={onToggleFilter}
         >
             筛选
-        </Button>
-        <Button icon={<ReloadOutlined />} loading={isRefreshing} onClick={onRefresh}>
+        </KuzhambuButton>
+        <KuzhambuButton
+            name="刷新"
+            icon={<ReloadOutlined />}
+            loading={isRefreshing}
+            onClick={onRefresh}
+        >
             刷新
-        </Button>
+        </KuzhambuButton>
         {canCreateUser ? (
-            <Button type="primary" icon={<PlusOutlined />} onClick={onCreate}>
+            <KuzhambuButton name="新增" type="primary" icon={<PlusOutlined />} onClick={onCreate}>
                 新增
-            </Button>
+            </KuzhambuButton>
         ) : null}
     </KuzhambuSpace>
 );

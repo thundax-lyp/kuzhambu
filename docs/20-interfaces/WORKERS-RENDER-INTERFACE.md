@@ -25,7 +25,6 @@ Render 接口是内部接口，只允许明确授权的 Java 业务域调用。
 | 服务名 | 允许路径 | 用途 |
 | --- | --- | --- |
 | `kuzhambu-classics` | `/internal/render/classics-export` | Classics 导出 |
-| `kuzhambu-classics` | `/internal/render/sancai-showcase` | 三才图会静态展示页 |
 | `kuzhambu-operations` | `/internal/render/operations-report` | Operations 报表 |
 
 访问控制分三层：
@@ -76,13 +75,11 @@ hex(hmac_sha256(internalWorkerSecret, signingInput))
 Render 接口：
 
 - `POST /internal/render/classics-export`
-- `POST /internal/render/sancai-showcase`
 - `POST /internal/render/operations-report`
 
 流式 render 接口：
 
 - `POST /internal/render/classics-export/stream`
-- `POST /internal/render/sancai-showcase/stream`
 - `POST /internal/render/operations-report/stream`
 
 同步接口适合小型文件。流式接口适合长时间 HTML、ZIP 或 PDF 生成进度展示，并通过 SSE `artifact` 事件分片传输大型产物。无论同步还是流式，最终业务落库都必须由 Java servers 以最终响应或 `completed` 事件为准。
@@ -249,7 +246,7 @@ data: {"eventId":"evt_0100","requestId":"req_20260601_000101","traceId":"trace_2
 
 `POST /internal/render/classics-export`
 
-用于 Classics 导出 CSV、JSON、HTML、ZIP 或静态展示所需文件包。
+用于 Classics 导出 CSV、JSON、HTML 或 ZIP 文件包。
 
 `renderType` 固定为 `CLASSICS_EXPORT`。
 
@@ -264,119 +261,9 @@ data: {"eventId":"evt_0100","requestId":"req_20260601_000101","traceId":"trace_2
 
 Workers 只负责生成文件内容和摘要，不负责导出记录状态、不创建 Storage 文件对象、不建立业务引用。
 
-## Sancai Showcase
+## Sancai Portal Display
 
-`POST /internal/render/sancai-showcase`
-
-用于生成三才图会静态展示页面。
-
-`renderType` 固定为 `SANCAI_SHOWCASE`。
-
-输入快照应包含：
-
-- 数据集元信息。
-- 目录结构。
-- 条目正文。
-- 图片或视觉资产引用的临时可读内容。
-- 是否包含私有内容的确认结果。
-
-`input.payload` 目标结构：
-
-```json
-{
-  "metadata": {
-    "title": "三才图会静态展示",
-    "generatedAt": "2026-07-08T10:00:00+08:00",
-    "generatedBy": "admin",
-    "templateVersion": "sancai-showcase-v1",
-    "locale": "zh-CN"
-  },
-  "scope": {
-    "scopeType": "FILTERED_RESULT",
-    "scopeTitle": "天地门公开条目",
-    "categoryIds": [1],
-    "volumeIds": [11],
-    "entryIds": [1001, 1002],
-    "filters": {
-      "keyword": "天地",
-      "lifecycleStatus": "PUBLISHED",
-      "visibility": "PUBLIC"
-    }
-  },
-  "visibilityRisk": {
-    "status": "PUBLIC_ONLY",
-    "privateConfirmed": false
-  },
-  "catalogs": [
-    {
-      "id": 1,
-      "title": "天地",
-      "entryCount": 2,
-      "imageEntryCount": 1,
-      "thumbnailResourceId": "asset-1001-original"
-    }
-  ],
-  "volumes": [
-    {
-      "id": 11,
-      "categoryId": 1,
-      "title": "卷一",
-      "priority": 1
-    }
-  ],
-  "entries": [
-    {
-      "id": 1001,
-      "categoryId": 1,
-      "volumeId": 11,
-      "title": "天地",
-      "originalText": "原文",
-      "translationText": "译文",
-      "tags": ["天文"],
-      "images": [
-        {
-          "resourceId": "asset-1001-original",
-          "imageType": "ORIGINAL",
-          "caption": "原图",
-          "currentUsed": false,
-          "priority": 1
-        }
-      ],
-      "visualAsset": {
-        "resourceId": "asset-1001-current",
-        "visualDescription": "视觉描述",
-        "currentUsed": true
-      }
-    }
-  ],
-  "assets": [
-    {
-      "resourceId": "asset-1001-original",
-      "temporaryUrl": "https://internal-temp-resource",
-      "filename": "1001.png",
-      "contentType": "image/png",
-      "sha256": "sha256:..."
-    }
-  ],
-  "options": {
-    "enableSearch": true,
-    "enableFilters": true,
-    "enableBrowseModeSwitch": true,
-    "offlineOpen": true,
-    "printable": true
-  }
-}
-```
-
-字段规则：
-
-- `catalogs` 是正式目录字段；`catalog` 仅作为旧测试输入兼容字段。
-- `entries[].images[].resourceId` 必须能在 `assets[].resourceId` 中找到对应资源；找不到时 worker 展示占位，不中断整页生成。
-- `assets[].temporaryUrl` 只允许作为本次渲染的临时可读资源，worker 读取后必须内联为 data URL，不得把临时 URL 写入 HTML。
-- `RenderSummary.metadata` 必须返回 `catalogCount`、`volumeCount`、`assetCount`、`visibilityRiskStatus`。
-- 成功产物固定为单个 HTML 文件，`contentType` 固定为 `text/html; charset=utf-8`。
-
-模板必须支持离线打开、浏览器打印和 PDF 生成。
+三才图会在线展示由 portal 读取 Classics 公开接口实时渲染，不通过 render workers 生成静态展示包。
 
 ## Operations Report
 
@@ -485,5 +372,5 @@ data: {"eventId":"evt_0002","requestId":"req_20260601_000101","traceId":"trace_2
 
 - [WORKERS-REQUIREMENTS.md](../10-requirements/WORKERS-REQUIREMENTS.md)：workers 无状态执行、render 能力和跨域边界。
 - [WORKERS-DESIGN.md](../30-designs/WORKERS-DESIGN.md)：workers 工程结构和 render 模块设计。
-- [CLASSICS-REQUIREMENTS.md](../10-requirements/CLASSICS-REQUIREMENTS.md)：Classics 导出、静态展示和分享边界。
+- [CLASSICS-REQUIREMENTS.md](../10-requirements/CLASSICS-REQUIREMENTS.md)：Classics 导出、portal 展示和分享边界。
 - [OPERATIONS-REQUIREMENTS.md](../10-requirements/OPERATIONS-REQUIREMENTS.md)：Operations 报表和运维统计边界。

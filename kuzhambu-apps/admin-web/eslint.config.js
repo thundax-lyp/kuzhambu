@@ -52,6 +52,7 @@ const SERVICE_METHOD_VERBS = [
 
 const ANTD_SPACE_DIRECT_IMPORT_ALLOWLIST = [];
 const ANTD_DRAWER_DIRECT_IMPORT_ALLOWLIST = ["/src/components/kuzhambu-drawer/kuzhambu-drawer.tsx"];
+const ANTD_MODAL_DIRECT_IMPORT_ALLOWLIST = ["/src/components/kuzhambu-modal/kuzhambu-modal.tsx"];
 
 const localRules = {
     rules: {
@@ -347,6 +348,94 @@ const localRules = {
                                 node: specifier,
                                 message:
                                     "ADMIN_WEB_UI_NO_ANTD_DRAWER_DIRECT: import Drawer from antd is forbidden; use KuzhambuDrawer from src/components/kuzhambu-drawer/."
+                            });
+                        });
+                    }
+                };
+            }
+        },
+        "no-antd-modal-direct-in-pages": {
+            create(context) {
+                const readNormalizedFilePath = () => {
+                    return context.physicalFilename.split(path.sep).join("/");
+                };
+
+                const isPageFile = (normalizedFilePath) => {
+                    return (
+                        normalizedFilePath.includes("/src/pages/") &&
+                        /\.(?:ts|tsx)$/.test(normalizedFilePath)
+                    );
+                };
+
+                const isAllowlistedDirectImportFile = (normalizedFilePath) => {
+                    return ANTD_MODAL_DIRECT_IMPORT_ALLOWLIST.some((suffix) =>
+                        normalizedFilePath.endsWith(suffix)
+                    );
+                };
+
+                return {
+                    ImportDeclaration(node) {
+                        const normalizedFilePath = readNormalizedFilePath();
+                        if (
+                            node.source.value !== "antd" ||
+                            !isPageFile(normalizedFilePath) ||
+                            isAllowlistedDirectImportFile(normalizedFilePath)
+                        ) {
+                            return;
+                        }
+
+                        node.specifiers.forEach((specifier) => {
+                            if (
+                                specifier.type !== "ImportSpecifier" ||
+                                specifier.imported.name !== "Modal"
+                            ) {
+                                return;
+                            }
+
+                            context.report({
+                                node: specifier,
+                                message:
+                                    "ADMIN_WEB_UI_NO_ANTD_MODAL_DIRECT_IN_PAGES: pages/**/*.{ts,tsx} must use KuzhambuModal from src/components/kuzhambu-modal/ instead of importing Modal from antd."
+                            });
+                        });
+                    }
+                };
+            }
+        },
+        "no-antd-button-direct-in-pages": {
+            create(context) {
+                const readNormalizedFilePath = () => {
+                    return context.physicalFilename.split(path.sep).join("/");
+                };
+
+                const isPageTsxFile = (normalizedFilePath) => {
+                    return (
+                        normalizedFilePath.includes("/src/pages/") &&
+                        normalizedFilePath.endsWith(".tsx")
+                    );
+                };
+
+                return {
+                    ImportDeclaration(node) {
+                        if (
+                            node.source.value !== "antd" ||
+                            !isPageTsxFile(readNormalizedFilePath())
+                        ) {
+                            return;
+                        }
+
+                        node.specifiers.forEach((specifier) => {
+                            if (
+                                specifier.type !== "ImportSpecifier" ||
+                                specifier.imported.name !== "Button"
+                            ) {
+                                return;
+                            }
+
+                            context.report({
+                                node: specifier,
+                                message:
+                                    "ADMIN_WEB_UI_NO_ANTD_BUTTON_DIRECT_IN_PAGES: pages/**/*.tsx must use KuzhambuButton from src/components/kuzhambu-button/ instead of importing Button from antd; set name to the stable getByRole accessible name."
                             });
                         });
                     }
@@ -1865,6 +1954,8 @@ export default tseslint.config(
             "local/no-explicit-any": "error",
             "local/no-antd-space-direct": "error",
             "local/no-antd-drawer-direct": "error",
+            "local/no-antd-modal-direct-in-pages": "error",
+            "local/no-antd-button-direct-in-pages": "error",
             "@typescript-eslint/no-explicit-any": "off",
             "local/confirm-hook-only": "error",
             "local/table-action-column-shape": "error",

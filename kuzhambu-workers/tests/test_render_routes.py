@@ -72,12 +72,12 @@ def test_render_stream_returns_progress_artifact_and_completed(monkeypatch, tmp_
     _configure(monkeypatch, "kuzhambu-classics")
     monkeypatch.setenv("KUZHAMBU_WORKER_TEMP_DIR", str(tmp_path))
     monkeypatch.setenv("KUZHAMBU_WORKER_ARTIFACT_CHUNK_BYTES", "16")
-    body = _body("SANCAI_SHOWCASE", "HTML", stream=True)
+    body = _body("CLASSICS_EXPORT", "ZIP", stream=True)
 
     response = TestClient(app).post(
-        "/internal/render/sancai-showcase/stream",
+        "/internal/render/classics-export/stream",
         content=body,
-        headers=_headers(body, "/internal/render/sancai-showcase/stream", "kuzhambu-classics"),
+        headers=_headers(body, "/internal/render/classics-export/stream", "kuzhambu-classics"),
     )
 
     assert response.status_code == 200
@@ -107,7 +107,7 @@ def test_render_route_rejects_forbidden_service(monkeypatch) -> None:
 
 def test_render_route_rejects_type_path_mismatch(monkeypatch) -> None:
     _configure(monkeypatch, "kuzhambu-classics")
-    body = _body("SANCAI_SHOWCASE", "HTML", stream=False)
+    body = _body("OPERATIONS_REPORT", "HTML", stream=False)
 
     response = TestClient(app).post(
         "/internal/render/classics-export",

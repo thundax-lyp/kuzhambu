@@ -1,0 +1,47 @@
+{
+  "templateId": 930103,
+  "promptVersionId": 940103,
+  "variableIdStart": 960401,
+  "scope": "classics",
+  "capability": "qa",
+  "suite": "classics-default-v1",
+  "name": "Classics Default QA",
+  "description": "古籍内容默认问答生成提示词。",
+  "status": "ACTIVE",
+  "versionNo": 1,
+  "current": true,
+  "variables": [
+    {
+      "name": "title",
+      "required": false,
+      "description": "标题",
+      "priority": 960401
+    },
+    {
+      "name": "document",
+      "required": true,
+      "description": "用于生成问答的内容",
+      "priority": 960402
+    }
+  ],
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "qa_pairs": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "question": { "type": "string" },
+            "answer": { "type": "string" }
+          },
+          "required": ["question", "answer"]
+        },
+        "minItems": 3,
+        "maxItems": 5
+      }
+    },
+    "required": ["qa_pairs"]
+  },
+  "changeSummary": "Initial classics default QA prompt."
+}

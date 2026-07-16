@@ -1,11 +1,12 @@
 import { CheckOutlined, CloseOutlined, ReloadOutlined } from "@ant-design/icons";
-import { Button, Typography } from "antd";
+import { Typography } from "antd";
 import type { Key } from "react";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { TagRecord, TagReviewPageQuery } from "../taxonomy-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 
@@ -93,14 +94,14 @@ export const TagReviewTable = ({
             width: DEFAULT_COLUMN_WIDTHS.name,
             ellipsis: true,
             render: (name: string, tag) => (
-                <Button
+                <KuzhambuButton
+                    name={String(`查看待审核标签 ${name || tag.id}`)}
                     type="link"
                     className="knowledge-taxonomy-tag-review-trigger"
-                    aria-label={`查看待审核标签 ${name || tag.id}`}
                     onClick={() => onOpenReview(tag)}
                 >
                     {name}
-                </Button>
+                </KuzhambuButton>
             )
         },
         {
@@ -155,27 +156,29 @@ export const TagReviewTable = ({
                 })
             }
             pageActions={
-                <Button icon={<ReloadOutlined />} onClick={onRefresh}>
+                <KuzhambuButton name="刷新" icon={<ReloadOutlined />} onClick={onRefresh}>
                     刷新
-                </Button>
+                </KuzhambuButton>
             }
             batchActions={
                 <>
-                    <Button
+                    <KuzhambuButton
+                        name="批量通过"
                         icon={<CheckOutlined />}
                         disabled={selectedRowKeys.length < 1}
                         onClick={onBatchApprove}
                     >
                         批量通过
-                    </Button>
-                    <Button
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="批量拒绝"
                         danger
                         icon={<CloseOutlined />}
                         disabled={selectedRowKeys.length < 1}
                         onClick={onBatchReject}
                     >
                         批量拒绝
-                    </Button>
+                    </KuzhambuButton>
                 </>
             }
             selectedCount={selectedRowKeys.length}

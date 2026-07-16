@@ -1,5 +1,5 @@
 import { DeleteOutlined, MergeCellsOutlined, ReloadOutlined } from "@ant-design/icons";
-import { Button, Typography } from "antd";
+import { Typography } from "antd";
 import type { Key } from "react";
 import type { ReactNode } from "react";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
@@ -9,6 +9,7 @@ import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { TagStatusCommand } from "../taxonomy-service";
 import type { TagPageQuery, TagRecord } from "../taxonomy-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 
@@ -129,14 +130,14 @@ export const TagTable = ({
             width: DEFAULT_COLUMN_WIDTHS.name,
             ellipsis: true,
             render: (name: string, tag) => (
-                <Button
+                <KuzhambuButton
+                    name={String(`查看统一标签 ${name || tag.id} 详情`)}
                     type="link"
                     className="knowledge-taxonomy-tag-detail-trigger"
-                    aria-label={`查看统一标签 ${name || tag.id} 详情`}
                     onClick={() => onOpenDetail(tag)}
                 >
                     {name}
-                </Button>
+                </KuzhambuButton>
             )
         },
         {
@@ -233,29 +234,31 @@ export const TagTable = ({
             pageActions={
                 <>
                     {pageActions}
-                    <Button icon={<ReloadOutlined />} onClick={onRefresh}>
+                    <KuzhambuButton name="刷新" icon={<ReloadOutlined />} onClick={onRefresh}>
                         刷新
-                    </Button>
+                    </KuzhambuButton>
                 </>
             }
             batchActions={
                 canEditTag ? (
                     <>
-                        <Button
+                        <KuzhambuButton
+                            name="批量合并"
                             icon={<MergeCellsOutlined />}
                             disabled={selectedRowKeys.length < 2}
                             onClick={onBatchMerge}
                         >
                             批量合并
-                        </Button>
-                        <Button
+                        </KuzhambuButton>
+                        <KuzhambuButton
+                            name="批量废弃"
                             danger
                             icon={<DeleteOutlined />}
                             disabled={selectedRowKeys.length < 1}
                             onClick={onBatchDeprecate}
                         >
                             批量废弃
-                        </Button>
+                        </KuzhambuButton>
                     </>
                 ) : null
             }

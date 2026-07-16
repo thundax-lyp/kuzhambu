@@ -1,16 +1,18 @@
+import { UploadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Button, Card, Empty, Input, Switch, Tag, Typography, Upload } from "antd";
+import { Alert, App, Badge, Card, Empty, Image, Typography, Upload } from "antd";
 import { useCallback, useMemo, useRef, useState } from "react";
+import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
+import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
+import { KuzhambuTable } from "@/components/kuzhambu-table";
+import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import { hasPermission } from "@/auth/permission-storage";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import * as shareService from "@/pages/classics/common/classics-share-service";
 import * as currentUserService from "@/service/current-user-service";
 import { ClassicsExportJobSection } from "@/pages/classics/common/components/classics-export-job-section";
-import { ClassicsShowcaseJobSection } from "@/pages/classics/common/components/classics-showcase-job-section";
 import type { ClassicsExportJobRecord } from "@/pages/classics/common/classics-export-types";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import { AiRefinementStreamPanel } from "@/pages/classics/common/components/ai-refinement-stream-panel";
@@ -18,7 +20,6 @@ import { ClassicsContentQaPanel } from "@/pages/classics/common/components/class
 import { ClassicsContentTagPanel } from "@/pages/classics/common/components/classics-content-tag-panel";
 import { AiCandidateBatchDrawer } from "@/pages/classics/common/components/ai-candidate-batch-drawer";
 import { hasClassicsContentPermission } from "@/pages/classics/common/classics-content-types";
-import { SancaiEntryImagePreview } from "./sancai-entry-image-preview";
 import { SancaiEntryList } from "./sancai-entry-list";
 import { SancaiEntryModel } from "./sancai-entry-model";
 import type { SancaiEntryFormValues } from "./sancai-form-values";
@@ -30,15 +31,14 @@ import type {
     SancaiContentVersionRecord,
     SancaiEntryImageRecord,
     SancaiEntryRecord,
-    SancaiShowcaseRecord,
     SancaiVisualAssetRecord,
     SancaiVolumeRecord
 } from "../sancai-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 
 const EXPORT_PAGE_SIZE = 8;
-const SHOWCASE_PAGE_SIZE = 8;
 const TASK_POLL_INTERVAL_MS = 3000;
 const IMAGE_ACCEPT = ".jpg,.jpeg,.png,.gif,.webp";
 
@@ -72,28 +72,45 @@ const formatImageSize = (size?: number | null) => {
     return `${(size / 1024 / 1024).toFixed(1)} MB`;
 };
 
+const resolveImagePreviewUrl = (entryId: number | null, image: SancaiEntryImageRecord) => {
+    if (!entryId || !image.id) {
+        return undefined;
+    }
+    return toAuthenticatedResourceUrl(
+        entryService.getImageContentUrl({
+            entryId,
+            imageId: image.id,
+            mode: "preview"
+        })
+    );
+};
+
 interface SancaiEntryPanelProps {
     categories?: SancaiCategoryRecord[];
     categoryId: number | null;
     defaultCreateOpen?: boolean;
+    exportJobsDrawerOpen?: boolean;
     isCatalogLoading: boolean;
     keyword?: string | null;
     lifecycleStatus?: string | null;
     refreshVersion: number;
     volumeId: number | null;
     volumes: SancaiVolumeRecord[];
+    onExportJobsDrawerOpenChange?: (open: boolean) => void;
 }
 
 export const SancaiEntryPanel = ({
     categories = [],
     categoryId,
     defaultCreateOpen = false,
+    exportJobsDrawerOpen,
     isCatalogLoading,
     keyword,
     lifecycleStatus,
     refreshVersion,
     volumeId,
-    volumes
+    volumes,
+    onExportJobsDrawerOpenChange
 }: SancaiEntryPanelProps) => {
     const { message: messageApi, modal: modalApi } = App.useApp();
     const confirm = useKuzhambuConfirm();
@@ -102,15 +119,12 @@ export const SancaiEntryPanel = ({
     const [isModelOpen, setIsModelOpen] = useState(defaultCreateOpen);
     const [editingEntry, setEditingEntry] = useState<SancaiEntryRecord | null>(null);
     const [selectedVersionId, setSelectedVersionId] = useState<number | null>(null);
-    const [previewImageId, setPreviewImageId] = useState<number | null>(null);
     const [batchCandidateContentIds, setBatchCandidateContentIds] = useState<number[]>([]);
     const [batchCandidateTitleById, setBatchCandidateTitleById] = useState<Record<number, string>>(
         {}
     );
     const [batchCandidateDrawerOpen, setBatchCandidateDrawerOpen] = useState(false);
-    const [imageUploadTitle, setImageUploadTitle] = useState("");
-    const [imageUploadType, setImageUploadType] = useState("ORIGINAL");
-    const [imageUploadCurrentUsed, setImageUploadCurrentUsed] = useState(true);
+    const [internalExportJobsDrawerOpen, setInternalExportJobsDrawerOpen] = useState(false);
     const candidatePanelRef = useRef<HTMLDivElement | null>(null);
     const tagPanelRef = useRef<HTMLDivElement | null>(null);
     const categoryOptions = useMemo(
@@ -242,15 +256,6 @@ export const SancaiEntryPanel = ({
         retry: false
     });
     const exportJobs = exportsQuery.data?.records || [];
-    const showcasesQuery = useQuery({
-        queryKey: ["classics", "sancai", "showcases", "jobs"],
-        queryFn: () =>
-            entryService.pageShowcases({
-                pageNo: 1,
-                pageSize: SHOWCASE_PAGE_SIZE
-            }),
-        retry: false
-    });
     let modelKey = "empty";
     if (isCreating) {
         modelKey = "create";
@@ -314,7 +319,6 @@ export const SancaiEntryPanel = ({
         streamEvents,
         isStreamingRefinementTask,
         streamErrorText,
-        entryTagNames,
         creatingRefinementCapability,
         retryingRefinementTaskId,
         invalidateSancaiContentGovernance,
@@ -338,11 +342,6 @@ export const SancaiEntryPanel = ({
     const invalidateExportJobs = async () => {
         await queryClient.invalidateQueries({
             queryKey: ["classics", "sancai", "exports", "jobs"]
-        });
-    };
-    const invalidateShowcaseJobs = async () => {
-        await queryClient.invalidateQueries({
-            queryKey: ["classics", "sancai", "showcases", "jobs"]
         });
     };
     const invalidateEntryImages = async () => {
@@ -487,7 +486,7 @@ export const SancaiEntryPanel = ({
         },
         onSuccess: async () => {
             await invalidateExportJobs();
-            messageApi.success("导出任务已提交，请到下方任务列表查看进度。");
+            messageApi.success("导出任务已提交，请到任务抽屉查看进度。");
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "导出提交失败");
@@ -503,70 +502,34 @@ export const SancaiEntryPanel = ({
             messageApi.error(error instanceof Error ? error.message : "导出记录删除失败");
         }
     });
-    const showcaseEntryMutation = useMutation({
-        mutationFn: (entry: SancaiEntryRecord) => {
-            const title = `${readEntryTitle(entry)} 静态展示`;
-            return entryService.requestShowcase({
-                scopeTitle: title,
-                scopeJson: JSON.stringify({
-                    title,
-                    entries: [
-                        {
-                            id: entry.id,
-                            title: entry.title,
-                            volumeId: entry.volumeId
-                        }
-                    ]
-                }),
-                visibilityRiskStatus: "PUBLIC_ONLY"
-            });
-        },
-        onSuccess: async () => {
-            await invalidateShowcaseJobs();
-            messageApi.success("三才静态展示任务已提交，请到下方任务列表查看进度。");
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "静态展示提交失败");
-        }
-    });
-    const deleteShowcaseMutation = useMutation({
-        mutationFn: entryService.deleteShowcase,
-        onSuccess: async () => {
-            await invalidateShowcaseJobs();
-            messageApi.success("静态展示记录已删除");
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "静态展示记录删除失败");
-        }
-    });
     const updateVisualAssetMutation = useMutation({
         mutationFn: entryService.updateVisualAsset,
         onSuccess: async () => {
             await Promise.all([refreshSancaiEntryDetail(), invalidateEntries()]);
-            messageApi.success("三才视觉资产已保存");
+            messageApi.success("三才视觉处理已采纳");
         },
         onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "视觉资产保存失败");
+            messageApi.error(error instanceof Error ? error.message : "视觉处理采纳失败");
         }
     });
     const changeCurrentVisualAssetMutation = useMutation({
         mutationFn: entryService.changeCurrentVisualAsset,
         onSuccess: async () => {
             await Promise.all([refreshSancaiEntryDetail(), invalidateEntries()]);
-            messageApi.success("当前视觉资产版本已切换");
+            messageApi.success("当前视觉处理版本已切换");
         },
         onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "视觉资产切换失败");
+            messageApi.error(error instanceof Error ? error.message : "视觉处理切换失败");
         }
     });
     const changeCurrentImageMutation = useMutation({
         mutationFn: entryService.changeCurrentImage,
         onSuccess: async () => {
             await invalidateEntryImages();
-            messageApi.success("当前配图已切换");
+            messageApi.success("封面图已切换");
         },
         onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "配图切换失败");
+            messageApi.error(error instanceof Error ? error.message : "封面图切换失败");
         }
     });
     const uploadImageMutation = useMutation({
@@ -575,40 +538,39 @@ export const SancaiEntryPanel = ({
                 throw new Error("请先选择条目");
             }
             return entryService.uploadImage({
-                currentUsed: imageUploadCurrentUsed,
+                currentUsed: false,
                 entryId: selectedEntryId,
                 file,
-                imageType: imageUploadType,
-                title: imageUploadTitle.trim() || file.name
+                imageType: "ORIGINAL",
+                title: file.name
             });
         },
         onSuccess: async () => {
-            setImageUploadTitle("");
             await invalidateEntryImages();
-            messageApi.success("配图已上传");
+            messageApi.success("图片已上传");
         },
         onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "配图上传失败");
+            messageApi.error(error instanceof Error ? error.message : "图片上传失败");
         }
     });
     const sortImagesMutation = useMutation({
         mutationFn: entryService.sortImages,
         onSuccess: async () => {
             await invalidateEntryImages();
-            messageApi.success("配图顺序已保存");
+            messageApi.success("图片顺序已保存");
         },
         onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "配图排序失败");
+            messageApi.error(error instanceof Error ? error.message : "图片排序失败");
         }
     });
     const deleteImageMutation = useMutation({
         mutationFn: entryService.deleteImage,
         onSuccess: async () => {
             await invalidateEntryImages();
-            messageApi.success("配图已删除");
+            messageApi.success("图片已删除");
         },
         onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "配图删除失败");
+            messageApi.error(error instanceof Error ? error.message : "图片删除失败");
         }
     });
 
@@ -626,7 +588,6 @@ export const SancaiEntryPanel = ({
         setSelectedVisualAsset(null);
         setEditingEntry(null);
         setSelectedVersionId(null);
-        setPreviewImageId(null);
         resetHandledSucceededTaskIds();
         setIsModelOpen(false);
     };
@@ -717,12 +678,6 @@ export const SancaiEntryPanel = ({
     const exportEntry = (entry: SancaiEntryRecord) => {
         exportEntryMutation.mutate(entry);
     };
-    const showcaseEntry = (entry: SancaiEntryRecord) => {
-        if (!entry.id) {
-            return;
-        }
-        showcaseEntryMutation.mutate(entry);
-    };
     const deleteExportJob = (job: ClassicsExportJobRecord) => {
         if (!job.id) {
             return;
@@ -753,45 +708,6 @@ export const SancaiEntryPanel = ({
             }
         });
     };
-    const deleteShowcaseJob = (job: SancaiShowcaseRecord) => {
-        if (!job.id) {
-            return;
-        }
-        confirm.danger({
-            title: "删除静态展示记录",
-            message: `确认删除静态展示任务 #${job.id}？`,
-            description:
-                "删除后该记录会从列表移除，并释放静态展示产物引用；已无引用的文件对象会进入 Storage 删除流程。",
-            okText: "删除",
-            onConfirm: () => deleteShowcaseMutation.mutateAsync(job.id as number)
-        });
-    };
-    const deleteShowcaseJobs = (jobs: SancaiShowcaseRecord[]) => {
-        const ids = jobs.map((job) => job.id).filter((id): id is number => id != null);
-        if (!ids.length) {
-            return;
-        }
-        confirm.danger({
-            title: "批量删除静态展示记录",
-            message: `确认删除 ${ids.length} 条静态展示记录？`,
-            description:
-                "批量删除逐条释放静态展示产物引用；单条仍被其他业务引用的文件不会被强制删除。",
-            okText: "删除",
-            onConfirm: async () => {
-                await Promise.all(ids.map((id) => entryService.deleteShowcase(id)));
-                await invalidateShowcaseJobs();
-                messageApi.success(`已删除 ${ids.length} 条静态展示记录`);
-            }
-        });
-    };
-    const editEntryTags = () => {
-        tagPanelRef.current?.scrollIntoView({
-            block: "start",
-            behavior: "smooth"
-        });
-        tagPanelRef.current?.focus();
-    };
-
     const resetVersion = (version: SancaiContentVersionRecord) => {
         if (!selectedEntry?.id) {
             return;
@@ -836,9 +752,6 @@ export const SancaiEntryPanel = ({
             visualAssetId
         });
     };
-    const previewImage = (image: SancaiEntryImageRecord) => {
-        setPreviewImageId(image.id);
-    };
     const downloadImage = (image: SancaiEntryImageRecord) => {
         if (!selectedEntryId) {
             return;
@@ -868,9 +781,11 @@ export const SancaiEntryPanel = ({
         }
         const title = readImageTitle(image);
         confirm.danger({
-            title: "删除三才图会配图",
+            title: "删除三才图会图片",
             message: `确认删除 ${title}？`,
-            description: "删除后当前条目的配图列表会立即刷新；若删除当前图，系统会自动补位。",
+            description: image.currentUsed
+                ? "删除当前封面图后，系统会按剩余排序第一张自动设为封面图。"
+                : "删除后当前条目的图片列表会立即刷新。",
             okText: "删除",
             onConfirm: () =>
                 deleteImageMutation.mutateAsync({
@@ -879,23 +794,25 @@ export const SancaiEntryPanel = ({
                 })
         });
     };
-    const moveImage = (image: SancaiEntryImageRecord, direction: "up" | "down") => {
+    const sortImage = (
+        sourceImage: SancaiEntryImageRecord,
+        targetImage: SancaiEntryImageRecord,
+        position: KuzhambuTableSortPosition
+    ) => {
         if (!selectedEntryId) {
             return;
         }
-        const currentIndex = entryImages.findIndex((item) => item.id === image.id);
-        if (currentIndex < 0) {
+        if (sourceImage.id === targetImage.id) {
             return;
         }
-        const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
-        if (targetIndex < 0 || targetIndex >= entryImages.length) {
+        const remainingImages = entryImages.filter((image) => image.id !== sourceImage.id);
+        const targetIndex = remainingImages.findIndex((image) => image.id === targetImage.id);
+        if (targetIndex < 0) {
             return;
         }
-        const nextImages = [...entryImages];
-        [nextImages[currentIndex], nextImages[targetIndex]] = [
-            nextImages[targetIndex],
-            nextImages[currentIndex]
-        ];
+        const insertIndex = position === "before" ? targetIndex : targetIndex + 1;
+        const nextImages = [...remainingImages];
+        nextImages.splice(insertIndex, 0, sourceImage);
         sortImagesMutation.mutate({
             entryId: selectedEntryId,
             orderedIds: nextImages.map((item) => item.id),
@@ -924,6 +841,9 @@ export const SancaiEntryPanel = ({
             sortDirection: "ASC"
         });
     };
+    const isExportJobsDrawerOpen = exportJobsDrawerOpen ?? internalExportJobsDrawerOpen;
+    const setExportJobsOpen = onExportJobsDrawerOpenChange ?? setInternalExportJobsDrawerOpen;
+
     return (
         <>
             {entriesQuery.isError ? (
@@ -935,66 +855,6 @@ export const SancaiEntryPanel = ({
                     description="请确认后台条目接口可用后刷新页面。"
                 />
             ) : null}
-            {showcasesQuery.isError ? (
-                <Alert
-                    className="sancai-alert"
-                    type="warning"
-                    showIcon
-                    title="静态展示任务列表加载失败"
-                    description="请确认后台静态展示任务接口可用后刷新页面。"
-                />
-            ) : null}
-            {exportsQuery.isError ? (
-                <Alert
-                    className="sancai-alert"
-                    type="warning"
-                    showIcon
-                    title="导出任务列表加载失败"
-                    description="请确认后台导出任务接口可用后刷新页面。"
-                />
-            ) : null}
-            <ClassicsExportJobSection
-                items={exportJobs}
-                loading={
-                    exportsQuery.isLoading ||
-                    exportEntryMutation.isPending ||
-                    deleteExportMutation.isPending
-                }
-                onDownload={(job) => {
-                    if (job.downloadUrl) {
-                        window.open(job.downloadUrl, "_blank", "noopener,noreferrer");
-                    }
-                }}
-                onDelete={canManageGeneratedArtifacts ? deleteExportJob : undefined}
-                onBatchDelete={canManageGeneratedArtifacts ? deleteExportJobs : undefined}
-                onRefresh={() => {
-                    void invalidateExportJobs();
-                }}
-            />
-            <ClassicsShowcaseJobSection
-                filtersVisible={false}
-                page={showcasesQuery.data}
-                onPreview={(job) => {
-                    if (job.contentUrl) {
-                        window.open(job.contentUrl, "_blank", "noopener,noreferrer");
-                    }
-                }}
-                loading={
-                    showcasesQuery.isLoading ||
-                    showcaseEntryMutation.isPending ||
-                    deleteShowcaseMutation.isPending
-                }
-                onDownload={(job) => {
-                    if (job.downloadUrl) {
-                        window.open(job.downloadUrl, "_blank", "noopener,noreferrer");
-                    }
-                }}
-                onDelete={canManageGeneratedArtifacts ? deleteShowcaseJob : undefined}
-                onBatchDelete={canManageGeneratedArtifacts ? deleteShowcaseJobs : undefined}
-                onRefresh={() => {
-                    void invalidateShowcaseJobs();
-                }}
-            />
             <SancaiEntryList
                 entries={entries}
                 isLoading={isLoading || sortEntryMutation.isPending}
@@ -1002,12 +862,59 @@ export const SancaiEntryPanel = ({
                 onChangeLifecycleStatus={changeLifecycleStatus}
                 onDelete={deleteEntry}
                 onExport={exportEntry}
-                onShowcase={showcaseEntry}
+                onRefresh={() => {
+                    void entriesQuery.refetch();
+                }}
                 onShare={shareEntry}
                 onBatchCandidateGovernance={openBatchCandidateDrawer}
                 onSort={sortEntry}
                 onView={selectEntry}
             />
+            <KuzhambuDrawer
+                destroyOnClose={false}
+                open={isExportJobsDrawerOpen}
+                size="large"
+                title="导出任务"
+                footer={
+                    <KuzhambuButton
+                        name="关闭"
+                        type="primary"
+                        onClick={() => setExportJobsOpen(false)}
+                    >
+                        关闭
+                    </KuzhambuButton>
+                }
+                onClose={() => setExportJobsOpen(false)}
+            >
+                {exportsQuery.isError ? (
+                    <Alert
+                        className="sancai-alert"
+                        type="warning"
+                        showIcon
+                        title="导出任务列表加载失败"
+                        description="请确认后台导出任务接口可用后刷新页面。"
+                    />
+                ) : null}
+                <ClassicsExportJobSection
+                    items={exportJobs}
+                    loading={
+                        exportsQuery.isLoading ||
+                        exportEntryMutation.isPending ||
+                        deleteExportMutation.isPending
+                    }
+                    sectionTitle="任务列表"
+                    onDownload={(job) => {
+                        if (job.downloadUrl) {
+                            window.open(job.downloadUrl, "_blank", "noopener,noreferrer");
+                        }
+                    }}
+                    onDelete={canManageGeneratedArtifacts ? deleteExportJob : undefined}
+                    onBatchDelete={canManageGeneratedArtifacts ? deleteExportJobs : undefined}
+                    onRefresh={() => {
+                        void invalidateExportJobs();
+                    }}
+                />
+            </KuzhambuDrawer>
             <AiCandidateBatchDrawer
                 contentIds={batchCandidateContentIds}
                 capabilities={[
@@ -1031,11 +938,7 @@ export const SancaiEntryPanel = ({
                 key={modelKey}
                 categoryOptions={categoryOptions}
                 entry={selectedEntry}
-                entryTags={
-                    selectedEntry?.tags?.map((tag) => tag.tagNameSnapshot || "") ?? entryTagNames
-                }
                 isSubmitting={addEntryMutation.isPending || updateEntryMutation.isPending}
-                isSwitchingVisualAsset={changeCurrentVisualAssetMutation.isPending}
                 isUpdatingVisualAsset={updateVisualAssetMutation.isPending}
                 initialCategoryId={categoryId}
                 initialVolumeId={volumeId}
@@ -1043,7 +946,6 @@ export const SancaiEntryPanel = ({
                 open={isModelOpen && !isLoading}
                 volumes={volumes}
                 onCancel={closeModel}
-                onEditTags={editEntryTags}
                 onSubmit={submitEntry}
                 onUseVisualAsset={switchVisualAsset}
                 onUpdateVisualAsset={updateVisualAsset}
@@ -1051,6 +953,9 @@ export const SancaiEntryPanel = ({
                 onCreateVisualAssetTask={(capability, asset) => {
                     createRefinementTask(capability, asset);
                 }}
+                onCreateTranslationTask={() => createRefinementTask("translate")}
+                isCreatingTranslationTask={creatingRefinementCapability === "translate"}
+                translationTasks={refinementTasks.filter((task) => task.capability === "translate")}
                 creatingVisualAssetCapability={
                     creatingRefinementCapability === "image_analysis" ||
                     creatingRefinementCapability === "fusion" ||
@@ -1059,184 +964,159 @@ export const SancaiEntryPanel = ({
                         ? creatingRefinementCapability
                         : null
                 }
-                afterForm={
+                qaContent={
+                    !isCreating && selectedEntry ? (
+                        <ClassicsContentQaPanel
+                            contentId={selectedEntry.id}
+                            contentType="SANCAI_ENTRY"
+                            panelTitle="三才图会问答对治理"
+                            onChanged={invalidateSancaiContentGovernance}
+                        />
+                    ) : null
+                }
+                imageContent={
+                    !isCreating && selectedEntry ? (
+                        <div
+                            className="sancai-entry-image-manager"
+                            aria-label="三才图会图片管理"
+                            aria-busy={imagesQuery.isLoading}
+                        >
+                            <div className="sancai-entry-image-toolbar">
+                                <Upload
+                                    aria-label="上传图片"
+                                    accept={IMAGE_ACCEPT}
+                                    showUploadList={false}
+                                    beforeUpload={(file) => {
+                                        uploadImageMutation.mutate(file);
+                                        return Upload.LIST_IGNORE;
+                                    }}
+                                >
+                                    <KuzhambuButton
+                                        name="上传图片"
+                                        icon={<UploadOutlined />}
+                                        loading={uploadImageMutation.isPending}
+                                        type="primary"
+                                    >
+                                        上传图片
+                                    </KuzhambuButton>
+                                </Upload>
+                            </div>
+                            {entryImages.length > 0 ? (
+                                <Image.PreviewGroup>
+                                    <KuzhambuTable
+                                        className="sancai-image-table"
+                                        ariaLabel="三才图会图片列表"
+                                        columns={
+                                            [
+                                                {
+                                                    title: "图片",
+                                                    key: "image",
+                                                    render: (_, image) => {
+                                                        const imageTitle = readImageTitle(image);
+                                                        const thumbnail = (
+                                                            <Image
+                                                                className={
+                                                                    image.currentUsed
+                                                                        ? "sancai-entry-image-cover-thumbnail"
+                                                                        : undefined
+                                                                }
+                                                                width={132}
+                                                                height={88}
+                                                                src={resolveImagePreviewUrl(
+                                                                    selectedEntryId,
+                                                                    image
+                                                                )}
+                                                                alt={imageTitle}
+                                                            />
+                                                        );
+                                                        return (
+                                                            <div className="sancai-entry-image-cell">
+                                                                {image.currentUsed ? (
+                                                                    <span className="sancai-entry-image-cover">
+                                                                        <Badge.Ribbon text="封面">
+                                                                            {thumbnail}
+                                                                        </Badge.Ribbon>
+                                                                    </span>
+                                                                ) : (
+                                                                    thumbnail
+                                                                )}
+                                                                <span className="sancai-entry-image-meta">
+                                                                    <Text strong>{imageTitle}</Text>
+                                                                    <Text type="secondary">
+                                                                        {formatImageSize(
+                                                                            image.size
+                                                                        )}
+                                                                    </Text>
+                                                                </span>
+                                                            </div>
+                                                        );
+                                                    }
+                                                },
+                                                {
+                                                    inlineLimit: 4,
+                                                    key: "actions",
+                                                    title: "操作",
+                                                    width: 220,
+                                                    options: (image) => [
+                                                        {
+                                                            key: "download",
+                                                            text: "下载",
+                                                            ariaLabel: `下载 ${readImageTitle(image)}`,
+                                                            onClick: () => downloadImage(image)
+                                                        },
+                                                        {
+                                                            key: "cover",
+                                                            text: "封面",
+                                                            ariaLabel: `设为封面 ${readImageTitle(image)}`,
+                                                            disabled: Boolean(image.currentUsed),
+                                                            onClick: () => changeCurrentImage(image)
+                                                        },
+                                                        {
+                                                            type: "divider"
+                                                        },
+                                                        {
+                                                            key: "delete",
+                                                            text: "删除",
+                                                            type: "danger",
+                                                            ariaLabel: `删除 ${readImageTitle(image)}`,
+                                                            disabled: deleteImageMutation.isPending,
+                                                            onClick: () => deleteImage(image)
+                                                        }
+                                                    ]
+                                                }
+                                            ] satisfies KuzhambuTableProps<SancaiEntryImageRecord>["columns"]
+                                        }
+                                        dataSource={entryImages}
+                                        pagination={false}
+                                        rowKey="id"
+                                        size="small"
+                                        scroll={{ x: 640 }}
+                                        sortable
+                                        onSort={sortImage}
+                                    />
+                                </Image.PreviewGroup>
+                            ) : (
+                                <Empty
+                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                    description="暂无图片"
+                                />
+                            )}
+                        </div>
+                    ) : null
+                }
+                refinementContent={
                     !isCreating && selectedEntry ? (
                         <>
-                            <Card
-                                size="small"
-                                title="配图管理"
-                                aria-label="三才图会配图管理"
-                                loading={imagesQuery.isLoading}
-                            >
-                                <div className="sancai-image-upload-bar">
-                                    <Input
-                                        aria-label="图片标题"
-                                        value={imageUploadTitle}
-                                        placeholder="图片标题"
-                                        onChange={(event) =>
-                                            setImageUploadTitle(event.target.value)
-                                        }
-                                    />
-                                    <label className="sancai-image-type-field">
-                                        <span>图片类型</span>
-                                        <select
-                                            aria-label="图片类型"
-                                            value={imageUploadType}
-                                            onChange={(event) =>
-                                                setImageUploadType(event.target.value)
-                                            }
-                                        >
-                                            <option value="ORIGINAL">ORIGINAL</option>
-                                            <option value="GENERATED">GENERATED</option>
-                                        </select>
-                                    </label>
-                                    <label className="sancai-image-current-field">
-                                        <span>上传后设为当前使用</span>
-                                        <Switch
-                                            aria-label="上传后设为当前使用"
-                                            checked={imageUploadCurrentUsed}
-                                            onChange={setImageUploadCurrentUsed}
-                                        />
-                                    </label>
-                                    <Upload
-                                        aria-label="上传配图"
-                                        accept={IMAGE_ACCEPT}
-                                        showUploadList={false}
-                                        beforeUpload={(file) => {
-                                            uploadImageMutation.mutate(file);
-                                            return Upload.LIST_IGNORE;
-                                        }}
-                                    >
-                                        <Button loading={uploadImageMutation.isPending}>
-                                            上传配图
-                                        </Button>
-                                    </Upload>
-                                </div>
-                                {entryImages.length > 0 ? (
-                                    <div className="sancai-image-card-list">
-                                        {entryImages.map((image, index) => {
-                                            const title = readImageTitle(image);
-                                            return (
-                                                <article
-                                                    key={image.id}
-                                                    className="sancai-image-card"
-                                                    aria-label={`配图 ${title}`}
-                                                >
-                                                    <div className="sancai-image-card-main">
-                                                        <div>
-                                                            <Text strong>{title}</Text>
-                                                            <KuzhambuSpace wrap>
-                                                                {image.currentUsed ? (
-                                                                    <Tag color="green">
-                                                                        当前使用
-                                                                    </Tag>
-                                                                ) : null}
-                                                                <Text type="secondary">
-                                                                    {image.imageType || "UNKNOWN"}
-                                                                </Text>
-                                                                <Text type="secondary">
-                                                                    优先级 {image.priority ?? "-"}
-                                                                </Text>
-                                                                <Text type="secondary">
-                                                                    {formatImageSize(image.size)}
-                                                                </Text>
-                                                            </KuzhambuSpace>
-                                                        </div>
-                                                        <KuzhambuSpace wrap>
-                                                            <Button
-                                                                size="small"
-                                                                onClick={() => previewImage(image)}
-                                                            >
-                                                                预览图片
-                                                            </Button>
-                                                            <Button
-                                                                size="small"
-                                                                onClick={() => downloadImage(image)}
-                                                            >
-                                                                下载图片
-                                                            </Button>
-                                                            <Button
-                                                                size="small"
-                                                                disabled={Boolean(
-                                                                    image.currentUsed
-                                                                )}
-                                                                loading={
-                                                                    changeCurrentImageMutation.isPending
-                                                                }
-                                                                onClick={() =>
-                                                                    changeCurrentImage(image)
-                                                                }
-                                                            >
-                                                                设为当前使用图片
-                                                            </Button>
-                                                            <Button
-                                                                danger
-                                                                size="small"
-                                                                loading={
-                                                                    deleteImageMutation.isPending
-                                                                }
-                                                                onClick={() => deleteImage(image)}
-                                                            >
-                                                                删除图片
-                                                            </Button>
-                                                            <Button
-                                                                size="small"
-                                                                disabled={
-                                                                    index === 0 ||
-                                                                    sortImagesMutation.isPending
-                                                                }
-                                                                onClick={() =>
-                                                                    moveImage(image, "up")
-                                                                }
-                                                            >
-                                                                上移图片
-                                                            </Button>
-                                                            <Button
-                                                                size="small"
-                                                                disabled={
-                                                                    index ===
-                                                                        entryImages.length - 1 ||
-                                                                    sortImagesMutation.isPending
-                                                                }
-                                                                onClick={() =>
-                                                                    moveImage(image, "down")
-                                                                }
-                                                            >
-                                                                下移图片
-                                                            </Button>
-                                                        </KuzhambuSpace>
-                                                    </div>
-                                                    <Text type="secondary">
-                                                        存储对象：{image.storageObjectId ?? "-"} /
-                                                        文件：
-                                                        {image.originalFilename || "-"}
-                                                    </Text>
-                                                </article>
-                                            );
-                                        })}
-                                    </div>
-                                ) : (
-                                    <Empty
-                                        image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                        description="暂无配图"
-                                    />
-                                )}
-                            </Card>
                             <Card size="small" title="AI 精修任务">
                                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                                    <Button
+                                    <KuzhambuButton
+                                        name="创建摘要任务"
                                         type="primary"
-                                        loading={creatingRefinementCapability === "translate"}
-                                        onClick={() => createRefinementTask("translate")}
-                                    >
-                                        创建译文任务
-                                    </Button>
-                                    <Button
                                         loading={creatingRefinementCapability === "summary"}
                                         onClick={() => createRefinementTask("summary")}
                                     >
-                                        创建摘要任务
-                                    </Button>
+                                        摘要
+                                    </KuzhambuButton>
                                 </div>
                                 <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
                                     {refinementTasks
@@ -1285,7 +1165,8 @@ export const SancaiEntryPanel = ({
                                                             task.status,
                                                             task.capability
                                                         ) ? (
-                                                            <Button
+                                                            <KuzhambuButton
+                                                                name="重试"
                                                                 size="small"
                                                                 loading={
                                                                     retryingRefinementTaskId ===
@@ -1296,7 +1177,7 @@ export const SancaiEntryPanel = ({
                                                                 }
                                                             >
                                                                 重试
-                                                            </Button>
+                                                            </KuzhambuButton>
                                                         ) : null}
                                                     </div>
                                                     {failureText ? (
@@ -1359,44 +1240,39 @@ export const SancaiEntryPanel = ({
                                     />
                                 </div>
                             ) : null}
-                            <div
-                                ref={tagPanelRef}
-                                className="sancai-candidate-panel-anchor"
-                                tabIndex={-1}
-                            >
-                                <ClassicsContentTagPanel
-                                    contentId={selectedEntry.id}
-                                    contentType="SANCAI_ENTRY"
-                                    panelTitle="三才图会标签治理"
-                                    onChanged={invalidateSancaiContentGovernance}
-                                />
-                            </div>
-                            <ClassicsContentQaPanel
-                                contentId={selectedEntry.id}
-                                contentType="SANCAI_ENTRY"
-                                panelTitle="三才图会问答对治理"
-                                onChanged={invalidateSancaiContentGovernance}
-                            />
-                            <SancaiVersionHistoryPanel
-                                currentEntry={selectedEntry}
-                                detailLoading={versionDetailQuery.isLoading}
-                                listLoading={versionsQuery.isLoading}
-                                resetting={resetVersionMutation.isPending}
-                                selectedVersion={selectedVersion}
-                                versions={versions}
-                                onSelectVersion={(version) => setSelectedVersionId(version.id)}
-                                onResetVersion={resetVersion}
-                            />
                         </>
                     ) : null
                 }
-            />
-            <SancaiEntryImagePreview
-                key={previewImageId ?? "closed"}
-                entryId={selectedEntryId}
-                images={entryImages}
-                openImageId={previewImageId}
-                onClose={() => setPreviewImageId(null)}
+                tagContent={
+                    !isCreating && selectedEntry ? (
+                        <div
+                            ref={tagPanelRef}
+                            className="sancai-candidate-panel-anchor"
+                            tabIndex={-1}
+                        >
+                            <ClassicsContentTagPanel
+                                contentId={selectedEntry.id}
+                                contentType="SANCAI_ENTRY"
+                                panelTitle="三才图会标签治理"
+                                onChanged={invalidateSancaiContentGovernance}
+                            />
+                        </div>
+                    ) : null
+                }
+                versionContent={
+                    !isCreating && selectedEntry ? (
+                        <SancaiVersionHistoryPanel
+                            currentEntry={selectedEntry}
+                            detailLoading={versionDetailQuery.isLoading}
+                            listLoading={versionsQuery.isLoading}
+                            resetting={resetVersionMutation.isPending}
+                            selectedVersion={selectedVersion}
+                            versions={versions}
+                            onSelectVersion={(version) => setSelectedVersionId(version.id)}
+                            onResetVersion={resetVersion}
+                        />
+                    ) : null
+                }
             />
         </>
     );

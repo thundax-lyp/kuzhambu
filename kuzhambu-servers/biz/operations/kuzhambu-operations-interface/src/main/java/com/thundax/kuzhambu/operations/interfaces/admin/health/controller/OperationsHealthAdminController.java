@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.operations.interfaces.admin.health.controller;
 
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
@@ -15,6 +16,8 @@ import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.reques
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.response.OperationsHealthPageResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.response.OperationsHealthSummaryResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.response.OperationsHealthTrendResponse;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -40,6 +43,13 @@ public class OperationsHealthAdminController {
     @HasPermission("operations:health:view")
     @IgnoreSysLogger
     @PostMapping("summary")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public List<OperationsHealthSummaryResponse> summary(@Valid @RequestBody OperationsHealthSummaryRequest request) {
         return healthCheckApplicationService.summary().stream()
                 .map(OperationsHealthInterfaceAssembler::toResponse)
@@ -50,6 +60,13 @@ public class OperationsHealthAdminController {
     @HasPermission("operations:health:view")
     @IgnoreSysLogger
     @PostMapping("page")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public PageResponse<OperationsHealthPageResponse> page(@Valid @RequestBody OperationsHealthPageRequest request) {
         return PageResponseHelper.fromPageResult(
                 healthCheckApplicationService.page(
@@ -62,6 +79,13 @@ public class OperationsHealthAdminController {
     @HasPermission("operations:health:view")
     @IgnoreSysLogger
     @PostMapping("trend")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public List<OperationsHealthTrendResponse> trend(@Valid @RequestBody OperationsHealthTrendRequest request) {
         return healthCheckApplicationService.trend(OperationsHealthInterfaceAssembler.toQuery(request)).stream()
                 .map(OperationsHealthInterfaceAssembler::toResponse)

@@ -1,4 +1,4 @@
-import { Alert, Button, Card, Descriptions, Empty, Select, Typography } from "antd";
+import { Alert, Card, Descriptions, Empty, Select, Typography } from "antd";
 import { useState } from "react";
 import { KuzhambuList, KuzhambuListItem } from "@/components/kuzhambu-list";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
@@ -9,6 +9,7 @@ import type {
     TagMergePreviewRecord,
     TagRecord
 } from "../taxonomy-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Paragraph, Text, Title } = Typography;
 
@@ -132,14 +133,16 @@ export const TagMergePanel = ({
                         </Paragraph>
                     </div>
                     <KuzhambuSpace wrap>
-                        <Button
+                        <KuzhambuButton
+                            name="预览合并影响"
                             onClick={previewMerge}
                             loading={previewing}
                             disabled={mergeDisabled}
                         >
                             预览合并影响
-                        </Button>
-                        <Button
+                        </KuzhambuButton>
+                        <KuzhambuButton
+                            name="执行标签合并"
                             type="primary"
                             danger
                             onClick={applyMerge}
@@ -147,7 +150,7 @@ export const TagMergePanel = ({
                             disabled={mergeDisabled || !canEditTag}
                         >
                             执行标签合并
-                        </Button>
+                        </KuzhambuButton>
                     </KuzhambuSpace>
                 </div>
 

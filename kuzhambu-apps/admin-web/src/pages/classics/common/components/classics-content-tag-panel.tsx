@@ -1,13 +1,15 @@
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
-import { App, Button, Card, Empty, Form, Input, Modal, Select } from "antd";
+import { App, Card, Empty, Form, Input, Select } from "antd";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { KuzhambuModal } from "@/components/kuzhambu-modal";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
 import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import * as contentService from "../classics-content-service";
 import type { ClassicsContentTagRecord, ClassicsContentType } from "../classics-content-types";
 import { type ClassicsContentTagCommand } from "../classics-content-service";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 interface ClassicsContentTagPanelProps {
     contentId: number;
@@ -245,14 +247,14 @@ export const ClassicsContentTagPanel = ({
         <Card size="small" title={panelTitle || "标签治理"}>
             <KuzhambuSpace orientation="vertical" size={16}>
                 <div>
-                    <Button
-                        aria-label="新增标签"
+                    <KuzhambuButton
+                        name="新增标签"
                         icon={<PlusOutlined />}
                         type="primary"
                         onClick={openCreate}
                     >
                         新增标签
-                    </Button>
+                    </KuzhambuButton>
                 </div>
 
                 <KuzhambuTable
@@ -280,16 +282,16 @@ export const ClassicsContentTagPanel = ({
                             width: 180,
                             render: (_value, tag) => (
                                 <KuzhambuSpace size="small" orientation="horizontal">
-                                    <Button
-                                        aria-label={`编辑标签 ${tag.id}`}
+                                    <KuzhambuButton
+                                        name={String(`编辑标签 ${tag.id}`)}
                                         icon={<EditOutlined />}
                                         size="small"
                                         onClick={() => openEdit(tag)}
                                     >
                                         编辑
-                                    </Button>
-                                    <Button
-                                        aria-label={`移除标签 ${tag.id}`}
+                                    </KuzhambuButton>
+                                    <KuzhambuButton
+                                        name={String(`移除标签 ${tag.id}`)}
                                         danger
                                         icon={<DeleteOutlined />}
                                         loading={deleteMutation.isPending}
@@ -297,7 +299,7 @@ export const ClassicsContentTagPanel = ({
                                         onClick={() => markRemoved(tag)}
                                     >
                                         移除
-                                    </Button>
+                                    </KuzhambuButton>
                                 </KuzhambuSpace>
                             )
                         }
@@ -316,7 +318,7 @@ export const ClassicsContentTagPanel = ({
                     onSort={submitSort}
                 />
 
-                <Modal
+                <KuzhambuModal
                     destroyOnHidden
                     okButtonProps={{
                         loading: addMutation.isPending || updateMutation.isPending
@@ -364,7 +366,7 @@ export const ClassicsContentTagPanel = ({
                             />
                         </Form.Item>
                     </Form>
-                </Modal>
+                </KuzhambuModal>
             </KuzhambuSpace>
         </Card>
     );

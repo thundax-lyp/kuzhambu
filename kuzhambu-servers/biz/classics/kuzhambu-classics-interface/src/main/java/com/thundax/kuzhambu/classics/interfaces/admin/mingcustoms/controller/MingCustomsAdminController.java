@@ -22,6 +22,7 @@ import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.res
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
+import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
@@ -29,18 +30,16 @@ import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "古籍模块-明代习俗", description = "明代习俗")
 @SysLogger(module = {"古籍", "明代习俗"})
@@ -62,7 +61,13 @@ public class MingCustomsAdminController {
     }
 
     @Operation(summary = "分页查询明代习俗", description = "classics:mingcustoms:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:mingcustoms:view")
     @SysLogger(value = "分页查询")
     @PostMapping("page")
@@ -75,16 +80,29 @@ public class MingCustomsAdminController {
     }
 
     @Operation(summary = "查看明代习俗", description = "classics:mingcustoms:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:mingcustoms:view")
     @SysLogger(value = "详情")
-    @GetMapping("{id}")
-    public MingCustomsResponse get(@PathVariable Long id) {
+    @PostMapping("get")
+    public MingCustomsResponse get(@Valid @RequestBody MingCustomsRequest request) {
+        Long id = requireParameter(request == null ? null : request.getId(), "id");
         return MingCustomsInterfaceAssembler.toResponse(service.get(MingCustomsEntryIdCodec.toDomain(id)));
     }
 
     @Operation(summary = "新增明代习俗", description = "classics:mingcustoms:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:mingcustoms:edit")
     @SysLogger(value = "新增")
     @PostMapping("add")
@@ -94,7 +112,13 @@ public class MingCustomsAdminController {
     }
 
     @Operation(summary = "更新明代习俗", description = "classics:mingcustoms:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:mingcustoms:edit")
     @SysLogger(value = "更新")
     @PostMapping("update")
@@ -104,7 +128,13 @@ public class MingCustomsAdminController {
     }
 
     @Operation(summary = "新增明代习俗关键词", description = "classics:mingcustoms:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:mingcustoms:edit")
     @SysLogger(value = "新增关键词")
     @PostMapping("keywords/add")
@@ -116,7 +146,13 @@ public class MingCustomsAdminController {
     }
 
     @Operation(summary = "排序明代习俗关键词", description = "classics:mingcustoms:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:mingcustoms:edit")
     @SysLogger(value = "关键词排序")
     @PostMapping("keywords/sort")
@@ -133,27 +169,38 @@ public class MingCustomsAdminController {
     }
 
     @Operation(summary = "查询明代习俗关键词云", description = "classics:mingcustoms:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:mingcustoms:view")
     @SysLogger(value = "关键词云")
-    @GetMapping("keyword-cloud")
-    public List<MingCustomsKeywordCloudItemResponse> listKeywordCloud(
-            @RequestParam(value = "visibility", required = false) String visibility) {
-        return service.listKeywordCloud(visibility).stream()
+    @PostMapping("keyword-cloud/list")
+    public List<MingCustomsKeywordCloudItemResponse> listKeywordCloud(@Valid @RequestBody MingCustomsRequest request) {
+        return service.listKeywordCloud(request == null ? null : request.getVisibility()).stream()
                 .map(MingCustomsInterfaceAssembler::toKeywordCloudResponse)
                 .toList();
     }
 
     @Operation(summary = "查询明代习俗标签云", description = "classics:mingcustoms:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:mingcustoms:view")
     @SysLogger(value = "标签云")
-    @GetMapping("tag-cloud")
-    public List<MingCustomsTagCloudItemResponse> listTagCloud(
-            @RequestParam(value = "category", required = false) String category,
-            @RequestParam(value = "keyword", required = false) String keyword,
-            @RequestParam(value = "visibility", required = false) String visibility) {
-        MingCustomsPageQuery query = MingCustomsInterfaceAssembler.toTagCloudQuery(category, keyword, visibility);
+    @PostMapping("tag-cloud/list")
+    public List<MingCustomsTagCloudItemResponse> listTagCloud(@Valid @RequestBody MingCustomsRequest request) {
+        MingCustomsPageQuery query = MingCustomsInterfaceAssembler.toTagCloudQuery(
+                request == null ? null : request.getCategory(),
+                request == null ? null : request.getKeyword(),
+                request == null ? null : request.getVisibility());
         query.setOperatorPermissions(KuzhambuContextHolder.currentAuthorities());
         return service.listTagCloud(query).stream()
                 .map(MingCustomsInterfaceAssembler::toTagCloudResponse)
@@ -161,7 +208,13 @@ public class MingCustomsAdminController {
     }
 
     @Operation(summary = "删除明代习俗", description = "classics:mingcustoms:delete")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:mingcustoms:delete")
     @SysLogger(value = "删除")
     @PostMapping("delete")
@@ -170,7 +223,13 @@ public class MingCustomsAdminController {
     }
 
     @Operation(summary = "查询明代习俗版本", description = "classics:mingcustoms:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:mingcustoms:view")
     @SysLogger(value = "版本列表")
     @PostMapping("versions/list")
@@ -184,7 +243,13 @@ public class MingCustomsAdminController {
     }
 
     @Operation(summary = "查看明代习俗版本", description = "classics:mingcustoms:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:mingcustoms:view")
     @SysLogger(value = "版本详情")
     @PostMapping("versions/get")
@@ -193,7 +258,13 @@ public class MingCustomsAdminController {
     }
 
     @Operation(summary = "恢复明代习俗版本", description = "classics:mingcustoms:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:mingcustoms:edit")
     @SysLogger(value = "版本恢复")
     @PostMapping("versions/reset")
@@ -213,5 +284,12 @@ public class MingCustomsAdminController {
             throw new BizException("历史版本不属于当前明代习俗条目");
         }
         return version;
+    }
+
+    private static Long requireParameter(Long value, String fieldName) {
+        if (value == null) {
+            throw AdminResponseExceptions.invalidParameter(fieldName);
+        }
+        return value;
     }
 }

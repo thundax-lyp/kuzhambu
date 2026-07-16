@@ -15,7 +15,7 @@ import com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.respons
 import java.lang.reflect.Method;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 class KnowledgePortalAtlasControllerTest {
@@ -25,9 +25,10 @@ class KnowledgePortalAtlasControllerTest {
     @Test
     void routesShouldKeepPortalApiPaths() throws Exception {
         assertRequestMapping(KnowledgePortalAtlasController.class, "/api/portal/knowledge/atlas");
-        assertGetMapping(
+        assertPostMapping(
                 KnowledgePortalAtlasController.class,
                 "getAtlas",
+                "get",
                 com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.request.KnowledgePortalAtlasQuery
                         .class);
     }
@@ -276,9 +277,10 @@ class KnowledgePortalAtlasControllerTest {
         assertEquals(expectedPath, mapping.value()[0]);
     }
 
-    private void assertGetMapping(Class<?> type, String methodName, Class<?>... parameters) throws Exception {
+    private void assertPostMapping(Class<?> type, String methodName, String expectedPath, Class<?>... parameters)
+            throws Exception {
         Method method = type.getDeclaredMethod(methodName, parameters);
-        GetMapping mapping = method.getAnnotation(GetMapping.class);
-        assertEquals(0, mapping.value().length);
+        PostMapping mapping = method.getAnnotation(PostMapping.class);
+        assertEquals(expectedPath, mapping.value()[0]);
     }
 }

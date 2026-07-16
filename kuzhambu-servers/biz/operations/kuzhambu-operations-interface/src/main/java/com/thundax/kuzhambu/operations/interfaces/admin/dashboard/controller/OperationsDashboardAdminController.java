@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.operations.interfaces.admin.dashboard.controller;
 
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
@@ -8,6 +9,8 @@ import com.thundax.kuzhambu.operations.application.dashboard.service.OperationsD
 import com.thundax.kuzhambu.operations.interfaces.admin.dashboard.assembler.OperationsDashboardInterfaceAssembler;
 import com.thundax.kuzhambu.operations.interfaces.admin.dashboard.controller.request.OperationsDashboardOverviewRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.dashboard.controller.response.OperationsDashboardOverviewResponse;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -32,6 +35,13 @@ public class OperationsDashboardAdminController {
     @HasPermission("operations:dashboard:view")
     @IgnoreSysLogger
     @PostMapping("overview")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public OperationsDashboardOverviewResponse overview(
             @Valid @RequestBody OperationsDashboardOverviewRequest request) {
         return OperationsDashboardInterfaceAssembler.toResponse(

@@ -1,4 +1,4 @@
-import { Button, Descriptions, Empty, Input, Typography } from "antd";
+import { Descriptions, Empty, Input, Typography } from "antd";
 import { useState, type ReactNode } from "react";
 import { KuzhambuList, KuzhambuListItem, KuzhambuListMeta } from "@/components/kuzhambu-list";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
@@ -11,6 +11,7 @@ import type {
     TagReviewCommand
 } from "../taxonomy-service";
 import type { TagDetailRecord } from "../taxonomy-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Paragraph, Text, Title } = Typography;
 const { TextArea } = Input;
@@ -144,28 +145,33 @@ export const TagDetailDrawer = ({
     if (reviewMode) {
         footer = (
             <div className="knowledge-taxonomy-tag-detail-footer">
-                <Button disabled={reviewing} onClick={closeDrawer}>
+                <KuzhambuButton name="关闭" disabled={reviewing} onClick={closeDrawer}>
                     关闭
-                </Button>
+                </KuzhambuButton>
                 <KuzhambuSpace>
-                    <Button type="primary" loading={reviewing} onClick={approveTag}>
+                    <KuzhambuButton
+                        name="通过"
+                        type="primary"
+                        loading={reviewing}
+                        onClick={approveTag}
+                    >
                         通过
-                    </Button>
-                    <Button danger loading={reviewing} onClick={rejectTag}>
+                    </KuzhambuButton>
+                    <KuzhambuButton name="拒绝" danger loading={reviewing} onClick={rejectTag}>
                         拒绝
-                    </Button>
+                    </KuzhambuButton>
                 </KuzhambuSpace>
             </div>
         );
     } else if (canDeprecateTag) {
         footer = (
             <div className="knowledge-taxonomy-tag-detail-footer">
-                <Button disabled={deprecating} onClick={closeDrawer}>
+                <KuzhambuButton name="关闭" disabled={deprecating} onClick={closeDrawer}>
                     关闭
-                </Button>
-                <Button danger loading={deprecating} onClick={deprecateTag}>
+                </KuzhambuButton>
+                <KuzhambuButton name="废弃标签" danger loading={deprecating} onClick={deprecateTag}>
                     废弃标签
-                </Button>
+                </KuzhambuButton>
             </div>
         );
     }

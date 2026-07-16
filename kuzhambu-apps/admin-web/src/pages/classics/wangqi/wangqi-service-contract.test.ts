@@ -103,7 +103,7 @@ describe("wangqi service request contracts", () => {
         });
 
         await service.get(400000000001);
-        expectLastCall("POST", "/classics/wangqi/documents/400000000001/get", {
+        expectLastCall("POST", "/classics/wangqi/documents/get", {
             id: 400000000001
         });
 
@@ -158,7 +158,7 @@ describe("wangqi service request contracts", () => {
         });
 
         await service.getSourceFile(400000000001);
-        expectLastCall("POST", "/classics/wangqi/documents/400000000001/source-file/get", {
+        expectLastCall("POST", "/classics/wangqi/documents/source-file/get", {
             id: 400000000001
         });
 

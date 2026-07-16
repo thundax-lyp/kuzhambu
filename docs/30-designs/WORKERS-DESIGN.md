@@ -39,7 +39,6 @@ kuzhambu-workers/
     render/
       templates/
       classics_export.py
-      sancai_showcase.py
       operations_report.py
       browser_pool.py
       artifact_store.py
@@ -115,10 +114,8 @@ Render 能力只处理调用方已经完成权限过滤、风险确认和数据�
 - `POST /internal/ai/stream`
 - `GET /internal/artifacts/{artifactId}`
 - `POST /internal/render/classics-export`
-- `POST /internal/render/sancai-showcase`
 - `POST /internal/render/operations-report`
 - `POST /internal/render/classics-export/stream`
-- `POST /internal/render/sancai-showcase/stream`
 - `POST /internal/render/operations-report/stream`
 
 AI 接口契约见 [`WORKERS-AI-INTERFACE.md`](../20-interfaces/WORKERS-AI-INTERFACE.md)。
@@ -222,7 +219,6 @@ Render 执行入口由 `render_routes.py` 分发到具体 renderer。
 Renderer：
 
 - `classics_export`：生成 Classics CSV、JSON、HTML 或 ZIP 导出产物。
-- `sancai_showcase`：生成三才图会静态展示页面。
 - `operations_report`：生成 Operations 周报、月报 HTML 或 PDF 产物。
 
 PDF 生成使用 Playwright/Chromium print。`render/browser_pool.py` 负责 Chromium Browser Pool，复用浏览器进程并限制并发页面数。PDF 渲染不得在每次请求中无控制地启动独立 Chromium 进程。
@@ -436,7 +432,7 @@ Workers 不引入 Black、isort、flake8 或 Prettier 作为 Python 格式化链
 - Workers 可以无数据库、无 Redis、无 MQ 启动。
 - Java AI 域可以通过 `/internal/ai/invoke` 完成一次无状态 prompt 执行。
 - Java AI 域可以通过 `/internal/ai/stream` 获取 SSE 增量输出，并在 `completed` 中拿到最终结果。
-- Classics 可以调用 render workers 生成导出或静态展示产物，并交给 Storage 保存。
+- Classics 可以调用 render workers 生成导出产物，并交给 Storage 保存。
 - Operations 可以调用 render workers 生成报表产物，并交给 Storage 保存。
 - Workers 日志不出现 AI Key、token、密码、签名、完整 prompt 或完整敏感输入。
 - Workers 单次请求不依赖历史请求即可复现执行。

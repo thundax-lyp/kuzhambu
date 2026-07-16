@@ -29,8 +29,6 @@ SERVICE_PATHS = {
     "kuzhambu-classics": {
         "/internal/render/classics-export",
         "/internal/render/classics-export/stream",
-        "/internal/render/sancai-showcase",
-        "/internal/render/sancai-showcase/stream",
     },
     "kuzhambu-operations": {
         "/internal/render/operations-report",

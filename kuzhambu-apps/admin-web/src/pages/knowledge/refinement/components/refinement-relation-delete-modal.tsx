@@ -1,4 +1,4 @@
-import { Modal } from "antd";
+import { KuzhambuModal } from "@/components/kuzhambu-modal";
 import type { RefinementRelationRecord } from "../refinement-types";
 
 interface RefinementRelationDeleteModalProps {
@@ -17,7 +17,7 @@ export const RefinementRelationDeleteModal = ({
     onConfirm
 }: RefinementRelationDeleteModalProps) => {
     return (
-        <Modal
+        <KuzhambuModal
             title="删除关系草稿"
             open={open}
             confirmLoading={deleting}
@@ -25,6 +25,6 @@ export const RefinementRelationDeleteModal = ({
             onOk={onConfirm}
         >
             确认删除关系草稿“{relation?.relationType || relation?.relationKey || "-"}”？
-        </Modal>
+        </KuzhambuModal>
     );
 };

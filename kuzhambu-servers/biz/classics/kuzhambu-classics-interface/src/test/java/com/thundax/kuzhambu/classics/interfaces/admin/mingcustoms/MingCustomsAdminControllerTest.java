@@ -35,7 +35,6 @@ import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
 class MingCustomsAdminControllerTest {
@@ -58,8 +57,10 @@ class MingCustomsAdminControllerTest {
         MingCustomsApplicationService service = mock(MingCustomsApplicationService.class);
         when(service.listKeywordCloud("PUBLIC")).thenReturn(List.of(new MingCustomsKeywordCloudItem("礼俗", 3L)));
         MingCustomsAdminController controller = new MingCustomsAdminController(service);
+        MingCustomsRequest request = new MingCustomsRequest();
+        request.setVisibility("PUBLIC");
 
-        List<MingCustomsKeywordCloudItemResponse> responses = controller.listKeywordCloud("PUBLIC");
+        List<MingCustomsKeywordCloudItemResponse> responses = controller.listKeywordCloud(request);
 
         assertEquals(1, responses.size());
         assertEquals("礼俗", responses.get(0).getKeyword());
@@ -91,8 +92,12 @@ class MingCustomsAdminControllerTest {
         MingCustomsApplicationService service = mock(MingCustomsApplicationService.class);
         when(service.listTagCloud(any())).thenReturn(List.of(new MingCustomsTagCloudItem(7001L, "祭祀", 3L)));
         MingCustomsAdminController controller = new MingCustomsAdminController(service);
+        MingCustomsRequest request = new MingCustomsRequest();
+        request.setCategory("礼俗");
+        request.setKeyword("祭祀");
+        request.setVisibility("PUBLIC");
 
-        List<MingCustomsTagCloudItemResponse> responses = controller.listTagCloud("礼俗", "祭祀", "PUBLIC");
+        List<MingCustomsTagCloudItemResponse> responses = controller.listTagCloud(request);
 
         assertEquals(1, responses.size());
         assertEquals(7001L, responses.get(0).getTagId());
@@ -140,10 +145,36 @@ class MingCustomsAdminControllerTest {
     @Test
     void versionRoutesShouldKeepExpectedPathsAndPermissions() throws Exception {
         Class<?> controllerType = MingCustomsAdminController.class;
-        assertGetMapping(controllerType, "listTagCloud", "tag-cloud", "classics:mingcustoms:view");
-        assertPostMapping(controllerType, "listVersions", "versions/list", "classics:mingcustoms:view");
-        assertPostMapping(controllerType, "getVersion", "versions/get", "classics:mingcustoms:view");
-        assertPostMapping(controllerType, "resetVersion", "versions/reset", "classics:mingcustoms:edit");
+        assertPostMapping(
+                controllerType,
+                "listKeywordCloud",
+                "keyword-cloud/list",
+                "classics:mingcustoms:view",
+                MingCustomsRequest.class);
+        assertPostMapping(
+                controllerType,
+                "listTagCloud",
+                "tag-cloud/list",
+                "classics:mingcustoms:view",
+                MingCustomsRequest.class);
+        assertPostMapping(
+                controllerType,
+                "listVersions",
+                "versions/list",
+                "classics:mingcustoms:view",
+                MingCustomsVersionRequest.class);
+        assertPostMapping(
+                controllerType,
+                "getVersion",
+                "versions/get",
+                "classics:mingcustoms:view",
+                MingCustomsVersionRequest.class);
+        assertPostMapping(
+                controllerType,
+                "resetVersion",
+                "versions/reset",
+                "classics:mingcustoms:edit",
+                MingCustomsVersionRequest.class);
     }
 
     @Test
@@ -217,20 +248,14 @@ class MingCustomsAdminControllerTest {
     }
 
     private static void assertPostMapping(
-            Class<?> controllerType, String methodName, String path, String expectedPermission) throws Exception {
-        Method method = controllerType.getMethod(methodName, MingCustomsVersionRequest.class);
+            Class<?> controllerType,
+            String methodName,
+            String path,
+            String expectedPermission,
+            Class<?>... parameterTypes)
+            throws Exception {
+        Method method = controllerType.getMethod(methodName, parameterTypes);
         PostMapping mapping = method.getAnnotation(PostMapping.class);
-        HasPermission permission = method.getAnnotation(HasPermission.class);
-        assertNotNull(mapping, methodName);
-        assertEquals(path, mapping.value()[0], methodName);
-        assertNotNull(permission, methodName);
-        assertEquals(List.of(expectedPermission), List.of(permission.value()), methodName);
-    }
-
-    private static void assertGetMapping(
-            Class<?> controllerType, String methodName, String path, String expectedPermission) throws Exception {
-        Method method = controllerType.getMethod(methodName, String.class, String.class, String.class);
-        GetMapping mapping = method.getAnnotation(GetMapping.class);
         HasPermission permission = method.getAnnotation(HasPermission.class);
         assertNotNull(mapping, methodName);
         assertEquals(path, mapping.value()[0], methodName);

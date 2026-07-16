@@ -1,10 +1,11 @@
 import { BookOutlined, FolderOutlined, ReloadOutlined } from "@ant-design/icons";
-import { Button, Empty, Skeleton, Tree, Typography } from "antd";
+import { Empty, Skeleton, Tree, Typography } from "antd";
 import type { DataNode } from "antd/es/tree";
 import type { Key, ReactNode } from "react";
 import { useMemo } from "react";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { SancaiCatalogNodeType, SancaiCatalogTreeNode } from "../sancai-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 
@@ -88,8 +89,8 @@ export const SancaiCatalogTreePanel = ({
                     <FolderOutlined />
                     <Text strong>{title}</Text>
                 </KuzhambuSpace>
-                <Button
-                    aria-label="刷新三才图会目录树"
+                <KuzhambuButton
+                    name="刷新三才图会目录树"
                     className="sancai-catalog-refresh"
                     icon={<ReloadOutlined />}
                     loading={isRefreshing}

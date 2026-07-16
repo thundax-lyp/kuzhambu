@@ -110,7 +110,9 @@ describe("ming customs service request contracts", () => {
         });
 
         await service.get(500000000001);
-        expectLastCall("GET", "/classics/ming-customs/500000000001", undefined);
+        expectLastCall("POST", "/classics/ming-customs/get", {
+            id: 500000000001
+        });
     });
 
     it("sends ming customs write requests", async () => {
@@ -146,24 +148,26 @@ describe("ming customs service request contracts", () => {
 
     it("sends ming customs option and keyword cloud requests", async () => {
         await service.listKeywordCloud("PUBLIC");
-        expectLastCall("GET", "/classics/ming-customs/keyword-cloud?visibility=PUBLIC", undefined);
+        expectLastCall("POST", "/classics/ming-customs/keyword-cloud/list", {
+            visibility: "PUBLIC"
+        });
 
         await service.listKeywordCloud();
-        expectLastCall("GET", "/classics/ming-customs/keyword-cloud", undefined);
+        expectLastCall("POST", "/classics/ming-customs/keyword-cloud/list", {});
 
         await service.listTagCloud({
             category: "RITUAL",
             keyword: "元旦",
             visibility: "PUBLIC"
         });
-        expectLastCall(
-            "GET",
-            "/classics/ming-customs/tag-cloud?category=RITUAL&keyword=%E5%85%83%E6%97%A6&visibility=PUBLIC",
-            undefined
-        );
+        expectLastCall("POST", "/classics/ming-customs/tag-cloud/list", {
+            category: "RITUAL",
+            keyword: "元旦",
+            visibility: "PUBLIC"
+        });
 
         await service.listTagCloud();
-        expectLastCall("GET", "/classics/ming-customs/tag-cloud", undefined);
+        expectLastCall("POST", "/classics/ming-customs/tag-cloud/list", {});
 
         const options = await service.listCategoryOptions();
         expectLastCall("POST", "/sys/dict/page", {

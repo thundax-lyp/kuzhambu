@@ -17,11 +17,12 @@ const DEFAULT_ACTION_COLUMN_MOBILE_WIDTH = 54;
 const DEFAULT_SORT_COLUMN_KEY = "__kuzhambu_sort";
 const DEFAULT_SORT_COLUMN_WIDTH = 28;
 const ACTION_BUTTON_WIDTH = 24;
-const ACTION_CELL_PADDING = 28;
-const ACTION_DIVIDER_WIDTH = 5;
+const ACTION_BUTTON_SIDE_PADDING = 4;
+const ACTION_CELL_SIDE_PADDING = 0;
+const ACTION_DIVIDER_WIDTH = 12;
 const ACTION_INLINE_LIMIT = 4;
-const ACTION_TEXT_BASE_WIDTH = 10;
-const ACTION_TEXT_CHAR_WIDTH = 14;
+const ACTION_TEXT_CHAR_WIDTH = 16;
+const ACTION_TITLE_MIN_WIDTH = 54;
 const DEFAULT_MIN_COLUMN_WIDTH = 96;
 const MOBILE_MEDIA_QUERY = "(max-width: 760px)";
 
@@ -162,7 +163,7 @@ const calculateActionButtonWidth = <RecordType extends object>(
 
     return Math.max(
         ACTION_BUTTON_WIDTH,
-        action.text.length * ACTION_TEXT_CHAR_WIDTH + ACTION_TEXT_BASE_WIDTH
+        action.text.length * ACTION_TEXT_CHAR_WIDTH + ACTION_BUTTON_SIDE_PADDING * 2
     );
 };
 
@@ -182,7 +183,10 @@ const calculateActionColumnWidth = <RecordType extends object>(
     );
     const hasOverflow = overflowActions.length > 0;
 
-    return ACTION_CELL_PADDING + inlineWidth + (hasOverflow ? ACTION_BUTTON_WIDTH : 0);
+    return Math.max(
+        ACTION_TITLE_MIN_WIDTH,
+        inlineWidth + (hasOverflow ? ACTION_BUTTON_WIDTH : 0) + ACTION_CELL_SIDE_PADDING * 2
+    );
 };
 
 const splitActions = <RecordType extends object>(
@@ -395,25 +399,26 @@ export const KuzhambuTable = <RecordType extends object = object>({
                                     key={action.key ?? `divider-${actionIndex}`}
                                 />
                             ) : (
-                                <Button
+                                <button
                                     aria-label={action.ariaLabel ?? action.text}
                                     className={[
                                         "kuzhambu-table-row-action",
                                         action.type === "warning"
                                             ? "kuzhambu-table-row-action-warning"
+                                            : "",
+                                        action.type === "danger"
+                                            ? "kuzhambu-table-row-action-danger"
                                             : ""
                                     ]
                                         .filter(Boolean)
                                         .join(" ")}
-                                    danger={action.type === "danger"}
                                     disabled={action.disabled}
-                                    icon={action.icon}
                                     key={action.key}
-                                    type="text"
+                                    type="button"
                                     onClick={() => action.onClick(record)}
                                 >
-                                    {action.icon ? null : action.text}
-                                </Button>
+                                    {action.icon ?? action.text}
+                                </button>
                             )
                         )}
                     </span>
@@ -434,12 +439,13 @@ export const KuzhambuTable = <RecordType extends object = object>({
                             }}
                             trigger={["click"]}
                         >
-                            <Button
+                            <button
                                 aria-label="展开行操作"
                                 className="kuzhambu-table-row-action kuzhambu-table-row-action-more"
-                                icon={<MoreOutlined />}
-                                type="text"
-                            />
+                                type="button"
+                            >
+                                <MoreOutlined />
+                            </button>
                         </Dropdown>
                     ) : null}
                 </div>

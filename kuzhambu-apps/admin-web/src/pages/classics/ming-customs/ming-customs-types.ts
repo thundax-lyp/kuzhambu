@@ -16,11 +16,15 @@ export interface MingCustomsKeywordCloudItem {
     count: number;
 }
 
+export type MingCustomsKeywordCloudRecord = MingCustomsKeywordCloudItem;
+
 export interface MingCustomsTagCloudItem {
     tagId?: number | null;
     tagNameSnapshot: string;
     count: number;
 }
+
+export type MingCustomsTagCloudRecord = MingCustomsTagCloudItem;
 
 export interface MingCustomsContentVersionRecord {
     id: number;

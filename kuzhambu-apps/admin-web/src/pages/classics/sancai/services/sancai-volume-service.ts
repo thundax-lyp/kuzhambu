@@ -1,6 +1,5 @@
-import { getJson, postJson } from "@/api/http";
-import type { DictItem } from "@/types/dict";
-import type { SancaiVolumeRecord } from "../sancai-types";
+import { postJson } from "@/api/http";
+import type { SancaiVolumeRecord, SancaiVolumeTypeRecord } from "../sancai-types";
 
 export interface SancaiVolumeQuery {
     categoryId?: number | null;
@@ -19,7 +18,7 @@ export interface SancaiVolumeSortCommand {
 }
 
 export const listTypes = () => {
-    return getJson<DictItem[]>("/classics/sancai/volumes/types");
+    return postJson<SancaiVolumeTypeRecord[]>("/classics/sancai/volumes/types/list");
 };
 
 export const list = (request: SancaiVolumeQuery = {}) => {

@@ -1,6 +1,6 @@
 import { CameraOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Input, Select, Switch, Upload } from "antd";
+import { Form, Input, Select, Switch, Upload } from "antd";
 import { useMemo, useState } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import type { CurrentUserRecord } from "@/service/current-user-types";
@@ -8,6 +8,7 @@ import type { OptionsRecord } from "@/types/options";
 import * as service from "../user-service";
 import type { UserDepartmentNode, UserFormValues, UserRecord, UserRoleRecord } from "../user-types";
 import { UserAvatar } from "./user-avatar";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 interface UserEditProps {
     open?: boolean;
@@ -169,20 +170,31 @@ export const UserEdit = ({
             open={visible}
             size="small"
             onClose={onClose}
-            extra={creating ? null : <Button size="small">−</Button>}
+            extra={
+                creating ? null : (
+                    <KuzhambuButton name="−" size="small">
+                        −
+                    </KuzhambuButton>
+                )
+            }
             footer={
                 <div className="user-edit-footer">
-                    <Button disabled={saving} onClick={onClose}>
+                    <KuzhambuButton name="取消" disabled={saving} onClick={onClose}>
                         取消
-                    </Button>
-                    <Button type="primary" loading={saving} onClick={saveForm}>
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name={String(saveText)}
+                        type="primary"
+                        loading={saving}
+                        onClick={saveForm}
+                    >
                         {saveText}
-                    </Button>
+                    </KuzhambuButton>
                 </div>
             }
         >
             {!creating && user ? (
-                <div className="user-edit-form">
+                <Form className="user-edit-form" component="div" layout="vertical">
                     <div className="user-edit-avatar">
                         <UserAvatar user={user} size={64} />
                         <Upload
@@ -199,49 +211,44 @@ export const UserEdit = ({
                                 return Upload.LIST_IGNORE;
                             }}
                         >
-                            <Button
+                            <KuzhambuButton
+                                name="上传用户头像"
                                 size="small"
                                 shape="circle"
-                                aria-label="上传用户头像"
                                 icon={<CameraOutlined />}
                                 loading={avatarUploading}
                             />
                         </Upload>
                     </div>
-                    <label>
-                        <span>姓名</span>
+                    <Form.Item label="姓名">
                         <Input
                             value={createForm.name}
                             placeholder="用户姓名"
                             onChange={(event) => updateForm({ name: event.target.value })}
                         />
-                    </label>
-                    <label>
-                        <span>登录名</span>
+                    </Form.Item>
+                    <Form.Item label="登录名">
                         <Input
                             value={createForm.loginName}
                             placeholder="lin.zhiyuan"
                             onChange={(event) => updateForm({ loginName: event.target.value })}
                         />
-                    </label>
-                    <label>
-                        <span>邮箱</span>
+                    </Form.Item>
+                    <Form.Item label="邮箱">
                         <Input
                             value={createForm.email || ""}
                             placeholder="name@example.com"
                             onChange={(event) => updateForm({ email: event.target.value })}
                         />
-                    </label>
-                    <label>
-                        <span>手机</span>
+                    </Form.Item>
+                    <Form.Item label="手机">
                         <Input
                             value={createForm.mobile || ""}
                             placeholder="手机号"
                             onChange={(event) => updateForm({ mobile: event.target.value })}
                         />
-                    </label>
-                    <label>
-                        <span>部门</span>
+                    </Form.Item>
+                    <Form.Item label="部门">
                         <Select
                             value={createForm.departmentId || undefined}
                             options={departmentOptions(departments)}
@@ -250,9 +257,8 @@ export const UserEdit = ({
                             optionFilterProp="label"
                             onChange={(departmentId) => updateForm({ departmentId })}
                         />
-                    </label>
-                    <label>
-                        <span>角色</span>
+                    </Form.Item>
+                    <Form.Item label="角色">
                         <Select
                             mode="multiple"
                             value={createForm.roleIds}
@@ -261,75 +267,66 @@ export const UserEdit = ({
                             placeholder="选择角色"
                             onChange={(roleIds) => updateForm({ roleIds })}
                         />
-                    </label>
-                    <label>
-                        <span>等级</span>
+                    </Form.Item>
+                    <Form.Item label="等级">
                         <Select
                             value={createForm.ranks}
                             options={editableRankOptions}
                             onChange={(ranks) => updateForm({ ranks })}
                         />
-                    </label>
-                    <label className="user-edit-switch-row">
-                        <span>管理员</span>
+                    </Form.Item>
+                    <Form.Item label="管理员">
                         <Switch
                             checked={createForm.admin}
                             onChange={(admin) => updateForm({ admin })}
                         />
-                    </label>
-                    <label className="user-edit-switch-row">
-                        <span>启用</span>
+                    </Form.Item>
+                    <Form.Item label="启用">
                         <Switch
                             checked={createForm.enable}
                             onChange={(enable) => updateForm({ enable })}
                         />
-                    </label>
-                </div>
+                    </Form.Item>
+                </Form>
             ) : null}
             {creating ? (
-                <div className="user-edit-form">
-                    <label>
-                        <span>登录名</span>
+                <Form className="user-edit-form" component="div" layout="vertical">
+                    <Form.Item label="登录名">
                         <Input
                             value={createForm.loginName}
                             placeholder="lin.zhiyuan"
                             onChange={(event) => updateForm({ loginName: event.target.value })}
                         />
-                    </label>
-                    <label>
-                        <span>登录密码</span>
+                    </Form.Item>
+                    <Form.Item label="登录密码">
                         <Input.Password
                             value={createForm.loginPass}
                             placeholder="设置初始密码"
                             onChange={(event) => updateForm({ loginPass: event.target.value })}
                         />
-                    </label>
-                    <label>
-                        <span>姓名</span>
+                    </Form.Item>
+                    <Form.Item label="姓名">
                         <Input
                             value={createForm.name}
                             placeholder="用户姓名"
                             onChange={(event) => updateForm({ name: event.target.value })}
                         />
-                    </label>
-                    <label>
-                        <span>邮箱</span>
+                    </Form.Item>
+                    <Form.Item label="邮箱">
                         <Input
                             value={createForm.email || ""}
                             placeholder="name@example.com"
                             onChange={(event) => updateForm({ email: event.target.value })}
                         />
-                    </label>
-                    <label>
-                        <span>手机</span>
+                    </Form.Item>
+                    <Form.Item label="手机">
                         <Input
                             value={createForm.mobile || ""}
                             placeholder="手机号"
                             onChange={(event) => updateForm({ mobile: event.target.value })}
                         />
-                    </label>
-                    <label>
-                        <span>部门</span>
+                    </Form.Item>
+                    <Form.Item label="部门">
                         <Select
                             value={createForm.departmentId || undefined}
                             options={departmentOptions(departments)}
@@ -338,9 +335,8 @@ export const UserEdit = ({
                             optionFilterProp="label"
                             onChange={(departmentId) => updateForm({ departmentId })}
                         />
-                    </label>
-                    <label>
-                        <span>角色</span>
+                    </Form.Item>
+                    <Form.Item label="角色">
                         <Select
                             mode="multiple"
                             value={createForm.roleIds}
@@ -349,30 +345,27 @@ export const UserEdit = ({
                             placeholder="选择角色"
                             onChange={(roleIds) => updateForm({ roleIds })}
                         />
-                    </label>
-                    <label>
-                        <span>等级</span>
+                    </Form.Item>
+                    <Form.Item label="等级">
                         <Select
                             value={createForm.ranks}
                             options={editableRankOptions}
                             onChange={(ranks) => updateForm({ ranks })}
                         />
-                    </label>
-                    <label className="user-edit-switch-row">
-                        <span>管理员</span>
+                    </Form.Item>
+                    <Form.Item label="管理员">
                         <Switch
                             checked={createForm.admin}
                             onChange={(admin) => updateForm({ admin })}
                         />
-                    </label>
-                    <label className="user-edit-switch-row">
-                        <span>启用</span>
+                    </Form.Item>
+                    <Form.Item label="启用">
                         <Switch
                             checked={createForm.enable}
                             onChange={(enable) => updateForm({ enable })}
                         />
-                    </label>
-                </div>
+                    </Form.Item>
+                </Form>
             ) : null}
         </KuzhambuDrawer>
     );

@@ -1,8 +1,9 @@
 import { ReloadOutlined } from "@ant-design/icons";
-import { Button, Table, Tag, Tooltip } from "antd";
+import { Table, Tag, Tooltip } from "antd";
 import { KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
 import type { ColumnsType } from "antd/es/table";
 import type { QualityReportSourceDetailRecord } from "../quality-report-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 interface QualityReportSourceTableProps {
     canReextract?: boolean;
@@ -64,20 +65,26 @@ export const QualityReportSourceTable = ({
                 const reextractDisabled = Boolean(disabledReason);
                 return (
                     <KuzhambuSpaceCompact className="knowledge-quality-report-source-actions">
-                        <Button disabled={!sourceDetail.href} href={sourceDetail.href || undefined}>
+                        <KuzhambuButton
+                            name="打开"
+                            disabled={!sourceDetail.href}
+                            href={sourceDetail.href || undefined}
+                        >
                             打开
-                        </Button>
+                        </KuzhambuButton>
                         <Tooltip title={disabledReason || "从质量报告低质量门类重提取"}>
                             <span>
-                                <Button
-                                    aria-label={`重提取${sourceDetail.sourceCategoryName || sourceDetail.sourceCategoryCode || "来源明细"}`}
+                                <KuzhambuButton
+                                    name={String(
+                                        `重提取${sourceDetail.sourceCategoryName || sourceDetail.sourceCategoryCode || "来源明细"}`
+                                    )}
                                     disabled={reextractDisabled}
                                     icon={<ReloadOutlined />}
                                     loading={reextractingDetailId === sourceDetail.detailId}
                                     onClick={() => onReextract?.(sourceDetail)}
                                 >
                                     重提取
-                                </Button>
+                                </KuzhambuButton>
                             </span>
                         </Tooltip>
                     </KuzhambuSpaceCompact>

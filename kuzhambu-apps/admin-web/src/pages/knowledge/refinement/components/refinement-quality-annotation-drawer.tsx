@@ -1,4 +1,4 @@
-import { Button, Form, Input, Select } from "antd";
+import { Form, Input, Select } from "antd";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type {
@@ -6,6 +6,7 @@ import type {
     QualityAnnotationTarget,
     UpsertQualityAnnotationCommand
 } from "../refinement-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 type QualityAnnotationFormValues = Pick<
     UpsertQualityAnnotationCommand,
@@ -86,18 +87,21 @@ export const RefinementQualityAnnotationDrawer = ({
                     <Input.TextArea rows={5} />
                 </Form.Item>
                 <KuzhambuSpace size={8}>
-                    <Button htmlType="submit" loading={saving} type="primary">
+                    <KuzhambuButton name="保存" htmlType="submit" loading={saving} type="primary">
                         保存
-                    </Button>
-                    <Button
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="删除标注"
                         danger
                         disabled={!existingAnnotation}
                         loading={deleting}
                         onClick={() => existingAnnotation && onDelete(existingAnnotation)}
                     >
                         删除标注
-                    </Button>
-                    <Button onClick={onCancel}>取消</Button>
+                    </KuzhambuButton>
+                    <KuzhambuButton name="取消" onClick={onCancel}>
+                        取消
+                    </KuzhambuButton>
                 </KuzhambuSpace>
             </Form>
         </KuzhambuDrawer>

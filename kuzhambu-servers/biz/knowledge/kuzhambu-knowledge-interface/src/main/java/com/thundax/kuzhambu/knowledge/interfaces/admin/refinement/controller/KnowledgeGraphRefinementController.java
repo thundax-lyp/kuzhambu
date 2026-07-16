@@ -86,6 +86,13 @@ public class KnowledgeGraphRefinementController {
     @HasPermission("knowledge:refinement:edit")
     @SysLogger("新增实体草稿")
     @PostMapping("entity/add")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public RefinementResponses.EntityResponse addEntity(
             @Valid @RequestBody RefinementRequests.EntityUpsertRequest request) {
         return KnowledgeGraphRefinementInterfaceAssembler.toResponse(
@@ -96,6 +103,13 @@ public class KnowledgeGraphRefinementController {
     @HasPermission("knowledge:refinement:edit")
     @SysLogger("更新实体草稿")
     @PostMapping("entity/update")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public RefinementResponses.EntityResponse updateEntity(
             @Valid @RequestBody RefinementRequests.EntityUpsertRequest request) {
         return KnowledgeGraphRefinementInterfaceAssembler.toResponse(
@@ -106,6 +120,13 @@ public class KnowledgeGraphRefinementController {
     @HasPermission("knowledge:refinement:edit")
     @SysLogger("确认实体草稿")
     @PostMapping("entity/confirm")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public RefinementResponses.EntityResponse confirmEntity(
             @Valid @RequestBody RefinementRequests.EntityConfirmRequest request) {
         return KnowledgeGraphRefinementInterfaceAssembler.toResponse(refinementService.confirmEntity(
@@ -116,6 +137,13 @@ public class KnowledgeGraphRefinementController {
     @HasPermission("knowledge:refinement:edit")
     @SysLogger("删除实体草稿")
     @PostMapping("entity/delete")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public void deleteEntity(@Valid @RequestBody RefinementRequests.EntityDeleteRequest request) {
         refinementService.deleteEntity(KnowledgeGraphRefinementInterfaceAssembler.toDeleteEntityCommand(request));
     }
@@ -124,6 +152,13 @@ public class KnowledgeGraphRefinementController {
     @HasPermission("knowledge:refinement:edit")
     @SysLogger("新增关系草稿")
     @PostMapping("relation/add")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public RefinementResponses.RelationResponse addRelation(
             @Valid @RequestBody RefinementRequests.RelationUpsertRequest request) {
         return KnowledgeGraphRefinementInterfaceAssembler.toResponse(refinementService.upsertRelation(
@@ -134,6 +169,13 @@ public class KnowledgeGraphRefinementController {
     @HasPermission("knowledge:refinement:edit")
     @SysLogger("更新关系草稿")
     @PostMapping("relation/update")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public RefinementResponses.RelationResponse updateRelation(
             @Valid @RequestBody RefinementRequests.RelationUpsertRequest request) {
         return KnowledgeGraphRefinementInterfaceAssembler.toResponse(refinementService.upsertRelation(
@@ -144,6 +186,13 @@ public class KnowledgeGraphRefinementController {
     @HasPermission("knowledge:refinement:edit")
     @SysLogger("确认关系草稿")
     @PostMapping("relation/confirm")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public RefinementResponses.RelationResponse confirmRelation(
             @Valid @RequestBody RefinementRequests.RelationConfirmRequest request) {
         return KnowledgeGraphRefinementInterfaceAssembler.toResponse(refinementService.confirmRelation(
@@ -154,6 +203,13 @@ public class KnowledgeGraphRefinementController {
     @HasPermission("knowledge:refinement:edit")
     @SysLogger("删除关系草稿")
     @PostMapping("relation/delete")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public void deleteRelation(@Valid @RequestBody RefinementRequests.RelationDeleteRequest request) {
         refinementService.deleteRelation(KnowledgeGraphRefinementInterfaceAssembler.toDeleteRelationCommand(request));
     }
@@ -162,6 +218,13 @@ public class KnowledgeGraphRefinementController {
     @HasPermission("knowledge:refinement:edit")
     @SysLogger("应用精修任务")
     @PostMapping("task/apply")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public RefinementResponses.ApplyResponse applyTask(
             @Valid @RequestBody RefinementRequests.TaskApplyRequest request) {
         return KnowledgeGraphRefinementInterfaceAssembler.toResponse(refinementService.applyTask(
@@ -173,6 +236,13 @@ public class KnowledgeGraphRefinementController {
     @HasPermission("knowledge:refinement:view")
     @SysLogger("质量汇总")
     @PostMapping("quality/summary")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public RefinementResponses.QualitySummaryResponse qualitySummary(
             @Valid @RequestBody RefinementRequests.QualitySummaryRequest request) {
         return KnowledgeGraphRefinementInterfaceAssembler.toResponse(
@@ -183,6 +253,13 @@ public class KnowledgeGraphRefinementController {
     @HasPermission("knowledge:refinement:edit")
     @SysLogger("新增世系节点草稿")
     @PostMapping("lineage-node/add")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public RefinementResponses.LineageNodeResponse addLineageNode(
             @Valid @RequestBody RefinementRequests.LineageNodeUpsertRequest request) {
         return KnowledgeGraphRefinementInterfaceAssembler.toResponse(refinementService.upsertLineageNode(
@@ -193,6 +270,13 @@ public class KnowledgeGraphRefinementController {
     @HasPermission("knowledge:refinement:edit")
     @SysLogger("更新世系节点草稿")
     @PostMapping("lineage-node/update")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public RefinementResponses.LineageNodeResponse updateLineageNode(
             @Valid @RequestBody RefinementRequests.LineageNodeUpsertRequest request) {
         return KnowledgeGraphRefinementInterfaceAssembler.toResponse(refinementService.upsertLineageNode(
@@ -203,6 +287,13 @@ public class KnowledgeGraphRefinementController {
     @HasPermission("knowledge:refinement:edit")
     @SysLogger("确认世系节点草稿")
     @PostMapping("lineage-node/confirm")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public RefinementResponses.LineageNodeResponse confirmLineageNode(
             @Valid @RequestBody RefinementRequests.LineageNodeConfirmRequest request) {
         return KnowledgeGraphRefinementInterfaceAssembler.toResponse(refinementService.confirmLineageNode(
@@ -213,6 +304,13 @@ public class KnowledgeGraphRefinementController {
     @HasPermission("knowledge:refinement:edit")
     @SysLogger("删除世系节点草稿")
     @PostMapping("lineage-node/delete")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public void deleteLineageNode(@Valid @RequestBody RefinementRequests.LineageNodeDeleteRequest request) {
         refinementService.deleteLineageNode(
                 KnowledgeGraphRefinementInterfaceAssembler.toDeleteLineageNodeCommand(request));
@@ -222,6 +320,13 @@ public class KnowledgeGraphRefinementController {
     @HasPermission("knowledge:refinement:edit")
     @SysLogger("新增世系关系草稿")
     @PostMapping("lineage-relation/add")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public RefinementResponses.LineageRelationResponse addLineageRelation(
             @Valid @RequestBody RefinementRequests.LineageRelationUpsertRequest request) {
         return KnowledgeGraphRefinementInterfaceAssembler.toResponse(refinementService.upsertLineageRelation(
@@ -232,6 +337,13 @@ public class KnowledgeGraphRefinementController {
     @HasPermission("knowledge:refinement:edit")
     @SysLogger("更新世系关系草稿")
     @PostMapping("lineage-relation/update")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public RefinementResponses.LineageRelationResponse updateLineageRelation(
             @Valid @RequestBody RefinementRequests.LineageRelationUpsertRequest request) {
         return KnowledgeGraphRefinementInterfaceAssembler.toResponse(refinementService.upsertLineageRelation(
@@ -242,6 +354,13 @@ public class KnowledgeGraphRefinementController {
     @HasPermission("knowledge:refinement:edit")
     @SysLogger("确认世系关系草稿")
     @PostMapping("lineage-relation/confirm")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public RefinementResponses.LineageRelationResponse confirmLineageRelation(
             @Valid @RequestBody RefinementRequests.LineageRelationConfirmRequest request) {
         return KnowledgeGraphRefinementInterfaceAssembler.toResponse(refinementService.confirmLineageRelation(
@@ -252,6 +371,13 @@ public class KnowledgeGraphRefinementController {
     @HasPermission("knowledge:refinement:edit")
     @SysLogger("删除世系关系草稿")
     @PostMapping("lineage-relation/delete")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public void deleteLineageRelation(@Valid @RequestBody RefinementRequests.LineageRelationDeleteRequest request) {
         refinementService.deleteLineageRelation(
                 KnowledgeGraphRefinementInterfaceAssembler.toDeleteLineageRelationCommand(request));
@@ -261,6 +387,13 @@ public class KnowledgeGraphRefinementController {
     @HasPermission("knowledge:refinement:edit")
     @SysLogger("新增或更新质量标注")
     @PostMapping("annotation/update")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public RefinementResponses.AnnotationResponse upsertAnnotation(
             @Valid @RequestBody RefinementRequests.AnnotationUpsertRequest request) {
         return KnowledgeGraphRefinementInterfaceAssembler.toResponse(refinementService.upsertAnnotation(
@@ -271,6 +404,13 @@ public class KnowledgeGraphRefinementController {
     @HasPermission("knowledge:refinement:edit")
     @SysLogger("新增质量标注")
     @PostMapping("annotation/add")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public RefinementResponses.AnnotationResponse addAnnotation(
             @Valid @RequestBody RefinementRequests.AnnotationUpsertRequest request) {
         return KnowledgeGraphRefinementInterfaceAssembler.toResponse(refinementService.upsertAnnotation(
@@ -281,6 +421,13 @@ public class KnowledgeGraphRefinementController {
     @HasPermission("knowledge:refinement:edit")
     @SysLogger("删除质量标注")
     @PostMapping("annotation/delete")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public void deleteAnnotation(@Valid @RequestBody RefinementRequests.AnnotationDeleteRequest request) {
         refinementService.deleteAnnotation(
                 KnowledgeGraphRefinementInterfaceAssembler.toDeleteAnnotationCommand(request));
@@ -290,6 +437,13 @@ public class KnowledgeGraphRefinementController {
     @HasPermission("knowledge:refinement:view")
     @SysLogger("分页获取质量标注")
     @PostMapping("annotation/page")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public PageResponse<RefinementResponses.AnnotationResponse> pageAnnotations(
             @Valid @RequestBody RefinementRequests.AnnotationPageRequest request) {
         return PageResponseHelper.fromPageResult(

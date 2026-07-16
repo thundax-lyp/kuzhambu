@@ -13,10 +13,12 @@ import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiContentSortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiContentResponse;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -41,7 +43,13 @@ public class SancaiContentAdminController {
     }
 
     @Operation(summary = "查询三才图会条目内容", description = "classics:sancai:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "内容列表")
     @PostMapping("list")
@@ -52,7 +60,13 @@ public class SancaiContentAdminController {
     }
 
     @Operation(summary = "新增三才图会条目内容", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "内容新增")
     @PostMapping("add")
@@ -64,7 +78,13 @@ public class SancaiContentAdminController {
     }
 
     @Operation(summary = "更新三才图会条目内容", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "内容更新")
     @PostMapping("update")
@@ -76,7 +96,13 @@ public class SancaiContentAdminController {
     }
 
     @Operation(summary = "删除三才图会条目内容", description = "classics:sancai:delete")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:delete")
     @SysLogger(value = "内容删除")
     @PostMapping("delete")
@@ -85,7 +111,13 @@ public class SancaiContentAdminController {
     }
 
     @Operation(summary = "排序三才图会条目内容", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "内容排序")
     @PostMapping("sort")

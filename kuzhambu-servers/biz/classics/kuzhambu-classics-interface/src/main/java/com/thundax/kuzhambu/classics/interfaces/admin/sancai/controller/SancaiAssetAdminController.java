@@ -9,27 +9,22 @@ import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryImageIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVisualAssetIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
-import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiShowcase;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageType;
-import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiShowcaseStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryDraftId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiShowcaseId;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.assembler.SancaiAssetInterfaceAssembler;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiAssetRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntryImageSortRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiAssetResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
-import com.thundax.kuzhambu.common.core.page.PageQuery;
-import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
+import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
-import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
-import com.thundax.kuzhambu.common.web.response.PageResponse;
-import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -62,7 +57,13 @@ public class SancaiAssetAdminController {
     }
 
     @Operation(summary = "更新三才图会草稿", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "更新草稿")
     @PostMapping("drafts/update")
@@ -72,17 +73,30 @@ public class SancaiAssetAdminController {
     }
 
     @Operation(summary = "查看三才图会最新草稿", description = "classics:sancai:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "最新草稿")
-    @GetMapping("drafts/latest/{entryId}")
-    public SancaiAssetResponse latestDraft(@PathVariable Long entryId) {
+    @PostMapping("drafts/latest")
+    public SancaiAssetResponse latestDraft(@Valid @RequestBody SancaiAssetRequest request) {
+        Long entryId = requireLong(request == null ? null : request.getEntryId(), "entryId");
         return SancaiAssetInterfaceAssembler.toDraftResponse(
                 service.getLatestDraft(SancaiEntryIdCodec.toDomain(entryId)));
     }
 
     @Operation(summary = "更新三才图会图片", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "更新图片")
     @PostMapping("images/update")
@@ -92,12 +106,19 @@ public class SancaiAssetAdminController {
     }
 
     @Operation(summary = "上传三才图会图片", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "图片上传")
-    @PostMapping(value = "images/{entryId}/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostJsonApiExempt(reason = "文件上传必须使用 multipart/form-data 承载文件流")
+    @PostMapping(value = "images/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public SancaiAssetResponse uploadImage(
-            @PathVariable Long entryId,
+            @RequestParam("entryId") Long entryId,
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "imageType", required = false) String imageType,
@@ -121,18 +142,31 @@ public class SancaiAssetAdminController {
     }
 
     @Operation(summary = "查询三才图会图片", description = "classics:sancai:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "图片列表")
-    @GetMapping("images/{entryId}")
-    public List<SancaiAssetResponse> listImages(@PathVariable Long entryId) {
+    @PostMapping("images/list")
+    public List<SancaiAssetResponse> listImages(@Valid @RequestBody SancaiAssetRequest request) {
+        Long entryId = requireLong(request == null ? null : request.getEntryId(), "entryId");
         return service.listImages(SancaiEntryIdCodec.toDomain(entryId)).stream()
                 .map(SancaiAssetInterfaceAssembler::toImageResponse)
                 .toList();
     }
 
     @Operation(summary = "删除三才图会图片", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "图片删除")
     @PostMapping("images/delete")
@@ -150,7 +184,13 @@ public class SancaiAssetAdminController {
     }
 
     @Operation(summary = "切换三才图会当前图片", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "切换当前图片")
     @PostMapping("images/current/change")
@@ -162,7 +202,13 @@ public class SancaiAssetAdminController {
     }
 
     @Operation(summary = "排序三才图会图片", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "图片排序")
     @PostMapping("images/sort")
@@ -180,13 +226,20 @@ public class SancaiAssetAdminController {
     }
 
     @Operation(summary = "读取三才图会图片内容", description = "classics:sancai:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "图片读取")
+    @PostJsonApiExempt(reason = "文件内容需要浏览器直链预览或下载")
     @GetMapping("images/{entryId}/{imageId}/content")
     public void downloadImage(
-            @PathVariable Long entryId,
-            @PathVariable Long imageId,
+            @PathVariable("entryId") Long entryId,
+            @PathVariable("imageId") Long imageId,
             @RequestParam(value = "download", required = false) Boolean download,
             HttpServletResponse response)
             throws IOException {
@@ -212,102 +265,39 @@ public class SancaiAssetAdminController {
         }
     }
 
-    @Operation(summary = "创建三才图会静态展示任务", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
-    @HasPermission("classics:sancai:edit")
-    @SysLogger(value = "创建展示任务")
-    @PostMapping("showcases/request")
-    public SancaiAssetResponse requestShowcase(@Valid @RequestBody SancaiAssetRequest request) {
-        return SancaiAssetInterfaceAssembler.toShowcaseJobResponse(
-                service.requestShowcaseJob(SancaiAssetInterfaceAssembler.toShowcaseCommand(request)));
-    }
-
-    @Operation(summary = "分页查询三才图会静态展示任务", description = "classics:sancai:view")
-    @ApiImplicitParams({})
-    @HasPermission("classics:sancai:view")
-    @SysLogger(value = "展示任务列表")
-    @PostMapping("showcases/page")
-    public PageResponse<SancaiAssetResponse> pageShowcases(@Valid @RequestBody SancaiAssetRequest request) {
-        PageQuery pageQuery = PageInterfaceAssembler.toPageQuery(request);
-        return PageResponseHelper.fromPageResult(
-                service.pageShowcases(
-                        request.getKeyword(),
-                        request.getStatus(),
-                        request.getVisibilityRiskStatus(),
-                        request.getRequestedAtStart(),
-                        request.getRequestedAtEnd(),
-                        pageQuery),
-                SancaiAssetInterfaceAssembler::toShowcaseResponse);
-    }
-
-    @Operation(summary = "删除三才图会静态展示任务", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
-    @HasPermission("classics:sancai:edit")
-    @SysLogger(value = "删除展示任务")
-    @PostMapping("showcases/delete")
-    public Boolean deleteShowcase(@Valid @RequestBody SancaiAssetRequest request) {
-        service.deleteShowcase(SancaiShowcaseId.of(requireLong(request == null ? null : request.getId(), "id")));
-        return true;
-    }
-
-    @Operation(summary = "下载三才图会静态展示产物", description = "classics:sancai:view")
-    @ApiImplicitParams({})
-    @HasPermission("classics:sancai:view")
-    @SysLogger(value = "展示产物下载")
-    @GetMapping("showcases/{id}/content")
-    public void downloadShowcaseContent(
-            @PathVariable Long id,
-            @RequestParam(value = "download", required = false) Boolean download,
-            HttpServletResponse response)
-            throws IOException {
-        if (id == null) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND);
-            return;
-        }
-        SancaiShowcase showcase = findCompletedShowcase(id);
-        if (showcase == null || showcase.getStorageObjectId() == null) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND);
-            return;
-        }
-        ClassicsStoredContentResult content;
-        try {
-            content = service.getShowcaseContent(SancaiShowcaseId.of(id));
-        } catch (BizException exception) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND);
-            return;
-        }
-        response.setContentType(
-                StringUtils.defaultIfBlank(content.getContentType(), MediaType.APPLICATION_OCTET_STREAM_VALUE));
-        if (content.getSize() != null) {
-            response.setContentLengthLong(content.getSize());
-        }
-        response.setHeader(
-                "Content-Disposition",
-                contentDisposition(content.getOriginalFilename(), Boolean.TRUE.equals(download)));
-        try (InputStream inputStream = content.getInputStream()) {
-            inputStream.transferTo(response.getOutputStream());
-        }
-    }
-
     @Operation(summary = "查询三才图会视觉资产", description = "classics:sancai:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "视觉资产列表")
-    @GetMapping("visual-assets/{entryId}")
-    public List<SancaiAssetResponse> listVisualAssets(@PathVariable Long entryId) {
+    @PostMapping("visual-assets/list")
+    public List<SancaiAssetResponse> listVisualAssets(@Valid @RequestBody SancaiAssetRequest request) {
+        Long entryId = requireLong(request == null ? null : request.getEntryId(), "entryId");
         return service.listVisualAssets(SancaiEntryIdCodec.toDomain(entryId)).stream()
                 .map(SancaiAssetInterfaceAssembler::toVisualAssetResponse)
                 .toList();
     }
 
     @Operation(summary = "读取三才图会视觉资产原图", description = "classics:sancai:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "视觉资产原图读取")
+    @PostJsonApiExempt(reason = "文件内容需要浏览器直链预览或下载")
     @GetMapping("visual-assets/{entryId}/{visualAssetId}/source-content")
     public void downloadVisualAssetSourceContent(
-            @PathVariable Long entryId,
-            @PathVariable Long visualAssetId,
+            @PathVariable("entryId") Long entryId,
+            @PathVariable("visualAssetId") Long visualAssetId,
             @RequestParam(value = "download", required = false) Boolean download,
             HttpServletResponse response)
             throws IOException {
@@ -315,13 +305,20 @@ public class SancaiAssetAdminController {
     }
 
     @Operation(summary = "读取三才图会视觉资产生成图", description = "classics:sancai:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "视觉资产生成图读取")
+    @PostJsonApiExempt(reason = "文件内容需要浏览器直链预览或下载")
     @GetMapping("visual-assets/{entryId}/{visualAssetId}/generated-content")
     public void downloadVisualAssetGeneratedContent(
-            @PathVariable Long entryId,
-            @PathVariable Long visualAssetId,
+            @PathVariable("entryId") Long entryId,
+            @PathVariable("visualAssetId") Long visualAssetId,
             @RequestParam(value = "download", required = false) Boolean download,
             HttpServletResponse response)
             throws IOException {
@@ -329,7 +326,13 @@ public class SancaiAssetAdminController {
     }
 
     @Operation(summary = "更新三才图会视觉资产", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "更新视觉资产")
     @PostMapping("visual-assets/update")
@@ -343,7 +346,13 @@ public class SancaiAssetAdminController {
     }
 
     @Operation(summary = "切换三才图会当前视觉资产", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "切换当前视觉资产")
     @PostMapping("visual-assets/current/change")
@@ -377,22 +386,6 @@ public class SancaiAssetAdminController {
         String normalized = path.replace('\\', '/');
         int index = normalized.lastIndexOf('/');
         return index >= 0 ? normalized.substring(index + 1) : normalized;
-    }
-
-    private SancaiShowcase findCompletedShowcase(Long id) {
-        PageResult<SancaiShowcase> page =
-                service.pageShowcases(String.valueOf(id), null, null, null, null, new PageQuery(1, 20));
-        if (page == null || page.getRecords() == null) {
-            return null;
-        }
-        return page.getRecords().stream()
-                .filter(showcase -> showcase != null
-                        && showcase.getId() != null
-                        && id.equals(showcase.getId().value())
-                        && showcase.getStatus() == SancaiShowcaseStatus.COMPLETED
-                        && showcase.getStorageObjectId() != null)
-                .findFirst()
-                .orElse(null);
     }
 
     private void downloadVisualAssetContent(

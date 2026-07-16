@@ -1,8 +1,6 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { MessageInstance } from "antd/es/message/interface";
-import * as classicsContentService from "@/pages/classics/common/classics-content-service";
-import type { ClassicsContentTagRecord } from "@/pages/classics/common/classics-content-types";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import type {
     AiRefinementStreamEventRecord,
@@ -14,44 +12,8 @@ import type { SancaiEntryRecord, SancaiVisualAssetRecord } from "../sancai-types
 
 type RefinementCapability = "translate" | "summary" | SancaiVisualAssetRefinementCapability;
 
-const DEFAULT_TEXT_REFINEMENT_MODEL_ID = 900102;
-const DEFAULT_TEXT_REFINEMENT_MODEL_NAME = "CTYUN-bot-DeepSeek-V3.2-pro";
-const DEFAULT_TEXT_REFINEMENT_SERVICE_ID = 900001;
-const DEFAULT_TEXT_REFINEMENT_SERVICE_ROLE = "PRIMARY";
-const DEFAULT_IMAGE_ANALYSIS_MODEL_ID = 900101;
-const DEFAULT_IMAGE_ANALYSIS_MODEL_NAME = "CTYUN-CX-Qwen3.5-397B-A17B";
-const DEFAULT_TEXT2IMAGE_MODEL_ID = 900201;
-const DEFAULT_TEXT2IMAGE_MODEL_NAME = "doubao-seedream-5-0-pro-260628";
-const DEFAULT_TEXT2IMAGE_SERVICE_ID = 900002;
-const DEFAULT_TEXT2IMAGE_SERVICE_ROLE = "TEXT2IMAGE";
-
 const isStreamRefinementCapability = (capability: string) => {
     return capability === "image_analysis" || capability === "image_gen";
-};
-
-const modelConfigForCapability = (capability: RefinementCapability) => {
-    if (capability === "image_gen") {
-        return {
-            serviceId: DEFAULT_TEXT2IMAGE_SERVICE_ID,
-            serviceRole: DEFAULT_TEXT2IMAGE_SERVICE_ROLE,
-            modelId: DEFAULT_TEXT2IMAGE_MODEL_ID,
-            modelName: DEFAULT_TEXT2IMAGE_MODEL_NAME
-        };
-    }
-    if (capability === "image_analysis") {
-        return {
-            serviceId: DEFAULT_TEXT_REFINEMENT_SERVICE_ID,
-            serviceRole: DEFAULT_TEXT_REFINEMENT_SERVICE_ROLE,
-            modelId: DEFAULT_IMAGE_ANALYSIS_MODEL_ID,
-            modelName: DEFAULT_IMAGE_ANALYSIS_MODEL_NAME
-        };
-    }
-    return {
-        serviceId: DEFAULT_TEXT_REFINEMENT_SERVICE_ID,
-        serviceRole: DEFAULT_TEXT_REFINEMENT_SERVICE_ROLE,
-        modelId: DEFAULT_TEXT_REFINEMENT_MODEL_ID,
-        modelName: DEFAULT_TEXT_REFINEMENT_MODEL_NAME
-    };
 };
 
 const createEventId = (prefix: string) => {
@@ -203,13 +165,6 @@ const buildInputPayloadJson = (
     return JSON.stringify(payload);
 };
 
-const readActiveTagNames = (tags: ClassicsContentTagRecord[] | undefined) => {
-    const names = (tags || [])
-        .map((tag) => tag.tagNameSnapshot?.trim())
-        .filter((tagName): tagName is string => Boolean(tagName));
-    return [...new Set(names)];
-};
-
 interface UseSancaiEntryPanelStateParams {
     queryClient: QueryClient;
     messageApi: MessageInstance;
@@ -228,7 +183,6 @@ interface UseSancaiEntryPanelStateResult {
     streamEvents: AiRefinementStreamEventRecord[];
     isStreamingRefinementTask: boolean;
     streamErrorText: string | null;
-    entryTagNames: string[];
     creatingRefinementCapability: RefinementCapability | null;
     retryingRefinementTaskId: number | null;
     invalidateSancaiContentGovernance: () => Promise<void>;
@@ -269,21 +223,6 @@ export const useSancaiEntryPanelState = ({
     const selectedVisualAssetId =
         selectedVisualAsset?.visualAssetId ?? selectedVisualAsset?.id ?? null;
 
-    const entryTagsQuery = useQuery({
-        queryKey: ["classics", "content", "tags", "SANCAI_ENTRY", selectedEntryId],
-        queryFn: () =>
-            classicsContentService.listTags({
-                contentType: "SANCAI_ENTRY",
-                contentId: selectedEntryId ?? 0
-            }),
-        enabled: Boolean(selectedEntryId),
-        retry: false
-    });
-
-    const entryTagNames = useMemo(
-        () => readActiveTagNames(entryTagsQuery.data),
-        [entryTagsQuery.data]
-    );
     const handledSucceededTaskIdsRef = useRef<Set<number>>(new Set());
     const resetHandledSucceededTaskIds = () => {
         handledSucceededTaskIdsRef.current.clear();
@@ -517,7 +456,7 @@ export const useSancaiEntryPanelState = ({
                     capability === "image_gen") &&
                 (imageAnalysisObjectId == null || sourceImageStorageObjectId == null)
             ) {
-                messageApi.warning("当前视觉资产缺少原图，无法创建图片相关任务");
+                messageApi.warning("当前视觉处理缺少原图，无法创建图片相关任务");
                 return;
             }
             if (
@@ -526,14 +465,14 @@ export const useSancaiEntryPanelState = ({
                     sourceImageStorageObjectId == null ||
                     !imageAnalysisMarkdown?.trim())
             ) {
-                messageApi.warning("当前视觉资产缺少图片理解结果，无法创建信息融合任务");
+                messageApi.warning("当前视觉处理缺少图片理解结果，无法创建信息融合任务");
                 return;
             }
             if (
                 capability === "fusion" &&
                 (!Number.isInteger(textWeight) || !Number.isInteger(imageWeight))
             ) {
-                messageApi.warning("当前视觉资产权重未正确设置，无法创建信息融合任务");
+                messageApi.warning("当前视觉处理权重未正确设置，无法创建信息融合任务");
                 return;
             }
             if (
@@ -542,11 +481,11 @@ export const useSancaiEntryPanelState = ({
                     !Number.isInteger(textWeight) ||
                     !Number.isInteger(imageWeight))
             ) {
-                messageApi.warning("当前视觉资产缺少图片理解结果或权重，无法创建视觉描述任务");
+                messageApi.warning("当前视觉处理缺少图片理解结果或权重，无法创建视觉描述任务");
                 return;
             }
             if (capability === "image_gen" && !visualDescription?.trim()) {
-                messageApi.warning("当前视觉资产缺少视觉描述结果，无法创建生图任务");
+                messageApi.warning("当前视觉处理缺少视觉描述结果，无法创建生图任务");
                 return;
             }
             if (
@@ -562,7 +501,6 @@ export const useSancaiEntryPanelState = ({
             if (sourceTaskId) {
                 setRetryingRefinementTaskId(sourceTaskId);
             }
-            const modelConfig = modelConfigForCapability(capability);
             createRefinementTaskMutation.mutate(
                 {
                     capability,
@@ -577,10 +515,6 @@ export const useSancaiEntryPanelState = ({
                             ? imageAnalysisObjectId
                             : null,
                     requestedBy: Number(currentUserId),
-                    serviceId: modelConfig.serviceId,
-                    serviceRole: modelConfig.serviceRole,
-                    modelId: modelConfig.modelId,
-                    modelName: modelConfig.modelName,
                     requestId: createEventId("sancai-task"),
                     traceId: createEventId("sancai-trace"),
                     promptMessagesJson: buildPromptMessagesJson(
@@ -691,7 +625,6 @@ export const useSancaiEntryPanelState = ({
         streamEvents,
         isStreamingRefinementTask,
         streamErrorText,
-        entryTagNames,
         creatingRefinementCapability,
         retryingRefinementTaskId,
         invalidateSancaiContentGovernance,

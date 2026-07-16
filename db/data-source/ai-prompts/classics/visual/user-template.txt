@@ -1,0 +1,9 @@
+标题：{{title}}
+
+融合说明：
+{{fusionText}}
+
+风格约束：
+{{styleGuide}}
+
+请生成一段视觉描述。

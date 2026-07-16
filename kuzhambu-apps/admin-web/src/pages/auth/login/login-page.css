@@ -33,30 +33,6 @@
     box-shadow: var(--shadow-soft);
 }
 
-.login-hero::before,
-.login-hero::after {
-    position: absolute;
-    inset: 0;
-    z-index: -2;
-    pointer-events: none;
-    content: "";
-    background-repeat: no-repeat;
-    background-position: left bottom;
-    background-size: cover;
-    filter: grayscale(0.12) contrast(0.94) saturate(0.82);
-    opacity: 0;
-    animation: login-ink-fade 18s ease-in-out infinite;
-}
-
-.login-hero::before {
-    background-image: url("/ink-login-1.png");
-}
-
-.login-hero::after {
-    background-image: url("/ink-login-2.png");
-    animation-delay: 9s;
-}
-
 .login-hero > * {
     position: relative;
     z-index: 1;
@@ -85,13 +61,6 @@
     text-shadow: 0 1px 12px color-mix(in srgb, var(--surface-panel) 92%, transparent);
 }
 
-html[data-theme="dark"] .login-hero::before,
-html[data-theme="dark"] .login-hero::after {
-    filter: grayscale(0.9) invert(1) sepia(0.18) saturate(0.72) hue-rotate(166deg) brightness(0.42)
-        contrast(0.92);
-    mix-blend-mode: lighten;
-}
-
 html[data-theme="dark"] .login-page::before {
     background: linear-gradient(
         90deg,
@@ -99,29 +68,6 @@ html[data-theme="dark"] .login-page::before {
         color-mix(in srgb, var(--surface-page) 72%, transparent) 44%,
         color-mix(in srgb, var(--surface-page) 98%, transparent) 72%
     );
-}
-
-@keyframes login-ink-fade {
-    0%,
-    40% {
-        opacity: 0.82;
-    }
-
-    50%,
-    100% {
-        opacity: 0;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .login-hero::before,
-    .login-hero::after {
-        animation: none;
-    }
-
-    .login-hero::before {
-        opacity: 0.78;
-    }
 }
 
 .login-logo {

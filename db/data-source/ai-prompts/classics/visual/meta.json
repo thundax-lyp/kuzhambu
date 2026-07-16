@@ -1,0 +1,35 @@
+{
+  "templateId": 930110,
+  "promptVersionId": 940110,
+  "variableIdStart": 960801,
+  "scope": "classics",
+  "capability": "visual",
+  "suite": "classics-default-v1",
+  "name": "Classics Default Visual Description",
+  "description": "古籍视觉描述默认提示词。",
+  "status": "ACTIVE",
+  "versionNo": 1,
+  "current": true,
+  "variables": [
+    {
+      "name": "title",
+      "required": false,
+      "description": "条目标题",
+      "priority": 960801
+    },
+    {
+      "name": "fusionText",
+      "required": false,
+      "description": "融合说明",
+      "priority": 960802
+    },
+    {
+      "name": "styleGuide",
+      "required": false,
+      "description": "视觉风格约束",
+      "priority": 960803
+    }
+  ],
+  "outputSchema": { "type": "text" },
+  "changeSummary": "Initial classics default visual description prompt."
+}

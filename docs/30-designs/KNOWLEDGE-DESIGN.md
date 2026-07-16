@@ -122,7 +122,7 @@ Portal 入口：
 
 ## Data Ownership
 
-Knowledge 是 `knowledge_*` 表的唯一写入方。Classics 删除或归档内容时，Knowledge 通过协作语义更新 `knowledge_tag_content_ref` 等来源引用和质量指标。
+Knowledge 是 `knowledge_*` 表的唯一写入方。Classics 删除或下线内容时，Knowledge 通过协作语义更新 `knowledge_tag_content_ref` 等来源引用和质量指标。
 
 协作兼容口径：
 

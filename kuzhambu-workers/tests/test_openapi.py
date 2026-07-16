@@ -45,16 +45,13 @@ def test_openapi_marks_render_interfaces_as_usecase_interfaces() -> None:
         path: body["paths"][path]["post"]["description"]
         for path in [
             "/internal/render/classics-export",
-            "/internal/render/sancai-showcase",
             "/internal/render/operations-report",
             "/internal/render/classics-export/stream",
-            "/internal/render/sancai-showcase/stream",
             "/internal/render/operations-report/stream",
         ]
     }
 
     assert "Classics 导出 usecase 接口" in descriptions["/internal/render/classics-export"]
-    assert "三才图会静态展示 usecase 接口" in descriptions["/internal/render/sancai-showcase"]
     assert "Operations 报表 usecase 接口" in descriptions["/internal/render/operations-report"]
     assert all("真实业务必须使用基于 usecase" not in value for value in descriptions.values())
     assert all(body["paths"][path]["post"]["tags"] == ["Render"] for path in descriptions)

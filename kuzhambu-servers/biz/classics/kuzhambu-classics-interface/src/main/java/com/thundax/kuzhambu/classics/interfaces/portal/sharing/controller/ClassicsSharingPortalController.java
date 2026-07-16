@@ -10,8 +10,10 @@ import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.respon
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.security.annotation.PublicApi;
+import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
@@ -20,6 +22,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -33,8 +37,8 @@ public class ClassicsSharingPortalController {
         this.service = service;
     }
 
-    @GetMapping
-    public ClassicsSharePortalListResponse list(ClassicsSharePortalSearchRequest request) {
+    @PostMapping("list")
+    public ClassicsSharePortalListResponse list(@Valid @RequestBody ClassicsSharePortalSearchRequest request) {
         ClassicsSharePortalSearchRequest effectiveRequest =
                 request == null ? new ClassicsSharePortalSearchRequest() : request;
         return ClassicsSharingPortalInterfaceAssembler.toListResponse(service.pagePortalShares(
@@ -45,8 +49,9 @@ public class ClassicsSharingPortalController {
                 new PageQuery(effectiveRequest.getPageNo(), effectiveRequest.getPageSize())));
     }
 
-    @GetMapping("{shareToken}")
-    public ClassicsSharePortalResponse get(@PathVariable("shareToken") String shareToken) {
+    @PostMapping("get")
+    public ClassicsSharePortalResponse get(@Valid @RequestBody ClassicsSharePortalSearchRequest request) {
+        String shareToken = request == null ? null : request.getShareToken();
         try {
             return ClassicsSharingPortalInterfaceAssembler.toResponse(service.getPortalShare(shareToken), shareToken);
         } catch (BizException exception) {
@@ -57,6 +62,7 @@ public class ClassicsSharingPortalController {
         }
     }
 
+    @PostJsonApiExempt(reason = "文件内容需要浏览器直链预览或下载")
     @GetMapping("{shareToken}/resources/{storageObjectId}/content")
     public void content(
             @PathVariable("shareToken") String shareToken,

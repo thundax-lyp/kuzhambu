@@ -1,8 +1,7 @@
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
-import { queryClient } from "@/query/query-client";
 import { QaAdminPage } from "./qa-admin-page";
 
 const mocks = vi.hoisted(() => ({
@@ -30,9 +29,19 @@ vi.mock("./qa-admin-service", () => ({
     createKnowledgeSync: mocks.createKnowledgeSync
 }));
 
+const createTestQueryClient = () =>
+    new QueryClient({
+        defaultOptions: {
+            queries: {
+                retry: false
+            }
+        }
+    });
+
 const renderPage = () => {
+    const testQueryClient = createTestQueryClient();
     return render(
-        <QueryClientProvider client={queryClient}>
+        <QueryClientProvider client={testQueryClient}>
             <AntdApp>
                 <QaAdminPage />
             </AntdApp>
@@ -50,7 +59,7 @@ const findButtonByNormalizedText = (text: string) => {
 
 describe("QaAdminPage", () => {
     beforeEach(() => {
-        queryClient.clear();
+        vi.clearAllMocks();
         mocks.getKnowledgeHealth.mockResolvedValue({
             checkedAt: 1700000000000,
             knowledgeBaseName: "kuzhambu-qa",
@@ -142,7 +151,6 @@ describe("QaAdminPage", () => {
 
     afterEach(() => {
         cleanup();
-        queryClient.clear();
         vi.restoreAllMocks();
     });
 

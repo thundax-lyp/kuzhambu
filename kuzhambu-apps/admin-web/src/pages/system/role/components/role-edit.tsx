@@ -1,4 +1,4 @@
-import { Button, Form, Input, Tree, Typography } from "antd";
+import { Form, Input, Tree, Typography } from "antd";
 import type { DataNode } from "antd/es/tree";
 import { useEffect, useState } from "react";
 import type { Key } from "react";
@@ -7,6 +7,7 @@ import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import type { OptionsRecord } from "@/types/options";
 import type { RoleSaveCommand } from "../role-service";
 import type { RoleRecord } from "../role-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -107,10 +108,12 @@ export const RoleEdit = ({
             onClose={onClose}
             footer={
                 <div className="role-edit-footer">
-                    <Button onClick={onClose}>取消</Button>
-                    <Button type="primary" loading={saving} onClick={saveRole}>
+                    <KuzhambuButton name="取消" onClick={onClose}>
+                        取消
+                    </KuzhambuButton>
+                    <KuzhambuButton name="保存" type="primary" loading={saving} onClick={saveRole}>
                         保存
-                    </Button>
+                    </KuzhambuButton>
                 </div>
             }
         >

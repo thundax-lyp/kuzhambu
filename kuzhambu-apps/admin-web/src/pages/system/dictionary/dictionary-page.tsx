@@ -1,6 +1,6 @@
 import { BookOutlined, DeleteOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Input, Typography } from "antd";
+import { App, Input, Typography } from "antd";
 import { useMemo, useState } from "react";
 import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
@@ -14,6 +14,7 @@ import { DictionaryEdit } from "./components/dictionary-edit";
 import * as dictionaryService from "./dictionary-service";
 import type { DictPageQuery, DictSaveCommand } from "./dictionary-service";
 import type { DictRecord } from "./dictionary-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./dictionary-page.css";
 
 const { Text } = Typography;
@@ -270,15 +271,20 @@ export const DictionaryPage = () => {
                 onFilterApply={applyFilters}
                 onFilterReset={resetFilters}
                 pageActions={
-                    <Button icon={<ReloadOutlined />} onClick={() => dictionaryQuery.refetch()}>
+                    <KuzhambuButton
+                        name="刷新"
+                        icon={<ReloadOutlined />}
+                        onClick={() => dictionaryQuery.refetch()}
+                    >
                         刷新
-                    </Button>
+                    </KuzhambuButton>
                 }
                 batchClassName="dictionary-table-toolbar"
                 selectedCount={selectedRowKeys.length}
                 batchActions={
                     <KuzhambuSpace wrap>
-                        <Button
+                        <KuzhambuButton
+                            name="批量删除"
                             danger
                             icon={<DeleteOutlined />}
                             disabled={!canEditDictionary || !hasSelectedDictionaries}
@@ -286,7 +292,7 @@ export const DictionaryPage = () => {
                             onClick={() => confirmDelete(selectedRowKeys.map(String))}
                         >
                             批量删除
-                        </Button>
+                        </KuzhambuButton>
                     </KuzhambuSpace>
                 }
                 rowKey="id"

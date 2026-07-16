@@ -21,6 +21,7 @@ import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiCategoryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVolumeIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategoryOverview;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
@@ -70,6 +71,11 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     @Override
     public List<SancaiCategory> listCategories() {
         return repository.listCategories(SortDirection.ASC);
+    }
+
+    @Override
+    public List<SancaiCategoryOverview> listCategoryOverviews() {
+        return repository.listCategoryOverviews(SortDirection.ASC);
     }
 
     @Override
@@ -757,7 +763,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
             return "恢复发布条目";
         }
         if (targetStatus == SancaiEntryLifecycleStatus.ARCHIVED) {
-            return "归档条目";
+            return "下线条目";
         }
         return "发布条目";
     }

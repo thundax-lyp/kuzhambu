@@ -187,7 +187,7 @@ class SancaiApplicationServiceImplTest {
         assertLifecycleTransition(
                 1101L, SancaiEntryLifecycleStatus.DRAFT, SancaiEntryLifecycleStatus.PUBLISHED, "发布条目");
         assertLifecycleTransition(
-                1102L, SancaiEntryLifecycleStatus.PUBLISHED, SancaiEntryLifecycleStatus.ARCHIVED, "归档条目");
+                1102L, SancaiEntryLifecycleStatus.PUBLISHED, SancaiEntryLifecycleStatus.ARCHIVED, "下线条目");
         assertLifecycleTransition(
                 1103L, SancaiEntryLifecycleStatus.ARCHIVED, SancaiEntryLifecycleStatus.PUBLISHED, "恢复发布条目");
     }

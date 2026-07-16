@@ -5,7 +5,7 @@ import {
     ReloadOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Button, Card, Descriptions, Select, Statistic, Typography } from "antd";
+import { Alert, App, Card, Descriptions, Select, Statistic, Typography } from "antd";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
@@ -17,6 +17,7 @@ import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import * as service from "./cleanup-service";
 import type { CleanupExecuteCommand, CleanupPageQuery } from "./cleanup-service";
 import type { OperationsCleanupRecord } from "./cleanup-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./cleanup-page.css";
 
 const { Text, Title } = Typography;
@@ -261,9 +262,13 @@ export const CleanupPage = () => {
                             />
                         </label>
                         <div className="operations-cleanup-toolbar-actions">
-                            <Button icon={<ReloadOutlined />} onClick={() => void refreshPage()}>
+                            <KuzhambuButton
+                                name="刷新"
+                                icon={<ReloadOutlined />}
+                                onClick={() => void refreshPage()}
+                            >
                                 刷新
-                            </Button>
+                            </KuzhambuButton>
                             {canExecuteCleanup ? (
                                 <Select
                                     aria-label="执行清理类型"
@@ -321,12 +326,13 @@ export const CleanupPage = () => {
                                                                 record.failureReason
                                                             )}
                                                         </Text>
-                                                        <Button
+                                                        <KuzhambuButton
+                                                            name="查看告警"
                                                             href={buildAlertPath(record.cleanupId)}
                                                             size="small"
                                                         >
                                                             查看告警
-                                                        </Button>
+                                                        </KuzhambuButton>
                                                     </KuzhambuSpace>
                                                 ) : null}
                                             </td>
@@ -335,8 +341,8 @@ export const CleanupPage = () => {
                                             <td>{formatDateTime(record.completedAt)}</td>
                                             <td>
                                                 <KuzhambuSpace size={8} wrap>
-                                                    <Button
-                                                        aria-label="详情"
+                                                    <KuzhambuButton
+                                                        name="详情"
                                                         icon={<LoadingOutlined />}
                                                         onClick={() =>
                                                             openCleanupDetail(
@@ -347,11 +353,11 @@ export const CleanupPage = () => {
                                                         size="small"
                                                     >
                                                         详情
-                                                    </Button>
+                                                    </KuzhambuButton>
                                                     {hasFailure ? (
-                                                        <Button
+                                                        <KuzhambuButton
+                                                            name="失败项"
                                                             danger
-                                                            aria-label="失败项"
                                                             icon={<DeleteOutlined />}
                                                             onClick={() =>
                                                                 openCleanupDetail(
@@ -362,7 +368,7 @@ export const CleanupPage = () => {
                                                             size="small"
                                                         >
                                                             失败项
-                                                        </Button>
+                                                        </KuzhambuButton>
                                                     ) : null}
                                                 </KuzhambuSpace>
                                             </td>
@@ -380,21 +386,23 @@ export const CleanupPage = () => {
                     </table>
 
                     <div className="operations-cleanup-pagination">
-                        <Button
+                        <KuzhambuButton
+                            name="上一页"
                             disabled={pageNo <= DEFAULT_PAGE_NO}
                             onClick={() => setPageNo((currentPage) => currentPage - 1)}
                         >
                             上一页
-                        </Button>
+                        </KuzhambuButton>
                         <Text type="secondary">
                             第 {pageNo} / {totalPage} 页，共 {totalCount} 条
                         </Text>
-                        <Button
+                        <KuzhambuButton
+                            name="下一页"
                             disabled={pageNo >= totalPage}
                             onClick={() => setPageNo((currentPage) => currentPage + 1)}
                         >
                             下一页
-                        </Button>
+                        </KuzhambuButton>
                     </div>
                 </Card>
             </section>
@@ -467,12 +475,13 @@ export const CleanupPage = () => {
                         {detailRecord.cleanupStatus === "FAILED" ? (
                             <Alert
                                 action={
-                                    <Button
+                                    <KuzhambuButton
+                                        name="查看告警"
                                         href={buildAlertPath(detailRecord.cleanupId)}
                                         size="small"
                                     >
                                         查看告警
-                                    </Button>
+                                    </KuzhambuButton>
                                 }
                                 description={`${failureReasonText(detailRecord.failureReason)}。请检查清理目标和失败项明细，必要时重新发起业务动作。`}
                                 message="清理任务执行失败"

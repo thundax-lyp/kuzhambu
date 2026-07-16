@@ -1,5 +1,4 @@
-import { ADMIN_API_BASE_URL, getJson, postFormData, postJson } from "@/api/http";
-import type { Page } from "@/types/page";
+import { ADMIN_API_BASE_URL, postFormData, postJson } from "@/api/http";
 import type {
     SancaiContentVersionRecord,
     SancaiEntryImageContentMode,
@@ -7,13 +6,11 @@ import type {
     SancaiEntryLifecycleStatus,
     SancaiEntryRecord,
     SancaiRefinementBatchRecord,
-    SancaiShowcaseRecord,
     SancaiVisualAssetRecord
 } from "../sancai-types";
 
 const ENTRIES_PATH = "/classics/sancai/entries";
 const ASSET_IMAGES_PATH = "/classics/sancai/assets/images";
-const ASSET_SHOWCASES_PATH = "/classics/sancai/assets/showcases";
 const ASSET_VISUAL_ASSETS_PATH = "/classics/sancai/assets/visual-assets";
 
 export interface SancaiEntryQuery {
@@ -125,31 +122,6 @@ export interface SancaiRefinementBatchCreateCommand {
     totalCount: number;
 }
 
-// prettier-ignore
-export type SancaiShowcaseStatus =
-    | "REQUESTED"
-    | "PROCESSING"
-    | "COMPLETED"
-    | "FAILED"
-    | "EXPIRED";
-
-export interface SancaiShowcaseCreateCommand {
-    scopeJson?: string | null;
-    scopeTitle?: string | null;
-    visibilityRiskStatus?: string | null;
-    privateConfirmed?: boolean | null;
-}
-
-export interface SancaiShowcasePageQuery {
-    keyword?: string | null;
-    pageNo?: number | null;
-    pageSize?: number | null;
-    requestedAtEnd?: string | null;
-    requestedAtStart?: string | null;
-    status?: SancaiShowcaseStatus | null;
-    visibilityRiskStatus?: string | null;
-}
-
 export const list = (request: SancaiEntryQuery = {}) => {
     return postJson<SancaiEntryRecord[], SancaiEntryQuery>(`${ENTRIES_PATH}/list`, {
         body: request
@@ -157,7 +129,9 @@ export const list = (request: SancaiEntryQuery = {}) => {
 };
 
 export const get = (id: number) => {
-    return getJson<SancaiEntryRecord>(`${ENTRIES_PATH}/${id}`);
+    return postJson<SancaiEntryRecord, SancaiEntryCommand>(`${ENTRIES_PATH}/get`, {
+        body: { id }
+    });
 };
 
 export const add = (request: SancaiEntryCommand) => {
@@ -191,7 +165,9 @@ export const sort = (request: SancaiEntrySortCommand) => {
 };
 
 export const listImages = (entryId: number) => {
-    return getJson<SancaiEntryImageRecord[]>(`${ASSET_IMAGES_PATH}/${entryId}`);
+    return postJson<SancaiEntryImageRecord[], { entryId: number }>(`${ASSET_IMAGES_PATH}/list`, {
+        body: { entryId }
+    });
 };
 
 export const deleteImage = (command: SancaiEntryImageMutationCommand) => {
@@ -222,11 +198,17 @@ export const sortImages = (command: SancaiEntryImageSortCommand) => {
 };
 
 export const listVisualAssets = (entryId: number) => {
-    return getJson<SancaiVisualAssetRecord[]>(`${ASSET_VISUAL_ASSETS_PATH}/${entryId}`);
+    return postJson<SancaiVisualAssetRecord[], { entryId: number }>(
+        `${ASSET_VISUAL_ASSETS_PATH}/list`,
+        {
+            body: { entryId }
+        }
+    );
 };
 
 export const uploadImage = (command: SancaiEntryImageUploadCommand) => {
     const body = new FormData();
+    body.append("entryId", String(command.entryId));
     body.append("file", command.file);
     if (command.title) {
         body.append("title", command.title);
@@ -240,10 +222,7 @@ export const uploadImage = (command: SancaiEntryImageUploadCommand) => {
     if (command.replaceImageId) {
         body.append("replaceImageId", String(command.replaceImageId));
     }
-    return postFormData<SancaiEntryImageRecord>(
-        `${ASSET_IMAGES_PATH}/${command.entryId}/upload`,
-        body
-    );
+    return postFormData<SancaiEntryImageRecord>(`${ASSET_IMAGES_PATH}/upload`, body);
 };
 
 export const getImageContentUrl = (request: SancaiEntryImageContentUrlCommand) => {
@@ -293,30 +272,6 @@ export const getVersion = (entryId: number, versionId: number) => {
             body: { id: entryId, versionId }
         }
     );
-};
-
-export const requestShowcase = (command: SancaiShowcaseCreateCommand) => {
-    return postJson<SancaiShowcaseRecord, SancaiShowcaseCreateCommand>(
-        `${ASSET_SHOWCASES_PATH}/request`,
-        {
-            body: command
-        }
-    );
-};
-
-export const pageShowcases = (query: SancaiShowcasePageQuery = {}) => {
-    return postJson<Page<SancaiShowcaseRecord>, SancaiShowcasePageQuery>(
-        `${ASSET_SHOWCASES_PATH}/page`,
-        {
-            body: query
-        }
-    );
-};
-
-export const deleteShowcase = (id: number) => {
-    return postJson<boolean, { id: number }>(`${ASSET_SHOWCASES_PATH}/delete`, {
-        body: { id }
-    });
 };
 
 export const resetVersion = (entryId: number, versionId: number) => {

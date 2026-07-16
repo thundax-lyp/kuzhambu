@@ -1,5 +1,6 @@
-import { Form, Input, InputNumber, Modal } from "antd";
+import { Form, Input, InputNumber } from "antd";
 import { useEffect } from "react";
+import { KuzhambuModal } from "@/components/kuzhambu-modal";
 import type { RefinementRelationRecord } from "../refinement-types";
 
 interface RefinementRelationEditorProps {
@@ -28,7 +29,7 @@ export const RefinementRelationEditor = ({
     }, [form, open, relation]);
 
     return (
-        <Modal
+        <KuzhambuModal
             title={relation?.draftId ? "编辑关系草稿" : "新增关系草稿"}
             open={open}
             confirmLoading={saving}
@@ -67,6 +68,6 @@ export const RefinementRelationEditor = ({
                     <InputNumber min={1} style={{ width: "100%" }} />
                 </Form.Item>
             </Form>
-        </Modal>
+        </KuzhambuModal>
     );
 };

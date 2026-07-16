@@ -62,11 +62,9 @@ public final class AiRefinementRequests {
         @JsonProperty(value = "serviceRole")
         private String serviceRole;
 
-        @NotNull
         @JsonProperty(value = "modelId")
         private Long modelId;
 
-        @NotBlank
         @Size(max = 128)
         @JsonProperty(value = "modelName")
         private String modelName;

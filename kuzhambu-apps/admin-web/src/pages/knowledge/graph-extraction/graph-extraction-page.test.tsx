@@ -1,8 +1,7 @@
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { App as AntdApp } from "antd";
 import { replacePermissions } from "@/auth/permission-storage";
-import { queryClient } from "@/query/query-client";
 import { GraphExtractionPage } from "./graph-extraction-page";
 
 const serviceMocks = vi.hoisted(() => ({
@@ -44,9 +43,29 @@ vi.mock("./graph-extraction-service", () => ({
     ...serviceMocks
 }));
 
+const createTestQueryClient = () =>
+    new QueryClient({
+        defaultOptions: {
+            queries: {
+                retry: false
+            }
+        }
+    });
+
+const renderPage = () => {
+    const testQueryClient = createTestQueryClient();
+    return render(
+        <QueryClientProvider client={testQueryClient}>
+            <AntdApp>
+                <GraphExtractionPage />
+            </AntdApp>
+        </QueryClientProvider>
+    );
+};
+
 describe("GraphExtractionPage", () => {
     beforeEach(() => {
-        queryClient.clear();
+        vi.clearAllMocks();
         replacePermissions([
             "knowledge:graph:view",
             "knowledge:graph:edit",
@@ -57,18 +76,11 @@ describe("GraphExtractionPage", () => {
     afterEach(() => {
         vi.restoreAllMocks();
         window.history.pushState({}, "", "/");
-        queryClient.clear();
         cleanup();
     });
 
     it("renders page shell", async () => {
-        render(
-            <QueryClientProvider client={queryClient}>
-                <AntdApp>
-                    <GraphExtractionPage />
-                </AntdApp>
-            </QueryClientProvider>
-        );
+        renderPage();
 
         expect(await screen.findByRole("heading", { name: "知识抽取任务" })).toBeInTheDocument();
         await waitFor(() => {
@@ -95,13 +107,7 @@ describe("GraphExtractionPage", () => {
             "",
             "/knowledge/graph-extraction?regenerate=1&taskType=GRAPH&sourceTaskId=88&triggerSource=REFINEMENT_APPLIED&replaceUnconfirmedOnly=true&selectionScopeJson=%7B%22sourceContentIds%22%3A%5B1001%5D%7D"
         );
-        render(
-            <QueryClientProvider client={queryClient}>
-                <AntdApp>
-                    <GraphExtractionPage />
-                </AntdApp>
-            </QueryClientProvider>
-        );
+        renderPage();
 
         expect(await screen.findByText("精修应用后的图谱重生成参数已载入")).toBeInTheDocument();
         expect(screen.getByDisplayValue("88")).toBeInTheDocument();

@@ -5,6 +5,12 @@ import { Card } from "@/components/ui/card";
 
 const sections = [
     {
+        title: "三才图会",
+        description: "浏览已发布的三才图会条目、译文与配图",
+        href: "/classics/sancai",
+        icon: BookOpen
+    },
+    {
         title: "分享内容",
         description: "浏览公开分享的古籍版本快照",
         href: "/shares",
@@ -45,6 +51,9 @@ export const HomePage = () => {
                     <h1>古籍知识门户</h1>
                 </div>
                 <div className="portal-header-actions">
+                    <Button asChild className="portal-action" size="lg" variant="outline">
+                        <Link to="/classics/sancai">进入三才图会</Link>
+                    </Button>
                     <Button asChild className="portal-action" size="lg" variant="outline">
                         <Link to="/knowledge">进入知识馆</Link>
                     </Button>

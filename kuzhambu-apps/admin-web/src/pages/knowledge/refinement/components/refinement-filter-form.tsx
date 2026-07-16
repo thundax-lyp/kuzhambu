@@ -1,7 +1,8 @@
-import { Button, Form, Input, Select } from "antd";
+import { Form, Input, Select } from "antd";
 import { useEffect } from "react";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { RefinementTaskPageQuery } from "../refinement-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 interface RefinementFilterFormProps {
     loading?: boolean;
@@ -66,10 +67,11 @@ export const RefinementFilterForm = ({
             </Form.Item>
             <Form.Item>
                 <KuzhambuSpace>
-                    <Button htmlType="submit" loading={loading} type="primary">
+                    <KuzhambuButton name="筛选" htmlType="submit" loading={loading} type="primary">
                         筛选
-                    </Button>
-                    <Button
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="重置"
                         onClick={() => {
                             form.setFieldsValue({
                                 taskType: undefined,
@@ -81,7 +83,7 @@ export const RefinementFilterForm = ({
                         }}
                     >
                         重置
-                    </Button>
+                    </KuzhambuButton>
                 </KuzhambuSpace>
             </Form.Item>
         </Form>

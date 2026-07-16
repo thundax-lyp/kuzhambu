@@ -36,12 +36,3 @@ export interface ClassicsExportScopePayload {
     scopeType: "SELECTED_ITEMS" | "FILTERED_RESULT";
     items: ClassicsExportScopePayloadItem[];
 }
-
-export interface ClassicsShowcaseJobRecord {
-    id?: number | null;
-    status?: string | null;
-    requestedAt?: string | null;
-    entryCount?: number | null;
-    visibilityRiskStatus?: string | null;
-    downloadUrl?: string | null;
-}

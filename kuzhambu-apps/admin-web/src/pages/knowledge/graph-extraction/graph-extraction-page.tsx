@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Button, Card, Empty, Typography } from "antd";
+import { Alert, App, Card, Empty, Typography } from "antd";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
@@ -16,6 +16,7 @@ import type {
     GraphExtractionTaskPageQuery,
     GraphExtractionTaskRecord
 } from "./graph-extraction-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./graph-extraction-page.css";
 
 const { Paragraph, Text, Title } = Typography;
@@ -243,12 +244,18 @@ export const GraphExtractionPage = () => {
                             }
                             showIcon
                         />
-                        <Button onClick={() => setCreateTriggerSource(MANUAL_TRIGGER_SOURCE)}>
+                        <KuzhambuButton
+                            name="切换为手工触发"
+                            onClick={() => setCreateTriggerSource(MANUAL_TRIGGER_SOURCE)}
+                        >
                             切换为手工触发
-                        </Button>
-                        <Button onClick={() => setCreateTriggerSource(QUALITY_TRIGGER_SOURCE)}>
+                        </KuzhambuButton>
+                        <KuzhambuButton
+                            name="切换为质量结果触发"
+                            onClick={() => setCreateTriggerSource(QUALITY_TRIGGER_SOURCE)}
+                        >
                             切换为质量结果触发
-                        </Button>
+                        </KuzhambuButton>
                     </KuzhambuSpace>
                     <GraphExtractionCreate
                         canEdit={canEditGraph}

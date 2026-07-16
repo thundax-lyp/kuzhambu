@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.common.core.crypto.Sm2Crypto;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
+import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiResponse;
@@ -337,6 +338,7 @@ public class UserController {
     })
     @HasPermission(value = "sys:user:edit")
     @SysLogger(value = "上传头像")
+    @PostJsonApiExempt(reason = "头像上传必须使用 multipart/form-data 承载文件流")
     @PostMapping(value = "avatar/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @WrappedApiResponse
     public Boolean uploadAvatar(@RequestParam("id") String id, MultipartFile avatar) {
@@ -522,6 +524,7 @@ public class UserController {
     })
     @HasPermission(value = "user")
     @IgnoreSysLogger
+    @PostJsonApiExempt(reason = "头像图片需要浏览器直链读取")
     @GetMapping(value = "avatar")
     public void avatarImage(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String userId = request.getParameter("id");

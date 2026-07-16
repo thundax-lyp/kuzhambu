@@ -60,6 +60,8 @@ public final class ApiAnnotationArchitectureRuleSupport {
             Pattern.compile("@RequestMapping\\s*\\(\\s*(?:value\\s*=\\s*)?\"([^\"]+)\"");
     private static final Pattern METHOD_MAPPING_VALUE_PATTERN = Pattern.compile(
             "@(GetMapping|PostMapping|PutMapping|DeleteMapping|PatchMapping)\\s*\\(\\s*(?:value\\s*=\\s*)?\"([^\"]+)\"");
+    private static final Pattern POST_JSON_API_EXEMPT_REASON_PATTERN =
+            Pattern.compile("@PostJsonApiExempt\\s*\\(\\s*reason\\s*=\\s*\"([^\"]+)\"");
     private static final Pattern RESPONSE_CONSTRUCTOR_PATTERN =
             Pattern.compile("new\\s+([A-Za-z0-9_]+Response)\\s*\\(");
 
@@ -117,6 +119,20 @@ public final class ApiAnnotationArchitectureRuleSupport {
                 "PostMapping methods must use no parameter, a @Valid @RequestBody *Request/List<*Request> "
                         + "parameter, or multipart form parameters, and return void, Boolean, String, *Response, "
                         + "List<*Response>, or PageResponse<*Response>: " + violations,
+                violations.isEmpty());
+    }
+
+    public static void assertPostMappingMethodsDoNotUsePathOrQueryParameters(Path sourceRoot) throws IOException {
+        Path root = ArchitectureSourceSupport.repositoryRoot();
+        List<String> violations = new ArrayList<String>();
+
+        try (Stream<Path> paths = controllerSources(sourceRoot)) {
+            paths.filter(path -> path.getFileName().toString().endsWith("Controller.java"))
+                    .forEach(path -> collectPostMappingPathOrQueryParameterViolations(root, path, violations));
+        }
+
+        assertTrue(
+                "API methods must use HTTP POST + JSON body unless @PostJsonApiExempt declares a reason: " + violations,
                 violations.isEmpty());
     }
 
@@ -333,6 +349,11 @@ public final class ApiAnnotationArchitectureRuleSupport {
             }
             collectMissingAnnotation(root, path, methodName, annotations, "@Operation", violations);
             collectMissingAnnotation(root, path, methodName, annotations, "@ApiImplicitParams", violations);
+            if (requiresAccessTokenHeader(classAnnotations, annotations)
+                    && !annotations.contains("AccessTokenNames.HEADER_TOKEN")) {
+                violations.add(ArchitectureSourceSupport.repositoryPath(root, path) + " method=" + methodName
+                        + " missing=@ApiImplicitParams AccessTokenNames.HEADER_TOKEN");
+            }
             if (!accessAnnotatedClass
                     && !annotations.contains("@PublicApi")
                     && !annotations.contains("@HasPermission")) {
@@ -348,6 +369,14 @@ public final class ApiAnnotationArchitectureRuleSupport {
             }
             previousMethodEnd = matcher.end();
         }
+    }
+
+    private static boolean requiresAccessTokenHeader(String classAnnotations, String methodAnnotations) {
+        if (methodAnnotations.contains("@PublicApi")) {
+            return false;
+        }
+        return methodAnnotations.contains("@HasPermission")
+                || (classAnnotations.contains("@HasPermission") && !classAnnotations.contains("@PublicApi"));
     }
 
     private static void collectPostMappingShapeViolations(Path root, Path path, List<String> violations) {
@@ -377,6 +406,61 @@ public final class ApiAnnotationArchitectureRuleSupport {
             if (!hasPostResponseShape(signature, methodName)) {
                 violations.add(ArchitectureSourceSupport.repositoryPath(root, path) + " method=" + methodName
                         + " return=" + compact(signature));
+            }
+            previousMethodEnd = matcher.end();
+        }
+    }
+
+    private static void collectPostMappingPathOrQueryParameterViolations(
+            Path root, Path path, List<String> violations) {
+        String content = ArchitectureSourceSupport.readSource(path);
+        if (restControllerClassAnnotations(content).length() == 0) {
+            return;
+        }
+        Matcher matcher = PUBLIC_METHOD_DECLARATION_PATTERN.matcher(content);
+        int previousMethodEnd = restControllerClassEnd(content);
+        while (matcher.find()) {
+            String annotations = directMethodAnnotations(content.substring(previousMethodEnd, matcher.start()));
+            String methodName = matcher.group(1);
+            boolean exempt = annotations.contains("@PostJsonApiExempt");
+            if (!isMappedMethod(annotations) && !exempt) {
+                previousMethodEnd = matcher.end();
+                continue;
+            }
+            int methodBodyStart = content.indexOf("{", matcher.end());
+            if (methodBodyStart < 0) {
+                previousMethodEnd = matcher.end();
+                continue;
+            }
+            String signature = content.substring(matcher.start(), methodBodyStart);
+            String parameters = parameters(signature);
+            if (exempt) {
+                if (!hasPostJsonApiExemptReason(annotations)) {
+                    violations.add(ArchitectureSourceSupport.repositoryPath(root, path) + " method=" + methodName
+                            + " exemption=missing-reason");
+                }
+                previousMethodEnd = matcher.end();
+                continue;
+            }
+            if (!annotations.contains("@PostMapping")) {
+                violations.add(ArchitectureSourceSupport.repositoryPath(root, path) + " method=" + methodName
+                        + " mapping=POST_JSON_REQUIRED");
+            }
+            if (postMappingPathContainsTemplate(annotations)) {
+                violations.add(ArchitectureSourceSupport.repositoryPath(root, path) + " method=" + methodName
+                        + " path=template-variable");
+            }
+            if (parameters.contains("@PathVariable")) {
+                violations.add(ArchitectureSourceSupport.repositoryPath(root, path) + " method=" + methodName
+                        + " parameter=@PathVariable");
+            }
+            if (parameters.contains("@RequestParam")) {
+                violations.add(ArchitectureSourceSupport.repositoryPath(root, path) + " method=" + methodName
+                        + " parameter=@RequestParam");
+            }
+            if (isMultipartParameterShape(annotations, parameters)) {
+                violations.add(ArchitectureSourceSupport.repositoryPath(root, path) + " method=" + methodName
+                        + " consumes=multipart/form-data");
             }
             previousMethodEnd = matcher.end();
         }
@@ -756,6 +840,41 @@ public final class ApiAnnotationArchitectureRuleSupport {
     private static boolean containsRestControllerAnnotation(String annotations) {
         for (String annotation : REST_CONTROLLER_ANNOTATIONS) {
             if (annotations.contains(annotation)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean hasPostJsonApiExemptReason(String annotations) {
+        Matcher matcher = POST_JSON_API_EXEMPT_REASON_PATTERN.matcher(annotations);
+        return matcher.find() && matcher.group(1).trim().length() > 0;
+    }
+
+    private static String directMethodAnnotations(String contentBeforeMethod) {
+        int firstBlockStart = contentBeforeMethod.indexOf('{');
+        if (firstBlockStart < 0) {
+            return contentBeforeMethod;
+        }
+        int depth = 0;
+        for (int i = firstBlockStart; i < contentBeforeMethod.length(); i++) {
+            char character = contentBeforeMethod.charAt(i);
+            if (character == '{') {
+                depth++;
+            } else if (character == '}') {
+                depth--;
+                if (depth == 0) {
+                    return contentBeforeMethod.substring(i + 1);
+                }
+            }
+        }
+        return contentBeforeMethod;
+    }
+
+    private static boolean postMappingPathContainsTemplate(String annotations) {
+        Matcher matcher = METHOD_MAPPING_VALUE_PATTERN.matcher(annotations);
+        while (matcher.find()) {
+            if ("PostMapping".equals(matcher.group(1)) && matcher.group(2).contains("{")) {
                 return true;
             }
         }

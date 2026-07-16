@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller;
 
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
@@ -17,6 +18,8 @@ import com.thundax.kuzhambu.discovery.interfaces.admin.qa.assembler.DiscoveryQaA
 import com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.request.DiscoveryQaAdminRequests;
 import com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.response.DiscoveryQaAdminResponses;
 import com.thundax.kuzhambu.discovery.interfaces.common.DiscoveryInterfaceIdCodec;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -46,6 +49,13 @@ public class DiscoveryQaAdminController {
     @HasPermission("discovery:qa:view")
     @IgnoreSysLogger
     @PostMapping("knowledge/health")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public DiscoveryQaAdminResponses.QaKnowledgeHealthResponse getKnowledgeHealth() {
         return DiscoveryQaAdminInterfaceAssembler.toHealthResponse(knowledgeSyncApplicationService.health());
     }
@@ -54,6 +64,13 @@ public class DiscoveryQaAdminController {
     @HasPermission("discovery:qa:edit")
     @IgnoreSysLogger
     @PostMapping("knowledge/rebuild")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public Long rebuildKnowledge() {
         return knowledgeSyncApplicationService.rebuild();
     }
@@ -62,6 +79,13 @@ public class DiscoveryQaAdminController {
     @HasPermission("discovery:qa:edit")
     @IgnoreSysLogger
     @PostMapping("knowledge/sync")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public DiscoveryQaAdminResponses.QaSyncItemResponse syncKnowledge(
             @Valid @RequestBody DiscoveryQaAdminRequests.KnowledgeSyncRequest request) {
         KnowledgeSyncItemResult result = knowledgeSyncApplicationService.syncContent(toSyncContentCommand(request));
@@ -72,6 +96,13 @@ public class DiscoveryQaAdminController {
     @HasPermission("discovery:qa:view")
     @IgnoreSysLogger
     @PostMapping("knowledge/sync/page")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public PageResponse<DiscoveryQaAdminResponses.QaSyncItemResponse> pageKnowledgeSyncItems(
             @Valid @RequestBody DiscoveryQaAdminRequests.KnowledgeSyncPageRequest request) {
         return PageResponseHelper.fromPageResult(
@@ -83,6 +114,13 @@ public class DiscoveryQaAdminController {
     @HasPermission("discovery:qa:view")
     @IgnoreSysLogger
     @PostMapping("session/get")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public DiscoveryQaAdminResponses.QaSessionDetailResponse getSession(
             @Valid @RequestBody DiscoveryQaAdminRequests.QaSessionGetRequest request) {
         return DiscoveryQaAdminInterfaceAssembler.toSessionDetailResponse(
@@ -93,6 +131,13 @@ public class DiscoveryQaAdminController {
     @HasPermission("discovery:qa:edit")
     @IgnoreSysLogger
     @PostMapping("session/delete")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public void deleteSession(@Valid @RequestBody DiscoveryQaAdminRequests.QaSessionDeleteRequest request) {
         qaApplicationService.deleteSession(toDeleteSessionCommand(request));
     }
@@ -101,6 +146,13 @@ public class DiscoveryQaAdminController {
     @HasPermission("discovery:qa:view")
     @IgnoreSysLogger
     @PostMapping("session/export")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public DiscoveryQaAdminResponses.QaSessionExportResponse exportSession(
             @Valid @RequestBody DiscoveryQaAdminRequests.QaSessionExportRequest request) {
         return DiscoveryQaAdminInterfaceAssembler.toSessionExportResponse(
@@ -111,6 +163,13 @@ public class DiscoveryQaAdminController {
     @HasPermission("discovery:qa:view")
     @IgnoreSysLogger
     @PostMapping("source/list")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public List<DiscoveryQaAdminResponses.QaSourceResponse> listSources(
             @Valid @RequestBody DiscoveryQaAdminRequests.QaSourceListRequest request) {
         return DiscoveryQaAdminInterfaceAssembler.toSourceResponses(qaApplicationService.listSourcesByMessageId(
@@ -121,6 +180,13 @@ public class DiscoveryQaAdminController {
     @HasPermission("discovery:qa:view")
     @IgnoreSysLogger
     @PostMapping("trace/get")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public DiscoveryQaAdminResponses.QaTraceResponse getTrace(
             @Valid @RequestBody DiscoveryQaAdminRequests.QaTraceGetRequest request) {
         return DiscoveryQaAdminInterfaceAssembler.toTraceResponse(

@@ -31,6 +31,7 @@ import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
+import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
@@ -39,13 +40,12 @@ import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.common.web.response.DictResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -64,25 +64,43 @@ public class SancaiAdminController {
     }
 
     @Operation(summary = "查询三才图会门类类型", description = "classics:sancai:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "门类类型")
-    @GetMapping("categories/types")
+    @PostMapping("categories/types/list")
     public List<DictResponse> listCategoryTypes() {
         return SancaiInterfaceAssembler.toCategoryTypes();
     }
 
     @Operation(summary = "查询三才图会卷目类型", description = "classics:sancai:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "卷目类型")
-    @GetMapping("volumes/types")
+    @PostMapping("volumes/types/list")
     public List<DictResponse> listVolumeTypes() {
         return SancaiInterfaceAssembler.toVolumeTypes();
     }
 
     @Operation(summary = "查询三才图会门类", description = "classics:sancai:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "门类列表")
     @PostMapping("categories/list")
@@ -93,16 +111,29 @@ public class SancaiAdminController {
     }
 
     @Operation(summary = "查看三才图会门类", description = "classics:sancai:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "门类详情")
-    @GetMapping("categories/{id}")
-    public SancaiCategoryResponse getCategory(@PathVariable Long id) {
-        return SancaiInterfaceAssembler.toResponse(service.getCategory(SancaiCategoryIdCodec.toDomain(id)));
+    @PostMapping("categories/get")
+    public SancaiCategoryResponse getCategory(@Valid @RequestBody SancaiCategoryRequest request) {
+        Long categoryId = requireParameter(request == null ? null : request.getId(), "id");
+        return SancaiInterfaceAssembler.toResponse(service.getCategory(SancaiCategoryIdCodec.toDomain(categoryId)));
     }
 
     @Operation(summary = "新增三才图会门类", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "门类新增")
     @PostMapping("categories/add")
@@ -114,7 +145,13 @@ public class SancaiAdminController {
     }
 
     @Operation(summary = "更新三才图会门类", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "门类更新")
     @PostMapping("categories/update")
@@ -126,7 +163,13 @@ public class SancaiAdminController {
     }
 
     @Operation(summary = "删除三才图会门类", description = "classics:sancai:delete")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:delete")
     @SysLogger(value = "门类删除")
     @PostMapping("categories/delete")
@@ -135,7 +178,13 @@ public class SancaiAdminController {
     }
 
     @Operation(summary = "查询三才图会卷", description = "classics:sancai:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "卷列表")
     @PostMapping("volumes/list")
@@ -148,16 +197,29 @@ public class SancaiAdminController {
     }
 
     @Operation(summary = "查看三才图会卷", description = "classics:sancai:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "卷详情")
-    @GetMapping("volumes/{id}")
-    public SancaiVolumeResponse getVolume(@PathVariable Long id) {
-        return SancaiInterfaceAssembler.toResponse(service.getVolume(SancaiVolumeIdCodec.toDomain(id)));
+    @PostMapping("volumes/get")
+    public SancaiVolumeResponse getVolume(@Valid @RequestBody SancaiVolumeRequest request) {
+        Long volumeId = requireParameter(request == null ? null : request.getId(), "id");
+        return SancaiInterfaceAssembler.toResponse(service.getVolume(SancaiVolumeIdCodec.toDomain(volumeId)));
     }
 
     @Operation(summary = "新增三才图会卷", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "卷新增")
     @PostMapping("volumes/add")
@@ -167,7 +229,13 @@ public class SancaiAdminController {
     }
 
     @Operation(summary = "更新三才图会卷", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "卷更新")
     @PostMapping("volumes/update")
@@ -177,7 +245,13 @@ public class SancaiAdminController {
     }
 
     @Operation(summary = "删除三才图会卷", description = "classics:sancai:delete")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:delete")
     @SysLogger(value = "卷删除")
     @PostMapping("volumes/delete")
@@ -186,7 +260,13 @@ public class SancaiAdminController {
     }
 
     @Operation(summary = "分页查询三才图会条目", description = "classics:sancai:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "分页查询")
     @PostMapping("entries/page")
@@ -199,7 +279,13 @@ public class SancaiAdminController {
     }
 
     @Operation(summary = "查询三才图会条目", description = "classics:sancai:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "条目列表")
     @PostMapping("entries/list")
@@ -212,12 +298,18 @@ public class SancaiAdminController {
     }
 
     @Operation(summary = "查看三才图会条目", description = "classics:sancai:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "详情")
-    @GetMapping("entries/{id}")
-    public SancaiEntryResponse getEntry(@PathVariable Long id) {
-        Long entryId = requireParameter(id, "id");
+    @PostMapping("entries/get")
+    public SancaiEntryResponse getEntry(@Valid @RequestBody SancaiEntryRequest request) {
+        Long entryId = requireParameter(request == null ? null : request.getId(), "id");
         return SancaiInterfaceAssembler.toResponse(
                 service.getEntry(SancaiEntryIdCodec.toDomain(entryId)),
                 contentService.listTags(
@@ -225,7 +317,13 @@ public class SancaiAdminController {
     }
 
     @Operation(summary = "新增三才图会条目", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "新增")
     @PostMapping("entries/add")
@@ -235,7 +333,13 @@ public class SancaiAdminController {
     }
 
     @Operation(summary = "更新三才图会条目", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "更新")
     @PostMapping("entries/update")
@@ -245,7 +349,13 @@ public class SancaiAdminController {
     }
 
     @Operation(summary = "变更三才图会条目生命周期", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "生命周期变更")
     @PostMapping("entries/lifecycle/change")
@@ -256,7 +366,13 @@ public class SancaiAdminController {
     }
 
     @Operation(summary = "查询三才图会条目版本", description = "classics:sancai:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "版本列表")
     @PostMapping("entries/versions/list")
@@ -270,7 +386,13 @@ public class SancaiAdminController {
     }
 
     @Operation(summary = "查看三才图会条目版本", description = "classics:sancai:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "版本详情")
     @PostMapping("entries/versions/get")
@@ -281,7 +403,13 @@ public class SancaiAdminController {
     }
 
     @Operation(summary = "恢复三才图会条目版本", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "版本恢复")
     @PostMapping("entries/versions/reset")
@@ -294,7 +422,13 @@ public class SancaiAdminController {
     }
 
     @Operation(summary = "排序三才图会门类", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "门类排序")
     @PostMapping("categories/sort")
@@ -311,7 +445,13 @@ public class SancaiAdminController {
     }
 
     @Operation(summary = "排序三才图会卷", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "卷排序")
     @PostMapping("volumes/sort")
@@ -328,7 +468,13 @@ public class SancaiAdminController {
     }
 
     @Operation(summary = "排序三才图会条目", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "条目排序")
     @PostMapping("entries/sort")
@@ -345,7 +491,13 @@ public class SancaiAdminController {
     }
 
     @Operation(summary = "删除三才图会条目", description = "classics:sancai:delete")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:delete")
     @SysLogger(value = "删除")
     @PostMapping("entries/delete")

@@ -1,7 +1,8 @@
-import { Button, Table, Tag } from "antd";
+import { Table, Tag } from "antd";
 import { KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
 import type { ColumnsType } from "antd/es/table";
 import type { QualityReportIssueRecord } from "../quality-report-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 interface QualityReportIssueTableProps {
     issues: QualityReportIssueRecord[];
@@ -41,9 +42,13 @@ export const QualityReportIssueTable = ({ issues }: QualityReportIssueTableProps
             key: "actions",
             render: (_, issue) => (
                 <KuzhambuSpaceCompact>
-                    <Button disabled={!issue.href} href={issue.href || undefined}>
+                    <KuzhambuButton
+                        name="打开"
+                        disabled={!issue.href}
+                        href={issue.href || undefined}
+                    >
                         打开
-                    </Button>
+                    </KuzhambuButton>
                 </KuzhambuSpaceCompact>
             )
         }

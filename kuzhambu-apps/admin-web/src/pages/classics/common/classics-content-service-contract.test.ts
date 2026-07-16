@@ -177,26 +177,21 @@ describe("classics content service request contracts", () => {
         localStorage.clear();
     });
 
-    it("sends GET list requests for tags and qa pairs", async () => {
-        await contentService.listTags({
+    it("sends POST list requests for tags and qa pairs", async () => {
+        const tagQuery = {
             contentType: "SANCAI_ENTRY",
             contentId: 3001
-        });
-        expectLastCall(
-            "GET",
-            "/classics/content/tags?contentType=SANCAI_ENTRY&contentId=3001",
-            undefined
-        );
-
-        await contentService.listQaPairs({
+        };
+        const qaPairQuery = {
             contentType: "WANGQI_DOCUMENT",
             contentId: 4001
-        });
-        expectLastCall(
-            "GET",
-            "/classics/content/qa-pairs?contentType=WANGQI_DOCUMENT&contentId=4001",
-            undefined
-        );
+        };
+
+        await contentService.listTags(tagQuery);
+        expectLastCall("POST", "/classics/content/tags/list", tagQuery);
+
+        await contentService.listQaPairs(qaPairQuery);
+        expectLastCall("POST", "/classics/content/qa-pairs/list", qaPairQuery);
     });
 
     it("sends tag add/update/sort commands", async () => {

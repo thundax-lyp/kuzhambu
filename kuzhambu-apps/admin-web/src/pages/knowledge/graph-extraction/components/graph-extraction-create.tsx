@@ -1,4 +1,4 @@
-import { Alert, Button, Card, Checkbox, Form, Input, InputNumber } from "antd";
+import { Alert, Card, Checkbox, Form, Input, InputNumber } from "antd";
 import { useEffect } from "react";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type {
@@ -7,6 +7,7 @@ import type {
     GraphExtractionTaskRecord,
     GraphExtractionTaskType
 } from "../graph-extraction-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { TextArea } = Input;
 
@@ -128,14 +129,15 @@ export const GraphExtractionCreate = ({
                                 <Input value={regenerateCommand.triggerSource || ""} disabled />
                             </Form.Item>
                         </div>
-                        <Button
+                        <KuzhambuButton
+                            name="提交精修重生成"
                             type="primary"
                             disabled={!canEdit || !regenerateReady}
                             loading={regenerating}
                             onClick={submitRegenerate}
                         >
                             提交精修重生成
-                        </Button>
+                        </KuzhambuButton>
                     </KuzhambuSpace>
                 </Card>
             ) : null}
@@ -219,7 +221,8 @@ export const GraphExtractionCreate = ({
 
                     <KuzhambuSpace wrap>
                         {CREATE_ACTIONS.map((action) => (
-                            <Button
+                            <KuzhambuButton
+                                name={String(action.label)}
                                 key={action.key}
                                 type={action.key === "GRAPH" ? "primary" : "default"}
                                 disabled={!canEdit}
@@ -227,7 +230,7 @@ export const GraphExtractionCreate = ({
                                 onClick={() => submitTask(action.key)}
                             >
                                 {action.label}
-                            </Button>
+                            </KuzhambuButton>
                         ))}
                     </KuzhambuSpace>
                 </Form>

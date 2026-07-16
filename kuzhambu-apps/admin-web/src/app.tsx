@@ -41,7 +41,7 @@ const App = () => {
                     boxShadow: "0 12px 34px rgba(70, 58, 38, 0.08)",
                     boxShadowSecondary: "0 8px 24px rgba(70, 58, 38, 0.06)",
                     fontFamily:
-                        '"Avenir Next", "LXGW WenKai", "STKaiti", "KaiTi", "PingFang SC", "Microsoft YaHei", sans-serif'
+                        'Georgia, "Times New Roman", "Songti SC", "Noto Serif SC", "Source Han Serif SC", SimSun, serif'
                 }
             }}
         >

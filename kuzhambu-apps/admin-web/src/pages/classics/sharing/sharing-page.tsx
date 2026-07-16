@@ -1,6 +1,6 @@
 import { FileSearchOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Descriptions, Select, Tag, Typography } from "antd";
+import { App, Descriptions, Select, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
@@ -22,6 +22,7 @@ import type {
     ClassicsShareTargetStatus,
     ClassicsShareVisibility
 } from "@/pages/classics/common/classics-share-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./sharing-page.css";
 
 const { Text } = Typography;
@@ -558,9 +559,13 @@ export const SharingPage = () => {
                     }));
                 }}
                 pageActions={
-                    <Button icon={<ReloadOutlined />} onClick={() => void sharePageQuery.refetch()}>
+                    <KuzhambuButton
+                        name="刷新"
+                        icon={<ReloadOutlined />}
+                        onClick={() => void sharePageQuery.refetch()}
+                    >
                         刷新
-                    </Button>
+                    </KuzhambuButton>
                 }
                 dataSource={shares}
                 rowKey="id"
@@ -623,7 +628,8 @@ export const SharingPage = () => {
 
                     <KuzhambuSpace align="end">
                         {detailRecord?.status === "ACTIVE" ? (
-                            <Button
+                            <KuzhambuButton
+                                name="撤销"
                                 danger
                                 onClick={() => {
                                     if (!detailRecord) {
@@ -633,10 +639,11 @@ export const SharingPage = () => {
                                 }}
                             >
                                 撤销
-                            </Button>
+                            </KuzhambuButton>
                         ) : null}
                         {canRestoreShare(detailRecord) ? (
-                            <Button
+                            <KuzhambuButton
+                                name="恢复"
                                 onClick={() => {
                                     if (!detailRecord) {
                                         return;
@@ -645,9 +652,10 @@ export const SharingPage = () => {
                                 }}
                             >
                                 恢复
-                            </Button>
+                            </KuzhambuButton>
                         ) : null}
-                        <Button
+                        <KuzhambuButton
+                            name="刷新访问记录"
                             icon={<FileSearchOutlined />}
                             onClick={() => {
                                 if (!detailRecord?.id) {
@@ -657,7 +665,7 @@ export const SharingPage = () => {
                             }}
                         >
                             刷新访问记录
-                        </Button>
+                        </KuzhambuButton>
                     </KuzhambuSpace>
 
                     <Text strong>关联内容</Text>

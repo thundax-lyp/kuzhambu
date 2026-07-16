@@ -6,7 +6,7 @@ import {
     UserOutlined
 } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Empty, Input, Typography } from "antd";
+import { Empty, Input, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
@@ -17,6 +17,7 @@ import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import * as service from "./system-log-service";
 import type { LogPageQuery } from "./system-log-service";
 import type { LogRecord } from "./system-log-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./system-log-page.css";
 
 const { Text } = Typography;
@@ -341,9 +342,13 @@ export const SystemLogPage = () => {
             onFilterApply={applyFilters}
             onFilterReset={resetFilters}
             pageActions={
-                <Button icon={<ReloadOutlined />} onClick={() => logQuery.refetch()}>
+                <KuzhambuButton
+                    name="刷新"
+                    icon={<ReloadOutlined />}
+                    onClick={() => logQuery.refetch()}
+                >
                     刷新
-                </Button>
+                </KuzhambuButton>
             }
             rowKey="id"
             className="system-log-table"

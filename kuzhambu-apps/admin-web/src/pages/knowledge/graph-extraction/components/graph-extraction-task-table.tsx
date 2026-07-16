@@ -1,7 +1,8 @@
-import { Button, Table, Tag } from "antd";
+import { Table, Tag } from "antd";
 import { KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
 import type { ColumnsType } from "antd/es/table";
 import type { GraphExtractionTaskRecord } from "../graph-extraction-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 interface GraphExtractionTaskTableProps {
     applyingTaskId?: string | null;
@@ -91,29 +92,34 @@ export const GraphExtractionTaskTable = ({
             key: "actions",
             render: (_, task) => (
                 <KuzhambuSpaceCompact>
-                    <Button onClick={() => onOpenDetail(task)}>查看</Button>
-                    <Button
+                    <KuzhambuButton name="查看" onClick={() => onOpenDetail(task)}>
+                        查看
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="重生成"
                         disabled={!canEdit}
                         loading={regeneratingTaskId === task.taskId}
                         onClick={() => onRegenerate(task)}
                     >
                         重生成
-                    </Button>
-                    <Button
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="取消批任务"
                         disabled={!canEdit || !task.batchJobId}
                         loading={cancellingBatchId === task.batchJobId}
                         onClick={() => onCancelBatch(task)}
                     >
                         取消批任务
-                    </Button>
-                    <Button
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="应用"
                         type="primary"
                         disabled={!canApply || !task.aiCandidateId || task.status === "APPLIED"}
                         loading={applyingTaskId === task.taskId}
                         onClick={() => onApply(task)}
                     >
                         应用
-                    </Button>
+                    </KuzhambuButton>
                 </KuzhambuSpaceCompact>
             ),
             title: "操作"

@@ -1,5 +1,6 @@
-import { Form, Input, InputNumber, Modal } from "antd";
+import { Form, Input, InputNumber } from "antd";
 import { useEffect } from "react";
+import { KuzhambuModal } from "@/components/kuzhambu-modal";
 import type { RefinementEntityRecord } from "../refinement-types";
 
 interface RefinementEntityEditorProps {
@@ -28,7 +29,7 @@ export const RefinementEntityEditor = ({
     }, [entity, form, open]);
 
     return (
-        <Modal
+        <KuzhambuModal
             title={entity?.draftId ? "编辑实体草稿" : "新增实体草稿"}
             open={open}
             confirmLoading={saving}
@@ -69,6 +70,6 @@ export const RefinementEntityEditor = ({
                     <InputNumber min={1} style={{ width: "100%" }} />
                 </Form.Item>
             </Form>
-        </Modal>
+        </KuzhambuModal>
     );
 };

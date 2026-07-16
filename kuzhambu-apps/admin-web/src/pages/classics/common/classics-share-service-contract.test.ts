@@ -242,9 +242,11 @@ describe("classics share service request contracts", () => {
     it("gets a share by id", async () => {
         await shareService.get(9001);
         expect(capturedCalls.at(-1)).toEqual({
-            body: undefined,
-            method: "GET",
-            path: "/classics/shares/9001"
+            body: {
+                id: 9001
+            },
+            method: "POST",
+            path: "/classics/shares/get"
         });
     });
 
