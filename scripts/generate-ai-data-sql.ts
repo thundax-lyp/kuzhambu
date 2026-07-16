@@ -355,6 +355,8 @@ const appendCapabilityMappingSql = (lines: string[]) => {
       [910104, "classics", "image_analysis", 900101, 1, REGISTERED_AT],
       [910105, "classics", "translate", 900102, 1, REGISTERED_AT],
       [910106, "classics", "image_gen", 900201, 1, REGISTERED_AT],
+      [910107, "classics", "fusion", 900102, 1, REGISTERED_AT],
+      [910108, "classics", "visual", 900102, 1, REGISTERED_AT],
       [910201, "discovery", "query_understanding", 900102, 1, REGISTERED_AT],
       [910202, "discovery", "answer_generation", 900102, 1, REGISTERED_AT],
     ]
@@ -382,6 +384,8 @@ const appendActionStatusSql = (lines: string[]) => {
       [920104, "classics", "image_analysis", 1, null, REGISTERED_AT],
       [920105, "classics", "translate", 1, null, REGISTERED_AT],
       [920106, "classics", "image_gen", 1, null, REGISTERED_AT],
+      [920107, "classics", "fusion", 1, null, REGISTERED_AT],
+      [920108, "classics", "visual", 1, null, REGISTERED_AT],
       [920201, "discovery", "query_understanding", 1, null, REGISTERED_AT],
       [920202, "discovery", "answer_generation", 1, null, REGISTERED_AT],
     ]

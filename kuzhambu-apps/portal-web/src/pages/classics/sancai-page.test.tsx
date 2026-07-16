@@ -18,7 +18,17 @@ const installFetchMock = () => {
         const body = init?.body ? JSON.parse(String(init.body)) : {};
 
         if (url.includes("/portal/classics/sancai/categories/list")) {
-            return apiResponse([{ categoryType: "FORMAL", id: 1, title: "天地" }]);
+            return apiResponse([
+                {
+                    categoryType: "FORMAL",
+                    id: 1,
+                    title: "天地",
+                    publicEntryCount: 13,
+                    illustratedEntryCount: 9,
+                    thumbnailUrl: "/api/portal/classics/sancai/images/1001/8001/content",
+                    thumbnailTitle: "天图"
+                }
+            ]);
         }
         if (url.includes("/portal/classics/sancai/volumes/list")) {
             return apiResponse([{ categoryId: 1, id: 11, title: "卷一", volumeType: "MAIN" }]);
@@ -125,7 +135,8 @@ describe("SancaiPage", () => {
         renderPage();
 
         expect(await screen.findByRole("heading", { name: "三才图会" })).toBeTruthy();
-        await user.click(await screen.findByRole("button", { name: "天地" }));
+        expect(await screen.findByText("13 条 / 配图 9")).toBeTruthy();
+        await user.click(await screen.findByRole("button", { name: /天地/ }));
         await user.click(await screen.findByRole("button", { name: "卷一" }));
 
         const list = await screen.findByLabelText("三才图会公开条目列表");

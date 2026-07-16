@@ -6,8 +6,10 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiCategoryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryImageIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVolumeIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategoryOverview;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiCategoryId;
@@ -24,6 +26,7 @@ import com.thundax.kuzhambu.classics.infra.sancai.persistence.mapper.SancaiVolum
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
@@ -60,6 +63,49 @@ public class SancaiRepositoryImpl implements SancaiRepository {
         LambdaQueryWrapper<SancaiCategoryDO> wrapper = new LambdaQueryWrapper<>();
         wrapper.orderBy(true, sortDirection != SortDirection.DESC, SancaiCategoryDO::getPriority);
         return SancaiPersistenceAssembler.toCategoryDomainList(categoryMapper.selectList(wrapper));
+    }
+
+    @Override
+    public List<SancaiCategoryOverview> listCategoryOverviews(SortDirection sortDirection) {
+        QueryWrapper<SancaiCategoryDO> wrapper = new QueryWrapper<>();
+        wrapper.select(
+                        "id AS categoryId",
+                        "COALESCE((SELECT COUNT(1) FROM classics_sancai_entry e"
+                                + " JOIN classics_sancai_volume v ON e.volume_id = v.id"
+                                + " WHERE v.category_id = classics_sancai_category.id"
+                                + " AND e.lifecycle_status = 'PUBLISHED' AND e.visibility = 'PUBLIC'), 0)"
+                                + " AS publicEntryCount",
+                        "COALESCE((SELECT COUNT(DISTINCT e.id) FROM classics_sancai_entry e"
+                                + " JOIN classics_sancai_volume v ON e.volume_id = v.id"
+                                + " JOIN classics_sancai_entry_image i ON i.entry_id = e.id"
+                                + " WHERE v.category_id = classics_sancai_category.id"
+                                + " AND e.lifecycle_status = 'PUBLISHED' AND e.visibility = 'PUBLIC'), 0)"
+                                + " AS illustratedEntryCount",
+                        "(SELECT e.id FROM classics_sancai_entry e"
+                                + " JOIN classics_sancai_volume v ON e.volume_id = v.id"
+                                + " JOIN classics_sancai_entry_image i ON i.entry_id = e.id"
+                                + " WHERE v.category_id = classics_sancai_category.id"
+                                + " AND e.lifecycle_status = 'PUBLISHED' AND e.visibility = 'PUBLIC'"
+                                + " ORDER BY i.current_used DESC, e.priority ASC, i.priority ASC LIMIT 1)"
+                                + " AS representativeEntryId",
+                        "(SELECT i.id FROM classics_sancai_entry e"
+                                + " JOIN classics_sancai_volume v ON e.volume_id = v.id"
+                                + " JOIN classics_sancai_entry_image i ON i.entry_id = e.id"
+                                + " WHERE v.category_id = classics_sancai_category.id"
+                                + " AND e.lifecycle_status = 'PUBLISHED' AND e.visibility = 'PUBLIC'"
+                                + " ORDER BY i.current_used DESC, e.priority ASC, i.priority ASC LIMIT 1)"
+                                + " AS representativeImageId",
+                        "(SELECT COALESCE(i.title, e.title) FROM classics_sancai_entry e"
+                                + " JOIN classics_sancai_volume v ON e.volume_id = v.id"
+                                + " JOIN classics_sancai_entry_image i ON i.entry_id = e.id"
+                                + " WHERE v.category_id = classics_sancai_category.id"
+                                + " AND e.lifecycle_status = 'PUBLISHED' AND e.visibility = 'PUBLIC'"
+                                + " ORDER BY i.current_used DESC, e.priority ASC, i.priority ASC LIMIT 1)"
+                                + " AS representativeImageTitle")
+                .orderBy(true, sortDirection != SortDirection.DESC, "priority");
+        return categoryMapper.selectMaps(wrapper).stream()
+                .map(SancaiRepositoryImpl::toCategoryOverview)
+                .toList();
     }
 
     @Override
@@ -419,5 +465,42 @@ public class SancaiRepositoryImpl implements SancaiRepository {
         } catch (NumberFormatException exception) {
             return 0;
         }
+    }
+
+    private static SancaiCategoryOverview toCategoryOverview(Map<String, Object> row) {
+        return new SancaiCategoryOverview(
+                SancaiCategoryIdCodec.toDomain(longValue(row, "categoryId", "categoryid", "category_id")),
+                longValue(row, "publicEntryCount", "publicentrycount", "public_entry_count"),
+                longValue(row, "illustratedEntryCount", "illustratedentrycount", "illustrated_entry_count"),
+                SancaiEntryIdCodec.toDomain(
+                        longValue(row, "representativeEntryId", "representativeentryid", "representative_entry_id")),
+                SancaiEntryImageIdCodec.toDomain(
+                        longValue(row, "representativeImageId", "representativeimageid", "representative_image_id")),
+                stringValue(row, "representativeImageTitle", "representativeimagetitle", "representative_image_title"));
+    }
+
+    private static Long longValue(Map<String, Object> row, String... keys) {
+        Object value = rowValue(row, keys);
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        return Long.valueOf(String.valueOf(value));
+    }
+
+    private static String stringValue(Map<String, Object> row, String... keys) {
+        Object value = rowValue(row, keys);
+        return value == null ? null : String.valueOf(value);
+    }
+
+    private static Object rowValue(Map<String, Object> row, String... keys) {
+        for (String key : keys) {
+            if (row.containsKey(key)) {
+                return row.get(key);
+            }
+        }
+        return null;
     }
 }

@@ -19,6 +19,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentT
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategoryOverview;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVisualAsset;
@@ -108,6 +109,20 @@ class SancaiPortalControllerTest {
     }
 
     @Test
+    void listCategoriesShouldReturnPortalOverviewMetrics() {
+        SancaiPortalController controller = controller();
+
+        var categories = controller.listCategories();
+
+        assertEquals(1, categories.size());
+        assertEquals(12L, categories.get(0).getPublicEntryCount());
+        assertEquals(8L, categories.get(0).getIllustratedEntryCount());
+        assertEquals(
+                "/api/portal/classics/sancai/images/3001/8001/content",
+                categories.get(0).getThumbnailUrl());
+    }
+
+    @Test
     void getEntryShouldRejectNonPublicPublishedEntry() {
         SancaiPortalController controller = controller();
 
@@ -150,6 +165,15 @@ class SancaiPortalControllerTest {
                 (proxy, method, args) -> {
                     if ("listCategories".equals(method.getName())) {
                         return List.of(new SancaiCategory(SancaiCategoryId.of(2L), "天文", SancaiCategoryType.FORMAL, 1));
+                    }
+                    if ("listCategoryOverviews".equals(method.getName())) {
+                        return List.of(new SancaiCategoryOverview(
+                                SancaiCategoryId.of(2L),
+                                12L,
+                                8L,
+                                SancaiEntryId.of(3001L),
+                                SancaiEntryImageId.of(8001L),
+                                "天图"));
                     }
                     if ("listVolumes".equals(method.getName())) {
                         assertEquals(SancaiCategoryId.of(2L), args[0]);

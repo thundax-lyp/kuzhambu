@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeComm
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeSortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategoryOverview;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiCategoryId;
@@ -23,6 +24,8 @@ import java.util.Set;
 public interface SancaiApplicationService {
 
     List<SancaiCategory> listCategories();
+
+    List<SancaiCategoryOverview> listCategoryOverviews();
 
     SancaiCategory getCategory(SancaiCategoryId id);
 

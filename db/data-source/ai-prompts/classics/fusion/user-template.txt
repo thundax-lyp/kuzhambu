@@ -1,0 +1,12 @@
+标题：{{title}}
+
+原文：
+{{sourceText}}
+
+译文：
+{{translationText}}
+
+图片理解：
+{{imageAnalysis}}
+
+请融合上述信息，形成面向古籍视觉资产的说明。

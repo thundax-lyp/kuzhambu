@@ -138,7 +138,20 @@ export const SancaiPage = () => {
                                 variant={selectedCategoryId === category.id ? "default" : "ghost"}
                                 onClick={() => selectCategory(category.id)}
                             >
-                                {readTitle(category, "门类")}
+                                {category.thumbnailUrl ? (
+                                    <img
+                                        alt={category.thumbnailTitle || readTitle(category, "门类")}
+                                        className="sancai-category-thumb"
+                                        src={category.thumbnailUrl}
+                                    />
+                                ) : null}
+                                <span className="sancai-category-summary">
+                                    <span>{readTitle(category, "门类")}</span>
+                                    <span>
+                                        {category.publicEntryCount ?? 0} 条 / 配图{" "}
+                                        {category.illustratedEntryCount ?? 0}
+                                    </span>
+                                </span>
                             </Button>
                         ))}
                     </div>

@@ -3,6 +3,10 @@ export interface SancaiCategoryRecord {
     title?: string | null;
     categoryType?: string | null;
     priority?: number | null;
+    publicEntryCount?: number | null;
+    illustratedEntryCount?: number | null;
+    thumbnailUrl?: string | null;
+    thumbnailTitle?: string | null;
 }
 
 export interface SancaiVolumeRecord {

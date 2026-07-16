@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContent
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentTagStatus;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategoryOverview;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVisualAsset;
@@ -42,6 +43,10 @@ public final class SancaiPortalInterfaceAssembler {
     }
 
     public static SancaiPortalCategoryResponse toResponse(SancaiCategory category) {
+        return toResponse(category, null);
+    }
+
+    public static SancaiPortalCategoryResponse toResponse(SancaiCategory category, SancaiCategoryOverview overview) {
         if (category == null) {
             return SancaiPortalCategoryResponse.builder().build();
         }
@@ -53,6 +58,15 @@ public final class SancaiPortalInterfaceAssembler {
                                 ? null
                                 : category.getCategoryType().value())
                 .priority(category.getPriority())
+                .publicEntryCount(overview == null ? 0L : overview.getPublicEntryCount())
+                .illustratedEntryCount(overview == null ? 0L : overview.getIllustratedEntryCount())
+                .thumbnailUrl(
+                        overview == null
+                                ? null
+                                : imageContentUrl(
+                                        value(overview.getRepresentativeEntryId()),
+                                        value(overview.getRepresentativeImageId())))
+                .thumbnailTitle(overview == null ? null : overview.getRepresentativeImageTitle())
                 .build();
     }
 

@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiCategoryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryImageIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVisualAssetIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategoryOverview;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.interfaces.portal.sancai.assembler.SancaiPortalInterfaceAssembler;
@@ -33,6 +34,9 @@ import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -63,8 +67,16 @@ public class SancaiPortalController {
     @Operation(summary = "查询三才图会门户门类", description = "公开访问")
     @PostMapping("categories/list")
     public List<SancaiPortalCategoryResponse> listCategories() {
+        Map<Long, SancaiCategoryOverview> overviewByCategoryId = service.listCategoryOverviews().stream()
+                .filter(overview -> overview.getCategoryId() != null)
+                .collect(Collectors.toMap(
+                        overview -> overview.getCategoryId().value(), Function.identity(), (left, right) -> left));
         return service.listCategories().stream()
-                .map(SancaiPortalInterfaceAssembler::toResponse)
+                .map(category -> SancaiPortalInterfaceAssembler.toResponse(
+                        category,
+                        category.getId() == null
+                                ? null
+                                : overviewByCategoryId.get(category.getId().value())))
                 .toList();
     }
 

@@ -49,6 +49,36 @@
 .sancai-nav-button {
     justify-content: flex-start;
     width: 100%;
+    height: auto;
+    min-height: 44px;
+    gap: 10px;
+    white-space: normal;
+}
+
+.sancai-category-thumb {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 auto;
+    border: 1px solid rgba(222, 216, 204, 0.9);
+    object-fit: cover;
+    background: #f8f3e8;
+}
+
+.sancai-category-summary {
+    display: grid;
+    min-width: 0;
+    gap: 2px;
+    text-align: left;
+}
+
+.sancai-category-summary span:first-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sancai-category-summary span:last-child {
+    color: #6b7280;
+    font-size: 12px;
 }
 
 .sancai-browser-content {
