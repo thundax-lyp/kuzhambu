@@ -116,7 +116,7 @@ html[data-theme="dark"] .kuzhambu-drawer-root .ant-drawer-mask {
     padding: 12px 20px;
 }
 
-.kuzhambu-drawer-root .ant-drawer-footer > div {
+.kuzhambu-drawer-root .kuzhambu-drawer-footer-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;

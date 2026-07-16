@@ -876,7 +876,11 @@ export const SancaiEntryPanel = ({
                 size="large"
                 title="导出任务"
                 footer={
-                    <KuzhambuButton name="关闭" onClick={() => setExportJobsOpen(false)}>
+                    <KuzhambuButton
+                        name="关闭"
+                        type="primary"
+                        onClick={() => setExportJobsOpen(false)}
+                    >
                         关闭
                     </KuzhambuButton>
                 }

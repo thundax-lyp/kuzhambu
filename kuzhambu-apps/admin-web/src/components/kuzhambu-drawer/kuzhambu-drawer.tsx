@@ -10,6 +10,7 @@ export interface KuzhambuDrawerProps extends Omit<DrawerProps, "size" | "width">
 
 export const KuzhambuDrawer = ({
     className,
+    footer,
     placement = "right",
     rootClassName,
     size = "small",
@@ -23,6 +24,9 @@ export const KuzhambuDrawer = ({
             className={["kuzhambu-drawer", `kuzhambu-drawer-${size}`, className]
                 .filter(Boolean)
                 .join(" ")}
+            footer={
+                footer ? <div className="kuzhambu-drawer-footer-actions">{footer}</div> : footer
+            }
             placement={placement}
             rootClassName={["kuzhambu-drawer-root", `kuzhambu-drawer-root-${size}`, rootClassName]
                 .filter(Boolean)
