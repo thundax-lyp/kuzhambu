@@ -353,6 +353,46 @@ const localRules = {
                 };
             }
         },
+        "no-antd-button-direct-in-pages": {
+            create(context) {
+                const readNormalizedFilePath = () => {
+                    return context.physicalFilename.split(path.sep).join("/");
+                };
+
+                const isPageTsxFile = (normalizedFilePath) => {
+                    return (
+                        normalizedFilePath.includes("/src/pages/") &&
+                        normalizedFilePath.endsWith(".tsx")
+                    );
+                };
+
+                return {
+                    ImportDeclaration(node) {
+                        if (
+                            node.source.value !== "antd" ||
+                            !isPageTsxFile(readNormalizedFilePath())
+                        ) {
+                            return;
+                        }
+
+                        node.specifiers.forEach((specifier) => {
+                            if (
+                                specifier.type !== "ImportSpecifier" ||
+                                specifier.imported.name !== "Button"
+                            ) {
+                                return;
+                            }
+
+                            context.report({
+                                node: specifier,
+                                message:
+                                    "ADMIN_WEB_UI_NO_ANTD_BUTTON_DIRECT_IN_PAGES: pages/**/*.tsx must use KuzhambuButton from src/components/kuzhambu-button/ instead of importing Button from antd; set name to the stable getByRole accessible name."
+                            });
+                        });
+                    }
+                };
+            }
+        },
         "shared-component-css-local": {
             create(context) {
                 return {
@@ -1865,6 +1905,7 @@ export default tseslint.config(
             "local/no-explicit-any": "error",
             "local/no-antd-space-direct": "error",
             "local/no-antd-drawer-direct": "error",
+            "local/no-antd-button-direct-in-pages": "error",
             "@typescript-eslint/no-explicit-any": "off",
             "local/confirm-hook-only": "error",
             "local/table-action-column-shape": "error",
