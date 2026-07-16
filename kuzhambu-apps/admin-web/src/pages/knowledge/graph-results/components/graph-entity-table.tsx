@@ -43,7 +43,10 @@ export const GraphEntityTable = ({
             key: "actions",
             render: (_, entity) => (
                 <KuzhambuSpaceCompact>
-                    <KuzhambuButton name="查看详情" onClick={() => onOpenDetail(entity)}>
+                    <KuzhambuButton
+                        testId="knowledge-graph-results-graph-entity-view-detail-button"
+                        onClick={() => onOpenDetail(entity)}
+                    >
                         查看详情
                     </KuzhambuButton>
                 </KuzhambuSpaceCompact>

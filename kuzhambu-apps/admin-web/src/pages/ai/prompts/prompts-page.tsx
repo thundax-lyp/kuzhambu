@@ -429,14 +429,14 @@ export const PromptsPage = () => {
             render: (_, record) => (
                 <KuzhambuSpaceCompact>
                     <KuzhambuButton
-                        name="查看"
+                        testId="ai-prompts-prompts-view-button"
                         icon={<EyeOutlined />}
                         onClick={() => setViewVersion(record)}
                     >
                         查看
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="对比"
+                        testId="ai-prompts-prompts-compare-button"
                         icon={<BranchesOutlined />}
                         disabled={!templateQuery.data?.currentVersionNo}
                         onClick={() => void compareWithCurrent(record)}
@@ -459,7 +459,7 @@ export const PromptsPage = () => {
                         }}
                     >
                         <KuzhambuButton
-                            name="回滚"
+                            testId="ai-prompts-prompts-rollback-button"
                             icon={<RetweetOutlined />}
                             disabled={!canEditPrompt || record.current === true}
                         >
@@ -483,7 +483,7 @@ export const PromptsPage = () => {
             actions={
                 <Tooltip title="刷新">
                     <KuzhambuButton
-                        name="刷新"
+                        testId="ai-prompts-prompts-refresh-button"
                         icon={<ReloadOutlined />}
                         loading={
                             templateQuery.isFetching ||
@@ -528,13 +528,16 @@ export const PromptsPage = () => {
                     <Form.Item>
                         <KuzhambuSpace>
                             <KuzhambuButton
-                                name="查询"
+                                testId="ai-prompts-prompts-query-button"
                                 type="primary"
                                 onClick={() => void applyFilter()}
                             >
                                 查询
                             </KuzhambuButton>
-                            <KuzhambuButton name="重置" onClick={resetFilter}>
+                            <KuzhambuButton
+                                testId="ai-prompts-prompts-reset-button"
+                                onClick={resetFilter}
+                            >
                                 重置
                             </KuzhambuButton>
                         </KuzhambuSpace>
@@ -653,7 +656,7 @@ export const PromptsPage = () => {
                         </Form.Item>
                         <KuzhambuSpace>
                             <KuzhambuButton
-                                name="校验变量"
+                                testId="ai-prompts-prompts-validate-variables-button"
                                 icon={<CheckCircleOutlined />}
                                 disabled={!currentTemplateId}
                                 loading={validateMutation.isPending}
@@ -662,7 +665,7 @@ export const PromptsPage = () => {
                                 校验变量
                             </KuzhambuButton>
                             <KuzhambuButton
-                                name="保存新版本"
+                                testId="ai-prompts-prompts-save-new-version-button"
                                 type="primary"
                                 icon={<SaveOutlined />}
                                 disabled={!canEditPrompt}
@@ -672,7 +675,7 @@ export const PromptsPage = () => {
                                 保存新版本
                             </KuzhambuButton>
                             <KuzhambuButton
-                                name="生成优化建议"
+                                testId="ai-prompts-prompts-generate-suggestions-button"
                                 icon={<ThunderboltOutlined />}
                                 disabled={!canEditPrompt || !currentTemplateId}
                                 loading={suggestionMutation.isPending}
@@ -728,11 +731,14 @@ export const PromptsPage = () => {
                 onClose={() => setSuggestionVersion(null)}
                 footer={
                     <KuzhambuSpace>
-                        <KuzhambuButton name="放弃" onClick={() => setSuggestionVersion(null)}>
+                        <KuzhambuButton
+                            testId="ai-prompts-prompts-discard-button"
+                            onClick={() => setSuggestionVersion(null)}
+                        >
                             放弃
                         </KuzhambuButton>
                         <KuzhambuButton
-                            name="应用为新版本"
+                            testId="ai-prompts-prompts-apply-new-version-button"
                             type="primary"
                             icon={<SaveOutlined />}
                             disabled={!canEditPrompt}

@@ -418,11 +418,14 @@ export const AiCandidateBatchDrawer = ({
             onClose={closeDrawer}
             footer={
                 <KuzhambuSpace style={{ display: "flex", justifyContent: "flex-end" }}>
-                    <KuzhambuButton name="关闭" onClick={closeDrawer}>
+                    <KuzhambuButton
+                        testId="classics-common-ai-candidate-batch-close-button"
+                        onClick={closeDrawer}
+                    >
                         关闭
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="刷新候选"
+                        testId="classics-common-ai-candidate-batch-action-button"
                         loading={applyBatchMutation.isPending || rejectBatchMutation.isPending}
                         onClick={() => {
                             void refreshCandidates();
@@ -431,7 +434,7 @@ export const AiCandidateBatchDrawer = ({
                         刷新候选
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="批量应用"
+                        testId="classics-common-ai-candidate-batch-action-button-2"
                         type="primary"
                         loading={applyBatchMutation.isPending}
                         disabled={!canEdit}
@@ -440,7 +443,7 @@ export const AiCandidateBatchDrawer = ({
                         批量应用
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="批量拒绝"
+                        testId="classics-common-ai-candidate-batch-action-button-3"
                         danger
                         loading={rejectBatchMutation.isPending}
                         disabled={!canEdit}

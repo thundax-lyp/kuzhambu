@@ -379,7 +379,7 @@ export const RefinementPage = () => {
             key: "actions",
             render: (_, node) => (
                 <KuzhambuButton
-                    name="标注"
+                    testId="knowledge-refinement-refinement-annotate-button"
                     disabled={!canEdit}
                     onClick={() =>
                         openAnnotation({
@@ -412,7 +412,7 @@ export const RefinementPage = () => {
             key: "actions",
             render: (_, relation) => (
                 <KuzhambuButton
-                    name="标注"
+                    testId="knowledge-refinement-refinement-annotate-button-2"
                     disabled={!canEdit}
                     onClick={() =>
                         openAnnotation({
@@ -485,21 +485,21 @@ export const RefinementPage = () => {
                                     action={
                                         <KuzhambuSpace size={8}>
                                             <KuzhambuButton
-                                                name="查看图谱结果"
+                                                testId="knowledge-refinement-refinement-action-button"
                                                 href={buildGraphResultsHref(applyFollowUp)}
                                                 size="small"
                                             >
                                                 查看图谱结果
                                             </KuzhambuButton>
                                             <KuzhambuButton
-                                                name="重生成图谱"
+                                                testId="knowledge-refinement-refinement-action-button-2"
                                                 href={buildGraphRegenerateHref(applyFollowUp)}
                                                 size="small"
                                             >
                                                 重生成图谱
                                             </KuzhambuButton>
                                             <KuzhambuButton
-                                                name="重新生成质量报告"
+                                                testId="knowledge-refinement-refinement-action-button-3"
                                                 href={buildQualityReportHref(applyFollowUp)}
                                                 size="small"
                                             >

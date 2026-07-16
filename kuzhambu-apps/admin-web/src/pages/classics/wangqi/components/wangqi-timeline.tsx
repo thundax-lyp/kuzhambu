@@ -38,7 +38,7 @@ export const WangqiTimeline = ({
     return (
         <>
             <KuzhambuButton
-                name="时间线"
+                testId="classics-wangqi-wangqi-timeline-action-button"
                 icon={<ClockCircleOutlined />}
                 onClick={() => setOpen(true)}
             >
@@ -53,7 +53,11 @@ export const WangqiTimeline = ({
                 title="时间线"
                 onClose={() => setOpen(false)}
                 footer={
-                    <KuzhambuButton name="关闭" type="primary" onClick={() => setOpen(false)}>
+                    <KuzhambuButton
+                        testId="classics-wangqi-wangqi-timeline-close-button"
+                        type="primary"
+                        onClick={() => setOpen(false)}
+                    >
                         关闭
                     </KuzhambuButton>
                 }
@@ -67,7 +71,7 @@ export const WangqiTimeline = ({
                             title: formatDateTime(record.documentTime),
                             content: (
                                 <KuzhambuButton
-                                    name={String(`打开王圻文档 ${record.title || "未命名文档"}`)}
+                                    testId="classics-wangqi-wangqi-timeline-action-button-2"
                                     type="text"
                                     className="wangqi-timeline-item"
                                     onClick={() => {

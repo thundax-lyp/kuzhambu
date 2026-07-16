@@ -199,7 +199,7 @@ export const QualityReportPage = () => {
                             <Alert
                                 action={
                                     <KuzhambuButton
-                                        name="重新生成报告"
+                                        testId="knowledge-quality-report-quality-report-action-button"
                                         disabled={!canGenerate || !staleGraphVersionId}
                                         loading={generateMutation.isPending}
                                         size="small"
@@ -234,7 +234,7 @@ export const QualityReportPage = () => {
                             <Alert
                                 action={
                                     <KuzhambuButton
-                                        name="打开任务台账"
+                                        testId="knowledge-quality-report-quality-report-action-button-2"
                                         href="/knowledge/graph-extraction"
                                         size="small"
                                     >

@@ -356,7 +356,7 @@ export const MenuPage = () => {
                 pageActions={
                     <>
                         <KuzhambuButton
-                            name="刷新"
+                            testId="system-menu-menu-refresh-button"
                             icon={<ReloadOutlined />}
                             onClick={() => menuQuery.refetch()}
                         >
@@ -364,7 +364,7 @@ export const MenuPage = () => {
                         </KuzhambuButton>
                         {canEditMenu ? (
                             <KuzhambuButton
-                                name="新增菜单"
+                                testId="system-menu-menu-action-button"
                                 type="primary"
                                 icon={<PlusOutlined />}
                                 onClick={openCreateEditor}

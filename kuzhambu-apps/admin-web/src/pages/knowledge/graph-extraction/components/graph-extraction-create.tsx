@@ -130,7 +130,7 @@ export const GraphExtractionCreate = ({
                             </Form.Item>
                         </div>
                         <KuzhambuButton
-                            name="提交精修重生成"
+                            testId="knowledge-graph-extraction-graph-extraction-create-action-button"
                             type="primary"
                             disabled={!canEdit || !regenerateReady}
                             loading={regenerating}
@@ -222,7 +222,7 @@ export const GraphExtractionCreate = ({
                     <KuzhambuSpace wrap>
                         {CREATE_ACTIONS.map((action) => (
                             <KuzhambuButton
-                                name={String(action.label)}
+                                testId="knowledge-graph-extraction-graph-extraction-create-action-button-2"
                                 key={action.key}
                                 type={action.key === "GRAPH" ? "primary" : "default"}
                                 disabled={!canEdit}

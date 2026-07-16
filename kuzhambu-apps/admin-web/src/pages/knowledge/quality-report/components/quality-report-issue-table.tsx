@@ -43,7 +43,7 @@ export const QualityReportIssueTable = ({ issues }: QualityReportIssueTableProps
             render: (_, issue) => (
                 <KuzhambuSpaceCompact>
                     <KuzhambuButton
-                        name="打开"
+                        testId="knowledge-quality-report-quality-report-issue-action-button"
                         disabled={!issue.href}
                         href={issue.href || undefined}
                     >

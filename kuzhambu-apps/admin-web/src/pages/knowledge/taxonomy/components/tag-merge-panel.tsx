@@ -134,7 +134,7 @@ export const TagMergePanel = ({
                     </div>
                     <KuzhambuSpace wrap>
                         <KuzhambuButton
-                            name="预览合并影响"
+                            testId="knowledge-taxonomy-tag-merge-action-button"
                             onClick={previewMerge}
                             loading={previewing}
                             disabled={mergeDisabled}
@@ -142,7 +142,7 @@ export const TagMergePanel = ({
                             预览合并影响
                         </KuzhambuButton>
                         <KuzhambuButton
-                            name="执行标签合并"
+                            testId="knowledge-taxonomy-tag-merge-action-button-2"
                             type="primary"
                             danger
                             onClick={applyMerge}

@@ -257,7 +257,7 @@ export const ClassicsExportJobSection = ({
                 </Checkbox>
                 {onRefresh ? (
                     <KuzhambuButton
-                        name="刷新"
+                        testId="classics-common-classics-export-job-refresh-button"
                         icon={<ReloadOutlined />}
                         onClick={() => {
                             onRefresh();
@@ -268,7 +268,7 @@ export const ClassicsExportJobSection = ({
                 ) : null}
                 {onBatchDelete ? (
                     <KuzhambuButton
-                        name="删除"
+                        testId="classics-common-classics-export-job-delete-button"
                         danger
                         disabled={!selectedJobs.length}
                         icon={<DeleteOutlined />}

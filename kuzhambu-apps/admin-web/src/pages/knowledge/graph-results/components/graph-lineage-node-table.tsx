@@ -43,7 +43,10 @@ export const GraphLineageNodeTable = ({
             key: "actions",
             render: (_, node) => (
                 <KuzhambuSpaceCompact>
-                    <KuzhambuButton name="查看详情" onClick={() => onOpenDetail(node)}>
+                    <KuzhambuButton
+                        testId="knowledge-graph-results-graph-lineage-node-view-detail-button"
+                        onClick={() => onOpenDetail(node)}
+                    >
                         查看详情
                     </KuzhambuButton>
                 </KuzhambuSpaceCompact>

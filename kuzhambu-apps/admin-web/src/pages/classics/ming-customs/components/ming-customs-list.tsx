@@ -62,7 +62,7 @@ export const MingCustomsList = ({
             width: DEFAULT_COLUMN_WIDTHS.title,
             render: (title: string | null | undefined, record) => (
                 <KuzhambuButton
-                    name={String(`编辑明代习俗 ${title || "未命名条目"}`)}
+                    testId={`ming-customs-edit-${record.id}-button`}
                     type="link"
                     className="ming-customs-title-link"
                     onClick={() => onOpenEdit(record)}

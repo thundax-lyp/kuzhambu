@@ -81,11 +81,15 @@ export const TagBatchReviewPanel = ({
             onClose={onClose}
             footer={
                 <div className="knowledge-taxonomy-drawer-footer">
-                    <KuzhambuButton name="取消" disabled={reviewing} onClick={onClose}>
+                    <KuzhambuButton
+                        testId="knowledge-taxonomy-tag-batch-review-cancel-button"
+                        disabled={reviewing}
+                        onClick={onClose}
+                    >
                         取消
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name={String(submitText)}
+                        testId="knowledge-taxonomy-tag-batch-review-action-button"
                         type="primary"
                         danger={!approving}
                         loading={reviewing}

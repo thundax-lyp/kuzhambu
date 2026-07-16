@@ -108,10 +108,15 @@ export const RoleEdit = ({
             onClose={onClose}
             footer={
                 <div className="role-edit-footer">
-                    <KuzhambuButton name="取消" onClick={onClose}>
+                    <KuzhambuButton testId="system-role-role-cancel-button" onClick={onClose}>
                         取消
                     </KuzhambuButton>
-                    <KuzhambuButton name="保存" type="primary" loading={saving} onClick={saveRole}>
+                    <KuzhambuButton
+                        testId="system-role-role-save-button"
+                        type="primary"
+                        loading={saving}
+                        onClick={saveRole}
+                    >
                         保存
                     </KuzhambuButton>
                 </div>

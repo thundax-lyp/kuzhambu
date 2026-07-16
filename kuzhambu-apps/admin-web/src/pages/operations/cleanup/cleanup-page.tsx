@@ -263,7 +263,7 @@ export const CleanupPage = () => {
                         </label>
                         <div className="operations-cleanup-toolbar-actions">
                             <KuzhambuButton
-                                name="刷新"
+                                testId="operations-cleanup-cleanup-refresh-button"
                                 icon={<ReloadOutlined />}
                                 onClick={() => void refreshPage()}
                             >
@@ -327,7 +327,7 @@ export const CleanupPage = () => {
                                                             )}
                                                         </Text>
                                                         <KuzhambuButton
-                                                            name="查看告警"
+                                                            testId="operations-cleanup-cleanup-view-alerts-button"
                                                             href={buildAlertPath(record.cleanupId)}
                                                             size="small"
                                                         >
@@ -342,7 +342,7 @@ export const CleanupPage = () => {
                                             <td>
                                                 <KuzhambuSpace size={8} wrap>
                                                     <KuzhambuButton
-                                                        name="详情"
+                                                        testId="operations-cleanup-cleanup-detail-button"
                                                         icon={<LoadingOutlined />}
                                                         onClick={() =>
                                                             openCleanupDetail(
@@ -356,7 +356,7 @@ export const CleanupPage = () => {
                                                     </KuzhambuButton>
                                                     {hasFailure ? (
                                                         <KuzhambuButton
-                                                            name="失败项"
+                                                            testId="operations-cleanup-cleanup-action-button"
                                                             danger
                                                             icon={<DeleteOutlined />}
                                                             onClick={() =>
@@ -387,7 +387,7 @@ export const CleanupPage = () => {
 
                     <div className="operations-cleanup-pagination">
                         <KuzhambuButton
-                            name="上一页"
+                            testId="operations-cleanup-cleanup-previous-page-button"
                             disabled={pageNo <= DEFAULT_PAGE_NO}
                             onClick={() => setPageNo((currentPage) => currentPage - 1)}
                         >
@@ -397,7 +397,7 @@ export const CleanupPage = () => {
                             第 {pageNo} / {totalPage} 页，共 {totalCount} 条
                         </Text>
                         <KuzhambuButton
-                            name="下一页"
+                            testId="operations-cleanup-cleanup-next-page-button"
                             disabled={pageNo >= totalPage}
                             onClick={() => setPageNo((currentPage) => currentPage + 1)}
                         >
@@ -476,7 +476,7 @@ export const CleanupPage = () => {
                             <Alert
                                 action={
                                     <KuzhambuButton
-                                        name="查看告警"
+                                        testId="operations-cleanup-cleanup-view-alerts-button-2"
                                         href={buildAlertPath(detailRecord.cleanupId)}
                                         size="small"
                                     >

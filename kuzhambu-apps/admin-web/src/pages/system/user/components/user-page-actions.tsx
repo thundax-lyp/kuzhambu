@@ -38,7 +38,7 @@ export const UserPageActions = ({
             onChange={(event) => onSearch(event.target.value)}
         />
         <KuzhambuButton
-            name="筛选"
+            testId="system-user-user-page-actions-filter-button"
             className={filterOpen || filterActive ? "user-page-filter-active" : ""}
             icon={<FilterOutlined />}
             aria-expanded={filterOpen}
@@ -47,7 +47,7 @@ export const UserPageActions = ({
             筛选
         </KuzhambuButton>
         <KuzhambuButton
-            name="刷新"
+            testId="system-user-user-page-actions-refresh-button"
             icon={<ReloadOutlined />}
             loading={isRefreshing}
             onClick={onRefresh}
@@ -55,7 +55,12 @@ export const UserPageActions = ({
             刷新
         </KuzhambuButton>
         {canCreateUser ? (
-            <KuzhambuButton name="新增" type="primary" icon={<PlusOutlined />} onClick={onCreate}>
+            <KuzhambuButton
+                testId="system-user-user-page-actions-create-button"
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={onCreate}
+            >
                 新增
             </KuzhambuButton>
         ) : null}

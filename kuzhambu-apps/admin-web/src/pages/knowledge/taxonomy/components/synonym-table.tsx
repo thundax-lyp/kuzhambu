@@ -153,7 +153,11 @@ export const SynonymTable = ({
             }
             onAdd={onAdd}
             pageActions={
-                <KuzhambuButton name="刷新" icon={<ReloadOutlined />} onClick={onRefresh}>
+                <KuzhambuButton
+                    testId="knowledge-taxonomy-synonym-refresh-button"
+                    icon={<ReloadOutlined />}
+                    onClick={onRefresh}
+                >
                     刷新
                 </KuzhambuButton>
             }

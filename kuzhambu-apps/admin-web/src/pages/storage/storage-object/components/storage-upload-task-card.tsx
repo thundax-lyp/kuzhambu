@@ -75,7 +75,7 @@ export const StorageUploadTaskCard = ({ task, onCancel }: StorageUploadTaskCardP
                     {task.fileName}
                 </Text>
                 <KuzhambuButton
-                    name="取消"
+                    testId="storage-storage-object-storage-upload-task-cancel-button"
                     size="small"
                     danger
                     disabled={!canCancel}

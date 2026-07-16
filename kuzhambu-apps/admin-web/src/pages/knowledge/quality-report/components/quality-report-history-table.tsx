@@ -48,7 +48,10 @@ export const QualityReportHistoryTable = ({
             key: "actions",
             render: (_, report) => (
                 <KuzhambuSpaceCompact>
-                    <KuzhambuButton name="查看" onClick={() => onView(report)}>
+                    <KuzhambuButton
+                        testId="knowledge-quality-report-quality-report-history-view-button"
+                        onClick={() => onView(report)}
+                    >
                         查看
                     </KuzhambuButton>
                 </KuzhambuSpaceCompact>

@@ -111,16 +111,26 @@ export const AiRefinementStreamPanel = ({
                 </Typography.Paragraph>
                 <KuzhambuSpace wrap>
                     {canViewCandidate ? (
-                        <KuzhambuButton name="查看候选" type="primary" onClick={onViewCandidate}>
+                        <KuzhambuButton
+                            testId="classics-common-ai-refinement-stream-view-candidate-button"
+                            type="primary"
+                            onClick={onViewCandidate}
+                        >
                             查看候选
                         </KuzhambuButton>
                     ) : null}
                     {canRetry ? (
-                        <KuzhambuButton name="重试" onClick={onRetry}>
+                        <KuzhambuButton
+                            testId="classics-common-ai-refinement-stream-retry-button"
+                            onClick={onRetry}
+                        >
                             重试
                         </KuzhambuButton>
                     ) : null}
-                    <KuzhambuButton name="关闭过程" onClick={onClose}>
+                    <KuzhambuButton
+                        testId="classics-common-ai-refinement-stream-close-process-button"
+                        onClick={onClose}
+                    >
                         关闭过程
                     </KuzhambuButton>
                 </KuzhambuSpace>

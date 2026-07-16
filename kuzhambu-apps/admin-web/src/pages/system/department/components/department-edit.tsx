@@ -84,11 +84,14 @@ export const DepartmentEdit = ({
             onClose={onClose}
             footer={
                 <div className="department-edit-footer">
-                    <KuzhambuButton name="取消" onClick={onClose}>
+                    <KuzhambuButton
+                        testId="system-department-department-cancel-button"
+                        onClick={onClose}
+                    >
                         取消
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="保存"
+                        testId="system-department-department-save-button"
                         type="primary"
                         loading={saving}
                         onClick={saveDepartment}

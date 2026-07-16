@@ -877,7 +877,7 @@ export const SancaiEntryPanel = ({
                 title="导出任务"
                 footer={
                     <KuzhambuButton
-                        name="关闭"
+                        testId="classics-sancai-sancai-entry-close-button"
                         type="primary"
                         onClick={() => setExportJobsOpen(false)}
                     >
@@ -992,7 +992,7 @@ export const SancaiEntryPanel = ({
                                     }}
                                 >
                                     <KuzhambuButton
-                                        name="上传图片"
+                                        testId="classics-sancai-sancai-entry-action-button"
                                         icon={<UploadOutlined />}
                                         loading={uploadImageMutation.isPending}
                                         type="primary"
@@ -1110,7 +1110,7 @@ export const SancaiEntryPanel = ({
                             <Card size="small" title="AI 精修任务">
                                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                                     <KuzhambuButton
-                                        name="创建摘要任务"
+                                        testId="classics-sancai-sancai-entry-action-button-2"
                                         type="primary"
                                         loading={creatingRefinementCapability === "summary"}
                                         onClick={() => createRefinementTask("summary")}
@@ -1166,7 +1166,7 @@ export const SancaiEntryPanel = ({
                                                             task.capability
                                                         ) ? (
                                                             <KuzhambuButton
-                                                                name="重试"
+                                                                testId="classics-sancai-sancai-entry-retry-button"
                                                                 size="small"
                                                                 loading={
                                                                     retryingRefinementTaskId ===

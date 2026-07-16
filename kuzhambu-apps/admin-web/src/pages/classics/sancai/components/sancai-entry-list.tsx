@@ -425,7 +425,7 @@ export const SancaiEntryList = ({
                 <KuzhambuSpace wrap>
                     <Text type="secondary">当前页已选 {selectedEntries.length} 条</Text>
                     <KuzhambuButton
-                        name="图片理解"
+                        testId="classics-sancai-sancai-entry-action-button"
                         disabled={!selectedEntries.length}
                         loading={createBatchMutation.isPending}
                         onClick={() => startBatch("image_analysis")}
@@ -433,7 +433,7 @@ export const SancaiEntryList = ({
                         图片理解
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="视觉处理"
+                        testId="classics-sancai-sancai-entry-action-button-2"
                         disabled={!selectedEntries.length}
                         loading={createBatchMutation.isPending}
                         onClick={() => startBatch("visual")}
@@ -441,7 +441,7 @@ export const SancaiEntryList = ({
                         视觉处理
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="分享"
+                        testId="classics-sancai-sancai-entry-share-button"
                         disabled={!selectedEntries.length || !canShareEntries}
                         loading={createBatchShareMutation.isPending}
                         onClick={startBatchShare}
@@ -449,7 +449,7 @@ export const SancaiEntryList = ({
                         分享
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="公开"
+                        testId="classics-sancai-sancai-entry-action-button-3"
                         disabled={!selectedEntries.length || !canChangeEntryVisibility}
                         loading={changeVisibilityBatchMutation.isPending}
                         onClick={() => changeBatchVisibility("PUBLIC")}
@@ -457,7 +457,7 @@ export const SancaiEntryList = ({
                         公开
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="私有"
+                        testId="classics-sancai-sancai-entry-action-button-4"
                         disabled={!selectedEntries.length || !canChangeEntryVisibility}
                         loading={changeVisibilityBatchMutation.isPending}
                         onClick={() => changeBatchVisibility("PRIVATE")}
@@ -465,7 +465,7 @@ export const SancaiEntryList = ({
                         私有
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="候选治理"
+                        testId="classics-sancai-sancai-entry-action-button-5"
                         disabled={!selectedEntries.length || !canChangeEntryVisibility}
                         onClick={openBatchCandidateGovernance}
                     >
@@ -473,7 +473,10 @@ export const SancaiEntryList = ({
                     </KuzhambuButton>
                 </KuzhambuSpace>
                 <KuzhambuSpace wrap>
-                    <KuzhambuButton name="刷新" onClick={onRefresh}>
+                    <KuzhambuButton
+                        testId="classics-sancai-sancai-entry-refresh-button"
+                        onClick={onRefresh}
+                    >
                         刷新
                     </KuzhambuButton>
                     {activeBatch ? (
@@ -488,7 +491,7 @@ export const SancaiEntryList = ({
                                 {activeBatch.cancelledCount ?? 0}
                             </Text>
                             <KuzhambuButton
-                                name="取消批量任务"
+                                testId="classics-sancai-sancai-entry-action-button-6"
                                 disabled={!canCancelBatch}
                                 loading={cancelBatchMutation.isPending}
                                 onClick={() => {

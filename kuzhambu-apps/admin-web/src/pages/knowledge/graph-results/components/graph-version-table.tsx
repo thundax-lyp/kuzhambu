@@ -77,11 +77,14 @@ export const GraphVersionTable = ({
             key: "actions",
             render: (_, version) => (
                 <KuzhambuSpaceCompact>
-                    <KuzhambuButton name="查看详情" onClick={() => onOpenDetail(version)}>
+                    <KuzhambuButton
+                        testId="knowledge-graph-results-graph-version-view-detail-button"
+                        onClick={() => onOpenDetail(version)}
+                    >
                         查看详情
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="查看正式结果"
+                        testId="knowledge-graph-results-graph-version-action-button"
                         type={selectedVersionId === version.versionId ? "primary" : "default"}
                         onClick={() => onOpenResults(version)}
                     >

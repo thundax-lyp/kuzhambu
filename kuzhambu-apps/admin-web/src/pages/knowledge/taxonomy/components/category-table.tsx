@@ -148,7 +148,11 @@ export const CategoryTable = ({
             }
             onAdd={onAdd}
             pageActions={
-                <KuzhambuButton name="刷新" icon={<ReloadOutlined />} onClick={onRefresh}>
+                <KuzhambuButton
+                    testId="knowledge-taxonomy-category-refresh-button"
+                    icon={<ReloadOutlined />}
+                    onClick={onRefresh}
+                >
                     刷新
                 </KuzhambuButton>
             }

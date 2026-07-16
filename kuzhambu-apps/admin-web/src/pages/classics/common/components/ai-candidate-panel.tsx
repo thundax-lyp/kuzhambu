@@ -244,7 +244,7 @@ export const AiCandidatePanel = ({
                             />
                             <KuzhambuSpace wrap>
                                 <KuzhambuButton
-                                    name="应用"
+                                    testId="classics-common-ai-candidate-action-button"
                                     disabled={
                                         applyingCandidateId === candidate.candidateId ||
                                         !canApply(candidate)
@@ -255,7 +255,7 @@ export const AiCandidatePanel = ({
                                     应用
                                 </KuzhambuButton>
                                 <KuzhambuButton
-                                    name="拒绝"
+                                    testId="classics-common-ai-candidate-action-button-2"
                                     disabled={
                                         rejectingCandidateId === candidate.candidateId ||
                                         rejectMutation.isPending

@@ -529,7 +529,7 @@ export const OperationsDashboardPage = () => {
                         onChange={(value) => setPeriodType(value as OperationsDashboardPeriodType)}
                     />
                     <KuzhambuButton
-                        name="刷新"
+                        testId="operations-dashboard-dashboard-refresh-button"
                         icon={<ReloadOutlined />}
                         onClick={() => void refreshDashboard()}
                         disabled={!canViewDashboard}
@@ -553,7 +553,7 @@ export const OperationsDashboardPage = () => {
                         <Alert
                             action={
                                 <KuzhambuButton
-                                    name="查看告警"
+                                    testId="operations-dashboard-dashboard-view-alerts-button"
                                     size="small"
                                     onClick={() => setAlertDrawerOpen(true)}
                                 >
@@ -891,7 +891,10 @@ export const OperationsDashboardPage = () => {
                                             }
                                         />
                                         <div className="operations-dashboard-alert-actions">
-                                            <KuzhambuButton name="去处理" size="small">
+                                            <KuzhambuButton
+                                                testId="operations-dashboard-dashboard-resolve-button"
+                                                size="small"
+                                            >
                                                 <Link to={resolveAlertActionPath(alert)}>
                                                     去处理
                                                 </Link>
@@ -899,7 +902,7 @@ export const OperationsDashboardPage = () => {
                                             {canManageHealthAlert &&
                                             alert.alertStatus === "ACTIVE" ? (
                                                 <KuzhambuButton
-                                                    name="确认"
+                                                    testId="operations-dashboard-dashboard-action-button"
                                                     loading={confirmAlertMutation.isPending}
                                                     onClick={() =>
                                                         confirmAlertMutation.mutate({
@@ -913,7 +916,7 @@ export const OperationsDashboardPage = () => {
                                             ) : null}
                                             {canManageHealthAlert ? (
                                                 <KuzhambuButton
-                                                    name="标记恢复"
+                                                    testId="operations-dashboard-dashboard-action-button-2"
                                                     loading={recoverAlertMutation.isPending}
                                                     onClick={() =>
                                                         recoverAlertMutation.mutate({
@@ -964,7 +967,7 @@ export const OperationsDashboardPage = () => {
                                 <div className="operations-dashboard-health-related-alerts-header">
                                     <Text strong>关联告警</Text>
                                     <KuzhambuButton
-                                        name="查看全部告警"
+                                        testId="operations-dashboard-dashboard-action-button-3"
                                         onClick={() => setAlertDrawerOpen(true)}
                                         size="small"
                                         type="link"

@@ -293,7 +293,7 @@ export const ModelsPage = () => {
             render: (_, record) => (
                 <KuzhambuSpaceCompact>
                     <KuzhambuButton
-                        name="编辑"
+                        testId="ai-model-configs-model-configs-edit-button"
                         icon={<EditOutlined />}
                         disabled={!canEditConfig}
                         onClick={() => openEdit(record)}
@@ -301,7 +301,7 @@ export const ModelsPage = () => {
                         编辑
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="检测"
+                        testId="ai-model-configs-model-configs-check-button"
                         icon={<ThunderboltOutlined />}
                         disabled={!canEditConfig}
                         loading={checkMutation.isPending}
@@ -310,14 +310,14 @@ export const ModelsPage = () => {
                         检测
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="检测历史"
+                        testId="ai-model-configs-model-configs-check-history-button"
                         icon={<HistoryOutlined />}
                         onClick={() => setHistoryModel(record)}
                     >
                         检测历史
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name={String(record.enabled ? "禁用" : "启用")}
+                        testId="ai-model-configs-model-configs-disable-or-enable-button"
                         disabled={!canEditConfig}
                         onClick={() => void changeEnabled(record, !record.enabled)}
                     >
@@ -332,7 +332,7 @@ export const ModelsPage = () => {
                         onConfirm={() => deleteMutation.mutate(record.modelId)}
                     >
                         <KuzhambuButton
-                            name="删除"
+                            testId="ai-model-configs-model-configs-delete-button"
                             icon={<DeleteOutlined />}
                             danger
                             disabled={!canEditConfig}
@@ -390,14 +390,14 @@ export const ModelsPage = () => {
                 <KuzhambuSpace>
                     <Tooltip title="刷新">
                         <KuzhambuButton
-                            name="刷新"
+                            testId="ai-model-configs-model-configs-refresh-button"
                             icon={<ReloadOutlined />}
                             loading={modelsQuery.isFetching || servicesQuery.isFetching}
                             onClick={() => void invalidateModels()}
                         />
                     </Tooltip>
                     <KuzhambuButton
-                        name="新增模型"
+                        testId="ai-model-configs-model-configs-create-model-button"
                         type="primary"
                         icon={<PlusOutlined />}
                         disabled={!canEditConfig}
@@ -452,7 +452,7 @@ export const ModelsPage = () => {
                     </Form.Item>
                     <Form.Item>
                         <KuzhambuButton
-                            name="重置"
+                            testId="ai-model-configs-model-configs-reset-button"
                             onClick={() => {
                                 setQuery({});
                                 setModelNameKeyword("");
@@ -481,11 +481,14 @@ export const ModelsPage = () => {
                 onClose={() => setDrawerOpen(false)}
                 footer={
                     <KuzhambuSpace>
-                        <KuzhambuButton name="取消" onClick={() => setDrawerOpen(false)}>
+                        <KuzhambuButton
+                            testId="ai-model-configs-model-configs-cancel-button"
+                            onClick={() => setDrawerOpen(false)}
+                        >
                             取消
                         </KuzhambuButton>
                         <KuzhambuButton
-                            name="保存"
+                            testId="ai-model-configs-model-configs-save-button"
                             type="primary"
                             icon={<SaveOutlined />}
                             disabled={!canEditConfig}

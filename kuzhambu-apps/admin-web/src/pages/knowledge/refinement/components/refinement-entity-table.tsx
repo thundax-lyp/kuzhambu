@@ -43,25 +43,29 @@ export const RefinementEntityTable = ({
             key: "actions",
             render: (_, entity) => (
                 <KuzhambuSpaceCompact>
-                    <KuzhambuButton name="编辑" disabled={!canEdit} onClick={() => onEdit(entity)}>
+                    <KuzhambuButton
+                        testId="knowledge-refinement-refinement-entity-edit-button"
+                        disabled={!canEdit}
+                        onClick={() => onEdit(entity)}
+                    >
                         编辑
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="确认"
+                        testId="knowledge-refinement-refinement-entity-action-button"
                         disabled={!canEdit || entity.confirmationStatus === "MANUAL_CONFIRMED"}
                         onClick={() => onConfirm(entity)}
                     >
                         确认
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="标注"
+                        testId="knowledge-refinement-refinement-entity-annotate-button"
                         disabled={!canEdit}
                         onClick={() => onAnnotate(entity)}
                     >
                         标注
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="删除"
+                        testId="knowledge-refinement-refinement-entity-delete-button"
                         danger
                         disabled={!canEdit}
                         onClick={() => onDelete(entity)}
@@ -76,7 +80,12 @@ export const RefinementEntityTable = ({
     return (
         <>
             <div className="knowledge-refinement-section-actions">
-                <KuzhambuButton name="新增实体" disabled={!canEdit} type="primary" onClick={onAdd}>
+                <KuzhambuButton
+                    testId="knowledge-refinement-refinement-entity-create-entity-button"
+                    disabled={!canEdit}
+                    type="primary"
+                    onClick={onAdd}
+                >
                     新增实体
                 </KuzhambuButton>
             </div>

@@ -122,7 +122,7 @@ export const ServicesPage = () => {
             actions={
                 <Tooltip title="刷新">
                     <KuzhambuButton
-                        name="刷新"
+                        testId="ai-services-services-refresh-button"
                         icon={<ReloadOutlined />}
                         loading={servicesQuery.isFetching}
                         onClick={() => void servicesQuery.refetch()}
@@ -140,7 +140,7 @@ export const ServicesPage = () => {
                             title={SERVICE_ROLE_TITLES[role]}
                             extra={
                                 <KuzhambuButton
-                                    name={String(record ? "编辑" : "配置")}
+                                    testId="ai-services-services-edit-or-configure-button"
                                     icon={<EditOutlined />}
                                     disabled={!canEditConfig}
                                     onClick={() => openEditor(role, record)}
@@ -197,7 +197,7 @@ export const ServicesPage = () => {
                 footer={
                     <KuzhambuSpace>
                         <KuzhambuButton
-                            name="取消"
+                            testId="ai-services-services-cancel-button"
                             onClick={() => {
                                 setEditorOpen(false);
                                 form.resetFields();
@@ -206,7 +206,7 @@ export const ServicesPage = () => {
                             取消
                         </KuzhambuButton>
                         <KuzhambuButton
-                            name="保存"
+                            testId="ai-services-services-save-button"
                             type="primary"
                             icon={<SaveOutlined />}
                             disabled={!canEditConfig}

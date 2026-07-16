@@ -45,28 +45,28 @@ export const RefinementRelationTable = ({
             render: (_, relation) => (
                 <KuzhambuSpaceCompact>
                     <KuzhambuButton
-                        name="编辑"
+                        testId="knowledge-refinement-refinement-relation-edit-button"
                         disabled={!canEdit}
                         onClick={() => onEdit(relation)}
                     >
                         编辑
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="确认"
+                        testId="knowledge-refinement-refinement-relation-action-button"
                         disabled={!canEdit || relation.confirmationStatus === "MANUAL_CONFIRMED"}
                         onClick={() => onConfirm(relation)}
                     >
                         确认
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="标注"
+                        testId="knowledge-refinement-refinement-relation-annotate-button"
                         disabled={!canEdit}
                         onClick={() => onAnnotate(relation)}
                     >
                         标注
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="删除"
+                        testId="knowledge-refinement-refinement-relation-delete-button"
                         danger
                         disabled={!canEdit}
                         onClick={() => onDelete(relation)}
@@ -81,7 +81,12 @@ export const RefinementRelationTable = ({
     return (
         <>
             <div className="knowledge-refinement-section-actions">
-                <KuzhambuButton name="新增关系" disabled={!canEdit} type="primary" onClick={onAdd}>
+                <KuzhambuButton
+                    testId="knowledge-refinement-refinement-relation-create-relation-button"
+                    disabled={!canEdit}
+                    type="primary"
+                    onClick={onAdd}
+                >
                     新增关系
                 </KuzhambuButton>
             </div>

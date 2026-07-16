@@ -37,7 +37,11 @@ export const TagGovernanceMetricsPanel = ({
             className="knowledge-taxonomy-metrics-panel"
             title="标签治理统计"
             extra={
-                <KuzhambuButton name="刷新统计" onClick={onRefresh} loading={loading}>
+                <KuzhambuButton
+                    testId="knowledge-taxonomy-tag-governance-metrics-refresh-stats-button"
+                    onClick={onRefresh}
+                    loading={loading}
+                >
                     刷新统计
                 </KuzhambuButton>
             }

@@ -66,11 +66,14 @@ export const MingCustomsModel = ({
             onClose={onClose}
             footer={
                 <div className="ming-customs-model-footer">
-                    <KuzhambuButton name="取消" onClick={onClose}>
+                    <KuzhambuButton
+                        testId="classics-ming-customs-ming-customs-cancel-button"
+                        onClick={onClose}
+                    >
                         取消
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name={String(mode === "create" ? "保存新增明代习俗" : "保存明代习俗")}
+                        testId="classics-ming-customs-ming-customs-create-button"
                         type="primary"
                         loading={saving}
                         onClick={saveEntry}

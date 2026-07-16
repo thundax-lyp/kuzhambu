@@ -705,7 +705,7 @@ export const SancaiEntryModel = ({
                     {mode === "edit" ? (
                         <KuzhambuSpace wrap>
                             <KuzhambuButton
-                                name="AI翻译"
+                                testId="classics-sancai-sancai-entry-ai-button"
                                 className="sancai-entry-ai-translation-button"
                                 icon={<TranslationOutlined />}
                                 onClick={openTranslationModal}
@@ -779,7 +779,7 @@ export const SancaiEntryModel = ({
                                     }}
                                 >
                                     <KuzhambuButton
-                                        name="上传三才图会图片"
+                                        testId="classics-sancai-sancai-entry-action-button"
                                         icon={<UploadOutlined />}
                                         loading={uploadImageMutation.isPending}
                                     >
@@ -787,7 +787,7 @@ export const SancaiEntryModel = ({
                                     </KuzhambuButton>
                                 </Upload>
                                 <KuzhambuButton
-                                    name="下载三才图会图片"
+                                    testId="classics-sancai-sancai-entry-action-button-2"
                                     icon={<DownloadOutlined />}
                                     href={downloadUrl}
                                     target="_blank"
@@ -994,7 +994,7 @@ export const SancaiEntryModel = ({
                             <div className="sancai-visual-workflow" aria-label="图文生图工作流">
                                 <KuzhambuSpace wrap>
                                     <KuzhambuButton
-                                        name="图片理解"
+                                        testId="classics-sancai-sancai-entry-action-button-3"
                                         icon={<FileSearchOutlined />}
                                         loading={creatingVisualAssetCapability === "image_analysis"}
                                         onClick={() => {
@@ -1005,7 +1005,7 @@ export const SancaiEntryModel = ({
                                     </KuzhambuButton>
                                     <span className="sancai-visual-workflow-arrow">›</span>
                                     <KuzhambuButton
-                                        name="信息融合"
+                                        testId="classics-sancai-sancai-entry-action-button-4"
                                         icon={<BranchesOutlined />}
                                         loading={creatingVisualAssetCapability === "fusion"}
                                         onClick={() => {
@@ -1016,7 +1016,7 @@ export const SancaiEntryModel = ({
                                     </KuzhambuButton>
                                     <span className="sancai-visual-workflow-arrow">›</span>
                                     <KuzhambuButton
-                                        name="视觉描述"
+                                        testId="classics-sancai-sancai-entry-action-button-5"
                                         icon={<FileTextOutlined />}
                                         loading={creatingVisualAssetCapability === "visual"}
                                         onClick={() => {
@@ -1027,7 +1027,7 @@ export const SancaiEntryModel = ({
                                     </KuzhambuButton>
                                     <span className="sancai-visual-workflow-arrow">›</span>
                                     <KuzhambuButton
-                                        name="生图"
+                                        testId="classics-sancai-sancai-entry-action-button-6"
                                         icon={<PictureOutlined />}
                                         loading={creatingVisualAssetCapability === "image_gen"}
                                         onClick={() => {
@@ -1041,7 +1041,7 @@ export const SancaiEntryModel = ({
                         ) : null}
                         <KuzhambuSpace wrap>
                             <KuzhambuButton
-                                name="采纳视觉处理"
+                                testId="classics-sancai-sancai-entry-action-button-7"
                                 icon={<CheckOutlined />}
                                 type="primary"
                                 loading={isUpdatingVisualAsset}
@@ -1227,7 +1227,10 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
                             value={activeSection}
                             onChange={(value) => setActiveSection(value as SancaiEntryModelSection)}
                         />
-                        <KuzhambuButton name="预览三才图会条目" onClick={openPreviewWindow}>
+                        <KuzhambuButton
+                            testId="classics-sancai-sancai-entry-preview-sancai-entry-button"
+                            onClick={openPreviewWindow}
+                        >
                             预览
                         </KuzhambuButton>
                     </KuzhambuSpace>
@@ -1235,13 +1238,14 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
             }
             footer={
                 <div className="sancai-drawer-footer">
-                    <KuzhambuButton name="取消" onClick={onCancel}>
+                    <KuzhambuButton
+                        testId="classics-sancai-sancai-entry-cancel-button"
+                        onClick={onCancel}
+                    >
                         取消
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name={String(
-                            mode === "create" ? "保存新增三才图会条目" : "保存三才图会条目"
-                        )}
+                        testId="classics-sancai-sancai-entry-create-button"
                         type="primary"
                         loading={isSubmitting}
                         onClick={submitForm}
@@ -1259,11 +1263,14 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
                 destroyOnHidden
                 footer={
                     <div className="sancai-modal-footer">
-                        <KuzhambuButton name="取消AI翻译" onClick={closeTranslationModal}>
+                        <KuzhambuButton
+                            testId="classics-sancai-sancai-entry-cancel-ai-translation-button"
+                            onClick={closeTranslationModal}
+                        >
                             取消
                         </KuzhambuButton>
                         <KuzhambuButton
-                            name="采用AI译文"
+                            testId="classics-sancai-sancai-entry-ai-button-2"
                             type="primary"
                             disabled={!translationDraft.trim()}
                             onClick={applyTranslationDraft}
@@ -1277,7 +1284,7 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
                 <div className="sancai-translation-modal-toolbar">
                     <KuzhambuSpace wrap>
                         <KuzhambuButton
-                            name="翻译"
+                            testId="classics-sancai-sancai-entry-action-button-8"
                             icon={<TranslationOutlined />}
                             type="primary"
                             loading={isCreatingTranslationTask}

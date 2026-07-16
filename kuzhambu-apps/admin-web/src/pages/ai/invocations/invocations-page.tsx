@@ -312,7 +312,7 @@ export const InvocationsPage = () => {
             key: "actions",
             render: (_, record) => (
                 <KuzhambuButton
-                    name="详情"
+                    testId="ai-invocations-invocations-detail-button"
                     icon={<EyeOutlined />}
                     onClick={() => setSelectedCall(record)}
                 >
@@ -331,7 +331,7 @@ export const InvocationsPage = () => {
             actions={
                 <Tooltip title="刷新">
                     <KuzhambuButton
-                        name="刷新"
+                        testId="ai-invocations-invocations-refresh-button"
                         icon={<ReloadOutlined />}
                         loading={summaryResult.isFetching || callsResult.isFetching}
                         onClick={() => {
@@ -384,7 +384,7 @@ export const InvocationsPage = () => {
                     </Form.Item>
                     <Form.Item>
                         <KuzhambuButton
-                            name="刷新"
+                            testId="ai-invocations-invocations-refresh-button-2"
                             type="primary"
                             onClick={() => void refreshSummary()}
                         >
@@ -467,13 +467,16 @@ export const InvocationsPage = () => {
                     <Form.Item>
                         <KuzhambuSpace>
                             <KuzhambuButton
-                                name="查询"
+                                testId="ai-invocations-invocations-query-button"
                                 type="primary"
                                 onClick={() => void searchCalls()}
                             >
                                 查询
                             </KuzhambuButton>
-                            <KuzhambuButton name="重置" onClick={resetCalls}>
+                            <KuzhambuButton
+                                testId="ai-invocations-invocations-reset-button"
+                                onClick={resetCalls}
+                            >
                                 重置
                             </KuzhambuButton>
                         </KuzhambuSpace>

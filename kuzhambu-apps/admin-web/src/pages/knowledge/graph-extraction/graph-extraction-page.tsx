@@ -245,13 +245,13 @@ export const GraphExtractionPage = () => {
                             showIcon
                         />
                         <KuzhambuButton
-                            name="切换为手工触发"
+                            testId="knowledge-graph-extraction-graph-extraction-action-button"
                             onClick={() => setCreateTriggerSource(MANUAL_TRIGGER_SOURCE)}
                         >
                             切换为手工触发
                         </KuzhambuButton>
                         <KuzhambuButton
-                            name="切换为质量结果触发"
+                            testId="knowledge-graph-extraction-graph-extraction-action-button-2"
                             onClick={() => setCreateTriggerSource(QUALITY_TRIGGER_SOURCE)}
                         >
                             切换为质量结果触发

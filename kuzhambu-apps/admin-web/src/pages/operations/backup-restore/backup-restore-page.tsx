@@ -316,7 +316,7 @@ export const BackupRestorePage = () => {
                         <>
                             <Text type="danger">{failureReasonText(record?.failureReason)}</Text>
                             <KuzhambuButton
-                                name="查看告警"
+                                testId="operations-backup-restore-backup-restore-view-alerts-button"
                                 href={buildAlertPath("BACKUP", record?.backupId)}
                                 size="small"
                             >
@@ -353,7 +353,7 @@ export const BackupRestorePage = () => {
             render: (_, record) => (
                 <KuzhambuSpace wrap>
                     <KuzhambuButton
-                        name="查看"
+                        testId="operations-backup-restore-backup-restore-view-button"
                         icon={<EyeOutlined />}
                         onClick={() => setBackupDetailId(record.backupId)}
                         size="small"
@@ -362,7 +362,7 @@ export const BackupRestorePage = () => {
                     </KuzhambuButton>
                     {canExecuteRestore && record.backupStatus === "SUCCEEDED" ? (
                         <KuzhambuButton
-                            name="演练"
+                            testId="operations-backup-restore-backup-restore-drill-button"
                             icon={<PlayCircleOutlined />}
                             onClick={() =>
                                 confirm.danger({
@@ -385,7 +385,7 @@ export const BackupRestorePage = () => {
                     ) : null}
                     {canExecuteRestore && record.backupStatus === "SUCCEEDED" ? (
                         <KuzhambuButton
-                            name="恢复"
+                            testId="operations-backup-restore-backup-restore-restore-button"
                             danger
                             icon={<SyncOutlined />}
                             onClick={() =>
@@ -451,7 +451,7 @@ export const BackupRestorePage = () => {
                         <>
                             <Text type="danger">{failureReasonText(record?.failureReason)}</Text>
                             <KuzhambuButton
-                                name="查看告警"
+                                testId="operations-backup-restore-backup-restore-view-alerts-button-2"
                                 href={buildAlertPath("RESTORE", record?.restoreId)}
                                 size="small"
                             >
@@ -501,7 +501,7 @@ export const BackupRestorePage = () => {
             key: "actions",
             render: (_, record) => (
                 <KuzhambuButton
-                    name="查看"
+                    testId="operations-backup-restore-backup-restore-view-button-2"
                     icon={<EyeOutlined />}
                     onClick={() => setRestoreDetailId(record.restoreId)}
                     size="small"
@@ -627,7 +627,7 @@ export const BackupRestorePage = () => {
                     </div>
                     <div className="backup-restore-page-toolbar-actions">
                         <KuzhambuButton
-                            name="刷新台账"
+                            testId="operations-backup-restore-backup-restore-refresh-ledger-button"
                             icon={<ReloadOutlined />}
                             onClick={() => {
                                 void refreshLedgers();
@@ -637,7 +637,7 @@ export const BackupRestorePage = () => {
                         </KuzhambuButton>
                         {canExecuteBackup ? (
                             <KuzhambuButton
-                                name="执行手动备份"
+                                testId="operations-backup-restore-backup-restore-run-manual-backup-button"
                                 icon={<PlayCircleOutlined />}
                                 loading={manualBackupMutation.isPending}
                                 onClick={() => {
@@ -720,7 +720,7 @@ export const BackupRestorePage = () => {
                             <Alert
                                 action={
                                     <KuzhambuButton
-                                        name="查看告警"
+                                        testId="operations-backup-restore-backup-restore-view-alerts-button-3"
                                         href={buildAlertPath(
                                             "BACKUP",
                                             backupDetailQuery.data.backupId
@@ -822,7 +822,7 @@ export const BackupRestorePage = () => {
                             <Alert
                                 action={
                                     <KuzhambuButton
-                                        name="查看告警"
+                                        testId="operations-backup-restore-backup-restore-view-alerts-button-4"
                                         href={buildAlertPath(
                                             "RESTORE",
                                             restoreDetailQuery.data.restoreId

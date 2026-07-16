@@ -814,7 +814,7 @@ export const MingCustomsPage = () => {
                                 }
                                 action={
                                     <KuzhambuButton
-                                        name="清除标签筛选"
+                                        testId="classics-ming-customs-ming-customs-action-button"
                                         size="small"
                                         onClick={clearTagFilter}
                                     >
@@ -851,7 +851,7 @@ export const MingCustomsPage = () => {
                         />
                         <div style={{ marginBottom: 12 }}>
                             <KuzhambuButton
-                                name="批量分享"
+                                testId="classics-ming-customs-ming-customs-batch-share-button"
                                 disabled={!selectedEntries.length || !canShareEntries}
                                 loading={batchShareMutation.isPending}
                                 onClick={shareSelectedEntries}
@@ -859,7 +859,7 @@ export const MingCustomsPage = () => {
                                 批量分享
                             </KuzhambuButton>
                             <KuzhambuButton
-                                name="批量候选治理"
+                                testId="classics-ming-customs-ming-customs-action-button-2"
                                 disabled={!selectedEntries.length || !canChangeEntryVisibility}
                                 style={{ marginLeft: 8 }}
                                 onClick={openBatchCandidateDrawer}
@@ -867,7 +867,7 @@ export const MingCustomsPage = () => {
                                 批量候选治理
                             </KuzhambuButton>
                             <KuzhambuButton
-                                name="批量公开"
+                                testId="classics-ming-customs-ming-customs-batch-public-button"
                                 disabled={!selectedEntries.length || !canChangeEntryVisibility}
                                 loading={batchVisibilityMutation.isPending}
                                 style={{ marginLeft: 8 }}
@@ -876,7 +876,7 @@ export const MingCustomsPage = () => {
                                 批量公开
                             </KuzhambuButton>
                             <KuzhambuButton
-                                name="批量私有"
+                                testId="classics-ming-customs-ming-customs-batch-private-button"
                                 disabled={!selectedEntries.length || !canChangeEntryVisibility}
                                 loading={batchVisibilityMutation.isPending}
                                 style={{ marginLeft: 8 }}
@@ -978,7 +978,7 @@ export const MingCustomsPage = () => {
                                 extra={
                                     <KuzhambuSpaceCompact>
                                         <KuzhambuButton
-                                            name="创建摘要任务"
+                                            testId="classics-ming-customs-ming-customs-action-button-3"
                                             type="primary"
                                             onClick={() =>
                                                 createRefinementTask(editorEntry, "summary")
@@ -988,7 +988,7 @@ export const MingCustomsPage = () => {
                                             创建摘要任务
                                         </KuzhambuButton>
                                         <KuzhambuButton
-                                            name="创建标签任务"
+                                            testId="classics-ming-customs-ming-customs-action-button-4"
                                             onClick={() =>
                                                 createRefinementTask(editorEntry, "tags")
                                             }
@@ -997,7 +997,7 @@ export const MingCustomsPage = () => {
                                             创建标签任务
                                         </KuzhambuButton>
                                         <KuzhambuButton
-                                            name="创建问答任务"
+                                            testId="classics-ming-customs-ming-customs-action-button-5"
                                             onClick={() => createRefinementTask(editorEntry, "qa")}
                                             loading={creatingRefinementCapability === "qa"}
                                         >

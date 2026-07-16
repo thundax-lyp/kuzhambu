@@ -131,7 +131,7 @@ export const TagTable = ({
             ellipsis: true,
             render: (name: string, tag) => (
                 <KuzhambuButton
-                    name={String(`查看统一标签 ${name || tag.id} 详情`)}
+                    testId="knowledge-taxonomy-tag-action-button"
                     type="link"
                     className="knowledge-taxonomy-tag-detail-trigger"
                     onClick={() => onOpenDetail(tag)}
@@ -234,7 +234,11 @@ export const TagTable = ({
             pageActions={
                 <>
                     {pageActions}
-                    <KuzhambuButton name="刷新" icon={<ReloadOutlined />} onClick={onRefresh}>
+                    <KuzhambuButton
+                        testId="knowledge-taxonomy-tag-refresh-button"
+                        icon={<ReloadOutlined />}
+                        onClick={onRefresh}
+                    >
                         刷新
                     </KuzhambuButton>
                 </>
@@ -243,7 +247,7 @@ export const TagTable = ({
                 canEditTag ? (
                     <>
                         <KuzhambuButton
-                            name="批量合并"
+                            testId="knowledge-taxonomy-tag-action-button-2"
                             icon={<MergeCellsOutlined />}
                             disabled={selectedRowKeys.length < 2}
                             onClick={onBatchMerge}
@@ -251,7 +255,7 @@ export const TagTable = ({
                             批量合并
                         </KuzhambuButton>
                         <KuzhambuButton
-                            name="批量废弃"
+                            testId="knowledge-taxonomy-tag-action-button-3"
                             danger
                             icon={<DeleteOutlined />}
                             disabled={selectedRowKeys.length < 1}

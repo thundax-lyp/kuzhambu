@@ -67,11 +67,16 @@ export const RefinementFilterForm = ({
             </Form.Item>
             <Form.Item>
                 <KuzhambuSpace>
-                    <KuzhambuButton name="筛选" htmlType="submit" loading={loading} type="primary">
+                    <KuzhambuButton
+                        testId="knowledge-refinement-refinement-filter-filter-button"
+                        htmlType="submit"
+                        loading={loading}
+                        type="primary"
+                    >
                         筛选
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="重置"
+                        testId="knowledge-refinement-refinement-filter-reset-button"
                         onClick={() => {
                             form.setFieldsValue({
                                 taskType: undefined,

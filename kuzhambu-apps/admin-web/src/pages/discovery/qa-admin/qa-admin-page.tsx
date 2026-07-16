@@ -194,7 +194,7 @@ export const QaAdminPage = () => {
             width: 120,
             render: (_, record) => (
                 <KuzhambuButton
-                    name="同步"
+                    testId="discovery-qa-admin-qa-admin-sync-button"
                     loading={syncMutation.isPending}
                     onClick={() =>
                         syncMutation.mutate({
@@ -288,7 +288,7 @@ export const QaAdminPage = () => {
                         <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
                             <KuzhambuSpace wrap>
                                 <KuzhambuButton
-                                    name="刷新健康"
+                                    testId="discovery-qa-admin-qa-admin-refresh-health-button"
                                     loading={healthQuery.isFetching}
                                     onClick={() => void healthQuery.refetch()}
                                     type="primary"
@@ -296,7 +296,7 @@ export const QaAdminPage = () => {
                                     刷新健康
                                 </KuzhambuButton>
                                 <KuzhambuButton
-                                    name="重建知识库"
+                                    testId="discovery-qa-admin-qa-admin-rebuild-knowledge-base-button"
                                     danger
                                     loading={rebuildMutation.isPending}
                                     onClick={() => rebuildMutation.mutate({})}
@@ -386,7 +386,7 @@ export const QaAdminPage = () => {
                                     />
                                 </label>
                                 <KuzhambuButton
-                                    name="查询同步"
+                                    testId="discovery-qa-admin-qa-admin-query-sync-button"
                                     loading={syncPageMutation.isPending}
                                     onClick={loadSyncItems}
                                     type="primary"
@@ -394,7 +394,7 @@ export const QaAdminPage = () => {
                                     查询同步
                                 </KuzhambuButton>
                                 <KuzhambuButton
-                                    name="同步内容"
+                                    testId="discovery-qa-admin-qa-admin-sync-content-button"
                                     loading={syncMutation.isPending}
                                     onClick={syncCurrentContent}
                                 >
@@ -445,7 +445,7 @@ export const QaAdminPage = () => {
                                 />
                             </label>
                             <KuzhambuButton
-                                name="加载会话"
+                                testId="discovery-qa-admin-qa-admin-load-session-button"
                                 loading={sessionMutation.isPending}
                                 onClick={() => {
                                     const nextSessionId = parseString(sessionId);
@@ -460,7 +460,7 @@ export const QaAdminPage = () => {
                                 加载会话
                             </KuzhambuButton>
                             <KuzhambuButton
-                                name="删除会话"
+                                testId="discovery-qa-admin-qa-admin-delete-session-button"
                                 danger
                                 loading={deleteSessionMutation.isPending}
                                 onClick={deleteCurrentSession}
@@ -468,7 +468,7 @@ export const QaAdminPage = () => {
                                 删除会话
                             </KuzhambuButton>
                             <KuzhambuButton
-                                name="导出 CSV"
+                                testId="discovery-qa-admin-qa-admin-export-csv-button"
                                 loading={exportSessionMutation.isPending}
                                 onClick={exportCurrentSession}
                             >
@@ -577,7 +577,7 @@ export const QaAdminPage = () => {
                                 />
                             </label>
                             <KuzhambuButton
-                                name="加载来源"
+                                testId="discovery-qa-admin-qa-admin-load-sources-button"
                                 loading={sourceMutation.isPending}
                                 onClick={() => {
                                     const nextMessageId = parseString(messageId);
@@ -635,7 +635,7 @@ export const QaAdminPage = () => {
                                 />
                             </label>
                             <KuzhambuButton
-                                name="加载轨迹"
+                                testId="discovery-qa-admin-qa-admin-load-traces-button"
                                 loading={traceMutation.isPending}
                                 onClick={() => {
                                     const nextTraceId = parseString(traceId);
@@ -687,7 +687,7 @@ export const QaAdminPage = () => {
                                         <KuzhambuSpace size={8}>
                                             <Text>{trace?.aiCallId ?? "-"}</Text>
                                             <KuzhambuButton
-                                                name="复制"
+                                                testId="discovery-qa-admin-qa-admin-copy-button"
                                                 disabled={!trace?.aiCallId}
                                                 onClick={copyAiCallId}
                                                 size="small"

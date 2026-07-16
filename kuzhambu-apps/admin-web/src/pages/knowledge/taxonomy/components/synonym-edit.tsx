@@ -103,11 +103,15 @@ export const SynonymEdit = ({
             onClose={onClose}
             footer={
                 <div className="knowledge-taxonomy-synonym-editor-footer">
-                    <KuzhambuButton name="取消" disabled={saving} onClick={onClose}>
+                    <KuzhambuButton
+                        testId="knowledge-taxonomy-synonym-cancel-button"
+                        disabled={saving}
+                        onClick={onClose}
+                    >
                         取消
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name={String(saveButtonText)}
+                        testId="knowledge-taxonomy-synonym-action-button"
                         type="primary"
                         loading={saving}
                         onClick={() => void saveSynonym()}

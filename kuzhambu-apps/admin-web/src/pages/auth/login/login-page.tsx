@@ -111,7 +111,7 @@ export const LoginPage = () => {
                                 description="请确认后台接口服务已启动，并检查 /kuzhambu-admin-api 代理配置。"
                                 action={
                                     <KuzhambuButton
-                                        name="重试"
+                                        testId="auth-login-login-retry-button"
                                         size="small"
                                         onClick={() => loginFormQuery.refetch()}
                                     >
@@ -176,7 +176,7 @@ export const LoginPage = () => {
                             </Form.Item>
 
                             <KuzhambuButton
-                                name="登录"
+                                testId="auth-login-login-action-button"
                                 block
                                 size="large"
                                 type="primary"

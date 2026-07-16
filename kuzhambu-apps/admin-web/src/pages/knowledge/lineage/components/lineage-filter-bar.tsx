@@ -135,11 +135,14 @@ export const LineageFilterBar = ({
                     })
                 }
             />
-            <KuzhambuButton name="重置" onClick={onReset}>
+            <KuzhambuButton
+                testId="knowledge-lineage-lineage-filter-bar-reset-button"
+                onClick={onReset}
+            >
                 重置
             </KuzhambuButton>
             <KuzhambuButton
-                name="刷新"
+                testId="knowledge-lineage-lineage-filter-bar-refresh-button"
                 icon={<ReloadOutlined />}
                 loading={loading}
                 onClick={onRefresh}

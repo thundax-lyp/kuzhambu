@@ -90,10 +90,15 @@ export const MenuEdit = ({ open, menu, parentOptions, saving, onClose, onSave }:
             onClose={onClose}
             footer={
                 <div className="menu-edit-footer">
-                    <KuzhambuButton name="取消" onClick={onClose}>
+                    <KuzhambuButton testId="system-menu-menu-cancel-button" onClick={onClose}>
                         取消
                     </KuzhambuButton>
-                    <KuzhambuButton name="保存" type="primary" loading={saving} onClick={saveMenu}>
+                    <KuzhambuButton
+                        testId="system-menu-menu-save-button"
+                        type="primary"
+                        loading={saving}
+                        onClick={saveMenu}
+                    >
                         保存
                     </KuzhambuButton>
                 </div>

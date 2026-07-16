@@ -29,7 +29,7 @@ export const QualityReportGenerateForm = ({
                 onChange={onChange}
             />
             <KuzhambuButton
-                name={String(submitLabel)}
+                testId="knowledge-quality-report-quality-report-generate-action-button"
                 disabled={disabled || !graphVersionId}
                 loading={loading}
                 type="primary"

@@ -128,7 +128,7 @@ export const WangqiVersionHistoryPanel = ({
                             key={version.id}
                             actions={[
                                 <KuzhambuButton
-                                    name={String(`查看王圻版本 ${version.versionNo ?? version.id}`)}
+                                    testId={`wangqi-version-view-${version.id}-button`}
                                     key="view"
                                     type="link"
                                     onClick={() => onSelectVersion(version)}
@@ -241,9 +241,7 @@ export const WangqiVersionHistoryPanel = ({
                                 <Alert type="warning" showIcon title="版本快照为空或无法解析" />
                             )}
                             <KuzhambuButton
-                                name={String(
-                                    `恢复王圻版本 ${selectedVersion.versionNo ?? selectedVersion.id}`
-                                )}
+                                testId={`wangqi-version-restore-${selectedVersion.id}-button`}
                                 danger
                                 loading={resetting}
                                 onClick={() => onResetVersion(selectedVersion)}

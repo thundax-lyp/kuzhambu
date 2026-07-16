@@ -104,7 +104,7 @@ export const SearchAdminPage = () => {
                         <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
                             <KuzhambuSpace wrap>
                                 <KuzhambuButton
-                                    name="刷新分析"
+                                    testId="discovery-search-admin-search-admin-action-button"
                                     loading={analysisMutation.isPending}
                                     onClick={() =>
                                         analysisMutation.mutate({
@@ -250,7 +250,7 @@ export const SearchAdminPage = () => {
 
                             <KuzhambuSpace wrap>
                                 <KuzhambuButton
-                                    name="查询日志"
+                                    testId="discovery-search-admin-search-admin-query-logs-button"
                                     loading={pageMutation.isPending}
                                     onClick={() =>
                                         pageMutation.mutate({
@@ -274,7 +274,10 @@ export const SearchAdminPage = () => {
                                 >
                                     查询日志
                                 </KuzhambuButton>
-                                <KuzhambuButton name="清空结果" onClick={() => setPageResult(null)}>
+                                <KuzhambuButton
+                                    testId="discovery-search-admin-search-admin-clear-result-button"
+                                    onClick={() => setPageResult(null)}
+                                >
                                     清空结果
                                 </KuzhambuButton>
                             </KuzhambuSpace>
@@ -310,7 +313,7 @@ export const SearchAdminPage = () => {
                                 />
                             </label>
                             <KuzhambuButton
-                                name="查看详情"
+                                testId="discovery-search-admin-search-admin-view-detail-button"
                                 loading={detailMutation.isPending}
                                 onClick={() =>
                                     detailMutation.mutate({
@@ -404,7 +407,7 @@ export const SearchAdminPage = () => {
                                 确认全量重建
                             </Checkbox>
                             <KuzhambuButton
-                                name="触发重建"
+                                testId="discovery-search-admin-search-admin-trigger-rebuild-button"
                                 danger
                                 loading={rebuildMutation.isPending}
                                 onClick={() =>

@@ -213,7 +213,7 @@ export const OperationsTasksPage = () => {
                             </KuzhambuSpace>
                             <KuzhambuSpace size={8} wrap>
                                 <KuzhambuButton
-                                    name="重置筛选"
+                                    testId="operations-tasks-tasks-reset-filter-button"
                                     icon={<SettingOutlined />}
                                     type="default"
                                     onClick={() => setFilters({})}
@@ -273,7 +273,7 @@ export const OperationsTasksPage = () => {
                                                 <td>{formatDateTime(task.completedAt)}</td>
                                                 <td>
                                                     <KuzhambuButton
-                                                        name="详情"
+                                                        testId="operations-tasks-tasks-detail-button"
                                                         size="small"
                                                         type="link"
                                                         onClick={() =>
@@ -298,7 +298,7 @@ export const OperationsTasksPage = () => {
                         </table>
                         <div className="operations-tasks-pagination">
                             <KuzhambuButton
-                                name="上一页"
+                                testId="operations-tasks-tasks-previous-page-button"
                                 disabled={taskPageNo <= 1}
                                 onClick={previousPage}
                             >
@@ -308,7 +308,7 @@ export const OperationsTasksPage = () => {
                                 第 {taskPageNo} / {totalPage} 页
                             </Text>
                             <KuzhambuButton
-                                name="下一页"
+                                testId="operations-tasks-tasks-next-page-button"
                                 disabled={taskPageNo >= totalPage}
                                 onClick={nextPage}
                             >
@@ -405,7 +405,10 @@ export const OperationsTasksPage = () => {
                         {isFailedTask(detailRecord) ? (
                             <Alert
                                 action={
-                                    <KuzhambuButton name="查看告警" size="small">
+                                    <KuzhambuButton
+                                        testId="operations-tasks-tasks-view-alerts-button"
+                                        size="small"
+                                    >
                                         <Link to={buildTaskAlertPath(detailRecord?.snapshotId)}>
                                             查看告警
                                         </Link>

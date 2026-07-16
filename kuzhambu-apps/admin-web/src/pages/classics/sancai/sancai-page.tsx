@@ -278,7 +278,7 @@ export const SancaiPage = () => {
                     ) : null}
                     {enableEntryFilter ? (
                         <KuzhambuButton
-                            name="筛选"
+                            testId="classics-sancai-sancai-filter-button"
                             className={
                                 isFilterOpen || filterActive ? "sancai-page-filter-active" : ""
                             }
@@ -290,7 +290,7 @@ export const SancaiPage = () => {
                         </KuzhambuButton>
                     ) : null}
                     <KuzhambuButton
-                        name="刷新三才图会数据"
+                        testId="classics-sancai-sancai-action-button"
                         icon={<ReloadOutlined />}
                         onClick={refreshPage}
                     >
@@ -298,7 +298,7 @@ export const SancaiPage = () => {
                     </KuzhambuButton>
                     {selectedVolume ? (
                         <KuzhambuButton
-                            name="任务"
+                            testId="classics-sancai-sancai-action-button-2"
                             icon={<ScheduleOutlined />}
                             onClick={() => setExportJobsDrawerOpen(true)}
                         >
@@ -307,7 +307,7 @@ export const SancaiPage = () => {
                     ) : null}
                     {enableAdd ? (
                         <KuzhambuButton
-                            name={String(addText)}
+                            testId="classics-sancai-sancai-action-button-3"
                             type="primary"
                             icon={<PlusOutlined />}
                             onClick={startCreate}
