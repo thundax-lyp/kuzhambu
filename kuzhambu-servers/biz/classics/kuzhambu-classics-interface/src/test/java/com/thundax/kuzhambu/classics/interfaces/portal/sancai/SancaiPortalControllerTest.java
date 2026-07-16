@@ -27,7 +27,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 class SancaiPortalControllerTest {
@@ -39,25 +39,25 @@ class SancaiPortalControllerTest {
         assertEquals("/api/portal/classics/sancai", mapping.value()[0]);
 
         assertEquals(
-                "categories",
+                "categories/list",
                 SancaiPortalController.class
                         .getDeclaredMethod("listCategories")
-                        .getAnnotation(GetMapping.class)
+                        .getAnnotation(PostMapping.class)
                         .value()[0]);
         assertEquals(
-                "volumes",
+                "volumes/list",
                 SancaiPortalController.class
-                        .getDeclaredMethod("listVolumes", Long.class)
-                        .getAnnotation(GetMapping.class)
+                        .getDeclaredMethod("listVolumes", SancaiPortalEntrySearchRequest.class)
+                        .getAnnotation(PostMapping.class)
                         .value()[0]);
         Method entries =
                 SancaiPortalController.class.getDeclaredMethod("pageEntries", SancaiPortalEntrySearchRequest.class);
-        assertEquals("entries", entries.getAnnotation(GetMapping.class).value()[0]);
+        assertEquals("entries/page", entries.getAnnotation(PostMapping.class).value()[0]);
         assertEquals(
-                "entries/{id}",
+                "entries/get",
                 SancaiPortalController.class
-                        .getDeclaredMethod("getEntry", Long.class)
-                        .getAnnotation(GetMapping.class)
+                        .getDeclaredMethod("getEntry", SancaiPortalEntrySearchRequest.class)
+                        .getAnnotation(PostMapping.class)
                         .value()[0]);
     }
 
@@ -83,7 +83,10 @@ class SancaiPortalControllerTest {
     void getEntryShouldRejectNonPublicPublishedEntry() {
         SancaiPortalController controller = new SancaiPortalController(service());
 
-        assertThrows(BizException.class, () -> controller.getEntry(3002L));
+        SancaiPortalEntrySearchRequest request = new SancaiPortalEntrySearchRequest();
+        request.setId(3002L);
+
+        assertThrows(BizException.class, () -> controller.getEntry(request));
     }
 
     private static SancaiApplicationService service() {

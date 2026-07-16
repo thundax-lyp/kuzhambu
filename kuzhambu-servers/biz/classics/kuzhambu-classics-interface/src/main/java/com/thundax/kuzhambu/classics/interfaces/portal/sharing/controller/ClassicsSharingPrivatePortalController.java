@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
 import com.thundax.kuzhambu.classics.interfaces.portal.sharing.assembler.ClassicsSharingPortalInterfaceAssembler;
+import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.request.ClassicsSharePortalSearchRequest;
 import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.response.ClassicsSharePortalResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
@@ -18,6 +19,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -30,9 +33,9 @@ public class ClassicsSharingPrivatePortalController {
         this.service = service;
     }
 
-    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
-    @GetMapping("{shareToken}")
-    public ClassicsSharePortalResponse get(@PathVariable("shareToken") String shareToken) {
+    @PostMapping("get")
+    public ClassicsSharePortalResponse get(@RequestBody ClassicsSharePortalSearchRequest request) {
+        String shareToken = request == null ? null : request.getShareToken();
         return ClassicsSharingPortalInterfaceAssembler.toPrivateResponse(
                 service.getPrivatePortalShare(shareToken, currentUserId(), currentAuthorities()), shareToken);
     }

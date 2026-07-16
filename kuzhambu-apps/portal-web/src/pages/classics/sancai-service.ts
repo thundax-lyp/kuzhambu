@@ -1,4 +1,4 @@
-import { getJson } from "@/api/http";
+import { postJson } from "@/api/http";
 import type {
     SancaiCategoryRecord,
     SancaiEntryPage,
@@ -10,15 +10,15 @@ import type {
 const SANCAI_PATH = "/portal/classics/sancai";
 
 export const listCategories = () => {
-    return getJson<SancaiCategoryRecord[]>(`${SANCAI_PATH}/categories`);
+    return postJson<SancaiCategoryRecord[]>(`${SANCAI_PATH}/categories/list`, {});
 };
 
 export const listVolumes = (categoryId?: number | null) => {
-    return getJson<SancaiVolumeRecord[]>(`${SANCAI_PATH}/volumes`, { categoryId });
+    return postJson<SancaiVolumeRecord[]>(`${SANCAI_PATH}/volumes/list`, { categoryId });
 };
 
 export const pageEntries = (query: SancaiEntryQuery = {}) => {
-    return getJson<SancaiEntryPage>(`${SANCAI_PATH}/entries`, {
+    return postJson<SancaiEntryPage>(`${SANCAI_PATH}/entries/page`, {
         categoryId: query.categoryId,
         keyword: query.keyword,
         pageNo: query.pageNo,
@@ -28,5 +28,5 @@ export const pageEntries = (query: SancaiEntryQuery = {}) => {
 };
 
 export const getEntry = (id: number) => {
-    return getJson<SancaiEntryRecord>(`${SANCAI_PATH}/entries/${id}`);
+    return postJson<SancaiEntryRecord>(`${SANCAI_PATH}/entries/get`, { id });
 };

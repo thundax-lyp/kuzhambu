@@ -16,13 +16,13 @@ const installFetchMock = () => {
     vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
         const url = String(input);
 
-        if (url.includes("/portal/classics/sancai/categories")) {
+        if (url.includes("/portal/classics/sancai/categories/list")) {
             return apiResponse([{ categoryType: "FORMAL", id: 1, title: "天地" }]);
         }
-        if (url.includes("/portal/classics/sancai/volumes")) {
+        if (url.includes("/portal/classics/sancai/volumes/list")) {
             return apiResponse([{ categoryId: 1, id: 11, title: "卷一", volumeType: "MAIN" }]);
         }
-        if (url.includes("/portal/classics/sancai/entries/1001")) {
+        if (url.includes("/portal/classics/sancai/entries/get")) {
             return apiResponse({
                 id: 1001,
                 volumeId: 11,
@@ -34,7 +34,7 @@ const installFetchMock = () => {
                 visibility: "PUBLIC"
             });
         }
-        if (url.includes("/portal/classics/sancai/entries")) {
+        if (url.includes("/portal/classics/sancai/entries/page")) {
             return apiResponse({
                 pageNo: 1,
                 pageSize: 12,

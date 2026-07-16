@@ -6,6 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SancaiPortalEntrySearchRequest {
+    private Long id;
     private Long categoryId;
     private Long volumeId;
     private String keyword;

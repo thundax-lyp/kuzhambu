@@ -1,4 +1,4 @@
-import { buildApiUrl, getJson, getJsonWithAccessToken } from "@/api/http";
+import { buildApiUrl, postJson, postJsonWithAccessToken } from "@/api/http";
 import type {
     ClassicsSharePortalListResponse,
     ClassicsSharePortalResponse,
@@ -22,16 +22,17 @@ export const getAccessToken = () => {
 };
 
 export const listShares = (query: ClassicsShareSearchQuery = {}) => {
-    return getJson<ClassicsSharePortalListResponse>("/portal/classics/shares", { ...query });
+    return postJson<ClassicsSharePortalListResponse>("/portal/classics/shares/list", { ...query });
 };
 
 export const getShare = (shareToken: string) => {
-    return getJson<ClassicsSharePortalResponse>(`/portal/classics/shares/${shareToken}`);
+    return postJson<ClassicsSharePortalResponse>("/portal/classics/shares/get", { shareToken });
 };
 
 export const getPrivateShare = (shareToken: string, accessToken: string) => {
-    return getJsonWithAccessToken<ClassicsSharePortalResponse>(
-        `/portal/classics/private-shares/${shareToken}`,
+    return postJsonWithAccessToken<ClassicsSharePortalResponse>(
+        "/portal/classics/private-shares/get",
+        { shareToken },
         accessToken
     );
 };
