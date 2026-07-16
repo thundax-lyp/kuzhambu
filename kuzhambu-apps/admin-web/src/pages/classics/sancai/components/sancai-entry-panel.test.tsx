@@ -1334,9 +1334,7 @@ describe("SancaiEntryPanel sharing", () => {
             });
         });
 
-        const exportSection = (await screen
-            .findByText("任务列表")
-            .then((node) => node.closest("section"))) as HTMLElement;
+        const exportSection = await screen.findByLabelText("任务列表表格");
         expect(
             await within(exportSection).findByRole("button", { name: /下\s*载/ })
         ).toBeInTheDocument();
@@ -1399,10 +1397,7 @@ describe("SancaiEntryPanel sharing", () => {
 
         renderEntryPanel({ exportJobsDrawerOpen: true });
 
-        const exportSection = (await screen
-            .findByText("任务列表")
-            .then((node) => node.closest("section"))) as HTMLElement;
-        expect(exportSection).toBeTruthy();
+        const exportSection = await screen.findByLabelText("任务列表表格");
         expect(await within(exportSection).findByText("已过期")).toBeInTheDocument();
         expect(
             await within(exportSection).findByRole("button", { name: /下\s*载/ })

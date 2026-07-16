@@ -1,8 +1,13 @@
+import { DeleteOutlined, ReloadOutlined } from "@ant-design/icons";
 import { Checkbox, Empty, Input, Select, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
-import { KuzhambuList, KuzhambuListItem, KuzhambuListMeta } from "@/components/kuzhambu-list";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
+import {
+    KuzhambuTable,
+    type KuzhambuTableColumn,
+    type KuzhambuTableRowActionOption
+} from "@/components/kuzhambu-table";
 import "./classics-export-job-section.css";
 import type { ClassicsExportJobRecord } from "../classics-export-types";
 
@@ -70,10 +75,6 @@ const renderExportStatus = (status?: string | null, expiresAt?: string | null) =
     );
 };
 
-const renderExportDescription = (job: ClassicsExportJobRecord) => {
-    return `条目数：${job.itemCount ?? 0} | 资产数：${job.assetCount ?? 0}`;
-};
-
 const matchesKeyword = (job: ClassicsExportJobRecord, keyword: string) => {
     const normalized = keyword.trim().toLowerCase();
     if (!normalized) {
@@ -135,33 +136,95 @@ export const ClassicsExportJobSection = ({
     const selectedJobs = visibleItems.filter(
         (job) => job.id != null && selectedIds.includes(job.id)
     );
-    const selectableIds = visibleItems
-        .map((job) => job.id)
-        .filter((id): id is number => id != null);
-    const allSelected = selectableIds.length > 0 && selectedJobs.length === selectableIds.length;
+    const columns = useMemo<KuzhambuTableColumn<ClassicsExportJobRecord>[]>(
+        () => [
+            {
+                title: "任务",
+                dataIndex: "id",
+                key: "id",
+                width: 104,
+                render: (id?: number | null) => `#${id ?? "草稿"}`
+            },
+            {
+                title: "状态",
+                dataIndex: "status",
+                key: "status",
+                width: 104,
+                render: (_status, job: ClassicsExportJobRecord) =>
+                    renderExportStatus(job.status, job.expiresAt)
+            },
+            {
+                title: "类型",
+                dataIndex: "exportKind",
+                key: "exportKind",
+                width: 168,
+                render: (_exportKind, job: ClassicsExportJobRecord) => (
+                    <div className="classics-export-job-section-cell-stack">
+                        <Text>{job.exportKind || "未设置"}</Text>
+                        <Text type="secondary">{job.exportFormat || "未设置"}</Text>
+                    </div>
+                )
+            },
+            {
+                title: "范围",
+                dataIndex: "scopeType",
+                key: "scopeType",
+                width: 168,
+                render: (_scopeType, job: ClassicsExportJobRecord) => (
+                    <div className="classics-export-job-section-cell-stack">
+                        <Text>{job.scopeType || "未设置"}</Text>
+                        <Text type="secondary">
+                            条目 {job.itemCount ?? 0} / 资产 {job.assetCount ?? 0}
+                        </Text>
+                    </div>
+                )
+            },
+            {
+                title: "请求时间",
+                dataIndex: "requestedAt",
+                key: "requestedAt",
+                width: 168,
+                render: (requestedAt?: string | null) => formatDateTime(requestedAt)
+            },
+            {
+                title: "过期时间",
+                dataIndex: "expiresAt",
+                key: "expiresAt",
+                width: 168,
+                render: (expiresAt?: string | null) => formatDateTime(expiresAt)
+            },
+            {
+                key: "actions",
+                options: (job: ClassicsExportJobRecord) => {
+                    const actions: KuzhambuTableRowActionOption<ClassicsExportJobRecord>[] = [
+                        {
+                            key: "download",
+                            text: "下载",
+                            ariaLabel: `下载导出任务 ${job.id ?? "草稿"}`,
+                            disabled: !isDownloadableExport(job),
+                            onClick: () => onDownload(job)
+                        }
+                    ];
+
+                    if (onDelete) {
+                        actions.push({
+                            key: "delete",
+                            text: "删除",
+                            type: "danger",
+                            ariaLabel: `删除导出任务 ${job.id ?? "草稿"}`,
+                            onClick: () => onDelete(job)
+                        });
+                    }
+
+                    return actions;
+                }
+            }
+        ],
+        [onDelete, onDownload]
+    );
 
     return (
         <section className="classics-export-job-section">
-            <KuzhambuSpace
-                align="center"
-                className="classics-export-job-section-head"
-                size={12}
-                wrap
-            >
-                <Text strong>{sectionTitle}</Text>
-                {onRefresh ? (
-                    <KuzhambuButton
-                        name="刷新"
-                        size="small"
-                        type="link"
-                        onClick={() => {
-                            onRefresh();
-                        }}
-                    >
-                        刷新
-                    </KuzhambuButton>
-                ) : null}
-            </KuzhambuSpace>
             <KuzhambuSpace className="classics-export-job-section-filters" size={8} wrap>
                 <Input.Search
                     allowClear
@@ -192,102 +255,57 @@ export const ClassicsExportJobSection = ({
                 >
                     仅过期
                 </Checkbox>
+                {onRefresh ? (
+                    <KuzhambuButton
+                        name="刷新"
+                        icon={<ReloadOutlined />}
+                        onClick={() => {
+                            onRefresh();
+                        }}
+                    >
+                        刷新
+                    </KuzhambuButton>
+                ) : null}
                 {onBatchDelete ? (
                     <KuzhambuButton
-                        name="删除选中"
+                        name="删除"
                         danger
                         disabled={!selectedJobs.length}
-                        size="small"
+                        icon={<DeleteOutlined />}
                         onClick={() => onBatchDelete(selectedJobs)}
                     >
-                        删除选中
+                        删除
                     </KuzhambuButton>
                 ) : null}
             </KuzhambuSpace>
-            <KuzhambuList
-                size="small"
+            <KuzhambuTable<ClassicsExportJobRecord>
+                ariaLabel={`${sectionTitle}表格`}
+                rowKey={(job) => job.id ?? `classics-export-job-${job.requestedAt ?? "draft"}`}
+                className="classics-export-job-section-table"
+                columns={columns}
                 dataSource={visibleItems}
                 loading={loading}
-                empty={
-                    <Empty description={sectionDescription} image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                }
-                renderItem={(job) => {
-                    const expired = isExpired(job.expiresAt);
-                    const downloadable = isDownloadableExport(job);
-                    const statusText = expired ? "已过期" : formatDateTime(job.requestedAt);
-                    return (
-                        <KuzhambuListItem
-                            key={job.id ?? `classics-export-job-${job.requestedAt}`}
-                            extra={
-                                <KuzhambuSpace size={8} wrap>
-                                    {onBatchDelete && job.id != null ? (
-                                        <Checkbox
-                                            aria-label={`选择导出任务 ${job.id}`}
-                                            checked={selectedIds.includes(job.id)}
-                                            onChange={(event) => {
-                                                setSelectedIds((current) =>
-                                                    event.target.checked
-                                                        ? Array.from(
-                                                              new Set([
-                                                                  ...current,
-                                                                  job.id as number
-                                                              ])
-                                                          )
-                                                        : current.filter((id) => id !== job.id)
-                                                );
-                                            }}
-                                        />
-                                    ) : null}
-                                    {renderExportStatus(job.status, job.expiresAt)}
-                                    {downloadable ? (
-                                        <KuzhambuButton
-                                            name="下载"
-                                            size="small"
-                                            type="primary"
-                                            onClick={() => onDownload(job)}
-                                        >
-                                            下载
-                                        </KuzhambuButton>
-                                    ) : (
-                                        <KuzhambuButton name="下载" size="small" disabled>
-                                            下载
-                                        </KuzhambuButton>
-                                    )}
-                                    {onDelete ? (
-                                        <KuzhambuButton
-                                            name="删除"
-                                            danger
-                                            size="small"
-                                            onClick={() => onDelete(job)}
-                                        >
-                                            删除
-                                        </KuzhambuButton>
-                                    ) : null}
-                                </KuzhambuSpace>
-                            }
-                        >
-                            <KuzhambuListMeta
-                                title={`任务 #${job.id ?? "草稿"}`}
-                                description={`${statusText} | ${renderExportDescription(job)}`}
-                            />
-                        </KuzhambuListItem>
-                    );
+                locale={{
+                    emptyText: (
+                        <Empty
+                            description={sectionDescription}
+                            image={Empty.PRESENTED_IMAGE_SIMPLE}
+                        />
+                    )
                 }}
+                pagination={false}
+                rowSelection={
+                    onBatchDelete
+                        ? {
+                              selectedRowKeys: selectedIds,
+                              onChange: (keys) => setSelectedIds(keys.map((key) => Number(key))),
+                              getCheckboxProps: (job) => ({
+                                  disabled: job.id == null
+                              })
+                          }
+                        : undefined
+                }
             />
-            {onBatchDelete && selectableIds.length ? (
-                <div className="classics-export-job-section-select-all">
-                    <Checkbox
-                        aria-label="选择全部可见导出任务"
-                        checked={allSelected}
-                        indeterminate={selectedJobs.length > 0 && !allSelected}
-                        onChange={(event) => {
-                            setSelectedIds(event.target.checked ? selectableIds : []);
-                        }}
-                    >
-                        已选 {selectedJobs.length} / {selectableIds.length}
-                    </Checkbox>
-                </div>
-            ) : null}
         </section>
     );
 };

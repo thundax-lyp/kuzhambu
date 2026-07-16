@@ -875,6 +875,11 @@ export const SancaiEntryPanel = ({
                 open={isExportJobsDrawerOpen}
                 size="large"
                 title="导出任务"
+                footer={
+                    <KuzhambuButton name="关闭" onClick={() => setExportJobsOpen(false)}>
+                        关闭
+                    </KuzhambuButton>
+                }
                 onClose={() => setExportJobsOpen(false)}
             >
                 {exportsQuery.isError ? (
