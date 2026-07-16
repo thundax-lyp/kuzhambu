@@ -6,7 +6,7 @@ import {
     UploadOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Empty, Image, Input, Select, Switch, Tag, Typography, Upload } from "antd";
+import { App, Empty, Form, Image, Input, Select, Switch, Tag, Typography, Upload } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
@@ -343,7 +343,7 @@ export const SancaiEntryModel = ({
         <KuzhambuDrawer
             title={mode === "create" ? "新增条目" : "编辑条目"}
             open={open}
-            size="middle"
+            size="large"
             destroyOnHidden
             footer={
                 <div className="sancai-drawer-footer">
@@ -364,9 +364,39 @@ export const SancaiEntryModel = ({
             }
             onClose={onCancel}
         >
-            <div className="sancai-detail-card">
-                <label className="sancai-form-field">
-                    <Text strong>标题</Text>
+            <Form
+                className="sancai-detail-card sancai-entry-model-form"
+                component="div"
+                labelCol={{ flex: "56px" }}
+                layout="horizontal"
+            >
+                <div className="sancai-entry-model-catalog-row">
+                    <Form.Item label="门类">
+                        <Select
+                            aria-label="三才图会条目门类"
+                            placeholder="选择门类"
+                            options={categoryOptions}
+                            value={form.categoryId ?? undefined}
+                            onChange={(value) => changeCategory(value ?? null)}
+                        />
+                    </Form.Item>
+                    <Form.Item label="卷">
+                        <Select
+                            aria-label="三才图会条目卷"
+                            disabled={!form.categoryId}
+                            placeholder="选择卷"
+                            options={volumeOptions}
+                            value={form.volumeId ?? undefined}
+                            onChange={(value) =>
+                                setForm((currentForm) => ({
+                                    ...currentForm,
+                                    volumeId: value ?? null
+                                }))
+                            }
+                        />
+                    </Form.Item>
+                </div>
+                <Form.Item label="标题">
                     <Input
                         aria-label="三才图会条目标题"
                         value={form.title}
@@ -377,35 +407,8 @@ export const SancaiEntryModel = ({
                             }))
                         }
                     />
-                </label>
-                <label className="sancai-form-field">
-                    <Text strong>门类</Text>
-                    <Select
-                        aria-label="三才图会条目门类"
-                        placeholder="选择门类"
-                        options={categoryOptions}
-                        value={form.categoryId ?? undefined}
-                        onChange={(value) => changeCategory(value ?? null)}
-                    />
-                </label>
-                <label className="sancai-form-field">
-                    <Text strong>卷</Text>
-                    <Select
-                        aria-label="三才图会条目卷"
-                        disabled={!form.categoryId}
-                        placeholder="选择卷"
-                        options={volumeOptions}
-                        value={form.volumeId ?? undefined}
-                        onChange={(value) =>
-                            setForm((currentForm) => ({
-                                ...currentForm,
-                                volumeId: value ?? null
-                            }))
-                        }
-                    />
-                </label>
-                <label className="sancai-form-field">
-                    <Text strong>原文</Text>
+                </Form.Item>
+                <Form.Item label="原文" className="sancai-entry-model-form-item-top">
                     <Input.TextArea
                         aria-label="三才图会原文"
                         value={form.originalText}
@@ -417,9 +420,8 @@ export const SancaiEntryModel = ({
                             }))
                         }
                     />
-                </label>
-                <label className="sancai-form-field">
-                    <Text strong>译文</Text>
+                </Form.Item>
+                <Form.Item label="译文" className="sancai-entry-model-form-item-top">
                     <Input.TextArea
                         aria-label="三才图会译文"
                         value={form.translationText}
@@ -431,9 +433,8 @@ export const SancaiEntryModel = ({
                             }))
                         }
                     />
-                </label>
-                <label className="sancai-form-field">
-                    <Text strong>摘要</Text>
+                </Form.Item>
+                <Form.Item label="摘要" className="sancai-entry-model-form-item-top">
                     <Input.TextArea
                         aria-label="三才图会摘要"
                         value={form.summary}
@@ -445,9 +446,8 @@ export const SancaiEntryModel = ({
                             }))
                         }
                     />
-                </label>
-                <div className="sancai-form-switch-field">
-                    <Text strong>可见性</Text>
+                </Form.Item>
+                <Form.Item label="可见性">
                     <Switch
                         checked={form.visibility === "PUBLIC"}
                         checkedChildren="公开"
@@ -460,7 +460,7 @@ export const SancaiEntryModel = ({
                             }))
                         }
                     />
-                </div>
+                </Form.Item>
                 {entryId ? (
                     <section className="sancai-form-field" aria-label="三才图会图片面板">
                         <Text strong>当前图片</Text>
@@ -763,8 +763,7 @@ export const SancaiEntryModel = ({
                                         {selectedVisualAsset.currentUsed ? "是" : "否"}
                                     </Text>
                                 </KuzhambuSpace>
-                                <label className="sancai-form-field">
-                                    <Text strong>文本权重</Text>
+                                <Form.Item label="文本权重">
                                     <Input
                                         aria-label="三才图会视觉资产文本权重"
                                         value={visualAssetFormValue?.textWeight ?? ""}
@@ -776,9 +775,8 @@ export const SancaiEntryModel = ({
                                             })
                                         }
                                     />
-                                </label>
-                                <label className="sancai-form-field">
-                                    <Text strong>图片权重</Text>
+                                </Form.Item>
+                                <Form.Item label="图片权重">
                                     <Input
                                         aria-label="三才图会视觉资产图片权重"
                                         value={visualAssetFormValue?.imageWeight ?? ""}
@@ -790,9 +788,11 @@ export const SancaiEntryModel = ({
                                             })
                                         }
                                     />
-                                </label>
-                                <label className="sancai-form-field">
-                                    <Text strong>图片理解</Text>
+                                </Form.Item>
+                                <Form.Item
+                                    label="图片理解"
+                                    className="sancai-entry-model-form-item-top"
+                                >
                                     <Input.TextArea
                                         aria-label="三才图会视觉资产图片理解"
                                         value={visualAssetFormValue?.imageAnalysisMarkdown ?? ""}
@@ -806,9 +806,11 @@ export const SancaiEntryModel = ({
                                             })
                                         }
                                     />
-                                </label>
-                                <label className="sancai-form-field">
-                                    <Text strong>融合描述</Text>
+                                </Form.Item>
+                                <Form.Item
+                                    label="融合描述"
+                                    className="sancai-entry-model-form-item-top"
+                                >
                                     <Input.TextArea
                                         aria-label="三才图会视觉资产融合描述"
                                         value={visualAssetFormValue?.fusionDescription ?? ""}
@@ -822,9 +824,11 @@ export const SancaiEntryModel = ({
                                             })
                                         }
                                     />
-                                </label>
-                                <label className="sancai-form-field">
-                                    <Text strong>视觉描述</Text>
+                                </Form.Item>
+                                <Form.Item
+                                    label="视觉描述"
+                                    className="sancai-entry-model-form-item-top"
+                                >
                                     <Input.TextArea
                                         aria-label="三才图会视觉资产视觉描述"
                                         value={visualAssetFormValue?.visualDescription ?? ""}
@@ -838,9 +842,11 @@ export const SancaiEntryModel = ({
                                             })
                                         }
                                     />
-                                </label>
-                                <label className="sancai-form-field">
-                                    <Text strong>生成参数</Text>
+                                </Form.Item>
+                                <Form.Item
+                                    label="生成参数"
+                                    className="sancai-entry-model-form-item-top"
+                                >
                                     <Input.TextArea
                                         aria-label="三才图会视觉资产生成参数"
                                         value={visualAssetFormValue?.generationParamsJson ?? ""}
@@ -854,7 +860,7 @@ export const SancaiEntryModel = ({
                                             })
                                         }
                                     />
-                                </label>
+                                </Form.Item>
                             </div>
                         ) : (
                             <Empty
@@ -864,7 +870,7 @@ export const SancaiEntryModel = ({
                         )}
                     </section>
                 ) : null}
-            </div>
+            </Form>
             {afterForm}
         </KuzhambuDrawer>
     );

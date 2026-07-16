@@ -1,11 +1,9 @@
-import { Input, Modal, Select, Typography } from "antd";
+import { Form, Input, Modal, Select } from "antd";
 import { useState } from "react";
 import type { DictItem } from "@/types/dict";
 import { toVolumeFormValues, type SancaiVolumeFormValues } from "./sancai-form-values";
 import type { SancaiCategoryRecord, SancaiVolumeRecord } from "../sancai-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
-
-const { Text } = Typography;
 
 interface SancaiVolumeModelProps {
     categories: SancaiCategoryRecord[];
@@ -88,18 +86,22 @@ const SancaiVolumeForm = ({
     volumeTypeItems: DictItem[];
 }) => {
     return (
-        <div className="sancai-category-editor" aria-label={volume ? "编辑卷目" : "新增卷目"}>
-            <label className="sancai-form-field">
-                <Text strong>卷目标题</Text>
+        <Form
+            aria-label={volume ? "编辑卷目" : "新增卷目"}
+            className="sancai-category-editor sancai-editor-form"
+            component="div"
+            labelCol={{ flex: "72px" }}
+            layout="horizontal"
+        >
+            <Form.Item label="卷目标题">
                 <Input
                     aria-label="三才图会卷目标题"
                     placeholder="卷目标题"
                     value={form.title}
                     onChange={(event) => onChange({ title: event.target.value })}
                 />
-            </label>
-            <label className="sancai-form-field">
-                <Text strong>所属门类</Text>
+            </Form.Item>
+            <Form.Item label="所属门类">
                 <Select
                     aria-label="三才图会卷目所属门类"
                     placeholder="所属门类"
@@ -110,16 +112,15 @@ const SancaiVolumeForm = ({
                     }))}
                     onChange={(categoryId) => onChange({ categoryId })}
                 />
-            </label>
-            <label className="sancai-form-field">
-                <Text strong>卷目类型</Text>
+            </Form.Item>
+            <Form.Item label="卷目类型">
                 <Select
                     aria-label="三才图会卷目类型"
                     value={form.volumeType}
                     options={volumeTypeItems}
                     onChange={(volumeType) => onChange({ volumeType })}
                 />
-            </label>
-        </div>
+            </Form.Item>
+        </Form>
     );
 };

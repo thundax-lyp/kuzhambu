@@ -273,7 +273,7 @@ html[data-theme="dark"] .user-page {
 
 .user-edit-form {
     display: grid;
-    gap: 14px;
+    gap: 0;
 }
 
 .user-edit-avatar {
@@ -288,11 +288,14 @@ html[data-theme="dark"] .user-page {
     bottom: -3px;
 }
 
-.user-edit-form label {
-    display: grid;
-    gap: 5px;
+.user-edit-form .ant-form-item {
+    margin-bottom: 14px;
+}
+
+.user-edit-form .ant-form-item-label > label {
     color: var(--user-copy);
     font-size: 12px;
+    font-weight: 700;
 }
 
 .user-edit-footer {

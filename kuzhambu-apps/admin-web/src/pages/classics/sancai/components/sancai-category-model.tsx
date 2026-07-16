@@ -1,11 +1,9 @@
-import { Input, Modal, Select, Typography } from "antd";
+import { Form, Input, Modal, Select } from "antd";
 import { useState } from "react";
 import type { DictItem } from "@/types/dict";
 import { toCategoryFormValues, type SancaiCategoryFormValues } from "./sancai-form-values";
 import type { SancaiCategoryRecord } from "../sancai-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
-
-const { Text } = Typography;
 
 interface SancaiCategoryModelProps {
     category: SancaiCategoryRecord | null;
@@ -54,9 +52,14 @@ export const SancaiCategoryModel = ({
             destroyOnHidden
             onCancel={onCancel}
         >
-            <div className="sancai-category-editor" aria-label={category ? "编辑门类" : "新增门类"}>
-                <label className="sancai-form-field">
-                    <Text strong>门类标题</Text>
+            <Form
+                aria-label={category ? "编辑门类" : "新增门类"}
+                className="sancai-category-editor sancai-editor-form"
+                component="div"
+                labelCol={{ flex: "72px" }}
+                layout="horizontal"
+            >
+                <Form.Item label="门类标题">
                     <Input
                         aria-label="三才图会门类标题"
                         placeholder="门类标题"
@@ -68,9 +71,8 @@ export const SancaiCategoryModel = ({
                             }))
                         }
                     />
-                </label>
-                <label className="sancai-form-field">
-                    <Text strong>门类类型</Text>
+                </Form.Item>
+                <Form.Item label="门类类型">
                     <Select
                         aria-label="三才图会门类类型"
                         value={form.categoryType}
@@ -82,8 +84,8 @@ export const SancaiCategoryModel = ({
                             }))
                         }
                     />
-                </label>
-            </div>
+                </Form.Item>
+            </Form>
         </Modal>
     );
 };

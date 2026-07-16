@@ -279,16 +279,36 @@ html[data-theme="dark"] .sancai-page {
     border-color: var(--sancai-line) !important;
 }
 
+.sancai-editor-form .ant-form-item,
+.sancai-entry-model-form .ant-form-item {
+    margin-bottom: 0;
+}
+
+.sancai-editor-form .ant-form-item-label > label,
+.sancai-entry-model-form .ant-form-item-label > label {
+    color: var(--sancai-ink);
+    font-weight: 700;
+}
+
+.sancai-entry-model-form .ant-form-item-control {
+    min-width: 0;
+}
+
+.sancai-entry-model-form-item-top .ant-form-item-label {
+    padding-top: 5px;
+}
+
 .sancai-form-field {
     display: grid;
     min-width: 0;
     gap: 6px;
 }
 
-.sancai-form-switch-field {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
+.sancai-entry-model-catalog-row {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
 }
 
 .sancai-image-card-list {
@@ -445,5 +465,18 @@ html[data-theme="dark"] .sancai-page {
 
     .sancai-version-history-panel-grid {
         grid-template-columns: minmax(0, 1fr);
+    }
+
+    .sancai-entry-model-catalog-row {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .sancai-editor-form .ant-form-item,
+    .sancai-entry-model-form .ant-form-item {
+        display: block;
+    }
+
+    .sancai-entry-model-form-item-top .ant-form-item-label {
+        padding-top: 0;
     }
 }
