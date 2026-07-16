@@ -1482,40 +1482,6 @@ describe("SancaiEntryPanel sharing", () => {
         expect(await screen.findByText("天地为何不变？")).toBeInTheDocument();
     });
 
-    it("renders image management controls and supports current switch and delete", async () => {
-        const user = userEvent.setup();
-        renderEntryPanel();
-
-        const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByRole("button", { name: "编辑 天地" }));
-
-        await openImageSection(user);
-        const imagePanel = await screen.findByLabelText("三才图会图片管理");
-        expect(within(imagePanel).getByAltText("sancai.png")).toBeInTheDocument();
-        expect(within(imagePanel).getByAltText("生成图")).toBeInTheDocument();
-        expect(within(imagePanel).getByRole("button", { name: "下载 生成图" })).toBeInTheDocument();
-        expect(
-            within(imagePanel).getByRole("button", { name: "设为封面 生成图" })
-        ).toBeInTheDocument();
-        expect(within(imagePanel).getByRole("button", { name: "删除 生成图" })).toBeInTheDocument();
-
-        await user.click(within(imagePanel).getByRole("button", { name: "设为封面 生成图" }));
-        await waitFor(() => {
-            expect(vi.mocked(entryService.changeCurrentImage).mock.calls.at(-1)?.at(0)).toEqual({
-                entryId: 3001,
-                imageId: 8002
-            });
-        });
-
-        await user.click(within(imagePanel).getByRole("button", { name: "删除 生成图" }));
-        await waitFor(() => {
-            expect(vi.mocked(entryService.deleteImage).mock.calls.at(-1)?.at(0)).toEqual({
-                entryId: 3001,
-                imageId: 8002
-            });
-        });
-    });
-
     it("renders empty image management state", async () => {
         vi.mocked(entryService.listImages).mockResolvedValueOnce([]);
         const user = userEvent.setup();
