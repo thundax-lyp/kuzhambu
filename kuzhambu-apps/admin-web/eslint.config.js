@@ -416,19 +416,16 @@ const localRules = {
                     return context.physicalFilename.split(path.sep).join("/");
                 };
 
-                const isPageTsxFile = (normalizedFilePath) => {
+                const isPageFile = (normalizedFilePath) => {
                     return (
                         normalizedFilePath.includes("/src/pages/") &&
-                        normalizedFilePath.endsWith(".tsx")
+                        /\.(?:ts|tsx)$/.test(normalizedFilePath)
                     );
                 };
 
                 return {
                     ImportDeclaration(node) {
-                        if (
-                            node.source.value !== "antd" ||
-                            !isPageTsxFile(readNormalizedFilePath())
-                        ) {
+                        if (node.source.value !== "antd" || !isPageFile(readNormalizedFilePath())) {
                             return;
                         }
 
@@ -443,7 +440,7 @@ const localRules = {
                             context.report({
                                 node: specifier,
                                 message:
-                                    "ADMIN_WEB_UI_NO_ANTD_BUTTON_DIRECT_IN_PAGES: pages/**/*.tsx must use KuzhambuButton from src/components/kuzhambu-button/ instead of importing Button from antd; set name to the stable getByRole accessible name."
+                                    "ADMIN_WEB_UI_NO_ANTD_BUTTON_DIRECT_IN_PAGES: pages/**/*.{ts,tsx} must use KuzhambuButton from src/components/kuzhambu-button/ instead of importing Button from antd."
                             });
                         });
                     }
