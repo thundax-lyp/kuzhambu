@@ -1,12 +1,6 @@
-import {
-    DownloadOutlined,
-    EditOutlined,
-    EyeOutlined,
-    PictureOutlined,
-    UploadOutlined
-} from "@ant-design/icons";
+import { DownloadOutlined, EyeOutlined, PictureOutlined, UploadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Empty, Form, Image, Input, Select, Switch, Tag, Typography, Upload } from "antd";
+import { App, Empty, Form, Image, Input, Select, Switch, Typography, Upload } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
@@ -83,7 +77,6 @@ const resolveStorageUrl = (url?: string | null) => {
 interface SancaiEntryModelProps {
     afterForm?: ReactNode;
     categoryOptions?: Array<{ label: string; value: number }>;
-    entryTags?: string[];
     entry: SancaiEntryRecord | undefined;
     initialCategoryId?: number | null;
     initialVolumeId?: number | null;
@@ -94,7 +87,6 @@ interface SancaiEntryModelProps {
     open: boolean;
     onCancel: () => void;
     onSubmit: (values: SancaiEntryFormValues) => void;
-    onEditTags?: () => void;
     onUseVisualAsset?: (asset: SancaiVisualAssetRecord) => void;
     onUpdateVisualAsset?: (asset: SancaiVisualAssetRecord) => void;
     onCreateVisualAssetTask?: (
@@ -109,7 +101,6 @@ interface SancaiEntryModelProps {
 export const SancaiEntryModel = ({
     afterForm,
     categoryOptions = [],
-    entryTags,
     entry,
     initialCategoryId = null,
     initialVolumeId = null,
@@ -120,7 +111,6 @@ export const SancaiEntryModel = ({
     open,
     onCancel,
     onSubmit,
-    onEditTags,
     onUseVisualAsset,
     onUpdateVisualAsset,
     onCreateVisualAssetTask,
@@ -161,10 +151,6 @@ export const SancaiEntryModel = ({
                 );
             }),
         [visualAssets]
-    );
-    const activeTags = useMemo(
-        () => [...new Set((entryTags || []).map((tag) => tag.trim()).filter(Boolean))],
-        [entryTags]
     );
     const volumeOptions = useMemo(
         () =>
@@ -366,8 +352,9 @@ export const SancaiEntryModel = ({
         >
             <Form
                 className="sancai-detail-card sancai-entry-model-form"
+                colon={false}
                 component="div"
-                labelCol={{ flex: "56px" }}
+                labelCol={{ flex: "88px" }}
                 layout="horizontal"
             >
                 <div className="sancai-entry-model-catalog-row">
@@ -462,113 +449,59 @@ export const SancaiEntryModel = ({
                     />
                 </Form.Item>
                 {entryId ? (
-                    <section className="sancai-form-field" aria-label="三才图会图片面板">
-                        <Text strong>当前图片</Text>
-                        <KuzhambuSpace wrap>
-                            <Upload
-                                aria-label="上传三才图会图片"
-                                accept={imageAccept}
-                                showUploadList={false}
-                                beforeUpload={(file) => {
-                                    uploadImageMutation.mutate(file);
-                                    return Upload.LIST_IGNORE;
-                                }}
-                            >
-                                <KuzhambuButton
-                                    name={String(currentImage ? "替换当前图片" : "上传图片")}
-                                    icon={<UploadOutlined />}
-                                    loading={uploadImageMutation.isPending}
-                                >
-                                    {currentImage ? "替换当前图片" : "上传图片"}
-                                </KuzhambuButton>
-                            </Upload>
-                            <KuzhambuButton
-                                name="预览三才图会图片"
-                                icon={<EyeOutlined />}
-                                href={previewUrl}
-                                target="_blank"
-                                disabled={!previewUrl}
-                            >
-                                预览
-                            </KuzhambuButton>
-                            <KuzhambuButton
-                                name="下载三才图会图片"
-                                icon={<DownloadOutlined />}
-                                href={downloadUrl}
-                                target="_blank"
-                                disabled={!downloadUrl}
-                            >
-                                下载
-                            </KuzhambuButton>
-                        </KuzhambuSpace>
-                        {currentImage && previewUrl ? (
-                            <>
-                                <Image
-                                    width={180}
-                                    src={previewUrl}
-                                    alt={
-                                        currentImage.title ||
-                                        currentImage.originalFilename ||
-                                        "三才图会图片"
-                                    }
-                                />
-                                <Text type="secondary">
-                                    {currentImage.originalFilename ||
-                                        currentImage.title ||
-                                        `图片 ${currentImage.id}`}{" "}
-                                    - {formatSize(currentImage.size)}
-                                </Text>
-                            </>
-                        ) : (
-                            <Empty
-                                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                description="未关联当前图片"
-                            />
-                        )}
-                    </section>
-                ) : null}
-                {entryId ? (
-                    <section className="sancai-form-field" aria-label="三才图会内容上下文">
-                        <Text strong>条目上下文</Text>
-                        <KuzhambuSpace wrap>
-                            <Text type="secondary">
-                                翻译状态：{entry?.translationStatus || "待处理"}
-                            </Text>
-                            <Text type="secondary">图片状态：{entry?.imageStatus || "待处理"}</Text>
-                            <Text type="secondary">
-                                视觉状态：{entry?.visualAssetStatus || "待处理"}
-                            </Text>
-                            <Text type="secondary">
-                                精修状态：{entry?.refinementStatus || "待处理"}
-                            </Text>
-                        </KuzhambuSpace>
-                        <Text type="secondary">原文：{entry?.originalText || "未填写"}</Text>
-                        <Text type="secondary">译文：{entry?.translationText || "未生成"}</Text>
-                        <div>
-                            <KuzhambuSpace wrap>
-                                <Text type="secondary">标签：</Text>
-                                {activeTags.length ? (
+                    <Form.Item label="图片" className="sancai-entry-model-form-item-top">
+                        <div className="sancai-entry-image-field">
+                            {currentImage && previewUrl ? (
+                                <div className="sancai-entry-image-frame">
                                     <>
-                                        {activeTags.map((tag) => (
-                                            <Tag key={tag}>{tag}</Tag>
-                                        ))}
+                                        <Image
+                                            width={180}
+                                            src={previewUrl}
+                                            alt={
+                                                currentImage.title ||
+                                                currentImage.originalFilename ||
+                                                "三才图会图片"
+                                            }
+                                        />
+                                        <Text type="secondary">
+                                            {currentImage.originalFilename ||
+                                                currentImage.title ||
+                                                `图片 ${currentImage.id}`}{" "}
+                                            - {formatSize(currentImage.size)}
+                                        </Text>
                                     </>
-                                ) : (
-                                    <Text type="secondary">未标注标签</Text>
-                                )}
-                                {onEditTags ? (
+                                </div>
+                            ) : null}
+                            <KuzhambuSpace wrap>
+                                <Upload
+                                    aria-label="上传三才图会图片"
+                                    accept={imageAccept}
+                                    showUploadList={false}
+                                    beforeUpload={(file) => {
+                                        uploadImageMutation.mutate(file);
+                                        return Upload.LIST_IGNORE;
+                                    }}
+                                >
                                     <KuzhambuButton
-                                        name="编辑三才图会条目标签"
-                                        icon={<EditOutlined />}
-                                        size="small"
-                                        onClick={onEditTags}
+                                        name="上传三才图会图片"
+                                        icon={<UploadOutlined />}
+                                        loading={uploadImageMutation.isPending}
                                     >
-                                        编辑标签
+                                        上传
                                     </KuzhambuButton>
-                                ) : null}
+                                </Upload>
+                                <KuzhambuButton
+                                    name="下载三才图会图片"
+                                    icon={<DownloadOutlined />}
+                                    href={downloadUrl}
+                                    target="_blank"
+                                    disabled={!downloadUrl}
+                                >
+                                    下载
+                                </KuzhambuButton>
                             </KuzhambuSpace>
                         </div>
-                    </section>
+                    </Form.Item>
                 ) : null}
                 {entryId ? (
                     <section className="sancai-form-field" aria-label="三才图会视觉资产面板">

@@ -263,20 +263,52 @@ html[data-theme="dark"] .sancai-page {
 }
 
 .sancai-detail-card {
+    position: relative;
     display: grid;
     min-width: 0;
-    gap: 10px;
-    padding: 14px;
+    gap: 12px;
+    padding: 18px 18px 16px;
     background:
-        linear-gradient(135deg, var(--sancai-accent-soft), transparent 42%), var(--sancai-soft);
-    border: 1px solid var(--sancai-line);
-    border-radius: 8px;
+        linear-gradient(90deg, rgba(126, 46, 37, 0.08), transparent 34%),
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--sancai-panel) 96%, #fff7df 4%),
+            var(--sancai-soft)
+        );
+    border: 1px solid color-mix(in srgb, var(--sancai-line) 78%, #7c5f35 22%);
+    border-left: 3px solid #7e2e25;
+    border-radius: 6px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.44);
 }
 
-.sancai-detail-card .ant-input {
+.sancai-detail-card::before {
+    position: absolute;
+    top: 12px;
+    bottom: 12px;
+    left: 10px;
+    width: 1px;
+    content: "";
+    background: rgba(126, 46, 37, 0.16);
+}
+
+.sancai-detail-card .ant-input,
+.sancai-detail-card .ant-select-selector {
     color: var(--sancai-ink);
-    background: var(--sancai-panel) !important;
-    border-color: var(--sancai-line) !important;
+    background: color-mix(in srgb, var(--sancai-panel) 88%, #fffaf0 12%) !important;
+    border-color: color-mix(in srgb, var(--sancai-line) 74%, #7c5f35 26%) !important;
+    border-radius: 5px !important;
+}
+
+.sancai-detail-card .ant-input:hover,
+.sancai-detail-card .ant-select-selector:hover {
+    border-color: color-mix(in srgb, var(--sancai-accent) 62%, #7e2e25 38%) !important;
+}
+
+.sancai-detail-card .ant-input:focus,
+.sancai-detail-card .ant-input-focused,
+.sancai-detail-card .ant-select-focused .ant-select-selector {
+    border-color: #7e2e25 !important;
+    box-shadow: 0 0 0 2px rgba(126, 46, 37, 0.1) !important;
 }
 
 .sancai-editor-form .ant-form-item,
@@ -286,8 +318,13 @@ html[data-theme="dark"] .sancai-page {
 
 .sancai-editor-form .ant-form-item-label > label,
 .sancai-entry-model-form .ant-form-item-label > label {
-    color: var(--sancai-ink);
+    color: color-mix(in srgb, var(--sancai-ink) 82%, #7e2e25 18%);
     font-weight: 700;
+    letter-spacing: 0;
+}
+
+.sancai-entry-model-form .ant-form-item-label {
+    padding-inline-end: 12px;
 }
 
 .sancai-entry-model-form .ant-form-item-control {
@@ -301,7 +338,12 @@ html[data-theme="dark"] .sancai-page {
 .sancai-form-field {
     display: grid;
     min-width: 0;
-    gap: 6px;
+    gap: 8px;
+    padding: 12px 14px;
+    background: color-mix(in srgb, var(--sancai-panel) 82%, #fff7df 18%);
+    border: 1px solid color-mix(in srgb, var(--sancai-line) 78%, #7c5f35 22%);
+    border-left: 3px solid rgba(126, 46, 37, 0.64);
+    border-radius: 6px;
 }
 
 .sancai-entry-model-catalog-row {
@@ -309,6 +351,34 @@ html[data-theme="dark"] .sancai-page {
     min-width: 0;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
+}
+
+.sancai-entry-image-field {
+    display: grid;
+    min-width: 0;
+    gap: 10px;
+    justify-items: start;
+}
+
+.sancai-entry-image-frame {
+    display: grid;
+    width: min(100%, 280px);
+    min-height: 148px;
+    align-content: center;
+    justify-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: color-mix(in srgb, var(--sancai-panel) 86%, #fff7df 14%);
+    border: 1px solid color-mix(in srgb, var(--sancai-line) 72%, #7c5f35 28%);
+    border-radius: 6px;
+}
+
+.sancai-entry-image-frame .ant-image {
+    max-width: 100%;
+}
+
+.sancai-entry-image-frame img {
+    border-radius: 4px;
 }
 
 .sancai-image-card-list {

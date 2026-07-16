@@ -1423,8 +1423,8 @@ describe("SancaiEntryPanel sharing", () => {
 
         expect(await screen.findByText("三才图会标签治理")).toBeInTheDocument();
         expect(await screen.findByText("三才图会问答对治理")).toBeInTheDocument();
-        const contextSection = await screen.findByLabelText("三才图会内容上下文");
-        expect(within(contextSection).getByText("三才")).toBeInTheDocument();
+        expect(screen.queryByLabelText("三才图会内容上下文")).not.toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "上传三才图会图片" })).toBeInTheDocument();
         expect(await screen.findByText("天地为何不变？")).toBeInTheDocument();
     });
 

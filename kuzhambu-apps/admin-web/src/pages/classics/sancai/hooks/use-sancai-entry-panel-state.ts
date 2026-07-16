@@ -1,8 +1,6 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { MessageInstance } from "antd/es/message/interface";
-import * as classicsContentService from "@/pages/classics/common/classics-content-service";
-import type { ClassicsContentTagRecord } from "@/pages/classics/common/classics-content-types";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import type {
     AiRefinementStreamEventRecord,
@@ -203,13 +201,6 @@ const buildInputPayloadJson = (
     return JSON.stringify(payload);
 };
 
-const readActiveTagNames = (tags: ClassicsContentTagRecord[] | undefined) => {
-    const names = (tags || [])
-        .map((tag) => tag.tagNameSnapshot?.trim())
-        .filter((tagName): tagName is string => Boolean(tagName));
-    return [...new Set(names)];
-};
-
 interface UseSancaiEntryPanelStateParams {
     queryClient: QueryClient;
     messageApi: MessageInstance;
@@ -228,7 +219,6 @@ interface UseSancaiEntryPanelStateResult {
     streamEvents: AiRefinementStreamEventRecord[];
     isStreamingRefinementTask: boolean;
     streamErrorText: string | null;
-    entryTagNames: string[];
     creatingRefinementCapability: RefinementCapability | null;
     retryingRefinementTaskId: number | null;
     invalidateSancaiContentGovernance: () => Promise<void>;
@@ -269,21 +259,6 @@ export const useSancaiEntryPanelState = ({
     const selectedVisualAssetId =
         selectedVisualAsset?.visualAssetId ?? selectedVisualAsset?.id ?? null;
 
-    const entryTagsQuery = useQuery({
-        queryKey: ["classics", "content", "tags", "SANCAI_ENTRY", selectedEntryId],
-        queryFn: () =>
-            classicsContentService.listTags({
-                contentType: "SANCAI_ENTRY",
-                contentId: selectedEntryId ?? 0
-            }),
-        enabled: Boolean(selectedEntryId),
-        retry: false
-    });
-
-    const entryTagNames = useMemo(
-        () => readActiveTagNames(entryTagsQuery.data),
-        [entryTagsQuery.data]
-    );
     const handledSucceededTaskIdsRef = useRef<Set<number>>(new Set());
     const resetHandledSucceededTaskIds = () => {
         handledSucceededTaskIdsRef.current.clear();
@@ -691,7 +666,6 @@ export const useSancaiEntryPanelState = ({
         streamEvents,
         isStreamingRefinementTask,
         streamErrorText,
-        entryTagNames,
         creatingRefinementCapability,
         retryingRefinementTaskId,
         invalidateSancaiContentGovernance,

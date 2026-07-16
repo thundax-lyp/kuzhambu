@@ -309,7 +309,6 @@ export const SancaiEntryPanel = ({
         streamEvents,
         isStreamingRefinementTask,
         streamErrorText,
-        entryTagNames,
         creatingRefinementCapability,
         retryingRefinementTaskId,
         invalidateSancaiContentGovernance,
@@ -701,14 +700,6 @@ export const SancaiEntryPanel = ({
             }
         });
     };
-    const editEntryTags = () => {
-        tagPanelRef.current?.scrollIntoView({
-            block: "start",
-            behavior: "smooth"
-        });
-        tagPanelRef.current?.focus();
-    };
-
     const resetVersion = (version: SancaiContentVersionRecord) => {
         if (!selectedEntry?.id) {
             return;
@@ -938,9 +929,6 @@ export const SancaiEntryPanel = ({
                 key={modelKey}
                 categoryOptions={categoryOptions}
                 entry={selectedEntry}
-                entryTags={
-                    selectedEntry?.tags?.map((tag) => tag.tagNameSnapshot || "") ?? entryTagNames
-                }
                 isSubmitting={addEntryMutation.isPending || updateEntryMutation.isPending}
                 isSwitchingVisualAsset={changeCurrentVisualAssetMutation.isPending}
                 isUpdatingVisualAsset={updateVisualAssetMutation.isPending}
@@ -950,7 +938,6 @@ export const SancaiEntryPanel = ({
                 open={isModelOpen && !isLoading}
                 volumes={volumes}
                 onCancel={closeModel}
-                onEditTags={editEntryTags}
                 onSubmit={submitEntry}
                 onUseVisualAsset={switchVisualAsset}
                 onUpdateVisualAsset={updateVisualAsset}
