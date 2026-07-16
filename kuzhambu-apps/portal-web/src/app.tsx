@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { SancaiPage } from "@/pages/classics/sancai-page";
 import { DiscoveryQaPage } from "@/pages/discovery/qa-page";
 import { DiscoverySearchPage } from "@/pages/discovery/search-page";
 import { HomePage } from "@/pages/home/home-page";
@@ -25,6 +26,7 @@ export const App = () => {
                 <Route path="/knowledge/atlas" element={<KnowledgeAtlasPage />} />
                 <Route path="/knowledge/lineage" element={<KnowledgeLineagePage />} />
                 <Route path="/knowledge/quality" element={<KnowledgeQualityPage />} />
+                <Route path="/classics/sancai" element={<SancaiPage />} />
                 <Route path="/discovery/search" element={<DiscoverySearchPage />} />
                 <Route path="/discovery/qa" element={<DiscoveryQaPage />} />
                 <Route path="/shares" element={<SharePage />} />

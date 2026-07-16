@@ -1,29 +1,21 @@
 import { FilterOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { Alert, App, Button, Input, Select, Splitter } from "antd";
+import { useQuery } from "@tanstack/react-query";
+import { Alert, Button, Input, Select, Splitter } from "antd";
 import { useMemo, useState } from "react";
 import { KuzhambuFilterPanel } from "@/components/kuzhambu-filter-panel";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import {
-    ClassicsShowcaseJobSection,
-    type SancaiShowcaseRequestedAtRange
-} from "@/pages/classics/common/components/classics-showcase-job-section";
 import { SancaiCatalogTreePanel } from "./components/sancai-catalog-tree-panel";
 import { SancaiCategoryPanel } from "./components/sancai-category-panel";
 import { SancaiEntryPanel } from "./components/sancai-entry-panel";
 import { SancaiVolumePanel } from "./components/sancai-volume-panel";
 import * as categoryService from "./services/sancai-category-service";
-import * as entryService from "./services/sancai-entry-service";
 import * as volumeService from "./services/sancai-volume-service";
 import type {
     SancaiCatalogTreeNode,
     SancaiCategoryRecord,
-    SancaiShowcaseRecord,
-    SancaiShowcaseStatus,
     SancaiVolumeRecord
 } from "./sancai-types";
-import type { SancaiShowcasePageQuery } from "./services/sancai-entry-service";
 import "./sancai-page.css";
 
 const entryStatusOptions = [
@@ -36,8 +28,6 @@ const entryStatusOptions = [
 const EMPTY_CATEGORIES: SancaiCategoryRecord[] = [];
 const EMPTY_VOLUMES: SancaiVolumeRecord[] = [];
 const ROOT_KEY = "sancai-root";
-const SHOWCASE_PRIVATE_CONFIRM_TEXT =
-    "你正在将平台内私有内容写入静态展示页面。生成后的 HTML 文件将脱离平台登录、权限、撤销和搜索可见性控制；任何获得文件或访问地址的人都可能查看这些内容。此操作不会改变内容在平台内的私有状态。是否继续生成？";
 
 const isQueryLoading = (...queries: Array<{ isLoading: boolean }>) => {
     return queries.some((query) => query.isLoading);
@@ -100,7 +90,6 @@ const buildTreeNodes = (
 };
 
 export const SancaiPage = () => {
-    const { message: messageApi, modal: modalApi } = App.useApp();
     const [selectedKey, setSelectedKey] = useState<string | null>(null);
     const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
     const [createIntent, setCreateIntent] = useState<{
@@ -113,17 +102,6 @@ export const SancaiPage = () => {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [lifecycleStatus, setLifecycleStatus] = useState("ALL");
     const [appliedLifecycleStatus, setAppliedLifecycleStatus] = useState<string | null>(null);
-    const [showcaseKeyword, setShowcaseKeyword] = useState("");
-    const [showcaseStatus, setShowcaseStatus] = useState<"ALL" | SancaiShowcaseStatus>("ALL");
-    const [showcaseVisibilityRiskStatus, setShowcaseVisibilityRiskStatus] = useState<
-        "ALL" | string
-    >("ALL");
-    const [showcaseRequestedAtRange, setShowcaseRequestedAtRange] =
-        useState<SancaiShowcaseRequestedAtRange>(null);
-    const [appliedShowcaseQuery, setAppliedShowcaseQuery] = useState<SancaiShowcasePageQuery>({
-        pageNo: 1,
-        pageSize: 20
-    });
     const categoriesQuery = useQuery({
         queryKey: ["classics", "sancai", "categories"],
         queryFn: categoryService.list,
@@ -132,11 +110,6 @@ export const SancaiPage = () => {
     const volumesQuery = useQuery({
         queryKey: ["classics", "sancai", "volumes"],
         queryFn: () => volumeService.list(),
-        retry: false
-    });
-    const showcaseQuery = useQuery({
-        queryKey: ["classics", "sancai", "showcases", appliedShowcaseQuery],
-        queryFn: () => entryService.pageShowcases(appliedShowcaseQuery),
         retry: false
     });
     const categories = categoriesQuery.data ?? EMPTY_CATEGORIES;
@@ -180,136 +153,6 @@ export const SancaiPage = () => {
     if (selectedPanel === "entry") {
         enableAdd = Boolean(selectedVolume);
     }
-    const requestShowcaseMutation = useMutation({
-        mutationFn: entryService.requestShowcase,
-        onSuccess: () => {
-            messageApi.success("静态展示任务已创建");
-            void showcaseQuery.refetch();
-        },
-        onError: () => {
-            messageApi.error("静态展示任务创建失败");
-        }
-    });
-
-    const buildShowcaseScope = () => {
-        const selectedCategories = selectedCategory ? [selectedCategory] : categories;
-        let selectedVolumes = volumes;
-        if (selectedVolume) {
-            selectedVolumes = [selectedVolume];
-        } else if (selectedCategory) {
-            selectedVolumes = visibleVolumes;
-        }
-        let scopeTitle = "全部三才图会公开条目";
-        if (selectedVolume) {
-            scopeTitle = `卷：${readTitle(selectedVolume, "卷")}`;
-        } else if (selectedCategory) {
-            scopeTitle = `门类：${readTitle(selectedCategory, "门类")}`;
-        }
-        return {
-            scopeTitle,
-            visibilityRiskStatus: "PUBLIC_ONLY",
-            payload: {
-                metadata: {
-                    title: "三才图会静态展示",
-                    generatedAt: new Date().toISOString(),
-                    generatedBy: "admin",
-                    templateVersion: "sancai-showcase-v1",
-                    locale: "zh-CN"
-                },
-                scope: {
-                    scopeType:
-                        selectedVolume || selectedCategory ? "FILTERED_RESULT" : "ALL_PUBLIC",
-                    scopeTitle,
-                    categoryIds: selectedCategories.map((category) => category.id),
-                    volumeIds: selectedVolumes.map((volume) => volume.id),
-                    entryIds: [],
-                    filters: {
-                        keyword: appliedKeyword,
-                        lifecycleStatus: appliedLifecycleStatus || "PUBLISHED",
-                        visibility: "PUBLIC"
-                    }
-                },
-                visibilityRisk: {
-                    status: "PUBLIC_ONLY",
-                    privateConfirmed: false
-                },
-                catalogs: selectedCategories.map((category) => ({
-                    id: category.id,
-                    title: readTitle(category, "门类"),
-                    entryCount: 0,
-                    imageEntryCount: 0
-                })),
-                volumes: selectedVolumes.map((volume) => ({
-                    id: volume.id,
-                    categoryId: volume.categoryId,
-                    title: readTitle(volume, "卷"),
-                    priority: volume.priority ?? 0
-                })),
-                entries: [],
-                assets: [],
-                options: {
-                    enableSearch: true,
-                    enableFilters: true,
-                    enableBrowseModeSwitch: true,
-                    offlineOpen: true,
-                    printable: true
-                }
-            }
-        };
-    };
-
-    const applyShowcaseFilters = (pageNo = 1, pageSize = appliedShowcaseQuery.pageSize ?? 20) => {
-        setAppliedShowcaseQuery({
-            pageNo,
-            pageSize,
-            keyword: normalizeKeyword(showcaseKeyword) ?? null,
-            status: showcaseStatus === "ALL" ? null : showcaseStatus,
-            visibilityRiskStatus:
-                showcaseVisibilityRiskStatus === "ALL" ? null : showcaseVisibilityRiskStatus,
-            requestedAtStart: showcaseRequestedAtRange?.[0]?.toISOString() ?? null,
-            requestedAtEnd: showcaseRequestedAtRange?.[1]?.toISOString() ?? null
-        });
-    };
-
-    const resetShowcaseFilters = () => {
-        setShowcaseKeyword("");
-        setShowcaseStatus("ALL");
-        setShowcaseVisibilityRiskStatus("ALL");
-        setShowcaseRequestedAtRange(null);
-        setAppliedShowcaseQuery({ pageNo: 1, pageSize: 20 });
-    };
-
-    const openShowcase = (job: SancaiShowcaseRecord, mode: "preview" | "download") => {
-        const url = mode === "preview" ? job.contentUrl : job.downloadUrl;
-        if (!url) {
-            return;
-        }
-        window.open(url, "_blank", "noopener,noreferrer");
-    };
-
-    const createShowcase = () => {
-        const scope = buildShowcaseScope();
-        const submit = (privateConfirmed: boolean) => {
-            requestShowcaseMutation.mutate({
-                scopeJson: JSON.stringify(scope.payload),
-                scopeTitle: scope.scopeTitle,
-                visibilityRiskStatus: scope.visibilityRiskStatus,
-                privateConfirmed
-            });
-        };
-        if (scope.visibilityRiskStatus === "CONTAINS_PRIVATE") {
-            modalApi.confirm({
-                title: "确认生成静态展示",
-                content: SHOWCASE_PRIVATE_CONFIRM_TEXT,
-                okText: "继续生成",
-                cancelText: "取消",
-                onOk: () => submit(true)
-            });
-            return;
-        }
-        submit(false);
-    };
-
     const selectVolume = (volume: SancaiVolumeRecord) => {
         setSelectedKey(toVolumeKey(volume.id));
         const categoryId = volume.categoryId;
@@ -502,29 +345,6 @@ export const SancaiPage = () => {
                 </Splitter.Panel>
                 <Splitter.Panel className="sancai-work-panel">{panelContent}</Splitter.Panel>
             </Splitter>
-            <ClassicsShowcaseJobSection
-                creating={requestShowcaseMutation.isPending}
-                error={showcaseQuery.isError}
-                keyword={showcaseKeyword}
-                loading={showcaseQuery.isFetching}
-                page={showcaseQuery.data}
-                requestedAtRange={showcaseRequestedAtRange}
-                status={showcaseStatus}
-                visibilityRiskStatus={showcaseVisibilityRiskStatus}
-                onCreate={createShowcase}
-                onDownload={(job) => openShowcase(job, "download")}
-                onFilter={() => applyShowcaseFilters()}
-                onKeywordChange={setShowcaseKeyword}
-                onPageChange={(pageNo, pageSize) => applyShowcaseFilters(pageNo, pageSize)}
-                onPreview={(job) => openShowcase(job, "preview")}
-                onRefresh={() => {
-                    void showcaseQuery.refetch();
-                }}
-                onRequestedAtRangeChange={setShowcaseRequestedAtRange}
-                onReset={resetShowcaseFilters}
-                onStatusChange={setShowcaseStatus}
-                onVisibilityRiskStatusChange={setShowcaseVisibilityRiskStatus}
-            />
         </KuzhambuPage>
     );
 };

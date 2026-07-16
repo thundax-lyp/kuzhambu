@@ -515,28 +515,6 @@ vi.mock("../services/sancai-entry-service", () => ({
         successCount: 0,
         failedCount: 0,
         cancelledCount: 1
-    })),
-    requestShowcase: vi.fn(async () => ({
-        id: 2001,
-        status: "REQUESTED"
-    })),
-    deleteShowcase: vi.fn(async () => true),
-    pageShowcases: vi.fn(async () => ({
-        pageNo: 1,
-        pageSize: 10,
-        totalPage: 1,
-        count: 1,
-        records: [
-            {
-                id: 2001,
-                requestedAt: "2026-06-21T10:30:00.000+08:00",
-                status: "COMPLETED",
-                entryCount: 1,
-                visibilityRiskStatus: "PUBLIC_ONLY",
-                downloadUrl: "/downloads/showcase.html"
-            }
-        ],
-        totalCount: 1
     }))
 }));
 
@@ -1423,38 +1401,14 @@ describe("SancaiEntryPanel sharing", () => {
         ).toBeDisabled();
     });
 
-    it("creates showcase job and shows showcase task", async () => {
-        const user = userEvent.setup();
-
+    it("does not expose static showcase generation from entry actions", async () => {
         renderEntryPanel();
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(
-            await within(entryTable).findByRole("button", { name: "生成静态展示 天地" })
-        );
-
-        await waitFor(() => {
-            expect(entryService.requestShowcase).toHaveBeenCalledTimes(1);
-        });
-        const request = vi.mocked(entryService.requestShowcase).mock.calls.at(-1)?.at(0) || {};
-        expect(request).toMatchObject({
-            scopeTitle: "天地 静态展示",
-            visibilityRiskStatus: "PUBLIC_ONLY"
-        });
-        const scopeJson = JSON.parse(request.scopeJson as string);
-        expect(scopeJson.title).toContain("静态展示");
-        expect(scopeJson.entries).toEqual([
-            {
-                id: 3001,
-                title: "天地",
-                volumeId: 101
-            }
-        ]);
-        expect(await screen.findByText("静态展示任务")).toBeInTheDocument();
-        const showcaseSection = screen.getByText("静态展示任务").closest("section") as HTMLElement;
         expect(
-            await within(showcaseSection).findByRole("button", { name: /下\s*载/ })
-        ).toBeInTheDocument();
+            within(entryTable).queryByRole("button", { name: "生成静态展示 天地" })
+        ).not.toBeInTheDocument();
+        expect(screen.queryByText("静态展示任务")).not.toBeInTheDocument();
     });
 
     it("renders tags and qa governance panel in editor", async () => {

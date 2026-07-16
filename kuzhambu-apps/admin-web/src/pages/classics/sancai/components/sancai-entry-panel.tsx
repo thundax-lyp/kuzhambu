@@ -10,7 +10,6 @@ import * as exportService from "@/pages/classics/common/classics-export-service"
 import * as shareService from "@/pages/classics/common/classics-share-service";
 import * as currentUserService from "@/service/current-user-service";
 import { ClassicsExportJobSection } from "@/pages/classics/common/components/classics-export-job-section";
-import { ClassicsShowcaseJobSection } from "@/pages/classics/common/components/classics-showcase-job-section";
 import type { ClassicsExportJobRecord } from "@/pages/classics/common/classics-export-types";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import { AiRefinementStreamPanel } from "@/pages/classics/common/components/ai-refinement-stream-panel";
@@ -30,7 +29,6 @@ import type {
     SancaiContentVersionRecord,
     SancaiEntryImageRecord,
     SancaiEntryRecord,
-    SancaiShowcaseRecord,
     SancaiVisualAssetRecord,
     SancaiVolumeRecord
 } from "../sancai-types";
@@ -38,7 +36,6 @@ import type {
 const { Text } = Typography;
 
 const EXPORT_PAGE_SIZE = 8;
-const SHOWCASE_PAGE_SIZE = 8;
 const TASK_POLL_INTERVAL_MS = 3000;
 const IMAGE_ACCEPT = ".jpg,.jpeg,.png,.gif,.webp";
 
@@ -242,15 +239,6 @@ export const SancaiEntryPanel = ({
         retry: false
     });
     const exportJobs = exportsQuery.data?.records || [];
-    const showcasesQuery = useQuery({
-        queryKey: ["classics", "sancai", "showcases", "jobs"],
-        queryFn: () =>
-            entryService.pageShowcases({
-                pageNo: 1,
-                pageSize: SHOWCASE_PAGE_SIZE
-            }),
-        retry: false
-    });
     let modelKey = "empty";
     if (isCreating) {
         modelKey = "create";
@@ -338,11 +326,6 @@ export const SancaiEntryPanel = ({
     const invalidateExportJobs = async () => {
         await queryClient.invalidateQueries({
             queryKey: ["classics", "sancai", "exports", "jobs"]
-        });
-    };
-    const invalidateShowcaseJobs = async () => {
-        await queryClient.invalidateQueries({
-            queryKey: ["classics", "sancai", "showcases", "jobs"]
         });
     };
     const invalidateEntryImages = async () => {
@@ -501,42 +484,6 @@ export const SancaiEntryPanel = ({
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "导出记录删除失败");
-        }
-    });
-    const showcaseEntryMutation = useMutation({
-        mutationFn: (entry: SancaiEntryRecord) => {
-            const title = `${readEntryTitle(entry)} 静态展示`;
-            return entryService.requestShowcase({
-                scopeTitle: title,
-                scopeJson: JSON.stringify({
-                    title,
-                    entries: [
-                        {
-                            id: entry.id,
-                            title: entry.title,
-                            volumeId: entry.volumeId
-                        }
-                    ]
-                }),
-                visibilityRiskStatus: "PUBLIC_ONLY"
-            });
-        },
-        onSuccess: async () => {
-            await invalidateShowcaseJobs();
-            messageApi.success("三才静态展示任务已提交，请到下方任务列表查看进度。");
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "静态展示提交失败");
-        }
-    });
-    const deleteShowcaseMutation = useMutation({
-        mutationFn: entryService.deleteShowcase,
-        onSuccess: async () => {
-            await invalidateShowcaseJobs();
-            messageApi.success("静态展示记录已删除");
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "静态展示记录删除失败");
         }
     });
     const updateVisualAssetMutation = useMutation({
@@ -717,12 +664,6 @@ export const SancaiEntryPanel = ({
     const exportEntry = (entry: SancaiEntryRecord) => {
         exportEntryMutation.mutate(entry);
     };
-    const showcaseEntry = (entry: SancaiEntryRecord) => {
-        if (!entry.id) {
-            return;
-        }
-        showcaseEntryMutation.mutate(entry);
-    };
     const deleteExportJob = (job: ClassicsExportJobRecord) => {
         if (!job.id) {
             return;
@@ -750,37 +691,6 @@ export const SancaiEntryPanel = ({
                 await Promise.all(ids.map((id) => exportService.deleteById(id)));
                 await invalidateExportJobs();
                 messageApi.success(`已删除 ${ids.length} 条导出记录`);
-            }
-        });
-    };
-    const deleteShowcaseJob = (job: SancaiShowcaseRecord) => {
-        if (!job.id) {
-            return;
-        }
-        confirm.danger({
-            title: "删除静态展示记录",
-            message: `确认删除静态展示任务 #${job.id}？`,
-            description:
-                "删除后该记录会从列表移除，并释放静态展示产物引用；已无引用的文件对象会进入 Storage 删除流程。",
-            okText: "删除",
-            onConfirm: () => deleteShowcaseMutation.mutateAsync(job.id as number)
-        });
-    };
-    const deleteShowcaseJobs = (jobs: SancaiShowcaseRecord[]) => {
-        const ids = jobs.map((job) => job.id).filter((id): id is number => id != null);
-        if (!ids.length) {
-            return;
-        }
-        confirm.danger({
-            title: "批量删除静态展示记录",
-            message: `确认删除 ${ids.length} 条静态展示记录？`,
-            description:
-                "批量删除逐条释放静态展示产物引用；单条仍被其他业务引用的文件不会被强制删除。",
-            okText: "删除",
-            onConfirm: async () => {
-                await Promise.all(ids.map((id) => entryService.deleteShowcase(id)));
-                await invalidateShowcaseJobs();
-                messageApi.success(`已删除 ${ids.length} 条静态展示记录`);
             }
         });
     };
@@ -935,15 +845,6 @@ export const SancaiEntryPanel = ({
                     description="请确认后台条目接口可用后刷新页面。"
                 />
             ) : null}
-            {showcasesQuery.isError ? (
-                <Alert
-                    className="sancai-alert"
-                    type="warning"
-                    showIcon
-                    title="静态展示任务列表加载失败"
-                    description="请确认后台静态展示任务接口可用后刷新页面。"
-                />
-            ) : null}
             {exportsQuery.isError ? (
                 <Alert
                     className="sancai-alert"
@@ -971,30 +872,6 @@ export const SancaiEntryPanel = ({
                     void invalidateExportJobs();
                 }}
             />
-            <ClassicsShowcaseJobSection
-                filtersVisible={false}
-                page={showcasesQuery.data}
-                onPreview={(job) => {
-                    if (job.contentUrl) {
-                        window.open(job.contentUrl, "_blank", "noopener,noreferrer");
-                    }
-                }}
-                loading={
-                    showcasesQuery.isLoading ||
-                    showcaseEntryMutation.isPending ||
-                    deleteShowcaseMutation.isPending
-                }
-                onDownload={(job) => {
-                    if (job.downloadUrl) {
-                        window.open(job.downloadUrl, "_blank", "noopener,noreferrer");
-                    }
-                }}
-                onDelete={canManageGeneratedArtifacts ? deleteShowcaseJob : undefined}
-                onBatchDelete={canManageGeneratedArtifacts ? deleteShowcaseJobs : undefined}
-                onRefresh={() => {
-                    void invalidateShowcaseJobs();
-                }}
-            />
             <SancaiEntryList
                 entries={entries}
                 isLoading={isLoading || sortEntryMutation.isPending}
@@ -1002,7 +879,6 @@ export const SancaiEntryPanel = ({
                 onChangeLifecycleStatus={changeLifecycleStatus}
                 onDelete={deleteEntry}
                 onExport={exportEntry}
-                onShowcase={showcaseEntry}
                 onShare={shareEntry}
                 onBatchCandidateGovernance={openBatchCandidateDrawer}
                 onSort={sortEntry}

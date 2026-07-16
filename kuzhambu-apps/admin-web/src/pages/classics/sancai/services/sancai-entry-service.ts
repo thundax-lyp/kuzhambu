@@ -1,5 +1,4 @@
 import { ADMIN_API_BASE_URL, getJson, postFormData, postJson } from "@/api/http";
-import type { Page } from "@/types/page";
 import type {
     SancaiContentVersionRecord,
     SancaiEntryImageContentMode,
@@ -7,13 +6,11 @@ import type {
     SancaiEntryLifecycleStatus,
     SancaiEntryRecord,
     SancaiRefinementBatchRecord,
-    SancaiShowcaseRecord,
     SancaiVisualAssetRecord
 } from "../sancai-types";
 
 const ENTRIES_PATH = "/classics/sancai/entries";
 const ASSET_IMAGES_PATH = "/classics/sancai/assets/images";
-const ASSET_SHOWCASES_PATH = "/classics/sancai/assets/showcases";
 const ASSET_VISUAL_ASSETS_PATH = "/classics/sancai/assets/visual-assets";
 
 export interface SancaiEntryQuery {
@@ -123,31 +120,6 @@ export interface SancaiRefinementBatchCreateCommand {
     failureSummaryJson?: string | null;
     scope: "classics";
     totalCount: number;
-}
-
-// prettier-ignore
-export type SancaiShowcaseStatus =
-    | "REQUESTED"
-    | "PROCESSING"
-    | "COMPLETED"
-    | "FAILED"
-    | "EXPIRED";
-
-export interface SancaiShowcaseCreateCommand {
-    scopeJson?: string | null;
-    scopeTitle?: string | null;
-    visibilityRiskStatus?: string | null;
-    privateConfirmed?: boolean | null;
-}
-
-export interface SancaiShowcasePageQuery {
-    keyword?: string | null;
-    pageNo?: number | null;
-    pageSize?: number | null;
-    requestedAtEnd?: string | null;
-    requestedAtStart?: string | null;
-    status?: SancaiShowcaseStatus | null;
-    visibilityRiskStatus?: string | null;
 }
 
 export const list = (request: SancaiEntryQuery = {}) => {
@@ -293,30 +265,6 @@ export const getVersion = (entryId: number, versionId: number) => {
             body: { id: entryId, versionId }
         }
     );
-};
-
-export const requestShowcase = (command: SancaiShowcaseCreateCommand) => {
-    return postJson<SancaiShowcaseRecord, SancaiShowcaseCreateCommand>(
-        `${ASSET_SHOWCASES_PATH}/request`,
-        {
-            body: command
-        }
-    );
-};
-
-export const pageShowcases = (query: SancaiShowcasePageQuery = {}) => {
-    return postJson<Page<SancaiShowcaseRecord>, SancaiShowcasePageQuery>(
-        `${ASSET_SHOWCASES_PATH}/page`,
-        {
-            body: query
-        }
-    );
-};
-
-export const deleteShowcase = (id: number) => {
-    return postJson<boolean, { id: number }>(`${ASSET_SHOWCASES_PATH}/delete`, {
-        body: { id }
-    });
 };
 
 export const resetVersion = (entryId: number, versionId: number) => {

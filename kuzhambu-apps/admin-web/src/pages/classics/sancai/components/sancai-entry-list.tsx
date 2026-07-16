@@ -26,7 +26,6 @@ interface SancaiEntryListProps {
     onChangeLifecycleStatus: (entry: SancaiEntryRecord, action: SancaiEntryLifecycleAction) => void;
     onDelete: (entry: SancaiEntryRecord) => void;
     onExport: (entry: SancaiEntryRecord) => void;
-    onShowcase: (entry: SancaiEntryRecord) => void;
     onShare: (entry: SancaiEntryRecord) => void;
     onBatchCandidateGovernance: (entries: SancaiEntryRecord[]) => void;
     onSort: (
@@ -148,7 +147,6 @@ export const SancaiEntryList = ({
     onChangeLifecycleStatus,
     onDelete,
     onExport,
-    onShowcase,
     onShare,
     onBatchCandidateGovernance,
     onSort,
@@ -383,12 +381,6 @@ export const SancaiEntryList = ({
                         ariaLabel: `导出 ${readTitle(entry, "条目")}`,
                         disabled: !canExportEntries,
                         onClick: () => onExport(entry)
-                    },
-                    {
-                        key: "showcase",
-                        text: "生成静态展示",
-                        ariaLabel: `生成静态展示 ${readTitle(entry, "条目")}`,
-                        onClick: () => onShowcase(entry)
                     },
                     {
                         key: "view",
