@@ -20,7 +20,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 class KnowledgePortalLineageControllerTest {
@@ -32,7 +32,7 @@ class KnowledgePortalLineageControllerTest {
         PublicApi publicApi = KnowledgePortalLineageController.class.getAnnotation(PublicApi.class);
         Method method = KnowledgePortalLineageController.class.getDeclaredMethod(
                 "getLineage", KnowledgePortalLineageController.Query.class);
-        assertEquals(0, method.getAnnotation(GetMapping.class).value().length);
+        assertEquals("get", method.getAnnotation(PostMapping.class).value()[0]);
         assertEquals(PublicApi.class, publicApi.annotationType());
         assertNull(method.getAnnotation(HasPermission.class));
     }

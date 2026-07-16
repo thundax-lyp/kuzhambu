@@ -1,4 +1,4 @@
-import { getJson } from "@/api/http";
+import { postJson } from "@/api/http";
 import type { KnowledgeLineageCanvasRecord } from "./knowledge-lineage-types";
 
 export interface KnowledgeLineageCanvasQuery {
@@ -13,6 +13,5 @@ export interface KnowledgeLineageCanvasQuery {
 }
 
 export const getKnowledgeLineage = (query: KnowledgeLineageCanvasQuery = {}) => {
-    const params: Record<string, string | number | null | undefined> = { ...query };
-    return getJson<KnowledgeLineageCanvasRecord>("/portal/knowledge/lineage", params);
+    return postJson<KnowledgeLineageCanvasRecord>("/portal/knowledge/lineage/get", { ...query });
 };

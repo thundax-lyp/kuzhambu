@@ -14,7 +14,7 @@ import com.thundax.kuzhambu.knowledge.interfaces.portal.quality.controller.respo
 import java.lang.reflect.Method;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 class KnowledgePortalQualityControllerTest {
@@ -24,7 +24,8 @@ class KnowledgePortalQualityControllerTest {
     @Test
     void routesShouldKeepPortalApiPaths() throws Exception {
         assertRequestMapping(KnowledgePortalQualityController.class, "/api/portal/knowledge/quality");
-        assertGetMapping(KnowledgePortalQualityController.class, "getQuality", KnowledgePortalQualityQuery.class);
+        assertPostMapping(
+                KnowledgePortalQualityController.class, "getQuality", "get", KnowledgePortalQualityQuery.class);
     }
 
     @Test
@@ -97,9 +98,10 @@ class KnowledgePortalQualityControllerTest {
         assertEquals(expectedPath, mapping.value()[0]);
     }
 
-    private void assertGetMapping(Class<?> type, String methodName, Class<?>... parameters) throws Exception {
+    private void assertPostMapping(Class<?> type, String methodName, String expectedPath, Class<?>... parameters)
+            throws Exception {
         Method method = type.getDeclaredMethod(methodName, parameters);
-        GetMapping mapping = method.getAnnotation(GetMapping.class);
-        assertEquals(0, mapping.value().length);
+        PostMapping mapping = method.getAnnotation(PostMapping.class);
+        assertEquals(expectedPath, mapping.value()[0]);
     }
 }

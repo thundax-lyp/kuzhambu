@@ -13,7 +13,7 @@ import com.thundax.kuzhambu.knowledge.interfaces.portal.home.controller.request.
 import java.lang.reflect.Method;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 class KnowledgePortalHomeControllerTest {
@@ -23,7 +23,7 @@ class KnowledgePortalHomeControllerTest {
     @Test
     void routesShouldKeepPortalApiPaths() throws Exception {
         assertRequestMapping(KnowledgePortalHomeController.class, "/api/portal/knowledge/home");
-        assertGetMapping(KnowledgePortalHomeController.class, "getHome", KnowledgePortalHomeQuery.class);
+        assertPostMapping(KnowledgePortalHomeController.class, "getHome", "get", KnowledgePortalHomeQuery.class);
     }
 
     @Test
@@ -101,9 +101,10 @@ class KnowledgePortalHomeControllerTest {
         assertEquals(expectedPath, mapping.value()[0]);
     }
 
-    private void assertGetMapping(Class<?> type, String methodName, Class<?>... parameters) throws Exception {
+    private void assertPostMapping(Class<?> type, String methodName, String expectedPath, Class<?>... parameters)
+            throws Exception {
         Method method = type.getDeclaredMethod(methodName, parameters);
-        GetMapping mapping = method.getAnnotation(GetMapping.class);
-        assertEquals(0, mapping.value().length);
+        PostMapping mapping = method.getAnnotation(PostMapping.class);
+        assertEquals(expectedPath, mapping.value()[0]);
     }
 }

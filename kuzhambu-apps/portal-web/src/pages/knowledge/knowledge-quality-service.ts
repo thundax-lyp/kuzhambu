@@ -1,4 +1,4 @@
-import { getJson } from "@/api/http";
+import { postJson } from "@/api/http";
 import type { KnowledgeQualityResponse } from "./knowledge-quality-types";
 
 export const KNOWLEDGE_QUALITY_FALLBACK: KnowledgeQualityResponse = {
@@ -96,7 +96,7 @@ export const KNOWLEDGE_QUALITY_FALLBACK: KnowledgeQualityResponse = {
 
 export const getKnowledgeQuality = async () => {
     try {
-        return await getJson<KnowledgeQualityResponse>("/portal/knowledge/quality");
+        return await postJson<KnowledgeQualityResponse>("/portal/knowledge/quality/get", {});
     } catch {
         return KNOWLEDGE_QUALITY_FALLBACK;
     }

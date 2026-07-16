@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.operations.interfaces.admin.report.controller;
 
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
+import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
@@ -80,6 +81,7 @@ public class OperationsReportAdminController {
     @Operation(summary = "下载报表产物", description = "operations:report:view")
     @HasPermission("operations:report:view")
     @SysLogger("下载报表")
+    @PostJsonApiExempt(reason = "文件内容需要浏览器直链预览或下载")
     @GetMapping("{reportId}/content")
     public void content(
             @PathVariable("reportId") Long reportId,

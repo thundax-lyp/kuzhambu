@@ -43,11 +43,11 @@ describe("knowledge lineage portal service", () => {
             confirmationStatus: "CONFIRMED",
             depth: 2
         };
-        const getJsonSpy = vi.spyOn(http, "getJson").mockResolvedValue(canvas);
+        const postJsonSpy = vi.spyOn(http, "postJson").mockResolvedValue(canvas);
 
         const result = await service.getKnowledgeLineage(query);
 
         expect(result.version?.versionId).toBe(71);
-        expect(getJsonSpy).toHaveBeenCalledWith("/portal/knowledge/lineage", query);
+        expect(postJsonSpy).toHaveBeenCalledWith("/portal/knowledge/lineage/get", query);
     });
 });

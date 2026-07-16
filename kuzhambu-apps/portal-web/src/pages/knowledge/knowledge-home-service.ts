@@ -1,4 +1,4 @@
-import { getJson } from "@/api/http";
+import { postJson } from "@/api/http";
 import type { KnowledgeHomeResponse } from "./knowledge-home-types";
 
 export const KNOWLEDGE_HOME_FALLBACK: KnowledgeHomeResponse = {
@@ -93,7 +93,7 @@ export const KNOWLEDGE_HOME_FALLBACK: KnowledgeHomeResponse = {
 
 export const getKnowledgeHome = async () => {
     try {
-        return await getJson<KnowledgeHomeResponse>("/portal/knowledge/home");
+        return await postJson<KnowledgeHomeResponse>("/portal/knowledge/home/get", {});
     } catch {
         return KNOWLEDGE_HOME_FALLBACK;
     }

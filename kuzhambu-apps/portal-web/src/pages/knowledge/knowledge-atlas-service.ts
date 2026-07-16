@@ -1,4 +1,4 @@
-import { getJson } from "@/api/http";
+import { postJson } from "@/api/http";
 import type {
     KnowledgeAtlasCanvasView,
     KnowledgeAtlasOverviewCategoryCard,
@@ -474,7 +474,7 @@ export const KNOWLEDGE_ATLAS_FALLBACK = buildFallback();
 
 export const getKnowledgeAtlas = async (query?: KnowledgeAtlasQuery) => {
     try {
-        return await getJson<KnowledgeAtlasResponse>("/portal/knowledge/atlas", {
+        return await postJson<KnowledgeAtlasResponse>("/portal/knowledge/atlas/get", {
             categoryCode: query?.categoryCode,
             entityId: query?.entityId,
             keyword: query?.keyword,
