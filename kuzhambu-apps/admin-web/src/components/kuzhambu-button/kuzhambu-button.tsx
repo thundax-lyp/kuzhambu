@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { Button } from "antd";
 import type { ButtonProps } from "antd";
 
@@ -9,6 +10,11 @@ export interface KuzhambuButtonProps extends Omit<
     testId: string;
 }
 
-export const KuzhambuButton = ({ ariaLabel, testId, ...props }: KuzhambuButtonProps) => {
-    return <Button {...props} aria-label={ariaLabel} data-testid={testId} />;
-};
+export const KuzhambuButton = forwardRef<
+    HTMLAnchorElement | HTMLButtonElement,
+    KuzhambuButtonProps
+>(({ ariaLabel, testId, ...props }, ref) => {
+    return <Button {...props} ref={ref} aria-label={ariaLabel} data-testid={testId} />;
+});
+
+KuzhambuButton.displayName = "KuzhambuButton";
