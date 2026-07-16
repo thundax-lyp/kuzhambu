@@ -338,10 +338,10 @@ effectiveAt
 
 默认用途：
 
-| Type | Usage |
-| --- | --- |
+| Type   | Usage                    |
+| ------ | ------------------------ |
 | Drawer | 业务表单、详情、复杂关系 |
-| Modal | 确认、轻量反馈 |
+| Modal  | 确认、轻量反馈           |
 
 底部按钮顺序：
 
@@ -500,11 +500,11 @@ CSS Selector
 
 ```ts
 test("delete requires confirmation", async ({ page }) => {
-    await page.goto("/users");
+  await page.goto("/users");
 
-    await page.getByRole("button", { name: "删除" }).click();
+  await page.getByRole("button", { name: "删除" }).click();
 
-    await expect(page.getByText("确认删除")).toBeVisible();
+  await expect(page.getByText("确认删除")).toBeVisible();
 });
 ```
 
