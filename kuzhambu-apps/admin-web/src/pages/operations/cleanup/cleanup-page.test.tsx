@@ -163,7 +163,9 @@ describe("CleanupPage", () => {
         expect(await screen.findByText("系统自动")).toBeInTheDocument();
         expect(screen.getByText("1001")).toBeInTheDocument();
 
-        const detailButtons = await screen.findAllByRole("button", { name: "详情" });
+        const detailButtons = await screen.findAllByTestId(
+            "operations-cleanup-cleanup-detail-button"
+        );
         fireEvent.click(detailButtons[0]);
 
         expect(await screen.findByText("触发来源")).toBeInTheDocument();
@@ -241,7 +243,7 @@ describe("CleanupPage", () => {
             "/operations/dashboard?sourceRefType=CLEANUP&sourceRefId=9102"
         );
 
-        fireEvent.click(await screen.findByRole("button", { name: "失败项" }));
+        fireEvent.click(await screen.findByTestId("operations-cleanup-cleanup-action-button"));
 
         expect(await screen.findByText("清理任务执行失败")).toBeInTheDocument();
         expect(screen.getByText("清理项失败")).toBeInTheDocument();

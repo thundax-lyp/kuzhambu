@@ -311,8 +311,8 @@ describe("SancaiPage", () => {
         expect(within(entryPanel).getByText("keyword:none")).toBeInTheDocument();
         expect(within(entryPanel).getByText("status:none")).toBeInTheDocument();
 
-        const refreshButton = screen.getByRole("button", { name: "刷新三才图会数据" });
-        const taskButton = screen.getByRole("button", { name: "任务" });
+        const refreshButton = screen.getByTestId("classics-sancai-sancai-action-button");
+        const taskButton = screen.getByTestId("classics-sancai-sancai-action-button-2");
         expect(
             refreshButton.compareDocumentPosition(taskButton) & Node.DOCUMENT_POSITION_FOLLOWING
         ).toBeTruthy();

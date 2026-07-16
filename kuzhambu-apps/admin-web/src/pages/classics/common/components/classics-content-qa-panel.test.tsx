@@ -187,7 +187,9 @@ describe("ClassicsContentQaPanel", () => {
             </QueryClientProvider>
         );
 
-        await user.click(await screen.findByRole("button", { name: "新增问答对" }));
+        await user.click(
+            await screen.findByTestId("classics-common-classics-content-qa-action-button")
+        );
         const dialog = screen.getByRole("dialog", { name: "新增问答对" });
         expect(await within(dialog).findByRole("button", { name: "OK" })).toBeInTheDocument();
 
@@ -228,7 +230,9 @@ describe("ClassicsContentQaPanel", () => {
             </QueryClientProvider>
         );
 
-        const editButton = await screen.findByRole("button", { name: "编辑问答对 10001" });
+        const editButton = await screen.findByTestId(
+            "classics-common-classics-content-qa-edit-10001-button"
+        );
         await user.click(editButton);
 
         const editDialog = screen.getByRole("dialog", { name: "编辑问答对" });
@@ -266,7 +270,9 @@ describe("ClassicsContentQaPanel", () => {
             </QueryClientProvider>
         );
 
-        const deleteButton = await screen.findByRole("button", { name: "删除问答对 10001" });
+        const deleteButton = await screen.findByTestId(
+            "classics-common-classics-content-qa-delete-10001-button"
+        );
         await user.click(deleteButton);
 
         await waitFor(() => {
