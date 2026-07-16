@@ -72,7 +72,9 @@ kuzhambu:
   access-token-filter:
     exclude-path:
       - /api/portal/classics/shares/**
+      - /api/portal/classics/sancai/**
       - ${SERVER_SERVLET_CONTEXT_PATH:/kuzhambu-api}/api/portal/classics/shares/**
+      - ${SERVER_SERVLET_CONTEXT_PATH:/kuzhambu-api}/api/portal/classics/sancai/**
   auth:
     captcha:
       whitelist-enabled: ${KUZHAMBU_AUTH_CAPTCHA_WHITELIST_ENABLED:false}
