@@ -14,12 +14,12 @@ def test_worker_e2e_render_stream_reassembles_artifact(monkeypatch, tmp_path) ->
     monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
     monkeypatch.setenv("KUZHAMBU_WORKER_TEMP_DIR", str(tmp_path))
     monkeypatch.setenv("KUZHAMBU_WORKER_ARTIFACT_CHUNK_BYTES", "32")
-    body = _body("SANCAI_SHOWCASE", "HTML", stream=True)
+    body = _body("CLASSICS_EXPORT", "ZIP", stream=True)
 
     response = TestClient(app).post(
-        "/internal/render/sancai-showcase/stream",
+        "/internal/render/classics-export/stream",
         content=body,
-        headers=_headers(body, "/internal/render/sancai-showcase/stream"),
+        headers=_headers(body, "/internal/render/classics-export/stream"),
     )
 
     assert response.status_code == 200
@@ -32,7 +32,7 @@ def test_worker_e2e_render_stream_reassembles_artifact(monkeypatch, tmp_path) ->
     assert chunk_indexes == list(range(len(artifacts)))
     assert completed["artifact"]["chunkCount"] == len(artifacts)
     assert f"sha256:{sha256(payload).hexdigest()}" == completed["artifact"]["sha256"]
-    assert "三才图会" in payload.decode("utf-8")
+    assert b"index.html" in payload
     assert not (tmp_path / "req-1").exists()
 
 
@@ -57,14 +57,15 @@ def _body(render_type: str, output_format: str, *, stream: bool) -> bytes:
         "operation": render_type,
         "renderType": render_type,
         "template": {"templateId": "default", "templateVersion": "2026.06.01"},
-        "output": {"format": output_format, "filenameHint": "showcase.html", "locale": "zh-CN"},
+        "output": {"format": output_format, "filenameHint": "export.zip", "locale": "zh-CN"},
         "input": {
             "snapshotId": "snapshot-1",
             "contentType": f"{render_type}_SNAPSHOT",
             "payload": {
                 "metadata": {"title": "三才图会"},
-                "catalog": [{"id": "cat-1", "label": "目录"}],
+                "scopeType": "ALL",
                 "entries": [{"id": "entry-1", "title": "第一条", "text": "天地玄黄"}],
+                "items": [{"id": "entry-1", "title": "第一条", "text": "天地玄黄"}],
             },
         },
         "options": {"stream": stream, "includeMetadata": True},

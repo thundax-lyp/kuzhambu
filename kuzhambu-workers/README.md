@@ -65,7 +65,6 @@ PDF 渲染通过 Browser Pool 复用 Chromium。每次渲染创建独立 context
 - `POST /internal/ai/knowledge/*`
 - `POST /internal/ai/platform/*`
 - `POST /internal/render/classics-export`
-- `POST /internal/render/sancai-showcase`
 - `POST /internal/render/operations-report`
 
 内部接口必须校验服务身份和请求签名，不接收用户 access token。

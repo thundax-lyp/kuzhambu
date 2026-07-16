@@ -23,7 +23,7 @@ def test_render_request_accepts_contract_shape() -> None:
 
 @pytest.mark.parametrize(
     "render_type",
-    ["CLASSICS_EXPORT", "SANCAI_SHOWCASE", "OPERATIONS_REPORT"],
+    ["CLASSICS_EXPORT", "OPERATIONS_REPORT"],
 )
 def test_render_type_contains_supported_values(render_type: str) -> None:
     request = RenderRequest.model_validate(_request_payload(render_type, "HTML"))
