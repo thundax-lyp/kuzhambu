@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Card, Empty, Tabs, Typography } from "antd";
+import { App, Card, Empty, Tabs, Typography } from "antd";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
@@ -21,6 +21,7 @@ import type {
 } from "./quality-report-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./quality-report-page.css";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Text, Title } = Typography;
 const QUALITY_REEXTRACT_TASK_TYPE = "GRAPH";
@@ -176,7 +177,7 @@ export const QualityReportPage = () => {
                 orientation="vertical"
                 size={16}
             >
-                <Alert
+                <KuzhambuAlert
                     banner
                     title="质量报告由人工标注和正式图谱状态生成，用于展示当前 Knowledge 质量治理快照。"
                     type="info"
@@ -196,10 +197,10 @@ export const QualityReportPage = () => {
                 {currentReport ? (
                     <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
                         {currentDetail?.stale ? (
-                            <Alert
+                            <KuzhambuAlert
                                 action={
                                     <KuzhambuButton
-                                        name="重新生成报告"
+                                        testId="knowledge-quality-report-quality-report-action-button"
                                         disabled={!canGenerate || !staleGraphVersionId}
                                         loading={generateMutation.isPending}
                                         size="small"
@@ -231,10 +232,10 @@ export const QualityReportPage = () => {
                             <QualityReportSummary report={currentReport} />
                         </section>
                         {latestReextractTask ? (
-                            <Alert
+                            <KuzhambuAlert
                                 action={
                                     <KuzhambuButton
-                                        name="打开任务台账"
+                                        testId="knowledge-quality-report-quality-report-action-button-2"
                                         href="/knowledge/graph-extraction"
                                         size="small"
                                     >

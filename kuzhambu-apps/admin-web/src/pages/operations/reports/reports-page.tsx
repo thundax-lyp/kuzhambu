@@ -5,7 +5,7 @@ import {
     ReloadOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, Card, DatePicker, Descriptions, InputNumber, Select, Spin, Typography } from "antd";
+import { Card, DatePicker, Descriptions, InputNumber, Select, Spin, Typography } from "antd";
 import type { Dayjs } from "dayjs";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
@@ -25,6 +25,7 @@ import type {
 } from "./reports-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./reports-page.css";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
@@ -199,7 +200,7 @@ export const OperationsReportsPage = () => {
             description="生成周报、月报，查看 HTML/PDF 产物状态，并定位失败原因。"
             actions={
                 <KuzhambuButton
-                    name="生成报表"
+                    testId="operations-reports-reports-action-button"
                     type="primary"
                     icon={<FileDoneOutlined />}
                     disabled={!canGenerateReport}
@@ -210,7 +211,7 @@ export const OperationsReportsPage = () => {
             }
         >
             {!canViewReport ? (
-                <Alert type="warning" showIcon message="缺少 operations:report:view 权限" />
+                <KuzhambuAlert type="warning" showIcon title="缺少 operations:report:view 权限" />
             ) : null}
 
             <section className="operations-reports-section">
@@ -263,7 +264,7 @@ export const OperationsReportsPage = () => {
                             />
                         </label>
                         <KuzhambuButton
-                            name="查询"
+                            testId="operations-reports-reports-query-button"
                             icon={<ReloadOutlined />}
                             onClick={() => reportPageQuery.refetch()}
                         >
@@ -322,7 +323,7 @@ export const OperationsReportsPage = () => {
                             />
                         </label>
                         <KuzhambuButton
-                            name="提交生成"
+                            testId="operations-reports-reports-action-button-2"
                             type="primary"
                             icon={<FileTextOutlined />}
                             disabled={
@@ -386,7 +387,7 @@ export const OperationsReportsPage = () => {
                                         <td>
                                             <KuzhambuSpace size={8} wrap>
                                                 <KuzhambuButton
-                                                    name="详情"
+                                                    testId="operations-reports-reports-detail-button"
                                                     size="small"
                                                     onClick={() =>
                                                         setDetailReportId(record.reportId)
@@ -396,7 +397,7 @@ export const OperationsReportsPage = () => {
                                                 </KuzhambuButton>
                                                 {canDownloadReport(record) ? (
                                                     <KuzhambuButton
-                                                        name="下载"
+                                                        testId="operations-reports-reports-download-button"
                                                         size="small"
                                                         icon={<DownloadOutlined />}
                                                         href={service.toReportDownloadUrl(
@@ -419,7 +420,7 @@ export const OperationsReportsPage = () => {
                     </table>
                     <KuzhambuSpace className="operations-reports-pagination" size={8}>
                         <KuzhambuButton
-                            name="上一页"
+                            testId="operations-reports-reports-previous-page-button"
                             disabled={pageNo <= DEFAULT_PAGE_NO}
                             onClick={() => setPageNo(pageNo - 1)}
                         >
@@ -429,7 +430,7 @@ export const OperationsReportsPage = () => {
                             第 {pageNo} / {totalPage} 页
                         </Text>
                         <KuzhambuButton
-                            name="下一页"
+                            testId="operations-reports-reports-next-page-button"
                             disabled={pageNo >= totalPage}
                             onClick={() => setPageNo(pageNo + 1)}
                         >
@@ -454,10 +455,10 @@ export const OperationsReportsPage = () => {
                         className="operations-reports-detail"
                     >
                         {detailRecord.reportStatus === "FAILED" ? (
-                            <Alert
+                            <KuzhambuAlert
                                 type="error"
                                 showIcon
-                                message="报表生成失败"
+                                title="报表生成失败"
                                 description={failureReasonText(detailRecord.failureReason)}
                             />
                         ) : null}
@@ -505,7 +506,7 @@ export const OperationsReportsPage = () => {
                         </Descriptions>
                         {canDownloadReport(detailRecord) ? (
                             <KuzhambuButton
-                                name="下载报表"
+                                testId="operations-reports-reports-action-button-3"
                                 type="primary"
                                 icon={<DownloadOutlined />}
                                 href={service.toReportDownloadUrl(detailRecord.reportId)}

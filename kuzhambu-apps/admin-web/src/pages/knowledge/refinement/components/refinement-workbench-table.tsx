@@ -58,7 +58,10 @@ export const RefinementWorkbenchTable = ({
             key: "actions",
             render: (_, item) => (
                 <KuzhambuSpaceCompact>
-                    <KuzhambuButton name="打开任务" onClick={() => onOpenTask(item)}>
+                    <KuzhambuButton
+                        testId="knowledge-refinement-refinement-workbench-open-task-button"
+                        onClick={() => onOpenTask(item)}
+                    >
                         打开任务
                     </KuzhambuButton>
                 </KuzhambuSpaceCompact>

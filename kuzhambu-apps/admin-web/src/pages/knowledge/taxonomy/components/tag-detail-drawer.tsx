@@ -145,19 +145,28 @@ export const TagDetailDrawer = ({
     if (reviewMode) {
         footer = (
             <div className="knowledge-taxonomy-tag-detail-footer">
-                <KuzhambuButton name="关闭" disabled={reviewing} onClick={closeDrawer}>
+                <KuzhambuButton
+                    testId="knowledge-taxonomy-tag-detail-close-button"
+                    disabled={reviewing}
+                    onClick={closeDrawer}
+                >
                     关闭
                 </KuzhambuButton>
                 <KuzhambuSpace>
                     <KuzhambuButton
-                        name="通过"
+                        testId="knowledge-taxonomy-tag-detail-action-button"
                         type="primary"
                         loading={reviewing}
                         onClick={approveTag}
                     >
                         通过
                     </KuzhambuButton>
-                    <KuzhambuButton name="拒绝" danger loading={reviewing} onClick={rejectTag}>
+                    <KuzhambuButton
+                        testId="knowledge-taxonomy-tag-detail-action-button-2"
+                        danger
+                        loading={reviewing}
+                        onClick={rejectTag}
+                    >
                         拒绝
                     </KuzhambuButton>
                 </KuzhambuSpace>
@@ -166,10 +175,19 @@ export const TagDetailDrawer = ({
     } else if (canDeprecateTag) {
         footer = (
             <div className="knowledge-taxonomy-tag-detail-footer">
-                <KuzhambuButton name="关闭" disabled={deprecating} onClick={closeDrawer}>
+                <KuzhambuButton
+                    testId="knowledge-taxonomy-tag-detail-close-button-2"
+                    disabled={deprecating}
+                    onClick={closeDrawer}
+                >
                     关闭
                 </KuzhambuButton>
-                <KuzhambuButton name="废弃标签" danger loading={deprecating} onClick={deprecateTag}>
+                <KuzhambuButton
+                    testId="knowledge-taxonomy-tag-detail-action-button-3"
+                    danger
+                    loading={deprecating}
+                    onClick={deprecateTag}
+                >
                     废弃标签
                 </KuzhambuButton>
             </div>

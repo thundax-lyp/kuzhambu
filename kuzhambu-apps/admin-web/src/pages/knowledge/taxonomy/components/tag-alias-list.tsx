@@ -119,7 +119,7 @@ export const TagAliasList = ({
                     </Form.Item>
                     <Form.Item style={{ marginBottom: 0 }}>
                         <KuzhambuButton
-                            name="新增别名"
+                            testId="knowledge-taxonomy-tag-alias-action-button"
                             type="primary"
                             loading={saving}
                             onClick={() => void createAlias()}
@@ -150,7 +150,7 @@ export const TagAliasList = ({
                                               onConfirm={() => onRemove({ id: alias.id })}
                                           >
                                               <KuzhambuButton
-                                                  name="删除"
+                                                  testId="knowledge-taxonomy-tag-alias-delete-button"
                                                   type="link"
                                                   danger
                                                   loading={removingAliasId === alias.id}

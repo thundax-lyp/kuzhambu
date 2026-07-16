@@ -248,7 +248,7 @@ export const ClassicsContentTagPanel = ({
             <KuzhambuSpace orientation="vertical" size={16}>
                 <div>
                     <KuzhambuButton
-                        name="新增标签"
+                        testId="classics-common-classics-content-tag-action-button"
                         icon={<PlusOutlined />}
                         type="primary"
                         onClick={openCreate}
@@ -283,7 +283,7 @@ export const ClassicsContentTagPanel = ({
                             render: (_value, tag) => (
                                 <KuzhambuSpace size="small" orientation="horizontal">
                                     <KuzhambuButton
-                                        name={String(`编辑标签 ${tag.id}`)}
+                                        testId="classics-common-classics-content-tag-action-button-2"
                                         icon={<EditOutlined />}
                                         size="small"
                                         onClick={() => openEdit(tag)}
@@ -291,7 +291,7 @@ export const ClassicsContentTagPanel = ({
                                         编辑
                                     </KuzhambuButton>
                                     <KuzhambuButton
-                                        name={String(`移除标签 ${tag.id}`)}
+                                        testId="classics-common-classics-content-tag-action-button-3"
                                         danger
                                         icon={<DeleteOutlined />}
                                         loading={deleteMutation.isPending}

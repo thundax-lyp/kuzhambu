@@ -289,7 +289,7 @@ export const OperationsHealthPage = () => {
                             <td>
                                 <KuzhambuSpace size={4} wrap>
                                     <KuzhambuButton
-                                        name="确认"
+                                        testId="operations-health-health-action-button"
                                         disabled={
                                             !canManageHealth || alert.alertStatus !== "ACTIVE"
                                         }
@@ -302,7 +302,7 @@ export const OperationsHealthPage = () => {
                                         确认
                                     </KuzhambuButton>
                                     <KuzhambuButton
-                                        name="恢复"
+                                        testId="operations-health-health-restore-button"
                                         disabled={
                                             !canManageHealth || alert.alertStatus === "RECOVERED"
                                         }
@@ -407,17 +407,24 @@ export const OperationsHealthPage = () => {
                         showTime
                     />
                     <KuzhambuButton
-                        name="查询"
+                        testId="operations-health-health-query-button"
                         icon={<SearchOutlined />}
                         type="primary"
                         onClick={() => submitQuery()}
                     >
                         查询
                     </KuzhambuButton>
-                    <KuzhambuButton name="重置" onClick={resetQuery}>
+                    <KuzhambuButton
+                        testId="operations-health-health-reset-button"
+                        onClick={resetQuery}
+                    >
                         重置
                     </KuzhambuButton>
-                    <KuzhambuButton name="刷新" icon={<ReloadOutlined />} onClick={refreshQuery}>
+                    <KuzhambuButton
+                        testId="operations-health-health-refresh-button"
+                        icon={<ReloadOutlined />}
+                        onClick={refreshQuery}
+                    >
                         刷新
                     </KuzhambuButton>
                 </KuzhambuSpace>
@@ -463,7 +470,7 @@ export const OperationsHealthPage = () => {
                                     <td>
                                         <KuzhambuSpace size={4} wrap>
                                             <KuzhambuButton
-                                                name="详情"
+                                                testId="operations-health-health-detail-button"
                                                 size="small"
                                                 type="link"
                                                 onClick={() => setSelectedHealth(record)}
@@ -471,7 +478,7 @@ export const OperationsHealthPage = () => {
                                                 详情
                                             </KuzhambuButton>
                                             <KuzhambuButton
-                                                name="查看告警"
+                                                testId="operations-health-health-view-alerts-button"
                                                 size="small"
                                                 type="link"
                                                 onClick={() => setAlertCheckId(record.checkId)}
@@ -494,7 +501,7 @@ export const OperationsHealthPage = () => {
 
                 <div className="operations-health-pagination">
                     <KuzhambuButton
-                        name="上一页"
+                        testId="operations-health-health-previous-page-button"
                         disabled={pageNo <= 1}
                         onClick={() => submitQuery(pageNo - 1, pageSize)}
                     >
@@ -504,7 +511,7 @@ export const OperationsHealthPage = () => {
                         第 {pageNo} / {totalPage} 页，共 {totalCount} 条
                     </Text>
                     <KuzhambuButton
-                        name="下一页"
+                        testId="operations-health-health-next-page-button"
                         disabled={pageNo >= totalPage}
                         onClick={() => submitQuery(pageNo + 1, pageSize)}
                     >

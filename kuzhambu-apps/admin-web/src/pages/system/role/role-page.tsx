@@ -427,7 +427,7 @@ export const RolePage = () => {
                 onFilterReset={resetFilters}
                 pageActions={
                     <KuzhambuButton
-                        name="刷新"
+                        testId="system-role-role-refresh-button"
                         icon={<ReloadOutlined />}
                         onClick={() => roleQuery.refetch()}
                     >
@@ -439,7 +439,7 @@ export const RolePage = () => {
                 batchActions={
                     <KuzhambuSpace wrap>
                         <KuzhambuButton
-                            name="启用"
+                            testId="system-role-role-enable-button"
                             disabled={!canEditRole || !hasSelectedRoles}
                             loading={statusMutation.isPending}
                             onClick={() => batchUpdateStatus(true)}
@@ -447,7 +447,7 @@ export const RolePage = () => {
                             启用
                         </KuzhambuButton>
                         <KuzhambuButton
-                            name="禁用"
+                            testId="system-role-role-disable-button"
                             disabled={!canEditRole || !hasSelectedRoles}
                             loading={statusMutation.isPending}
                             onClick={() => batchUpdateStatus(false)}
@@ -455,7 +455,7 @@ export const RolePage = () => {
                             禁用
                         </KuzhambuButton>
                         <KuzhambuButton
-                            name="批量删除"
+                            testId="system-role-role-batch-delete-button"
                             danger
                             icon={<DeleteOutlined />}
                             disabled={!canEditRole || !hasSelectedRoles}

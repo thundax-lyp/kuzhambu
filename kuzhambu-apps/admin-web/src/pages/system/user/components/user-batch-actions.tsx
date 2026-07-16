@@ -31,7 +31,7 @@ export const UserBatchActions = ({
             actions={
                 <KuzhambuSpace wrap>
                     <KuzhambuButton
-                        name="禁用"
+                        testId="system-user-user-batch-actions-disable-button"
                         className="user-batch-neutral"
                         icon={<PoweroffOutlined />}
                         disabled={!hasSelectedUsers || !canEditUser}
@@ -41,7 +41,7 @@ export const UserBatchActions = ({
                         禁用
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="启用"
+                        testId="system-user-user-batch-actions-enable-button"
                         className="user-batch-enable"
                         icon={<PoweroffOutlined />}
                         disabled={!hasSelectedUsers || !canEditUser}
@@ -51,7 +51,7 @@ export const UserBatchActions = ({
                         启用
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="批量删除"
+                        testId="system-user-user-batch-actions-batch-delete-button"
                         danger
                         icon={<DeleteOutlined />}
                         disabled={!hasSelectedUsers || !canEditUser}

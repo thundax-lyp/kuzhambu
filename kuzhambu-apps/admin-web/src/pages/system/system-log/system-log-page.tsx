@@ -343,7 +343,7 @@ export const SystemLogPage = () => {
             onFilterReset={resetFilters}
             pageActions={
                 <KuzhambuButton
-                    name="刷新"
+                    testId="system-system-log-system-log-refresh-button"
                     icon={<ReloadOutlined />}
                     onClick={() => logQuery.refetch()}
                 >

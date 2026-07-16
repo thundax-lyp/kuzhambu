@@ -420,7 +420,7 @@ test.describe("classics sancai page", () => {
         await page.getByRole("textbox", { name: "三才图会译文" }).fill("新译文");
         await page.getByRole("textbox", { name: "三才图会摘要" }).fill("新摘要");
         await page.getByRole("switch", { name: "三才图会公开状态" }).click();
-        await page.getByRole("button", { name: "保存三才图会条目" }).click();
+        await page.getByTestId("classics-sancai-sancai-entry-create-button").click();
         await expect
             .poll(() => updateRequests.at(-1))
             .toEqual({

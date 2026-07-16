@@ -479,9 +479,7 @@ describe("MingCustomsPage", () => {
             </QueryClientProvider>
         );
 
-        await user.click(
-            await screen.findByRole("button", { name: "编辑明代习俗 岁时礼仪：元旦朝贺" })
-        );
+        await user.click(await screen.findByTestId("ming-customs-edit-500000000001-button"));
         await user.click(await screen.findByRole("button", { name: "创建摘要任务" }));
         await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(1));
         await user.click(await screen.findByRole("button", { name: "创建标签任务" }));
@@ -528,9 +526,7 @@ describe("MingCustomsPage", () => {
             </QueryClientProvider>
         );
 
-        await user.click(
-            await screen.findByRole("button", { name: "编辑明代习俗 岁时礼仪：元旦朝贺" })
-        );
+        await user.click(await screen.findByTestId("ming-customs-edit-500000000001-button"));
         await user.click(await screen.findByRole("button", { name: "创建问答任务" }));
 
         expect(aiRefinementTaskService.createTask).not.toHaveBeenCalled();
@@ -680,9 +676,7 @@ describe("MingCustomsPage", () => {
             </QueryClientProvider>
         );
 
-        await user.click(
-            await screen.findByRole("button", { name: "编辑明代习俗 岁时礼仪：元旦朝贺" })
-        );
+        await user.click(await screen.findByTestId("ming-customs-edit-500000000001-button"));
         capturedCalls.length = 0;
         await user.click(await screen.findByRole("button", { name: "mock-ai-applied" }));
 
@@ -729,9 +723,7 @@ describe("MingCustomsPage", () => {
             </QueryClientProvider>
         );
 
-        await user.click(
-            await screen.findByRole("button", { name: "编辑明代习俗 岁时礼仪：元旦朝贺" })
-        );
+        await user.click(await screen.findByTestId("ming-customs-edit-500000000001-button"));
         capturedCalls.length = 0;
         await user.click(await screen.findByRole("button", { name: "mock-ai-rejected" }));
 
@@ -822,8 +814,12 @@ describe("MingCustomsPage", () => {
         );
 
         expect(screen.getByLabelText("明代习俗版本历史面板")).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "查看明代习俗版本 12" })).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "恢复明代习俗版本 12" })).toBeInTheDocument();
+        expect(
+            screen.getByTestId("ming-customs-version-view-500000000003-button")
+        ).toBeInTheDocument();
+        expect(
+            screen.getByTestId("ming-customs-version-restore-500000000003-button")
+        ).toBeInTheDocument();
         expect(screen.getByText(/历史：旧版摘要/)).toBeInTheDocument();
         expect(screen.getByText(/当前：新版摘要/)).toBeInTheDocument();
         expect(screen.getByText("确认标签")).toBeInTheDocument();
@@ -858,7 +854,9 @@ describe("MingCustomsPage", () => {
         );
 
         expect(screen.getByText("版本快照为空或无法解析")).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "恢复明代习俗版本 13" })).toBeDisabled();
+        expect(
+            screen.getByTestId("ming-customs-version-restore-500000000004-button")
+        ).toBeDisabled();
     });
 
     it("shows empty state when version history is empty", () => {
@@ -889,11 +887,9 @@ describe("MingCustomsPage", () => {
             </QueryClientProvider>
         );
 
-        await user.click(
-            await screen.findByRole("button", { name: "编辑明代习俗 岁时礼仪：元旦朝贺" })
-        );
+        await user.click(await screen.findByTestId("ming-customs-edit-500000000001-button"));
         expect(await screen.findByLabelText("明代习俗版本历史面板")).toBeInTheDocument();
-        await user.click(await screen.findByRole("button", { name: "查看明代习俗版本 1" }));
+        await user.click(await screen.findByTestId("ming-customs-version-view-9001-button"));
 
         expect(await screen.findByText("当前：岁时礼仪：元旦朝贺")).toBeInTheDocument();
         expect(screen.getByText("历史：旧标题")).toBeInTheDocument();
@@ -910,11 +906,9 @@ describe("MingCustomsPage", () => {
             </QueryClientProvider>
         );
 
-        await user.click(
-            await screen.findByRole("button", { name: "编辑明代习俗 岁时礼仪：元旦朝贺" })
-        );
-        await user.click(await screen.findByRole("button", { name: "查看明代习俗版本 1" }));
-        await user.click(await screen.findByRole("button", { name: "恢复明代习俗版本 1" }));
+        await user.click(await screen.findByTestId("ming-customs-edit-500000000001-button"));
+        await user.click(await screen.findByTestId("ming-customs-version-view-9001-button"));
+        await user.click(await screen.findByTestId("ming-customs-version-restore-9001-button"));
 
         await waitFor(() => {
             expect(confirmDangerMock).toHaveBeenCalledWith(

@@ -172,18 +172,22 @@ export const UserEdit = ({
             onClose={onClose}
             extra={
                 creating ? null : (
-                    <KuzhambuButton name="−" size="small">
+                    <KuzhambuButton testId="system-user-user-remove-button" size="small">
                         −
                     </KuzhambuButton>
                 )
             }
             footer={
                 <div className="user-edit-footer">
-                    <KuzhambuButton name="取消" disabled={saving} onClick={onClose}>
+                    <KuzhambuButton
+                        testId="system-user-user-cancel-button"
+                        disabled={saving}
+                        onClick={onClose}
+                    >
                         取消
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name={String(saveText)}
+                        testId="system-user-user-action-button"
                         type="primary"
                         loading={saving}
                         onClick={saveForm}
@@ -212,7 +216,7 @@ export const UserEdit = ({
                             }}
                         >
                             <KuzhambuButton
-                                name="上传用户头像"
+                                testId="system-user-user-action-button-2"
                                 size="small"
                                 shape="circle"
                                 icon={<CameraOutlined />}

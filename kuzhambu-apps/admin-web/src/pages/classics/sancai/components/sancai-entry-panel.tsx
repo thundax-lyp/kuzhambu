@@ -1,6 +1,6 @@
 import { UploadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Badge, Card, Empty, Image, Typography, Upload } from "antd";
+import { App, Badge, Card, Empty, Image, Typography, Upload } from "antd";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
@@ -35,6 +35,7 @@ import type {
     SancaiVolumeRecord
 } from "../sancai-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Text } = Typography;
 
@@ -847,7 +848,7 @@ export const SancaiEntryPanel = ({
     return (
         <>
             {entriesQuery.isError ? (
-                <Alert
+                <KuzhambuAlert
                     className="sancai-alert"
                     type="warning"
                     showIcon
@@ -877,7 +878,7 @@ export const SancaiEntryPanel = ({
                 title="导出任务"
                 footer={
                     <KuzhambuButton
-                        name="关闭"
+                        testId="classics-sancai-sancai-entry-close-button"
                         type="primary"
                         onClick={() => setExportJobsOpen(false)}
                     >
@@ -887,7 +888,7 @@ export const SancaiEntryPanel = ({
                 onClose={() => setExportJobsOpen(false)}
             >
                 {exportsQuery.isError ? (
-                    <Alert
+                    <KuzhambuAlert
                         className="sancai-alert"
                         type="warning"
                         showIcon
@@ -992,7 +993,7 @@ export const SancaiEntryPanel = ({
                                     }}
                                 >
                                     <KuzhambuButton
-                                        name="上传图片"
+                                        testId="classics-sancai-sancai-entry-action-button"
                                         icon={<UploadOutlined />}
                                         loading={uploadImageMutation.isPending}
                                         type="primary"
@@ -1110,7 +1111,7 @@ export const SancaiEntryPanel = ({
                             <Card size="small" title="AI 精修任务">
                                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                                     <KuzhambuButton
-                                        name="创建摘要任务"
+                                        testId="classics-sancai-sancai-entry-action-button-2"
                                         type="primary"
                                         loading={creatingRefinementCapability === "summary"}
                                         onClick={() => createRefinementTask("summary")}
@@ -1166,7 +1167,7 @@ export const SancaiEntryPanel = ({
                                                             task.capability
                                                         ) ? (
                                                             <KuzhambuButton
-                                                                name="重试"
+                                                                testId="classics-sancai-sancai-entry-retry-button"
                                                                 size="small"
                                                                 loading={
                                                                     retryingRefinementTaskId ===
@@ -1181,11 +1182,11 @@ export const SancaiEntryPanel = ({
                                                         ) : null}
                                                     </div>
                                                     {failureText ? (
-                                                        <Alert
+                                                        <KuzhambuAlert
                                                             showIcon
                                                             type="error"
                                                             style={{ marginTop: 8 }}
-                                                            message="失败原因"
+                                                            title="失败原因"
                                                             description={failureText}
                                                         />
                                                     ) : null}

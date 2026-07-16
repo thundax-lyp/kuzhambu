@@ -92,11 +92,14 @@ export const GraphExtractionTaskTable = ({
             key: "actions",
             render: (_, task) => (
                 <KuzhambuSpaceCompact>
-                    <KuzhambuButton name="查看" onClick={() => onOpenDetail(task)}>
+                    <KuzhambuButton
+                        testId="knowledge-graph-extraction-graph-extraction-task-view-button"
+                        onClick={() => onOpenDetail(task)}
+                    >
                         查看
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="重生成"
+                        testId="knowledge-graph-extraction-graph-extraction-task-action-button"
                         disabled={!canEdit}
                         loading={regeneratingTaskId === task.taskId}
                         onClick={() => onRegenerate(task)}
@@ -104,7 +107,7 @@ export const GraphExtractionTaskTable = ({
                         重生成
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="取消批任务"
+                        testId="knowledge-graph-extraction-graph-extraction-task-action-button-2"
                         disabled={!canEdit || !task.batchJobId}
                         loading={cancellingBatchId === task.batchJobId}
                         onClick={() => onCancelBatch(task)}
@@ -112,7 +115,7 @@ export const GraphExtractionTaskTable = ({
                         取消批任务
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="应用"
+                        testId="knowledge-graph-extraction-graph-extraction-task-action-button-3"
                         type="primary"
                         disabled={!canApply || !task.aiCandidateId || task.status === "APPLIED"}
                         loading={applyingTaskId === task.taskId}

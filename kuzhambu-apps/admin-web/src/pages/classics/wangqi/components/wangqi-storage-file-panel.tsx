@@ -65,7 +65,7 @@ export const WangqiStorageFilePanel = ({
         <section className="wangqi-storage-file-panel" aria-label="王圻原始文件面板">
             <KuzhambuSpace className="wangqi-storage-file-panel-actions" wrap>
                 <KuzhambuButton
-                    name="刷新王圻原始文件元数据"
+                    testId="classics-wangqi-wangqi-storage-file-action-button"
                     icon={<ReloadOutlined />}
                     loading={loading}
                     onClick={onRefresh}
@@ -81,7 +81,7 @@ export const WangqiStorageFilePanel = ({
                     }}
                 >
                     <KuzhambuButton
-                        name={String(hasSourceFile ? "替换王圻原始文件" : "上传王圻原始文件")}
+                        testId="classics-wangqi-wangqi-storage-file-action-button-2"
                         icon={<UploadOutlined />}
                         loading={uploading}
                     >
@@ -89,7 +89,7 @@ export const WangqiStorageFilePanel = ({
                     </KuzhambuButton>
                 </Upload>
                 <KuzhambuButton
-                    name="预览王圻原始文件"
+                    testId="classics-wangqi-wangqi-storage-file-action-button-3"
                     icon={<EyeOutlined />}
                     href={previewUrl}
                     target="_blank"
@@ -98,7 +98,7 @@ export const WangqiStorageFilePanel = ({
                     预览
                 </KuzhambuButton>
                 <KuzhambuButton
-                    name="下载王圻原始文件"
+                    testId="classics-wangqi-wangqi-storage-file-action-button-4"
                     icon={<DownloadOutlined />}
                     href={downloadUrl}
                     target="_blank"

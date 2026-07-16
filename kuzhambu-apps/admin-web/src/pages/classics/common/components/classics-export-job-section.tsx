@@ -201,6 +201,7 @@ export const ClassicsExportJobSection = ({
                             key: "download",
                             text: "下载",
                             ariaLabel: `下载导出任务 ${job.id ?? "草稿"}`,
+                            testId: `classics-export-job-${job.id ?? "draft"}-download-button`,
                             disabled: !isDownloadableExport(job),
                             onClick: () => onDownload(job)
                         }
@@ -212,6 +213,7 @@ export const ClassicsExportJobSection = ({
                             text: "删除",
                             type: "danger",
                             ariaLabel: `删除导出任务 ${job.id ?? "草稿"}`,
+                            testId: `classics-export-job-${job.id ?? "draft"}-delete-button`,
                             onClick: () => onDelete(job)
                         });
                     }
@@ -257,7 +259,7 @@ export const ClassicsExportJobSection = ({
                 </Checkbox>
                 {onRefresh ? (
                     <KuzhambuButton
-                        name="刷新"
+                        testId="classics-common-classics-export-job-refresh-button"
                         icon={<ReloadOutlined />}
                         onClick={() => {
                             onRefresh();
@@ -268,7 +270,7 @@ export const ClassicsExportJobSection = ({
                 ) : null}
                 {onBatchDelete ? (
                     <KuzhambuButton
-                        name="删除"
+                        testId="classics-common-classics-export-job-delete-button"
                         danger
                         disabled={!selectedJobs.length}
                         icon={<DeleteOutlined />}

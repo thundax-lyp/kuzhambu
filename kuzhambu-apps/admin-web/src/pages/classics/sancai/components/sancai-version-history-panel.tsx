@@ -1,4 +1,4 @@
-import { Alert, Descriptions, Empty, Tag, Typography } from "antd";
+import { Descriptions, Empty, Tag, Typography } from "antd";
 import { KuzhambuList, KuzhambuListItem, KuzhambuListMeta } from "@/components/kuzhambu-list";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type {
@@ -7,6 +7,7 @@ import type {
     SancaiVersionSnapshot
 } from "../sancai-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Text } = Typography;
 
@@ -105,9 +106,7 @@ export const SancaiVersionHistoryPanel = ({
                             key={version.id}
                             actions={[
                                 <KuzhambuButton
-                                    name={String(
-                                        `查看三才图会版本 ${version.versionNo ?? version.id}`
-                                    )}
+                                    testId="classics-sancai-sancai-version-history-action-button"
                                     key="view"
                                     type="link"
                                     onClick={() => onSelectVersion(version)}
@@ -188,12 +187,14 @@ export const SancaiVersionHistoryPanel = ({
                                     })}
                                 </Descriptions>
                             ) : (
-                                <Alert type="warning" showIcon title="版本快照为空或无法解析" />
+                                <KuzhambuAlert
+                                    type="warning"
+                                    showIcon
+                                    title="版本快照为空或无法解析"
+                                />
                             )}
                             <KuzhambuButton
-                                name={String(
-                                    `恢复三才图会版本 ${selectedVersion.versionNo ?? selectedVersion.id}`
-                                )}
+                                testId="classics-sancai-sancai-version-history-action-button-2"
                                 danger
                                 loading={resetting}
                                 disabled={!snapshot}

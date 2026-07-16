@@ -95,7 +95,7 @@ export const TagReviewTable = ({
             ellipsis: true,
             render: (name: string, tag) => (
                 <KuzhambuButton
-                    name={String(`查看待审核标签 ${name || tag.id}`)}
+                    testId="knowledge-taxonomy-tag-review-action-button"
                     type="link"
                     className="knowledge-taxonomy-tag-review-trigger"
                     onClick={() => onOpenReview(tag)}
@@ -156,14 +156,18 @@ export const TagReviewTable = ({
                 })
             }
             pageActions={
-                <KuzhambuButton name="刷新" icon={<ReloadOutlined />} onClick={onRefresh}>
+                <KuzhambuButton
+                    testId="knowledge-taxonomy-tag-review-refresh-button"
+                    icon={<ReloadOutlined />}
+                    onClick={onRefresh}
+                >
                     刷新
                 </KuzhambuButton>
             }
             batchActions={
                 <>
                     <KuzhambuButton
-                        name="批量通过"
+                        testId="knowledge-taxonomy-tag-review-action-button-2"
                         icon={<CheckOutlined />}
                         disabled={selectedRowKeys.length < 1}
                         onClick={onBatchApprove}
@@ -171,7 +175,7 @@ export const TagReviewTable = ({
                         批量通过
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="批量拒绝"
+                        testId="knowledge-taxonomy-tag-review-action-button-3"
                         danger
                         icon={<CloseOutlined />}
                         disabled={selectedRowKeys.length < 1}

@@ -6,7 +6,7 @@ import {
     SearchOutlined
 } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Alert, Input, Select, Splitter } from "antd";
+import { Input, Select, Splitter } from "antd";
 import { useMemo, useState } from "react";
 import { KuzhambuFilterPanel } from "@/components/kuzhambu-filter-panel";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
@@ -24,6 +24,7 @@ import type {
 } from "./sancai-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./sancai-page.css";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const entryStatusOptions = [
     { label: "全部状态", value: "ALL" },
@@ -278,7 +279,7 @@ export const SancaiPage = () => {
                     ) : null}
                     {enableEntryFilter ? (
                         <KuzhambuButton
-                            name="筛选"
+                            testId="classics-sancai-sancai-filter-button"
                             className={
                                 isFilterOpen || filterActive ? "sancai-page-filter-active" : ""
                             }
@@ -290,7 +291,7 @@ export const SancaiPage = () => {
                         </KuzhambuButton>
                     ) : null}
                     <KuzhambuButton
-                        name="刷新三才图会数据"
+                        testId="classics-sancai-sancai-action-button"
                         icon={<ReloadOutlined />}
                         onClick={refreshPage}
                     >
@@ -298,7 +299,7 @@ export const SancaiPage = () => {
                     </KuzhambuButton>
                     {selectedVolume ? (
                         <KuzhambuButton
-                            name="任务"
+                            testId="classics-sancai-sancai-action-button-2"
                             icon={<ScheduleOutlined />}
                             onClick={() => setExportJobsDrawerOpen(true)}
                         >
@@ -307,7 +308,7 @@ export const SancaiPage = () => {
                     ) : null}
                     {enableAdd ? (
                         <KuzhambuButton
-                            name={String(addText)}
+                            testId="classics-sancai-sancai-action-button-3"
                             type="primary"
                             icon={<PlusOutlined />}
                             onClick={startCreate}
@@ -344,7 +345,7 @@ export const SancaiPage = () => {
                 />
             ) : null}
             {hasError ? (
-                <Alert
+                <KuzhambuAlert
                     className="sancai-alert"
                     type="warning"
                     showIcon

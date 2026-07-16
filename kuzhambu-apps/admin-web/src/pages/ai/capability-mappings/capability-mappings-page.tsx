@@ -1,6 +1,6 @@
 import { EditOutlined, PlusOutlined, ReloadOutlined, SaveOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Card, Form, Select, Switch, Table, Tag, Tooltip } from "antd";
+import { App, Card, Form, Select, Switch, Table, Tag, Tooltip } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useEffect, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
@@ -19,6 +19,7 @@ import type {
 } from "./capability-mappings-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./capability-mappings-page.css";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 type MappingFormValues = AiCapabilityMappingChangeCommand;
 
@@ -283,7 +284,7 @@ export const CapabilityMappingsPage = () => {
             render: (_, record) => (
                 <KuzhambuSpaceCompact>
                     <KuzhambuButton
-                        name="配置模型"
+                        testId="ai-capability-mappings-capability-mappings-configure-model-button"
                         icon={<EditOutlined />}
                         disabled={!canEditConfig}
                         onClick={() => openEdit(record)}
@@ -291,7 +292,7 @@ export const CapabilityMappingsPage = () => {
                         配置模型
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name={String(record.enabled ? "禁用" : "启用")}
+                        testId="ai-capability-mappings-capability-mappings-disable-or-enable-button"
                         disabled={!canEditConfig}
                         onClick={() => void changeEnabled(record, !record.enabled)}
                     >
@@ -312,7 +313,7 @@ export const CapabilityMappingsPage = () => {
                 <KuzhambuSpace>
                     <Tooltip title="刷新">
                         <KuzhambuButton
-                            name="刷新"
+                            testId="ai-capability-mappings-capability-mappings-refresh-button"
                             icon={<ReloadOutlined />}
                             loading={
                                 mappingsQuery.isFetching ||
@@ -323,7 +324,7 @@ export const CapabilityMappingsPage = () => {
                         />
                     </Tooltip>
                     <KuzhambuButton
-                        name="新增映射"
+                        testId="ai-capability-mappings-capability-mappings-create-mapping-button"
                         type="primary"
                         icon={<PlusOutlined />}
                         disabled={!canEditConfig}
@@ -382,7 +383,10 @@ export const CapabilityMappingsPage = () => {
                         />
                     </Form.Item>
                     <Form.Item>
-                        <KuzhambuButton name="重置" onClick={() => setQuery({})}>
+                        <KuzhambuButton
+                            testId="ai-capability-mappings-capability-mappings-reset-button"
+                            onClick={() => setQuery({})}
+                        >
                             重置
                         </KuzhambuButton>
                     </Form.Item>
@@ -410,11 +414,14 @@ export const CapabilityMappingsPage = () => {
                 onClose={() => setDrawerOpen(false)}
                 footer={
                     <KuzhambuSpace>
-                        <KuzhambuButton name="取消" onClick={() => setDrawerOpen(false)}>
+                        <KuzhambuButton
+                            testId="ai-capability-mappings-capability-mappings-cancel-button"
+                            onClick={() => setDrawerOpen(false)}
+                        >
                             取消
                         </KuzhambuButton>
                         <KuzhambuButton
-                            name="保存"
+                            testId="ai-capability-mappings-capability-mappings-save-button"
                             type="primary"
                             icon={<SaveOutlined />}
                             disabled={!canEditConfig}
@@ -467,10 +474,10 @@ export const CapabilityMappingsPage = () => {
                                 {tagMatch.modelTags.length === 0 ? "-" : null}
                             </KuzhambuSpace>
                         </div>
-                        <Alert
+                        <KuzhambuAlert
                             type={tagMatch.matched ? "success" : "warning"}
                             showIcon
-                            message={
+                            title={
                                 tagMatch.matched
                                     ? "能力标签匹配"
                                     : `缺少标签：${tagMatch.missingTags.join(", ")}`

@@ -35,6 +35,7 @@ export interface KuzhambuTableRowAction<RecordType extends object = object> {
     icon?: ReactNode;
     key: Key;
     onClick: (record: RecordType) => void;
+    testId?: string;
     text: string;
     type?: KuzhambuTableRowActionType;
 }
@@ -412,6 +413,7 @@ export const KuzhambuTable = <RecordType extends object = object>({
                                     ]
                                         .filter(Boolean)
                                         .join(" ")}
+                                    data-testid={action.testId}
                                     disabled={action.disabled}
                                     key={action.key}
                                     type="button"

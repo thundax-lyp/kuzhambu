@@ -172,7 +172,7 @@ export const ActionStatusPage = () => {
             key: "actions",
             render: (_, record) => (
                 <KuzhambuButton
-                    name="刷新状态"
+                    testId="ai-action-status-action-status-refresh-status-button"
                     icon={<SyncOutlined />}
                     disabled={!canEditConfig}
                     loading={refreshingKey === statusKey(record)}
@@ -193,7 +193,7 @@ export const ActionStatusPage = () => {
             actions={
                 <Tooltip title="刷新">
                     <KuzhambuButton
-                        name="刷新"
+                        testId="ai-action-status-action-status-refresh-button"
                         icon={<ReloadOutlined />}
                         loading={statusesQuery.isFetching || capabilitiesQuery.isFetching}
                         onClick={() => void statusesQuery.refetch()}
@@ -233,17 +233,20 @@ export const ActionStatusPage = () => {
                     <Form.Item>
                         <KuzhambuSpace>
                             <KuzhambuButton
-                                name="查询"
+                                testId="ai-action-status-action-status-query-button"
                                 type="primary"
                                 onClick={() => void applyFilter()}
                             >
                                 查询
                             </KuzhambuButton>
-                            <KuzhambuButton name="重置" onClick={resetFilter}>
+                            <KuzhambuButton
+                                testId="ai-action-status-action-status-reset-button"
+                                onClick={resetFilter}
+                            >
                                 重置
                             </KuzhambuButton>
                             <KuzhambuButton
-                                name="刷新全部"
+                                testId="ai-action-status-action-status-refresh-all-button"
                                 icon={<SyncOutlined />}
                                 disabled={!canEditConfig || (statusesQuery.data || []).length === 0}
                                 loading={refreshMutation.isPending}

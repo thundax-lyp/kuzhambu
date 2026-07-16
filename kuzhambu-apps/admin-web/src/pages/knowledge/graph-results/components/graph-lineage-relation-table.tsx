@@ -43,7 +43,10 @@ export const GraphLineageRelationTable = ({
             key: "actions",
             render: (_, relation) => (
                 <KuzhambuSpaceCompact>
-                    <KuzhambuButton name="查看详情" onClick={() => onOpenDetail(relation)}>
+                    <KuzhambuButton
+                        testId="knowledge-graph-results-graph-lineage-relation-view-detail-button"
+                        onClick={() => onOpenDetail(relation)}
+                    >
                         查看详情
                     </KuzhambuButton>
                 </KuzhambuSpaceCompact>

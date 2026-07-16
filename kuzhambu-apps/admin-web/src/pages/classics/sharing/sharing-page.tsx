@@ -560,7 +560,7 @@ export const SharingPage = () => {
                 }}
                 pageActions={
                     <KuzhambuButton
-                        name="刷新"
+                        testId="classics-sharing-sharing-refresh-button"
                         icon={<ReloadOutlined />}
                         onClick={() => void sharePageQuery.refetch()}
                     >
@@ -629,7 +629,7 @@ export const SharingPage = () => {
                     <KuzhambuSpace align="end">
                         {detailRecord?.status === "ACTIVE" ? (
                             <KuzhambuButton
-                                name="撤销"
+                                testId="classics-sharing-sharing-action-button"
                                 danger
                                 onClick={() => {
                                     if (!detailRecord) {
@@ -643,7 +643,7 @@ export const SharingPage = () => {
                         ) : null}
                         {canRestoreShare(detailRecord) ? (
                             <KuzhambuButton
-                                name="恢复"
+                                testId="classics-sharing-sharing-restore-button"
                                 onClick={() => {
                                     if (!detailRecord) {
                                         return;
@@ -655,7 +655,7 @@ export const SharingPage = () => {
                             </KuzhambuButton>
                         ) : null}
                         <KuzhambuButton
-                            name="刷新访问记录"
+                            testId="classics-sharing-sharing-action-button-2"
                             icon={<FileSearchOutlined />}
                             onClick={() => {
                                 if (!detailRecord?.id) {

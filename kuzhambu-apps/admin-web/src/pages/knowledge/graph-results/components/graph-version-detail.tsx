@@ -35,7 +35,7 @@ export const GraphVersionDetail = ({
             onClose={onClose}
             footer={
                 <KuzhambuButton
-                    name="查看此版本正式结果"
+                    testId="knowledge-graph-results-graph-version-detail-action-button"
                     type="primary"
                     disabled={!version}
                     onClick={() => {

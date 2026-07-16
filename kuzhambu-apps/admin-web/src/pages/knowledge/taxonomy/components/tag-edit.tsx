@@ -122,11 +122,15 @@ export const TagEdit = ({
             onClose={onClose}
             footer={
                 <div className="knowledge-taxonomy-tag-editor-footer">
-                    <KuzhambuButton name="取消" disabled={saving} onClick={onClose}>
+                    <KuzhambuButton
+                        testId="knowledge-taxonomy-tag-cancel-button"
+                        disabled={saving}
+                        onClick={onClose}
+                    >
                         取消
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name={String(saveButtonText)}
+                        testId="knowledge-taxonomy-tag-action-button"
                         type="primary"
                         loading={saving}
                         onClick={saveTag}

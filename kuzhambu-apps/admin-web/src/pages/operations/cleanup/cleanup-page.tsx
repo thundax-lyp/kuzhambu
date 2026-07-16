@@ -5,7 +5,7 @@ import {
     ReloadOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Card, Descriptions, Select, Statistic, Typography } from "antd";
+import { App, Card, Descriptions, Select, Statistic, Typography } from "antd";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
@@ -19,6 +19,7 @@ import type { CleanupExecuteCommand, CleanupPageQuery } from "./cleanup-service"
 import type { OperationsCleanupRecord } from "./cleanup-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./cleanup-page.css";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Text, Title } = Typography;
 
@@ -263,7 +264,7 @@ export const CleanupPage = () => {
                         </label>
                         <div className="operations-cleanup-toolbar-actions">
                             <KuzhambuButton
-                                name="刷新"
+                                testId="operations-cleanup-cleanup-refresh-button"
                                 icon={<ReloadOutlined />}
                                 onClick={() => void refreshPage()}
                             >
@@ -327,7 +328,7 @@ export const CleanupPage = () => {
                                                             )}
                                                         </Text>
                                                         <KuzhambuButton
-                                                            name="查看告警"
+                                                            testId="operations-cleanup-cleanup-view-alerts-button"
                                                             href={buildAlertPath(record.cleanupId)}
                                                             size="small"
                                                         >
@@ -342,7 +343,7 @@ export const CleanupPage = () => {
                                             <td>
                                                 <KuzhambuSpace size={8} wrap>
                                                     <KuzhambuButton
-                                                        name="详情"
+                                                        testId="operations-cleanup-cleanup-detail-button"
                                                         icon={<LoadingOutlined />}
                                                         onClick={() =>
                                                             openCleanupDetail(
@@ -356,7 +357,7 @@ export const CleanupPage = () => {
                                                     </KuzhambuButton>
                                                     {hasFailure ? (
                                                         <KuzhambuButton
-                                                            name="失败项"
+                                                            testId="operations-cleanup-cleanup-action-button"
                                                             danger
                                                             icon={<DeleteOutlined />}
                                                             onClick={() =>
@@ -387,7 +388,7 @@ export const CleanupPage = () => {
 
                     <div className="operations-cleanup-pagination">
                         <KuzhambuButton
-                            name="上一页"
+                            testId="operations-cleanup-cleanup-previous-page-button"
                             disabled={pageNo <= DEFAULT_PAGE_NO}
                             onClick={() => setPageNo((currentPage) => currentPage - 1)}
                         >
@@ -397,7 +398,7 @@ export const CleanupPage = () => {
                             第 {pageNo} / {totalPage} 页，共 {totalCount} 条
                         </Text>
                         <KuzhambuButton
-                            name="下一页"
+                            testId="operations-cleanup-cleanup-next-page-button"
                             disabled={pageNo >= totalPage}
                             onClick={() => setPageNo((currentPage) => currentPage + 1)}
                         >
@@ -473,10 +474,10 @@ export const CleanupPage = () => {
                         />
 
                         {detailRecord.cleanupStatus === "FAILED" ? (
-                            <Alert
+                            <KuzhambuAlert
                                 action={
                                     <KuzhambuButton
-                                        name="查看告警"
+                                        testId="operations-cleanup-cleanup-view-alerts-button-2"
                                         href={buildAlertPath(detailRecord.cleanupId)}
                                         size="small"
                                     >
@@ -484,7 +485,7 @@ export const CleanupPage = () => {
                                     </KuzhambuButton>
                                 }
                                 description={`${failureReasonText(detailRecord.failureReason)}。请检查清理目标和失败项明细，必要时重新发起业务动作。`}
-                                message="清理任务执行失败"
+                                title="清理任务执行失败"
                                 showIcon
                                 type="warning"
                             />
@@ -534,11 +535,11 @@ export const CleanupPage = () => {
                                                 <td>{formatDateTime(item.processedAt)}</td>
                                                 <td>
                                                     {item.itemStatus === "FAILED" ? (
-                                                        <Alert
+                                                        <KuzhambuAlert
                                                             description={failureReasonText(
                                                                 item.failureReason
                                                             )}
-                                                            message="清理项失败"
+                                                            title="清理项失败"
                                                             showIcon
                                                             type="warning"
                                                         />

@@ -375,7 +375,7 @@ test.describe("classics ming customs page", () => {
         await page.getByRole("combobox", { name: "明代习俗编辑分类" }).click();
         await page.getByTitle("岁时节令").last().click();
         await page.getByRole("textbox", { name: "明代习俗正文" }).fill("## 上元\n\n灯市连宵。");
-        await page.getByRole("button", { name: "保存新增明代习俗" }).click();
+        await page.getByTestId("classics-ming-customs-ming-customs-create-button").click();
         await expect
             .poll(() => addRequests.at(-1))
             .toMatchObject({
@@ -392,7 +392,7 @@ test.describe("classics ming customs page", () => {
         await expect(preview.locator("script")).toHaveCount(0);
         await expect(preview.getByText("alert(1)")).toHaveCount(0);
         await page.getByRole("textbox", { name: "明代习俗正文" }).fill("更新后的正文");
-        await page.getByRole("button", { name: "保存明代习俗" }).click();
+        await page.getByTestId("classics-ming-customs-ming-customs-create-button").click();
         await expect
             .poll(() => updateRequests.at(-1))
             .toMatchObject({

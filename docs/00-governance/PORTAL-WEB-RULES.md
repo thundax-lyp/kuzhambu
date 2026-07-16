@@ -71,3 +71,31 @@
 - 页面域逻辑明显变复杂时，优先拆到同目录 service、types 或组件中。
 - shared UI 组件不得引入页面语义。
 - portal-web 不复用 admin-web 的 Ant Design 专属门禁，也不禁止 Tailwind CSS。
+
+### UI
+
+- 业务控件应具备业务可访问名称。优先使用可见文本；无稳定可见文本时，DOM 元素使用 `aria-label` 或 `aria-labelledby`，封装组件使用 `ariaLabel`。可访问名称只表达用户和辅助技术需要理解的业务语义，不承担自动化测试稳定锚点职责。
+- 需要稳定自动化定位的业务控件应显式提供 `data-testid` 或组件封装层的 `testId`；`testId` 命名应描述模块、对象和动作，避免复用纯展示文案。
+- `data-testid` / `testId` 遵循 [`UI-RULES.md`](./UI-RULES.md) 的统一测试锚点规则：生产发布构建擦除，开发、单测和 E2E 构建保留。
+- 不得为了测试覆盖原生控件语义 role。`button`、`input`、`select`、`table` 等原生或组件库已提供语义的控件保留其默认 role，只补充稳定名称。
+
+### Testing
+
+- Playwright locator 优先级固定为：
+
+```text
+getByTestId
+getByRole(..., { name })
+getByRole
+getByLabel
+getByText
+CSS Selector
+```
+
+- Playwright 测试业务控件时优先使用 `getByTestId` 作为明确技术锚点；`getByRole(..., { name })` 用于验证用户可感知语义、可访问名称或没有必要新增技术锚点的简单控件。
+- `data-testid` / `testId` 不替代可访问名称。图标按钮、无文本按钮、表格、搜索框等仍需通过可见文本、DOM `aria-label` / `aria-labelledby` 或组件封装层的 `ariaLabel` 提供业务语义。
+- 若 E2E 使用生产式构建产物，构建时必须设置 `VITE_EXPOSE_TEST_ID=true` 保留 `data-testid`；生产发布构建不得设置该变量。
+- Playwright 测试禁止使用 `waitForTimeout`。
+- Playwright 测试禁止使用复杂 CSS selector。
+- E2E 测试之间不得依赖共享状态。
+- 测试应验证用户可见结果和关键请求契约，不验证组件库内部 DOM 细节。

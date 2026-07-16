@@ -82,11 +82,14 @@ export const DictionaryEdit = ({
             onClose={onClose}
             footer={
                 <div className="dictionary-edit-footer">
-                    <KuzhambuButton name="取消" onClick={onClose}>
+                    <KuzhambuButton
+                        testId="system-dictionary-dictionary-cancel-button"
+                        onClick={onClose}
+                    >
                         取消
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="保存"
+                        testId="system-dictionary-dictionary-save-button"
                         type="primary"
                         loading={saving}
                         onClick={saveDictionary}

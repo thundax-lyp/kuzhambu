@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Badge, Card, Select } from "antd";
+import { App, Badge, Card, Select } from "antd";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
@@ -38,6 +38,7 @@ import type {
 } from "./ming-customs-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./ming-customs-page.css";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 type MingCustomsVisibilityFilter = "ALL" | "PUBLIC" | "PRIVATE";
 type MingCustomsSortDirectionFilter = "ASC" | "DESC";
@@ -798,11 +799,11 @@ export const MingCustomsPage = () => {
                 content={
                     <>
                         {selectedTagFilter ? (
-                            <Alert
+                            <KuzhambuAlert
                                 showIcon
                                 type="info"
                                 style={{ marginBottom: 12 }}
-                                message={
+                                title={
                                     <span>
                                         当前标签筛选：{selectedTagFilter.tagNameSnapshot}
                                         <Badge
@@ -814,7 +815,7 @@ export const MingCustomsPage = () => {
                                 }
                                 action={
                                     <KuzhambuButton
-                                        name="清除标签筛选"
+                                        testId="classics-ming-customs-ming-customs-action-button"
                                         size="small"
                                         onClick={clearTagFilter}
                                     >
@@ -824,7 +825,7 @@ export const MingCustomsPage = () => {
                             />
                         ) : null}
                         {exportJobsQuery.isError ? (
-                            <Alert
+                            <KuzhambuAlert
                                 type="warning"
                                 showIcon
                                 title="导出任务列表加载失败"
@@ -851,7 +852,7 @@ export const MingCustomsPage = () => {
                         />
                         <div style={{ marginBottom: 12 }}>
                             <KuzhambuButton
-                                name="批量分享"
+                                testId="classics-ming-customs-ming-customs-batch-share-button"
                                 disabled={!selectedEntries.length || !canShareEntries}
                                 loading={batchShareMutation.isPending}
                                 onClick={shareSelectedEntries}
@@ -859,7 +860,7 @@ export const MingCustomsPage = () => {
                                 批量分享
                             </KuzhambuButton>
                             <KuzhambuButton
-                                name="批量候选治理"
+                                testId="classics-ming-customs-ming-customs-action-button-2"
                                 disabled={!selectedEntries.length || !canChangeEntryVisibility}
                                 style={{ marginLeft: 8 }}
                                 onClick={openBatchCandidateDrawer}
@@ -867,7 +868,7 @@ export const MingCustomsPage = () => {
                                 批量候选治理
                             </KuzhambuButton>
                             <KuzhambuButton
-                                name="批量公开"
+                                testId="classics-ming-customs-ming-customs-batch-public-button"
                                 disabled={!selectedEntries.length || !canChangeEntryVisibility}
                                 loading={batchVisibilityMutation.isPending}
                                 style={{ marginLeft: 8 }}
@@ -876,7 +877,7 @@ export const MingCustomsPage = () => {
                                 批量公开
                             </KuzhambuButton>
                             <KuzhambuButton
-                                name="批量私有"
+                                testId="classics-ming-customs-ming-customs-batch-private-button"
                                 disabled={!selectedEntries.length || !canChangeEntryVisibility}
                                 loading={batchVisibilityMutation.isPending}
                                 style={{ marginLeft: 8 }}
@@ -886,11 +887,11 @@ export const MingCustomsPage = () => {
                             </KuzhambuButton>
                         </div>
                         {batchShareResult ? (
-                            <Alert
+                            <KuzhambuAlert
                                 showIcon
                                 type={batchShareResult.failureCount > 0 ? "warning" : "success"}
                                 style={{ marginBottom: 12 }}
-                                message={`批量分享结果：成功 ${batchShareResult.successCount}，失败 ${batchShareResult.failureCount}`}
+                                title={`批量分享结果：成功 ${batchShareResult.successCount}，失败 ${batchShareResult.failureCount}`}
                                 description={
                                     batchShareResult.failures.length
                                         ? batchShareResult.failures
@@ -904,13 +905,13 @@ export const MingCustomsPage = () => {
                             />
                         ) : null}
                         {batchVisibilityResult ? (
-                            <Alert
+                            <KuzhambuAlert
                                 showIcon
                                 type={
                                     batchVisibilityResult.failureCount > 0 ? "warning" : "success"
                                 }
                                 style={{ marginBottom: 12 }}
-                                message={`批量可见性结果：成功 ${batchVisibilityResult.successCount}，失败 ${batchVisibilityResult.failureCount}`}
+                                title={`批量可见性结果：成功 ${batchVisibilityResult.successCount}，失败 ${batchVisibilityResult.failureCount}`}
                                 description={
                                     batchVisibilityResult.failures.length
                                         ? batchVisibilityResult.failures
@@ -978,7 +979,7 @@ export const MingCustomsPage = () => {
                                 extra={
                                     <KuzhambuSpaceCompact>
                                         <KuzhambuButton
-                                            name="创建摘要任务"
+                                            testId="classics-ming-customs-ming-customs-action-button-3"
                                             type="primary"
                                             onClick={() =>
                                                 createRefinementTask(editorEntry, "summary")
@@ -988,7 +989,7 @@ export const MingCustomsPage = () => {
                                             创建摘要任务
                                         </KuzhambuButton>
                                         <KuzhambuButton
-                                            name="创建标签任务"
+                                            testId="classics-ming-customs-ming-customs-action-button-4"
                                             onClick={() =>
                                                 createRefinementTask(editorEntry, "tags")
                                             }
@@ -997,7 +998,7 @@ export const MingCustomsPage = () => {
                                             创建标签任务
                                         </KuzhambuButton>
                                         <KuzhambuButton
-                                            name="创建问答任务"
+                                            testId="classics-ming-customs-ming-customs-action-button-5"
                                             onClick={() => createRefinementTask(editorEntry, "qa")}
                                             loading={creatingRefinementCapability === "qa"}
                                         >

@@ -685,7 +685,7 @@ export const TaxonomyPage = () => {
                                         pageActions={
                                             canEditTaxonomy ? (
                                                 <KuzhambuButton
-                                                    name="AI 抽取标签"
+                                                    testId="knowledge-taxonomy-taxonomy-ai-button"
                                                     type="primary"
                                                     onClick={openTagExtraction}
                                                 >

@@ -315,7 +315,7 @@ export const AuditLogPage = () => {
                 onFilterReset={resetFilters}
                 pageActions={
                     <KuzhambuButton
-                        name="刷新"
+                        testId="audit-audit-log-audit-log-refresh-button"
                         icon={<ReloadOutlined />}
                         loading={auditLogQuery.isFetching}
                         onClick={() => auditLogQuery.refetch()}

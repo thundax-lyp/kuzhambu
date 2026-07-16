@@ -81,7 +81,7 @@ describe("LineageCanvas", () => {
             />
         );
 
-        fireEvent.click(screen.getByRole("button", { name: "适配世系画布" }));
+        fireEvent.click(screen.getByTestId("knowledge-lineage-lineage-canvas-action-button-3"));
         expect(screen.getByRole("img", { name: "世系图画布" })).toBeInTheDocument();
     });
 });

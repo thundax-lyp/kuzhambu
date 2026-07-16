@@ -263,7 +263,7 @@ test.describe("admin quality report smoke", () => {
         await expect(page.getByRole("table", { name: "知识质量报告来源明细表格" })).toContainText(
             "LOW_QUALITY"
         );
-        await page.getByRole("button", { name: "重提取医药" }).click();
+        await page.getByTestId("quality-report-source-81-reextract-button").click();
         await expect(page.getByRole("dialog", { name: "确认重提取低质量门类" })).toBeVisible();
         await page.getByRole("button", { name: "重提取" }).last().click();
         await expect

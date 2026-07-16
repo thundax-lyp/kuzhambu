@@ -112,11 +112,15 @@ export const CategoryEdit = ({
             onClose={onClose}
             footer={
                 <div className="knowledge-taxonomy-category-editor-footer">
-                    <KuzhambuButton name="取消" disabled={saving} onClick={onClose}>
+                    <KuzhambuButton
+                        testId="knowledge-taxonomy-category-cancel-button"
+                        disabled={saving}
+                        onClick={onClose}
+                    >
                         取消
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name={String(saveButtonText)}
+                        testId="knowledge-taxonomy-category-action-button"
                         type="primary"
                         loading={saving}
                         onClick={saveCategory}

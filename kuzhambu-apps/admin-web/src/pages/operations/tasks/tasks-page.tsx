@@ -1,6 +1,6 @@
 import { DashboardOutlined, SettingOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Alert, Card, Descriptions, Input, Select, Spin, Typography } from "antd";
+import { Card, Descriptions, Input, Select, Spin, Typography } from "antd";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { hasPermission } from "@/auth/permission-storage";
@@ -14,6 +14,7 @@ import type { OperationsTaskPageQuery } from "./tasks-service";
 import type { OperationsTaskRecord } from "./tasks-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./tasks-page.css";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Text, Title } = Typography;
 const { Option } = Select;
@@ -213,7 +214,7 @@ export const OperationsTasksPage = () => {
                             </KuzhambuSpace>
                             <KuzhambuSpace size={8} wrap>
                                 <KuzhambuButton
-                                    name="重置筛选"
+                                    testId="operations-tasks-tasks-reset-filter-button"
                                     icon={<SettingOutlined />}
                                     type="default"
                                     onClick={() => setFilters({})}
@@ -273,7 +274,7 @@ export const OperationsTasksPage = () => {
                                                 <td>{formatDateTime(task.completedAt)}</td>
                                                 <td>
                                                     <KuzhambuButton
-                                                        name="详情"
+                                                        testId="operations-tasks-tasks-detail-button"
                                                         size="small"
                                                         type="link"
                                                         onClick={() =>
@@ -298,7 +299,7 @@ export const OperationsTasksPage = () => {
                         </table>
                         <div className="operations-tasks-pagination">
                             <KuzhambuButton
-                                name="上一页"
+                                testId="operations-tasks-tasks-previous-page-button"
                                 disabled={taskPageNo <= 1}
                                 onClick={previousPage}
                             >
@@ -308,7 +309,7 @@ export const OperationsTasksPage = () => {
                                 第 {taskPageNo} / {totalPage} 页
                             </Text>
                             <KuzhambuButton
-                                name="下一页"
+                                testId="operations-tasks-tasks-next-page-button"
                                 disabled={taskPageNo >= totalPage}
                                 onClick={nextPage}
                             >
@@ -403,16 +404,19 @@ export const OperationsTasksPage = () => {
                         </Descriptions>
                         {taskDetailQuery.isLoading ? <Spin size="large" /> : null}
                         {isFailedTask(detailRecord) ? (
-                            <Alert
+                            <KuzhambuAlert
                                 action={
-                                    <KuzhambuButton name="查看告警" size="small">
+                                    <KuzhambuButton
+                                        testId="operations-tasks-tasks-view-alerts-button"
+                                        size="small"
+                                    >
                                         <Link to={buildTaskAlertPath(detailRecord?.snapshotId)}>
                                             查看告警
                                         </Link>
                                     </KuzhambuButton>
                                 }
                                 description={`${failureReasonText(detailRecord?.failureReason)}。请查看来源域任务状态，必要时重新发起业务动作。`}
-                                message="长任务执行失败"
+                                title="长任务执行失败"
                                 showIcon
                                 type="warning"
                             />

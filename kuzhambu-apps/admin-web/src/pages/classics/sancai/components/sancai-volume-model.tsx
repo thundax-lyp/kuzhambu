@@ -39,13 +39,14 @@ export const SancaiVolumeModel = ({
             open
             footer={
                 <div className="sancai-modal-footer">
-                    <KuzhambuButton name="取消" onClick={onCancel}>
+                    <KuzhambuButton
+                        testId="classics-sancai-sancai-volume-cancel-button"
+                        onClick={onCancel}
+                    >
                         取消
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name={String(
-                            volume ? `保存卷目 ${readTitle(volume, "卷")}` : "保存新增卷目"
-                        )}
+                        testId="classics-sancai-sancai-volume-action-button"
                         loading={isSubmitting}
                         type="primary"
                         onClick={() => onSubmit(form)}

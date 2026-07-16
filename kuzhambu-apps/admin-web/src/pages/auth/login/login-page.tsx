@@ -1,6 +1,6 @@
 import { LockOutlined, ReloadOutlined, UserOutlined } from "@ant-design/icons";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Alert, App, Card, Form, Input, Typography } from "antd";
+import { App, Card, Form, Input, Typography } from "antd";
 import { sm2 } from "sm-crypto";
 import { useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
@@ -11,6 +11,7 @@ import { KuzhambuLogo } from "@/components/kuzhambu-logo";
 import { KuzhambuSpace, KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./login-page.css";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -104,14 +105,14 @@ export const LoginPage = () => {
                         </div>
 
                         {loginFormQuery.isError ? (
-                            <Alert
+                            <KuzhambuAlert
                                 type="error"
                                 showIcon
                                 title="登录表单初始化失败"
                                 description="请确认后台接口服务已启动，并检查 /kuzhambu-admin-api 代理配置。"
                                 action={
                                     <KuzhambuButton
-                                        name="重试"
+                                        testId="auth-login-login-retry-button"
                                         size="small"
                                         onClick={() => loginFormQuery.refetch()}
                                     >
@@ -176,7 +177,7 @@ export const LoginPage = () => {
                             </Form.Item>
 
                             <KuzhambuButton
-                                name="登录"
+                                testId="auth-login-login-action-button"
                                 block
                                 size="large"
                                 type="primary"

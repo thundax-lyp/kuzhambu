@@ -328,7 +328,7 @@ export const DepartmentPage = () => {
                 pageActions={
                     <>
                         <KuzhambuButton
-                            name="刷新"
+                            testId="system-department-department-refresh-button"
                             icon={<ReloadOutlined />}
                             onClick={() => departmentQuery.refetch()}
                         >
@@ -336,7 +336,7 @@ export const DepartmentPage = () => {
                         </KuzhambuButton>
                         {canEditDepartment ? (
                             <KuzhambuButton
-                                name="新增部门"
+                                testId="system-department-department-action-button"
                                 type="primary"
                                 icon={<PlusOutlined />}
                                 onClick={openCreateEditor}

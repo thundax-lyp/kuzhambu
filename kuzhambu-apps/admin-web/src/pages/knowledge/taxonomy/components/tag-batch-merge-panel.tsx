@@ -154,12 +154,16 @@ export const TagBatchMergePanel = ({
             onClose={onClose}
             footer={
                 <div className="knowledge-taxonomy-drawer-footer">
-                    <KuzhambuButton name="取消" disabled={previewing || applying} onClick={onClose}>
+                    <KuzhambuButton
+                        testId="knowledge-taxonomy-tag-batch-merge-cancel-button"
+                        disabled={previewing || applying}
+                        onClick={onClose}
+                    >
                         取消
                     </KuzhambuButton>
                     <KuzhambuSpace>
                         <KuzhambuButton
-                            name="预览影响"
+                            testId="knowledge-taxonomy-tag-batch-merge-action-button"
                             loading={previewing}
                             disabled={submitDisabled}
                             onClick={previewImpact}
@@ -167,7 +171,7 @@ export const TagBatchMergePanel = ({
                             预览影响
                         </KuzhambuButton>
                         <KuzhambuButton
-                            name="执行批量合并"
+                            testId="knowledge-taxonomy-tag-batch-merge-action-button-2"
                             type="primary"
                             danger
                             loading={applying}

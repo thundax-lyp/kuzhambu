@@ -64,11 +64,14 @@ export const WangqiDocumentModel = ({
             onClose={onClose}
             footer={
                 <div className="wangqi-document-model-footer">
-                    <KuzhambuButton name="取消" onClick={onClose}>
+                    <KuzhambuButton
+                        testId="classics-wangqi-wangqi-document-cancel-button"
+                        onClick={onClose}
+                    >
                         取消
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name={String(mode === "create" ? "保存新增王圻文档" : "保存王圻文档")}
+                        testId="classics-wangqi-wangqi-document-create-button"
                         type="primary"
                         loading={saving}
                         onClick={saveDocument}

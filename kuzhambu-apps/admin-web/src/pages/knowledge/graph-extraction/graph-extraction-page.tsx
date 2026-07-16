@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Card, Empty, Typography } from "antd";
+import { App, Card, Empty, Typography } from "antd";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
@@ -18,6 +18,7 @@ import type {
 } from "./graph-extraction-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./graph-extraction-page.css";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Paragraph, Text, Title } = Typography;
 
@@ -214,7 +215,7 @@ export const GraphExtractionPage = () => {
                 size={16}
                 className="knowledge-graph-extraction-layout"
             >
-                <Alert
+                <KuzhambuAlert
                     banner
                     className="knowledge-graph-extraction-banner"
                     title="本页已接通知识抽取任务创建、任务列表、详情查看和候选应用动作。"
@@ -233,7 +234,7 @@ export const GraphExtractionPage = () => {
                         `QUALITY_REPORT`，便于后端任务台账追溯触发来源。
                     </Paragraph>
                     <KuzhambuSpace wrap>
-                        <Alert
+                        <KuzhambuAlert
                             title={
                                 createTriggerSource === QUALITY_TRIGGER_SOURCE
                                     ? "当前为质量结果触发模式"
@@ -245,13 +246,13 @@ export const GraphExtractionPage = () => {
                             showIcon
                         />
                         <KuzhambuButton
-                            name="切换为手工触发"
+                            testId="knowledge-graph-extraction-graph-extraction-action-button"
                             onClick={() => setCreateTriggerSource(MANUAL_TRIGGER_SOURCE)}
                         >
                             切换为手工触发
                         </KuzhambuButton>
                         <KuzhambuButton
-                            name="切换为质量结果触发"
+                            testId="knowledge-graph-extraction-graph-extraction-action-button-2"
                             onClick={() => setCreateTriggerSource(QUALITY_TRIGGER_SOURCE)}
                         >
                             切换为质量结果触发

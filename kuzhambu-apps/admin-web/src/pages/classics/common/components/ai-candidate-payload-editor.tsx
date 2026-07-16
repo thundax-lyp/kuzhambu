@@ -220,14 +220,17 @@ export const AiCandidatePayloadEditor = ({
                             onChange={(event) => updateTag(index, event.target.value)}
                         />
                         <KuzhambuButton
-                            name={String(`删除候选标签 ${index + 1}`)}
+                            testId="classics-common-ai-candidate-payload-editor-action-button"
                             onClick={() => removeTag(index)}
                         >
                             删除
                         </KuzhambuButton>
                     </KuzhambuSpace>
                 ))}
-                <KuzhambuButton name="新增候选标签" onClick={appendTag}>
+                <KuzhambuButton
+                    testId="classics-common-ai-candidate-payload-editor-create-candidate-tag-button"
+                    onClick={appendTag}
+                >
                     新增标签
                 </KuzhambuButton>
             </div>
@@ -254,7 +257,7 @@ export const AiCandidatePayloadEditor = ({
                         onChange={(event) => updateQaPair(index, "answer", event.target.value)}
                     />
                     <KuzhambuButton
-                        name={String(`删除候选问答 ${index + 1}`)}
+                        testId="classics-common-ai-candidate-payload-editor-action-button-2"
                         style={{ marginTop: 8 }}
                         onClick={() => removeQaPair(index)}
                     >
@@ -262,7 +265,10 @@ export const AiCandidatePayloadEditor = ({
                     </KuzhambuButton>
                 </div>
             ))}
-            <KuzhambuButton name="新增候选问答" onClick={appendQaPair}>
+            <KuzhambuButton
+                testId="classics-common-ai-candidate-payload-editor-create-candidate-qa-button"
+                onClick={appendQaPair}
+            >
                 新增问答
             </KuzhambuButton>
         </div>

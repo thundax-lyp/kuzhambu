@@ -135,11 +135,13 @@
 ### UI
 
 - `ADMIN_WEB_UI_CONFIRM_HOOK`：确认操作固定使用 `useKuzhambuConfirm`，页面不直接调用 `Modal.confirm`。
-- `ADMIN_WEB_UI_NO_ANTD_SPACE_DIRECT`：页面、布局和共享组件禁止直接从 `antd` 导入 `Space` 或 `SpaceProps`；统一使用 `src/components/kuzhambu-space/` 暴露的 `KuzhambuSpace` 与 `KuzhambuSpaceCompact`。`KuzhambuSpace` 实现文件自身作为唯一例外。
-- `ADMIN_WEB_UI_NO_ANTD_DRAWER_DIRECT`：页面和共享组件禁止直接从 `antd` 导入 `Drawer`；统一使用 `src/components/kuzhambu-drawer/` 暴露的 `KuzhambuDrawer`。`KuzhambuDrawer` 实现文件自身作为唯一例外。
-- `ADMIN_WEB_UI_NO_ANTD_MODAL_DIRECT_IN_PAGES`：`src/pages/**/*.{ts,tsx}` 禁止直接从 `antd` 导入 `Modal`；页面层弹窗统一使用 `src/components/kuzhambu-modal/` 暴露的 `KuzhambuModal`。`KuzhambuModal` 实现文件自身作为唯一底层 Ant Design `Modal` 入口。
+- `ADMIN_WEB_UI_NO_ANTD_SPACE_DIRECT_IN_PAGES`：`src/pages/**/*.{ts,tsx}` 禁止直接从 `antd` 导入 `Space` 或 `SpaceProps`；页面层布局间距统一使用 `src/components/kuzhambu-space/` 暴露的 `KuzhambuSpace` 与 `KuzhambuSpaceCompact`。
+- `ADMIN_WEB_UI_NO_ANTD_DRAWER_DIRECT_IN_PAGES`：`src/pages/**/*.{ts,tsx}` 禁止直接从 `antd` 导入 `Drawer`；页面层抽屉统一使用 `src/components/kuzhambu-drawer/` 暴露的 `KuzhambuDrawer`。
+- `ADMIN_WEB_UI_NO_ANTD_MODAL_DIRECT_IN_PAGES`：`src/pages/**/*.{ts,tsx}` 禁止直接从 `antd` 导入 `Modal`；页面层弹窗统一使用 `src/components/kuzhambu-modal/` 暴露的 `KuzhambuModal`。
+- `ADMIN_WEB_UI_NO_ANTD_ALERT_DIRECT_IN_PAGES`：`src/pages/**/*.{ts,tsx}` 禁止直接从 `antd` 导入 `Alert`；页面层提示统一使用 `src/components/kuzhambu-alert/` 暴露的 `KuzhambuAlert`。
+- `ADMIN_WEB_UI_NO_ANTD_BUTTON_DIRECT_IN_PAGES`：`src/pages/**/*.{ts,tsx}` 禁止直接从 `antd` 导入 `Button`；页面层按钮统一使用 `src/components/kuzhambu-button/` 暴露的 `KuzhambuButton`。
 - `ADMIN_WEB_UI_TABLE_ACTION_COLUMN`：表格操作列使用 `key: "actions"`，优先传 `options`；`render` 只作为复杂逃生口。
-- `ADMIN_WEB_UI_INTERACTIVE_ACCESSIBLE_NAME`：可机器判断的业务交互控件必须有稳定可访问名称。当前门禁覆盖无可见文本的 `Button`、`Input.Search`、`Table` 和 `KuzhambuTable`；名称来自可见文本、`aria-label` 或 `aria-labelledby`。
+- `ADMIN_WEB_UI_INTERACTIVE_ACCESSIBLE_NAME`：可机器判断的业务交互控件必须有业务可访问名称。当前门禁覆盖无可见文本的 `Button`、`Input.Search`、`Table` 和 `KuzhambuTable`；名称来自可见文本、`aria-label` 或 `aria-labelledby`，不作为自动化测试稳定锚点。
 
 ### Forbidden Defaults
 
@@ -169,7 +171,9 @@
 
 ### UI
 
-- Hard Rule 暂未覆盖的业务控件也应具备稳定的可访问名称。优先使用可见文本；无稳定可见文本时使用 `aria-label` 或 `aria-labelledby`，确保 Playwright 可以通过 `getByRole(..., { name })` 定位。
+- Hard Rule 暂未覆盖的业务控件也应具备业务可访问名称。优先使用可见文本；无稳定可见文本时，DOM 元素使用 `aria-label` 或 `aria-labelledby`，封装组件使用 `ariaLabel`。可访问名称只表达用户和辅助技术需要理解的业务语义，不承担自动化测试稳定锚点职责。
+- 需要稳定自动化定位的业务控件应显式提供 `data-testid` 或组件封装层的 `testId`；`testId` 命名应描述模块、对象和动作，避免复用纯展示文案。
+- `data-testid` / `testId` 遵循 [`UI-RULES.md`](./UI-RULES.md) 的统一测试锚点规则：生产发布构建擦除，开发、单测和 E2E 构建保留。
 - 不得为了测试覆盖原生控件语义 role。`button`、`input`、`select`、`table` 等原生或 Ant Design 已提供语义的控件保留其默认 role，只补充稳定名称。
 - `KuzhambuListPage` 这类共享业务组件必须尽量用 `subjectName` 生成搜索框和表格的默认可访问名称，页面只在默认文案不准确时覆盖。
 
@@ -473,15 +477,17 @@ JPG / PNG
 - Playwright locator 优先级固定为：
 
 ```text
+getByTestId
 getByRole(..., { name })
 getByRole
 getByLabel
 getByText
-getByTestId
 CSS Selector
 ```
 
-- Playwright 测试业务控件时优先使用 `getByRole(..., { name })`，控件名称来自稳定可见文本、`aria-label` 或 `aria-labelledby`。
+- Playwright 测试业务控件时优先使用 `getByTestId` 作为明确技术锚点；`getByRole(..., { name })` 用于验证用户可感知语义、可访问名称或没有必要新增技术锚点的简单控件。
+- `data-testid` / `testId` 不替代可访问名称。图标按钮、无文本按钮、表格、搜索框等仍需通过可见文本、DOM `aria-label` / `aria-labelledby` 或组件封装层的 `ariaLabel` 提供业务语义。
+- 若 E2E 使用生产式构建产物，构建时必须设置 `VITE_EXPOSE_TEST_ID=true` 保留 `data-testid`；生产发布构建不得设置该变量。
 - Playwright 测试禁止使用 `waitForTimeout`。
 - Playwright 测试禁止使用复杂 CSS selector。
 - E2E 测试之间不得依赖共享状态。
@@ -502,7 +508,7 @@ CSS Selector
 test("delete requires confirmation", async ({ page }) => {
   await page.goto("/users");
 
-  await page.getByRole("button", { name: "删除" }).click();
+  await page.getByTestId("users-delete-button").click();
 
   await expect(page.getByText("确认删除")).toBeVisible();
 });

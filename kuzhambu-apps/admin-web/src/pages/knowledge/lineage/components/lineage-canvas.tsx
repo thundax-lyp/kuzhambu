@@ -190,21 +190,24 @@ export const LineageCanvas = ({
             <div className="knowledge-lineage-canvas__tools" aria-label="世系画布工具">
                 <Tooltip title="缩小">
                     <KuzhambuButton
-                        name="缩小世系画布"
+                        ariaLabel="缩小世系画布"
+                        testId="knowledge-lineage-lineage-canvas-action-button"
                         icon={<ZoomOutOutlined />}
                         onClick={() => zoom(1.12)}
                     />
                 </Tooltip>
                 <Tooltip title="放大">
                     <KuzhambuButton
-                        name="放大世系画布"
+                        ariaLabel="放大世系画布"
+                        testId="knowledge-lineage-lineage-canvas-action-button-2"
                         icon={<ZoomInOutlined />}
                         onClick={() => zoom(0.88)}
                     />
                 </Tooltip>
                 <Tooltip title="适配视图">
                     <KuzhambuButton
-                        name="适配世系画布"
+                        ariaLabel="适配世系画布"
+                        testId="knowledge-lineage-lineage-canvas-action-button-3"
                         icon={<FullscreenOutlined />}
                         onClick={() => setViewBox(DEFAULT_VIEW_BOX)}
                     />

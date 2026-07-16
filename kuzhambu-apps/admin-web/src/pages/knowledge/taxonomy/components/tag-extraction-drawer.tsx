@@ -145,14 +145,14 @@ export const TagExtractionDrawer = ({
             footer={
                 <div className="knowledge-taxonomy-tag-extraction-footer">
                     <KuzhambuButton
-                        name="取消"
+                        testId="knowledge-taxonomy-tag-extraction-cancel-button"
                         disabled={extracting || applying}
                         onClick={closeDrawer}
                     >
                         取消
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="开始抽取"
+                        testId="knowledge-taxonomy-tag-extraction-action-button"
                         type="primary"
                         loading={extracting}
                         onClick={extractTags}
@@ -210,7 +210,7 @@ export const TagExtractionDrawer = ({
                         </Form.Item>
                         <KuzhambuSpace wrap>
                             <KuzhambuButton
-                                name="应用选中标签"
+                                testId="knowledge-taxonomy-tag-extraction-action-button-2"
                                 type="primary"
                                 disabled={!result.aiCandidateId || selectedTags.length === 0}
                                 loading={applying}
@@ -219,7 +219,7 @@ export const TagExtractionDrawer = ({
                                 应用选中标签
                             </KuzhambuButton>
                             <KuzhambuButton
-                                name="重新抽取"
+                                testId="knowledge-taxonomy-tag-extraction-action-button-3"
                                 disabled={extracting || applying}
                                 onClick={reExtractTags}
                             >

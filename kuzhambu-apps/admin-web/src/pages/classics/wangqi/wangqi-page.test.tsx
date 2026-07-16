@@ -299,7 +299,7 @@ describe("WangqiPage", () => {
             </QueryClientProvider>
         );
 
-        await user.click(await screen.findByRole("button", { name: "编辑王圻文档 王圻文档" }));
+        await user.click(await screen.findByTestId("wangqi-document-edit-400000000001-button"));
         await user.click(await screen.findByRole("button", { name: "创建摘要任务" }));
         await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(1));
         await user.click(await screen.findByRole("button", { name: "创建标签任务" }));
@@ -345,7 +345,7 @@ describe("WangqiPage", () => {
             </QueryClientProvider>
         );
 
-        await user.click(await screen.findByRole("button", { name: "编辑王圻文档 王圻文档" }));
+        await user.click(await screen.findByTestId("wangqi-document-edit-400000000001-button"));
         await user.click(await screen.findByRole("button", { name: "创建标签任务" }));
 
         expect(aiRefinementTaskService.createTask).not.toHaveBeenCalled();
@@ -364,7 +364,7 @@ describe("WangqiPage", () => {
             </QueryClientProvider>
         );
 
-        await user.click(await screen.findByRole("button", { name: "编辑王圻文档 王圻文档" }));
+        await user.click(await screen.findByTestId("wangqi-document-edit-400000000001-button"));
         const qaButton = await screen.findByRole("button", { name: "单文档问答" });
 
         expect(qaButton).toBeEnabled();
@@ -392,7 +392,7 @@ describe("WangqiPage", () => {
             </QueryClientProvider>
         );
 
-        await user.click(await screen.findByRole("button", { name: "编辑王圻文档 王圻文档" }));
+        await user.click(await screen.findByTestId("wangqi-document-edit-0-button"));
 
         expect(await screen.findByRole("button", { name: "单文档问答" })).toBeDisabled();
     }, 30000);
@@ -414,7 +414,7 @@ describe("WangqiPage", () => {
             </QueryClientProvider>
         );
 
-        await user.click(await screen.findByRole("button", { name: "编辑王圻文档 王圻文档" }));
+        await user.click(await screen.findByTestId("wangqi-document-edit-400000000001-button"));
 
         expect(await screen.findByRole("button", { name: "单文档问答" })).toBeDisabled();
     }, 30000);
@@ -556,7 +556,7 @@ describe("WangqiPage", () => {
             </QueryClientProvider>
         );
 
-        await user.click(await screen.findByRole("button", { name: "编辑王圻文档 王圻文档" }));
+        await user.click(await screen.findByTestId("wangqi-document-edit-400000000001-button"));
         capturedCalls.length = 0;
         await user.click(await screen.findByRole("button", { name: "mock-ai-applied" }));
 
@@ -602,7 +602,7 @@ describe("WangqiPage", () => {
             </QueryClientProvider>
         );
 
-        await user.click(await screen.findByRole("button", { name: "编辑王圻文档 王圻文档" }));
+        await user.click(await screen.findByTestId("wangqi-document-edit-400000000001-button"));
         capturedCalls.length = 0;
         await user.click(await screen.findByRole("button", { name: "mock-ai-rejected" }));
 

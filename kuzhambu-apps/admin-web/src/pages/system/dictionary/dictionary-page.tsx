@@ -272,7 +272,7 @@ export const DictionaryPage = () => {
                 onFilterReset={resetFilters}
                 pageActions={
                     <KuzhambuButton
-                        name="刷新"
+                        testId="system-dictionary-dictionary-refresh-button"
                         icon={<ReloadOutlined />}
                         onClick={() => dictionaryQuery.refetch()}
                     >
@@ -284,7 +284,7 @@ export const DictionaryPage = () => {
                 batchActions={
                     <KuzhambuSpace wrap>
                         <KuzhambuButton
-                            name="批量删除"
+                            testId="system-dictionary-dictionary-batch-delete-button"
                             danger
                             icon={<DeleteOutlined />}
                             disabled={!canEditDictionary || !hasSelectedDictionaries}

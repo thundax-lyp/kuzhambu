@@ -39,7 +39,11 @@ export const MingCustomsTagCloud = ({
 
     return (
         <>
-            <KuzhambuButton name="标签云" icon={<TagsOutlined />} onClick={() => setOpen(true)}>
+            <KuzhambuButton
+                testId="classics-ming-customs-ming-customs-keyword-cloud-tag-cloud-button"
+                icon={<TagsOutlined />}
+                onClick={() => setOpen(true)}
+            >
                 标签云
             </KuzhambuButton>
             <KuzhambuDrawer
@@ -51,7 +55,11 @@ export const MingCustomsTagCloud = ({
                 title="标签云"
                 onClose={() => setOpen(false)}
                 footer={
-                    <KuzhambuButton name="关闭" type="primary" onClick={() => setOpen(false)}>
+                    <KuzhambuButton
+                        testId="classics-ming-customs-ming-customs-keyword-cloud-close-button"
+                        type="primary"
+                        onClick={() => setOpen(false)}
+                    >
                         关闭
                     </KuzhambuButton>
                 }

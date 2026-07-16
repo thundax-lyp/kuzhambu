@@ -241,7 +241,7 @@ export const ClassicsContentQaPanel = ({
             <KuzhambuSpace orientation="vertical" size={16}>
                 <div>
                     <KuzhambuButton
-                        name="新增问答对"
+                        testId="classics-common-classics-content-qa-action-button"
                         icon={<PlusOutlined />}
                         type="primary"
                         onClick={openCreate}
@@ -278,7 +278,7 @@ export const ClassicsContentQaPanel = ({
                             render: (_value, pair) => (
                                 <KuzhambuSpace size="small" orientation="horizontal">
                                     <KuzhambuButton
-                                        name={String(`编辑问答对 ${pair.id}`)}
+                                        testId={`classics-common-classics-content-qa-edit-${pair.id}-button`}
                                         icon={<EditOutlined />}
                                         size="small"
                                         onClick={() => openEdit(pair)}
@@ -286,7 +286,7 @@ export const ClassicsContentQaPanel = ({
                                         编辑
                                     </KuzhambuButton>
                                     <KuzhambuButton
-                                        name={String(`删除问答对 ${pair.id}`)}
+                                        testId={`classics-common-classics-content-qa-delete-${pair.id}-button`}
                                         danger
                                         icon={<DeleteOutlined />}
                                         loading={deleteMutation.isPending}

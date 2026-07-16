@@ -1,4 +1,4 @@
-import { Alert, Card, Checkbox, Form, Input, InputNumber } from "antd";
+import { Card, Checkbox, Form, Input, InputNumber } from "antd";
 import { useEffect } from "react";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type {
@@ -8,6 +8,7 @@ import type {
     GraphExtractionTaskType
 } from "../graph-extraction-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { TextArea } = Input;
 
@@ -117,7 +118,11 @@ export const GraphExtractionCreate = ({
             {regenerateCommand ? (
                 <Card className="graph-extraction-create-card" variant="borderless">
                     <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
-                        <Alert showIcon type="warning" message="精修应用后的图谱重生成参数已载入" />
+                        <KuzhambuAlert
+                            showIcon
+                            type="warning"
+                            title="精修应用后的图谱重生成参数已载入"
+                        />
                         <div className="graph-extraction-create-grid">
                             <Form.Item label="源任务 ID">
                                 <Input value={regenerateCommand.sourceTaskId || ""} disabled />
@@ -130,7 +135,7 @@ export const GraphExtractionCreate = ({
                             </Form.Item>
                         </div>
                         <KuzhambuButton
-                            name="提交精修重生成"
+                            testId="knowledge-graph-extraction-graph-extraction-create-action-button"
                             type="primary"
                             disabled={!canEdit || !regenerateReady}
                             loading={regenerating}
@@ -222,7 +227,7 @@ export const GraphExtractionCreate = ({
                     <KuzhambuSpace wrap>
                         {CREATE_ACTIONS.map((action) => (
                             <KuzhambuButton
-                                name={String(action.label)}
+                                testId="knowledge-graph-extraction-graph-extraction-create-action-button-2"
                                 key={action.key}
                                 type={action.key === "GRAPH" ? "primary" : "default"}
                                 disabled={!canEdit}

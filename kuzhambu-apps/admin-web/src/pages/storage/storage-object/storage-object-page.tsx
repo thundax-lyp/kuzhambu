@@ -623,7 +623,7 @@ export const StorageObjectPage = () => {
                             onChange={uploadSelectedFile}
                         />
                         <KuzhambuButton
-                            name="上传"
+                            testId="storage-storage-object-storage-object-upload-button"
                             icon={<UploadOutlined />}
                             disabled={!canEditStorage || isUploadInProgress}
                             loading={isUploadInProgress}
@@ -632,7 +632,7 @@ export const StorageObjectPage = () => {
                             上传
                         </KuzhambuButton>
                         <KuzhambuButton
-                            name="刷新"
+                            testId="storage-storage-object-storage-object-refresh-button"
                             icon={<ReloadOutlined />}
                             loading={storageQuery.isFetching}
                             onClick={() => storageQuery.refetch()}
@@ -646,7 +646,7 @@ export const StorageObjectPage = () => {
                 batchActions={
                     <KuzhambuSpace wrap>
                         <KuzhambuButton
-                            name="批量删除"
+                            testId="storage-storage-object-storage-object-batch-delete-button"
                             danger
                             icon={<DeleteOutlined />}
                             disabled={!hasSelectedStorages || !canEditStorage}

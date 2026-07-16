@@ -87,11 +87,16 @@ export const RefinementQualityAnnotationDrawer = ({
                     <Input.TextArea rows={5} />
                 </Form.Item>
                 <KuzhambuSpace size={8}>
-                    <KuzhambuButton name="保存" htmlType="submit" loading={saving} type="primary">
+                    <KuzhambuButton
+                        testId="knowledge-refinement-refinement-quality-annotation-save-button"
+                        htmlType="submit"
+                        loading={saving}
+                        type="primary"
+                    >
                         保存
                     </KuzhambuButton>
                     <KuzhambuButton
-                        name="删除标注"
+                        testId="knowledge-refinement-refinement-quality-annotation-action-button"
                         danger
                         disabled={!existingAnnotation}
                         loading={deleting}
@@ -99,7 +104,10 @@ export const RefinementQualityAnnotationDrawer = ({
                     >
                         删除标注
                     </KuzhambuButton>
-                    <KuzhambuButton name="取消" onClick={onCancel}>
+                    <KuzhambuButton
+                        testId="knowledge-refinement-refinement-quality-annotation-cancel-button"
+                        onClick={onCancel}
+                    >
                         取消
                     </KuzhambuButton>
                 </KuzhambuSpace>

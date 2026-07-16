@@ -41,7 +41,10 @@ export const RefinementQualityAnnotationTable = ({
             title: "操作",
             key: "actions",
             render: (_, annotation) => (
-                <KuzhambuButton name="标注" onClick={() => onEdit(annotation)}>
+                <KuzhambuButton
+                    testId="knowledge-refinement-refinement-quality-annotation-annotate-button"
+                    onClick={() => onEdit(annotation)}
+                >
                     标注
                 </KuzhambuButton>
             )

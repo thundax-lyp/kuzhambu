@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Card, Select, Tooltip } from "antd";
+import { App, Card, Select, Tooltip } from "antd";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
@@ -35,6 +35,7 @@ import type { WangqiDocumentCommand, WangqiDocumentQuery } from "./wangqi-servic
 import type { WangqiContentVersionRecord, WangqiDocumentRecord } from "./wangqi-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./wangqi-page.css";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 type WangqiVisibilityFilter = "ALL" | "PUBLIC" | "PRIVATE";
 type WangqiSortDirectionFilter = "ASC" | "DESC";
@@ -807,7 +808,7 @@ export const WangqiPage = () => {
                         />
                         <div style={{ marginBottom: 12 }}>
                             <KuzhambuButton
-                                name="批量分享"
+                                testId="classics-wangqi-wangqi-batch-share-button"
                                 disabled={!selectedDocuments.length || !canShareDocuments}
                                 loading={batchShareMutation.isPending}
                                 onClick={shareSelectedDocuments}
@@ -815,7 +816,7 @@ export const WangqiPage = () => {
                                 批量分享
                             </KuzhambuButton>
                             <KuzhambuButton
-                                name="批量候选治理"
+                                testId="classics-wangqi-wangqi-action-button"
                                 disabled={!selectedDocuments.length || !canChangeDocumentVisibility}
                                 style={{ marginLeft: 8 }}
                                 onClick={openBatchCandidateDrawer}
@@ -823,7 +824,7 @@ export const WangqiPage = () => {
                                 批量候选治理
                             </KuzhambuButton>
                             <KuzhambuButton
-                                name="批量公开"
+                                testId="classics-wangqi-wangqi-batch-public-button"
                                 disabled={!selectedDocuments.length || !canChangeDocumentVisibility}
                                 loading={batchVisibilityMutation.isPending}
                                 style={{ marginLeft: 8 }}
@@ -832,7 +833,7 @@ export const WangqiPage = () => {
                                 批量公开
                             </KuzhambuButton>
                             <KuzhambuButton
-                                name="批量私有"
+                                testId="classics-wangqi-wangqi-batch-private-button"
                                 disabled={!selectedDocuments.length || !canChangeDocumentVisibility}
                                 loading={batchVisibilityMutation.isPending}
                                 style={{ marginLeft: 8 }}
@@ -842,11 +843,11 @@ export const WangqiPage = () => {
                             </KuzhambuButton>
                         </div>
                         {batchShareResult ? (
-                            <Alert
+                            <KuzhambuAlert
                                 showIcon
                                 type={batchShareResult.failureCount > 0 ? "warning" : "success"}
                                 style={{ marginBottom: 12 }}
-                                message={`批量分享结果：成功 ${batchShareResult.successCount}，失败 ${batchShareResult.failureCount}`}
+                                title={`批量分享结果：成功 ${batchShareResult.successCount}，失败 ${batchShareResult.failureCount}`}
                                 description={
                                     batchShareResult.failures.length
                                         ? batchShareResult.failures
@@ -860,13 +861,13 @@ export const WangqiPage = () => {
                             />
                         ) : null}
                         {batchVisibilityResult ? (
-                            <Alert
+                            <KuzhambuAlert
                                 showIcon
                                 type={
                                     batchVisibilityResult.failureCount > 0 ? "warning" : "success"
                                 }
                                 style={{ marginBottom: 12 }}
-                                message={`批量可见性结果：成功 ${batchVisibilityResult.successCount}，失败 ${batchVisibilityResult.failureCount}`}
+                                title={`批量可见性结果：成功 ${batchVisibilityResult.successCount}，失败 ${batchVisibilityResult.failureCount}`}
                                 description={
                                     batchVisibilityResult.failures.length
                                         ? batchVisibilityResult.failures
@@ -932,7 +933,7 @@ export const WangqiPage = () => {
                                     <KuzhambuSpaceCompact>
                                         <Tooltip title={singleDocumentQaDisabledReason}>
                                             <KuzhambuButton
-                                                name="单文档问答"
+                                                testId="classics-wangqi-wangqi-action-button-2"
                                                 disabled={!activeDocument.id || !canOpenDiscoveryQa}
                                                 onClick={() => openSingleDocumentQa(activeDocument)}
                                             >
@@ -940,7 +941,7 @@ export const WangqiPage = () => {
                                             </KuzhambuButton>
                                         </Tooltip>
                                         <KuzhambuButton
-                                            name="创建摘要任务"
+                                            testId="classics-wangqi-wangqi-action-button-3"
                                             type="primary"
                                             onClick={() =>
                                                 createRefinementTask(activeDocument, "summary")
@@ -950,7 +951,7 @@ export const WangqiPage = () => {
                                             创建摘要任务
                                         </KuzhambuButton>
                                         <KuzhambuButton
-                                            name="创建标签任务"
+                                            testId="classics-wangqi-wangqi-action-button-4"
                                             onClick={() =>
                                                 createRefinementTask(activeDocument, "tags")
                                             }
@@ -959,7 +960,7 @@ export const WangqiPage = () => {
                                             创建标签任务
                                         </KuzhambuButton>
                                         <KuzhambuButton
-                                            name="创建问答任务"
+                                            testId="classics-wangqi-wangqi-action-button-5"
                                             onClick={() =>
                                                 createRefinementTask(activeDocument, "qa")
                                             }

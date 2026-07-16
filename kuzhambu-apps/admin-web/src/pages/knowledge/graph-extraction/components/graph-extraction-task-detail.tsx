@@ -46,7 +46,7 @@ export const GraphExtractionTaskDetail = ({
             onClose={onClose}
             footer={
                 <KuzhambuButton
-                    name="应用候选结果"
+                    testId="knowledge-graph-extraction-graph-extraction-task-detail-action-button"
                     type="primary"
                     disabled={!canApply || !task?.aiCandidateId || task?.status === "APPLIED"}
                     loading={applying}

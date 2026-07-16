@@ -78,7 +78,7 @@ export const WangqiDocumentList = ({
             width: DEFAULT_COLUMN_WIDTHS.title,
             render: (title: string | null | undefined, record) => (
                 <KuzhambuButton
-                    name={String(`编辑王圻文档 ${title || "未命名文档"}`)}
+                    testId={`wangqi-document-edit-${record.id}-button`}
                     type="link"
                     className="wangqi-document-title-link"
                     onClick={() => onOpenEdit(record)}

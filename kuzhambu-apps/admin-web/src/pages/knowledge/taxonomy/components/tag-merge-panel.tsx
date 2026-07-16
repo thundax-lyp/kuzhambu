@@ -1,4 +1,4 @@
-import { Alert, Card, Descriptions, Empty, Select, Typography } from "antd";
+import { Card, Descriptions, Empty, Select, Typography } from "antd";
 import { useState } from "react";
 import { KuzhambuList, KuzhambuListItem } from "@/components/kuzhambu-list";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
@@ -10,6 +10,7 @@ import type {
     TagRecord
 } from "../taxonomy-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Paragraph, Text, Title } = Typography;
 
@@ -134,7 +135,7 @@ export const TagMergePanel = ({
                     </div>
                     <KuzhambuSpace wrap>
                         <KuzhambuButton
-                            name="预览合并影响"
+                            testId="knowledge-taxonomy-tag-merge-action-button"
                             onClick={previewMerge}
                             loading={previewing}
                             disabled={mergeDisabled}
@@ -142,7 +143,7 @@ export const TagMergePanel = ({
                             预览合并影响
                         </KuzhambuButton>
                         <KuzhambuButton
-                            name="执行标签合并"
+                            testId="knowledge-taxonomy-tag-merge-action-button-2"
                             type="primary"
                             danger
                             onClick={applyMerge}
@@ -192,7 +193,7 @@ export const TagMergePanel = ({
                 </div>
 
                 {sourceTagId && targetTagId && sourceTagId === targetTagId ? (
-                    <Alert title="源标签和目标标签不能相同" type="warning" showIcon />
+                    <KuzhambuAlert title="源标签和目标标签不能相同" type="warning" showIcon />
                 ) : null}
 
                 {preview ? (

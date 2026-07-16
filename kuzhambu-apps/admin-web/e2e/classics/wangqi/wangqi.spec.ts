@@ -261,7 +261,7 @@ test.describe("classics wangqi page", () => {
         await expect(page.getByLabel("王圻文档正文预览")).not.toContainText("alert(1)");
 
         await page.getByRole("textbox", { name: "王圻文档标题" }).fill("王圻文档修订");
-        await page.getByRole("button", { name: "保存王圻文档" }).click();
+        await page.getByTestId("classics-wangqi-wangqi-document-create-button").click();
         await expect
             .poll(() => updateRequests.at(-1))
             .toMatchObject({
@@ -278,7 +278,7 @@ test.describe("classics wangqi page", () => {
         await expect.poll(() => uploadRequests.at(-1)).toBe("POST");
         await page.getByRole("button", { name: "查看王圻版本 1" }).click();
         await expect(page.getByText("历史：历史王圻文档")).toBeVisible();
-        await page.getByRole("button", { name: "恢复王圻版本 1" }).click();
+        await page.getByTestId("wangqi-version-restore-9001-button").click();
         await page.getByRole("button", { name: /^\s*恢\s*复\s*$/ }).click();
         await expect
             .poll(() => resetRequests.at(-1))

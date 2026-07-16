@@ -90,7 +90,7 @@ export const SancaiCatalogTreePanel = ({
                     <Text strong>{title}</Text>
                 </KuzhambuSpace>
                 <KuzhambuButton
-                    name="刷新三才图会目录树"
+                    testId="classics-sancai-sancai-catalog-tree-action-button"
                     className="sancai-catalog-refresh"
                     icon={<ReloadOutlined />}
                     loading={isRefreshing}

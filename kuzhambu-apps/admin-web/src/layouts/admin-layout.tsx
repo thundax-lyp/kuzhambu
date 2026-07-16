@@ -17,7 +17,7 @@ import {
     TeamOutlined,
     UserOutlined
 } from "@ant-design/icons";
-import { Alert, App, Avatar, Button, Dropdown, Layout, Menu, Typography } from "antd";
+import { App, Avatar, Button, Dropdown, Layout, Menu, Typography } from "antd";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { MenuProps } from "antd";
 import { useEffect, useState } from "react";
@@ -37,6 +37,7 @@ import {
     listCurrentUserPerms
 } from "../service/current-user-service";
 import { getStoredTheme, setAdminTheme, subscribeAdminThemeChange } from "../theme/theme-storage";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
@@ -402,7 +403,7 @@ export const AdminLayout = () => {
                 <div className="admin-content-grid">
                     <Content className="workspace">
                         {currentUserInfoQuery.isError ? (
-                            <Alert
+                            <KuzhambuAlert
                                 type="warning"
                                 showIcon
                                 title="当前用户信息加载失败"
@@ -411,7 +412,7 @@ export const AdminLayout = () => {
                             />
                         ) : null}
                         {currentUserMenusQuery.isError ? (
-                            <Alert
+                            <KuzhambuAlert
                                 type="warning"
                                 showIcon
                                 title="权限菜单加载失败"
@@ -420,7 +421,7 @@ export const AdminLayout = () => {
                             />
                         ) : null}
                         {currentUserPermsQuery.isError ? (
-                            <Alert
+                            <KuzhambuAlert
                                 type="warning"
                                 showIcon
                                 title="权限字符串加载失败"
