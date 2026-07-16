@@ -136,6 +136,9 @@ describe("SancaiPage", () => {
 
         expect(await screen.findByRole("heading", { name: "三才图会" })).toBeTruthy();
         expect(await screen.findByText("13 条 / 配图 9")).toBeTruthy();
+        expect((await screen.findByAltText("天图")).getAttribute("src")).toBe(
+            "/kuzhambu-api/api/portal/classics/sancai/images/1001/8001/content"
+        );
         await user.click(await screen.findByRole("button", { name: /天地/ }));
         await user.click(await screen.findByRole("button", { name: "卷一" }));
 
@@ -148,7 +151,7 @@ describe("SancaiPage", () => {
         });
         expect(within(detail).getByText("天文")).toBeTruthy();
         expect(within(detail).getByAltText("天图").getAttribute("src")).toBe(
-            "/api/portal/classics/sancai/images/1001/8001/content"
+            "/kuzhambu-api/api/portal/classics/sancai/images/1001/8001/content"
         );
         expect(within(detail).getByText("天图视觉描述")).toBeTruthy();
     });
