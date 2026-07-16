@@ -2,7 +2,7 @@
 
 ## Purpose
 
-本文档定义 Classics 古籍域数据设计，覆盖三才图会、王圻文档、明代习俗、内容标签、问答对、版本、导出、静态展示页面和分享。
+本文档定义 Classics 古籍域数据设计，覆盖三才图会、王圻文档、明代习俗、内容标签、问答对、版本、导出、portal 在线展示和分享。
 
 设计约束：每个持久化字段必须能追溯到原始需求中的内容展示、筛选、状态、版本、导出、分享或访问统计需求；不从既有错误 SQL 或初始化数据反推字段。
 
@@ -135,21 +135,11 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 
 约束：`id` 主键；`(entry_id, version_no)` 唯一。索引：`(entry_id, current_used)`、`status`。
 
-### classics_sancai_showcase
+### classics_sancai_portal_view
 
-需求来源：三才图会静态展示页面生成、范围、生成时间、条目数量、私有内容风险提示、产物下载。静态展示生成记录属于后台全局记录，不按用户隔离。
+需求来源：三才图会 portal 在线展示。portal 直接读取公开且已发布的三才图会门类、卷和条目，不生成静态展示包，不维护展示包任务记录。
 
-| Column | Type | Key | Requirement Source |
-| --- | --- | --- | --- |
-| `id` | `bigint` | PK, AUTO_INCREMENT | 静态展示生成记录身份 |
-| `requested_at` | `datetime(3)` | KEY | 展示生成时间 |
-| `status` | `varchar(16)` | KEY | 生成状态 |
-| `scope_json` | `json` |  | 生成范围快照 |
-| `storage_object_id` | `bigint` |  | 静态页面产物 Storage 对象 |
-| `entry_count` | `int` |  | 条目数量展示 |
-| `visibility_risk_status` | `varchar(16)` |  | 可见性风险状态，例如 `PUBLIC_ONLY`、`CONTAINS_PRIVATE` |
-
-约束：`id` 主键。索引：`requested_at`、`status`。
+约束：portal 展示数据来自 `classics_sancai_category`、`classics_sancai_volume`、`classics_sancai_entry`、`classics_sancai_entry_image` 和视觉资产表；展示查询必须过滤 `lifecycle_status = PUBLISHED` 且 `visibility = PUBLIC`。
 
 ### classics_wangqi_document
 

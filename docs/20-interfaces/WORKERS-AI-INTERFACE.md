@@ -182,10 +182,8 @@ Health 接口不得检查数据库、Redis 或 MQ。
   "render": {
     "endpoints": [
       "/internal/render/classics-export",
-      "/internal/render/sancai-showcase",
       "/internal/render/operations-report",
       "/internal/render/classics-export/stream",
-      "/internal/render/sancai-showcase/stream",
       "/internal/render/operations-report/stream"
     ],
     "stream": true,

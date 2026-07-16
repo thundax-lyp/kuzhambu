@@ -17,7 +17,7 @@ Workers 是无状态执行器，负责 AI 编排执行、流式输出转发、�
 - 支持同步响应和流式响应。
 - 支持由 Java servers 编排的异步任务单元执行。
 - AI 翻译、摘要、版本摘要、标签、问答对、查询理解、回答生成、实体关系抽取、图片理解、图片生成、视觉描述、信息融合、条目拆分、知识图谱抽取、世系图抽取和提示词优化建议。
-- Classics 导出、三才图会静态展示页、Operations 报表等文件渲染和格式加工。
+- Classics 导出、Operations 报表等文件渲染和格式加工。
 - 请求级临时文件读取、处理和清理。
 - 运行日志、请求追踪标识透传、执行耗时和 token 或成本用量摘要返回。
 
@@ -77,7 +77,6 @@ AI 执行接口示例：
 文件和渲染接口示例：
 
 - `POST /internal/render/classics-export`
-- `POST /internal/render/sancai-showcase`
 - `POST /internal/render/operations-report`
 
 健康和能力接口示例：
@@ -210,7 +209,7 @@ Classics 消费 AI 域和 Workers 生成能力，但拥有正式古籍内容。
 - 翻译、摘要、标签、问答对、图片理解、视觉资产和条目拆分结果必须先进入 AI 候选区。
 - Classics 负责用户确认、拒绝、编辑后应用、正式内容写入、版本记录和业务审计。
 - Classics 负责导出范围、权限过滤、私有内容确认和导出记录。
-- Workers 只生成导出文件、视觉描述、图片理解 Markdown、静态展示页面或其他产物内容。
+- Workers 只生成导出文件、视觉描述、图片理解 Markdown 或其他产物内容。
 
 ### Knowledge
 
@@ -309,7 +308,7 @@ System 拥有认证、权限和业务审计。
 
 - [ARCHITECTURE.md](../00-governance/ARCHITECTURE.md)：定义 `kuzhambu-workers/` 工程组和 Python 3.10 基线。
 - [AI-REQUIREMENTS.md](./AI-REQUIREMENTS.md)：AI 配置、提示词、候选结果和调用统计归 AI 域。
-- [CLASSICS-REQUIREMENTS.md](./CLASSICS-REQUIREMENTS.md)：古籍正式内容、导出、静态展示和分享归 Classics 域。
+- [CLASSICS-REQUIREMENTS.md](./CLASSICS-REQUIREMENTS.md)：古籍正式内容、导出、portal 展示和分享归 Classics 域。
 - [KNOWLEDGE-REQUIREMENTS.md](./KNOWLEDGE-REQUIREMENTS.md)：标签、实体关系和图谱正式结果归 Knowledge 域。
 - [DISCOVERY-REQUIREMENTS.md](./DISCOVERY-REQUIREMENTS.md)：搜索、问答会话、来源和调试信息归 Discovery 域。
 - [OPERATIONS-REQUIREMENTS.md](./OPERATIONS-REQUIREMENTS.md)：报表、长任务和维护记录归 Operations 域。
