@@ -1,5 +1,6 @@
-import { Form, Input, Modal, Select } from "antd";
+import { Form, Input, Select } from "antd";
 import { useState } from "react";
+import { KuzhambuModal } from "@/components/kuzhambu-modal";
 import type { DictItem } from "@/types/dict";
 import { toVolumeFormValues, type SancaiVolumeFormValues } from "./sancai-form-values";
 import type { SancaiCategoryRecord, SancaiVolumeRecord } from "../sancai-types";
@@ -33,7 +34,7 @@ export const SancaiVolumeModel = ({
     );
 
     return (
-        <Modal
+        <KuzhambuModal
             title={volume ? "编辑卷目" : "新增卷目"}
             open
             footer={
@@ -68,7 +69,7 @@ export const SancaiVolumeModel = ({
                     }))
                 }
             />
-        </Modal>
+        </KuzhambuModal>
     );
 };
 

@@ -1,6 +1,6 @@
 import { Empty, Image, Typography } from "antd";
 import { useMemo, useState } from "react";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
+import { KuzhambuModal } from "@/components/kuzhambu-modal";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import * as entryService from "../services/sancai-entry-service";
 import type { SancaiEntryImageRecord } from "../sancai-types";
@@ -59,14 +59,15 @@ export const SancaiEntryImagePreview = ({
     const hasMultipleImages = orderedImages.length > 1;
 
     return (
-        <KuzhambuDrawer
-            title="配图预览"
+        <KuzhambuModal
+            title="图片预览"
             open={openImageId !== null}
-            size="middle"
+            footer={null}
+            width={760}
             destroyOnHidden
-            onClose={onClose}
+            onCancel={onClose}
         >
-            <section className="sancai-image-preview" aria-label="配图预览">
+            <section className="sancai-image-preview" aria-label="图片预览">
                 {activeImage && previewUrl ? (
                     <>
                         <div className="sancai-image-preview-main">
@@ -119,9 +120,9 @@ export const SancaiEntryImagePreview = ({
                         </KuzhambuSpace>
                     </>
                 ) : (
-                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无可预览配图" />
+                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无可预览图片" />
                 )}
             </section>
-        </KuzhambuDrawer>
+        </KuzhambuModal>
     );
 };

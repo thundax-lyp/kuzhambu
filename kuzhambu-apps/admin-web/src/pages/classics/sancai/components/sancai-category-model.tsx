@@ -1,5 +1,6 @@
-import { Form, Input, Modal, Select } from "antd";
+import { Form, Input, Select } from "antd";
 import { useState } from "react";
+import { KuzhambuModal } from "@/components/kuzhambu-modal";
 import type { DictItem } from "@/types/dict";
 import { toCategoryFormValues, type SancaiCategoryFormValues } from "./sancai-form-values";
 import type { SancaiCategoryRecord } from "../sancai-types";
@@ -29,7 +30,7 @@ export const SancaiCategoryModel = ({
     );
 
     return (
-        <Modal
+        <KuzhambuModal
             title={category ? "编辑门类" : "新增门类"}
             open
             footer={
@@ -86,6 +87,6 @@ export const SancaiCategoryModel = ({
                     />
                 </Form.Item>
             </Form>
-        </Modal>
+        </KuzhambuModal>
     );
 };

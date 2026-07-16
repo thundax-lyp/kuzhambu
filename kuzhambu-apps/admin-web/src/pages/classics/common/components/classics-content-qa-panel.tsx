@@ -1,7 +1,8 @@
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
-import { App, Card, Empty, Form, Input, Modal, Select } from "antd";
+import { App, Card, Empty, Form, Input, Select } from "antd";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { KuzhambuModal } from "@/components/kuzhambu-modal";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
 import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
@@ -312,7 +313,7 @@ export const ClassicsContentQaPanel = ({
                     onSort={submitSort}
                 />
 
-                <Modal
+                <KuzhambuModal
                     destroyOnHidden
                     okButtonProps={{
                         loading: addMutation.isPending || updateMutation.isPending
@@ -365,7 +366,7 @@ export const ClassicsContentQaPanel = ({
                             />
                         </Form.Item>
                     </Form>
-                </Modal>
+                </KuzhambuModal>
             </KuzhambuSpace>
         </Card>
     );
