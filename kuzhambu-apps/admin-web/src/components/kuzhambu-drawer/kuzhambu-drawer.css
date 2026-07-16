@@ -113,18 +113,21 @@ html[data-theme="dark"] .kuzhambu-drawer-root .ant-drawer-mask {
 }
 
 .kuzhambu-drawer-root .ant-drawer-footer {
-    padding: 14px 20px 18px;
+    padding: 12px 20px;
 }
 
 .kuzhambu-drawer-root .ant-drawer-footer > div {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-end;
 }
 
 .kuzhambu-drawer-root .ant-drawer-footer .ant-btn {
-    width: 100%;
-    min-height: 40px;
+    width: auto;
+    min-width: 88px;
+    min-height: 36px;
 }
 
 .kuzhambu-drawer-root .ant-drawer-footer .ant-btn-primary {
