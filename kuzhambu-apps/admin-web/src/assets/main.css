@@ -139,69 +139,12 @@ button {
     isolation: isolate;
 }
 
-.sidebar-ink {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    background-repeat: no-repeat;
-    background-position: center bottom;
-    background-size: cover;
-    border-radius: inherit;
-    filter: grayscale(0.22) contrast(0.92) saturate(0.78);
-    mix-blend-mode: multiply;
-    opacity: 0;
-    animation: sidebar-ink-fade 14s ease-in-out infinite;
-}
-
-.sidebar-ink-1 {
-    background-image:
-        linear-gradient(180deg, transparent 0%, var(--surface-panel) 96%),
-        url("/ink-sidebar-admin-dashboard.png");
-}
-
-.sidebar-ink-2 {
-    background-image:
-        linear-gradient(180deg, transparent 0%, var(--surface-panel) 96%),
-        url("/ink-sidebar-knowledge-graph.png");
-    animation-delay: 7s;
-}
-
-html[data-theme="dark"] .sidebar-ink {
-    filter: grayscale(1) invert(1) sepia(0.18) saturate(0.72) hue-rotate(166deg) brightness(0.46)
-        contrast(0.92);
-    mix-blend-mode: lighten;
-    opacity: 0;
-}
-
 .sidebar .ant-layout-sider-children {
     position: static;
     display: flex;
     flex-direction: column;
     min-height: 100%;
     overflow: hidden;
-}
-
-@keyframes sidebar-ink-fade {
-    0%,
-    30% {
-        opacity: 1;
-    }
-
-    44%,
-    100% {
-        opacity: 0;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .sidebar-ink {
-        animation: none;
-    }
-
-    .sidebar-ink-1 {
-        opacity: 1;
-    }
 }
 
 .brand {
@@ -369,30 +312,6 @@ html[data-theme="dark"] .sidebar-ink {
     min-height: calc(100vh - 120px);
     min-width: 0;
     border-radius: 10px;
-}
-
-.admin-content-grid::before {
-    position: fixed;
-    right: 0;
-    bottom: 0;
-    z-index: 0;
-    width: min(78vw, 1160px);
-    height: min(64vh, 720px);
-    pointer-events: none;
-    content: "";
-    background:
-        linear-gradient(180deg, transparent 0%, var(--surface-page) 100%),
-        url("/ink-workspace.jpg") right bottom / contain no-repeat;
-    filter: grayscale(0.35) contrast(0.95) saturate(0.74);
-    mix-blend-mode: multiply;
-    opacity: 0.24;
-}
-
-html[data-theme="dark"] .admin-content-grid::before {
-    filter: grayscale(1) invert(1) sepia(0.18) saturate(0.72) hue-rotate(166deg) brightness(0.48)
-        contrast(0.9);
-    mix-blend-mode: lighten;
-    opacity: 0.16;
 }
 
 .workspace > * {

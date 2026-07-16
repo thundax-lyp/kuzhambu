@@ -83,7 +83,6 @@ html[data-theme="dark"] .sancai-page {
     align-content: stretch;
     min-width: 0;
     gap: 10px;
-    padding-right: 12px;
     overflow: hidden;
 }
 

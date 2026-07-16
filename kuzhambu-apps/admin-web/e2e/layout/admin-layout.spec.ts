@@ -202,7 +202,7 @@ const readUserDepartmentSplitMetrics = async (page: Page) => {
     });
 };
 
-const readSidebarInkMetrics = async (page: Page) => {
+const readSidebarMetrics = async (page: Page) => {
     return page.evaluate(() => {
         const rect = (selector: string) => {
             const element = document.querySelector(selector);
@@ -219,14 +219,7 @@ const readSidebarInkMetrics = async (page: Page) => {
                 width: bounds.width
             };
         };
-        const ink = document.querySelector(".sidebar-ink-1");
-        if (!ink) {
-            throw new Error(".sidebar-ink-1 not found");
-        }
-
         return {
-            ink: rect(".sidebar-ink-1"),
-            opacity: Number(getComputedStyle(ink).opacity),
             sidebar: rect(".sidebar")
         };
     });
@@ -534,17 +527,15 @@ test.describe("admin layout", () => {
         await expectNoPageHorizontalOverflow(page);
     });
 
-    test("stretches the ink sidebar background across the desktop sidebar", async ({ page }) => {
+    test("keeps the desktop sidebar aligned to the viewport chrome", async ({ page }) => {
         await page.setViewportSize({ width: 1280, height: 800 });
         await page.goto("/dashboard");
 
         await expect(page.getByRole("menuitem", { name: "仪表盘" })).toBeVisible();
-        const metrics = await readSidebarInkMetrics(page);
-        expect(Math.abs(metrics.ink.top - metrics.sidebar.top)).toBeLessThanOrEqual(1);
-        expect(Math.abs(metrics.ink.right - metrics.sidebar.right)).toBeLessThanOrEqual(1);
-        expect(Math.abs(metrics.ink.bottom - metrics.sidebar.bottom)).toBeLessThanOrEqual(1);
-        expect(Math.abs(metrics.ink.left - metrics.sidebar.left)).toBeLessThanOrEqual(1);
-        expect(metrics.opacity).toBe(1);
+        const metrics = await readSidebarMetrics(page);
+        expect(metrics.sidebar.top).toBe(12);
+        expect(metrics.sidebar.left).toBe(12);
+        expect(metrics.sidebar.height).toBe(776);
     });
 
     test("uses the padded viewport width when the mobile menu is closed or open", async ({
