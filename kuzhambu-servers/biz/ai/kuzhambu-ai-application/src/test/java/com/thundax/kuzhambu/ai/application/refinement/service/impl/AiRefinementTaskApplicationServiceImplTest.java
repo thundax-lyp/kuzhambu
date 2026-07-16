@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.Test;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 class AiRefinementTaskApplicationServiceImplTest {
 
@@ -66,6 +67,30 @@ class AiRefinementTaskApplicationServiceImplTest {
         assertEquals("WORKER_STREAM", completed.getFailureStage());
         assertEquals("WORKER_PROTOCOL_FAILURE", completed.getErrorType());
         assertEquals("Worker stream ended without completed event", completed.getErrorMessage());
+    }
+
+    @Test
+    void addTaskShouldExecuteOnlyAfterTransactionCommitWhenSynchronizationIsActive() {
+        RecordingTaskRepository repository = new RecordingTaskRepository();
+        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(
+                new AiCandidateResult(101L, 201L, "SUCCEEDED", "translate", null, "TEXT", "译文", null, null));
+        AiRefinementTaskApplicationServiceImpl service =
+                new AiRefinementTaskApplicationServiceImpl(repository, refinementService);
+
+        TransactionSynchronizationManager.initSynchronization();
+        AiRefinementTask accepted;
+        try {
+            accepted = service.addTask(command("translate"));
+            assertEquals("PENDING", repository.getTask(accepted.getTaskId()).getStatus());
+            TransactionSynchronizationManager.getSynchronizations()
+                    .forEach(synchronization -> synchronization.afterCommit());
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+
+        AiRefinementTask completed = awaitTerminal(repository, accepted.getTaskId());
+        assertEquals("SUCCEEDED", completed.getStatus());
+        assertEquals("译文", completed.getResultPreview());
     }
 
     private AiRefinementRequestCommand command(String capability) {

@@ -581,7 +581,7 @@ const openSelectAndChoose = async (label: string, optionText: string) => {
 
 const switchEntryDrawerSection = async (
     user: ReturnType<typeof userEvent.setup>,
-    sectionName: "基础信息" | "视觉处理" | "AI 精修" | "标签" | "问答" | "版本"
+    sectionName: "基础信息" | "内容处理" | "视觉处理" | "标签" | "问答" | "版本"
 ) => {
     await user.click(
         await screen.findByText(sectionName, {
@@ -600,7 +600,7 @@ const openVisualAssetSection = async (user: ReturnType<typeof userEvent.setup>) 
 };
 
 const openRefinementSection = async (user: ReturnType<typeof userEvent.setup>) => {
-    await switchEntryDrawerSection(user, "AI 精修");
+    await switchEntryDrawerSection(user, "内容处理");
 };
 
 const openTagSection = async (user: ReturnType<typeof userEvent.setup>) => {
@@ -888,12 +888,20 @@ describe("SancaiEntryPanel sharing", () => {
             contentId: 3001,
             objectId: 5002,
             requestedBy: 99,
-            serviceId: 900001,
-            serviceRole: "PRIMARY",
-            modelId: 900101,
-            modelName: "CTYUN-CX-Qwen3.5-397B-A17B",
             locale: "zh-CN"
         });
+        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
+            "serviceId"
+        );
+        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
+            "serviceRole"
+        );
+        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
+            "modelId"
+        );
+        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
+            "modelName"
+        );
     }, 30000);
 
     it("shows AI stream panel after creating image analysis task", async () => {
@@ -1383,8 +1391,8 @@ describe("SancaiEntryPanel sharing", () => {
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
         await user.click(await within(entryTable).findByRole("button", { name: "编辑 天地" }));
-        await openRefinementSection(user);
-        await user.click(await screen.findByRole("button", { name: "创建译文任务" }));
+        await user.click(await screen.findByRole("button", { name: "AI翻译" }));
+        await user.click(await screen.findByRole("button", { name: "翻译" }));
 
         await waitFor(() => {
             expect(aiRefinementTaskService.createTask).toHaveBeenCalled();
@@ -1396,12 +1404,20 @@ describe("SancaiEntryPanel sharing", () => {
             contentType: "SANCAI_ENTRY",
             contentId: 3001,
             requestedBy: 99,
-            serviceId: 900001,
-            serviceRole: "PRIMARY",
-            modelId: 900102,
-            modelName: "CTYUN-bot-DeepSeek-V3.2-pro",
             locale: "zh-CN"
         });
+        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
+            "serviceId"
+        );
+        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
+            "serviceRole"
+        );
+        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
+            "modelId"
+        );
+        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
+            "modelName"
+        );
     }, 30000);
 
     it("shows expired export task as disabled download", async () => {

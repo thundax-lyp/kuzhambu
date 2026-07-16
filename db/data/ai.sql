@@ -67,6 +67,8 @@ INSERT INTO `ai_capability_mapping` (
     (910104, 'classics', 'image_analysis', 900101, 1, '2026-02-27 04:00:00.000'),
     (910105, 'classics', 'translate', 900102, 1, '2026-02-27 04:00:00.000'),
     (910106, 'classics', 'image_gen', 900201, 1, '2026-02-27 04:00:00.000'),
+    (910107, 'classics', 'fusion', 900102, 1, '2026-02-27 04:00:00.000'),
+    (910108, 'classics', 'visual', 900102, 1, '2026-02-27 04:00:00.000'),
     (910201, 'discovery', 'query_understanding', 900102, 1, '2026-02-27 04:00:00.000'),
     (910202, 'discovery', 'answer_generation', 900102, 1, '2026-02-27 04:00:00.000')
 ON DUPLICATE KEY UPDATE
@@ -83,6 +85,8 @@ INSERT INTO `ai_action_status` (
     (920104, 'classics', 'image_analysis', 1, NULL, '2026-02-27 04:00:00.000'),
     (920105, 'classics', 'translate', 1, NULL, '2026-02-27 04:00:00.000'),
     (920106, 'classics', 'image_gen', 1, NULL, '2026-02-27 04:00:00.000'),
+    (920107, 'classics', 'fusion', 1, NULL, '2026-02-27 04:00:00.000'),
+    (920108, 'classics', 'visual', 1, NULL, '2026-02-27 04:00:00.000'),
     (920201, 'discovery', 'query_understanding', 1, NULL, '2026-02-27 04:00:00.000'),
     (920202, 'discovery', 'answer_generation', 1, NULL, '2026-02-27 04:00:00.000')
 ON DUPLICATE KEY UPDATE
@@ -101,7 +105,9 @@ INSERT INTO `ai_prompt_template` (
     (930105, 'discovery', 'answer_generation', 'Discovery Default Answer Generation', '知识发现默认来源融合回答提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
     (930106, 'classics', 'translate', 'Classics Default Translate', '古籍文言文默认现代中文翻译提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
     (930107, 'classics', 'image_analysis', 'Classics Default Image Analysis', '古籍图像默认解读提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
-    (930108, 'classics', 'image_gen', 'Classics Default Image Generation', '古籍视觉资产默认文生图提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000')
+    (930108, 'classics', 'image_gen', 'Classics Default Image Generation', '古籍视觉资产默认文生图提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
+    (930109, 'classics', 'fusion', 'Classics Default Visual Fusion', '古籍图文信息融合默认提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
+    (930110, 'classics', 'visual', 'Classics Default Visual Description', '古籍视觉描述默认提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000')
 ON DUPLICATE KEY UPDATE
     `scope` = VALUES(`scope`),
     `capability` = VALUES(`capability`),
@@ -122,7 +128,9 @@ INSERT INTO `ai_prompt_version` (
     (940105, 930105, 1, '[{"role":"system","content":"你是古籍知识发现的回答助手，负责根据检索来源生成可信中文回答。\\n\\n规则：\\n1. 只依据 sources 回答，不得编造来源之外的信息。\\n2. 如果来源不足以回答，answerStatus 设为 INSUFFICIENT_SOURCE，并说明缺口。\\n3. 回答应简洁、清楚，必要时指出不同来源之间的差异。\\n4. 输出必须是 JSON，不输出 Markdown。"},{"role":"user","content":"用户问题：{{question}}\\n回答风格：{{answerStyle}}\\n\\n检索来源：\\n{{sources}}\\n\\n请返回 JSON：\\n{\\n  \\"answer\\": \\"回答正文\\",\\n  \\"answerStatus\\": \\"ANSWERED\\",\\n  \\"sourceSummaries\\": [\\"来源摘要\\"]\\n}"}]', '[{"name":"question","required":true,"description":"用户问题"},{"name":"sources","required":true,"description":"检索来源列表"},{"name":"answerStyle","required":false,"description":"回答风格约束"}]', '{"type":"object","properties":{"answer":{"type":"string"},"answerStatus":{"type":"string"},"sourceSummaries":{"type":"array","items":{"type":"string"}}},"required":["answer","answerStatus","sourceSummaries"]}', '930105:current', 'Initial discovery default answer generation prompt.', '2026-02-27 04:00:00.000'),
     (940106, 930106, 1, '[{"role":"system","content":"你是古籍整理助手，负责把古文或文言文翻译成现代中文。\\n\\n规则：\\n1. 逐句理解后翻译，保持原意，不擅自增删事实。\\n2. 专名、官名、地名、书名不确定时保留原词，避免误译。\\n3. 遇到残缺、 OCR 错误或无法判断的内容，保守处理，不编造。\\n4. 只输出译文正文，不输出注释、说明、标题或“译文：”前缀。"},{"role":"user","content":"内容类型：{{contentType}}\\n标题：{{title}}\\n上下文：{{contextPath}}\\n\\n原文：\\n{{sourceText}}\\n\\n请翻译为现代中文。"}]', '[{"name":"contentType","required":true,"description":"内容类型"},{"name":"title","required":false,"description":"标题"},{"name":"contextPath","required":false,"description":"卷册或上下文路径"},{"name":"sourceText","required":true,"description":"待翻译原文"}]', '{"type":"text"}', '930106:current', 'Initial classics default translate prompt.', '2026-02-27 04:00:00.000'),
     (940107, 930107, 1, '[{"role":"system","content":"你是古籍图像解读助手，负责描述和解释古籍插图、版刻图、器物图或人物图。\\n\\n规则：\\n1. 区分可见事实和推测，不把不确定内容说成事实。\\n2. 优先描述主体、构图、文字标注、器物形态、人物关系和可能用途。\\n3. 如果图像信息不足，说明无法判断的部分。\\n4. 输出 Markdown，可使用简短小标题。"},{"role":"user","content":"标题：{{title}}\\n\\n相关上下文：\\n{{contextText}}\\n\\n图像描述：\\n{{imageDescription}}\\n\\n请给出面向古籍整理场景的图像解读，包括可见内容、可能含义和不确定点。"}]', '[{"name":"title","required":false,"description":"图像或条目标题"},{"name":"contextText","required":false,"description":"相关文字上下文"},{"name":"imageDescription","required":false,"description":"模型或人工提供的图像描述"}]', '{"type":"text"}', '930107:current', 'Initial classics default image analysis prompt.', '2026-02-27 04:00:00.000'),
-    (940108, 930108, 1, '[{"role":"system","content":"你是古籍视觉资产提示词编写助手，负责把古籍条目转换成适合文生图模型的中文提示词。\\n\\n规则：\\n1. 提示词应描述主体、场景、构图、材质、光线和风格。\\n2. 不添加输入中没有依据的具体人物身份、年代事件或敏感内容。\\n3. 默认风格应接近古籍插图、博物馆图录或克制的学术视觉，不使用夸张奇幻风。\\n4. 只输出最终图像生成提示词，不输出解释。"},{"role":"user","content":"标题：{{title}}\\n\\n条目内容：\\n{{sourceText}}\\n\\n视觉风格约束：\\n{{styleGuide}}\\n\\n请生成一段可直接用于文生图模型的中文提示词。"}]', '[{"name":"title","required":false,"description":"条目标题"},{"name":"sourceText","required":false,"description":"原文或说明"},{"name":"styleGuide","required":false,"description":"视觉风格约束"}]', '{"type":"text"}', '930108:current', 'Initial classics default image generation prompt.', '2026-02-27 04:00:00.000')
+    (940108, 930108, 1, '[{"role":"system","content":"你是古籍视觉资产提示词编写助手，负责把古籍条目转换成适合文生图模型的中文提示词。\\n\\n规则：\\n1. 提示词应描述主体、场景、构图、材质、光线和风格。\\n2. 不添加输入中没有依据的具体人物身份、年代事件或敏感内容。\\n3. 默认风格应接近古籍插图、博物馆图录或克制的学术视觉，不使用夸张奇幻风。\\n4. 只输出最终图像生成提示词，不输出解释。"},{"role":"user","content":"标题：{{title}}\\n\\n条目内容：\\n{{sourceText}}\\n\\n视觉风格约束：\\n{{styleGuide}}\\n\\n请生成一段可直接用于文生图模型的中文提示词。"}]', '[{"name":"title","required":false,"description":"条目标题"},{"name":"sourceText","required":false,"description":"原文或说明"},{"name":"styleGuide","required":false,"description":"视觉风格约束"}]', '{"type":"text"}', '930108:current', 'Initial classics default image generation prompt.', '2026-02-27 04:00:00.000'),
+    (940109, 930109, 1, '[{"role":"system","content":"你是古籍图文信息融合助手，负责把条目原文、译文和图片理解结果整合为一段可靠的视觉资料说明。\\n\\n规则：\\n1. 明确区分文字依据、图像依据和推测。\\n2. 不添加输入中没有依据的人物、年代、地点或用途。\\n3. 输出应适合后续视觉描述和资料展示。\\n4. 输出 Markdown，可使用简短小标题。"},{"role":"user","content":"标题：{{title}}\\n\\n原文：\\n{{sourceText}}\\n\\n译文：\\n{{translationText}}\\n\\n图片理解：\\n{{imageAnalysis}}\\n\\n请融合上述信息，形成面向古籍视觉资产的说明。"}]', '[{"name":"title","required":false,"description":"条目标题"},{"name":"sourceText","required":false,"description":"原文"},{"name":"translationText","required":false,"description":"译文"},{"name":"imageAnalysis","required":false,"description":"图片理解结果"}]', '{"type":"text"}', '930109:current', 'Initial classics default visual fusion prompt.', '2026-02-27 04:00:00.000'),
+    (940110, 930110, 1, '[{"role":"system","content":"你是古籍视觉描述助手，负责把融合后的图文资料整理成可用于展示和后续生图的视觉描述。\\n\\n规则：\\n1. 描述主体、构图、器物、人物姿态、环境和风格。\\n2. 保持克制、准确，不使用夸张玄幻表达。\\n3. 不引入输入外事实。\\n4. 只输出视觉描述正文。"},{"role":"user","content":"标题：{{title}}\\n\\n融合说明：\\n{{fusionText}}\\n\\n风格约束：\\n{{styleGuide}}\\n\\n请生成一段视觉描述。"}]', '[{"name":"title","required":false,"description":"条目标题"},{"name":"fusionText","required":false,"description":"融合说明"},{"name":"styleGuide","required":false,"description":"视觉风格约束"}]', '{"type":"text"}', '930110:current', 'Initial classics default visual description prompt.', '2026-02-27 04:00:00.000')
 ON DUPLICATE KEY UPDATE
     `message_templates_json` = VALUES(`message_templates_json`),
     `variables_snapshot_json` = VALUES(`variables_snapshot_json`),
@@ -160,7 +168,14 @@ INSERT INTO `ai_prompt_variable` (
     (960503, 930107, 'imageDescription', 0, '模型或人工提供的图像描述', 960503),
     (960601, 930108, 'title', 0, '条目标题', 960601),
     (960602, 930108, 'sourceText', 0, '原文或说明', 960602),
-    (960603, 930108, 'styleGuide', 0, '视觉风格约束', 960603)
+    (960603, 930108, 'styleGuide', 0, '视觉风格约束', 960603),
+    (960701, 930109, 'title', 0, '条目标题', 960701),
+    (960702, 930109, 'sourceText', 0, '原文', 960702),
+    (960703, 930109, 'translationText', 0, '译文', 960703),
+    (960704, 930109, 'imageAnalysis', 0, '图片理解结果', 960704),
+    (960801, 930110, 'title', 0, '条目标题', 960801),
+    (960802, 930110, 'fusionText', 0, '融合说明', 960802),
+    (960803, 930110, 'styleGuide', 0, '视觉风格约束', 960803)
 ON DUPLICATE KEY UPDATE
     `required` = VALUES(`required`),
     `description` = VALUES(`description`),

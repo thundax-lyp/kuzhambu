@@ -12,42 +12,8 @@ import type { SancaiEntryRecord, SancaiVisualAssetRecord } from "../sancai-types
 
 type RefinementCapability = "translate" | "summary" | SancaiVisualAssetRefinementCapability;
 
-const DEFAULT_TEXT_REFINEMENT_MODEL_ID = 900102;
-const DEFAULT_TEXT_REFINEMENT_SERVICE_ID = 900001;
-const DEFAULT_TEXT_REFINEMENT_SERVICE_ROLE = "PRIMARY";
-const DEFAULT_IMAGE_ANALYSIS_MODEL_ID = 900101;
-const DEFAULT_IMAGE_ANALYSIS_MODEL_NAME = "CTYUN-CX-Qwen3.5-397B-A17B";
-const DEFAULT_TEXT2IMAGE_MODEL_ID = 900201;
-const DEFAULT_TEXT2IMAGE_MODEL_NAME = "doubao-seedream-5-0-pro-260628";
-const DEFAULT_TEXT2IMAGE_SERVICE_ID = 900002;
-const DEFAULT_TEXT2IMAGE_SERVICE_ROLE = "TEXT2IMAGE";
-
 const isStreamRefinementCapability = (capability: string) => {
     return capability === "image_analysis" || capability === "image_gen";
-};
-
-const modelConfigForCapability = (capability: RefinementCapability) => {
-    if (capability === "image_gen") {
-        return {
-            serviceId: DEFAULT_TEXT2IMAGE_SERVICE_ID,
-            serviceRole: DEFAULT_TEXT2IMAGE_SERVICE_ROLE,
-            modelId: DEFAULT_TEXT2IMAGE_MODEL_ID,
-            modelName: DEFAULT_TEXT2IMAGE_MODEL_NAME
-        };
-    }
-    if (capability === "image_analysis") {
-        return {
-            serviceId: DEFAULT_TEXT_REFINEMENT_SERVICE_ID,
-            serviceRole: DEFAULT_TEXT_REFINEMENT_SERVICE_ROLE,
-            modelId: DEFAULT_IMAGE_ANALYSIS_MODEL_ID,
-            modelName: DEFAULT_IMAGE_ANALYSIS_MODEL_NAME
-        };
-    }
-    return {
-        serviceId: DEFAULT_TEXT_REFINEMENT_SERVICE_ID,
-        serviceRole: DEFAULT_TEXT_REFINEMENT_SERVICE_ROLE,
-        modelId: DEFAULT_TEXT_REFINEMENT_MODEL_ID
-    };
 };
 
 const createEventId = (prefix: string) => {
@@ -535,7 +501,6 @@ export const useSancaiEntryPanelState = ({
             if (sourceTaskId) {
                 setRetryingRefinementTaskId(sourceTaskId);
             }
-            const modelConfig = modelConfigForCapability(capability);
             createRefinementTaskMutation.mutate(
                 {
                     capability,
@@ -550,10 +515,6 @@ export const useSancaiEntryPanelState = ({
                             ? imageAnalysisObjectId
                             : null,
                     requestedBy: Number(currentUserId),
-                    serviceId: modelConfig.serviceId,
-                    serviceRole: modelConfig.serviceRole,
-                    modelId: modelConfig.modelId,
-                    modelName: modelConfig.modelName,
                     requestId: createEventId("sancai-task"),
                     traceId: createEventId("sancai-trace"),
                     promptMessagesJson: buildPromptMessagesJson(

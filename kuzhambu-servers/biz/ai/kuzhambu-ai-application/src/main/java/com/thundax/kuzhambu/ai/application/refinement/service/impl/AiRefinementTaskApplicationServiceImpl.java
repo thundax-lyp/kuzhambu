@@ -24,6 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Service
 @Transactional(readOnly = true)
@@ -77,7 +79,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         task.setRequestedAt(now);
         Long taskId = taskRepository.saveTask(task);
         task.setTaskId(taskId);
-        CompletableFuture.runAsync(() -> executeTaskSafely(taskId, command));
+        scheduleTaskExecution(taskId, command);
         return task;
     }
 
@@ -177,9 +179,28 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         if (latestTask == null || STATUS_CANCELLED.equals(latestTask.getStatus())) {
             return;
         }
+        latestTask.setServiceRole(command.getServiceRole());
+        latestTask.setModelId(command.getModelId());
+        if (!isBlank(command.getModelName())) {
+            latestTask.setModelName(command.getModelName());
+        }
         applyResult(latestTask, result);
         taskRepository.updateTask(latestTask);
         publishTerminalEvent(taskId, latestTask, result);
+    }
+
+    private void scheduleTaskExecution(Long taskId, AiRefinementRequestCommand command) {
+        Runnable task = () -> CompletableFuture.runAsync(() -> executeTaskSafely(taskId, command));
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            task.run();
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                task.run();
+            }
+        });
     }
 
     private void markFailedAfterUnexpectedException(Long taskId, RuntimeException exception) {
@@ -290,8 +311,6 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
                 || isBlank(command.getContentType())
                 || command.getContentId() == null
                 || command.getRequestedBy() == null
-                || command.getModelId() == null
-                || isBlank(command.getModelName())
                 || isBlank(command.getPromptMessagesJson())
                 || isBlank(command.getInputPayloadJson())) {
             throw new BizException("AI refinement task add command is incomplete");
