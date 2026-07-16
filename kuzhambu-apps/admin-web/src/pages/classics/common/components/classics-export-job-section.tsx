@@ -201,6 +201,7 @@ export const ClassicsExportJobSection = ({
                             key: "download",
                             text: "下载",
                             ariaLabel: `下载导出任务 ${job.id ?? "草稿"}`,
+                            testId: `classics-export-job-${job.id ?? "draft"}-download-button`,
                             disabled: !isDownloadableExport(job),
                             onClick: () => onDownload(job)
                         }
@@ -212,6 +213,7 @@ export const ClassicsExportJobSection = ({
                             text: "删除",
                             type: "danger",
                             ariaLabel: `删除导出任务 ${job.id ?? "草稿"}`,
+                            testId: `classics-export-job-${job.id ?? "draft"}-delete-button`,
                             onClick: () => onDelete(job)
                         });
                     }

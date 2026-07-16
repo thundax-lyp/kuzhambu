@@ -639,7 +639,7 @@ describe("SancaiEntryPanel sharing", () => {
         renderEntryPanel();
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByRole("button", { name: "分享 天地" }));
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-share-button"));
 
         await waitFor(() => {
             expect(shareService.create).toHaveBeenCalled();
@@ -713,21 +713,21 @@ describe("SancaiEntryPanel sharing", () => {
         renderEntryPanel();
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
-        const readEntryButton = (label: string) =>
-            entryTable.querySelector<HTMLButtonElement>(`button[aria-label="${label}"]`);
+        const readEntryButton = (testId: string) =>
+            within(entryTable).getByTestId(testId) as HTMLButtonElement;
         const readButtonByText = (text: string) =>
             [...document.querySelectorAll<HTMLButtonElement>("button")].find(
                 (button) => button.textContent?.replace(/\s/g, "") === text
             );
 
         await waitFor(() => {
-            expect(readEntryButton("分享 天地")).toBeDisabled();
+            expect(readEntryButton("sancai-entry-3001-share-button")).toBeDisabled();
         });
-        expect(readEntryButton("查看 天地")).toBeEnabled();
-        expect(readEntryButton("导出 天地")).toBeDisabled();
-        expect(readEntryButton("下线 天地")).toBeDisabled();
-        expect(readEntryButton("发布 地理")).toBeDisabled();
-        expect(readEntryButton("恢复发布 人物")).toBeDisabled();
+        expect(readEntryButton("sancai-entry-3001-view-button")).toBeEnabled();
+        expect(readEntryButton("sancai-entry-3001-export-button")).toBeDisabled();
+        expect(readEntryButton("sancai-entry-3001-lifecycle-button")).toBeDisabled();
+        expect(readEntryButton("sancai-entry-3002-lifecycle-button")).toBeDisabled();
+        expect(readEntryButton("sancai-entry-3003-lifecycle-button")).toBeDisabled();
         expect(readButtonByText("分享")).toBeDisabled();
         expect(readButtonByText("公开")).toBeDisabled();
         expect(readButtonByText("私有")).toBeDisabled();
@@ -752,9 +752,11 @@ describe("SancaiEntryPanel sharing", () => {
         renderEntryPanel();
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
-        expect(await within(entryTable).findByRole("button", { name: "发布 地理" })).toBeEnabled();
-        expect(within(entryTable).getByRole("button", { name: "下线 天地" })).toBeEnabled();
-        expect(within(entryTable).getByRole("button", { name: "恢复发布 人物" })).toBeEnabled();
+        expect(
+            await within(entryTable).findByTestId("sancai-entry-3002-lifecycle-button")
+        ).toBeEnabled();
+        expect(within(entryTable).getByTestId("sancai-entry-3001-lifecycle-button")).toBeEnabled();
+        expect(within(entryTable).getByTestId("sancai-entry-3003-lifecycle-button")).toBeEnabled();
         expect(
             [...entryTable.querySelectorAll<HTMLButtonElement>("button[aria-label$=' 天地']")]
                 .map((button) => button.getAttribute("aria-label"))
@@ -808,7 +810,9 @@ describe("SancaiEntryPanel sharing", () => {
         renderEntryPanel();
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByRole("button", { name: "发布 地理" }));
+        await user.click(
+            await within(entryTable).findByTestId("sancai-entry-3002-lifecycle-button")
+        );
 
         expect(confirmDangerMock).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -834,11 +838,11 @@ describe("SancaiEntryPanel sharing", () => {
         const invalidateSpy = vi.spyOn(client, "invalidateQueries");
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByRole("button", { name: "编辑 天地" }));
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
         await openVersionSection(user);
         expect(await screen.findByLabelText("三才图会版本历史面板")).toBeInTheDocument();
 
-        await user.click(within(entryTable).getByRole("button", { name: "下线 天地" }));
+        await user.click(within(entryTable).getByTestId("sancai-entry-3001-lifecycle-button"));
 
         await waitFor(() => {
             expect(entryService.changeLifecycleStatus).toHaveBeenCalled();
@@ -874,7 +878,7 @@ describe("SancaiEntryPanel sharing", () => {
         renderEntryPanel();
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByRole("button", { name: "编辑 天地" }));
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
 
         const visualAssetPanel = await openVisualAssetSection(user);
         fireEvent.click(
@@ -912,7 +916,7 @@ describe("SancaiEntryPanel sharing", () => {
         renderEntryPanel();
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByRole("button", { name: "编辑 天地" }));
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
 
         const visualAssetPanel = await openVisualAssetSection(user);
         fireEvent.click(
@@ -961,7 +965,7 @@ describe("SancaiEntryPanel sharing", () => {
         renderEntryPanel();
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByRole("button", { name: "编辑 天地" }));
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
 
         const visualAssetPanel = await openVisualAssetSection(user);
         await user.click(
@@ -1016,7 +1020,7 @@ describe("SancaiEntryPanel sharing", () => {
         renderEntryPanel();
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByRole("button", { name: "编辑 天地" }));
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
         await openRefinementSection(user);
 
         await waitFor(() => {
@@ -1030,7 +1034,9 @@ describe("SancaiEntryPanel sharing", () => {
         });
 
         const visualAssetPanel = await openVisualAssetSection(user);
-        await user.click(within(visualAssetPanel).getByRole("button", { name: "选择处理记录 1" }));
+        await user.click(
+            within(visualAssetPanel).getByTestId("sancai-visual-asset-5001-select-button")
+        );
         await openRefinementSection(user);
 
         await waitFor(() => {
@@ -1086,7 +1092,7 @@ describe("SancaiEntryPanel sharing", () => {
         renderEntryPanel();
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByRole("button", { name: "编辑 天地" }));
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
         await openRefinementSection(user);
 
         await waitFor(() => {
@@ -1119,7 +1125,7 @@ describe("SancaiEntryPanel sharing", () => {
         const invalidateSpy = vi.spyOn(client, "invalidateQueries");
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByRole("button", { name: "编辑 天地" }));
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
         await openRefinementSection(user);
 
         await waitFor(() => {
@@ -1193,7 +1199,7 @@ describe("SancaiEntryPanel sharing", () => {
         const invalidateSpy = vi.spyOn(client, "invalidateQueries");
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByRole("button", { name: "编辑 天地" }));
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
         await openRefinementSection(user);
 
         await waitFor(() => {
@@ -1272,7 +1278,7 @@ describe("SancaiEntryPanel sharing", () => {
         renderEntryPanel();
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByRole("button", { name: "编辑 天地" }));
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
 
         const visualAssetPanel = await openVisualAssetSection(user);
         expect(
@@ -1342,7 +1348,7 @@ describe("SancaiEntryPanel sharing", () => {
         renderEntryPanel();
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByRole("button", { name: "编辑 天地" }));
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
 
         await openVersionSection(user);
         expect(await screen.findByLabelText("三才图会版本历史面板")).toBeInTheDocument();
@@ -1373,7 +1379,7 @@ describe("SancaiEntryPanel sharing", () => {
         renderEntryPanel({ exportJobsDrawerOpen: true });
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByRole("button", { name: "导出 天地" }));
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-export-button"));
 
         await waitFor(() => {
             expect(exportService.create).toHaveBeenCalledWith({
@@ -1390,7 +1396,7 @@ describe("SancaiEntryPanel sharing", () => {
 
         const exportSection = await screen.findByLabelText("任务列表表格");
         expect(
-            await within(exportSection).findByRole("button", { name: /下\s*载/ })
+            await within(exportSection).findByTestId("classics-export-job-1001-download-button")
         ).toBeInTheDocument();
     });
 
@@ -1400,7 +1406,7 @@ describe("SancaiEntryPanel sharing", () => {
         renderEntryPanel();
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByRole("button", { name: "编辑 天地" }));
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
         await user.click(await screen.findByTestId("classics-sancai-sancai-entry-ai-button"));
         await user.click(await screen.findByTestId("classics-sancai-sancai-entry-action-button-8"));
 
@@ -1463,7 +1469,7 @@ describe("SancaiEntryPanel sharing", () => {
         const exportSection = await screen.findByLabelText("任务列表表格");
         expect(await within(exportSection).findByText("已过期")).toBeInTheDocument();
         expect(
-            await within(exportSection).findByRole("button", { name: /下\s*载/ })
+            await within(exportSection).findByTestId("classics-export-job-1002-download-button")
         ).toBeDisabled();
     });
 
@@ -1471,9 +1477,7 @@ describe("SancaiEntryPanel sharing", () => {
         renderEntryPanel();
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
-        expect(
-            within(entryTable).queryByRole("button", { name: "生成静态展示 天地" })
-        ).not.toBeInTheDocument();
+        expect(within(entryTable).queryByText("生成静态展示")).not.toBeInTheDocument();
         expect(screen.queryByText("静态展示任务")).not.toBeInTheDocument();
     });
 
@@ -1482,7 +1486,7 @@ describe("SancaiEntryPanel sharing", () => {
         renderEntryPanel();
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByRole("button", { name: "编辑 天地" }));
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
 
         await openTagSection(user);
         expect(await screen.findByText("三才图会标签治理")).toBeInTheDocument();
@@ -1498,7 +1502,7 @@ describe("SancaiEntryPanel sharing", () => {
         renderEntryPanel();
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByRole("button", { name: "编辑 天地" }));
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
 
         await openImageSection(user);
         const imagePanel = await screen.findByLabelText("三才图会图片管理");
@@ -1510,7 +1514,7 @@ describe("SancaiEntryPanel sharing", () => {
         renderEntryPanel();
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByRole("button", { name: "编辑 天地" }));
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
 
         await openImageSection(user);
         const imagePanel = await screen.findByLabelText("三才图会图片管理");
@@ -1562,7 +1566,7 @@ describe("SancaiEntryPanel sharing", () => {
         renderEntryPanel();
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByRole("button", { name: "编辑 天地" }));
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
 
         await openImageSection(user);
         const imagePanel = await screen.findByLabelText("三才图会图片管理");
@@ -1583,7 +1587,9 @@ describe("SancaiEntryPanel sharing", () => {
             timeout: 1000
         });
         fireEvent.click(
-            await within(entryTable).findByRole("button", { name: "编辑 天地" }, { timeout: 1000 })
+            await within(entryTable).findByTestId("sancai-entry-3001-view-button", undefined, {
+                timeout: 1000
+            })
         );
 
         fireEvent.click(
@@ -1602,7 +1608,7 @@ describe("SancaiEntryPanel sharing", () => {
         });
         expect(within(visualAssetPanel).getByText(/当前处理：处理记录 2/)).toBeInTheDocument();
         expect(
-            within(visualAssetPanel).getByRole("button", { name: "选择处理记录 1" })
+            within(visualAssetPanel).getByTestId("sancai-visual-asset-5001-select-button")
         ).toBeInTheDocument();
         expect(within(visualAssetPanel).getByAltText("处理记录 1生成图预览")).toBeInTheDocument();
         expect(within(visualAssetPanel).getByAltText("处理记录 2生成图预览")).toBeInTheDocument();
@@ -1615,9 +1621,9 @@ describe("SancaiEntryPanel sharing", () => {
         );
         expect(within(visualAssetPanel).getAllByText("已完成").length).toBeGreaterThan(0);
 
-        const currentVersionButton = within(visualAssetPanel).getByRole("button", {
-            name: "设为当前视觉处理 处理记录 1"
-        });
+        const currentVersionButton = within(visualAssetPanel).getByTestId(
+            "sancai-visual-asset-5001-use-button"
+        );
         expect(currentVersionButton).not.toBeDisabled();
         fireEvent.click(currentVersionButton);
 
@@ -1638,7 +1644,7 @@ describe("SancaiEntryPanel sharing", () => {
         renderEntryPanel();
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByRole("button", { name: "编辑 天地" }));
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
 
         const visualAssetPanel = await openVisualAssetSection(user);
         expect(
@@ -1662,7 +1668,7 @@ describe("SancaiEntryPanel sharing", () => {
         renderEntryPanel();
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
-        await user.click(await within(entryTable).findByRole("button", { name: "编辑 天地" }));
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
 
         const visualAssetPanel = await openVisualAssetSection(user);
         fireEvent.mouseDown(

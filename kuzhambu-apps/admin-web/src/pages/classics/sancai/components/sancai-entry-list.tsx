@@ -377,12 +377,14 @@ export const SancaiEntryList = ({
                         key: "view",
                         text: viewOrEditText,
                         ariaLabel: `${viewOrEditText} ${readTitle(entry, "条目")}`,
+                        testId: `sancai-entry-${entry.id}-view-button`,
                         onClick: () => onView(entry)
                     },
                     {
                         key: "share",
                         text: "分享",
                         ariaLabel: `分享 ${readTitle(entry, "条目")}`,
+                        testId: `sancai-entry-${entry.id}-share-button`,
                         disabled: !canShareEntries,
                         onClick: () => onShare(entry)
                     },
@@ -390,6 +392,7 @@ export const SancaiEntryList = ({
                         key: "export",
                         text: "导出",
                         ariaLabel: `导出 ${readTitle(entry, "条目")}`,
+                        testId: `sancai-entry-${entry.id}-export-button`,
                         disabled: !canExportEntries,
                         onClick: () => onExport(entry)
                     },
@@ -399,6 +402,7 @@ export const SancaiEntryList = ({
                                   key: "lifecycle",
                                   text: lifecycleAction.text,
                                   ariaLabel: lifecycleAction.ariaLabel,
+                                  testId: `sancai-entry-${entry.id}-lifecycle-button`,
                                   disabled: !canChangeEntryVisibility,
                                   onClick: () => onChangeLifecycleStatus(entry, lifecycleAction)
                               }
@@ -410,6 +414,7 @@ export const SancaiEntryList = ({
                         key: "delete",
                         text: "删除",
                         ariaLabel: `删除 ${readTitle(entry, "条目")}`,
+                        testId: `sancai-entry-${entry.id}-delete-button`,
                         onClick: () => onDelete(entry)
                     }
                 ];

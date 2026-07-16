@@ -956,6 +956,7 @@ export const SancaiEntryModel = ({
                                                     key: "select",
                                                     text: "选择",
                                                     ariaLabel: `选择${readVisualAssetTitle(asset)}`,
+                                                    testId: `sancai-visual-asset-${assetId}-select-button`,
                                                     disabled:
                                                         !selectedSourceStorageObjectId ||
                                                         isSelected,
@@ -965,6 +966,7 @@ export const SancaiEntryModel = ({
                                                     key: "use",
                                                     text: "当前",
                                                     ariaLabel: `设为当前视觉处理 ${readVisualAssetTitle(asset)}`,
+                                                    testId: `sancai-visual-asset-${assetId}-use-button`,
                                                     disabled:
                                                         !selectedSourceStorageObjectId ||
                                                         Boolean(asset.currentUsed),
