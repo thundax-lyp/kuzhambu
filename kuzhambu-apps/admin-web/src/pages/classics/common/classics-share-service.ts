@@ -1,4 +1,4 @@
-import { getJson, postJson } from "@/api/http";
+import { postJson } from "@/api/http";
 import type {
     ClassicsBatchOperationRecord,
     ClassicsShareLinkStatus,
@@ -74,7 +74,9 @@ export const page = (request: ClassicsShareQuery = {}) => {
 };
 
 export const get = (id: number) => {
-    return getJson<ClassicsShareRecord>(`${SHARE_PATH}/${id}`);
+    return postJson<ClassicsShareRecord, { id: number }>(`${SHARE_PATH}/get`, {
+        body: { id }
+    });
 };
 
 export const updateStatus = (request: ClassicsShareStatusUpdateCommand) => {

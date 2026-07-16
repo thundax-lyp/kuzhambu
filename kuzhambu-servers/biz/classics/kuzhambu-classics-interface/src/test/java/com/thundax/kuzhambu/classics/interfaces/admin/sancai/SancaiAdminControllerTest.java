@@ -56,7 +56,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -67,23 +66,23 @@ class SancaiAdminControllerTest {
     @Test
     void routesShouldKeepAdminApiPaths() throws Exception {
         assertRequestMapping(SancaiAdminController.class, "/api/classics/sancai");
-        assertGetMapping(SancaiAdminController.class, "listCategoryTypes", "categories/types");
-        assertGetMapping(SancaiAdminController.class, "listVolumeTypes", "volumes/types");
+        assertPostMapping(SancaiAdminController.class, "listCategoryTypes", "categories/types/list");
+        assertPostMapping(SancaiAdminController.class, "listVolumeTypes", "volumes/types/list");
         assertPostMapping(SancaiAdminController.class, "listCategories", "categories/list");
-        assertGetMapping(SancaiAdminController.class, "getCategory", "categories/{id}", Long.class);
+        assertPostMapping(SancaiAdminController.class, "getCategory", "categories/get", SancaiCategoryRequest.class);
         assertPostMapping(SancaiAdminController.class, "addCategory", "categories/add", SancaiCategoryRequest.class);
         assertPostMapping(
                 SancaiAdminController.class, "updateCategory", "categories/update", SancaiCategoryRequest.class);
         assertPostMapping(
                 SancaiAdminController.class, "deleteCategory", "categories/delete", SancaiCategoryRequest.class);
         assertPostMapping(SancaiAdminController.class, "listVolumes", "volumes/list", SancaiEntryPageRequest.class);
-        assertGetMapping(SancaiAdminController.class, "getVolume", "volumes/{id}", Long.class);
+        assertPostMapping(SancaiAdminController.class, "getVolume", "volumes/get", SancaiVolumeRequest.class);
         assertPostMapping(SancaiAdminController.class, "addVolume", "volumes/add", SancaiVolumeRequest.class);
         assertPostMapping(SancaiAdminController.class, "updateVolume", "volumes/update", SancaiVolumeRequest.class);
         assertPostMapping(SancaiAdminController.class, "deleteVolume", "volumes/delete", SancaiVolumeRequest.class);
         assertPostMapping(SancaiAdminController.class, "pageEntries", "entries/page", SancaiEntryPageRequest.class);
         assertPostMapping(SancaiAdminController.class, "listEntries", "entries/list", SancaiEntryPageRequest.class);
-        assertGetMapping(SancaiAdminController.class, "getEntry", "entries/{id}", Long.class);
+        assertPostMapping(SancaiAdminController.class, "getEntry", "entries/get", SancaiEntryRequest.class);
         assertPostMapping(SancaiAdminController.class, "addEntry", "entries/add", SancaiEntryRequest.class);
         assertPostMapping(SancaiAdminController.class, "updateEntry", "entries/update", SancaiEntryRequest.class);
         assertPostMapping(
@@ -346,13 +345,12 @@ class SancaiAdminControllerTest {
         assertEquals(1, categories.size());
         assertEquals("天文", categories.get(0).getTitle());
 
-        assertEquals("天文", controller.getCategory(2L).getTitle());
-
         SancaiCategoryRequest categoryRequest = new SancaiCategoryRequest();
         categoryRequest.setId(2L);
         categoryRequest.setTitle("天文");
         categoryRequest.setCategoryType("FORMAL");
         categoryRequest.setPriority(10);
+        assertEquals("天文", controller.getCategory(categoryRequest).getTitle());
         assertEquals(2L, controller.addCategory(categoryRequest).getId());
         assertEquals(2L, controller.updateCategory(categoryRequest).getId());
         controller.deleteCategory(categoryRequest);
@@ -362,14 +360,13 @@ class SancaiAdminControllerTest {
         List<SancaiVolumeResponse> volumes = controller.listVolumes(volumePageRequest);
         assertEquals(1, volumes.size());
         assertEquals(2L, volumes.get(0).getCategoryId());
-        assertEquals("天文卷一", controller.getVolume(101L).getTitle());
-
         SancaiVolumeRequest volumeRequest = new SancaiVolumeRequest();
         volumeRequest.setId(101L);
         volumeRequest.setCategoryId(2L);
         volumeRequest.setTitle("天文卷一");
         volumeRequest.setVolumeType("MAIN");
         volumeRequest.setPriority(101);
+        assertEquals("天文卷一", controller.getVolume(volumeRequest).getTitle());
         assertEquals(101L, controller.addVolume(volumeRequest).getId());
         assertEquals(101L, controller.updateVolume(volumeRequest).getId());
         controller.deleteVolume(volumeRequest);
@@ -386,16 +383,15 @@ class SancaiAdminControllerTest {
                 "天地", controller.pageEntries(pageRequest).getRecords().get(0).getTitle());
         assertEquals("天地", controller.listEntries(pageRequest).get(0).getTitle());
 
-        SancaiEntryResponse detail = controller.getEntry(3001L);
-        assertEquals("天地", detail.getTitle());
-        assertEquals("天文", detail.getTags().get(0).getTagNameSnapshot());
-
         SancaiEntryRequest entryRequest = new SancaiEntryRequest();
         entryRequest.setId(3001L);
         entryRequest.setVolumeId(101L);
         entryRequest.setTitle("天地");
         entryRequest.setLifecycleStatus("PUBLISHED");
         entryRequest.setVisibility("PUBLIC");
+        SancaiEntryResponse detail = controller.getEntry(entryRequest);
+        assertEquals("天地", detail.getTitle());
+        assertEquals("天文", detail.getTags().get(0).getTagNameSnapshot());
         assertEquals(3001L, controller.addEntry(entryRequest).getId());
         assertEquals(3001L, controller.updateEntry(entryRequest).getId());
 
@@ -685,14 +681,6 @@ class SancaiAdminControllerTest {
         Method method = controllerType.getDeclaredMethod(methodName, parameterTypes);
         HasPermission permission = method.getAnnotation(HasPermission.class);
         assertArrayEquals(new String[] {expectedPermission}, permission.value());
-    }
-
-    private static void assertGetMapping(
-            Class<?> controllerType, String methodName, String expectedPath, Class<?>... parameterTypes)
-            throws Exception {
-        Method method = controllerType.getDeclaredMethod(methodName, parameterTypes);
-        GetMapping mapping = method.getAnnotation(GetMapping.class);
-        assertEquals(expectedPath, mapping.value()[0]);
     }
 
     private static void assertJsonFields(Object value, String... expectedFields) {

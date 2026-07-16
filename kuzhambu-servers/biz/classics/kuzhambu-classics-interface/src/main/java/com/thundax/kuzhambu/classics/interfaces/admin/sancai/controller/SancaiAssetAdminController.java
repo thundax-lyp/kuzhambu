@@ -68,9 +68,9 @@ public class SancaiAssetAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "最新草稿")
-    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
-    @GetMapping("drafts/latest/{entryId}")
-    public SancaiAssetResponse latestDraft(@PathVariable("entryId") Long entryId) {
+    @PostMapping("drafts/latest")
+    public SancaiAssetResponse latestDraft(@Valid @RequestBody SancaiAssetRequest request) {
+        Long entryId = requireLong(request == null ? null : request.getEntryId(), "entryId");
         return SancaiAssetInterfaceAssembler.toDraftResponse(
                 service.getLatestDraft(SancaiEntryIdCodec.toDomain(entryId)));
     }
@@ -119,9 +119,9 @@ public class SancaiAssetAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "图片列表")
-    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
-    @GetMapping("images/{entryId}")
-    public List<SancaiAssetResponse> listImages(@PathVariable("entryId") Long entryId) {
+    @PostMapping("images/list")
+    public List<SancaiAssetResponse> listImages(@Valid @RequestBody SancaiAssetRequest request) {
+        Long entryId = requireLong(request == null ? null : request.getEntryId(), "entryId");
         return service.listImages(SancaiEntryIdCodec.toDomain(entryId)).stream()
                 .map(SancaiAssetInterfaceAssembler::toImageResponse)
                 .toList();
@@ -213,9 +213,9 @@ public class SancaiAssetAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "视觉资产列表")
-    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
-    @GetMapping("visual-assets/{entryId}")
-    public List<SancaiAssetResponse> listVisualAssets(@PathVariable("entryId") Long entryId) {
+    @PostMapping("visual-assets/list")
+    public List<SancaiAssetResponse> listVisualAssets(@Valid @RequestBody SancaiAssetRequest request) {
+        Long entryId = requireLong(request == null ? null : request.getEntryId(), "entryId");
         return service.listVisualAssets(SancaiEntryIdCodec.toDomain(entryId)).stream()
                 .map(SancaiAssetInterfaceAssembler::toVisualAssetResponse)
                 .toList();

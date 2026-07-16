@@ -40,7 +40,6 @@ import java.lang.reflect.Proxy;
 import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -59,7 +58,7 @@ class ClassicsSharingAdminControllerTest {
         assertPostMapping(ClassicsSharingAdminController.class, "page", "page", ClassicsSharingRequest.class);
         assertPostMapping(
                 ClassicsSharingAdminController.class, "updateStatus", "status/update", ClassicsSharingRequest.class);
-        assertGetMapping(ClassicsSharingAdminController.class, "get", "{id}", Long.class);
+        assertPostMapping(ClassicsSharingAdminController.class, "get", "get", ClassicsSharingRequest.class);
         assertPostMapping(
                 ClassicsSharingAdminController.class,
                 "pageAccessRecords",
@@ -106,8 +105,10 @@ class ClassicsSharingAdminControllerTest {
     @Test
     void detailResponseShouldExposeDeletedTargetStatusAndTitleSnapshot() {
         ClassicsSharingAdminController controller = new ClassicsSharingAdminController(sharingService());
+        ClassicsSharingRequest request = new ClassicsSharingRequest();
+        request.setId(10L);
 
-        ClassicsSharingResponse response = controller.get(10L);
+        ClassicsSharingResponse response = controller.get(request);
 
         assertEquals("公开分享", response.getTitle());
         JsonNode json = OBJECT_MAPPER.valueToTree(response);
@@ -302,14 +303,6 @@ class ClassicsSharingAdminControllerTest {
             throws Exception {
         Method method = controllerType.getDeclaredMethod(methodName, parameterTypes);
         PostMapping mapping = method.getAnnotation(PostMapping.class);
-        assertEquals(expectedPath, mapping.value()[0]);
-    }
-
-    private static void assertGetMapping(
-            Class<?> controllerType, String methodName, String expectedPath, Class<?>... parameterTypes)
-            throws Exception {
-        Method method = controllerType.getDeclaredMethod(methodName, parameterTypes);
-        GetMapping mapping = method.getAnnotation(GetMapping.class);
         assertEquals(expectedPath, mapping.value()[0]);
     }
 

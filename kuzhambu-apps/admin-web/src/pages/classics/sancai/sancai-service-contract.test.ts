@@ -91,7 +91,7 @@ describe("sancai service request contracts", () => {
 
     it("sends category service requests with domain function names", async () => {
         await categoryService.listTypes();
-        expectLastCall("GET", "/classics/sancai/categories/types", undefined);
+        expectLastCall("POST", "/classics/sancai/categories/types/list", undefined);
 
         await categoryService.list();
         expectLastCall("POST", "/classics/sancai/categories/list", undefined);
@@ -133,7 +133,7 @@ describe("sancai service request contracts", () => {
 
     it("sends volume service requests with domain function names", async () => {
         await volumeService.listTypes();
-        expectLastCall("GET", "/classics/sancai/volumes/types", undefined);
+        expectLastCall("POST", "/classics/sancai/volumes/types/list", undefined);
 
         await volumeService.list({
             categoryId: 2
@@ -222,7 +222,9 @@ describe("sancai service request contracts", () => {
         });
 
         await entryService.get(3001);
-        expectLastCall("GET", "/classics/sancai/entries/3001", undefined);
+        expectLastCall("POST", "/classics/sancai/entries/get", {
+            id: 3001
+        });
 
         await entryService.add(entryCommand);
         expectLastCall("POST", "/classics/sancai/entries/add", entryCommand);
@@ -262,7 +264,9 @@ describe("sancai service request contracts", () => {
         });
 
         await entryService.listImages(3001);
-        expectLastCall("GET", "/classics/sancai/assets/images/3001", undefined);
+        expectLastCall("POST", "/classics/sancai/assets/images/list", {
+            entryId: 3001
+        });
 
         await entryService.deleteImage({
             entryId: 3001,
@@ -294,7 +298,9 @@ describe("sancai service request contracts", () => {
         });
 
         await entryService.listVisualAssets(3001);
-        expectLastCall("GET", "/classics/sancai/assets/visual-assets/3001", undefined);
+        expectLastCall("POST", "/classics/sancai/assets/visual-assets/list", {
+            entryId: 3001
+        });
 
         await entryService.uploadImage({
             currentUsed: true,

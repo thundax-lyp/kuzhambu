@@ -22,7 +22,6 @@ import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.res
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
-import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
@@ -36,12 +35,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "古籍模块-明代习俗", description = "明代习俗")
 @SysLogger(module = {"古籍", "明代习俗"})
@@ -79,9 +75,9 @@ public class MingCustomsAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:mingcustoms:view")
     @SysLogger(value = "详情")
-    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
-    @GetMapping("{id}")
-    public MingCustomsResponse get(@PathVariable Long id) {
+    @PostMapping("get")
+    public MingCustomsResponse get(@Valid @RequestBody MingCustomsRequest request) {
+        Long id = requireParameter(request == null ? null : request.getId(), "id");
         return MingCustomsInterfaceAssembler.toResponse(service.get(MingCustomsEntryIdCodec.toDomain(id)));
     }
 
@@ -138,11 +134,9 @@ public class MingCustomsAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:mingcustoms:view")
     @SysLogger(value = "关键词云")
-    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
-    @GetMapping("keyword-cloud")
-    public List<MingCustomsKeywordCloudItemResponse> listKeywordCloud(
-            @RequestParam(value = "visibility", required = false) String visibility) {
-        return service.listKeywordCloud(visibility).stream()
+    @PostMapping("keyword-cloud/list")
+    public List<MingCustomsKeywordCloudItemResponse> listKeywordCloud(@Valid @RequestBody MingCustomsRequest request) {
+        return service.listKeywordCloud(request == null ? null : request.getVisibility()).stream()
                 .map(MingCustomsInterfaceAssembler::toKeywordCloudResponse)
                 .toList();
     }
@@ -151,13 +145,12 @@ public class MingCustomsAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:mingcustoms:view")
     @SysLogger(value = "标签云")
-    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
-    @GetMapping("tag-cloud")
-    public List<MingCustomsTagCloudItemResponse> listTagCloud(
-            @RequestParam(value = "category", required = false) String category,
-            @RequestParam(value = "keyword", required = false) String keyword,
-            @RequestParam(value = "visibility", required = false) String visibility) {
-        MingCustomsPageQuery query = MingCustomsInterfaceAssembler.toTagCloudQuery(category, keyword, visibility);
+    @PostMapping("tag-cloud/list")
+    public List<MingCustomsTagCloudItemResponse> listTagCloud(@Valid @RequestBody MingCustomsRequest request) {
+        MingCustomsPageQuery query = MingCustomsInterfaceAssembler.toTagCloudQuery(
+                request == null ? null : request.getCategory(),
+                request == null ? null : request.getKeyword(),
+                request == null ? null : request.getVisibility());
         query.setOperatorPermissions(KuzhambuContextHolder.currentAuthorities());
         return service.listTagCloud(query).stream()
                 .map(MingCustomsInterfaceAssembler::toTagCloudResponse)
@@ -217,5 +210,12 @@ public class MingCustomsAdminController {
             throw new BizException("历史版本不属于当前明代习俗条目");
         }
         return version;
+    }
+
+    private static Long requireParameter(Long value, String fieldName) {
+        if (value == null) {
+            throw AdminResponseExceptions.invalidParameter(fieldName);
+        }
+        return value;
     }
 }

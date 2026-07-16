@@ -59,12 +59,12 @@ const installFetchMock = () => {
         if (path.endsWith("/classics/sancai/categories/list")) {
             return apiResponse(mockCategories);
         }
-        if (path.endsWith("/classics/sancai/categories/types")) {
+        if (path.endsWith("/classics/sancai/categories/types/list")) {
             return apiResponse([
                 { label: "正式门类", type: "SANCAI_CATEGORY_TYPE", value: "FORMAL" }
             ]);
         }
-        if (path.endsWith("/classics/sancai/volumes/types")) {
+        if (path.endsWith("/classics/sancai/volumes/types/list")) {
             return apiResponse([{ label: "正式卷目", type: "SANCAI_VOLUME_TYPE", value: "MAIN" }]);
         }
         if (path.endsWith("/classics/sancai/volumes/list")) {
@@ -102,7 +102,7 @@ const installFetchMock = () => {
                 }
             ]);
         }
-        if (path.endsWith("/classics/sancai/entries/3001")) {
+        if (path.endsWith("/classics/sancai/entries/get")) {
             return apiResponse({
                 id: 3001,
                 volumeId: 101,
@@ -123,7 +123,7 @@ const installFetchMock = () => {
                 versionDirty: false
             });
         }
-        if (path.endsWith("/classics/sancai/assets/images/3001")) {
+        if (path.endsWith("/classics/sancai/assets/images/list")) {
             return apiResponse([
                 {
                     currentUsed: true,
@@ -138,7 +138,7 @@ const installFetchMock = () => {
                 }
             ]);
         }
-        if (path.endsWith("/classics/sancai/assets/visual-assets/3001")) {
+        if (path.endsWith("/classics/sancai/assets/visual-assets/list")) {
             return apiResponse([
                 {
                     id: 5002,

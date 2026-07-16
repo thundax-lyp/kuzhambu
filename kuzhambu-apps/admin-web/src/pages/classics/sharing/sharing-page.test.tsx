@@ -156,7 +156,7 @@ const installFetchMock = () => {
                 ]
             });
         }
-        if (path.endsWith("/classics/shares/900000000001")) {
+        if (path.endsWith("/classics/shares/get")) {
             return apiResponse({
                 id: 900000000001,
                 title: "王圻批量分享 - 王圻文档",

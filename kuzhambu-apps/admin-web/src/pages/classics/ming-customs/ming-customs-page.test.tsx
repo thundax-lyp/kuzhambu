@@ -145,11 +145,11 @@ const installFetchMock = () => {
             });
         }
 
-        if (path.endsWith("/classics/ming-customs/keyword-cloud")) {
+        if (path.endsWith("/classics/ming-customs/keyword-cloud/list")) {
             return apiResponse([]);
         }
 
-        if (path.startsWith("/classics/ming-customs/tag-cloud")) {
+        if (path.endsWith("/classics/ming-customs/tag-cloud/list")) {
             return apiResponse([
                 {
                     tagId: 700000000001,
@@ -186,7 +186,7 @@ const installFetchMock = () => {
                 totalCount: 0
             });
         }
-        if (path.endsWith("/classics/ming-customs/500000000001")) {
+        if (path.endsWith("/classics/ming-customs/get")) {
             return apiResponse(mockMingCustomsRecord);
         }
         if (path.endsWith("/classics/ming-customs/versions/list")) {

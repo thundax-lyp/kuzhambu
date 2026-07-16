@@ -50,12 +50,12 @@ class SancaiAssetAdminControllerTest {
                 "drafts/update",
                 "classics:sancai:edit",
                 SancaiAssetRequest.class);
-        assertGetMapping(
+        assertPostMapping(
                 SancaiAssetAdminController.class,
                 "latestDraft",
-                "drafts/latest/{entryId}",
+                "drafts/latest",
                 "classics:sancai:view",
-                Long.class);
+                SancaiAssetRequest.class);
         assertPostMapping(
                 SancaiAssetAdminController.class,
                 "updateImage",
@@ -82,8 +82,12 @@ class SancaiAssetAdminControllerTest {
                 Long.class,
                 Boolean.class,
                 HttpServletResponse.class);
-        assertGetMapping(
-                SancaiAssetAdminController.class, "listImages", "images/{entryId}", "classics:sancai:view", Long.class);
+        assertPostMapping(
+                SancaiAssetAdminController.class,
+                "listImages",
+                "images/list",
+                "classics:sancai:view",
+                SancaiAssetRequest.class);
         assertPostMapping(
                 SancaiAssetAdminController.class,
                 "deleteImage",
@@ -102,12 +106,12 @@ class SancaiAssetAdminControllerTest {
                 "images/sort",
                 "classics:sancai:edit",
                 SancaiEntryImageSortRequest.class);
-        assertGetMapping(
+        assertPostMapping(
                 SancaiAssetAdminController.class,
                 "listVisualAssets",
-                "visual-assets/{entryId}",
+                "visual-assets/list",
                 "classics:sancai:view",
-                Long.class);
+                SancaiAssetRequest.class);
         assertGetMapping(
                 SancaiAssetAdminController.class,
                 "downloadVisualAssetSourceContent",
@@ -206,7 +210,10 @@ class SancaiAssetAdminControllerTest {
 
     @Test
     void visualAssetApisShouldReturnVisualAssetContract() {
-        List<SancaiAssetResponse> listResponse = controller().listVisualAssets(3001L);
+        SancaiAssetRequest request = new SancaiAssetRequest();
+        request.setEntryId(3001L);
+
+        List<SancaiAssetResponse> listResponse = controller().listVisualAssets(request);
         assertEquals(1, listResponse.size());
         SancaiAssetResponse item = listResponse.get(0);
         assertEquals(5001L, item.getVisualAssetId());

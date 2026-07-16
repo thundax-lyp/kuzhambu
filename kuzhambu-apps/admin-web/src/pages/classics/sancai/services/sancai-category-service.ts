@@ -1,6 +1,5 @@
-import { getJson, postJson } from "@/api/http";
-import type { DictItem } from "@/types/dict";
-import type { SancaiCategoryRecord } from "../sancai-types";
+import { postJson } from "@/api/http";
+import type { SancaiCategoryRecord, SancaiCategoryTypeRecord } from "../sancai-types";
 
 export interface SancaiCategoryCommand {
     categoryType?: string | null;
@@ -14,7 +13,7 @@ export interface SancaiCategorySortCommand {
 }
 
 export const listTypes = () => {
-    return getJson<DictItem[]>("/classics/sancai/categories/types");
+    return postJson<SancaiCategoryTypeRecord[]>("/classics/sancai/categories/types/list");
 };
 
 export const list = () => {

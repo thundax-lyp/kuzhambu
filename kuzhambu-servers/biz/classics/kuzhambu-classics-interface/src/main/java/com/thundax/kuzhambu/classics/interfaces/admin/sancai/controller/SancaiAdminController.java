@@ -31,7 +31,6 @@ import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
-import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
@@ -45,8 +44,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -68,8 +65,7 @@ public class SancaiAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "门类类型")
-    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
-    @GetMapping("categories/types")
+    @PostMapping("categories/types/list")
     public List<DictResponse> listCategoryTypes() {
         return SancaiInterfaceAssembler.toCategoryTypes();
     }
@@ -78,8 +74,7 @@ public class SancaiAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "卷目类型")
-    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
-    @GetMapping("volumes/types")
+    @PostMapping("volumes/types/list")
     public List<DictResponse> listVolumeTypes() {
         return SancaiInterfaceAssembler.toVolumeTypes();
     }
@@ -99,10 +94,10 @@ public class SancaiAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "门类详情")
-    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
-    @GetMapping("categories/{id}")
-    public SancaiCategoryResponse getCategory(@PathVariable("id") Long id) {
-        return SancaiInterfaceAssembler.toResponse(service.getCategory(SancaiCategoryIdCodec.toDomain(id)));
+    @PostMapping("categories/get")
+    public SancaiCategoryResponse getCategory(@Valid @RequestBody SancaiCategoryRequest request) {
+        Long categoryId = requireParameter(request == null ? null : request.getId(), "id");
+        return SancaiInterfaceAssembler.toResponse(service.getCategory(SancaiCategoryIdCodec.toDomain(categoryId)));
     }
 
     @Operation(summary = "新增三才图会门类", description = "classics:sancai:edit")
@@ -155,10 +150,10 @@ public class SancaiAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "卷详情")
-    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
-    @GetMapping("volumes/{id}")
-    public SancaiVolumeResponse getVolume(@PathVariable("id") Long id) {
-        return SancaiInterfaceAssembler.toResponse(service.getVolume(SancaiVolumeIdCodec.toDomain(id)));
+    @PostMapping("volumes/get")
+    public SancaiVolumeResponse getVolume(@Valid @RequestBody SancaiVolumeRequest request) {
+        Long volumeId = requireParameter(request == null ? null : request.getId(), "id");
+        return SancaiInterfaceAssembler.toResponse(service.getVolume(SancaiVolumeIdCodec.toDomain(volumeId)));
     }
 
     @Operation(summary = "新增三才图会卷", description = "classics:sancai:edit")
@@ -220,10 +215,9 @@ public class SancaiAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "详情")
-    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
-    @GetMapping("entries/{id}")
-    public SancaiEntryResponse getEntry(@PathVariable("id") Long id) {
-        Long entryId = requireParameter(id, "id");
+    @PostMapping("entries/get")
+    public SancaiEntryResponse getEntry(@Valid @RequestBody SancaiEntryRequest request) {
+        Long entryId = requireParameter(request == null ? null : request.getId(), "id");
         return SancaiInterfaceAssembler.toResponse(
                 service.getEntry(SancaiEntryIdCodec.toDomain(entryId)),
                 contentService.listTags(

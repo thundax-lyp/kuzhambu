@@ -1,4 +1,5 @@
 import type { ClassicsContentTagRecord } from "@/pages/classics/common/classics-content-types";
+import type { DictItem } from "@/types/dict";
 
 export interface SancaiCategoryRecord {
     id: number;
@@ -7,6 +8,8 @@ export interface SancaiCategoryRecord {
     priority?: number | null;
 }
 
+export type SancaiCategoryTypeRecord = DictItem;
+
 export interface SancaiVolumeRecord {
     id: number;
     categoryId?: number | null;
@@ -14,6 +17,8 @@ export interface SancaiVolumeRecord {
     volumeType?: string | null;
     priority?: number | null;
 }
+
+export type SancaiVolumeTypeRecord = DictItem;
 
 export type SancaiEntryLifecycleStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 

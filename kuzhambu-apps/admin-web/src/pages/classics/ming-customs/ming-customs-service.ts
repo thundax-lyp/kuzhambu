@@ -1,11 +1,11 @@
-import { getJson, postJson } from "@/api/http";
+import { postJson } from "@/api/http";
 import type { DictItem } from "@/types/dict";
 import type { Page, PageQuery } from "@/types/page";
 import type {
     MingCustomsContentVersionRecord,
-    MingCustomsKeywordCloudItem,
+    MingCustomsKeywordCloudRecord,
     MingCustomsRecord,
-    MingCustomsTagCloudItem
+    MingCustomsTagCloudRecord
 } from "./ming-customs-types";
 
 const CATEGORY_DICT_TYPE = "CLASSICS_MING_CUSTOMS_CATEGORY";
@@ -51,7 +51,9 @@ export const page = (request: MingCustomsQuery = {}) => {
 };
 
 export const get = (id: number) => {
-    return getJson<MingCustomsRecord>(`/classics/ming-customs/${id}`);
+    return postJson<MingCustomsRecord, MingCustomsCommand>("/classics/ming-customs/get", {
+        body: { id }
+    });
 };
 
 export const add = (request: MingCustomsCommand) => {
@@ -73,33 +75,21 @@ export const deleteById = (id: number) => {
 };
 
 export const listKeywordCloud = (visibility?: string | null) => {
-    const searchParams = new URLSearchParams();
-    if (visibility) {
-        searchParams.set("visibility", visibility);
-    }
-    const queryString = searchParams.toString();
-    const path = queryString
-        ? `/classics/ming-customs/keyword-cloud?${queryString}`
-        : "/classics/ming-customs/keyword-cloud";
-    return getJson<MingCustomsKeywordCloudItem[]>(path);
+    return postJson<MingCustomsKeywordCloudRecord[], MingCustomsCommand>(
+        "/classics/ming-customs/keyword-cloud/list",
+        {
+            body: { visibility }
+        }
+    );
 };
 
 export const listTagCloud = (query: MingCustomsTagCloudQuery = {}) => {
-    const searchParams = new URLSearchParams();
-    if (query.category) {
-        searchParams.set("category", query.category);
-    }
-    if (query.keyword) {
-        searchParams.set("keyword", query.keyword);
-    }
-    if (query.visibility) {
-        searchParams.set("visibility", query.visibility);
-    }
-    const queryString = searchParams.toString();
-    const path = queryString
-        ? `/classics/ming-customs/tag-cloud?${queryString}`
-        : "/classics/ming-customs/tag-cloud";
-    return getJson<MingCustomsTagCloudItem[]>(path);
+    return postJson<MingCustomsTagCloudRecord[], MingCustomsTagCloudQuery>(
+        "/classics/ming-customs/tag-cloud/list",
+        {
+            body: query
+        }
+    );
 };
 
 export const listVersions = (entryId: number) => {

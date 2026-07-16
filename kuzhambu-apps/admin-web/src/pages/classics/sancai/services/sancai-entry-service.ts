@@ -1,4 +1,4 @@
-import { ADMIN_API_BASE_URL, getJson, postFormData, postJson } from "@/api/http";
+import { ADMIN_API_BASE_URL, postFormData, postJson } from "@/api/http";
 import type {
     SancaiContentVersionRecord,
     SancaiEntryImageContentMode,
@@ -129,7 +129,9 @@ export const list = (request: SancaiEntryQuery = {}) => {
 };
 
 export const get = (id: number) => {
-    return getJson<SancaiEntryRecord>(`${ENTRIES_PATH}/${id}`);
+    return postJson<SancaiEntryRecord, SancaiEntryCommand>(`${ENTRIES_PATH}/get`, {
+        body: { id }
+    });
 };
 
 export const add = (request: SancaiEntryCommand) => {
@@ -163,7 +165,9 @@ export const sort = (request: SancaiEntrySortCommand) => {
 };
 
 export const listImages = (entryId: number) => {
-    return getJson<SancaiEntryImageRecord[]>(`${ASSET_IMAGES_PATH}/${entryId}`);
+    return postJson<SancaiEntryImageRecord[], { entryId: number }>(`${ASSET_IMAGES_PATH}/list`, {
+        body: { entryId }
+    });
 };
 
 export const deleteImage = (command: SancaiEntryImageMutationCommand) => {
@@ -194,7 +198,12 @@ export const sortImages = (command: SancaiEntryImageSortCommand) => {
 };
 
 export const listVisualAssets = (entryId: number) => {
-    return getJson<SancaiVisualAssetRecord[]>(`${ASSET_VISUAL_ASSETS_PATH}/${entryId}`);
+    return postJson<SancaiVisualAssetRecord[], { entryId: number }>(
+        `${ASSET_VISUAL_ASSETS_PATH}/list`,
+        {
+            body: { entryId }
+        }
+    );
 };
 
 export const uploadImage = (command: SancaiEntryImageUploadCommand) => {
