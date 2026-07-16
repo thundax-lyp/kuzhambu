@@ -6,7 +6,7 @@ import {
     SearchOutlined
 } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Alert, Input, Select, Splitter } from "antd";
+import { Input, Select, Splitter } from "antd";
 import { useMemo, useState } from "react";
 import { KuzhambuFilterPanel } from "@/components/kuzhambu-filter-panel";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
@@ -24,6 +24,7 @@ import type {
 } from "./sancai-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./sancai-page.css";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const entryStatusOptions = [
     { label: "全部状态", value: "ALL" },
@@ -344,7 +345,7 @@ export const SancaiPage = () => {
                 />
             ) : null}
             {hasError ? (
-                <Alert
+                <KuzhambuAlert
                     className="sancai-alert"
                     type="warning"
                     showIcon

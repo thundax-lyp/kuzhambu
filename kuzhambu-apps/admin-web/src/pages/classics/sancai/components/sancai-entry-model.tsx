@@ -11,7 +11,6 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     App,
-    Alert,
     Empty,
     Form,
     Image,
@@ -44,6 +43,7 @@ import type {
     SancaiVisualAssetRecord
 } from "../sancai-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Text } = Typography;
 const imageAccept = ".jpg,.jpeg,.png,.gif,.webp";
@@ -1295,7 +1295,7 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
                     </KuzhambuSpace>
                 </div>
                 {isCreatingTranslationTask || latestTranslationTask ? (
-                    <Alert
+                    <KuzhambuAlert
                         showIcon
                         className="sancai-translation-task-alert"
                         type={
@@ -1303,7 +1303,7 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
                                 ? "info"
                                 : readRefinementTaskAlertType(latestTranslationTask?.status)
                         }
-                        message={
+                        title={
                             isCreatingTranslationTask
                                 ? "正在创建翻译任务"
                                 : `翻译任务：${readRefinementTaskStatusLabel(
@@ -1369,10 +1369,10 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
                             />
                         </Form.Item>
                         {translationCandidatesQuery.isError ? (
-                            <Alert
+                            <KuzhambuAlert
                                 showIcon
                                 type="warning"
-                                message="候选译文加载失败"
+                                title="候选译文加载失败"
                                 description="AI 任务可能仍在执行，请稍后重新打开。"
                             />
                         ) : null}

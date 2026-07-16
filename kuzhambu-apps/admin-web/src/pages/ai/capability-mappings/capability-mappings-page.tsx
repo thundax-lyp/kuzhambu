@@ -1,6 +1,6 @@
 import { EditOutlined, PlusOutlined, ReloadOutlined, SaveOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Card, Form, Select, Switch, Table, Tag, Tooltip } from "antd";
+import { App, Card, Form, Select, Switch, Table, Tag, Tooltip } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useEffect, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
@@ -19,6 +19,7 @@ import type {
 } from "./capability-mappings-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./capability-mappings-page.css";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 type MappingFormValues = AiCapabilityMappingChangeCommand;
 
@@ -473,10 +474,10 @@ export const CapabilityMappingsPage = () => {
                                 {tagMatch.modelTags.length === 0 ? "-" : null}
                             </KuzhambuSpace>
                         </div>
-                        <Alert
+                        <KuzhambuAlert
                             type={tagMatch.matched ? "success" : "warning"}
                             showIcon
-                            message={
+                            title={
                                 tagMatch.matched
                                     ? "能力标签匹配"
                                     : `缺少标签：${tagMatch.missingTags.join(", ")}`

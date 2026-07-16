@@ -8,7 +8,7 @@ import {
     SyncOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Card, Descriptions, Select, Statistic, Table, Typography } from "antd";
+import { App, Card, Descriptions, Select, Statistic, Table, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import type { ReactNode } from "react";
 import { useState } from "react";
@@ -28,6 +28,7 @@ import type {
 } from "./backup-restore-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./backup-restore-page.css";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Text, Title } = Typography;
 
@@ -717,7 +718,7 @@ export const BackupRestorePage = () => {
                 {backupDetailQuery.data ? (
                     <div className="backup-restore-page-detail">
                         {backupDetailQuery.data.backupStatus === "FAILED" ? (
-                            <Alert
+                            <KuzhambuAlert
                                 action={
                                     <KuzhambuButton
                                         testId="operations-backup-restore-backup-restore-view-alerts-button-3"
@@ -731,7 +732,7 @@ export const BackupRestorePage = () => {
                                     </KuzhambuButton>
                                 }
                                 description={`${failureReasonText(backupDetailQuery.data.failureReason)}。请检查备份存储和数据库连接后重新发起业务动作。`}
-                                message="备份执行失败"
+                                title="备份执行失败"
                                 showIcon
                                 type="warning"
                             />
@@ -819,7 +820,7 @@ export const BackupRestorePage = () => {
                 {restoreDetailQuery.data ? (
                     <div className="backup-restore-page-detail">
                         {restoreDetailQuery.data.restoreStatus === "FAILED" ? (
-                            <Alert
+                            <KuzhambuAlert
                                 action={
                                     <KuzhambuButton
                                         testId="operations-backup-restore-backup-restore-view-alerts-button-4"
@@ -833,7 +834,7 @@ export const BackupRestorePage = () => {
                                     </KuzhambuButton>
                                 }
                                 description={`PRE_RESTORE 备份：${restoreDetailQuery.data.preRestoreBackupId || "-"}；${failureReasonText(restoreDetailQuery.data.failureReason)}。请检查恢复来源和写阻断状态后重新发起业务动作。`}
-                                message="恢复执行失败"
+                                title="恢复执行失败"
                                 showIcon
                                 type="warning"
                             />

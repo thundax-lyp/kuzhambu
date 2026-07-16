@@ -1,4 +1,4 @@
-import { Alert, Descriptions, Empty, Tag, Typography } from "antd";
+import { Descriptions, Empty, Tag, Typography } from "antd";
 import { KuzhambuList, KuzhambuListItem, KuzhambuListMeta } from "@/components/kuzhambu-list";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type {
@@ -7,6 +7,7 @@ import type {
     WangqiVersionSnapshot
 } from "../wangqi-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Text } = Typography;
 
@@ -238,7 +239,11 @@ export const WangqiVersionHistoryPanel = ({
                                     </Descriptions>
                                 </>
                             ) : (
-                                <Alert type="warning" showIcon title="版本快照为空或无法解析" />
+                                <KuzhambuAlert
+                                    type="warning"
+                                    showIcon
+                                    title="版本快照为空或无法解析"
+                                />
                             )}
                             <KuzhambuButton
                                 testId={`wangqi-version-restore-${selectedVersion.id}-button`}

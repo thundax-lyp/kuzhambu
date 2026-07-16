@@ -1,5 +1,5 @@
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Empty, Typography } from "antd";
+import { App, Empty, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
@@ -13,6 +13,7 @@ import type { ClassicsBatchOperationRecord, ClassicsContentType } from "../class
 import type { ClassicsAiCandidateBatchApplyCommand } from "../classics-content-service";
 import { AiCandidatePayloadEditor } from "./ai-candidate-payload-editor";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Text } = Typography;
 
@@ -465,20 +466,20 @@ export const AiCandidateBatchDrawer = ({
             </KuzhambuSpace>
 
             {hasLoadError ? (
-                <Alert
+                <KuzhambuAlert
                     type="warning"
-                    message="候选列表加载失败"
+                    title="候选列表加载失败"
                     description="请稍后重试或联系管理员。"
                     showIcon
                 />
             ) : null}
 
             {operationResult ? (
-                <Alert
+                <KuzhambuAlert
                     showIcon
                     type={operationResult.result.failureCount > 0 ? "warning" : "success"}
                     style={{ marginTop: 8 }}
-                    message={
+                    title={
                         operationResult.action === "apply"
                             ? `批量候选应用结果：成功 ${operationResult.result.successCount}，失败 ${operationResult.result.failureCount}`
                             : `批量候选拒绝结果：成功 ${operationResult.result.successCount}，失败 ${operationResult.result.failureCount}`

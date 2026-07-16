@@ -5,7 +5,7 @@ import {
     ReloadOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, Card, DatePicker, Descriptions, InputNumber, Select, Spin, Typography } from "antd";
+import { Card, DatePicker, Descriptions, InputNumber, Select, Spin, Typography } from "antd";
 import type { Dayjs } from "dayjs";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
@@ -25,6 +25,7 @@ import type {
 } from "./reports-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./reports-page.css";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
@@ -210,7 +211,7 @@ export const OperationsReportsPage = () => {
             }
         >
             {!canViewReport ? (
-                <Alert type="warning" showIcon message="缺少 operations:report:view 权限" />
+                <KuzhambuAlert type="warning" showIcon title="缺少 operations:report:view 权限" />
             ) : null}
 
             <section className="operations-reports-section">
@@ -454,10 +455,10 @@ export const OperationsReportsPage = () => {
                         className="operations-reports-detail"
                     >
                         {detailRecord.reportStatus === "FAILED" ? (
-                            <Alert
+                            <KuzhambuAlert
                                 type="error"
                                 showIcon
-                                message="报表生成失败"
+                                title="报表生成失败"
                                 description={failureReasonText(detailRecord.failureReason)}
                             />
                         ) : null}

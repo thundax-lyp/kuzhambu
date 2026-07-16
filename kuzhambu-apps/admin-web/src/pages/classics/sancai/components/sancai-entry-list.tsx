@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Empty, Skeleton, Tag, Typography } from "antd";
+import { App, Empty, Skeleton, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
@@ -507,11 +508,11 @@ export const SancaiEntryList = ({
                 </KuzhambuSpace>
             </KuzhambuSpace>
             {batchShareResult ? (
-                <Alert
+                <KuzhambuAlert
                     showIcon
                     type={batchShareResult.failureCount > 0 ? "warning" : "success"}
                     style={{ marginBottom: 12 }}
-                    message={`批量分享结果：成功 ${batchShareResult.successCount}，失败 ${batchShareResult.failureCount}`}
+                    title={`批量分享结果：成功 ${batchShareResult.successCount}，失败 ${batchShareResult.failureCount}`}
                     description={
                         batchShareResult.failures.length
                             ? batchShareResult.failures
@@ -525,11 +526,11 @@ export const SancaiEntryList = ({
                 />
             ) : null}
             {batchVisibilityResult ? (
-                <Alert
+                <KuzhambuAlert
                     showIcon
                     type={batchVisibilityResult.failureCount > 0 ? "warning" : "success"}
                     style={{ marginBottom: 12 }}
-                    message={`批量可见性结果：成功 ${batchVisibilityResult.successCount}，失败 ${batchVisibilityResult.failureCount}`}
+                    title={`批量可见性结果：成功 ${batchVisibilityResult.successCount}，失败 ${batchVisibilityResult.failureCount}`}
                     description={
                         batchVisibilityResult.failures.length
                             ? batchVisibilityResult.failures

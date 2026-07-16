@@ -1,6 +1,6 @@
 import { LockOutlined, ReloadOutlined, UserOutlined } from "@ant-design/icons";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Alert, App, Card, Form, Input, Typography } from "antd";
+import { App, Card, Form, Input, Typography } from "antd";
 import { sm2 } from "sm-crypto";
 import { useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
@@ -11,6 +11,7 @@ import { KuzhambuLogo } from "@/components/kuzhambu-logo";
 import { KuzhambuSpace, KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./login-page.css";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -104,7 +105,7 @@ export const LoginPage = () => {
                         </div>
 
                         {loginFormQuery.isError ? (
-                            <Alert
+                            <KuzhambuAlert
                                 type="error"
                                 showIcon
                                 title="登录表单初始化失败"

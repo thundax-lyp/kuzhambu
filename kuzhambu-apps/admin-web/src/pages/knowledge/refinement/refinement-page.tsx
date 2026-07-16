@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Card, Col, Empty, Row, Table, Tag, Typography } from "antd";
+import { App, Card, Col, Empty, Row, Table, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
@@ -31,6 +31,7 @@ import type {
 } from "./refinement-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./refinement-page.css";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Text, Title } = Typography;
 
@@ -437,7 +438,7 @@ export const RefinementPage = () => {
             title="知识图谱精修工作台"
         >
             <KuzhambuSpace className="knowledge-refinement-layout" orientation="vertical" size={16}>
-                <Alert
+                <KuzhambuAlert
                     banner
                     title="本页支持打开精修任务、修订实体关系草稿、标注质量问题并应用回正式事实。"
                     type="info"
@@ -481,7 +482,7 @@ export const RefinementPage = () => {
                     {detailReady ? (
                         <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
                             {applyFollowUp ? (
-                                <Alert
+                                <KuzhambuAlert
                                     action={
                                         <KuzhambuSpace size={8}>
                                             <KuzhambuButton
@@ -507,7 +508,7 @@ export const RefinementPage = () => {
                                             </KuzhambuButton>
                                         </KuzhambuSpace>
                                     }
-                                    message="精修已应用，图谱与质量报告需要继续联动处理"
+                                    title="精修已应用，图谱与质量报告需要继续联动处理"
                                     showIcon
                                     type="success"
                                 />

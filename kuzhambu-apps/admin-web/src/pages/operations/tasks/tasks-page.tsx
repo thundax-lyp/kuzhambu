@@ -1,6 +1,6 @@
 import { DashboardOutlined, SettingOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Alert, Card, Descriptions, Input, Select, Spin, Typography } from "antd";
+import { Card, Descriptions, Input, Select, Spin, Typography } from "antd";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { hasPermission } from "@/auth/permission-storage";
@@ -14,6 +14,7 @@ import type { OperationsTaskPageQuery } from "./tasks-service";
 import type { OperationsTaskRecord } from "./tasks-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./tasks-page.css";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Text, Title } = Typography;
 const { Option } = Select;
@@ -403,7 +404,7 @@ export const OperationsTasksPage = () => {
                         </Descriptions>
                         {taskDetailQuery.isLoading ? <Spin size="large" /> : null}
                         {isFailedTask(detailRecord) ? (
-                            <Alert
+                            <KuzhambuAlert
                                 action={
                                     <KuzhambuButton
                                         testId="operations-tasks-tasks-view-alerts-button"
@@ -415,7 +416,7 @@ export const OperationsTasksPage = () => {
                                     </KuzhambuButton>
                                 }
                                 description={`${failureReasonText(detailRecord?.failureReason)}。请查看来源域任务状态，必要时重新发起业务动作。`}
-                                message="长任务执行失败"
+                                title="长任务执行失败"
                                 showIcon
                                 type="warning"
                             />

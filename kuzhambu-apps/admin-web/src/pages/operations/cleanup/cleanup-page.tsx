@@ -5,7 +5,7 @@ import {
     ReloadOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Card, Descriptions, Select, Statistic, Typography } from "antd";
+import { App, Card, Descriptions, Select, Statistic, Typography } from "antd";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
@@ -19,6 +19,7 @@ import type { CleanupExecuteCommand, CleanupPageQuery } from "./cleanup-service"
 import type { OperationsCleanupRecord } from "./cleanup-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./cleanup-page.css";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Text, Title } = Typography;
 
@@ -473,7 +474,7 @@ export const CleanupPage = () => {
                         />
 
                         {detailRecord.cleanupStatus === "FAILED" ? (
-                            <Alert
+                            <KuzhambuAlert
                                 action={
                                     <KuzhambuButton
                                         testId="operations-cleanup-cleanup-view-alerts-button-2"
@@ -484,7 +485,7 @@ export const CleanupPage = () => {
                                     </KuzhambuButton>
                                 }
                                 description={`${failureReasonText(detailRecord.failureReason)}。请检查清理目标和失败项明细，必要时重新发起业务动作。`}
-                                message="清理任务执行失败"
+                                title="清理任务执行失败"
                                 showIcon
                                 type="warning"
                             />
@@ -534,11 +535,11 @@ export const CleanupPage = () => {
                                                 <td>{formatDateTime(item.processedAt)}</td>
                                                 <td>
                                                     {item.itemStatus === "FAILED" ? (
-                                                        <Alert
+                                                        <KuzhambuAlert
                                                             description={failureReasonText(
                                                                 item.failureReason
                                                             )}
-                                                            message="清理项失败"
+                                                            title="清理项失败"
                                                             showIcon
                                                             type="warning"
                                                         />

@@ -1,4 +1,4 @@
-import { Alert, Card, Tag, Typography } from "antd";
+import { Card, Tag, Typography } from "antd";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type {
     AiRefinementStreamEventRecord,
@@ -6,6 +6,7 @@ import type {
 } from "../ai-refinement-task-types";
 import * as aiRefinementTaskService from "../ai-refinement-task-service";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 interface AiRefinementStreamPanelProps {
     events: AiRefinementStreamEventRecord[];
@@ -92,9 +93,9 @@ export const AiRefinementStreamPanel = ({
         >
             <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
                 <Typography.Text type="secondary">阶段：{stage}</Typography.Text>
-                {warningText ? <Alert showIcon type="warning" message={warningText} /> : null}
+                {warningText ? <KuzhambuAlert showIcon type="warning" title={warningText} /> : null}
                 {errorText ? (
-                    <Alert showIcon type="error" message="失败原因" description={errorText} />
+                    <KuzhambuAlert showIcon type="error" title="失败原因" description={errorText} />
                 ) : null}
                 <Typography.Paragraph
                     style={{

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Alert, Card, Empty, Tabs, Typography } from "antd";
+import { Card, Empty, Tabs, Typography } from "antd";
 import { useCallback, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
@@ -25,6 +25,7 @@ import type {
     GraphVersionRecord
 } from "./graph-results-types";
 import "./graph-results-page.css";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Paragraph, Text, Title } = Typography;
 type GraphResultsTabKey = "versions" | "entities" | "relations" | "lineage";
@@ -246,7 +247,7 @@ export const GraphResultsPage = () => {
                 size={16}
                 className="knowledge-graph-results-layout"
             >
-                <Alert
+                <KuzhambuAlert
                     banner
                     className="knowledge-graph-results-banner"
                     title="本页将作为正式结果审阅台，与 taxonomy 治理台和抽取任务台保持独立边界。"
@@ -316,7 +317,7 @@ export const GraphResultsPage = () => {
                                         size={16}
                                         className="knowledge-graph-results-layout"
                                     >
-                                        <Alert
+                                        <KuzhambuAlert
                                             showIcon
                                             type="info"
                                             title={
@@ -362,7 +363,7 @@ export const GraphResultsPage = () => {
                                         size={16}
                                         className="knowledge-graph-results-layout"
                                     >
-                                        <Alert
+                                        <KuzhambuAlert
                                             showIcon
                                             type="info"
                                             title={
@@ -408,7 +409,7 @@ export const GraphResultsPage = () => {
                                         size={16}
                                         className="knowledge-graph-results-layout"
                                     >
-                                        <Alert
+                                        <KuzhambuAlert
                                             showIcon
                                             type="info"
                                             title={

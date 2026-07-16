@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Alert, Empty, Spin, Tabs, Typography } from "antd";
+import { Empty, Spin, Tabs, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
@@ -17,6 +17,7 @@ import type {
     LineageRelationRecord
 } from "./lineage-types";
 import "./lineage-page.css";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Text, Title } = Typography;
 
@@ -149,7 +150,7 @@ export const LineagePage = () => {
                             </div>
                             <div className="knowledge-lineage-list-shell">
                                 {lineageQuery.isFetching && !lineageQuery.isLoading ? (
-                                    <Alert banner message="正在刷新世系画布" type="info" />
+                                    <KuzhambuAlert banner title="正在刷新世系画布" type="info" />
                                 ) : null}
                                 <Tabs
                                     items={[

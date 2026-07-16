@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Alert, Card, Empty } from "antd";
+import { App, Card, Empty } from "antd";
 import { useCallback, useMemo, useState } from "react";
 import { KuzhambuList, KuzhambuListItem } from "@/components/kuzhambu-list";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
@@ -7,6 +7,7 @@ import * as aiCandidateService from "../ai-candidate-service";
 import type { AiCandidateCapability, AiCandidateRecord } from "../ai-candidate-types";
 import { AiCandidatePayloadEditor } from "./ai-candidate-payload-editor";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 type CandidateContentType = "SANCAI_ENTRY" | "WANGQI_DOCUMENT" | "MING_CUSTOMS";
 
 interface AiCandidatePanelProps {
@@ -214,7 +215,11 @@ export const AiCandidatePanel = ({
 
     if (pendingCandidatesQuery.isError) {
         return (
-            <Alert type="warning" title="候选列表加载失败" description="请稍后重试或联系管理员。" />
+            <KuzhambuAlert
+                type="warning"
+                title="候选列表加载失败"
+                description="请稍后重试或联系管理员。"
+            />
         );
     }
 

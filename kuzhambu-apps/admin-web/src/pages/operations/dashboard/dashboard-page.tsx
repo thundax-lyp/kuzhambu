@@ -11,7 +11,7 @@ import {
     WarningOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Card, Empty, Segmented, Spin, Statistic, Typography } from "antd";
+import { App, Card, Empty, Segmented, Spin, Statistic, Typography } from "antd";
 import { type ReactNode, useState } from "react";
 import { Link } from "react-router-dom";
 import { hasPermission } from "@/auth/permission-storage";
@@ -28,6 +28,7 @@ import type {
 } from "./dashboard-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./dashboard-page.css";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Text, Title } = Typography;
 
@@ -550,7 +551,7 @@ export const OperationsDashboardPage = () => {
                     {isLoading && !overview ? <Spin size="large" /> : null}
 
                     {canRenderHealthBanner ? (
-                        <Alert
+                        <KuzhambuAlert
                             action={
                                 <KuzhambuButton
                                     testId="operations-dashboard-dashboard-view-alerts-button"
@@ -566,7 +567,7 @@ export const OperationsDashboardPage = () => {
                                     ? `最新：${latestOpenAlert.message || latestOpenAlert.component || "-"}`
                                     : undefined
                             }
-                            message={`健康告警 ${formatNumber(activeAlertCount)} 个，严重 ${formatNumber(criticalAlertCount)} 个`}
+                            title={`健康告警 ${formatNumber(activeAlertCount)} 个，严重 ${formatNumber(criticalAlertCount)} 个`}
                             showIcon
                             type={criticalAlertCount > 0 ? "error" : "warning"}
                         />
@@ -876,9 +877,9 @@ export const OperationsDashboardPage = () => {
                                                 {alert.sourceRefId || "-"}
                                             </Text>
                                         </div>
-                                        <Alert
+                                        <KuzhambuAlert
                                             description={alert.suggestion || "暂无处置建议"}
-                                            message={
+                                            title={
                                                 alert.failureReason ||
                                                 alert.recoveryAction ||
                                                 "处置建议"
@@ -977,11 +978,11 @@ export const OperationsDashboardPage = () => {
                                 </div>
                                 {selectedHealthAlertInfo.length ? (
                                     selectedHealthAlertInfo.map((alert) => (
-                                        <Alert
+                                        <KuzhambuAlert
                                             className="operations-dashboard-health-related-alert"
                                             description={alert.suggestion || "暂无处置建议"}
                                             key={alert.alertId}
-                                            message={alert.message || "未返回告警消息"}
+                                            title={alert.message || "未返回告警消息"}
                                             showIcon
                                             type={
                                                 alert.alertLevel === "CRITICAL"

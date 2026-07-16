@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Card, Select, Tooltip } from "antd";
+import { App, Card, Select, Tooltip } from "antd";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
@@ -35,6 +35,7 @@ import type { WangqiDocumentCommand, WangqiDocumentQuery } from "./wangqi-servic
 import type { WangqiContentVersionRecord, WangqiDocumentRecord } from "./wangqi-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./wangqi-page.css";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 type WangqiVisibilityFilter = "ALL" | "PUBLIC" | "PRIVATE";
 type WangqiSortDirectionFilter = "ASC" | "DESC";
@@ -842,11 +843,11 @@ export const WangqiPage = () => {
                             </KuzhambuButton>
                         </div>
                         {batchShareResult ? (
-                            <Alert
+                            <KuzhambuAlert
                                 showIcon
                                 type={batchShareResult.failureCount > 0 ? "warning" : "success"}
                                 style={{ marginBottom: 12 }}
-                                message={`批量分享结果：成功 ${batchShareResult.successCount}，失败 ${batchShareResult.failureCount}`}
+                                title={`批量分享结果：成功 ${batchShareResult.successCount}，失败 ${batchShareResult.failureCount}`}
                                 description={
                                     batchShareResult.failures.length
                                         ? batchShareResult.failures
@@ -860,13 +861,13 @@ export const WangqiPage = () => {
                             />
                         ) : null}
                         {batchVisibilityResult ? (
-                            <Alert
+                            <KuzhambuAlert
                                 showIcon
                                 type={
                                     batchVisibilityResult.failureCount > 0 ? "warning" : "success"
                                 }
                                 style={{ marginBottom: 12 }}
-                                message={`批量可见性结果：成功 ${batchVisibilityResult.successCount}，失败 ${batchVisibilityResult.failureCount}`}
+                                title={`批量可见性结果：成功 ${batchVisibilityResult.successCount}，失败 ${batchVisibilityResult.failureCount}`}
                                 description={
                                     batchVisibilityResult.failures.length
                                         ? batchVisibilityResult.failures
