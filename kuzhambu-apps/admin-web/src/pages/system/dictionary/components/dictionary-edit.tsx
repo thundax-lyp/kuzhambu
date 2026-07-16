@@ -1,8 +1,9 @@
-import { Button, Form, Input } from "antd";
+import { Form, Input } from "antd";
 import { useEffect } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import type { DictSaveCommand } from "../dictionary-service";
 import type { DictRecord } from "../dictionary-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { TextArea } = Input;
 
@@ -81,10 +82,17 @@ export const DictionaryEdit = ({
             onClose={onClose}
             footer={
                 <div className="dictionary-edit-footer">
-                    <Button onClick={onClose}>取消</Button>
-                    <Button type="primary" loading={saving} onClick={saveDictionary}>
+                    <KuzhambuButton name="取消" onClick={onClose}>
+                        取消
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="保存"
+                        type="primary"
+                        loading={saving}
+                        onClick={saveDictionary}
+                    >
                         保存
-                    </Button>
+                    </KuzhambuButton>
                 </div>
             }
         >

@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Badge, Button, Card, Select } from "antd";
+import { Alert, App, Badge, Card, Select } from "antd";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
+import { KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
 import { AiCandidateBatchDrawer } from "@/pages/classics/common/components/ai-candidate-batch-drawer";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
@@ -35,6 +36,7 @@ import type {
     MingCustomsRecord,
     MingCustomsTagCloudItem
 } from "./ming-customs-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./ming-customs-page.css";
 
 type MingCustomsVisibilityFilter = "ALL" | "PUBLIC" | "PRIVATE";
@@ -811,9 +813,13 @@ export const MingCustomsPage = () => {
                                     </span>
                                 }
                                 action={
-                                    <Button size="small" onClick={clearTagFilter}>
+                                    <KuzhambuButton
+                                        name="清除标签筛选"
+                                        size="small"
+                                        onClick={clearTagFilter}
+                                    >
                                         清除标签筛选
-                                    </Button>
+                                    </KuzhambuButton>
                                 }
                             />
                         ) : null}
@@ -844,36 +850,40 @@ export const MingCustomsPage = () => {
                             }}
                         />
                         <div style={{ marginBottom: 12 }}>
-                            <Button
+                            <KuzhambuButton
+                                name="批量分享"
                                 disabled={!selectedEntries.length || !canShareEntries}
                                 loading={batchShareMutation.isPending}
                                 onClick={shareSelectedEntries}
                             >
                                 批量分享
-                            </Button>
-                            <Button
+                            </KuzhambuButton>
+                            <KuzhambuButton
+                                name="批量候选治理"
                                 disabled={!selectedEntries.length || !canChangeEntryVisibility}
                                 style={{ marginLeft: 8 }}
                                 onClick={openBatchCandidateDrawer}
                             >
                                 批量候选治理
-                            </Button>
-                            <Button
+                            </KuzhambuButton>
+                            <KuzhambuButton
+                                name="批量公开"
                                 disabled={!selectedEntries.length || !canChangeEntryVisibility}
                                 loading={batchVisibilityMutation.isPending}
                                 style={{ marginLeft: 8 }}
                                 onClick={() => changeSelectedVisibility("PUBLIC")}
                             >
                                 批量公开
-                            </Button>
-                            <Button
+                            </KuzhambuButton>
+                            <KuzhambuButton
+                                name="批量私有"
                                 disabled={!selectedEntries.length || !canChangeEntryVisibility}
                                 loading={batchVisibilityMutation.isPending}
                                 style={{ marginLeft: 8 }}
                                 onClick={() => changeSelectedVisibility("PRIVATE")}
                             >
                                 批量私有
-                            </Button>
+                            </KuzhambuButton>
                         </div>
                         {batchShareResult ? (
                             <Alert
@@ -966,8 +976,9 @@ export const MingCustomsPage = () => {
                                 size="small"
                                 title="AI 精修任务"
                                 extra={
-                                    <Button.Group>
-                                        <Button
+                                    <KuzhambuSpaceCompact>
+                                        <KuzhambuButton
+                                            name="创建摘要任务"
                                             type="primary"
                                             onClick={() =>
                                                 createRefinementTask(editorEntry, "summary")
@@ -975,22 +986,24 @@ export const MingCustomsPage = () => {
                                             loading={creatingRefinementCapability === "summary"}
                                         >
                                             创建摘要任务
-                                        </Button>
-                                        <Button
+                                        </KuzhambuButton>
+                                        <KuzhambuButton
+                                            name="创建标签任务"
                                             onClick={() =>
                                                 createRefinementTask(editorEntry, "tags")
                                             }
                                             loading={creatingRefinementCapability === "tags"}
                                         >
                                             创建标签任务
-                                        </Button>
-                                        <Button
+                                        </KuzhambuButton>
+                                        <KuzhambuButton
+                                            name="创建问答任务"
                                             onClick={() => createRefinementTask(editorEntry, "qa")}
                                             loading={creatingRefinementCapability === "qa"}
                                         >
                                             创建问答任务
-                                        </Button>
-                                    </Button.Group>
+                                        </KuzhambuButton>
+                                    </KuzhambuSpaceCompact>
                                 }
                             >
                                 {refinementTasks.length ? (

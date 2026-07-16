@@ -1,7 +1,8 @@
-import { Button, Table, Tag } from "antd";
+import { Table, Tag } from "antd";
 import { KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
 import type { ColumnsType } from "antd/es/table";
 import type { GraphVersionRecord } from "../graph-results-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 interface GraphVersionTableProps {
     loading?: boolean;
@@ -76,13 +77,16 @@ export const GraphVersionTable = ({
             key: "actions",
             render: (_, version) => (
                 <KuzhambuSpaceCompact>
-                    <Button onClick={() => onOpenDetail(version)}>查看详情</Button>
-                    <Button
+                    <KuzhambuButton name="查看详情" onClick={() => onOpenDetail(version)}>
+                        查看详情
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="查看正式结果"
                         type={selectedVersionId === version.versionId ? "primary" : "default"}
                         onClick={() => onOpenResults(version)}
                     >
                         查看正式结果
-                    </Button>
+                    </KuzhambuButton>
                 </KuzhambuSpaceCompact>
             ),
             title: "操作"

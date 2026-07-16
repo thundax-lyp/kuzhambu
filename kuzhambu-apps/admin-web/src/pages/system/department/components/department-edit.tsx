@@ -1,8 +1,9 @@
-import { Button, Form, Input, Select } from "antd";
+import { Form, Input, Select } from "antd";
 import { useEffect } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import type { DepartmentSaveCommand } from "../department-service";
 import type { DepartmentNode } from "../department-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { TextArea } = Input;
 
@@ -83,10 +84,17 @@ export const DepartmentEdit = ({
             onClose={onClose}
             footer={
                 <div className="department-edit-footer">
-                    <Button onClick={onClose}>取消</Button>
-                    <Button type="primary" loading={saving} onClick={saveDepartment}>
+                    <KuzhambuButton name="取消" onClick={onClose}>
+                        取消
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="保存"
+                        type="primary"
+                        loading={saving}
+                        onClick={saveDepartment}
+                    >
                         保存
-                    </Button>
+                    </KuzhambuButton>
                 </div>
             }
         >

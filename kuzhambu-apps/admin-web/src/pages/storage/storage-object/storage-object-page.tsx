@@ -7,7 +7,7 @@ import {
     UploadOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Input, Select, Typography } from "antd";
+import { App, Input, Select, Typography } from "antd";
 import { useMemo, useRef, useState } from "react";
 import type { ChangeEvent, Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
@@ -26,6 +26,7 @@ import type {
     StorageRecord,
     StorageUploadTaskRecord
 } from "./storage-object-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./storage-object-page.css";
 
 const { Text } = Typography;
@@ -621,28 +622,31 @@ export const StorageObjectPage = () => {
                             accept={uploadAccept}
                             onChange={uploadSelectedFile}
                         />
-                        <Button
+                        <KuzhambuButton
+                            name="上传"
                             icon={<UploadOutlined />}
                             disabled={!canEditStorage || isUploadInProgress}
                             loading={isUploadInProgress}
                             onClick={openUploadPicker}
                         >
                             上传
-                        </Button>
-                        <Button
+                        </KuzhambuButton>
+                        <KuzhambuButton
+                            name="刷新"
                             icon={<ReloadOutlined />}
                             loading={storageQuery.isFetching}
                             onClick={() => storageQuery.refetch()}
                         >
                             刷新
-                        </Button>
+                        </KuzhambuButton>
                     </KuzhambuSpace>
                 }
                 batchClassName="storage-object-table-toolbar"
                 selectedCount={selectedRowKeys.length}
                 batchActions={
                     <KuzhambuSpace wrap>
-                        <Button
+                        <KuzhambuButton
+                            name="批量删除"
                             danger
                             icon={<DeleteOutlined />}
                             disabled={!hasSelectedStorages || !canEditStorage}
@@ -650,7 +654,7 @@ export const StorageObjectPage = () => {
                             onClick={openBatchDeleteConfirm}
                         >
                             批量删除
-                        </Button>
+                        </KuzhambuButton>
                     </KuzhambuSpace>
                 }
                 rowKey="id"

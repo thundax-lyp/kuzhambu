@@ -1,8 +1,9 @@
-import { Button, Form, Input } from "antd";
+import { Form, Input } from "antd";
 import { useEffect, useMemo } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import type { SynonymCreateCommand, SynonymUpdateCommand } from "../taxonomy-service";
 import type { SynonymRecord } from "../taxonomy-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 interface SynonymEditProps {
     open?: boolean;
@@ -102,12 +103,17 @@ export const SynonymEdit = ({
             onClose={onClose}
             footer={
                 <div className="knowledge-taxonomy-synonym-editor-footer">
-                    <Button disabled={saving} onClick={onClose}>
+                    <KuzhambuButton name="取消" disabled={saving} onClick={onClose}>
                         取消
-                    </Button>
-                    <Button type="primary" loading={saving} onClick={() => void saveSynonym()}>
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name={String(saveButtonText)}
+                        type="primary"
+                        loading={saving}
+                        onClick={() => void saveSynonym()}
+                    >
                         {saveButtonText}
-                    </Button>
+                    </KuzhambuButton>
                 </div>
             }
         >

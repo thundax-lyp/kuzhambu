@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { ClockCircleOutlined } from "@ant-design/icons";
-import { Button, Empty, Timeline, Typography } from "antd";
+import { Empty, Timeline, Typography } from "antd";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import type { WangqiDocumentRecord } from "../wangqi-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 
@@ -36,9 +37,13 @@ export const WangqiTimeline = ({
 
     return (
         <>
-            <Button icon={<ClockCircleOutlined />} onClick={() => setOpen(true)}>
+            <KuzhambuButton
+                name="时间线"
+                icon={<ClockCircleOutlined />}
+                onClick={() => setOpen(true)}
+            >
                 时间线
-            </Button>
+            </KuzhambuButton>
             <KuzhambuDrawer
                 aria-label="王圻文档时间线"
                 destroyOnHidden
@@ -48,9 +53,9 @@ export const WangqiTimeline = ({
                 title="时间线"
                 onClose={() => setOpen(false)}
                 footer={
-                    <Button type="primary" onClick={() => setOpen(false)}>
+                    <KuzhambuButton name="关闭" type="primary" onClick={() => setOpen(false)}>
                         关闭
-                    </Button>
+                    </KuzhambuButton>
                 }
             >
                 {dataSource.length === 0 ? (
@@ -61,10 +66,10 @@ export const WangqiTimeline = ({
                             key: record.id,
                             title: formatDateTime(record.documentTime),
                             content: (
-                                <Button
+                                <KuzhambuButton
+                                    name={String(`打开王圻文档 ${record.title || "未命名文档"}`)}
                                     type="text"
                                     className="wangqi-timeline-item"
-                                    aria-label={`打开王圻文档 ${record.title || "未命名文档"}`}
                                     onClick={() => {
                                         setOpen(false);
                                         onOpenDocument(record);
@@ -80,7 +85,7 @@ export const WangqiTimeline = ({
                                     >
                                         {record.summary || "暂无摘要"}
                                     </Text>
-                                </Button>
+                                </KuzhambuButton>
                             )
                         }))}
                     />

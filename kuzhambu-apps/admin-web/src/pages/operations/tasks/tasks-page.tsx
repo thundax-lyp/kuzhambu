@@ -1,6 +1,6 @@
 import { DashboardOutlined, SettingOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Alert, Button, Card, Descriptions, Input, Select, Spin, Typography } from "antd";
+import { Alert, Card, Descriptions, Input, Select, Spin, Typography } from "antd";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { hasPermission } from "@/auth/permission-storage";
@@ -12,6 +12,7 @@ import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import * as service from "./tasks-service";
 import type { OperationsTaskPageQuery } from "./tasks-service";
 import type { OperationsTaskRecord } from "./tasks-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./tasks-page.css";
 
 const { Text, Title } = Typography;
@@ -211,13 +212,14 @@ export const OperationsTasksPage = () => {
                                 </Select>
                             </KuzhambuSpace>
                             <KuzhambuSpace size={8} wrap>
-                                <Button
+                                <KuzhambuButton
+                                    name="重置筛选"
                                     icon={<SettingOutlined />}
                                     type="default"
                                     onClick={() => setFilters({})}
                                 >
                                     重置筛选
-                                </Button>
+                                </KuzhambuButton>
                                 <Text type="secondary">共 {totalCount} 条记录</Text>
                             </KuzhambuSpace>
                         </KuzhambuSpace>
@@ -270,7 +272,8 @@ export const OperationsTasksPage = () => {
                                                 <td>{formatDateTime(task.startedAt)}</td>
                                                 <td>{formatDateTime(task.completedAt)}</td>
                                                 <td>
-                                                    <Button
+                                                    <KuzhambuButton
+                                                        name="详情"
                                                         size="small"
                                                         type="link"
                                                         onClick={() =>
@@ -279,7 +282,7 @@ export const OperationsTasksPage = () => {
                                                         disabled={!canViewTask}
                                                     >
                                                         详情
-                                                    </Button>
+                                                    </KuzhambuButton>
                                                 </td>
                                             </tr>
                                         );
@@ -294,15 +297,23 @@ export const OperationsTasksPage = () => {
                             </tbody>
                         </table>
                         <div className="operations-tasks-pagination">
-                            <Button disabled={taskPageNo <= 1} onClick={previousPage}>
+                            <KuzhambuButton
+                                name="上一页"
+                                disabled={taskPageNo <= 1}
+                                onClick={previousPage}
+                            >
                                 上一页
-                            </Button>
+                            </KuzhambuButton>
                             <Text>
                                 第 {taskPageNo} / {totalPage} 页
                             </Text>
-                            <Button disabled={taskPageNo >= totalPage} onClick={nextPage}>
+                            <KuzhambuButton
+                                name="下一页"
+                                disabled={taskPageNo >= totalPage}
+                                onClick={nextPage}
+                            >
                                 下一页
-                            </Button>
+                            </KuzhambuButton>
                             <KuzhambuSpace size={8}>
                                 <Text>每页</Text>
                                 <Select
@@ -394,11 +405,11 @@ export const OperationsTasksPage = () => {
                         {isFailedTask(detailRecord) ? (
                             <Alert
                                 action={
-                                    <Button size="small">
+                                    <KuzhambuButton name="查看告警" size="small">
                                         <Link to={buildTaskAlertPath(detailRecord?.snapshotId)}>
                                             查看告警
                                         </Link>
-                                    </Button>
+                                    </KuzhambuButton>
                                 }
                                 description={`${failureReasonText(detailRecord?.failureReason)}。请查看来源域任务状态，必要时重新发起业务动作。`}
                                 message="长任务执行失败"

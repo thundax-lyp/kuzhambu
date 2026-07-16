@@ -1,9 +1,10 @@
-import { Button, Empty, Image, Typography } from "antd";
+import { Empty, Image, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import * as entryService from "../services/sancai-entry-service";
 import type { SancaiEntryImageRecord } from "../sancai-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 
@@ -83,7 +84,8 @@ export const SancaiEntryImagePreview = ({
                             </Text>
                         </div>
                         <KuzhambuSpace wrap>
-                            <Button
+                            <KuzhambuButton
+                                name="上一张"
                                 disabled={!hasMultipleImages || resolvedIndex === 0}
                                 onClick={() =>
                                     setNavigatedImageId(
@@ -92,8 +94,9 @@ export const SancaiEntryImagePreview = ({
                                 }
                             >
                                 上一张
-                            </Button>
-                            <Button
+                            </KuzhambuButton>
+                            <KuzhambuButton
+                                name="下一张"
                                 disabled={
                                     !hasMultipleImages || resolvedIndex === orderedImages.length - 1
                                 }
@@ -104,10 +107,15 @@ export const SancaiEntryImagePreview = ({
                                 }
                             >
                                 下一张
-                            </Button>
-                            <Button href={downloadUrl} target="_blank" disabled={!downloadUrl}>
+                            </KuzhambuButton>
+                            <KuzhambuButton
+                                name="下载当前图片"
+                                href={downloadUrl}
+                                target="_blank"
+                                disabled={!downloadUrl}
+                            >
                                 下载当前图片
-                            </Button>
+                            </KuzhambuButton>
                         </KuzhambuSpace>
                     </>
                 ) : (

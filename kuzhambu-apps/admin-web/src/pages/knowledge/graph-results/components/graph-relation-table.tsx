@@ -1,7 +1,8 @@
-import { Button, Table, Tag } from "antd";
+import { Table, Tag } from "antd";
 import { KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
 import type { ColumnsType } from "antd/es/table";
 import type { GraphRelationRecord } from "../graph-results-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 interface GraphRelationTableProps {
     loading?: boolean;
@@ -42,7 +43,9 @@ export const GraphRelationTable = ({
             key: "actions",
             render: (_, relation) => (
                 <KuzhambuSpaceCompact>
-                    <Button onClick={() => onOpenDetail(relation)}>查看详情</Button>
+                    <KuzhambuButton name="查看详情" onClick={() => onOpenDetail(relation)}>
+                        查看详情
+                    </KuzhambuButton>
                 </KuzhambuSpaceCompact>
             ),
             title: "操作"

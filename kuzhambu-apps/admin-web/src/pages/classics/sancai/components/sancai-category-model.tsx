@@ -1,8 +1,9 @@
-import { Button, Input, Modal, Select, Typography } from "antd";
+import { Input, Modal, Select, Typography } from "antd";
 import { useState } from "react";
 import type { DictItem } from "@/types/dict";
 import { toCategoryFormValues, type SancaiCategoryFormValues } from "./sancai-form-values";
 import type { SancaiCategoryRecord } from "../sancai-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 
@@ -35,17 +36,19 @@ export const SancaiCategoryModel = ({
             open
             footer={
                 <div className="sancai-modal-footer">
-                    <Button onClick={onCancel}>取消</Button>
-                    <Button
-                        aria-label={
+                    <KuzhambuButton name="取消" onClick={onCancel}>
+                        取消
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name={String(
                             category ? `保存门类 ${readTitle(category, "门类")}` : "保存新增门类"
-                        }
+                        )}
                         loading={isSubmitting}
                         type="primary"
                         onClick={() => onSubmit(form)}
                     >
                         保存
-                    </Button>
+                    </KuzhambuButton>
                 </div>
             }
             destroyOnHidden

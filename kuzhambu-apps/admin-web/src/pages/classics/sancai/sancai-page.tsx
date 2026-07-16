@@ -1,6 +1,6 @@
 import { FilterOutlined, PlusOutlined, ReloadOutlined, SearchOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Alert, Button, Input, Select, Splitter } from "antd";
+import { Alert, Input, Select, Splitter } from "antd";
 import { useMemo, useState } from "react";
 import { KuzhambuFilterPanel } from "@/components/kuzhambu-filter-panel";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
@@ -16,6 +16,7 @@ import type {
     SancaiCategoryRecord,
     SancaiVolumeRecord
 } from "./sancai-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./sancai-page.css";
 
 const entryStatusOptions = [
@@ -267,7 +268,8 @@ export const SancaiPage = () => {
                         />
                     ) : null}
                     {enableEntryFilter ? (
-                        <Button
+                        <KuzhambuButton
+                            name="筛选"
                             className={
                                 isFilterOpen || filterActive ? "sancai-page-filter-active" : ""
                             }
@@ -276,19 +278,24 @@ export const SancaiPage = () => {
                             onClick={() => setIsFilterOpen((open) => !open)}
                         >
                             筛选
-                        </Button>
+                        </KuzhambuButton>
                     ) : null}
-                    <Button
-                        aria-label="刷新三才图会数据"
+                    <KuzhambuButton
+                        name="刷新三才图会数据"
                         icon={<ReloadOutlined />}
                         onClick={refreshPage}
                     >
                         刷新
-                    </Button>
+                    </KuzhambuButton>
                     {enableAdd ? (
-                        <Button type="primary" icon={<PlusOutlined />} onClick={startCreate}>
+                        <KuzhambuButton
+                            name={String(addText)}
+                            type="primary"
+                            icon={<PlusOutlined />}
+                            onClick={startCreate}
+                        >
                             {addText}
-                        </Button>
+                        </KuzhambuButton>
                     ) : null}
                 </KuzhambuSpace>
             }

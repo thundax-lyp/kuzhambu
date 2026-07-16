@@ -1,6 +1,6 @@
 import { ClockCircleOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Avatar, Button, Empty, Tag, Typography } from "antd";
+import { Avatar, Empty, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useCurrentAccessToken } from "@/auth/hooks/use-current-access-token";
@@ -17,6 +17,7 @@ import type { AuditLogFilters } from "./components/audit-log-filter";
 import * as service from "./audit-log-service";
 import type { AuditLogPageQuery } from "./audit-log-service";
 import type { AuditLogRecord } from "./audit-log-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./audit-log-page.css";
 
 const { Text } = Typography;
@@ -313,13 +314,14 @@ export const AuditLogPage = () => {
                 onFilterApply={applyFilters}
                 onFilterReset={resetFilters}
                 pageActions={
-                    <Button
+                    <KuzhambuButton
+                        name="刷新"
                         icon={<ReloadOutlined />}
                         loading={auditLogQuery.isFetching}
                         onClick={() => auditLogQuery.refetch()}
                     >
                         刷新
-                    </Button>
+                    </KuzhambuButton>
                 }
                 rowKey="id"
                 className="audit-log-table"

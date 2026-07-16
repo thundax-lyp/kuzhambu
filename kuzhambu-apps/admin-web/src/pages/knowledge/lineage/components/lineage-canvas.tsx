@@ -1,8 +1,9 @@
 import { FullscreenOutlined, ZoomInOutlined, ZoomOutOutlined } from "@ant-design/icons";
-import { Button, Empty, Tooltip } from "antd";
+import { Empty, Tooltip } from "antd";
 import { useMemo, useRef, useState } from "react";
 import type { MouseEvent as ReactMouseEvent, WheelEvent as ReactWheelEvent } from "react";
 import type { LineageNodeRecord, LineageRelationRecord } from "../lineage-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 interface LineageCanvasProps {
     nodes: LineageNodeRecord[];
@@ -188,22 +189,22 @@ export const LineageCanvas = ({
         <div className="knowledge-lineage-canvas">
             <div className="knowledge-lineage-canvas__tools" aria-label="世系画布工具">
                 <Tooltip title="缩小">
-                    <Button
-                        aria-label="缩小世系画布"
+                    <KuzhambuButton
+                        name="缩小世系画布"
                         icon={<ZoomOutOutlined />}
                         onClick={() => zoom(1.12)}
                     />
                 </Tooltip>
                 <Tooltip title="放大">
-                    <Button
-                        aria-label="放大世系画布"
+                    <KuzhambuButton
+                        name="放大世系画布"
                         icon={<ZoomInOutlined />}
                         onClick={() => zoom(0.88)}
                     />
                 </Tooltip>
                 <Tooltip title="适配视图">
-                    <Button
-                        aria-label="适配世系画布"
+                    <KuzhambuButton
+                        name="适配世系画布"
                         icon={<FullscreenOutlined />}
                         onClick={() => setViewBox(DEFAULT_VIEW_BOX)}
                     />

@@ -11,7 +11,7 @@ import {
     WarningOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Button, Card, Empty, Segmented, Spin, Statistic, Typography } from "antd";
+import { Alert, App, Card, Empty, Segmented, Spin, Statistic, Typography } from "antd";
 import { type ReactNode, useState } from "react";
 import { Link } from "react-router-dom";
 import { hasPermission } from "@/auth/permission-storage";
@@ -26,6 +26,7 @@ import type {
     OperationsHealthAlertRecord,
     OperationsHealthSummaryRecord
 } from "./dashboard-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./dashboard-page.css";
 
 const { Text, Title } = Typography;
@@ -527,13 +528,14 @@ export const OperationsDashboardPage = () => {
                         value={periodType}
                         onChange={(value) => setPeriodType(value as OperationsDashboardPeriodType)}
                     />
-                    <Button
+                    <KuzhambuButton
+                        name="刷新"
                         icon={<ReloadOutlined />}
                         onClick={() => void refreshDashboard()}
                         disabled={!canViewDashboard}
                     >
                         刷新
-                    </Button>
+                    </KuzhambuButton>
                 </KuzhambuSpace>
             }
             className="dashboard-page operations-dashboard-page"
@@ -550,9 +552,13 @@ export const OperationsDashboardPage = () => {
                     {canRenderHealthBanner ? (
                         <Alert
                             action={
-                                <Button size="small" onClick={() => setAlertDrawerOpen(true)}>
+                                <KuzhambuButton
+                                    name="查看告警"
+                                    size="small"
+                                    onClick={() => setAlertDrawerOpen(true)}
+                                >
                                     查看告警
-                                </Button>
+                                </KuzhambuButton>
                             }
                             className="operations-dashboard-alert-banner"
                             description={
@@ -885,14 +891,15 @@ export const OperationsDashboardPage = () => {
                                             }
                                         />
                                         <div className="operations-dashboard-alert-actions">
-                                            <Button size="small">
+                                            <KuzhambuButton name="去处理" size="small">
                                                 <Link to={resolveAlertActionPath(alert)}>
                                                     去处理
                                                 </Link>
-                                            </Button>
+                                            </KuzhambuButton>
                                             {canManageHealthAlert &&
                                             alert.alertStatus === "ACTIVE" ? (
-                                                <Button
+                                                <KuzhambuButton
+                                                    name="确认"
                                                     loading={confirmAlertMutation.isPending}
                                                     onClick={() =>
                                                         confirmAlertMutation.mutate({
@@ -902,10 +909,11 @@ export const OperationsDashboardPage = () => {
                                                     size="small"
                                                 >
                                                     确认
-                                                </Button>
+                                                </KuzhambuButton>
                                             ) : null}
                                             {canManageHealthAlert ? (
-                                                <Button
+                                                <KuzhambuButton
+                                                    name="标记恢复"
                                                     loading={recoverAlertMutation.isPending}
                                                     onClick={() =>
                                                         recoverAlertMutation.mutate({
@@ -916,7 +924,7 @@ export const OperationsDashboardPage = () => {
                                                     type="primary"
                                                 >
                                                     标记恢复
-                                                </Button>
+                                                </KuzhambuButton>
                                             ) : null}
                                         </div>
                                     </Card>
@@ -955,13 +963,14 @@ export const OperationsDashboardPage = () => {
                             <div className="operations-dashboard-health-related-alerts">
                                 <div className="operations-dashboard-health-related-alerts-header">
                                     <Text strong>关联告警</Text>
-                                    <Button
+                                    <KuzhambuButton
+                                        name="查看全部告警"
                                         onClick={() => setAlertDrawerOpen(true)}
                                         size="small"
                                         type="link"
                                     >
                                         查看全部告警
-                                    </Button>
+                                    </KuzhambuButton>
                                 </div>
                                 {selectedHealthAlertInfo.length ? (
                                     selectedHealthAlertInfo.map((alert) => (

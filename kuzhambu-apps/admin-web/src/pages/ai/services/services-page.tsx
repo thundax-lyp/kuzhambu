@@ -1,6 +1,6 @@
 import { EditOutlined, ReloadOutlined, SaveOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Card, Descriptions, Form, Input, Select, Switch, Tooltip } from "antd";
+import { App, Card, Descriptions, Form, Input, Select, Switch, Tooltip } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
@@ -11,6 +11,7 @@ import type { KuzhambuTagType } from "@/components/kuzhambu-tag";
 import * as service from "./services-service";
 import type { AiServiceConfigChangeCommand } from "./services-service";
 import type { AiServiceConfigRecord, AiServiceRole } from "./services-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./services-page.css";
 
 type ServiceFormValues = AiServiceConfigChangeCommand;
@@ -120,8 +121,8 @@ export const ServicesPage = () => {
             description="管理主服务、备用服务和文生图服务连接状态"
             actions={
                 <Tooltip title="刷新">
-                    <Button
-                        aria-label="刷新"
+                    <KuzhambuButton
+                        name="刷新"
                         icon={<ReloadOutlined />}
                         loading={servicesQuery.isFetching}
                         onClick={() => void servicesQuery.refetch()}
@@ -138,13 +139,14 @@ export const ServicesPage = () => {
                             className="services-card"
                             title={SERVICE_ROLE_TITLES[role]}
                             extra={
-                                <Button
+                                <KuzhambuButton
+                                    name={String(record ? "编辑" : "配置")}
                                     icon={<EditOutlined />}
                                     disabled={!canEditConfig}
                                     onClick={() => openEditor(role, record)}
                                 >
                                     {record ? "编辑" : "配置"}
-                                </Button>
+                                </KuzhambuButton>
                             }
                         >
                             {record ? (
@@ -194,15 +196,17 @@ export const ServicesPage = () => {
                 }}
                 footer={
                     <KuzhambuSpace>
-                        <Button
+                        <KuzhambuButton
+                            name="取消"
                             onClick={() => {
                                 setEditorOpen(false);
                                 form.resetFields();
                             }}
                         >
                             取消
-                        </Button>
-                        <Button
+                        </KuzhambuButton>
+                        <KuzhambuButton
+                            name="保存"
                             type="primary"
                             icon={<SaveOutlined />}
                             disabled={!canEditConfig}
@@ -210,7 +214,7 @@ export const ServicesPage = () => {
                             onClick={() => void submitForm()}
                         >
                             保存
-                        </Button>
+                        </KuzhambuButton>
                     </KuzhambuSpace>
                 }
             >

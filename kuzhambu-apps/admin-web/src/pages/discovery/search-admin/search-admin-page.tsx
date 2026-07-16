@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { Button, Card, Checkbox, Descriptions, Input, Table, Typography } from "antd";
+import { Card, Checkbox, Descriptions, Input, Table, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useState } from "react";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
@@ -10,6 +10,7 @@ import type {
     DiscoverySearchLogPageRecord,
     DiscoverySearchLogRecord
 } from "./search-admin-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./search-admin-page.css";
 
 const { Text, Title } = Typography;
@@ -102,7 +103,8 @@ export const SearchAdminPage = () => {
                     <Card title="搜索分析摘要" size="small">
                         <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
                             <KuzhambuSpace wrap>
-                                <Button
+                                <KuzhambuButton
+                                    name="刷新分析"
                                     loading={analysisMutation.isPending}
                                     onClick={() =>
                                         analysisMutation.mutate({
@@ -113,7 +115,7 @@ export const SearchAdminPage = () => {
                                     type="primary"
                                 >
                                     刷新分析
-                                </Button>
+                                </KuzhambuButton>
                                 <Text type="secondary">
                                     分析范围复用下方搜索日志的起始时间和结束时间。
                                 </Text>
@@ -247,7 +249,8 @@ export const SearchAdminPage = () => {
                             </KuzhambuSpace>
 
                             <KuzhambuSpace wrap>
-                                <Button
+                                <KuzhambuButton
+                                    name="查询日志"
                                     loading={pageMutation.isPending}
                                     onClick={() =>
                                         pageMutation.mutate({
@@ -270,8 +273,10 @@ export const SearchAdminPage = () => {
                                     type="primary"
                                 >
                                     查询日志
-                                </Button>
-                                <Button onClick={() => setPageResult(null)}>清空结果</Button>
+                                </KuzhambuButton>
+                                <KuzhambuButton name="清空结果" onClick={() => setPageResult(null)}>
+                                    清空结果
+                                </KuzhambuButton>
                             </KuzhambuSpace>
                         </KuzhambuSpace>
 
@@ -304,7 +309,8 @@ export const SearchAdminPage = () => {
                                     style={{ width: 220 }}
                                 />
                             </label>
-                            <Button
+                            <KuzhambuButton
+                                name="查看详情"
                                 loading={detailMutation.isPending}
                                 onClick={() =>
                                     detailMutation.mutate({
@@ -314,7 +320,7 @@ export const SearchAdminPage = () => {
                                 type="primary"
                             >
                                 查看详情
-                            </Button>
+                            </KuzhambuButton>
                         </KuzhambuSpace>
 
                         <Descriptions
@@ -397,7 +403,8 @@ export const SearchAdminPage = () => {
                             >
                                 确认全量重建
                             </Checkbox>
-                            <Button
+                            <KuzhambuButton
+                                name="触发重建"
                                 danger
                                 loading={rebuildMutation.isPending}
                                 onClick={() =>
@@ -407,7 +414,7 @@ export const SearchAdminPage = () => {
                                 }
                             >
                                 触发重建
-                            </Button>
+                            </KuzhambuButton>
                         </KuzhambuSpace>
                         <Text type="secondary">
                             {rebuildResult !== null

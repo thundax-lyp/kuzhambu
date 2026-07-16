@@ -1,4 +1,4 @@
-import { Button, Descriptions, Empty, Select, Typography } from "antd";
+import { Descriptions, Empty, Select, Typography } from "antd";
 import { useState } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuList, KuzhambuListItem } from "@/components/kuzhambu-list";
@@ -10,6 +10,7 @@ import type {
     TagContentRefRecord,
     TagRecord
 } from "../taxonomy-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 
@@ -153,18 +154,20 @@ export const TagBatchMergePanel = ({
             onClose={onClose}
             footer={
                 <div className="knowledge-taxonomy-drawer-footer">
-                    <Button disabled={previewing || applying} onClick={onClose}>
+                    <KuzhambuButton name="取消" disabled={previewing || applying} onClick={onClose}>
                         取消
-                    </Button>
+                    </KuzhambuButton>
                     <KuzhambuSpace>
-                        <Button
+                        <KuzhambuButton
+                            name="预览影响"
                             loading={previewing}
                             disabled={submitDisabled}
                             onClick={previewImpact}
                         >
                             预览影响
-                        </Button>
-                        <Button
+                        </KuzhambuButton>
+                        <KuzhambuButton
+                            name="执行批量合并"
                             type="primary"
                             danger
                             loading={applying}
@@ -172,7 +175,7 @@ export const TagBatchMergePanel = ({
                             onClick={applyMerge}
                         >
                             执行批量合并
-                        </Button>
+                        </KuzhambuButton>
                     </KuzhambuSpace>
                 </div>
             }

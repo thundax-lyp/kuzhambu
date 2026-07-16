@@ -1,5 +1,6 @@
-import { Button, Progress, Typography } from "antd";
+import { Progress, Typography } from "antd";
 import { StorageUploadTaskRecord } from "../storage-object-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./storage-upload-task-card.css";
 
 const { Text } = Typography;
@@ -73,7 +74,8 @@ export const StorageUploadTaskCard = ({ task, onCancel }: StorageUploadTaskCardP
                 <Text className="storage-upload-task-card-title" strong>
                     {task.fileName}
                 </Text>
-                <Button
+                <KuzhambuButton
+                    name="取消"
                     size="small"
                     danger
                     disabled={!canCancel}
@@ -85,7 +87,7 @@ export const StorageUploadTaskCard = ({ task, onCancel }: StorageUploadTaskCardP
                     }}
                 >
                     取消
-                </Button>
+                </KuzhambuButton>
             </div>
             <Text className="storage-upload-task-card-stage">{toUploadStageText(task.stage)}</Text>
             <Progress

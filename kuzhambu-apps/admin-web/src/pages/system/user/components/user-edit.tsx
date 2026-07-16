@@ -1,6 +1,6 @@
 import { CameraOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Input, Select, Switch, Upload } from "antd";
+import { Input, Select, Switch, Upload } from "antd";
 import { useMemo, useState } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import type { CurrentUserRecord } from "@/service/current-user-types";
@@ -8,6 +8,7 @@ import type { OptionsRecord } from "@/types/options";
 import * as service from "../user-service";
 import type { UserDepartmentNode, UserFormValues, UserRecord, UserRoleRecord } from "../user-types";
 import { UserAvatar } from "./user-avatar";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 interface UserEditProps {
     open?: boolean;
@@ -169,15 +170,26 @@ export const UserEdit = ({
             open={visible}
             size="small"
             onClose={onClose}
-            extra={creating ? null : <Button size="small">−</Button>}
+            extra={
+                creating ? null : (
+                    <KuzhambuButton name="−" size="small">
+                        −
+                    </KuzhambuButton>
+                )
+            }
             footer={
                 <div className="user-edit-footer">
-                    <Button disabled={saving} onClick={onClose}>
+                    <KuzhambuButton name="取消" disabled={saving} onClick={onClose}>
                         取消
-                    </Button>
-                    <Button type="primary" loading={saving} onClick={saveForm}>
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name={String(saveText)}
+                        type="primary"
+                        loading={saving}
+                        onClick={saveForm}
+                    >
                         {saveText}
-                    </Button>
+                    </KuzhambuButton>
                 </div>
             }
         >
@@ -199,10 +211,10 @@ export const UserEdit = ({
                                 return Upload.LIST_IGNORE;
                             }}
                         >
-                            <Button
+                            <KuzhambuButton
+                                name="上传用户头像"
                                 size="small"
                                 shape="circle"
-                                aria-label="上传用户头像"
                                 icon={<CameraOutlined />}
                                 loading={avatarUploading}
                             />

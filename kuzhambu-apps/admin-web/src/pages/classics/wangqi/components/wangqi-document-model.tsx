@@ -1,4 +1,4 @@
-import { Button, DatePicker, Form, Input, InputNumber, Select, Switch, Typography } from "antd";
+import { DatePicker, Form, Input, InputNumber, Select, Switch, Typography } from "antd";
 import { useEffect } from "react";
 import type { ReactNode } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
@@ -11,6 +11,7 @@ import {
 } from "./wangqi-document-form-values";
 import type { WangqiDocumentCommand } from "../wangqi-service";
 import type { WangqiDocumentRecord } from "../wangqi-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -63,15 +64,17 @@ export const WangqiDocumentModel = ({
             onClose={onClose}
             footer={
                 <div className="wangqi-document-model-footer">
-                    <Button onClick={onClose}>取消</Button>
-                    <Button
-                        aria-label={mode === "create" ? "保存新增王圻文档" : "保存王圻文档"}
+                    <KuzhambuButton name="取消" onClick={onClose}>
+                        取消
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name={String(mode === "create" ? "保存新增王圻文档" : "保存王圻文档")}
                         type="primary"
                         loading={saving}
                         onClick={saveDocument}
                     >
                         保存
-                    </Button>
+                    </KuzhambuButton>
                 </div>
             }
         >

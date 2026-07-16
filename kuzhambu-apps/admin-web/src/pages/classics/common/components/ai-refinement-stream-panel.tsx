@@ -1,10 +1,11 @@
-import { Alert, Button, Card, Tag, Typography } from "antd";
+import { Alert, Card, Tag, Typography } from "antd";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type {
     AiRefinementStreamEventRecord,
     AiRefinementTaskRecord
 } from "../ai-refinement-task-types";
 import * as aiRefinementTaskService from "../ai-refinement-task-service";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 interface AiRefinementStreamPanelProps {
     events: AiRefinementStreamEventRecord[];
@@ -110,12 +111,18 @@ export const AiRefinementStreamPanel = ({
                 </Typography.Paragraph>
                 <KuzhambuSpace wrap>
                     {canViewCandidate ? (
-                        <Button type="primary" onClick={onViewCandidate}>
+                        <KuzhambuButton name="查看候选" type="primary" onClick={onViewCandidate}>
                             查看候选
-                        </Button>
+                        </KuzhambuButton>
                     ) : null}
-                    {canRetry ? <Button onClick={onRetry}>重试</Button> : null}
-                    <Button onClick={onClose}>关闭过程</Button>
+                    {canRetry ? (
+                        <KuzhambuButton name="重试" onClick={onRetry}>
+                            重试
+                        </KuzhambuButton>
+                    ) : null}
+                    <KuzhambuButton name="关闭过程" onClick={onClose}>
+                        关闭过程
+                    </KuzhambuButton>
                 </KuzhambuSpace>
             </KuzhambuSpace>
         </Card>

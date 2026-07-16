@@ -1,8 +1,9 @@
-import { Button, Typography } from "antd";
+import { Typography } from "antd";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import type { MingCustomsRecord } from "../ming-customs-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 
@@ -60,14 +61,14 @@ export const MingCustomsList = ({
             key: "title",
             width: DEFAULT_COLUMN_WIDTHS.title,
             render: (title: string | null | undefined, record) => (
-                <Button
+                <KuzhambuButton
+                    name={String(`编辑明代习俗 ${title || "未命名条目"}`)}
                     type="link"
                     className="ming-customs-title-link"
-                    aria-label={`编辑明代习俗 ${title || "未命名条目"}`}
                     onClick={() => onOpenEdit(record)}
                 >
                     <Text strong>{title || "未命名条目"}</Text>
-                </Button>
+                </KuzhambuButton>
             )
         },
         {

@@ -1,7 +1,8 @@
-import { Button, Table, Tag } from "antd";
+import { Table, Tag } from "antd";
 import { KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
 import type { ColumnsType } from "antd/es/table";
 import type { RefinementEntityRecord } from "../refinement-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 interface RefinementEntityTableProps {
     canEdit?: boolean;
@@ -42,21 +43,31 @@ export const RefinementEntityTable = ({
             key: "actions",
             render: (_, entity) => (
                 <KuzhambuSpaceCompact>
-                    <Button disabled={!canEdit} onClick={() => onEdit(entity)}>
+                    <KuzhambuButton name="编辑" disabled={!canEdit} onClick={() => onEdit(entity)}>
                         编辑
-                    </Button>
-                    <Button
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="确认"
                         disabled={!canEdit || entity.confirmationStatus === "MANUAL_CONFIRMED"}
                         onClick={() => onConfirm(entity)}
                     >
                         确认
-                    </Button>
-                    <Button disabled={!canEdit} onClick={() => onAnnotate(entity)}>
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="标注"
+                        disabled={!canEdit}
+                        onClick={() => onAnnotate(entity)}
+                    >
                         标注
-                    </Button>
-                    <Button danger disabled={!canEdit} onClick={() => onDelete(entity)}>
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="删除"
+                        danger
+                        disabled={!canEdit}
+                        onClick={() => onDelete(entity)}
+                    >
                         删除
-                    </Button>
+                    </KuzhambuButton>
                 </KuzhambuSpaceCompact>
             )
         }
@@ -65,9 +76,9 @@ export const RefinementEntityTable = ({
     return (
         <>
             <div className="knowledge-refinement-section-actions">
-                <Button disabled={!canEdit} type="primary" onClick={onAdd}>
+                <KuzhambuButton name="新增实体" disabled={!canEdit} type="primary" onClick={onAdd}>
                     新增实体
-                </Button>
+                </KuzhambuButton>
             </div>
             <Table<RefinementEntityRecord>
                 aria-label="知识图谱精修实体表格"

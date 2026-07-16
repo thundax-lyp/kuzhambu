@@ -1,8 +1,9 @@
-import { Button, Typography } from "antd";
+import { Typography } from "antd";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import type { WangqiDocumentRecord } from "../wangqi-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 
@@ -76,14 +77,14 @@ export const WangqiDocumentList = ({
             key: "title",
             width: DEFAULT_COLUMN_WIDTHS.title,
             render: (title: string | null | undefined, record) => (
-                <Button
+                <KuzhambuButton
+                    name={String(`编辑王圻文档 ${title || "未命名文档"}`)}
                     type="link"
                     className="wangqi-document-title-link"
-                    aria-label={`编辑王圻文档 ${title || "未命名文档"}`}
                     onClick={() => onOpenEdit(record)}
                 >
                     <Text strong>{title || "未命名文档"}</Text>
-                </Button>
+                </KuzhambuButton>
             )
         },
         {

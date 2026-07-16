@@ -1,7 +1,8 @@
-import { Button, Card, Empty, Typography } from "antd";
+import { Card, Empty, Typography } from "antd";
 import { KuzhambuList, KuzhambuListItem } from "@/components/kuzhambu-list";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { TagGovernanceMetricsRecord } from "../taxonomy-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Paragraph, Text } = Typography;
 
@@ -36,9 +37,9 @@ export const TagGovernanceMetricsPanel = ({
             className="knowledge-taxonomy-metrics-panel"
             title="标签治理统计"
             extra={
-                <Button onClick={onRefresh} loading={loading}>
+                <KuzhambuButton name="刷新统计" onClick={onRefresh} loading={loading}>
                     刷新统计
-                </Button>
+                </KuzhambuButton>
             }
             variant="borderless"
         >

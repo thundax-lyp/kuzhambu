@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Button, Card, Select, Tooltip } from "antd";
+import { Alert, App, Card, Select, Tooltip } from "antd";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
+import { KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
 import { AiCandidateBatchDrawer } from "@/pages/classics/common/components/ai-candidate-batch-drawer";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
@@ -32,6 +33,7 @@ import { WangqiVersionHistoryPanel } from "./components/wangqi-version-history-p
 import * as wangqiService from "./wangqi-service";
 import type { WangqiDocumentCommand, WangqiDocumentQuery } from "./wangqi-service";
 import type { WangqiContentVersionRecord, WangqiDocumentRecord } from "./wangqi-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./wangqi-page.css";
 
 type WangqiVisibilityFilter = "ALL" | "PUBLIC" | "PRIVATE";
@@ -804,36 +806,40 @@ export const WangqiPage = () => {
                             }}
                         />
                         <div style={{ marginBottom: 12 }}>
-                            <Button
+                            <KuzhambuButton
+                                name="批量分享"
                                 disabled={!selectedDocuments.length || !canShareDocuments}
                                 loading={batchShareMutation.isPending}
                                 onClick={shareSelectedDocuments}
                             >
                                 批量分享
-                            </Button>
-                            <Button
+                            </KuzhambuButton>
+                            <KuzhambuButton
+                                name="批量候选治理"
                                 disabled={!selectedDocuments.length || !canChangeDocumentVisibility}
                                 style={{ marginLeft: 8 }}
                                 onClick={openBatchCandidateDrawer}
                             >
                                 批量候选治理
-                            </Button>
-                            <Button
+                            </KuzhambuButton>
+                            <KuzhambuButton
+                                name="批量公开"
                                 disabled={!selectedDocuments.length || !canChangeDocumentVisibility}
                                 loading={batchVisibilityMutation.isPending}
                                 style={{ marginLeft: 8 }}
                                 onClick={() => changeSelectedVisibility("PUBLIC")}
                             >
                                 批量公开
-                            </Button>
-                            <Button
+                            </KuzhambuButton>
+                            <KuzhambuButton
+                                name="批量私有"
                                 disabled={!selectedDocuments.length || !canChangeDocumentVisibility}
                                 loading={batchVisibilityMutation.isPending}
                                 style={{ marginLeft: 8 }}
                                 onClick={() => changeSelectedVisibility("PRIVATE")}
                             >
                                 批量私有
-                            </Button>
+                            </KuzhambuButton>
                         </div>
                         {batchShareResult ? (
                             <Alert
@@ -923,16 +929,18 @@ export const WangqiPage = () => {
                                 size="small"
                                 title="AI 精修任务"
                                 extra={
-                                    <Button.Group>
+                                    <KuzhambuSpaceCompact>
                                         <Tooltip title={singleDocumentQaDisabledReason}>
-                                            <Button
+                                            <KuzhambuButton
+                                                name="单文档问答"
                                                 disabled={!activeDocument.id || !canOpenDiscoveryQa}
                                                 onClick={() => openSingleDocumentQa(activeDocument)}
                                             >
                                                 单文档问答
-                                            </Button>
+                                            </KuzhambuButton>
                                         </Tooltip>
-                                        <Button
+                                        <KuzhambuButton
+                                            name="创建摘要任务"
                                             type="primary"
                                             onClick={() =>
                                                 createRefinementTask(activeDocument, "summary")
@@ -940,24 +948,26 @@ export const WangqiPage = () => {
                                             loading={creatingRefinementCapability === "summary"}
                                         >
                                             创建摘要任务
-                                        </Button>
-                                        <Button
+                                        </KuzhambuButton>
+                                        <KuzhambuButton
+                                            name="创建标签任务"
                                             onClick={() =>
                                                 createRefinementTask(activeDocument, "tags")
                                             }
                                             loading={creatingRefinementCapability === "tags"}
                                         >
                                             创建标签任务
-                                        </Button>
-                                        <Button
+                                        </KuzhambuButton>
+                                        <KuzhambuButton
+                                            name="创建问答任务"
                                             onClick={() =>
                                                 createRefinementTask(activeDocument, "qa")
                                             }
                                             loading={creatingRefinementCapability === "qa"}
                                         >
                                             创建问答任务
-                                        </Button>
-                                    </Button.Group>
+                                        </KuzhambuButton>
+                                    </KuzhambuSpaceCompact>
                                 }
                             >
                                 {refinementTasks.length ? (

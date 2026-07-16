@@ -1,4 +1,4 @@
-import { Alert, Button, Descriptions, Empty, Tag, Typography } from "antd";
+import { Alert, Descriptions, Empty, Tag, Typography } from "antd";
 import { KuzhambuList, KuzhambuListItem, KuzhambuListMeta } from "@/components/kuzhambu-list";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type {
@@ -6,6 +6,7 @@ import type {
     SancaiEntryRecord,
     SancaiVersionSnapshot
 } from "../sancai-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 
@@ -103,14 +104,16 @@ export const SancaiVersionHistoryPanel = ({
                             className="sancai-version-history-list-item"
                             key={version.id}
                             actions={[
-                                <Button
+                                <KuzhambuButton
+                                    name={String(
+                                        `查看三才图会版本 ${version.versionNo ?? version.id}`
+                                    )}
                                     key="view"
                                     type="link"
-                                    aria-label={`查看三才图会版本 ${version.versionNo ?? version.id}`}
                                     onClick={() => onSelectVersion(version)}
                                 >
                                     查看
-                                </Button>
+                                </KuzhambuButton>
                             ]}
                         >
                             <KuzhambuListMeta
@@ -187,15 +190,17 @@ export const SancaiVersionHistoryPanel = ({
                             ) : (
                                 <Alert type="warning" showIcon title="版本快照为空或无法解析" />
                             )}
-                            <Button
+                            <KuzhambuButton
+                                name={String(
+                                    `恢复三才图会版本 ${selectedVersion.versionNo ?? selectedVersion.id}`
+                                )}
                                 danger
-                                aria-label={`恢复三才图会版本 ${selectedVersion.versionNo ?? selectedVersion.id}`}
                                 loading={resetting}
                                 disabled={!snapshot}
                                 onClick={() => onResetVersion(selectedVersion)}
                             >
                                 恢复此版本
-                            </Button>
+                            </KuzhambuButton>
                         </KuzhambuSpace>
                     ) : (
                         <Empty

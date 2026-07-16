@@ -8,19 +8,7 @@ import {
     ThunderboltOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-    App,
-    Button,
-    Card,
-    Form,
-    Input,
-    Popconfirm,
-    Select,
-    Switch,
-    Table,
-    Tag,
-    Tooltip
-} from "antd";
+import { App, Card, Form, Input, Popconfirm, Select, Switch, Table, Tag, Tooltip } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useEffect, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
@@ -30,6 +18,7 @@ import { KuzhambuSpace, KuzhambuSpaceCompact } from "@/components/kuzhambu-space
 import * as service from "./model-configs-service";
 import type { AiModelChangeCommand, AiModelListQuery } from "./model-configs-service";
 import type { AiModelCheckRecord, AiModelRecord } from "./model-configs-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./model-configs-page.css";
 
 type ModelFormValues = AiModelChangeCommand;
@@ -303,30 +292,37 @@ export const ModelsPage = () => {
             key: "actions",
             render: (_, record) => (
                 <KuzhambuSpaceCompact>
-                    <Button
+                    <KuzhambuButton
+                        name="编辑"
                         icon={<EditOutlined />}
                         disabled={!canEditConfig}
                         onClick={() => openEdit(record)}
                     >
                         编辑
-                    </Button>
-                    <Button
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="检测"
                         icon={<ThunderboltOutlined />}
                         disabled={!canEditConfig}
                         loading={checkMutation.isPending}
                         onClick={() => checkMutation.mutate(record.modelId)}
                     >
                         检测
-                    </Button>
-                    <Button icon={<HistoryOutlined />} onClick={() => setHistoryModel(record)}>
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="检测历史"
+                        icon={<HistoryOutlined />}
+                        onClick={() => setHistoryModel(record)}
+                    >
                         检测历史
-                    </Button>
-                    <Button
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name={String(record.enabled ? "禁用" : "启用")}
                         disabled={!canEditConfig}
                         onClick={() => void changeEnabled(record, !record.enabled)}
                     >
                         {record.enabled ? "禁用" : "启用"}
-                    </Button>
+                    </KuzhambuButton>
                     <Popconfirm
                         title="删除模型"
                         description="确认删除该模型？"
@@ -335,9 +331,14 @@ export const ModelsPage = () => {
                         disabled={!canEditConfig}
                         onConfirm={() => deleteMutation.mutate(record.modelId)}
                     >
-                        <Button icon={<DeleteOutlined />} danger disabled={!canEditConfig}>
+                        <KuzhambuButton
+                            name="删除"
+                            icon={<DeleteOutlined />}
+                            danger
+                            disabled={!canEditConfig}
+                        >
                             删除
-                        </Button>
+                        </KuzhambuButton>
                     </Popconfirm>
                 </KuzhambuSpaceCompact>
             )
@@ -388,21 +389,22 @@ export const ModelsPage = () => {
             actions={
                 <KuzhambuSpace>
                     <Tooltip title="刷新">
-                        <Button
-                            aria-label="刷新"
+                        <KuzhambuButton
+                            name="刷新"
                             icon={<ReloadOutlined />}
                             loading={modelsQuery.isFetching || servicesQuery.isFetching}
                             onClick={() => void invalidateModels()}
                         />
                     </Tooltip>
-                    <Button
+                    <KuzhambuButton
+                        name="新增模型"
                         type="primary"
                         icon={<PlusOutlined />}
                         disabled={!canEditConfig}
                         onClick={openCreate}
                     >
                         新增模型
-                    </Button>
+                    </KuzhambuButton>
                 </KuzhambuSpace>
             }
         >
@@ -449,14 +451,15 @@ export const ModelsPage = () => {
                         />
                     </Form.Item>
                     <Form.Item>
-                        <Button
+                        <KuzhambuButton
+                            name="重置"
                             onClick={() => {
                                 setQuery({});
                                 setModelNameKeyword("");
                             }}
                         >
                             重置
-                        </Button>
+                        </KuzhambuButton>
                     </Form.Item>
                 </Form>
             </Card>
@@ -478,8 +481,11 @@ export const ModelsPage = () => {
                 onClose={() => setDrawerOpen(false)}
                 footer={
                     <KuzhambuSpace>
-                        <Button onClick={() => setDrawerOpen(false)}>取消</Button>
-                        <Button
+                        <KuzhambuButton name="取消" onClick={() => setDrawerOpen(false)}>
+                            取消
+                        </KuzhambuButton>
+                        <KuzhambuButton
+                            name="保存"
                             type="primary"
                             icon={<SaveOutlined />}
                             disabled={!canEditConfig}
@@ -487,7 +493,7 @@ export const ModelsPage = () => {
                             onClick={() => void submitForm()}
                         >
                             保存
-                        </Button>
+                        </KuzhambuButton>
                     </KuzhambuSpace>
                 }
             >

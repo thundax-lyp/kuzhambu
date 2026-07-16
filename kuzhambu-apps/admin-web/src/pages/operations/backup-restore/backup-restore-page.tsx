@@ -8,7 +8,7 @@ import {
     SyncOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Button, Card, Descriptions, Select, Statistic, Table, Typography } from "antd";
+import { Alert, App, Card, Descriptions, Select, Statistic, Table, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import type { ReactNode } from "react";
 import { useState } from "react";
@@ -26,6 +26,7 @@ import type {
     OperationsRestoreMode,
     OperationsRestoreRecord
 } from "./backup-restore-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./backup-restore-page.css";
 
 const { Text, Title } = Typography;
@@ -314,9 +315,13 @@ export const BackupRestorePage = () => {
                     {value === "FAILED" ? (
                         <>
                             <Text type="danger">{failureReasonText(record?.failureReason)}</Text>
-                            <Button href={buildAlertPath("BACKUP", record?.backupId)} size="small">
+                            <KuzhambuButton
+                                name="查看告警"
+                                href={buildAlertPath("BACKUP", record?.backupId)}
+                                size="small"
+                            >
                                 查看告警
-                            </Button>
+                            </KuzhambuButton>
                         </>
                     ) : null}
                 </KuzhambuSpace>
@@ -347,15 +352,17 @@ export const BackupRestorePage = () => {
             key: "actions",
             render: (_, record) => (
                 <KuzhambuSpace wrap>
-                    <Button
+                    <KuzhambuButton
+                        name="查看"
                         icon={<EyeOutlined />}
                         onClick={() => setBackupDetailId(record.backupId)}
                         size="small"
                     >
                         查看
-                    </Button>
+                    </KuzhambuButton>
                     {canExecuteRestore && record.backupStatus === "SUCCEEDED" ? (
-                        <Button
+                        <KuzhambuButton
+                            name="演练"
                             icon={<PlayCircleOutlined />}
                             onClick={() =>
                                 confirm.danger({
@@ -374,10 +381,11 @@ export const BackupRestorePage = () => {
                             size="small"
                         >
                             演练
-                        </Button>
+                        </KuzhambuButton>
                     ) : null}
                     {canExecuteRestore && record.backupStatus === "SUCCEEDED" ? (
-                        <Button
+                        <KuzhambuButton
+                            name="恢复"
                             danger
                             icon={<SyncOutlined />}
                             onClick={() =>
@@ -397,7 +405,7 @@ export const BackupRestorePage = () => {
                             size="small"
                         >
                             恢复
-                        </Button>
+                        </KuzhambuButton>
                     ) : null}
                 </KuzhambuSpace>
             )
@@ -442,12 +450,13 @@ export const BackupRestorePage = () => {
                     {value === "FAILED" ? (
                         <>
                             <Text type="danger">{failureReasonText(record?.failureReason)}</Text>
-                            <Button
+                            <KuzhambuButton
+                                name="查看告警"
                                 href={buildAlertPath("RESTORE", record?.restoreId)}
                                 size="small"
                             >
                                 查看告警
-                            </Button>
+                            </KuzhambuButton>
                         </>
                     ) : null}
                 </KuzhambuSpace>
@@ -491,13 +500,14 @@ export const BackupRestorePage = () => {
         {
             key: "actions",
             render: (_, record) => (
-                <Button
+                <KuzhambuButton
+                    name="查看"
                     icon={<EyeOutlined />}
                     onClick={() => setRestoreDetailId(record.restoreId)}
                     size="small"
                 >
                     查看
-                </Button>
+                </KuzhambuButton>
             )
         }
     ];
@@ -616,16 +626,18 @@ export const BackupRestorePage = () => {
                         </label>
                     </div>
                     <div className="backup-restore-page-toolbar-actions">
-                        <Button
+                        <KuzhambuButton
+                            name="刷新台账"
                             icon={<ReloadOutlined />}
                             onClick={() => {
                                 void refreshLedgers();
                             }}
                         >
                             刷新台账
-                        </Button>
+                        </KuzhambuButton>
                         {canExecuteBackup ? (
-                            <Button
+                            <KuzhambuButton
+                                name="执行手动备份"
                                 icon={<PlayCircleOutlined />}
                                 loading={manualBackupMutation.isPending}
                                 onClick={() => {
@@ -634,7 +646,7 @@ export const BackupRestorePage = () => {
                                 type="primary"
                             >
                                 执行手动备份
-                            </Button>
+                            </KuzhambuButton>
                         ) : null}
                     </div>
                 </div>
@@ -707,7 +719,8 @@ export const BackupRestorePage = () => {
                         {backupDetailQuery.data.backupStatus === "FAILED" ? (
                             <Alert
                                 action={
-                                    <Button
+                                    <KuzhambuButton
+                                        name="查看告警"
                                         href={buildAlertPath(
                                             "BACKUP",
                                             backupDetailQuery.data.backupId
@@ -715,7 +728,7 @@ export const BackupRestorePage = () => {
                                         size="small"
                                     >
                                         查看告警
-                                    </Button>
+                                    </KuzhambuButton>
                                 }
                                 description={`${failureReasonText(backupDetailQuery.data.failureReason)}。请检查备份存储和数据库连接后重新发起业务动作。`}
                                 message="备份执行失败"
@@ -808,7 +821,8 @@ export const BackupRestorePage = () => {
                         {restoreDetailQuery.data.restoreStatus === "FAILED" ? (
                             <Alert
                                 action={
-                                    <Button
+                                    <KuzhambuButton
+                                        name="查看告警"
                                         href={buildAlertPath(
                                             "RESTORE",
                                             restoreDetailQuery.data.restoreId
@@ -816,7 +830,7 @@ export const BackupRestorePage = () => {
                                         size="small"
                                     >
                                         查看告警
-                                    </Button>
+                                    </KuzhambuButton>
                                 }
                                 description={`PRE_RESTORE 备份：${restoreDetailQuery.data.preRestoreBackupId || "-"}；${failureReasonText(restoreDetailQuery.data.failureReason)}。请检查恢复来源和写阻断状态后重新发起业务动作。`}
                                 message="恢复执行失败"

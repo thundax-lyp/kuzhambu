@@ -1,8 +1,9 @@
-import { Button, Input, Modal, Select, Typography } from "antd";
+import { Input, Modal, Select, Typography } from "antd";
 import { useState } from "react";
 import type { DictItem } from "@/types/dict";
 import { toVolumeFormValues, type SancaiVolumeFormValues } from "./sancai-form-values";
 import type { SancaiCategoryRecord, SancaiVolumeRecord } from "../sancai-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 
@@ -39,15 +40,19 @@ export const SancaiVolumeModel = ({
             open
             footer={
                 <div className="sancai-modal-footer">
-                    <Button onClick={onCancel}>取消</Button>
-                    <Button
-                        aria-label={volume ? `保存卷目 ${readTitle(volume, "卷")}` : "保存新增卷目"}
+                    <KuzhambuButton name="取消" onClick={onCancel}>
+                        取消
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name={String(
+                            volume ? `保存卷目 ${readTitle(volume, "卷")}` : "保存新增卷目"
+                        )}
                         loading={isSubmitting}
                         type="primary"
                         onClick={() => onSubmit(form)}
                     >
                         保存
-                    </Button>
+                    </KuzhambuButton>
                 </div>
             }
             destroyOnHidden

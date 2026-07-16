@@ -1,8 +1,9 @@
-import { Button, Form, Input, InputNumber } from "antd";
+import { Form, Input, InputNumber } from "antd";
 import { useEffect, useMemo } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import type { TagCategoryCreateCommand, TagCategoryUpdateCommand } from "../taxonomy-service";
 import type { TagCategoryRecord } from "../taxonomy-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { TextArea } = Input;
 
@@ -111,12 +112,17 @@ export const CategoryEdit = ({
             onClose={onClose}
             footer={
                 <div className="knowledge-taxonomy-category-editor-footer">
-                    <Button disabled={saving} onClick={onClose}>
+                    <KuzhambuButton name="取消" disabled={saving} onClick={onClose}>
                         取消
-                    </Button>
-                    <Button type="primary" loading={saving} onClick={saveCategory}>
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name={String(saveButtonText)}
+                        type="primary"
+                        loading={saving}
+                        onClick={saveCategory}
+                    >
                         {saveButtonText}
-                    </Button>
+                    </KuzhambuButton>
                 </div>
             }
         >

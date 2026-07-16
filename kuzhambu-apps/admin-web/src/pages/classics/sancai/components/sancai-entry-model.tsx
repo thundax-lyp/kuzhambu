@@ -6,7 +6,7 @@ import {
     UploadOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Empty, Image, Input, Select, Switch, Tag, Typography, Upload } from "antd";
+import { App, Empty, Image, Input, Select, Switch, Tag, Typography, Upload } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
@@ -22,6 +22,7 @@ import type {
     SancaiEntryRecord,
     SancaiVisualAssetRecord
 } from "../sancai-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 const imageAccept = ".jpg,.jpeg,.png,.gif,.webp";
@@ -346,15 +347,19 @@ export const SancaiEntryModel = ({
             destroyOnHidden
             footer={
                 <div className="sancai-drawer-footer">
-                    <Button onClick={onCancel}>取消</Button>
-                    <Button
-                        aria-label={mode === "create" ? "保存新增三才图会条目" : "保存三才图会条目"}
+                    <KuzhambuButton name="取消" onClick={onCancel}>
+                        取消
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name={String(
+                            mode === "create" ? "保存新增三才图会条目" : "保存三才图会条目"
+                        )}
                         type="primary"
                         loading={isSubmitting}
                         onClick={submitForm}
                     >
                         保存
-                    </Button>
+                    </KuzhambuButton>
                 </div>
             }
             onClose={onCancel}
@@ -469,31 +474,32 @@ export const SancaiEntryModel = ({
                                     return Upload.LIST_IGNORE;
                                 }}
                             >
-                                <Button
+                                <KuzhambuButton
+                                    name={String(currentImage ? "替换当前图片" : "上传图片")}
                                     icon={<UploadOutlined />}
                                     loading={uploadImageMutation.isPending}
                                 >
                                     {currentImage ? "替换当前图片" : "上传图片"}
-                                </Button>
+                                </KuzhambuButton>
                             </Upload>
-                            <Button
-                                aria-label="预览三才图会图片"
+                            <KuzhambuButton
+                                name="预览三才图会图片"
                                 icon={<EyeOutlined />}
                                 href={previewUrl}
                                 target="_blank"
                                 disabled={!previewUrl}
                             >
                                 预览
-                            </Button>
-                            <Button
-                                aria-label="下载三才图会图片"
+                            </KuzhambuButton>
+                            <KuzhambuButton
+                                name="下载三才图会图片"
                                 icon={<DownloadOutlined />}
                                 href={downloadUrl}
                                 target="_blank"
                                 disabled={!downloadUrl}
                             >
                                 下载
-                            </Button>
+                            </KuzhambuButton>
                         </KuzhambuSpace>
                         {currentImage && previewUrl ? (
                             <>
@@ -551,14 +557,14 @@ export const SancaiEntryModel = ({
                                     <Text type="secondary">未标注标签</Text>
                                 )}
                                 {onEditTags ? (
-                                    <Button
-                                        aria-label="编辑三才图会条目标签"
+                                    <KuzhambuButton
+                                        name="编辑三才图会条目标签"
                                         icon={<EditOutlined />}
                                         size="small"
                                         onClick={onEditTags}
                                     >
                                         编辑标签
-                                    </Button>
+                                    </KuzhambuButton>
                                 ) : null}
                             </KuzhambuSpace>
                         </div>
@@ -595,7 +601,12 @@ export const SancaiEntryModel = ({
                                             return null;
                                         }
                                         return (
-                                            <Button
+                                            <KuzhambuButton
+                                                name={String(
+                                                    `版本 ${asset.versionNo ?? assetId}${
+                                                        asset.currentUsed ? " · 当前使用" : ""
+                                                    }`
+                                                )}
                                                 key={assetId}
                                                 type={
                                                     assetId ===
@@ -614,14 +625,15 @@ export const SancaiEntryModel = ({
                                                 {`版本 ${asset.versionNo ?? assetId}${
                                                     asset.currentUsed ? " · 当前使用" : ""
                                                 }`}
-                                            </Button>
+                                            </KuzhambuButton>
                                         );
                                     })}
                                 </KuzhambuSpace>
                                 <KuzhambuSpace wrap>
                                     {onCreateVisualAssetTask ? (
                                         <>
-                                            <Button
+                                            <KuzhambuButton
+                                                name="创建图片理解任务"
                                                 type="default"
                                                 loading={
                                                     creatingVisualAssetCapability ===
@@ -632,24 +644,27 @@ export const SancaiEntryModel = ({
                                                 }}
                                             >
                                                 创建图片理解任务
-                                            </Button>
-                                            <Button
+                                            </KuzhambuButton>
+                                            <KuzhambuButton
+                                                name="创建信息融合任务"
                                                 loading={creatingVisualAssetCapability === "fusion"}
                                                 onClick={() => {
                                                     createVisualAssetTask("fusion");
                                                 }}
                                             >
                                                 创建信息融合任务
-                                            </Button>
-                                            <Button
+                                            </KuzhambuButton>
+                                            <KuzhambuButton
+                                                name="创建视觉描述任务"
                                                 loading={creatingVisualAssetCapability === "visual"}
                                                 onClick={() => {
                                                     createVisualAssetTask("visual");
                                                 }}
                                             >
                                                 创建视觉描述任务
-                                            </Button>
-                                            <Button
+                                            </KuzhambuButton>
+                                            <KuzhambuButton
+                                                name="创建生图任务"
                                                 loading={
                                                     creatingVisualAssetCapability === "image_gen"
                                                 }
@@ -658,61 +673,63 @@ export const SancaiEntryModel = ({
                                                 }}
                                             >
                                                 创建生图任务
-                                            </Button>
+                                            </KuzhambuButton>
                                         </>
                                     ) : null}
-                                    <Button
+                                    <KuzhambuButton
+                                        name="保存视觉资产字段"
                                         type="primary"
                                         loading={isUpdatingVisualAsset}
                                         onClick={saveVisualAsset}
                                     >
                                         保存视觉资产字段
-                                    </Button>
-                                    <Button
+                                    </KuzhambuButton>
+                                    <KuzhambuButton
+                                        name="设为当前使用版本"
                                         loading={isSwitchingVisualAsset}
                                         disabled={!canSwitchVisualAsset}
                                         onClick={activateVisualAsset}
                                     >
                                         设为当前使用版本
-                                    </Button>
+                                    </KuzhambuButton>
                                 </KuzhambuSpace>
                                 <KuzhambuSpace wrap>
-                                    <Button
-                                        aria-label="预览视觉资产原图"
+                                    <KuzhambuButton
+                                        name="预览视觉资产原图"
                                         icon={<EyeOutlined />}
                                         href={sourcePreviewUrl}
                                         target="_blank"
                                         disabled={!sourcePreviewUrl}
                                     >
                                         预览原图
-                                    </Button>
-                                    <Button
-                                        aria-label="下载视觉资产原图"
+                                    </KuzhambuButton>
+                                    <KuzhambuButton
+                                        name="下载视觉资产原图"
                                         icon={<DownloadOutlined />}
                                         href={sourceDownloadUrl}
                                         target="_blank"
                                         disabled={!sourceDownloadUrl}
                                     >
                                         下载原图
-                                    </Button>
-                                    <Button
-                                        aria-label="预览视觉资产生成图"
+                                    </KuzhambuButton>
+                                    <KuzhambuButton
+                                        name="预览视觉资产生成图"
                                         icon={<PictureOutlined />}
                                         href={generatedPreviewUrl}
                                         target="_blank"
                                         disabled={!generatedPreviewUrl}
                                     >
                                         预览生成图
-                                    </Button>
-                                    <Button
-                                        aria-label="下载视觉资产生成图"
+                                    </KuzhambuButton>
+                                    <KuzhambuButton
+                                        name="下载视觉资产生成图"
                                         icon={<DownloadOutlined />}
                                         href={generatedDownloadUrl}
                                         target="_blank"
                                         disabled={!generatedDownloadUrl}
                                     >
                                         下载生成图
-                                    </Button>
+                                    </KuzhambuButton>
                                 </KuzhambuSpace>
                                 <KuzhambuSpace wrap align="start">
                                     {sourcePreviewUrl ? (

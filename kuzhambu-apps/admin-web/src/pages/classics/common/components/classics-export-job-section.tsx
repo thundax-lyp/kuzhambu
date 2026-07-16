@@ -1,7 +1,8 @@
-import { Button, Checkbox, Empty, Input, Select, Tag, Typography } from "antd";
+import { Checkbox, Empty, Input, Select, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { KuzhambuList, KuzhambuListItem, KuzhambuListMeta } from "@/components/kuzhambu-list";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./classics-export-job-section.css";
 import type { ClassicsExportJobRecord } from "../classics-export-types";
 
@@ -149,7 +150,8 @@ export const ClassicsExportJobSection = ({
             >
                 <Text strong>{sectionTitle}</Text>
                 {onRefresh ? (
-                    <Button
+                    <KuzhambuButton
+                        name="刷新"
                         size="small"
                         type="link"
                         onClick={() => {
@@ -157,7 +159,7 @@ export const ClassicsExportJobSection = ({
                         }}
                     >
                         刷新
-                    </Button>
+                    </KuzhambuButton>
                 ) : null}
             </KuzhambuSpace>
             <KuzhambuSpace className="classics-export-job-section-filters" size={8} wrap>
@@ -191,14 +193,15 @@ export const ClassicsExportJobSection = ({
                     仅过期
                 </Checkbox>
                 {onBatchDelete ? (
-                    <Button
+                    <KuzhambuButton
+                        name="删除选中"
                         danger
                         disabled={!selectedJobs.length}
                         size="small"
                         onClick={() => onBatchDelete(selectedJobs)}
                     >
                         删除选中
-                    </Button>
+                    </KuzhambuButton>
                 ) : null}
             </KuzhambuSpace>
             <KuzhambuList
@@ -237,22 +240,28 @@ export const ClassicsExportJobSection = ({
                                     ) : null}
                                     {renderExportStatus(job.status, job.expiresAt)}
                                     {downloadable ? (
-                                        <Button
+                                        <KuzhambuButton
+                                            name="下载"
                                             size="small"
                                             type="primary"
                                             onClick={() => onDownload(job)}
                                         >
                                             下载
-                                        </Button>
+                                        </KuzhambuButton>
                                     ) : (
-                                        <Button size="small" disabled>
+                                        <KuzhambuButton name="下载" size="small" disabled>
                                             下载
-                                        </Button>
+                                        </KuzhambuButton>
                                     )}
                                     {onDelete ? (
-                                        <Button danger size="small" onClick={() => onDelete(job)}>
+                                        <KuzhambuButton
+                                            name="删除"
+                                            danger
+                                            size="small"
+                                            onClick={() => onDelete(job)}
+                                        >
                                             删除
-                                        </Button>
+                                        </KuzhambuButton>
                                     ) : null}
                                 </KuzhambuSpace>
                             }

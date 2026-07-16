@@ -1,7 +1,8 @@
-import { Button, Table, Tag } from "antd";
+import { Table, Tag } from "antd";
 import { KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
 import type { ColumnsType } from "antd/es/table";
 import type { QualityReportRecord } from "../quality-report-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 interface QualityReportHistoryTableProps {
     loading?: boolean;
@@ -47,7 +48,9 @@ export const QualityReportHistoryTable = ({
             key: "actions",
             render: (_, report) => (
                 <KuzhambuSpaceCompact>
-                    <Button onClick={() => onView(report)}>查看</Button>
+                    <KuzhambuButton name="查看" onClick={() => onView(report)}>
+                        查看
+                    </KuzhambuButton>
                 </KuzhambuSpaceCompact>
             )
         }

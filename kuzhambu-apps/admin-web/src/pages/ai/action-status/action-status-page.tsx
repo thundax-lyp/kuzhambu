@@ -1,6 +1,6 @@
 import { ReloadOutlined, SyncOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Card, Form, Select, Table, Tag, Tooltip, Typography } from "antd";
+import { App, Card, Form, Select, Table, Tag, Tooltip, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useEffect, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
@@ -9,6 +9,7 @@ import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import * as service from "./action-status-service";
 import type { AiActionStatusQuery } from "./action-status-service";
 import type { AiActionStatusRecord } from "./action-status-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./action-status-page.css";
 
 const SCOPE_OPTIONS = [
@@ -170,14 +171,15 @@ export const ActionStatusPage = () => {
         {
             key: "actions",
             render: (_, record) => (
-                <Button
+                <KuzhambuButton
+                    name="刷新状态"
                     icon={<SyncOutlined />}
                     disabled={!canEditConfig}
                     loading={refreshingKey === statusKey(record)}
                     onClick={() => void refreshOne(record)}
                 >
                     刷新状态
-                </Button>
+                </KuzhambuButton>
             )
         }
     ];
@@ -190,8 +192,8 @@ export const ActionStatusPage = () => {
             description="检查 scope + capability 的可用状态和不可用原因"
             actions={
                 <Tooltip title="刷新">
-                    <Button
-                        aria-label="刷新"
+                    <KuzhambuButton
+                        name="刷新"
                         icon={<ReloadOutlined />}
                         loading={statusesQuery.isFetching || capabilitiesQuery.isFetching}
                         onClick={() => void statusesQuery.refetch()}
@@ -230,18 +232,25 @@ export const ActionStatusPage = () => {
                     </Form.Item>
                     <Form.Item>
                         <KuzhambuSpace>
-                            <Button type="primary" onClick={() => void applyFilter()}>
+                            <KuzhambuButton
+                                name="查询"
+                                type="primary"
+                                onClick={() => void applyFilter()}
+                            >
                                 查询
-                            </Button>
-                            <Button onClick={resetFilter}>重置</Button>
-                            <Button
+                            </KuzhambuButton>
+                            <KuzhambuButton name="重置" onClick={resetFilter}>
+                                重置
+                            </KuzhambuButton>
+                            <KuzhambuButton
+                                name="刷新全部"
                                 icon={<SyncOutlined />}
                                 disabled={!canEditConfig || (statusesQuery.data || []).length === 0}
                                 loading={refreshMutation.isPending}
                                 onClick={() => void refreshAll()}
                             >
                                 刷新全部
-                            </Button>
+                            </KuzhambuButton>
                         </KuzhambuSpace>
                     </Form.Item>
                 </Form>

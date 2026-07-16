@@ -1,5 +1,5 @@
 import { DownloadOutlined, EyeOutlined, ReloadOutlined, UploadOutlined } from "@ant-design/icons";
-import { Button, Descriptions, Empty, Typography, Upload } from "antd";
+import { Descriptions, Empty, Typography, Upload } from "antd";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import * as wangqiService from "../wangqi-service";
@@ -8,6 +8,7 @@ import type {
     WangqiSourceFileContentMode,
     WangqiSourceFileRecord
 } from "../wangqi-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 
@@ -63,14 +64,14 @@ export const WangqiStorageFilePanel = ({
     return (
         <section className="wangqi-storage-file-panel" aria-label="王圻原始文件面板">
             <KuzhambuSpace className="wangqi-storage-file-panel-actions" wrap>
-                <Button
-                    aria-label="刷新王圻原始文件元数据"
+                <KuzhambuButton
+                    name="刷新王圻原始文件元数据"
                     icon={<ReloadOutlined />}
                     loading={loading}
                     onClick={onRefresh}
                 >
                     刷新
-                </Button>
+                </KuzhambuButton>
                 <Upload
                     aria-label="上传王圻原始文件"
                     showUploadList={false}
@@ -79,32 +80,32 @@ export const WangqiStorageFilePanel = ({
                         return Upload.LIST_IGNORE;
                     }}
                 >
-                    <Button
-                        aria-label={hasSourceFile ? "替换王圻原始文件" : "上传王圻原始文件"}
+                    <KuzhambuButton
+                        name={String(hasSourceFile ? "替换王圻原始文件" : "上传王圻原始文件")}
                         icon={<UploadOutlined />}
                         loading={uploading}
                     >
                         {hasSourceFile ? "替换原始文件" : "上传原始文件"}
-                    </Button>
+                    </KuzhambuButton>
                 </Upload>
-                <Button
-                    aria-label="预览王圻原始文件"
+                <KuzhambuButton
+                    name="预览王圻原始文件"
                     icon={<EyeOutlined />}
                     href={previewUrl}
                     target="_blank"
                     disabled={!previewUrl || !hasSourceFile}
                 >
                     预览
-                </Button>
-                <Button
-                    aria-label="下载王圻原始文件"
+                </KuzhambuButton>
+                <KuzhambuButton
+                    name="下载王圻原始文件"
                     icon={<DownloadOutlined />}
                     href={downloadUrl}
                     target="_blank"
                     disabled={!downloadUrl || !hasSourceFile}
                 >
                     下载
-                </Button>
+                </KuzhambuButton>
             </KuzhambuSpace>
             {hasSourceFile ? (
                 <Descriptions

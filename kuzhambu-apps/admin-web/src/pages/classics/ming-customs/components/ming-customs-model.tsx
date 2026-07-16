@@ -1,4 +1,4 @@
-import { Button, Form, Input, Select, Switch, Typography } from "antd";
+import { Form, Input, Select, Switch, Typography } from "antd";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
@@ -12,6 +12,7 @@ import {
 } from "./ming-customs-form-values";
 import type { MingCustomsCommand } from "../ming-customs-service";
 import type { MingCustomsRecord } from "../ming-customs-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -65,15 +66,17 @@ export const MingCustomsModel = ({
             onClose={onClose}
             footer={
                 <div className="ming-customs-model-footer">
-                    <Button onClick={onClose}>取消</Button>
-                    <Button
-                        aria-label={mode === "create" ? "保存新增明代习俗" : "保存明代习俗"}
+                    <KuzhambuButton name="取消" onClick={onClose}>
+                        取消
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name={String(mode === "create" ? "保存新增明代习俗" : "保存明代习俗")}
                         type="primary"
                         loading={saving}
                         onClick={saveEntry}
                     >
                         保存
-                    </Button>
+                    </KuzhambuButton>
                 </div>
             }
         >

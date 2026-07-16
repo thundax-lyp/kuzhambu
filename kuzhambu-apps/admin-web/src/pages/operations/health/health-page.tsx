@@ -1,16 +1,6 @@
 import { ReloadOutlined, SearchOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-    App,
-    Button,
-    Card,
-    DatePicker,
-    Descriptions,
-    Input,
-    Select,
-    Tooltip,
-    Typography
-} from "antd";
+import { App, Card, DatePicker, Descriptions, Input, Select, Tooltip, Typography } from "antd";
 import { useEffect, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
@@ -26,6 +16,7 @@ import type {
     OperationsHealthRecord,
     OperationsHealthStatus
 } from "./health-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./health-page.css";
 
 const { RangePicker } = DatePicker;
@@ -297,7 +288,8 @@ export const OperationsHealthPage = () => {
                             <td>{formatDateTime(alert.lastTriggeredAt)}</td>
                             <td>
                                 <KuzhambuSpace size={4} wrap>
-                                    <Button
+                                    <KuzhambuButton
+                                        name="确认"
                                         disabled={
                                             !canManageHealth || alert.alertStatus !== "ACTIVE"
                                         }
@@ -308,8 +300,9 @@ export const OperationsHealthPage = () => {
                                         }
                                     >
                                         确认
-                                    </Button>
-                                    <Button
+                                    </KuzhambuButton>
+                                    <KuzhambuButton
+                                        name="恢复"
                                         disabled={
                                             !canManageHealth || alert.alertStatus === "RECOVERED"
                                         }
@@ -334,7 +327,7 @@ export const OperationsHealthPage = () => {
                                         }
                                     >
                                         恢复
-                                    </Button>
+                                    </KuzhambuButton>
                                 </KuzhambuSpace>
                             </td>
                         </tr>
@@ -413,13 +406,20 @@ export const OperationsHealthPage = () => {
                         allowEmpty={[true, true]}
                         showTime
                     />
-                    <Button icon={<SearchOutlined />} type="primary" onClick={() => submitQuery()}>
+                    <KuzhambuButton
+                        name="查询"
+                        icon={<SearchOutlined />}
+                        type="primary"
+                        onClick={() => submitQuery()}
+                    >
                         查询
-                    </Button>
-                    <Button onClick={resetQuery}>重置</Button>
-                    <Button icon={<ReloadOutlined />} onClick={refreshQuery}>
+                    </KuzhambuButton>
+                    <KuzhambuButton name="重置" onClick={resetQuery}>
+                        重置
+                    </KuzhambuButton>
+                    <KuzhambuButton name="刷新" icon={<ReloadOutlined />} onClick={refreshQuery}>
                         刷新
-                    </Button>
+                    </KuzhambuButton>
                 </KuzhambuSpace>
 
                 <table className="operations-health-table">
@@ -462,20 +462,22 @@ export const OperationsHealthPage = () => {
                                     <td>{formatDateTime(record.checkedAt)}</td>
                                     <td>
                                         <KuzhambuSpace size={4} wrap>
-                                            <Button
+                                            <KuzhambuButton
+                                                name="详情"
                                                 size="small"
                                                 type="link"
                                                 onClick={() => setSelectedHealth(record)}
                                             >
                                                 详情
-                                            </Button>
-                                            <Button
+                                            </KuzhambuButton>
+                                            <KuzhambuButton
+                                                name="查看告警"
                                                 size="small"
                                                 type="link"
                                                 onClick={() => setAlertCheckId(record.checkId)}
                                             >
                                                 查看告警
-                                            </Button>
+                                            </KuzhambuButton>
                                         </KuzhambuSpace>
                                     </td>
                                 </tr>
@@ -491,21 +493,23 @@ export const OperationsHealthPage = () => {
                 </table>
 
                 <div className="operations-health-pagination">
-                    <Button
+                    <KuzhambuButton
+                        name="上一页"
                         disabled={pageNo <= 1}
                         onClick={() => submitQuery(pageNo - 1, pageSize)}
                     >
                         上一页
-                    </Button>
+                    </KuzhambuButton>
                     <Text>
                         第 {pageNo} / {totalPage} 页，共 {totalCount} 条
                     </Text>
-                    <Button
+                    <KuzhambuButton
+                        name="下一页"
                         disabled={pageNo >= totalPage}
                         onClick={() => submitQuery(pageNo + 1, pageSize)}
                     >
                         下一页
-                    </Button>
+                    </KuzhambuButton>
                     <KuzhambuSpace size={8}>
                         <Text>每页</Text>
                         <Select

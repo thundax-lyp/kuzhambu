@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Button, Card, Col, Empty, Row, Table, Tag, Typography } from "antd";
+import { Alert, App, Card, Col, Empty, Row, Table, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
@@ -29,6 +29,7 @@ import type {
     RefinementRelationRecord,
     RefinementTaskPageQuery
 } from "./refinement-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./refinement-page.css";
 
 const { Text, Title } = Typography;
@@ -377,7 +378,8 @@ export const RefinementPage = () => {
         {
             key: "actions",
             render: (_, node) => (
-                <Button
+                <KuzhambuButton
+                    name="标注"
                     disabled={!canEdit}
                     onClick={() =>
                         openAnnotation({
@@ -389,7 +391,7 @@ export const RefinementPage = () => {
                     }
                 >
                     标注
-                </Button>
+                </KuzhambuButton>
             )
         }
     ];
@@ -409,7 +411,8 @@ export const RefinementPage = () => {
         {
             key: "actions",
             render: (_, relation) => (
-                <Button
+                <KuzhambuButton
+                    name="标注"
                     disabled={!canEdit}
                     onClick={() =>
                         openAnnotation({
@@ -421,7 +424,7 @@ export const RefinementPage = () => {
                     }
                 >
                     标注
-                </Button>
+                </KuzhambuButton>
             )
         }
     ];
@@ -481,24 +484,27 @@ export const RefinementPage = () => {
                                 <Alert
                                     action={
                                         <KuzhambuSpace size={8}>
-                                            <Button
+                                            <KuzhambuButton
+                                                name="查看图谱结果"
                                                 href={buildGraphResultsHref(applyFollowUp)}
                                                 size="small"
                                             >
                                                 查看图谱结果
-                                            </Button>
-                                            <Button
+                                            </KuzhambuButton>
+                                            <KuzhambuButton
+                                                name="重生成图谱"
                                                 href={buildGraphRegenerateHref(applyFollowUp)}
                                                 size="small"
                                             >
                                                 重生成图谱
-                                            </Button>
-                                            <Button
+                                            </KuzhambuButton>
+                                            <KuzhambuButton
+                                                name="重新生成质量报告"
                                                 href={buildQualityReportHref(applyFollowUp)}
                                                 size="small"
                                             >
                                                 重新生成质量报告
-                                            </Button>
+                                            </KuzhambuButton>
                                         </KuzhambuSpace>
                                     }
                                     message="精修已应用，图谱与质量报告需要继续联动处理"

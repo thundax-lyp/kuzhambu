@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Tabs } from "antd";
+import { App, Tabs } from "antd";
 import type { Key } from "react";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
@@ -49,6 +49,7 @@ import type {
     TagRecord,
     TagReviewPageQuery
 } from "./taxonomy-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./taxonomy-page.css";
 
 const TAXONOMY_TAB_ITEMS = [
@@ -683,9 +684,13 @@ export const TaxonomyPage = () => {
                                         onSelectedRowKeysChange={setSelectedTagRowKeys}
                                         pageActions={
                                             canEditTaxonomy ? (
-                                                <Button type="primary" onClick={openTagExtraction}>
+                                                <KuzhambuButton
+                                                    name="AI 抽取标签"
+                                                    type="primary"
+                                                    onClick={openTagExtraction}
+                                                >
                                                     AI 抽取标签
-                                                </Button>
+                                                </KuzhambuButton>
                                             ) : null
                                         }
                                         onStatusChange={(request) =>

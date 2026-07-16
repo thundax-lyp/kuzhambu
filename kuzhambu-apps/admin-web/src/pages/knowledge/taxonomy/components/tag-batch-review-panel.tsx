@@ -1,9 +1,10 @@
-import { Button, Form, Input, Select, Typography } from "antd";
+import { Form, Input, Select, Typography } from "antd";
 import { useMemo } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { TagBatchReviewCommand } from "../taxonomy-service";
 import type { TagCategoryRecord, TagRecord } from "../taxonomy-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -80,10 +81,11 @@ export const TagBatchReviewPanel = ({
             onClose={onClose}
             footer={
                 <div className="knowledge-taxonomy-drawer-footer">
-                    <Button disabled={reviewing} onClick={onClose}>
+                    <KuzhambuButton name="取消" disabled={reviewing} onClick={onClose}>
                         取消
-                    </Button>
-                    <Button
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name={String(submitText)}
                         type="primary"
                         danger={!approving}
                         loading={reviewing}
@@ -91,7 +93,7 @@ export const TagBatchReviewPanel = ({
                         onClick={submitReview}
                     >
                         {submitText}
-                    </Button>
+                    </KuzhambuButton>
                 </div>
             }
         >

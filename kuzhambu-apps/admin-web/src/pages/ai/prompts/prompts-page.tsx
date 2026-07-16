@@ -10,7 +10,6 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     App,
-    Button,
     Card,
     Descriptions,
     Form,
@@ -35,6 +34,7 @@ import type {
     AiPromptVariableRecord,
     AiPromptVersionRecord
 } from "./prompts-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./prompts-page.css";
 
 type PromptFormValues = Omit<AiPromptTemplateChangeCommand, "variables">;
@@ -428,16 +428,21 @@ export const PromptsPage = () => {
             key: "actions",
             render: (_, record) => (
                 <KuzhambuSpaceCompact>
-                    <Button icon={<EyeOutlined />} onClick={() => setViewVersion(record)}>
+                    <KuzhambuButton
+                        name="查看"
+                        icon={<EyeOutlined />}
+                        onClick={() => setViewVersion(record)}
+                    >
                         查看
-                    </Button>
-                    <Button
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="对比"
                         icon={<BranchesOutlined />}
                         disabled={!templateQuery.data?.currentVersionNo}
                         onClick={() => void compareWithCurrent(record)}
                     >
                         对比
-                    </Button>
+                    </KuzhambuButton>
                     <Popconfirm
                         title="回滚版本"
                         description={`确认回滚到版本 ${record.versionNo}？`}
@@ -453,12 +458,13 @@ export const PromptsPage = () => {
                             }
                         }}
                     >
-                        <Button
+                        <KuzhambuButton
+                            name="回滚"
                             icon={<RetweetOutlined />}
                             disabled={!canEditPrompt || record.current === true}
                         >
                             回滚
-                        </Button>
+                        </KuzhambuButton>
                     </Popconfirm>
                 </KuzhambuSpaceCompact>
             )
@@ -476,8 +482,8 @@ export const PromptsPage = () => {
             description="管理提示词模板、变量、版本对比和回滚"
             actions={
                 <Tooltip title="刷新">
-                    <Button
-                        aria-label="刷新"
+                    <KuzhambuButton
+                        name="刷新"
                         icon={<ReloadOutlined />}
                         loading={
                             templateQuery.isFetching ||
@@ -521,10 +527,16 @@ export const PromptsPage = () => {
                     </Form.Item>
                     <Form.Item>
                         <KuzhambuSpace>
-                            <Button type="primary" onClick={() => void applyFilter()}>
+                            <KuzhambuButton
+                                name="查询"
+                                type="primary"
+                                onClick={() => void applyFilter()}
+                            >
                                 查询
-                            </Button>
-                            <Button onClick={resetFilter}>重置</Button>
+                            </KuzhambuButton>
+                            <KuzhambuButton name="重置" onClick={resetFilter}>
+                                重置
+                            </KuzhambuButton>
                         </KuzhambuSpace>
                     </Form.Item>
                 </Form>
@@ -640,15 +652,17 @@ export const PromptsPage = () => {
                             <Input />
                         </Form.Item>
                         <KuzhambuSpace>
-                            <Button
+                            <KuzhambuButton
+                                name="校验变量"
                                 icon={<CheckCircleOutlined />}
                                 disabled={!currentTemplateId}
                                 loading={validateMutation.isPending}
                                 onClick={() => void validateVariables()}
                             >
                                 校验变量
-                            </Button>
-                            <Button
+                            </KuzhambuButton>
+                            <KuzhambuButton
+                                name="保存新版本"
                                 type="primary"
                                 icon={<SaveOutlined />}
                                 disabled={!canEditPrompt}
@@ -656,15 +670,16 @@ export const PromptsPage = () => {
                                 onClick={() => void submitTemplate()}
                             >
                                 保存新版本
-                            </Button>
-                            <Button
+                            </KuzhambuButton>
+                            <KuzhambuButton
+                                name="生成优化建议"
                                 icon={<ThunderboltOutlined />}
                                 disabled={!canEditPrompt || !currentTemplateId}
                                 loading={suggestionMutation.isPending}
                                 onClick={() => void generateSuggestion()}
                             >
                                 生成优化建议
-                            </Button>
+                            </KuzhambuButton>
                         </KuzhambuSpace>
                     </Form>
                 </Card>
@@ -713,8 +728,11 @@ export const PromptsPage = () => {
                 onClose={() => setSuggestionVersion(null)}
                 footer={
                     <KuzhambuSpace>
-                        <Button onClick={() => setSuggestionVersion(null)}>放弃</Button>
-                        <Button
+                        <KuzhambuButton name="放弃" onClick={() => setSuggestionVersion(null)}>
+                            放弃
+                        </KuzhambuButton>
+                        <KuzhambuButton
+                            name="应用为新版本"
                             type="primary"
                             icon={<SaveOutlined />}
                             disabled={!canEditPrompt}
@@ -722,7 +740,7 @@ export const PromptsPage = () => {
                             onClick={() => void submitTemplate(suggestionVersion)}
                         >
                             应用为新版本
-                        </Button>
+                        </KuzhambuButton>
                     </KuzhambuSpace>
                 }
             >

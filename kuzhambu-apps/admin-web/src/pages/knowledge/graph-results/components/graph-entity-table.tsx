@@ -1,7 +1,8 @@
-import { Button, Table, Tag } from "antd";
+import { Table, Tag } from "antd";
 import { KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
 import type { ColumnsType } from "antd/es/table";
 import type { GraphEntityRecord } from "../graph-results-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 interface GraphEntityTableProps {
     entities: GraphEntityRecord[];
@@ -42,7 +43,9 @@ export const GraphEntityTable = ({
             key: "actions",
             render: (_, entity) => (
                 <KuzhambuSpaceCompact>
-                    <Button onClick={() => onOpenDetail(entity)}>查看详情</Button>
+                    <KuzhambuButton name="查看详情" onClick={() => onOpenDetail(entity)}>
+                        查看详情
+                    </KuzhambuButton>
                 </KuzhambuSpaceCompact>
             ),
             title: "操作"

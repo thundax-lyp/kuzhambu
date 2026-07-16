@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { TagsOutlined } from "@ant-design/icons";
-import { Badge, Button, Empty } from "antd";
+import { Badge, Empty } from "antd";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import * as service from "../ming-customs-service";
 import type { MingCustomsTagCloudItem } from "../ming-customs-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 export interface MingCustomsTagCloudProps {
     category?: string | null;
@@ -38,9 +39,9 @@ export const MingCustomsTagCloud = ({
 
     return (
         <>
-            <Button icon={<TagsOutlined />} onClick={() => setOpen(true)}>
+            <KuzhambuButton name="标签云" icon={<TagsOutlined />} onClick={() => setOpen(true)}>
                 标签云
-            </Button>
+            </KuzhambuButton>
             <KuzhambuDrawer
                 aria-label="明代习俗标签云"
                 destroyOnHidden
@@ -50,9 +51,9 @@ export const MingCustomsTagCloud = ({
                 title="标签云"
                 onClose={() => setOpen(false)}
                 footer={
-                    <Button type="primary" onClick={() => setOpen(false)}>
+                    <KuzhambuButton name="关闭" type="primary" onClick={() => setOpen(false)}>
                         关闭
-                    </Button>
+                    </KuzhambuButton>
                 }
             >
                 {items.length > 0 ? (

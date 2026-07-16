@@ -1,11 +1,12 @@
 import { ReloadOutlined } from "@ant-design/icons";
-import { Button, Typography } from "antd";
+import { Typography } from "antd";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import type { SynonymRemoveCommand, SynonymStatusCommand } from "../taxonomy-service";
 import type { SynonymPageQuery, SynonymRecord } from "../taxonomy-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 
@@ -152,9 +153,9 @@ export const SynonymTable = ({
             }
             onAdd={onAdd}
             pageActions={
-                <Button icon={<ReloadOutlined />} onClick={onRefresh}>
+                <KuzhambuButton name="刷新" icon={<ReloadOutlined />} onClick={onRefresh}>
                     刷新
-                </Button>
+                </KuzhambuButton>
             }
             filterActive={hasSearch}
             rowKey="id"

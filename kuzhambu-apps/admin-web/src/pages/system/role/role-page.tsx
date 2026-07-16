@@ -1,6 +1,6 @@
 import { DeleteOutlined, ReloadOutlined, SafetyCertificateOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Select, Typography } from "antd";
+import { App, Select, Typography } from "antd";
 import type { DataNode } from "antd/es/tree";
 import { useMemo, useState } from "react";
 import type { Key } from "react";
@@ -16,6 +16,7 @@ import { RoleEdit } from "./components/role-edit";
 import * as service from "./role-service";
 import type { RoleOptionKeys, RoleSaveCommand } from "./role-service";
 import type { RoleMenuNode, RoleMenuTreeNode, RoleRecord } from "./role-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./role-page.css";
 
 const { Text } = Typography;
@@ -425,29 +426,36 @@ export const RolePage = () => {
                 onFilterApply={applyFilters}
                 onFilterReset={resetFilters}
                 pageActions={
-                    <Button icon={<ReloadOutlined />} onClick={() => roleQuery.refetch()}>
+                    <KuzhambuButton
+                        name="刷新"
+                        icon={<ReloadOutlined />}
+                        onClick={() => roleQuery.refetch()}
+                    >
                         刷新
-                    </Button>
+                    </KuzhambuButton>
                 }
                 batchClassName="role-table-toolbar"
                 selectedCount={selectedRowKeys.length}
                 batchActions={
                     <KuzhambuSpace wrap>
-                        <Button
+                        <KuzhambuButton
+                            name="启用"
                             disabled={!canEditRole || !hasSelectedRoles}
                             loading={statusMutation.isPending}
                             onClick={() => batchUpdateStatus(true)}
                         >
                             启用
-                        </Button>
-                        <Button
+                        </KuzhambuButton>
+                        <KuzhambuButton
+                            name="禁用"
                             disabled={!canEditRole || !hasSelectedRoles}
                             loading={statusMutation.isPending}
                             onClick={() => batchUpdateStatus(false)}
                         >
                             禁用
-                        </Button>
-                        <Button
+                        </KuzhambuButton>
+                        <KuzhambuButton
+                            name="批量删除"
                             danger
                             icon={<DeleteOutlined />}
                             disabled={!canEditRole || !hasSelectedRoles}
@@ -455,7 +463,7 @@ export const RolePage = () => {
                             onClick={batchDeleteRoles}
                         >
                             批量删除
-                        </Button>
+                        </KuzhambuButton>
                     </KuzhambuSpace>
                 }
                 rowKey="id"

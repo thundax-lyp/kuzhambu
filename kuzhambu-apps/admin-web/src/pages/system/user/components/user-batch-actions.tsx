@@ -1,7 +1,7 @@
 import { DeleteOutlined, PoweroffOutlined } from "@ant-design/icons";
-import { Button } from "antd";
 import { KuzhambuBatchActionBar } from "@/components/kuzhambu-batch-action-bar";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 interface UserBatchActionsProps {
     canEditUser: boolean;
@@ -30,7 +30,8 @@ export const UserBatchActions = ({
             selectedCount={selectedCount}
             actions={
                 <KuzhambuSpace wrap>
-                    <Button
+                    <KuzhambuButton
+                        name="禁用"
                         className="user-batch-neutral"
                         icon={<PoweroffOutlined />}
                         disabled={!hasSelectedUsers || !canEditUser}
@@ -38,8 +39,9 @@ export const UserBatchActions = ({
                         onClick={onDisable}
                     >
                         禁用
-                    </Button>
-                    <Button
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="启用"
                         className="user-batch-enable"
                         icon={<PoweroffOutlined />}
                         disabled={!hasSelectedUsers || !canEditUser}
@@ -47,8 +49,9 @@ export const UserBatchActions = ({
                         onClick={onEnable}
                     >
                         启用
-                    </Button>
-                    <Button
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="批量删除"
                         danger
                         icon={<DeleteOutlined />}
                         disabled={!hasSelectedUsers || !canEditUser}
@@ -56,7 +59,7 @@ export const UserBatchActions = ({
                         onClick={onDelete}
                     >
                         批量删除
-                    </Button>
+                    </KuzhambuButton>
                 </KuzhambuSpace>
             }
         />

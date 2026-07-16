@@ -1,4 +1,4 @@
-import { Alert, Button, Descriptions, Empty, Tag, Typography } from "antd";
+import { Alert, Descriptions, Empty, Tag, Typography } from "antd";
 import { KuzhambuList, KuzhambuListItem, KuzhambuListMeta } from "@/components/kuzhambu-list";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type {
@@ -6,6 +6,7 @@ import type {
     MingCustomsRecord,
     MingCustomsVersionSnapshot
 } from "../ming-customs-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 
@@ -129,14 +130,16 @@ export const MingCustomsVersionHistoryPanel = ({
                         <KuzhambuListItem
                             key={version.id}
                             actions={[
-                                <Button
+                                <KuzhambuButton
+                                    name={String(
+                                        `查看明代习俗版本 ${version.versionNo ?? version.id}`
+                                    )}
                                     key="view"
                                     type="link"
-                                    aria-label={`查看明代习俗版本 ${version.versionNo ?? version.id}`}
                                     onClick={() => onSelectVersion(version)}
                                 >
                                     查看
-                                </Button>
+                                </KuzhambuButton>
                             ]}
                         >
                             <KuzhambuListMeta
@@ -242,15 +245,17 @@ export const MingCustomsVersionHistoryPanel = ({
                             ) : (
                                 <Alert type="warning" showIcon title="版本快照为空或无法解析" />
                             )}
-                            <Button
+                            <KuzhambuButton
+                                name={String(
+                                    `恢复明代习俗版本 ${selectedVersion.versionNo ?? selectedVersion.id}`
+                                )}
                                 danger
-                                aria-label={`恢复明代习俗版本 ${selectedVersion.versionNo ?? selectedVersion.id}`}
                                 disabled={!canResetVersion}
                                 loading={resetting}
                                 onClick={() => onResetVersion(selectedVersion)}
                             >
                                 恢复此版本
-                            </Button>
+                            </KuzhambuButton>
                         </KuzhambuSpace>
                     ) : (
                         <Empty

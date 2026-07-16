@@ -1,6 +1,6 @@
 import { MenuOutlined, PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Button, Typography } from "antd";
+import { App, Typography } from "antd";
 import { useMemo, useState } from "react";
 import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
@@ -13,6 +13,7 @@ import { MenuEdit } from "./components/menu-edit";
 import * as service from "./menu-service";
 import type { MenuMoveCommand, MenuSaveCommand } from "./menu-service";
 import type { MenuNode, MenuTableNode } from "./menu-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./menu-page.css";
 
 const { Text } = Typography;
@@ -343,17 +344,22 @@ export const MenuPage = () => {
                 subjectName="菜单"
                 pageActions={
                     <>
-                        <Button icon={<ReloadOutlined />} onClick={() => menuQuery.refetch()}>
+                        <KuzhambuButton
+                            name="刷新"
+                            icon={<ReloadOutlined />}
+                            onClick={() => menuQuery.refetch()}
+                        >
                             刷新
-                        </Button>
+                        </KuzhambuButton>
                         {canEditMenu ? (
-                            <Button
+                            <KuzhambuButton
+                                name="新增菜单"
                                 type="primary"
                                 icon={<PlusOutlined />}
                                 onClick={openCreateEditor}
                             >
                                 新增菜单
-                            </Button>
+                            </KuzhambuButton>
                         ) : null}
                     </>
                 }

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Alert, App, Button, Card, Empty, Input, Switch, Tag, Typography, Upload } from "antd";
+import { Alert, App, Card, Empty, Input, Switch, Tag, Typography, Upload } from "antd";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
@@ -33,6 +33,7 @@ import type {
     SancaiVisualAssetRecord,
     SancaiVolumeRecord
 } from "../sancai-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 
@@ -998,9 +999,12 @@ export const SancaiEntryPanel = ({
                                             return Upload.LIST_IGNORE;
                                         }}
                                     >
-                                        <Button loading={uploadImageMutation.isPending}>
+                                        <KuzhambuButton
+                                            name="上传配图"
+                                            loading={uploadImageMutation.isPending}
+                                        >
                                             上传配图
-                                        </Button>
+                                        </KuzhambuButton>
                                     </Upload>
                                 </div>
                                 {entryImages.length > 0 ? (
@@ -1034,19 +1038,22 @@ export const SancaiEntryPanel = ({
                                                             </KuzhambuSpace>
                                                         </div>
                                                         <KuzhambuSpace wrap>
-                                                            <Button
+                                                            <KuzhambuButton
+                                                                name="预览图片"
                                                                 size="small"
                                                                 onClick={() => previewImage(image)}
                                                             >
                                                                 预览图片
-                                                            </Button>
-                                                            <Button
+                                                            </KuzhambuButton>
+                                                            <KuzhambuButton
+                                                                name="下载图片"
                                                                 size="small"
                                                                 onClick={() => downloadImage(image)}
                                                             >
                                                                 下载图片
-                                                            </Button>
-                                                            <Button
+                                                            </KuzhambuButton>
+                                                            <KuzhambuButton
+                                                                name="设为当前使用图片"
                                                                 size="small"
                                                                 disabled={Boolean(
                                                                     image.currentUsed
@@ -1059,8 +1066,9 @@ export const SancaiEntryPanel = ({
                                                                 }
                                                             >
                                                                 设为当前使用图片
-                                                            </Button>
-                                                            <Button
+                                                            </KuzhambuButton>
+                                                            <KuzhambuButton
+                                                                name="删除图片"
                                                                 danger
                                                                 size="small"
                                                                 loading={
@@ -1069,8 +1077,9 @@ export const SancaiEntryPanel = ({
                                                                 onClick={() => deleteImage(image)}
                                                             >
                                                                 删除图片
-                                                            </Button>
-                                                            <Button
+                                                            </KuzhambuButton>
+                                                            <KuzhambuButton
+                                                                name="上移图片"
                                                                 size="small"
                                                                 disabled={
                                                                     index === 0 ||
@@ -1081,8 +1090,9 @@ export const SancaiEntryPanel = ({
                                                                 }
                                                             >
                                                                 上移图片
-                                                            </Button>
-                                                            <Button
+                                                            </KuzhambuButton>
+                                                            <KuzhambuButton
+                                                                name="下移图片"
                                                                 size="small"
                                                                 disabled={
                                                                     index ===
@@ -1094,7 +1104,7 @@ export const SancaiEntryPanel = ({
                                                                 }
                                                             >
                                                                 下移图片
-                                                            </Button>
+                                                            </KuzhambuButton>
                                                         </KuzhambuSpace>
                                                     </div>
                                                     <Text type="secondary">
@@ -1115,19 +1125,21 @@ export const SancaiEntryPanel = ({
                             </Card>
                             <Card size="small" title="AI 精修任务">
                                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                                    <Button
+                                    <KuzhambuButton
+                                        name="创建译文任务"
                                         type="primary"
                                         loading={creatingRefinementCapability === "translate"}
                                         onClick={() => createRefinementTask("translate")}
                                     >
                                         创建译文任务
-                                    </Button>
-                                    <Button
+                                    </KuzhambuButton>
+                                    <KuzhambuButton
+                                        name="创建摘要任务"
                                         loading={creatingRefinementCapability === "summary"}
                                         onClick={() => createRefinementTask("summary")}
                                     >
                                         创建摘要任务
-                                    </Button>
+                                    </KuzhambuButton>
                                 </div>
                                 <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
                                     {refinementTasks
@@ -1176,7 +1188,8 @@ export const SancaiEntryPanel = ({
                                                             task.status,
                                                             task.capability
                                                         ) ? (
-                                                            <Button
+                                                            <KuzhambuButton
+                                                                name="重试"
                                                                 size="small"
                                                                 loading={
                                                                     retryingRefinementTaskId ===
@@ -1187,7 +1200,7 @@ export const SancaiEntryPanel = ({
                                                                 }
                                                             >
                                                                 重试
-                                                            </Button>
+                                                            </KuzhambuButton>
                                                         ) : null}
                                                     </div>
                                                     {failureText ? (

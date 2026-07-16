@@ -1,7 +1,8 @@
 import { ReloadOutlined } from "@ant-design/icons";
-import { Button, Input, Select } from "antd";
+import { Input, Select } from "antd";
 import type { LineageCanvasQuery } from "../lineage-service";
 import type { LineageAvailableFiltersRecord, LineageVersionRecord } from "../lineage-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 interface LineageFilterBarProps {
     filters: LineageAvailableFiltersRecord;
@@ -134,10 +135,17 @@ export const LineageFilterBar = ({
                     })
                 }
             />
-            <Button onClick={onReset}>重置</Button>
-            <Button icon={<ReloadOutlined />} loading={loading} onClick={onRefresh}>
+            <KuzhambuButton name="重置" onClick={onReset}>
+                重置
+            </KuzhambuButton>
+            <KuzhambuButton
+                name="刷新"
+                icon={<ReloadOutlined />}
+                loading={loading}
+                onClick={onRefresh}
+            >
                 刷新
-            </Button>
+            </KuzhambuButton>
         </div>
     );
 };

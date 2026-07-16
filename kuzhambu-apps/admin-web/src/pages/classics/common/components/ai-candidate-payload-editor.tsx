@@ -1,8 +1,9 @@
-import { Button, Input } from "antd";
+import { Input } from "antd";
 import { useEffect, useState } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { AiCandidateCapability } from "../ai-candidate-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const TEXT_CAPABILITY_ARIA_LABEL: Record<
     "translate" | "summary" | "image_analysis" | "visual" | "fusion" | "image_gen",
@@ -218,17 +219,17 @@ export const AiCandidatePayloadEditor = ({
                             value={tag}
                             onChange={(event) => updateTag(index, event.target.value)}
                         />
-                        <Button
-                            aria-label={`删除候选标签 ${index + 1}`}
+                        <KuzhambuButton
+                            name={String(`删除候选标签 ${index + 1}`)}
                             onClick={() => removeTag(index)}
                         >
                             删除
-                        </Button>
+                        </KuzhambuButton>
                     </KuzhambuSpace>
                 ))}
-                <Button aria-label="新增候选标签" onClick={appendTag}>
+                <KuzhambuButton name="新增候选标签" onClick={appendTag}>
                     新增标签
-                </Button>
+                </KuzhambuButton>
             </div>
         );
     }
@@ -252,18 +253,18 @@ export const AiCandidatePayloadEditor = ({
                         value={pair.answer}
                         onChange={(event) => updateQaPair(index, "answer", event.target.value)}
                     />
-                    <Button
-                        aria-label={`删除候选问答 ${index + 1}`}
+                    <KuzhambuButton
+                        name={String(`删除候选问答 ${index + 1}`)}
                         style={{ marginTop: 8 }}
                         onClick={() => removeQaPair(index)}
                     >
                         删除问答
-                    </Button>
+                    </KuzhambuButton>
                 </div>
             ))}
-            <Button aria-label="新增候选问答" onClick={appendQaPair}>
+            <KuzhambuButton name="新增候选问答" onClick={appendQaPair}>
                 新增问答
-            </Button>
+            </KuzhambuButton>
         </div>
     );
 };

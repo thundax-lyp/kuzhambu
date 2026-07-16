@@ -1,4 +1,4 @@
-import { Button, Form, Input, InputNumber, Select, Switch } from "antd";
+import { Form, Input, InputNumber, Select, Switch } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import type { Key } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
@@ -7,6 +7,7 @@ import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { TagCandidateApplyCommand, TagExtractionCommand } from "../taxonomy-service";
 import type { TagExtractionCandidateRecord, TagExtractionResultRecord } from "../taxonomy-types";
 import { TagExtractionCandidateTable } from "./tag-extraction-candidate-table";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { TextArea } = Input;
 
@@ -143,12 +144,21 @@ export const TagExtractionDrawer = ({
             onClose={closeDrawer}
             footer={
                 <div className="knowledge-taxonomy-tag-extraction-footer">
-                    <Button disabled={extracting || applying} onClick={closeDrawer}>
+                    <KuzhambuButton
+                        name="取消"
+                        disabled={extracting || applying}
+                        onClick={closeDrawer}
+                    >
                         取消
-                    </Button>
-                    <Button type="primary" loading={extracting} onClick={extractTags}>
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        name="开始抽取"
+                        type="primary"
+                        loading={extracting}
+                        onClick={extractTags}
+                    >
                         开始抽取
-                    </Button>
+                    </KuzhambuButton>
                 </div>
             }
         >
@@ -199,17 +209,22 @@ export const TagExtractionDrawer = ({
                             <TextArea rows={3} />
                         </Form.Item>
                         <KuzhambuSpace wrap>
-                            <Button
+                            <KuzhambuButton
+                                name="应用选中标签"
                                 type="primary"
                                 disabled={!result.aiCandidateId || selectedTags.length === 0}
                                 loading={applying}
                                 onClick={applySelectedTags}
                             >
                                 应用选中标签
-                            </Button>
-                            <Button disabled={extracting || applying} onClick={reExtractTags}>
+                            </KuzhambuButton>
+                            <KuzhambuButton
+                                name="重新抽取"
+                                disabled={extracting || applying}
+                                onClick={reExtractTags}
+                            >
                                 重新抽取
-                            </Button>
+                            </KuzhambuButton>
                         </KuzhambuSpace>
                     </div>
                 ) : null}
