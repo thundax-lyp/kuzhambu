@@ -50,10 +50,6 @@ const SERVICE_METHOD_VERBS = [
     "regenerate"
 ];
 
-const ANTD_SPACE_DIRECT_IMPORT_ALLOWLIST = [];
-const ANTD_DRAWER_DIRECT_IMPORT_ALLOWLIST = ["/src/components/kuzhambu-drawer/kuzhambu-drawer.tsx"];
-const ANTD_MODAL_DIRECT_IMPORT_ALLOWLIST = ["/src/components/kuzhambu-modal/kuzhambu-modal.tsx"];
-
 const localRules = {
     rules: {
         "kebab-case-file-name": {
@@ -264,33 +260,22 @@ const localRules = {
                 };
             }
         },
-        "no-antd-space-direct": {
+        "no-antd-space-direct-in-pages": {
             create(context) {
                 const readNormalizedFilePath = () => {
                     return context.physicalFilename.split(path.sep).join("/");
                 };
 
-                const isKuzhambuSpaceImplementation = (normalizedFilePath) => {
-                    return normalizedFilePath.endsWith(
-                        "/src/components/kuzhambu-space/kuzhambu-space.tsx"
-                    );
-                };
-
-                const isAllowlistedDirectImportFile = (normalizedFilePath) => {
-                    return ANTD_SPACE_DIRECT_IMPORT_ALLOWLIST.some((suffix) =>
-                        normalizedFilePath.endsWith(suffix)
+                const isPageFile = (normalizedFilePath) => {
+                    return (
+                        normalizedFilePath.includes("/src/pages/") &&
+                        /\.(?:ts|tsx)$/.test(normalizedFilePath)
                     );
                 };
 
                 return {
                     ImportDeclaration(node) {
-                        const normalizedFilePath = readNormalizedFilePath();
-
-                        if (
-                            isKuzhambuSpaceImplementation(normalizedFilePath) ||
-                            isAllowlistedDirectImportFile(normalizedFilePath) ||
-                            node.source.value !== "antd"
-                        ) {
+                        if (node.source.value !== "antd" || !isPageFile(readNormalizedFilePath())) {
                             return;
                         }
 
@@ -306,32 +291,29 @@ const localRules = {
                             context.report({
                                 node: specifier,
                                 message:
-                                    "ADMIN_WEB_UI_NO_ANTD_SPACE_DIRECT: import KuzhambuSpace or KuzhambuSpaceCompact from src/components/kuzhambu-space/ instead of importing Space or SpaceProps from antd."
+                                    "ADMIN_WEB_UI_NO_ANTD_SPACE_DIRECT_IN_PAGES: pages/**/*.{ts,tsx} must use KuzhambuSpace or KuzhambuSpaceCompact from src/components/kuzhambu-space/ instead of importing Space or SpaceProps from antd."
                             });
                         });
                     }
                 };
             }
         },
-        "no-antd-drawer-direct": {
+        "no-antd-drawer-direct-in-pages": {
             create(context) {
                 const readNormalizedFilePath = () => {
                     return context.physicalFilename.split(path.sep).join("/");
                 };
 
-                const isKuzhambuDrawerImplementation = (normalizedFilePath) => {
-                    return ANTD_DRAWER_DIRECT_IMPORT_ALLOWLIST.some((suffix) =>
-                        normalizedFilePath.endsWith(suffix)
+                const isPageFile = (normalizedFilePath) => {
+                    return (
+                        normalizedFilePath.includes("/src/pages/") &&
+                        /\.(?:ts|tsx)$/.test(normalizedFilePath)
                     );
                 };
 
                 return {
                     ImportDeclaration(node) {
-                        if (isKuzhambuDrawerImplementation(readNormalizedFilePath())) {
-                            return;
-                        }
-
-                        if (node.source.value !== "antd") {
+                        if (node.source.value !== "antd" || !isPageFile(readNormalizedFilePath())) {
                             return;
                         }
 
@@ -347,7 +329,7 @@ const localRules = {
                             context.report({
                                 node: specifier,
                                 message:
-                                    "ADMIN_WEB_UI_NO_ANTD_DRAWER_DIRECT: import Drawer from antd is forbidden; use KuzhambuDrawer from src/components/kuzhambu-drawer/."
+                                    "ADMIN_WEB_UI_NO_ANTD_DRAWER_DIRECT_IN_PAGES: pages/**/*.{ts,tsx} must use KuzhambuDrawer from src/components/kuzhambu-drawer/ instead of importing Drawer from antd."
                             });
                         });
                     }
@@ -367,20 +349,9 @@ const localRules = {
                     );
                 };
 
-                const isAllowlistedDirectImportFile = (normalizedFilePath) => {
-                    return ANTD_MODAL_DIRECT_IMPORT_ALLOWLIST.some((suffix) =>
-                        normalizedFilePath.endsWith(suffix)
-                    );
-                };
-
                 return {
                     ImportDeclaration(node) {
-                        const normalizedFilePath = readNormalizedFilePath();
-                        if (
-                            node.source.value !== "antd" ||
-                            !isPageFile(normalizedFilePath) ||
-                            isAllowlistedDirectImportFile(normalizedFilePath)
-                        ) {
+                        if (node.source.value !== "antd" || !isPageFile(readNormalizedFilePath())) {
                             return;
                         }
 
@@ -396,6 +367,43 @@ const localRules = {
                                 node: specifier,
                                 message:
                                     "ADMIN_WEB_UI_NO_ANTD_MODAL_DIRECT_IN_PAGES: pages/**/*.{ts,tsx} must use KuzhambuModal from src/components/kuzhambu-modal/ instead of importing Modal from antd."
+                            });
+                        });
+                    }
+                };
+            }
+        },
+        "no-antd-alert-direct-in-pages": {
+            create(context) {
+                const readNormalizedFilePath = () => {
+                    return context.physicalFilename.split(path.sep).join("/");
+                };
+
+                const isPageFile = (normalizedFilePath) => {
+                    return (
+                        normalizedFilePath.includes("/src/pages/") &&
+                        /\.(?:ts|tsx)$/.test(normalizedFilePath)
+                    );
+                };
+
+                return {
+                    ImportDeclaration(node) {
+                        if (node.source.value !== "antd" || !isPageFile(readNormalizedFilePath())) {
+                            return;
+                        }
+
+                        node.specifiers.forEach((specifier) => {
+                            if (
+                                specifier.type !== "ImportSpecifier" ||
+                                specifier.imported.name !== "Alert"
+                            ) {
+                                return;
+                            }
+
+                            context.report({
+                                node: specifier,
+                                message:
+                                    "ADMIN_WEB_UI_NO_ANTD_ALERT_DIRECT_IN_PAGES: pages/**/*.{ts,tsx} must use KuzhambuAlert from src/components/kuzhambu-alert/ instead of importing Alert from antd."
                             });
                         });
                     }
@@ -1952,9 +1960,10 @@ export default tseslint.config(
             "local/service-namespace-import": "error",
             "local/no-console-log": "error",
             "local/no-explicit-any": "error",
-            "local/no-antd-space-direct": "error",
-            "local/no-antd-drawer-direct": "error",
+            "local/no-antd-space-direct-in-pages": "error",
+            "local/no-antd-drawer-direct-in-pages": "error",
             "local/no-antd-modal-direct-in-pages": "error",
+            "local/no-antd-alert-direct-in-pages": "error",
             "local/no-antd-button-direct-in-pages": "error",
             "@typescript-eslint/no-explicit-any": "off",
             "local/confirm-hook-only": "error",
