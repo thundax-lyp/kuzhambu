@@ -23,7 +23,7 @@ const compareFields: Array<{
     { key: "visibility", label: "可见性" },
     { key: "translationStatus", label: "翻译状态" },
     { key: "imageStatus", label: "配图状态" },
-    { key: "visualAssetStatus", label: "视觉资产状态" },
+    { key: "visualAssetStatus", label: "视觉处理状态" },
     { key: "refinementStatus", label: "精修状态" },
     { key: "priority", label: "历史排序值" }
 ];

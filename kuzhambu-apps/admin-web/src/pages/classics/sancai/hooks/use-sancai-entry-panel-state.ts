@@ -13,7 +13,6 @@ import type { SancaiEntryRecord, SancaiVisualAssetRecord } from "../sancai-types
 type RefinementCapability = "translate" | "summary" | SancaiVisualAssetRefinementCapability;
 
 const DEFAULT_TEXT_REFINEMENT_MODEL_ID = 900102;
-const DEFAULT_TEXT_REFINEMENT_MODEL_NAME = "CTYUN-bot-DeepSeek-V3.2-pro";
 const DEFAULT_TEXT_REFINEMENT_SERVICE_ID = 900001;
 const DEFAULT_TEXT_REFINEMENT_SERVICE_ROLE = "PRIMARY";
 const DEFAULT_IMAGE_ANALYSIS_MODEL_ID = 900101;
@@ -47,8 +46,7 @@ const modelConfigForCapability = (capability: RefinementCapability) => {
     return {
         serviceId: DEFAULT_TEXT_REFINEMENT_SERVICE_ID,
         serviceRole: DEFAULT_TEXT_REFINEMENT_SERVICE_ROLE,
-        modelId: DEFAULT_TEXT_REFINEMENT_MODEL_ID,
-        modelName: DEFAULT_TEXT_REFINEMENT_MODEL_NAME
+        modelId: DEFAULT_TEXT_REFINEMENT_MODEL_ID
     };
 };
 
@@ -492,7 +490,7 @@ export const useSancaiEntryPanelState = ({
                     capability === "image_gen") &&
                 (imageAnalysisObjectId == null || sourceImageStorageObjectId == null)
             ) {
-                messageApi.warning("当前视觉资产缺少原图，无法创建图片相关任务");
+                messageApi.warning("当前视觉处理缺少原图，无法创建图片相关任务");
                 return;
             }
             if (
@@ -501,14 +499,14 @@ export const useSancaiEntryPanelState = ({
                     sourceImageStorageObjectId == null ||
                     !imageAnalysisMarkdown?.trim())
             ) {
-                messageApi.warning("当前视觉资产缺少图片理解结果，无法创建信息融合任务");
+                messageApi.warning("当前视觉处理缺少图片理解结果，无法创建信息融合任务");
                 return;
             }
             if (
                 capability === "fusion" &&
                 (!Number.isInteger(textWeight) || !Number.isInteger(imageWeight))
             ) {
-                messageApi.warning("当前视觉资产权重未正确设置，无法创建信息融合任务");
+                messageApi.warning("当前视觉处理权重未正确设置，无法创建信息融合任务");
                 return;
             }
             if (
@@ -517,11 +515,11 @@ export const useSancaiEntryPanelState = ({
                     !Number.isInteger(textWeight) ||
                     !Number.isInteger(imageWeight))
             ) {
-                messageApi.warning("当前视觉资产缺少图片理解结果或权重，无法创建视觉描述任务");
+                messageApi.warning("当前视觉处理缺少图片理解结果或权重，无法创建视觉描述任务");
                 return;
             }
             if (capability === "image_gen" && !visualDescription?.trim()) {
-                messageApi.warning("当前视觉资产缺少视觉描述结果，无法创建生图任务");
+                messageApi.warning("当前视觉处理缺少视觉描述结果，无法创建生图任务");
                 return;
             }
             if (

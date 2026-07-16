@@ -42,7 +42,7 @@ export interface AiRefinementTaskCreatePayload {
     serviceId?: number | null;
     serviceRole?: string | null;
     modelId: number;
-    modelName: string;
+    modelName?: string | null;
     promptVersionId?: number | null;
     requestId: string;
     traceId: string;

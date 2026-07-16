@@ -9,6 +9,7 @@
     --kuzhambu-table-muted: var(--text-muted);
     --kuzhambu-table-panel-bg: color-mix(in srgb, var(--surface-panel) 62%, transparent);
     --kuzhambu-table-primary: var(--accent-blue);
+    --kuzhambu-table-danger: #dc2626;
     --kuzhambu-table-resize-line: color-mix(in srgb, var(--text-muted) 38%, transparent);
     --kuzhambu-table-resize-line-active: color-mix(in srgb, var(--accent-blue) 88%, #0f172a);
     position: relative;
@@ -17,6 +18,7 @@
 }
 
 html[data-theme="dark"] .kuzhambu-table {
+    --kuzhambu-table-danger: #f87171;
     --kuzhambu-table-resize-line: color-mix(in srgb, var(--text-muted) 24%, transparent);
     --kuzhambu-table-resize-line-active: var(--kuzhambu-table-primary);
 }
@@ -205,10 +207,25 @@ html[data-theme="dark"] .kuzhambu-table {
     min-width: 24px;
     height: 24px;
     padding: 0 4px;
+    color: var(--kuzhambu-table-primary);
+    font: inherit;
     line-height: 22px;
     place-items: center;
-    border-color: transparent;
+    background: transparent;
+    border: 0;
     box-shadow: none;
+    cursor: pointer;
+}
+
+.kuzhambu-table-row-action:hover:not(:disabled) {
+    background: var(--kuzhambu-table-hover);
+    border-radius: 4px;
+}
+
+.kuzhambu-table-row-action:disabled {
+    color: var(--text-muted);
+    cursor: not-allowed;
+    opacity: 0.48;
 }
 
 .kuzhambu-table-row-action-divider {
@@ -225,6 +242,14 @@ html[data-theme="dark"] .kuzhambu-table {
 
 .kuzhambu-table-row-action-warning:hover {
     color: color-mix(in srgb, var(--accent-amber) 80%, #000);
+}
+
+.kuzhambu-table-row-action-danger {
+    color: var(--kuzhambu-table-danger);
+}
+
+.kuzhambu-table-row-action-danger:hover:not(:disabled) {
+    color: color-mix(in srgb, var(--kuzhambu-table-danger) 82%, #000);
 }
 
 :where(.ant-dropdown-menu) .kuzhambu-table-row-action-menu-warning {
