@@ -65,7 +65,7 @@ class SancaiAssetAdminControllerTest {
         assertMultipartPostMapping(
                 SancaiAssetAdminController.class,
                 "uploadImage",
-                "images/{entryId}/upload",
+                "images/upload",
                 "classics:sancai:edit",
                 Long.class,
                 MultipartFile.class,

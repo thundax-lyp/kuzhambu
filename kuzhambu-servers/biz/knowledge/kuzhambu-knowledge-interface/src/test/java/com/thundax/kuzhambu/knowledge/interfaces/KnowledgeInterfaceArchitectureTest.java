@@ -1,8 +1,10 @@
 package com.thundax.kuzhambu.knowledge.interfaces;
 
 import com.thundax.kuzhambu.common.test.architecture.AbstractArchitectureTest;
+import com.thundax.kuzhambu.common.test.architecture.ApiAnnotationArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
+import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 
 class KnowledgeInterfaceArchitectureTest extends AbstractArchitectureTest {
@@ -14,5 +16,11 @@ class KnowledgeInterfaceArchitectureTest extends AbstractArchitectureTest {
         JavaClasses classes = importPackages(BASE_PACKAGE + ".interfaces");
 
         SpringBeanArchitectureRuleSupport.assertDirectSpringBeansHaveSingleConstructor(classes);
+    }
+
+    @Test
+    void interfaceApiAnnotationsShouldKeepContractShape() throws Exception {
+        ApiAnnotationArchitectureRuleSupport.assertPostMappingMethodsDoNotUsePathOrQueryParameters(
+                Path.of("src/main/java"));
     }
 }

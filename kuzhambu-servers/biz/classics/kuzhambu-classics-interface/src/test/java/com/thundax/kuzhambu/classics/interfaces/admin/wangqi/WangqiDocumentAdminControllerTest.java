@@ -58,11 +58,7 @@ class WangqiDocumentAdminControllerTest {
                 "classics:wangqi:view",
                 WangqiDocumentRequest.class);
         assertPostMapping(
-                WangqiDocumentAdminController.class,
-                "get",
-                "{id}/get",
-                "classics:wangqi:view",
-                WangqiDocumentRequest.class);
+                WangqiDocumentAdminController.class, "get", "get", "classics:wangqi:view", WangqiDocumentRequest.class);
         assertPostMapping(
                 WangqiDocumentAdminController.class,
                 "listTimeline",
@@ -93,7 +89,7 @@ class WangqiDocumentAdminControllerTest {
         assertPostMapping(
                 WangqiDocumentAdminController.class,
                 "getSourceFile",
-                "{id}/source-file/get",
+                "source-file/get",
                 "classics:wangqi:view",
                 WangqiDocumentRequest.class);
         assertGetMapping(

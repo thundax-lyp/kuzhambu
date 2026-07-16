@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.ai.interfaces.admin.refinement.assembler.AiRefinemen
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.request.AiRefinementRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.response.AiRefinementResponses;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
@@ -65,6 +66,7 @@ public class AiRefinementTaskController {
     @ApiImplicitParams({})
     @HasPermission(value = "ai:refinement:view")
     @SysLogger(value = "任务流式过程")
+    @PostJsonApiExempt(reason = "SSE 事件流必须使用浏览器可直接建立的 GET 流式连接")
     @GetMapping(value = "stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamTask(@RequestParam(value = "taskId") Long taskId) {
         SseEmitter emitter = new SseEmitter(600_000L);

@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.knowledge.interfaces.portal.home.controller;
 
 import com.thundax.kuzhambu.common.security.annotation.PublicApi;
+import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.knowledge.application.portal.KnowledgePortalReadApplicationService;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.home.assembler.KnowledgePortalHomeInterfaceAssembler;
@@ -25,6 +26,7 @@ public class KnowledgePortalHomeController {
     }
 
     @Operation(summary = "获取知识门户首页", description = "Portal 首页")
+    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
     @GetMapping
     public KnowledgePortalHomeResponse getHome(@Valid KnowledgePortalHomeQuery request) {
         return KnowledgePortalHomeInterfaceAssembler.toResponse(knowledgePortalReadApplicationService.getHome());

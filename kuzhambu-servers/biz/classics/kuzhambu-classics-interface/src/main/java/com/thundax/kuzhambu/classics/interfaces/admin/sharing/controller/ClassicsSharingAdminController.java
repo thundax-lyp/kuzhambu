@@ -19,6 +19,7 @@ import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.respons
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.response.ClassicsSharingResponse;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
+import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
@@ -115,6 +116,7 @@ public class ClassicsSharingAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:sharing:view")
     @SysLogger(value = "详情")
+    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
     @GetMapping("{id}")
     public ClassicsSharingResponse get(@PathVariable("id") Long id) {
         ClassicsShareLinkId linkId = ClassicsShareLinkIdCodec.toDomain(id);

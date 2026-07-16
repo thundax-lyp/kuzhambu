@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.storage.interfaces.admin.object.controller;
 
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
+import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
@@ -183,6 +184,7 @@ public class StorageObjectController {
     })
     @HasPermission(value = "storage:object:edit")
     @SysLogger(value = "分片上传-上传分片")
+    @PostJsonApiExempt(reason = "分片文件上传必须使用 multipart/form-data 承载文件流")
     @PostMapping(value = "multipart/uploadPart", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public UploadMultipartPartResponse uploadPart(
             @Valid UploadMultipartPartRequest request, @RequestParam("file") MultipartFile file) {
@@ -238,6 +240,7 @@ public class StorageObjectController {
     })
     @HasPermission(value = "storage:object:edit")
     @SysLogger(value = "上传")
+    @PostJsonApiExempt(reason = "文件上传必须使用 multipart/form-data 承载文件流")
     @PostMapping(value = "upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public StorageObjectResponse upload(
             @RequestParam("file") MultipartFile file,
@@ -276,6 +279,7 @@ public class StorageObjectController {
     })
     @HasPermission(value = "storage:object:view")
     @SysLogger(value = "读取内容")
+    @PostJsonApiExempt(reason = "文件内容需要浏览器直链预览或下载")
     @GetMapping(value = "{id}/content")
     public void content(
             @PathVariable("id") String id,

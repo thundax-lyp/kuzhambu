@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.knowledge.interfaces.portal.lineage.controller;
 
 import com.thundax.kuzhambu.common.security.annotation.PublicApi;
+import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.knowledge.application.portal.KnowledgePortalReadApplicationService;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.lineage.assembler.KnowledgePortalLineageInterfaceAssembler;
@@ -27,6 +28,7 @@ public class KnowledgePortalLineageController {
     }
 
     @Operation(summary = "获取知识门户世系图", description = "Portal 世系图")
+    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
     @GetMapping
     public KnowledgePortalLineageResponse getLineage(@Valid Query request) {
         return KnowledgePortalLineageInterfaceAssembler.toResponse(knowledgePortalReadApplicationService.getLineage(

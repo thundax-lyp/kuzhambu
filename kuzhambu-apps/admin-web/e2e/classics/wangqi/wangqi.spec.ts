@@ -117,7 +117,7 @@ test.describe("classics wangqi page", () => {
             }
         );
         await page.route(
-            "**/kuzhambu-admin-api/api/classics/wangqi/documents/400000000001/get",
+            "**/kuzhambu-admin-api/api/classics/wangqi/documents/get",
             async (route) => {
                 await route.fulfill({
                     contentType: "application/json",
@@ -132,7 +132,7 @@ test.describe("classics wangqi page", () => {
             }
         );
         await page.route(
-            "**/kuzhambu-admin-api/api/classics/wangqi/documents/400000000001/source-file/get",
+            "**/kuzhambu-admin-api/api/classics/wangqi/documents/source-file/get",
             async (route) => {
                 await route.fulfill({
                     contentType: "application/json",

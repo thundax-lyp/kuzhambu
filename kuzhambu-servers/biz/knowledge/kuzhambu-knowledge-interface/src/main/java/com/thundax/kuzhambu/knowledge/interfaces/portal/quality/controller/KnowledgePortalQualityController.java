@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.knowledge.interfaces.portal.quality.controller;
 
 import com.thundax.kuzhambu.common.security.annotation.PublicApi;
+import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.knowledge.application.portal.KnowledgePortalReadApplicationService;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.quality.assembler.KnowledgePortalQualityInterfaceAssembler;
@@ -26,6 +27,7 @@ public class KnowledgePortalQualityController {
     }
 
     @Operation(summary = "获取知识门户质量页数据", description = "Portal 质量页")
+    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
     @GetMapping
     public KnowledgePortalQualityResponse getQuality(@Valid KnowledgePortalQualityQuery request) {
         return KnowledgePortalQualityInterfaceAssembler.toResponse(knowledgePortalReadApplicationService.getQuality());

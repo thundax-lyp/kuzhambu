@@ -130,7 +130,7 @@ const installFetchMock = () => {
                 records: [mockDocumentRecord]
             });
         }
-        if (path.endsWith(`/classics/wangqi/documents/${mockDocumentRecord.id}/get`)) {
+        if (path.endsWith("/classics/wangqi/documents/get")) {
             return apiResponse(mockDocumentRecord);
         }
         if (path.endsWith("/classics/wangqi/documents/timeline/list")) {
@@ -144,14 +144,14 @@ const installFetchMock = () => {
             return apiResponse([]);
         }
         if (
-            path.includes("/classics/content/tags") &&
-            path.includes("contentType=WANGQI_DOCUMENT")
+            path.endsWith("/classics/content/tags/list") &&
+            body?.contentType === "WANGQI_DOCUMENT"
         ) {
             return apiResponse([]);
         }
         if (
-            path.includes("/classics/content/qa-pairs") &&
-            path.includes("contentType=WANGQI_DOCUMENT")
+            path.endsWith("/classics/content/qa-pairs/list") &&
+            body?.contentType === "WANGQI_DOCUMENT"
         ) {
             return apiResponse([]);
         }

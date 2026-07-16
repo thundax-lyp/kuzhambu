@@ -12,6 +12,7 @@ import com.thundax.kuzhambu.classics.interfaces.portal.sancai.controller.respons
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.security.annotation.PublicApi;
+import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
@@ -32,6 +33,7 @@ public class SancaiPortalController {
         this.service = service;
     }
 
+    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
     @GetMapping("categories")
     public List<SancaiPortalCategoryResponse> listCategories() {
         return service.listCategories().stream()
@@ -39,6 +41,7 @@ public class SancaiPortalController {
                 .toList();
     }
 
+    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
     @GetMapping("volumes")
     public List<SancaiPortalVolumeResponse> listVolumes(
             @RequestParam(value = "categoryId", required = false) Long categoryId) {
@@ -47,6 +50,7 @@ public class SancaiPortalController {
                 .toList();
     }
 
+    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
     @GetMapping("entries")
     public PageResponse<SancaiPortalEntryResponse> pageEntries(@ModelAttribute SancaiPortalEntrySearchRequest request) {
         SancaiPortalEntrySearchRequest effectiveRequest =
@@ -61,6 +65,7 @@ public class SancaiPortalController {
                 SancaiPortalInterfaceAssembler::toResponse);
     }
 
+    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
     @GetMapping("entries/{id}")
     public SancaiPortalEntryResponse getEntry(@PathVariable("id") Long id) {
         SancaiEntry entry = service.getEntry(SancaiEntryIdCodec.toDomain(id));

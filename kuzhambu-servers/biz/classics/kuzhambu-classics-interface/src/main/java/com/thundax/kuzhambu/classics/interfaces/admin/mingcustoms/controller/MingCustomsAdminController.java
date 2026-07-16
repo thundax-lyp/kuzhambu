@@ -22,6 +22,7 @@ import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.res
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
+import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
@@ -78,6 +79,7 @@ public class MingCustomsAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:mingcustoms:view")
     @SysLogger(value = "详情")
+    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
     @GetMapping("{id}")
     public MingCustomsResponse get(@PathVariable Long id) {
         return MingCustomsInterfaceAssembler.toResponse(service.get(MingCustomsEntryIdCodec.toDomain(id)));
@@ -136,6 +138,7 @@ public class MingCustomsAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:mingcustoms:view")
     @SysLogger(value = "关键词云")
+    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
     @GetMapping("keyword-cloud")
     public List<MingCustomsKeywordCloudItemResponse> listKeywordCloud(
             @RequestParam(value = "visibility", required = false) String visibility) {
@@ -148,6 +151,7 @@ public class MingCustomsAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:mingcustoms:view")
     @SysLogger(value = "标签云")
+    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
     @GetMapping("tag-cloud")
     public List<MingCustomsTagCloudItemResponse> listTagCloud(
             @RequestParam(value = "category", required = false) String category,

@@ -32,6 +32,7 @@ import com.thundax.kuzhambu.classics.interfaces.admin.content.controller.respons
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
+import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
@@ -91,10 +92,11 @@ public class ClassicsContentAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:content:view")
     @SysLogger(value = "标签列表")
-    @GetMapping("tags")
-    public List<ClassicsContentResponse> listTags(@RequestParam String contentType, @RequestParam Long contentId) {
-        String validContentType = validContentTagType(contentType);
-        ClassicsContentId contentIdValue = ClassicsContentIdCodec.toDomain(requireParameter(contentId, "contentId"));
+    @PostMapping("tags/list")
+    public List<ClassicsContentResponse> listTags(@Valid @RequestBody ClassicsContentRequest request) {
+        String validContentType = validContentTagType(request == null ? null : request.getContentType());
+        ClassicsContentId contentIdValue = ClassicsContentIdCodec.toDomain(
+                requireParameter(request == null ? null : request.getContentId(), "contentId"));
         return service.listTags(validContentType, contentIdValue).stream()
                 .map(ClassicsContentInterfaceAssembler::toTagResponse)
                 .toList();
@@ -162,10 +164,11 @@ public class ClassicsContentAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:content:view")
     @SysLogger(value = "问答列表")
-    @GetMapping("qa-pairs")
-    public List<ClassicsContentResponse> listQaPairs(@RequestParam String contentType, @RequestParam Long contentId) {
-        ClassicsContentId contentIdValue = ClassicsContentIdCodec.toDomain(contentId);
-        return service.listQaPairs(contentType, contentIdValue).stream()
+    @PostMapping("qa-pairs/list")
+    public List<ClassicsContentResponse> listQaPairs(@Valid @RequestBody ClassicsContentRequest request) {
+        ClassicsContentId contentIdValue = ClassicsContentIdCodec.toDomain(
+                requireParameter(request == null ? null : request.getContentId(), "contentId"));
+        return service.listQaPairs(request == null ? null : request.getContentType(), contentIdValue).stream()
                 .map(ClassicsContentInterfaceAssembler::toQaResponse)
                 .toList();
     }
@@ -323,6 +326,7 @@ public class ClassicsContentAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:content:view")
     @SysLogger(value = "导出文件下载")
+    @PostJsonApiExempt(reason = "文件内容需要浏览器直链预览或下载")
     @GetMapping("exports/{jobId}/content")
     public void downloadExportContent(
             @PathVariable("jobId") Long jobId,

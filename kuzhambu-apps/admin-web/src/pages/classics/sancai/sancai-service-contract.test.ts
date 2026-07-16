@@ -304,8 +304,9 @@ describe("sancai service request contracts", () => {
             replaceImageId: 8001,
             title: "sancai.png"
         });
-        expectLastCall("POST", "/classics/sancai/assets/images/3001/upload", {
+        expectLastCall("POST", "/classics/sancai/assets/images/upload", {
             currentUsed: "true",
+            entryId: "3001",
             file: "sancai.png",
             imageType: "ORIGINAL",
             replaceImageId: "8001",

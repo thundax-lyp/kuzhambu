@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.respon
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.security.annotation.PublicApi;
+import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -33,6 +34,7 @@ public class ClassicsSharingPortalController {
         this.service = service;
     }
 
+    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
     @GetMapping
     public ClassicsSharePortalListResponse list(ClassicsSharePortalSearchRequest request) {
         ClassicsSharePortalSearchRequest effectiveRequest =
@@ -45,6 +47,7 @@ public class ClassicsSharingPortalController {
                 new PageQuery(effectiveRequest.getPageNo(), effectiveRequest.getPageSize())));
     }
 
+    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
     @GetMapping("{shareToken}")
     public ClassicsSharePortalResponse get(@PathVariable("shareToken") String shareToken) {
         try {
@@ -57,6 +60,7 @@ public class ClassicsSharingPortalController {
         }
     }
 
+    @PostJsonApiExempt(reason = "文件内容需要浏览器直链预览或下载")
     @GetMapping("{shareToken}/resources/{storageObjectId}/content")
     public void content(
             @PathVariable("shareToken") String shareToken,

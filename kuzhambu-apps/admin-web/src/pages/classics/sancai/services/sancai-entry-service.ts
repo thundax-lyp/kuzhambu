@@ -199,6 +199,7 @@ export const listVisualAssets = (entryId: number) => {
 
 export const uploadImage = (command: SancaiEntryImageUploadCommand) => {
     const body = new FormData();
+    body.append("entryId", String(command.entryId));
     body.append("file", command.file);
     if (command.title) {
         body.append("title", command.title);
@@ -212,10 +213,7 @@ export const uploadImage = (command: SancaiEntryImageUploadCommand) => {
     if (command.replaceImageId) {
         body.append("replaceImageId", String(command.replaceImageId));
     }
-    return postFormData<SancaiEntryImageRecord>(
-        `${ASSET_IMAGES_PATH}/${command.entryId}/upload`,
-        body
-    );
+    return postFormData<SancaiEntryImageRecord>(`${ASSET_IMAGES_PATH}/upload`, body);
 };
 
 export const getImageContentUrl = (request: SancaiEntryImageContentUrlCommand) => {

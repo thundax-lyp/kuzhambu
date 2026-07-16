@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.classics.interfaces.portal.sharing.assembler.Classic
 import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.response.ClassicsSharePortalResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
+import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -29,12 +30,14 @@ public class ClassicsSharingPrivatePortalController {
         this.service = service;
     }
 
+    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
     @GetMapping("{shareToken}")
     public ClassicsSharePortalResponse get(@PathVariable("shareToken") String shareToken) {
         return ClassicsSharingPortalInterfaceAssembler.toPrivateResponse(
                 service.getPrivatePortalShare(shareToken, currentUserId(), currentAuthorities()), shareToken);
     }
 
+    @PostJsonApiExempt(reason = "文件内容需要浏览器直链预览或下载")
     @GetMapping("{shareToken}/resources/{storageObjectId}/content")
     public void content(
             @PathVariable("shareToken") String shareToken,

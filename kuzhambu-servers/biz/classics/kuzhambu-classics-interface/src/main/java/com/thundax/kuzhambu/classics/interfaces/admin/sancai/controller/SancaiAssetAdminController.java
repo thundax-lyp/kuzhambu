@@ -18,6 +18,7 @@ import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiAssetResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
@@ -67,6 +68,7 @@ public class SancaiAssetAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "最新草稿")
+    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
     @GetMapping("drafts/latest/{entryId}")
     public SancaiAssetResponse latestDraft(@PathVariable("entryId") Long entryId) {
         return SancaiAssetInterfaceAssembler.toDraftResponse(
@@ -87,9 +89,10 @@ public class SancaiAssetAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "图片上传")
-    @PostMapping(value = "images/{entryId}/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostJsonApiExempt(reason = "文件上传必须使用 multipart/form-data 承载文件流")
+    @PostMapping(value = "images/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public SancaiAssetResponse uploadImage(
-            @PathVariable("entryId") Long entryId,
+            @RequestParam("entryId") Long entryId,
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "title", required = false) String title,
             @RequestParam(value = "imageType", required = false) String imageType,
@@ -116,6 +119,7 @@ public class SancaiAssetAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "图片列表")
+    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
     @GetMapping("images/{entryId}")
     public List<SancaiAssetResponse> listImages(@PathVariable("entryId") Long entryId) {
         return service.listImages(SancaiEntryIdCodec.toDomain(entryId)).stream()
@@ -175,6 +179,7 @@ public class SancaiAssetAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "图片读取")
+    @PostJsonApiExempt(reason = "文件内容需要浏览器直链预览或下载")
     @GetMapping("images/{entryId}/{imageId}/content")
     public void downloadImage(
             @PathVariable("entryId") Long entryId,
@@ -208,6 +213,7 @@ public class SancaiAssetAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "视觉资产列表")
+    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
     @GetMapping("visual-assets/{entryId}")
     public List<SancaiAssetResponse> listVisualAssets(@PathVariable("entryId") Long entryId) {
         return service.listVisualAssets(SancaiEntryIdCodec.toDomain(entryId)).stream()
@@ -219,6 +225,7 @@ public class SancaiAssetAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "视觉资产原图读取")
+    @PostJsonApiExempt(reason = "文件内容需要浏览器直链预览或下载")
     @GetMapping("visual-assets/{entryId}/{visualAssetId}/source-content")
     public void downloadVisualAssetSourceContent(
             @PathVariable("entryId") Long entryId,
@@ -233,6 +240,7 @@ public class SancaiAssetAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "视觉资产生成图读取")
+    @PostJsonApiExempt(reason = "文件内容需要浏览器直链预览或下载")
     @GetMapping("visual-assets/{entryId}/{visualAssetId}/generated-content")
     public void downloadVisualAssetGeneratedContent(
             @PathVariable("entryId") Long entryId,

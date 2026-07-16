@@ -440,8 +440,11 @@ class ClassicsContentAdminControllerTest {
         deleteQaRequest.setId(4001L);
         assertTrue(controller.deleteQaPair(deleteQaRequest));
 
-        JsonNode listed = OBJECT_MAPPER.valueToTree(
-                controller.listTags("SANCAI_ENTRY", 456L).get(0));
+        ClassicsContentRequest listTagsRequest = new ClassicsContentRequest();
+        listTagsRequest.setContentType("SANCAI_ENTRY");
+        listTagsRequest.setContentId(456L);
+        JsonNode listed =
+                OBJECT_MAPPER.valueToTree(controller.listTags(listTagsRequest).get(0));
         assertEquals(3001L, listed.get("id").asLong());
         assertEquals("SANCAI_ENTRY", listed.get("contentType").asText());
         assertEquals(456L, listed.get("contentId").asLong());

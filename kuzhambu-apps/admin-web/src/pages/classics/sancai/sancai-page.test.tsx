@@ -193,10 +193,10 @@ const installFetchMock = () => {
                 pageSize: 20
             });
         }
-        if (path.includes("/classics/content/tags?")) {
+        if (path.endsWith("/classics/content/tags/list")) {
             return apiResponse([]);
         }
-        if (path.includes("/classics/content/qa-pairs?")) {
+        if (path.endsWith("/classics/content/qa-pairs/list")) {
             return apiResponse([]);
         }
         if (path.endsWith("/ai/invocation/candidate/list")) {

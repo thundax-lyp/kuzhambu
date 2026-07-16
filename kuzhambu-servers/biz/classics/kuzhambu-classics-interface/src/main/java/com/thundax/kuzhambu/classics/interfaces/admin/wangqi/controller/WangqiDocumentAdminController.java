@@ -20,6 +20,7 @@ import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
+import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
@@ -76,7 +77,7 @@ public class WangqiDocumentAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:wangqi:view")
     @SysLogger(value = "详情")
-    @PostMapping("{id}/get")
+    @PostMapping("get")
     public WangqiDocumentResponse get(@Valid @RequestBody WangqiDocumentRequest request) {
         return WangqiDocumentInterfaceAssembler.toResponse(
                 service.get(WangqiDocumentIdCodec.toDomain(request.getId())));
@@ -132,6 +133,7 @@ public class WangqiDocumentAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:wangqi:edit")
     @SysLogger(value = "原始文件上传")
+    @PostJsonApiExempt(reason = "文件上传必须使用 multipart/form-data 承载文件流")
     @PostMapping(value = "{id}/source-file/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public WangqiDocumentSourceFileResponse uploadSourceFile(
             @PathVariable("id") Long id, @RequestParam("file") MultipartFile file) {
@@ -152,7 +154,7 @@ public class WangqiDocumentAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:wangqi:view")
     @SysLogger(value = "原始文件详情")
-    @PostMapping("{id}/source-file/get")
+    @PostMapping("source-file/get")
     public WangqiDocumentSourceFileResponse getSourceFile(@Valid @RequestBody WangqiDocumentRequest request) {
         return WangqiDocumentInterfaceAssembler.toSourceFileResponse(
                 service.getSourceFile(WangqiDocumentIdCodec.toDomain(request.getId())));
@@ -162,6 +164,7 @@ public class WangqiDocumentAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:wangqi:view")
     @SysLogger(value = "原始文件读取")
+    @PostJsonApiExempt(reason = "文件内容需要浏览器直链预览或下载")
     @GetMapping("{id}/source-file/content")
     public void downloadSourceFile(
             @PathVariable("id") Long id,

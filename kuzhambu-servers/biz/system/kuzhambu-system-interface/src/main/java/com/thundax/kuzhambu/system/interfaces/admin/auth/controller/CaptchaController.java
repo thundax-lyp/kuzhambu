@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.system.interfaces.admin.auth.controller;
 
 import com.thundax.kuzhambu.common.security.annotation.PublicApi;
 import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
+import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiResponse;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
@@ -72,6 +73,7 @@ public class CaptchaController {
     @Operation(summary = "图形验证码")
     @ApiImplicitParams({})
     @IgnoreSysLogger
+    @PostJsonApiExempt(reason = "验证码图片需要浏览器直链读取")
     @GetMapping
     public void captcha(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String loginToken = request.getParameter("loginToken");

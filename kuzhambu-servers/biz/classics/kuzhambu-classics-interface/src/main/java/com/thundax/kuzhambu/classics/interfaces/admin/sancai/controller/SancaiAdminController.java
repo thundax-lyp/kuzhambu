@@ -31,6 +31,7 @@ import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
+import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
@@ -67,6 +68,7 @@ public class SancaiAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "门类类型")
+    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
     @GetMapping("categories/types")
     public List<DictResponse> listCategoryTypes() {
         return SancaiInterfaceAssembler.toCategoryTypes();
@@ -76,6 +78,7 @@ public class SancaiAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "卷目类型")
+    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
     @GetMapping("volumes/types")
     public List<DictResponse> listVolumeTypes() {
         return SancaiInterfaceAssembler.toVolumeTypes();
@@ -96,6 +99,7 @@ public class SancaiAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "门类详情")
+    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
     @GetMapping("categories/{id}")
     public SancaiCategoryResponse getCategory(@PathVariable("id") Long id) {
         return SancaiInterfaceAssembler.toResponse(service.getCategory(SancaiCategoryIdCodec.toDomain(id)));
@@ -151,6 +155,7 @@ public class SancaiAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "卷详情")
+    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
     @GetMapping("volumes/{id}")
     public SancaiVolumeResponse getVolume(@PathVariable("id") Long id) {
         return SancaiInterfaceAssembler.toResponse(service.getVolume(SancaiVolumeIdCodec.toDomain(id)));
@@ -215,6 +220,7 @@ public class SancaiAdminController {
     @ApiImplicitParams({})
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "详情")
+    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
     @GetMapping("entries/{id}")
     public SancaiEntryResponse getEntry(@PathVariable("id") Long id) {
         Long entryId = requireParameter(id, "id");

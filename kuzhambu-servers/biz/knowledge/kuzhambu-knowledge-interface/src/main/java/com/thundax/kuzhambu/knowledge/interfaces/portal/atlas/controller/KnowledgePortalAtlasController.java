@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller;
 
 import com.thundax.kuzhambu.common.security.annotation.PublicApi;
+import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.knowledge.application.portal.KnowledgePortalReadApplicationService;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.assembler.KnowledgePortalAtlasInterfaceAssembler;
@@ -25,6 +26,7 @@ public class KnowledgePortalAtlasController {
     }
 
     @Operation(summary = "获取知识门户浏览页数据", description = "Portal 浏览页")
+    @PostJsonApiExempt(reason = "存量 GET JSON 数据接口，待迁移为 POST JSON")
     @GetMapping
     public KnowledgePortalAtlasResponse getAtlas(@Valid KnowledgePortalAtlasQuery request) {
         return KnowledgePortalAtlasInterfaceAssembler.toResponse(knowledgePortalReadApplicationService.getAtlas(
