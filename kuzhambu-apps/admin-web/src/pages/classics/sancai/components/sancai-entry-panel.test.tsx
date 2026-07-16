@@ -664,7 +664,7 @@ describe("SancaiEntryPanel sharing", () => {
         const entryTable = await screen.findByLabelText("三才图会条目表格");
         const rowCheckbox = within(entryTable).getAllByRole("checkbox")[1];
         await user.click(rowCheckbox);
-        await user.click(screen.getByRole("button", { name: "分享" }));
+        await user.click(screen.getByTestId("classics-sancai-sancai-entry-share-button"));
 
         await waitFor(() => {
             expect(shareService.createBatch).toHaveBeenCalled();
@@ -693,7 +693,7 @@ describe("SancaiEntryPanel sharing", () => {
         const entryTable = await screen.findByLabelText("三才图会条目表格");
         const rowCheckbox = within(entryTable).getAllByRole("checkbox")[1];
         await user.click(rowCheckbox);
-        await user.click(screen.getByRole("button", { name: "私有" }));
+        await user.click(screen.getByTestId("classics-sancai-sancai-entry-action-button-4"));
 
         await waitFor(() => {
             expect(contentService.changeVisibilityBatch).toHaveBeenCalled();
@@ -742,7 +742,7 @@ describe("SancaiEntryPanel sharing", () => {
         const entryTable = await screen.findByLabelText("三才图会条目表格");
         const rowCheckbox = within(entryTable).getAllByRole("checkbox")[1];
         await user.click(rowCheckbox);
-        await user.click(screen.getByRole("button", { name: "候选治理" }));
+        await user.click(screen.getByTestId("classics-sancai-sancai-entry-action-button-5"));
 
         expect(await screen.findByText("AI 候选批量治理")).toBeInTheDocument();
         expect(await screen.findByText("暂无待处理候选")).toBeInTheDocument();
@@ -776,12 +776,12 @@ describe("SancaiEntryPanel sharing", () => {
 
         await openSelectAndChoose("三才图会条目门类", "地理");
         vi.mocked(entryService.update).mockClear();
-        await user.click(screen.getByRole("button", { name: "保存三才图会条目" }));
+        await user.click(screen.getByTestId("classics-sancai-sancai-entry-create-button"));
         expect(entryService.update).not.toHaveBeenCalled();
         expect(await screen.findByText("请选择卷")).toBeInTheDocument();
 
         await openSelectAndChoose("三才图会条目卷", "地理卷一");
-        await user.click(screen.getByRole("button", { name: "保存三才图会条目" }));
+        await user.click(screen.getByTestId("classics-sancai-sancai-entry-create-button"));
 
         await waitFor(() => {
             expect(entryService.update).toHaveBeenCalled();
@@ -877,7 +877,9 @@ describe("SancaiEntryPanel sharing", () => {
         await user.click(await within(entryTable).findByRole("button", { name: "编辑 天地" }));
 
         const visualAssetPanel = await openVisualAssetSection(user);
-        fireEvent.click(within(visualAssetPanel).getByRole("button", { name: "图片理解" }));
+        fireEvent.click(
+            within(visualAssetPanel).getByTestId("classics-sancai-sancai-entry-action-button-3")
+        );
 
         await waitFor(() => {
             expect(aiRefinementTaskService.createTask).toHaveBeenCalled();
@@ -913,7 +915,9 @@ describe("SancaiEntryPanel sharing", () => {
         await user.click(await within(entryTable).findByRole("button", { name: "编辑 天地" }));
 
         const visualAssetPanel = await openVisualAssetSection(user);
-        fireEvent.click(within(visualAssetPanel).getByRole("button", { name: "图片理解" }));
+        fireEvent.click(
+            within(visualAssetPanel).getByTestId("classics-sancai-sancai-entry-action-button-3")
+        );
         await waitFor(() => {
             expect(aiRefinementTaskService.createTask).toHaveBeenCalled();
             expect(aiRefinementTaskService.requestTaskStream).toHaveBeenCalled();
@@ -960,7 +964,9 @@ describe("SancaiEntryPanel sharing", () => {
         await user.click(await within(entryTable).findByRole("button", { name: "编辑 天地" }));
 
         const visualAssetPanel = await openVisualAssetSection(user);
-        await user.click(within(visualAssetPanel).getByRole("button", { name: "图片理解" }));
+        await user.click(
+            within(visualAssetPanel).getByTestId("classics-sancai-sancai-entry-action-button-3")
+        );
         await waitFor(() => {
             expect(aiRefinementTaskService.createTask).toHaveBeenCalled();
             expect(aiRefinementTaskService.requestTaskStream).toHaveBeenCalled();
@@ -1119,9 +1125,7 @@ describe("SancaiEntryPanel sharing", () => {
         await waitFor(() => {
             expect(screen.queryByText("AI 候选确认")).toBeInTheDocument();
         });
-        const applyButton = await screen.findByRole("button", {
-            name: (value) => value.replace(/\s/g, "") === "应用"
-        });
+        const applyButton = await screen.findByTestId("classics-common-ai-candidate-action-button");
         expect(applyButton).toBeEnabled();
         await user.click(applyButton);
 
@@ -1196,9 +1200,9 @@ describe("SancaiEntryPanel sharing", () => {
             expect(screen.queryByText("AI 候选确认")).toBeInTheDocument();
         });
 
-        const rejectButton = await screen.findByRole("button", {
-            name: (value) => value.replace(/\s/g, "") === "拒绝"
-        });
+        const rejectButton = await screen.findByTestId(
+            "classics-common-ai-candidate-action-button-2"
+        );
         await user.click(rejectButton);
 
         await waitFor(() => {
@@ -1274,7 +1278,9 @@ describe("SancaiEntryPanel sharing", () => {
         expect(
             within(visualAssetPanel).getByLabelText("三才图会视觉处理生成图占位")
         ).toBeInTheDocument();
-        await user.click(within(visualAssetPanel).getByRole("button", { name: "图片理解" }));
+        await user.click(
+            within(visualAssetPanel).getByTestId("classics-sancai-sancai-entry-action-button-3")
+        );
 
         expect(
             await screen.findByText("当前视觉处理缺少原图，无法创建图片相关任务")
@@ -1313,7 +1319,7 @@ describe("SancaiEntryPanel sharing", () => {
         const entryTable = await screen.findByLabelText("三才图会条目表格");
         const rowCheckbox = within(entryTable).getAllByRole("checkbox")[1];
         await user.click(rowCheckbox);
-        await user.click(screen.getByRole("button", { name: "图片理解" }));
+        await user.click(screen.getByTestId("classics-sancai-sancai-entry-action-button"));
 
         await waitFor(() => {
             expect(entryService.createRefinementBatch).toHaveBeenCalled();
@@ -1340,10 +1346,14 @@ describe("SancaiEntryPanel sharing", () => {
 
         await openVersionSection(user);
         expect(await screen.findByLabelText("三才图会版本历史面板")).toBeInTheDocument();
-        await user.click(await screen.findByRole("button", { name: "查看三才图会版本 1" }));
+        await user.click(
+            await screen.findByTestId("classics-sancai-sancai-version-history-action-button")
+        );
         expect(await screen.findByText("历史：历史天地")).toBeInTheDocument();
 
-        await user.click(screen.getByRole("button", { name: "恢复三才图会版本 1" }));
+        await user.click(
+            screen.getByTestId("classics-sancai-sancai-version-history-action-button-2")
+        );
 
         await waitFor(() => {
             expect(entryService.resetVersion).toHaveBeenCalledWith(3001, 9001);
@@ -1391,8 +1401,8 @@ describe("SancaiEntryPanel sharing", () => {
 
         const entryTable = await screen.findByLabelText("三才图会条目表格");
         await user.click(await within(entryTable).findByRole("button", { name: "编辑 天地" }));
-        await user.click(await screen.findByRole("button", { name: "AI翻译" }));
-        await user.click(await screen.findByRole("button", { name: "翻译" }));
+        await user.click(await screen.findByTestId("classics-sancai-sancai-entry-ai-button"));
+        await user.click(await screen.findByTestId("classics-sancai-sancai-entry-action-button-8"));
 
         await waitFor(() => {
             expect(aiRefinementTaskService.createTask).toHaveBeenCalled();
@@ -1505,7 +1515,9 @@ describe("SancaiEntryPanel sharing", () => {
         await openImageSection(user);
         const imagePanel = await screen.findByLabelText("三才图会图片管理");
 
-        const uploadButton = within(imagePanel).getByRole("button", { name: "上传图片" });
+        const uploadButton = within(imagePanel).getByTestId(
+            "classics-sancai-sancai-entry-action-button"
+        );
         const uploadInput = uploadButton
             .closest(".ant-upload")
             ?.querySelector('input[type="file"]') as HTMLInputElement;
@@ -1667,7 +1679,9 @@ describe("SancaiEntryPanel sharing", () => {
             within(visualAssetPanel).getByLabelText("三才图会视觉处理视觉描述");
         await user.clear(descriptionInput);
         await user.type(descriptionInput, "更新后的视觉描述");
-        await user.click(within(visualAssetPanel).getByRole("button", { name: "采纳视觉处理" }));
+        await user.click(
+            within(visualAssetPanel).getByTestId("classics-sancai-sancai-entry-action-button-7")
+        );
 
         await waitFor(() => {
             expect(entryService.updateVisualAsset).toHaveBeenCalled();
