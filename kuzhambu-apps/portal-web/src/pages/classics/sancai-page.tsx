@@ -107,6 +107,10 @@ export const SancaiPage = () => {
         setSelectedEntryId(null);
         setPageNo(1);
     };
+    const changePage = (nextPageNo: number) => {
+        setPageNo(nextPageNo);
+        setSelectedEntryId(null);
+    };
 
     return (
         <main className="sancai-portal-page">
@@ -207,7 +211,7 @@ export const SancaiPage = () => {
                                 <Button
                                     disabled={pageNo <= 1}
                                     variant="outline"
-                                    onClick={() => setPageNo((value) => Math.max(1, value - 1))}
+                                    onClick={() => changePage(Math.max(1, pageNo - 1))}
                                 >
                                     上一页
                                 </Button>
@@ -217,7 +221,7 @@ export const SancaiPage = () => {
                                 <Button
                                     disabled={pageNo >= totalPage}
                                     variant="outline"
-                                    onClick={() => setPageNo((value) => value + 1)}
+                                    onClick={() => changePage(pageNo + 1)}
                                 >
                                     下一页
                                 </Button>
@@ -229,9 +233,69 @@ export const SancaiPage = () => {
                                 <>
                                     <p className="sancai-detail-kicker">公开已发布</p>
                                     <h2>{readTitle(selectedEntry, "条目")}</h2>
+                                    {selectedEntry.images?.length ? (
+                                        <div
+                                            className="sancai-image-strip"
+                                            aria-label="三才图会条目图片"
+                                        >
+                                            {selectedEntry.images.map((image) =>
+                                                image.previewUrl ? (
+                                                    <img
+                                                        key={image.id ?? image.previewUrl}
+                                                        alt={image.title || "三才图会条目图片"}
+                                                        className={
+                                                            image.currentUsed
+                                                                ? "sancai-entry-image is-cover"
+                                                                : "sancai-entry-image"
+                                                        }
+                                                        src={image.previewUrl}
+                                                    />
+                                                ) : null
+                                            )}
+                                        </div>
+                                    ) : null}
+                                    {selectedEntry.tags?.length ? (
+                                        <div
+                                            className="sancai-tag-list"
+                                            aria-label="三才图会条目标签"
+                                        >
+                                            {selectedEntry.tags.map((tag) => (
+                                                <span
+                                                    key={tag.id ?? tag.tagName}
+                                                    className="sancai-tag"
+                                                >
+                                                    {tag.tagName}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    ) : null}
                                     <p className="sancai-detail-summary">
                                         {readEntryText(selectedEntry)}
                                     </p>
+                                    {selectedEntry.currentVisualAsset ? (
+                                        <section className="sancai-visual-summary">
+                                            {selectedEntry.currentVisualAsset
+                                                .generatedPreviewUrl ? (
+                                                <img
+                                                    alt="三才图会视觉处理生成图"
+                                                    src={
+                                                        selectedEntry.currentVisualAsset
+                                                            .generatedPreviewUrl
+                                                    }
+                                                />
+                                            ) : null}
+                                            <div>
+                                                <h3>视觉处理</h3>
+                                                <p>
+                                                    {selectedEntry.currentVisualAsset
+                                                        .visualDescription ||
+                                                        selectedEntry.currentVisualAsset
+                                                            .fusionDescription ||
+                                                        "暂无视觉描述"}
+                                                </p>
+                                            </div>
+                                        </section>
+                                    ) : null}
                                     <div className="sancai-detail-columns">
                                         <section>
                                             <h3>原文</h3>

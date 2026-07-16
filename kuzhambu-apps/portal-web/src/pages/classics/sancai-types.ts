@@ -28,6 +28,38 @@ export interface SancaiEntryRecord {
     refinementStatus?: string | null;
     priority?: number | null;
     contentUpdatedAt?: string | null;
+    tags?: SancaiEntryTagRecord[] | null;
+    images?: SancaiEntryImageRecord[] | null;
+    currentVisualAsset?: SancaiVisualAssetRecord | null;
+}
+
+export interface SancaiEntryTagRecord {
+    id?: number | null;
+    tagId?: number | null;
+    tagName?: string | null;
+    source?: string | null;
+    priority?: number | null;
+}
+
+export interface SancaiEntryImageRecord {
+    id?: number | null;
+    title?: string | null;
+    imageType?: string | null;
+    currentUsed?: boolean | null;
+    priority?: number | null;
+    previewUrl?: string | null;
+    downloadUrl?: string | null;
+}
+
+export interface SancaiVisualAssetRecord {
+    visualAssetId?: number | null;
+    versionNo?: number | null;
+    status?: string | null;
+    imageAnalysisMarkdown?: string | null;
+    fusionDescription?: string | null;
+    visualDescription?: string | null;
+    sourcePreviewUrl?: string | null;
+    generatedPreviewUrl?: string | null;
 }
 
 export interface SancaiEntryPage {

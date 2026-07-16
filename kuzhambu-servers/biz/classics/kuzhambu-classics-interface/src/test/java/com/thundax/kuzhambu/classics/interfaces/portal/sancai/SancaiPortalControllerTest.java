@@ -4,17 +4,35 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
+import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageContent;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
+import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
+import com.thundax.kuzhambu.classics.domain.common.model.valueobject.KnowledgeTagId;
+import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
+import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentSource;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentTagStatus;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
+import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVisualAsset;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiCategoryType;
+import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageType;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
+import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisualAssetStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVolumeType;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiCategoryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisualAssetId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVolumeId;
 import com.thundax.kuzhambu.classics.interfaces.portal.sancai.controller.SancaiPortalController;
 import com.thundax.kuzhambu.classics.interfaces.portal.sancai.controller.request.SancaiPortalEntrySearchRequest;
@@ -23,6 +41,9 @@ import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.common.security.annotation.PublicApi;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import java.io.ByteArrayInputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.List;
@@ -35,6 +56,7 @@ class SancaiPortalControllerTest {
     @Test
     void routesShouldKeepPortalSancaiApiPaths() throws Exception {
         assertNotNull(SancaiPortalController.class.getAnnotation(PublicApi.class));
+        assertNotNull(SancaiPortalController.class.getAnnotation(Tag.class));
         RequestMapping mapping = SancaiPortalController.class.getAnnotation(RequestMapping.class);
         assertEquals("/api/portal/classics/sancai", mapping.value()[0]);
 
@@ -59,11 +81,17 @@ class SancaiPortalControllerTest {
                         .getDeclaredMethod("getEntry", SancaiPortalEntrySearchRequest.class)
                         .getAnnotation(PostMapping.class)
                         .value()[0]);
+        for (Method method : SancaiPortalController.class.getDeclaredMethods()) {
+            if (method.getAnnotation(PostMapping.class) != null
+                    || method.getAnnotation(org.springframework.web.bind.annotation.GetMapping.class) != null) {
+                assertNotNull(method.getAnnotation(Operation.class), method.getName());
+            }
+        }
     }
 
     @Test
     void pageEntriesShouldForcePublicPublishedFilter() {
-        SancaiPortalController controller = new SancaiPortalController(service());
+        SancaiPortalController controller = controller();
         SancaiPortalEntrySearchRequest request = new SancaiPortalEntrySearchRequest();
         request.setCategoryId(2L);
         request.setVolumeId(101L);
@@ -81,12 +109,38 @@ class SancaiPortalControllerTest {
 
     @Test
     void getEntryShouldRejectNonPublicPublishedEntry() {
-        SancaiPortalController controller = new SancaiPortalController(service());
+        SancaiPortalController controller = controller();
 
         SancaiPortalEntrySearchRequest request = new SancaiPortalEntrySearchRequest();
         request.setId(3002L);
 
         assertThrows(BizException.class, () -> controller.getEntry(request));
+    }
+
+    @Test
+    void getEntryShouldReturnPortalTagsImagesAndCurrentVisualAsset() {
+        SancaiPortalController controller = controller();
+        SancaiPortalEntrySearchRequest request = new SancaiPortalEntrySearchRequest();
+        request.setId(3001L);
+
+        var response = controller.getEntry(request);
+
+        assertEquals("三才", response.getTags().get(0).getTagName());
+        assertEquals(
+                "/api/portal/classics/sancai/images/3001/8001/content",
+                response.getImages().get(0).getPreviewUrl());
+        assertEquals(
+                "/api/portal/classics/sancai/images/3001/8001/content?download=true",
+                response.getImages().get(0).getDownloadUrl());
+        assertEquals(5001L, response.getCurrentVisualAsset().getVisualAssetId());
+        assertEquals("视觉描述", response.getCurrentVisualAsset().getVisualDescription());
+        assertEquals(
+                "/api/portal/classics/sancai/visual-assets/3001/5001/generated-content",
+                response.getCurrentVisualAsset().getGeneratedPreviewUrl());
+    }
+
+    private static SancaiPortalController controller() {
+        return new SancaiPortalController(service(), assetService(), contentService());
     }
 
     private static SancaiApplicationService service() {
@@ -127,6 +181,42 @@ class SancaiPortalControllerTest {
                 });
     }
 
+    private static SancaiAssetApplicationService assetService() {
+        return (SancaiAssetApplicationService) Proxy.newProxyInstance(
+                SancaiAssetApplicationService.class.getClassLoader(),
+                new Class<?>[] {SancaiAssetApplicationService.class},
+                (proxy, method, args) -> {
+                    if ("listImages".equals(method.getName())) {
+                        return List.of(image());
+                    }
+                    if ("listVisualAssets".equals(method.getName())) {
+                        return List.of(visualAsset());
+                    }
+                    if ("getImageContent".equals(method.getName())) {
+                        return new SancaiEntryImageContent(3001L, 8001L, 7001L, storedContent());
+                    }
+                    if ("getVisualAssetSourceContent".equals(method.getName())
+                            || "getVisualAssetGeneratedContent".equals(method.getName())) {
+                        return storedContent();
+                    }
+                    throw new UnsupportedOperationException(method.getName());
+                });
+    }
+
+    private static ClassicsContentApplicationService contentService() {
+        return (ClassicsContentApplicationService) Proxy.newProxyInstance(
+                ClassicsContentApplicationService.class.getClassLoader(),
+                new Class<?>[] {ClassicsContentApplicationService.class},
+                (proxy, method, args) -> {
+                    if ("listTags".equals(method.getName())) {
+                        assertEquals("SANCAI_ENTRY", args[0]);
+                        assertEquals(ClassicsContentId.of(3001L), args[1]);
+                        return List.of(tag());
+                    }
+                    throw new UnsupportedOperationException(method.getName());
+                });
+    }
+
     private static SancaiEntry publicEntry() {
         SancaiEntry entry = new SancaiEntry();
         entry.setId(SancaiEntryId.of(3001L));
@@ -138,5 +228,50 @@ class SancaiPortalControllerTest {
         entry.setLifecycleStatus(SancaiEntryLifecycleStatus.PUBLISHED);
         entry.setVisibility(SancaiEntryVisibility.PUBLIC);
         return entry;
+    }
+
+    private static ClassicsContentTag tag() {
+        ClassicsContentTag tag = new ClassicsContentTag();
+        tag.setId(ClassicsContentTagId.of(6001L));
+        tag.setContentType(ClassicsContentType.SANCAI_ENTRY);
+        tag.setContentId(ClassicsContentId.of(3001L));
+        tag.setTagId(KnowledgeTagId.of(7001L));
+        tag.setTagNameSnapshot("三才");
+        tag.setSource(ClassicsContentSource.MANUAL);
+        tag.setStatus(ClassicsContentTagStatus.ACTIVE);
+        tag.setPriority(1);
+        return tag;
+    }
+
+    private static SancaiEntryImage image() {
+        SancaiEntryImage image = new SancaiEntryImage();
+        image.setId(SancaiEntryImageId.of(8001L));
+        image.setEntryId(SancaiEntryId.of(3001L));
+        image.setStorageObjectId(StorageObjectId.of(7001L));
+        image.setImageType(SancaiEntryImageType.ORIGINAL);
+        image.setTitle("原图");
+        image.setCurrentUsed(true);
+        image.setPriority(1);
+        return image;
+    }
+
+    private static SancaiVisualAsset visualAsset() {
+        SancaiVisualAsset visualAsset = new SancaiVisualAsset();
+        visualAsset.setId(SancaiVisualAssetId.of(5001L));
+        visualAsset.setEntryId(SancaiEntryId.of(3001L));
+        visualAsset.setVersionNo(1);
+        visualAsset.setStatus(SancaiVisualAssetStatus.READY);
+        visualAsset.setSourceImageStorageObjectId(StorageObjectId.of(7001L));
+        visualAsset.setGeneratedImageStorageObjectId(StorageObjectId.of(7002L));
+        visualAsset.setCurrentUsed(true);
+        visualAsset.setImageAnalysisMarkdown("图片理解");
+        visualAsset.setFusionDescription("融合描述");
+        visualAsset.setVisualDescription("视觉描述");
+        return visualAsset;
+    }
+
+    private static ClassicsStoredContentResult storedContent() {
+        return new ClassicsStoredContentResult(
+                7001L, "sancai.png", "image/png", 4L, new ByteArrayInputStream(new byte[] {1, 2, 3, 4}));
     }
 }
