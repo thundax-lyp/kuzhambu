@@ -66,7 +66,7 @@ export const QualityReportSourceTable = ({
                 return (
                     <KuzhambuSpaceCompact className="knowledge-quality-report-source-actions">
                         <KuzhambuButton
-                            testId="knowledge-quality-report-quality-report-source-action-button"
+                            testId={`quality-report-source-${sourceDetail.detailId}-open-button`}
                             disabled={!sourceDetail.href}
                             href={sourceDetail.href || undefined}
                         >
@@ -75,7 +75,7 @@ export const QualityReportSourceTable = ({
                         <Tooltip title={disabledReason || "从质量报告低质量门类重提取"}>
                             <span>
                                 <KuzhambuButton
-                                    testId="knowledge-quality-report-quality-report-source-action-button-2"
+                                    testId={`quality-report-source-${sourceDetail.detailId}-reextract-button`}
                                     disabled={reextractDisabled}
                                     icon={<ReloadOutlined />}
                                     loading={reextractingDetailId === sourceDetail.detailId}
