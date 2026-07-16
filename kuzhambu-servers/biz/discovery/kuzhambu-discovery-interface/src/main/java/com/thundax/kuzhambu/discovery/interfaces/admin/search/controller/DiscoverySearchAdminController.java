@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.discovery.interfaces.admin.search.controller;
 
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
@@ -16,6 +17,8 @@ import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchAnalysisSummaryResponse;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchLogDetailResponse;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchLogResponse;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -43,6 +46,13 @@ public class DiscoverySearchAdminController {
     @HasPermission("discovery:search:view")
     @IgnoreSysLogger
     @PostMapping("logs/page")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public PageResponse<DiscoverySearchLogResponse> pageLogs(
             @Valid @RequestBody DiscoverySearchLogPageRequest request) {
         return PageResponseHelper.fromPageResult(
@@ -54,6 +64,13 @@ public class DiscoverySearchAdminController {
     @HasPermission("discovery:search:view")
     @IgnoreSysLogger
     @PostMapping("logs/get")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public DiscoverySearchLogDetailResponse getLog(@Valid @RequestBody DiscoverySearchLogGetRequest request) {
         return DiscoverySearchAdminInterfaceAssembler.toDetailResponse(
                 searchApplicationService.getLog(request.getSearchLogId()));
@@ -63,6 +80,13 @@ public class DiscoverySearchAdminController {
     @HasPermission("discovery:search:view")
     @IgnoreSysLogger
     @PostMapping("analysis/summary")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public DiscoverySearchAnalysisSummaryResponse getAnalysisSummary(
             @Valid @RequestBody DiscoverySearchAnalysisSummaryRequest request) {
         return DiscoverySearchAdminInterfaceAssembler.toResponse(
@@ -73,6 +97,13 @@ public class DiscoverySearchAdminController {
     @HasPermission("discovery:search:edit")
     @IgnoreSysLogger
     @PostMapping("index/rebuild")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public Integer rebuildIndex(@Valid @RequestBody DiscoverySearchIndexRebuildRequest request) {
         return searchIndexApplicationService.rebuildIndex();
     }

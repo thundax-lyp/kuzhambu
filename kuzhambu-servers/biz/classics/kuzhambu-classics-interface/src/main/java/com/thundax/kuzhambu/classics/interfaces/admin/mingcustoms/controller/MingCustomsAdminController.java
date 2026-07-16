@@ -22,6 +22,7 @@ import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.controller.res
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
+import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
@@ -29,6 +30,7 @@ import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -59,7 +61,13 @@ public class MingCustomsAdminController {
     }
 
     @Operation(summary = "分页查询明代习俗", description = "classics:mingcustoms:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:mingcustoms:view")
     @SysLogger(value = "分页查询")
     @PostMapping("page")
@@ -72,7 +80,13 @@ public class MingCustomsAdminController {
     }
 
     @Operation(summary = "查看明代习俗", description = "classics:mingcustoms:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:mingcustoms:view")
     @SysLogger(value = "详情")
     @PostMapping("get")
@@ -82,7 +96,13 @@ public class MingCustomsAdminController {
     }
 
     @Operation(summary = "新增明代习俗", description = "classics:mingcustoms:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:mingcustoms:edit")
     @SysLogger(value = "新增")
     @PostMapping("add")
@@ -92,7 +112,13 @@ public class MingCustomsAdminController {
     }
 
     @Operation(summary = "更新明代习俗", description = "classics:mingcustoms:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:mingcustoms:edit")
     @SysLogger(value = "更新")
     @PostMapping("update")
@@ -102,7 +128,13 @@ public class MingCustomsAdminController {
     }
 
     @Operation(summary = "新增明代习俗关键词", description = "classics:mingcustoms:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:mingcustoms:edit")
     @SysLogger(value = "新增关键词")
     @PostMapping("keywords/add")
@@ -114,7 +146,13 @@ public class MingCustomsAdminController {
     }
 
     @Operation(summary = "排序明代习俗关键词", description = "classics:mingcustoms:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:mingcustoms:edit")
     @SysLogger(value = "关键词排序")
     @PostMapping("keywords/sort")
@@ -131,7 +169,13 @@ public class MingCustomsAdminController {
     }
 
     @Operation(summary = "查询明代习俗关键词云", description = "classics:mingcustoms:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:mingcustoms:view")
     @SysLogger(value = "关键词云")
     @PostMapping("keyword-cloud/list")
@@ -142,7 +186,13 @@ public class MingCustomsAdminController {
     }
 
     @Operation(summary = "查询明代习俗标签云", description = "classics:mingcustoms:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:mingcustoms:view")
     @SysLogger(value = "标签云")
     @PostMapping("tag-cloud/list")
@@ -158,7 +208,13 @@ public class MingCustomsAdminController {
     }
 
     @Operation(summary = "删除明代习俗", description = "classics:mingcustoms:delete")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:mingcustoms:delete")
     @SysLogger(value = "删除")
     @PostMapping("delete")
@@ -167,7 +223,13 @@ public class MingCustomsAdminController {
     }
 
     @Operation(summary = "查询明代习俗版本", description = "classics:mingcustoms:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:mingcustoms:view")
     @SysLogger(value = "版本列表")
     @PostMapping("versions/list")
@@ -181,7 +243,13 @@ public class MingCustomsAdminController {
     }
 
     @Operation(summary = "查看明代习俗版本", description = "classics:mingcustoms:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:mingcustoms:view")
     @SysLogger(value = "版本详情")
     @PostMapping("versions/get")
@@ -190,7 +258,13 @@ public class MingCustomsAdminController {
     }
 
     @Operation(summary = "恢复明代习俗版本", description = "classics:mingcustoms:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:mingcustoms:edit")
     @SysLogger(value = "版本恢复")
     @PostMapping("versions/reset")

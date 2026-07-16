@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.operations.interfaces.admin.report.controller;
 
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
 import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
@@ -19,6 +20,8 @@ import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.reques
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.response.OperationsReportDetailResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.response.OperationsReportGenerateResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.response.OperationsReportPageResponse;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
@@ -52,6 +55,13 @@ public class OperationsReportAdminController {
     @HasPermission("operations:report:generate")
     @IgnoreSysLogger
     @PostMapping("generate")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public OperationsReportGenerateResponse generate(@Valid @RequestBody OperationsReportGenerateRequest request) {
         return OperationsReportInterfaceAssembler.toResponse(
                 reportApplicationService.generate(OperationsReportInterfaceAssembler.toCommand(request)));
@@ -61,6 +71,13 @@ public class OperationsReportAdminController {
     @HasPermission("operations:report:view")
     @IgnoreSysLogger
     @PostMapping("page")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public PageResponse<OperationsReportPageResponse> page(@Valid @RequestBody OperationsReportPageRequest request) {
         return PageResponseHelper.fromPageResult(
                 reportApplicationService.page(
@@ -73,6 +90,13 @@ public class OperationsReportAdminController {
     @HasPermission("operations:report:view")
     @IgnoreSysLogger
     @PostMapping("detail")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public OperationsReportDetailResponse detail(@Valid @RequestBody OperationsReportDetailRequest request) {
         return OperationsReportInterfaceAssembler.toDetailResponse(
                 reportApplicationService.detail(OperationsReportInterfaceAssembler.toQuery(request)));
@@ -83,6 +107,13 @@ public class OperationsReportAdminController {
     @SysLogger("下载报表")
     @PostJsonApiExempt(reason = "文件内容需要浏览器直链预览或下载")
     @GetMapping("{reportId}/content")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public void content(
             @PathVariable("reportId") Long reportId,
             @RequestParam(value = "download", required = false) Boolean download,

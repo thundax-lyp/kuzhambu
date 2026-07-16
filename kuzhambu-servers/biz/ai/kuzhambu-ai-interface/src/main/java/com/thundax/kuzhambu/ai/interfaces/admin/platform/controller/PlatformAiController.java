@@ -5,8 +5,10 @@ import com.thundax.kuzhambu.ai.interfaces.admin.platform.assembler.PlatformAiInt
 import com.thundax.kuzhambu.ai.interfaces.admin.platform.controller.request.PlatformAiRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.platform.controller.response.PlatformAiResponses.InvokeResponse;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,7 +30,13 @@ public class PlatformAiController {
     }
 
     @Operation(summary = "生成提示词优化建议", description = "ai:prompt:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:prompt:edit")
     @SysLogger(value = "提示词建议")
     @PostMapping(value = "prompt-suggestion")
@@ -38,7 +46,13 @@ public class PlatformAiController {
     }
 
     @Operation(summary = "生成版本摘要", description = "ai:prompt:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:prompt:view")
     @SysLogger(value = "版本摘要")
     @PostMapping(value = "version-summary")

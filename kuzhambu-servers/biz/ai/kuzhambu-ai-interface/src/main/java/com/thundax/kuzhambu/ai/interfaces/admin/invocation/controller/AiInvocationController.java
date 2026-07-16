@@ -13,11 +13,13 @@ import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.A
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.AiInvocationResponses.IdResponse;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.assembler.PageInterfaceAssembler;
 import com.thundax.kuzhambu.common.web.response.PageResponse;
 import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -49,7 +51,13 @@ public class AiInvocationController {
     }
 
     @Operation(summary = "获取AI调用记录", description = "ai:invocation:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:invocation:view")
     @SysLogger(value = "调用读取")
     @PostMapping(value = "call/get")
@@ -58,7 +66,13 @@ public class AiInvocationController {
     }
 
     @Operation(summary = "分页查询AI调用记录", description = "ai:invocation:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:invocation:view")
     @SysLogger(value = "调用分页")
     @PostMapping(value = "call/page")
@@ -83,7 +97,13 @@ public class AiInvocationController {
     }
 
     @Operation(summary = "统计AI调用记录", description = "ai:invocation:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:invocation:view")
     @SysLogger(value = "调用统计")
     @PostMapping(value = "call/summary")
@@ -101,7 +121,13 @@ public class AiInvocationController {
     }
 
     @Operation(summary = "获取AI候选", description = "ai:invocation:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:invocation:view")
     @SysLogger(value = "候选读取")
     @PostMapping(value = "candidate/get")
@@ -110,7 +136,13 @@ public class AiInvocationController {
     }
 
     @Operation(summary = "获取AI候选列表", description = "ai:invocation:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:invocation:view")
     @SysLogger(value = "候选列表")
     @PostMapping(value = "candidate/list")
@@ -129,7 +161,13 @@ public class AiInvocationController {
     }
 
     @Operation(summary = "拒绝AI候选", description = "ai:invocation:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:invocation:edit")
     @SysLogger(value = "候选拒绝")
     @PostMapping(value = "candidate/reject")
@@ -139,7 +177,13 @@ public class AiInvocationController {
     }
 
     @Operation(summary = "标记AI候选已应用", description = "ai:invocation:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:invocation:edit")
     @SysLogger(value = "候选已应用")
     @PostMapping(value = "candidate/mark-applied")
@@ -159,7 +203,13 @@ public class AiInvocationController {
     }
 
     @Operation(summary = "获取AI批量任务", description = "ai:invocation:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:invocation:view")
     @SysLogger(value = "批量读取")
     @PostMapping(value = "batch/get")
@@ -168,7 +218,13 @@ public class AiInvocationController {
     }
 
     @Operation(summary = "创建AI批量任务", description = "ai:invocation:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:invocation:edit")
     @SysLogger(value = "批量创建")
     @PostMapping(value = "batch/create")
@@ -179,7 +235,13 @@ public class AiInvocationController {
     }
 
     @Operation(summary = "取消AI批量任务", description = "ai:invocation:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:invocation:edit")
     @SysLogger(value = "批量取消")
     @PostMapping(value = "batch/cancel")
@@ -188,7 +250,13 @@ public class AiInvocationController {
     }
 
     @Operation(summary = "记录AI批量成功", description = "ai:invocation:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:invocation:edit")
     @SysLogger(value = "批量成功")
     @PostMapping(value = "batch/record-success")
@@ -197,7 +265,13 @@ public class AiInvocationController {
     }
 
     @Operation(summary = "记录AI批量失败", description = "ai:invocation:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:invocation:edit")
     @SysLogger(value = "批量失败")
     @PostMapping(value = "batch/record-failure")
@@ -207,7 +281,13 @@ public class AiInvocationController {
     }
 
     @Operation(summary = "判断AI批量任务是否可继续派发", description = "ai:invocation:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:invocation:view")
     @SysLogger(value = "批量派发判断")
     @PostMapping(value = "batch/can-dispatch")

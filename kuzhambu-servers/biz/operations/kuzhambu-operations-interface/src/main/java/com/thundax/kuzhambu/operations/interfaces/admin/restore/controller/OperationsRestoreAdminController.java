@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.operations.interfaces.admin.restore.controller;
 
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
@@ -15,6 +16,8 @@ import com.thundax.kuzhambu.operations.interfaces.admin.restore.controller.reque
 import com.thundax.kuzhambu.operations.interfaces.admin.restore.controller.response.OperationsRestoreDetailResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.restore.controller.response.OperationsRestoreExecuteResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.restore.controller.response.OperationsRestorePageResponse;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -38,6 +41,13 @@ public class OperationsRestoreAdminController {
     @HasPermission("operations:restore:execute")
     @IgnoreSysLogger
     @PostMapping("execute")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public OperationsRestoreExecuteResponse execute(@Valid @RequestBody OperationsRestoreExecuteRequest request) {
         return OperationsRestoreInterfaceAssembler.toResponse(
                 restoreApplicationService.execute(OperationsRestoreInterfaceAssembler.toCommand(request)));
@@ -47,6 +57,13 @@ public class OperationsRestoreAdminController {
     @HasPermission("operations:restore:view")
     @IgnoreSysLogger
     @PostMapping("page")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public PageResponse<OperationsRestorePageResponse> page(@Valid @RequestBody OperationsRestorePageRequest request) {
         return PageResponseHelper.fromPageResult(
                 restoreApplicationService.page(
@@ -59,6 +76,13 @@ public class OperationsRestoreAdminController {
     @HasPermission("operations:restore:view")
     @IgnoreSysLogger
     @PostMapping("detail")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public OperationsRestoreDetailResponse detail(@Valid @RequestBody OperationsRestoreDetailRequest request) {
         return OperationsRestoreInterfaceAssembler.toDetailResponse(
                 restoreApplicationService.detail(OperationsRestoreInterfaceAssembler.toQuery(request)));

@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.operations.interfaces.admin.backup.controller;
 
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
@@ -15,6 +16,8 @@ import com.thundax.kuzhambu.operations.interfaces.admin.backup.controller.reques
 import com.thundax.kuzhambu.operations.interfaces.admin.backup.controller.response.OperationsBackupDetailResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.backup.controller.response.OperationsBackupExecuteResponse;
 import com.thundax.kuzhambu.operations.interfaces.admin.backup.controller.response.OperationsBackupPageResponse;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -38,6 +41,13 @@ public class OperationsBackupAdminController {
     @HasPermission("operations:backup:execute")
     @IgnoreSysLogger
     @PostMapping("execute")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public OperationsBackupExecuteResponse execute(@Valid @RequestBody OperationsBackupExecuteRequest request) {
         return OperationsBackupInterfaceAssembler.toResponse(
                 backupApplicationService.execute(OperationsBackupInterfaceAssembler.toCommand(request)));
@@ -47,6 +57,13 @@ public class OperationsBackupAdminController {
     @HasPermission("operations:backup:view")
     @IgnoreSysLogger
     @PostMapping("page")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public PageResponse<OperationsBackupPageResponse> page(@Valid @RequestBody OperationsBackupPageRequest request) {
         return PageResponseHelper.fromPageResult(
                 backupApplicationService.page(
@@ -59,6 +76,13 @@ public class OperationsBackupAdminController {
     @HasPermission("operations:backup:view")
     @IgnoreSysLogger
     @PostMapping("detail")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     public OperationsBackupDetailResponse detail(@Valid @RequestBody OperationsBackupDetailRequest request) {
         return OperationsBackupInterfaceAssembler.toDetailResponse(
                 backupApplicationService.detail(OperationsBackupInterfaceAssembler.toQuery(request)));

@@ -13,8 +13,10 @@ import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.response.AiCon
 import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.response.AiConfigResponses.ModelResponse;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.response.AiConfigResponses.ServiceConfigResponse;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -45,7 +47,13 @@ public class AiConfigController {
     }
 
     @Operation(summary = "按服务ID获取AI服务配置", description = "ai:config:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:config:view")
     @SysLogger(value = "服务配置读取")
     @PostMapping(value = "service/get")
@@ -54,7 +62,13 @@ public class AiConfigController {
     }
 
     @Operation(summary = "按角色获取AI服务配置", description = "ai:config:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:config:view")
     @SysLogger(value = "服务配置读取")
     @PostMapping(value = "service/get-by-role")
@@ -63,7 +77,13 @@ public class AiConfigController {
     }
 
     @Operation(summary = "保存AI服务配置", description = "ai:config:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:config:edit")
     @SysLogger(value = "服务配置保存")
     @PostMapping(value = "service/save")
@@ -73,7 +93,13 @@ public class AiConfigController {
     }
 
     @Operation(summary = "获取AI模型", description = "ai:config:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:config:view")
     @SysLogger(value = "模型读取")
     @PostMapping(value = "model/get")
@@ -82,7 +108,13 @@ public class AiConfigController {
     }
 
     @Operation(summary = "获取AI模型列表", description = "ai:config:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:config:view")
     @SysLogger(value = "模型列表")
     @PostMapping(value = "model/list")
@@ -93,7 +125,13 @@ public class AiConfigController {
     }
 
     @Operation(summary = "新增AI模型", description = "ai:config:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:config:edit")
     @SysLogger(value = "模型新增")
     @PostMapping(value = "model/create")
@@ -103,7 +141,13 @@ public class AiConfigController {
     }
 
     @Operation(summary = "更新AI模型", description = "ai:config:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:config:edit")
     @SysLogger(value = "模型更新")
     @PostMapping(value = "model/update")
@@ -113,7 +157,13 @@ public class AiConfigController {
     }
 
     @Operation(summary = "删除AI模型", description = "ai:config:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:config:edit")
     @SysLogger(value = "模型删除")
     @PostMapping(value = "model/delete")
@@ -124,7 +174,13 @@ public class AiConfigController {
     }
 
     @Operation(summary = "检测AI模型", description = "ai:config:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:config:edit")
     @SysLogger(value = "模型检测")
     @PostMapping(value = "model/check")
@@ -133,7 +189,13 @@ public class AiConfigController {
     }
 
     @Operation(summary = "记录AI模型检测结果", description = "ai:config:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:config:edit")
     @SysLogger(value = "模型检测记录")
     @PostMapping(value = "model/check-record")
@@ -144,7 +206,13 @@ public class AiConfigController {
     }
 
     @Operation(summary = "获取AI模型检测历史", description = "ai:config:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:config:view")
     @SysLogger(value = "模型检测历史")
     @PostMapping(value = "model/check-records")
@@ -156,7 +224,13 @@ public class AiConfigController {
     }
 
     @Operation(summary = "获取AI能力列表", description = "ai:config:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:config:view")
     @SysLogger(value = "能力列表")
     @PostMapping(value = "capability/list")
@@ -168,7 +242,13 @@ public class AiConfigController {
     }
 
     @Operation(summary = "获取AI能力", description = "ai:config:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:config:view")
     @SysLogger(value = "能力读取")
     @PostMapping(value = "capability/get")
@@ -177,7 +257,13 @@ public class AiConfigController {
     }
 
     @Operation(summary = "获取AI能力映射", description = "ai:config:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:config:view")
     @SysLogger(value = "能力映射读取")
     @PostMapping(value = "capability/mapping/get")
@@ -187,7 +273,13 @@ public class AiConfigController {
     }
 
     @Operation(summary = "获取AI能力映射列表", description = "ai:config:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:config:view")
     @SysLogger(value = "能力映射列表")
     @PostMapping(value = "capability/mapping/list")
@@ -201,7 +293,13 @@ public class AiConfigController {
     }
 
     @Operation(summary = "保存AI能力映射", description = "ai:config:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:config:edit")
     @SysLogger(value = "能力映射保存")
     @PostMapping(value = "capability/mapping/save")
@@ -212,7 +310,13 @@ public class AiConfigController {
     }
 
     @Operation(summary = "获取AI动作状态", description = "ai:config:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:config:view")
     @SysLogger(value = "动作状态读取")
     @PostMapping(value = "action/status")
@@ -222,7 +326,13 @@ public class AiConfigController {
     }
 
     @Operation(summary = "获取AI动作状态列表", description = "ai:config:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:config:view")
     @SysLogger(value = "动作状态列表")
     @PostMapping(value = "action/status/list")
@@ -236,7 +346,13 @@ public class AiConfigController {
     }
 
     @Operation(summary = "刷新AI动作状态", description = "ai:config:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:config:edit")
     @SysLogger(value = "动作状态刷新")
     @PostMapping(value = "action/status/refresh")

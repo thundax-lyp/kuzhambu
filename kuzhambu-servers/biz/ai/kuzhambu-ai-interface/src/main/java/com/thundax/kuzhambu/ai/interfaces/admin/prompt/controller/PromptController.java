@@ -7,8 +7,10 @@ import com.thundax.kuzhambu.ai.interfaces.admin.prompt.controller.response.Promp
 import com.thundax.kuzhambu.ai.interfaces.admin.prompt.controller.response.PromptResponses.VariableResponse;
 import com.thundax.kuzhambu.ai.interfaces.admin.prompt.controller.response.PromptResponses.VersionResponse;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,7 +34,13 @@ public class PromptController {
     }
 
     @Operation(summary = "获取提示词模板", description = "ai:prompt:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:prompt:view")
     @SysLogger(value = "模板读取")
     @PostMapping(value = "template/get")
@@ -41,7 +49,13 @@ public class PromptController {
     }
 
     @Operation(summary = "按范围和能力获取提示词模板", description = "ai:prompt:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:prompt:view")
     @SysLogger(value = "模板读取")
     @PostMapping(value = "template/get-by-scope")
@@ -51,7 +65,13 @@ public class PromptController {
     }
 
     @Operation(summary = "保存提示词模板", description = "ai:prompt:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:prompt:edit")
     @SysLogger(value = "模板保存")
     @PostMapping(value = "template/save")
@@ -61,7 +81,13 @@ public class PromptController {
     }
 
     @Operation(summary = "获取当前提示词版本", description = "ai:prompt:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:prompt:view")
     @SysLogger(value = "当前版本读取")
     @PostMapping(value = "version/current")
@@ -70,7 +96,13 @@ public class PromptController {
     }
 
     @Operation(summary = "获取提示词版本列表", description = "ai:prompt:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:prompt:view")
     @SysLogger(value = "版本列表")
     @PostMapping(value = "version/list")
@@ -81,7 +113,13 @@ public class PromptController {
     }
 
     @Operation(summary = "对比提示词版本", description = "ai:prompt:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:prompt:view")
     @SysLogger(value = "版本对比")
     @PostMapping(value = "version/compare")
@@ -92,7 +130,13 @@ public class PromptController {
     }
 
     @Operation(summary = "回滚提示词版本", description = "ai:prompt:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:prompt:edit")
     @SysLogger(value = "版本回滚")
     @PostMapping(value = "version/rollback")
@@ -102,7 +146,13 @@ public class PromptController {
     }
 
     @Operation(summary = "获取提示词变量列表", description = "ai:prompt:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:prompt:view")
     @SysLogger(value = "变量列表")
     @PostMapping(value = "variable/list")
@@ -113,7 +163,13 @@ public class PromptController {
     }
 
     @Operation(summary = "校验提示词必填变量", description = "ai:prompt:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:prompt:view")
     @SysLogger(value = "变量校验")
     @PostMapping(value = "variable/validate")
@@ -123,7 +179,13 @@ public class PromptController {
     }
 
     @Operation(summary = "构建提示词优化建议", description = "ai:prompt:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission(value = "ai:prompt:edit")
     @SysLogger(value = "优化建议")
     @PostMapping(value = "optimization/suggest")

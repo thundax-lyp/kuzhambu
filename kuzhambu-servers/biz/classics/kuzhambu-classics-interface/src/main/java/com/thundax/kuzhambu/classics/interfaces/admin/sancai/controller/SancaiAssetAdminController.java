@@ -18,11 +18,13 @@ import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.response.SancaiAssetResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.PostJsonApiExempt;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.common.web.request.RequestListHelper;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -55,7 +57,13 @@ public class SancaiAssetAdminController {
     }
 
     @Operation(summary = "更新三才图会草稿", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "更新草稿")
     @PostMapping("drafts/update")
@@ -65,7 +73,13 @@ public class SancaiAssetAdminController {
     }
 
     @Operation(summary = "查看三才图会最新草稿", description = "classics:sancai:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "最新草稿")
     @PostMapping("drafts/latest")
@@ -76,7 +90,13 @@ public class SancaiAssetAdminController {
     }
 
     @Operation(summary = "更新三才图会图片", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "更新图片")
     @PostMapping("images/update")
@@ -86,7 +106,13 @@ public class SancaiAssetAdminController {
     }
 
     @Operation(summary = "上传三才图会图片", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "图片上传")
     @PostJsonApiExempt(reason = "文件上传必须使用 multipart/form-data 承载文件流")
@@ -116,7 +142,13 @@ public class SancaiAssetAdminController {
     }
 
     @Operation(summary = "查询三才图会图片", description = "classics:sancai:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "图片列表")
     @PostMapping("images/list")
@@ -128,7 +160,13 @@ public class SancaiAssetAdminController {
     }
 
     @Operation(summary = "删除三才图会图片", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "图片删除")
     @PostMapping("images/delete")
@@ -146,7 +184,13 @@ public class SancaiAssetAdminController {
     }
 
     @Operation(summary = "切换三才图会当前图片", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "切换当前图片")
     @PostMapping("images/current/change")
@@ -158,7 +202,13 @@ public class SancaiAssetAdminController {
     }
 
     @Operation(summary = "排序三才图会图片", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "图片排序")
     @PostMapping("images/sort")
@@ -176,7 +226,13 @@ public class SancaiAssetAdminController {
     }
 
     @Operation(summary = "读取三才图会图片内容", description = "classics:sancai:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "图片读取")
     @PostJsonApiExempt(reason = "文件内容需要浏览器直链预览或下载")
@@ -210,7 +266,13 @@ public class SancaiAssetAdminController {
     }
 
     @Operation(summary = "查询三才图会视觉资产", description = "classics:sancai:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "视觉资产列表")
     @PostMapping("visual-assets/list")
@@ -222,7 +284,13 @@ public class SancaiAssetAdminController {
     }
 
     @Operation(summary = "读取三才图会视觉资产原图", description = "classics:sancai:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "视觉资产原图读取")
     @PostJsonApiExempt(reason = "文件内容需要浏览器直链预览或下载")
@@ -237,7 +305,13 @@ public class SancaiAssetAdminController {
     }
 
     @Operation(summary = "读取三才图会视觉资产生成图", description = "classics:sancai:view")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:view")
     @SysLogger(value = "视觉资产生成图读取")
     @PostJsonApiExempt(reason = "文件内容需要浏览器直链预览或下载")
@@ -252,7 +326,13 @@ public class SancaiAssetAdminController {
     }
 
     @Operation(summary = "更新三才图会视觉资产", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "更新视觉资产")
     @PostMapping("visual-assets/update")
@@ -266,7 +346,13 @@ public class SancaiAssetAdminController {
     }
 
     @Operation(summary = "切换三才图会当前视觉资产", description = "classics:sancai:edit")
-    @ApiImplicitParams({})
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
     @HasPermission("classics:sancai:edit")
     @SysLogger(value = "切换当前视觉资产")
     @PostMapping("visual-assets/current/change")

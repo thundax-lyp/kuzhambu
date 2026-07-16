@@ -349,6 +349,11 @@ public final class ApiAnnotationArchitectureRuleSupport {
             }
             collectMissingAnnotation(root, path, methodName, annotations, "@Operation", violations);
             collectMissingAnnotation(root, path, methodName, annotations, "@ApiImplicitParams", violations);
+            if (requiresAccessTokenHeader(classAnnotations, annotations)
+                    && !annotations.contains("AccessTokenNames.HEADER_TOKEN")) {
+                violations.add(ArchitectureSourceSupport.repositoryPath(root, path) + " method=" + methodName
+                        + " missing=@ApiImplicitParams AccessTokenNames.HEADER_TOKEN");
+            }
             if (!accessAnnotatedClass
                     && !annotations.contains("@PublicApi")
                     && !annotations.contains("@HasPermission")) {
@@ -364,6 +369,14 @@ public final class ApiAnnotationArchitectureRuleSupport {
             }
             previousMethodEnd = matcher.end();
         }
+    }
+
+    private static boolean requiresAccessTokenHeader(String classAnnotations, String methodAnnotations) {
+        if (methodAnnotations.contains("@PublicApi")) {
+            return false;
+        }
+        return methodAnnotations.contains("@HasPermission")
+                || (classAnnotations.contains("@HasPermission") && !classAnnotations.contains("@PublicApi"));
     }
 
     private static void collectPostMappingShapeViolations(Path root, Path path, List<String> violations) {
