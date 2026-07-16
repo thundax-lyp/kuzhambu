@@ -70,7 +70,7 @@ Classics 拥有古籍内容主数据和内容上下文内的维护数据。Stora
 | `original_text` | `longtext` |  | 原文展示和编辑 |
 | `translation_text` | `longtext` |  | 译文展示和编辑 |
 | `summary` | `text` |  | 摘要内联查看、编辑和保存 |
-| `lifecycle_status` | `varchar(16)` | KEY(lifecycle_status, visibility) | 草稿、发布、归档生命周期 |
+| `lifecycle_status` | `varchar(16)` | KEY(lifecycle_status, visibility) | 草稿、发布、下线生命周期 |
 | `visibility` | `varchar(16)` | KEY(lifecycle_status, visibility) | 公开和私有可见性 |
 | `translation_status` | `varchar(16)` | KEY(translation_status, image_status, visual_asset_status, refinement_status) | 按翻译状态筛选 |
 | `image_status` | `varchar(16)` | KEY(translation_status, image_status, visual_asset_status, refinement_status) | 按配图状态筛选 |

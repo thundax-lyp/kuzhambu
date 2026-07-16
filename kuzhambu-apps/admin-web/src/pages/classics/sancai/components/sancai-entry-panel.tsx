@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Alert, App, Button, Card, Empty, Input, Switch, Tag, Typography, Upload } from "antd";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
+import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import { hasPermission } from "@/auth/permission-storage";
@@ -105,6 +106,7 @@ export const SancaiEntryPanel = ({
         {}
     );
     const [batchCandidateDrawerOpen, setBatchCandidateDrawerOpen] = useState(false);
+    const [exportJobsDrawerOpen, setExportJobsDrawerOpen] = useState(false);
     const [imageUploadTitle, setImageUploadTitle] = useState("");
     const [imageUploadType, setImageUploadType] = useState("ORIGINAL");
     const [imageUploadCurrentUsed, setImageUploadCurrentUsed] = useState(true);
@@ -470,7 +472,7 @@ export const SancaiEntryPanel = ({
         },
         onSuccess: async () => {
             await invalidateExportJobs();
-            messageApi.success("导出任务已提交，请到下方任务列表查看进度。");
+            messageApi.success("导出任务已提交，请到任务抽屉查看进度。");
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "导出提交失败");
@@ -845,33 +847,6 @@ export const SancaiEntryPanel = ({
                     description="请确认后台条目接口可用后刷新页面。"
                 />
             ) : null}
-            {exportsQuery.isError ? (
-                <Alert
-                    className="sancai-alert"
-                    type="warning"
-                    showIcon
-                    title="导出任务列表加载失败"
-                    description="请确认后台导出任务接口可用后刷新页面。"
-                />
-            ) : null}
-            <ClassicsExportJobSection
-                items={exportJobs}
-                loading={
-                    exportsQuery.isLoading ||
-                    exportEntryMutation.isPending ||
-                    deleteExportMutation.isPending
-                }
-                onDownload={(job) => {
-                    if (job.downloadUrl) {
-                        window.open(job.downloadUrl, "_blank", "noopener,noreferrer");
-                    }
-                }}
-                onDelete={canManageGeneratedArtifacts ? deleteExportJob : undefined}
-                onBatchDelete={canManageGeneratedArtifacts ? deleteExportJobs : undefined}
-                onRefresh={() => {
-                    void invalidateExportJobs();
-                }}
-            />
             <SancaiEntryList
                 entries={entries}
                 isLoading={isLoading || sortEntryMutation.isPending}
@@ -879,11 +854,51 @@ export const SancaiEntryPanel = ({
                 onChangeLifecycleStatus={changeLifecycleStatus}
                 onDelete={deleteEntry}
                 onExport={exportEntry}
+                onOpenExportJobs={() => setExportJobsDrawerOpen(true)}
+                onRefresh={() => {
+                    void entriesQuery.refetch();
+                }}
                 onShare={shareEntry}
                 onBatchCandidateGovernance={openBatchCandidateDrawer}
                 onSort={sortEntry}
                 onView={selectEntry}
             />
+            <KuzhambuDrawer
+                destroyOnClose={false}
+                open={exportJobsDrawerOpen}
+                size="large"
+                title="导出任务"
+                onClose={() => setExportJobsDrawerOpen(false)}
+            >
+                {exportsQuery.isError ? (
+                    <Alert
+                        className="sancai-alert"
+                        type="warning"
+                        showIcon
+                        title="导出任务列表加载失败"
+                        description="请确认后台导出任务接口可用后刷新页面。"
+                    />
+                ) : null}
+                <ClassicsExportJobSection
+                    items={exportJobs}
+                    loading={
+                        exportsQuery.isLoading ||
+                        exportEntryMutation.isPending ||
+                        deleteExportMutation.isPending
+                    }
+                    sectionTitle="任务列表"
+                    onDownload={(job) => {
+                        if (job.downloadUrl) {
+                            window.open(job.downloadUrl, "_blank", "noopener,noreferrer");
+                        }
+                    }}
+                    onDelete={canManageGeneratedArtifacts ? deleteExportJob : undefined}
+                    onBatchDelete={canManageGeneratedArtifacts ? deleteExportJobs : undefined}
+                    onRefresh={() => {
+                        void invalidateExportJobs();
+                    }}
+                />
+            </KuzhambuDrawer>
             <AiCandidateBatchDrawer
                 contentIds={batchCandidateContentIds}
                 capabilities={[

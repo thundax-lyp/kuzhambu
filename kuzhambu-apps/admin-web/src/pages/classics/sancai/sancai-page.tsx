@@ -22,7 +22,7 @@ const entryStatusOptions = [
     { label: "全部状态", value: "ALL" },
     { label: "草稿", value: "DRAFT" },
     { label: "已发布", value: "PUBLISHED" },
-    { label: "已归档", value: "ARCHIVED" }
+    { label: "已下线", value: "ARCHIVED" }
 ];
 
 const EMPTY_CATEGORIES: SancaiCategoryRecord[] = [];

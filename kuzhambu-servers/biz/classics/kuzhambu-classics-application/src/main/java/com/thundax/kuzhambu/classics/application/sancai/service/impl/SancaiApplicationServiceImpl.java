@@ -757,7 +757,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
             return "恢复发布条目";
         }
         if (targetStatus == SancaiEntryLifecycleStatus.ARCHIVED) {
-            return "归档条目";
+            return "下线条目";
         }
         return "发布条目";
     }

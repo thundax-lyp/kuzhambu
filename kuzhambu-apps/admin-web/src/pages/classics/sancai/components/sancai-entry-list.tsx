@@ -26,6 +26,8 @@ interface SancaiEntryListProps {
     onChangeLifecycleStatus: (entry: SancaiEntryRecord, action: SancaiEntryLifecycleAction) => void;
     onDelete: (entry: SancaiEntryRecord) => void;
     onExport: (entry: SancaiEntryRecord) => void;
+    onOpenExportJobs: () => void;
+    onRefresh: () => void;
     onShare: (entry: SancaiEntryRecord) => void;
     onBatchCandidateGovernance: (entries: SancaiEntryRecord[]) => void;
     onSort: (
@@ -83,13 +85,13 @@ const lifecycleActionMeta: Record<
         text: "发布"
     },
     PUBLISHED: {
-        confirmDescription: "归档后条目退出默认已发布治理范围，但不会删除内容和版本历史。",
-        confirmTitle: "归档三才图会条目",
-        confirmVerb: "归档",
-        okText: "归档",
-        successMessage: "三才图会条目已归档",
+        confirmDescription: "下线后条目退出默认已发布治理范围和 portal 展示，但仍可继续编辑。",
+        confirmTitle: "下线三才图会条目",
+        confirmVerb: "下线",
+        okText: "下线",
+        successMessage: "三才图会条目已下线",
         targetStatus: "ARCHIVED",
-        text: "归档"
+        text: "下线"
     }
 };
 
@@ -127,7 +129,7 @@ const readVolumeTitle = (entry: SancaiEntryRecord, volumes: SancaiVolumeRecord[]
 };
 
 const statusTagMeta: Record<string, { color: string; label: string }> = {
-    ARCHIVED: { color: "default", label: "已归档" },
+    ARCHIVED: { color: "default", label: "已下线" },
     DRAFT: { color: "gold", label: "草稿" },
     PUBLISHED: { color: "green", label: "已发布" }
 };
@@ -147,6 +149,8 @@ export const SancaiEntryList = ({
     onChangeLifecycleStatus,
     onDelete,
     onExport,
+    onOpenExportJobs,
+    onRefresh,
     onShare,
     onBatchCandidateGovernance,
     onSort,
@@ -367,7 +371,14 @@ export const SancaiEntryList = ({
             key: "actions",
             options: (entry) => {
                 const lifecycleAction = getSancaiEntryLifecycleAction(entry);
+                const viewOrEditText = canChangeEntryVisibility ? "编辑" : "查看";
                 return [
+                    {
+                        key: "view",
+                        text: viewOrEditText,
+                        ariaLabel: `${viewOrEditText} ${readTitle(entry, "条目")}`,
+                        onClick: () => onView(entry)
+                    },
                     {
                         key: "share",
                         text: "分享",
@@ -381,12 +392,6 @@ export const SancaiEntryList = ({
                         ariaLabel: `导出 ${readTitle(entry, "条目")}`,
                         disabled: !canExportEntries,
                         onClick: () => onExport(entry)
-                    },
-                    {
-                        key: "view",
-                        text: "查看",
-                        ariaLabel: `查看 ${readTitle(entry, "条目")}`,
-                        onClick: () => onView(entry)
                     },
                     ...(lifecycleAction
                         ? [
@@ -425,66 +430,71 @@ export const SancaiEntryList = ({
                         loading={createBatchMutation.isPending}
                         onClick={() => startBatch("image_analysis")}
                     >
-                        批量图片理解
+                        图片理解
                     </Button>
                     <Button
                         disabled={!selectedEntries.length}
                         loading={createBatchMutation.isPending}
                         onClick={() => startBatch("visual")}
                     >
-                        批量视觉处理
+                        视觉处理
                     </Button>
                     <Button
                         disabled={!selectedEntries.length || !canShareEntries}
                         loading={createBatchShareMutation.isPending}
                         onClick={startBatchShare}
                     >
-                        批量分享
+                        分享
                     </Button>
                     <Button
                         disabled={!selectedEntries.length || !canChangeEntryVisibility}
                         loading={changeVisibilityBatchMutation.isPending}
                         onClick={() => changeBatchVisibility("PUBLIC")}
                     >
-                        批量公开
+                        公开
                     </Button>
                     <Button
                         disabled={!selectedEntries.length || !canChangeEntryVisibility}
                         loading={changeVisibilityBatchMutation.isPending}
                         onClick={() => changeBatchVisibility("PRIVATE")}
                     >
-                        批量私有
+                        私有
                     </Button>
                     <Button
                         disabled={!selectedEntries.length || !canChangeEntryVisibility}
                         onClick={openBatchCandidateGovernance}
                     >
-                        批量候选治理
+                        候选治理
                     </Button>
                 </KuzhambuSpace>
-                {activeBatch ? (
-                    <KuzhambuSpace wrap>
-                        <Text type="secondary">
-                            批量任务 #{activeBatch.batchId} / {activeBatch.capability} /{" "}
-                            {activeBatch.status || "UNKNOWN"}
-                        </Text>
-                        <Text type="secondary">
-                            成功 {activeBatch.successCount ?? 0} / 失败{" "}
-                            {activeBatch.failedCount ?? 0} / 取消 {activeBatch.cancelledCount ?? 0}
-                        </Text>
-                        <Button
-                            disabled={!canCancelBatch}
-                            loading={cancelBatchMutation.isPending}
-                            onClick={() => {
-                                if (activeBatch.batchId) {
-                                    cancelBatchMutation.mutate(activeBatch.batchId);
-                                }
-                            }}
-                        >
-                            取消批量任务
-                        </Button>
-                    </KuzhambuSpace>
-                ) : null}
+                <KuzhambuSpace wrap>
+                    <Button onClick={onRefresh}>刷新</Button>
+                    <Button onClick={onOpenExportJobs}>任务</Button>
+                    {activeBatch ? (
+                        <>
+                            <Text type="secondary">
+                                批量任务 #{activeBatch.batchId} / {activeBatch.capability} /{" "}
+                                {activeBatch.status || "UNKNOWN"}
+                            </Text>
+                            <Text type="secondary">
+                                成功 {activeBatch.successCount ?? 0} / 失败{" "}
+                                {activeBatch.failedCount ?? 0} / 取消{" "}
+                                {activeBatch.cancelledCount ?? 0}
+                            </Text>
+                            <Button
+                                disabled={!canCancelBatch}
+                                loading={cancelBatchMutation.isPending}
+                                onClick={() => {
+                                    if (activeBatch.batchId) {
+                                        cancelBatchMutation.mutate(activeBatch.batchId);
+                                    }
+                                }}
+                            >
+                                取消批量任务
+                            </Button>
+                        </>
+                    ) : null}
+                </KuzhambuSpace>
             </KuzhambuSpace>
             {batchShareResult ? (
                 <Alert
