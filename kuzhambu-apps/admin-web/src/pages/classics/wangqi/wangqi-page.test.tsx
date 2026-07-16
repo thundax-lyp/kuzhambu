@@ -115,8 +115,9 @@ const createTestQueryClient = () =>
 const installFetchMock = () => {
     vi.spyOn(globalThis, "fetch").mockImplementation((input, init) => {
         const path = readFetchUrl(input).replace("/kuzhambu-admin-api/api", "");
+        const body = readFetchBody(init?.body);
         capturedCalls.push({
-            body: readFetchBody(init?.body),
+            body,
             method: init?.method,
             path
         });
