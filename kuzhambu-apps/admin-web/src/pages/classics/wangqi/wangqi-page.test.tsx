@@ -90,8 +90,12 @@ const openDrawerSection = async (user: ReturnType<typeof userEvent.setup>, secti
     await user.click(await screen.findByText(sectionName));
 };
 
-const openContentProcessingSection = async (user: ReturnType<typeof userEvent.setup>) => {
-    await openDrawerSection(user, "内容处理");
+const openTagsSection = async (user: ReturnType<typeof userEvent.setup>) => {
+    await openDrawerSection(user, "标签");
+};
+
+const openQaSection = async (user: ReturnType<typeof userEvent.setup>) => {
+    await openDrawerSection(user, "问答");
 };
 
 const readFetchUrl = (input: RequestInfo | URL) => {
@@ -375,6 +379,7 @@ describe("WangqiPage", () => {
         expect(await screen.findByRole("radio", { name: "基础信息" })).toBeChecked();
         expect(screen.queryByRole("radio", { name: "摘要" })).not.toBeInTheDocument();
         expect(screen.queryByRole("radio", { name: "正文" })).not.toBeInTheDocument();
+        expect(screen.queryByRole("radio", { name: "内容处理" })).not.toBeInTheDocument();
         expect(screen.getByRole("radio", { name: "标签" })).toBeInTheDocument();
         expect(screen.getByRole("radio", { name: "问答" })).toBeInTheDocument();
 
@@ -443,7 +448,7 @@ describe("WangqiPage", () => {
         });
     }, 30000);
 
-    it("creates summary tags and qa refinement tasks from the document drawer", async () => {
+    it("creates summary tags and qa refinement tasks from their own sections", async () => {
         const user = userEvent.setup();
 
         render(
@@ -455,12 +460,16 @@ describe("WangqiPage", () => {
         );
 
         await user.click(await screen.findByTestId("wangqi-document-edit-1-button"));
-        await openContentProcessingSection(user);
-        await user.click(await screen.findByRole("button", { name: "创建摘要任务" }));
+        await user.click(await screen.findByRole("button", { name: "AI 摘要" }));
+        await user.click(
+            await screen.findByTestId("classics-wangqi-wangqi-summary-ai-create-button")
+        );
         await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(1));
-        await user.click(await screen.findByRole("button", { name: "创建标签任务" }));
+        await openTagsSection(user);
+        await user.click(await screen.findByRole("button", { name: "生成标签" }));
         await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(2));
-        await user.click(await screen.findByRole("button", { name: "创建问答任务" }));
+        await openQaSection(user);
+        await user.click(await screen.findByRole("button", { name: "生成问答" }));
         await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(3));
 
         expect(currentUserService.getCurrentUserInfo).toHaveBeenCalled();
@@ -502,8 +511,8 @@ describe("WangqiPage", () => {
         );
 
         await user.click(await screen.findByTestId("wangqi-document-edit-1-button"));
-        await openContentProcessingSection(user);
-        await user.click(await screen.findByRole("button", { name: "创建标签任务" }));
+        await openTagsSection(user);
+        await user.click(await screen.findByRole("button", { name: "生成标签" }));
 
         expect(aiRefinementTaskService.createTask).not.toHaveBeenCalled();
         expect(await screen.findByText("正文为空，无法创建 AI 精修任务")).toBeInTheDocument();
@@ -522,7 +531,7 @@ describe("WangqiPage", () => {
         );
 
         await user.click(await screen.findByTestId("wangqi-document-edit-1-button"));
-        await openContentProcessingSection(user);
+        await openQaSection(user);
         const qaButton = await screen.findByRole("button", { name: "单文档问答" });
 
         expect(qaButton).toBeEnabled();
@@ -551,7 +560,7 @@ describe("WangqiPage", () => {
         );
 
         await user.click(await screen.findByTestId("wangqi-document-edit-0-button"));
-        await openContentProcessingSection(user);
+        await openQaSection(user);
 
         expect(await screen.findByRole("button", { name: "单文档问答" })).toBeDisabled();
     }, 30000);
@@ -574,7 +583,7 @@ describe("WangqiPage", () => {
         );
 
         await user.click(await screen.findByTestId("wangqi-document-edit-1-button"));
-        await openContentProcessingSection(user);
+        await openQaSection(user);
 
         expect(await screen.findByRole("button", { name: "单文档问答" })).toBeDisabled();
     }, 30000);
@@ -719,7 +728,7 @@ describe("WangqiPage", () => {
         );
 
         await user.click(await screen.findByTestId("wangqi-document-edit-1-button"));
-        await openContentProcessingSection(user);
+        await openTagsSection(user);
         capturedCalls.length = 0;
         await user.click(await screen.findByRole("button", { name: "mock-ai-applied" }));
 
@@ -766,7 +775,7 @@ describe("WangqiPage", () => {
         );
 
         await user.click(await screen.findByTestId("wangqi-document-edit-1-button"));
-        await openContentProcessingSection(user);
+        await openTagsSection(user);
         capturedCalls.length = 0;
         await user.click(await screen.findByRole("button", { name: "mock-ai-rejected" }));
 

@@ -30,7 +30,7 @@ const { Text } = Typography;
 const { TextArea } = Input;
 const SUMMARY_CANDIDATE_POLL_INTERVAL_MS = 3000;
 
-type WangqiDocumentModelSection = "basic" | "refinement" | "tags" | "qa" | "source" | "versions";
+type WangqiDocumentModelSection = "basic" | "tags" | "qa" | "source" | "versions";
 
 export interface WangqiDocumentModelProps {
     document?: WangqiDocumentRecord | null;
@@ -38,7 +38,6 @@ export interface WangqiDocumentModelProps {
     mode: "create" | "edit";
     open: boolean;
     qaContent?: ReactNode;
-    refinementContent?: ReactNode;
     saving?: boolean;
     sourceFileContent?: ReactNode;
     tagContent?: ReactNode;
@@ -157,7 +156,6 @@ export const WangqiDocumentModel = ({
     mode,
     open,
     qaContent,
-    refinementContent,
     saving = false,
     sourceFileContent,
     tagContent,
@@ -271,7 +269,6 @@ export const WangqiDocumentModel = ({
         { label: "基础信息", value: "basic" },
         ...(mode === "edit"
             ? [
-                  { label: "内容处理", value: "refinement" },
                   { label: "标签", value: "tags" },
                   { label: "问答", value: "qa" },
                   { label: "文件", value: "source" },
@@ -356,7 +353,6 @@ export const WangqiDocumentModel = ({
 
     const sectionContent: Record<WangqiDocumentModelSection, ReactNode> = {
         basic: basicContent,
-        refinement: refinementContent || <Text type="secondary">暂无内容处理任务</Text>,
         tags: tagContent || <Text type="secondary">暂无标签</Text>,
         qa: qaContent || <Text type="secondary">暂无问答</Text>,
         source: sourceFileContent || <Text type="secondary">暂无原始文件</Text>,

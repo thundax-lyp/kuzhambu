@@ -270,6 +270,14 @@ export const WangqiPage = () => {
         () => refinementTasksQuery.data?.items || [],
         [refinementTasksQuery.data?.items]
     );
+    const tagRefinementTasks = useMemo(
+        () => refinementTasks.filter((task) => task.capability === "tags"),
+        [refinementTasks]
+    );
+    const qaRefinementTasks = useMemo(
+        () => refinementTasks.filter((task) => task.capability === "qa"),
+        [refinementTasks]
+    );
     const exportJobs = exportJobsQuery.data?.records || [];
     const selectedDocuments = useMemo(
         () => records.filter((record) => selectedDocumentIds.includes(record.id)),
@@ -989,12 +997,60 @@ export const WangqiPage = () => {
                 }
                 onClose={closeEditor}
                 onSave={(command) => saveMutation.mutate(command)}
-                refinementContent={
+                tagContent={
+                    editorMode === "edit" && activeDocument ? (
+                        <div className="wangqi-page-drawer-panels">
+                            <Card size="small" title="AI 标签">
+                                <KuzhambuSpace wrap>
+                                    <KuzhambuButton
+                                        testId="classics-wangqi-wangqi-action-button-4"
+                                        type="primary"
+                                        onClick={() => createRefinementTask(activeDocument, "tags")}
+                                        loading={creatingRefinementCapability === "tags"}
+                                    >
+                                        生成标签
+                                    </KuzhambuButton>
+                                </KuzhambuSpace>
+                                <div className="wangqi-refinement-task-list">
+                                    {tagRefinementTasks.length ? (
+                                        tagRefinementTasks.slice(0, 3).map((task) => (
+                                            <div key={task.taskId}>
+                                                标签：{task.status}
+                                                {task.resultPreview
+                                                    ? ` · ${task.resultPreview}`
+                                                    : ""}
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div>暂无标签任务</div>
+                                    )}
+                                </div>
+                            </Card>
+                            <AiCandidatePanel
+                                capabilities={["tags"]}
+                                contentId={activeDocument.id}
+                                contentType="WANGQI_DOCUMENT"
+                                onApplied={async () => {
+                                    await invalidateWangqi();
+                                }}
+                                onRejected={async () => {
+                                    await invalidateWangqiCandidates();
+                                }}
+                            />
+                            <ClassicsContentTagPanel
+                                contentId={activeDocument.id}
+                                contentType="WANGQI_DOCUMENT"
+                                onChanged={invalidateWangqi}
+                            />
+                        </div>
+                    ) : null
+                }
+                qaContent={
                     editorMode === "edit" && activeDocument ? (
                         <div className="wangqi-page-drawer-panels">
                             <Card
                                 size="small"
-                                title="AI 精修任务"
+                                title="AI 问答"
                                 extra={
                                     <KuzhambuSpaceCompact>
                                         <Tooltip title={singleDocumentQaDisabledReason}>
@@ -1007,49 +1063,35 @@ export const WangqiPage = () => {
                                             </KuzhambuButton>
                                         </Tooltip>
                                         <KuzhambuButton
-                                            testId="classics-wangqi-wangqi-action-button-3"
-                                            type="primary"
-                                            onClick={() =>
-                                                createRefinementTask(activeDocument, "summary")
-                                            }
-                                            loading={creatingRefinementCapability === "summary"}
-                                        >
-                                            创建摘要任务
-                                        </KuzhambuButton>
-                                        <KuzhambuButton
-                                            testId="classics-wangqi-wangqi-action-button-4"
-                                            onClick={() =>
-                                                createRefinementTask(activeDocument, "tags")
-                                            }
-                                            loading={creatingRefinementCapability === "tags"}
-                                        >
-                                            创建标签任务
-                                        </KuzhambuButton>
-                                        <KuzhambuButton
                                             testId="classics-wangqi-wangqi-action-button-5"
+                                            type="primary"
                                             onClick={() =>
                                                 createRefinementTask(activeDocument, "qa")
                                             }
                                             loading={creatingRefinementCapability === "qa"}
                                         >
-                                            创建问答任务
+                                            生成问答
                                         </KuzhambuButton>
                                     </KuzhambuSpaceCompact>
                                 }
                             >
-                                {refinementTasks.length ? (
-                                    refinementTasks.slice(0, 4).map((task) => (
-                                        <div key={task.taskId}>
-                                            {task.capability}：{task.status}
-                                            {task.resultPreview ? ` · ${task.resultPreview}` : ""}
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div>暂无精修任务</div>
-                                )}
+                                <div className="wangqi-refinement-task-list">
+                                    {qaRefinementTasks.length ? (
+                                        qaRefinementTasks.slice(0, 3).map((task) => (
+                                            <div key={task.taskId}>
+                                                问答：{task.status}
+                                                {task.resultPreview
+                                                    ? ` · ${task.resultPreview}`
+                                                    : ""}
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div>暂无问答任务</div>
+                                    )}
+                                </div>
                             </Card>
                             <AiCandidatePanel
-                                capabilities={["summary", "tags", "qa"]}
+                                capabilities={["qa"]}
                                 contentId={activeDocument.id}
                                 contentType="WANGQI_DOCUMENT"
                                 onApplied={async () => {
@@ -1059,26 +1101,13 @@ export const WangqiPage = () => {
                                     await invalidateWangqiCandidates();
                                 }}
                             />
+                            <ClassicsContentQaPanel
+                                panelTitle="王圻问答对"
+                                contentId={activeDocument.id}
+                                contentType="WANGQI_DOCUMENT"
+                                onChanged={invalidateWangqi}
+                            />
                         </div>
-                    ) : null
-                }
-                tagContent={
-                    editorMode === "edit" && activeDocument ? (
-                        <ClassicsContentTagPanel
-                            contentId={activeDocument.id}
-                            contentType="WANGQI_DOCUMENT"
-                            onChanged={invalidateWangqi}
-                        />
-                    ) : null
-                }
-                qaContent={
-                    editorMode === "edit" && activeDocument ? (
-                        <ClassicsContentQaPanel
-                            panelTitle="王圻问答对"
-                            contentId={activeDocument.id}
-                            contentType="WANGQI_DOCUMENT"
-                            onChanged={invalidateWangqi}
-                        />
                     ) : null
                 }
                 sourceFileContent={
