@@ -1,6 +1,6 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { App } from "antd";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { replacePermissions } from "@/auth/permission-storage";
 import { queryClient } from "@/query/query-client";
 import { AiModelsPage } from "./ai-models-page";
@@ -102,5 +102,45 @@ describe("AiModelsPage", () => {
         await screen.findByText("GPT 4o");
         expect(screen.queryByRole("button", { name: /新增模型/ })).not.toBeInTheDocument();
         expect(screen.getByRole("button", { name: "编辑 GPT 4o" })).toBeDisabled();
+    });
+
+    it("updates selected hidden models after search filtering", async () => {
+        vi.mocked(service.listAiModels).mockResolvedValue([
+            models[0],
+            {
+                id: 2002,
+                apiSource: "BYTEDANCE",
+                baseUrl: "https://api.secondary.example",
+                apiKeyConfigured: true,
+                modelName: "claude-sonnet-4",
+                displayName: "Claude Sonnet 4",
+                capabilities: ["TEXT2TEXT"],
+                defaultParamsJson: "{}",
+                description: "secondary model",
+                enabled: true,
+                registeredAt: "2026-07-02T00:00:00.000Z"
+            }
+        ]);
+        renderPage();
+
+        await screen.findByText("GPT 4o");
+        fireEvent.click(screen.getAllByRole("checkbox")[1]);
+        fireEvent.change(screen.getByPlaceholderText("搜索模型..."), {
+            target: { value: "Claude" }
+        });
+        expect(screen.queryByText("GPT 4o")).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByTestId("ai-models-disable-button"));
+
+        await waitFor(() => {
+            expect(service.changeAiModel).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    id: 2001,
+                    modelName: "gpt-4o",
+                    enabled: false
+                }),
+                expect.anything()
+            );
+        });
     });
 });

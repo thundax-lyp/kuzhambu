@@ -247,7 +247,9 @@ export const AiModelsPage = () => {
         if (!canEditConfig || !hasSelectedModels) {
             return;
         }
-        const selectedModels = filteredModels.filter((model) => selectedRowKeys.includes(model.id));
+        const selectedModels = (modelsQuery.data || []).filter((model) =>
+            selectedRowKeys.includes(model.id)
+        );
         await Promise.all(selectedModels.map((model) => changeEnabled(model, enabled)));
         setSelectedRowKeys([]);
     };
