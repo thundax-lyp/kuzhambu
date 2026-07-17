@@ -981,17 +981,11 @@ export const WangqiPage = () => {
                 mode={editorMode}
                 open={editorOpen}
                 saving={saveMutation.isPending}
-                summaryAction={
-                    editorMode === "edit" && activeDocument ? (
-                        <KuzhambuButton
-                            testId="classics-wangqi-wangqi-summary-ai-button"
-                            type="primary"
-                            onClick={() => createRefinementTask(activeDocument, "summary")}
-                            loading={creatingRefinementCapability === "summary"}
-                        >
-                            AI 摘要
-                        </KuzhambuButton>
-                    ) : null
+                creatingSummaryTask={creatingRefinementCapability === "summary"}
+                onCreateSummaryTask={
+                    editorMode === "edit" && activeDocument
+                        ? () => createRefinementTask(activeDocument, "summary")
+                        : undefined
                 }
                 onClose={closeEditor}
                 onSave={(command) => saveMutation.mutate(command)}

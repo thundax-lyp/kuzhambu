@@ -386,7 +386,7 @@ describe("WangqiPage", () => {
         expect(screen.queryByLabelText("王圻文档正文预览")).not.toBeInTheDocument();
     }, 30000);
 
-    it("creates summary refinement task from the summary field", async () => {
+    it("opens summary ai modal and creates task inside the modal", async () => {
         const user = userEvent.setup();
 
         render(
@@ -400,6 +400,15 @@ describe("WangqiPage", () => {
         await user.click(await screen.findByTestId("wangqi-document-edit-1-button"));
         await user.click(await screen.findByRole("button", { name: "AI 摘要" }));
 
+        expect(
+            await screen.findByTestId("classics-wangqi-wangqi-summary-ai-create-button")
+        ).toBeInTheDocument();
+        expect(screen.getByLabelText("AI摘要当前摘要")).toHaveValue("记录王圻古籍条目。");
+        expect(await screen.findByLabelText("AI摘要候选摘要")).toHaveValue("文档摘要候选");
+        expect(aiRefinementTaskService.createTask).not.toHaveBeenCalled();
+
+        await user.click(screen.getByTestId("classics-wangqi-wangqi-summary-ai-create-button"));
+
         await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(1));
         expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).toEqual(
             expect.objectContaining({
@@ -409,6 +418,28 @@ describe("WangqiPage", () => {
                 requestedBy: 99
             })
         );
+    }, 30000);
+
+    it("applies summary ai draft back to the basic form", async () => {
+        const user = userEvent.setup();
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <WangqiPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await user.click(await screen.findByTestId("wangqi-document-edit-1-button"));
+        await user.click(await screen.findByRole("button", { name: "AI 摘要" }));
+        await user.clear(await screen.findByLabelText("AI摘要候选摘要"));
+        await user.type(screen.getByLabelText("AI摘要候选摘要"), "采用后的摘要");
+        await user.click(screen.getByTestId("classics-wangqi-wangqi-summary-ai-apply-button"));
+
+        await waitFor(() => {
+            expect(screen.getByLabelText("王圻文档摘要")).toHaveValue("采用后的摘要");
+        });
     }, 30000);
 
     it("creates summary tags and qa refinement tasks from the document drawer", async () => {
