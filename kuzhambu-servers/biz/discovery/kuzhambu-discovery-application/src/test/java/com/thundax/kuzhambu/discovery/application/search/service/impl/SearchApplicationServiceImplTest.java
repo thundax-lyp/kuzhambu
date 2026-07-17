@@ -23,7 +23,6 @@ import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResul
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPageResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchResult;
 import com.thundax.kuzhambu.discovery.application.search.service.QueryUnderstandingApplicationService;
-import com.thundax.kuzhambu.discovery.application.search.support.DefaultSearchPermissionFilter;
 import com.thundax.kuzhambu.discovery.application.search.support.SearchIndexGateway;
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchLog;
 import com.thundax.kuzhambu.discovery.domain.search.model.enums.SearchIntentType;
@@ -58,7 +57,6 @@ class SearchApplicationServiceImplTest {
                 searchClickRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
-                new DefaultSearchPermissionFilter(),
                 queryUnderstandingApplicationService);
         SearchQuery query = new SearchQuery(
                 "黄帝",
@@ -103,7 +101,6 @@ class SearchApplicationServiceImplTest {
                 searchClickRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
-                new DefaultSearchPermissionFilter(),
                 queryUnderstandingApplicationService);
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
                 .thenReturn(searchPageResult(
@@ -179,7 +176,6 @@ class SearchApplicationServiceImplTest {
                 searchClickRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
-                new DefaultSearchPermissionFilter(),
                 queryUnderstandingApplicationService);
         SearchQuery query = new SearchQuery(
                 "",
@@ -230,7 +226,6 @@ class SearchApplicationServiceImplTest {
                 searchClickRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
-                new DefaultSearchPermissionFilter(),
                 queryUnderstandingApplicationService);
         SearchQuery query = new SearchQuery(
                 "黄帝",
@@ -264,11 +259,12 @@ class SearchApplicationServiceImplTest {
         assertEquals("1001", result.getGroups().get(0).getItems().get(0).getContentId());
         ArgumentCaptor<SearchScope> scopeCaptor = ArgumentCaptor.forClass(SearchScope.class);
         verify(searchIndexGateway).search(any(), scopeCaptor.capture(), any(Integer.class), any(Integer.class));
-        assertEquals(List.of("PUBLIC"), scopeCaptor.getValue().getVisibilityScopes());
+        assertEquals(List.of("PUBLIC", "PRIVATE"), scopeCaptor.getValue().getVisibilityScopes());
+        assertTrue(scopeCaptor.getValue().getPrivateKnowledgeBases().isEmpty());
     }
 
     @Test
-    void searchShouldCountPermissionFilteredTotalAcrossPages() {
+    void searchShouldPushPermissionScopeToGatewayBeforePagination() {
         KuzhambuContextHolder.setSubject(new KuzhambuSubject(
                 "admin-1", KuzhambuSubjectType.ADMIN_USER, "admin", "token-1", Set.of("classics:sancai:view")));
         SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
@@ -281,7 +277,6 @@ class SearchApplicationServiceImplTest {
                 searchClickRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
-                new DefaultSearchPermissionFilter(),
                 queryUnderstandingApplicationService);
         SearchQuery query = new SearchQuery(
                 "黄帝",
@@ -302,39 +297,25 @@ class SearchApplicationServiceImplTest {
                 .thenReturn(
                         new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), List.of(), null, null));
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
-                .thenReturn(
-                        searchPageResult(
-                                201,
-                                new SearchGroupResult(
-                                        "SANCAI_ENTRY",
-                                        "三才图会",
-                                        2,
-                                        List.of(
-                                                searchResult("SANCAI_ENTRY", "1001", "PUBLIC"),
-                                                searchResult("WANGQI_DOCUMENT", "1002", "PRIVATE")))),
-                        searchPageResult(
-                                201,
-                                new SearchGroupResult(
-                                        "SANCAI_ENTRY",
-                                        "三才图会",
-                                        2,
-                                        List.of(
-                                                searchResult("SANCAI_ENTRY", "1001", "PUBLIC"),
-                                                searchResult("WANGQI_DOCUMENT", "1002", "PRIVATE")))),
-                        searchPageResult(
-                                201,
-                                new SearchGroupResult(
-                                        "SANCAI_ENTRY",
-                                        "三才图会",
-                                        1,
-                                        List.of(searchResult("SANCAI_ENTRY", "1003", "PUBLIC")))));
+                .thenReturn(searchPageResult(
+                        2,
+                        new SearchGroupResult(
+                                "SANCAI_ENTRY",
+                                "三才图会",
+                                2,
+                                List.of(
+                                        searchResult("SANCAI_ENTRY", "1001", "PUBLIC"),
+                                        searchResult("SANCAI_ENTRY", "1002", "PRIVATE")))));
 
         var result = service.search(query);
+        ArgumentCaptor<SearchScope> scopeCaptor = ArgumentCaptor.forClass(SearchScope.class);
 
         assertEquals(2, result.getResultTotalCount());
         assertEquals(1, result.getGroupTotalCount());
         assertEquals("1001", result.getGroups().get(0).getItems().get(0).getContentId());
-        verify(searchIndexGateway, times(3)).search(any(), any(), any(Integer.class), any(Integer.class));
+        verify(searchIndexGateway, times(1))
+                .search(any(), scopeCaptor.capture(), any(Integer.class), any(Integer.class));
+        assertEquals(List.of("SANCAI_ENTRY"), scopeCaptor.getValue().getPrivateKnowledgeBases());
     }
 
     @Test
@@ -351,7 +332,6 @@ class SearchApplicationServiceImplTest {
                 searchClickRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
-                new DefaultSearchPermissionFilter(),
                 queryUnderstandingApplicationService);
         SearchQuery query = new SearchQuery(
                 "黄帝",
@@ -384,7 +364,7 @@ class SearchApplicationServiceImplTest {
     }
 
     @Test
-    void searchShouldRejectUnknownPrivateContentType() {
+    void searchShouldConstrainPrivateScopeForFullContentPermission() {
         KuzhambuContextHolder.setSubject(new KuzhambuSubject(
                 "admin-1", KuzhambuSubjectType.ADMIN_USER, "admin", "token-1", Set.of("classics:content:view")));
         SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
@@ -397,7 +377,6 @@ class SearchApplicationServiceImplTest {
                 searchClickRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
-                new DefaultSearchPermissionFilter(),
                 queryUnderstandingApplicationService);
         SearchQuery query = new SearchQuery(
                 "黄帝",
@@ -418,19 +397,18 @@ class SearchApplicationServiceImplTest {
                 .thenReturn(
                         new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), List.of(), null, null));
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
-                .thenReturn(searchPageResult(
-                        1,
-                        new SearchGroupResult(
-                                "UNKNOWN_CONTENT",
-                                "未知内容",
-                                1,
-                                List.of(searchResult("UNKNOWN_CONTENT", "1003", "PRIVATE")))));
+                .thenReturn(searchPageResult(0));
 
         var result = service.search(query);
+        ArgumentCaptor<SearchScope> scopeCaptor = ArgumentCaptor.forClass(SearchScope.class);
 
         assertEquals(0, result.getResultTotalCount());
         assertEquals(0, result.getGroupTotalCount());
         assertTrue(result.getGroups().isEmpty());
+        verify(searchIndexGateway).search(any(), scopeCaptor.capture(), any(Integer.class), any(Integer.class));
+        assertEquals(
+                List.of("SANCAI_ENTRY", "WANGQI_DOCUMENT", "MING_CUSTOMS"),
+                scopeCaptor.getValue().getPrivateKnowledgeBases());
     }
 
     @Test
@@ -445,7 +423,6 @@ class SearchApplicationServiceImplTest {
                 searchClickRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
-                new DefaultSearchPermissionFilter(),
                 queryUnderstandingApplicationService);
         when(searchLogRepository.getBySearchLogId("s-1"))
                 .thenReturn(new SearchLog(
@@ -499,7 +476,6 @@ class SearchApplicationServiceImplTest {
                 searchClickRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
-                new DefaultSearchPermissionFilter(),
                 queryUnderstandingApplicationService);
         when(searchLogRepository.getBySearchLogId("missing")).thenReturn(null);
 
@@ -535,7 +511,6 @@ class SearchApplicationServiceImplTest {
                 searchClickRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
-                new DefaultSearchPermissionFilter(),
                 queryUnderstandingApplicationService);
         when(searchLogRepository.page("黄帝", "ENTITY", "SUCCEEDED", "user-1", 1, 20))
                 .thenReturn(PageResult.of(
@@ -582,7 +557,6 @@ class SearchApplicationServiceImplTest {
                 searchClickRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
-                new DefaultSearchPermissionFilter(),
                 queryUnderstandingApplicationService);
         Date dateFrom = new Date(1_718_000_000_000L);
         Date dateTo = new Date(1_720_419_200_000L);
@@ -618,7 +592,6 @@ class SearchApplicationServiceImplTest {
                 searchClickRepository,
                 new SearchDomainService(),
                 mock(SearchIndexGateway.class),
-                new DefaultSearchPermissionFilter(),
                 mock(QueryUnderstandingApplicationService.class));
         when(searchLogRepository.listByCreatedAtRange(null, null))
                 .thenReturn(List.of(
@@ -653,7 +626,6 @@ class SearchApplicationServiceImplTest {
                 searchClickRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
-                new DefaultSearchPermissionFilter(),
                 queryUnderstandingApplicationService);
         SearchQuery query = new SearchQuery(
                 "黄帝",

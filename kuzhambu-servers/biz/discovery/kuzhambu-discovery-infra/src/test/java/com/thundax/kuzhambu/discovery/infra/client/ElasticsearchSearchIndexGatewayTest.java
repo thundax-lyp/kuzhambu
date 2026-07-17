@@ -190,6 +190,7 @@ class ElasticsearchSearchIndexGatewayTest {
                         List.of("上古"),
                         List.of("PUBLISHED"),
                         List.of("PUBLIC"),
+                        List.of(),
                         new Date(1_718_000_000_000L),
                         new Date(1_720_419_200_000L)),
                 1,
@@ -207,6 +208,45 @@ class ElasticsearchSearchIndexGatewayTest {
         assertTrue(fieldNames.contains("visibility"));
         assertTrue(fieldNames.contains("updatedAt"));
         assertTrue(fieldNames.contains("deleted"));
+    }
+
+    @Test
+    void searchShouldApplyPrivateKnowledgeBasePermissionCriteria() {
+        DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
+        ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
+        @SuppressWarnings("unchecked")
+        SearchHits<DiscoverySearchDocument> searchHits = mock(SearchHits.class);
+        ArgumentCaptor<CriteriaQuery> queryCaptor = ArgumentCaptor.forClass(CriteriaQuery.class);
+        when(searchHits.getSearchHits()).thenReturn(List.of());
+        when(operations.search(
+                        queryCaptor.capture(),
+                        eq(DiscoverySearchDocument.class),
+                        any(org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.class)))
+                .thenReturn(searchHits);
+        ElasticsearchSearchIndexGateway gateway =
+                new ElasticsearchSearchIndexGateway(properties, operations, new DiscoverySearchDocumentAssembler());
+
+        gateway.search(
+                new SearchKeyword("黄帝", "黄帝", "黄帝"),
+                new SearchScope(
+                        List.of(),
+                        List.of(),
+                        List.of(),
+                        List.of(),
+                        List.of("PUBLIC", "PRIVATE"),
+                        List.of("SANCAI_ENTRY"),
+                        null,
+                        null),
+                1,
+                20);
+
+        Set<String> fieldNames = flattenCriteria(queryCaptor.getValue().getCriteria()).stream()
+                .map(Criteria::getField)
+                .filter(field -> field != null && field.getName() != null)
+                .map(field -> field.getName())
+                .collect(Collectors.toSet());
+        assertTrue(fieldNames.contains("visibility"));
+        assertTrue(fieldNames.contains("knowledgeBase"));
     }
 
     @Test

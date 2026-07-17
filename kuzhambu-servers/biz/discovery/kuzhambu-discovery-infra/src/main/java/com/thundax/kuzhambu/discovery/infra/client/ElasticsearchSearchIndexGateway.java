@@ -26,6 +26,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
 
+    private static final String PUBLIC_VISIBILITY = "PUBLIC";
+    private static final String PRIVATE_VISIBILITY = "PRIVATE";
+    private static final String NO_MATCH_VISIBILITY = "__NO_MATCH__";
+
     private static final int HIGHLIGHT_CONTEXT_LENGTH = 60;
     private static final int FALLBACK_LENGTH = 160;
 
@@ -182,7 +186,7 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
         criteria = appendInFilter(criteria, "categoryCode", searchScope.getCategoryCodes());
         criteria = appendInFilter(criteria, "tagNames", searchScope.getTagNames());
         criteria = appendInFilter(criteria, "status", searchScope.getContentStatuses());
-        criteria = appendInFilter(criteria, "visibility", searchScope.getVisibilityScopes());
+        criteria = appendVisibilityPermissionFilter(criteria, searchScope);
         criteria = criteria.and(new Criteria("deleted").is(false));
         if (searchScope.getDateFrom() != null) {
             criteria = criteria.and(new Criteria("updatedAt")
@@ -217,6 +221,44 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
             return criteria;
         }
         return criteria.and(new Criteria(fieldName).in(filteredValues.toArray()));
+    }
+
+    private Criteria appendVisibilityPermissionFilter(Criteria criteria, SearchScope searchScope) {
+        List<String> visibilityScopes = normalizedValues(searchScope.getVisibilityScopes());
+        List<String> privateKnowledgeBases = normalizedValues(searchScope.getPrivateKnowledgeBases());
+        boolean allowPublic = visibilityScopes.isEmpty() || containsIgnoreCase(visibilityScopes, PUBLIC_VISIBILITY);
+        boolean allowPrivate = (visibilityScopes.isEmpty() || containsIgnoreCase(visibilityScopes, PRIVATE_VISIBILITY))
+                && !privateKnowledgeBases.isEmpty();
+        if (allowPublic && allowPrivate) {
+            return criteria.and(Criteria.or()
+                    .subCriteria(new Criteria("visibility").is(PUBLIC_VISIBILITY))
+                    .subCriteria(Criteria.and()
+                            .subCriteria(new Criteria("visibility").is(PRIVATE_VISIBILITY))
+                            .subCriteria(new Criteria("knowledgeBase").in(privateKnowledgeBases.toArray()))));
+        }
+        if (allowPublic) {
+            return criteria.and(new Criteria("visibility").is(PUBLIC_VISIBILITY));
+        }
+        if (allowPrivate) {
+            return criteria.and(new Criteria("visibility")
+                    .is(PRIVATE_VISIBILITY)
+                    .and(new Criteria("knowledgeBase").in(privateKnowledgeBases.toArray())));
+        }
+        return criteria.and(new Criteria("visibility").is(NO_MATCH_VISIBILITY));
+    }
+
+    private List<String> normalizedValues(List<String> values) {
+        if (values == null || values.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return values.stream()
+                .filter(value -> value != null && !value.isBlank())
+                .map(String::trim)
+                .toList();
+    }
+
+    private boolean containsIgnoreCase(List<String> values, String expected) {
+        return values.stream().anyMatch(value -> expected.equalsIgnoreCase(value));
     }
 
     private List<SearchGroupResult> toGroupedResults(List<SearchHit<DiscoverySearchDocument>> hits, String keyword) {

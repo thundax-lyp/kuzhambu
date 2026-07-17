@@ -17,6 +17,7 @@ public class SearchScope {
     private List<String> tagNames;
     private List<String> contentStatuses;
     private List<String> visibilityScopes;
+    private List<String> privateKnowledgeBases;
     private Date dateFrom;
     private Date dateTo;
 }
