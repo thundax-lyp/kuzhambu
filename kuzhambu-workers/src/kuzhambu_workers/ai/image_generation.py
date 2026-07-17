@@ -107,7 +107,7 @@ def _build_image_prompt(messages: list[AiMessage]) -> str:
     parts = [
         f"{message.role.value}: {message.content.strip()}"
         for message in messages
-        if message.content.strip()
+        if isinstance(message.content, str) and message.content.strip()
     ]
     if not parts:
         raise _model_semantic_failure("IMAGE_PROMPT_EMPTY", "图片生成 prompt 不能为空。")

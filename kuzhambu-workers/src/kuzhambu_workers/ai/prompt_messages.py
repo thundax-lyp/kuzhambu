@@ -1,3 +1,5 @@
+from typing import Any
+
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage, ToolMessage
 
 from kuzhambu_workers.schemas.ai import AiMessage, AiPrompt, MessageRole
@@ -7,7 +9,7 @@ def build_langchain_messages(prompt: AiPrompt) -> list[BaseMessage]:
     return [_to_langchain_message(message) for message in prompt.messages]
 
 
-def build_openai_messages(prompt: AiPrompt) -> list[dict[str, str]]:
+def build_openai_messages(prompt: AiPrompt) -> list[dict[str, Any]]:
     return [_to_openai_message(message) for message in prompt.messages]
 
 
@@ -23,7 +25,7 @@ def _to_langchain_message(message: AiMessage) -> BaseMessage:
     raise ValueError(f"unsupported message role: {message.role}")
 
 
-def _to_openai_message(message: AiMessage) -> dict[str, str]:
+def _to_openai_message(message: AiMessage) -> dict[str, Any]:
     return {
         "role": message.role.value,
         "content": message.content,

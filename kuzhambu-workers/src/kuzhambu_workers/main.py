@@ -8,6 +8,7 @@ from kuzhambu_workers.api.ai_routes import router as ai_router
 from kuzhambu_workers.api.ai_usecase_routes import router as ai_usecase_router
 from kuzhambu_workers.api.artifact_routes import router as artifact_router
 from kuzhambu_workers.api.health_routes import router as health_router
+from kuzhambu_workers.api.openai_routes import router as openai_router
 from kuzhambu_workers.api.render_routes import router as render_router
 from kuzhambu_workers.core.config import load_settings
 from kuzhambu_workers.render.artifact_store import cleanup_expired_artifacts
@@ -48,6 +49,10 @@ def create_app() -> FastAPI:
             {"name": "Platform", "description": "Platform AI usecase interfaces."},
             {"name": "AI Debug", "description": "Generic AI debug interfaces."},
             {
+                "name": "OpenAI Compatible",
+                "description": "Internal OpenAI-compatible facade interfaces.",
+            },
+            {
                 "name": "Artifacts",
                 "description": "Internal temporary artifact download interfaces.",
             },
@@ -60,6 +65,7 @@ def create_app() -> FastAPI:
     app.include_router(ai_usecase_router)
     app.include_router(artifact_router)
     app.include_router(health_router)
+    app.include_router(openai_router)
     app.include_router(render_router)
 
     return app

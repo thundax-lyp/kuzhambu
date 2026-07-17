@@ -74,6 +74,32 @@ def test_invoke_chat_completion_posts_openai_compatible_request() -> None:
     assert result.usage.costAmount == "0.00"
     assert result.usage.latencyMs >= 0
     assert result.raw_finish_reason == "stop"
+    assert result.provider_usage is True
+
+
+def test_invoke_chat_completion_marks_missing_usage_as_synthetic() -> None:
+    def handler(_: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={
+                "choices": [
+                    {
+                        "message": {"content": "answer"},
+                        "finish_reason": "stop",
+                    }
+                ],
+            },
+        )
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    request = AiInvokeRequest.model_validate(_request_payload())
+
+    result = invoke_chat_completion(request, client=client)
+
+    assert result.content == "answer"
+    assert result.usage.inputTokens == 0
+    assert result.usage.outputTokens == 0
+    assert result.provider_usage is False
 
 
 @pytest.mark.parametrize(
