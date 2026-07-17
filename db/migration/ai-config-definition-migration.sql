@@ -88,6 +88,33 @@ SET
 WHERE `template_id` IS NOT NULL
     AND `id` <> `template_id`;
 
+UPDATE `ai_prompt_template`
+SET `capability` = CASE
+    WHEN `scope` = 'classics' AND `capability` = 'summary' THEN 'classics_summary'
+    WHEN `scope` = 'classics' AND `capability` = 'tags' THEN 'classics_tags'
+    WHEN `scope` = 'classics' AND `capability` = 'qa' THEN 'classics_qa'
+    WHEN `scope` = 'classics' AND `capability` = 'image_analysis' THEN 'classics_image_describe'
+    WHEN `scope` = 'classics' AND `capability` = 'translate' THEN 'classics_translate'
+    WHEN `scope` = 'classics' AND `capability` = 'image_gen' THEN 'classics_image_generate'
+    WHEN `scope` = 'classics' AND `capability` = 'fusion' THEN 'classics_image_prompt_fusion'
+    WHEN `scope` = 'classics' AND `capability` = 'visual' THEN 'classics_visual_describe'
+    WHEN `scope` = 'classics' AND `capability` = 'split' THEN 'classics_split'
+    WHEN `scope` = 'discovery' AND `capability` = 'query_understanding' THEN 'discovery_query_understanding'
+    WHEN `scope` = 'discovery' AND `capability` = 'answer_generation' THEN 'discovery_answer_generation'
+    WHEN `scope` = 'knowledge' AND `capability` = 'knowledge_graph' THEN 'knowledge_graph_extract'
+    WHEN `scope` = 'knowledge' AND `capability` = 'relation_extraction' THEN 'knowledge_relation_extract'
+    WHEN `scope` = 'knowledge' AND `capability` = 'lineage_extraction' THEN 'knowledge_lineage_extract'
+    WHEN `scope` = 'knowledge' AND `capability` = 'tags' THEN 'knowledge_tags'
+    WHEN `scope` = 'platform' AND `capability` = 'version_summary' THEN 'platform_version_summary'
+    WHEN `scope` = 'platform' AND `capability` = 'prompt_suggestion' THEN 'prompt_suggestion'
+    ELSE CONCAT(`scope`, '_', `capability`)
+END
+WHERE `scope` IS NOT NULL
+    AND `scope` <> ''
+    AND `capability` IS NOT NULL
+    AND `capability` <> ''
+    AND `capability` NOT LIKE CONCAT(`scope`, '\\_%');
+
 ALTER TABLE `ai_prompt_template`
     DROP COLUMN IF EXISTS `template_id`,
     DROP COLUMN IF EXISTS `scope`,
