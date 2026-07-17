@@ -9,7 +9,7 @@ public final class PromptVersionIdCodec {
     private PromptVersionIdCodec() {}
 
     public static PromptVersionId toDomain(Long value) {
-        return PromptVersionId.ofNullable(value);
+        return value == null ? null : new PromptVersionId(value);
     }
 
     public static PromptVersionId toDomain(String value) {

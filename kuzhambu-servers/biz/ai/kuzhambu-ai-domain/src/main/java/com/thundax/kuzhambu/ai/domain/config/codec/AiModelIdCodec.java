@@ -9,7 +9,7 @@ public final class AiModelIdCodec {
     private AiModelIdCodec() {}
 
     public static AiModelId toDomain(Long value) {
-        return AiModelId.ofNullable(value);
+        return value == null ? null : new AiModelId(value);
     }
 
     public static AiModelId toDomain(String value) {

@@ -10,11 +10,11 @@ import com.thundax.kuzhambu.ai.application.capability.service.AiCapabilityApplic
 import com.thundax.kuzhambu.ai.application.config.model.service.AiModelApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiCapabilityMapping;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiApiSource;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiModelCapability;
-import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -72,7 +72,7 @@ class AiWorkerModelConfigResolverTest {
     private static class FakeModelApplicationService implements AiModelApplicationService {
 
         private final AiModel model = new AiModel(
-                AiModelId.of(2001L),
+                AiModelIdCodec.toDomain(2001L),
                 AiApiSource.OPENAI,
                 "https://api.example",
                 "encrypted",

@@ -7,14 +7,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.ai.domain.config.codec.PromptTemplateIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.PromptVariableIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVariable;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVersion;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.PromptTemplateStatus;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptTemplateId;
-import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVariableId;
-import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
 import com.thundax.kuzhambu.ai.infra.config.persistence.dataobject.PromptTemplateDO;
 import com.thundax.kuzhambu.ai.infra.config.persistence.dataobject.PromptVariableDO;
 import com.thundax.kuzhambu.ai.infra.config.persistence.dataobject.PromptVersionDO;
@@ -89,7 +90,7 @@ class PromptRepositoryIT {
         PromptRepositoryImpl repository = new PromptRepositoryImpl(mapper);
         Instant registeredAt = Instant.parse("2026-01-03T00:00:00Z");
         PromptTemplate template = new PromptTemplate(
-                PromptTemplateId.of(4001L),
+                PromptTemplateIdCodec.toDomain(4001L),
                 AiBusinessCapability.CLASSICS_TRANSLATE,
                 "Classics translate",
                 "translate prompt",
@@ -118,8 +119,8 @@ class PromptRepositoryIT {
         PromptRepositoryImpl repository = new PromptRepositoryImpl(mapper);
         Instant registeredAt = Instant.parse("2026-01-04T00:00:00Z");
         PromptVersion version = new PromptVersion(
-                PromptVersionId.of(5001L),
-                PromptTemplateId.of(4001L),
+                PromptVersionIdCodec.toDomain(5001L),
+                PromptTemplateIdCodec.toDomain(4001L),
                 1,
                 "[{\"role\":\"user\",\"content\":\"{{text}}\"}]",
                 "[{\"name\":\"text\"}]",
@@ -127,12 +128,17 @@ class PromptRepositoryIT {
                 "initial",
                 registeredAt);
         List<PromptVariable> variables = List.of(new PromptVariable(
-                PromptVariableId.of(6001L), PromptTemplateId.of(4001L), "text", true, "input text", 1));
+                PromptVariableIdCodec.toDomain(6001L),
+                PromptTemplateIdCodec.toDomain(4001L),
+                "text",
+                true,
+                "input text",
+                1));
 
         when(mapper.markCurrentVersion(4001L, 1)).thenReturn(1);
         repository.saveVersion(version);
-        int affectedRows = repository.markCurrentVersion(PromptTemplateId.of(4001L), 1);
-        int variableRows = repository.replaceVariables(PromptTemplateId.of(4001L), variables);
+        int affectedRows = repository.markCurrentVersion(PromptTemplateIdCodec.toDomain(4001L), 1);
+        int variableRows = repository.replaceVariables(PromptTemplateIdCodec.toDomain(4001L), variables);
 
         ArgumentCaptor<PromptVersionDO> versionCaptor = ArgumentCaptor.forClass(PromptVersionDO.class);
         ArgumentCaptor<PromptVariableDO> variableCaptor = ArgumentCaptor.forClass(PromptVariableDO.class);

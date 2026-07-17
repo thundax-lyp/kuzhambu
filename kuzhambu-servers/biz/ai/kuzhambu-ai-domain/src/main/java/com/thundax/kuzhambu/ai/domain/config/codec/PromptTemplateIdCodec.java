@@ -9,7 +9,7 @@ public final class PromptTemplateIdCodec {
     private PromptTemplateIdCodec() {}
 
     public static PromptTemplateId toDomain(Long value) {
-        return PromptTemplateId.ofNullable(value);
+        return value == null ? null : new PromptTemplateId(value);
     }
 
     public static PromptTemplateId toDomain(String value) {

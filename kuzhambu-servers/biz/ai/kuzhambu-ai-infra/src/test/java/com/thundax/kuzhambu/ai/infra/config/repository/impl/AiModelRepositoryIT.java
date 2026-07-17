@@ -9,6 +9,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiApiSource;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiModelCapability;
@@ -44,7 +45,7 @@ class AiModelRepositoryIT {
         AiModelRepositoryImpl repository = new AiModelRepositoryImpl(mapper);
         Instant registeredAt = Instant.parse("2026-01-01T00:00:00Z");
         AiModel model = new AiModel(
-                AiModelId.of(2001L),
+                AiModelIdCodec.toDomain(2001L),
                 AiApiSource.OPENAI,
                 "https://api.example",
                 "encrypted",
@@ -69,7 +70,7 @@ class AiModelRepositoryIT {
         assertEquals(registeredAt, savedModel.getRegisteredAt());
 
         when(mapper.selectById(any())).thenReturn(savedModel);
-        AiModel loadedModel = repository.getModelById(AiModelId.of(2001L));
+        AiModel loadedModel = repository.getModelById(AiModelIdCodec.toDomain(2001L));
 
         assertNotNull(loadedModel);
         assertEquals(List.of(AiModelCapability.TEXT2TEXT, AiModelCapability.IMAGE2TEXT), loadedModel.getCapabilities());

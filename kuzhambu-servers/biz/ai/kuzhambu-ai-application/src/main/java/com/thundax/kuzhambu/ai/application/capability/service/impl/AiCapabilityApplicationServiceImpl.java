@@ -6,9 +6,9 @@ import com.thundax.kuzhambu.ai.application.capability.service.AiCapabilityApplic
 import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiActionStatus;
 import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiCapabilityMapping;
 import com.thundax.kuzhambu.ai.domain.capability.repository.AiCapabilityRepository;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
-import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.domain.config.repository.AiModelRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
@@ -167,7 +167,7 @@ public class AiCapabilityApplicationServiceImpl implements AiCapabilityApplicati
             return;
         }
         AiBusinessCapability.from(mapping.getCapability());
-        AiModel model = aiModelRepository.getModelById(AiModelId.of(mapping.getModelId()));
+        AiModel model = aiModelRepository.getModelById(AiModelIdCodec.toDomain(mapping.getModelId()));
         if (!mapping.canUse(model)) {
             throw new BizException("Model capability tags do not satisfy AI capability: " + mapping.getCapability());
         }
@@ -176,7 +176,8 @@ public class AiCapabilityApplicationServiceImpl implements AiCapabilityApplicati
     private AiActionStatus buildActionStatus(
             AiActionStatus current, String scope, String capabilityName, Instant checkedAt) {
         AiCapabilityMapping mapping = aiCapabilityRepository.getMapping(scope, capabilityName);
-        AiModel model = mapping == null ? null : aiModelRepository.getModelById(AiModelId.of(mapping.getModelId()));
+        AiModel model =
+                mapping == null ? null : aiModelRepository.getModelById(AiModelIdCodec.toDomain(mapping.getModelId()));
         Long actionStatusId = current == null ? null : current.getActionStatusId();
         if (mapping == null || !mapping.isEnabled()) {
             return AiActionStatus.unavailable(

@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.ai.application.capability.result.AiActionStatusResul
 import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiActionStatus;
 import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiCapabilityMapping;
 import com.thundax.kuzhambu.ai.domain.capability.repository.AiCapabilityRepository;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiApiSource;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiModelCapability;
@@ -147,7 +148,7 @@ class AiCapabilityApplicationServiceImplTest {
     private static class FakeModelRepository implements AiModelRepository {
 
         private final AiModel model = new AiModel(
-                AiModelId.of(2001L),
+                AiModelIdCodec.toDomain(2001L),
                 AiApiSource.OPENAI,
                 "https://api.example",
                 "encrypted",
