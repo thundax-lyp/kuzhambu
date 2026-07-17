@@ -1,5 +1,5 @@
 import { postJson } from "@/api/http";
-import type { AiModelRecord } from "./model-configs-types";
+import type { AiModelRecord } from "./ai-models-types";
 
 export interface AiModelListQuery {
     apiSource?: string | null;
@@ -19,25 +19,25 @@ export interface AiModelChangeCommand {
     enabled: boolean;
 }
 
-export const listModelConfigs = (query: AiModelListQuery = {}) => {
+export const listAiModels = (query: AiModelListQuery = {}) => {
     return postJson<AiModelRecord[], AiModelListQuery>("/ai/config/model/list", {
         body: query
     });
 };
 
-export const createModelConfig = (command: AiModelChangeCommand) => {
+export const createAiModel = (command: AiModelChangeCommand) => {
     return postJson<AiModelRecord, AiModelChangeCommand>("/ai/config/model/create", {
         body: command
     });
 };
 
-export const changeModelConfig = (command: AiModelChangeCommand) => {
+export const changeAiModel = (command: AiModelChangeCommand) => {
     return postJson<AiModelRecord, AiModelChangeCommand>("/ai/config/model/update", {
         body: command
     });
 };
 
-export const deleteModelConfig = (id: number) => {
+export const deleteAiModel = (id: number) => {
     return postJson<boolean, { id: number }>("/ai/config/model/delete", {
         body: { id }
     });

@@ -3,14 +3,14 @@ import { App } from "antd";
 import { cleanup, render, screen } from "@testing-library/react";
 import { replacePermissions } from "@/auth/permission-storage";
 import { queryClient } from "@/query/query-client";
-import { ModelsPage } from "./model-configs-page";
-import * as service from "./model-configs-service";
+import { AiModelsPage } from "./ai-models-page";
+import * as service from "./ai-models-service";
 
-vi.mock("./model-configs-service", () => ({
-    changeModelConfig: vi.fn(),
-    createModelConfig: vi.fn(),
-    deleteModelConfig: vi.fn(),
-    listModelConfigs: vi.fn()
+vi.mock("./ai-models-service", () => ({
+    changeAiModel: vi.fn(),
+    createAiModel: vi.fn(),
+    deleteAiModel: vi.fn(),
+    listAiModels: vi.fn()
 }));
 
 vi.mock("@/components/kuzhambu-drawer", () => {
@@ -58,19 +58,19 @@ const renderPage = () =>
     render(
         <App>
             <QueryClientProvider client={queryClient}>
-                <ModelsPage />
+                <AiModelsPage />
             </QueryClientProvider>
         </App>
     );
 
-describe("ModelsPage", () => {
+describe("AiModelsPage", () => {
     beforeEach(() => {
         queryClient.clear();
         replacePermissions(["ai:config:view", "ai:config:edit"]);
-        vi.mocked(service.listModelConfigs).mockResolvedValue(models);
-        vi.mocked(service.changeModelConfig).mockResolvedValue(models[0]);
-        vi.mocked(service.createModelConfig).mockResolvedValue(models[0]);
-        vi.mocked(service.deleteModelConfig).mockResolvedValue(true);
+        vi.mocked(service.listAiModels).mockResolvedValue(models);
+        vi.mocked(service.changeAiModel).mockResolvedValue(models[0]);
+        vi.mocked(service.createAiModel).mockResolvedValue(models[0]);
+        vi.mocked(service.deleteAiModel).mockResolvedValue(true);
     });
 
     afterEach(() => {
@@ -82,11 +82,17 @@ describe("ModelsPage", () => {
     it("renders filters and model table", async () => {
         renderPage();
 
-        expect(await screen.findByRole("heading", { name: "AI 模型配置" })).toBeInTheDocument();
+        expect(await screen.findByRole("heading", { name: "模型管理" })).toBeInTheDocument();
+        expect(screen.getByText("维护 AI 模型、供应商、能力和调用参数。")).toBeInTheDocument();
         expect(await screen.findByText("GPT 4o")).toBeInTheDocument();
         expect(screen.getByText("gpt-4o")).toBeInTheDocument();
-        expect(screen.getByText("TEXT2TEXT")).toBeInTheDocument();
-        expect(screen.getByText("IMAGE2TEXT")).toBeInTheDocument();
+        expect(screen.getByText("OpenAI 兼容")).toBeInTheDocument();
+        expect(screen.getByText("文本生成")).toBeInTheDocument();
+        expect(screen.getByText("图像理解")).toBeInTheDocument();
+        expect(screen.getByRole("columnheader", { name: "模型名称" })).toBeInTheDocument();
+        expect(screen.getByRole("columnheader", { name: "模型标识" })).toBeInTheDocument();
+        expect(screen.getByRole("columnheader", { name: "供应商" })).toBeInTheDocument();
+        expect(screen.getByRole("columnheader", { name: "能力" })).toBeInTheDocument();
     });
 
     it("disables edit actions without edit permission", async () => {
@@ -94,7 +100,7 @@ describe("ModelsPage", () => {
         renderPage();
 
         await screen.findByText("GPT 4o");
-        expect(screen.getByRole("button", { name: /新增模型/ })).toBeDisabled();
-        expect(screen.getByRole("button", { name: /编辑/ })).toBeDisabled();
+        expect(screen.queryByRole("button", { name: /新增模型/ })).not.toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "编辑 GPT 4o" })).toBeDisabled();
     });
 });
