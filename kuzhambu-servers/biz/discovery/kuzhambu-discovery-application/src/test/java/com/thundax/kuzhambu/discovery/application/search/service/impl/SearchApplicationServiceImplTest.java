@@ -20,6 +20,7 @@ import com.thundax.kuzhambu.discovery.application.search.query.SearchLogPageQuer
 import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
 import com.thundax.kuzhambu.discovery.application.search.result.QueryUnderstandingResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchPageResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchResult;
 import com.thundax.kuzhambu.discovery.application.search.service.QueryUnderstandingApplicationService;
 import com.thundax.kuzhambu.discovery.application.search.support.DefaultSearchPermissionFilter;
@@ -104,20 +105,22 @@ class SearchApplicationServiceImplTest {
                 new DefaultSearchPermissionFilter(),
                 queryUnderstandingApplicationService);
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
-                .thenReturn(List.of(new SearchGroupResult(
-                        "SANCAI_ENTRY",
-                        "三才图会",
+                .thenReturn(searchPageResult(
                         1,
-                        List.of(new SearchResult(
-                                "CLASSICS",
+                        new SearchGroupResult(
                                 "SANCAI_ENTRY",
-                                "1001",
-                                "黄帝",
-                                "上古帝王",
-                                "<mark>黄帝</mark>上古帝王",
+                                "三才图会",
                                 1,
-                                1,
-                                "/classics/sancai/1001")))));
+                                List.of(new SearchResult(
+                                        "CLASSICS",
+                                        "SANCAI_ENTRY",
+                                        "1001",
+                                        "黄帝",
+                                        "上古帝王",
+                                        "<mark>黄帝</mark>上古帝王",
+                                        1,
+                                        1,
+                                        "/classics/sancai/1001")))));
         Date dateFrom = new Date(1_718_000_000_000L);
         Date dateTo = new Date(1_720_419_200_000L);
         SearchQuery query = new SearchQuery(
@@ -196,8 +199,10 @@ class SearchApplicationServiceImplTest {
                 .thenReturn(new QueryUnderstandingResult(
                         "", "", "KEYWORD_SEARCH", List.of(), List.of(), "req-blank", "trace-blank"));
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
-                .thenReturn(List.of(new SearchGroupResult(
-                        "SANCAI_ENTRY", "三才图会", 1, List.of(searchResult("SANCAI_ENTRY", "1001", "PUBLIC")))));
+                .thenReturn(searchPageResult(
+                        20,
+                        new SearchGroupResult(
+                                "SANCAI_ENTRY", "三才图会", 1, List.of(searchResult("SANCAI_ENTRY", "1001", "PUBLIC")))));
 
         var result = service.search(query);
         ArgumentCaptor<SearchKeyword> keywordCaptor = ArgumentCaptor.forClass(SearchKeyword.class);
@@ -206,7 +211,8 @@ class SearchApplicationServiceImplTest {
         verify(searchIndexGateway).search(keywordCaptor.capture(), any(), any(Integer.class), any(Integer.class));
         verify(searchLogRepository).save(searchLogCaptor.capture());
         assertEquals("", keywordCaptor.getValue().getNormalizedText());
-        assertEquals(1, result.getResultTotalCount());
+        assertEquals(20, result.getResultTotalCount());
+        assertEquals(20, searchLogCaptor.getValue().getResultTotalCount());
         assertEquals("SUCCEEDED", searchLogCaptor.getValue().getSearchStatus());
         assertEquals("", searchLogCaptor.getValue().getNormalizedQueryText());
     }
@@ -244,13 +250,15 @@ class SearchApplicationServiceImplTest {
                 .thenReturn(
                         new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), List.of(), null, null));
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
-                .thenReturn(List.of(new SearchGroupResult(
-                        "SANCAI_ENTRY",
-                        "三才图会",
-                        2,
-                        List.of(
-                                searchResult("SANCAI_ENTRY", "1001", "PUBLIC"),
-                                searchResult("SANCAI_ENTRY", "1002", "PRIVATE")))));
+                .thenReturn(searchPageResult(
+                        1,
+                        new SearchGroupResult(
+                                "SANCAI_ENTRY",
+                                "三才图会",
+                                2,
+                                List.of(
+                                        searchResult("SANCAI_ENTRY", "1001", "PUBLIC"),
+                                        searchResult("SANCAI_ENTRY", "1002", "PRIVATE")))));
 
         var result = service.search(query);
 
@@ -295,8 +303,10 @@ class SearchApplicationServiceImplTest {
                 .thenReturn(
                         new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), List.of(), null, null));
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
-                .thenReturn(List.of(new SearchGroupResult(
-                        "SANCAI_ENTRY", "三才图会", 1, List.of(searchResult("SANCAI_ENTRY", "1002", "PRIVATE")))));
+                .thenReturn(searchPageResult(
+                        1,
+                        new SearchGroupResult(
+                                "SANCAI_ENTRY", "三才图会", 1, List.of(searchResult("SANCAI_ENTRY", "1002", "PRIVATE")))));
 
         var result = service.search(query);
 
@@ -339,8 +349,13 @@ class SearchApplicationServiceImplTest {
                 .thenReturn(
                         new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), List.of(), null, null));
         when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
-                .thenReturn(List.of(new SearchGroupResult(
-                        "UNKNOWN_CONTENT", "未知内容", 1, List.of(searchResult("UNKNOWN_CONTENT", "1003", "PRIVATE")))));
+                .thenReturn(searchPageResult(
+                        1,
+                        new SearchGroupResult(
+                                "UNKNOWN_CONTENT",
+                                "未知内容",
+                                1,
+                                List.of(searchResult("UNKNOWN_CONTENT", "1003", "PRIVATE")))));
 
         var result = service.search(query);
 
@@ -601,6 +616,10 @@ class SearchApplicationServiceImplTest {
         assertEquals("DISCOVERY-29999", searchLogCaptor.getValue().getFailureCode());
         assertEquals("boom", searchLogCaptor.getValue().getFailureMessage());
         assertTrue(searchLogCaptor.getValue().getSearchLatencyMs() >= 0);
+    }
+
+    private SearchPageResult searchPageResult(int totalCount, SearchGroupResult... groups) {
+        return new SearchPageResult(totalCount, List.of(groups));
     }
 
     private SearchLog searchLog(String queryText, String searchStatus, Integer resultTotalCount) {

@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.discovery.infra.client;
 
 import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchPageResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchSourceContent;
 import com.thundax.kuzhambu.discovery.application.search.support.SearchIndexGateway;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.Criteria;
 import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
@@ -50,15 +52,16 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
     }
 
     @Override
-    public List<SearchGroupResult> search(SearchKeyword keyword, SearchScope searchScope, int pageNo, int pageSize) {
+    public SearchPageResult search(SearchKeyword keyword, SearchScope searchScope, int pageNo, int pageSize) {
         ElasticsearchOperations operations = requireOperations("search");
         CriteriaQuery query =
                 new CriteriaQuery(buildCriteria(keyword == null ? null : keyword.getNormalizedText(), searchScope));
         query.setPageable(PageRequest.of(Math.max(pageNo - 1, 0), pageSize));
-        List<SearchHit<DiscoverySearchDocument>> hits = operations
-                .search(query, DiscoverySearchDocument.class, indexCoordinates())
-                .getSearchHits();
-        return toGroupedResults(hits, keyword == null ? null : keyword.getNormalizedText());
+        SearchHits<DiscoverySearchDocument> searchHits =
+                operations.search(query, DiscoverySearchDocument.class, indexCoordinates());
+        return new SearchPageResult(
+                toIntTotalHits(searchHits.getTotalHits()),
+                toGroupedResults(searchHits.getSearchHits(), keyword == null ? null : keyword.getNormalizedText()));
     }
 
     @Override
@@ -255,6 +258,10 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
                         entry.getValue().size(),
                         entry.getValue()))
                 .toList();
+    }
+
+    private int toIntTotalHits(long totalHits) {
+        return totalHits > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) totalHits;
     }
 
     private String groupTitle(String contentType) {

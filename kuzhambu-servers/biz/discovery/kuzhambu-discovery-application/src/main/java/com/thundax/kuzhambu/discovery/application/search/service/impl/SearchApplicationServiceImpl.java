@@ -13,6 +13,7 @@ import com.thundax.kuzhambu.discovery.application.search.result.QueryUnderstandi
 import com.thundax.kuzhambu.discovery.application.search.result.SearchAnalysisSummaryResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchLogResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchPageResult;
 import com.thundax.kuzhambu.discovery.application.search.service.QueryUnderstandingApplicationService;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchApplicationService;
 import com.thundax.kuzhambu.discovery.application.search.support.SearchIndexGateway;
@@ -73,13 +74,15 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
         int pageNo = searchDomainService.normalizePageNo(query.getPageNo());
         int pageSize = searchDomainService.normalizePageSize(query.getPageSize());
         try {
-            List<SearchGroupResult> groups = searchIndexGateway.search(keyword, scope, pageNo, pageSize);
+            SearchPageResult searchPage = searchIndexGateway.search(keyword, scope, pageNo, pageSize);
+            List<SearchGroupResult> groups = searchPage.safeGroups();
             List<SearchGroupResult> filteredGroups = searchPermissionFilter.filter(query, groups);
             SearchLog searchLog = buildSucceededSearchLog(
                     query,
                     understandingResult,
                     keyword.getNormalizedText(),
                     scope,
+                    resolveResultTotalCount(searchPage, groups, filteredGroups),
                     filteredGroups,
                     elapsedMillis(startNanos));
             searchLogRepository.save(searchLog);
@@ -182,11 +185,9 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
             QueryUnderstandingResult understandingResult,
             String normalizedQueryText,
             SearchScope searchScope,
+            int totalCount,
             List<SearchGroupResult> groups,
             Long searchLatencyMs) {
-        int totalCount = groups == null
-                ? 0
-                : groups.stream().mapToInt(SearchGroupResult::getCount).sum();
         return new SearchLog(
                 null,
                 newSearchLogId(),
@@ -206,6 +207,27 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
                 query.getRequestId(),
                 query.getTraceId(),
                 new Date());
+    }
+
+    private int resolveResultTotalCount(
+            SearchPageResult searchPage, List<SearchGroupResult> groups, List<SearchGroupResult> filteredGroups) {
+        int pageItemCount = countItems(groups);
+        int filteredPageItemCount = countItems(filteredGroups);
+        if (pageItemCount == filteredPageItemCount) {
+            return searchPage == null ? filteredPageItemCount : searchPage.getTotalCount();
+        }
+        return filteredPageItemCount;
+    }
+
+    private int countItems(List<SearchGroupResult> groups) {
+        if (groups == null || groups.isEmpty()) {
+            return 0;
+        }
+        return groups.stream()
+                .map(SearchGroupResult::getItems)
+                .filter(items -> items != null)
+                .mapToInt(List::size)
+                .sum();
     }
 
     private SearchLog buildFailedSearchLog(

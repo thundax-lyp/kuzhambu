@@ -167,6 +167,10 @@ const renderQueryHighlight = (text: string, queryText: string) => {
     return nodes.length > 0 ? nodes : text;
 };
 
+const toPlainHighlightText = (value?: string | null) => {
+    return (value ?? "").replace(/<mark>(.*?)<\/mark>/giu, "$1").trim();
+};
+
 const createClickCommand = (
     searchLogId: string,
     group: DiscoverySearchGroupRecord,
@@ -305,6 +309,17 @@ export const SearchPage = () => {
             </Link>
         );
     };
+    const renderResultSummary = (result: SearchResultEntry) => {
+        const title = (result.item.title || "").trim();
+        const highlightText = toPlainHighlightText(result.item.highlightText);
+        const summary = (result.item.summary || "").trim();
+        const summaryText = highlightText || summary;
+        if (!summaryText || summaryText === title) {
+            return null;
+        }
+
+        return renderHighlightText(result.item.highlightText) || summary;
+    };
     const resultContent = (
         <Spin spinning={searchMutation.isPending}>
             <section className="search-page-results" aria-label="检索结果">
@@ -317,31 +332,33 @@ export const SearchPage = () => {
                 {!searchMutation.isError && results.length > 0 ? (
                     <>
                         <div className="search-page-result-list">
-                            {results.map((result) => (
-                                <article className="search-page-result-item" key={result.key}>
-                                    <h3 className="search-page-result-title">
-                                        {renderResultTitle(result)}
-                                    </h3>
-                                    <p className="search-page-result-summary">
-                                        {renderHighlightText(result.item.highlightText) ||
-                                            result.item.summary ||
-                                            "暂无摘要"}
-                                    </p>
-                                    <div className="search-page-result-meta">
-                                        <Tag color="blue">
-                                            {result.group.groupTitle ||
-                                                result.group.groupKey ||
-                                                "未分组"}
-                                        </Tag>
-                                    </div>
-                                </article>
-                            ))}
+                            {results.map((result) => {
+                                const summary = renderResultSummary(result);
+                                return (
+                                    <article className="search-page-result-item" key={result.key}>
+                                        <h3 className="search-page-result-title">
+                                            {renderResultTitle(result)}
+                                        </h3>
+                                        {summary ? (
+                                            <p className="search-page-result-summary">{summary}</p>
+                                        ) : null}
+                                        <div className="search-page-result-meta">
+                                            <Tag color="blue">
+                                                {result.group.groupTitle ||
+                                                    result.group.groupKey ||
+                                                    "未分组"}
+                                            </Tag>
+                                        </div>
+                                    </article>
+                                );
+                            })}
                         </div>
                         <Pagination
                             className="search-page-pagination"
                             current={currentPageNo}
                             pageSize={currentPageSize}
                             showSizeChanger
+                            showTotal={(total) => `共 ${total} 条`}
                             total={totalCount}
                             onChange={changePage}
                         />
