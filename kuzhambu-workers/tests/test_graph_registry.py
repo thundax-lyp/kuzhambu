@@ -78,7 +78,7 @@ def test_registry_streams_chat_completion_through_registered_graph(monkeypatch) 
         return iter([OpenAiChatCompletionChunk(delta="hello", usage=None, finish_reason="stop")])
 
     monkeypatch.setattr(
-        "kuzhambu_workers.ai.graph_registry.iter_chat_completion_chunks",
+        "kuzhambu_workers.ai.graphs.basic.iter_chat_completion_chunks",
         fake_chunks,
     )
     registry = GraphRegistry.build_default()

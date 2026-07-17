@@ -5,6 +5,7 @@ from langgraph.graph import END, START, StateGraph
 from kuzhambu_workers.ai.openai_compatible import (
     OpenAiChatCompletionResult,
     invoke_chat_completion,
+    iter_chat_completion_chunks,
 )
 from kuzhambu_workers.ai.structured_output import (
     parse_structured_output,
@@ -16,6 +17,7 @@ from kuzhambu_workers.schemas.ai import AiCapability, AiInvokeRequest, ResultFor
 
 class BasicGraphState(TypedDict, total=False):
     request: AiInvokeRequest
+    streamResponseFormat: dict[str, Any] | None
     result: dict[str, Any]
 
 
@@ -32,6 +34,18 @@ def _execute(state: BasicGraphState) -> BasicGraphState:
     if request.capability == AiCapability.IMAGE_GEN:
         raise unsupported_capability(request.capability.value)
 
+    if "streamResponseFormat" in state:
+        return {
+            **state,
+            "result": {
+                "format": "STREAM",
+                "chunks": iter_chat_completion_chunks(
+                    request,
+                    response_format=state.get("streamResponseFormat"),
+                ),
+            },
+        }
+
     model_result = _invoke_chat_completion(request)
     result_format = _result_format(request)
     payload: str | dict[str, Any] | list[Any] = model_result.content
@@ -45,6 +59,7 @@ def _execute(state: BasicGraphState) -> BasicGraphState:
             "payload": payload,
             "usage": model_result.usage.model_dump(mode="json"),
             "rawFinishReason": model_result.raw_finish_reason,
+            "providerUsage": model_result.provider_usage,
         },
     }
 

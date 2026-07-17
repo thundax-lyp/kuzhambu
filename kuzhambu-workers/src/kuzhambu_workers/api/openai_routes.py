@@ -327,6 +327,7 @@ def _invoke_image_generation(
     try:
         artifact = _image_artifact_payload(result)
         if request.response_format == "b64_json":
+            _ensure_image_artifact_size(artifact["data"])
             data = OpenAiCompatibleImageData(b64_json=b64encode(artifact["data"]).decode("ascii"))
         elif request.response_format == "url":
             metadata = _store_generated_image(
@@ -404,6 +405,8 @@ def _raw_finish_reason(result: dict[str, Any]) -> str | None:
 
 
 def _openai_usage_from_graph_result(result: dict[str, Any]) -> OpenAiCompatibleUsage:
+    if result.get("providerUsage") is False:
+        return OpenAiCompatibleUsage()
     usage = result.get("usage")
     if not isinstance(usage, dict):
         return OpenAiCompatibleUsage()
@@ -434,16 +437,7 @@ def _store_generated_image(
     filename: str,
 ) -> ArtifactMetadata:
     settings = load_settings()
-    if len(data) > settings.max_artifact_bytes:
-        raise WorkerError(
-            WorkerErrorType.IMAGE_INPUT_FAILURE,
-            "IMAGE_ARTIFACT_TOO_LARGE",
-            "图片生成结果超过 workers artifact 大小限制。",
-            detail={
-                "sizeBytes": len(data),
-                "maxArtifactBytes": settings.max_artifact_bytes,
-            },
-        )
+    _ensure_image_artifact_size(data)
     store = RequestArtifactStore(
         request.requestId,
         settings.temp_dir,
@@ -455,6 +449,21 @@ def _store_generated_image(
         format="ARTIFACT",
         filename=filename,
         content_type=content_type,
+    )
+
+
+def _ensure_image_artifact_size(data: bytes) -> None:
+    settings = load_settings()
+    if len(data) <= settings.max_artifact_bytes:
+        return
+    raise WorkerError(
+        WorkerErrorType.IMAGE_INPUT_FAILURE,
+        "IMAGE_ARTIFACT_TOO_LARGE",
+        "图片生成结果超过 workers artifact 大小限制。",
+        detail={
+            "sizeBytes": len(data),
+            "maxArtifactBytes": settings.max_artifact_bytes,
+        },
     )
 
 

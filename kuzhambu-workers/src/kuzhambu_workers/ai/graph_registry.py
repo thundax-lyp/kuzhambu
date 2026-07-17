@@ -5,10 +5,7 @@ from typing import Any, cast
 from kuzhambu_workers.ai.graphs.basic import build_basic_graph
 from kuzhambu_workers.ai.graphs.image_generation import build_image_generation_graph
 from kuzhambu_workers.ai.graphs.text import build_text_graph
-from kuzhambu_workers.ai.openai_compatible import (
-    OpenAiChatCompletionChunk,
-    iter_chat_completion_chunks,
-)
+from kuzhambu_workers.ai.openai_compatible import OpenAiChatCompletionChunk
 from kuzhambu_workers.core.errors import unsupported_capability
 from kuzhambu_workers.schemas.ai import AiCapability, AiInvokeRequest
 
@@ -63,4 +60,7 @@ class GraphRegistry:
         )
         if graph is None:
             raise unsupported_capability(request.capability.value)
-        return iter_chat_completion_chunks(request, response_format=response_format)
+        state = graph.invoke({"request": request, "streamResponseFormat": response_format})
+        result = state["result"]
+        chunks = result["chunks"]
+        return cast(Iterable[OpenAiChatCompletionChunk], chunks)

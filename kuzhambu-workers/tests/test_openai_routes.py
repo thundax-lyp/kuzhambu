@@ -147,6 +147,36 @@ def test_openai_compatible_chat_completion_passes_response_format_to_graph(
     assert captured["response_format"] == response_format
 
 
+def test_openai_compatible_chat_completion_preserves_unknown_non_stream_usage(
+    monkeypatch,
+) -> None:
+    monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
+    monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
+
+    class FakeRegistry:
+        def invoke(self, request):
+            return {
+                "format": "TEXT",
+                "payload": "answer",
+                "usage": {"inputTokens": 0, "outputTokens": 0, "latencyMs": 8},
+                "providerUsage": False,
+            }
+
+    monkeypatch.setattr("kuzhambu_workers.api.openai_routes._REGISTRY", FakeRegistry())
+    body = _body(stream=False)
+
+    response = TestClient(app).post(
+        _PATH, content=body, headers=_headers(body, service="kuzhambu-ai")
+    )
+
+    assert response.status_code == 200
+    assert response.json()["usage"] == {
+        "prompt_tokens": None,
+        "completion_tokens": None,
+        "total_tokens": None,
+    }
+
+
 def test_openai_compatible_chat_completion_streams_response_format(monkeypatch) -> None:
     monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
     monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
@@ -490,6 +520,40 @@ def test_openai_compatible_image_generation_rejects_oversized_artifact(
     assert response.status_code == 502
     assert response.json()["error"]["code"] == "IMAGE_ARTIFACT_TOO_LARGE"
     assert not (tmp_path / "artifacts").exists()
+
+
+def test_openai_compatible_image_generation_rejects_oversized_b64_artifact(
+    monkeypatch,
+    tmp_path,
+) -> None:
+    monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
+    monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
+    monkeypatch.setenv("KUZHAMBU_WORKER_TEMP_DIR", str(tmp_path))
+    monkeypatch.setenv("KUZHAMBU_WORKER_MAX_ARTIFACT_BYTES", "1")
+
+    class FakeRegistry:
+        def invoke(self, request):
+            return {
+                "format": "ARTIFACT",
+                "payload": {
+                    "data": PNG_1X1,
+                    "contentType": "image/png",
+                    "filename": "image.png",
+                },
+                "usage": {},
+            }
+
+    monkeypatch.setattr("kuzhambu_workers.api.openai_routes._REGISTRY", FakeRegistry())
+    body = _image_body(extra={"response_format": "b64_json"})
+
+    response = TestClient(app).post(
+        _IMAGE_PATH,
+        content=body,
+        headers=_headers(body, service="kuzhambu-ai", path=_IMAGE_PATH),
+    )
+
+    assert response.status_code == 502
+    assert response.json()["error"]["code"] == "IMAGE_ARTIFACT_TOO_LARGE"
 
 
 def test_openai_compatible_image_generation_uses_seed_sample_config(

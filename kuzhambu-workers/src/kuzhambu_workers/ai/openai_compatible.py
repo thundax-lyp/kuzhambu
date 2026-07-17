@@ -36,6 +36,7 @@ class OpenAiChatCompletionResult:
     content: str
     usage: UsageSummary
     raw_finish_reason: str | None
+    provider_usage: bool = True
 
 
 @dataclass(frozen=True)
@@ -82,11 +83,13 @@ def invoke_chat_completion(
     payload = _json_payload(response)
     content = _message_content(payload)
     finish_reason = _finish_reason(payload)
+    provider_usage = payload.get("usage") is not None
     usage = usage_from_provider(payload.get("usage"), latency_ms=latency_ms)
     return OpenAiChatCompletionResult(
         content=content,
         usage=usage,
         raw_finish_reason=finish_reason,
+        provider_usage=provider_usage,
     )
 
 

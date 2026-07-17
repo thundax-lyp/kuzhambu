@@ -5,12 +5,14 @@ from langgraph.graph import END, START, StateGraph
 from kuzhambu_workers.ai.openai_compatible import (
     OpenAiChatCompletionResult,
     invoke_chat_completion,
+    iter_chat_completion_chunks,
 )
 from kuzhambu_workers.schemas.ai import AiInvokeRequest, ResultFormat
 
 
 class TextGraphState(TypedDict, total=False):
     request: AiInvokeRequest
+    streamResponseFormat: dict[str, Any] | None
     result: dict[str, Any]
 
 
@@ -24,6 +26,15 @@ def build_text_graph() -> Any:
 
 def _invoke_text(state: TextGraphState) -> TextGraphState:
     request = state["request"]
+    if "streamResponseFormat" in state:
+        chunks = _iter_chat_completion_chunks(request, state.get("streamResponseFormat"))
+        return {
+            **state,
+            "result": {
+                "format": "STREAM",
+                "chunks": chunks,
+            },
+        }
     model_result = _invoke_chat_completion(request)
     return {
         **state,
@@ -32,6 +43,7 @@ def _invoke_text(state: TextGraphState) -> TextGraphState:
             "payload": model_result.content,
             "usage": model_result.usage.model_dump(mode="json"),
             "rawFinishReason": model_result.raw_finish_reason,
+            "providerUsage": model_result.provider_usage,
         },
     }
 
@@ -48,3 +60,11 @@ def _invoke_chat_completion(request: AiInvokeRequest) -> OpenAiChatCompletionRes
     if response_format is None:
         return invoke_chat_completion(request)
     return invoke_chat_completion(request, response_format=response_format)
+
+
+def _iter_chat_completion_chunks(
+    request: AiInvokeRequest,
+    response_format: dict[str, Any] | None,
+) -> Any:
+    chunks: Any = iter_chat_completion_chunks(request, response_format=response_format)
+    return chunks
