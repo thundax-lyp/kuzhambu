@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.discovery.interfaces.portal.search.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -15,6 +16,7 @@ import com.thundax.kuzhambu.discovery.application.search.result.SearchResult;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchApplicationService;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchClickRequest;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchRequest;
+import jakarta.validation.constraints.NotBlank;
 import java.lang.reflect.Method;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -91,6 +93,11 @@ class DiscoverySearchPortalControllerTest {
                 "resultRank",
                 "groupRank",
                 "targetPath");
+    }
+
+    @Test
+    void searchRequestShouldRejectBlankQueryText() throws Exception {
+        assertNotNull(DiscoverySearchRequest.class.getDeclaredField("queryText").getAnnotation(NotBlank.class));
     }
 
     @Test

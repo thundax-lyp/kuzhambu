@@ -28,6 +28,7 @@ import com.thundax.kuzhambu.discovery.application.search.support.SearchIndexGate
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchLog;
 import com.thundax.kuzhambu.discovery.domain.search.model.enums.SearchIntentType;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchKeyword;
+import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchScope;
 import com.thundax.kuzhambu.discovery.domain.search.repository.SearchClickRepository;
 import com.thundax.kuzhambu.discovery.domain.search.repository.SearchLogRepository;
 import com.thundax.kuzhambu.discovery.domain.service.SearchDomainService;
@@ -253,12 +254,7 @@ class SearchApplicationServiceImplTest {
                 .thenReturn(searchPageResult(
                         1,
                         new SearchGroupResult(
-                                "SANCAI_ENTRY",
-                                "三才图会",
-                                2,
-                                List.of(
-                                        searchResult("SANCAI_ENTRY", "1001", "PUBLIC"),
-                                        searchResult("SANCAI_ENTRY", "1002", "PRIVATE")))));
+                                "SANCAI_ENTRY", "三才图会", 1, List.of(searchResult("SANCAI_ENTRY", "1001", "PUBLIC")))));
 
         var result = service.search(query);
 
@@ -266,6 +262,79 @@ class SearchApplicationServiceImplTest {
         assertEquals(1, result.getGroupTotalCount());
         assertEquals(1, result.getGroups().get(0).getCount());
         assertEquals("1001", result.getGroups().get(0).getItems().get(0).getContentId());
+        ArgumentCaptor<SearchScope> scopeCaptor = ArgumentCaptor.forClass(SearchScope.class);
+        verify(searchIndexGateway).search(any(), scopeCaptor.capture(), any(Integer.class), any(Integer.class));
+        assertEquals(List.of("PUBLIC"), scopeCaptor.getValue().getVisibilityScopes());
+    }
+
+    @Test
+    void searchShouldCountPermissionFilteredTotalAcrossPages() {
+        KuzhambuContextHolder.setSubject(new KuzhambuSubject(
+                "admin-1", KuzhambuSubjectType.ADMIN_USER, "admin", "token-1", Set.of("classics:sancai:view")));
+        SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
+        SearchClickRepository searchClickRepository = mock(SearchClickRepository.class);
+        SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
+        QueryUnderstandingApplicationService queryUnderstandingApplicationService =
+                mock(QueryUnderstandingApplicationService.class);
+        SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
+                searchLogRepository,
+                searchClickRepository,
+                new SearchDomainService(),
+                searchIndexGateway,
+                new DefaultSearchPermissionFilter(),
+                queryUnderstandingApplicationService);
+        SearchQuery query = new SearchQuery(
+                "黄帝",
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of("PUBLIC", "PRIVATE"),
+                null,
+                null,
+                1,
+                2,
+                "ADMIN",
+                "admin-1",
+                "req-total",
+                "trace-total");
+        when(queryUnderstandingApplicationService.understand(query))
+                .thenReturn(
+                        new QueryUnderstandingResult("黄帝", "黄帝", "KEYWORD_SEARCH", List.of(), List.of(), null, null));
+        when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
+                .thenReturn(
+                        searchPageResult(
+                                201,
+                                new SearchGroupResult(
+                                        "SANCAI_ENTRY",
+                                        "三才图会",
+                                        2,
+                                        List.of(
+                                                searchResult("SANCAI_ENTRY", "1001", "PUBLIC"),
+                                                searchResult("WANGQI_DOCUMENT", "1002", "PRIVATE")))),
+                        searchPageResult(
+                                201,
+                                new SearchGroupResult(
+                                        "SANCAI_ENTRY",
+                                        "三才图会",
+                                        2,
+                                        List.of(
+                                                searchResult("SANCAI_ENTRY", "1001", "PUBLIC"),
+                                                searchResult("WANGQI_DOCUMENT", "1002", "PRIVATE")))),
+                        searchPageResult(
+                                201,
+                                new SearchGroupResult(
+                                        "SANCAI_ENTRY",
+                                        "三才图会",
+                                        1,
+                                        List.of(searchResult("SANCAI_ENTRY", "1003", "PUBLIC")))));
+
+        var result = service.search(query);
+
+        assertEquals(2, result.getResultTotalCount());
+        assertEquals(1, result.getGroupTotalCount());
+        assertEquals("1001", result.getGroups().get(0).getItems().get(0).getContentId());
+        verify(searchIndexGateway, times(3)).search(any(), any(), any(Integer.class), any(Integer.class));
     }
 
     @Test

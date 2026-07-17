@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
+import com.thundax.kuzhambu.common.security.permission.PermissionMatcher;
+import com.thundax.kuzhambu.common.security.permission.PrefixPermissionMatcher;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchClickCreateCommand;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchAnalysisSummaryQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchLogPageQuery;
@@ -21,6 +24,7 @@ import com.thundax.kuzhambu.discovery.application.search.support.SearchPermissio
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchClick;
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchLog;
 import com.thundax.kuzhambu.discovery.domain.search.model.enums.SearchIntentType;
+import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchKeyword;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchScope;
 import com.thundax.kuzhambu.discovery.domain.search.repository.SearchClickRepository;
 import com.thundax.kuzhambu.discovery.domain.search.repository.SearchLogRepository;
@@ -30,6 +34,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -41,6 +46,14 @@ import org.springframework.stereotype.Service;
 public class SearchApplicationServiceImpl implements SearchApplicationService {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final String PUBLIC_VISIBILITY = "PUBLIC";
+    private static final String PRIVATE_VISIBILITY = "PRIVATE";
+    private static final String SUPER_PERMISSION = "super";
+    private static final String CLASSICS_CONTENT_VIEW_PERMISSION = "classics:content:view";
+    private static final List<String> PRIVATE_CONTENT_VIEW_PERMISSIONS =
+            List.of("classics:sancai:view", "classics:wangqi:view", "classics:mingcustoms:view");
+    private static final int PERMISSION_TOTAL_PAGE_SIZE = 200;
+    private static final PermissionMatcher PERMISSION_MATCHER = new PrefixPermissionMatcher();
 
     private final SearchLogRepository searchLogRepository;
     private final SearchClickRepository searchClickRepository;
@@ -82,7 +95,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
                     understandingResult,
                     keyword.getNormalizedText(),
                     scope,
-                    resolveResultTotalCount(searchPage, groups, filteredGroups),
+                    resolveResultTotalCount(keyword, scope, searchPage, groups, filteredGroups),
                     filteredGroups,
                     elapsedMillis(startNanos));
             searchLogRepository.save(searchLog);
@@ -210,13 +223,33 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
     }
 
     private int resolveResultTotalCount(
-            SearchPageResult searchPage, List<SearchGroupResult> groups, List<SearchGroupResult> filteredGroups) {
+            SearchKeyword keyword,
+            SearchScope searchScope,
+            SearchPageResult searchPage,
+            List<SearchGroupResult> groups,
+            List<SearchGroupResult> filteredGroups) {
         int pageItemCount = countItems(groups);
         int filteredPageItemCount = countItems(filteredGroups);
-        if (pageItemCount == filteredPageItemCount) {
+        if (pageItemCount == filteredPageItemCount && !shouldRecountPermissionTotal(searchScope)) {
             return searchPage == null ? filteredPageItemCount : searchPage.getTotalCount();
         }
-        return filteredPageItemCount;
+        return countPermissionFilteredTotal(keyword, searchScope, searchPage);
+    }
+
+    private int countPermissionFilteredTotal(
+            SearchKeyword keyword, SearchScope searchScope, SearchPageResult firstSearchPage) {
+        if (firstSearchPage == null || firstSearchPage.getTotalCount() <= 0) {
+            return 0;
+        }
+        int totalCount = firstSearchPage.getTotalCount();
+        int pageSize = searchDomainService.normalizePageSize(PERMISSION_TOTAL_PAGE_SIZE);
+        int pageCount = (int) Math.ceil((double) totalCount / pageSize);
+        int filteredTotal = 0;
+        for (int pageNo = 1; pageNo <= pageCount; pageNo++) {
+            SearchPageResult page = searchIndexGateway.search(keyword, searchScope, pageNo, pageSize);
+            filteredTotal += countItems(searchPermissionFilter.filter(null, page.safeGroups()));
+        }
+        return filteredTotal;
     }
 
     private int countItems(List<SearchGroupResult> groups) {
@@ -286,7 +319,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
     }
 
     private SearchScope toSearchScope(SearchQuery query) {
-        return new SearchScope(
+        SearchScope scope = new SearchScope(
                 query.getKnowledgeBases(),
                 query.getCategoryCodes(),
                 query.getTagNames(),
@@ -294,6 +327,11 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
                 query.getVisibilityScopes(),
                 query.getDateFrom(),
                 query.getDateTo());
+        if (hasPrivateSearchPermission()) {
+            return scope;
+        }
+        scope.setVisibilityScopes(List.of(PUBLIC_VISIBILITY));
+        return scope;
     }
 
     private String resolveSearchText(SearchQuery query, QueryUnderstandingResult understandingResult) {
@@ -360,6 +398,47 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
         if (query == null) {
             throw new BizException("Search query is required");
         }
+    }
+
+    private boolean shouldRecountPermissionTotal(SearchScope searchScope) {
+        return hasPartialPrivateSearchPermission() && scopeMayContainPrivateResults(searchScope);
+    }
+
+    private boolean hasPrivateSearchPermission() {
+        Set<String> authorities = KuzhambuContextHolder.currentAuthorities();
+        if (authorities == null || authorities.isEmpty()) {
+            return false;
+        }
+        return hasSuperOrClassicsContentPermission(authorities)
+                || PRIVATE_CONTENT_VIEW_PERMISSIONS.stream()
+                        .anyMatch(permission -> PERMISSION_MATCHER.matches(authorities, permission));
+    }
+
+    private boolean hasPartialPrivateSearchPermission() {
+        Set<String> authorities = KuzhambuContextHolder.currentAuthorities();
+        if (authorities == null || authorities.isEmpty()) {
+            return false;
+        }
+        return !hasSuperOrClassicsContentPermission(authorities)
+                && PRIVATE_CONTENT_VIEW_PERMISSIONS.stream()
+                        .anyMatch(permission -> PERMISSION_MATCHER.matches(authorities, permission));
+    }
+
+    private boolean hasSuperOrClassicsContentPermission(Set<String> authorities) {
+        return authorities != null
+                && (authorities.contains(SUPER_PERMISSION)
+                        || PERMISSION_MATCHER.matches(authorities, CLASSICS_CONTENT_VIEW_PERMISSION));
+    }
+
+    private boolean scopeMayContainPrivateResults(SearchScope searchScope) {
+        List<String> visibilityScopes = searchScope == null ? null : searchScope.getVisibilityScopes();
+        if (visibilityScopes == null || visibilityScopes.isEmpty()) {
+            return true;
+        }
+        return visibilityScopes.stream()
+                .filter(value -> value != null)
+                .map(String::trim)
+                .anyMatch(value -> value.isEmpty() || PRIVATE_VISIBILITY.equalsIgnoreCase(value));
     }
 
     private void validateClickCommand(SearchClickCreateCommand command) {
