@@ -17,7 +17,7 @@ const compareFields: Array<{
 }> = [
     { key: "title", label: "标题" },
     { key: "summary", label: "摘要" },
-    { key: "contentFormat", label: "正文格式" },
+    { key: "contentFormat", label: "格式" },
     { key: "content", label: "正文" },
     { key: "documentTime", label: "文档时间" },
     { key: "visibility", label: "可见性" }

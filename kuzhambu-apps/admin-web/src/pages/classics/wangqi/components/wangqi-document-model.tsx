@@ -201,7 +201,7 @@ export const WangqiDocumentModel = ({
                     <Input aria-label="王圻文档标题" maxLength={120} showCount />
                 </Form.Item>
                 <div className="wangqi-document-model-grid">
-                    <Form.Item name="contentFormat" label="正文格式">
+                    <Form.Item name="contentFormat" label="格式">
                         <Select
                             aria-label="王圻文档正文格式"
                             options={[
