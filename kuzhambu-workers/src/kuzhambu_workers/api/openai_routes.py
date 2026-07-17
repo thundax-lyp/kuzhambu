@@ -65,6 +65,9 @@ async def chat_completions(request: Request) -> JSONResponse | StreamingResponse
     ai_request = _to_ai_request(parsed)
     if isinstance(ai_request, JSONResponse):
         return ai_request
+    validation_failure = _validate_chat_completion_request(ai_request)
+    if validation_failure is not None:
+        return validation_failure
     if parsed.stream:
         return _stream_chat_completion(parsed, ai_request)
     return _invoke_chat_completion(parsed, ai_request)
@@ -89,7 +92,7 @@ async def image_generations(request: Request) -> JSONResponse:
     ai_request = _to_image_ai_request(parsed)
     if isinstance(ai_request, JSONResponse):
         return ai_request
-    validation_failure = _validate_image_generation_request(parsed)
+    validation_failure = _validate_image_generation_request(parsed, ai_request)
     if validation_failure is not None:
         return validation_failure
     return _invoke_image_generation(parsed, ai_request)
@@ -194,8 +197,23 @@ def _chat_input_payload(request: OpenAiCompatibleChatRequest) -> dict[str, Any]:
     return {"responseFormat": request.response_format}
 
 
+def _validate_chat_completion_request(ai_request: AiInvokeRequest) -> JSONResponse | None:
+    requested_count = _effective_int_parameter(ai_request.modelConfig.parameters, "n", 1)
+    if requested_count != 1:
+        return _error_json(
+            protocol_failure(
+                "MODEL_CONFIG_INVALID",
+                "OpenAI-compatible chat completion 当前仅支持 n=1。",
+                detail={"n": requested_count},
+            ).to_payload(),
+            400,
+        )
+    return None
+
+
 def _validate_image_generation_request(
     request: OpenAiCompatibleImageGenerationRequest,
+    ai_request: AiInvokeRequest,
 ) -> JSONResponse | None:
     if request.response_format not in SUPPORTED_IMAGE_RESPONSE_FORMATS:
         return _error_json(
@@ -205,7 +223,8 @@ def _validate_image_generation_request(
             ).to_payload(),
             400,
         )
-    requested_count = _requested_image_count(request)
+    parameters = ai_request.modelConfig.parameters
+    requested_count = _effective_int_parameter(parameters, "n", 1)
     if requested_count != 1:
         return _error_json(
             protocol_failure(
@@ -215,14 +234,24 @@ def _validate_image_generation_request(
             ).to_payload(),
             400,
         )
+    stream = parameters.get("stream")
+    if stream is not None and stream is not False:
+        return _error_json(
+            protocol_failure(
+                "MODEL_CONFIG_INVALID",
+                "OpenAI-compatible 图片生成同步接口不支持 stream=true。",
+                detail={"stream": stream},
+            ).to_payload(),
+            400,
+        )
     return None
 
 
-def _requested_image_count(request: OpenAiCompatibleImageGenerationRequest) -> int:
-    value = request.model_extra.get("n") if request.model_extra is not None else None
+def _effective_int_parameter(parameters: dict[str, Any], field_name: str, default: int) -> int:
+    value = parameters.get(field_name, default)
     if value is None:
-        value = request.extendParams.get("n", 1)
-    if isinstance(value, int):
+        return default
+    if type(value) is int:
         return value
     return -1
 

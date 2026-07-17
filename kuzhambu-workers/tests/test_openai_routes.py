@@ -233,6 +233,30 @@ def test_openai_compatible_chat_completion_streams_usage_chunk(monkeypatch) -> N
     assert "data: [DONE]" in response.text
 
 
+def test_openai_compatible_chat_completion_rejects_multiple_choices_before_graph(
+    monkeypatch,
+) -> None:
+    monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
+    monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
+    captured = {"called": False}
+
+    class FakeRegistry:
+        def invoke(self, request):
+            captured["called"] = True
+            return {}
+
+    monkeypatch.setattr("kuzhambu_workers.api.openai_routes._REGISTRY", FakeRegistry())
+    body = _body(stream=False, extra={"n": 2})
+
+    response = TestClient(app).post(
+        _PATH, content=body, headers=_headers(body, service="kuzhambu-ai")
+    )
+
+    assert response.status_code == 400
+    assert captured["called"] is False
+    assert response.json()["error"]["code"] == "MODEL_CONFIG_INVALID"
+
+
 def test_openai_compatible_image_generation_rejects_invalid_format_before_graph(
     monkeypatch,
 ) -> None:
@@ -247,6 +271,58 @@ def test_openai_compatible_image_generation_rejects_invalid_format_before_graph(
 
     monkeypatch.setattr("kuzhambu_workers.api.openai_routes._REGISTRY", FakeRegistry())
     body = _image_body(extra={"response_format": "bad"})
+
+    response = TestClient(app).post(
+        _IMAGE_PATH,
+        content=body,
+        headers=_headers(body, service="kuzhambu-ai", path=_IMAGE_PATH),
+    )
+
+    assert response.status_code == 400
+    assert captured["called"] is False
+    assert response.json()["error"]["code"] == "MODEL_CONFIG_INVALID"
+
+
+def test_openai_compatible_image_generation_rejects_effective_extend_count_before_graph(
+    monkeypatch,
+) -> None:
+    monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
+    monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
+    captured = {"called": False}
+
+    class FakeRegistry:
+        def invoke(self, request):
+            captured["called"] = True
+            return {}
+
+    monkeypatch.setattr("kuzhambu_workers.api.openai_routes._REGISTRY", FakeRegistry())
+    body = _image_body(extra={"n": 1, "extendParams": {"n": 2}})
+
+    response = TestClient(app).post(
+        _IMAGE_PATH,
+        content=body,
+        headers=_headers(body, service="kuzhambu-ai", path=_IMAGE_PATH),
+    )
+
+    assert response.status_code == 400
+    assert captured["called"] is False
+    assert response.json()["error"]["code"] == "MODEL_CONFIG_INVALID"
+
+
+def test_openai_compatible_image_generation_rejects_stream_before_graph(
+    monkeypatch,
+) -> None:
+    monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
+    monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
+    captured = {"called": False}
+
+    class FakeRegistry:
+        def invoke(self, request):
+            captured["called"] = True
+            return {}
+
+    monkeypatch.setattr("kuzhambu_workers.api.openai_routes._REGISTRY", FakeRegistry())
+    body = _image_body(extra={"extendParams": {"stream": True}})
 
     response = TestClient(app).post(
         _IMAGE_PATH,
@@ -408,7 +484,11 @@ def _body(*, stream: bool, extra: dict[str, object] | None = None) -> bytes:
         },
     }
     if extra is not None:
-        payload.update(extra)
+        extra_payload = dict(extra)
+        extend_params = extra_payload.pop("extendParams", None)
+        if isinstance(extend_params, dict):
+            payload["extendParams"].update(extend_params)
+        payload.update(extra_payload)
     return json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode()
 
 
@@ -433,7 +513,11 @@ def _image_body(extra: dict[str, object] | None = None) -> bytes:
         },
     }
     if extra is not None:
-        payload.update(extra)
+        extra_payload = dict(extra)
+        extend_params = extra_payload.pop("extendParams", None)
+        if isinstance(extend_params, dict):
+            payload["extendParams"].update(extend_params)
+        payload.update(extra_payload)
     return json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode()
 
 
