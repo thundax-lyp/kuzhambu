@@ -57,12 +57,10 @@ class PromptRepositoryIT {
         assertTrue(normalized.contains("`base_url` = COALESCE(NULLIF(VALUES(`base_url`), ''), `base_url`)"));
         assertTrue(normalized.contains(
                 "`encrypted_api_key` = COALESCE(VALUES(`encrypted_api_key`), `encrypted_api_key`)"));
-        assertTrue(normalized.contains("930101, 'classics_summary', 'Classics Default Summary', '古籍内容默认摘要提示词。', 1, 1"));
+        assertTrue(normalized.contains("930101, 'classics_summary', '古籍摘要提示词', '古籍内容默认摘要提示词。', 1, 1"));
         assertTrue(
-                normalized.contains(
-                        "930104, 'discovery_query_understanding', 'Discovery Default Query Understanding', '知识发现默认查询理解提示词。', 1, 1"));
-        assertTrue(normalized.contains(
-                "930108, 'classics_image_generate', 'Classics Default Image Generation', '古籍视觉资产默认文生图提示词。', 1, 1"));
+                normalized.contains("930104, 'discovery_query_understanding', '知识发现查询理解提示词', '知识发现默认查询理解提示词。', 1, 1"));
+        assertTrue(normalized.contains("930108, 'classics_image_generate', '古籍图片生成提示词', '古籍视觉资产默认文生图提示词。', 1, 1"));
         assertTrue(normalized.contains("900101, 'OPENAI', '', NULL, 'CTYUN-CX-Qwen3.5-397B-A17B'"));
         assertTrue(normalized.contains("900102, 'OPENAI', '', NULL, 'CTYUN-bot-DeepSeek-V3.2-pro'"));
         assertTrue(normalized.contains("900201, 'BYTEDANCE', '', NULL, 'doubao-seedream-5-0-pro-260628'"));

@@ -11,6 +11,20 @@ public final class WangqiDocumentEventPersistenceAssembler {
 
     private WangqiDocumentEventPersistenceAssembler() {}
 
+    public static WangqiDocumentEventDO toObject(WangqiDocumentEvent entity) {
+        if (entity == null) {
+            return null;
+        }
+        return new WangqiDocumentEventDO(
+                WangqiDocumentEventIdCodec.toValue(entity.getId()),
+                WangqiDocumentIdCodec.toValue(entity.getDocumentId()),
+                entity.getTitle(),
+                entity.getOccurredAt(),
+                entity.getOccurredLabel(),
+                entity.getSummary(),
+                entity.getPriority());
+    }
+
     public static WangqiDocumentEvent toDomain(WangqiDocumentEventDO dataObject) {
         if (dataObject == null) {
             return null;
