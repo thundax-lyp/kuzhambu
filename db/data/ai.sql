@@ -4,9 +4,9 @@ INSERT INTO `ai_model` (
     `id`, `api_source`, `base_url`, `encrypted_api_key`, `model_name`, `display_name`, `capabilities_json`,
     `default_params_json`, `description`, `enabled`, `registered_at`
 ) VALUES
-    (900101, 'OPENAI', '', NULL, 'CTYUN-CX-Qwen3.5-397B-A17B', 'CTYUN Qwen3.5 397B', '["TEXT_TO_TEXT","IMAGE_TO_TEXT"]', '{"temperature":0.2,"max_tokens":4096}', 'Default OpenAI-compatible vision-capable model for classics AI.', 1, '2026-02-27 04:00:00.000'),
-    (900102, 'OPENAI', '', NULL, 'CTYUN-bot-DeepSeek-V3.2-pro', 'CTYUN DeepSeek V3.2 Pro', '["TEXT_TO_TEXT"]', '{"temperature":0.2,"max_tokens":4096}', 'Default OpenAI-compatible LLM from local server configuration.', 1, '2026-02-27 04:00:00.000'),
-    (900201, 'BYTEDANCE', '', NULL, 'doubao-seedream-5-0-pro-260628', 'Doubao Seedream 5.0 Pro', '["TEXT_TO_IMAGE"]', '{"response_format":"url","size":"2K","stream":false,"watermark":true}', 'Default ByteDance text-to-image model.', 1, '2026-02-27 04:00:00.000')
+    (900101, 'OPENAI', '', NULL, 'CTYUN-CX-Qwen3.5-397B-A17B', 'CTYUN Qwen3.5 397B', '["TEXT2TEXT","IMAGE2TEXT"]', '{"temperature":0.2,"max_tokens":4096}', 'Default OpenAI-compatible vision-capable model for classics AI.', 1, '2026-02-27 04:00:00.000'),
+    (900102, 'OPENAI', '', NULL, 'CTYUN-bot-DeepSeek-V3.2-pro', 'CTYUN DeepSeek V3.2 Pro', '["TEXT2TEXT"]', '{"temperature":0.2,"max_tokens":4096}', 'Default OpenAI-compatible LLM from local server configuration.', 1, '2026-02-27 04:00:00.000'),
+    (900201, 'BYTEDANCE', '', NULL, 'doubao-seedream-5-0-pro-260628', 'Doubao Seedream 5.0 Pro', '["TEXT2IMAGE"]', '{"response_format":"url","size":"2K","stream":false,"watermark":true}', 'Default ByteDance text-to-image model.', 1, '2026-02-27 04:00:00.000')
 ON DUPLICATE KEY UPDATE
     `api_source` = VALUES(`api_source`),
     `base_url` = VALUES(`base_url`),
@@ -21,16 +21,16 @@ ON DUPLICATE KEY UPDATE
 INSERT INTO `ai_capability_mapping` (
     `mapping_id`, `scope`, `capability`, `model_id`, `enabled`, `configured_at`
 ) VALUES
-    (910101, 'classics', 'summary', 900102, 1, '2026-02-27 04:00:00.000'),
-    (910102, 'classics', 'tags', 900102, 1, '2026-02-27 04:00:00.000'),
-    (910103, 'classics', 'qa', 900102, 1, '2026-02-27 04:00:00.000'),
-    (910104, 'classics', 'image_analysis', 900101, 1, '2026-02-27 04:00:00.000'),
-    (910105, 'classics', 'translate', 900102, 1, '2026-02-27 04:00:00.000'),
-    (910106, 'classics', 'image_gen', 900201, 1, '2026-02-27 04:00:00.000'),
-    (910107, 'classics', 'fusion', 900102, 1, '2026-02-27 04:00:00.000'),
-    (910108, 'classics', 'visual', 900102, 1, '2026-02-27 04:00:00.000'),
-    (910201, 'discovery', 'query_understanding', 900102, 1, '2026-02-27 04:00:00.000'),
-    (910202, 'discovery', 'answer_generation', 900102, 1, '2026-02-27 04:00:00.000')
+    (910101, 'classics', 'classics_summary', 900102, 1, '2026-02-27 04:00:00.000'),
+    (910102, 'classics', 'classics_tags', 900102, 1, '2026-02-27 04:00:00.000'),
+    (910103, 'classics', 'classics_qa', 900102, 1, '2026-02-27 04:00:00.000'),
+    (910104, 'classics', 'classics_image_describe', 900101, 1, '2026-02-27 04:00:00.000'),
+    (910105, 'classics', 'classics_translate', 900102, 1, '2026-02-27 04:00:00.000'),
+    (910106, 'classics', 'classics_image_generate', 900201, 1, '2026-02-27 04:00:00.000'),
+    (910107, 'classics', 'classics_image_prompt_fusion', 900102, 1, '2026-02-27 04:00:00.000'),
+    (910108, 'classics', 'classics_visual_describe', 900102, 1, '2026-02-27 04:00:00.000'),
+    (910201, 'discovery', 'discovery_query_understanding', 900102, 1, '2026-02-27 04:00:00.000'),
+    (910202, 'discovery', 'discovery_answer_generation', 900102, 1, '2026-02-27 04:00:00.000')
 ON DUPLICATE KEY UPDATE
     `model_id` = VALUES(`model_id`),
     `enabled` = VALUES(`enabled`),
@@ -39,37 +39,36 @@ ON DUPLICATE KEY UPDATE
 INSERT INTO `ai_action_status` (
     `action_status_id`, `scope`, `capability`, `available`, `unavailable_reason`, `checked_at`
 ) VALUES
-    (920101, 'classics', 'summary', 1, NULL, '2026-02-27 04:00:00.000'),
-    (920102, 'classics', 'tags', 1, NULL, '2026-02-27 04:00:00.000'),
-    (920103, 'classics', 'qa', 1, NULL, '2026-02-27 04:00:00.000'),
-    (920104, 'classics', 'image_analysis', 1, NULL, '2026-02-27 04:00:00.000'),
-    (920105, 'classics', 'translate', 1, NULL, '2026-02-27 04:00:00.000'),
-    (920106, 'classics', 'image_gen', 1, NULL, '2026-02-27 04:00:00.000'),
-    (920107, 'classics', 'fusion', 1, NULL, '2026-02-27 04:00:00.000'),
-    (920108, 'classics', 'visual', 1, NULL, '2026-02-27 04:00:00.000'),
-    (920201, 'discovery', 'query_understanding', 1, NULL, '2026-02-27 04:00:00.000'),
-    (920202, 'discovery', 'answer_generation', 1, NULL, '2026-02-27 04:00:00.000')
+    (920101, 'classics', 'classics_summary', 1, NULL, '2026-02-27 04:00:00.000'),
+    (920102, 'classics', 'classics_tags', 1, NULL, '2026-02-27 04:00:00.000'),
+    (920103, 'classics', 'classics_qa', 1, NULL, '2026-02-27 04:00:00.000'),
+    (920104, 'classics', 'classics_image_describe', 1, NULL, '2026-02-27 04:00:00.000'),
+    (920105, 'classics', 'classics_translate', 1, NULL, '2026-02-27 04:00:00.000'),
+    (920106, 'classics', 'classics_image_generate', 1, NULL, '2026-02-27 04:00:00.000'),
+    (920107, 'classics', 'classics_image_prompt_fusion', 1, NULL, '2026-02-27 04:00:00.000'),
+    (920108, 'classics', 'classics_visual_describe', 1, NULL, '2026-02-27 04:00:00.000'),
+    (920201, 'discovery', 'discovery_query_understanding', 1, NULL, '2026-02-27 04:00:00.000'),
+    (920202, 'discovery', 'discovery_answer_generation', 1, NULL, '2026-02-27 04:00:00.000')
 ON DUPLICATE KEY UPDATE
     `available` = VALUES(`available`),
     `unavailable_reason` = VALUES(`unavailable_reason`),
     `checked_at` = VALUES(`checked_at`);
 
 INSERT INTO `ai_prompt_template` (
-    `id`, `scope`, `capability`, `name`, `description`, `status`,
+    `id`, `capability`, `name`, `description`, `status`,
     `current_version_no`, `registered_at`
 ) VALUES
-    (930101, 'classics', 'summary', 'Classics Default Summary', '古籍内容默认摘要提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
-    (930102, 'classics', 'tags', 'Classics Default Tags', '古籍内容默认标签抽取提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
-    (930103, 'classics', 'qa', 'Classics Default QA', '古籍内容默认问答生成提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
-    (930104, 'discovery', 'query_understanding', 'Discovery Default Query Understanding', '知识发现默认查询理解提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
-    (930105, 'discovery', 'answer_generation', 'Discovery Default Answer Generation', '知识发现默认来源融合回答提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
-    (930106, 'classics', 'translate', 'Classics Default Translate', '古籍文言文默认现代中文翻译提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
-    (930107, 'classics', 'image_analysis', 'Classics Default Image Analysis', '古籍图像默认解读提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
-    (930108, 'classics', 'image_gen', 'Classics Default Image Generation', '古籍视觉资产默认文生图提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
-    (930109, 'classics', 'fusion', 'Classics Default Visual Fusion', '古籍图文信息融合默认提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
-    (930110, 'classics', 'visual', 'Classics Default Visual Description', '古籍视觉描述默认提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000')
+    (930101, 'classics_summary', 'Classics Default Summary', '古籍内容默认摘要提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
+    (930102, 'classics_tags', 'Classics Default Tags', '古籍内容默认标签抽取提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
+    (930103, 'classics_qa', 'Classics Default QA', '古籍内容默认问答生成提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
+    (930104, 'discovery_query_understanding', 'Discovery Default Query Understanding', '知识发现默认查询理解提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
+    (930105, 'discovery_answer_generation', 'Discovery Default Answer Generation', '知识发现默认来源融合回答提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
+    (930106, 'classics_translate', 'Classics Default Translate', '古籍文言文默认现代中文翻译提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
+    (930107, 'classics_image_describe', 'Classics Default Image Analysis', '古籍图像默认解读提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
+    (930108, 'classics_image_generate', 'Classics Default Image Generation', '古籍视觉资产默认文生图提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
+    (930109, 'classics_image_prompt_fusion', 'Classics Default Visual Fusion', '古籍图文信息融合默认提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
+    (930110, 'classics_visual_describe', 'Classics Default Visual Description', '古籍视觉描述默认提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000')
 ON DUPLICATE KEY UPDATE
-    `scope` = VALUES(`scope`),
     `capability` = VALUES(`capability`),
     `name` = VALUES(`name`),
     `description` = VALUES(`description`),

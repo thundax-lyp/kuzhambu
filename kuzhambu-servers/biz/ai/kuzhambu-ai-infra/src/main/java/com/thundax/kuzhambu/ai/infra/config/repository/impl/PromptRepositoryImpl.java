@@ -1,12 +1,15 @@
 package com.thundax.kuzhambu.ai.infra.config.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.thundax.kuzhambu.ai.domain.config.codec.PromptTemplateIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.PromptVariableIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVariable;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVersion;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.PromptTemplateStatus;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptTemplateId;
-import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVariableId;
-import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
 import com.thundax.kuzhambu.ai.domain.config.repository.PromptRepository;
 import com.thundax.kuzhambu.ai.infra.config.persistence.dataobject.PromptTemplateDO;
 import com.thundax.kuzhambu.ai.infra.config.persistence.dataobject.PromptVariableDO;
@@ -28,12 +31,12 @@ public class PromptRepositoryImpl implements PromptRepository {
 
     @Override
     public PromptTemplate getTemplate(PromptTemplateId templateId) {
-        return toTemplateDomain(promptMapper.selectById(value(templateId)));
+        return toTemplateDomain(promptMapper.selectById(PromptTemplateIdCodec.toValue(templateId)));
     }
 
     @Override
-    public PromptTemplate getTemplate(String scope, String capability) {
-        return toTemplateDomain(promptMapper.selectTemplateByScope(scope, capability));
+    public PromptTemplate getTemplate(String capability) {
+        return toTemplateDomain(promptMapper.selectTemplateByCapability(capability));
     }
 
     @Override
@@ -43,7 +46,7 @@ public class PromptRepositoryImpl implements PromptRepository {
             dataObject.setRegisteredAt(Instant.now());
         }
         promptMapper.insert(dataObject);
-        return PromptTemplateId.ofNullable(dataObject.getId());
+        return PromptTemplateIdCodec.toDomain(dataObject.getId());
     }
 
     @Override
@@ -53,7 +56,6 @@ public class PromptRepositoryImpl implements PromptRepository {
                 null,
                 new LambdaUpdateWrapper<PromptTemplateDO>()
                         .eq(PromptTemplateDO::getId, dataObject.getId())
-                        .set(PromptTemplateDO::getScope, dataObject.getScope())
                         .set(PromptTemplateDO::getCapability, dataObject.getCapability())
                         .set(PromptTemplateDO::getName, dataObject.getName())
                         .set(PromptTemplateDO::getDescription, dataObject.getDescription())
@@ -62,12 +64,12 @@ public class PromptRepositoryImpl implements PromptRepository {
 
     @Override
     public PromptVersion getCurrentVersion(PromptTemplateId templateId) {
-        return toVersionDomain(promptMapper.selectCurrentVersion(value(templateId)));
+        return toVersionDomain(promptMapper.selectCurrentVersion(PromptTemplateIdCodec.toValue(templateId)));
     }
 
     @Override
     public List<PromptVersion> listVersions(PromptTemplateId templateId) {
-        return toVersionDomainList(promptMapper.selectVersions(value(templateId)));
+        return toVersionDomainList(promptMapper.selectVersions(PromptTemplateIdCodec.toValue(templateId)));
     }
 
     @Override
@@ -77,29 +79,29 @@ public class PromptRepositoryImpl implements PromptRepository {
             dataObject.setRegisteredAt(Instant.now());
         }
         promptMapper.insertVersion(dataObject);
-        return PromptVersionId.ofNullable(dataObject.getId());
+        return PromptVersionIdCodec.toDomain(dataObject.getId());
     }
 
     @Override
     public int markCurrentVersion(PromptTemplateId templateId, int versionNo) {
-        return promptMapper.markCurrentVersion(value(templateId), versionNo);
+        return promptMapper.markCurrentVersion(PromptTemplateIdCodec.toValue(templateId), versionNo);
     }
 
     @Override
     public List<PromptVariable> listVariables(PromptTemplateId templateId) {
-        return toVariableDomainList(promptMapper.selectVariables(value(templateId)));
+        return toVariableDomainList(promptMapper.selectVariables(PromptTemplateIdCodec.toValue(templateId)));
     }
 
     @Override
     public int replaceVariables(PromptTemplateId templateId, List<PromptVariable> variables) {
-        promptMapper.deleteVariables(value(templateId));
+        promptMapper.deleteVariables(PromptTemplateIdCodec.toValue(templateId));
         int affectedRows = 0;
         if (variables == null) {
             return affectedRows;
         }
         for (PromptVariable variable : variables) {
             PromptVariableDO dataObject = toVariableObject(variable);
-            dataObject.setTemplateId(value(templateId));
+            dataObject.setTemplateId(PromptTemplateIdCodec.toValue(templateId));
             affectedRows += promptMapper.insertVariable(dataObject);
         }
         return affectedRows;
@@ -110,12 +112,15 @@ public class PromptRepositoryImpl implements PromptRepository {
             return null;
         }
         PromptTemplateDO dataObject = new PromptTemplateDO();
-        dataObject.setId(value(template.getId()));
-        dataObject.setScope(template.getScope());
-        dataObject.setCapability(template.getCapability());
+        dataObject.setId(PromptTemplateIdCodec.toValue(template.getId()));
+        dataObject.setCapability(
+                template.getCapability() == null
+                        ? null
+                        : template.getCapability().value());
         dataObject.setName(template.getName());
         dataObject.setDescription(template.getDescription());
-        dataObject.setStatus(template.getStatus());
+        dataObject.setStatus(
+                template.getStatus() == null ? null : template.getStatus().value());
         dataObject.setCurrentVersionNo(template.getCurrentVersionNo());
         dataObject.setRegisteredAt(template.getRegisteredAt());
         return dataObject;
@@ -126,12 +131,11 @@ public class PromptRepositoryImpl implements PromptRepository {
             return null;
         }
         return new PromptTemplate(
-                PromptTemplateId.ofNullable(dataObject.getId()),
-                dataObject.getScope(),
-                dataObject.getCapability(),
+                PromptTemplateIdCodec.toDomain(dataObject.getId()),
+                AiBusinessCapability.from(dataObject.getCapability()),
                 dataObject.getName(),
                 dataObject.getDescription(),
-                dataObject.getStatus(),
+                PromptTemplateStatus.fromNullable(dataObject.getStatus()),
                 dataObject.getCurrentVersionNo(),
                 dataObject.getRegisteredAt());
     }
@@ -141,8 +145,8 @@ public class PromptRepositoryImpl implements PromptRepository {
             return null;
         }
         PromptVersionDO dataObject = new PromptVersionDO();
-        dataObject.setId(value(version.getId()));
-        dataObject.setTemplateId(value(version.getTemplateId()));
+        dataObject.setId(PromptVersionIdCodec.toValue(version.getId()));
+        dataObject.setTemplateId(PromptTemplateIdCodec.toValue(version.getTemplateId()));
         dataObject.setVersionNo(version.getVersionNo());
         dataObject.setMessageTemplatesJson(version.getMessageTemplatesJson());
         dataObject.setVariablesSnapshotJson(version.getVariablesSnapshotJson());
@@ -157,8 +161,8 @@ public class PromptRepositoryImpl implements PromptRepository {
             return null;
         }
         return new PromptVersion(
-                PromptVersionId.ofNullable(dataObject.getId()),
-                PromptTemplateId.ofNullable(dataObject.getTemplateId()),
+                PromptVersionIdCodec.toDomain(dataObject.getId()),
+                PromptTemplateIdCodec.toDomain(dataObject.getTemplateId()),
                 dataObject.getVersionNo() == null ? 0 : dataObject.getVersionNo(),
                 dataObject.getMessageTemplatesJson(),
                 dataObject.getVariablesSnapshotJson(),
@@ -183,8 +187,8 @@ public class PromptRepositoryImpl implements PromptRepository {
             return null;
         }
         PromptVariableDO dataObject = new PromptVariableDO();
-        dataObject.setId(value(variable.getId()));
-        dataObject.setTemplateId(value(variable.getTemplateId()));
+        dataObject.setId(PromptVariableIdCodec.toValue(variable.getId()));
+        dataObject.setTemplateId(PromptTemplateIdCodec.toValue(variable.getTemplateId()));
         dataObject.setVariableName(variable.getVariableName());
         dataObject.setRequired(variable.isRequired());
         dataObject.setDescription(variable.getDescription());
@@ -197,8 +201,8 @@ public class PromptRepositoryImpl implements PromptRepository {
             return null;
         }
         return new PromptVariable(
-                PromptVariableId.ofNullable(dataObject.getId()),
-                PromptTemplateId.ofNullable(dataObject.getTemplateId()),
+                PromptVariableIdCodec.toDomain(dataObject.getId()),
+                PromptTemplateIdCodec.toDomain(dataObject.getTemplateId()),
                 dataObject.getVariableName(),
                 Boolean.TRUE.equals(dataObject.getRequired()),
                 dataObject.getDescription(),
@@ -214,17 +218,5 @@ public class PromptRepositoryImpl implements PromptRepository {
             variables.add(toVariableDomain(dataObject));
         }
         return variables;
-    }
-
-    private Long value(PromptTemplateId id) {
-        return id == null ? null : id.value();
-    }
-
-    private Long value(PromptVersionId id) {
-        return id == null ? null : id.value();
-    }
-
-    private Long value(PromptVariableId id) {
-        return id == null ? null : id.value();
     }
 }

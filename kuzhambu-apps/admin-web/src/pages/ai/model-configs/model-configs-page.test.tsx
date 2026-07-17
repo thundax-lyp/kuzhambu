@@ -46,7 +46,7 @@ const models = [
         apiKeyConfigured: true,
         modelName: "gpt-4o",
         displayName: "GPT 4o",
-        capabilities: ["TEXT_TO_TEXT", "IMAGE_TO_TEXT"],
+        capabilities: ["TEXT2TEXT", "IMAGE2TEXT"],
         defaultParamsJson: '{"temperature":0.2}',
         description: "primary model",
         enabled: true,
@@ -85,8 +85,8 @@ describe("ModelsPage", () => {
         expect(await screen.findByRole("heading", { name: "AI 模型配置" })).toBeInTheDocument();
         expect(await screen.findByText("GPT 4o")).toBeInTheDocument();
         expect(screen.getByText("gpt-4o")).toBeInTheDocument();
-        expect(screen.getByText("TEXT_TO_TEXT")).toBeInTheDocument();
-        expect(screen.getByText("IMAGE_TO_TEXT")).toBeInTheDocument();
+        expect(screen.getByText("TEXT2TEXT")).toBeInTheDocument();
+        expect(screen.getByText("IMAGE2TEXT")).toBeInTheDocument();
     });
 
     it("disables edit actions without edit permission", async () => {

@@ -23,12 +23,7 @@ type ModelFormValues = AiModelChangeCommand;
 
 const DEFAULT_PARAMS = "{}";
 const API_SOURCE_OPTIONS = ["OPENAI", "BYTEDANCE"];
-const MODEL_CAPABILITY_OPTIONS = [
-    "TEXT_TO_TEXT",
-    "TEXT_TO_IMAGE",
-    "IMAGE_TO_TEXT",
-    "IMAGE_TO_IMAGE"
-];
+const MODEL_CAPABILITY_OPTIONS = ["TEXT2TEXT", "TEXT2IMAGE", "IMAGE2TEXT", "IMAGE2IMAGE"];
 
 const formatDateTime = (value?: string | null) => {
     if (!value) {

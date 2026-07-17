@@ -48,7 +48,7 @@ public class PromptController {
         return PromptInterfaceAssembler.toResponse(promptService.getTemplate(request.getId()));
     }
 
-    @Operation(summary = "按范围和能力获取提示词模板", description = "ai:prompt:view")
+    @Operation(summary = "按能力获取提示词模板", description = "ai:prompt:view")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -58,10 +58,9 @@ public class PromptController {
     })
     @HasPermission(value = "ai:prompt:view")
     @SysLogger(value = "模板读取")
-    @PostMapping(value = "template/get-by-scope")
-    public TemplateResponse getTemplateByScope(@Valid @RequestBody PromptRequests.TemplateQueryRequest request) {
-        return PromptInterfaceAssembler.toResponse(
-                promptService.getTemplate(request.getScope(), request.getCapability()));
+    @PostMapping(value = "template/get-by-capability")
+    public TemplateResponse getTemplateByCapability(@Valid @RequestBody PromptRequests.TemplateQueryRequest request) {
+        return PromptInterfaceAssembler.toResponse(promptService.getTemplate(request.getCapability()));
     }
 
     @Operation(summary = "保存提示词模板", description = "ai:prompt:edit")

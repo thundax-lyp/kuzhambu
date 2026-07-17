@@ -1,6 +1,5 @@
 export interface AiPromptTemplateRecord {
     id?: number | null;
-    scope?: string | null;
     capability?: string | null;
     name?: string | null;
     description?: string | null;
@@ -36,12 +35,4 @@ export interface AiPromptCapabilityRecord {
     outputMode: string;
     enabled: boolean;
     priority: number;
-}
-
-export interface AiPromptActionStatusRecord {
-    scope?: string | null;
-    capability?: string | null;
-    available?: boolean | null;
-    unavailableReason?: string | null;
-    checkedAt?: string | null;
 }

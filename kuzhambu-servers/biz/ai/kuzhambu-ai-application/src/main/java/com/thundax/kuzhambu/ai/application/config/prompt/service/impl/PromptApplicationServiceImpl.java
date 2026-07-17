@@ -5,6 +5,7 @@ import com.thundax.kuzhambu.ai.application.config.prompt.command.PromptTemplateS
 import com.thundax.kuzhambu.ai.application.config.prompt.query.PromptVersionCompareQuery;
 import com.thundax.kuzhambu.ai.application.config.prompt.result.PromptVersionResult;
 import com.thundax.kuzhambu.ai.application.config.prompt.service.PromptApplicationService;
+import com.thundax.kuzhambu.ai.domain.config.codec.PromptTemplateIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVariable;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVersion;
@@ -42,15 +43,15 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
 
     @Override
     public PromptTemplate getTemplate(Long templateId) {
-        return templateId == null ? null : promptRepository.getTemplate(PromptTemplateId.of(templateId));
+        return promptRepository.getTemplate(PromptTemplateIdCodec.toDomain(templateId));
     }
 
     @Override
-    public PromptTemplate getTemplate(String scope, String capability) {
-        if (isBlank(scope) || isBlank(capability)) {
+    public PromptTemplate getTemplate(String capability) {
+        if (isBlank(capability)) {
             return null;
         }
-        return promptRepository.getTemplate(scope, capability);
+        return promptRepository.getTemplate(capability);
     }
 
     @Override
@@ -66,8 +67,9 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
         promptRepository.replaceVariables(templateId, variables);
         promptRepository.saveVersion(version);
         promptRepository.markCurrentVersion(templateId, versionNo);
-        aiCapabilityApplicationService.refreshActionStatus(template.getScope(), template.getCapability());
-        return value(templateId);
+        aiCapabilityApplicationService.refreshActionStatusesByCapability(
+                template.getCapability().value());
+        return PromptTemplateIdCodec.toValue(templateId);
     }
 
     @Override
@@ -75,7 +77,7 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
         if (templateId == null) {
             return null;
         }
-        return PromptVersionResult.from(promptRepository.getCurrentVersion(PromptTemplateId.of(templateId)));
+        return PromptVersionResult.from(promptRepository.getCurrentVersion(PromptTemplateIdCodec.toDomain(templateId)));
     }
 
     @Override
@@ -84,7 +86,7 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
         if (templateId == null) {
             return results;
         }
-        for (PromptVersion version : promptRepository.listVersions(PromptTemplateId.of(templateId))) {
+        for (PromptVersion version : promptRepository.listVersions(PromptTemplateIdCodec.toDomain(templateId))) {
             results.add(PromptVersionResult.from(version));
         }
         return results;
@@ -105,14 +107,15 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
     @Transactional(rollbackFor = Exception.class)
     public PromptVersionResult rollback(Long templateId, int versionNo) {
         findVersion(templateId, versionNo);
-        PromptTemplateId id = PromptTemplateId.of(templateId);
+        PromptTemplateId id = PromptTemplateIdCodec.toDomain(templateId);
         int affectedRows = promptRepository.markCurrentVersion(id, versionNo);
         if (affectedRows <= 0) {
             throw new BizException("Prompt rollback failed: " + templateId + "#" + versionNo);
         }
         PromptTemplate template = promptRepository.getTemplate(id);
         if (template != null) {
-            aiCapabilityApplicationService.refreshActionStatus(template.getScope(), template.getCapability());
+            aiCapabilityApplicationService.refreshActionStatusesByCapability(
+                    template.getCapability().value());
         }
         return getCurrentVersion(templateId);
     }
@@ -122,7 +125,7 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
         if (templateId == null) {
             return new ArrayList<>();
         }
-        return promptRepository.listVariables(PromptTemplateId.of(templateId));
+        return promptRepository.listVariables(PromptTemplateIdCodec.toDomain(templateId));
     }
 
     @Override
@@ -131,7 +134,7 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
             throw new BizException("Prompt templateId is required");
         }
         List<String> missingNames = promptVariableDomainService.findMissingRequiredVariables(
-                promptRepository.listVariables(PromptTemplateId.of(templateId)), providedNames);
+                promptRepository.listVariables(PromptTemplateIdCodec.toDomain(templateId)), providedNames);
         if (!missingNames.isEmpty()) {
             throw new BizException("Prompt required variables are missing: " + missingNames);
         }
@@ -139,7 +142,7 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
 
     @Override
     public PromptVersionResult buildOptimizationSuggestion(Long templateId, String changeSummary) {
-        PromptVersion current = promptRepository.getCurrentVersion(PromptTemplateId.of(templateId));
+        PromptVersion current = promptRepository.getCurrentVersion(PromptTemplateIdCodec.toDomain(templateId));
         if (current == null) {
             return null;
         }
@@ -167,7 +170,7 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
         if (templateId == null || versionNo <= 0) {
             throw new BizException("Prompt templateId and versionNo are required");
         }
-        for (PromptVersion version : promptRepository.listVersions(PromptTemplateId.of(templateId))) {
+        for (PromptVersion version : promptRepository.listVersions(PromptTemplateIdCodec.toDomain(templateId))) {
             if (version.getVersionNo() == versionNo) {
                 return version;
             }
@@ -177,11 +180,10 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
 
     private void validateCommand(PromptTemplateSaveCommand command) {
         if (command == null
-                || isBlank(command.getScope())
                 || isBlank(command.getCapability())
                 || isBlank(command.getName())
                 || isBlank(command.getMessageTemplatesJson())) {
-            throw new BizException("Prompt scope, capability, name and message templates are required");
+            throw new BizException("Prompt capability, name and message templates are required");
         }
     }
 
@@ -252,9 +254,5 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
-    }
-
-    private Long value(PromptTemplateId id) {
-        return id == null ? null : id.value();
     }
 }

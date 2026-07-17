@@ -22,7 +22,7 @@ class AiCapabilityApplicationServiceImplTest {
     void saveMappingShouldAllowDisabledMappingWithMismatchedTags() {
         FakeCapabilityRepository capabilityRepository = new FakeCapabilityRepository();
         FakeModelRepository modelRepository = new FakeModelRepository();
-        modelRepository.model.setCapabilities(List.of(AiModelCapability.TEXT_TO_IMAGE));
+        modelRepository.model.setCapabilities(List.of(AiModelCapability.TEXT2IMAGE));
         AiCapabilityApplicationServiceImpl service =
                 new AiCapabilityApplicationServiceImpl(capabilityRepository, modelRepository);
         AiCapabilityMappingSaveCommand command = new AiCapabilityMappingSaveCommand();
@@ -153,7 +153,7 @@ class AiCapabilityApplicationServiceImplTest {
                 "encrypted",
                 "gpt-4o",
                 "GPT 4o",
-                List.of(AiModelCapability.TEXT_TO_TEXT),
+                List.of(AiModelCapability.TEXT2TEXT),
                 "{}",
                 "matched model",
                 true,

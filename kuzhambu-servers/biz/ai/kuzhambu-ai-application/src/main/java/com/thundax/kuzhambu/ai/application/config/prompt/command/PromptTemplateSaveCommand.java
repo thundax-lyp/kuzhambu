@@ -1,9 +1,11 @@
 package com.thundax.kuzhambu.ai.application.config.prompt.command;
 
+import com.thundax.kuzhambu.ai.domain.config.codec.PromptTemplateIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVariable;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVersion;
-import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptTemplateId;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.PromptTemplateStatus;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +21,6 @@ import lombok.Setter;
 public class PromptTemplateSaveCommand {
 
     private Long id;
-    private String scope;
     private String capability;
     private String name;
     private String description;
@@ -32,12 +33,11 @@ public class PromptTemplateSaveCommand {
 
     public PromptTemplate toTemplate() {
         PromptTemplate template = new PromptTemplate();
-        template.setId(PromptTemplateId.ofNullable(id));
-        template.setScope(scope);
-        template.setCapability(capability);
+        template.setId(PromptTemplateIdCodec.toDomain(id));
+        template.setCapability(AiBusinessCapability.from(capability));
         template.setName(name);
         template.setDescription(description);
-        template.setStatus(status);
+        template.setStatus(PromptTemplateStatus.fromNullable(status));
         template.setRegisteredAt(Instant.now());
         return template;
     }

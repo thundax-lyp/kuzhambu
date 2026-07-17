@@ -13,7 +13,10 @@ public class PlatformAiWorkerUsecaseResolver {
                     "PLATFORM_PROMPT_SUGGESTION", "/internal/ai/platform/prompt-suggestion", "prompt_suggestion", true),
             "PLATFORM_VERSION_SUMMARY",
             new PlatformAiWorkerUsecaseSpec(
-                    "PLATFORM_VERSION_SUMMARY", "/internal/ai/platform/version-summary", "version_summary", false));
+                    "PLATFORM_VERSION_SUMMARY",
+                    "/internal/ai/platform/version-summary",
+                    "platform_version_summary",
+                    false));
 
     public PlatformAiWorkerUsecaseSpec resolve(String usecase) {
         PlatformAiWorkerUsecaseSpec spec = SUPPORTED_USECASES.get(usecase);

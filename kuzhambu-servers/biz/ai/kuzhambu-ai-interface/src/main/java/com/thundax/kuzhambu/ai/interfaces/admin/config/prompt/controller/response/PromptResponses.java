@@ -23,9 +23,6 @@ public final class PromptResponses {
         @JsonProperty(value = "id")
         private Long id;
 
-        @JsonProperty(value = "scope")
-        private String scope;
-
         @JsonProperty(value = "capability")
         private String capability;
 

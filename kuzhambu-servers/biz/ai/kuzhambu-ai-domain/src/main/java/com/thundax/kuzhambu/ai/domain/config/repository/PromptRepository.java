@@ -11,7 +11,7 @@ public interface PromptRepository {
 
     PromptTemplate getTemplate(PromptTemplateId templateId);
 
-    PromptTemplate getTemplate(String scope, String capability);
+    PromptTemplate getTemplate(String capability);
 
     PromptTemplateId saveTemplate(PromptTemplate template);
 

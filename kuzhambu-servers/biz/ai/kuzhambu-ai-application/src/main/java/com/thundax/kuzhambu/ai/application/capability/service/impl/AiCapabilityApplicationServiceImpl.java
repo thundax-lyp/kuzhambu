@@ -103,6 +103,21 @@ public class AiCapabilityApplicationServiceImpl implements AiCapabilityApplicati
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void refreshActionStatusesByCapability(String capability) {
+        if (isBlank(capability)) {
+            return;
+        }
+        List<AiCapabilityMapping> mappings = aiCapabilityRepository.listMappings(null, capability, true);
+        if (mappings == null || mappings.isEmpty()) {
+            return;
+        }
+        for (AiCapabilityMapping mapping : mappings) {
+            refreshActionStatus(mapping.getScope(), mapping.getCapability());
+        }
+    }
+
+    @Override
     public AiActionStatusResult getActionStatus(String scope, String capability) {
         if (isBlank(scope) || isBlank(capability)) {
             return null;

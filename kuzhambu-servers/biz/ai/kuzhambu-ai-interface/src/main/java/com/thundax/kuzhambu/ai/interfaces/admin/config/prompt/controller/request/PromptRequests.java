@@ -37,11 +37,6 @@ public final class PromptRequests {
     public static class TemplateQueryRequest implements Serializable {
 
         @Size(max = 64)
-        @Schema(name = "scope", description = "业务范围")
-        @JsonProperty(value = "scope")
-        private String scope;
-
-        @Size(max = 64)
         @Schema(name = "capability", description = "能力编码")
         @JsonProperty(value = "capability")
         private String capability;
@@ -57,12 +52,6 @@ public final class PromptRequests {
         @Schema(name = "id", description = "模板ID")
         @JsonProperty(value = "id")
         private Long id;
-
-        @NotBlank
-        @Size(max = 64)
-        @Schema(name = "scope", description = "业务范围")
-        @JsonProperty(value = "scope")
-        private String scope;
 
         @NotBlank
         @Size(max = 64)

@@ -11,8 +11,7 @@ vi.mock("./prompts-service", () => ({
     previewPromptVersionCompare: vi.fn(),
     regeneratePromptSuggestion: vi.fn(),
     getCurrentPromptVersion: vi.fn(),
-    getPromptActionStatus: vi.fn(),
-    getPromptTemplateByScope: vi.fn(),
+    getPromptTemplateByCapability: vi.fn(),
     listPromptCapabilities: vi.fn(),
     listPromptVariables: vi.fn(),
     listPromptVersions: vi.fn(),
@@ -47,8 +46,7 @@ vi.mock("@/components/kuzhambu-drawer", () => {
 
 const template = {
     id: 1001,
-    scope: "classics",
-    capability: "summary",
+    capability: "classics_summary",
     name: "摘要提示词",
     description: "生成摘要",
     status: "ACTIVE",
@@ -103,7 +101,7 @@ describe("PromptsPage", () => {
         replacePermissions(["ai:prompt:view", "ai:prompt:edit"]);
         vi.mocked(service.listPromptCapabilities).mockResolvedValue([
             {
-                capability: "summary",
+                capability: "classics_summary",
                 name: "摘要生成",
                 requiredTags: ["chat"],
                 outputMode: "JSON",
@@ -111,17 +109,10 @@ describe("PromptsPage", () => {
                 priority: 1
             }
         ]);
-        vi.mocked(service.getPromptTemplateByScope).mockResolvedValue(template);
+        vi.mocked(service.getPromptTemplateByCapability).mockResolvedValue(template);
         vi.mocked(service.getCurrentPromptVersion).mockResolvedValue(currentVersion);
         vi.mocked(service.listPromptVersions).mockResolvedValue(versions);
         vi.mocked(service.listPromptVariables).mockResolvedValue(variables);
-        vi.mocked(service.getPromptActionStatus).mockResolvedValue({
-            scope: "classics",
-            capability: "summary",
-            available: true,
-            unavailableReason: null,
-            checkedAt: "2026-07-02T00:00:00.000Z"
-        });
         vi.mocked(service.confirmPromptVariables).mockResolvedValue(true);
         vi.mocked(service.previewPromptVersionCompare).mockResolvedValue(versions);
         vi.mocked(service.regeneratePromptSuggestion).mockResolvedValue({
@@ -150,7 +141,7 @@ describe("PromptsPage", () => {
         renderPage();
 
         await screen.findByText("版本编辑");
-        await screen.findByText("摘要生成 / summary");
+        await screen.findByText("摘要生成 / classics_summary");
         fireEvent.click(screen.getByRole("button", { name: /查\s*询/ }));
 
         expect(await screen.findByText("摘要提示词")).toBeInTheDocument();
@@ -164,7 +155,7 @@ describe("PromptsPage", () => {
         renderPage();
 
         await screen.findByText("版本编辑");
-        await screen.findByText("摘要生成 / summary");
+        await screen.findByText("摘要生成 / classics_summary");
         fireEvent.click(screen.getByRole("button", { name: /查\s*询/ }));
 
         await waitFor(() => {
@@ -176,7 +167,7 @@ describe("PromptsPage", () => {
         renderPage();
 
         await screen.findByText("版本编辑");
-        await screen.findByText("摘要生成 / summary");
+        await screen.findByText("摘要生成 / classics_summary");
         fireEvent.click(screen.getByRole("button", { name: /查\s*询/ }));
         await screen.findByText("摘要提示词");
 

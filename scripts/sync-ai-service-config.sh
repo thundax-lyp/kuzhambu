@@ -10,7 +10,7 @@ Usage:
   scripts/sync-ai-service-config.sh [env_file]
 
 Reads local AI service connection settings from env_file and upserts
-ai_service_config. Missing API keys or base URLs preserve existing database
+ai_model endpoint settings. Missing API keys or base URLs preserve existing database
 values; real secrets are never read from db/data/ai.sql.
 
 Required database env:
@@ -20,26 +20,29 @@ Optional:
   MYSQL_CLIENT_BIN=mysql
 
 AI service env groups:
-  KUZHAMBU_AI_PRIMARY_SERVICE_ID=900001
-  KUZHAMBU_AI_PRIMARY_API_SOURCE=OPENAI_COMPATIBLE
+  KUZHAMBU_AI_PRIMARY_MODEL_ID=900102
+  KUZHAMBU_AI_PRIMARY_API_SOURCE=OPENAI
   KUZHAMBU_AI_PRIMARY_BASE_URL=
   KUZHAMBU_AI_PRIMARY_API_KEY=
   KUZHAMBU_AI_PRIMARY_ENABLED=1
-  KUZHAMBU_AI_PRIMARY_STATUS=AVAILABLE
 
-  KUZHAMBU_AI_BACKUP_SERVICE_ID=
-  KUZHAMBU_AI_BACKUP_API_SOURCE=OPENAI_COMPATIBLE
+  KUZHAMBU_AI_VISION_MODEL_ID=900101
+  KUZHAMBU_AI_VISION_API_SOURCE=OPENAI
+  KUZHAMBU_AI_VISION_BASE_URL=
+  KUZHAMBU_AI_VISION_API_KEY=
+  KUZHAMBU_AI_VISION_ENABLED=1
+
+  KUZHAMBU_AI_BACKUP_MODEL_ID=
+  KUZHAMBU_AI_BACKUP_API_SOURCE=OPENAI
   KUZHAMBU_AI_BACKUP_BASE_URL=
   KUZHAMBU_AI_BACKUP_API_KEY=
   KUZHAMBU_AI_BACKUP_ENABLED=1
-  KUZHAMBU_AI_BACKUP_STATUS=UNAVAILABLE
 
-  KUZHAMBU_AI_TEXT2IMAGE_SERVICE_ID=900002
-  KUZHAMBU_AI_TEXT2IMAGE_API_SOURCE=OPENAI_COMPATIBLE
+  KUZHAMBU_AI_TEXT2IMAGE_MODEL_ID=900201
+  KUZHAMBU_AI_TEXT2IMAGE_API_SOURCE=BYTEDANCE
   KUZHAMBU_AI_TEXT2IMAGE_BASE_URL=
   KUZHAMBU_AI_TEXT2IMAGE_API_KEY=
   KUZHAMBU_AI_TEXT2IMAGE_ENABLED=1
-  KUZHAMBU_AI_TEXT2IMAGE_STATUS=AVAILABLE
 USAGE
 }
 
@@ -103,14 +106,14 @@ sql_number() {
     printf "%s" "${value}"
 }
 
-append_service_sql() {
+append_model_sql() {
     local prefix="$1"
-    local role="$2"
-    local service_id_var="KUZHAMBU_AI_${prefix}_SERVICE_ID"
-    local service_id="${!service_id_var:-}"
+    local model_role="$2"
+    local model_id_var="KUZHAMBU_AI_${prefix}_MODEL_ID"
+    local model_id="${!model_id_var:-}"
 
-    if [[ -z "${service_id}" ]]; then
-        echo "skip ${role}: ${service_id_var} is empty"
+    if [[ -z "${model_id}" ]]; then
+        echo "skip ${model_role}: ${model_id_var} is empty"
         return
     fi
 
@@ -118,35 +121,24 @@ append_service_sql() {
     local base_url_var="KUZHAMBU_AI_${prefix}_BASE_URL"
     local api_key_var="KUZHAMBU_AI_${prefix}_API_KEY"
     local enabled_var="KUZHAMBU_AI_${prefix}_ENABLED"
-    local status_var="KUZHAMBU_AI_${prefix}_STATUS"
 
-    local api_source="${!api_source_var:-OPENAI_COMPATIBLE}"
+    local api_source="${!api_source_var:-OPENAI}"
     local base_url="${!base_url_var:-}"
     local api_key="${!api_key_var:-}"
     local enabled="${!enabled_var:-1}"
-    local status="${!status_var:-AVAILABLE}"
 
     cat >> "${SQL_FILE}" <<SQL
-INSERT INTO \`ai_service_config\` (
-    \`service_id\`, \`service_role\`, \`api_source\`, \`base_url\`, \`encrypted_api_key\`,
-    \`enabled\`, \`status\`, \`last_checked_at\`, \`configured_at\`
-) VALUES (
-    $(sql_number "${service_id}"), $(sql_string "${role}"), $(sql_string "${api_source}"),
-    COALESCE($(sql_string "${base_url}"), ''),
-    $(sql_string "${api_key}"),
-    $(sql_number "${enabled}"), $(sql_string "${status}"), NULL, NOW(3)
-)
-ON DUPLICATE KEY UPDATE
-    \`api_source\` = VALUES(\`api_source\`),
-    \`base_url\` = COALESCE(NULLIF(VALUES(\`base_url\`), ''), \`base_url\`),
-    \`encrypted_api_key\` = COALESCE(VALUES(\`encrypted_api_key\`), \`encrypted_api_key\`),
-    \`enabled\` = VALUES(\`enabled\`),
-    \`status\` = VALUES(\`status\`),
-    \`configured_at\` = NOW(3);
+UPDATE \`ai_model\`
+SET
+    \`api_source\` = $(sql_string "${api_source}"),
+    \`base_url\` = COALESCE(NULLIF($(sql_string "${base_url}"), ''), \`base_url\`),
+    \`encrypted_api_key\` = COALESCE($(sql_string "${api_key}"), \`encrypted_api_key\`),
+    \`enabled\` = $(sql_number "${enabled}")
+WHERE \`id\` = $(sql_number "${model_id}");
 
 SQL
 
-    echo "queue ${role}: service_id=${service_id}"
+    echo "queue ${model_role}: model_id=${model_id}"
 }
 
 SQL_FILE="$(mktemp /tmp/kuzhambu-ai-service-config-XXXXXX.sql)"
@@ -158,12 +150,13 @@ SET NAMES utf8mb4;
 
 SQL
 
-append_service_sql "PRIMARY" "PRIMARY"
-append_service_sql "BACKUP" "BACKUP"
-append_service_sql "TEXT2IMAGE" "TEXT2IMAGE"
+append_model_sql "PRIMARY" "PRIMARY"
+append_model_sql "VISION" "VISION"
+append_model_sql "BACKUP" "BACKUP"
+append_model_sql "TEXT2IMAGE" "TEXT2IMAGE"
 
-if ! grep -q "INSERT INTO \`ai_service_config\`" "${SQL_FILE}"; then
-    echo "error: no AI service config was queued" >&2
+if ! grep -q "UPDATE \`ai_model\`" "${SQL_FILE}"; then
+    echo "error: no AI model endpoint config was queued" >&2
     exit 1
 fi
 
@@ -173,4 +166,4 @@ MYSQL_PWD="${MYSQL_PASSWORD}" "${MYSQL_CLIENT_BIN}" \
     --user="${MYSQL_USER}" \
     "${MYSQL_DATABASE}" < "${SQL_FILE}"
 
-echo "synced AI service config from ${ENV_FILE}"
+echo "synced AI model endpoint config from ${ENV_FILE}"

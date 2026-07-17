@@ -12,22 +12,25 @@ public class DiscoveryAiWorkerUsecaseResolver {
             new DiscoveryAiWorkerUsecaseSpec(
                     "DISCOVERY_QUERY_UNDERSTANDING",
                     "/internal/ai/discovery/query-understanding",
-                    "query_understanding",
+                    "discovery_query_understanding",
                     false),
             "DISCOVERY_QUERY_REWRITE",
             new DiscoveryAiWorkerUsecaseSpec(
-                    "DISCOVERY_QUERY_REWRITE", "/internal/ai/discovery/query-rewrite", "query_understanding", false),
+                    "DISCOVERY_QUERY_REWRITE",
+                    "/internal/ai/discovery/query-rewrite",
+                    "discovery_query_understanding",
+                    false),
             "DISCOVERY_ANSWER_GENERATION",
             new DiscoveryAiWorkerUsecaseSpec(
                     "DISCOVERY_ANSWER_GENERATION",
                     "/internal/ai/discovery/answer-generation",
-                    "answer_generation",
+                    "discovery_answer_generation",
                     false),
             "DISCOVERY_ANSWER_GENERATION_STREAM",
             new DiscoveryAiWorkerUsecaseSpec(
                     "DISCOVERY_ANSWER_GENERATION_STREAM",
                     "/internal/ai/discovery/answer-generation/stream",
-                    "answer_generation",
+                    "discovery_answer_generation",
                     true));
 
     public DiscoveryAiWorkerUsecaseSpec resolve(String usecase) {

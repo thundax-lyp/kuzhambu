@@ -3,10 +3,10 @@ package com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.assembler;
 import com.thundax.kuzhambu.ai.application.config.prompt.command.PromptTemplateSaveCommand;
 import com.thundax.kuzhambu.ai.application.config.prompt.query.PromptVersionCompareQuery;
 import com.thundax.kuzhambu.ai.application.config.prompt.result.PromptVersionResult;
+import com.thundax.kuzhambu.ai.domain.config.codec.PromptTemplateIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.PromptVariableIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVariable;
-import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptTemplateId;
-import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVariableId;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.controller.request.PromptRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.controller.response.PromptResponses;
 import java.util.ArrayList;
@@ -19,7 +19,6 @@ public final class PromptInterfaceAssembler {
     public static PromptTemplateSaveCommand toSaveCommand(PromptRequests.TemplateSaveRequest request) {
         PromptTemplateSaveCommand command = new PromptTemplateSaveCommand();
         command.setId(request.getId());
-        command.setScope(request.getScope());
         command.setCapability(request.getCapability());
         command.setName(request.getName());
         command.setDescription(request.getDescription());
@@ -45,12 +44,17 @@ public final class PromptInterfaceAssembler {
             return PromptResponses.TemplateResponse.builder().build();
         }
         return PromptResponses.TemplateResponse.builder()
-                .id(value(template.getId()))
-                .scope(template.getScope())
-                .capability(template.getCapability())
+                .id(PromptTemplateIdCodec.toValue(template.getId()))
+                .capability(
+                        template.getCapability() == null
+                                ? null
+                                : template.getCapability().value())
                 .name(template.getName())
                 .description(template.getDescription())
-                .status(template.getStatus())
+                .status(
+                        template.getStatus() == null
+                                ? null
+                                : template.getStatus().value())
                 .currentVersionNo(template.getCurrentVersionNo())
                 .registeredAt(template.getRegisteredAt())
                 .build();
@@ -77,8 +81,8 @@ public final class PromptInterfaceAssembler {
             return PromptResponses.VariableResponse.builder().build();
         }
         return PromptResponses.VariableResponse.builder()
-                .id(value(variable.getId()))
-                .templateId(value(variable.getTemplateId()))
+                .id(PromptVariableIdCodec.toValue(variable.getId()))
+                .templateId(PromptTemplateIdCodec.toValue(variable.getTemplateId()))
                 .variableName(variable.getVariableName())
                 .required(variable.isRequired())
                 .description(variable.getDescription())
@@ -108,13 +112,5 @@ public final class PromptInterfaceAssembler {
 
     private static String defaultString(String value, String defaultValue) {
         return value == null || value.trim().isEmpty() ? defaultValue : value;
-    }
-
-    private static Long value(PromptTemplateId id) {
-        return id == null ? null : id.value();
-    }
-
-    private static Long value(PromptVariableId id) {
-        return id == null ? null : id.value();
     }
 }

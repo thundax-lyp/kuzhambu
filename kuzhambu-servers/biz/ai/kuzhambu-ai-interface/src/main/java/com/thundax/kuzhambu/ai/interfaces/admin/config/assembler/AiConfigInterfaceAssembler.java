@@ -3,11 +3,11 @@ package com.thundax.kuzhambu.ai.interfaces.admin.config.assembler;
 import com.thundax.kuzhambu.ai.application.capability.command.AiCapabilityMappingSaveCommand;
 import com.thundax.kuzhambu.ai.application.capability.result.AiActionStatusResult;
 import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiCapabilityMapping;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiApiSource;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiModelCapability;
-import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.request.AiConfigRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.response.AiConfigResponses;
 import java.time.Instant;
@@ -20,7 +20,7 @@ public final class AiConfigInterfaceAssembler {
 
     public static AiModel toModel(AiConfigRequests.ModelSaveRequest request) {
         AiModel model = new AiModel();
-        model.setId(AiModelId.ofNullable(request.getId()));
+        model.setId(AiModelIdCodec.toDomain(request.getId()));
         model.setApiSource(AiApiSource.from(request.getApiSource()));
         model.setBaseUrl(request.getBaseUrl());
         model.setEncryptedApiKey(request.getApiKey());
@@ -39,7 +39,7 @@ public final class AiConfigInterfaceAssembler {
             return AiConfigResponses.ModelResponse.builder().build();
         }
         return AiConfigResponses.ModelResponse.builder()
-                .id(value(model.getId()))
+                .id(AiModelIdCodec.toValue(model.getId()))
                 .apiSource(
                         model.getApiSource() == null
                                 ? null
@@ -124,9 +124,5 @@ public final class AiConfigInterfaceAssembler {
             return Collections.emptyList();
         }
         return values.stream().map(AiModelCapability::value).toList();
-    }
-
-    private static Long value(AiModelId id) {
-        return id == null ? null : id.value();
     }
 }

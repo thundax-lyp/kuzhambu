@@ -35,8 +35,8 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     private static final Logger LOGGER = LoggerFactory.getLogger(AiRefinementTaskApplicationServiceImpl.class);
 
     private static final String CONTENT_TYPE_SANCAI_ENTRY = "SANCAI_ENTRY";
-    private static final String CAPABILITY_IMAGE_ANALYSIS = "image_analysis";
-    private static final String CAPABILITY_IMAGE_GEN = "image_gen";
+    private static final String CAPABILITY_IMAGE_ANALYSIS = "classics_image_describe";
+    private static final String CAPABILITY_IMAGE_GEN = "classics_image_generate";
     private static final String STATUS_PENDING = "PENDING";
     private static final String STATUS_RUNNING = "RUNNING";
     private static final String STATUS_SUCCEEDED = "SUCCEEDED";
@@ -231,32 +231,32 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
 
     private AiCandidateResult invoke(Long taskId, AiRefinementRequestCommand command, boolean streamEnabled) {
         String capability = command.getCapability();
-        if ("translate".equals(capability)) {
+        if ("classics_translate".equals(capability)) {
             return refinementApplicationService.translate(command);
         }
-        if ("summary".equals(capability)) {
+        if ("classics_summary".equals(capability)) {
             return refinementApplicationService.summarize(command);
         }
-        if ("tags".equals(capability)) {
+        if ("classics_tags".equals(capability)) {
             return refinementApplicationService.generateTags(command);
         }
-        if ("qa".equals(capability)) {
+        if ("classics_qa".equals(capability)) {
             return refinementApplicationService.generateQa(command);
         }
-        if ("image_analysis".equals(capability)) {
+        if ("classics_image_describe".equals(capability)) {
             return streamEnabled
                     ? refinementApplicationService.analyzeImage(command, event -> publishStreamEvent(taskId, event))
                     : refinementApplicationService.analyzeImage(command);
         }
-        if ("visual".equals(capability)) {
+        if ("classics_visual_describe".equals(capability)) {
             return refinementApplicationService.describeVisual(command);
         }
-        if ("image_gen".equals(capability)) {
+        if ("classics_image_generate".equals(capability)) {
             return streamEnabled
                     ? refinementApplicationService.generateImage(command, event -> publishStreamEvent(taskId, event))
                     : refinementApplicationService.generateImage(command);
         }
-        if ("split".equals(capability)) {
+        if ("classics_split".equals(capability)) {
             return refinementApplicationService.splitEntry(command);
         }
         throw new BizException("unsupported ai refinement capability: " + capability);

@@ -8,7 +8,6 @@ type AiPromptMeta = {
   templateId: number;
   promptVersionId: number;
   variableIdStart: number;
-  scope: string;
   capability: string;
   name: string;
   description: string;
@@ -109,15 +108,14 @@ const validatePromptSeeds = (prompts: PromptSeed[]) => {
     "variableId",
   );
   assertUnique(
-    prompts.map((prompt) => `${prompt.scope}:${prompt.capability}`),
-    "scope/capability",
+    prompts.map((prompt) => prompt.capability),
+    "capability",
   );
   for (const prompt of prompts) {
     assertPositiveInteger(prompt.templateId, "templateId");
     assertPositiveInteger(prompt.promptVersionId, "promptVersionId");
     assertPositiveInteger(prompt.variableIdStart, "variableIdStart");
     assertPositiveInteger(prompt.versionNo, "versionNo");
-    assertNonBlank(prompt.scope, "scope");
     assertNonBlank(prompt.capability, "capability");
     assertNonBlank(prompt.name, "name");
     assertNonBlank(prompt.systemTemplate, "system-template.txt");
@@ -127,8 +125,6 @@ const validatePromptSeeds = (prompts: PromptSeed[]) => {
 
 const generate = (prompts: PromptSeed[]) => {
   const lines: string[] = ["SET NAMES utf8mb4;", ""];
-  appendCapabilitySql(lines);
-  appendServiceConfigSql(lines);
   appendModelSql(lines);
   appendCapabilityMappingSql(lines);
   appendActionStatusSql(lines);
@@ -138,144 +134,10 @@ const generate = (prompts: PromptSeed[]) => {
   return lines.join("\n");
 };
 
-const appendCapabilitySql = (lines: string[]) => {
-  lines.push("INSERT INTO `ai_capability` (");
-  lines.push(
-    "    `capability`, `name`, `required_tags_json`, `output_mode`, `enabled`, `priority`",
-  );
-  lines.push(") VALUES");
-  lines.push(
-    [
-      ["translate", "古文翻译", ["text"], "TEXT", 1, 10],
-      ["tags", "标签提取", ["text", "structured_output"], "STRUCTURED", 1, 20],
-      ["visual", "视觉描述", ["text"], "TEXT", 1, 30],
-      ["fusion", "信息融合", ["text"], "TEXT", 1, 40],
-      ["qa", "问答生成", ["text", "structured_output"], "STRUCTURED", 1, 50],
-      ["split", "条目拆分", ["text", "structured_output"], "STRUCTURED", 1, 60],
-      ["image_analysis", "图片理解", ["vision"], "MARKDOWN", 1, 70],
-      ["image_gen", "图片生成", ["image_gen"], "ARTIFACT", 1, 80],
-      [
-        "knowledge_graph",
-        "知识图谱抽取",
-        ["text", "structured_output"],
-        "STRUCTURED",
-        1,
-        90,
-      ],
-      ["summary", "摘要生成", ["text"], "TEXT", 1, 100],
-      ["version_summary", "版本摘要", ["text"], "TEXT", 1, 110],
-      [
-        "query_understanding",
-        "查询理解",
-        ["text", "structured_output"],
-        "STRUCTURED",
-        1,
-        120,
-      ],
-      [
-        "answer_generation",
-        "回答生成",
-        ["text", "streaming_text"],
-        "TEXT",
-        1,
-        130,
-      ],
-      [
-        "relation_extraction",
-        "实体关系抽取",
-        ["text", "structured_output"],
-        "STRUCTURED",
-        1,
-        140,
-      ],
-      [
-        "lineage_extraction",
-        "世系图抽取",
-        ["text", "structured_output"],
-        "STRUCTURED",
-        1,
-        150,
-      ],
-      ["prompt_suggestion", "提示词优化建议", ["text"], "TEXT", 1, 160],
-    ]
-      .map(([capability, name, tags, outputMode, enabled, priority]) =>
-        row([
-          capability,
-          name,
-          JSON.stringify(tags),
-          outputMode,
-          enabled,
-          priority,
-        ]),
-      )
-      .join(",\n"),
-  );
-  lines.push("ON DUPLICATE KEY UPDATE");
-  lines.push("    `name` = VALUES(`name`),");
-  lines.push("    `required_tags_json` = VALUES(`required_tags_json`),");
-  lines.push("    `output_mode` = VALUES(`output_mode`),");
-  lines.push("    `enabled` = VALUES(`enabled`),");
-  lines.push("    `priority` = VALUES(`priority`);");
-  lines.push("");
-};
-
-const appendServiceConfigSql = (lines: string[]) => {
-  lines.push(
-    "-- Runtime endpoint secrets are synchronized from dev.env by scripts/sync-ai-service-config.sh.",
-  );
-  lines.push("INSERT INTO `ai_service_config` (");
-  lines.push(
-    "    `service_id`, `service_role`, `api_source`, `base_url`, `encrypted_api_key`,",
-  );
-  lines.push("    `enabled`, `status`, `last_checked_at`, `configured_at`");
-  lines.push(") VALUES");
-  lines.push(
-    [
-      [
-        900001,
-        "PRIMARY",
-        "OPENAI_COMPATIBLE",
-        "",
-        null,
-        1,
-        "AVAILABLE",
-        REGISTERED_AT,
-        REGISTERED_AT,
-      ],
-      [
-        900002,
-        "TEXT2IMAGE",
-        "OPENAI_COMPATIBLE",
-        "",
-        null,
-        1,
-        "AVAILABLE",
-        REGISTERED_AT,
-        REGISTERED_AT,
-      ],
-    ]
-      .map((values) => row(values))
-      .join(",\n"),
-  );
-  lines.push("ON DUPLICATE KEY UPDATE");
-  lines.push("    `api_source` = VALUES(`api_source`),");
-  lines.push(
-    "    `base_url` = COALESCE(NULLIF(VALUES(`base_url`), ''), `base_url`),",
-  );
-  lines.push(
-    "    `encrypted_api_key` = COALESCE(VALUES(`encrypted_api_key`), `encrypted_api_key`),",
-  );
-  lines.push("    `enabled` = VALUES(`enabled`),");
-  lines.push("    `status` = VALUES(`status`),");
-  lines.push("    `last_checked_at` = VALUES(`last_checked_at`),");
-  lines.push("    `configured_at` = VALUES(`configured_at`);");
-  lines.push("");
-};
-
 const appendModelSql = (lines: string[]) => {
   lines.push("INSERT INTO `ai_model` (");
   lines.push(
-    "    `model_id`, `service_id`, `model_name`, `display_name`, `capability_tags_json`,",
+    "    `id`, `api_source`, `base_url`, `encrypted_api_key`, `model_name`, `display_name`, `capabilities_json`,",
   );
   lines.push(
     "    `default_params_json`, `description`, `enabled`, `registered_at`",
@@ -285,15 +147,12 @@ const appendModelSql = (lines: string[]) => {
     [
       [
         900101,
-        900001,
+        "OPENAI",
+        "",
+        null,
         "CTYUN-CX-Qwen3.5-397B-A17B",
         "CTYUN Qwen3.5 397B",
-        JSON.stringify([
-          "text",
-          "vision",
-          "structured_output",
-          "streaming_text",
-        ]),
+        JSON.stringify(["TEXT2TEXT", "IMAGE2TEXT"]),
         JSON.stringify({ temperature: 0.2, max_tokens: 4096 }),
         "Default OpenAI-compatible vision-capable model for classics AI.",
         1,
@@ -301,10 +160,12 @@ const appendModelSql = (lines: string[]) => {
       ],
       [
         900102,
-        900001,
+        "OPENAI",
+        "",
+        null,
         "CTYUN-bot-DeepSeek-V3.2-pro",
         "CTYUN DeepSeek V3.2 Pro",
-        JSON.stringify(["text", "structured_output", "streaming_text"]),
+        JSON.stringify(["TEXT2TEXT"]),
         JSON.stringify({ temperature: 0.2, max_tokens: 4096 }),
         "Default OpenAI-compatible LLM from local server configuration.",
         1,
@@ -312,17 +173,19 @@ const appendModelSql = (lines: string[]) => {
       ],
       [
         900201,
-        900002,
+        "BYTEDANCE",
+        "",
+        null,
         "doubao-seedream-5-0-pro-260628",
         "Doubao Seedream 5.0 Pro",
-        JSON.stringify(["image_gen"]),
+        JSON.stringify(["TEXT2IMAGE"]),
         JSON.stringify({
           response_format: "url",
           size: "2K",
           stream: false,
           watermark: true,
         }),
-        "Default OpenAI-compatible text-to-image model from local server configuration.",
+        "Default ByteDance text-to-image model.",
         1,
         REGISTERED_AT,
       ],
@@ -331,9 +194,11 @@ const appendModelSql = (lines: string[]) => {
       .join(",\n"),
   );
   lines.push("ON DUPLICATE KEY UPDATE");
-  lines.push("    `service_id` = VALUES(`service_id`),");
+  lines.push("    `api_source` = VALUES(`api_source`),");
+  lines.push("    `base_url` = VALUES(`base_url`),");
+  lines.push("    `encrypted_api_key` = VALUES(`encrypted_api_key`),");
   lines.push("    `display_name` = VALUES(`display_name`),");
-  lines.push("    `capability_tags_json` = VALUES(`capability_tags_json`),");
+  lines.push("    `capabilities_json` = VALUES(`capabilities_json`),");
   lines.push("    `default_params_json` = VALUES(`default_params_json`),");
   lines.push("    `description` = VALUES(`description`),");
   lines.push("    `enabled` = VALUES(`enabled`),");
@@ -349,16 +214,16 @@ const appendCapabilityMappingSql = (lines: string[]) => {
   lines.push(") VALUES");
   lines.push(
     [
-      [910101, "classics", "summary", 900102, 1, REGISTERED_AT],
-      [910102, "classics", "tags", 900102, 1, REGISTERED_AT],
-      [910103, "classics", "qa", 900102, 1, REGISTERED_AT],
-      [910104, "classics", "image_analysis", 900101, 1, REGISTERED_AT],
-      [910105, "classics", "translate", 900102, 1, REGISTERED_AT],
-      [910106, "classics", "image_gen", 900201, 1, REGISTERED_AT],
-      [910107, "classics", "fusion", 900102, 1, REGISTERED_AT],
-      [910108, "classics", "visual", 900102, 1, REGISTERED_AT],
-      [910201, "discovery", "query_understanding", 900102, 1, REGISTERED_AT],
-      [910202, "discovery", "answer_generation", 900102, 1, REGISTERED_AT],
+      [910101, "classics", "classics_summary", 900102, 1, REGISTERED_AT],
+      [910102, "classics", "classics_tags", 900102, 1, REGISTERED_AT],
+      [910103, "classics", "classics_qa", 900102, 1, REGISTERED_AT],
+      [910104, "classics", "classics_image_describe", 900101, 1, REGISTERED_AT],
+      [910105, "classics", "classics_translate", 900102, 1, REGISTERED_AT],
+      [910106, "classics", "classics_image_generate", 900201, 1, REGISTERED_AT],
+      [910107, "classics", "classics_image_prompt_fusion", 900102, 1, REGISTERED_AT],
+      [910108, "classics", "classics_visual_describe", 900102, 1, REGISTERED_AT],
+      [910201, "discovery", "discovery_query_understanding", 900102, 1, REGISTERED_AT],
+      [910202, "discovery", "discovery_answer_generation", 900102, 1, REGISTERED_AT],
     ]
       .map((values) => row(values))
       .join(",\n"),
@@ -378,16 +243,16 @@ const appendActionStatusSql = (lines: string[]) => {
   lines.push(") VALUES");
   lines.push(
     [
-      [920101, "classics", "summary", 1, null, REGISTERED_AT],
-      [920102, "classics", "tags", 1, null, REGISTERED_AT],
-      [920103, "classics", "qa", 1, null, REGISTERED_AT],
-      [920104, "classics", "image_analysis", 1, null, REGISTERED_AT],
-      [920105, "classics", "translate", 1, null, REGISTERED_AT],
-      [920106, "classics", "image_gen", 1, null, REGISTERED_AT],
-      [920107, "classics", "fusion", 1, null, REGISTERED_AT],
-      [920108, "classics", "visual", 1, null, REGISTERED_AT],
-      [920201, "discovery", "query_understanding", 1, null, REGISTERED_AT],
-      [920202, "discovery", "answer_generation", 1, null, REGISTERED_AT],
+      [920101, "classics", "classics_summary", 1, null, REGISTERED_AT],
+      [920102, "classics", "classics_tags", 1, null, REGISTERED_AT],
+      [920103, "classics", "classics_qa", 1, null, REGISTERED_AT],
+      [920104, "classics", "classics_image_describe", 1, null, REGISTERED_AT],
+      [920105, "classics", "classics_translate", 1, null, REGISTERED_AT],
+      [920106, "classics", "classics_image_generate", 1, null, REGISTERED_AT],
+      [920107, "classics", "classics_image_prompt_fusion", 1, null, REGISTERED_AT],
+      [920108, "classics", "classics_visual_describe", 1, null, REGISTERED_AT],
+      [920201, "discovery", "discovery_query_understanding", 1, null, REGISTERED_AT],
+      [920202, "discovery", "discovery_answer_generation", 1, null, REGISTERED_AT],
     ]
       .map((values) => row(values))
       .join(",\n"),
@@ -402,7 +267,7 @@ const appendActionStatusSql = (lines: string[]) => {
 const appendPromptTemplateSql = (lines: string[], prompts: PromptSeed[]) => {
   lines.push("INSERT INTO `ai_prompt_template` (");
   lines.push(
-    "    `template_id`, `scope`, `capability`, `name`, `description`, `status`,",
+    "    `id`, `capability`, `name`, `description`, `status`,",
   );
   lines.push("    `current_version_no`, `registered_at`");
   lines.push(") VALUES");
@@ -411,7 +276,6 @@ const appendPromptTemplateSql = (lines: string[], prompts: PromptSeed[]) => {
       .map((prompt) =>
         row([
           prompt.templateId,
-          prompt.scope,
           prompt.capability,
           prompt.name,
           prompt.description,
@@ -423,7 +287,6 @@ const appendPromptTemplateSql = (lines: string[], prompts: PromptSeed[]) => {
       .join(",\n"),
   );
   lines.push("ON DUPLICATE KEY UPDATE");
-  lines.push("    `scope` = VALUES(`scope`),");
   lines.push("    `capability` = VALUES(`capability`),");
   lines.push("    `name` = VALUES(`name`),");
   lines.push("    `description` = VALUES(`description`),");
@@ -436,10 +299,10 @@ const appendPromptTemplateSql = (lines: string[], prompts: PromptSeed[]) => {
 const appendPromptVersionSql = (lines: string[], prompts: PromptSeed[]) => {
   lines.push("INSERT INTO `ai_prompt_version` (");
   lines.push(
-    "    `prompt_version_id`, `template_id`, `version_no`, `message_templates_json`,",
+    "    `id`, `template_id`, `version_no`, `message_templates_json`,",
   );
   lines.push(
-    "    `variables_snapshot_json`, `output_schema_json`, `current_key`, `change_summary`, `registered_at`",
+    "    `variables_snapshot_json`, `output_schema_json`, `change_summary`, `registered_at`",
   );
   lines.push(") VALUES");
   lines.push(
@@ -461,7 +324,6 @@ const appendPromptVersionSql = (lines: string[], prompts: PromptSeed[]) => {
             })),
           ),
           JSON.stringify(prompt.outputSchema),
-          prompt.current ? `${prompt.templateId}:current` : null,
           prompt.changeSummary,
           prompt.registeredAt,
         ]),
@@ -476,7 +338,6 @@ const appendPromptVersionSql = (lines: string[], prompts: PromptSeed[]) => {
     "    `variables_snapshot_json` = VALUES(`variables_snapshot_json`),",
   );
   lines.push("    `output_schema_json` = VALUES(`output_schema_json`),");
-  lines.push("    `current_key` = VALUES(`current_key`),");
   lines.push("    `change_summary` = VALUES(`change_summary`),");
   lines.push("    `registered_at` = VALUES(`registered_at`);");
   lines.push("");
@@ -485,7 +346,7 @@ const appendPromptVersionSql = (lines: string[], prompts: PromptSeed[]) => {
 const appendPromptVariableSql = (lines: string[], prompts: PromptSeed[]) => {
   lines.push("INSERT INTO `ai_prompt_variable` (");
   lines.push(
-    "    `variable_id`, `template_id`, `variable_name`, `required`, `description`, `priority`",
+    "    `id`, `template_id`, `variable_name`, `required`, `description`, `priority`",
   );
   lines.push(") VALUES");
   lines.push(

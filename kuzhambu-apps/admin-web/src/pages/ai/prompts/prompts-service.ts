@@ -1,6 +1,5 @@
 import { postJson } from "@/api/http";
 import type {
-    AiPromptActionStatusRecord,
     AiPromptCapabilityRecord,
     AiPromptTemplateRecord,
     AiPromptVariableRecord,
@@ -8,13 +7,11 @@ import type {
 } from "./prompts-types";
 
 export interface AiPromptTemplateQuery {
-    scope?: string | null;
     capability?: string | null;
 }
 
 export interface AiPromptTemplateChangeCommand {
     id?: number | null;
-    scope: string;
     capability: string;
     name: string;
     description?: string | null;
@@ -60,9 +57,9 @@ export const listPromptCapabilities = () => {
     );
 };
 
-export const getPromptTemplateByScope = (query: AiPromptTemplateQuery) => {
+export const getPromptTemplateByCapability = (query: AiPromptTemplateQuery) => {
     return postJson<AiPromptTemplateRecord, AiPromptTemplateQuery>(
-        "/ai/config/prompt/template/get-by-scope",
+        "/ai/config/prompt/template/get-by-capability",
         {
             body: query
         }
@@ -139,10 +136,4 @@ export const regeneratePromptSuggestion = (command: AiPromptSuggestionCommand) =
             body: command
         }
     );
-};
-
-export const getPromptActionStatus = (query: AiPromptTemplateQuery) => {
-    return postJson<AiPromptActionStatusRecord, AiPromptTemplateQuery>("/ai/config/action/status", {
-        body: query
-    });
 };

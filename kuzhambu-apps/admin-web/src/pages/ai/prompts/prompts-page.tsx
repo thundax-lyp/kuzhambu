@@ -41,12 +41,6 @@ type PromptFormValues = Omit<AiPromptTemplateChangeCommand, "variables">;
 
 const EMPTY_JSON_ARRAY = "[]";
 const EMPTY_JSON_OBJECT = "{}";
-const SCOPE_OPTIONS = [
-    { label: "classics", value: "classics" },
-    { label: "knowledge", value: "knowledge" },
-    { label: "discovery", value: "discovery" },
-    { label: "platform", value: "platform" }
-];
 
 const formatDateTime = (value?: string | null) => {
     if (!value) {
@@ -152,8 +146,8 @@ export const PromptsPage = () => {
 
     const templateQuery = useQuery({
         queryKey: ["ai", "prompts", "template", query],
-        queryFn: () => service.getPromptTemplateByScope(query),
-        enabled: Boolean(query.scope && query.capability) && canViewPrompt,
+        queryFn: () => service.getPromptTemplateByCapability(query),
+        enabled: Boolean(query.capability) && canViewPrompt,
         retry: false
     });
 
@@ -180,13 +174,6 @@ export const PromptsPage = () => {
         retry: false
     });
 
-    const actionStatusQuery = useQuery({
-        queryKey: ["ai", "prompts", "action-status", query],
-        queryFn: () => service.getPromptActionStatus(query),
-        enabled: Boolean(query.scope && query.capability) && canViewPrompt,
-        retry: false
-    });
-
     const capabilityOptions = useMemo(() => {
         return (capabilitiesQuery.data || []).map((record) => ({
             label: `${record.name} / ${record.capability}`,
@@ -195,9 +182,6 @@ export const PromptsPage = () => {
     }, [capabilitiesQuery.data]);
 
     useEffect(() => {
-        if (!filterForm.getFieldValue("scope")) {
-            filterForm.setFieldValue("scope", SCOPE_OPTIONS[0]?.value);
-        }
         if (capabilityOptions.length > 0 && !filterForm.getFieldValue("capability")) {
             filterForm.setFieldValue("capability", capabilityOptions[0].value);
         }
@@ -223,7 +207,6 @@ export const PromptsPage = () => {
         }
         editorForm.setFieldsValue({
             id: template.id || null,
-            scope: template.scope || query.scope || "",
             capability: template.capability || query.capability || "",
             name: template.name || "",
             description: template.description || "",
@@ -243,7 +226,6 @@ export const PromptsPage = () => {
         currentVersionQuery.data,
         editorForm,
         query.capability,
-        query.scope,
         templateQuery.data,
         variablesQuery.data
     ]);
@@ -252,7 +234,6 @@ export const PromptsPage = () => {
         mutationFn: service.changePromptTemplate,
         onSuccess: async (template) => {
             setQuery({
-                scope: template.scope || query.scope,
                 capability: template.capability || query.capability
             });
             await invalidatePrompt();
@@ -314,7 +295,6 @@ export const PromptsPage = () => {
         const variables = toVariableRows(variablesSnapshot);
         await changeMutation.mutateAsync({
             id: values.id || null,
-            scope: values.scope,
             capability: values.capability,
             name: values.name,
             description: values.description || null,
@@ -475,7 +455,6 @@ export const PromptsPage = () => {
     ];
 
     const template = templateQuery.data || ({} as AiPromptTemplateRecord);
-    const actionStatus = actionStatusQuery.data;
 
     return (
         <KuzhambuPage
@@ -500,23 +479,7 @@ export const PromptsPage = () => {
             }
         >
             <Card className="prompts-filter-card">
-                <Form
-                    form={filterForm}
-                    layout="inline"
-                    className="prompts-filter-form"
-                    initialValues={{ scope: SCOPE_OPTIONS[0]?.value }}
-                >
-                    <Form.Item
-                        label="scope"
-                        name="scope"
-                        rules={[{ required: true, message: "请选择 scope" }]}
-                    >
-                        <Select
-                            aria-label="筛选 scope"
-                            className="prompts-filter-control"
-                            options={SCOPE_OPTIONS}
-                        />
-                    </Form.Item>
+                <Form form={filterForm} layout="inline" className="prompts-filter-form">
                     <Form.Item
                         label="capability"
                         name="capability"
@@ -565,12 +528,6 @@ export const PromptsPage = () => {
                         <Descriptions.Item label="registeredAt">
                             {formatDateTime(template.registeredAt)}
                         </Descriptions.Item>
-                        <Descriptions.Item label="actionStatus">
-                            <Tag color={actionStatus?.available ? "green" : "red"}>
-                                {actionStatus?.available ? "可用" : "不可用"}
-                            </Tag>
-                            {actionStatus?.unavailableReason || ""}
-                        </Descriptions.Item>
                     </Descriptions>
                 </Card>
 
@@ -580,13 +537,6 @@ export const PromptsPage = () => {
                             <Input />
                         </Form.Item>
                         <div className="prompts-editor-grid">
-                            <Form.Item
-                                label="scope"
-                                name="scope"
-                                rules={[{ required: true, message: "请选择 scope" }]}
-                            >
-                                <Select options={SCOPE_OPTIONS} />
-                            </Form.Item>
                             <Form.Item
                                 label="capability"
                                 name="capability"
@@ -605,7 +555,7 @@ export const PromptsPage = () => {
                                 <Select
                                     options={[
                                         { label: "ACTIVE", value: "ACTIVE" },
-                                        { label: "DISABLED", value: "DISABLED" }
+                                        { label: "INACTIVE", value: "INACTIVE" }
                                     ]}
                                 />
                             </Form.Item>

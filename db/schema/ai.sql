@@ -34,7 +34,6 @@ CREATE TABLE IF NOT EXISTS `ai_capability_mapping` (
 
 CREATE TABLE IF NOT EXISTS `ai_prompt_template` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `scope` varchar(32) NOT NULL,
     `capability` varchar(64) NOT NULL,
     `name` varchar(255) NOT NULL,
     `description` varchar(1024) DEFAULT NULL,
@@ -42,7 +41,7 @@ CREATE TABLE IF NOT EXISTS `ai_prompt_template` (
     `current_version_no` int DEFAULT NULL,
     `registered_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_ai_prompt_template_scope` (`scope`, `capability`),
+    UNIQUE KEY `uk_ai_prompt_template_capability` (`capability`),
     KEY `idx_ai_prompt_template_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI提示词模板表';
 

@@ -78,7 +78,7 @@ class AiWorkerModelConfigResolverTest {
                 "encrypted",
                 "gpt-4o",
                 "GPT 4o",
-                List.of(AiModelCapability.TEXT_TO_TEXT),
+                List.of(AiModelCapability.TEXT2TEXT),
                 "{}",
                 "matched model",
                 true,
@@ -119,7 +119,7 @@ class AiWorkerModelConfigResolverTest {
 
         @Override
         public List<AiBusinessCapability> listCapabilities(Boolean enabled) {
-            return List.of(AiBusinessCapability.TRANSLATE);
+            return List.of(AiBusinessCapability.CLASSICS_TRANSLATE);
         }
 
         @Override
@@ -142,6 +142,9 @@ class AiWorkerModelConfigResolverTest {
 
         @Override
         public void refreshActionStatusesByModelId(Long modelId) {}
+
+        @Override
+        public void refreshActionStatusesByCapability(String capability) {}
 
         @Override
         public AiActionStatusResult getActionStatus(String scope, String capability) {

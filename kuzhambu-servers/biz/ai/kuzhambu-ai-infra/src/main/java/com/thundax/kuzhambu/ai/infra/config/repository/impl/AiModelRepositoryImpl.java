@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiApiSource;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiModelCapability;
@@ -30,7 +31,7 @@ public class AiModelRepositoryImpl implements AiModelRepository {
 
     @Override
     public AiModel getModelById(AiModelId id) {
-        return toModelDomain(aiModelMapper.selectById(id == null ? null : id.value()));
+        return toModelDomain(aiModelMapper.selectById(AiModelIdCodec.toValue(id)));
     }
 
     @Override
@@ -47,7 +48,7 @@ public class AiModelRepositoryImpl implements AiModelRepository {
             dataObject.setRegisteredAt(Instant.now());
         }
         aiModelMapper.insert(dataObject);
-        return AiModelId.ofNullable(dataObject.getId());
+        return AiModelIdCodec.toDomain(dataObject.getId());
     }
 
     @Override
@@ -70,7 +71,7 @@ public class AiModelRepositoryImpl implements AiModelRepository {
 
     @Override
     public int deleteModel(AiModelId id) {
-        return aiModelMapper.deleteById(id == null ? null : id.value());
+        return aiModelMapper.deleteById(AiModelIdCodec.toValue(id));
     }
 
     private AiModelDO toModelObject(AiModel model) {
@@ -78,7 +79,7 @@ public class AiModelRepositoryImpl implements AiModelRepository {
             return null;
         }
         return new AiModelDO(
-                value(model.getId()),
+                AiModelIdCodec.toValue(model.getId()),
                 model.getApiSource() == null ? null : model.getApiSource().value(),
                 model.getBaseUrl(),
                 model.getEncryptedApiKey(),
@@ -96,7 +97,7 @@ public class AiModelRepositoryImpl implements AiModelRepository {
             return null;
         }
         return new AiModel(
-                AiModelId.ofNullable(dataObject.getId()),
+                AiModelIdCodec.toDomain(dataObject.getId()),
                 AiApiSource.from(dataObject.getApiSource()),
                 dataObject.getBaseUrl(),
                 dataObject.getEncryptedApiKey(),
@@ -152,9 +153,5 @@ public class AiModelRepositoryImpl implements AiModelRepository {
         } catch (Exception exception) {
             throw new IllegalArgumentException("AI model capabilities can not be parsed", exception);
         }
-    }
-
-    private Long value(AiModelId id) {
-        return id == null ? null : id.value();
     }
 }

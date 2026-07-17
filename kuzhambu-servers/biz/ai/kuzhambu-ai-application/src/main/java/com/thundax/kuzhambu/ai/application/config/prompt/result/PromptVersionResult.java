@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.ai.application.config.prompt.result;
 
+import com.thundax.kuzhambu.ai.domain.config.codec.PromptTemplateIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVersion;
-import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptTemplateId;
-import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,21 +25,13 @@ public class PromptVersionResult {
             return null;
         }
         return new PromptVersionResult(
-                value(version.getId()),
-                value(version.getTemplateId()),
+                PromptVersionIdCodec.toValue(version.getId()),
+                PromptTemplateIdCodec.toValue(version.getTemplateId()),
                 version.getVersionNo(),
                 version.getMessageTemplatesJson(),
                 version.getVariablesSnapshotJson(),
                 version.getOutputSchemaJson(),
                 version.getChangeSummary(),
                 version.getRegisteredAt());
-    }
-
-    private static Long value(PromptVersionId id) {
-        return id == null ? null : id.value();
-    }
-
-    private static Long value(PromptTemplateId id) {
-        return id == null ? null : id.value();
     }
 }

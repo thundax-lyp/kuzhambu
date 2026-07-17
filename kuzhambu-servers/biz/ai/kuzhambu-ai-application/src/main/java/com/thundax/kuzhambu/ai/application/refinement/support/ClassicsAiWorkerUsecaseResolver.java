@@ -10,54 +10,56 @@ public class ClassicsAiWorkerUsecaseResolver {
     private static final Map<String, Map<String, ClassicsAiWorkerUsecaseSpec>> SUPPORTED_USECASES = Map.of(
             "SANCAI_ENTRY",
             Map.of(
-                    "translate",
+                    "classics_translate",
                             new ClassicsAiWorkerUsecaseSpec(
                                     "CLASSICS_SANCAI_TRANSLATE", "/internal/ai/classics/sancai/translate"),
-                    "translate_batch_item",
+                    "classics_translate_batch_item",
                             new ClassicsAiWorkerUsecaseSpec(
                                     "CLASSICS_SANCAI_TRANSLATE_BATCH_ITEM",
                                     "/internal/ai/classics/sancai/translate-batch-item"),
-                    "summary",
+                    "classics_summary",
                             new ClassicsAiWorkerUsecaseSpec(
                                     "CLASSICS_SANCAI_SUMMARY", "/internal/ai/classics/sancai/summary"),
-                    "tags",
+                    "classics_tags",
                             new ClassicsAiWorkerUsecaseSpec(
                                     "CLASSICS_SANCAI_TAGS", "/internal/ai/classics/sancai/tags"),
-                    "qa", new ClassicsAiWorkerUsecaseSpec("CLASSICS_SANCAI_QA", "/internal/ai/classics/sancai/qa"),
-                    "image_analysis",
+                    "classics_qa",
+                            new ClassicsAiWorkerUsecaseSpec("CLASSICS_SANCAI_QA", "/internal/ai/classics/sancai/qa"),
+                    "classics_image_describe",
                             new ClassicsAiWorkerUsecaseSpec(
                                     "CLASSICS_SANCAI_IMAGE_ANALYSIS", "/internal/ai/classics/sancai/image-analysis"),
-                    "image_gen",
+                    "classics_image_generate",
                             new ClassicsAiWorkerUsecaseSpec(
                                     "CLASSICS_SANCAI_IMAGE_GEN", "/internal/ai/classics/sancai/image-gen"),
-                    "fusion",
+                    "classics_image_prompt_fusion",
                             new ClassicsAiWorkerUsecaseSpec(
                                     "CLASSICS_SANCAI_FUSION", "/internal/ai/classics/sancai/fusion"),
-                    "visual",
+                    "classics_visual_describe",
                             new ClassicsAiWorkerUsecaseSpec(
                                     "CLASSICS_SANCAI_VISUAL_DESCRIPTION",
                                     "/internal/ai/classics/sancai/visual-description"),
-                    "split",
+                    "classics_split",
                             new ClassicsAiWorkerUsecaseSpec(
                                     "CLASSICS_SANCAI_SPLIT", "/internal/ai/classics/sancai/split")),
             "WANGQI_DOCUMENT",
             Map.of(
-                    "summary",
+                    "classics_summary",
                             new ClassicsAiWorkerUsecaseSpec(
                                     "CLASSICS_WANGQI_SUMMARY", "/internal/ai/classics/wangqi/summary"),
-                    "tags",
+                    "classics_tags",
                             new ClassicsAiWorkerUsecaseSpec(
                                     "CLASSICS_WANGQI_TAGS", "/internal/ai/classics/wangqi/tags"),
-                    "qa", new ClassicsAiWorkerUsecaseSpec("CLASSICS_WANGQI_QA", "/internal/ai/classics/wangqi/qa")),
+                    "classics_qa",
+                            new ClassicsAiWorkerUsecaseSpec("CLASSICS_WANGQI_QA", "/internal/ai/classics/wangqi/qa")),
             "MING_CUSTOMS",
             Map.of(
-                    "summary",
+                    "classics_summary",
                             new ClassicsAiWorkerUsecaseSpec(
                                     "CLASSICS_MING_CUSTOMS_SUMMARY", "/internal/ai/classics/ming-customs/summary"),
-                    "tags",
+                    "classics_tags",
                             new ClassicsAiWorkerUsecaseSpec(
                                     "CLASSICS_MING_CUSTOMS_TAGS", "/internal/ai/classics/ming-customs/tags"),
-                    "qa",
+                    "classics_qa",
                             new ClassicsAiWorkerUsecaseSpec(
                                     "CLASSICS_MING_CUSTOMS_QA", "/internal/ai/classics/ming-customs/qa")));
 

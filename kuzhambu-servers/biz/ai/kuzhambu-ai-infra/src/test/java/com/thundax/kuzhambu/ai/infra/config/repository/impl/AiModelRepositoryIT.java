@@ -50,7 +50,7 @@ class AiModelRepositoryIT {
                 "encrypted",
                 "gpt-test",
                 "GPT Test",
-                List.of(AiModelCapability.TEXT_TO_TEXT, AiModelCapability.IMAGE_TO_TEXT),
+                List.of(AiModelCapability.TEXT2TEXT, AiModelCapability.IMAGE2TEXT),
                 "{\"temperature\":0.2}",
                 "test model",
                 true,
@@ -65,16 +65,14 @@ class AiModelRepositoryIT {
         assertEquals("OPENAI", savedModel.getApiSource());
         assertEquals("https://api.example", savedModel.getBaseUrl());
         assertEquals("gpt-test", savedModel.getModelName());
-        assertEquals("[\"TEXT_TO_TEXT\",\"IMAGE_TO_TEXT\"]", savedModel.getCapabilitiesJson());
+        assertEquals("[\"TEXT2TEXT\",\"IMAGE2TEXT\"]", savedModel.getCapabilitiesJson());
         assertEquals(registeredAt, savedModel.getRegisteredAt());
 
         when(mapper.selectById(any())).thenReturn(savedModel);
         AiModel loadedModel = repository.getModelById(AiModelId.of(2001L));
 
         assertNotNull(loadedModel);
-        assertEquals(
-                List.of(AiModelCapability.TEXT_TO_TEXT, AiModelCapability.IMAGE_TO_TEXT),
-                loadedModel.getCapabilities());
+        assertEquals(List.of(AiModelCapability.TEXT2TEXT, AiModelCapability.IMAGE2TEXT), loadedModel.getCapabilities());
         assertEquals("GPT Test", loadedModel.getDisplayName());
     }
 

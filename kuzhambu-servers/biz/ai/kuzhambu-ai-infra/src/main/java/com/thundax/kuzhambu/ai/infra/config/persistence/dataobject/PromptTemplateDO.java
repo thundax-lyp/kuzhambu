@@ -17,7 +17,6 @@ public class PromptTemplateDO {
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    private String scope;
     private String capability;
     private String name;
     private String description;

@@ -10,6 +10,8 @@ import static org.mockito.Mockito.when;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVariable;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVersion;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.PromptTemplateStatus;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptTemplateId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVariableId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
@@ -38,7 +40,7 @@ class PromptRepositoryIT {
         assertTrue(schemaSql.contains("CREATE TABLE IF NOT EXISTS `ai_model`"));
         assertTrue(schemaSql.contains("CREATE TABLE IF NOT EXISTS `ai_capability_mapping`"));
         assertTrue(schemaSql.contains("CREATE TABLE IF NOT EXISTS `ai_action_status`"));
-        assertTrue(schemaSql.contains("UNIQUE KEY `uk_ai_prompt_template_scope`"));
+        assertTrue(schemaSql.contains("UNIQUE KEY `uk_ai_prompt_template_capability`"));
         assertTrue(schemaSql.contains("UNIQUE KEY `uk_ai_prompt_version_no`"));
     }
 
@@ -53,21 +55,21 @@ class PromptRepositoryIT {
         assertTrue(normalized.contains("`base_url` = VALUES(`base_url`)"));
         assertTrue(normalized.contains("`encrypted_api_key` = VALUES(`encrypted_api_key`)"));
         assertTrue(normalized.contains(
-                "930101, 'classics', 'summary', 'Classics Default Summary', '古籍内容默认摘要提示词。', 'ACTIVE', 1"));
+                "930101, 'classics_summary', 'Classics Default Summary', '古籍内容默认摘要提示词。', 'ACTIVE', 1"));
         assertTrue(
                 normalized.contains(
-                        "930104, 'discovery', 'query_understanding', 'Discovery Default Query Understanding', '知识发现默认查询理解提示词。', 'ACTIVE', 1"));
+                        "930104, 'discovery_query_understanding', 'Discovery Default Query Understanding', '知识发现默认查询理解提示词。', 'ACTIVE', 1"));
         assertTrue(
                 normalized.contains(
-                        "930108, 'classics', 'image_gen', 'Classics Default Image Generation', '古籍视觉资产默认文生图提示词。', 'ACTIVE', 1"));
+                        "930108, 'classics_image_generate', 'Classics Default Image Generation', '古籍视觉资产默认文生图提示词。', 'ACTIVE', 1"));
         assertTrue(normalized.contains("900101, 'OPENAI', '', NULL, 'CTYUN-CX-Qwen3.5-397B-A17B'"));
         assertTrue(normalized.contains("900102, 'OPENAI', '', NULL, 'CTYUN-bot-DeepSeek-V3.2-pro'"));
         assertTrue(normalized.contains("900201, 'BYTEDANCE', '', NULL, 'doubao-seedream-5-0-pro-260628'"));
-        assertTrue(normalized.contains("(910105, 'classics', 'translate', 900102"));
-        assertTrue(normalized.contains("(910106, 'classics', 'image_gen', 900201"));
-        assertTrue(normalized.contains("(910201, 'discovery', 'query_understanding', 900102"));
-        assertTrue(normalized.contains("(920106, 'classics', 'image_gen', 1, NULL"));
-        assertTrue(normalized.contains("(920201, 'discovery', 'query_understanding', 1, NULL"));
+        assertTrue(normalized.contains("(910105, 'classics', 'classics_translate', 900102"));
+        assertTrue(normalized.contains("(910106, 'classics', 'classics_image_generate', 900201"));
+        assertTrue(normalized.contains("(910201, 'discovery', 'discovery_query_understanding', 900102"));
+        assertTrue(normalized.contains("(920106, 'classics', 'classics_image_generate', 1, NULL"));
+        assertTrue(normalized.contains("(920201, 'discovery', 'discovery_query_understanding', 1, NULL"));
 
         assertTrue(normalized.contains("(940101, 930101, 1,"));
         assertTrue(normalized.contains("(940106, 930106, 1,"));
@@ -88,11 +90,10 @@ class PromptRepositoryIT {
         Instant registeredAt = Instant.parse("2026-01-03T00:00:00Z");
         PromptTemplate template = new PromptTemplate(
                 PromptTemplateId.of(4001L),
-                "classics",
-                "translate",
+                AiBusinessCapability.CLASSICS_TRANSLATE,
                 "Classics translate",
                 "translate prompt",
-                "ACTIVE",
+                PromptTemplateStatus.ACTIVE,
                 1,
                 registeredAt);
 
@@ -102,11 +103,10 @@ class PromptRepositoryIT {
         verify(mapper).insert(templateCaptor.capture());
         PromptTemplateDO savedTemplate = templateCaptor.getValue();
         assertEquals(4001L, templateId.value());
-        assertEquals("classics", savedTemplate.getScope());
-        assertEquals("translate", savedTemplate.getCapability());
+        assertEquals("classics_translate", savedTemplate.getCapability());
 
-        when(mapper.selectTemplateByScope("classics", "translate")).thenReturn(savedTemplate);
-        PromptTemplate loadedTemplate = repository.getTemplate("classics", "translate");
+        when(mapper.selectTemplateByCapability("classics_translate")).thenReturn(savedTemplate);
+        PromptTemplate loadedTemplate = repository.getTemplate("classics_translate");
 
         assertEquals("Classics translate", loadedTemplate.getName());
         assertEquals(1, loadedTemplate.getCurrentVersionNo());

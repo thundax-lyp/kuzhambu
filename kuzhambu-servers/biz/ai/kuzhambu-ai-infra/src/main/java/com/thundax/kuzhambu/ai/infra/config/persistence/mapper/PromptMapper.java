@@ -16,8 +16,8 @@ import org.apache.ibatis.annotations.Update;
 @Mapper
 public interface PromptMapper extends BaseMapper<PromptTemplateDO> {
 
-    @Select("select * from ai_prompt_template where scope = #{scope} and capability = #{capability}")
-    PromptTemplateDO selectTemplateByScope(@Param("scope") String scope, @Param("capability") String capability);
+    @Select("select * from ai_prompt_template where capability = #{capability}")
+    PromptTemplateDO selectTemplateByCapability(String capability);
 
     @Insert(
             """

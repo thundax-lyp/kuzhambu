@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.ai.application.config.model.service.impl;
 
 import com.thundax.kuzhambu.ai.application.capability.service.AiCapabilityApplicationService;
 import com.thundax.kuzhambu.ai.application.config.model.service.AiModelApplicationService;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.domain.config.repository.AiModelRepository;
@@ -26,7 +27,7 @@ public class AiModelApplicationServiceImpl implements AiModelApplicationService 
 
     @Override
     public AiModel get(Long id) {
-        return id == null ? null : aiModelRepository.getModelById(AiModelId.of(id));
+        return aiModelRepository.getModelById(AiModelIdCodec.toDomain(id));
     }
 
     @Override
@@ -41,7 +42,7 @@ public class AiModelApplicationServiceImpl implements AiModelApplicationService 
             return null;
         }
         AiModelId id = aiModelRepository.saveModel(model);
-        return id == null ? null : id.value();
+        return AiModelIdCodec.toValue(id);
     }
 
     @Override
@@ -52,7 +53,7 @@ public class AiModelApplicationServiceImpl implements AiModelApplicationService 
         }
         int affectedRows = aiModelRepository.updateModel(model);
         if (affectedRows > 0) {
-            aiCapabilityApplicationService.refreshActionStatusesByModelId(value(model.getId()));
+            aiCapabilityApplicationService.refreshActionStatusesByModelId(AiModelIdCodec.toValue(model.getId()));
         }
         return affectedRows;
     }
@@ -64,10 +65,6 @@ public class AiModelApplicationServiceImpl implements AiModelApplicationService 
             return 0;
         }
         aiCapabilityApplicationService.assertModelCanBeDeleted(id);
-        return aiModelRepository.deleteModel(AiModelId.of(id));
-    }
-
-    private Long value(AiModelId id) {
-        return id == null ? null : id.value();
+        return aiModelRepository.deleteModel(AiModelIdCodec.toDomain(id));
     }
 }

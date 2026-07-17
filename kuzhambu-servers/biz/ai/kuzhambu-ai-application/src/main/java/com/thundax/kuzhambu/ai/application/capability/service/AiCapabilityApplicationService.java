@@ -22,6 +22,8 @@ public interface AiCapabilityApplicationService {
 
     void refreshActionStatusesByModelId(Long modelId);
 
+    void refreshActionStatusesByCapability(String capability);
+
     AiActionStatusResult getActionStatus(String scope, String capability);
 
     List<AiActionStatusResult> listActionStatuses(String scope, String capability, Boolean available);

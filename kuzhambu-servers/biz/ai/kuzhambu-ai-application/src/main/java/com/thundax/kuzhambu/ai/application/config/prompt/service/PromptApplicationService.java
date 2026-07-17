@@ -12,7 +12,7 @@ public interface PromptApplicationService {
 
     PromptTemplate getTemplate(Long templateId);
 
-    PromptTemplate getTemplate(String scope, String capability);
+    PromptTemplate getTemplate(String capability);
 
     Long saveTemplate(PromptTemplateSaveCommand command);
 
