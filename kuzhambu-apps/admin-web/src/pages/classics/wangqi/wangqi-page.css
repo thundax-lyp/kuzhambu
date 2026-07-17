@@ -148,7 +148,7 @@
 .wangqi-document-model-basic-head {
     display: grid;
     min-width: 0;
-    gap: 2px;
+    gap: 10px;
     padding-bottom: 4px;
     border-bottom: 1px solid var(--wangqi-panel-border);
 }
@@ -172,6 +172,17 @@
 .wangqi-document-model-date-picker,
 .wangqi-document-model-storage-input {
     width: 100%;
+}
+
+.wangqi-document-summary-field {
+    display: grid;
+    min-width: 0;
+    gap: 8px;
+}
+
+.wangqi-document-summary-field-action {
+    display: flex;
+    justify-content: flex-end;
 }
 
 .wangqi-rich-text-editor {

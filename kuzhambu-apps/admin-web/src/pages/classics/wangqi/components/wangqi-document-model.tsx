@@ -35,6 +35,7 @@ export interface WangqiDocumentModelProps {
     refinementContent?: ReactNode;
     saving?: boolean;
     sourceFileContent?: ReactNode;
+    summaryAction?: ReactNode;
     tagContent?: ReactNode;
     versionContent?: ReactNode;
     onClose: () => void;
@@ -152,6 +153,7 @@ export const WangqiDocumentModel = ({
     refinementContent,
     saving = false,
     sourceFileContent,
+    summaryAction,
     tagContent,
     versionContent,
     onClose,
@@ -228,17 +230,22 @@ export const WangqiDocumentModel = ({
                 </div>
             </div>
             <div className="wangqi-document-model-text-fields">
-                <Form.Item
-                    name="summary"
-                    label="摘要"
-                    className="wangqi-document-model-form-item-top"
-                >
-                    <TextArea
-                        aria-label="王圻文档摘要"
-                        autoSize={resolveTextAreaAutoSize({ minRows: 4, maxRows: 8 })}
-                        maxLength={500}
-                        showCount
-                    />
+                <Form.Item label="摘要" className="wangqi-document-model-form-item-top">
+                    <div className="wangqi-document-summary-field">
+                        {summaryAction ? (
+                            <div className="wangqi-document-summary-field-action">
+                                {summaryAction}
+                            </div>
+                        ) : null}
+                        <Form.Item name="summary" noStyle>
+                            <TextArea
+                                aria-label="王圻文档摘要"
+                                autoSize={resolveTextAreaAutoSize({ minRows: 4, maxRows: 8 })}
+                                maxLength={500}
+                                showCount
+                            />
+                        </Form.Item>
+                    </div>
                 </Form.Item>
                 <Form.Item
                     name="content"

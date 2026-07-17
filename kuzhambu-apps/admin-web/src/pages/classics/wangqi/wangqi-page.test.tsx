@@ -378,11 +378,37 @@ describe("WangqiPage", () => {
         expect(screen.getByRole("radio", { name: "标签" })).toBeInTheDocument();
         expect(screen.getByRole("radio", { name: "问答" })).toBeInTheDocument();
 
-        expect(await screen.findByLabelText("王圻文档摘要")).toBeInTheDocument();
+        expect(await screen.findByLabelText("王圻文档摘要")).toHaveValue("记录王圻古籍条目。");
+        expect(screen.getByRole("button", { name: "AI 摘要" })).toBeInTheDocument();
         expect(await screen.findByLabelText("王圻 Tiptap 编辑器")).toBeInTheDocument();
         expect(screen.getByLabelText("王圻文档正文")).toHaveAttribute("contenteditable", "true");
         expect(screen.getByTestId("classics-wangqi-markdown-heading-button")).toBeInTheDocument();
         expect(screen.queryByLabelText("王圻文档正文预览")).not.toBeInTheDocument();
+    }, 30000);
+
+    it("creates summary refinement task from the summary field", async () => {
+        const user = userEvent.setup();
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <WangqiPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await user.click(await screen.findByTestId("wangqi-document-edit-1-button"));
+        await user.click(await screen.findByRole("button", { name: "AI 摘要" }));
+
+        await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(1));
+        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).toEqual(
+            expect.objectContaining({
+                capability: "summary",
+                contentType: "WANGQI_DOCUMENT",
+                contentId: 1,
+                requestedBy: 99
+            })
+        );
     }, 30000);
 
     it("creates summary tags and qa refinement tasks from the document drawer", async () => {
