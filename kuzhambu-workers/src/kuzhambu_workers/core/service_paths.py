@@ -28,3 +28,8 @@ AI_USECASE_PATHS = (
     "/internal/ai/platform/prompt-suggestion",
     "/internal/ai/platform/version-summary",
 )
+
+OPENAI_COMPATIBLE_PATHS = (
+    "/internal/openai/v1/chat-completions",
+    "/internal/openai/v1/images/generations",
+)

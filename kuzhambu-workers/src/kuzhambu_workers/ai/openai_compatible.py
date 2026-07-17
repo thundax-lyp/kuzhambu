@@ -25,9 +25,9 @@ from kuzhambu_workers.schemas.common import UsageSummary
 @dataclass(frozen=True)
 class OpenAiChatCompletionRequest:
     model: str
-    messages: list[dict[str, str]]
+    messages: list[dict[str, Any]]
     stream: bool
-    response_format: dict[str, str] | None
+    response_format: dict[str, Any] | None
     parameters: dict[str, Any]
 
 
@@ -36,6 +36,7 @@ class OpenAiChatCompletionResult:
     content: str
     usage: UsageSummary
     raw_finish_reason: str | None
+    provider_usage: bool = True
 
 
 @dataclass(frozen=True)
@@ -43,13 +44,14 @@ class OpenAiChatCompletionChunk:
     delta: str
     usage: UsageSummary | None
     finish_reason: str | None
+    provider_usage: bool = False
 
 
 def invoke_chat_completion(
     request: AiInvokeRequest,
     *,
     client: httpx.Client | None = None,
-    response_format: dict[str, str] | None = None,
+    response_format: dict[str, Any] | None = None,
 ) -> OpenAiChatCompletionResult:
     invocation = prepare_openai_compatible_invocation(request.modelConfig)
     chat_request = build_chat_completion_request(
@@ -81,11 +83,13 @@ def invoke_chat_completion(
     payload = _json_payload(response)
     content = _message_content(payload)
     finish_reason = _finish_reason(payload)
+    provider_usage = payload.get("usage") is not None
     usage = usage_from_provider(payload.get("usage"), latency_ms=latency_ms)
     return OpenAiChatCompletionResult(
         content=content,
         usage=usage,
         raw_finish_reason=finish_reason,
+        provider_usage=provider_usage,
     )
 
 
@@ -93,7 +97,7 @@ def build_chat_completion_request(
     request: AiInvokeRequest,
     *,
     stream: bool,
-    response_format: dict[str, str] | None = None,
+    response_format: dict[str, Any] | None = None,
 ) -> OpenAiChatCompletionRequest:
     invocation = prepare_openai_compatible_invocation(request.modelConfig)
     effective_response_format = response_format
@@ -220,9 +224,14 @@ def iter_chat_completion_chunks(
     request: AiInvokeRequest,
     *,
     client: httpx.Client | None = None,
+    response_format: dict[str, Any] | None = None,
 ) -> Iterator[OpenAiChatCompletionChunk]:
     invocation = prepare_openai_compatible_invocation(request.modelConfig)
-    chat_request = build_chat_completion_request(request, stream=True)
+    chat_request = build_chat_completion_request(
+        request,
+        stream=True,
+        response_format=response_format,
+    )
     body = _request_body(chat_request)
     headers = _request_headers(request.modelConfig.apiKey)
     start_ms = monotonic_ms()
@@ -271,6 +280,7 @@ def _iter_response_chunks(
             delta="",
             usage=UsageSummary(latencyMs=elapsed_ms(start_ms)),
             finish_reason=None,
+            provider_usage=False,
         )
 
 
@@ -311,11 +321,33 @@ def _stream_chunk_from_payload(
         raise model_stream_chunk_invalid()
 
     usage = None
-    if "usage" in payload:
+    provider_usage = False
+    if payload.get("usage") is not None:
         usage = usage_from_provider(payload.get("usage"), latency_ms=elapsed_ms(start_ms))
+        provider_usage = True
     if not delta and finish_reason is None and usage is None:
+        if _is_role_only_chunk(payload):
+            return OpenAiChatCompletionChunk(delta="", usage=None, finish_reason=None)
         raise model_stream_chunk_invalid()
-    return OpenAiChatCompletionChunk(delta=delta, usage=usage, finish_reason=finish_reason)
+    return OpenAiChatCompletionChunk(
+        delta=delta,
+        usage=usage,
+        finish_reason=finish_reason,
+        provider_usage=provider_usage,
+    )
+
+
+def _is_role_only_chunk(payload: dict[str, Any]) -> bool:
+    choices = payload.get("choices")
+    if not isinstance(choices, list) or not choices:
+        return False
+    first = choices[0]
+    if not isinstance(first, dict):
+        return False
+    delta = first.get("delta")
+    if not isinstance(delta, dict):
+        return False
+    return isinstance(delta.get("role"), str) and "content" not in delta
 
 
 def _stream_delta(choice: dict[str, Any]) -> str:
