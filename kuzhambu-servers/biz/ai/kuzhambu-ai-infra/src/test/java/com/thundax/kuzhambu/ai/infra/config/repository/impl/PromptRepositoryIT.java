@@ -67,11 +67,12 @@ class PromptRepositoryIT {
         assertTrue(normalized.contains("900101, 'OPENAI', '', NULL, 'CTYUN-CX-Qwen3.5-397B-A17B'"));
         assertTrue(normalized.contains("900102, 'OPENAI', '', NULL, 'CTYUN-bot-DeepSeek-V3.2-pro'"));
         assertTrue(normalized.contains("900201, 'BYTEDANCE', '', NULL, 'doubao-seedream-5-0-pro-260628'"));
-        assertTrue(normalized.contains("(910105, 'classics', 'classics_translate', 900102"));
-        assertTrue(normalized.contains("(910106, 'classics', 'classics_image_generate', 900201"));
-        assertTrue(normalized.contains("(910201, 'discovery', 'discovery_query_understanding', 900102"));
-        assertTrue(normalized.contains("(920106, 'classics', 'classics_image_generate', 1, NULL"));
-        assertTrue(normalized.contains("(920201, 'discovery', 'discovery_query_understanding', 1, NULL"));
+        assertTrue(normalized.contains("INSERT INTO `ai_business_config`"));
+        assertTrue(normalized.contains("(910106, 'classics_translate', 930106, 900102, NULL, 1"));
+        assertTrue(normalized.contains("(910107, 'classics_image_describe', 930107, 900101, NULL, 1"));
+        assertTrue(normalized.contains("(910108, 'classics_image_generate', 930108, 900201, NULL, 1"));
+        assertFalse(normalized.contains("INSERT INTO `ai_capability_mapping`"));
+        assertFalse(normalized.contains("INSERT INTO `ai_action_status`"));
 
         assertTrue(normalized.contains("(940101, 930101, 1,"));
         assertTrue(normalized.contains("(940106, 930106, 1,"));

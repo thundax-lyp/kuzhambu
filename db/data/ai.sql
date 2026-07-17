@@ -40,6 +40,26 @@ ON DUPLICATE KEY UPDATE
     `current_version_no` = VALUES(`current_version_no`),
     `registered_at` = VALUES(`registered_at`);
 
+INSERT INTO `ai_business_config` (
+    `id`, `capability`, `prompt_template_id`, `model_id`, `default_params_json`, `enabled`, `configured_at`
+) VALUES
+    (910101, 'classics_summary', 930101, 900102, NULL, 1, '2026-02-27 04:00:00.000'),
+    (910102, 'classics_tags', 930102, 900102, NULL, 1, '2026-02-27 04:00:00.000'),
+    (910103, 'classics_qa', 930103, 900102, NULL, 1, '2026-02-27 04:00:00.000'),
+    (910104, 'discovery_query_understanding', 930104, 900102, NULL, 1, '2026-02-27 04:00:00.000'),
+    (910105, 'discovery_answer_generation', 930105, 900102, NULL, 1, '2026-02-27 04:00:00.000'),
+    (910106, 'classics_translate', 930106, 900102, NULL, 1, '2026-02-27 04:00:00.000'),
+    (910107, 'classics_image_describe', 930107, 900101, NULL, 1, '2026-02-27 04:00:00.000'),
+    (910108, 'classics_image_generate', 930108, 900201, NULL, 1, '2026-02-27 04:00:00.000'),
+    (910109, 'classics_image_prompt_fusion', 930109, 900102, NULL, 1, '2026-02-27 04:00:00.000'),
+    (910110, 'classics_visual_describe', 930110, 900102, NULL, 1, '2026-02-27 04:00:00.000')
+ON DUPLICATE KEY UPDATE
+    `prompt_template_id` = VALUES(`prompt_template_id`),
+    `model_id` = VALUES(`model_id`),
+    `default_params_json` = VALUES(`default_params_json`),
+    `enabled` = VALUES(`enabled`),
+    `configured_at` = VALUES(`configured_at`);
+
 INSERT INTO `ai_prompt_version` (
     `id`, `template_id`, `version_no`, `message_templates_json`,
     `variables_snapshot_json`, `output_schema_json`, `change_summary`, `registered_at`

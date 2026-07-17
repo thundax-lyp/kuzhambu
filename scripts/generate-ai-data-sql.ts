@@ -127,6 +127,7 @@ const generate = (prompts: PromptSeed[]) => {
   const lines: string[] = ["SET NAMES utf8mb4;", ""];
   appendModelSql(lines);
   appendPromptTemplateSql(lines, prompts);
+  appendBusinessConfigSql(lines, prompts);
   appendPromptVersionSql(lines, prompts);
   appendPromptVariableSql(lines, prompts);
   return lines.join("\n");
@@ -234,6 +235,47 @@ const appendPromptTemplateSql = (lines: string[], prompts: PromptSeed[]) => {
   lines.push("    `current_version_no` = VALUES(`current_version_no`),");
   lines.push("    `registered_at` = VALUES(`registered_at`);");
   lines.push("");
+};
+
+const appendBusinessConfigSql = (lines: string[], prompts: PromptSeed[]) => {
+  lines.push("INSERT INTO `ai_business_config` (");
+  lines.push(
+    "    `id`, `capability`, `prompt_template_id`, `model_id`, `default_params_json`, `enabled`, `configured_at`",
+  );
+  lines.push(") VALUES");
+  lines.push(
+    prompts
+      .map((prompt, index) =>
+        row([
+          910101 + index,
+          prompt.capability,
+          prompt.templateId,
+          modelIdFor(prompt.capability),
+          null,
+          1,
+          prompt.registeredAt,
+        ]),
+      )
+      .join(",\n"),
+  );
+  lines.push("ON DUPLICATE KEY UPDATE");
+  lines.push("    `prompt_template_id` = VALUES(`prompt_template_id`),");
+  lines.push("    `model_id` = VALUES(`model_id`),");
+  lines.push("    `default_params_json` = VALUES(`default_params_json`),");
+  lines.push("    `enabled` = VALUES(`enabled`),");
+  lines.push("    `configured_at` = VALUES(`configured_at`);");
+  lines.push("");
+};
+
+const modelIdFor = (capability: string) => {
+  switch (capability) {
+    case "classics_image_describe":
+      return 900101;
+    case "classics_image_generate":
+      return 900201;
+    default:
+      return 900102;
+  }
 };
 
 const appendPromptVersionSql = (lines: string[], prompts: PromptSeed[]) => {
