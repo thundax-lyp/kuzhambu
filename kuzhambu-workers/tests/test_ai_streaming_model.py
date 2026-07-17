@@ -30,6 +30,26 @@ def test_iter_chat_completion_chunks_parses_delta_and_usage() -> None:
     assert chunks[-1].finish_reason == "stop"
 
 
+def test_iter_chat_completion_chunks_ignores_role_only_chunk() -> None:
+    def handler(_: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            text=(
+                'data: {"choices":[{"delta":{"role":"assistant"}}]}\n\n'
+                'data: {"choices":[{"delta":{"content":"answer"},"finish_reason":"stop"}]}\n\n'
+            ),
+        )
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    request = AiInvokeRequest.model_validate(_request_payload())
+
+    chunks = list(iter_chat_completion_chunks(request, client=client))
+
+    assert chunks[0].delta == ""
+    assert chunks[1].delta == "answer"
+    assert chunks[1].finish_reason == "stop"
+
+
 def test_iter_chat_completion_chunks_adds_latency_usage_when_provider_omits_usage() -> None:
     def handler(_: httpx.Request) -> httpx.Response:
         return httpx.Response(

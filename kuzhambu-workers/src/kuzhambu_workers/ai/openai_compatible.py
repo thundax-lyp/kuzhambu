@@ -319,8 +319,23 @@ def _stream_chunk_from_payload(
     if "usage" in payload:
         usage = usage_from_provider(payload.get("usage"), latency_ms=elapsed_ms(start_ms))
     if not delta and finish_reason is None and usage is None:
+        if _is_role_only_chunk(payload):
+            return OpenAiChatCompletionChunk(delta="", usage=None, finish_reason=None)
         raise model_stream_chunk_invalid()
     return OpenAiChatCompletionChunk(delta=delta, usage=usage, finish_reason=finish_reason)
+
+
+def _is_role_only_chunk(payload: dict[str, Any]) -> bool:
+    choices = payload.get("choices")
+    if not isinstance(choices, list) or not choices:
+        return False
+    first = choices[0]
+    if not isinstance(first, dict):
+        return False
+    delta = first.get("delta")
+    if not isinstance(delta, dict):
+        return False
+    return isinstance(delta.get("role"), str) and "content" not in delta
 
 
 def _stream_delta(choice: dict[str, Any]) -> str:
