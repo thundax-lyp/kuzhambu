@@ -59,6 +59,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AiRefinementTask addTask(AiRefinementRequestCommand command) {
+        normalizeCommandCapability(command);
         validateAddCommand(command);
         Instant now = Instant.now();
         AiRefinementTask task = new AiRefinementTask();
@@ -260,6 +261,30 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
             return refinementApplicationService.splitEntry(command);
         }
         throw new BizException("unsupported ai refinement capability: " + capability);
+    }
+
+    private void normalizeCommandCapability(AiRefinementRequestCommand command) {
+        if (command == null) {
+            return;
+        }
+        command.setCapability(normalizeCapability(command.getCapability()));
+    }
+
+    private String normalizeCapability(String capability) {
+        if (capability == null) {
+            return null;
+        }
+        return switch (capability) {
+            case "translate" -> "classics_translate";
+            case "summary" -> "classics_summary";
+            case "tags" -> "classics_tags";
+            case "qa" -> "classics_qa";
+            case "image_analysis" -> "classics_image_describe";
+            case "visual" -> "classics_visual_describe";
+            case "image_gen" -> "classics_image_generate";
+            case "split" -> "classics_split";
+            default -> capability;
+        };
     }
 
     private void applyResult(AiRefinementTask task, AiCandidateResult result) {

@@ -110,6 +110,31 @@ class AiRefinementTaskApplicationServiceImplTest {
         assertEquals("译文", completed.getResultPreview());
     }
 
+    @Test
+    void addTaskShouldNormalizeLegacyCapabilityBeforePersistAndExecute() {
+        RecordingTaskRepository repository = new RecordingTaskRepository();
+        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
+                101L,
+                201L,
+                "SUCCEEDED",
+                AiBusinessCapability.CLASSICS_TRANSLATE.value(),
+                null,
+                "TEXT",
+                "译文",
+                null,
+                null));
+        AiRefinementTaskApplicationServiceImpl service =
+                new AiRefinementTaskApplicationServiceImpl(repository, refinementService);
+
+        AiRefinementRequestCommand command = command("translate");
+        AiRefinementTask accepted = service.addTask(command);
+        AiRefinementTask completed = awaitTerminal(repository, accepted.getTaskId());
+
+        assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE.value(), command.getCapability());
+        assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE.value(), completed.getCapability());
+        assertEquals("SUCCEEDED", completed.getStatus());
+    }
+
     private AiRefinementRequestCommand command(String capability) {
         AiRefinementRequestCommand command = new AiRefinementRequestCommand();
         command.setCapability(capability);
