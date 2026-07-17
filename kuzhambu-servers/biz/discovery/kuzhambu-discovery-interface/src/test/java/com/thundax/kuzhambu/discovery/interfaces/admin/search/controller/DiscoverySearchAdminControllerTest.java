@@ -11,13 +11,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchAnalysisSummaryQuery;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchAnalysisSummaryResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchLogResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchResult;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchApplicationService;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchIndexApplicationService;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchAnalysisSummaryRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchIndexRebuildRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchLogGetRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchLogPageRequest;
+import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchRequest;
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.List;
@@ -32,6 +35,8 @@ class DiscoverySearchAdminControllerTest {
 
     @Test
     void routesShouldKeepAdminApiPaths() throws Exception {
+        assertRequestMapping(DiscoverySearchAdminQueryController.class, "/api/discovery/search");
+        assertPostMapping(DiscoverySearchAdminQueryController.class, "search", "search", DiscoverySearchRequest.class);
         assertRequestMapping(DiscoverySearchAdminController.class, "/api/discovery/search-admin");
         assertPostMapping(
                 DiscoverySearchAdminController.class, "pageLogs", "logs/page", DiscoverySearchLogPageRequest.class);
@@ -141,6 +146,54 @@ class DiscoverySearchAdminControllerTest {
         verify(service).pageLogs(any());
         assertEquals(1, response.getRecords().size());
         assertEquals("s-1", response.getRecords().get(0).getSearchLogId());
+    }
+
+    @Test
+    void searchShouldMapGroupedResults() {
+        SearchApplicationService service = mock(SearchApplicationService.class);
+        DiscoverySearchAdminQueryController controller = new DiscoverySearchAdminQueryController(service);
+        DiscoverySearchRequest request = new DiscoverySearchRequest();
+        request.setQueryText("");
+        request.setPageNo(1);
+        request.setPageSize(20);
+        when(service.search(any()))
+                .thenReturn(new SearchLogResult(
+                        "s-1",
+                        "",
+                        "",
+                        "",
+                        "KEYWORD_SEARCH",
+                        null,
+                        1,
+                        1,
+                        "SUCCEEDED",
+                        null,
+                        null,
+                        "admin-1",
+                        "req-1",
+                        "trace-1",
+                        1_718_000_000_000L,
+                        List.of(new SearchGroupResult(
+                                "SANCAI_ENTRY",
+                                "三才图会",
+                                1,
+                                List.of(new SearchResult(
+                                        "CLASSICS",
+                                        "SANCAI_ENTRY",
+                                        "1001",
+                                        "黄帝",
+                                        "上古帝王",
+                                        null,
+                                        1,
+                                        1,
+                                        "/classics/sancai/1001"))))));
+
+        var response = controller.search(request);
+
+        verify(service).search(any());
+        assertEquals("s-1", response.getSearchLogId());
+        assertEquals(1, response.getTotalCount());
+        assertEquals("1001", response.getGroups().get(0).getItems().get(0).getContentId());
     }
 
     @Test

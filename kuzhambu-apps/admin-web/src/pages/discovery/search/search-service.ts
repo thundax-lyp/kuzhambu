@@ -27,12 +27,9 @@ export interface DiscoverySearchClickCommand {
 }
 
 export const searchDiscovery = (query: DiscoverySearchQuery) => {
-    return postJson<DiscoverySearchResultRecord, DiscoverySearchQuery>(
-        "/portal/discovery/search/search",
-        {
-            body: query
-        }
-    );
+    return postJson<DiscoverySearchResultRecord, DiscoverySearchQuery>("/discovery/search/search", {
+        body: query
+    });
 };
 
 export const clickSearchResult = (command: DiscoverySearchClickCommand) => {

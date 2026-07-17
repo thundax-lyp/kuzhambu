@@ -1,23 +1,54 @@
 package com.thundax.kuzhambu.discovery.interfaces.admin.search.assembler;
 
 import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchAnalysisSummaryQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchLogPageQuery;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchAnalysisSummaryResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchLogResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchResult;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchAnalysisSummaryRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchLogPageRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchAnalysisSummaryResponse;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchLogDetailResponse;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchLogResponse;
+import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchRequest;
+import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.response.DiscoverySearchGroupResponse;
+import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.response.DiscoverySearchResponse;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 public final class DiscoverySearchAdminInterfaceAssembler {
 
+    private static final String ADMIN_OPERATOR_TYPE = "ADMIN";
+
     private DiscoverySearchAdminInterfaceAssembler() {}
+
+    public static SearchQuery toQuery(DiscoverySearchRequest request) {
+        if (request == null) {
+            return null;
+        }
+        return new SearchQuery(
+                request.getQueryText(),
+                request.getKnowledgeBases(),
+                request.getCategoryCodes(),
+                request.getTagNames(),
+                request.getContentStatuses(),
+                request.getVisibilityScopes(),
+                parseDate(request.getDateFrom(), "dateFrom"),
+                parseDate(request.getDateTo(), "dateTo"),
+                request.getPageNo() == null ? 1 : request.getPageNo(),
+                request.getPageSize() == null ? 20 : request.getPageSize(),
+                ADMIN_OPERATOR_TYPE,
+                KuzhambuContextHolder.currentSubjectId(),
+                newRequestId(),
+                newTraceId());
+    }
 
     public static SearchLogPageQuery toQuery(DiscoverySearchLogPageRequest request) {
         if (request == null) {
@@ -82,6 +113,20 @@ public final class DiscoverySearchAdminInterfaceAssembler {
                 .build();
     }
 
+    public static DiscoverySearchResponse toSearchResponse(SearchLogResult result) {
+        if (result == null) {
+            return null;
+        }
+        return DiscoverySearchResponse.builder()
+                .searchLogId(result.getSearchLogId())
+                .queryText(result.getQueryText())
+                .displayQueryText(result.getDisplayQueryText())
+                .totalCount(result.getResultTotalCount())
+                .groupCount(result.getGroupTotalCount())
+                .groups(toGroupResponses(result.getGroups()))
+                .build();
+    }
+
     public static DiscoverySearchAnalysisSummaryResponse toResponse(SearchAnalysisSummaryResult result) {
         if (result == null) {
             return null;
@@ -107,6 +152,54 @@ public final class DiscoverySearchAdminInterfaceAssembler {
 
     private static Date toDate(Long value) {
         return value == null ? null : new Date(value);
+    }
+
+    private static List<DiscoverySearchGroupResponse> toGroupResponses(List<SearchGroupResult> groups) {
+        if (groups == null || groups.isEmpty()) {
+            return List.of();
+        }
+        return groups.stream()
+                .map(DiscoverySearchAdminInterfaceAssembler::toGroupResponse)
+                .toList();
+    }
+
+    private static DiscoverySearchGroupResponse toGroupResponse(SearchGroupResult group) {
+        if (group == null) {
+            return null;
+        }
+        return DiscoverySearchGroupResponse.builder()
+                .groupKey(group.getGroupKey())
+                .groupTitle(group.getGroupTitle())
+                .count(group.getCount())
+                .items(toItemResponses(group.getItems()))
+                .build();
+    }
+
+    private static List<DiscoverySearchGroupResponse.DiscoverySearchItemResponse> toItemResponses(
+            List<SearchResult> items) {
+        if (items == null || items.isEmpty()) {
+            return List.of();
+        }
+        return items.stream()
+                .map(DiscoverySearchAdminInterfaceAssembler::toItemResponse)
+                .toList();
+    }
+
+    private static DiscoverySearchGroupResponse.DiscoverySearchItemResponse toItemResponse(SearchResult item) {
+        if (item == null) {
+            return null;
+        }
+        return DiscoverySearchGroupResponse.DiscoverySearchItemResponse.builder()
+                .contentDomain(item.getContentDomain())
+                .contentType(item.getContentType())
+                .contentId(item.getContentId())
+                .title(item.getTitle())
+                .summary(item.getSummary())
+                .highlightText(item.getHighlightText())
+                .resultRank(item.getResultRank())
+                .groupRank(item.getGroupRank())
+                .targetPath(item.getTargetPath())
+                .build();
     }
 
     private static List<DiscoverySearchAnalysisSummaryResponse.TopQueryResponse> toTopQueryResponses(
@@ -135,5 +228,13 @@ public final class DiscoverySearchAdminInterfaceAssembler {
                     fieldName + " must be ISO-8601 format",
                     exception);
         }
+    }
+
+    private static String newRequestId() {
+        return UUID.randomUUID().toString();
+    }
+
+    private static String newTraceId() {
+        return UUID.randomUUID().toString();
     }
 }

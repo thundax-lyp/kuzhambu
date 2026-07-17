@@ -173,7 +173,7 @@ describe("discovery admin service contracts", () => {
             tagNames: ["礼制"],
             visibilityScopes: ["PUBLIC"]
         });
-        expect(postJson).toHaveBeenLastCalledWith("/portal/discovery/search/search", {
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/search/search", {
             body: {
                 categoryCodes: ["SANCAI_ENTRY"],
                 contentStatuses: ["PUBLISHED"],
