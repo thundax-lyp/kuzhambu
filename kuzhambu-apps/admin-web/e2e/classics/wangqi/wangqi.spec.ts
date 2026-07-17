@@ -250,8 +250,8 @@ test.describe("classics wangqi page", () => {
             });
 
         await page.getByRole("button", { name: /查看或编辑 王圻文档/ }).click();
-        await expect(page.getByLabel("王圻文档正文预览")).toBeVisible();
-        await expect(page.getByLabel("王圻文档正文预览")).not.toContainText("alert(1)");
+        await expect(page.getByLabel("王圻 Tiptap 编辑器")).toBeVisible();
+        await expect(page.getByLabel("王圻文档正文")).not.toContainText("alert(1)");
 
         await page.getByRole("textbox", { name: "王圻文档标题" }).fill("王圻文档修订");
         await page.getByTestId("classics-wangqi-wangqi-document-create-button").click();

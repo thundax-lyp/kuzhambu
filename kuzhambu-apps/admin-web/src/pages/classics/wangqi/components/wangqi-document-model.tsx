@@ -4,8 +4,11 @@ import {
     OrderedListOutlined,
     UnorderedListOutlined
 } from "@ant-design/icons";
+import { Markdown } from "@tiptap/markdown";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 import { DatePicker, Form, Input, Segmented, Select, Switch, Typography } from "antd";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
@@ -38,57 +41,104 @@ export interface WangqiDocumentModelProps {
     onSave: (command: WangqiDocumentCommand) => void;
 }
 
-interface WangqiMarkdownEditorProps {
+interface WangqiRichTextEditorProps {
     value?: string;
     onChange?: (value: string) => void;
 }
 
-const appendMarkdown = (value: string | undefined, markdown: string) => {
-    const currentValue = value || "";
-    return currentValue ? `${currentValue}\n${markdown}` : markdown;
-};
+const WangqiRichTextEditor = ({ value, onChange }: WangqiRichTextEditorProps) => {
+    const extensions = useMemo(() => [StarterKit, Markdown], []);
+    const editor = useEditor({
+        extensions,
+        content: value || "",
+        contentType: "markdown",
+        editorProps: {
+            attributes: {
+                "aria-label": "王圻文档正文",
+                class: "wangqi-rich-text-editor-content"
+            }
+        },
+        immediatelyRender: false,
+        onUpdate: ({ editor: currentEditor }) => {
+            onChange?.(currentEditor.getMarkdown());
+        }
+    });
 
-const WangqiMarkdownEditor = ({ value, onChange }: WangqiMarkdownEditorProps) => {
-    const insertMarkdown = (markdown: string) => {
-        onChange?.(appendMarkdown(value, markdown));
+    useEffect(() => {
+        if (!editor || value === editor.getMarkdown()) {
+            return;
+        }
+        editor.commands.setContent(value || "", { contentType: "markdown" });
+    }, [editor, value]);
+
+    const runCommand = (command: () => void) => {
+        command();
+        editor?.commands.focus();
     };
 
     return (
-        <div className="wangqi-markdown-editor" aria-label="王圻 Markdown 编辑器">
-            <div className="wangqi-markdown-editor-toolbar">
+        <div className="wangqi-rich-text-editor" aria-label="王圻 Tiptap 编辑器">
+            <div className="wangqi-rich-text-editor-toolbar">
                 <KuzhambuButton
                     testId="classics-wangqi-markdown-heading-button"
+                    className={
+                        editor?.isActive("heading", { level: 2 })
+                            ? "wangqi-rich-text-editor-toolbar-button-active"
+                            : undefined
+                    }
                     icon={<Text>H2</Text>}
-                    onClick={() => insertMarkdown("## 小标题")}
+                    onClick={() =>
+                        runCommand(() => editor?.chain().focus().toggleHeading({ level: 2 }).run())
+                    }
                 />
                 <KuzhambuButton
                     testId="classics-wangqi-markdown-bold-button"
+                    className={
+                        editor?.isActive("bold")
+                            ? "wangqi-rich-text-editor-toolbar-button-active"
+                            : undefined
+                    }
                     icon={<BoldOutlined />}
-                    onClick={() => insertMarkdown("**重点文字**")}
+                    onClick={() => runCommand(() => editor?.chain().focus().toggleBold().run())}
                 />
                 <KuzhambuButton
                     testId="classics-wangqi-markdown-list-button"
+                    className={
+                        editor?.isActive("bulletList")
+                            ? "wangqi-rich-text-editor-toolbar-button-active"
+                            : undefined
+                    }
                     icon={<UnorderedListOutlined />}
-                    onClick={() => insertMarkdown("- 列表项")}
+                    onClick={() =>
+                        runCommand(() => editor?.chain().focus().toggleBulletList().run())
+                    }
                 />
                 <KuzhambuButton
                     testId="classics-wangqi-markdown-ordered-list-button"
+                    className={
+                        editor?.isActive("orderedList")
+                            ? "wangqi-rich-text-editor-toolbar-button-active"
+                            : undefined
+                    }
                     icon={<OrderedListOutlined />}
-                    onClick={() => insertMarkdown("1. 列表项")}
+                    onClick={() =>
+                        runCommand(() => editor?.chain().focus().toggleOrderedList().run())
+                    }
                 />
                 <KuzhambuButton
                     testId="classics-wangqi-markdown-quote-button"
+                    className={
+                        editor?.isActive("blockquote")
+                            ? "wangqi-rich-text-editor-toolbar-button-active"
+                            : undefined
+                    }
                     icon={<BlockOutlined />}
-                    onClick={() => insertMarkdown("> 引文")}
+                    onClick={() =>
+                        runCommand(() => editor?.chain().focus().toggleBlockquote().run())
+                    }
                 />
             </div>
-            <TextArea
-                aria-label="王圻文档正文"
-                value={value}
-                className="wangqi-markdown-editor-input"
-                autoSize={resolveTextAreaAutoSize({ minRows: 14, maxRows: 24 })}
-                onChange={(event) => onChange?.(event.target.value)}
-            />
+            <EditorContent editor={editor} />
         </div>
     );
 };
@@ -178,7 +228,11 @@ export const WangqiDocumentModel = ({
                 </div>
             </div>
             <div className="wangqi-document-model-text-fields">
-                <Form.Item name="summary" label="摘要">
+                <Form.Item
+                    name="summary"
+                    label="摘要"
+                    className="wangqi-document-model-form-item-top"
+                >
                     <TextArea
                         aria-label="王圻文档摘要"
                         autoSize={resolveTextAreaAutoSize({ minRows: 4, maxRows: 8 })}
@@ -186,8 +240,12 @@ export const WangqiDocumentModel = ({
                         showCount
                     />
                 </Form.Item>
-                <Form.Item name="content" label="正文">
-                    <WangqiMarkdownEditor />
+                <Form.Item
+                    name="content"
+                    label="正文"
+                    className="wangqi-document-model-form-item-top"
+                >
+                    <WangqiRichTextEditor />
                 </Form.Item>
             </div>
         </div>
@@ -239,7 +297,9 @@ export const WangqiDocumentModel = ({
         >
             <Form<WangqiDocumentFormValues>
                 form={form}
-                layout="vertical"
+                colon={false}
+                labelCol={{ flex: "88px" }}
+                layout="horizontal"
                 className="wangqi-document-model-form"
             >
                 <div className="wangqi-document-model-section">{sectionContent[activeSection]}</div>

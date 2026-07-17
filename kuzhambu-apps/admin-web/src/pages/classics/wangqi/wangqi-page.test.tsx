@@ -379,8 +379,8 @@ describe("WangqiPage", () => {
         expect(screen.getByRole("radio", { name: "问答" })).toBeInTheDocument();
 
         expect(await screen.findByLabelText("王圻文档摘要")).toBeInTheDocument();
-        expect(await screen.findByLabelText("王圻 Markdown 编辑器")).toBeInTheDocument();
-        expect(screen.getByLabelText("王圻文档正文")).toBeInTheDocument();
+        expect(await screen.findByLabelText("王圻 Tiptap 编辑器")).toBeInTheDocument();
+        expect(screen.getByLabelText("王圻文档正文")).toHaveAttribute("contenteditable", "true");
         expect(screen.getByTestId("classics-wangqi-markdown-heading-button")).toBeInTheDocument();
         expect(screen.queryByLabelText("王圻文档正文预览")).not.toBeInTheDocument();
     }, 30000);
