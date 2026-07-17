@@ -2,9 +2,12 @@ package com.thundax.kuzhambu.ai.application.config.model.service.impl;
 
 import com.thundax.kuzhambu.ai.application.config.model.service.AiModelApplicationService;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.model.entity.AiBusinessConfig;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
+import com.thundax.kuzhambu.ai.domain.config.repository.AiBusinessConfigRepository;
 import com.thundax.kuzhambu.ai.domain.config.repository.AiModelRepository;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -15,9 +18,12 @@ import org.springframework.transaction.annotation.Transactional;
 @BizExceptionBoundary
 public class AiModelApplicationServiceImpl implements AiModelApplicationService {
 
+    private final AiBusinessConfigRepository aiBusinessConfigRepository;
     private final AiModelRepository aiModelRepository;
 
-    public AiModelApplicationServiceImpl(AiModelRepository aiModelRepository) {
+    public AiModelApplicationServiceImpl(
+            AiBusinessConfigRepository aiBusinessConfigRepository, AiModelRepository aiModelRepository) {
+        this.aiBusinessConfigRepository = aiBusinessConfigRepository;
         this.aiModelRepository = aiModelRepository;
     }
 
@@ -56,6 +62,16 @@ public class AiModelApplicationServiceImpl implements AiModelApplicationService 
         if (id == null) {
             return 0;
         }
-        return aiModelRepository.delete(AiModelIdCodec.toDomain(id));
+        AiModelId modelId = AiModelIdCodec.toDomain(id);
+        assertModelCanBeDeleted(modelId);
+        return aiModelRepository.delete(modelId);
+    }
+
+    private void assertModelCanBeDeleted(AiModelId modelId) {
+        for (AiBusinessConfig config : aiBusinessConfigRepository.list(null, null)) {
+            if (config.getModelId() != null && config.getModelId().equals(modelId)) {
+                throw new BizException("AI model is used by business config");
+            }
+        }
     }
 }
