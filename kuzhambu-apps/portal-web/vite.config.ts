@@ -20,7 +20,20 @@ export default defineConfig(({ mode }) => {
             globals: true,
             exclude: ["e2e/**", "node_modules/**", "dist/**"],
             fileParallelism: true,
-            maxWorkers: "75%"
+            maxWorkers: "75%",
+            coverage: {
+                provider: "v8",
+                reporter: ["text", "html", "lcov"],
+                reportsDirectory: "coverage",
+                include: ["src/**/*.{ts,tsx}"],
+                exclude: [
+                    "src/**/*.test.{ts,tsx}",
+                    "src/**/*.spec.{ts,tsx}",
+                    "src/test/**",
+                    "src/**/*.d.ts",
+                    "src/main.tsx"
+                ]
+            }
         },
         build: {
             chunkSizeWarningLimit: 10000
