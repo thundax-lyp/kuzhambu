@@ -37,16 +37,12 @@ import type {
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./prompts-page.css";
 
-type PromptFormValues = Omit<AiPromptTemplateChangeCommand, "variables">;
+type PromptFormValues = Omit<AiPromptTemplateChangeCommand, "variables" | "enabled"> & {
+    status?: string | null;
+};
 
 const EMPTY_JSON_ARRAY = "[]";
 const EMPTY_JSON_OBJECT = "{}";
-const SCOPE_OPTIONS = [
-    { label: "classics", value: "classics" },
-    { label: "knowledge", value: "knowledge" },
-    { label: "discovery", value: "discovery" },
-    { label: "platform", value: "platform" }
-];
 
 const formatDateTime = (value?: string | null) => {
     if (!value) {
@@ -124,6 +120,10 @@ const variablesToJson = (variables: AiPromptVariableRecord[] = []) => {
     );
 };
 
+const statusFromEnabled = (enabled?: boolean | null) => (enabled === false ? "INACTIVE" : "ACTIVE");
+
+const enabledFromStatus = (status?: string | null) => status !== "INACTIVE";
+
 const versionTitle = (version: AiPromptVersionRecord) => {
     return `版本 ${version.versionNo ?? "-"}`;
 };
@@ -140,7 +140,7 @@ export const PromptsPage = () => {
     const [compareVersions, setCompareVersions] = useState<AiPromptVersionRecord[]>([]);
     const [suggestionVersion, setSuggestionVersion] = useState<AiPromptVersionRecord | null>(null);
     const variablesSnapshotJson = Form.useWatch("variablesSnapshotJson", editorForm);
-    const currentTemplateId = Form.useWatch("templateId", editorForm);
+    const currentTemplateId = Form.useWatch("id", editorForm);
     const currentChangeSummary = Form.useWatch("changeSummary", editorForm);
 
     const capabilitiesQuery = useQuery({
@@ -152,12 +152,12 @@ export const PromptsPage = () => {
 
     const templateQuery = useQuery({
         queryKey: ["ai", "prompts", "template", query],
-        queryFn: () => service.getPromptTemplateByScope(query),
-        enabled: Boolean(query.scope && query.capability) && canViewPrompt,
+        queryFn: () => service.getPromptTemplateByCapability(query),
+        enabled: Boolean(query.capability) && canViewPrompt,
         retry: false
     });
 
-    const templateId = templateQuery.data?.templateId || null;
+    const templateId = templateQuery.data?.id || null;
 
     const currentVersionQuery = useQuery({
         queryKey: ["ai", "prompts", "current-version", templateId],
@@ -180,13 +180,6 @@ export const PromptsPage = () => {
         retry: false
     });
 
-    const actionStatusQuery = useQuery({
-        queryKey: ["ai", "prompts", "action-status", query],
-        queryFn: () => service.getPromptActionStatus(query),
-        enabled: Boolean(query.scope && query.capability) && canViewPrompt,
-        retry: false
-    });
-
     const capabilityOptions = useMemo(() => {
         return (capabilitiesQuery.data || []).map((record) => ({
             label: `${record.name} / ${record.capability}`,
@@ -195,9 +188,6 @@ export const PromptsPage = () => {
     }, [capabilitiesQuery.data]);
 
     useEffect(() => {
-        if (!filterForm.getFieldValue("scope")) {
-            filterForm.setFieldValue("scope", SCOPE_OPTIONS[0]?.value);
-        }
         if (capabilityOptions.length > 0 && !filterForm.getFieldValue("capability")) {
             filterForm.setFieldValue("capability", capabilityOptions[0].value);
         }
@@ -222,12 +212,11 @@ export const PromptsPage = () => {
             return;
         }
         editorForm.setFieldsValue({
-            templateId: template.templateId || null,
-            scope: template.scope || query.scope || "",
+            id: template.id || null,
             capability: template.capability || query.capability || "",
             name: template.name || "",
             description: template.description || "",
-            status: template.status || "ACTIVE",
+            status: statusFromEnabled(template.enabled),
             messageTemplatesJson: formatJsonText(
                 currentVersion?.messageTemplatesJson,
                 EMPTY_JSON_ARRAY
@@ -243,7 +232,6 @@ export const PromptsPage = () => {
         currentVersionQuery.data,
         editorForm,
         query.capability,
-        query.scope,
         templateQuery.data,
         variablesQuery.data
     ]);
@@ -252,7 +240,6 @@ export const PromptsPage = () => {
         mutationFn: service.changePromptTemplate,
         onSuccess: async (template) => {
             setQuery({
-                scope: template.scope || query.scope,
                 capability: template.capability || query.capability
             });
             await invalidatePrompt();
@@ -313,12 +300,11 @@ export const PromptsPage = () => {
             overrideVersion?.variablesSnapshotJson || values.variablesSnapshotJson;
         const variables = toVariableRows(variablesSnapshot);
         await changeMutation.mutateAsync({
-            templateId: values.templateId || null,
-            scope: values.scope,
+            id: values.id || null,
             capability: values.capability,
             name: values.name,
             description: values.description || null,
-            status: values.status || "ACTIVE",
+            enabled: enabledFromStatus(values.status),
             messageTemplatesJson: normalizeJsonText(messageTemplatesJson, EMPTY_JSON_ARRAY),
             variablesSnapshotJson: normalizeJsonText(variablesSnapshot, EMPTY_JSON_ARRAY),
             outputSchemaJson: normalizeJsonText(outputSchemaJson, EMPTY_JSON_OBJECT),
@@ -333,7 +319,7 @@ export const PromptsPage = () => {
             return;
         }
         await validateMutation.mutateAsync({
-            templateId: currentTemplateId,
+            id: currentTemplateId,
             providedNames: variableRows.map((variable) => variable.variableName)
         });
     };
@@ -344,7 +330,7 @@ export const PromptsPage = () => {
             return;
         }
         await suggestionMutation.mutateAsync({
-            templateId: currentTemplateId,
+            id: currentTemplateId,
             changeSummary: currentChangeSummary || "生成优化建议"
         });
     };
@@ -354,7 +340,7 @@ export const PromptsPage = () => {
             return;
         }
         await compareMutation.mutateAsync({
-            templateId,
+            id: templateId,
             leftVersionNo: version.versionNo,
             rightVersionNo: templateQuery.data.currentVersionNo
         });
@@ -406,11 +392,11 @@ export const PromptsPage = () => {
         },
         {
             title: "current",
-            dataIndex: "current",
             key: "current",
-            render: (current: boolean) => (
-                <Tag color={current ? "green" : "default"}>{current ? "当前" : "历史"}</Tag>
-            )
+            render: (_, record) => {
+                const current = record.versionNo === templateQuery.data?.currentVersionNo;
+                return <Tag color={current ? "green" : "default"}>{current ? "当前" : "历史"}</Tag>;
+            }
         },
         {
             title: "changeSummary",
@@ -426,53 +412,55 @@ export const PromptsPage = () => {
         },
         {
             key: "actions",
-            render: (_, record) => (
-                <KuzhambuSpaceCompact>
-                    <KuzhambuButton
-                        testId="ai-prompts-prompts-view-button"
-                        icon={<EyeOutlined />}
-                        onClick={() => setViewVersion(record)}
-                    >
-                        查看
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="ai-prompts-prompts-compare-button"
-                        icon={<BranchesOutlined />}
-                        disabled={!templateQuery.data?.currentVersionNo}
-                        onClick={() => void compareWithCurrent(record)}
-                    >
-                        对比
-                    </KuzhambuButton>
-                    <Popconfirm
-                        title="回滚版本"
-                        description={`确认回滚到版本 ${record.versionNo}？`}
-                        okText="回滚"
-                        cancelText="取消"
-                        disabled={!canEditPrompt || record.current === true}
-                        onConfirm={() => {
-                            if (templateId && record.versionNo) {
-                                rollbackMutation.mutate({
-                                    templateId,
-                                    versionNo: record.versionNo
-                                });
-                            }
-                        }}
-                    >
+            render: (_, record) => {
+                const current = record.versionNo === templateQuery.data?.currentVersionNo;
+                return (
+                    <KuzhambuSpaceCompact>
                         <KuzhambuButton
-                            testId="ai-prompts-prompts-rollback-button"
-                            icon={<RetweetOutlined />}
-                            disabled={!canEditPrompt || record.current === true}
+                            testId="ai-prompts-prompts-view-button"
+                            icon={<EyeOutlined />}
+                            onClick={() => setViewVersion(record)}
                         >
-                            回滚
+                            查看
                         </KuzhambuButton>
-                    </Popconfirm>
-                </KuzhambuSpaceCompact>
-            )
+                        <KuzhambuButton
+                            testId="ai-prompts-prompts-compare-button"
+                            icon={<BranchesOutlined />}
+                            disabled={!templateQuery.data?.currentVersionNo}
+                            onClick={() => void compareWithCurrent(record)}
+                        >
+                            对比
+                        </KuzhambuButton>
+                        <Popconfirm
+                            title="回滚版本"
+                            description={`确认回滚到版本 ${record.versionNo}？`}
+                            okText="回滚"
+                            cancelText="取消"
+                            disabled={!canEditPrompt || current}
+                            onConfirm={() => {
+                                if (templateId && record.versionNo) {
+                                    rollbackMutation.mutate({
+                                        id: templateId,
+                                        versionNo: record.versionNo
+                                    });
+                                }
+                            }}
+                        >
+                            <KuzhambuButton
+                                testId="ai-prompts-prompts-rollback-button"
+                                icon={<RetweetOutlined />}
+                                disabled={!canEditPrompt || current}
+                            >
+                                回滚
+                            </KuzhambuButton>
+                        </Popconfirm>
+                    </KuzhambuSpaceCompact>
+                );
+            }
         }
     ];
 
     const template = templateQuery.data || ({} as AiPromptTemplateRecord);
-    const actionStatus = actionStatusQuery.data;
 
     return (
         <KuzhambuPage
@@ -497,23 +485,7 @@ export const PromptsPage = () => {
             }
         >
             <Card className="prompts-filter-card">
-                <Form
-                    form={filterForm}
-                    layout="inline"
-                    className="prompts-filter-form"
-                    initialValues={{ scope: SCOPE_OPTIONS[0]?.value }}
-                >
-                    <Form.Item
-                        label="scope"
-                        name="scope"
-                        rules={[{ required: true, message: "请选择 scope" }]}
-                    >
-                        <Select
-                            aria-label="筛选 scope"
-                            className="prompts-filter-control"
-                            options={SCOPE_OPTIONS}
-                        />
-                    </Form.Item>
+                <Form form={filterForm} layout="inline" className="prompts-filter-form">
                     <Form.Item
                         label="capability"
                         name="capability"
@@ -548,15 +520,13 @@ export const PromptsPage = () => {
             <div className="prompts-workbench">
                 <Card className="prompts-template-card" title="模板信息">
                     <Descriptions column={1} size="small">
-                        <Descriptions.Item label="templateId">
-                            {template.templateId || "-"}
-                        </Descriptions.Item>
+                        <Descriptions.Item label="id">{template.id || "-"}</Descriptions.Item>
                         <Descriptions.Item label="name">{template.name || "-"}</Descriptions.Item>
                         <Descriptions.Item label="description">
                             {template.description || "-"}
                         </Descriptions.Item>
-                        <Descriptions.Item label="status">
-                            {template.status || "-"}
+                        <Descriptions.Item label="enabled">
+                            {statusFromEnabled(template.enabled)}
                         </Descriptions.Item>
                         <Descriptions.Item label="currentVersionNo">
                             {template.currentVersionNo || "-"}
@@ -564,28 +534,15 @@ export const PromptsPage = () => {
                         <Descriptions.Item label="registeredAt">
                             {formatDateTime(template.registeredAt)}
                         </Descriptions.Item>
-                        <Descriptions.Item label="actionStatus">
-                            <Tag color={actionStatus?.available ? "green" : "red"}>
-                                {actionStatus?.available ? "可用" : "不可用"}
-                            </Tag>
-                            {actionStatus?.unavailableReason || ""}
-                        </Descriptions.Item>
                     </Descriptions>
                 </Card>
 
                 <Card className="prompts-editor-card" title="版本编辑">
                     <Form form={editorForm} layout="vertical" className="prompts-editor-form">
-                        <Form.Item name="templateId" hidden>
+                        <Form.Item name="id" hidden>
                             <Input />
                         </Form.Item>
                         <div className="prompts-editor-grid">
-                            <Form.Item
-                                label="scope"
-                                name="scope"
-                                rules={[{ required: true, message: "请选择 scope" }]}
-                            >
-                                <Select options={SCOPE_OPTIONS} />
-                            </Form.Item>
                             <Form.Item
                                 label="capability"
                                 name="capability"
@@ -600,11 +557,11 @@ export const PromptsPage = () => {
                             >
                                 <Input />
                             </Form.Item>
-                            <Form.Item label="status" name="status">
+                            <Form.Item label="enabled" name="status">
                                 <Select
                                     options={[
                                         { label: "ACTIVE", value: "ACTIVE" },
-                                        { label: "DISABLED", value: "DISABLED" }
+                                        { label: "INACTIVE", value: "INACTIVE" }
                                     ]}
                                 />
                             </Form.Item>
@@ -633,7 +590,7 @@ export const PromptsPage = () => {
                         </Form.Item>
                         <Table<AiPromptVariableRecord>
                             aria-label="提示词变量预览"
-                            rowKey={(record) => record.variableId || record.variableName}
+                            rowKey={(record) => record.id || record.variableName}
                             columns={variableColumns}
                             dataSource={variableRows}
                             pagination={false}
@@ -690,9 +647,7 @@ export const PromptsPage = () => {
                 <Card className="prompts-version-card" title="版本列表">
                     <Table<AiPromptVersionRecord>
                         aria-label="提示词版本列表"
-                        rowKey={(record) =>
-                            record.promptVersionId || `${record.templateId}-${record.versionNo}`
-                        }
+                        rowKey={(record) => record.id || `${record.templateId}-${record.versionNo}`}
                         columns={versionColumns}
                         dataSource={versionsQuery.data || []}
                         loading={versionsQuery.isFetching}

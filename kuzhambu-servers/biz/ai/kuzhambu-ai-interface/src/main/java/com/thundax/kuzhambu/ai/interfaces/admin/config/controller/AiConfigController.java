@@ -1,17 +1,13 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.config.controller;
 
 import com.thundax.kuzhambu.ai.application.capability.service.AiCapabilityApplicationService;
-import com.thundax.kuzhambu.ai.application.config.service.AiServiceConfigApplicationService;
-import com.thundax.kuzhambu.ai.application.model.service.AiModelApplicationService;
+import com.thundax.kuzhambu.ai.application.config.business.service.AiBusinessConfigApplicationService;
+import com.thundax.kuzhambu.ai.application.config.model.service.AiModelApplicationService;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.assembler.AiConfigInterfaceAssembler;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.request.AiConfigRequests;
-import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.response.AiConfigResponses.ActionStatusResponse;
-import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.response.AiConfigResponses.CapabilityMappingResponse;
+import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.response.AiConfigResponses.BusinessConfigResponse;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.response.AiConfigResponses.CapabilityResponse;
-import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.response.AiConfigResponses.IdResponse;
-import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.response.AiConfigResponses.ModelCheckRecordResponse;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.response.AiConfigResponses.ModelResponse;
-import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.response.AiConfigResponses.ServiceConfigResponse;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
@@ -33,63 +29,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @WrappedApiController
 public class AiConfigController {
 
-    private final AiServiceConfigApplicationService serviceConfigService;
     private final AiModelApplicationService modelService;
     private final AiCapabilityApplicationService capabilityService;
+    private final AiBusinessConfigApplicationService businessConfigService;
 
     public AiConfigController(
-            AiServiceConfigApplicationService serviceConfigService,
             AiModelApplicationService modelService,
-            AiCapabilityApplicationService capabilityService) {
-        this.serviceConfigService = serviceConfigService;
+            AiCapabilityApplicationService capabilityService,
+            AiBusinessConfigApplicationService businessConfigService) {
         this.modelService = modelService;
         this.capabilityService = capabilityService;
-    }
-
-    @Operation(summary = "按服务ID获取AI服务配置", description = "ai:config:view")
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-                name = AccessTokenNames.HEADER_TOKEN,
-                value = "令牌",
-                paramType = "header",
-                dataTypeClass = String.class),
-    })
-    @HasPermission(value = "ai:config:view")
-    @SysLogger(value = "服务配置读取")
-    @PostMapping(value = "service/get")
-    public ServiceConfigResponse getService(@Valid @RequestBody AiConfigRequests.ServiceIdRequest request) {
-        return AiConfigInterfaceAssembler.toResponse(serviceConfigService.getByServiceId(request.getServiceId()));
-    }
-
-    @Operation(summary = "按角色获取AI服务配置", description = "ai:config:view")
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-                name = AccessTokenNames.HEADER_TOKEN,
-                value = "令牌",
-                paramType = "header",
-                dataTypeClass = String.class),
-    })
-    @HasPermission(value = "ai:config:view")
-    @SysLogger(value = "服务配置读取")
-    @PostMapping(value = "service/get-by-role")
-    public ServiceConfigResponse getServiceByRole(@Valid @RequestBody AiConfigRequests.ServiceRoleRequest request) {
-        return AiConfigInterfaceAssembler.toResponse(serviceConfigService.getByRole(request.getServiceRole()));
-    }
-
-    @Operation(summary = "保存AI服务配置", description = "ai:config:edit")
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-                name = AccessTokenNames.HEADER_TOKEN,
-                value = "令牌",
-                paramType = "header",
-                dataTypeClass = String.class),
-    })
-    @HasPermission(value = "ai:config:edit")
-    @SysLogger(value = "服务配置保存")
-    @PostMapping(value = "service/save")
-    public ServiceConfigResponse saveService(@Valid @RequestBody AiConfigRequests.ServiceConfigSaveRequest request) {
-        Long serviceId = serviceConfigService.save(AiConfigInterfaceAssembler.toServiceConfig(request));
-        return AiConfigInterfaceAssembler.toResponse(serviceConfigService.getByServiceId(serviceId));
+        this.businessConfigService = businessConfigService;
     }
 
     @Operation(summary = "获取AI模型", description = "ai:config:view")
@@ -104,7 +54,7 @@ public class AiConfigController {
     @SysLogger(value = "模型读取")
     @PostMapping(value = "model/get")
     public ModelResponse getModel(@Valid @RequestBody AiConfigRequests.ModelIdRequest request) {
-        return AiConfigInterfaceAssembler.toResponse(modelService.get(request.getModelId()));
+        return AiConfigInterfaceAssembler.toResponse(modelService.get(request.getId()));
     }
 
     @Operation(summary = "获取AI模型列表", description = "ai:config:view")
@@ -119,7 +69,7 @@ public class AiConfigController {
     @SysLogger(value = "模型列表")
     @PostMapping(value = "model/list")
     public List<ModelResponse> listModels(@Valid @RequestBody AiConfigRequests.ModelListRequest request) {
-        return modelService.list(request.getServiceId(), request.getEnabled()).stream()
+        return modelService.list(request.getApiSource(), request.getEnabled()).stream()
                 .map(AiConfigInterfaceAssembler::toResponse)
                 .collect(Collectors.toList());
     }
@@ -136,8 +86,8 @@ public class AiConfigController {
     @SysLogger(value = "模型新增")
     @PostMapping(value = "model/create")
     public ModelResponse createModel(@Valid @RequestBody AiConfigRequests.ModelSaveRequest request) {
-        Long modelId = modelService.save(AiConfigInterfaceAssembler.toModel(request));
-        return AiConfigInterfaceAssembler.toResponse(modelService.get(modelId));
+        Long id = modelService.save(AiConfigInterfaceAssembler.toModel(request));
+        return AiConfigInterfaceAssembler.toResponse(modelService.get(id));
     }
 
     @Operation(summary = "更新AI模型", description = "ai:config:edit")
@@ -153,7 +103,7 @@ public class AiConfigController {
     @PostMapping(value = "model/update")
     public ModelResponse updateModel(@Valid @RequestBody AiConfigRequests.ModelSaveRequest request) {
         modelService.update(AiConfigInterfaceAssembler.toModel(request));
-        return AiConfigInterfaceAssembler.toResponse(modelService.get(request.getModelId()));
+        return AiConfigInterfaceAssembler.toResponse(modelService.get(request.getId()));
     }
 
     @Operation(summary = "删除AI模型", description = "ai:config:edit")
@@ -168,59 +118,8 @@ public class AiConfigController {
     @SysLogger(value = "模型删除")
     @PostMapping(value = "model/delete")
     public Boolean deleteModel(@Valid @RequestBody AiConfigRequests.ModelIdRequest request) {
-        capabilityService.assertModelCanBeDeleted(request.getModelId());
-        modelService.delete(request.getModelId());
+        modelService.delete(request.getId());
         return true;
-    }
-
-    @Operation(summary = "检测AI模型", description = "ai:config:edit")
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-                name = AccessTokenNames.HEADER_TOKEN,
-                value = "令牌",
-                paramType = "header",
-                dataTypeClass = String.class),
-    })
-    @HasPermission(value = "ai:config:edit")
-    @SysLogger(value = "模型检测")
-    @PostMapping(value = "model/check")
-    public ModelCheckRecordResponse checkModel(@Valid @RequestBody AiConfigRequests.ModelIdRequest request) {
-        return AiConfigInterfaceAssembler.toResponse(modelService.check(request.getModelId()));
-    }
-
-    @Operation(summary = "记录AI模型检测结果", description = "ai:config:edit")
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-                name = AccessTokenNames.HEADER_TOKEN,
-                value = "令牌",
-                paramType = "header",
-                dataTypeClass = String.class),
-    })
-    @HasPermission(value = "ai:config:edit")
-    @SysLogger(value = "模型检测记录")
-    @PostMapping(value = "model/check-record")
-    public IdResponse recordModelCheck(@Valid @RequestBody AiConfigRequests.ModelCheckRecordRequest request) {
-        return IdResponse.builder()
-                .id(modelService.recordCheck(AiConfigInterfaceAssembler.toCheckCommand(request)))
-                .build();
-    }
-
-    @Operation(summary = "获取AI模型检测历史", description = "ai:config:view")
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-                name = AccessTokenNames.HEADER_TOKEN,
-                value = "令牌",
-                paramType = "header",
-                dataTypeClass = String.class),
-    })
-    @HasPermission(value = "ai:config:view")
-    @SysLogger(value = "模型检测历史")
-    @PostMapping(value = "model/check-records")
-    public List<ModelCheckRecordResponse> listModelCheckRecords(
-            @Valid @RequestBody AiConfigRequests.ModelIdRequest request) {
-        return modelService.listCheckRecords(request.getModelId()).stream()
-                .map(AiConfigInterfaceAssembler::toResponse)
-                .collect(Collectors.toList());
     }
 
     @Operation(summary = "获取AI能力列表", description = "ai:config:view")
@@ -256,7 +155,7 @@ public class AiConfigController {
         return AiConfigInterfaceAssembler.toResponse(capabilityService.getCapability(request.getCapability()));
     }
 
-    @Operation(summary = "获取AI能力映射", description = "ai:config:view")
+    @Operation(summary = "获取AI业务配置", description = "ai:config:view")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -265,14 +164,14 @@ public class AiConfigController {
                 dataTypeClass = String.class),
     })
     @HasPermission(value = "ai:config:view")
-    @SysLogger(value = "能力映射读取")
-    @PostMapping(value = "capability/mapping/get")
-    public CapabilityMappingResponse getMapping(@Valid @RequestBody AiConfigRequests.CapabilityQueryRequest request) {
-        return AiConfigInterfaceAssembler.toResponse(
-                capabilityService.getMapping(request.getScope(), request.getCapability()));
+    @SysLogger(value = "业务配置读取")
+    @PostMapping(value = "business-config/get")
+    public BusinessConfigResponse getBusinessConfig(
+            @Valid @RequestBody AiConfigRequests.BusinessConfigIdRequest request) {
+        return AiConfigInterfaceAssembler.toResponse(businessConfigService.get(request.getId()));
     }
 
-    @Operation(summary = "获取AI能力映射列表", description = "ai:config:view")
+    @Operation(summary = "获取AI业务配置列表", description = "ai:config:view")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -281,18 +180,16 @@ public class AiConfigController {
                 dataTypeClass = String.class),
     })
     @HasPermission(value = "ai:config:view")
-    @SysLogger(value = "能力映射列表")
-    @PostMapping(value = "capability/mapping/list")
-    public List<CapabilityMappingResponse> listMappings(
-            @Valid @RequestBody AiConfigRequests.CapabilityQueryRequest request) {
-        return capabilityService
-                .listMappings(request.getScope(), request.getCapability(), request.getEnabled())
-                .stream()
+    @SysLogger(value = "业务配置列表")
+    @PostMapping(value = "business-config/list")
+    public List<BusinessConfigResponse> listBusinessConfigs(
+            @Valid @RequestBody AiConfigRequests.BusinessConfigListRequest request) {
+        return businessConfigService.list(request.getCapability(), request.getEnabled()).stream()
                 .map(AiConfigInterfaceAssembler::toResponse)
                 .collect(Collectors.toList());
     }
 
-    @Operation(summary = "保存AI能力映射", description = "ai:config:edit")
+    @Operation(summary = "新增AI业务配置", description = "ai:config:edit")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -301,51 +198,15 @@ public class AiConfigController {
                 dataTypeClass = String.class),
     })
     @HasPermission(value = "ai:config:edit")
-    @SysLogger(value = "能力映射保存")
-    @PostMapping(value = "capability/mapping/save")
-    public IdResponse saveMapping(@Valid @RequestBody AiConfigRequests.CapabilityMappingSaveRequest request) {
-        return IdResponse.builder()
-                .id(capabilityService.saveMapping(AiConfigInterfaceAssembler.toMappingCommand(request)))
-                .build();
+    @SysLogger(value = "业务配置新增")
+    @PostMapping(value = "business-config/create")
+    public BusinessConfigResponse createBusinessConfig(
+            @Valid @RequestBody AiConfigRequests.BusinessConfigSaveRequest request) {
+        Long id = businessConfigService.save(AiConfigInterfaceAssembler.toBusinessConfig(request));
+        return AiConfigInterfaceAssembler.toResponse(businessConfigService.get(id));
     }
 
-    @Operation(summary = "获取AI动作状态", description = "ai:config:view")
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-                name = AccessTokenNames.HEADER_TOKEN,
-                value = "令牌",
-                paramType = "header",
-                dataTypeClass = String.class),
-    })
-    @HasPermission(value = "ai:config:view")
-    @SysLogger(value = "动作状态读取")
-    @PostMapping(value = "action/status")
-    public ActionStatusResponse getActionStatus(@Valid @RequestBody AiConfigRequests.CapabilityQueryRequest request) {
-        return AiConfigInterfaceAssembler.toResponse(
-                capabilityService.getActionStatus(request.getScope(), request.getCapability()));
-    }
-
-    @Operation(summary = "获取AI动作状态列表", description = "ai:config:view")
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-                name = AccessTokenNames.HEADER_TOKEN,
-                value = "令牌",
-                paramType = "header",
-                dataTypeClass = String.class),
-    })
-    @HasPermission(value = "ai:config:view")
-    @SysLogger(value = "动作状态列表")
-    @PostMapping(value = "action/status/list")
-    public List<ActionStatusResponse> listActionStatuses(
-            @Valid @RequestBody AiConfigRequests.ActionStatusListRequest request) {
-        return capabilityService
-                .listActionStatuses(request.getScope(), request.getCapability(), request.getAvailable())
-                .stream()
-                .map(AiConfigInterfaceAssembler::toResponse)
-                .collect(Collectors.toList());
-    }
-
-    @Operation(summary = "刷新AI动作状态", description = "ai:config:edit")
+    @Operation(summary = "更新AI业务配置", description = "ai:config:edit")
     @ApiImplicitParams({
         @ApiImplicitParam(
                 name = AccessTokenNames.HEADER_TOKEN,
@@ -354,11 +215,27 @@ public class AiConfigController {
                 dataTypeClass = String.class),
     })
     @HasPermission(value = "ai:config:edit")
-    @SysLogger(value = "动作状态刷新")
-    @PostMapping(value = "action/status/refresh")
-    public ActionStatusResponse refreshActionStatus(
-            @Valid @RequestBody AiConfigRequests.CapabilityQueryRequest request) {
-        return AiConfigInterfaceAssembler.toResponse(
-                capabilityService.refreshActionStatus(request.getScope(), request.getCapability()));
+    @SysLogger(value = "业务配置更新")
+    @PostMapping(value = "business-config/update")
+    public BusinessConfigResponse updateBusinessConfig(
+            @Valid @RequestBody AiConfigRequests.BusinessConfigSaveRequest request) {
+        businessConfigService.update(AiConfigInterfaceAssembler.toBusinessConfig(request));
+        return AiConfigInterfaceAssembler.toResponse(businessConfigService.get(request.getId()));
+    }
+
+    @Operation(summary = "删除AI业务配置", description = "ai:config:edit")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission(value = "ai:config:edit")
+    @SysLogger(value = "业务配置删除")
+    @PostMapping(value = "business-config/delete")
+    public Boolean deleteBusinessConfig(@Valid @RequestBody AiConfigRequests.BusinessConfigIdRequest request) {
+        businessConfigService.delete(request.getId());
+        return true;
     }
 }

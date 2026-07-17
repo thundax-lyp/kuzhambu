@@ -74,7 +74,7 @@ class AiInvocationRepositoryIT {
         record.setRequestedAt(requestedAt);
         record.setCompletedAt(requestedAt);
 
-        Long callId = repository.saveCallRecord(record);
+        Long callId = repository.insertCallRecord(record);
 
         ArgumentCaptor<AiCallRecordDO> callCaptor = ArgumentCaptor.forClass(AiCallRecordDO.class);
         verify(mapper).insert(callCaptor.capture());
@@ -122,7 +122,7 @@ class AiInvocationRepositoryIT {
         candidate.setRequestedAt(requestedAt);
         candidate.setRejectedAt(requestedAt);
 
-        Long candidateId = repository.saveCandidate(candidate);
+        Long candidateId = repository.insertCandidate(candidate);
 
         ArgumentCaptor<AiCandidateDO> candidateCaptor = ArgumentCaptor.forClass(AiCandidateDO.class);
         verify(mapper).insertCandidate(candidateCaptor.capture());

@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiRequest;
 import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiResult;
 import java.util.function.Consumer;
@@ -32,11 +33,11 @@ class DiscoveryAiApplicationServiceImplTest {
         assertEquals("discovery", capturedCommand.getScope());
         assertEquals("DISCOVERY_QUERY_UNDERSTANDING", capturedCommand.getOperation());
         assertEquals("/internal/ai/discovery/query-understanding", capturedCommand.getWorkerPath());
-        assertEquals("query_understanding", capturedCommand.getCapability());
+        assertEquals(AiBusinessCapability.DISCOVERY_QUERY_UNDERSTANDING.value(), capturedCommand.getCapability());
         assertFalse(capturedCommand.isStream());
         assertFalse(capturedCommand.isCreateCandidate());
         assertEquals("SUCCEEDED", result.getStatus());
-        assertEquals("query_understanding", result.getCapability());
+        assertEquals(AiBusinessCapability.DISCOVERY_QUERY_UNDERSTANDING.value(), result.getCapability());
     }
 
     @Test
@@ -52,11 +53,11 @@ class DiscoveryAiApplicationServiceImplTest {
         assertTrue(invocationService.streamInvoked());
         assertEquals("DISCOVERY_ANSWER_GENERATION_STREAM", capturedCommand.getOperation());
         assertEquals("/internal/ai/discovery/answer-generation/stream", capturedCommand.getWorkerPath());
-        assertEquals("answer_generation", capturedCommand.getCapability());
+        assertEquals(AiBusinessCapability.DISCOVERY_ANSWER_GENERATION.value(), capturedCommand.getCapability());
         assertTrue(capturedCommand.isStream());
         assertFalse(capturedCommand.isCreateCandidate());
         assertEquals("STREAM_SUCCEEDED", result.getStatus());
-        assertEquals("answer_generation", result.getCapability());
+        assertEquals(AiBusinessCapability.DISCOVERY_ANSWER_GENERATION.value(), result.getCapability());
     }
 
     @Test
@@ -71,13 +72,13 @@ class DiscoveryAiApplicationServiceImplTest {
         assertNotNull(result);
         assertEquals("DISCOVERY_ANSWER_GENERATION", capturedCommand.getOperation());
         assertEquals("/internal/ai/discovery/answer-generation", capturedCommand.getWorkerPath());
-        assertEquals("answer_generation", capturedCommand.getCapability());
+        assertEquals(AiBusinessCapability.DISCOVERY_ANSWER_GENERATION.value(), capturedCommand.getCapability());
         assertFalse(capturedCommand.isStream());
         assertFalse(capturedCommand.isCreateCandidate());
         assertEquals(101L, result.getCallId());
         assertEquals(102L, result.getCandidateId());
         assertEquals("SUCCEEDED", result.getStatus());
-        assertEquals("answer_generation", result.getCapability());
+        assertEquals(AiBusinessCapability.DISCOVERY_ANSWER_GENERATION.value(), result.getCapability());
     }
 
     @Test

@@ -163,12 +163,9 @@
       "menus": [
         "仪表盘",
         "AI 管理",
-        "AI 管理/服务配置",
         "AI 管理/模型配置",
-        "AI 管理/能力映射",
         "AI 管理/提示词版本",
         "AI 管理/调用统计",
-        "AI 管理/动作状态",
         "系统管理",
         "系统管理/字典管理",
         "系统管理/存储管理",
@@ -679,29 +676,12 @@
       "remarks": "AI 配置和调用治理根菜单",
       "children": [
         {
-          "id": 9,
-          "name": "服务配置",
-          "perms": ["ai:config:view", "ai:config:edit"],
-          "priority": 90,
-          "icon": "ai-service",
-          "url": "/ai/services",
-          "remarks": "AI 主服务和备用服务配置"
-        },
-        {
           "name": "模型配置",
           "perms": ["ai:config:view", "ai:config:edit"],
           "priority": 85,
           "icon": "ai-model",
           "url": "/ai/models",
           "remarks": "AI 模型注册、启停和检测"
-        },
-        {
-          "name": "能力映射",
-          "perms": ["ai:config:view", "ai:config:edit"],
-          "priority": 80,
-          "icon": "ai-capability",
-          "url": "/ai/capability-mappings",
-          "remarks": "AI 能力到模型的映射治理"
         },
         {
           "id": 10,
@@ -730,14 +710,6 @@
           "icon": "ai-invocation",
           "url": "/ai/invocations",
           "remarks": "AI 调用记录、候选和批量任务"
-        },
-        {
-          "name": "动作状态",
-          "perms": ["ai:config:view", "ai:config:edit"],
-          "priority": 65,
-          "icon": "ai-action-status",
-          "url": "/ai/action-status",
-          "remarks": "AI 功能动作可用状态"
         }
       ]
     },

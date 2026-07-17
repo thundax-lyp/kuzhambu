@@ -11,8 +11,7 @@ vi.mock("./prompts-service", () => ({
     previewPromptVersionCompare: vi.fn(),
     regeneratePromptSuggestion: vi.fn(),
     getCurrentPromptVersion: vi.fn(),
-    getPromptActionStatus: vi.fn(),
-    getPromptTemplateByScope: vi.fn(),
+    getPromptTemplateByCapability: vi.fn(),
     listPromptCapabilities: vi.fn(),
     listPromptVariables: vi.fn(),
     listPromptVersions: vi.fn(),
@@ -46,24 +45,22 @@ vi.mock("@/components/kuzhambu-drawer", () => {
 });
 
 const template = {
-    templateId: 1001,
-    scope: "classics",
-    capability: "summary",
+    id: 1001,
+    capability: "classics_summary",
     name: "摘要提示词",
     description: "生成摘要",
-    status: "ACTIVE",
+    enabled: true,
     currentVersionNo: 2,
     registeredAt: "2026-07-01T00:00:00.000Z"
 };
 
 const currentVersion = {
-    promptVersionId: 2002,
+    id: 2002,
     templateId: 1001,
     versionNo: 2,
     messageTemplatesJson: '[{"role":"user","content":"{{title}}"}]',
     variablesSnapshotJson: '[{"variableName":"title","required":true,"priority":1}]',
     outputSchemaJson: '{"type":"object"}',
-    current: true,
     changeSummary: "current",
     registeredAt: "2026-07-02T00:00:00.000Z"
 };
@@ -71,9 +68,8 @@ const currentVersion = {
 const versions = [
     {
         ...currentVersion,
-        promptVersionId: 2001,
+        id: 2001,
         versionNo: 1,
-        current: false,
         changeSummary: "initial"
     },
     currentVersion
@@ -81,7 +77,7 @@ const versions = [
 
 const variables = [
     {
-        variableId: 3001,
+        id: 3001,
         templateId: 1001,
         variableName: "title",
         required: true,
@@ -105,7 +101,7 @@ describe("PromptsPage", () => {
         replacePermissions(["ai:prompt:view", "ai:prompt:edit"]);
         vi.mocked(service.listPromptCapabilities).mockResolvedValue([
             {
-                capability: "summary",
+                capability: "classics_summary",
                 name: "摘要生成",
                 requiredTags: ["chat"],
                 outputMode: "JSON",
@@ -113,17 +109,10 @@ describe("PromptsPage", () => {
                 priority: 1
             }
         ]);
-        vi.mocked(service.getPromptTemplateByScope).mockResolvedValue(template);
+        vi.mocked(service.getPromptTemplateByCapability).mockResolvedValue(template);
         vi.mocked(service.getCurrentPromptVersion).mockResolvedValue(currentVersion);
         vi.mocked(service.listPromptVersions).mockResolvedValue(versions);
         vi.mocked(service.listPromptVariables).mockResolvedValue(variables);
-        vi.mocked(service.getPromptActionStatus).mockResolvedValue({
-            scope: "classics",
-            capability: "summary",
-            available: true,
-            unavailableReason: null,
-            checkedAt: "2026-07-02T00:00:00.000Z"
-        });
         vi.mocked(service.confirmPromptVariables).mockResolvedValue(true);
         vi.mocked(service.previewPromptVersionCompare).mockResolvedValue(versions);
         vi.mocked(service.regeneratePromptSuggestion).mockResolvedValue({
@@ -152,7 +141,7 @@ describe("PromptsPage", () => {
         renderPage();
 
         await screen.findByText("版本编辑");
-        await screen.findByText("摘要生成 / summary");
+        await screen.findByText("摘要生成 / classics_summary");
         fireEvent.click(screen.getByRole("button", { name: /查\s*询/ }));
 
         expect(await screen.findByText("摘要提示词")).toBeInTheDocument();
@@ -166,7 +155,7 @@ describe("PromptsPage", () => {
         renderPage();
 
         await screen.findByText("版本编辑");
-        await screen.findByText("摘要生成 / summary");
+        await screen.findByText("摘要生成 / classics_summary");
         fireEvent.click(screen.getByRole("button", { name: /查\s*询/ }));
 
         await waitFor(() => {
@@ -178,7 +167,7 @@ describe("PromptsPage", () => {
         renderPage();
 
         await screen.findByText("版本编辑");
-        await screen.findByText("摘要生成 / summary");
+        await screen.findByText("摘要生成 / classics_summary");
         fireEvent.click(screen.getByRole("button", { name: /查\s*询/ }));
         await screen.findByText("摘要提示词");
 

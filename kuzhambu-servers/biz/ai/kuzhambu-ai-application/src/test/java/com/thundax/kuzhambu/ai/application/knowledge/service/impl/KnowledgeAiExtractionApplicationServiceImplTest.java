@@ -8,6 +8,7 @@ import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
 import com.thundax.kuzhambu.ai.application.knowledge.support.KnowledgeAiWorkerUsecaseResolver;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionRequest;
 import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionResult;
 import java.util.function.Consumer;
@@ -29,7 +30,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         assertNotNull(result);
         assertEquals("KNOWLEDGE_GRAPH_EXTRACTION", capturedCommand.getOperation());
         assertEquals("/internal/ai/knowledge/graph-extraction", capturedCommand.getWorkerPath());
-        assertEquals("knowledge_graph", capturedCommand.getCapability());
+        assertEquals(AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT.value(), capturedCommand.getCapability());
     }
 
     @Test
@@ -42,7 +43,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertEquals("KNOWLEDGE_RELATION_EXTRACTION", capturedCommand.getOperation());
-        assertEquals("relation_extraction", capturedCommand.getCapability());
+        assertEquals(AiBusinessCapability.KNOWLEDGE_RELATION_EXTRACT.value(), capturedCommand.getCapability());
     }
 
     @Test
@@ -56,7 +57,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
 
         assertEquals("KNOWLEDGE_LINEAGE_EXTRACTION", capturedCommand.getOperation());
         assertEquals("/internal/ai/knowledge/lineage-extraction", capturedCommand.getWorkerPath());
-        assertEquals("lineage_extraction", capturedCommand.getCapability());
+        assertEquals(AiBusinessCapability.KNOWLEDGE_LINEAGE_EXTRACT.value(), capturedCommand.getCapability());
     }
 
     @Test
@@ -71,7 +72,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         assertEquals("knowledge", capturedCommand.getScope());
         assertEquals("KNOWLEDGE_TAG_EXTRACTION", capturedCommand.getOperation());
         assertEquals("/internal/ai/knowledge/tag-extraction", capturedCommand.getWorkerPath());
-        assertEquals("tags", capturedCommand.getCapability());
+        assertEquals(AiBusinessCapability.KNOWLEDGE_TAG_EXTRACT.value(), capturedCommand.getCapability());
         assertEquals(true, capturedCommand.isForceJson());
         assertEquals(true, capturedCommand.isCreateCandidate());
     }

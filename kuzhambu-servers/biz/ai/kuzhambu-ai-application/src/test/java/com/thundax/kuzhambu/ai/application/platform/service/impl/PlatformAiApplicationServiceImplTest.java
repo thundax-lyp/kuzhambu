@@ -11,6 +11,7 @@ import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
 import com.thundax.kuzhambu.ai.application.platform.command.PlatformAiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.platform.support.PlatformAiWorkerUsecaseResolver;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 
@@ -31,10 +32,10 @@ class PlatformAiApplicationServiceImplTest {
         assertEquals("platform", capturedCommand.getScope());
         assertEquals("PLATFORM_PROMPT_SUGGESTION", capturedCommand.getOperation());
         assertEquals("/internal/ai/platform/prompt-suggestion", capturedCommand.getWorkerPath());
-        assertEquals("prompt_suggestion", capturedCommand.getCapability());
+        assertEquals(AiBusinessCapability.PROMPT_SUGGEST.value(), capturedCommand.getCapability());
         assertFalse(capturedCommand.isStream());
         assertTrue(capturedCommand.isCreateCandidate());
-        assertEquals("prompt_suggestion", result.getCapability());
+        assertEquals(AiBusinessCapability.PROMPT_SUGGEST.value(), result.getCapability());
     }
 
     @Test
@@ -49,10 +50,10 @@ class PlatformAiApplicationServiceImplTest {
         assertNotNull(result);
         assertEquals("PLATFORM_VERSION_SUMMARY", capturedCommand.getOperation());
         assertEquals("/internal/ai/platform/version-summary", capturedCommand.getWorkerPath());
-        assertEquals("version_summary", capturedCommand.getCapability());
+        assertEquals(AiBusinessCapability.PLATFORM_VERSION_SUMMARY.value(), capturedCommand.getCapability());
         assertFalse(capturedCommand.isStream());
         assertFalse(capturedCommand.isCreateCandidate());
-        assertEquals("version_summary", result.getCapability());
+        assertEquals(AiBusinessCapability.PLATFORM_VERSION_SUMMARY.value(), result.getCapability());
     }
 
     @Test

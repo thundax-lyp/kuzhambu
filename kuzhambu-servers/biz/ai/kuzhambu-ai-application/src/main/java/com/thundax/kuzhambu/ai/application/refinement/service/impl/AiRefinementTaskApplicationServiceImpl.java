@@ -35,8 +35,8 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     private static final Logger LOGGER = LoggerFactory.getLogger(AiRefinementTaskApplicationServiceImpl.class);
 
     private static final String CONTENT_TYPE_SANCAI_ENTRY = "SANCAI_ENTRY";
-    private static final String CAPABILITY_IMAGE_ANALYSIS = "image_analysis";
-    private static final String CAPABILITY_IMAGE_GEN = "image_gen";
+    private static final String CAPABILITY_IMAGE_ANALYSIS = "classics_image_describe";
+    private static final String CAPABILITY_IMAGE_GEN = "classics_image_generate";
     private static final String STATUS_PENDING = "PENDING";
     private static final String STATUS_RUNNING = "RUNNING";
     private static final String STATUS_SUCCEEDED = "SUCCEEDED";
@@ -59,6 +59,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AiRefinementTask addTask(AiRefinementRequestCommand command) {
+        normalizeCommandCapability(command);
         validateAddCommand(command);
         Instant now = Instant.now();
         AiRefinementTask task = new AiRefinementTask();
@@ -77,7 +78,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         task.setPromptVersionId(command.getPromptVersionId());
         task.setStreamEnabled(isStreamEnabledTask(command));
         task.setRequestedAt(now);
-        Long taskId = taskRepository.saveTask(task);
+        Long taskId = taskRepository.insert(task);
         task.setTaskId(taskId);
         scheduleTaskExecution(taskId, command);
         return task;
@@ -137,7 +138,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
             return task;
         }
         task.markCancelled(Instant.now());
-        taskRepository.updateTask(task);
+        taskRepository.update(task);
         return task;
     }
 
@@ -151,12 +152,12 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     }
 
     private void executeTask(Long taskId, AiRefinementRequestCommand command) {
-        AiRefinementTask task = taskRepository.getTask(taskId);
+        AiRefinementTask task = taskRepository.get(taskId);
         if (task == null || STATUS_CANCELLED.equals(task.getStatus())) {
             return;
         }
         task.markRunning(Instant.now());
-        taskRepository.updateTask(task);
+        taskRepository.update(task);
 
         AiCandidateResult result;
         try {
@@ -175,7 +176,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
             publishFailureEvent(taskId, command, result);
         }
 
-        AiRefinementTask latestTask = taskRepository.getTask(taskId);
+        AiRefinementTask latestTask = taskRepository.get(taskId);
         if (latestTask == null || STATUS_CANCELLED.equals(latestTask.getStatus())) {
             return;
         }
@@ -185,7 +186,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
             latestTask.setModelName(command.getModelName());
         }
         applyResult(latestTask, result);
-        taskRepository.updateTask(latestTask);
+        taskRepository.update(latestTask);
         publishTerminalEvent(taskId, latestTask, result);
     }
 
@@ -204,7 +205,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     }
 
     private void markFailedAfterUnexpectedException(Long taskId, RuntimeException exception) {
-        AiRefinementTask task = taskRepository.getTask(taskId);
+        AiRefinementTask task = taskRepository.get(taskId);
         if (task == null || isTerminal(task.getStatus())) {
             return;
         }
@@ -213,7 +214,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         task.setErrorMessage(exception.getMessage());
         task.setCompletedAt(Instant.now());
         task.setStatus(STATUS_FAILED);
-        taskRepository.updateTask(task);
+        taskRepository.update(task);
         publishTerminalEvent(
                 taskId,
                 task,
@@ -231,35 +232,59 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
 
     private AiCandidateResult invoke(Long taskId, AiRefinementRequestCommand command, boolean streamEnabled) {
         String capability = command.getCapability();
-        if ("translate".equals(capability)) {
+        if ("classics_translate".equals(capability)) {
             return refinementApplicationService.translate(command);
         }
-        if ("summary".equals(capability)) {
+        if ("classics_summary".equals(capability)) {
             return refinementApplicationService.summarize(command);
         }
-        if ("tags".equals(capability)) {
+        if ("classics_tags".equals(capability)) {
             return refinementApplicationService.generateTags(command);
         }
-        if ("qa".equals(capability)) {
+        if ("classics_qa".equals(capability)) {
             return refinementApplicationService.generateQa(command);
         }
-        if ("image_analysis".equals(capability)) {
+        if ("classics_image_describe".equals(capability)) {
             return streamEnabled
                     ? refinementApplicationService.analyzeImage(command, event -> publishStreamEvent(taskId, event))
                     : refinementApplicationService.analyzeImage(command);
         }
-        if ("visual".equals(capability)) {
+        if ("classics_visual_describe".equals(capability)) {
             return refinementApplicationService.describeVisual(command);
         }
-        if ("image_gen".equals(capability)) {
+        if ("classics_image_generate".equals(capability)) {
             return streamEnabled
                     ? refinementApplicationService.generateImage(command, event -> publishStreamEvent(taskId, event))
                     : refinementApplicationService.generateImage(command);
         }
-        if ("split".equals(capability)) {
+        if ("classics_split".equals(capability)) {
             return refinementApplicationService.splitEntry(command);
         }
         throw new BizException("unsupported ai refinement capability: " + capability);
+    }
+
+    private void normalizeCommandCapability(AiRefinementRequestCommand command) {
+        if (command == null) {
+            return;
+        }
+        command.setCapability(normalizeCapability(command.getCapability()));
+    }
+
+    private String normalizeCapability(String capability) {
+        if (capability == null) {
+            return null;
+        }
+        return switch (capability) {
+            case "translate" -> "classics_translate";
+            case "summary" -> "classics_summary";
+            case "tags" -> "classics_tags";
+            case "qa" -> "classics_qa";
+            case "image_analysis" -> "classics_image_describe";
+            case "visual" -> "classics_visual_describe";
+            case "image_gen" -> "classics_image_generate";
+            case "split" -> "classics_split";
+            default -> capability;
+        };
     }
 
     private void applyResult(AiRefinementTask task, AiCandidateResult result) {
@@ -295,7 +320,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         if (taskId == null) {
             throw new BizException("AI refinement taskId is required");
         }
-        AiRefinementTask task = taskRepository.getTask(taskId);
+        AiRefinementTask task = taskRepository.get(taskId);
         if (task == null) {
             throw new BizException("AI refinement task not found or expired: " + taskId);
         }

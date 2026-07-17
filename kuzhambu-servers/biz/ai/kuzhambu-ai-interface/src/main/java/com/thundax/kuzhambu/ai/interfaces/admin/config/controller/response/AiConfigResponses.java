@@ -27,16 +27,13 @@ public final class AiConfigResponses {
 
     @Getter
     @Builder
-    @Schema(name = "AiServiceConfigResponse", description = "AI服务配置响应")
+    @Schema(name = "AiModelResponse", description = "AI模型响应")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class ServiceConfigResponse implements Serializable {
+    public static class ModelResponse implements Serializable {
 
-        @JsonProperty(value = "serviceId")
-        private Long serviceId;
-
-        @JsonProperty(value = "serviceRole")
-        private String serviceRole;
+        @JsonProperty(value = "id")
+        private Long id;
 
         @JsonProperty(value = "apiSource")
         private String apiSource;
@@ -47,40 +44,14 @@ public final class AiConfigResponses {
         @JsonProperty(value = "apiKeyConfigured")
         private Boolean apiKeyConfigured;
 
-        @JsonProperty(value = "enabled")
-        private Boolean enabled;
-
-        @JsonProperty(value = "status")
-        private String status;
-
-        @JsonProperty(value = "lastCheckedAt")
-        private Instant lastCheckedAt;
-
-        @JsonProperty(value = "configuredAt")
-        private Instant configuredAt;
-    }
-
-    @Getter
-    @Builder
-    @Schema(name = "AiModelResponse", description = "AI模型响应")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class ModelResponse implements Serializable {
-
-        @JsonProperty(value = "modelId")
-        private Long modelId;
-
-        @JsonProperty(value = "serviceId")
-        private Long serviceId;
-
         @JsonProperty(value = "modelName")
         private String modelName;
 
         @JsonProperty(value = "displayName")
         private String displayName;
 
-        @JsonProperty(value = "capabilityTags")
-        private List<String> capabilityTags;
+        @JsonProperty(value = "capabilities")
+        private List<String> capabilities;
 
         @JsonProperty(value = "defaultParamsJson")
         private String defaultParamsJson;
@@ -93,41 +64,6 @@ public final class AiConfigResponses {
 
         @JsonProperty(value = "registeredAt")
         private Instant registeredAt;
-    }
-
-    @Getter
-    @Builder
-    @Schema(name = "AiModelCheckRecordResponse", description = "AI模型检测记录响应")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class ModelCheckRecordResponse implements Serializable {
-
-        @JsonProperty(value = "checkId")
-        private Long checkId;
-
-        @JsonProperty(value = "modelId")
-        private Long modelId;
-
-        @JsonProperty(value = "serviceId")
-        private Long serviceId;
-
-        @JsonProperty(value = "modelName")
-        private String modelName;
-
-        @JsonProperty(value = "status")
-        private String status;
-
-        @JsonProperty(value = "latencyMs")
-        private Integer latencyMs;
-
-        @JsonProperty(value = "errorType")
-        private String errorType;
-
-        @JsonProperty(value = "errorMessage")
-        private String errorMessage;
-
-        @JsonProperty(value = "checkedAt")
-        private Instant checkedAt;
     }
 
     @Getter
@@ -146,6 +82,9 @@ public final class AiConfigResponses {
         @JsonProperty(value = "requiredTags")
         private List<String> requiredTags;
 
+        @JsonProperty(value = "requiredModelCapabilities")
+        private List<String> requiredModelCapabilities;
+
         @JsonProperty(value = "outputMode")
         private String outputMode;
 
@@ -158,50 +97,33 @@ public final class AiConfigResponses {
 
     @Getter
     @Builder
-    @Schema(name = "AiCapabilityMappingResponse", description = "AI能力映射响应")
+    @Schema(name = "AiBusinessConfigResponse", description = "AI业务配置响应")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class CapabilityMappingResponse implements Serializable {
+    public static class BusinessConfigResponse implements Serializable {
 
-        @JsonProperty(value = "mappingId")
-        private Long mappingId;
-
-        @JsonProperty(value = "scope")
-        private String scope;
+        @JsonProperty(value = "id")
+        private Long id;
 
         @JsonProperty(value = "capability")
         private String capability;
+
+        @JsonProperty(value = "promptTemplateId")
+        private Long promptTemplateId;
 
         @JsonProperty(value = "modelId")
         private Long modelId;
 
+        @JsonProperty(value = "defaultParamsJson")
+        private String defaultParamsJson;
+
         @JsonProperty(value = "enabled")
         private Boolean enabled;
 
+        @JsonProperty(value = "priority")
+        private Integer priority;
+
         @JsonProperty(value = "configuredAt")
         private Instant configuredAt;
-    }
-
-    @Getter
-    @Builder
-    @Schema(name = "AiActionStatusResponse", description = "AI动作状态响应")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class ActionStatusResponse implements Serializable {
-
-        @JsonProperty(value = "scope")
-        private String scope;
-
-        @JsonProperty(value = "capability")
-        private String capability;
-
-        @JsonProperty(value = "available")
-        private Boolean available;
-
-        @JsonProperty(value = "unavailableReason")
-        private String unavailableReason;
-
-        @JsonProperty(value = "checkedAt")
-        private Instant checkedAt;
     }
 }

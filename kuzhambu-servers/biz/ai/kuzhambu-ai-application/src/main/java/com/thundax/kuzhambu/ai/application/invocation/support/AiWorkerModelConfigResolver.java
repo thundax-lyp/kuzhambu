@@ -3,13 +3,14 @@ package com.thundax.kuzhambu.ai.application.invocation.support;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thundax.kuzhambu.ai.application.capability.service.AiCapabilityApplicationService;
-import com.thundax.kuzhambu.ai.application.config.service.AiServiceConfigApplicationService;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.thundax.kuzhambu.ai.application.config.business.service.AiBusinessConfigApplicationService;
+import com.thundax.kuzhambu.ai.application.config.model.service.AiModelApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
-import com.thundax.kuzhambu.ai.application.model.service.AiModelApplicationService;
-import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiCapabilityMapping;
-import com.thundax.kuzhambu.ai.domain.config.model.entity.AiServiceConfig;
-import com.thundax.kuzhambu.ai.domain.model.model.entity.AiModel;
+import com.thundax.kuzhambu.ai.domain.config.model.entity.AiBusinessConfig;
+import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiModelCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -17,19 +18,16 @@ import org.springframework.stereotype.Component;
 @Component
 public class AiWorkerModelConfigResolver {
 
-    private final AiServiceConfigApplicationService serviceConfigService;
+    private final AiBusinessConfigApplicationService businessConfigService;
     private final AiModelApplicationService modelService;
-    private final AiCapabilityApplicationService capabilityService;
     private final ObjectMapper objectMapper;
 
     public AiWorkerModelConfigResolver(
-            AiServiceConfigApplicationService serviceConfigService,
+            AiBusinessConfigApplicationService businessConfigService,
             AiModelApplicationService modelService,
-            AiCapabilityApplicationService capabilityService,
             ObjectMapper objectMapper) {
-        this.serviceConfigService = serviceConfigService;
+        this.businessConfigService = businessConfigService;
         this.modelService = modelService;
-        this.capabilityService = capabilityService;
         this.objectMapper = objectMapper;
     }
 
@@ -38,23 +36,13 @@ public class AiWorkerModelConfigResolver {
             return null;
         }
 
-        AiModel model = resolveModel(command);
-        AiServiceConfig serviceConfig = resolveServiceConfig(command, model);
-
-        if (serviceConfig == null) {
-            throw new IllegalArgumentException("AI service config not found: serviceRole=%s, serviceId=%s"
-                    .formatted(command.getServiceRole(), command.getServiceId()));
+        ModelResolution resolution = resolveModel(command);
+        AiModel model = resolution.model();
+        if (model.getApiSource() == null) {
+            throw new IllegalArgumentException("AI model apiSource is required: " + command.getModelId());
         }
-        if (!serviceConfig.isAvailable()) {
-            throw new IllegalArgumentException("AI service is unavailable: serviceRole=%s, serviceId=%s"
-                    .formatted(serviceConfig.getServiceRole(), serviceConfig.getServiceId()));
-        }
-
-        if (model.getServiceId() != null
-                && serviceConfig.getServiceId() != null
-                && !model.getServiceId().equals(serviceConfig.getServiceId())) {
-            throw new IllegalArgumentException("AI service mismatch: serviceRole=%s, modelId=%s"
-                    .formatted(serviceConfig.getServiceRole(), model.getModelId()));
+        if (isBlank(model.getBaseUrl())) {
+            throw new IllegalArgumentException("AI model baseUrl is required: " + command.getModelId());
         }
 
         if (!isBlank(command.getModelName()) && !command.getModelName().equals(model.getModelName())) {
@@ -63,42 +51,31 @@ public class AiWorkerModelConfigResolver {
         }
 
         return new ResolvedModelConfig(
-                serviceConfig.getServiceId(),
-                serviceConfig.getServiceRole(),
-                model.getModelId(),
-                serviceConfig.getApiSource(),
-                serviceConfig.getBaseUrl(),
-                serviceConfig.getEncryptedApiKey(),
+                command.getServiceId(),
+                command.getServiceRole(),
+                value(model.getId()),
+                model.getApiSource() == null ? null : model.getApiSource().value(),
+                model.getBaseUrl(),
+                model.getEncryptedApiKey(),
                 model.getModelName(),
-                model.getCapabilityTags() == null ? new ArrayList<>() : new ArrayList<>(model.getCapabilityTags()),
-                parseParameters(model),
+                model.getCapabilities() == null
+                        ? new ArrayList<>()
+                        : model.getCapabilities().stream()
+                                .map(AiModelCapability::value)
+                                .toList(),
+                parseParameters(model, resolution.config()),
                 null);
     }
 
-    private AiServiceConfig resolveServiceConfig(AiInvokeCommand command, AiModel model) {
-        if (!isBlank(command.getServiceRole())) {
-            AiServiceConfig byRole = serviceConfigService.getByRole(command.getServiceRole());
-            if (byRole == null && command.getServiceId() != null) {
-                return serviceConfigService.getByServiceId(command.getServiceId());
-            }
-            return byRole;
-        }
-        if (command.getServiceId() != null) {
-            return serviceConfigService.getByServiceId(command.getServiceId());
-        }
-        if (model != null && model.getServiceId() != null) {
-            return serviceConfigService.getByServiceId(model.getServiceId());
-        }
-        return null;
-    }
-
-    private AiModel resolveModel(AiInvokeCommand command) {
+    private ModelResolution resolveModel(AiInvokeCommand command) {
+        AiBusinessConfig config = resolveBusinessConfig(command);
         if (command.getModelId() == null) {
-            AiCapabilityMapping mapping = resolveCapabilityMapping(command);
-            if (mapping == null || mapping.getModelId() == null) {
+            if (config == null || config.getModelId() == null) {
                 throw new IllegalArgumentException("AI modelId is required");
             }
-            command.setModelId(mapping.getModelId());
+            command.setModelId(value(config.getModelId()));
+        } else if (!matchesModel(command.getModelId(), config)) {
+            config = null;
         }
         AiModel model = modelService.get(command.getModelId());
         if (model == null) {
@@ -107,37 +84,55 @@ public class AiWorkerModelConfigResolver {
         if (!model.isEnabled()) {
             throw new IllegalArgumentException("AI model is disabled: " + command.getModelId());
         }
-        return model;
+        return new ModelResolution(model, config);
     }
 
-    private AiCapabilityMapping resolveCapabilityMapping(AiInvokeCommand command) {
-        if (capabilityService == null || isBlank(command.getScope()) || isBlank(command.getCapability())) {
-            return null;
-        }
-        AiCapabilityMapping mapping = capabilityService.getMapping(command.getScope(), command.getCapability());
-        if (mapping == null) {
-            return null;
-        }
-        if (!mapping.isEnabled()) {
-            throw new IllegalArgumentException("AI capability mapping is disabled: scope=%s, capability=%s"
-                    .formatted(command.getScope(), command.getCapability()));
-        }
-        return mapping;
+    private boolean matchesModel(Long modelId, AiBusinessConfig config) {
+        return modelId != null && config != null && modelId.equals(value(config.getModelId()));
     }
 
-    private JsonNode parseParameters(AiModel model) {
-        if (isBlank(model.getDefaultParamsJson())) {
-            return objectMapper.createObjectNode();
+    private AiBusinessConfig resolveBusinessConfig(AiInvokeCommand command) {
+        if (isBlank(command.getCapability())) {
+            return null;
         }
+        List<AiBusinessConfig> configs = businessConfigService.list(command.getCapability(), true);
+        return configs.isEmpty() ? null : configs.get(0);
+    }
+
+    private JsonNode parseParameters(AiModel model, AiBusinessConfig config) {
+        ObjectNode parameters = objectMapper.createObjectNode();
+        mergeParameters(parameters, model.getDefaultParamsJson(), "AI model default parameters is not valid JSON");
+        if (config != null) {
+            mergeParameters(
+                    parameters,
+                    config.getDefaultParamsJson(),
+                    "AI business config default parameters is not valid JSON");
+        }
+        return parameters;
+    }
+
+    private void mergeParameters(ObjectNode target, String parametersJson, String errorMessage) {
+        if (isBlank(parametersJson)) {
+            return;
+        }
+        JsonNode parameters;
         try {
-            return objectMapper.readTree(model.getDefaultParamsJson());
+            parameters = objectMapper.readTree(parametersJson);
         } catch (JsonProcessingException ex) {
-            throw new IllegalArgumentException("AI model default parameters is not valid JSON", ex);
+            throw new IllegalArgumentException(errorMessage, ex);
         }
+        if (!parameters.isObject()) {
+            throw new IllegalArgumentException(errorMessage);
+        }
+        target.setAll((ObjectNode) parameters);
     }
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private Long value(AiModelId id) {
+        return id == null ? null : id.value();
     }
 
     public record ResolvedModelConfig(
@@ -151,4 +146,6 @@ public class AiWorkerModelConfigResolver {
             List<String> capabilityTags,
             JsonNode parameters,
             Long timeoutMs) {}
+
+    private record ModelResolution(AiModel model, AiBusinessConfig config) {}
 }

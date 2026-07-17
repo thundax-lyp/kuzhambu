@@ -1,30 +1,11 @@
 package com.thundax.kuzhambu.ai.application.capability.service;
 
-import com.thundax.kuzhambu.ai.application.capability.command.AiCapabilityMappingSaveCommand;
-import com.thundax.kuzhambu.ai.application.capability.result.AiActionStatusResult;
-import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiCapability;
-import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiCapabilityMapping;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import java.util.List;
 
 public interface AiCapabilityApplicationService {
 
-    AiCapability getCapability(String capability);
+    AiBusinessCapability getCapability(String capability);
 
-    List<AiCapability> listCapabilities(Boolean enabled);
-
-    AiCapabilityMapping getMapping(String scope, String capability);
-
-    List<AiCapabilityMapping> listMappings(String scope, String capability, Boolean enabled);
-
-    Long saveMapping(AiCapabilityMappingSaveCommand command);
-
-    void assertModelCanBeDeleted(Long modelId);
-
-    void refreshActionStatusesByModelId(Long modelId);
-
-    AiActionStatusResult getActionStatus(String scope, String capability);
-
-    List<AiActionStatusResult> listActionStatuses(String scope, String capability, Boolean available);
-
-    AiActionStatusResult refreshActionStatus(String scope, String capability);
+    List<AiBusinessCapability> listCapabilities(Boolean enabled);
 }

@@ -35,7 +35,7 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
     }
 
     @Override
-    public Long saveCallRecord(AiCallRecord callRecord) {
+    public Long insertCallRecord(AiCallRecord callRecord) {
         AiCallRecordDO dataObject = toCallObject(callRecord);
         if (dataObject.getCallId() == null) {
             dataObject.setCallId(nextId());
@@ -132,7 +132,7 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
     }
 
     @Override
-    public Long saveCandidate(AiCandidate candidate) {
+    public Long insertCandidate(AiCandidate candidate) {
         AiCandidateDO dataObject = toCandidateObject(candidate);
         if (dataObject.getCandidateId() == null) {
             dataObject.setCandidateId(nextId());

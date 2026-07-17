@@ -39,7 +39,7 @@ public class AiRefinementTaskCleanupApplicationServiceImpl implements AiRefineme
                     continue;
                 }
                 task.markFailed(FAILURE_STAGE_WORKER_RESULT, ERROR_TYPE_TASK_EXPIRED, ERROR_MESSAGE_TASK_EXPIRED, now);
-                taskRepository.updateTask(task);
+                taskRepository.update(task);
                 expiredCount++;
             }
         }

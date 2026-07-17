@@ -52,7 +52,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
         validateCommand(command);
         command.setStream(false);
         AiCallRecord callRecord = command.toRunningCallRecord();
-        Long callId = aiInvocationRepository.saveCallRecord(callRecord);
+        Long callId = aiInvocationRepository.insertCallRecord(callRecord);
         callRecord.setCallId(callId);
         AiInvokeResult result;
         try {
@@ -73,7 +73,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
         validateCommand(command);
         command.setStream(true);
         AiCallRecord callRecord = command.toRunningCallRecord();
-        Long callId = aiInvocationRepository.saveCallRecord(callRecord);
+        Long callId = aiInvocationRepository.insertCallRecord(callRecord);
         callRecord.setCallId(callId);
         AtomicReference<AiInvokeResult> completedResult = new AtomicReference<>();
         try {
@@ -134,7 +134,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
             aiInvocationRepository.updateCallRecord(callRecord);
             if (command.isCreateCandidate()) {
                 Long candidateId =
-                        aiInvocationRepository.saveCandidate(result.toCandidate(command, callRecord.getCallId()));
+                        aiInvocationRepository.insertCandidate(result.toCandidate(command, callRecord.getCallId()));
                 result.setCandidateId(candidateId);
             }
         } else {
@@ -144,7 +144,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
                 AiCandidate candidate = result.toCandidate(command, callRecord.getCallId());
                 candidate.reject(
                         result.getErrorType(), result.getErrorMessage(), result.getFailureStage(), completedAt);
-                Long candidateId = aiInvocationRepository.saveCandidate(candidate);
+                Long candidateId = aiInvocationRepository.insertCandidate(candidate);
                 result.setCandidateId(candidateId);
             }
             aiInvocationRepository.updateCallRecord(callRecord);

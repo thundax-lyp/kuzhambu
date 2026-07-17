@@ -243,7 +243,7 @@ class AiWorkerInvocationApplicationServiceTest {
         }
 
         @Override
-        public Long saveCallRecord(AiCallRecord callRecord) {
+        public Long insertCallRecord(AiCallRecord callRecord) {
             return 100L;
         }
 
@@ -292,7 +292,7 @@ class AiWorkerInvocationApplicationServiceTest {
         }
 
         @Override
-        public Long saveCandidate(AiCandidate candidate) {
+        public Long insertCandidate(AiCandidate candidate) {
             savedCandidate.set(candidate);
             return 200L;
         }

@@ -15,14 +15,14 @@ import org.junit.jupiter.api.Test;
 
 class AiRefinementApplicationServiceImplTest {
 
-    private static final String CAPABILITY_TRANSLATE = "translate";
-    private static final String CAPABILITY_SUMMARY = "summary";
-    private static final String CAPABILITY_TAGS = "tags";
-    private static final String CAPABILITY_QA = "qa";
-    private static final String CAPABILITY_IMAGE_ANALYSIS = "image_analysis";
-    private static final String CAPABILITY_IMAGE_GEN = "image_gen";
-    private static final String CAPABILITY_VISUAL = "visual";
-    private static final String CAPABILITY_SPLIT = "split";
+    private static final String CAPABILITY_TRANSLATE = "classics_translate";
+    private static final String CAPABILITY_SUMMARY = "classics_summary";
+    private static final String CAPABILITY_TAGS = "classics_tags";
+    private static final String CAPABILITY_QA = "classics_qa";
+    private static final String CAPABILITY_IMAGE_ANALYSIS = "classics_image_describe";
+    private static final String CAPABILITY_IMAGE_GEN = "classics_image_generate";
+    private static final String CAPABILITY_VISUAL = "classics_visual_describe";
+    private static final String CAPABILITY_SPLIT = "classics_split";
 
     private final ClassicsAiWorkerUsecaseResolver resolver = new ClassicsAiWorkerUsecaseResolver();
 
@@ -38,7 +38,7 @@ class AiRefinementApplicationServiceImplTest {
         assertNotNull(result);
         assertEquals("CLASSICS_SANCAI_SUMMARY", capturedCommand.getOperation());
         assertEquals("/internal/ai/classics/sancai/summary", capturedCommand.getWorkerPath());
-        assertEquals("summary", capturedCommand.getCapability());
+        assertEquals(CAPABILITY_SUMMARY, capturedCommand.getCapability());
     }
 
     @Test
@@ -54,7 +54,7 @@ class AiRefinementApplicationServiceImplTest {
         assertNotNull(result);
         assertEquals("CLASSICS_WANGQI_SUMMARY", capturedCommand.getOperation());
         assertEquals("/internal/ai/classics/wangqi/summary", capturedCommand.getWorkerPath());
-        assertEquals("summary", capturedCommand.getCapability());
+        assertEquals(CAPABILITY_SUMMARY, capturedCommand.getCapability());
     }
 
     @Test
@@ -69,7 +69,7 @@ class AiRefinementApplicationServiceImplTest {
         assertNotNull(result);
         assertEquals("CLASSICS_MING_CUSTOMS_SUMMARY", capturedCommand.getOperation());
         assertEquals("/internal/ai/classics/ming-customs/summary", capturedCommand.getWorkerPath());
-        assertEquals("summary", capturedCommand.getCapability());
+        assertEquals(CAPABILITY_SUMMARY, capturedCommand.getCapability());
     }
 
     @Test
@@ -85,7 +85,7 @@ class AiRefinementApplicationServiceImplTest {
         assertNotNull(result);
         assertEquals("CLASSICS_WANGQI_TAGS", capturedCommand.getOperation());
         assertEquals("/internal/ai/classics/wangqi/tags", capturedCommand.getWorkerPath());
-        assertEquals("tags", capturedCommand.getCapability());
+        assertEquals(CAPABILITY_TAGS, capturedCommand.getCapability());
     }
 
     @Test
@@ -100,7 +100,7 @@ class AiRefinementApplicationServiceImplTest {
         assertNotNull(result);
         assertEquals("CLASSICS_MING_CUSTOMS_QA", capturedCommand.getOperation());
         assertEquals("/internal/ai/classics/ming-customs/qa", capturedCommand.getWorkerPath());
-        assertEquals("qa", capturedCommand.getCapability());
+        assertEquals(CAPABILITY_QA, capturedCommand.getCapability());
     }
 
     @Test
@@ -116,7 +116,7 @@ class AiRefinementApplicationServiceImplTest {
         assertNotNull(result);
         assertEquals("CLASSICS_SANCAI_TRANSLATE", capturedCommand.getOperation());
         assertEquals("/internal/ai/classics/sancai/translate", capturedCommand.getWorkerPath());
-        assertEquals("translate", capturedCommand.getCapability());
+        assertEquals(CAPABILITY_TRANSLATE, capturedCommand.getCapability());
     }
 
     @Test
@@ -132,7 +132,7 @@ class AiRefinementApplicationServiceImplTest {
         assertNotNull(result);
         assertEquals("CLASSICS_SANCAI_VISUAL_DESCRIPTION", capturedCommand.getOperation());
         assertEquals("/internal/ai/classics/sancai/visual-description", capturedCommand.getWorkerPath());
-        assertEquals("visual", capturedCommand.getCapability());
+        assertEquals(CAPABILITY_VISUAL, capturedCommand.getCapability());
     }
 
     @Test
@@ -147,7 +147,7 @@ class AiRefinementApplicationServiceImplTest {
         assertNotNull(result);
         assertEquals("CLASSICS_SANCAI_SPLIT", capturedCommand.getOperation());
         assertEquals("/internal/ai/classics/sancai/split", capturedCommand.getWorkerPath());
-        assertEquals("split", capturedCommand.getCapability());
+        assertEquals(CAPABILITY_SPLIT, capturedCommand.getCapability());
     }
 
     @Test
@@ -165,7 +165,7 @@ class AiRefinementApplicationServiceImplTest {
         assertEquals("image-analysis-body", result.getResultPayload());
         assertEquals("CLASSICS_SANCAI_IMAGE_ANALYSIS", capturedCommand.getOperation());
         assertEquals("/internal/ai/classics/sancai/image-analysis", capturedCommand.getWorkerPath());
-        assertEquals("image_analysis", capturedCommand.getCapability());
+        assertEquals(CAPABILITY_IMAGE_ANALYSIS, capturedCommand.getCapability());
         assertEquals(true, capturedCommand.isStream());
         assertEquals(true, capturedCommand.isCreateCandidate());
         assertEquals(true, capturedCommand.toRunningCallRecord().isStreamUsed());
@@ -185,7 +185,7 @@ class AiRefinementApplicationServiceImplTest {
         assertNotNull(result);
         assertEquals("CLASSICS_SANCAI_IMAGE_GEN", capturedCommand.getOperation());
         assertEquals("/internal/ai/classics/sancai/image-gen", capturedCommand.getWorkerPath());
-        assertEquals("image_gen", capturedCommand.getCapability());
+        assertEquals(CAPABILITY_IMAGE_GEN, capturedCommand.getCapability());
         assertEquals(true, capturedCommand.isStream());
         assertEquals(true, invocationService.streamInvoked());
     }

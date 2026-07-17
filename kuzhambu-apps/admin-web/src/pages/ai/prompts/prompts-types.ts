@@ -1,28 +1,26 @@
 export interface AiPromptTemplateRecord {
-    templateId?: number | null;
-    scope?: string | null;
+    id?: number | null;
     capability?: string | null;
     name?: string | null;
     description?: string | null;
-    status?: string | null;
+    enabled?: boolean | null;
     currentVersionNo?: number | null;
     registeredAt?: string | null;
 }
 
 export interface AiPromptVersionRecord {
-    promptVersionId?: number | null;
+    id?: number | null;
     templateId?: number | null;
     versionNo?: number | null;
     messageTemplatesJson?: string | null;
     variablesSnapshotJson?: string | null;
     outputSchemaJson?: string | null;
-    current?: boolean | null;
     changeSummary?: string | null;
     registeredAt?: string | null;
 }
 
 export interface AiPromptVariableRecord {
-    variableId?: number | null;
+    id?: number | null;
     templateId?: number | null;
     variableName: string;
     required: boolean;
@@ -37,12 +35,4 @@ export interface AiPromptCapabilityRecord {
     outputMode: string;
     enabled: boolean;
     priority: number;
-}
-
-export interface AiPromptActionStatusRecord {
-    scope?: string | null;
-    capability?: string | null;
-    available?: boolean | null;
-    unavailableReason?: string | null;
-    checkedAt?: string | null;
 }

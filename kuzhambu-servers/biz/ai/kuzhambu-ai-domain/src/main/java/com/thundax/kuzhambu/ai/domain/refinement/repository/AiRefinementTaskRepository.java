@@ -6,11 +6,11 @@ import java.util.List;
 
 public interface AiRefinementTaskRepository {
 
-    AiRefinementTask getTask(Long taskId);
+    AiRefinementTask get(Long taskId);
 
-    Long saveTask(AiRefinementTask task);
+    Long insert(AiRefinementTask task);
 
-    int updateTask(AiRefinementTask task);
+    int update(AiRefinementTask task);
 
     List<AiRefinementTask> listTasks(
             String capability,

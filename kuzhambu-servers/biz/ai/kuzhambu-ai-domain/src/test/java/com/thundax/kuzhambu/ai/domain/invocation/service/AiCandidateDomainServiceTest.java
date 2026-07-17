@@ -150,7 +150,7 @@ class AiCandidateDomainServiceTest {
         }
 
         @Override
-        public Long saveCallRecord(com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord callRecord) {
+        public Long insertCallRecord(com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord callRecord) {
             return null;
         }
 
@@ -194,7 +194,7 @@ class AiCandidateDomainServiceTest {
         }
 
         @Override
-        public Long saveCandidate(AiCandidate candidate) {
+        public Long insertCandidate(AiCandidate candidate) {
             return null;
         }
 

@@ -140,19 +140,19 @@ class AdminStarterArchitectureTest extends AbstractArchitectureTest {
         String systemSql = Files.readString(repoRoot.resolve("db/data/system.sql"));
 
         Assertions.assertThat(systemJson)
-                .contains("\"url\": \"/ai/services\"")
                 .contains("\"url\": \"/ai/models\"")
-                .contains("\"url\": \"/ai/capability-mappings\"")
                 .contains("\"url\": \"/ai/prompts\"")
                 .contains("\"url\": \"/ai/invocations\"")
-                .contains("\"url\": \"/ai/action-status\"");
+                .doesNotContain("\"url\": \"/ai/action-status\"")
+                .doesNotContain("\"url\": \"/ai/services\"")
+                .doesNotContain("\"url\": \"/ai/capability-mappings\"");
         Assertions.assertThat(systemSql)
-                .contains("'/ai/services'")
                 .contains("'/ai/models'")
-                .contains("'/ai/capability-mappings'")
                 .contains("'/ai/prompts'")
                 .contains("'/ai/invocations'")
-                .contains("'/ai/action-status'");
+                .doesNotContain("'/ai/action-status'")
+                .doesNotContain("'/ai/services'")
+                .doesNotContain("'/ai/capability-mappings'");
     }
 
     private String loadApplicationYaml() throws IOException {
