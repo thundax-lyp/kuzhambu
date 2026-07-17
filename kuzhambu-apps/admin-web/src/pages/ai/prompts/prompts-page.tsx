@@ -37,7 +37,9 @@ import type {
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./prompts-page.css";
 
-type PromptFormValues = Omit<AiPromptTemplateChangeCommand, "variables">;
+type PromptFormValues = Omit<AiPromptTemplateChangeCommand, "variables" | "enabled"> & {
+    status?: string | null;
+};
 
 const EMPTY_JSON_ARRAY = "[]";
 const EMPTY_JSON_OBJECT = "{}";
@@ -117,6 +119,10 @@ const variablesToJson = (variables: AiPromptVariableRecord[] = []) => {
         2
     );
 };
+
+const statusFromEnabled = (enabled?: boolean | null) => (enabled === false ? "INACTIVE" : "ACTIVE");
+
+const enabledFromStatus = (status?: string | null) => status !== "INACTIVE";
 
 const versionTitle = (version: AiPromptVersionRecord) => {
     return `版本 ${version.versionNo ?? "-"}`;
@@ -210,7 +216,7 @@ export const PromptsPage = () => {
             capability: template.capability || query.capability || "",
             name: template.name || "",
             description: template.description || "",
-            status: template.status || "ACTIVE",
+            status: statusFromEnabled(template.enabled),
             messageTemplatesJson: formatJsonText(
                 currentVersion?.messageTemplatesJson,
                 EMPTY_JSON_ARRAY
@@ -298,7 +304,7 @@ export const PromptsPage = () => {
             capability: values.capability,
             name: values.name,
             description: values.description || null,
-            status: values.status || "ACTIVE",
+            enabled: enabledFromStatus(values.status),
             messageTemplatesJson: normalizeJsonText(messageTemplatesJson, EMPTY_JSON_ARRAY),
             variablesSnapshotJson: normalizeJsonText(variablesSnapshot, EMPTY_JSON_ARRAY),
             outputSchemaJson: normalizeJsonText(outputSchemaJson, EMPTY_JSON_OBJECT),
@@ -519,8 +525,8 @@ export const PromptsPage = () => {
                         <Descriptions.Item label="description">
                             {template.description || "-"}
                         </Descriptions.Item>
-                        <Descriptions.Item label="status">
-                            {template.status || "-"}
+                        <Descriptions.Item label="enabled">
+                            {statusFromEnabled(template.enabled)}
                         </Descriptions.Item>
                         <Descriptions.Item label="currentVersionNo">
                             {template.currentVersionNo || "-"}
@@ -551,7 +557,7 @@ export const PromptsPage = () => {
                             >
                                 <Input />
                             </Form.Item>
-                            <Form.Item label="status" name="status">
+                            <Form.Item label="enabled" name="status">
                                 <Select
                                     options={[
                                         { label: "ACTIVE", value: "ACTIVE" },

@@ -49,7 +49,7 @@ const template = {
     capability: "classics_summary",
     name: "摘要提示词",
     description: "生成摘要",
-    status: "ACTIVE",
+    enabled: true,
     currentVersionNo: 2,
     registeredAt: "2026-07-01T00:00:00.000Z"
 };

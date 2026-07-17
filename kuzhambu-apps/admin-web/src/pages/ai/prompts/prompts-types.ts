@@ -3,7 +3,7 @@ export interface AiPromptTemplateRecord {
     capability?: string | null;
     name?: string | null;
     description?: string | null;
-    status?: string | null;
+    enabled?: boolean | null;
     currentVersionNo?: number | null;
     registeredAt?: string | null;
 }

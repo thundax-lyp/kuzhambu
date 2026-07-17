@@ -15,7 +15,7 @@ export interface AiPromptTemplateChangeCommand {
     capability: string;
     name: string;
     description?: string | null;
-    status?: string | null;
+    enabled?: boolean | null;
     messageTemplatesJson: string;
     variablesSnapshotJson?: string | null;
     outputSchemaJson?: string | null;
