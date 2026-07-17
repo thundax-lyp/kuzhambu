@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.ai.domain.config.model.enums;
 
 import com.thundax.kuzhambu.common.core.exception.DomainException;
 import java.util.Arrays;
+import java.util.List;
 
 public enum AiBusinessCapability {
     CLASSICS_TRANSLATE("classics_translate", "古籍翻译"),
@@ -37,6 +38,14 @@ public enum AiBusinessCapability {
 
     public String displayName() {
         return displayName;
+    }
+
+    public List<AiModelCapability> requiredModelCapabilities() {
+        return switch (this) {
+            case CLASSICS_IMAGE_DESCRIBE -> List.of(AiModelCapability.IMAGE2TEXT);
+            case CLASSICS_IMAGE_GENERATE -> List.of(AiModelCapability.TEXT2IMAGE);
+            default -> List.of(AiModelCapability.TEXT2TEXT);
+        };
     }
 
     public static AiBusinessCapability from(String value) {
