@@ -2,28 +2,21 @@ package com.thundax.kuzhambu.ai.infra.config.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
-import com.thundax.kuzhambu.ai.domain.config.model.enums.AiApiSource;
-import com.thundax.kuzhambu.ai.domain.config.model.enums.AiModelCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.domain.config.repository.AiModelRepository;
+import com.thundax.kuzhambu.ai.infra.config.persistence.assembler.AiConfigPersistenceAssembler;
 import com.thundax.kuzhambu.ai.infra.config.persistence.dataobject.AiModelDO;
 import com.thundax.kuzhambu.ai.infra.config.persistence.mapper.AiModelMapper;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class AiModelRepositoryImpl implements AiModelRepository {
 
-    private static final TypeReference<List<String>> STRING_LIST_TYPE = new TypeReference<>() {};
-
     private final AiModelMapper aiModelMapper;
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public AiModelRepositoryImpl(AiModelMapper aiModelMapper) {
         this.aiModelMapper = aiModelMapper;
@@ -31,19 +24,20 @@ public class AiModelRepositoryImpl implements AiModelRepository {
 
     @Override
     public AiModel get(AiModelId id) {
-        return toModelDomain(aiModelMapper.selectById(AiModelIdCodec.toValue(id)));
+        return AiConfigPersistenceAssembler.toModelDomain(aiModelMapper.selectById(AiModelIdCodec.toValue(id)));
     }
 
     @Override
     public List<AiModel> list(String apiSource, Boolean enabled) {
-        return toModelDomainList(aiModelMapper.selectList(new LambdaQueryWrapper<AiModelDO>()
-                .eq(apiSource != null && !apiSource.isBlank(), AiModelDO::getApiSource, apiSource)
-                .eq(enabled != null, AiModelDO::getEnabled, enabled)));
+        return AiConfigPersistenceAssembler.toModelDomainList(
+                aiModelMapper.selectList(new LambdaQueryWrapper<AiModelDO>()
+                        .eq(apiSource != null && !apiSource.isBlank(), AiModelDO::getApiSource, apiSource)
+                        .eq(enabled != null, AiModelDO::getEnabled, enabled)));
     }
 
     @Override
     public AiModelId insert(AiModel model) {
-        AiModelDO dataObject = toModelObject(model);
+        AiModelDO dataObject = AiConfigPersistenceAssembler.toObject(model);
         if (dataObject.getRegisteredAt() == null) {
             dataObject.setRegisteredAt(Instant.now());
         }
@@ -53,7 +47,7 @@ public class AiModelRepositoryImpl implements AiModelRepository {
 
     @Override
     public int update(AiModel model) {
-        AiModelDO dataObject = toModelObject(model);
+        AiModelDO dataObject = AiConfigPersistenceAssembler.toObject(model);
         return aiModelMapper.update(
                 null,
                 new LambdaUpdateWrapper<AiModelDO>()
@@ -72,86 +66,5 @@ public class AiModelRepositoryImpl implements AiModelRepository {
     @Override
     public int delete(AiModelId id) {
         return aiModelMapper.deleteById(AiModelIdCodec.toValue(id));
-    }
-
-    private AiModelDO toModelObject(AiModel model) {
-        if (model == null) {
-            return null;
-        }
-        return new AiModelDO(
-                AiModelIdCodec.toValue(model.getId()),
-                model.getApiSource() == null ? null : model.getApiSource().value(),
-                model.getBaseUrl(),
-                model.getEncryptedApiKey(),
-                model.getModelName(),
-                model.getDisplayName(),
-                toCapabilityJson(model.getCapabilities()),
-                model.getDefaultParamsJson(),
-                model.getDescription(),
-                model.isEnabled(),
-                model.getRegisteredAt());
-    }
-
-    private AiModel toModelDomain(AiModelDO dataObject) {
-        if (dataObject == null) {
-            return null;
-        }
-        return new AiModel(
-                AiModelIdCodec.toDomain(dataObject.getId()),
-                AiApiSource.from(dataObject.getApiSource()),
-                dataObject.getBaseUrl(),
-                dataObject.getEncryptedApiKey(),
-                dataObject.getModelName(),
-                dataObject.getDisplayName(),
-                toCapabilities(dataObject.getCapabilitiesJson()),
-                dataObject.getDefaultParamsJson(),
-                dataObject.getDescription(),
-                Boolean.TRUE.equals(dataObject.getEnabled()),
-                dataObject.getRegisteredAt());
-    }
-
-    private List<AiModel> toModelDomainList(List<AiModelDO> dataObjects) {
-        List<AiModel> models = new ArrayList<>();
-        if (dataObjects == null) {
-            return models;
-        }
-        for (AiModelDO dataObject : dataObjects) {
-            models.add(toModelDomain(dataObject));
-        }
-        return models;
-    }
-
-    private String toCapabilityJson(List<AiModelCapability> values) {
-        List<String> names = new ArrayList<>();
-        if (values != null) {
-            for (AiModelCapability value : values) {
-                if (value != null) {
-                    names.add(value.value());
-                }
-            }
-        }
-        try {
-            return objectMapper.writeValueAsString(names);
-        } catch (Exception exception) {
-            throw new IllegalArgumentException("AI model capabilities can not be serialized", exception);
-        }
-    }
-
-    private List<AiModelCapability> toCapabilities(String json) {
-        List<AiModelCapability> capabilities = new ArrayList<>();
-        if (json == null || json.isBlank()) {
-            return capabilities;
-        }
-        try {
-            for (String value : objectMapper.readValue(json, STRING_LIST_TYPE)) {
-                AiModelCapability capability = AiModelCapability.from(value);
-                if (capability != null) {
-                    capabilities.add(capability);
-                }
-            }
-            return capabilities;
-        } catch (Exception exception) {
-            throw new IllegalArgumentException("AI model capabilities can not be parsed", exception);
-        }
     }
 }
