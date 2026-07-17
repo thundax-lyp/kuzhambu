@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.ai.interfaces.admin.config.controller;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.thundax.kuzhambu.ai.application.capability.service.AiCapabilityApplicationService;
+import com.thundax.kuzhambu.ai.application.config.business.service.AiBusinessConfigApplicationService;
 import com.thundax.kuzhambu.ai.application.config.model.service.AiModelApplicationService;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.request.AiConfigRequests.CapabilityQueryRequest;
@@ -31,7 +32,8 @@ class AiConfigControllerTest {
 
     @Test
     void listCapabilitiesShouldDelegateEnabledFilterToCapabilityService() {
-        AiConfigController controller = new AiConfigController(noModelService(), capabilityListService());
+        AiConfigController controller =
+                new AiConfigController(noModelService(), capabilityListService(), noBusinessConfigService());
         CapabilityQueryRequest request = new CapabilityQueryRequest();
         request.setEnabled(true);
 
@@ -55,6 +57,10 @@ class AiConfigControllerTest {
             throw new UnsupportedOperationException(
                     "capability service should not be called in this test: " + method.getName());
         });
+    }
+
+    private static AiBusinessConfigApplicationService noBusinessConfigService() {
+        return proxy(AiBusinessConfigApplicationService.class, noOpInvocationHandler("business config service"));
     }
 
     @SuppressWarnings("unchecked")
