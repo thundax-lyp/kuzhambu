@@ -65,7 +65,7 @@ async def chat_completions(request: Request) -> JSONResponse | StreamingResponse
     ai_request = _to_ai_request(parsed)
     if isinstance(ai_request, JSONResponse):
         return ai_request
-    validation_failure = _validate_chat_completion_request(ai_request)
+    validation_failure = _validate_chat_completion_request(parsed, ai_request)
     if validation_failure is not None:
         return validation_failure
     if parsed.stream:
@@ -197,7 +197,25 @@ def _chat_input_payload(request: OpenAiCompatibleChatRequest) -> dict[str, Any]:
     return {"responseFormat": request.response_format}
 
 
-def _validate_chat_completion_request(ai_request: AiInvokeRequest) -> JSONResponse | None:
+def _validate_chat_completion_request(
+    request: OpenAiCompatibleChatRequest,
+    ai_request: AiInvokeRequest,
+) -> JSONResponse | None:
+    if (
+        request.operation != "OPENAI_COMPATIBLE_CHAT_COMPLETION"
+        or request.capability == AiCapability.IMAGE_GEN
+    ):
+        return _error_json(
+            protocol_failure(
+                "MODEL_CONFIG_INVALID",
+                "OpenAI-compatible chat completion 接口只能路由到 chat graph。",
+                detail={
+                    "capability": request.capability.value,
+                    "operation": request.operation,
+                },
+            ).to_payload(),
+            400,
+        )
     requested_count = _effective_int_parameter(ai_request.modelConfig.parameters, "n", 1)
     if requested_count != 1:
         return _error_json(

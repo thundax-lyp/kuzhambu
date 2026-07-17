@@ -319,7 +319,7 @@ def _stream_chunk_from_payload(
 
     usage = None
     provider_usage = False
-    if "usage" in payload:
+    if payload.get("usage") is not None:
         usage = usage_from_provider(payload.get("usage"), latency_ms=elapsed_ms(start_ms))
         provider_usage = True
     if not delta and finish_reason is None and usage is None:

@@ -292,6 +292,36 @@ def test_openai_compatible_chat_completion_rejects_multiple_choices_before_graph
     assert response.json()["error"]["code"] == "MODEL_CONFIG_INVALID"
 
 
+def test_openai_compatible_chat_completion_rejects_graph_routing_override(
+    monkeypatch,
+) -> None:
+    monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
+    monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
+    captured = {"called": False}
+
+    class FakeRegistry:
+        def invoke(self, request):
+            captured["called"] = True
+            return {}
+
+    monkeypatch.setattr("kuzhambu_workers.api.openai_routes._REGISTRY", FakeRegistry())
+    body = _body(
+        stream=False,
+        extra={
+            "capability": "image_gen",
+            "operation": "OPENAI_COMPATIBLE_IMAGE_GENERATION",
+        },
+    )
+
+    response = TestClient(app).post(
+        _PATH, content=body, headers=_headers(body, service="kuzhambu-ai")
+    )
+
+    assert response.status_code == 400
+    assert captured["called"] is False
+    assert response.json()["error"]["code"] == "MODEL_CONFIG_INVALID"
+
+
 def test_openai_compatible_image_generation_rejects_invalid_format_before_graph(
     monkeypatch,
 ) -> None:

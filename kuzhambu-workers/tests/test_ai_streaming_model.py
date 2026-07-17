@@ -70,6 +70,30 @@ def test_iter_chat_completion_chunks_adds_latency_usage_when_provider_omits_usag
     assert chunks[-1].provider_usage is False
 
 
+def test_iter_chat_completion_chunks_ignores_null_usage_fields() -> None:
+    def handler(_: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            text=(
+                'data: {"choices":[{"delta":{"content":"answer"}}],"usage":null}\n\n'
+                'data: {"choices":[],"usage":{"prompt_tokens":3,"completion_tokens":4}}\n\n'
+            ),
+        )
+
+    client = httpx.Client(transport=httpx.MockTransport(handler))
+    request = AiInvokeRequest.model_validate(_request_payload())
+
+    chunks = list(iter_chat_completion_chunks(request, client=client))
+
+    assert chunks[0].delta == "answer"
+    assert chunks[0].usage is None
+    assert chunks[0].provider_usage is False
+    assert chunks[1].usage is not None
+    assert chunks[1].provider_usage is True
+    assert chunks[1].usage.inputTokens == 3
+    assert chunks[1].usage.outputTokens == 4
+
+
 def test_iter_chat_completion_chunks_rejects_invalid_chunk() -> None:
     def handler(_: httpx.Request) -> httpx.Response:
         return httpx.Response(200, text="data: not-json\n\n")
