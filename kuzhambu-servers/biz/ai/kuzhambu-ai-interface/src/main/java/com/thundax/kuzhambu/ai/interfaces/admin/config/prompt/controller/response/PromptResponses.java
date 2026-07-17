@@ -32,8 +32,8 @@ public final class PromptResponses {
         @JsonProperty(value = "description")
         private String description;
 
-        @JsonProperty(value = "status")
-        private String status;
+        @JsonProperty(value = "enabled")
+        private Boolean enabled;
 
         @JsonProperty(value = "currentVersionNo")
         private Integer currentVersionNo;

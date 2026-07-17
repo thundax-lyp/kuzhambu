@@ -6,7 +6,7 @@
   "suite": "classics-default-v1",
   "name": "Classics Default Visual Fusion",
   "description": "古籍图文信息融合默认提示词。",
-  "status": "ACTIVE",
+  "enabled": true,
   "versionNo": 1,
   "current": true,
   "variables": [

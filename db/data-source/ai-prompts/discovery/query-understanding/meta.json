@@ -6,7 +6,7 @@
   "suite": "discovery-default-v1",
   "name": "Discovery Default Query Understanding",
   "description": "知识发现默认查询理解提示词。",
-  "status": "ACTIVE",
+  "enabled": true,
   "versionNo": 1,
   "current": true,
   "variables": [

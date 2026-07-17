@@ -40,6 +40,10 @@ public final class PromptRequests {
         @Schema(name = "capability", description = "能力编码")
         @JsonProperty(value = "capability")
         private String capability;
+
+        @Schema(name = "enabled", description = "是否启用")
+        @JsonProperty(value = "enabled")
+        private Boolean enabled;
     }
 
     @Getter
@@ -70,10 +74,9 @@ public final class PromptRequests {
         @JsonProperty(value = "description")
         private String description;
 
-        @Size(max = 32)
-        @Schema(name = "status", description = "模板状态")
-        @JsonProperty(value = "status")
-        private String status;
+        @Schema(name = "enabled", description = "是否启用")
+        @JsonProperty(value = "enabled")
+        private Boolean enabled;
 
         @NotBlank
         @Schema(name = "messageTemplatesJson", description = "消息模板JSON")

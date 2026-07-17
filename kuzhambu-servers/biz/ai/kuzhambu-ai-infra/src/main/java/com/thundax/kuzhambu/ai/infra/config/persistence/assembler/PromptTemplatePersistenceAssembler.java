@@ -3,7 +3,6 @@ package com.thundax.kuzhambu.ai.infra.config.persistence.assembler;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptTemplateIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
-import com.thundax.kuzhambu.ai.domain.config.model.enums.PromptTemplateStatus;
 import com.thundax.kuzhambu.ai.infra.config.persistence.dataobject.PromptTemplateDO;
 
 public final class PromptTemplatePersistenceAssembler {
@@ -22,8 +21,7 @@ public final class PromptTemplatePersistenceAssembler {
                         : template.getCapability().value());
         dataObject.setName(template.getName());
         dataObject.setDescription(template.getDescription());
-        dataObject.setStatus(
-                template.getStatus() == null ? null : template.getStatus().value());
+        dataObject.setEnabled(template.isEnabled());
         dataObject.setCurrentVersionNo(template.getCurrentVersionNo());
         dataObject.setRegisteredAt(template.getRegisteredAt());
         return dataObject;
@@ -38,7 +36,7 @@ public final class PromptTemplatePersistenceAssembler {
                 AiBusinessCapability.from(dataObject.getCapability()),
                 dataObject.getName(),
                 dataObject.getDescription(),
-                PromptTemplateStatus.fromNullable(dataObject.getStatus()),
+                Boolean.TRUE.equals(dataObject.getEnabled()),
                 dataObject.getCurrentVersionNo(),
                 dataObject.getRegisteredAt());
     }

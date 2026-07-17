@@ -14,7 +14,6 @@ import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVariable;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVersion;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
-import com.thundax.kuzhambu.ai.domain.config.model.enums.PromptTemplateStatus;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptTemplateId;
 import com.thundax.kuzhambu.ai.infra.config.persistence.dataobject.PromptTemplateDO;
 import com.thundax.kuzhambu.ai.infra.config.persistence.dataobject.PromptVariableDO;
@@ -43,6 +42,7 @@ class PromptRepositoryIT {
         assertFalse(schemaSql.contains("CREATE TABLE IF NOT EXISTS `ai_capability_mapping`"));
         assertFalse(schemaSql.contains("CREATE TABLE IF NOT EXISTS `ai_action_status`"));
         assertTrue(schemaSql.contains("UNIQUE KEY `uk_ai_prompt_template_capability`"));
+        assertTrue(schemaSql.contains("KEY `idx_ai_prompt_template_enabled`"));
         assertTrue(schemaSql.contains("UNIQUE KEY `uk_ai_prompt_version_no`"));
     }
 
@@ -56,14 +56,11 @@ class PromptRepositoryIT {
         assertFalse(normalized.contains("https://ark.cn-beijing.volces.com/api/v3"));
         assertTrue(normalized.contains("`base_url` = VALUES(`base_url`)"));
         assertTrue(normalized.contains("`encrypted_api_key` = VALUES(`encrypted_api_key`)"));
-        assertTrue(normalized.contains(
-                "930101, 'classics_summary', 'Classics Default Summary', '古籍内容默认摘要提示词。', 'ACTIVE', 1"));
+        assertTrue(normalized.contains("930101, 'classics_summary', 'Classics Default Summary', '古籍内容默认摘要提示词。', 1, 1"));
         assertTrue(
                 normalized.contains(
-                        "930104, 'discovery_query_understanding', 'Discovery Default Query Understanding', '知识发现默认查询理解提示词。', 'ACTIVE', 1"));
-        assertTrue(
-                normalized.contains(
-                        "930108, 'classics_image_generate', 'Classics Default Image Generation', '古籍视觉资产默认文生图提示词。', 'ACTIVE', 1"));
+                        "930104, 'discovery_query_understanding', 'Discovery Default Query Understanding', '知识发现默认查询理解提示词。', 1, 1"));
+        assertTrue(normalized.contains("930108, 'classics_image_generate', 'Classics Default Image Generation', '古籍视觉资产默认文生图提示词。', 1, 1"));
         assertTrue(normalized.contains("900101, 'OPENAI', '', NULL, 'CTYUN-CX-Qwen3.5-397B-A17B'"));
         assertTrue(normalized.contains("900102, 'OPENAI', '', NULL, 'CTYUN-bot-DeepSeek-V3.2-pro'"));
         assertTrue(normalized.contains("900201, 'BYTEDANCE', '', NULL, 'doubao-seedream-5-0-pro-260628'"));
@@ -96,7 +93,7 @@ class PromptRepositoryIT {
                 AiBusinessCapability.CLASSICS_TRANSLATE,
                 "Classics translate",
                 "translate prompt",
-                PromptTemplateStatus.ACTIVE,
+                true,
                 1,
                 registeredAt);
 
@@ -107,6 +104,7 @@ class PromptRepositoryIT {
         PromptTemplateDO savedTemplate = templateCaptor.getValue();
         assertEquals(4001L, templateId.value());
         assertEquals("classics_translate", savedTemplate.getCapability());
+        assertEquals(true, savedTemplate.getEnabled());
 
         when(mapper.selectTemplateByCapability("classics_translate")).thenReturn(savedTemplate);
         PromptTemplate loadedTemplate = repository.get(AiBusinessCapability.CLASSICS_TRANSLATE);

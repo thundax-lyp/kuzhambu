@@ -5,7 +5,6 @@ import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVariable;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVersion;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
-import com.thundax.kuzhambu.ai.domain.config.model.enums.PromptTemplateStatus;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +23,7 @@ public class PromptTemplateSaveCommand {
     private String capability;
     private String name;
     private String description;
-    private String status = "ACTIVE";
+    private boolean enabled = true;
     private String messageTemplatesJson;
     private String variablesSnapshotJson;
     private String outputSchemaJson;
@@ -37,7 +36,7 @@ public class PromptTemplateSaveCommand {
         template.setCapability(AiBusinessCapability.from(capability));
         template.setName(name);
         template.setDescription(description);
-        template.setStatus(PromptTemplateStatus.fromNullable(status));
+        template.setEnabled(enabled);
         template.setRegisteredAt(Instant.now());
         return template;
     }

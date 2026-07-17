@@ -20,7 +20,7 @@ public class PromptTemplateDO {
     private String capability;
     private String name;
     private String description;
-    private String status;
+    private Boolean enabled;
     private Integer currentVersionNo;
     private Instant registeredAt;
 }

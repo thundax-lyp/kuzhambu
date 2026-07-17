@@ -63,6 +63,23 @@ public class PromptController {
         return PromptInterfaceAssembler.toResponse(promptService.getTemplate(request.getCapability()));
     }
 
+    @Operation(summary = "获取提示词模板列表", description = "ai:prompt:view")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    @HasPermission(value = "ai:prompt:view")
+    @SysLogger(value = "模板列表")
+    @PostMapping(value = "template/list")
+    public List<TemplateResponse> listTemplates(@Valid @RequestBody PromptRequests.TemplateQueryRequest request) {
+        return promptService.listTemplates(request.getCapability(), request.getEnabled()).stream()
+                .map(PromptInterfaceAssembler::toResponse)
+                .collect(Collectors.toList());
+    }
+
     @Operation(summary = "保存提示词模板", description = "ai:prompt:edit")
     @ApiImplicitParams({
         @ApiImplicitParam(

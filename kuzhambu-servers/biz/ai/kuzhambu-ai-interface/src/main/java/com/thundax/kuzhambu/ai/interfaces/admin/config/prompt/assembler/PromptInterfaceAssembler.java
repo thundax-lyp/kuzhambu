@@ -22,7 +22,7 @@ public final class PromptInterfaceAssembler {
         command.setCapability(request.getCapability());
         command.setName(request.getName());
         command.setDescription(request.getDescription());
-        command.setStatus(defaultString(request.getStatus(), "ACTIVE"));
+        command.setEnabled(request.getEnabled() == null || request.getEnabled());
         command.setMessageTemplatesJson(request.getMessageTemplatesJson());
         command.setVariablesSnapshotJson(request.getVariablesSnapshotJson());
         command.setOutputSchemaJson(request.getOutputSchemaJson());
@@ -51,10 +51,7 @@ public final class PromptInterfaceAssembler {
                                 : template.getCapability().value())
                 .name(template.getName())
                 .description(template.getDescription())
-                .status(
-                        template.getStatus() == null
-                                ? null
-                                : template.getStatus().value())
+                .enabled(template.isEnabled())
                 .currentVersionNo(template.getCurrentVersionNo())
                 .registeredAt(template.getRegisteredAt())
                 .build();
@@ -108,9 +105,5 @@ public final class PromptInterfaceAssembler {
             items.add(item);
         }
         return items;
-    }
-
-    private static String defaultString(String value, String defaultValue) {
-        return value == null || value.trim().isEmpty() ? defaultValue : value;
     }
 }

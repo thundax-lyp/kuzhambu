@@ -6,7 +6,7 @@
   "suite": "discovery-default-v1",
   "name": "Discovery Default Answer Generation",
   "description": "知识发现默认来源融合回答提示词。",
-  "status": "ACTIVE",
+  "enabled": true,
   "versionNo": 1,
   "current": true,
   "variables": [

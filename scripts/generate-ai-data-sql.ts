@@ -11,7 +11,7 @@ type AiPromptMeta = {
   capability: string;
   name: string;
   description: string;
-  status?: string;
+  enabled?: boolean;
   versionNo: number;
   current?: boolean;
   suite: string;
@@ -69,7 +69,6 @@ const readPromptSeeds = (root: string) => {
     ) as AiPromptMeta;
     return {
       ...meta,
-      status: meta.status ?? "ACTIVE",
       registeredAt: meta.registeredAt ?? REGISTERED_AT,
       systemTemplate: readFileSync(
         join(promptDir, "system-template.txt"),
@@ -208,7 +207,7 @@ const appendModelSql = (lines: string[]) => {
 const appendPromptTemplateSql = (lines: string[], prompts: PromptSeed[]) => {
   lines.push("INSERT INTO `ai_prompt_template` (");
   lines.push(
-    "    `id`, `capability`, `name`, `description`, `status`,",
+    "    `id`, `capability`, `name`, `description`, `enabled`,",
   );
   lines.push("    `current_version_no`, `registered_at`");
   lines.push(") VALUES");
@@ -220,7 +219,7 @@ const appendPromptTemplateSql = (lines: string[], prompts: PromptSeed[]) => {
           prompt.capability,
           prompt.name,
           prompt.description,
-          prompt.status,
+          prompt.enabled ?? true,
           prompt.current ? prompt.versionNo : null,
           prompt.registeredAt,
         ]),
@@ -231,7 +230,7 @@ const appendPromptTemplateSql = (lines: string[], prompts: PromptSeed[]) => {
   lines.push("    `capability` = VALUES(`capability`),");
   lines.push("    `name` = VALUES(`name`),");
   lines.push("    `description` = VALUES(`description`),");
-  lines.push("    `status` = VALUES(`status`),");
+  lines.push("    `enabled` = VALUES(`enabled`),");
   lines.push("    `current_version_no` = VALUES(`current_version_no`),");
   lines.push("    `registered_at` = VALUES(`registered_at`);");
   lines.push("");

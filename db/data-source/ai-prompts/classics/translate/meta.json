@@ -6,7 +6,7 @@
   "suite": "classics-default-v1",
   "name": "Classics Default Translate",
   "description": "古籍文言文默认现代中文翻译提示词。",
-  "status": "ACTIVE",
+  "enabled": true,
   "versionNo": 1,
   "current": true,
   "variables": [

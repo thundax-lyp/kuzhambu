@@ -19,24 +19,24 @@ ON DUPLICATE KEY UPDATE
     `registered_at` = VALUES(`registered_at`);
 
 INSERT INTO `ai_prompt_template` (
-    `id`, `capability`, `name`, `description`, `status`,
+    `id`, `capability`, `name`, `description`, `enabled`,
     `current_version_no`, `registered_at`
 ) VALUES
-    (930101, 'classics_summary', 'Classics Default Summary', '古籍内容默认摘要提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
-    (930102, 'classics_tags', 'Classics Default Tags', '古籍内容默认标签抽取提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
-    (930103, 'classics_qa', 'Classics Default QA', '古籍内容默认问答生成提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
-    (930104, 'discovery_query_understanding', 'Discovery Default Query Understanding', '知识发现默认查询理解提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
-    (930105, 'discovery_answer_generation', 'Discovery Default Answer Generation', '知识发现默认来源融合回答提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
-    (930106, 'classics_translate', 'Classics Default Translate', '古籍文言文默认现代中文翻译提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
-    (930107, 'classics_image_describe', 'Classics Default Image Analysis', '古籍图像默认解读提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
-    (930108, 'classics_image_generate', 'Classics Default Image Generation', '古籍视觉资产默认文生图提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
-    (930109, 'classics_image_prompt_fusion', 'Classics Default Visual Fusion', '古籍图文信息融合默认提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000'),
-    (930110, 'classics_visual_describe', 'Classics Default Visual Description', '古籍视觉描述默认提示词。', 'ACTIVE', 1, '2026-02-27 04:00:00.000')
+    (930101, 'classics_summary', 'Classics Default Summary', '古籍内容默认摘要提示词。', 1, 1, '2026-02-27 04:00:00.000'),
+    (930102, 'classics_tags', 'Classics Default Tags', '古籍内容默认标签抽取提示词。', 1, 1, '2026-02-27 04:00:00.000'),
+    (930103, 'classics_qa', 'Classics Default QA', '古籍内容默认问答生成提示词。', 1, 1, '2026-02-27 04:00:00.000'),
+    (930104, 'discovery_query_understanding', 'Discovery Default Query Understanding', '知识发现默认查询理解提示词。', 1, 1, '2026-02-27 04:00:00.000'),
+    (930105, 'discovery_answer_generation', 'Discovery Default Answer Generation', '知识发现默认来源融合回答提示词。', 1, 1, '2026-02-27 04:00:00.000'),
+    (930106, 'classics_translate', 'Classics Default Translate', '古籍文言文默认现代中文翻译提示词。', 1, 1, '2026-02-27 04:00:00.000'),
+    (930107, 'classics_image_describe', 'Classics Default Image Analysis', '古籍图像默认解读提示词。', 1, 1, '2026-02-27 04:00:00.000'),
+    (930108, 'classics_image_generate', 'Classics Default Image Generation', '古籍视觉资产默认文生图提示词。', 1, 1, '2026-02-27 04:00:00.000'),
+    (930109, 'classics_image_prompt_fusion', 'Classics Default Visual Fusion', '古籍图文信息融合默认提示词。', 1, 1, '2026-02-27 04:00:00.000'),
+    (930110, 'classics_visual_describe', 'Classics Default Visual Description', '古籍视觉描述默认提示词。', 1, 1, '2026-02-27 04:00:00.000')
 ON DUPLICATE KEY UPDATE
     `capability` = VALUES(`capability`),
     `name` = VALUES(`name`),
     `description` = VALUES(`description`),
-    `status` = VALUES(`status`),
+    `enabled` = VALUES(`enabled`),
     `current_version_no` = VALUES(`current_version_no`),
     `registered_at` = VALUES(`registered_at`);
 

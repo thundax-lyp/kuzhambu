@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.ai.infra.config.repository.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptTemplateIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
@@ -42,6 +43,20 @@ public class PromptRepositoryImpl implements PromptRepository {
     }
 
     @Override
+    public List<PromptTemplate> list(AiBusinessCapability capability, Boolean enabled) {
+        return promptMapper
+                .selectList(new LambdaQueryWrapper<PromptTemplateDO>()
+                        .eq(
+                                capability != null,
+                                PromptTemplateDO::getCapability,
+                                capability == null ? null : capability.value())
+                        .eq(enabled != null, PromptTemplateDO::getEnabled, enabled))
+                .stream()
+                .map(PromptTemplatePersistenceAssembler::toDomain)
+                .toList();
+    }
+
+    @Override
     public PromptTemplateId insertTemplate(PromptTemplate template) {
         PromptTemplateDO dataObject = PromptTemplatePersistenceAssembler.toObject(template);
         if (dataObject.getRegisteredAt() == null) {
@@ -61,7 +76,7 @@ public class PromptRepositoryImpl implements PromptRepository {
                         .set(PromptTemplateDO::getCapability, dataObject.getCapability())
                         .set(PromptTemplateDO::getName, dataObject.getName())
                         .set(PromptTemplateDO::getDescription, dataObject.getDescription())
-                        .set(PromptTemplateDO::getStatus, dataObject.getStatus()));
+                        .set(PromptTemplateDO::getEnabled, dataObject.getEnabled()));
     }
 
     @Override

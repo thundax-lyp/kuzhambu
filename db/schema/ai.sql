@@ -37,12 +37,12 @@ CREATE TABLE IF NOT EXISTS `ai_prompt_template` (
     `capability` varchar(64) NOT NULL,
     `name` varchar(255) NOT NULL,
     `description` varchar(1024) DEFAULT NULL,
-    `status` varchar(16) NOT NULL DEFAULT 'ACTIVE',
+    `enabled` tinyint(1) NOT NULL DEFAULT 1,
     `current_version_no` int DEFAULT NULL,
     `registered_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_ai_prompt_template_capability` (`capability`),
-    KEY `idx_ai_prompt_template_status` (`status`)
+    KEY `idx_ai_prompt_template_enabled` (`enabled`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI提示词模板表';
 
 CREATE TABLE IF NOT EXISTS `ai_prompt_version` (

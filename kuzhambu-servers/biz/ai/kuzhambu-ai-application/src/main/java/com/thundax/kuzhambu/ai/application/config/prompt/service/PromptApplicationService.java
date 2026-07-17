@@ -14,6 +14,8 @@ public interface PromptApplicationService {
 
     PromptTemplate getTemplate(String capability);
 
+    List<PromptTemplate> listTemplates(String capability, Boolean enabled);
+
     Long saveTemplate(PromptTemplateSaveCommand command);
 
     PromptVersionResult getCurrentVersion(Long templateId);

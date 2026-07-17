@@ -52,6 +52,11 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
     }
 
     @Override
+    public List<PromptTemplate> listTemplates(String capability, Boolean enabled) {
+        return promptRepository.list(toCapability(capability), enabled);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public Long saveTemplate(PromptTemplateSaveCommand command) {
         validateCommand(command);
@@ -244,5 +249,9 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private AiBusinessCapability toCapability(String capability) {
+        return isBlank(capability) ? null : AiBusinessCapability.from(capability);
     }
 }

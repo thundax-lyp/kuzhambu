@@ -30,7 +30,7 @@ public class AiBusinessConfig {
 
     public boolean promptMatches(PromptTemplate promptTemplate) {
         return promptTemplate != null
-                && promptTemplate.isActive()
+                && promptTemplate.isEnabled()
                 && capability != null
                 && promptTemplate.getCapability() == capability
                 && promptTemplateId != null

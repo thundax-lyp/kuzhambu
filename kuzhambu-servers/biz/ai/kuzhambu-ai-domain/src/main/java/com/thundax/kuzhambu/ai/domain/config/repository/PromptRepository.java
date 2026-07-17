@@ -14,6 +14,8 @@ public interface PromptRepository {
 
     PromptTemplate get(AiBusinessCapability capability);
 
+    List<PromptTemplate> list(AiBusinessCapability capability, Boolean enabled);
+
     PromptTemplateId insertTemplate(PromptTemplate template);
 
     int updateTemplate(PromptTemplate template);
