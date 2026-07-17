@@ -21,6 +21,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
     "com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.mapper",
     "com.thundax.kuzhambu.ai.infra.batch.persistence.mapper",
     "com.thundax.kuzhambu.ai.infra.capability.persistence.mapper",
+    "com.thundax.kuzhambu.ai.infra.config.persistence.mapper",
     "com.thundax.kuzhambu.ai.infra.invocation.persistence.mapper",
     "com.thundax.kuzhambu.ai.infra.model.persistence.mapper",
     "com.thundax.kuzhambu.ai.infra.prompt.persistence.mapper",
