@@ -29,5 +29,7 @@ public interface WangqiDocumentRepository {
 
     int updateVisibility(WangqiDocumentId id, String visibility);
 
+    int deleteByDocumentId(WangqiDocumentId id);
+
     int deleteById(WangqiDocumentId id);
 }

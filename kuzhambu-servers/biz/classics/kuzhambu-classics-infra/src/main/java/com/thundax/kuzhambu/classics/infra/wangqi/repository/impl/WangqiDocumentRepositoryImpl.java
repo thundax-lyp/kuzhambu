@@ -136,6 +136,12 @@ public class WangqiDocumentRepositoryImpl implements WangqiDocumentRepository {
     }
 
     @Override
+    public int deleteByDocumentId(WangqiDocumentId id) {
+        return eventMapper.delete(new LambdaQueryWrapper<WangqiDocumentEventDO>()
+                .eq(WangqiDocumentEventDO::getDocumentId, WangqiDocumentIdCodec.toValue(id)));
+    }
+
+    @Override
     public int deleteById(WangqiDocumentId id) {
         return mapper.deleteById(WangqiDocumentIdCodec.toValue(id));
     }
