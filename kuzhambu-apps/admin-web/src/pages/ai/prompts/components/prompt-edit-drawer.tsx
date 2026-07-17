@@ -1,7 +1,9 @@
 import {
     BranchesOutlined,
     CheckCircleOutlined,
+    DeleteOutlined,
     EyeOutlined,
+    PlusOutlined,
     RetweetOutlined,
     SaveOutlined,
     ThunderboltOutlined
@@ -13,6 +15,7 @@ import { useEffect, useMemo, useState } from "react";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuSpace, KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
+import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { AiPromptTemplateChangeCommand } from "../prompts-service";
 import * as service from "../prompts-service";
@@ -23,7 +26,7 @@ import type {
 } from "../prompts-types";
 
 type PromptFormValues = Omit<AiPromptTemplateChangeCommand, "variables" | "enabled"> & {
-    status?: string | null;
+    status?: boolean | null;
 };
 
 interface PromptEditDrawerProps {
@@ -161,9 +164,9 @@ const formatDate = (value?: string | null) => {
     return `${date.getFullYear()}-${month}-${day}`;
 };
 
-const statusFromEnabled = (enabled?: boolean | null) => (enabled === false ? "INACTIVE" : "ACTIVE");
+const statusFromEnabled = (enabled?: boolean | null) => enabled !== false;
 
-const enabledFromStatus = (status?: string | null) => status !== "INACTIVE";
+const enabledFromStatus = (status?: boolean | null) => status !== false;
 
 const versionTitle = (version: AiPromptVersionRecord) => `版本 ${version.versionNo ?? "-"}`;
 
@@ -232,34 +235,6 @@ const PromptMarkdownEditor = ({
                                     updateMessages(nextMessages);
                                 }}
                             />
-                            <KuzhambuSpaceCompact>
-                                <KuzhambuButton
-                                    testId="ai-prompts-prompts-add-message-button"
-                                    onClick={() => {
-                                        const nextMessages = [...messages];
-                                        nextMessages.splice(index + 1, 0, {
-                                            role: "user",
-                                            content: ""
-                                        });
-                                        updateMessages(nextMessages);
-                                    }}
-                                >
-                                    添加
-                                </KuzhambuButton>
-                                <KuzhambuButton
-                                    testId="ai-prompts-prompts-remove-message-button"
-                                    disabled={messages.length <= 1}
-                                    onClick={() => {
-                                        updateMessages(
-                                            messages.filter(
-                                                (_item, itemIndex) => itemIndex !== index
-                                            )
-                                        );
-                                    }}
-                                >
-                                    删除
-                                </KuzhambuButton>
-                            </KuzhambuSpaceCompact>
                         </div>
                         <Input.TextArea
                             aria-label={`${roleLabel}消息正文`}
@@ -274,6 +249,38 @@ const PromptMarkdownEditor = ({
                                 updateMessages(nextMessages);
                             }}
                         />
+                        <div className="prompt-markdown-editor-actions">
+                            <KuzhambuSpaceCompact>
+                                <KuzhambuButton
+                                    testId="ai-prompts-prompts-add-message-button"
+                                    icon={<PlusOutlined />}
+                                    onClick={() => {
+                                        const nextMessages = [...messages];
+                                        nextMessages.splice(index + 1, 0, {
+                                            role: "user",
+                                            content: ""
+                                        });
+                                        updateMessages(nextMessages);
+                                    }}
+                                >
+                                    添加消息
+                                </KuzhambuButton>
+                                <KuzhambuButton
+                                    testId="ai-prompts-prompts-remove-message-button"
+                                    icon={<DeleteOutlined />}
+                                    disabled={messages.length <= 1}
+                                    onClick={() => {
+                                        updateMessages(
+                                            messages.filter(
+                                                (_item, itemIndex) => itemIndex !== index
+                                            )
+                                        );
+                                    }}
+                                >
+                                    删除消息
+                                </KuzhambuButton>
+                            </KuzhambuSpaceCompact>
+                        </div>
                     </section>
                 );
             })}
@@ -336,7 +343,7 @@ export const PromptEditDrawer = ({
                 capability: "",
                 name: "",
                 description: "",
-                status: "ACTIVE",
+                status: true,
                 messageTemplatesJson: promptMessagesToJson([
                     { role: "system", content: "" },
                     { role: "user", content: "" }
@@ -592,7 +599,7 @@ export const PromptEditDrawer = ({
                 className="prompt-edit-drawer"
                 open={open}
                 title={template ? "编辑提示词" : "新建提示词"}
-                size="full"
+                size="large"
                 onClose={closeDrawer}
                 footer={
                     <div className="prompts-drawer-footer">
@@ -643,20 +650,20 @@ export const PromptEditDrawer = ({
                         <Form.Item
                             label="状态"
                             name="status"
+                            valuePropName="checked"
                             className="prompts-editor-item-status"
                         >
-                            <Select
-                                options={[
-                                    { label: "启用", value: "ACTIVE" },
-                                    { label: "禁用", value: "INACTIVE" }
-                                ]}
+                            <KuzhambuSwitch
+                                checkedChildren="启用"
+                                unCheckedChildren="禁用"
+                                aria-label="提示词模板状态"
                             />
                         </Form.Item>
                     </div>
                     <Form.Item
                         label="说明"
                         name="description"
-                        className="prompts-editor-item-wide prompts-editor-item-top"
+                        className="prompts-editor-item-full prompts-editor-item-top"
                     >
                         <Input.TextArea rows={2} />
                     </Form.Item>

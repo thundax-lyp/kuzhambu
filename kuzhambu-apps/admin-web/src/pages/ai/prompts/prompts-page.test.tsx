@@ -136,8 +136,9 @@ describe("PromptsPage", () => {
         expect(await screen.findByRole("heading", { name: "提示词管理" })).toBeInTheDocument();
         expect(screen.getByText("维护 AI 提示词模板、变量、版本对比和回滚。")).toBeInTheDocument();
         expect(await screen.findByText("摘要提示词")).toBeInTheDocument();
-        expect(screen.getByText("古籍管理")).toBeInTheDocument();
-        expect(screen.getByText("摘要")).toBeInTheDocument();
+        expect(screen.getByText("古籍")).toBeInTheDocument();
+        expect(screen.getByText("古籍摘要")).toBeInTheDocument();
+        expect(screen.queryByRole("columnheader", { name: "业务域" })).not.toBeInTheDocument();
         expect(screen.getByText("2026-07-01")).toBeInTheDocument();
         expect(screen.queryByRole("columnheader", { name: "当前版本" })).not.toBeInTheDocument();
     });
@@ -174,7 +175,7 @@ describe("PromptsPage", () => {
         renderPage();
 
         await screen.findByText("摘要提示词");
-        fireEvent.click(screen.getByRole("button", { name: /新建模板/ }));
+        fireEvent.click(screen.getByRole("button", { name: /新建/ }));
 
         expect(await screen.findByRole("heading", { name: "新建提示词" })).toBeInTheDocument();
         expect(screen.getByRole("button", { name: /创建模板/ })).toBeInTheDocument();
@@ -220,12 +221,55 @@ describe("PromptsPage", () => {
         });
     });
 
+    it("batch disables selected prompt templates", async () => {
+        renderPage();
+
+        await screen.findByText("摘要提示词");
+        const rowCheckbox = screen.getAllByRole("checkbox")[1];
+        fireEvent.click(rowCheckbox);
+        fireEvent.click(screen.getByRole("button", { name: /禁用/ }));
+
+        await waitFor(() => {
+            expect(service.changePromptTemplate).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    enabled: false,
+                    id: template.id,
+                    changeSummary: "禁用提示词模板"
+                })
+            );
+        });
+    });
+
+    it("batch deletes selected prompt templates as a soft delete", async () => {
+        renderPage();
+
+        await screen.findByText("摘要提示词");
+        const rowCheckbox = screen.getAllByRole("checkbox")[1];
+        fireEvent.click(rowCheckbox);
+        fireEvent.click(screen.getByRole("button", { name: /批量删除/ }));
+
+        expect((await screen.findAllByText("批量删除提示词模板")).length).toBeGreaterThan(0);
+        fireEvent.click(
+            within(screen.getByRole("dialog")).getByRole("button", { name: /删\s*除/ })
+        );
+
+        await waitFor(() => {
+            expect(service.changePromptTemplate).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    enabled: false,
+                    id: template.id,
+                    changeSummary: "删除提示词模板"
+                })
+            );
+        });
+    });
+
     it("disables edit action without edit permission", async () => {
         replacePermissions(["ai:prompt:view"]);
         renderPage();
 
         await screen.findByText("摘要提示词");
         expect(screen.getByRole("button", { name: "编辑 摘要提示词" })).toBeDisabled();
-        expect(screen.getByRole("button", { name: /新建模板/ })).toBeDisabled();
+        expect(screen.getByRole("button", { name: /新建/ })).toBeDisabled();
     });
 });
