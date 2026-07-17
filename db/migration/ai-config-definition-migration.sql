@@ -30,6 +30,54 @@ SET
 WHERE service_config.`service_id` IS NOT NULL
     OR model.`capabilities_json` IS NULL;
 
+INSERT INTO `ai_business_config` (
+    `id`, `capability`, `prompt_template_id`, `model_id`, `default_params_json`, `enabled`, `priority`, `configured_at`
+)
+SELECT
+    mapping.`mapping_id`,
+    CASE
+        WHEN mapping.`scope` = 'classics' AND mapping.`capability` = 'summary' THEN 'classics_summary'
+        WHEN mapping.`scope` = 'classics' AND mapping.`capability` = 'tags' THEN 'classics_tags'
+        WHEN mapping.`scope` = 'classics' AND mapping.`capability` = 'qa' THEN 'classics_qa'
+        WHEN mapping.`scope` = 'classics' AND mapping.`capability` = 'image_analysis' THEN 'classics_image_describe'
+        WHEN mapping.`scope` = 'classics' AND mapping.`capability` = 'translate' THEN 'classics_translate'
+        WHEN mapping.`scope` = 'classics' AND mapping.`capability` = 'image_gen' THEN 'classics_image_generate'
+        WHEN mapping.`scope` = 'classics' AND mapping.`capability` = 'fusion' THEN 'classics_image_prompt_fusion'
+        WHEN mapping.`scope` = 'classics' AND mapping.`capability` = 'visual' THEN 'classics_visual_describe'
+        WHEN mapping.`scope` = 'discovery' AND mapping.`capability` = 'query_understanding' THEN 'discovery_query_understanding'
+        WHEN mapping.`scope` = 'discovery' AND mapping.`capability` = 'answer_generation' THEN 'discovery_answer_generation'
+        ELSE CONCAT(mapping.`scope`, '_', mapping.`capability`)
+    END AS `capability`,
+    CASE
+        WHEN mapping.`scope` = 'classics' AND mapping.`capability` = 'summary' THEN 930101
+        WHEN mapping.`scope` = 'classics' AND mapping.`capability` = 'tags' THEN 930102
+        WHEN mapping.`scope` = 'classics' AND mapping.`capability` = 'qa' THEN 930103
+        WHEN mapping.`scope` = 'classics' AND mapping.`capability` = 'image_analysis' THEN 930107
+        WHEN mapping.`scope` = 'classics' AND mapping.`capability` = 'translate' THEN 930106
+        WHEN mapping.`scope` = 'classics' AND mapping.`capability` = 'image_gen' THEN 930108
+        WHEN mapping.`scope` = 'classics' AND mapping.`capability` = 'fusion' THEN 930109
+        WHEN mapping.`scope` = 'classics' AND mapping.`capability` = 'visual' THEN 930110
+        WHEN mapping.`scope` = 'discovery' AND mapping.`capability` = 'query_understanding' THEN 930104
+        WHEN mapping.`scope` = 'discovery' AND mapping.`capability` = 'answer_generation' THEN 930105
+        ELSE NULL
+    END AS `prompt_template_id`,
+    mapping.`model_id`,
+    NULL,
+    mapping.`enabled`,
+    mapping.`mapping_id`,
+    mapping.`configured_at`
+FROM `ai_capability_mapping` mapping
+HAVING `prompt_template_id` IS NOT NULL
+ON DUPLICATE KEY UPDATE
+    `model_id` = VALUES(`model_id`),
+    `enabled` = VALUES(`enabled`),
+    `configured_at` = VALUES(`configured_at`);
+
+ALTER TABLE `ai_model`
+    DROP COLUMN IF EXISTS `model_id`,
+    DROP COLUMN IF EXISTS `service_id`,
+    DROP COLUMN IF EXISTS `capability_tags_json`;
+
 ALTER TABLE `ai_prompt_template`
     ADD COLUMN IF NOT EXISTS `enabled` tinyint(1) NOT NULL DEFAULT 1;
 
@@ -40,12 +88,24 @@ SET
 WHERE `template_id` IS NOT NULL
     AND `id` <> `template_id`;
 
+ALTER TABLE `ai_prompt_template`
+    DROP COLUMN IF EXISTS `template_id`,
+    DROP COLUMN IF EXISTS `scope`,
+    DROP COLUMN IF EXISTS `status`;
+
 UPDATE `ai_prompt_version`
 SET `id` = `prompt_version_id`
 WHERE `prompt_version_id` IS NOT NULL
     AND `id` <> `prompt_version_id`;
 
+ALTER TABLE `ai_prompt_version`
+    DROP COLUMN IF EXISTS `prompt_version_id`,
+    DROP COLUMN IF EXISTS `current_key`;
+
 UPDATE `ai_prompt_variable`
 SET `id` = `variable_id`
 WHERE `variable_id` IS NOT NULL
     AND `id` <> `variable_id`;
+
+ALTER TABLE `ai_prompt_variable`
+    DROP COLUMN IF EXISTS `variable_id`;

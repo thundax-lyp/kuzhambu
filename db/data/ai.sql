@@ -55,7 +55,7 @@ INSERT INTO `ai_business_config` (
     (910110, 'classics_visual_describe', 930110, 900102, NULL, 1, 10, '2026-02-27 04:00:00.000')
 ON DUPLICATE KEY UPDATE
     `prompt_template_id` = VALUES(`prompt_template_id`),
-    `model_id` = VALUES(`model_id`),
+    `model_id` = COALESCE(`model_id`, VALUES(`model_id`)),
     `default_params_json` = VALUES(`default_params_json`),
     `enabled` = VALUES(`enabled`),
     `priority` = VALUES(`priority`),

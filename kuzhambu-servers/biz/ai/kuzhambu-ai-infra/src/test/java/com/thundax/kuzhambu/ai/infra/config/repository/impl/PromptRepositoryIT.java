@@ -70,6 +70,7 @@ class PromptRepositoryIT {
         assertTrue(normalized.contains("(910106, 'classics_translate', 930106, 900102, NULL, 1, 6"));
         assertTrue(normalized.contains("(910107, 'classics_image_describe', 930107, 900101, NULL, 1, 7"));
         assertTrue(normalized.contains("(910108, 'classics_image_generate', 930108, 900201, NULL, 1, 8"));
+        assertTrue(normalized.contains("`model_id` = COALESCE(`model_id`, VALUES(`model_id`))"));
         assertFalse(normalized.contains("INSERT INTO `ai_capability_mapping`"));
         assertFalse(normalized.contains("INSERT INTO `ai_action_status`"));
 

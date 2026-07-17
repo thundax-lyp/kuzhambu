@@ -260,7 +260,7 @@ const appendBusinessConfigSql = (lines: string[], prompts: PromptSeed[]) => {
   );
   lines.push("ON DUPLICATE KEY UPDATE");
   lines.push("    `prompt_template_id` = VALUES(`prompt_template_id`),");
-  lines.push("    `model_id` = VALUES(`model_id`),");
+  lines.push("    `model_id` = COALESCE(`model_id`, VALUES(`model_id`)),");
   lines.push("    `default_params_json` = VALUES(`default_params_json`),");
   lines.push("    `enabled` = VALUES(`enabled`),");
   lines.push("    `priority` = VALUES(`priority`),");
