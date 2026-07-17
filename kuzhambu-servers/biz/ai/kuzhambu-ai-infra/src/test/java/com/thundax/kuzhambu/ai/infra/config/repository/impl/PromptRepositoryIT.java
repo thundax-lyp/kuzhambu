@@ -54,8 +54,9 @@ class PromptRepositoryIT {
         assertFalse(normalized.contains("INSERT INTO `ai_service_config`"));
         assertFalse(normalized.contains("https://ai.wdit.com.cn/v1"));
         assertFalse(normalized.contains("https://ark.cn-beijing.volces.com/api/v3"));
-        assertTrue(normalized.contains("`base_url` = VALUES(`base_url`)"));
-        assertTrue(normalized.contains("`encrypted_api_key` = VALUES(`encrypted_api_key`)"));
+        assertTrue(normalized.contains("`base_url` = COALESCE(NULLIF(VALUES(`base_url`), ''), `base_url`)"));
+        assertTrue(normalized.contains(
+                "`encrypted_api_key` = COALESCE(VALUES(`encrypted_api_key`), `encrypted_api_key`)"));
         assertTrue(normalized.contains("930101, 'classics_summary', 'Classics Default Summary', '古籍内容默认摘要提示词。', 1, 1"));
         assertTrue(
                 normalized.contains(

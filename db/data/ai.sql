@@ -9,8 +9,8 @@ INSERT INTO `ai_model` (
     (900201, 'BYTEDANCE', '', NULL, 'doubao-seedream-5-0-pro-260628', 'Doubao Seedream 5.0 Pro', '["TEXT2IMAGE"]', '{"response_format":"url","size":"2K","stream":false,"watermark":true}', 'Default ByteDance text-to-image model.', 1, '2026-02-27 04:00:00.000')
 ON DUPLICATE KEY UPDATE
     `api_source` = VALUES(`api_source`),
-    `base_url` = VALUES(`base_url`),
-    `encrypted_api_key` = VALUES(`encrypted_api_key`),
+    `base_url` = COALESCE(NULLIF(VALUES(`base_url`), ''), `base_url`),
+    `encrypted_api_key` = COALESCE(VALUES(`encrypted_api_key`), `encrypted_api_key`),
     `display_name` = VALUES(`display_name`),
     `capabilities_json` = VALUES(`capabilities_json`),
     `default_params_json` = VALUES(`default_params_json`),

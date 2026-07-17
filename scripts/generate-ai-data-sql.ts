@@ -193,8 +193,8 @@ const appendModelSql = (lines: string[]) => {
   );
   lines.push("ON DUPLICATE KEY UPDATE");
   lines.push("    `api_source` = VALUES(`api_source`),");
-  lines.push("    `base_url` = VALUES(`base_url`),");
-  lines.push("    `encrypted_api_key` = VALUES(`encrypted_api_key`),");
+  lines.push("    `base_url` = COALESCE(NULLIF(VALUES(`base_url`), ''), `base_url`),");
+  lines.push("    `encrypted_api_key` = COALESCE(VALUES(`encrypted_api_key`), `encrypted_api_key`),");
   lines.push("    `display_name` = VALUES(`display_name`),");
   lines.push("    `capabilities_json` = VALUES(`capabilities_json`),");
   lines.push("    `default_params_json` = VALUES(`default_params_json`),");
