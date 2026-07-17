@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsCommand;
+import com.thundax.kuzhambu.classics.application.mingcustoms.command.MingCustomsKeywordCommand;
 import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.impl.MingCustomsApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
@@ -18,13 +19,16 @@ import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSear
 import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsKeyword;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsContentFormat;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsTagCloudItem;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.repository.MingCustomsRepository;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -189,6 +193,39 @@ class MingCustomsApplicationServiceImplTest {
         verify(repository).deleteById(MingCustomsEntryId.of(3003L));
     }
 
+    @Test
+    void addKeywordShouldPublishSearchSyncForOwningEntry() {
+        MingCustomsRepository repository = mock(MingCustomsRepository.class);
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
+        MingCustomsApplicationServiceImpl service =
+                new MingCustomsApplicationServiceImpl(repository, null, publishSupport, null);
+        MingCustomsEntry entry = publicEntry(3007L, 9);
+        when(repository.insertKeyword(any())).thenReturn(MingCustomsKeywordId.of(7001L));
+        when(repository.getById(MingCustomsEntryId.of(3007L))).thenReturn(entry);
+
+        service.addKeyword(new MingCustomsKeywordCommand(MingCustomsEntryId.of(3007L), "元日"));
+
+        verify(publishSupport).publishUpsertAfterCommit(ClassicsContentType.MING_CUSTOMS, "3007", 9);
+    }
+
+    @Test
+    void deleteKeywordShouldPublishSearchSyncForOwningEntry() {
+        MingCustomsRepository repository = mock(MingCustomsRepository.class);
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
+        MingCustomsApplicationServiceImpl service =
+                new MingCustomsApplicationServiceImpl(repository, null, publishSupport, null);
+        MingCustomsKeyword keyword =
+                new MingCustomsKeyword(MingCustomsKeywordId.of(7002L), MingCustomsEntryId.of(3008L), "岁时", 1);
+        MingCustomsEntry entry = publicEntry(3008L, 10);
+        when(repository.listKeywords(SortDirection.ASC)).thenReturn(List.of(keyword));
+        when(repository.getById(MingCustomsEntryId.of(3008L))).thenReturn(entry);
+
+        service.deleteKeyword(MingCustomsKeywordId.of(7002L));
+
+        verify(repository).deleteKeywordById(MingCustomsKeywordId.of(7002L));
+        verify(publishSupport).publishUpsertAfterCommit(ClassicsContentType.MING_CUSTOMS, "3008", 10);
+    }
+
     private static void versionEntryOnEnsure(
             ClassicsContentApplicationService contentApplicationService, int versionNo) {
         doAnswer(invocation -> {
@@ -212,5 +249,13 @@ class MingCustomsApplicationServiceImplTest {
                 "内容",
                 "原文",
                 MingCustomsVisibility.PUBLIC);
+    }
+
+    private static MingCustomsEntry publicEntry(long id, int versionNo) {
+        MingCustomsEntry entry = new MingCustomsEntry();
+        entry.setId(MingCustomsEntryId.of(id));
+        entry.setVisibility(MingCustomsVisibility.PUBLIC);
+        entry.setCurrentVersionNo(versionNo);
+        return entry;
     }
 }

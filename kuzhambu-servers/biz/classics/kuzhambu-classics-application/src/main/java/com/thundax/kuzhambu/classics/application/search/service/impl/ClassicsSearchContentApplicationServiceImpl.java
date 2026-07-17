@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.search.service.impl;
 
+import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
@@ -8,9 +9,14 @@ import com.thundax.kuzhambu.classics.application.search.result.ClassicsSearchSou
 import com.thundax.kuzhambu.classics.application.search.service.ClassicsSearchContentApplicationService;
 import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentPageQuery;
 import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
+import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentTagStatus;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsKeyword;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
@@ -38,14 +44,17 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
     private final SancaiApplicationService sancaiApplicationService;
     private final WangqiDocumentApplicationService wangqiDocumentApplicationService;
     private final MingCustomsApplicationService mingCustomsApplicationService;
+    private final ClassicsContentApplicationService classicsContentApplicationService;
 
     public ClassicsSearchContentApplicationServiceImpl(
             SancaiApplicationService sancaiApplicationService,
             WangqiDocumentApplicationService wangqiDocumentApplicationService,
-            MingCustomsApplicationService mingCustomsApplicationService) {
+            MingCustomsApplicationService mingCustomsApplicationService,
+            ClassicsContentApplicationService classicsContentApplicationService) {
         this.sancaiApplicationService = sancaiApplicationService;
         this.wangqiDocumentApplicationService = wangqiDocumentApplicationService;
         this.mingCustomsApplicationService = mingCustomsApplicationService;
+        this.classicsContentApplicationService = classicsContentApplicationService;
     }
 
     @Override
@@ -203,16 +212,21 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
         Long volumeId = entry.getVolumeId() == null ? null : entry.getVolumeId().value();
         Long categoryId = volumeId == null ? null : categoryIdByVolumeId.get(volumeId);
         SancaiCategory category = categoryId == null ? null : categoryById.get(categoryId);
+        String contentType = ClassicsContentType.SANCAI_ENTRY.value();
+        String contentId = String.valueOf(entry.getId().value());
+        List<String> textSegments =
+                nonBlankSegments(entry.getOriginalText(), entry.getTranslationText(), entry.getSummary());
+        textSegments.addAll(qaTextSegments(contentType, contentId));
         return new ClassicsSearchSourceContent(
-                "SANCAI_ENTRY",
-                String.valueOf(entry.getId().value()),
-                "SANCAI_ENTRY",
+                contentType,
+                contentId,
+                contentType,
                 categoryId == null ? null : String.valueOf(categoryId),
                 category == null ? null : category.getTitle(),
                 entry.getTitle(),
                 entry.getSummary(),
-                nonBlankSegments(entry.getOriginalText(), entry.getTranslationText(), entry.getSummary()),
-                Collections.emptyList(),
+                textSegments,
+                tagNames(contentType, contentId),
                 entry.getLifecycleStatus().value(),
                 entry.getVisibility().value(),
                 entry.getCurrentVersionNo(),
@@ -226,16 +240,20 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
                 || document.getVisibility() != WangqiDocumentVisibility.PUBLIC) {
             return null;
         }
+        String contentType = ClassicsContentType.WANGQI_DOCUMENT.value();
+        String contentId = String.valueOf(document.getId().value());
+        List<String> textSegments = nonBlankSegments(document.getTitle(), document.getSummary(), document.getContent());
+        textSegments.addAll(qaTextSegments(contentType, contentId));
         return new ClassicsSearchSourceContent(
-                "WANGQI_DOCUMENT",
-                String.valueOf(document.getId().value()),
-                "WANGQI_DOCUMENT",
+                contentType,
+                contentId,
+                contentType,
                 null,
                 null,
                 document.getTitle(),
                 document.getSummary(),
-                nonBlankSegments(document.getTitle(), document.getSummary(), document.getContent()),
-                Collections.emptyList(),
+                textSegments,
+                tagNames(contentType, contentId),
                 "PUBLISHED",
                 document.getVisibility().value(),
                 document.getCurrentVersionNo(),
@@ -247,20 +265,81 @@ public class ClassicsSearchContentApplicationServiceImpl implements ClassicsSear
         if (entry == null || entry.getId() == null || entry.getVisibility() != MingCustomsVisibility.PUBLIC) {
             return null;
         }
+        String contentType = ClassicsContentType.MING_CUSTOMS.value();
+        String contentId = String.valueOf(entry.getId().value());
+        List<String> textSegments =
+                nonBlankSegments(entry.getTitle(), entry.getSummary(), entry.getContent(), entry.getOriginalExcerpts());
+        textSegments.addAll(keywordTextSegments(entry));
+        textSegments.addAll(qaTextSegments(contentType, contentId));
         return new ClassicsSearchSourceContent(
-                "MING_CUSTOMS",
-                String.valueOf(entry.getId().value()),
-                "MING_CUSTOMS",
+                contentType,
+                contentId,
+                contentType,
                 entry.getCategory(),
                 entry.getCategory(),
                 entry.getTitle(),
                 entry.getSummary(),
-                nonBlankSegments(entry.getTitle(), entry.getSummary(), entry.getContent(), entry.getOriginalExcerpts()),
-                Collections.emptyList(),
+                textSegments,
+                tagNames(contentType, contentId),
                 "PUBLISHED",
                 entry.getVisibility().value(),
                 entry.getCurrentVersionNo(),
                 entry.getContentUpdatedAt(),
                 entry.getContentUpdatedAt());
+    }
+
+    private List<String> tagNames(String contentType, String contentId) {
+        if (classicsContentApplicationService == null) {
+            return Collections.emptyList();
+        }
+        List<ClassicsContentTag> tags = classicsContentApplicationService.listTags(
+                contentType, ClassicsContentIdCodec.toDomain(Long.valueOf(contentId)));
+        if (tags == null || tags.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return tags.stream()
+                .filter(tag -> tag != null
+                        && (tag.getStatus() == null || tag.getStatus() == ClassicsContentTagStatus.ACTIVE)
+                        && tag.getTagNameSnapshot() != null
+                        && !tag.getTagNameSnapshot().isBlank())
+                .map(tag -> tag.getTagNameSnapshot().trim())
+                .distinct()
+                .toList();
+    }
+
+    private List<String> qaTextSegments(String contentType, String contentId) {
+        if (classicsContentApplicationService == null) {
+            return Collections.emptyList();
+        }
+        List<ClassicsContentQaPair> qaPairs = classicsContentApplicationService.listQaPairs(
+                contentType, ClassicsContentIdCodec.toDomain(Long.valueOf(contentId)));
+        if (qaPairs == null || qaPairs.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<String> segments = new ArrayList<>();
+        for (ClassicsContentQaPair pair : qaPairs) {
+            if (pair == null) {
+                continue;
+            }
+            segments.addAll(nonBlankSegments(pair.getQuestion(), pair.getAnswer()));
+        }
+        return segments;
+    }
+
+    private List<String> keywordTextSegments(MingCustomsEntry entry) {
+        if (entry == null || entry.getId() == null) {
+            return Collections.emptyList();
+        }
+        List<MingCustomsKeyword> keywords = mingCustomsApplicationService.listKeywords(entry.getId());
+        if (keywords == null || keywords.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return keywords.stream()
+                .filter(keyword -> keyword != null
+                        && keyword.getKeyword() != null
+                        && !keyword.getKeyword().isBlank())
+                .map(keyword -> keyword.getKeyword().trim())
+                .distinct()
+                .toList();
     }
 }

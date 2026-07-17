@@ -147,6 +147,7 @@ class ClassicsContentApplicationServiceImplTest {
         repository.versionById = restoredFrom;
         repository.insertedVersions.add(restoredFrom);
         FakeSancaiRepository sancaiRepository = new FakeSancaiRepository();
+        ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
                 repository,
                 null,
@@ -156,7 +157,7 @@ class ClassicsContentApplicationServiceImplTest {
                 null,
                 null,
                 null,
-                null);
+                publishSupport);
 
         ClassicsContentVersion restoredVersion = service.restoreHistoryVersion(ClassicsContentVersionId.of(9L));
 
@@ -167,6 +168,7 @@ class ClassicsContentApplicationServiceImplTest {
         assertEquals(restoredVersion.getId(), sancaiRepository.restoredEntry.getCurrentVersionId());
         assertEquals(restoredVersion.getVersionNo(), sancaiRepository.restoredEntry.getCurrentVersionNo());
         assertNotNull(sancaiRepository.restoredEntry.getCurrentVersionedAt());
+        verify(publishSupport).publishUpsertAfterCommit(ClassicsContentType.SANCAI_ENTRY, "100", 2);
     }
 
     @Test
