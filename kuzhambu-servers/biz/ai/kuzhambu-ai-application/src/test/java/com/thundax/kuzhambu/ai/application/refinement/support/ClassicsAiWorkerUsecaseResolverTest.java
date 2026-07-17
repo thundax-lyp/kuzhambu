@@ -13,7 +13,7 @@ class ClassicsAiWorkerUsecaseResolverTest {
 
     @Test
     void resolveSanCaiSummary() {
-        ClassicsAiWorkerUsecaseSpec spec = resolver.resolve("SANCAI_ENTRY", "summary");
+        ClassicsAiWorkerUsecaseSpec spec = resolver.resolve("SANCAI_ENTRY", "classics_summary");
         assertNotNull(spec);
         assertEquals("CLASSICS_SANCAI_SUMMARY", spec.operation());
         assertEquals("/internal/ai/classics/sancai/summary", spec.workerPath());
@@ -21,7 +21,7 @@ class ClassicsAiWorkerUsecaseResolverTest {
 
     @Test
     void resolveSanCaiTranslateBatchItem() {
-        ClassicsAiWorkerUsecaseSpec spec = resolver.resolve("SANCAI_ENTRY", "translate_batch_item");
+        ClassicsAiWorkerUsecaseSpec spec = resolver.resolve("SANCAI_ENTRY", "classics_translate_batch_item");
         assertNotNull(spec);
         assertEquals("CLASSICS_SANCAI_TRANSLATE_BATCH_ITEM", spec.operation());
         assertEquals("/internal/ai/classics/sancai/translate-batch-item", spec.workerPath());
@@ -29,7 +29,7 @@ class ClassicsAiWorkerUsecaseResolverTest {
 
     @Test
     void resolveWangqiQa() {
-        ClassicsAiWorkerUsecaseSpec spec = resolver.resolve("WANGQI_DOCUMENT", "qa");
+        ClassicsAiWorkerUsecaseSpec spec = resolver.resolve("WANGQI_DOCUMENT", "classics_qa");
         assertNotNull(spec);
         assertEquals("CLASSICS_WANGQI_QA", spec.operation());
         assertEquals("/internal/ai/classics/wangqi/qa", spec.workerPath());
@@ -37,7 +37,7 @@ class ClassicsAiWorkerUsecaseResolverTest {
 
     @Test
     void resolveMingCustomsTags() {
-        ClassicsAiWorkerUsecaseSpec spec = resolver.resolve("MING_CUSTOMS", "tags");
+        ClassicsAiWorkerUsecaseSpec spec = resolver.resolve("MING_CUSTOMS", "classics_tags");
         assertNotNull(spec);
         assertEquals("CLASSICS_MING_CUSTOMS_TAGS", spec.operation());
         assertEquals("/internal/ai/classics/ming-customs/tags", spec.workerPath());
@@ -46,23 +46,24 @@ class ClassicsAiWorkerUsecaseResolverTest {
     @Test
     void resolveUnsupportedWangqiTranslateShouldThrow() {
         BizException exception =
-                assertThrows(BizException.class, () -> resolver.resolve("WANGQI_DOCUMENT", "translate"));
+                assertThrows(BizException.class, () -> resolver.resolve("WANGQI_DOCUMENT", "classics_translate"));
         assertEquals(
-                "unsupported classics ai worker usecase: contentType=WANGQI_DOCUMENT, capability=translate",
+                "unsupported classics ai worker usecase: contentType=WANGQI_DOCUMENT, capability=classics_translate",
                 exception.getMessage());
     }
 
     @Test
     void resolveUnsupportedMingCustomsVisualShouldThrow() {
-        BizException exception = assertThrows(BizException.class, () -> resolver.resolve("MING_CUSTOMS", "visual"));
+        BizException exception =
+                assertThrows(BizException.class, () -> resolver.resolve("MING_CUSTOMS", "classics_visual_describe"));
         assertEquals(
-                "unsupported classics ai worker usecase: contentType=MING_CUSTOMS, capability=visual",
+                "unsupported classics ai worker usecase: contentType=MING_CUSTOMS, capability=classics_visual_describe",
                 exception.getMessage());
     }
 
     @Test
     void resolveSanCaiImageAnalysis() {
-        ClassicsAiWorkerUsecaseSpec spec = resolver.resolve("SANCAI_ENTRY", "image_analysis");
+        ClassicsAiWorkerUsecaseSpec spec = resolver.resolve("SANCAI_ENTRY", "classics_image_describe");
         assertNotNull(spec);
         assertEquals("CLASSICS_SANCAI_IMAGE_ANALYSIS", spec.operation());
         assertEquals("/internal/ai/classics/sancai/image-analysis", spec.workerPath());
@@ -70,7 +71,7 @@ class ClassicsAiWorkerUsecaseResolverTest {
 
     @Test
     void resolveSanCaiFusion() {
-        ClassicsAiWorkerUsecaseSpec spec = resolver.resolve("SANCAI_ENTRY", "fusion");
+        ClassicsAiWorkerUsecaseSpec spec = resolver.resolve("SANCAI_ENTRY", "classics_image_prompt_fusion");
         assertNotNull(spec);
         assertEquals("CLASSICS_SANCAI_FUSION", spec.operation());
         assertEquals("/internal/ai/classics/sancai/fusion", spec.workerPath());
@@ -78,7 +79,7 @@ class ClassicsAiWorkerUsecaseResolverTest {
 
     @Test
     void resolveSanCaiImageGen() {
-        ClassicsAiWorkerUsecaseSpec spec = resolver.resolve("SANCAI_ENTRY", "image_gen");
+        ClassicsAiWorkerUsecaseSpec spec = resolver.resolve("SANCAI_ENTRY", "classics_image_generate");
         assertNotNull(spec);
         assertEquals("CLASSICS_SANCAI_IMAGE_GEN", spec.operation());
         assertEquals("/internal/ai/classics/sancai/image-gen", spec.workerPath());

@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.thundax.kuzhambu.ai.application.refinement.command.AiRefinementRequestCommand;
 import com.thundax.kuzhambu.ai.application.refinement.result.AiCandidateResult;
 import com.thundax.kuzhambu.ai.application.refinement.service.AiRefinementApplicationService;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.refinement.model.entity.AiRefinementTask;
 import com.thundax.kuzhambu.ai.domain.refinement.repository.AiRefinementTaskRepository;
 import java.time.Instant;
@@ -24,12 +25,20 @@ class AiRefinementTaskApplicationServiceImplTest {
     @Test
     void addTaskShouldMarkSancaiImageAnalysisStreamAndPersistSucceededCandidate() {
         RecordingTaskRepository repository = new RecordingTaskRepository();
-        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(
-                new AiCandidateResult(101L, 201L, "SUCCEEDED", "image_analysis", null, "MARKDOWN", "候选正文", null, null));
+        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
+                101L,
+                201L,
+                "SUCCEEDED",
+                AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE.value(),
+                null,
+                "MARKDOWN",
+                "候选正文",
+                null,
+                null));
         AiRefinementTaskApplicationServiceImpl service =
                 new AiRefinementTaskApplicationServiceImpl(repository, refinementService);
 
-        AiRefinementTask accepted = service.addTask(command("image_analysis"));
+        AiRefinementTask accepted = service.addTask(command(AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE.value()));
         AiRefinementTask completed = awaitTerminal(repository, accepted.getTaskId());
 
         assertTrue(accepted.isStreamEnabled());
@@ -48,7 +57,7 @@ class AiRefinementTaskApplicationServiceImplTest {
                 101L,
                 201L,
                 "FAILED",
-                "image_gen",
+                AiBusinessCapability.CLASSICS_IMAGE_GENERATE.value(),
                 "WORKER_STREAM",
                 null,
                 null,
@@ -57,7 +66,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         AiRefinementTaskApplicationServiceImpl service =
                 new AiRefinementTaskApplicationServiceImpl(repository, refinementService);
 
-        AiRefinementTask accepted = service.addTask(command("image_gen"));
+        AiRefinementTask accepted = service.addTask(command(AiBusinessCapability.CLASSICS_IMAGE_GENERATE.value()));
         AiRefinementTask completed = awaitTerminal(repository, accepted.getTaskId());
 
         assertTrue(completed.isStreamEnabled());
@@ -72,15 +81,23 @@ class AiRefinementTaskApplicationServiceImplTest {
     @Test
     void addTaskShouldExecuteOnlyAfterTransactionCommitWhenSynchronizationIsActive() {
         RecordingTaskRepository repository = new RecordingTaskRepository();
-        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(
-                new AiCandidateResult(101L, 201L, "SUCCEEDED", "translate", null, "TEXT", "译文", null, null));
+        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
+                101L,
+                201L,
+                "SUCCEEDED",
+                AiBusinessCapability.CLASSICS_TRANSLATE.value(),
+                null,
+                "TEXT",
+                "译文",
+                null,
+                null));
         AiRefinementTaskApplicationServiceImpl service =
                 new AiRefinementTaskApplicationServiceImpl(repository, refinementService);
 
         TransactionSynchronizationManager.initSynchronization();
         AiRefinementTask accepted;
         try {
-            accepted = service.addTask(command("translate"));
+            accepted = service.addTask(command(AiBusinessCapability.CLASSICS_TRANSLATE.value()));
             assertEquals("PENDING", repository.get(accepted.getTaskId()).getStatus());
             TransactionSynchronizationManager.getSynchronizations()
                     .forEach(synchronization -> synchronization.afterCommit());

@@ -18,6 +18,7 @@ import com.thundax.kuzhambu.ai.application.knowledge.service.impl.KnowledgeAiExt
 import com.thundax.kuzhambu.ai.application.report.result.AiReportSummaryResult;
 import com.thundax.kuzhambu.ai.application.report.result.AiReportSummaryResult.TopCapabilityResult;
 import com.thundax.kuzhambu.ai.application.report.service.AiReportApplicationService;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiRequest;
 import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiResult;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
@@ -204,7 +205,14 @@ class AiFacadeImplTest {
             assertTrue(request.isForceJson());
             assertEquals("zh-CN", request.getLocale());
             return new DiscoveryAiResult(
-                    701L, null, "FAILED", "answer_generation", "JSON", null, "WORKER_STREAM", "stream interrupted");
+                    701L,
+                    null,
+                    "FAILED",
+                    AiBusinessCapability.DISCOVERY_ANSWER_GENERATION.value(),
+                    "JSON",
+                    null,
+                    "WORKER_STREAM",
+                    "stream interrupted");
         });
         AiFacadeImpl facade = newFacade(
                 mock(AiReportApplicationService.class),
@@ -235,7 +243,7 @@ class AiFacadeImplTest {
         assertEquals(701L, response.getCallId());
         assertNull(response.getCandidateId());
         assertEquals("FAILED", response.getStatus());
-        assertEquals("answer_generation", response.getCapability());
+        assertEquals(AiBusinessCapability.DISCOVERY_ANSWER_GENERATION.value(), response.getCapability());
         assertEquals("JSON", response.getResultFormat());
         assertNull(response.getResultPayload());
         assertEquals("WORKER_STREAM", response.getErrorType());

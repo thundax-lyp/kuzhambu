@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.ai.application.invocation.result;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +13,7 @@ class AiInvokeResultTest {
     void toCandidateShouldKeepMarkdownResultPayloadForImageAnalysis() {
         AiInvokeCommand command = new AiInvokeCommand();
         command.setBatchId(1L);
-        command.setCapability("image_analysis");
+        command.setCapability(AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE.value());
         command.setContentType("SANCAI_ENTRY");
         command.setContentId(10L);
         command.setObjectId(20L);
@@ -33,7 +34,7 @@ class AiInvokeResultTest {
 
         assertEquals(100L, candidate.getCallId());
         assertEquals(1L, candidate.getBatchId());
-        assertEquals("image_analysis", candidate.getCapability());
+        assertEquals(AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE.value(), candidate.getCapability());
         assertEquals("SANCAI_ENTRY", candidate.getContentType());
         assertEquals(10L, candidate.getContentId());
         assertEquals(20L, candidate.getObjectId());
@@ -51,7 +52,7 @@ class AiInvokeResultTest {
     void toCandidateShouldKeepFailureSnapshot() {
         AiInvokeCommand command = new AiInvokeCommand();
         command.setBatchId(1L);
-        command.setCapability("translate");
+        command.setCapability(AiBusinessCapability.CLASSICS_TRANSLATE.value());
         command.setContentType("ENTRY");
         command.setContentId(10L);
         command.setModelName("model-a");
