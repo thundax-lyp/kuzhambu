@@ -1,6 +1,5 @@
 package com.thundax.kuzhambu.ai.application.config.model.service.impl;
 
-import com.thundax.kuzhambu.ai.application.capability.service.AiCapabilityApplicationService;
 import com.thundax.kuzhambu.ai.application.config.model.service.AiModelApplicationService;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
@@ -17,12 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class AiModelApplicationServiceImpl implements AiModelApplicationService {
 
     private final AiModelRepository aiModelRepository;
-    private final AiCapabilityApplicationService aiCapabilityApplicationService;
 
-    public AiModelApplicationServiceImpl(
-            AiModelRepository aiModelRepository, AiCapabilityApplicationService aiCapabilityApplicationService) {
+    public AiModelApplicationServiceImpl(AiModelRepository aiModelRepository) {
         this.aiModelRepository = aiModelRepository;
-        this.aiCapabilityApplicationService = aiCapabilityApplicationService;
     }
 
     @Override
@@ -51,11 +47,7 @@ public class AiModelApplicationServiceImpl implements AiModelApplicationService 
         if (model == null) {
             return 0;
         }
-        int affectedRows = aiModelRepository.update(model);
-        if (affectedRows > 0) {
-            aiCapabilityApplicationService.refreshActionStatusesByModelId(AiModelIdCodec.toValue(model.getId()));
-        }
-        return affectedRows;
+        return aiModelRepository.update(model);
     }
 
     @Override
@@ -64,7 +56,6 @@ public class AiModelApplicationServiceImpl implements AiModelApplicationService 
         if (id == null) {
             return 0;
         }
-        aiCapabilityApplicationService.assertModelCanBeDeleted(id);
         return aiModelRepository.delete(AiModelIdCodec.toDomain(id));
     }
 }

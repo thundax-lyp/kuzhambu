@@ -1,8 +1,5 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.config.assembler;
 
-import com.thundax.kuzhambu.ai.application.capability.command.AiCapabilityMappingSaveCommand;
-import com.thundax.kuzhambu.ai.application.capability.result.AiActionStatusResult;
-import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiCapabilityMapping;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiApiSource;
@@ -66,45 +63,6 @@ public final class AiConfigInterfaceAssembler {
                 .requiredTags(Collections.emptyList())
                 .enabled(true)
                 .priority(capability.ordinal() + 1)
-                .build();
-    }
-
-    public static AiCapabilityMappingSaveCommand toMappingCommand(
-            AiConfigRequests.CapabilityMappingSaveRequest request) {
-        AiCapabilityMappingSaveCommand command = new AiCapabilityMappingSaveCommand();
-        command.setMappingId(request.getMappingId());
-        command.setScope(request.getScope());
-        command.setCapability(request.getCapability());
-        command.setModelId(request.getModelId());
-        command.setEnabled(request.getEnabled() == null || request.getEnabled());
-        command.setConfiguredAt(Instant.now());
-        return command;
-    }
-
-    public static AiConfigResponses.CapabilityMappingResponse toResponse(AiCapabilityMapping mapping) {
-        if (mapping == null) {
-            return AiConfigResponses.CapabilityMappingResponse.builder().build();
-        }
-        return AiConfigResponses.CapabilityMappingResponse.builder()
-                .mappingId(mapping.getMappingId())
-                .scope(mapping.getScope())
-                .capability(mapping.getCapability())
-                .modelId(mapping.getModelId())
-                .enabled(mapping.isEnabled())
-                .configuredAt(mapping.getConfiguredAt())
-                .build();
-    }
-
-    public static AiConfigResponses.ActionStatusResponse toResponse(AiActionStatusResult result) {
-        if (result == null) {
-            return AiConfigResponses.ActionStatusResponse.builder().build();
-        }
-        return AiConfigResponses.ActionStatusResponse.builder()
-                .scope(result.getScope())
-                .capability(result.getCapability())
-                .available(result.isAvailable())
-                .unavailableReason(result.getUnavailableReason())
-                .checkedAt(result.getCheckedAt())
                 .build();
     }
 

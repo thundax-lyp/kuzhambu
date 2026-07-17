@@ -3,10 +3,8 @@ package com.thundax.kuzhambu.ai.application.invocation.support;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thundax.kuzhambu.ai.application.capability.service.AiCapabilityApplicationService;
 import com.thundax.kuzhambu.ai.application.config.model.service.AiModelApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
-import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiCapabilityMapping;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiModelCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
@@ -18,15 +16,10 @@ import org.springframework.stereotype.Component;
 public class AiWorkerModelConfigResolver {
 
     private final AiModelApplicationService modelService;
-    private final AiCapabilityApplicationService capabilityService;
     private final ObjectMapper objectMapper;
 
-    public AiWorkerModelConfigResolver(
-            AiModelApplicationService modelService,
-            AiCapabilityApplicationService capabilityService,
-            ObjectMapper objectMapper) {
+    public AiWorkerModelConfigResolver(AiModelApplicationService modelService, ObjectMapper objectMapper) {
         this.modelService = modelService;
-        this.capabilityService = capabilityService;
         this.objectMapper = objectMapper;
     }
 
@@ -67,11 +60,7 @@ public class AiWorkerModelConfigResolver {
 
     private AiModel resolveModel(AiInvokeCommand command) {
         if (command.getModelId() == null) {
-            AiCapabilityMapping mapping = resolveCapabilityMapping(command);
-            if (mapping == null || mapping.getModelId() == null) {
-                throw new IllegalArgumentException("AI modelId is required");
-            }
-            command.setModelId(mapping.getModelId());
+            throw new IllegalArgumentException("AI modelId is required");
         }
         AiModel model = modelService.get(command.getModelId());
         if (model == null) {
@@ -81,21 +70,6 @@ public class AiWorkerModelConfigResolver {
             throw new IllegalArgumentException("AI model is disabled: " + command.getModelId());
         }
         return model;
-    }
-
-    private AiCapabilityMapping resolveCapabilityMapping(AiInvokeCommand command) {
-        if (capabilityService == null || isBlank(command.getScope()) || isBlank(command.getCapability())) {
-            return null;
-        }
-        AiCapabilityMapping mapping = capabilityService.getMapping(command.getScope(), command.getCapability());
-        if (mapping == null) {
-            return null;
-        }
-        if (!mapping.isEnabled()) {
-            throw new IllegalArgumentException("AI capability mapping is disabled: scope=%s, capability=%s"
-                    .formatted(command.getScope(), command.getCapability()));
-        }
-        return mapping;
     }
 
     private JsonNode parseParameters(AiModel model) {

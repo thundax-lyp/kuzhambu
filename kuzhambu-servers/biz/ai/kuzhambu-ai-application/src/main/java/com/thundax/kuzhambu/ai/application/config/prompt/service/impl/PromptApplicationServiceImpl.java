@@ -1,6 +1,5 @@
 package com.thundax.kuzhambu.ai.application.config.prompt.service.impl;
 
-import com.thundax.kuzhambu.ai.application.capability.service.AiCapabilityApplicationService;
 import com.thundax.kuzhambu.ai.application.config.prompt.command.PromptTemplateSaveCommand;
 import com.thundax.kuzhambu.ai.application.config.prompt.query.PromptVersionCompareQuery;
 import com.thundax.kuzhambu.ai.application.config.prompt.result.PromptVersionResult;
@@ -32,13 +31,10 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
     private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\{\\{\\s*([A-Za-z][A-Za-z0-9_]*)\\s*}}");
 
     private final PromptRepository promptRepository;
-    private final AiCapabilityApplicationService aiCapabilityApplicationService;
     private final PromptVariableDomainService promptVariableDomainService = new PromptVariableDomainService();
 
-    public PromptApplicationServiceImpl(
-            PromptRepository promptRepository, AiCapabilityApplicationService aiCapabilityApplicationService) {
+    public PromptApplicationServiceImpl(PromptRepository promptRepository) {
         this.promptRepository = promptRepository;
-        this.aiCapabilityApplicationService = aiCapabilityApplicationService;
     }
 
     @Override
@@ -67,8 +63,6 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
         promptRepository.replaceVariables(templateId, variables);
         promptRepository.insertVersion(version);
         promptRepository.markCurrentVersion(templateId, versionNo);
-        aiCapabilityApplicationService.refreshActionStatusesByCapability(
-                template.getCapability().value());
         return PromptTemplateIdCodec.toValue(templateId);
     }
 
@@ -111,11 +105,6 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
         int affectedRows = promptRepository.markCurrentVersion(id, versionNo);
         if (affectedRows <= 0) {
             throw new BizException("Prompt rollback failed: " + templateId + "#" + versionNo);
-        }
-        PromptTemplate template = promptRepository.get(id);
-        if (template != null) {
-            aiCapabilityApplicationService.refreshActionStatusesByCapability(
-                    template.getCapability().value());
         }
         return getCurrentVersion(templateId);
     }
