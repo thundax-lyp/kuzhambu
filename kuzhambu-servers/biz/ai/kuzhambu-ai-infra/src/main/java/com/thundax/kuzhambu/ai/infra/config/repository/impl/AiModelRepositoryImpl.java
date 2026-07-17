@@ -53,7 +53,10 @@ public class AiModelRepositoryImpl implements AiModelRepository {
                         .eq(AiModelDO::getId, dataObject.getId())
                         .set(AiModelDO::getApiSource, dataObject.getApiSource())
                         .set(AiModelDO::getBaseUrl, dataObject.getBaseUrl())
-                        .set(AiModelDO::getEncryptedApiKey, dataObject.getEncryptedApiKey())
+                        .set(
+                                !isBlank(dataObject.getEncryptedApiKey()),
+                                AiModelDO::getEncryptedApiKey,
+                                dataObject.getEncryptedApiKey())
                         .set(AiModelDO::getModelName, dataObject.getModelName())
                         .set(AiModelDO::getDisplayName, dataObject.getDisplayName())
                         .set(AiModelDO::getCapabilitiesJson, dataObject.getCapabilitiesJson())
@@ -65,5 +68,9 @@ public class AiModelRepositoryImpl implements AiModelRepository {
     @Override
     public int delete(AiModelId id) {
         return aiModelMapper.deleteById(AiModelIdCodec.toValue(id));
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }

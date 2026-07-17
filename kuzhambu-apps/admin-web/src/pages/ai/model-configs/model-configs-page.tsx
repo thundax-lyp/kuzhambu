@@ -63,6 +63,15 @@ const assertJsonText = (value?: string | null) => {
     }
 };
 
+const omitBlankApiKey = (command: AiModelChangeCommand): AiModelChangeCommand => {
+    if (!command.apiKey?.trim()) {
+        const sanitized = { ...command };
+        delete sanitized.apiKey;
+        return sanitized;
+    }
+    return command;
+};
+
 export const ModelsPage = () => {
     const { message } = App.useApp();
     const queryClient = useQueryClient();
@@ -186,7 +195,7 @@ export const ModelsPage = () => {
             capabilities: values.capabilities || []
         };
         if (editingModel) {
-            await changeMutation.mutateAsync(command);
+            await changeMutation.mutateAsync(omitBlankApiKey(command));
             return;
         }
         await createMutation.mutateAsync(command);
@@ -197,7 +206,6 @@ export const ModelsPage = () => {
             id: record.id,
             apiSource: record.apiSource,
             baseUrl: record.baseUrl || "",
-            apiKey: "",
             modelName: record.modelName,
             displayName: record.displayName || null,
             capabilities: record.capabilities || [],
