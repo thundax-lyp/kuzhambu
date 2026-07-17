@@ -5,6 +5,7 @@ import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVariable;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVersion;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptTemplateId;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
