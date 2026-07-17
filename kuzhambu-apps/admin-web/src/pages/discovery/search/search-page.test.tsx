@@ -108,7 +108,9 @@ describe("SearchPage", () => {
             );
         });
         expect(await screen.findByText("三才图会")).toBeInTheDocument();
-        expect(screen.getByText("礼器图")).toBeInTheDocument();
+        expect(screen.getByRole("link", { name: /礼器图/u })).toBeInTheDocument();
+        expect(screen.getAllByText("礼器").length).toBeGreaterThanOrEqual(2);
+        expect(screen.getByLabelText("检索结果")).toBeInTheDocument();
     });
 
     it("restores query string and records result clicks", async () => {

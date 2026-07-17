@@ -2,8 +2,65 @@
     --kuzhambu-list-page-accent: var(--accent-blue);
 }
 
-.search-page-highlight mark {
+.search-page-results {
+    min-height: 280px;
+    padding: 4px 0 0;
+}
+
+.search-page-result-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.search-page-result-item {
+    padding: 18px 2px 16px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.search-page-result-title {
+    margin: 0 0 8px;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.45;
+    letter-spacing: 0;
+}
+
+.search-page-result-title a {
+    color: var(--accent-blue);
+    text-decoration: none;
+}
+
+.search-page-result-title a:hover {
+    text-decoration: underline;
+}
+
+.search-page-result-summary {
+    max-width: 880px;
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.75;
+    letter-spacing: 0;
+}
+
+.search-page-result-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.search-page-pagination {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 18px;
+}
+
+.search-page-result-title mark,
+.search-page-result-summary mark {
     padding: 0 2px;
     border-radius: 3px;
     background: #fff1a8;
+    color: inherit;
 }

@@ -1,13 +1,12 @@
 import { useMutation } from "@tanstack/react-query";
 import { SearchOutlined } from "@ant-design/icons";
-import { DatePicker, Input, Select } from "antd";
+import { DatePicker, Empty, Input, Pagination, Select, Spin, Tag } from "antd";
 import dayjs from "dayjs";
 import type { Dayjs } from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
-import type { KuzhambuTableColumn } from "@/components/kuzhambu-table";
 import * as service from "./search-service";
 import type { DiscoverySearchGroupRecord, DiscoverySearchItemRecord } from "./search-types";
 import type { DiscoverySearchClickCommand, DiscoverySearchQuery } from "./search-service";
@@ -24,7 +23,7 @@ const KNOWLEDGE_BASE_OPTIONS = [
     { label: "明代习俗", value: "MING_CUSTOMS" }
 ];
 
-interface SearchResultRow {
+interface SearchResultEntry {
     group: DiscoverySearchGroupRecord;
     item: DiscoverySearchItemRecord;
     key: string;
@@ -137,6 +136,37 @@ const renderHighlightText = (highlightText?: string | null) => {
     return nodes;
 };
 
+const escapeRegExp = (value: string) => {
+    return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+};
+
+const renderQueryHighlight = (text: string, queryText: string) => {
+    const terms = splitList(queryText).filter((term) => term.length > 0);
+    if (terms.length === 0) {
+        return text;
+    }
+
+    const pattern = new RegExp(`(${terms.map(escapeRegExp).join("|")})`, "giu");
+    const nodes: Array<string | JSX.Element> = [];
+    let lastIndex = 0;
+    let match = pattern.exec(text);
+
+    while (match) {
+        if (match.index > lastIndex) {
+            nodes.push(text.slice(lastIndex, match.index));
+        }
+        nodes.push(<mark key={`query-mark-${match.index}`}>{match[0]}</mark>);
+        lastIndex = match.index + match[0].length;
+        match = pattern.exec(text);
+    }
+
+    if (lastIndex < text.length) {
+        nodes.push(text.slice(lastIndex));
+    }
+
+    return nodes.length > 0 ? nodes : text;
+};
+
 const createClickCommand = (
     searchLogId: string,
     group: DiscoverySearchGroupRecord,
@@ -182,7 +212,7 @@ export const SearchPage = () => {
     }, [runSearch, searchParams]);
 
     const response = searchMutation.data;
-    const rows = useMemo(() => {
+    const results = useMemo<SearchResultEntry[]>(() => {
         return (response?.groups ?? []).flatMap((group, groupIndex) => {
             const groupKey = group.groupKey || `group-${groupIndex}`;
             return (group.items ?? []).map((item, itemIndex) => ({
@@ -256,66 +286,73 @@ export const SearchPage = () => {
 
     const shouldShowZeroResult =
         !searchMutation.isPending && !searchMutation.isError && response?.totalCount === 0;
-    const columns: KuzhambuTableColumn<SearchResultRow>[] = [
-        {
-            title: "分组",
-            dataIndex: ["group", "groupTitle"],
-            key: "group",
-            width: 140,
-            render: (_value, row) => row.group.groupTitle || row.group.groupKey || "-"
-        },
-        {
-            title: "标题",
-            dataIndex: ["item", "title"],
-            key: "title",
-            width: 220,
-            render: (_value, row) => {
-                const title = row.item.title || "未命名结果";
-                if (!row.item.targetPath) {
-                    return title;
-                }
-
-                return (
-                    <Link to={row.item.targetPath} onClick={() => recordClick(row.group, row.item)}>
-                        {title}
-                    </Link>
-                );
-            }
-        },
-        {
-            title: "摘要",
-            dataIndex: ["item", "highlightText"],
-            key: "summary",
-            render: (_value, row) => (
-                <span className="search-page-highlight">
-                    {renderHighlightText(row.item.highlightText) || row.item.summary || "-"}
-                </span>
-            )
-        },
-        {
-            title: "类型",
-            dataIndex: ["item", "contentType"],
-            key: "contentType",
-            width: 140,
-            render: (_value, row) => row.item.contentType || "-"
-        },
-        {
-            title: "内容 ID",
-            dataIndex: ["item", "contentId"],
-            key: "contentId",
-            width: 120,
-            render: (_value, row) => row.item.contentId || "-"
-        },
-        {
-            title: "排序",
-            key: "rank",
-            width: 120,
-            render: (_value, row) => `${row.item.resultRank ?? "-"} / ${row.item.groupRank ?? "-"}`
+    const currentPageNo = Number.parseInt(form.pageNo, 10) || 1;
+    const currentPageSize = Number.parseInt(form.pageSize, 10) || 10;
+    const totalCount = response?.totalCount ?? results.length;
+    const renderResultTitle = (result: SearchResultEntry) => {
+        const title = result.item.title || "未命名结果";
+        const titleContent = renderQueryHighlight(title, form.queryText);
+        if (!result.item.targetPath) {
+            return <span>{titleContent}</span>;
         }
-    ];
+
+        return (
+            <Link
+                to={result.item.targetPath}
+                onClick={() => recordClick(result.group, result.item)}
+            >
+                {titleContent}
+            </Link>
+        );
+    };
+    const resultContent = (
+        <Spin spinning={searchMutation.isPending}>
+            <section className="search-page-results" aria-label="检索结果">
+                {searchMutation.isError ? <Empty description="检索失败，请稍后重试" /> : null}
+                {!searchMutation.isError && results.length === 0 ? (
+                    <Empty
+                        description={shouldShowZeroResult ? "没有找到匹配内容" : "暂无搜索结果"}
+                    />
+                ) : null}
+                {!searchMutation.isError && results.length > 0 ? (
+                    <>
+                        <div className="search-page-result-list">
+                            {results.map((result) => (
+                                <article className="search-page-result-item" key={result.key}>
+                                    <h3 className="search-page-result-title">
+                                        {renderResultTitle(result)}
+                                    </h3>
+                                    <p className="search-page-result-summary">
+                                        {renderHighlightText(result.item.highlightText) ||
+                                            result.item.summary ||
+                                            "暂无摘要"}
+                                    </p>
+                                    <div className="search-page-result-meta">
+                                        <Tag color="blue">
+                                            {result.group.groupTitle ||
+                                                result.group.groupKey ||
+                                                "未分组"}
+                                        </Tag>
+                                    </div>
+                                </article>
+                            ))}
+                        </div>
+                        <Pagination
+                            className="search-page-pagination"
+                            current={currentPageNo}
+                            pageSize={currentPageSize}
+                            showSizeChanger
+                            total={totalCount}
+                            onChange={changePage}
+                        />
+                    </>
+                ) : null}
+            </section>
+        </Spin>
+    );
 
     return (
-        <KuzhambuListPage<SearchResultRow>
+        <KuzhambuListPage<SearchResultEntry>
             pageClassName="search-page"
             title="检索"
             description="公开已发布内容。"
@@ -382,20 +419,7 @@ export const SearchPage = () => {
                     搜索
                 </KuzhambuButton>
             }
-            columns={columns}
-            dataSource={rows}
-            loading={searchMutation.isPending}
-            pagination={{
-                current: Number.parseInt(form.pageNo, 10) || 1,
-                pageSize: Number.parseInt(form.pageSize, 10) || 10,
-                showSizeChanger: true,
-                total: response?.totalCount ?? rows.length
-            }}
-            rowKey="key"
-            locale={{
-                emptyText: shouldShowZeroResult ? "没有找到匹配内容" : "暂无搜索结果"
-            }}
-            onChange={(pagination) => changePage(pagination.current, pagination.pageSize)}
+            content={resultContent}
         />
     );
 };
