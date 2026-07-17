@@ -1,50 +1,41 @@
-import {
-    BranchesOutlined,
-    CheckCircleOutlined,
-    EyeOutlined,
-    ReloadOutlined,
-    RetweetOutlined,
-    SaveOutlined,
-    ThunderboltOutlined
-} from "@ant-design/icons";
+import { PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-    App,
-    Card,
-    Descriptions,
-    Form,
-    Input,
-    Popconfirm,
-    Select,
-    Table,
-    Tag,
-    Tooltip,
-    Typography
-} from "antd";
-import type { ColumnsType } from "antd/es/table";
+import { App, Select, Typography } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuPage } from "@/components/kuzhambu-page";
-import { KuzhambuSpace, KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
-import * as service from "./prompts-service";
-import type { AiPromptTemplateChangeCommand, AiPromptTemplateQuery } from "./prompts-service";
-import type {
-    AiPromptTemplateRecord,
-    AiPromptVariableRecord,
-    AiPromptVersionRecord
-} from "./prompts-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
+import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
+import { KuzhambuTag } from "@/components/kuzhambu-tag";
+import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
+import { PromptEditDrawer } from "./components/prompt-edit-drawer";
+import * as service from "./prompts-service";
+import type { AiPromptTemplateQuery } from "./prompts-service";
+import type { AiPromptTemplateRecord } from "./prompts-types";
 import "./prompts-page.css";
 
-type PromptFormValues = Omit<AiPromptTemplateChangeCommand, "variables" | "enabled"> & {
-    status?: string | null;
+const { Text } = Typography;
+
+const DEFAULT_COLUMN_WIDTHS = {
+    name: 220,
+    domain: 120,
+    capability: 160,
+    enabled: 112,
+    registeredAt: 120,
+    description: 360
 };
 
-const EMPTY_JSON_ARRAY = "[]";
-const EMPTY_JSON_OBJECT = "{}";
+interface PromptFilters {
+    capability?: string | null;
+    enabled: "ALL" | "ENABLED" | "DISABLED";
+}
 
-const formatDateTime = (value?: string | null) => {
+const DEFAULT_PROMPT_FILTERS: PromptFilters = {
+    capability: null,
+    enabled: "ALL"
+};
+
+const formatDate = (value?: string | null) => {
     if (!value) {
         return "-";
     }
@@ -52,62 +43,88 @@ const formatDateTime = (value?: string | null) => {
     if (Number.isNaN(timestamp)) {
         return value;
     }
-    return new Intl.DateTimeFormat("zh-CN", {
-        dateStyle: "medium",
-        timeStyle: "short"
-    }).format(new Date(timestamp));
+    const date = new Date(timestamp);
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${date.getFullYear()}-${month}-${day}`;
 };
 
-const normalizeJsonText = (value?: string | null, fallback = EMPTY_JSON_OBJECT) => {
+const toEnabledQueryValue = (enabled: PromptFilters["enabled"]) => {
+    if (enabled === "ENABLED") {
+        return true;
+    }
+    if (enabled === "DISABLED") {
+        return false;
+    }
+    return undefined;
+};
+
+const readCapabilityDomain = (capability?: string | null) => {
+    if (!capability) {
+        return "其他";
+    }
+    if (capability.startsWith("classics_")) {
+        return "古籍管理";
+    }
+    if (capability.startsWith("discovery_")) {
+        return "知识发现";
+    }
+    if (capability.startsWith("knowledge_")) {
+        return "知识治理";
+    }
+    if (capability.startsWith("platform_")) {
+        return "平台";
+    }
+    if (capability.startsWith("prompt_")) {
+        return "提示词";
+    }
+    return "其他";
+};
+
+const trimCapabilityDomainPrefix = (name: string) => {
+    return name
+        .replace(/^古籍/, "")
+        .replace(/^知识发现/, "")
+        .replace(/^知识/, "")
+        .replace(/^平台/, "")
+        .replace(/^提示词/, "")
+        .trim();
+};
+
+const readCapabilityLabel = (capability?: string | null, name?: string | null) => {
+    const label = name?.trim();
+    return label ? trimCapabilityDomainPrefix(label) || label : capability || "-";
+};
+
+const readPromptName = (template: AiPromptTemplateRecord) => {
+    return template.name?.trim() || template.capability || `模板 ${template.id ?? ""}`;
+};
+
+const readPromptDisplayName = (
+    template: AiPromptTemplateRecord,
+    capabilityName?: string | null
+) => {
+    const name = template.name?.trim();
+    if (name && !/\bDefault\b/i.test(name)) {
+        return name;
+    }
+    const capabilityLabel = readCapabilityLabel(template.capability, capabilityName);
+    return capabilityLabel === "-" ? readPromptName(template) : `${capabilityLabel}提示词`;
+};
+
+const normalizeJsonText = (value?: string | null, fallback = "{}") => {
     const trimmed = value?.trim();
     return trimmed ? trimmed : fallback;
 };
 
-const parseJson = (value: string) => {
-    return JSON.parse(value) as unknown;
-};
-
-const formatJsonText = (value?: string | null, fallback = EMPTY_JSON_OBJECT) => {
-    const normalized = normalizeJsonText(value, fallback);
-    try {
-        return JSON.stringify(parseJson(normalized), null, 2);
-    } catch {
-        return normalized;
-    }
-};
-
-const assertJsonText = (value?: string | null, fallback = EMPTY_JSON_OBJECT) => {
-    try {
-        parseJson(normalizeJsonText(value, fallback));
-        return Promise.resolve();
-    } catch {
-        return Promise.reject(new Error("请输入合法 JSON"));
-    }
-};
-
-const toVariableRows = (value?: string | null): AiPromptVariableRecord[] => {
-    try {
-        const parsed = parseJson(normalizeJsonText(value, EMPTY_JSON_ARRAY));
-        if (!Array.isArray(parsed)) {
-            return [];
-        }
-        return parsed
-            .filter(
-                (item): item is Record<string, unknown> => item != null && typeof item === "object"
-            )
-            .map((item, index) => ({
-                variableName: String(item.variableName || ""),
-                required: item.required !== false,
-                description: typeof item.description === "string" ? item.description : null,
-                priority: typeof item.priority === "number" ? item.priority : index + 1
-            }))
-            .filter((item) => item.variableName.trim().length > 0);
-    } catch {
-        return [];
-    }
-};
-
-const variablesToJson = (variables: AiPromptVariableRecord[] = []) => {
+const variablesToJson = (
+    variables: Array<{
+        description?: string | null;
+        priority?: number | null;
+        required: boolean;
+        variableName: string;
+    }> = []
+) => {
     return JSON.stringify(
         variables.map((variable, index) => ({
             variableName: variable.variableName,
@@ -120,28 +137,18 @@ const variablesToJson = (variables: AiPromptVariableRecord[] = []) => {
     );
 };
 
-const statusFromEnabled = (enabled?: boolean | null) => (enabled === false ? "INACTIVE" : "ACTIVE");
-
-const enabledFromStatus = (status?: string | null) => status !== "INACTIVE";
-
-const versionTitle = (version: AiPromptVersionRecord) => {
-    return `版本 ${version.versionNo ?? "-"}`;
-};
-
 export const PromptsPage = () => {
-    const { message } = App.useApp();
+    const { message: messageApi, modal } = App.useApp();
     const queryClient = useQueryClient();
-    const [filterForm] = Form.useForm<AiPromptTemplateQuery>();
-    const [editorForm] = Form.useForm<PromptFormValues>();
-    const canViewPrompt = hasPermission("ai:prompt:view");
+    const canViewPrompt = hasPermission("ai:prompt:view") || hasPermission("ai:prompt:edit");
     const canEditPrompt = hasPermission("ai:prompt:edit");
     const [query, setQuery] = useState<AiPromptTemplateQuery>({});
-    const [viewVersion, setViewVersion] = useState<AiPromptVersionRecord | null>(null);
-    const [compareVersions, setCompareVersions] = useState<AiPromptVersionRecord[]>([]);
-    const [suggestionVersion, setSuggestionVersion] = useState<AiPromptVersionRecord | null>(null);
-    const variablesSnapshotJson = Form.useWatch("variablesSnapshotJson", editorForm);
-    const currentTemplateId = Form.useWatch("id", editorForm);
-    const currentChangeSummary = Form.useWatch("changeSummary", editorForm);
+    const [searchText, setSearchText] = useState("");
+    const [filters, setFilters] = useState<PromptFilters>(DEFAULT_PROMPT_FILTERS);
+    const [editingTemplate, setEditingTemplate] = useState<AiPromptTemplateRecord | null>(null);
+    const [drawerOpen, setDrawerOpen] = useState(false);
+    const hasActiveFilters =
+        Boolean(filters.capability) || filters.enabled !== DEFAULT_PROMPT_FILTERS.enabled;
 
     const capabilitiesQuery = useQuery({
         queryKey: ["ai", "prompts", "capabilities"],
@@ -150,577 +157,381 @@ export const PromptsPage = () => {
         retry: false
     });
 
-    const templateQuery = useQuery({
-        queryKey: ["ai", "prompts", "template", query],
-        queryFn: () => service.getPromptTemplateByCapability(query),
-        enabled: Boolean(query.capability) && canViewPrompt,
+    const templatesQuery = useQuery({
+        queryKey: ["ai", "prompts", "templates", query],
+        queryFn: () => service.listPromptTemplates(query),
+        enabled: canViewPrompt,
         retry: false
     });
 
-    const templateId = templateQuery.data?.id || null;
-
-    const currentVersionQuery = useQuery({
-        queryKey: ["ai", "prompts", "current-version", templateId],
-        queryFn: () => service.getCurrentPromptVersion(templateId || 0),
-        enabled: Boolean(templateId) && canViewPrompt,
-        retry: false
+    const statusMutation = useMutation({
+        mutationFn: async ({
+            enabled,
+            template
+        }: {
+            enabled: boolean;
+            template: AiPromptTemplateRecord;
+        }) => {
+            if (!template.id) {
+                throw new Error("提示词模板 ID 缺失");
+            }
+            const [currentVersion, variables] = await Promise.all([
+                service.getCurrentPromptVersion(template.id),
+                service.listPromptVariables(template.id)
+            ]);
+            return service.changePromptTemplate({
+                id: template.id,
+                capability: template.capability || "",
+                name: template.name || "",
+                description: template.description || null,
+                enabled,
+                messageTemplatesJson: normalizeJsonText(currentVersion?.messageTemplatesJson, "[]"),
+                variablesSnapshotJson:
+                    currentVersion?.variablesSnapshotJson || variablesToJson(variables),
+                outputSchemaJson: normalizeJsonText(currentVersion?.outputSchemaJson),
+                changeSummary: enabled ? "启用提示词模板" : "禁用提示词模板",
+                variables
+            });
+        },
+        onSuccess: async () => {
+            await invalidatePrompts();
+            messageApi.success("提示词状态已更新");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "提示词状态更新失败");
+        }
     });
 
-    const versionsQuery = useQuery({
-        queryKey: ["ai", "prompts", "versions", templateId],
-        queryFn: () => service.listPromptVersions(templateId || 0),
-        enabled: Boolean(templateId) && canViewPrompt,
-        retry: false
+    const deleteMutation = useMutation({
+        mutationFn: async (template: AiPromptTemplateRecord) => {
+            if (!template.id) {
+                throw new Error("提示词模板 ID 缺失");
+            }
+            const [currentVersion, variables] = await Promise.all([
+                service.getCurrentPromptVersion(template.id),
+                service.listPromptVariables(template.id)
+            ]);
+            return service.changePromptTemplate({
+                id: template.id,
+                capability: template.capability || "",
+                name: template.name || "",
+                description: template.description || null,
+                enabled: false,
+                messageTemplatesJson: normalizeJsonText(currentVersion?.messageTemplatesJson, "[]"),
+                variablesSnapshotJson:
+                    currentVersion?.variablesSnapshotJson || variablesToJson(variables),
+                outputSchemaJson: normalizeJsonText(currentVersion?.outputSchemaJson),
+                changeSummary: "删除提示词模板",
+                variables
+            });
+        },
+        onSuccess: async () => {
+            await invalidatePrompts();
+            messageApi.success("提示词模板已删除");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "提示词模板删除失败");
+        }
     });
 
-    const variablesQuery = useQuery({
-        queryKey: ["ai", "prompts", "variables", templateId],
-        queryFn: () => service.listPromptVariables(templateId || 0),
-        enabled: Boolean(templateId) && canViewPrompt,
-        retry: false
-    });
+    const capabilityByCode = useMemo(() => {
+        return new Map((capabilitiesQuery.data || []).map((record) => [record.capability, record]));
+    }, [capabilitiesQuery.data]);
 
     const capabilityOptions = useMemo(() => {
         return (capabilitiesQuery.data || []).map((record) => ({
-            label: `${record.name} / ${record.capability}`,
+            label: `${readCapabilityDomain(record.capability)} / ${readCapabilityLabel(
+                record.capability,
+                record.name
+            )}`,
             value: record.capability
         }));
     }, [capabilitiesQuery.data]);
 
+    const filteredTemplates = useMemo(() => {
+        const keyword = searchText.trim().toLowerCase();
+        if (!keyword) {
+            return templatesQuery.data || [];
+        }
+        return (templatesQuery.data || []).filter((template) => {
+            const capability = capabilityByCode.get(template.capability || "");
+            return (
+                (template.name || "").toLowerCase().includes(keyword) ||
+                (template.description || "").toLowerCase().includes(keyword) ||
+                readCapabilityDomain(template.capability).toLowerCase().includes(keyword) ||
+                readCapabilityLabel(template.capability, capability?.name)
+                    .toLowerCase()
+                    .includes(keyword)
+            );
+        });
+    }, [capabilityByCode, searchText, templatesQuery.data]);
+
     useEffect(() => {
-        if (capabilityOptions.length > 0 && !filterForm.getFieldValue("capability")) {
-            filterForm.setFieldValue("capability", capabilityOptions[0].value);
+        if (templatesQuery.isError) {
+            const error = templatesQuery.error;
+            messageApi.error(error instanceof Error ? error.message : "提示词模板加载失败");
         }
-    }, [capabilityOptions, filterForm]);
+    }, [messageApi, templatesQuery.error, templatesQuery.isError]);
 
-    const variableRows = useMemo(() => {
-        const parsedVariables = toVariableRows(variablesSnapshotJson);
-        if (parsedVariables.length > 0) {
-            return parsedVariables;
-        }
-        return variablesQuery.data || [];
-    }, [variablesQuery.data, variablesSnapshotJson]);
-
-    const invalidatePrompt = async () => {
+    const invalidatePrompts = async () => {
         await queryClient.invalidateQueries({ queryKey: ["ai", "prompts"] });
     };
 
-    useEffect(() => {
-        const template = templateQuery.data;
-        const currentVersion = currentVersionQuery.data;
-        if (!template) {
-            return;
-        }
-        editorForm.setFieldsValue({
-            id: template.id || null,
-            capability: template.capability || query.capability || "",
-            name: template.name || "",
-            description: template.description || "",
-            status: statusFromEnabled(template.enabled),
-            messageTemplatesJson: formatJsonText(
-                currentVersion?.messageTemplatesJson,
-                EMPTY_JSON_ARRAY
-            ),
-            variablesSnapshotJson:
-                variablesQuery.data && variablesQuery.data.length > 0
-                    ? variablesToJson(variablesQuery.data)
-                    : formatJsonText(currentVersion?.variablesSnapshotJson, EMPTY_JSON_ARRAY),
-            outputSchemaJson: formatJsonText(currentVersion?.outputSchemaJson, EMPTY_JSON_OBJECT),
-            changeSummary: ""
-        });
-    }, [
-        currentVersionQuery.data,
-        editorForm,
-        query.capability,
-        templateQuery.data,
-        variablesQuery.data
-    ]);
-
-    const changeMutation = useMutation({
-        mutationFn: service.changePromptTemplate,
-        onSuccess: async (template) => {
-            setQuery({
-                capability: template.capability || query.capability
-            });
-            await invalidatePrompt();
-            message.success("提示词模板已保存");
-        },
-        onError: (error) => {
-            message.error(error instanceof Error ? error.message : "提示词模板保存失败");
-        }
-    });
-
-    const validateMutation = useMutation({
-        mutationFn: service.confirmPromptVariables,
-        onSuccess: () => {
-            message.success("必填变量校验通过");
-        },
-        onError: (error) => {
-            message.error(error instanceof Error ? error.message : "必填变量校验失败");
-        }
-    });
-
-    const compareMutation = useMutation({
-        mutationFn: service.previewPromptVersionCompare,
-        onSuccess: (versions) => {
-            setCompareVersions(versions);
-        },
-        onError: (error) => {
-            message.error(error instanceof Error ? error.message : "版本对比失败");
-        }
-    });
-
-    const rollbackMutation = useMutation({
-        mutationFn: service.changePromptVersionRollback,
-        onSuccess: async () => {
-            await invalidatePrompt();
-            message.success("提示词版本已回滚");
-        },
-        onError: (error) => {
-            message.error(error instanceof Error ? error.message : "提示词版本回滚失败");
-        }
-    });
-
-    const suggestionMutation = useMutation({
-        mutationFn: service.regeneratePromptSuggestion,
-        onSuccess: (version) => {
-            setSuggestionVersion(version);
-        },
-        onError: (error) => {
-            message.error(error instanceof Error ? error.message : "优化建议生成失败");
-        }
-    });
-
-    const submitTemplate = async (overrideVersion?: AiPromptVersionRecord | null) => {
-        const values = await editorForm.validateFields();
-        const messageTemplatesJson =
-            overrideVersion?.messageTemplatesJson || values.messageTemplatesJson;
-        const outputSchemaJson = overrideVersion?.outputSchemaJson || values.outputSchemaJson;
-        const variablesSnapshot =
-            overrideVersion?.variablesSnapshotJson || values.variablesSnapshotJson;
-        const variables = toVariableRows(variablesSnapshot);
-        await changeMutation.mutateAsync({
-            id: values.id || null,
-            capability: values.capability,
-            name: values.name,
-            description: values.description || null,
-            enabled: enabledFromStatus(values.status),
-            messageTemplatesJson: normalizeJsonText(messageTemplatesJson, EMPTY_JSON_ARRAY),
-            variablesSnapshotJson: normalizeJsonText(variablesSnapshot, EMPTY_JSON_ARRAY),
-            outputSchemaJson: normalizeJsonText(outputSchemaJson, EMPTY_JSON_OBJECT),
-            changeSummary: values.changeSummary || overrideVersion?.changeSummary || "应用优化建议",
-            variables
+    const applyFilters = () => {
+        setQuery({
+            capability: filters.capability || undefined,
+            enabled: toEnabledQueryValue(filters.enabled)
         });
     };
 
-    const validateVariables = async () => {
-        if (!currentTemplateId) {
-            message.warning("请先保存模板后再校验变量");
-            return;
-        }
-        await validateMutation.mutateAsync({
-            id: currentTemplateId,
-            providedNames: variableRows.map((variable) => variable.variableName)
-        });
-    };
-
-    const generateSuggestion = async () => {
-        if (!currentTemplateId) {
-            message.warning("请先保存模板后再生成优化建议");
-            return;
-        }
-        await suggestionMutation.mutateAsync({
-            id: currentTemplateId,
-            changeSummary: currentChangeSummary || "生成优化建议"
-        });
-    };
-
-    const compareWithCurrent = async (version: AiPromptVersionRecord) => {
-        if (!templateId || !version.versionNo || !templateQuery.data?.currentVersionNo) {
-            return;
-        }
-        await compareMutation.mutateAsync({
-            id: templateId,
-            leftVersionNo: version.versionNo,
-            rightVersionNo: templateQuery.data.currentVersionNo
-        });
-    };
-
-    const resetFilter = () => {
-        filterForm.resetFields();
+    const resetFilters = () => {
+        setFilters(DEFAULT_PROMPT_FILTERS);
         setQuery({});
     };
 
-    const applyFilter = async () => {
-        const values = await filterForm.validateFields();
-        setQuery(values);
+    const openEdit = (template: AiPromptTemplateRecord) => {
+        setEditingTemplate(template);
+        setDrawerOpen(true);
     };
 
-    const variableColumns: ColumnsType<AiPromptVariableRecord> = [
+    const openCreate = () => {
+        setEditingTemplate(null);
+        setDrawerOpen(true);
+    };
+
+    const closeEditor = () => {
+        setDrawerOpen(false);
+        setEditingTemplate(null);
+    };
+
+    const handleSaved = () => {
+        setDrawerOpen(false);
+        setEditingTemplate(null);
+        void invalidatePrompts();
+    };
+
+    const changeEnabled = (template: AiPromptTemplateRecord, enabled: boolean) => {
+        if (!canEditPrompt) {
+            return;
+        }
+        statusMutation.mutate({ enabled, template });
+    };
+
+    const deleteTemplate = (template: AiPromptTemplateRecord) => {
+        if (!canEditPrompt) {
+            return;
+        }
+        modal.confirm({
+            title: "删除提示词模板",
+            content: `确认删除 ${readPromptDisplayName(
+                template,
+                capabilityByCode.get(template.capability || "")?.name
+            )}？删除后模板会被禁用并保留历史版本。`,
+            okText: "删除",
+            okType: "danger",
+            cancelText: "取消",
+            onOk: () => deleteMutation.mutateAsync(template)
+        });
+    };
+
+    const columns: KuzhambuTableProps<AiPromptTemplateRecord>["columns"] = [
         {
-            title: "variableName",
-            dataIndex: "variableName",
-            key: "variableName"
-        },
-        {
-            title: "required",
-            dataIndex: "required",
-            key: "required",
-            render: (required: boolean) => (
-                <Tag color={required ? "red" : "default"}>{required ? "必填" : "可选"}</Tag>
+            title: "模板名称",
+            dataIndex: "name",
+            key: "name",
+            width: DEFAULT_COLUMN_WIDTHS.name,
+            render: (_, template) => (
+                <Text strong>
+                    {readPromptDisplayName(
+                        template,
+                        capabilityByCode.get(template.capability || "")?.name
+                    )}
+                </Text>
             )
         },
         {
-            title: "description",
-            dataIndex: "description",
-            key: "description",
-            render: (value?: string | null) => value || "-"
+            title: "业务域",
+            key: "domain",
+            width: DEFAULT_COLUMN_WIDTHS.domain,
+            render: (_, template) => (
+                <KuzhambuTag type="info">{readCapabilityDomain(template.capability)}</KuzhambuTag>
+            )
         },
         {
-            title: "priority",
-            dataIndex: "priority",
-            key: "priority",
-            render: (value?: number | null) => value ?? "-"
-        }
-    ];
-
-    const versionColumns: ColumnsType<AiPromptVersionRecord> = [
-        {
-            title: "versionNo",
-            dataIndex: "versionNo",
-            key: "versionNo"
+            title: "能力",
+            dataIndex: "capability",
+            key: "capability",
+            width: DEFAULT_COLUMN_WIDTHS.capability,
+            render: (capability?: string | null) => (
+                <KuzhambuTag type="accent">
+                    {readCapabilityLabel(capability, capabilityByCode.get(capability || "")?.name)}
+                </KuzhambuTag>
+            )
         },
         {
-            title: "current",
-            key: "current",
-            render: (_, record) => {
-                const current = record.versionNo === templateQuery.data?.currentVersionNo;
-                return <Tag color={current ? "green" : "default"}>{current ? "当前" : "历史"}</Tag>;
-            }
+            title: "状态",
+            dataIndex: "enabled",
+            key: "enabled",
+            width: DEFAULT_COLUMN_WIDTHS.enabled,
+            align: "center",
+            render: (enabled: boolean | null | undefined, template) => (
+                <KuzhambuSwitch
+                    checked={enabled !== false}
+                    checkedChildren="启用"
+                    unCheckedChildren="禁用"
+                    aria-label={`切换 ${readPromptDisplayName(
+                        template,
+                        capabilityByCode.get(template.capability || "")?.name
+                    )} 状态，当前${enabled === false ? "禁用" : "启用"}`}
+                    disabled={!canEditPrompt || statusMutation.isPending}
+                    onChange={(checked) => changeEnabled(template, checked)}
+                />
+            )
         },
         {
-            title: "changeSummary",
-            dataIndex: "changeSummary",
-            key: "changeSummary",
-            render: (value?: string | null) => value || "-"
-        },
-        {
-            title: "registeredAt",
+            title: "注册时间",
             dataIndex: "registeredAt",
             key: "registeredAt",
-            render: formatDateTime
+            width: DEFAULT_COLUMN_WIDTHS.registeredAt,
+            align: "center",
+            render: formatDate
+        },
+        {
+            title: "说明",
+            dataIndex: "description",
+            key: "description",
+            width: DEFAULT_COLUMN_WIDTHS.description,
+            ellipsis: true,
+            render: (description?: string | null) => description || "-"
         },
         {
             key: "actions",
-            render: (_, record) => {
-                const current = record.versionNo === templateQuery.data?.currentVersionNo;
-                return (
-                    <KuzhambuSpaceCompact>
-                        <KuzhambuButton
-                            testId="ai-prompts-prompts-view-button"
-                            icon={<EyeOutlined />}
-                            onClick={() => setViewVersion(record)}
-                        >
-                            查看
-                        </KuzhambuButton>
-                        <KuzhambuButton
-                            testId="ai-prompts-prompts-compare-button"
-                            icon={<BranchesOutlined />}
-                            disabled={!templateQuery.data?.currentVersionNo}
-                            onClick={() => void compareWithCurrent(record)}
-                        >
-                            对比
-                        </KuzhambuButton>
-                        <Popconfirm
-                            title="回滚版本"
-                            description={`确认回滚到版本 ${record.versionNo}？`}
-                            okText="回滚"
-                            cancelText="取消"
-                            disabled={!canEditPrompt || current}
-                            onConfirm={() => {
-                                if (templateId && record.versionNo) {
-                                    rollbackMutation.mutate({
-                                        id: templateId,
-                                        versionNo: record.versionNo
-                                    });
-                                }
-                            }}
-                        >
-                            <KuzhambuButton
-                                testId="ai-prompts-prompts-rollback-button"
-                                icon={<RetweetOutlined />}
-                                disabled={!canEditPrompt || current}
-                            >
-                                回滚
-                            </KuzhambuButton>
-                        </Popconfirm>
-                    </KuzhambuSpaceCompact>
-                );
-            }
+            options: (template) => [
+                {
+                    key: "edit",
+                    text: "编辑",
+                    ariaLabel: `编辑 ${readPromptDisplayName(
+                        template,
+                        capabilityByCode.get(template.capability || "")?.name
+                    )}`,
+                    disabled: !canEditPrompt,
+                    onClick: () => openEdit(template)
+                },
+                {
+                    key: "delete",
+                    text: "删除",
+                    type: "danger",
+                    ariaLabel: `删除 ${readPromptDisplayName(
+                        template,
+                        capabilityByCode.get(template.capability || "")?.name
+                    )}`,
+                    disabled: !canEditPrompt || deleteMutation.isPending,
+                    onClick: () => deleteTemplate(template)
+                }
+            ]
         }
     ];
 
-    const template = templateQuery.data || ({} as AiPromptTemplateRecord);
-
     return (
-        <KuzhambuPage
-            className="prompts-page"
-            eyebrow="AI"
-            title="AI 提示词版本"
-            description="管理提示词模板、变量、版本对比和回滚"
-            actions={
-                <Tooltip title="刷新">
-                    <KuzhambuButton
-                        testId="ai-prompts-prompts-refresh-button"
-                        icon={<ReloadOutlined />}
-                        loading={
-                            templateQuery.isFetching ||
-                            currentVersionQuery.isFetching ||
-                            versionsQuery.isFetching ||
-                            variablesQuery.isFetching
-                        }
-                        onClick={() => void invalidatePrompt()}
-                    />
-                </Tooltip>
-            }
-        >
-            <Card className="prompts-filter-card">
-                <Form form={filterForm} layout="inline" className="prompts-filter-form">
-                    <Form.Item
-                        label="capability"
-                        name="capability"
-                        rules={[{ required: true, message: "请选择 capability" }]}
-                    >
-                        <Select
-                            aria-label="筛选 capability"
-                            className="prompts-filter-control"
-                            options={capabilityOptions}
-                        />
-                    </Form.Item>
-                    <Form.Item>
-                        <KuzhambuSpace>
-                            <KuzhambuButton
-                                testId="ai-prompts-prompts-query-button"
-                                type="primary"
-                                onClick={() => void applyFilter()}
-                            >
-                                查询
-                            </KuzhambuButton>
-                            <KuzhambuButton
-                                testId="ai-prompts-prompts-reset-button"
-                                onClick={resetFilter}
-                            >
-                                重置
-                            </KuzhambuButton>
-                        </KuzhambuSpace>
-                    </Form.Item>
-                </Form>
-            </Card>
-
-            <div className="prompts-workbench">
-                <Card className="prompts-template-card" title="模板信息">
-                    <Descriptions column={1} size="small">
-                        <Descriptions.Item label="id">{template.id || "-"}</Descriptions.Item>
-                        <Descriptions.Item label="name">{template.name || "-"}</Descriptions.Item>
-                        <Descriptions.Item label="description">
-                            {template.description || "-"}
-                        </Descriptions.Item>
-                        <Descriptions.Item label="enabled">
-                            {statusFromEnabled(template.enabled)}
-                        </Descriptions.Item>
-                        <Descriptions.Item label="currentVersionNo">
-                            {template.currentVersionNo || "-"}
-                        </Descriptions.Item>
-                        <Descriptions.Item label="registeredAt">
-                            {formatDateTime(template.registeredAt)}
-                        </Descriptions.Item>
-                    </Descriptions>
-                </Card>
-
-                <Card className="prompts-editor-card" title="版本编辑">
-                    <Form form={editorForm} layout="vertical" className="prompts-editor-form">
-                        <Form.Item name="id" hidden>
-                            <Input />
-                        </Form.Item>
-                        <div className="prompts-editor-grid">
-                            <Form.Item
-                                label="capability"
-                                name="capability"
-                                rules={[{ required: true, message: "请选择 capability" }]}
-                            >
-                                <Select options={capabilityOptions} />
-                            </Form.Item>
-                            <Form.Item
-                                label="name"
-                                name="name"
-                                rules={[{ required: true, message: "请输入模板名称" }]}
-                            >
-                                <Input />
-                            </Form.Item>
-                            <Form.Item label="enabled" name="status">
-                                <Select
-                                    options={[
-                                        { label: "ACTIVE", value: "ACTIVE" },
-                                        { label: "INACTIVE", value: "INACTIVE" }
-                                    ]}
-                                />
-                            </Form.Item>
-                        </div>
-                        <Form.Item label="description" name="description">
-                            <Input.TextArea rows={2} />
-                        </Form.Item>
-                        <Form.Item
-                            label="messageTemplatesJson"
-                            name="messageTemplatesJson"
-                            rules={[
-                                { required: true, message: "请输入消息模板 JSON" },
-                                { validator: (_, value) => assertJsonText(value, EMPTY_JSON_ARRAY) }
-                            ]}
-                        >
-                            <Input.TextArea rows={8} />
-                        </Form.Item>
-                        <Form.Item
-                            label="variablesSnapshotJson"
-                            name="variablesSnapshotJson"
-                            rules={[
-                                { validator: (_, value) => assertJsonText(value, EMPTY_JSON_ARRAY) }
-                            ]}
-                        >
-                            <Input.TextArea rows={5} />
-                        </Form.Item>
-                        <Table<AiPromptVariableRecord>
-                            aria-label="提示词变量预览"
-                            rowKey={(record) => record.id || record.variableName}
-                            columns={variableColumns}
-                            dataSource={variableRows}
-                            pagination={false}
-                            size="small"
-                        />
-                        <Form.Item
-                            label="outputSchemaJson"
-                            name="outputSchemaJson"
-                            rules={[
-                                {
-                                    validator: (_, value) =>
-                                        assertJsonText(value, EMPTY_JSON_OBJECT)
+        <>
+            <KuzhambuListPage<AiPromptTemplateRecord>
+                pageClassName="prompts-page"
+                title="提示词管理"
+                description="维护 AI 提示词模板、变量、版本对比和回滚。"
+                subjectName="提示词"
+                enableFilter
+                enableSearch
+                searchShortcut="⌘K"
+                searchValue={searchText}
+                onSearchChange={setSearchText}
+                filterActive={hasActiveFilters}
+                filterFields={[
+                    {
+                        name: "capability",
+                        label: "能力",
+                        render: () => (
+                            <Select
+                                allowClear
+                                placeholder="全部"
+                                value={filters.capability || undefined}
+                                options={capabilityOptions}
+                                loading={capabilitiesQuery.isFetching}
+                                onChange={(capability) =>
+                                    setFilters((currentFilters) => ({
+                                        ...currentFilters,
+                                        capability: capability || null
+                                    }))
                                 }
-                            ]}
-                        >
-                            <Input.TextArea rows={5} />
-                        </Form.Item>
-                        <Form.Item label="changeSummary" name="changeSummary">
-                            <Input />
-                        </Form.Item>
-                        <KuzhambuSpace>
-                            <KuzhambuButton
-                                testId="ai-prompts-prompts-validate-variables-button"
-                                icon={<CheckCircleOutlined />}
-                                disabled={!currentTemplateId}
-                                loading={validateMutation.isPending}
-                                onClick={() => void validateVariables()}
-                            >
-                                校验变量
-                            </KuzhambuButton>
-                            <KuzhambuButton
-                                testId="ai-prompts-prompts-save-new-version-button"
-                                type="primary"
-                                icon={<SaveOutlined />}
-                                disabled={!canEditPrompt}
-                                loading={changeMutation.isPending}
-                                onClick={() => void submitTemplate()}
-                            >
-                                保存新版本
-                            </KuzhambuButton>
-                            <KuzhambuButton
-                                testId="ai-prompts-prompts-generate-suggestions-button"
-                                icon={<ThunderboltOutlined />}
-                                disabled={!canEditPrompt || !currentTemplateId}
-                                loading={suggestionMutation.isPending}
-                                onClick={() => void generateSuggestion()}
-                            >
-                                生成优化建议
-                            </KuzhambuButton>
-                        </KuzhambuSpace>
-                    </Form>
-                </Card>
-
-                <Card className="prompts-version-card" title="版本列表">
-                    <Table<AiPromptVersionRecord>
-                        aria-label="提示词版本列表"
-                        rowKey={(record) => record.id || `${record.templateId}-${record.versionNo}`}
-                        columns={versionColumns}
-                        dataSource={versionsQuery.data || []}
-                        loading={versionsQuery.isFetching}
-                        pagination={false}
-                        size="small"
-                    />
-                </Card>
-            </div>
-
-            <KuzhambuDrawer
-                open={Boolean(viewVersion)}
-                title={viewVersion ? versionTitle(viewVersion) : "版本详情"}
-                size="large"
-                onClose={() => setViewVersion(null)}
-            >
-                {viewVersion ? <VersionDetail version={viewVersion} /> : null}
-            </KuzhambuDrawer>
-
-            <KuzhambuDrawer
-                open={compareVersions.length > 0}
-                title="版本对比"
-                size="large"
-                onClose={() => setCompareVersions([])}
-            >
-                <div className="prompts-compare-grid">
-                    {compareVersions.map((version) => (
-                        <VersionDetail key={version.versionNo} version={version} />
-                    ))}
-                </div>
-            </KuzhambuDrawer>
-
-            <KuzhambuDrawer
-                open={Boolean(suggestionVersion)}
-                title="优化建议预览"
-                size="large"
-                onClose={() => setSuggestionVersion(null)}
-                footer={
-                    <KuzhambuSpace>
+                            />
+                        )
+                    },
+                    {
+                        name: "enabled",
+                        label: "状态",
+                        render: () => (
+                            <Select
+                                value={filters.enabled}
+                                options={[
+                                    { label: "全部", value: "ALL" },
+                                    { label: "启用", value: "ENABLED" },
+                                    { label: "禁用", value: "DISABLED" }
+                                ]}
+                                onChange={(enabled) =>
+                                    setFilters((currentFilters) => ({
+                                        ...currentFilters,
+                                        enabled
+                                    }))
+                                }
+                            />
+                        )
+                    }
+                ]}
+                onFilterApply={applyFilters}
+                onFilterReset={resetFilters}
+                pageActions={
+                    <>
                         <KuzhambuButton
-                            testId="ai-prompts-prompts-discard-button"
-                            onClick={() => setSuggestionVersion(null)}
-                        >
-                            放弃
-                        </KuzhambuButton>
-                        <KuzhambuButton
-                            testId="ai-prompts-prompts-apply-new-version-button"
+                            testId="ai-prompts-prompts-create-button"
                             type="primary"
-                            icon={<SaveOutlined />}
+                            icon={<PlusOutlined />}
                             disabled={!canEditPrompt}
-                            loading={changeMutation.isPending}
-                            onClick={() => void submitTemplate(suggestionVersion)}
+                            onClick={openCreate}
                         >
-                            应用为新版本
+                            新建模板
                         </KuzhambuButton>
-                    </KuzhambuSpace>
+                        <KuzhambuButton
+                            testId="ai-prompts-prompts-refresh-button"
+                            icon={<ReloadOutlined />}
+                            loading={templatesQuery.isFetching}
+                            onClick={() => void invalidatePrompts()}
+                        >
+                            刷新
+                        </KuzhambuButton>
+                    </>
                 }
-            >
-                {suggestionVersion ? <VersionDetail version={suggestionVersion} /> : null}
-            </KuzhambuDrawer>
-        </KuzhambuPage>
+                rowKey={(template) => template.id || template.capability || ""}
+                className="prompts-table"
+                columns={columns}
+                dataSource={filteredTemplates}
+                loading={templatesQuery.isFetching}
+                pagination={false}
+                scroll={{ x: 1088 }}
+                locale={{
+                    emptyText: templatesQuery.isError
+                        ? "提示词模板加载失败，请确认权限和接口状态。"
+                        : "暂无提示词模板"
+                }}
+            />
+
+            <PromptEditDrawer
+                key={drawerOpen ? editingTemplate?.id || "create" : "closed"}
+                canEdit={canEditPrompt}
+                capabilityOptions={capabilityOptions}
+                open={drawerOpen}
+                template={editingTemplate}
+                onClose={closeEditor}
+                onSaved={handleSaved}
+            />
+        </>
     );
 };
-
-const VersionDetail = ({ version }: { version: AiPromptVersionRecord }) => (
-    <div className="prompts-version-detail">
-        <Typography.Title level={5}>{versionTitle(version)}</Typography.Title>
-        <Typography.Text strong>messageTemplatesJson</Typography.Text>
-        <pre>{formatJsonText(version.messageTemplatesJson, EMPTY_JSON_ARRAY)}</pre>
-        <Typography.Text strong>variablesSnapshotJson</Typography.Text>
-        <pre>{formatJsonText(version.variablesSnapshotJson, EMPTY_JSON_ARRAY)}</pre>
-        <Typography.Text strong>outputSchemaJson</Typography.Text>
-        <pre>{formatJsonText(version.outputSchemaJson, EMPTY_JSON_OBJECT)}</pre>
-        <Typography.Text strong>changeSummary</Typography.Text>
-        <pre>{version.changeSummary || "-"}</pre>
-    </div>
-);

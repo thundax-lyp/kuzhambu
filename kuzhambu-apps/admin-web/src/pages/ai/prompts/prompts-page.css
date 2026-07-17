@@ -2,29 +2,8 @@
     min-height: 100%;
 }
 
-.prompts-filter-card {
-    margin-bottom: 16px;
-}
-
-.prompts-filter-form {
-    row-gap: 12px;
-}
-
-.prompts-filter-control {
-    min-width: 180px;
-}
-
-.prompts-workbench {
-    display: grid;
-    grid-template-columns: minmax(240px, 0.8fr) minmax(420px, 1.6fr) minmax(320px, 1fr);
-    gap: 16px;
-    align-items: start;
-}
-
-.prompts-template-card,
-.prompts-editor-card,
-.prompts-version-card {
-    min-width: 0;
+.prompts-table {
+    width: 100%;
 }
 
 .prompts-editor-form {
@@ -34,8 +13,68 @@
 
 .prompts-editor-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     gap: 12px;
+}
+
+.prompts-editor-item-compact .ant-form-item-control {
+    max-width: 360px;
+}
+
+.prompts-editor-item-status .ant-form-item-control {
+    max-width: 180px;
+}
+
+.prompts-editor-item-wide .ant-form-item-control {
+    max-width: 760px;
+}
+
+.prompt-edit-drawer .ant-drawer-body {
+    max-width: 1320px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.prompt-markdown-editor {
+    display: grid;
+    gap: 12px;
+}
+
+.prompt-markdown-editor-message {
+    display: grid;
+    gap: 8px;
+    padding: 12px;
+    border: 1px solid #d9d9d9;
+    border-radius: 6px;
+    background: #fafafa;
+}
+
+.prompt-markdown-editor-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.prompt-markdown-editor-role {
+    width: 120px;
+}
+
+.prompt-markdown-editor textarea {
+    font-family:
+        ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+        monospace;
+    line-height: 1.6;
+}
+
+.prompts-editor-item-top .ant-form-item-label {
+    align-self: flex-start;
+}
+
+.prompts-version-section {
+    display: grid;
+    gap: 12px;
+    margin-top: 20px;
 }
 
 .prompts-compare-grid {
@@ -61,14 +100,13 @@
     word-break: break-word;
 }
 
-@media (max-width: 1200px) {
-    .prompts-workbench {
-        grid-template-columns: 1fr;
-    }
+.prompts-drawer-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
 }
 
 @media (max-width: 760px) {
-    .prompts-editor-grid,
     .prompts-compare-grid {
         grid-template-columns: 1fr;
     }

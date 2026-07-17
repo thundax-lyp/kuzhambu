@@ -1,6 +1,6 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { App } from "antd";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { replacePermissions } from "@/auth/permission-storage";
 import { queryClient } from "@/query/query-client";
 import { PromptsPage } from "./prompts-page";
@@ -8,15 +8,16 @@ import * as service from "./prompts-service";
 
 vi.mock("./prompts-service", () => ({
     changePromptTemplate: vi.fn(),
-    previewPromptVersionCompare: vi.fn(),
-    regeneratePromptSuggestion: vi.fn(),
+    changePromptVersionRollback: vi.fn(),
+    confirmPromptVariables: vi.fn(),
     getCurrentPromptVersion: vi.fn(),
     getPromptTemplateByCapability: vi.fn(),
     listPromptCapabilities: vi.fn(),
+    listPromptTemplates: vi.fn(),
     listPromptVariables: vi.fn(),
     listPromptVersions: vi.fn(),
-    changePromptVersionRollback: vi.fn(),
-    confirmPromptVariables: vi.fn()
+    previewPromptVersionCompare: vi.fn(),
+    regeneratePromptSuggestion: vi.fn()
 }));
 
 vi.mock("@/components/kuzhambu-drawer", () => {
@@ -102,14 +103,14 @@ describe("PromptsPage", () => {
         vi.mocked(service.listPromptCapabilities).mockResolvedValue([
             {
                 capability: "classics_summary",
-                name: "摘要生成",
+                name: "古籍摘要",
                 requiredTags: ["chat"],
                 outputMode: "JSON",
                 enabled: true,
                 priority: 1
             }
         ]);
-        vi.mocked(service.getPromptTemplateByCapability).mockResolvedValue(template);
+        vi.mocked(service.listPromptTemplates).mockResolvedValue([template]);
         vi.mocked(service.getCurrentPromptVersion).mockResolvedValue(currentVersion);
         vi.mocked(service.listPromptVersions).mockResolvedValue(versions);
         vi.mocked(service.listPromptVariables).mockResolvedValue(variables);
@@ -129,59 +130,102 @@ describe("PromptsPage", () => {
         vi.clearAllMocks();
     });
 
-    it("renders prompt workbench and version list", async () => {
+    it("renders prompt filter and table", async () => {
         renderPage();
 
-        expect(await screen.findByRole("heading", { name: "AI 提示词版本" })).toBeInTheDocument();
-        expect(screen.getByText("版本编辑")).toBeInTheDocument();
-        expect(screen.getByText("版本列表")).toBeInTheDocument();
-    });
-
-    it("queries template and renders variables", async () => {
-        renderPage();
-
-        await screen.findByText("版本编辑");
-        await screen.findByText("摘要生成 / classics_summary");
-        fireEvent.click(screen.getByRole("button", { name: /查\s*询/ }));
-
+        expect(await screen.findByRole("heading", { name: "提示词管理" })).toBeInTheDocument();
+        expect(screen.getByText("维护 AI 提示词模板、变量、版本对比和回滚。")).toBeInTheDocument();
         expect(await screen.findByText("摘要提示词")).toBeInTheDocument();
-        await waitFor(() => {
-            expect(screen.getByDisplayValue(/"variableName": "title"/)).toBeInTheDocument();
-        });
+        expect(screen.getByText("古籍管理")).toBeInTheDocument();
+        expect(screen.getByText("摘要")).toBeInTheDocument();
+        expect(screen.getByText("2026-07-01")).toBeInTheDocument();
+        expect(screen.queryByRole("columnheader", { name: "当前版本" })).not.toBeInTheDocument();
     });
 
-    it("falls back to current version variables when variable registry is empty", async () => {
-        vi.mocked(service.listPromptVariables).mockResolvedValue([]);
+    it("applies capability filter", async () => {
         renderPage();
 
-        await screen.findByText("版本编辑");
-        await screen.findByText("摘要生成 / classics_summary");
-        fireEvent.click(screen.getByRole("button", { name: /查\s*询/ }));
-
-        await waitFor(() => {
-            expect(screen.getByDisplayValue(/"variableName": "title"/)).toBeInTheDocument();
-        });
-    });
-
-    it("opens suggestion preview before applying as new version", async () => {
-        renderPage();
-
-        await screen.findByText("版本编辑");
-        await screen.findByText("摘要生成 / classics_summary");
-        fireEvent.click(screen.getByRole("button", { name: /查\s*询/ }));
         await screen.findByText("摘要提示词");
+        fireEvent.click(screen.getByRole("button", { name: /筛选/ }));
+        expect((await screen.findAllByText("能力")).length).toBeGreaterThan(1);
+        expect(screen.getAllByText("状态").length).toBeGreaterThan(1);
+        fireEvent.click(screen.getByRole("button", { name: /查\s*询/ }));
 
-        fireEvent.click(screen.getByRole("button", { name: /生成优化建议/ }));
-
-        expect(await screen.findByRole("heading", { name: "优化建议预览" })).toBeInTheDocument();
-        expect(service.changePromptTemplate).not.toHaveBeenCalled();
+        await waitFor(() => {
+            expect(service.listPromptTemplates).toHaveBeenLastCalledWith({});
+        });
     });
 
-    it("disables edit actions without edit permission", async () => {
+    it("opens edit drawer for selected prompt", async () => {
+        renderPage();
+
+        await screen.findByText("摘要提示词");
+        fireEvent.click(screen.getByRole("button", { name: "编辑 摘要提示词" }));
+
+        expect(await screen.findByRole("heading", { name: "编辑提示词" })).toBeInTheDocument();
+        expect(await screen.findByText("版本列表")).toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.getByText("title")).toBeInTheDocument();
+        });
+        expect(screen.queryByText("变量快照 JSON")).not.toBeInTheDocument();
+    });
+
+    it("opens create drawer", async () => {
+        renderPage();
+
+        await screen.findByText("摘要提示词");
+        fireEvent.click(screen.getByRole("button", { name: /新建模板/ }));
+
+        expect(await screen.findByRole("heading", { name: "新建提示词" })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: /创建模板/ })).toBeInTheDocument();
+        expect(screen.queryByText("版本列表")).not.toBeInTheDocument();
+    });
+
+    it("changes prompt enabled state from table switch", async () => {
+        renderPage();
+
+        await screen.findByText("摘要提示词");
+        fireEvent.click(screen.getByRole("switch", { name: "切换 摘要提示词 状态，当前启用" }));
+
+        await waitFor(() => {
+            expect(service.changePromptTemplate).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    enabled: false,
+                    id: template.id,
+                    messageTemplatesJson: currentVersion.messageTemplatesJson
+                })
+            );
+        });
+    });
+
+    it("deletes prompt template as a soft delete", async () => {
+        renderPage();
+
+        await screen.findByText("摘要提示词");
+        fireEvent.click(screen.getByRole("button", { name: "删除 摘要提示词" }));
+
+        expect((await screen.findAllByText("删除提示词模板")).length).toBeGreaterThan(0);
+        fireEvent.click(
+            within(screen.getByRole("dialog")).getByRole("button", { name: /删\s*除/ })
+        );
+
+        await waitFor(() => {
+            expect(service.changePromptTemplate).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    enabled: false,
+                    id: template.id,
+                    changeSummary: "删除提示词模板"
+                })
+            );
+        });
+    });
+
+    it("disables edit action without edit permission", async () => {
         replacePermissions(["ai:prompt:view"]);
         renderPage();
 
-        expect(await screen.findByRole("button", { name: /保存新版本/ })).toBeDisabled();
-        expect(screen.getByRole("button", { name: /生成优化建议/ })).toBeDisabled();
+        await screen.findByText("摘要提示词");
+        expect(screen.getByRole("button", { name: "编辑 摘要提示词" })).toBeDisabled();
+        expect(screen.getByRole("button", { name: /新建模板/ })).toBeDisabled();
     });
 });
