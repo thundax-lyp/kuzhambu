@@ -4,9 +4,9 @@ INSERT INTO `ai_model` (
     `id`, `api_source`, `base_url`, `encrypted_api_key`, `model_name`, `display_name`, `capabilities_json`,
     `default_params_json`, `description`, `enabled`, `registered_at`
 ) VALUES
-    (900101, 'OPENAI', '', NULL, 'CTYUN-CX-Qwen3.5-397B-A17B', 'CTYUN Qwen3.5 397B', '["TEXT2TEXT","IMAGE2TEXT"]', '{"temperature":0.2,"max_tokens":4096}', 'Default OpenAI-compatible vision-capable model for classics AI.', 1, '2026-02-27 04:00:00.000'),
-    (900102, 'OPENAI', '', NULL, 'CTYUN-bot-DeepSeek-V3.2-pro', 'CTYUN DeepSeek V3.2 Pro', '["TEXT2TEXT"]', '{"temperature":0.2,"max_tokens":4096}', 'Default OpenAI-compatible LLM from local server configuration.', 1, '2026-02-27 04:00:00.000'),
-    (900201, 'BYTEDANCE', '', NULL, 'doubao-seedream-5-0-pro-260628', 'Doubao Seedream 5.0 Pro', '["TEXT2IMAGE"]', '{"response_format":"url","size":"2K","stream":false,"watermark":true}', 'Default ByteDance text-to-image model.', 1, '2026-02-27 04:00:00.000')
+    (900101, 'OPENAI', '', NULL, 'CTYUN-CX-Qwen3.5-397B-A17B', '天翼千问 3.5 397B', '["TEXT2TEXT","IMAGE2TEXT"]', '{"temperature":0.2,"max_tokens":4096}', 'Default OpenAI-compatible vision-capable model for classics AI.', 1, '2026-02-27 04:00:00.000'),
+    (900102, 'OPENAI', '', NULL, 'CTYUN-bot-DeepSeek-V3.2-pro', '天翼 DeepSeek V3.2 Pro', '["TEXT2TEXT"]', '{"temperature":0.2,"max_tokens":4096}', 'Default OpenAI-compatible LLM from local server configuration.', 1, '2026-02-27 04:00:00.000'),
+    (900201, 'BYTEDANCE', '', NULL, 'doubao-seedream-5-0-pro-260628', '豆包 Seedream 5.0 Pro', '["TEXT2IMAGE"]', '{"response_format":"url","size":"2K","stream":false,"watermark":true}', 'Default ByteDance text-to-image model.', 1, '2026-02-27 04:00:00.000')
 ON DUPLICATE KEY UPDATE
     `api_source` = VALUES(`api_source`),
     `base_url` = COALESCE(NULLIF(VALUES(`base_url`), ''), `base_url`),
@@ -22,16 +22,16 @@ INSERT INTO `ai_prompt_template` (
     `id`, `capability`, `name`, `description`, `enabled`,
     `current_version_no`, `registered_at`
 ) VALUES
-    (930101, 'classics_summary', 'Classics Default Summary', '古籍内容默认摘要提示词。', 1, 1, '2026-02-27 04:00:00.000'),
-    (930102, 'classics_tags', 'Classics Default Tags', '古籍内容默认标签抽取提示词。', 1, 1, '2026-02-27 04:00:00.000'),
-    (930103, 'classics_qa', 'Classics Default QA', '古籍内容默认问答生成提示词。', 1, 1, '2026-02-27 04:00:00.000'),
-    (930104, 'discovery_query_understanding', 'Discovery Default Query Understanding', '知识发现默认查询理解提示词。', 1, 1, '2026-02-27 04:00:00.000'),
-    (930105, 'discovery_answer_generation', 'Discovery Default Answer Generation', '知识发现默认来源融合回答提示词。', 1, 1, '2026-02-27 04:00:00.000'),
-    (930106, 'classics_translate', 'Classics Default Translate', '古籍文言文默认现代中文翻译提示词。', 1, 1, '2026-02-27 04:00:00.000'),
-    (930107, 'classics_image_describe', 'Classics Default Image Analysis', '古籍图像默认解读提示词。', 1, 1, '2026-02-27 04:00:00.000'),
-    (930108, 'classics_image_generate', 'Classics Default Image Generation', '古籍视觉资产默认文生图提示词。', 1, 1, '2026-02-27 04:00:00.000'),
-    (930109, 'classics_image_prompt_fusion', 'Classics Default Visual Fusion', '古籍图文信息融合默认提示词。', 1, 1, '2026-02-27 04:00:00.000'),
-    (930110, 'classics_visual_describe', 'Classics Default Visual Description', '古籍视觉描述默认提示词。', 1, 1, '2026-02-27 04:00:00.000')
+    (930101, 'classics_summary', '古籍摘要提示词', '古籍内容默认摘要提示词。', 1, 1, '2026-02-27 04:00:00.000'),
+    (930102, 'classics_tags', '古籍标签提取提示词', '古籍内容默认标签抽取提示词。', 1, 1, '2026-02-27 04:00:00.000'),
+    (930103, 'classics_qa', '古籍问答生成提示词', '古籍内容默认问答生成提示词。', 1, 1, '2026-02-27 04:00:00.000'),
+    (930104, 'discovery_query_understanding', '知识发现查询理解提示词', '知识发现默认查询理解提示词。', 1, 1, '2026-02-27 04:00:00.000'),
+    (930105, 'discovery_answer_generation', '知识发现回答生成提示词', '知识发现默认来源融合回答提示词。', 1, 1, '2026-02-27 04:00:00.000'),
+    (930106, 'classics_translate', '古籍翻译提示词', '古籍文言文默认现代中文翻译提示词。', 1, 1, '2026-02-27 04:00:00.000'),
+    (930107, 'classics_image_describe', '古籍图片理解提示词', '古籍图像默认解读提示词。', 1, 1, '2026-02-27 04:00:00.000'),
+    (930108, 'classics_image_generate', '古籍图片生成提示词', '古籍视觉资产默认文生图提示词。', 1, 1, '2026-02-27 04:00:00.000'),
+    (930109, 'classics_image_prompt_fusion', '古籍图文融合提示词', '古籍图文信息融合默认提示词。', 1, 1, '2026-02-27 04:00:00.000'),
+    (930110, 'classics_visual_describe', '古籍视觉描述提示词', '古籍视觉描述默认提示词。', 1, 1, '2026-02-27 04:00:00.000')
 ON DUPLICATE KEY UPDATE
     `capability` = VALUES(`capability`),
     `name` = VALUES(`name`),
