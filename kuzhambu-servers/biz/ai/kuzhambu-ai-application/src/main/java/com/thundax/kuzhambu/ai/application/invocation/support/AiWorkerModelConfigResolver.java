@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.ai.application.invocation.support;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.thundax.kuzhambu.ai.application.config.business.service.AiBusinessConfigApplicationService;
 import com.thundax.kuzhambu.ai.application.config.model.service.AiModelApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
@@ -35,7 +36,8 @@ public class AiWorkerModelConfigResolver {
             return null;
         }
 
-        AiModel model = resolveModel(command);
+        ModelResolution resolution = resolveModel(command);
+        AiModel model = resolution.model();
         if (model.getApiSource() == null) {
             throw new IllegalArgumentException("AI model apiSource is required: " + command.getModelId());
         }
@@ -61,13 +63,14 @@ public class AiWorkerModelConfigResolver {
                         : model.getCapabilities().stream()
                                 .map(AiModelCapability::value)
                                 .toList(),
-                parseParameters(model),
+                parseParameters(model, resolution.config()),
                 null);
     }
 
-    private AiModel resolveModel(AiInvokeCommand command) {
+    private ModelResolution resolveModel(AiInvokeCommand command) {
+        AiBusinessConfig config = null;
         if (command.getModelId() == null) {
-            AiBusinessConfig config = resolveBusinessConfig(command);
+            config = resolveBusinessConfig(command);
             if (config == null || config.getModelId() == null) {
                 throw new IllegalArgumentException("AI modelId is required");
             }
@@ -80,7 +83,7 @@ public class AiWorkerModelConfigResolver {
         if (!model.isEnabled()) {
             throw new IllegalArgumentException("AI model is disabled: " + command.getModelId());
         }
-        return model;
+        return new ModelResolution(model, config);
     }
 
     private AiBusinessConfig resolveBusinessConfig(AiInvokeCommand command) {
@@ -91,15 +94,32 @@ public class AiWorkerModelConfigResolver {
         return configs.isEmpty() ? null : configs.get(0);
     }
 
-    private JsonNode parseParameters(AiModel model) {
-        if (isBlank(model.getDefaultParamsJson())) {
-            return objectMapper.createObjectNode();
+    private JsonNode parseParameters(AiModel model, AiBusinessConfig config) {
+        ObjectNode parameters = objectMapper.createObjectNode();
+        mergeParameters(parameters, model.getDefaultParamsJson(), "AI model default parameters is not valid JSON");
+        if (config != null) {
+            mergeParameters(
+                    parameters,
+                    config.getDefaultParamsJson(),
+                    "AI business config default parameters is not valid JSON");
         }
+        return parameters;
+    }
+
+    private void mergeParameters(ObjectNode target, String parametersJson, String errorMessage) {
+        if (isBlank(parametersJson)) {
+            return;
+        }
+        JsonNode parameters;
         try {
-            return objectMapper.readTree(model.getDefaultParamsJson());
+            parameters = objectMapper.readTree(parametersJson);
         } catch (JsonProcessingException ex) {
-            throw new IllegalArgumentException("AI model default parameters is not valid JSON", ex);
+            throw new IllegalArgumentException(errorMessage, ex);
         }
+        if (!parameters.isObject()) {
+            throw new IllegalArgumentException(errorMessage);
+        }
+        target.setAll((ObjectNode) parameters);
     }
 
     private boolean isBlank(String value) {
@@ -121,4 +141,6 @@ public class AiWorkerModelConfigResolver {
             List<String> capabilityTags,
             JsonNode parameters,
             Long timeoutMs) {}
+
+    private record ModelResolution(AiModel model, AiBusinessConfig config) {}
 }

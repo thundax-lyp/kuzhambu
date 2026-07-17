@@ -58,7 +58,7 @@ class AiWorkerModelConfigResolverTest {
     void resolveShouldUseBusinessConfigWhenModelIdIsMissing() {
         FakeModelApplicationService modelService = new FakeModelApplicationService();
         FakeBusinessConfigApplicationService businessConfigService =
-                new FakeBusinessConfigApplicationService(AiModelIdCodec.toDomain(2001L));
+                new FakeBusinessConfigApplicationService(AiModelIdCodec.toDomain(2001L), null);
         AiWorkerModelConfigResolver resolver = newResolver(businessConfigService, modelService);
 
         AiInvokeCommand command = new AiInvokeCommand();
@@ -71,8 +71,26 @@ class AiWorkerModelConfigResolverTest {
         assertThat(resolved.modelName()).isEqualTo("gpt-4o");
     }
 
+    @Test
+    void resolveShouldOverrideModelParametersWithBusinessConfigParameters() {
+        FakeModelApplicationService modelService = new FakeModelApplicationService();
+        modelService.model.setDefaultParamsJson("{\"temperature\":0.2,\"max_tokens\":4096}");
+        FakeBusinessConfigApplicationService businessConfigService =
+                new FakeBusinessConfigApplicationService(AiModelIdCodec.toDomain(2001L), "{\"temperature\":0.7}");
+        AiWorkerModelConfigResolver resolver = newResolver(businessConfigService, modelService);
+
+        AiInvokeCommand command = new AiInvokeCommand();
+        command.setScope("classics");
+        command.setCapability("classics_translate");
+
+        AiWorkerModelConfigResolver.ResolvedModelConfig resolved = resolver.resolve(command);
+
+        assertThat(resolved.parameters().get("temperature").asDouble()).isEqualTo(0.7);
+        assertThat(resolved.parameters().get("max_tokens").asInt()).isEqualTo(4096);
+    }
+
     private static AiWorkerModelConfigResolver newResolver(AiModelApplicationService modelService) {
-        return newResolver(new FakeBusinessConfigApplicationService(null), modelService);
+        return newResolver(new FakeBusinessConfigApplicationService(null, null), modelService);
     }
 
     private static AiWorkerModelConfigResolver newResolver(
@@ -132,13 +150,13 @@ class AiWorkerModelConfigResolverTest {
 
         private final AiBusinessConfig config;
 
-        private FakeBusinessConfigApplicationService(AiModelId modelId) {
+        private FakeBusinessConfigApplicationService(AiModelId modelId, String defaultParamsJson) {
             if (modelId == null) {
                 this.config = null;
                 return;
             }
             this.config = new AiBusinessConfig(
-                    null, AiBusinessCapability.CLASSICS_TRANSLATE, null, modelId, null, true, 1, null);
+                    null, AiBusinessCapability.CLASSICS_TRANSLATE, null, modelId, defaultParamsJson, true, 1, null);
         }
 
         @Override
