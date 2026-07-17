@@ -236,6 +236,7 @@ class WangqiDocumentApplicationServiceImplTest {
                 ArgumentCaptor.forClass(MarkStorageUsageFacadeRequest.class);
         verify(storageFacade).markUnused(statusCaptor.capture());
         assertEquals(7001L, statusCaptor.getValue().getStorageObjectId());
+        verify(repository).deleteByDocumentId(documentId);
         verify(repository).deleteById(documentId);
     }
 

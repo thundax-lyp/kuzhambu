@@ -17,10 +17,9 @@ const compareFields: Array<{
 }> = [
     { key: "title", label: "标题" },
     { key: "summary", label: "摘要" },
-    { key: "contentFormat", label: "正文格式" },
+    { key: "contentFormat", label: "格式" },
     { key: "content", label: "正文" },
     { key: "documentTime", label: "文档时间" },
-    { key: "storageObjectId", label: "原始文件对象 ID" },
     { key: "visibility", label: "可见性" }
 ];
 
@@ -30,6 +29,18 @@ const formatDateTime = (value?: string | null) => {
     }
     const date = new Date(value);
     return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
+};
+
+const formatYearMonth = (value?: string | null) => {
+    if (!value) {
+        return "-";
+    }
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+        return value;
+    }
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    return `${date.getFullYear()}/${month}`;
 };
 
 const readSnapshot = (
@@ -55,9 +66,12 @@ const readCurrentValue = (
     return document[key as keyof WangqiDocumentRecord];
 };
 
-const formatValue = (value: unknown) => {
+const formatValue = (value: unknown, key?: keyof WangqiVersionSnapshot) => {
     if (value === null || value === undefined || value === "") {
         return "-";
+    }
+    if (key === "documentTime") {
+        return formatYearMonth(String(value));
     }
     return String(value);
 };
@@ -193,8 +207,8 @@ export const WangqiVersionHistoryPanel = ({
                                             );
                                             const historyValue = snapshot[field.key];
                                             const changed =
-                                                formatValue(currentValue) !==
-                                                formatValue(historyValue);
+                                                formatValue(currentValue, field.key) !==
+                                                formatValue(historyValue, field.key);
                                             return (
                                                 <Descriptions.Item
                                                     key={field.key}
@@ -203,12 +217,14 @@ export const WangqiVersionHistoryPanel = ({
                                                 >
                                                     <KuzhambuSpace orientation="vertical" size={2}>
                                                         <Text>
-                                                            当前：{formatValue(currentValue)}
+                                                            当前：
+                                                            {formatValue(currentValue, field.key)}
                                                         </Text>
                                                         <Text
                                                             type={changed ? "warning" : "secondary"}
                                                         >
-                                                            历史：{formatValue(historyValue)}
+                                                            历史：
+                                                            {formatValue(historyValue, field.key)}
                                                         </Text>
                                                     </KuzhambuSpace>
                                                 </Descriptions.Item>

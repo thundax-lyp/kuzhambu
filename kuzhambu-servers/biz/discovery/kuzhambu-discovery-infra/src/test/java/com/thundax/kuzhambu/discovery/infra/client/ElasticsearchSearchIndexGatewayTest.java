@@ -89,6 +89,7 @@ class ElasticsearchSearchIndexGatewayTest {
                 null,
                 "/classics/sancai/1001");
         when(searchHit.getContent()).thenReturn(document);
+        when(searchHits.getTotalHits()).thenReturn(21L);
         when(searchHits.getSearchHits()).thenReturn(List.of(searchHit));
         when(operations.search(
                         any(org.springframework.data.elasticsearch.core.query.CriteriaQuery.class),
@@ -98,19 +99,21 @@ class ElasticsearchSearchIndexGatewayTest {
         ElasticsearchSearchIndexGateway gateway =
                 new ElasticsearchSearchIndexGateway(properties, operations, new DiscoverySearchDocumentAssembler());
 
-        var groups = gateway.search(new SearchKeyword("黄帝", "黄帝", "黄帝"), new SearchScope(), 1, 20);
+        var page = gateway.search(new SearchKeyword("黄帝", "黄帝", "黄帝"), new SearchScope(), 1, 20);
 
-        assertTrue(groups.size() == 1);
-        assertTrue(groups.get(0).getItems().size() == 1);
-        assertTrue(groups.get(0).getItems().get(0).getTargetPath().contains("/classics/sancai/1001"));
-        assertTrue(groups.get(0).getItems().get(0).getHighlightText().contains("<mark>黄帝</mark>"));
-        assertTrue(groups.get(0).getItems().get(0).getGroupRank() == 1);
-        assertEquals("SANCAI_ENTRY", groups.get(0).getItems().get(0).getKnowledgeBase());
-        assertEquals("11", groups.get(0).getItems().get(0).getCategoryCode());
-        assertEquals(List.of("上古"), groups.get(0).getItems().get(0).getTagNames());
-        assertEquals("PUBLISHED", groups.get(0).getItems().get(0).getContentStatus());
-        assertEquals("PUBLIC", groups.get(0).getItems().get(0).getVisibility());
-        assertEquals(1_767_312_000_000L, groups.get(0).getItems().get(0).getUpdatedAt());
+        assertEquals(21, page.getTotalCount());
+        assertTrue(page.getGroups().size() == 1);
+        assertTrue(page.getGroups().get(0).getItems().size() == 1);
+        assertTrue(page.getGroups().get(0).getItems().get(0).getTargetPath().contains("/classics/sancai/1001"));
+        assertTrue(page.getGroups().get(0).getItems().get(0).getHighlightText().contains("<mark>黄帝</mark>"));
+        assertTrue(page.getGroups().get(0).getItems().get(0).getGroupRank() == 1);
+        assertEquals("SANCAI_ENTRY", page.getGroups().get(0).getItems().get(0).getKnowledgeBase());
+        assertEquals("11", page.getGroups().get(0).getItems().get(0).getCategoryCode());
+        assertEquals(List.of("上古"), page.getGroups().get(0).getItems().get(0).getTagNames());
+        assertEquals("PUBLISHED", page.getGroups().get(0).getItems().get(0).getContentStatus());
+        assertEquals("PUBLIC", page.getGroups().get(0).getItems().get(0).getVisibility());
+        assertEquals(
+                1_767_312_000_000L, page.getGroups().get(0).getItems().get(0).getUpdatedAt());
     }
 
     @Test
@@ -131,9 +134,9 @@ class ElasticsearchSearchIndexGatewayTest {
         ElasticsearchSearchIndexGateway gateway =
                 new ElasticsearchSearchIndexGateway(properties, operations, new DiscoverySearchDocumentAssembler());
 
-        var groups = gateway.search(new SearchKeyword("天地", "天地", "天地"), new SearchScope(), 1, 20);
+        var page = gateway.search(new SearchKeyword("天地", "天地", "天地"), new SearchScope(), 1, 20);
 
-        var items = groups.get(0).getItems();
+        var items = page.getGroups().get(0).getItems();
         assertTrue(items.get(0).getHighlightText().contains("<mark>天地</mark>"));
         assertTrue(items.get(1).getHighlightText().contains("<mark>天地</mark>"));
         assertTrue(items.get(2).getHighlightText().equals("没有命中"));
@@ -158,9 +161,9 @@ class ElasticsearchSearchIndexGatewayTest {
         ElasticsearchSearchIndexGateway gateway =
                 new ElasticsearchSearchIndexGateway(properties, operations, new DiscoverySearchDocumentAssembler());
 
-        var groups = gateway.search(new SearchKeyword("", "", ""), new SearchScope(), 1, 20);
+        var page = gateway.search(new SearchKeyword("", "", ""), new SearchScope(), 1, 20);
 
-        assertTrue(groups.get(0).getItems().get(0).getHighlightText().equals("标题"));
+        assertTrue(page.getGroups().get(0).getItems().get(0).getHighlightText().equals("标题"));
     }
 
     @Test
@@ -187,6 +190,7 @@ class ElasticsearchSearchIndexGatewayTest {
                         List.of("上古"),
                         List.of("PUBLISHED"),
                         List.of("PUBLIC"),
+                        List.of(),
                         new Date(1_718_000_000_000L),
                         new Date(1_720_419_200_000L)),
                 1,
@@ -204,6 +208,45 @@ class ElasticsearchSearchIndexGatewayTest {
         assertTrue(fieldNames.contains("visibility"));
         assertTrue(fieldNames.contains("updatedAt"));
         assertTrue(fieldNames.contains("deleted"));
+    }
+
+    @Test
+    void searchShouldApplyPrivateKnowledgeBasePermissionCriteria() {
+        DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
+        ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
+        @SuppressWarnings("unchecked")
+        SearchHits<DiscoverySearchDocument> searchHits = mock(SearchHits.class);
+        ArgumentCaptor<CriteriaQuery> queryCaptor = ArgumentCaptor.forClass(CriteriaQuery.class);
+        when(searchHits.getSearchHits()).thenReturn(List.of());
+        when(operations.search(
+                        queryCaptor.capture(),
+                        eq(DiscoverySearchDocument.class),
+                        any(org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.class)))
+                .thenReturn(searchHits);
+        ElasticsearchSearchIndexGateway gateway =
+                new ElasticsearchSearchIndexGateway(properties, operations, new DiscoverySearchDocumentAssembler());
+
+        gateway.search(
+                new SearchKeyword("黄帝", "黄帝", "黄帝"),
+                new SearchScope(
+                        List.of(),
+                        List.of(),
+                        List.of(),
+                        List.of(),
+                        List.of("PUBLIC", "PRIVATE"),
+                        List.of("SANCAI_ENTRY"),
+                        null,
+                        null),
+                1,
+                20);
+
+        Set<String> fieldNames = flattenCriteria(queryCaptor.getValue().getCriteria()).stream()
+                .map(Criteria::getField)
+                .filter(field -> field != null && field.getName() != null)
+                .map(field -> field.getName())
+                .collect(Collectors.toSet());
+        assertTrue(fieldNames.contains("visibility"));
+        assertTrue(fieldNames.contains("knowledgeBase"));
     }
 
     @Test

@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentForm
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
 import java.util.Date;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,6 +33,7 @@ public class WangqiDocument implements Versionable {
     private Integer currentVersionNo;
     private Date currentVersionedAt;
     private Date contentUpdatedAt;
+    private List<WangqiDocumentEvent> events;
 
     public WangqiDocument(
             WangqiDocumentId id,

@@ -1,0 +1,80 @@
+.search-page {
+    --kuzhambu-list-page-accent: var(--accent-blue);
+}
+
+.search-page-results {
+    min-height: 280px;
+    padding: 8px 12px 0;
+}
+
+.search-page-result-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.search-page-result-item {
+    width: 100%;
+    padding: 14px 16px 13px;
+    background: color-mix(in srgb, var(--surface-panel) 76%, transparent);
+    border: 1px solid var(--line-subtle);
+    border-radius: 8px;
+    transition:
+        background 0.16s ease,
+        border-color 0.16s ease;
+}
+
+.search-page-result-item:hover {
+    background: color-mix(in srgb, var(--surface-panel) 92%, var(--surface-soft));
+    border-color: color-mix(in srgb, var(--accent-blue) 24%, var(--line-subtle));
+}
+
+.search-page-result-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.42;
+    letter-spacing: 0;
+}
+
+.search-page-result-title a {
+    color: var(--accent-blue);
+    text-decoration: none;
+}
+
+.search-page-result-title a:hover {
+    text-decoration: underline;
+}
+
+.search-page-result-summary {
+    margin: 5px 0 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.68;
+    letter-spacing: 0;
+}
+
+.search-page-result-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.search-page-result-meta .ant-tag {
+    margin-inline-end: 0;
+}
+
+.search-page-pagination {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 18px;
+}
+
+.search-page-result-title mark,
+.search-page-result-summary mark {
+    padding: 0 2px;
+    border-radius: 3px;
+    background: #fff1a8;
+    color: inherit;
+}

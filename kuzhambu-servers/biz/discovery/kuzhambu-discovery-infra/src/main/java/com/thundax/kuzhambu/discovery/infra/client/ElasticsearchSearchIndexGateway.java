@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.discovery.infra.client;
 
 import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchPageResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchSourceContent;
 import com.thundax.kuzhambu.discovery.application.search.support.SearchIndexGateway;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.Criteria;
 import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
@@ -23,6 +25,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
+
+    private static final String PUBLIC_VISIBILITY = "PUBLIC";
+    private static final String PRIVATE_VISIBILITY = "PRIVATE";
+    private static final String NO_MATCH_VISIBILITY = "__NO_MATCH__";
 
     private static final int HIGHLIGHT_CONTEXT_LENGTH = 60;
     private static final int FALLBACK_LENGTH = 160;
@@ -50,15 +56,16 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
     }
 
     @Override
-    public List<SearchGroupResult> search(SearchKeyword keyword, SearchScope searchScope, int pageNo, int pageSize) {
+    public SearchPageResult search(SearchKeyword keyword, SearchScope searchScope, int pageNo, int pageSize) {
         ElasticsearchOperations operations = requireOperations("search");
         CriteriaQuery query =
                 new CriteriaQuery(buildCriteria(keyword == null ? null : keyword.getNormalizedText(), searchScope));
         query.setPageable(PageRequest.of(Math.max(pageNo - 1, 0), pageSize));
-        List<SearchHit<DiscoverySearchDocument>> hits = operations
-                .search(query, DiscoverySearchDocument.class, indexCoordinates())
-                .getSearchHits();
-        return toGroupedResults(hits, keyword == null ? null : keyword.getNormalizedText());
+        SearchHits<DiscoverySearchDocument> searchHits =
+                operations.search(query, DiscoverySearchDocument.class, indexCoordinates());
+        return new SearchPageResult(
+                toIntTotalHits(searchHits.getTotalHits()),
+                toGroupedResults(searchHits.getSearchHits(), keyword == null ? null : keyword.getNormalizedText()));
     }
 
     @Override
@@ -179,7 +186,7 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
         criteria = appendInFilter(criteria, "categoryCode", searchScope.getCategoryCodes());
         criteria = appendInFilter(criteria, "tagNames", searchScope.getTagNames());
         criteria = appendInFilter(criteria, "status", searchScope.getContentStatuses());
-        criteria = appendInFilter(criteria, "visibility", searchScope.getVisibilityScopes());
+        criteria = appendVisibilityPermissionFilter(criteria, searchScope);
         criteria = criteria.and(new Criteria("deleted").is(false));
         if (searchScope.getDateFrom() != null) {
             criteria = criteria.and(new Criteria("updatedAt")
@@ -214,6 +221,44 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
             return criteria;
         }
         return criteria.and(new Criteria(fieldName).in(filteredValues.toArray()));
+    }
+
+    private Criteria appendVisibilityPermissionFilter(Criteria criteria, SearchScope searchScope) {
+        List<String> visibilityScopes = normalizedValues(searchScope.getVisibilityScopes());
+        List<String> privateKnowledgeBases = normalizedValues(searchScope.getPrivateKnowledgeBases());
+        boolean allowPublic = visibilityScopes.isEmpty() || containsIgnoreCase(visibilityScopes, PUBLIC_VISIBILITY);
+        boolean allowPrivate = (visibilityScopes.isEmpty() || containsIgnoreCase(visibilityScopes, PRIVATE_VISIBILITY))
+                && !privateKnowledgeBases.isEmpty();
+        if (allowPublic && allowPrivate) {
+            return criteria.and(Criteria.or()
+                    .subCriteria(new Criteria("visibility").is(PUBLIC_VISIBILITY))
+                    .subCriteria(Criteria.and()
+                            .subCriteria(new Criteria("visibility").is(PRIVATE_VISIBILITY))
+                            .subCriteria(new Criteria("knowledgeBase").in(privateKnowledgeBases.toArray()))));
+        }
+        if (allowPublic) {
+            return criteria.and(new Criteria("visibility").is(PUBLIC_VISIBILITY));
+        }
+        if (allowPrivate) {
+            return criteria.and(new Criteria("visibility")
+                    .is(PRIVATE_VISIBILITY)
+                    .and(new Criteria("knowledgeBase").in(privateKnowledgeBases.toArray())));
+        }
+        return criteria.and(new Criteria("visibility").is(NO_MATCH_VISIBILITY));
+    }
+
+    private List<String> normalizedValues(List<String> values) {
+        if (values == null || values.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return values.stream()
+                .filter(value -> value != null && !value.isBlank())
+                .map(String::trim)
+                .toList();
+    }
+
+    private boolean containsIgnoreCase(List<String> values, String expected) {
+        return values.stream().anyMatch(value -> expected.equalsIgnoreCase(value));
     }
 
     private List<SearchGroupResult> toGroupedResults(List<SearchHit<DiscoverySearchDocument>> hits, String keyword) {
@@ -255,6 +300,10 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
                         entry.getValue().size(),
                         entry.getValue()))
                 .toList();
+    }
+
+    private int toIntTotalHits(long totalHits) {
+        return totalHits > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) totalHits;
     }
 
     private String groupTitle(String contentType) {

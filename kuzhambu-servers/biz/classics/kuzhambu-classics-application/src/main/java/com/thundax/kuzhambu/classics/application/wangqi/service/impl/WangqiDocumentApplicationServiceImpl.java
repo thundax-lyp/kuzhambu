@@ -274,6 +274,7 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
                 .ownerId(ownerId(id))
                 .build());
         releaseSourceFile(document);
+        repository.deleteByDocumentId(id);
         repository.deleteById(id);
     }
 

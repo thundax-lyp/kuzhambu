@@ -1,11 +1,12 @@
 import { Navigate, RouterProvider, createBrowserRouter } from "react-router-dom";
 import { AdminLayout } from "../layouts/admin-layout";
 import { InvocationsPage } from "../pages/ai/invocations/invocations-page";
-import { ModelsPage } from "../pages/ai/model-configs/model-configs-page";
+import { AiModelsPage } from "../pages/ai/ai-models/ai-models-page";
 import { PromptsPage } from "../pages/ai/prompts/prompts-page";
 import { AuditLogPage } from "../pages/audit/audit-log/audit-log-page";
 import { LoginPage } from "../pages/auth/login/login-page";
 import { QaAdminPage } from "../pages/discovery/qa-admin/qa-admin-page";
+import { SearchPage } from "../pages/discovery/search/search-page";
 import { SearchAdminPage } from "../pages/discovery/search-admin/search-admin-page";
 import { MingCustomsPage } from "../pages/classics/ming-customs/ming-customs-page";
 import { SancaiPage } from "../pages/classics/sancai/sancai-page";
@@ -93,7 +94,7 @@ const router = createBrowserRouter(
                         },
                         {
                             path: "ai/models",
-                            element: <ModelsPage />
+                            element: <AiModelsPage />
                         },
                         {
                             path: "ai/prompts",
@@ -142,6 +143,10 @@ const router = createBrowserRouter(
                         {
                             path: "knowledge/taxonomy",
                             element: <TaxonomyPage />
+                        },
+                        {
+                            path: "discovery/search",
+                            element: <SearchPage />
                         },
                         {
                             path: "discovery/qa-admin",

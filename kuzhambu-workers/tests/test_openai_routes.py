@@ -661,8 +661,8 @@ def _image_body(extra: dict[str, object] | None = None) -> bytes:
         "model": f"BYTEDANCE/{sample['model']}",
         "prompt": sample["prompt"],
         "response_format": sample["response_format"],
-        "capability": meta["capability"],
-        "scope": meta["scope"],
+        "capability": "image_gen",
+        "scope": meta.get("scope", "OPENAI_COMPATIBLE"),
         "extendParams": {
             "baseUrl": "https://ark.example/api/v3",
             "apiKey": "ark-key",

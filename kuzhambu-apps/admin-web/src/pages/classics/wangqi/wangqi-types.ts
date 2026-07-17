@@ -1,3 +1,13 @@
+export interface WangqiDocumentEventRecord {
+    id?: number | null;
+    documentId?: number | null;
+    title?: string | null;
+    occurredAt?: string | null;
+    occurredLabel?: string | null;
+    summary?: string | null;
+    priority?: number | null;
+}
+
 export interface WangqiDocumentRecord {
     id: number;
     title?: string | null;
@@ -11,6 +21,7 @@ export interface WangqiDocumentRecord {
     currentVersionNo?: number | null;
     currentVersionedAt?: string | null;
     contentUpdatedAt?: string | null;
+    events?: WangqiDocumentEventRecord[];
     versionDirty?: boolean;
 }
 

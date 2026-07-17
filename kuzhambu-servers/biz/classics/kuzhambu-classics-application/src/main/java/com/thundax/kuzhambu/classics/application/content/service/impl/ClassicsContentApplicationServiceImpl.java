@@ -1221,6 +1221,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             Versionable restored = wangqiDocumentVersionRestorer.restoreSnapshot(version);
             ClassicsContentVersion restoredVersion = createRestoredVersion(restored, version);
             wangqiDocumentVersionRestorer.markVersioned((WangqiDocument) restored);
+            publishSearchSyncAfterCommit(restored);
             return restoredVersion;
         }
         if (version.getContentType() == ClassicsContentType.MING_CUSTOMS) {
@@ -1234,6 +1235,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             Versionable restored = sancaiEntryVersionRestorer.restoreSnapshot(version);
             ClassicsContentVersion restoredVersion = createRestoredVersion(restored, version);
             sancaiEntryVersionRestorer.markVersioned((SancaiEntry) restored);
+            publishSearchSyncAfterCommit(restored);
             return restoredVersion;
         }
         throw new BizException("暂不支持恢复该类型历史版本: " + version.getContentType());

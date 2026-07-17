@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
@@ -12,9 +13,17 @@ import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicatio
 import com.thundax.kuzhambu.classics.application.search.service.impl.ClassicsSearchContentApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentPageQuery;
 import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
+import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
+import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentSource;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentTagStatus;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
+import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsKeyword;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
@@ -39,8 +48,13 @@ class ClassicsSearchContentApplicationServiceImplTest {
         WangqiDocumentApplicationService wangqiDocumentApplicationService =
                 mock(WangqiDocumentApplicationService.class);
         MingCustomsApplicationService mingCustomsApplicationService = mock(MingCustomsApplicationService.class);
+        ClassicsContentApplicationService classicsContentApplicationService =
+                mock(ClassicsContentApplicationService.class);
         ClassicsSearchContentApplicationServiceImpl service = new ClassicsSearchContentApplicationServiceImpl(
-                sancaiApplicationService, wangqiDocumentApplicationService, mingCustomsApplicationService);
+                sancaiApplicationService,
+                wangqiDocumentApplicationService,
+                mingCustomsApplicationService,
+                classicsContentApplicationService);
 
         SancaiCategory category = new SancaiCategory(SancaiCategoryId.of(11L), "天文", null, 1);
         SancaiVolume volume = new SancaiVolume(SancaiVolumeId.of(22L), SancaiCategoryId.of(11L), "卷一", null, 1);
@@ -85,6 +99,30 @@ class ClassicsSearchContentApplicationServiceImplTest {
                         org.mockito.ArgumentMatchers.any()))
                 .thenReturn(PageResult.of(1, 200, 1, List.of(mingEntry)))
                 .thenReturn(PageResult.of(2, 200, 1, List.of()));
+        when(mingCustomsApplicationService.listKeywords(MingCustomsEntryId.of(3001L)))
+                .thenReturn(List.of(
+                        new MingCustomsKeyword(MingCustomsKeywordId.of(9001L), MingCustomsEntryId.of(3001L), "元日", 1)));
+        when(classicsContentApplicationService.listTags(
+                        ClassicsContentType.SANCAI_ENTRY.value(), ClassicsContentId.of(1001L)))
+                .thenReturn(List.of(new ClassicsContentTag(
+                        null,
+                        ClassicsContentType.SANCAI_ENTRY,
+                        ClassicsContentId.of(1001L),
+                        null,
+                        "礼制",
+                        ClassicsContentSource.MANUAL,
+                        ClassicsContentTagStatus.ACTIVE,
+                        1)));
+        when(classicsContentApplicationService.listQaPairs(
+                        ClassicsContentType.SANCAI_ENTRY.value(), ClassicsContentId.of(1001L)))
+                .thenReturn(List.of(new ClassicsContentQaPair(
+                        null,
+                        ClassicsContentType.SANCAI_ENTRY,
+                        ClassicsContentId.of(1001L),
+                        "黄帝是谁？",
+                        "黄帝是上古帝王。",
+                        ClassicsContentSource.MANUAL,
+                        1)));
 
         var results = service.listPublicContents();
 
@@ -93,5 +131,8 @@ class ClassicsSearchContentApplicationServiceImplTest {
         assertEquals("PUBLISHED", results.get(1).getStatus());
         assertEquals("节令", results.get(2).getCategoryCode());
         assertTrue(results.get(0).getTextSegments().contains("原文"));
+        assertTrue(results.get(0).getTextSegments().contains("黄帝是谁？"));
+        assertTrue(results.get(0).getTagNames().contains("礼制"));
+        assertTrue(results.get(2).getTextSegments().contains("元日"));
     }
 }

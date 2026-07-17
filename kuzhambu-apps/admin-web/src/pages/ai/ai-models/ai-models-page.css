@@ -1,0 +1,50 @@
+.ai-models-page {
+    min-height: 100%;
+}
+
+.ai-models-table {
+    width: 100%;
+}
+
+.ai-models-capabilities {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+}
+
+.ai-models-table .ai-models-center-column {
+    text-align: center;
+}
+
+.ai-models-center-column-title {
+    display: block;
+    width: 100%;
+    text-align: center;
+}
+
+.ai-models-form {
+    padding-top: 4px;
+}
+
+.ai-models-form-item-compact .ant-form-item-control {
+    max-width: 360px;
+}
+
+.ai-models-form-item-medium .ant-form-item-control {
+    max-width: 520px;
+}
+
+.ai-models-form-item-wide .ant-form-item-control {
+    max-width: 760px;
+}
+
+.ai-models-form-item-top .ant-form-item-label {
+    align-self: flex-start;
+}
+
+.ai-models-drawer-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}

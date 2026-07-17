@@ -205,7 +205,9 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         keyword.setCustomId(command.getCustomId());
         keyword.setKeyword(command.getKeyword());
         keyword.setPriority(repository.maxPriority() + 1);
-        return repository.insertKeyword(keyword);
+        MingCustomsKeywordId keywordId = repository.insertKeyword(keyword);
+        publishSearchSyncAfterCommit(repository.getById(command.getCustomId()));
+        return keywordId;
     }
 
     @Override
@@ -272,7 +274,11 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteKeyword(MingCustomsKeywordId id) {
+        MingCustomsKeyword keyword = findKeyword(id);
         repository.deleteKeywordById(id);
+        if (keyword != null) {
+            publishSearchSyncAfterCommit(repository.getById(keyword.getCustomId()));
+        }
     }
 
     @Override
@@ -299,6 +305,20 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
         if (repository.updateKeywordPriority(keyword) != 1) {
             throw sortDbFailure();
         }
+    }
+
+    private MingCustomsKeyword findKeyword(MingCustomsKeywordId id) {
+        if (id == null) {
+            return null;
+        }
+        List<MingCustomsKeyword> keywords = repository.listKeywords(SortDirection.ASC);
+        if (keywords == null || keywords.isEmpty()) {
+            return null;
+        }
+        return keywords.stream()
+                .filter(keyword -> keyword != null && id.equals(keyword.getId()))
+                .findFirst()
+                .orElse(null);
     }
 
     private static BizException sortEmptyInput() {

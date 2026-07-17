@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.ai.facade.AiFacade;
@@ -23,15 +24,49 @@ import org.mockito.ArgumentCaptor;
 class QueryUnderstandingApplicationServiceImplTest {
 
     @Test
-    void understandShouldRejectBlankQuery() {
+    void understandShouldRejectNullQuery() {
         QueryUnderstandingApplicationServiceImpl service = new QueryUnderstandingApplicationServiceImpl(
                 mock(QueryUnderstandingRepository.class),
                 mock(DiscoveryKnowledgeEnhancementProvider.class),
                 mock(QueryUnderstandingPayloadBuilder.class),
                 mock(AiFacade.class));
 
-        BizException exception = assertThrows(BizException.class, () -> service.understand(new SearchQuery()));
+        BizException exception = assertThrows(BizException.class, () -> service.understand(null));
         assertEquals("Search query is required", exception.getMessage());
+    }
+
+    @Test
+    void understandShouldReturnDefaultResultAndSkipAiForBlankQuery() {
+        QueryUnderstandingRepository repository = mock(QueryUnderstandingRepository.class);
+        DiscoveryKnowledgeEnhancementProvider enhancementProvider = mock(DiscoveryKnowledgeEnhancementProvider.class);
+        QueryUnderstandingPayloadBuilder payloadBuilder = mock(QueryUnderstandingPayloadBuilder.class);
+        AiFacade aiFacade = mock(AiFacade.class);
+        QueryUnderstandingApplicationServiceImpl service =
+                new QueryUnderstandingApplicationServiceImpl(repository, enhancementProvider, payloadBuilder, aiFacade);
+        SearchQuery query = new SearchQuery(
+                " ",
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                null,
+                null,
+                1,
+                20,
+                "ANONYMOUS",
+                null,
+                "req-blank",
+                "trace-blank");
+
+        QueryUnderstandingResult result = service.understand(query);
+
+        assertEquals("", result.getNormalizedQueryText());
+        assertEquals("", result.getRewrittenQueryText());
+        assertEquals("KEYWORD_SEARCH", result.getIntent());
+        assertEquals("req-blank", result.getRequestId());
+        assertEquals("trace-blank", result.getTraceId());
+        verifyNoInteractions(repository, enhancementProvider, payloadBuilder, aiFacade);
     }
 
     @Test

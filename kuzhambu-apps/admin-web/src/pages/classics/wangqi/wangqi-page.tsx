@@ -1,10 +1,19 @@
+import {
+    FilterOutlined,
+    PlusOutlined,
+    ReloadOutlined,
+    ScheduleOutlined,
+    SearchOutlined
+} from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Card, Select, Tooltip } from "antd";
+import { App, Card, Input, Select, Tooltip, Typography } from "antd";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
-import { KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
+import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
+import { KuzhambuFilterPanel } from "@/components/kuzhambu-filter-panel";
+import { KuzhambuPage } from "@/components/kuzhambu-page";
+import { KuzhambuSpace, KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
 import { AiCandidateBatchDrawer } from "@/pages/classics/common/components/ai-candidate-batch-drawer";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
@@ -36,6 +45,8 @@ import type { WangqiContentVersionRecord, WangqiDocumentRecord } from "./wangqi-
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./wangqi-page.css";
 import { KuzhambuAlert } from "@/components/kuzhambu-alert";
+
+const { Text } = Typography;
 
 type WangqiVisibilityFilter = "ALL" | "PUBLIC" | "PRIVATE";
 type WangqiSortDirectionFilter = "ASC" | "DESC";
@@ -166,6 +177,8 @@ export const WangqiPage = () => {
     );
     const [batchVisibilityResult, setBatchVisibilityResult] =
         useState<ClassicsBatchOperationRecord | null>(null);
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [exportJobsDrawerOpen, setExportJobsDrawerOpen] = useState(false);
     const [creatingRefinementCapability, setCreatingRefinementCapability] =
         useState<AiRefinementTaskCapability | null>(null);
     const handledSucceededTaskIdsRef = useRef<Set<number>>(new Set());
@@ -256,6 +269,14 @@ export const WangqiPage = () => {
     const refinementTasks = useMemo(
         () => refinementTasksQuery.data?.items || [],
         [refinementTasksQuery.data?.items]
+    );
+    const tagRefinementTasks = useMemo(
+        () => refinementTasks.filter((task) => task.capability === "tags"),
+        [refinementTasks]
+    );
+    const qaRefinementTasks = useMemo(
+        () => refinementTasks.filter((task) => task.capability === "qa"),
+        [refinementTasks]
     );
     const exportJobs = exportJobsQuery.data?.records || [];
     const selectedDocuments = useMemo(
@@ -720,200 +741,247 @@ export const WangqiPage = () => {
 
     return (
         <>
-            <KuzhambuListPage<WangqiDocumentRecord>
-                pageClassName="wangqi-page"
+            <KuzhambuPage
+                className="wangqi-page"
                 title="王圻文档"
                 description="王圻古籍文档管理入口。"
-                subjectName="王圻文档"
-                enableSearch
-                enableFilter
-                enableAdd
-                addText="新增王圻文档"
-                filterActive={hasActiveFilters}
-                filterFields={[
-                    {
-                        name: "visibility",
-                        label: "可见性",
-                        render: () => (
-                            <Select
-                                aria-label="王圻文档可见性"
-                                value={filters.visibility}
-                                options={[
-                                    { value: "ALL", label: "全部" },
-                                    { value: "PUBLIC", label: "公开" },
-                                    { value: "PRIVATE", label: "私有" }
-                                ]}
-                                onChange={(value) =>
-                                    setFilters((currentFilters) => ({
-                                        ...currentFilters,
-                                        visibility: value
-                                    }))
-                                }
-                            />
-                        )
-                    },
-                    {
-                        name: "sortDirection",
-                        label: "排序",
-                        render: () => (
-                            <Select
-                                aria-label="王圻文档排序方向"
-                                value={filters.sortDirection}
-                                options={[
-                                    { value: "DESC", label: "新到旧" },
-                                    { value: "ASC", label: "旧到新" }
-                                ]}
-                                onChange={(value) =>
-                                    setFilters((currentFilters) => ({
-                                        ...currentFilters,
-                                        sortDirection: value
-                                    }))
-                                }
-                            />
-                        )
-                    }
-                ]}
-                onFilterApply={applyFilters}
-                onFilterReset={resetFilters}
-                onAdd={openCreateEditor}
-                pageActions={
-                    <WangqiTimeline
-                        loading={pageQuery.isLoading}
-                        dataSource={records}
-                        onOpenDocument={openEditEditor}
-                    />
-                }
-                searchPlaceholder="搜索王圻文档标题、摘要或正文"
-                searchValue={searchText}
-                onSearchChange={searchWangqi}
-                content={
-                    <>
-                        <ClassicsExportJobSection
-                            items={exportJobs}
-                            loading={
-                                exportJobsQuery.isLoading ||
-                                exportMutation.isPending ||
-                                deleteExportMutation.isPending
-                            }
-                            onDownload={(job) => {
-                                if (job.downloadUrl) {
-                                    window.open(job.downloadUrl, "_blank", "noopener,noreferrer");
-                                }
-                            }}
-                            onDelete={canExportDocuments ? deleteExportJob : undefined}
-                            onBatchDelete={canExportDocuments ? deleteExportJobs : undefined}
-                            onRefresh={() => {
-                                void invalidateExportJobs();
-                            }}
+                actions={
+                    <KuzhambuSpace className="wangqi-page-actions">
+                        <Input
+                            allowClear
+                            aria-label="搜索王圻文档"
+                            className="wangqi-page-search"
+                            placeholder="搜索标题、摘要或正文"
+                            prefix={<SearchOutlined />}
+                            value={searchText}
+                            onChange={(event) => searchWangqi(event.target.value)}
                         />
-                        <div style={{ marginBottom: 12 }}>
+                        <KuzhambuButton
+                            testId="classics-wangqi-wangqi-filter-button"
+                            className={
+                                isFilterOpen || hasActiveFilters ? "wangqi-page-filter-active" : ""
+                            }
+                            icon={<FilterOutlined />}
+                            aria-expanded={isFilterOpen}
+                            onClick={() => setIsFilterOpen((open) => !open)}
+                        >
+                            筛选
+                        </KuzhambuButton>
+                        <KuzhambuButton
+                            testId="classics-wangqi-wangqi-refresh-button"
+                            icon={<ReloadOutlined />}
+                            onClick={() => void pageQuery.refetch()}
+                        >
+                            刷新
+                        </KuzhambuButton>
+                        <WangqiTimeline
+                            loading={pageQuery.isLoading}
+                            dataSource={records}
+                            onOpenDocument={openEditEditor}
+                        />
+                        <KuzhambuButton
+                            testId="classics-wangqi-wangqi-export-jobs-button"
+                            icon={<ScheduleOutlined />}
+                            onClick={() => setExportJobsDrawerOpen(true)}
+                        >
+                            任务
+                        </KuzhambuButton>
+                        <KuzhambuButton
+                            testId="classics-wangqi-wangqi-document-create-button"
+                            type="primary"
+                            icon={<PlusOutlined />}
+                            onClick={openCreateEditor}
+                        >
+                            新增文档
+                        </KuzhambuButton>
+                    </KuzhambuSpace>
+                }
+            >
+                <KuzhambuFilterPanel
+                    open={isFilterOpen}
+                    resetDisabled={!hasActiveFilters}
+                    fields={[
+                        {
+                            name: "visibility",
+                            label: "可见性",
+                            render: () => (
+                                <Select
+                                    aria-label="王圻文档可见性"
+                                    value={filters.visibility}
+                                    options={[
+                                        { value: "ALL", label: "全部" },
+                                        { value: "PUBLIC", label: "公开" },
+                                        { value: "PRIVATE", label: "私有" }
+                                    ]}
+                                    onChange={(value) =>
+                                        setFilters((currentFilters) => ({
+                                            ...currentFilters,
+                                            visibility: value
+                                        }))
+                                    }
+                                />
+                            )
+                        },
+                        {
+                            name: "sortDirection",
+                            label: "排序",
+                            render: () => (
+                                <Select
+                                    aria-label="王圻文档排序方向"
+                                    value={filters.sortDirection}
+                                    options={[
+                                        { value: "DESC", label: "新到旧" },
+                                        { value: "ASC", label: "旧到新" }
+                                    ]}
+                                    onChange={(value) =>
+                                        setFilters((currentFilters) => ({
+                                            ...currentFilters,
+                                            sortDirection: value
+                                        }))
+                                    }
+                                />
+                            )
+                        }
+                    ]}
+                    onApply={() => {
+                        applyFilters();
+                        setIsFilterOpen(false);
+                    }}
+                    onReset={resetFilters}
+                />
+                <div className="wangqi-document-panel">
+                    <div className="wangqi-document-toolbar">
+                        <Text type="secondary">
+                            已选 {selectedDocuments.length} / 当前页 {records.length}
+                        </Text>
+                        <KuzhambuSpace className="wangqi-document-toolbar-actions" wrap>
                             <KuzhambuButton
                                 testId="classics-wangqi-wangqi-batch-share-button"
                                 disabled={!selectedDocuments.length || !canShareDocuments}
                                 loading={batchShareMutation.isPending}
                                 onClick={shareSelectedDocuments}
                             >
-                                批量分享
+                                分享文档
                             </KuzhambuButton>
                             <KuzhambuButton
                                 testId="classics-wangqi-wangqi-action-button"
                                 disabled={!selectedDocuments.length || !canChangeDocumentVisibility}
-                                style={{ marginLeft: 8 }}
                                 onClick={openBatchCandidateDrawer}
                             >
-                                批量候选治理
+                                候选治理
                             </KuzhambuButton>
                             <KuzhambuButton
                                 testId="classics-wangqi-wangqi-batch-public-button"
                                 disabled={!selectedDocuments.length || !canChangeDocumentVisibility}
                                 loading={batchVisibilityMutation.isPending}
-                                style={{ marginLeft: 8 }}
                                 onClick={() => changeSelectedVisibility("PUBLIC")}
                             >
-                                批量公开
+                                设为公开
                             </KuzhambuButton>
                             <KuzhambuButton
                                 testId="classics-wangqi-wangqi-batch-private-button"
                                 disabled={!selectedDocuments.length || !canChangeDocumentVisibility}
                                 loading={batchVisibilityMutation.isPending}
-                                style={{ marginLeft: 8 }}
                                 onClick={() => changeSelectedVisibility("PRIVATE")}
                             >
-                                批量私有
+                                设为私有
                             </KuzhambuButton>
-                        </div>
-                        {batchShareResult ? (
-                            <KuzhambuAlert
-                                showIcon
-                                type={batchShareResult.failureCount > 0 ? "warning" : "success"}
-                                style={{ marginBottom: 12 }}
-                                title={`批量分享结果：成功 ${batchShareResult.successCount}，失败 ${batchShareResult.failureCount}`}
-                                description={
-                                    batchShareResult.failures.length
-                                        ? batchShareResult.failures
-                                              .map(
-                                                  (item) =>
-                                                      `${item.contentType}#${item.contentId}: ${item.failureReason || item.failureCode || "未知失败"}`
-                                              )
-                                              .join("；")
-                                        : "全部选中王圻文档已创建分享记录。"
-                                }
-                            />
-                        ) : null}
-                        {batchVisibilityResult ? (
-                            <KuzhambuAlert
-                                showIcon
-                                type={
-                                    batchVisibilityResult.failureCount > 0 ? "warning" : "success"
-                                }
-                                style={{ marginBottom: 12 }}
-                                title={`批量可见性结果：成功 ${batchVisibilityResult.successCount}，失败 ${batchVisibilityResult.failureCount}`}
-                                description={
-                                    batchVisibilityResult.failures.length
-                                        ? batchVisibilityResult.failures
-                                              .map(
-                                                  (item) =>
-                                                      `${item.contentType}#${item.contentId}: ${item.failureReason || item.failureCode || "未知失败"}`
-                                              )
-                                              .join("；")
-                                        : "全部选中王圻文档已更新可见性。"
-                                }
-                            />
-                        ) : null}
-                        <WangqiDocumentList
-                            canExport={canExportDocuments}
-                            canShare={canShareDocuments}
-                            loading={pageQuery.isLoading}
-                            dataSource={records}
-                            onDelete={deleteDocument}
-                            onExport={exportDocument}
-                            onOpenEdit={openEditEditor}
-                            onShare={shareDocument}
-                            onSelectedDocumentIdsChange={setSelectedDocumentIds}
-                            onSortDirectionChange={sortWangqiDocuments}
-                            pagination={{
-                                current: currentPageNo,
-                                pageSize: currentPageSize,
-                                total: totalCount,
-                                onChange: (pageNo, pageSize) => updateQuery({ pageNo, pageSize })
-                            }}
-                            sortDirection={
-                                query.sortDirection || DEFAULT_WANGQI_FILTERS.sortDirection
+                        </KuzhambuSpace>
+                    </div>
+                    {batchShareResult ? (
+                        <KuzhambuAlert
+                            showIcon
+                            type={batchShareResult.failureCount > 0 ? "warning" : "success"}
+                            className="wangqi-result-alert"
+                            title={`分享结果：成功 ${batchShareResult.successCount}，失败 ${batchShareResult.failureCount}`}
+                            description={
+                                batchShareResult.failures.length
+                                    ? batchShareResult.failures
+                                          .map(
+                                              (item) =>
+                                                  `${item.contentType}#${item.contentId}: ${item.failureReason || item.failureCode || "未知失败"}`
+                                          )
+                                          .join("；")
+                                    : "全部选中王圻文档已创建分享记录。"
                             }
-                            selectedDocumentIds={selectedDocumentIds}
                         />
-                        <AiCandidateBatchDrawer
-                            open={batchCandidateDrawerOpen}
-                            contentType="WANGQI_DOCUMENT"
-                            contentIds={batchCandidateDocumentIds}
-                            capabilities={["summary", "tags", "qa"]}
-                            contentTitleById={batchCandidateTitleById}
-                            canEdit={canChangeDocumentVisibility}
-                            onClose={() => setBatchCandidateDrawerOpen(false)}
-                            onChanged={invalidateWangqi}
+                    ) : null}
+                    {batchVisibilityResult ? (
+                        <KuzhambuAlert
+                            showIcon
+                            type={batchVisibilityResult.failureCount > 0 ? "warning" : "success"}
+                            className="wangqi-result-alert"
+                            title={`可见性结果：成功 ${batchVisibilityResult.successCount}，失败 ${batchVisibilityResult.failureCount}`}
+                            description={
+                                batchVisibilityResult.failures.length
+                                    ? batchVisibilityResult.failures
+                                          .map(
+                                              (item) =>
+                                                  `${item.contentType}#${item.contentId}: ${item.failureReason || item.failureCode || "未知失败"}`
+                                          )
+                                          .join("；")
+                                    : "全部选中王圻文档已更新可见性。"
+                            }
                         />
-                    </>
-                }
+                    ) : null}
+                    <WangqiDocumentList
+                        canExport={canExportDocuments}
+                        canShare={canShareDocuments}
+                        loading={pageQuery.isLoading}
+                        dataSource={records}
+                        onDelete={deleteDocument}
+                        onExport={exportDocument}
+                        onOpenEdit={openEditEditor}
+                        onShare={shareDocument}
+                        onSelectedDocumentIdsChange={setSelectedDocumentIds}
+                        onSortDirectionChange={sortWangqiDocuments}
+                        pagination={{
+                            current: currentPageNo,
+                            pageSize: currentPageSize,
+                            total: totalCount,
+                            onChange: (pageNo, pageSize) => updateQuery({ pageNo, pageSize })
+                        }}
+                        sortDirection={query.sortDirection || DEFAULT_WANGQI_FILTERS.sortDirection}
+                        selectedDocumentIds={selectedDocumentIds}
+                    />
+                </div>
+            </KuzhambuPage>
+            <KuzhambuDrawer
+                aria-label="王圻导出任务"
+                destroyOnHidden
+                open={exportJobsDrawerOpen}
+                size="large"
+                title="导出任务"
+                onClose={() => setExportJobsDrawerOpen(false)}
+            >
+                <ClassicsExportJobSection
+                    items={exportJobs}
+                    loading={
+                        exportJobsQuery.isLoading ||
+                        exportMutation.isPending ||
+                        deleteExportMutation.isPending
+                    }
+                    onDownload={(job) => {
+                        if (job.downloadUrl) {
+                            window.open(job.downloadUrl, "_blank", "noopener,noreferrer");
+                        }
+                    }}
+                    onDelete={canExportDocuments ? deleteExportJob : undefined}
+                    onBatchDelete={canExportDocuments ? deleteExportJobs : undefined}
+                    onRefresh={() => {
+                        void invalidateExportJobs();
+                    }}
+                />
+            </KuzhambuDrawer>
+            <AiCandidateBatchDrawer
+                open={batchCandidateDrawerOpen}
+                contentType="WANGQI_DOCUMENT"
+                contentIds={batchCandidateDocumentIds}
+                capabilities={["summary", "tags", "qa"]}
+                contentTitleById={batchCandidateTitleById}
+                canEdit={canChangeDocumentVisibility}
+                onClose={() => setBatchCandidateDrawerOpen(false)}
+                onChanged={invalidateWangqi}
             />
             <WangqiDocumentModel
                 document={activeDocument}
@@ -921,69 +989,45 @@ export const WangqiPage = () => {
                 mode={editorMode}
                 open={editorOpen}
                 saving={saveMutation.isPending}
+                creatingSummaryTask={creatingRefinementCapability === "summary"}
+                onCreateSummaryTask={
+                    editorMode === "edit" && activeDocument
+                        ? () => createRefinementTask(activeDocument, "summary")
+                        : undefined
+                }
                 onClose={closeEditor}
                 onSave={(command) => saveMutation.mutate(command)}
-                afterForm={
+                tagContent={
                     editorMode === "edit" && activeDocument ? (
                         <div className="wangqi-page-drawer-panels">
-                            <Card
-                                size="small"
-                                title="AI 精修任务"
-                                extra={
-                                    <KuzhambuSpaceCompact>
-                                        <Tooltip title={singleDocumentQaDisabledReason}>
-                                            <KuzhambuButton
-                                                testId="classics-wangqi-wangqi-action-button-2"
-                                                disabled={!activeDocument.id || !canOpenDiscoveryQa}
-                                                onClick={() => openSingleDocumentQa(activeDocument)}
-                                            >
-                                                单文档问答
-                                            </KuzhambuButton>
-                                        </Tooltip>
-                                        <KuzhambuButton
-                                            testId="classics-wangqi-wangqi-action-button-3"
-                                            type="primary"
-                                            onClick={() =>
-                                                createRefinementTask(activeDocument, "summary")
-                                            }
-                                            loading={creatingRefinementCapability === "summary"}
-                                        >
-                                            创建摘要任务
-                                        </KuzhambuButton>
-                                        <KuzhambuButton
-                                            testId="classics-wangqi-wangqi-action-button-4"
-                                            onClick={() =>
-                                                createRefinementTask(activeDocument, "tags")
-                                            }
-                                            loading={creatingRefinementCapability === "tags"}
-                                        >
-                                            创建标签任务
-                                        </KuzhambuButton>
-                                        <KuzhambuButton
-                                            testId="classics-wangqi-wangqi-action-button-5"
-                                            onClick={() =>
-                                                createRefinementTask(activeDocument, "qa")
-                                            }
-                                            loading={creatingRefinementCapability === "qa"}
-                                        >
-                                            创建问答任务
-                                        </KuzhambuButton>
-                                    </KuzhambuSpaceCompact>
-                                }
-                            >
-                                {refinementTasks.length ? (
-                                    refinementTasks.slice(0, 4).map((task) => (
-                                        <div key={task.taskId}>
-                                            {task.capability}：{task.status}
-                                            {task.resultPreview ? ` · ${task.resultPreview}` : ""}
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div>暂无精修任务</div>
-                                )}
+                            <Card size="small" title="AI 标签">
+                                <KuzhambuSpace wrap>
+                                    <KuzhambuButton
+                                        testId="classics-wangqi-wangqi-action-button-4"
+                                        type="primary"
+                                        onClick={() => createRefinementTask(activeDocument, "tags")}
+                                        loading={creatingRefinementCapability === "tags"}
+                                    >
+                                        生成标签
+                                    </KuzhambuButton>
+                                </KuzhambuSpace>
+                                <div className="wangqi-refinement-task-list">
+                                    {tagRefinementTasks.length ? (
+                                        tagRefinementTasks.slice(0, 3).map((task) => (
+                                            <div key={task.taskId}>
+                                                标签：{task.status}
+                                                {task.resultPreview
+                                                    ? ` · ${task.resultPreview}`
+                                                    : ""}
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div>暂无标签任务</div>
+                                    )}
+                                </div>
                             </Card>
                             <AiCandidatePanel
-                                capabilities={["summary", "tags", "qa"]}
+                                capabilities={["tags"]}
                                 contentId={activeDocument.id}
                                 contentType="WANGQI_DOCUMENT"
                                 onApplied={async () => {
@@ -998,31 +1042,98 @@ export const WangqiPage = () => {
                                 contentType="WANGQI_DOCUMENT"
                                 onChanged={invalidateWangqi}
                             />
+                        </div>
+                    ) : null
+                }
+                qaContent={
+                    editorMode === "edit" && activeDocument ? (
+                        <div className="wangqi-page-drawer-panels">
+                            <Card
+                                size="small"
+                                title="AI 问答"
+                                extra={
+                                    <KuzhambuSpaceCompact>
+                                        <Tooltip title={singleDocumentQaDisabledReason}>
+                                            <KuzhambuButton
+                                                testId="classics-wangqi-wangqi-action-button-2"
+                                                disabled={!activeDocument.id || !canOpenDiscoveryQa}
+                                                onClick={() => openSingleDocumentQa(activeDocument)}
+                                            >
+                                                单文档问答
+                                            </KuzhambuButton>
+                                        </Tooltip>
+                                        <KuzhambuButton
+                                            testId="classics-wangqi-wangqi-action-button-5"
+                                            type="primary"
+                                            onClick={() =>
+                                                createRefinementTask(activeDocument, "qa")
+                                            }
+                                            loading={creatingRefinementCapability === "qa"}
+                                        >
+                                            生成问答
+                                        </KuzhambuButton>
+                                    </KuzhambuSpaceCompact>
+                                }
+                            >
+                                <div className="wangqi-refinement-task-list">
+                                    {qaRefinementTasks.length ? (
+                                        qaRefinementTasks.slice(0, 3).map((task) => (
+                                            <div key={task.taskId}>
+                                                问答：{task.status}
+                                                {task.resultPreview
+                                                    ? ` · ${task.resultPreview}`
+                                                    : ""}
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div>暂无问答任务</div>
+                                    )}
+                                </div>
+                            </Card>
+                            <AiCandidatePanel
+                                capabilities={["qa"]}
+                                contentId={activeDocument.id}
+                                contentType="WANGQI_DOCUMENT"
+                                onApplied={async () => {
+                                    await invalidateWangqi();
+                                }}
+                                onRejected={async () => {
+                                    await invalidateWangqiCandidates();
+                                }}
+                            />
                             <ClassicsContentQaPanel
                                 panelTitle="王圻问答对"
                                 contentId={activeDocument.id}
                                 contentType="WANGQI_DOCUMENT"
                                 onChanged={invalidateWangqi}
                             />
-                            <WangqiStorageFilePanel
-                                document={activeDocument}
-                                loading={sourceFileQuery.isLoading || sourceFileQuery.isFetching}
-                                sourceFile={sourceFileQuery.data}
-                                uploading={uploadSourceFileMutation.isPending}
-                                onRefresh={() => void sourceFileQuery.refetch()}
-                                onUpload={uploadSourceFile}
-                            />
-                            <WangqiVersionHistoryPanel
-                                currentDocument={activeDocument}
-                                detailLoading={versionDetailQuery.isLoading}
-                                listLoading={versionsQuery.isLoading}
-                                resetting={resetVersionMutation.isPending}
-                                selectedVersion={selectedVersion}
-                                versions={versions}
-                                onSelectVersion={(version) => setSelectedVersionId(version.id)}
-                                onResetVersion={resetVersion}
-                            />
                         </div>
+                    ) : null
+                }
+                sourceFileContent={
+                    editorMode === "edit" && activeDocument ? (
+                        <WangqiStorageFilePanel
+                            document={activeDocument}
+                            loading={sourceFileQuery.isLoading || sourceFileQuery.isFetching}
+                            sourceFile={sourceFileQuery.data}
+                            uploading={uploadSourceFileMutation.isPending}
+                            onRefresh={() => void sourceFileQuery.refetch()}
+                            onUpload={uploadSourceFile}
+                        />
+                    ) : null
+                }
+                versionContent={
+                    editorMode === "edit" && activeDocument ? (
+                        <WangqiVersionHistoryPanel
+                            currentDocument={activeDocument}
+                            detailLoading={versionDetailQuery.isLoading}
+                            listLoading={versionsQuery.isLoading}
+                            resetting={resetVersionMutation.isPending}
+                            selectedVersion={selectedVersion}
+                            versions={versions}
+                            onSelectVersion={(version) => setSelectedVersionId(version.id)}
+                            onResetVersion={resetVersion}
+                        />
                     ) : null
                 }
             />

@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
+import com.thundax.kuzhambu.common.security.permission.PermissionMatcher;
+import com.thundax.kuzhambu.common.security.permission.PrefixPermissionMatcher;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchClickCreateCommand;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchAnalysisSummaryQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchLogPageQuery;
@@ -13,10 +16,10 @@ import com.thundax.kuzhambu.discovery.application.search.result.QueryUnderstandi
 import com.thundax.kuzhambu.discovery.application.search.result.SearchAnalysisSummaryResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchLogResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchPageResult;
 import com.thundax.kuzhambu.discovery.application.search.service.QueryUnderstandingApplicationService;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchApplicationService;
 import com.thundax.kuzhambu.discovery.application.search.support.SearchIndexGateway;
-import com.thundax.kuzhambu.discovery.application.search.support.SearchPermissionFilter;
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchClick;
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchLog;
 import com.thundax.kuzhambu.discovery.domain.search.model.enums.SearchIntentType;
@@ -27,8 +30,10 @@ import com.thundax.kuzhambu.discovery.domain.service.SearchDomainService;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -40,12 +45,18 @@ import org.springframework.stereotype.Service;
 public class SearchApplicationServiceImpl implements SearchApplicationService {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final String PUBLIC_VISIBILITY = "PUBLIC";
+    private static final String SUPER_PERMISSION = "super";
+    private static final String CLASSICS_CONTENT_VIEW_PERMISSION = "classics:content:view";
+    private static final Map<String, String> PRIVATE_KNOWLEDGE_BASE_BY_PERMISSION = privateKnowledgeBaseByPermission();
+    private static final List<String> ALL_PRIVATE_KNOWLEDGE_BASES =
+            List.copyOf(PRIVATE_KNOWLEDGE_BASE_BY_PERMISSION.values());
+    private static final PermissionMatcher PERMISSION_MATCHER = new PrefixPermissionMatcher();
 
     private final SearchLogRepository searchLogRepository;
     private final SearchClickRepository searchClickRepository;
     private final SearchDomainService searchDomainService;
     private final SearchIndexGateway searchIndexGateway;
-    private final SearchPermissionFilter searchPermissionFilter;
     private final QueryUnderstandingApplicationService queryUnderstandingApplicationService;
 
     public SearchApplicationServiceImpl(
@@ -53,13 +64,11 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
             SearchClickRepository searchClickRepository,
             SearchDomainService searchDomainService,
             SearchIndexGateway searchIndexGateway,
-            SearchPermissionFilter searchPermissionFilter,
             QueryUnderstandingApplicationService queryUnderstandingApplicationService) {
         this.searchLogRepository = searchLogRepository;
         this.searchClickRepository = searchClickRepository;
         this.searchDomainService = searchDomainService;
         this.searchIndexGateway = searchIndexGateway;
-        this.searchPermissionFilter = searchPermissionFilter;
         this.queryUnderstandingApplicationService = queryUnderstandingApplicationService;
     }
 
@@ -73,17 +82,18 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
         int pageNo = searchDomainService.normalizePageNo(query.getPageNo());
         int pageSize = searchDomainService.normalizePageSize(query.getPageSize());
         try {
-            List<SearchGroupResult> groups = searchIndexGateway.search(keyword, scope, pageNo, pageSize);
-            List<SearchGroupResult> filteredGroups = searchPermissionFilter.filter(query, groups);
+            SearchPageResult searchPage = searchIndexGateway.search(keyword, scope, pageNo, pageSize);
+            List<SearchGroupResult> groups = searchPage.safeGroups();
             SearchLog searchLog = buildSucceededSearchLog(
                     query,
                     understandingResult,
                     keyword.getNormalizedText(),
                     scope,
-                    filteredGroups,
+                    searchPage.getTotalCount(),
+                    groups,
                     elapsedMillis(startNanos));
             searchLogRepository.save(searchLog);
-            return toSearchResult(searchLog, filteredGroups);
+            return toSearchResult(searchLog, groups);
         } catch (BizException exception) {
             searchLogRepository.save(buildFailedSearchLog(
                     query,
@@ -182,11 +192,9 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
             QueryUnderstandingResult understandingResult,
             String normalizedQueryText,
             SearchScope searchScope,
+            int totalCount,
             List<SearchGroupResult> groups,
             Long searchLatencyMs) {
-        int totalCount = groups == null
-                ? 0
-                : groups.stream().mapToInt(SearchGroupResult::getCount).sum();
         return new SearchLog(
                 null,
                 newSearchLogId(),
@@ -264,14 +272,16 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
     }
 
     private SearchScope toSearchScope(SearchQuery query) {
-        return new SearchScope(
+        SearchScope scope = new SearchScope(
                 query.getKnowledgeBases(),
                 query.getCategoryCodes(),
                 query.getTagNames(),
                 query.getContentStatuses(),
                 query.getVisibilityScopes(),
+                privateKnowledgeBasesForCurrentSubject(),
                 query.getDateFrom(),
                 query.getDateTo());
+        return scope;
     }
 
     private String resolveSearchText(SearchQuery query, QueryUnderstandingResult understandingResult) {
@@ -335,9 +345,29 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
     }
 
     private void validateSearchQuery(SearchQuery query) {
-        if (query == null || isBlank(query.getQueryText())) {
+        if (query == null) {
             throw new BizException("Search query is required");
         }
+    }
+
+    private List<String> privateKnowledgeBasesForCurrentSubject() {
+        Set<String> authorities = KuzhambuContextHolder.currentAuthorities();
+        if (authorities == null || authorities.isEmpty()) {
+            return Collections.emptyList();
+        }
+        if (hasSuperOrClassicsContentPermission(authorities)) {
+            return ALL_PRIVATE_KNOWLEDGE_BASES;
+        }
+        return PRIVATE_KNOWLEDGE_BASE_BY_PERMISSION.entrySet().stream()
+                .filter(entry -> PERMISSION_MATCHER.matches(authorities, entry.getKey()))
+                .map(Map.Entry::getValue)
+                .toList();
+    }
+
+    private boolean hasSuperOrClassicsContentPermission(Set<String> authorities) {
+        return authorities != null
+                && (authorities.contains(SUPER_PERMISSION)
+                        || PERMISSION_MATCHER.matches(authorities, CLASSICS_CONTENT_VIEW_PERMISSION));
     }
 
     private void validateClickCommand(SearchClickCreateCommand command) {
@@ -404,5 +434,13 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
         } catch (JsonProcessingException exception) {
             return null;
         }
+    }
+
+    private static Map<String, String> privateKnowledgeBaseByPermission() {
+        Map<String, String> mappings = new LinkedHashMap<>();
+        mappings.put("classics:sancai:view", "SANCAI_ENTRY");
+        mappings.put("classics:wangqi:view", "WANGQI_DOCUMENT");
+        mappings.put("classics:mingcustoms:view", "MING_CUSTOMS");
+        return Collections.unmodifiableMap(mappings);
     }
 }

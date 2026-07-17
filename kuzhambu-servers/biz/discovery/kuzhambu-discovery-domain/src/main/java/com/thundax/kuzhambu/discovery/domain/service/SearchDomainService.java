@@ -13,7 +13,7 @@ public class SearchDomainService {
 
     public SearchKeyword normalizeKeyword(String queryText) {
         if (queryText == null || queryText.isBlank()) {
-            throw new DomainException("搜索词不能为空");
+            return new SearchKeyword(queryText, "", "");
         }
         String normalizedText = queryText.trim();
         return new SearchKeyword(queryText, normalizedText, normalizedText);
@@ -22,6 +22,7 @@ public class SearchDomainService {
     public SearchScope normalizeScope(SearchScope searchScope) {
         if (searchScope == null) {
             return new SearchScope(
+                    Collections.emptyList(),
                     Collections.emptyList(),
                     Collections.emptyList(),
                     Collections.emptyList(),

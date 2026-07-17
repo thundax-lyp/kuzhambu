@@ -7,7 +7,6 @@ export interface WangqiDocumentFormValues {
     contentFormat: string;
     documentTime: Dayjs | null;
     isPublic: boolean;
-    storageObjectId: number | null;
     summary: string;
     title: string;
 }
@@ -25,7 +24,6 @@ export const toWangqiDocumentFormValues = (
         contentFormat: record?.contentFormat || "MARKDOWN",
         documentTime: record?.documentTime ? dayjs(record.documentTime) : null,
         isPublic: (record?.visibility || "PUBLIC") === "PUBLIC",
-        storageObjectId: record?.storageObjectId ?? null,
         summary: record?.summary || "",
         title: record?.title || ""
     };
@@ -42,7 +40,7 @@ export const toWangqiDocumentCommand = (
         contentFormat: normalizeText(values.contentFormat) || "MARKDOWN",
         content: normalizeText(values.content),
         documentTime: values.documentTime?.toISOString(),
-        storageObjectId: values.storageObjectId,
+        storageObjectId: record?.storageObjectId ?? null,
         visibility: values.isPublic ? "PUBLIC" : "PRIVATE"
     };
 };

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import * as qaService from "./qa-admin/qa-admin-service";
+import * as searchConsumerService from "./search/search-service";
 import * as searchService from "./search-admin/search-admin-service";
 
 const postJson = vi.hoisted(() => vi.fn());
@@ -155,6 +156,60 @@ describe("discovery admin service contracts", () => {
         expect(postJson).toHaveBeenLastCalledWith("/discovery/search-admin/index/rebuild", {
             body: {
                 confirm: true
+            }
+        });
+    });
+
+    it("maps search consumer endpoints and request bodies", async () => {
+        await searchConsumerService.searchDiscovery({
+            categoryCodes: ["SANCAI_ENTRY"],
+            contentStatuses: ["PUBLISHED"],
+            dateFrom: "2026-01-01T00:00:00.000Z",
+            dateTo: "2026-01-02T23:59:59.000Z",
+            knowledgeBases: ["SANCAI_ENTRY"],
+            pageNo: 1,
+            pageSize: 10,
+            queryText: "礼器",
+            tagNames: ["礼制"],
+            visibilityScopes: ["PUBLIC"]
+        });
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/search/search", {
+            body: {
+                categoryCodes: ["SANCAI_ENTRY"],
+                contentStatuses: ["PUBLISHED"],
+                dateFrom: "2026-01-01T00:00:00.000Z",
+                dateTo: "2026-01-02T23:59:59.000Z",
+                knowledgeBases: ["SANCAI_ENTRY"],
+                pageNo: 1,
+                pageSize: 10,
+                queryText: "礼器",
+                tagNames: ["礼制"],
+                visibilityScopes: ["PUBLIC"]
+            }
+        });
+
+        await searchConsumerService.clickSearchResult({
+            contentDomain: "classics",
+            contentId: "1001",
+            contentTitle: "礼器",
+            contentType: "SANCAI_ENTRY",
+            groupRank: 1,
+            resultGroupKey: "SANCAI_ENTRY",
+            resultRank: 1,
+            searchLogId: "LOG-1001",
+            targetPath: "/classics/sancai"
+        });
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/search/click", {
+            body: {
+                contentDomain: "classics",
+                contentId: "1001",
+                contentTitle: "礼器",
+                contentType: "SANCAI_ENTRY",
+                groupRank: 1,
+                resultGroupKey: "SANCAI_ENTRY",
+                resultRank: 1,
+                searchLogId: "LOG-1001",
+                targetPath: "/classics/sancai"
             }
         });
     });

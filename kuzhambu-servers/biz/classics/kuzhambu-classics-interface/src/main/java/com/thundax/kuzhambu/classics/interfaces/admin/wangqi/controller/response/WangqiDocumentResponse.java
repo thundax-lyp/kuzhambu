@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -36,4 +37,7 @@ public class WangqiDocumentResponse implements Serializable {
 
     @JsonProperty("visibility")
     private String visibility;
+
+    @JsonProperty("events")
+    private List<WangqiDocumentEventResponse> events;
 }

@@ -55,10 +55,18 @@ public class QueryUnderstandingApplicationServiceImpl implements QueryUnderstand
 
     @Override
     public QueryUnderstandingResult understand(SearchQuery query) {
-        if (query == null
-                || query.getQueryText() == null
-                || query.getQueryText().isBlank()) {
+        if (query == null) {
             throw new BizException("Search query is required");
+        }
+        if (StringUtils.isBlank(query.getQueryText())) {
+            return new QueryUnderstandingResult(
+                    "",
+                    "",
+                    SearchIntentType.KEYWORD_SEARCH.value(),
+                    List.of(),
+                    List.of(),
+                    query.getRequestId(),
+                    query.getTraceId());
         }
         String normalizedQueryText =
                 searchDomainService.normalizeKeyword(query.getQueryText()).getNormalizedText();

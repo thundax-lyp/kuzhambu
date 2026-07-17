@@ -8,6 +8,7 @@ import type {
 
 export interface AiPromptTemplateQuery {
     capability?: string | null;
+    enabled?: boolean | null;
 }
 
 export interface AiPromptTemplateChangeCommand {
@@ -60,6 +61,15 @@ export const listPromptCapabilities = () => {
 export const getPromptTemplateByCapability = (query: AiPromptTemplateQuery) => {
     return postJson<AiPromptTemplateRecord, AiPromptTemplateQuery>(
         "/ai/config/prompt/template/get-by-capability",
+        {
+            body: query
+        }
+    );
+};
+
+export const listPromptTemplates = (query: AiPromptTemplateQuery = {}) => {
+    return postJson<AiPromptTemplateRecord[], AiPromptTemplateQuery>(
+        "/ai/config/prompt/template/list",
         {
             body: query
         }

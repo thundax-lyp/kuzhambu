@@ -8,8 +8,12 @@
         "dev:portal": "pnpm --filter ./portal-web run dev",
         "build": "pnpm --recursive run build",
         "test": "pnpm --recursive run test",
+        "test:coverage": "pnpm --recursive run test:coverage",
         "lint": "pnpm --recursive run lint",
         "format:check": "pnpm --recursive run format:check",
         "format": "pnpm --recursive run format"
+    },
+    "devDependencies": {
+        "@vitest/coverage-v8": "4.1.9"
     }
 }

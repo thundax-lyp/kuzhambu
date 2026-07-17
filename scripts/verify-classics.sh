@@ -18,6 +18,7 @@ required_tables=(
     classics_sancai_volume
     classics_sancai_entry
     classics_wangqi_document
+    classics_wangqi_document_event
     classics_ming_customs_entry
     classics_share_link
 )
@@ -44,13 +45,33 @@ if ! grep -q "INSERT INTO \`classics_wangqi_document\`" "${ROOT_DIR}/db/data/cla
     exit 1
 fi
 
-if ! grep -q "(400000000001, .*'MARKDOWN'.*'PUBLIC'.*'2026-01-01 08:00:00.000')" "${ROOT_DIR}/db/data/classics.sql"; then
-    echo "Missing public markdown wangqi document data" >&2
+if ! grep -q "Local document IDs are deterministic 1..14" "${ROOT_DIR}/db/data/classics.sql"; then
+    echo "Missing deterministic wangqi document import marker" >&2
     exit 1
 fi
 
-if ! grep -q "(400000000002, .*'HTML'.*'PRIVATE'.*'2026-01-02 08:00:00.000')" "${ROOT_DIR}/db/data/classics.sql"; then
-    echo "Missing private html wangqi document data" >&2
+if ! grep -q "(1, .*'MARKDOWN'.*'PUBLIC'.*'1570-01-01 00:00:00.000')" "${ROOT_DIR}/db/data/classics.sql"; then
+    echo "Missing first imported public markdown wangqi document data" >&2
+    exit 1
+fi
+
+if ! grep -q "(14, .*'MARKDOWN'.*'PUBLIC'.*'1570-09-01 00:00:00.000')" "${ROOT_DIR}/db/data/classics.sql"; then
+    echo "Missing last imported public markdown wangqi document data" >&2
+    exit 1
+fi
+
+if ! grep -q "INSERT INTO \`classics_wangqi_document_event\`" "${ROOT_DIR}/db/data/classics.sql"; then
+    echo "Missing wangqi document event data" >&2
+    exit 1
+fi
+
+if ! grep -q "ALTER TABLE \`classics_wangqi_document\` AUTO_INCREMENT = 15" "${ROOT_DIR}/db/data/classics.sql"; then
+    echo "Missing wangqi document auto increment reset" >&2
+    exit 1
+fi
+
+if ! grep -q "ALTER TABLE \`classics_wangqi_document_event\` AUTO_INCREMENT = 15" "${ROOT_DIR}/db/data/classics.sql"; then
+    echo "Missing wangqi document event auto increment reset" >&2
     exit 1
 fi
 

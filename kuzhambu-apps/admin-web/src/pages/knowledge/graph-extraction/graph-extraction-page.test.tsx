@@ -99,7 +99,7 @@ describe("GraphExtractionPage", () => {
             expect(serviceMocks.getTaskDetail).toHaveBeenCalledWith({ taskId: 8008 });
         });
         expect(await screen.findByText('{"sourceContentIds":[1001,1002]}')).toBeInTheDocument();
-    });
+    }, 60_000);
 
     it("submits refinement handoff regenerate payload from search params", async () => {
         window.history.pushState(

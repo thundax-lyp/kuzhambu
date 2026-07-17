@@ -61,15 +61,13 @@ describe("ShareForm", () => {
                     titleSnapshot: "王圻文档"
                 }
             ],
-            title: "王圻批量分享 - 王圻文档",
+            title: "王圻分享 - 王圻文档",
             visibility: "PUBLIC"
         });
 
         renderShareForm("active-token");
 
-        expect(
-            await screen.findByRole("heading", { name: "王圻批量分享 - 王圻文档" })
-        ).toBeTruthy();
+        expect(await screen.findByRole("heading", { name: "王圻分享 - 王圻文档" })).toBeTruthy();
         expect(await screen.findByRole("heading", { name: "王圻文档" })).toBeTruthy();
         expect(await screen.findByText("ACTIVE")).toBeTruthy();
         expect(await screen.findByText("可用")).toBeTruthy();
