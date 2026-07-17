@@ -17,10 +17,11 @@ import com.thundax.kuzhambu.discovery.application.search.result.SearchResult;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchApplicationService;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchIndexApplicationService;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchAnalysisSummaryRequest;
+import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchClickRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchIndexRebuildRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchLogGetRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchLogPageRequest;
-import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchRequest;
+import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchRequest;
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.List;
@@ -37,6 +38,8 @@ class DiscoverySearchAdminControllerTest {
     void routesShouldKeepAdminApiPaths() throws Exception {
         assertRequestMapping(DiscoverySearchAdminQueryController.class, "/api/discovery/search");
         assertPostMapping(DiscoverySearchAdminQueryController.class, "search", "search", DiscoverySearchRequest.class);
+        assertPostMapping(
+                DiscoverySearchAdminQueryController.class, "click", "click", DiscoverySearchClickRequest.class);
         assertRequestMapping(DiscoverySearchAdminController.class, "/api/discovery/search-admin");
         assertPostMapping(
                 DiscoverySearchAdminController.class, "pageLogs", "logs/page", DiscoverySearchLogPageRequest.class);
@@ -194,6 +197,28 @@ class DiscoverySearchAdminControllerTest {
         assertEquals("s-1", response.getSearchLogId());
         assertEquals(1, response.getTotalCount());
         assertEquals("1001", response.getGroups().get(0).getItems().get(0).getContentId());
+    }
+
+    @Test
+    void clickShouldDelegateToSearchApplicationService() {
+        SearchApplicationService service = mock(SearchApplicationService.class);
+        DiscoverySearchAdminQueryController controller = new DiscoverySearchAdminQueryController(service);
+        DiscoverySearchClickRequest request = new DiscoverySearchClickRequest();
+        request.setSearchLogId("s-1");
+        request.setContentDomain("CLASSICS");
+        request.setContentType("SANCAI_ENTRY");
+        request.setContentId("1001");
+        request.setContentTitle("黄帝");
+        request.setResultGroupKey("SANCAI_ENTRY");
+        request.setResultRank(1);
+        request.setGroupRank(1);
+        request.setTargetPath("/classics/sancai/1001");
+        when(service.recordClick(any())).thenReturn(Boolean.TRUE);
+
+        Boolean result = controller.click(request);
+
+        verify(service).recordClick(any());
+        assertEquals(Boolean.TRUE, result);
     }
 
     @Test

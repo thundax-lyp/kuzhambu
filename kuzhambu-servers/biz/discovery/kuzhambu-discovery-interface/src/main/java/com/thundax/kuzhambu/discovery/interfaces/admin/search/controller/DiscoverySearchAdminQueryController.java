@@ -7,8 +7,9 @@ import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchApplicationService;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.assembler.DiscoverySearchAdminInterfaceAssembler;
-import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchRequest;
-import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.response.DiscoverySearchResponse;
+import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchClickRequest;
+import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchRequest;
+import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchResponse;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,5 +45,20 @@ public class DiscoverySearchAdminQueryController {
     public DiscoverySearchResponse search(@Valid @RequestBody DiscoverySearchRequest request) {
         return DiscoverySearchAdminInterfaceAssembler.toSearchResponse(
                 searchApplicationService.search(DiscoverySearchAdminInterfaceAssembler.toQuery(request)));
+    }
+
+    @Operation(summary = "记录后台搜索点击", description = "后台搜索点击")
+    @HasPermission("discovery:search:view")
+    @IgnoreSysLogger
+    @PostMapping("click")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    public Boolean click(@Valid @RequestBody DiscoverySearchClickRequest request) {
+        return searchApplicationService.recordClick(DiscoverySearchAdminInterfaceAssembler.toCommand(request));
     }
 }

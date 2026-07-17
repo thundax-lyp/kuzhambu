@@ -199,7 +199,7 @@ describe("discovery admin service contracts", () => {
             searchLogId: "LOG-1001",
             targetPath: "/classics/sancai"
         });
-        expect(postJson).toHaveBeenLastCalledWith("/portal/discovery/search/click", {
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/search/click", {
             body: {
                 contentDomain: "classics",
                 contentId: "1001",

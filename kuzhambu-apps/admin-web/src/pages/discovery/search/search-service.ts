@@ -33,7 +33,7 @@ export const searchDiscovery = (query: DiscoverySearchQuery) => {
 };
 
 export const clickSearchResult = (command: DiscoverySearchClickCommand) => {
-    return postJson<boolean, DiscoverySearchClickCommand>("/portal/discovery/search/click", {
+    return postJson<boolean, DiscoverySearchClickCommand>("/discovery/search/click", {
         body: command
     });
 };

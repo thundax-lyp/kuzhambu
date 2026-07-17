@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.discovery.interfaces.admin.search.assembler;
 
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
+import com.thundax.kuzhambu.discovery.application.search.command.SearchClickCreateCommand;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchAnalysisSummaryQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchLogPageQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
@@ -10,13 +11,14 @@ import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResul
 import com.thundax.kuzhambu.discovery.application.search.result.SearchLogResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchResult;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchAnalysisSummaryRequest;
+import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchClickRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchLogPageRequest;
+import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.request.DiscoverySearchRequest;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchAnalysisSummaryResponse;
+import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchGroupResponse;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchLogDetailResponse;
 import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchLogResponse;
-import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchRequest;
-import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.response.DiscoverySearchGroupResponse;
-import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.response.DiscoverySearchResponse;
+import com.thundax.kuzhambu.discovery.interfaces.admin.search.controller.response.DiscoverySearchResponse;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
@@ -63,6 +65,26 @@ public final class DiscoverySearchAdminInterfaceAssembler {
                 parseDate(request.getDateTo(), "dateTo"),
                 request.getPageNo() == null ? 1 : request.getPageNo(),
                 request.getPageSize() == null ? 20 : request.getPageSize());
+    }
+
+    public static SearchClickCreateCommand toCommand(DiscoverySearchClickRequest request) {
+        if (request == null) {
+            return null;
+        }
+        return new SearchClickCreateCommand(
+                request.getSearchLogId(),
+                request.getContentDomain(),
+                request.getContentType(),
+                request.getContentId(),
+                request.getContentTitle(),
+                request.getResultGroupKey(),
+                request.getResultRank(),
+                request.getGroupRank(),
+                request.getTargetPath(),
+                ADMIN_OPERATOR_TYPE,
+                KuzhambuContextHolder.currentSubjectId(),
+                newRequestId(),
+                newTraceId());
     }
 
     public static SearchAnalysisSummaryQuery toQuery(DiscoverySearchAnalysisSummaryRequest request) {
