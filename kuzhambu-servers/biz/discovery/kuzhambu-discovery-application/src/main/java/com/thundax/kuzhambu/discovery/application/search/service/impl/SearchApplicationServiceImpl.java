@@ -335,7 +335,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
     }
 
     private void validateSearchQuery(SearchQuery query) {
-        if (query == null || isBlank(query.getQueryText())) {
+        if (query == null) {
             throw new BizException("Search query is required");
         }
     }

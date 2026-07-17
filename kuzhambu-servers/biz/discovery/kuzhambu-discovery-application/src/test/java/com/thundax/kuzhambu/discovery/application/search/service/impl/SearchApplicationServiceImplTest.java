@@ -26,6 +26,7 @@ import com.thundax.kuzhambu.discovery.application.search.support.DefaultSearchPe
 import com.thundax.kuzhambu.discovery.application.search.support.SearchIndexGateway;
 import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchLog;
 import com.thundax.kuzhambu.discovery.domain.search.model.enums.SearchIntentType;
+import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchKeyword;
 import com.thundax.kuzhambu.discovery.domain.search.repository.SearchClickRepository;
 import com.thundax.kuzhambu.discovery.domain.search.repository.SearchLogRepository;
 import com.thundax.kuzhambu.discovery.domain.service.SearchDomainService;
@@ -160,6 +161,54 @@ class SearchApplicationServiceImplTest {
         assertEquals(
                 "<mark>黄帝</mark>上古帝王",
                 result.getGroups().get(0).getItems().get(0).getHighlightText());
+    }
+
+    @Test
+    void searchShouldAllowBlankQueryForDefaultPublishedContentList() {
+        SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
+        SearchClickRepository searchClickRepository = mock(SearchClickRepository.class);
+        SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
+        QueryUnderstandingApplicationService queryUnderstandingApplicationService =
+                mock(QueryUnderstandingApplicationService.class);
+        SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
+                searchLogRepository,
+                searchClickRepository,
+                new SearchDomainService(),
+                searchIndexGateway,
+                new DefaultSearchPermissionFilter(),
+                queryUnderstandingApplicationService);
+        SearchQuery query = new SearchQuery(
+                "",
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of("PUBLISHED"),
+                List.of("PUBLIC"),
+                null,
+                null,
+                1,
+                20,
+                "ADMIN",
+                "admin-1",
+                "req-blank",
+                "trace-blank");
+        when(queryUnderstandingApplicationService.understand(query))
+                .thenReturn(new QueryUnderstandingResult(
+                        "", "", "KEYWORD_SEARCH", List.of(), List.of(), "req-blank", "trace-blank"));
+        when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
+                .thenReturn(List.of(new SearchGroupResult(
+                        "SANCAI_ENTRY", "三才图会", 1, List.of(searchResult("SANCAI_ENTRY", "1001", "PUBLIC")))));
+
+        var result = service.search(query);
+        ArgumentCaptor<SearchKeyword> keywordCaptor = ArgumentCaptor.forClass(SearchKeyword.class);
+        ArgumentCaptor<SearchLog> searchLogCaptor = ArgumentCaptor.forClass(SearchLog.class);
+
+        verify(searchIndexGateway).search(keywordCaptor.capture(), any(), any(Integer.class), any(Integer.class));
+        verify(searchLogRepository).save(searchLogCaptor.capture());
+        assertEquals("", keywordCaptor.getValue().getNormalizedText());
+        assertEquals(1, result.getResultTotalCount());
+        assertEquals("SUCCEEDED", searchLogCaptor.getValue().getSearchStatus());
+        assertEquals("", searchLogCaptor.getValue().getNormalizedQueryText());
     }
 
     @Test
