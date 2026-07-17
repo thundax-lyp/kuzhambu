@@ -68,13 +68,14 @@ public class AiWorkerModelConfigResolver {
     }
 
     private ModelResolution resolveModel(AiInvokeCommand command) {
-        AiBusinessConfig config = null;
+        AiBusinessConfig config = resolveBusinessConfig(command);
         if (command.getModelId() == null) {
-            config = resolveBusinessConfig(command);
             if (config == null || config.getModelId() == null) {
                 throw new IllegalArgumentException("AI modelId is required");
             }
             command.setModelId(value(config.getModelId()));
+        } else if (!matchesModel(command.getModelId(), config)) {
+            config = null;
         }
         AiModel model = modelService.get(command.getModelId());
         if (model == null) {
@@ -84,6 +85,10 @@ public class AiWorkerModelConfigResolver {
             throw new IllegalArgumentException("AI model is disabled: " + command.getModelId());
         }
         return new ModelResolution(model, config);
+    }
+
+    private boolean matchesModel(Long modelId, AiBusinessConfig config) {
+        return modelId != null && config != null && modelId.equals(value(config.getModelId()));
     }
 
     private AiBusinessConfig resolveBusinessConfig(AiInvokeCommand command) {

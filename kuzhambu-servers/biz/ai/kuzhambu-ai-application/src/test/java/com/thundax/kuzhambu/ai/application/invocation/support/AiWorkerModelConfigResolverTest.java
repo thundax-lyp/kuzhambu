@@ -89,6 +89,26 @@ class AiWorkerModelConfigResolverTest {
         assertThat(resolved.parameters().get("max_tokens").asInt()).isEqualTo(4096);
     }
 
+    @Test
+    void resolveShouldKeepBusinessConfigParametersAfterModelIdIsResolved() {
+        FakeModelApplicationService modelService = new FakeModelApplicationService();
+        modelService.model.setDefaultParamsJson("{\"temperature\":0.2,\"max_tokens\":4096}");
+        FakeBusinessConfigApplicationService businessConfigService =
+                new FakeBusinessConfigApplicationService(AiModelIdCodec.toDomain(2001L), "{\"temperature\":0.7}");
+        AiWorkerModelConfigResolver resolver = newResolver(businessConfigService, modelService);
+
+        AiInvokeCommand command = new AiInvokeCommand();
+        command.setScope("classics");
+        command.setCapability("classics_translate");
+
+        resolver.resolve(command);
+        AiWorkerModelConfigResolver.ResolvedModelConfig resolvedAgain = resolver.resolve(command);
+
+        assertThat(command.getModelId()).isEqualTo(2001L);
+        assertThat(resolvedAgain.parameters().get("temperature").asDouble()).isEqualTo(0.7);
+        assertThat(resolvedAgain.parameters().get("max_tokens").asInt()).isEqualTo(4096);
+    }
+
     private static AiWorkerModelConfigResolver newResolver(AiModelApplicationService modelService) {
         return newResolver(new FakeBusinessConfigApplicationService(null, null), modelService);
     }
