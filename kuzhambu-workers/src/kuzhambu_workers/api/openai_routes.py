@@ -9,12 +9,12 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import ValidationError
 
 from kuzhambu_workers.ai.graph_registry import GraphRegistry
-from kuzhambu_workers.ai.openai_compatible import iter_chat_completion_chunks
 from kuzhambu_workers.core.config import load_settings
 from kuzhambu_workers.core.errors import WorkerError, WorkerErrorType, protocol_failure
 from kuzhambu_workers.core.security import verify_internal_request
 from kuzhambu_workers.render.artifact_store import ArtifactMetadata, RequestArtifactStore
 from kuzhambu_workers.schemas.ai import (
+    AiCapability,
     AiInput,
     AiInvokeRequest,
     AiOptions,
@@ -220,6 +220,21 @@ def _validate_image_generation_request(
             protocol_failure(
                 "MODEL_CONFIG_INVALID",
                 "OpenAI-compatible 图片生成当前仅支持 response_format=b64_json 或 url。",
+            ).to_payload(),
+            400,
+        )
+    if (
+        request.capability != AiCapability.IMAGE_GEN
+        or request.operation != "OPENAI_COMPATIBLE_IMAGE_GENERATION"
+    ):
+        return _error_json(
+            protocol_failure(
+                "MODEL_CONFIG_INVALID",
+                "OpenAI-compatible 图片生成接口只能路由到 image generation graph。",
+                detail={
+                    "capability": request.capability.value,
+                    "operation": request.operation,
+                },
             ).to_payload(),
             400,
         )
@@ -431,7 +446,8 @@ def _stream_chat_completion(
 ) -> StreamingResponse:
     async def events() -> AsyncIterator[str]:
         try:
-            for chunk in iter_chat_completion_chunks(
+            include_usage = _include_stream_usage(ai_request)
+            for chunk in _REGISTRY.stream_chat_completion(
                 ai_request,
                 response_format=request.response_format,
             ):
@@ -467,7 +483,7 @@ def _stream_chat_completion(
                             ],
                         }
                     )
-                if chunk.usage is not None:
+                if include_usage and chunk.provider_usage and chunk.usage is not None:
                     yield _openai_sse(
                         {
                             "id": request.requestId,
@@ -486,6 +502,13 @@ def _stream_chat_completion(
             yield "data: [DONE]\n\n"
 
     return StreamingResponse(events(), media_type="text/event-stream")
+
+
+def _include_stream_usage(ai_request: AiInvokeRequest) -> bool:
+    stream_options = ai_request.modelConfig.parameters.get("stream_options")
+    if not isinstance(stream_options, dict):
+        return False
+    return stream_options.get("include_usage") is True
 
 
 def _openai_sse(payload: dict[str, Any]) -> str:

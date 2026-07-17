@@ -1,7 +1,10 @@
 import pytest
 
 from kuzhambu_workers.ai.graph_registry import CANONICAL_CAPABILITIES, GraphRegistry
-from kuzhambu_workers.ai.openai_compatible import OpenAiChatCompletionResult
+from kuzhambu_workers.ai.openai_compatible import (
+    OpenAiChatCompletionChunk,
+    OpenAiChatCompletionResult,
+)
 from kuzhambu_workers.core.errors import WorkerError
 from kuzhambu_workers.schemas.ai import AiCapability, AiInvokeRequest
 from kuzhambu_workers.schemas.common import UsageSummary
@@ -64,6 +67,32 @@ def test_registry_rejects_unregistered_capability() -> None:
         registry.invoke(request)
 
     assert raised.value.code == "UNSUPPORTED_CAPABILITY"
+
+
+def test_registry_streams_chat_completion_through_registered_graph(monkeypatch) -> None:
+    captured = {"called": False}
+
+    def fake_chunks(request, *, response_format=None):
+        captured["called"] = True
+        assert response_format == {"type": "json_object"}
+        return iter([OpenAiChatCompletionChunk(delta="hello", usage=None, finish_reason="stop")])
+
+    monkeypatch.setattr(
+        "kuzhambu_workers.ai.graph_registry.iter_chat_completion_chunks",
+        fake_chunks,
+    )
+    registry = GraphRegistry.build_default()
+    request = AiInvokeRequest.model_validate(_request_payload("answer_generation"))
+
+    chunks = list(
+        registry.stream_chat_completion(
+            request,
+            response_format={"type": "json_object"},
+        )
+    )
+
+    assert captured["called"] is True
+    assert chunks[0].delta == "hello"
 
 
 def _model_result(content: str) -> OpenAiChatCompletionResult:

@@ -153,13 +153,12 @@ def test_openai_compatible_chat_completion_streams_response_format(monkeypatch) 
     captured: dict[str, Any] = {}
     response_format = _json_schema_response_format()
 
-    def fake_chunks(request, *, response_format=None):
-        captured["response_format"] = response_format
-        return iter([OpenAiChatCompletionChunk(delta="", usage=None, finish_reason="stop")])
+    class FakeRegistry:
+        def stream_chat_completion(self, request, *, response_format=None):
+            captured["response_format"] = response_format
+            return iter([OpenAiChatCompletionChunk(delta="", usage=None, finish_reason="stop")])
 
-    monkeypatch.setattr(
-        "kuzhambu_workers.api.openai_routes.iter_chat_completion_chunks", fake_chunks
-    )
+    monkeypatch.setattr("kuzhambu_workers.api.openai_routes._REGISTRY", FakeRegistry())
     body = _body(stream=True, extra={"response_format": response_format})
 
     response = TestClient(app).post(
@@ -174,20 +173,19 @@ def test_openai_compatible_chat_completion_streams_openai_chunks(monkeypatch) ->
     monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
     monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
 
-    def fake_chunks(request, *, response_format=None):
-        assert request.options.stream is True
-        assert response_format is None
-        return iter(
-            [
-                OpenAiChatCompletionChunk(delta="hel", usage=None, finish_reason=None),
-                OpenAiChatCompletionChunk(delta="lo", usage=None, finish_reason=None),
-                OpenAiChatCompletionChunk(delta="", usage=None, finish_reason="stop"),
-            ]
-        )
+    class FakeRegistry:
+        def stream_chat_completion(self, request, *, response_format=None):
+            assert request.options.stream is True
+            assert response_format is None
+            return iter(
+                [
+                    OpenAiChatCompletionChunk(delta="hel", usage=None, finish_reason=None),
+                    OpenAiChatCompletionChunk(delta="lo", usage=None, finish_reason=None),
+                    OpenAiChatCompletionChunk(delta="", usage=None, finish_reason="stop"),
+                ]
+            )
 
-    monkeypatch.setattr(
-        "kuzhambu_workers.api.openai_routes.iter_chat_completion_chunks", fake_chunks
-    )
+    monkeypatch.setattr("kuzhambu_workers.api.openai_routes._REGISTRY", FakeRegistry())
     body = _body(stream=True)
 
     response = TestClient(app).post(
@@ -207,20 +205,20 @@ def test_openai_compatible_chat_completion_streams_usage_chunk(monkeypatch) -> N
     monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
     monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
 
-    def fake_chunks(request, *, response_format=None):
-        return iter(
-            [
-                OpenAiChatCompletionChunk(
-                    delta="",
-                    usage=_usage(3, 5),
-                    finish_reason=None,
-                )
-            ]
-        )
+    class FakeRegistry:
+        def stream_chat_completion(self, request, *, response_format=None):
+            return iter(
+                [
+                    OpenAiChatCompletionChunk(
+                        delta="",
+                        usage=_usage(3, 5),
+                        finish_reason=None,
+                        provider_usage=True,
+                    )
+                ]
+            )
 
-    monkeypatch.setattr(
-        "kuzhambu_workers.api.openai_routes.iter_chat_completion_chunks", fake_chunks
-    )
+    monkeypatch.setattr("kuzhambu_workers.api.openai_routes._REGISTRY", FakeRegistry())
     body = _body(stream=True, extra={"stream_options": {"include_usage": True}})
 
     response = TestClient(app).post(
@@ -230,6 +228,43 @@ def test_openai_compatible_chat_completion_streams_usage_chunk(monkeypatch) -> N
     assert response.status_code == 200
     assert '"choices":[]' in response.text
     assert '"usage":{"prompt_tokens":3,"completion_tokens":5,"total_tokens":8}' in response.text
+    assert "data: [DONE]" in response.text
+
+
+def test_openai_compatible_chat_completion_omits_synthetic_stream_usage(
+    monkeypatch,
+) -> None:
+    monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
+    monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
+
+    class FakeRegistry:
+        def stream_chat_completion(self, request, *, response_format=None):
+            return iter(
+                [
+                    OpenAiChatCompletionChunk(
+                        delta="answer",
+                        usage=None,
+                        finish_reason="stop",
+                    ),
+                    OpenAiChatCompletionChunk(
+                        delta="",
+                        usage=_usage(0, 0),
+                        finish_reason=None,
+                        provider_usage=False,
+                    ),
+                ]
+            )
+
+    monkeypatch.setattr("kuzhambu_workers.api.openai_routes._REGISTRY", FakeRegistry())
+    body = _body(stream=True, extra={"stream_options": {"include_usage": True}})
+
+    response = TestClient(app).post(
+        _PATH, content=body, headers=_headers(body, service="kuzhambu-ai")
+    )
+
+    assert response.status_code == 200
+    assert '"content":"answer"' in response.text
+    assert '"usage"' not in response.text
     assert "data: [DONE]" in response.text
 
 
@@ -323,6 +358,37 @@ def test_openai_compatible_image_generation_rejects_stream_before_graph(
 
     monkeypatch.setattr("kuzhambu_workers.api.openai_routes._REGISTRY", FakeRegistry())
     body = _image_body(extra={"extendParams": {"stream": True}})
+
+    response = TestClient(app).post(
+        _IMAGE_PATH,
+        content=body,
+        headers=_headers(body, service="kuzhambu-ai", path=_IMAGE_PATH),
+    )
+
+    assert response.status_code == 400
+    assert captured["called"] is False
+    assert response.json()["error"]["code"] == "MODEL_CONFIG_INVALID"
+
+
+def test_openai_compatible_image_generation_rejects_graph_routing_override(
+    monkeypatch,
+) -> None:
+    monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
+    monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
+    captured = {"called": False}
+
+    class FakeRegistry:
+        def invoke(self, request):
+            captured["called"] = True
+            return {}
+
+    monkeypatch.setattr("kuzhambu_workers.api.openai_routes._REGISTRY", FakeRegistry())
+    body = _image_body(
+        extra={
+            "capability": "summary",
+            "operation": "OPENAI_COMPATIBLE_CHAT_COMPLETION",
+        }
+    )
 
     response = TestClient(app).post(
         _IMAGE_PATH,

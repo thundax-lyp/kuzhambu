@@ -43,6 +43,7 @@ class OpenAiChatCompletionChunk:
     delta: str
     usage: UsageSummary | None
     finish_reason: str | None
+    provider_usage: bool = False
 
 
 def invoke_chat_completion(
@@ -276,6 +277,7 @@ def _iter_response_chunks(
             delta="",
             usage=UsageSummary(latencyMs=elapsed_ms(start_ms)),
             finish_reason=None,
+            provider_usage=False,
         )
 
 
@@ -316,13 +318,20 @@ def _stream_chunk_from_payload(
         raise model_stream_chunk_invalid()
 
     usage = None
+    provider_usage = False
     if "usage" in payload:
         usage = usage_from_provider(payload.get("usage"), latency_ms=elapsed_ms(start_ms))
+        provider_usage = True
     if not delta and finish_reason is None and usage is None:
         if _is_role_only_chunk(payload):
             return OpenAiChatCompletionChunk(delta="", usage=None, finish_reason=None)
         raise model_stream_chunk_invalid()
-    return OpenAiChatCompletionChunk(delta=delta, usage=usage, finish_reason=finish_reason)
+    return OpenAiChatCompletionChunk(
+        delta=delta,
+        usage=usage,
+        finish_reason=finish_reason,
+        provider_usage=provider_usage,
+    )
 
 
 def _is_role_only_chunk(payload: dict[str, Any]) -> bool:
