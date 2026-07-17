@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -13,31 +12,25 @@ import lombok.Getter;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class WangqiDocumentResponse implements Serializable {
+public class WangqiDocumentEventResponse implements Serializable {
     @JsonProperty("id")
     private Long id;
+
+    @JsonProperty("documentId")
+    private Long documentId;
 
     @JsonProperty("title")
     private String title;
 
+    @JsonProperty("occurredAt")
+    private Date occurredAt;
+
+    @JsonProperty("occurredLabel")
+    private String occurredLabel;
+
     @JsonProperty("summary")
     private String summary;
 
-    @JsonProperty("contentFormat")
-    private String contentFormat;
-
-    @JsonProperty("content")
-    private String content;
-
-    @JsonProperty("documentTime")
-    private Date documentTime;
-
-    @JsonProperty("storageObjectId")
-    private Long storageObjectId;
-
-    @JsonProperty("visibility")
-    private String visibility;
-
-    @JsonProperty("events")
-    private List<WangqiDocumentEventResponse> events;
+    @JsonProperty("priority")
+    private Integer priority;
 }

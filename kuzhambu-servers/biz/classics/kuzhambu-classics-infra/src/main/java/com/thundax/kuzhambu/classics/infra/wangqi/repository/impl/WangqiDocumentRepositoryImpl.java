@@ -7,14 +7,21 @@ import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
 import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
+import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocumentEvent;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
 import com.thundax.kuzhambu.classics.domain.wangqi.repository.WangqiDocumentRepository;
+import com.thundax.kuzhambu.classics.infra.wangqi.persistence.assembler.WangqiDocumentEventPersistenceAssembler;
 import com.thundax.kuzhambu.classics.infra.wangqi.persistence.assembler.WangqiDocumentPersistenceAssembler;
 import com.thundax.kuzhambu.classics.infra.wangqi.persistence.dataobject.WangqiDocumentDO;
+import com.thundax.kuzhambu.classics.infra.wangqi.persistence.dataobject.WangqiDocumentEventDO;
+import com.thundax.kuzhambu.classics.infra.wangqi.persistence.mapper.WangqiDocumentEventMapper;
 import com.thundax.kuzhambu.classics.infra.wangqi.persistence.mapper.WangqiDocumentMapper;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 
@@ -22,14 +29,21 @@ import org.springframework.stereotype.Repository;
 public class WangqiDocumentRepositoryImpl implements WangqiDocumentRepository {
 
     private final WangqiDocumentMapper mapper;
+    private final WangqiDocumentEventMapper eventMapper;
 
-    public WangqiDocumentRepositoryImpl(WangqiDocumentMapper mapper) {
+    public WangqiDocumentRepositoryImpl(WangqiDocumentMapper mapper, WangqiDocumentEventMapper eventMapper) {
         this.mapper = mapper;
+        this.eventMapper = eventMapper;
     }
 
     @Override
     public WangqiDocument getById(WangqiDocumentId id) {
-        return WangqiDocumentPersistenceAssembler.toDomain(mapper.selectById(WangqiDocumentIdCodec.toValue(id)));
+        WangqiDocument document =
+                WangqiDocumentPersistenceAssembler.toDomain(mapper.selectById(WangqiDocumentIdCodec.toValue(id)));
+        if (document != null) {
+            attachEvents(List.of(document));
+        }
+        return document;
     }
 
     @Override
@@ -37,17 +51,38 @@ public class WangqiDocumentRepositoryImpl implements WangqiDocumentRepository {
             String keyword, String visibility, SortDirection sortDirection, int pageNo, int pageSize) {
         LambdaQueryWrapper<WangqiDocumentDO> wrapper = buildWrapper(keyword, visibility, sortDirection);
         Page<WangqiDocumentDO> dataPage = mapper.selectPage(new Page<>(pageNo, pageSize), wrapper);
-        return PageResult.of(
-                (int) dataPage.getCurrent(),
-                (int) dataPage.getSize(),
-                dataPage.getTotal(),
-                WangqiDocumentPersistenceAssembler.toDomainList(dataPage.getRecords()));
+        List<WangqiDocument> documents = WangqiDocumentPersistenceAssembler.toDomainList(dataPage.getRecords());
+        attachEvents(documents);
+        return PageResult.of((int) dataPage.getCurrent(), (int) dataPage.getSize(), dataPage.getTotal(), documents);
     }
 
     @Override
     public List<WangqiDocument> listTimeline(String keyword, String visibility, SortDirection sortDirection) {
         LambdaQueryWrapper<WangqiDocumentDO> wrapper = buildWrapper(keyword, visibility, sortDirection);
-        return WangqiDocumentPersistenceAssembler.toDomainList(mapper.selectList(wrapper));
+        List<WangqiDocument> documents = WangqiDocumentPersistenceAssembler.toDomainList(mapper.selectList(wrapper));
+        attachEvents(documents);
+        return documents;
+    }
+
+    @Override
+    public List<WangqiDocumentEvent> listEvents(List<WangqiDocumentId> documentIds) {
+        if (documentIds == null || documentIds.isEmpty()) {
+            return List.of();
+        }
+        List<Long> ids = documentIds.stream()
+                .map(WangqiDocumentIdCodec::toValue)
+                .filter(id -> id != null)
+                .toList();
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        return WangqiDocumentEventPersistenceAssembler.toDomainList(
+                eventMapper.selectList(new LambdaQueryWrapper<WangqiDocumentEventDO>()
+                        .in(WangqiDocumentEventDO::getDocumentId, ids)
+                        .orderByAsc(WangqiDocumentEventDO::getDocumentId)
+                        .orderByAsc(WangqiDocumentEventDO::getPriority)
+                        .orderByAsc(WangqiDocumentEventDO::getOccurredAt)
+                        .orderByAsc(WangqiDocumentEventDO::getId)));
     }
 
     @Override
@@ -116,5 +151,24 @@ public class WangqiDocumentRepositoryImpl implements WangqiDocumentRepository {
                         .like(WangqiDocumentDO::getContent, keyword))
                 .orderBy(true, sortDirection != SortDirection.DESC, WangqiDocumentDO::getDocumentTime);
         return wrapper;
+    }
+
+    private void attachEvents(List<WangqiDocument> documents) {
+        if (documents == null || documents.isEmpty()) {
+            return;
+        }
+        List<WangqiDocumentId> ids = documents.stream()
+                .filter(document -> document != null && document.getId() != null)
+                .map(WangqiDocument::getId)
+                .toList();
+        Map<Long, List<WangqiDocumentEvent>> eventsByDocumentId = listEvents(ids).stream()
+                .collect(Collectors.groupingBy(event -> WangqiDocumentIdCodec.toValue(event.getDocumentId())));
+        for (WangqiDocument document : documents) {
+            if (document == null || document.getId() == null) {
+                continue;
+            }
+            document.setEvents(eventsByDocumentId.getOrDefault(
+                    WangqiDocumentIdCodec.toValue(document.getId()), Collections.emptyList()));
+        }
     }
 }

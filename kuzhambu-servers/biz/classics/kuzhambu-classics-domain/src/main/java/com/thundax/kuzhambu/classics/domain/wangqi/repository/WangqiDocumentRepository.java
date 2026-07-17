@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.classics.domain.wangqi.repository;
 
 import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
+import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocumentEvent;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
@@ -15,6 +16,8 @@ public interface WangqiDocumentRepository {
             String keyword, String visibility, SortDirection sortDirection, int pageNo, int pageSize);
 
     List<WangqiDocument> listTimeline(String keyword, String visibility, SortDirection sortDirection);
+
+    List<WangqiDocumentEvent> listEvents(List<WangqiDocumentId> documentIds);
 
     WangqiDocumentId insert(WangqiDocument document);
 

@@ -8,10 +8,13 @@ import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
+import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentEventIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
+import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocumentEvent;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.request.WangqiDocumentRequest;
+import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response.WangqiDocumentEventResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response.WangqiDocumentResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response.WangqiDocumentSourceFileResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.wangqi.controller.response.WangqiDocumentVersionResponse;
@@ -67,6 +70,7 @@ public final class WangqiDocumentInterfaceAssembler {
                                 entity.getVisibility() == null
                                         ? null
                                         : entity.getVisibility().value())
+                        .events(toEventResponses(entity.getEvents()))
                         .build();
     }
 
@@ -106,6 +110,33 @@ public final class WangqiDocumentInterfaceAssembler {
 
     private static WangqiDocumentVisibility visibility(String value) {
         return StringUtils.isBlank(value) ? null : WangqiDocumentVisibility.from(value);
+    }
+
+    private static java.util.List<WangqiDocumentEventResponse> toEventResponses(
+            java.util.List<WangqiDocumentEvent> events) {
+        if (events == null || events.isEmpty()) {
+            return java.util.List.of();
+        }
+        return events.stream()
+                .map(WangqiDocumentInterfaceAssembler::toEventResponse)
+                .toList();
+    }
+
+    private static WangqiDocumentEventResponse toEventResponse(WangqiDocumentEvent event) {
+        return event == null
+                ? WangqiDocumentEventResponse.builder().build()
+                : WangqiDocumentEventResponse.builder()
+                        .id(WangqiDocumentEventIdCodec.toValue(event.getId()))
+                        .documentId(
+                                event.getDocumentId() == null
+                                        ? null
+                                        : event.getDocumentId().value())
+                        .title(event.getTitle())
+                        .occurredAt(event.getOccurredAt())
+                        .occurredLabel(event.getOccurredLabel())
+                        .summary(event.getSummary())
+                        .priority(event.getPriority())
+                        .build();
     }
 
     private static String sourceFileContentUrl(Long documentId) {
