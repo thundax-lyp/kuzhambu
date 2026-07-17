@@ -359,7 +359,7 @@ describe("WangqiPage", () => {
         expect(within(table).queryByText("暂无摘要")).not.toBeInTheDocument();
     }, 30000);
 
-    it("uses segmented drawer sections and markdown editor without content preview", async () => {
+    it("keeps summary and markdown editor in the basic drawer section", async () => {
         const user = userEvent.setup();
 
         render(
@@ -373,17 +373,12 @@ describe("WangqiPage", () => {
         await user.click(await screen.findByTestId("wangqi-document-edit-1-button"));
 
         expect(await screen.findByRole("radio", { name: "基础信息" })).toBeChecked();
-        expect(screen.getByRole("radio", { name: "摘要" })).toBeInTheDocument();
-        expect(screen.getByRole("radio", { name: "正文" })).toBeInTheDocument();
+        expect(screen.queryByRole("radio", { name: "摘要" })).not.toBeInTheDocument();
+        expect(screen.queryByRole("radio", { name: "正文" })).not.toBeInTheDocument();
         expect(screen.getByRole("radio", { name: "标签" })).toBeInTheDocument();
         expect(screen.getByRole("radio", { name: "问答" })).toBeInTheDocument();
 
-        await openDrawerSection(user, "摘要");
-
         expect(await screen.findByLabelText("王圻文档摘要")).toBeInTheDocument();
-
-        await openDrawerSection(user, "正文");
-
         expect(await screen.findByLabelText("王圻 Markdown 编辑器")).toBeInTheDocument();
         expect(screen.getByLabelText("王圻文档正文")).toBeInTheDocument();
         expect(screen.getByTestId("classics-wangqi-markdown-heading-button")).toBeInTheDocument();

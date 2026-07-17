@@ -121,10 +121,34 @@
     min-width: 0;
 }
 
+.wangqi-document-model-basic {
+    display: grid;
+    min-width: 0;
+    gap: 18px;
+}
+
+.wangqi-document-model-basic-head {
+    display: grid;
+    min-width: 0;
+    gap: 2px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--wangqi-panel-border);
+}
+
 .wangqi-document-model-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 220px 120px;
+    grid-template-columns: minmax(180px, 1fr) 220px 120px;
     gap: 0 16px;
+}
+
+.wangqi-document-model-text-fields {
+    display: grid;
+    min-width: 0;
+    gap: 18px;
+}
+
+.wangqi-document-model-basic .ant-form-item {
+    margin-bottom: 0;
 }
 
 .wangqi-document-model-date-picker,

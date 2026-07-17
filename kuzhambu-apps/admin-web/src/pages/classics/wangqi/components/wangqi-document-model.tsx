@@ -21,8 +21,7 @@ import { KuzhambuButton } from "@/components/kuzhambu-button";
 const { Text } = Typography;
 const { TextArea } = Input;
 
-type WangqiDocumentModelSection =
-    "basic" | "summary" | "content" | "refinement" | "tags" | "qa" | "source" | "versions";
+type WangqiDocumentModelSection = "basic" | "refinement" | "tags" | "qa" | "source" | "versions";
 
 export interface WangqiDocumentModelProps {
     document?: WangqiDocumentRecord | null;
@@ -87,7 +86,7 @@ const WangqiMarkdownEditor = ({ value, onChange }: WangqiMarkdownEditorProps) =>
                 aria-label="王圻文档正文"
                 value={value}
                 className="wangqi-markdown-editor-input"
-                autoSize={resolveTextAreaAutoSize({ minRows: 18, maxRows: 28 })}
+                autoSize={resolveTextAreaAutoSize({ minRows: 14, maxRows: 24 })}
                 onChange={(event) => onChange?.(event.target.value)}
             />
         </div>
@@ -130,8 +129,6 @@ export const WangqiDocumentModel = ({
 
     const sectionOptions = [
         { label: "基础信息", value: "basic" },
-        { label: "摘要", value: "summary" },
-        { label: "正文", value: "content" },
         ...(mode === "edit"
             ? [
                   { label: "内容处理", value: "refinement" },
@@ -144,64 +141,60 @@ export const WangqiDocumentModel = ({
     ];
 
     const basicContent = (
-        <>
-            <Form.Item
-                name="title"
-                label="标题"
-                rules={[{ required: true, message: "请输入标题" }]}
-            >
-                <Input aria-label="王圻文档标题" maxLength={120} showCount />
-            </Form.Item>
-            <div className="wangqi-document-model-grid">
-                <Form.Item name="contentFormat" label="正文格式">
-                    <Select
-                        aria-label="王圻文档正文格式"
-                        options={[
-                            { label: "Markdown", value: "MARKDOWN" },
-                            { label: "HTML", value: "HTML" }
-                        ]}
+        <div className="wangqi-document-model-basic">
+            <div className="wangqi-document-model-basic-head">
+                <Form.Item
+                    name="title"
+                    label="标题"
+                    rules={[{ required: true, message: "请输入标题" }]}
+                >
+                    <Input aria-label="王圻文档标题" maxLength={120} showCount />
+                </Form.Item>
+                <div className="wangqi-document-model-grid">
+                    <Form.Item name="contentFormat" label="正文格式">
+                        <Select
+                            aria-label="王圻文档正文格式"
+                            options={[
+                                { label: "Markdown", value: "MARKDOWN" },
+                                { label: "HTML", value: "HTML" }
+                            ]}
+                        />
+                    </Form.Item>
+                    <Form.Item name="documentTime" label="文档时间">
+                        <DatePicker
+                            aria-label="王圻文档时间"
+                            picker="month"
+                            format="YYYY-MM"
+                            className="wangqi-document-model-date-picker"
+                        />
+                    </Form.Item>
+                    <Form.Item name="isPublic" label="可见性" valuePropName="checked">
+                        <Switch
+                            aria-label="王圻文档公开状态"
+                            checkedChildren="公开"
+                            unCheckedChildren="私有"
+                        />
+                    </Form.Item>
+                </div>
+            </div>
+            <div className="wangqi-document-model-text-fields">
+                <Form.Item name="summary" label="摘要">
+                    <TextArea
+                        aria-label="王圻文档摘要"
+                        autoSize={resolveTextAreaAutoSize({ minRows: 4, maxRows: 8 })}
+                        maxLength={500}
+                        showCount
                     />
                 </Form.Item>
-                <Form.Item name="documentTime" label="文档时间">
-                    <DatePicker
-                        aria-label="王圻文档时间"
-                        picker="month"
-                        format="YYYY-MM"
-                        className="wangqi-document-model-date-picker"
-                    />
-                </Form.Item>
-                <Form.Item name="isPublic" label="可见性" valuePropName="checked">
-                    <Switch
-                        aria-label="王圻文档公开状态"
-                        checkedChildren="公开"
-                        unCheckedChildren="私有"
-                    />
+                <Form.Item name="content" label="正文">
+                    <WangqiMarkdownEditor />
                 </Form.Item>
             </div>
-        </>
-    );
-
-    const summaryContent = (
-        <Form.Item name="summary" label="摘要">
-            <TextArea
-                aria-label="王圻文档摘要"
-                autoSize={resolveTextAreaAutoSize({ minRows: 12, maxRows: 20 })}
-                maxLength={500}
-                showCount
-            />
-        </Form.Item>
-    );
-
-    const contentEditor = (
-        <Form.Item name="content" label="正文">
-            <WangqiMarkdownEditor />
-        </Form.Item>
+        </div>
     );
 
     const sectionContent: Record<WangqiDocumentModelSection, ReactNode> = {
         basic: basicContent,
-        summary: summaryContent,
-        content: contentEditor,
         refinement: refinementContent || <Text type="secondary">暂无内容处理任务</Text>,
         tags: tagContent || <Text type="secondary">暂无标签</Text>,
         qa: qaContent || <Text type="secondary">暂无问答</Text>,
