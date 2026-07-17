@@ -1,6 +1,9 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.config.assembler;
 
+import com.thundax.kuzhambu.ai.domain.config.codec.AiBusinessConfigIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.PromptTemplateIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.model.entity.AiBusinessConfig;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiApiSource;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
@@ -29,6 +32,18 @@ public final class AiConfigInterfaceAssembler {
         model.setEnabled(request.getEnabled() == null || request.getEnabled());
         model.setRegisteredAt(Instant.now());
         return model;
+    }
+
+    public static AiBusinessConfig toBusinessConfig(AiConfigRequests.BusinessConfigSaveRequest request) {
+        AiBusinessConfig config = new AiBusinessConfig();
+        config.setId(AiBusinessConfigIdCodec.toDomain(request.getId()));
+        config.setCapability(AiBusinessCapability.from(request.getCapability()));
+        config.setPromptTemplateId(PromptTemplateIdCodec.toDomain(request.getPromptTemplateId()));
+        config.setModelId(AiModelIdCodec.toDomain(request.getModelId()));
+        config.setDefaultParamsJson(request.getDefaultParamsJson());
+        config.setEnabled(request.getEnabled() == null || request.getEnabled());
+        config.setConfiguredAt(Instant.now());
+        return config;
     }
 
     public static AiConfigResponses.ModelResponse toResponse(AiModel model) {
@@ -61,8 +76,29 @@ public final class AiConfigInterfaceAssembler {
                 .capability(capability.value())
                 .name(capability.displayName())
                 .requiredTags(Collections.emptyList())
+                .requiredModelCapabilities(capability.requiredModelCapabilities().stream()
+                        .map(AiModelCapability::value)
+                        .toList())
                 .enabled(true)
                 .priority(capability.ordinal() + 1)
+                .build();
+    }
+
+    public static AiConfigResponses.BusinessConfigResponse toResponse(AiBusinessConfig config) {
+        if (config == null) {
+            return AiConfigResponses.BusinessConfigResponse.builder().build();
+        }
+        return AiConfigResponses.BusinessConfigResponse.builder()
+                .id(AiBusinessConfigIdCodec.toValue(config.getId()))
+                .capability(
+                        config.getCapability() == null
+                                ? null
+                                : config.getCapability().value())
+                .promptTemplateId(PromptTemplateIdCodec.toValue(config.getPromptTemplateId()))
+                .modelId(AiModelIdCodec.toValue(config.getModelId()))
+                .defaultParamsJson(config.getDefaultParamsJson())
+                .enabled(config.isEnabled())
+                .configuredAt(config.getConfiguredAt())
                 .build();
     }
 

@@ -116,4 +116,70 @@ public final class AiConfigRequests {
         @JsonProperty(value = "enabled")
         private Boolean enabled;
     }
+
+    @Getter
+    @Setter
+    @Schema(name = "AiBusinessConfigIdRequest", description = "AI业务配置ID请求")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class BusinessConfigIdRequest implements Serializable {
+
+        @NotNull
+        @Schema(name = "id", description = "业务配置ID")
+        @JsonProperty(value = "id")
+        private Long id;
+    }
+
+    @Getter
+    @Setter
+    @Schema(name = "AiBusinessConfigListRequest", description = "AI业务配置列表请求")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class BusinessConfigListRequest implements Serializable {
+
+        @Size(max = 64)
+        @Schema(name = "capability", description = "业务能力编码")
+        @JsonProperty(value = "capability")
+        private String capability;
+
+        @Schema(name = "enabled", description = "是否启用")
+        @JsonProperty(value = "enabled")
+        private Boolean enabled;
+    }
+
+    @Getter
+    @Setter
+    @Schema(name = "AiBusinessConfigSaveRequest", description = "AI业务配置保存请求")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class BusinessConfigSaveRequest implements Serializable {
+
+        @Schema(name = "id", description = "业务配置ID")
+        @JsonProperty(value = "id")
+        private Long id;
+
+        @NotBlank
+        @Size(max = 64)
+        @Schema(name = "capability", description = "业务能力编码")
+        @JsonProperty(value = "capability")
+        private String capability;
+
+        @NotNull
+        @Schema(name = "promptTemplateId", description = "提示词模板ID")
+        @JsonProperty(value = "promptTemplateId")
+        private Long promptTemplateId;
+
+        @NotNull
+        @Schema(name = "modelId", description = "模型ID")
+        @JsonProperty(value = "modelId")
+        private Long modelId;
+
+        @Schema(name = "defaultParamsJson", description = "默认参数JSON")
+        @JsonProperty(value = "defaultParamsJson")
+        private String defaultParamsJson;
+
+        @Schema(name = "enabled", description = "是否启用")
+        @JsonProperty(value = "enabled")
+        private Boolean enabled;
+    }
 }

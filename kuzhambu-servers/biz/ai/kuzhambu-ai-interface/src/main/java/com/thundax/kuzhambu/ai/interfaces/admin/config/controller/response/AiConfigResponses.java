@@ -82,6 +82,9 @@ public final class AiConfigResponses {
         @JsonProperty(value = "requiredTags")
         private List<String> requiredTags;
 
+        @JsonProperty(value = "requiredModelCapabilities")
+        private List<String> requiredModelCapabilities;
+
         @JsonProperty(value = "outputMode")
         private String outputMode;
 
@@ -90,5 +93,34 @@ public final class AiConfigResponses {
 
         @JsonProperty(value = "priority")
         private Integer priority;
+    }
+
+    @Getter
+    @Builder
+    @Schema(name = "AiBusinessConfigResponse", description = "AI业务配置响应")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class BusinessConfigResponse implements Serializable {
+
+        @JsonProperty(value = "id")
+        private Long id;
+
+        @JsonProperty(value = "capability")
+        private String capability;
+
+        @JsonProperty(value = "promptTemplateId")
+        private Long promptTemplateId;
+
+        @JsonProperty(value = "modelId")
+        private Long modelId;
+
+        @JsonProperty(value = "defaultParamsJson")
+        private String defaultParamsJson;
+
+        @JsonProperty(value = "enabled")
+        private Boolean enabled;
+
+        @JsonProperty(value = "configuredAt")
+        private Instant configuredAt;
     }
 }
