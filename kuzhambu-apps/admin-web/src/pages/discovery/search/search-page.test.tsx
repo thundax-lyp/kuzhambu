@@ -69,7 +69,7 @@ describe("SearchPage", () => {
     it("renders search shell", () => {
         renderPage();
 
-        expect(screen.getByRole("heading", { name: "跨库搜索" })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { name: "检索" })).toBeInTheDocument();
         expect(screen.getByLabelText("搜索内容")).toBeInTheDocument();
         expect(screen.getByText(/公开已发布内容/u)).toBeInTheDocument();
         expect(screen.getByRole("button", { name: "搜索" })).toBeInTheDocument();

@@ -317,7 +317,7 @@ export const SearchPage = () => {
     return (
         <KuzhambuListPage<SearchResultRow>
             pageClassName="search-page"
-            title="跨库搜索"
+            title="检索"
             description="公开已发布内容。"
             subjectName="内容"
             enableFilter
