@@ -3,8 +3,10 @@ package com.thundax.kuzhambu.ai.application.invocation.support;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.ai.application.config.business.service.AiBusinessConfigApplicationService;
 import com.thundax.kuzhambu.ai.application.config.model.service.AiModelApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
+import com.thundax.kuzhambu.ai.domain.config.model.entity.AiBusinessConfig;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiModelCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
@@ -15,10 +17,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class AiWorkerModelConfigResolver {
 
+    private final AiBusinessConfigApplicationService businessConfigService;
     private final AiModelApplicationService modelService;
     private final ObjectMapper objectMapper;
 
-    public AiWorkerModelConfigResolver(AiModelApplicationService modelService, ObjectMapper objectMapper) {
+    public AiWorkerModelConfigResolver(
+            AiBusinessConfigApplicationService businessConfigService,
+            AiModelApplicationService modelService,
+            ObjectMapper objectMapper) {
+        this.businessConfigService = businessConfigService;
         this.modelService = modelService;
         this.objectMapper = objectMapper;
     }
@@ -60,7 +67,11 @@ public class AiWorkerModelConfigResolver {
 
     private AiModel resolveModel(AiInvokeCommand command) {
         if (command.getModelId() == null) {
-            throw new IllegalArgumentException("AI modelId is required");
+            AiBusinessConfig config = resolveBusinessConfig(command);
+            if (config == null || config.getModelId() == null) {
+                throw new IllegalArgumentException("AI modelId is required");
+            }
+            command.setModelId(value(config.getModelId()));
         }
         AiModel model = modelService.get(command.getModelId());
         if (model == null) {
@@ -70,6 +81,14 @@ public class AiWorkerModelConfigResolver {
             throw new IllegalArgumentException("AI model is disabled: " + command.getModelId());
         }
         return model;
+    }
+
+    private AiBusinessConfig resolveBusinessConfig(AiInvokeCommand command) {
+        if (isBlank(command.getCapability())) {
+            return null;
+        }
+        List<AiBusinessConfig> configs = businessConfigService.list(command.getCapability(), true);
+        return configs.isEmpty() ? null : configs.get(0);
     }
 
     private JsonNode parseParameters(AiModel model) {
