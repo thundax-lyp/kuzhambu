@@ -1,0 +1,9 @@
+.search-page {
+    --kuzhambu-list-page-accent: var(--accent-blue);
+}
+
+.search-page-highlight mark {
+    padding: 0 2px;
+    border-radius: 3px;
+    background: #fff1a8;
+}

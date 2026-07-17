@@ -6,6 +6,7 @@ import { PromptsPage } from "../pages/ai/prompts/prompts-page";
 import { AuditLogPage } from "../pages/audit/audit-log/audit-log-page";
 import { LoginPage } from "../pages/auth/login/login-page";
 import { QaAdminPage } from "../pages/discovery/qa-admin/qa-admin-page";
+import { SearchPage } from "../pages/discovery/search/search-page";
 import { SearchAdminPage } from "../pages/discovery/search-admin/search-admin-page";
 import { MingCustomsPage } from "../pages/classics/ming-customs/ming-customs-page";
 import { SancaiPage } from "../pages/classics/sancai/sancai-page";
@@ -142,6 +143,10 @@ const router = createBrowserRouter(
                         {
                             path: "knowledge/taxonomy",
                             element: <TaxonomyPage />
+                        },
+                        {
+                            path: "discovery/search",
+                            element: <SearchPage />
                         },
                         {
                             path: "discovery/qa-admin",

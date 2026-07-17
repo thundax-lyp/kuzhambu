@@ -1,0 +1,134 @@
+import { QueryClientProvider } from "@tanstack/react-query";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { App as AntdApp } from "antd";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { queryClient } from "@/query/query-client";
+import { SearchPage } from "./search-page";
+
+const mocks = vi.hoisted(() => ({
+    clickSearchResult: vi.fn(async () => true),
+    searchDiscovery: vi.fn(async () => ({
+        displayQueryText: "礼器",
+        groupCount: 1,
+        groups: [
+            {
+                count: 1,
+                groupKey: "SANCAI_ENTRY",
+                groupTitle: "三才图会",
+                items: [
+                    {
+                        contentDomain: "classics",
+                        contentId: "1001",
+                        contentType: "SANCAI_ENTRY",
+                        groupRank: 1,
+                        highlightText: "命中 <mark>礼器</mark> 内容",
+                        resultRank: 1,
+                        targetPath: "/classics/sancai",
+                        title: "礼器图"
+                    }
+                ]
+            }
+        ],
+        queryText: "礼器",
+        searchLogId: "LOG-1001",
+        totalCount: 1
+    }))
+}));
+
+vi.mock("./search-service", () => mocks);
+
+const renderPage = (initialEntry = "/discovery/search") => {
+    return render(
+        <QueryClientProvider client={queryClient}>
+            <AntdApp>
+                <MemoryRouter initialEntries={[initialEntry]}>
+                    <Routes>
+                        <Route path="/discovery/search" element={<SearchPage />} />
+                        <Route path="/classics/sancai" element={<div>三才详情</div>} />
+                    </Routes>
+                </MemoryRouter>
+            </AntdApp>
+        </QueryClientProvider>
+    );
+};
+
+describe("SearchPage", () => {
+    beforeEach(() => {
+        queryClient.clear();
+        mocks.clickSearchResult.mockClear();
+        mocks.searchDiscovery.mockClear();
+    });
+
+    afterEach(() => {
+        cleanup();
+        queryClient.clear();
+        vi.restoreAllMocks();
+    });
+
+    it("renders search shell", () => {
+        renderPage();
+
+        expect(screen.getByRole("heading", { name: "跨库搜索" })).toBeInTheDocument();
+        expect(screen.getByLabelText("搜索内容")).toBeInTheDocument();
+        expect(screen.getByText(/公开已发布内容/u)).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "搜索" })).toBeInTheDocument();
+    });
+
+    it("loads public published search on initial open", async () => {
+        renderPage();
+
+        await waitFor(() => {
+            expect(mocks.searchDiscovery).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    contentStatuses: ["PUBLISHED"],
+                    queryText: "",
+                    visibilityScopes: ["PUBLIC"]
+                }),
+                expect.anything()
+            );
+        });
+    });
+
+    it("submits public published search request and renders grouped results", async () => {
+        const user = userEvent.setup();
+        renderPage();
+
+        await user.type(screen.getByLabelText("搜索内容"), "礼器");
+        await user.click(screen.getByRole("button", { name: "搜索" }));
+
+        await waitFor(() => {
+            expect(mocks.searchDiscovery).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    contentStatuses: ["PUBLISHED"],
+                    queryText: "礼器",
+                    visibilityScopes: ["PUBLIC"]
+                }),
+                expect.anything()
+            );
+        });
+        expect(await screen.findByText("三才图会")).toBeInTheDocument();
+        expect(screen.getByText("礼器图")).toBeInTheDocument();
+    });
+
+    it("restores query string and records result clicks", async () => {
+        const user = userEvent.setup();
+        renderPage("/discovery/search?q=礼器&knowledgeBases=SANCAI_ENTRY&pageNo=1&pageSize=10");
+
+        const result = await screen.findByRole("link", { name: /礼器图/u });
+        await user.click(result);
+
+        expect(mocks.clickSearchResult).toHaveBeenCalledWith({
+            contentDomain: "classics",
+            contentId: "1001",
+            contentTitle: "礼器图",
+            contentType: "SANCAI_ENTRY",
+            groupRank: 1,
+            resultGroupKey: "SANCAI_ENTRY",
+            resultRank: 1,
+            searchLogId: "LOG-1001",
+            targetPath: "/classics/sancai"
+        });
+        expect(await screen.findByText("三才详情")).toBeInTheDocument();
+    });
+});
