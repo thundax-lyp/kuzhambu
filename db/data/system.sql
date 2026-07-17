@@ -111,7 +111,7 @@ INSERT INTO `system_menu` (
     (7, 2, 12, 13, '分享管理', 'classics:sharing:view,classics:sharing:edit', 75, 'VISIBLE', '{"icon":"open-api"}', '/classics/shares', '_self', '古籍内容分享管理'),
     (8, NULL, 15, 24, 'AI 管理', 'ai', 90, 'VISIBLE', '{"icon":"system"}', '/ai', '_self', 'AI 配置和调用治理根菜单'),
     (9, 8, 16, 17, '模型配置', 'ai:config:view,ai:config:edit', 85, 'VISIBLE', '{"icon":"ai-model"}', '/ai/models', '_self', 'AI 模型注册、启停和检测'),
-    (10, 8, 18, 19, '提示词版本', 'ai:prompt:view,ai:prompt:edit', 75, 'VISIBLE', '{"icon":"ai-prompt"}', '/ai/prompts', '_self', 'AI 提示词模板和版本'),
+    (10, 8, 18, 19, '提示词', 'ai:prompt:view,ai:prompt:edit', 75, 'VISIBLE', '{"icon":"ai-prompt"}', '/ai/prompts', '_self', 'AI 提示词模板和版本'),
     (11, 8, 20, 21, 'AI 精修', 'ai:refinement:edit', 72, 'HIDDEN', '{"icon":"submissions"}', '/ai/refinement', '_self', 'AI 内容精修能力入口'),
     (12, 8, 22, 23, '调用统计', 'ai:invocation:view,ai:invocation:edit', 70, 'VISIBLE', '{"icon":"ai-invocation"}', '/ai/invocations', '_self', 'AI 调用记录、候选和批量任务'),
     (13, NULL, 25, 34, '知识治理', 'knowledge', 85, 'VISIBLE', '{"icon":"book"}', '/knowledge', '_self', '知识治理根菜单'),
