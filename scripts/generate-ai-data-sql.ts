@@ -239,7 +239,7 @@ const appendPromptTemplateSql = (lines: string[], prompts: PromptSeed[]) => {
 const appendBusinessConfigSql = (lines: string[], prompts: PromptSeed[]) => {
   lines.push("INSERT INTO `ai_business_config` (");
   lines.push(
-    "    `id`, `capability`, `prompt_template_id`, `model_id`, `default_params_json`, `enabled`, `configured_at`",
+    "    `id`, `capability`, `prompt_template_id`, `model_id`, `default_params_json`, `enabled`, `priority`, `configured_at`",
   );
   lines.push(") VALUES");
   lines.push(
@@ -252,6 +252,7 @@ const appendBusinessConfigSql = (lines: string[], prompts: PromptSeed[]) => {
           modelIdFor(prompt.capability),
           null,
           1,
+          index + 1,
           prompt.registeredAt,
         ]),
       )
@@ -262,6 +263,7 @@ const appendBusinessConfigSql = (lines: string[], prompts: PromptSeed[]) => {
   lines.push("    `model_id` = VALUES(`model_id`),");
   lines.push("    `default_params_json` = VALUES(`default_params_json`),");
   lines.push("    `enabled` = VALUES(`enabled`),");
+  lines.push("    `priority` = VALUES(`priority`),");
   lines.push("    `configured_at` = VALUES(`configured_at`);");
   lines.push("");
 };

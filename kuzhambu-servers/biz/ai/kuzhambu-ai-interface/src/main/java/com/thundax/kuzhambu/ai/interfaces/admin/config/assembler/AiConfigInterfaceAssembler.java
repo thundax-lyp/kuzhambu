@@ -42,6 +42,7 @@ public final class AiConfigInterfaceAssembler {
         config.setModelId(AiModelIdCodec.toDomain(request.getModelId()));
         config.setDefaultParamsJson(request.getDefaultParamsJson());
         config.setEnabled(request.getEnabled() == null || request.getEnabled());
+        config.setPriority(request.getPriority() == null ? 0 : request.getPriority());
         config.setConfiguredAt(Instant.now());
         return config;
     }
@@ -98,6 +99,7 @@ public final class AiConfigInterfaceAssembler {
                 .modelId(AiModelIdCodec.toValue(config.getModelId()))
                 .defaultParamsJson(config.getDefaultParamsJson())
                 .enabled(config.isEnabled())
+                .priority(config.getPriority())
                 .configuredAt(config.getConfiguredAt())
                 .build();
     }

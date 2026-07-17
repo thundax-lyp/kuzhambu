@@ -24,6 +24,7 @@ public final class AiBusinessConfigPersistenceAssembler {
                 AiModelIdCodec.toValue(config.getModelId()),
                 config.getDefaultParamsJson(),
                 config.isEnabled(),
+                config.getPriority(),
                 config.getConfiguredAt());
     }
 
@@ -38,6 +39,7 @@ public final class AiBusinessConfigPersistenceAssembler {
                 AiModelIdCodec.toDomain(dataObject.getModelId()),
                 dataObject.getDefaultParamsJson(),
                 Boolean.TRUE.equals(dataObject.getEnabled()),
+                dataObject.getPriority() == null ? 0 : dataObject.getPriority(),
                 dataObject.getConfiguredAt());
     }
 

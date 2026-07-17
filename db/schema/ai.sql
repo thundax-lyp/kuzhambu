@@ -24,12 +24,13 @@ CREATE TABLE IF NOT EXISTS `ai_business_config` (
     `model_id` bigint NOT NULL,
     `default_params_json` json DEFAULT NULL,
     `enabled` tinyint(1) NOT NULL DEFAULT 1,
+    `priority` int NOT NULL DEFAULT 0,
     `configured_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_ai_business_config_capability` (`capability`),
     KEY `idx_ai_business_config_prompt` (`prompt_template_id`),
     KEY `idx_ai_business_config_model` (`model_id`),
-    KEY `idx_ai_business_config_enabled` (`enabled`)
+    KEY `idx_ai_business_config_enabled` (`enabled`, `priority`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI业务配置表';
 
 CREATE TABLE IF NOT EXISTS `ai_prompt_template` (

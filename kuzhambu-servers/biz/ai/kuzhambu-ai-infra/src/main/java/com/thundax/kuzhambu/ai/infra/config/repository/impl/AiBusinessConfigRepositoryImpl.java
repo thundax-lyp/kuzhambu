@@ -43,7 +43,9 @@ public class AiBusinessConfigRepositoryImpl implements AiBusinessConfigRepositor
                                 capability != null,
                                 AiBusinessConfigDO::getCapability,
                                 capability == null ? null : capability.value())
-                        .eq(enabled != null, AiBusinessConfigDO::getEnabled, enabled)));
+                        .eq(enabled != null, AiBusinessConfigDO::getEnabled, enabled)
+                        .orderByAsc(AiBusinessConfigDO::getPriority)
+                        .orderByAsc(AiBusinessConfigDO::getId)));
     }
 
     @Override
@@ -67,7 +69,8 @@ public class AiBusinessConfigRepositoryImpl implements AiBusinessConfigRepositor
                         .set(AiBusinessConfigDO::getPromptTemplateId, dataObject.getPromptTemplateId())
                         .set(AiBusinessConfigDO::getModelId, dataObject.getModelId())
                         .set(AiBusinessConfigDO::getDefaultParamsJson, dataObject.getDefaultParamsJson())
-                        .set(AiBusinessConfigDO::getEnabled, dataObject.getEnabled()));
+                        .set(AiBusinessConfigDO::getEnabled, dataObject.getEnabled())
+                        .set(AiBusinessConfigDO::getPriority, dataObject.getPriority()));
     }
 
     @Override

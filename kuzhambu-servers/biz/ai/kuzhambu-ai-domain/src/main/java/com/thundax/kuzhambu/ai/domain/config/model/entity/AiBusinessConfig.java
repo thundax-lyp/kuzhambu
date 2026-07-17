@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiBusinessConfigId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptTemplateId;
+import com.thundax.kuzhambu.common.core.sort.Sortable;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,7 +15,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AiBusinessConfig {
+public class AiBusinessConfig implements Sortable {
 
     private AiBusinessConfigId id;
     private AiBusinessCapability capability;
@@ -22,6 +23,7 @@ public class AiBusinessConfig {
     private AiModelId modelId;
     private String defaultParamsJson;
     private boolean enabled = true;
+    private int priority;
     private Instant configuredAt;
 
     public boolean canUse(PromptTemplate promptTemplate, AiModel model) {

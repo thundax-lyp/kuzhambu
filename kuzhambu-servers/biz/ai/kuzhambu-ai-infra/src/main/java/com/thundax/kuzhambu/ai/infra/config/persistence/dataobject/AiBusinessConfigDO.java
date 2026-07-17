@@ -22,5 +22,6 @@ public class AiBusinessConfigDO {
     private Long modelId;
     private String defaultParamsJson;
     private Boolean enabled;
+    private Integer priority;
     private Instant configuredAt;
 }
