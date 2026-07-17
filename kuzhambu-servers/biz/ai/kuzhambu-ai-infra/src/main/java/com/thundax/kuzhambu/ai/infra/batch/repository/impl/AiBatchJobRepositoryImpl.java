@@ -6,7 +6,9 @@ import com.thundax.kuzhambu.ai.domain.batch.model.entity.AiBatchJob;
 import com.thundax.kuzhambu.ai.domain.batch.repository.AiBatchJobRepository;
 import com.thundax.kuzhambu.ai.domain.split.model.entity.EntrySplitCandidate;
 import com.thundax.kuzhambu.ai.domain.vision.model.entity.ImageUnderstandingResult;
-import com.thundax.kuzhambu.ai.infra.batch.persistence.assembler.AiBatchPersistenceAssembler;
+import com.thundax.kuzhambu.ai.infra.batch.persistence.assembler.AiBatchJobPersistenceAssembler;
+import com.thundax.kuzhambu.ai.infra.batch.persistence.assembler.EntrySplitCandidatePersistenceAssembler;
+import com.thundax.kuzhambu.ai.infra.batch.persistence.assembler.ImageUnderstandingResultPersistenceAssembler;
 import com.thundax.kuzhambu.ai.infra.batch.persistence.dataobject.AiBatchJobDO;
 import com.thundax.kuzhambu.ai.infra.batch.persistence.dataobject.EntrySplitCandidateDO;
 import com.thundax.kuzhambu.ai.infra.batch.persistence.dataobject.ImageUnderstandingResultDO;
@@ -28,13 +30,13 @@ public class AiBatchJobRepositoryImpl implements AiBatchJobRepository {
 
     @Override
     public AiBatchJob get(Long batchId) {
-        return AiBatchPersistenceAssembler.toBatchDomain(aiBatchJobMapper.selectOne(
+        return AiBatchJobPersistenceAssembler.toDomain(aiBatchJobMapper.selectOne(
                 new LambdaQueryWrapper<AiBatchJobDO>().eq(AiBatchJobDO::getBatchId, batchId)));
     }
 
     @Override
     public Long insert(AiBatchJob batchJob) {
-        AiBatchJobDO dataObject = AiBatchPersistenceAssembler.toObject(batchJob);
+        AiBatchJobDO dataObject = AiBatchJobPersistenceAssembler.toObject(batchJob);
         if (dataObject.getBatchId() == null) {
             dataObject.setBatchId(nextId());
         }
@@ -47,7 +49,7 @@ public class AiBatchJobRepositoryImpl implements AiBatchJobRepository {
 
     @Override
     public int update(AiBatchJob batchJob) {
-        AiBatchJobDO dataObject = AiBatchPersistenceAssembler.toObject(batchJob);
+        AiBatchJobDO dataObject = AiBatchJobPersistenceAssembler.toObject(batchJob);
         return aiBatchJobMapper.update(
                 null,
                 new LambdaUpdateWrapper<AiBatchJobDO>()
@@ -63,7 +65,7 @@ public class AiBatchJobRepositoryImpl implements AiBatchJobRepository {
 
     @Override
     public Long insertImageUnderstanding(ImageUnderstandingResult result) {
-        ImageUnderstandingResultDO dataObject = AiBatchPersistenceAssembler.toObject(result);
+        ImageUnderstandingResultDO dataObject = ImageUnderstandingResultPersistenceAssembler.toObject(result);
         if (dataObject.getUnderstandingId() == null) {
             dataObject.setUnderstandingId(nextId());
         }
@@ -76,13 +78,13 @@ public class AiBatchJobRepositoryImpl implements AiBatchJobRepository {
 
     @Override
     public ImageUnderstandingResult getImageUnderstanding(Long storageObjectId, String contentHash) {
-        return AiBatchPersistenceAssembler.toImageDomain(
+        return ImageUnderstandingResultPersistenceAssembler.toDomain(
                 aiBatchJobMapper.selectImageUnderstanding(storageObjectId, contentHash));
     }
 
     @Override
     public Long insertEntrySplitCandidate(EntrySplitCandidate candidate) {
-        EntrySplitCandidateDO dataObject = AiBatchPersistenceAssembler.toObject(candidate);
+        EntrySplitCandidateDO dataObject = EntrySplitCandidatePersistenceAssembler.toObject(candidate);
         if (dataObject.getSplitCandidateId() == null) {
             dataObject.setSplitCandidateId(nextId());
         }
@@ -92,7 +94,8 @@ public class AiBatchJobRepositoryImpl implements AiBatchJobRepository {
 
     @Override
     public List<EntrySplitCandidate> listEntrySplitCandidates(Long candidateId) {
-        return AiBatchPersistenceAssembler.toSplitDomainList(aiBatchJobMapper.selectEntrySplitCandidates(candidateId));
+        return EntrySplitCandidatePersistenceAssembler.toDomainList(
+                aiBatchJobMapper.selectEntrySplitCandidates(candidateId));
     }
 
     private Long nextId() {
