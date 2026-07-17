@@ -147,7 +147,7 @@ ByteDance text2image 请求示例：
   "traceId": "trace_20260601_000001",
   "model": "BYTEDANCE/doubao-seedream",
   "prompt": "一只白瓷杯，宋代器物风格",
-  "response_format": "b64_json",
+  "response_format": "url",
   "extendParams": {
     "baseUrl": "https://ark.cn-beijing.volces.com/api/v3",
     "apiKey": "only-present-in-process-memory",
@@ -158,6 +158,8 @@ ByteDance text2image 请求示例：
 ```
 
 OpenAI-compatible 响应使用 OpenAI chat completion、`data: ...` chunk 或 image generations 形态返回。请求中的 OpenAI 参数扩展字段，例如 `temperature`，会转发到下游供应商；`extendParams` 中除 `baseUrl`、`apiKey`、`capabilityTags` 和 `timeoutMs` 外的字段也会作为供应商参数转发。
+
+当 text2image 使用 `response_format: "url"` 时，workers 返回的是 `/internal/artifacts/{artifactId}` 内部临时下载路径，不是最终业务 URL。Java servers 仍需使用服务身份下载 artifact 并转存到 Storage。
 
 通用接口不承载业务权限、用例级审计或稳定业务语义。后续 usecase 接口示例：
 

@@ -16,6 +16,7 @@ from kuzhambu_workers.ai.openai_compatible import (
 from kuzhambu_workers.core.config import load_settings
 from kuzhambu_workers.core.errors import WorkerError, protocol_failure
 from kuzhambu_workers.core.security import verify_internal_request
+from kuzhambu_workers.render.artifact_store import ArtifactMetadata, RequestArtifactStore
 from kuzhambu_workers.schemas.ai import (
     AiInput,
     AiInvokeRequest,
@@ -223,16 +224,42 @@ def _invoke_image_generation(
 
     if request.response_format == "b64_json":
         data = OpenAiCompatibleImageData(b64_json=b64encode(artifact.data).decode("ascii"))
+    elif request.response_format == "url":
+        metadata = _store_generated_image(
+            request, artifact.data, artifact.content_type, artifact.filename
+        )
+        data = OpenAiCompatibleImageData(url=metadata.download_path)
     else:
         return _error_json(
             protocol_failure(
                 "MODEL_CONFIG_INVALID",
-                "OpenAI-compatible 图片生成当前仅支持 response_format=b64_json。",
+                "OpenAI-compatible 图片生成当前仅支持 response_format=b64_json 或 url。",
             ).to_payload(),
             400,
         )
     response = OpenAiCompatibleImageGenerationResponse(created=int(time()), data=[data])
     return JSONResponse(response.model_dump(mode="json"))
+
+
+def _store_generated_image(
+    request: OpenAiCompatibleImageGenerationRequest,
+    data: bytes,
+    content_type: str,
+    filename: str,
+) -> ArtifactMetadata:
+    settings = load_settings()
+    store = RequestArtifactStore(
+        request.requestId,
+        settings.temp_dir,
+        settings.artifact_chunk_bytes,
+        settings.artifact_ttl_hours,
+    )
+    return store.put_bytes(
+        data=data,
+        format="ARTIFACT",
+        filename=filename,
+        content_type=content_type,
+    )
 
 
 def _stream_chat_completion(

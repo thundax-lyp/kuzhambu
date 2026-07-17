@@ -1,5 +1,6 @@
 import json
-from base64 import b64encode
+from pathlib import Path
+from re import DOTALL, search
 from time import time
 
 from fastapi.testclient import TestClient
@@ -15,6 +16,13 @@ from kuzhambu_workers.schemas.common import UsageSummary
 
 _PATH = "/internal/openai/v1/chat-completions"
 _IMAGE_PATH = "/internal/openai/v1/images/generations"
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+_IMAGE_GENERATION_META = (
+    _REPO_ROOT / "db/data-source/ai-prompts/classics/image-generation/meta.json"
+)
+_IMAGE_GENERATION_SAMPLE = (
+    _REPO_ROOT / "db/data-source/ai-prompts/classics/image-generation/sample.md"
+)
 PNG_1X1 = (
     b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01"
     b"\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\rIDATx\x9cc\xf8"
@@ -102,9 +110,13 @@ def test_openai_compatible_chat_completion_streams_openai_chunks(monkeypatch) ->
     assert "data: [DONE]" in response.text
 
 
-def test_openai_compatible_image_generation_invokes_bytedance_text2image(monkeypatch) -> None:
+def test_openai_compatible_image_generation_uses_seed_sample_config(
+    monkeypatch,
+    tmp_path,
+) -> None:
     monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
     monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
+    monkeypatch.setenv("KUZHAMBU_WORKER_TEMP_DIR", str(tmp_path))
     captured: dict[str, object] = {}
 
     def fake_generate_image(request):
@@ -130,14 +142,24 @@ def test_openai_compatible_image_generation_invokes_bytedance_text2image(monkeyp
 
     assert response.status_code == 200
     payload = response.json()
-    assert payload["data"] == [{"b64_json": b64encode(PNG_1X1).decode("ascii"), "url": None}]
+    image_url = payload["data"][0]["url"]
+    assert payload["data"][0]["b64_json"] is None
+    assert image_url.startswith("/internal/artifacts/art_")
+    artifact_id = image_url.removeprefix("/internal/artifacts/")
+    assert (tmp_path / "artifacts" / f"{artifact_id}.bin").read_bytes() == PNG_1X1
     assert captured["model_config"]["serviceRole"] == "BYTEDANCE"
     assert captured["model_config"]["apiSource"] == "OPENAI_COMPATIBLE"
     assert captured["model_config"]["baseUrl"] == "https://ark.example/api/v3"
     assert captured["model_config"]["apiKey"] == "ark-key"
-    assert captured["model_config"]["modelName"] == "doubao-seedream"
+    assert captured["model_config"]["modelName"] == "doubao-seedream-5-0-pro-260628"
+    assert captured["model_config"]["capabilityTags"] == ["image_gen"]
+    assert captured["model_config"]["parameters"]["response_format"] == "url"
     assert captured["model_config"]["parameters"]["size"] == "2K"
-    assert captured["prompt"] == [{"role": "user", "content": "draw a cup"}]
+    assert captured["model_config"]["parameters"]["stream"] is False
+    assert captured["model_config"]["parameters"]["watermark"] is True
+    assert captured["prompt"] == [
+        {"role": "user", "content": _image_generation_sample_payload()["prompt"]}
+    ]
 
 
 def test_openai_compatible_chat_completion_rejects_disallowed_service(monkeypatch) -> None:
@@ -177,19 +199,34 @@ def _body(*, stream: bool, extra: dict[str, object] | None = None) -> bytes:
 
 
 def _image_body() -> bytes:
+    meta = json.loads(_IMAGE_GENERATION_META.read_text(encoding="utf-8"))
+    sample = _image_generation_sample_payload()
     payload = {
         "requestId": "req-openai-1",
         "traceId": "trace-openai-1",
-        "model": "BYTEDANCE/doubao-seedream",
-        "prompt": "draw a cup",
-        "response_format": "b64_json",
+        "model": f"BYTEDANCE/{sample['model']}",
+        "prompt": sample["prompt"],
+        "response_format": sample["response_format"],
+        "capability": meta["capability"],
+        "scope": meta["scope"],
         "extendParams": {
             "baseUrl": "https://ark.example/api/v3",
             "apiKey": "ark-key",
-            "size": "2K",
+            "capabilityTags": ["image_gen"],
+            "size": sample["size"],
+            "stream": sample["stream"],
+            "watermark": sample["watermark"],
         },
     }
     return json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode()
+
+
+def _image_generation_sample_payload() -> dict[str, object]:
+    sample_markdown = _IMAGE_GENERATION_SAMPLE.read_text(encoding="utf-8")
+    matched = search(r"-d '(\{.*?\})'", sample_markdown, flags=DOTALL)
+    if matched is None:
+        raise AssertionError("image generation sample JSON payload not found")
+    return json.loads(matched.group(1))
 
 
 def _headers(body: bytes, *, service: str, path: str = _PATH) -> dict[str, str]:
