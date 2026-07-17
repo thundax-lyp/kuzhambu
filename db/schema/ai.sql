@@ -17,21 +17,6 @@ CREATE TABLE IF NOT EXISTS `ai_model` (
     KEY `idx_ai_model_enabled` (`api_source`, `enabled`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI模型表';
 
-CREATE TABLE IF NOT EXISTS `ai_capability_mapping` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `mapping_id` bigint NOT NULL,
-    `scope` varchar(32) NOT NULL,
-    `capability` varchar(64) NOT NULL,
-    `model_id` bigint NOT NULL,
-    `enabled` tinyint(1) NOT NULL DEFAULT 1,
-    `configured_at` datetime(3) NOT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_ai_capability_mapping_id` (`mapping_id`),
-    UNIQUE KEY `uk_ai_capability_mapping_scope` (`scope`, `capability`),
-    KEY `idx_ai_capability_mapping_model` (`model_id`),
-    KEY `idx_ai_capability_mapping_enabled` (`enabled`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI能力模型映射表';
-
 CREATE TABLE IF NOT EXISTS `ai_prompt_template` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `capability` varchar(64) NOT NULL,
@@ -71,20 +56,6 @@ CREATE TABLE IF NOT EXISTS `ai_prompt_variable` (
     UNIQUE KEY `uk_ai_prompt_variable_priority` (`priority`),
     KEY `idx_ai_prompt_variable_template` (`template_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI提示词变量表';
-
-CREATE TABLE IF NOT EXISTS `ai_action_status` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `action_status_id` bigint NOT NULL,
-    `scope` varchar(32) NOT NULL,
-    `capability` varchar(64) NOT NULL,
-    `available` tinyint(1) NOT NULL DEFAULT 0,
-    `unavailable_reason` varchar(1024) DEFAULT NULL,
-    `checked_at` datetime(3) NOT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_ai_action_status_id` (`action_status_id`),
-    UNIQUE KEY `uk_ai_action_status_scope` (`scope`, `capability`),
-    KEY `idx_ai_action_status_available` (`available`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI功能动作状态表';
 
 CREATE TABLE IF NOT EXISTS `ai_call_record` (
     `id` bigint NOT NULL AUTO_INCREMENT,

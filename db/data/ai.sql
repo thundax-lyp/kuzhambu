@@ -18,42 +18,6 @@ ON DUPLICATE KEY UPDATE
     `enabled` = VALUES(`enabled`),
     `registered_at` = VALUES(`registered_at`);
 
-INSERT INTO `ai_capability_mapping` (
-    `mapping_id`, `scope`, `capability`, `model_id`, `enabled`, `configured_at`
-) VALUES
-    (910101, 'classics', 'classics_summary', 900102, 1, '2026-02-27 04:00:00.000'),
-    (910102, 'classics', 'classics_tags', 900102, 1, '2026-02-27 04:00:00.000'),
-    (910103, 'classics', 'classics_qa', 900102, 1, '2026-02-27 04:00:00.000'),
-    (910104, 'classics', 'classics_image_describe', 900101, 1, '2026-02-27 04:00:00.000'),
-    (910105, 'classics', 'classics_translate', 900102, 1, '2026-02-27 04:00:00.000'),
-    (910106, 'classics', 'classics_image_generate', 900201, 1, '2026-02-27 04:00:00.000'),
-    (910107, 'classics', 'classics_image_prompt_fusion', 900102, 1, '2026-02-27 04:00:00.000'),
-    (910108, 'classics', 'classics_visual_describe', 900102, 1, '2026-02-27 04:00:00.000'),
-    (910201, 'discovery', 'discovery_query_understanding', 900102, 1, '2026-02-27 04:00:00.000'),
-    (910202, 'discovery', 'discovery_answer_generation', 900102, 1, '2026-02-27 04:00:00.000')
-ON DUPLICATE KEY UPDATE
-    `model_id` = VALUES(`model_id`),
-    `enabled` = VALUES(`enabled`),
-    `configured_at` = VALUES(`configured_at`);
-
-INSERT INTO `ai_action_status` (
-    `action_status_id`, `scope`, `capability`, `available`, `unavailable_reason`, `checked_at`
-) VALUES
-    (920101, 'classics', 'classics_summary', 1, NULL, '2026-02-27 04:00:00.000'),
-    (920102, 'classics', 'classics_tags', 1, NULL, '2026-02-27 04:00:00.000'),
-    (920103, 'classics', 'classics_qa', 1, NULL, '2026-02-27 04:00:00.000'),
-    (920104, 'classics', 'classics_image_describe', 1, NULL, '2026-02-27 04:00:00.000'),
-    (920105, 'classics', 'classics_translate', 1, NULL, '2026-02-27 04:00:00.000'),
-    (920106, 'classics', 'classics_image_generate', 1, NULL, '2026-02-27 04:00:00.000'),
-    (920107, 'classics', 'classics_image_prompt_fusion', 1, NULL, '2026-02-27 04:00:00.000'),
-    (920108, 'classics', 'classics_visual_describe', 1, NULL, '2026-02-27 04:00:00.000'),
-    (920201, 'discovery', 'discovery_query_understanding', 1, NULL, '2026-02-27 04:00:00.000'),
-    (920202, 'discovery', 'discovery_answer_generation', 1, NULL, '2026-02-27 04:00:00.000')
-ON DUPLICATE KEY UPDATE
-    `available` = VALUES(`available`),
-    `unavailable_reason` = VALUES(`unavailable_reason`),
-    `checked_at` = VALUES(`checked_at`);
-
 INSERT INTO `ai_prompt_template` (
     `id`, `capability`, `name`, `description`, `status`,
     `current_version_no`, `registered_at`

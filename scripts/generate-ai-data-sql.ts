@@ -126,8 +126,6 @@ const validatePromptSeeds = (prompts: PromptSeed[]) => {
 const generate = (prompts: PromptSeed[]) => {
   const lines: string[] = ["SET NAMES utf8mb4;", ""];
   appendModelSql(lines);
-  appendCapabilityMappingSql(lines);
-  appendActionStatusSql(lines);
   appendPromptTemplateSql(lines, prompts);
   appendPromptVersionSql(lines, prompts);
   appendPromptVariableSql(lines, prompts);
@@ -203,64 +201,6 @@ const appendModelSql = (lines: string[]) => {
   lines.push("    `description` = VALUES(`description`),");
   lines.push("    `enabled` = VALUES(`enabled`),");
   lines.push("    `registered_at` = VALUES(`registered_at`);");
-  lines.push("");
-};
-
-const appendCapabilityMappingSql = (lines: string[]) => {
-  lines.push("INSERT INTO `ai_capability_mapping` (");
-  lines.push(
-    "    `mapping_id`, `scope`, `capability`, `model_id`, `enabled`, `configured_at`",
-  );
-  lines.push(") VALUES");
-  lines.push(
-    [
-      [910101, "classics", "classics_summary", 900102, 1, REGISTERED_AT],
-      [910102, "classics", "classics_tags", 900102, 1, REGISTERED_AT],
-      [910103, "classics", "classics_qa", 900102, 1, REGISTERED_AT],
-      [910104, "classics", "classics_image_describe", 900101, 1, REGISTERED_AT],
-      [910105, "classics", "classics_translate", 900102, 1, REGISTERED_AT],
-      [910106, "classics", "classics_image_generate", 900201, 1, REGISTERED_AT],
-      [910107, "classics", "classics_image_prompt_fusion", 900102, 1, REGISTERED_AT],
-      [910108, "classics", "classics_visual_describe", 900102, 1, REGISTERED_AT],
-      [910201, "discovery", "discovery_query_understanding", 900102, 1, REGISTERED_AT],
-      [910202, "discovery", "discovery_answer_generation", 900102, 1, REGISTERED_AT],
-    ]
-      .map((values) => row(values))
-      .join(",\n"),
-  );
-  lines.push("ON DUPLICATE KEY UPDATE");
-  lines.push("    `model_id` = VALUES(`model_id`),");
-  lines.push("    `enabled` = VALUES(`enabled`),");
-  lines.push("    `configured_at` = VALUES(`configured_at`);");
-  lines.push("");
-};
-
-const appendActionStatusSql = (lines: string[]) => {
-  lines.push("INSERT INTO `ai_action_status` (");
-  lines.push(
-    "    `action_status_id`, `scope`, `capability`, `available`, `unavailable_reason`, `checked_at`",
-  );
-  lines.push(") VALUES");
-  lines.push(
-    [
-      [920101, "classics", "classics_summary", 1, null, REGISTERED_AT],
-      [920102, "classics", "classics_tags", 1, null, REGISTERED_AT],
-      [920103, "classics", "classics_qa", 1, null, REGISTERED_AT],
-      [920104, "classics", "classics_image_describe", 1, null, REGISTERED_AT],
-      [920105, "classics", "classics_translate", 1, null, REGISTERED_AT],
-      [920106, "classics", "classics_image_generate", 1, null, REGISTERED_AT],
-      [920107, "classics", "classics_image_prompt_fusion", 1, null, REGISTERED_AT],
-      [920108, "classics", "classics_visual_describe", 1, null, REGISTERED_AT],
-      [920201, "discovery", "discovery_query_understanding", 1, null, REGISTERED_AT],
-      [920202, "discovery", "discovery_answer_generation", 1, null, REGISTERED_AT],
-    ]
-      .map((values) => row(values))
-      .join(",\n"),
-  );
-  lines.push("ON DUPLICATE KEY UPDATE");
-  lines.push("    `available` = VALUES(`available`),");
-  lines.push("    `unavailable_reason` = VALUES(`unavailable_reason`),");
-  lines.push("    `checked_at` = VALUES(`checked_at`);");
   lines.push("");
 };
 
