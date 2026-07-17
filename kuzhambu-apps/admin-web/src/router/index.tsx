@@ -1,6 +1,5 @@
 import { Navigate, RouterProvider, createBrowserRouter } from "react-router-dom";
 import { AdminLayout } from "../layouts/admin-layout";
-import { ActionStatusPage } from "../pages/ai/action-status/action-status-page";
 import { InvocationsPage } from "../pages/ai/invocations/invocations-page";
 import { ModelsPage } from "../pages/ai/model-configs/model-configs-page";
 import { PromptsPage } from "../pages/ai/prompts/prompts-page";
@@ -103,10 +102,6 @@ const router = createBrowserRouter(
                         {
                             path: "ai/invocations",
                             element: <InvocationsPage />
-                        },
-                        {
-                            path: "ai/action-status",
-                            element: <ActionStatusPage />
                         },
                         {
                             path: "classics/sancai",

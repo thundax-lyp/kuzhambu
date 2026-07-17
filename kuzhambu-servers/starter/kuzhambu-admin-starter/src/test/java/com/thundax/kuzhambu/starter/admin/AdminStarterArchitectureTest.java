@@ -143,14 +143,14 @@ class AdminStarterArchitectureTest extends AbstractArchitectureTest {
                 .contains("\"url\": \"/ai/models\"")
                 .contains("\"url\": \"/ai/prompts\"")
                 .contains("\"url\": \"/ai/invocations\"")
-                .contains("\"url\": \"/ai/action-status\"")
+                .doesNotContain("\"url\": \"/ai/action-status\"")
                 .doesNotContain("\"url\": \"/ai/services\"")
                 .doesNotContain("\"url\": \"/ai/capability-mappings\"");
         Assertions.assertThat(systemSql)
                 .contains("'/ai/models'")
                 .contains("'/ai/prompts'")
                 .contains("'/ai/invocations'")
-                .contains("'/ai/action-status'")
+                .doesNotContain("'/ai/action-status'")
                 .doesNotContain("'/ai/services'")
                 .doesNotContain("'/ai/capability-mappings'");
     }

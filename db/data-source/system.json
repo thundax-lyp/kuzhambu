@@ -166,7 +166,6 @@
         "AI 管理/模型配置",
         "AI 管理/提示词版本",
         "AI 管理/调用统计",
-        "AI 管理/动作状态",
         "系统管理",
         "系统管理/字典管理",
         "系统管理/存储管理",
@@ -711,14 +710,6 @@
           "icon": "ai-invocation",
           "url": "/ai/invocations",
           "remarks": "AI 调用记录、候选和批量任务"
-        },
-        {
-          "name": "动作状态",
-          "perms": ["ai:config:view", "ai:config:edit"],
-          "priority": 65,
-          "icon": "ai-action-status",
-          "url": "/ai/action-status",
-          "remarks": "AI 功能动作可用状态"
         }
       ]
     },
