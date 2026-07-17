@@ -8,7 +8,9 @@ import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVariable;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVersion;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptTemplateId;
 import com.thundax.kuzhambu.ai.domain.config.repository.PromptRepository;
-import com.thundax.kuzhambu.ai.infra.config.persistence.assembler.AiConfigPersistenceAssembler;
+import com.thundax.kuzhambu.ai.infra.config.persistence.assembler.PromptTemplatePersistenceAssembler;
+import com.thundax.kuzhambu.ai.infra.config.persistence.assembler.PromptVariablePersistenceAssembler;
+import com.thundax.kuzhambu.ai.infra.config.persistence.assembler.PromptVersionPersistenceAssembler;
 import com.thundax.kuzhambu.ai.infra.config.persistence.dataobject.PromptTemplateDO;
 import com.thundax.kuzhambu.ai.infra.config.persistence.dataobject.PromptVariableDO;
 import com.thundax.kuzhambu.ai.infra.config.persistence.dataobject.PromptVersionDO;
@@ -28,18 +30,18 @@ public class PromptRepositoryImpl implements PromptRepository {
 
     @Override
     public PromptTemplate get(PromptTemplateId templateId) {
-        return AiConfigPersistenceAssembler.toTemplateDomain(
+        return PromptTemplatePersistenceAssembler.toDomain(
                 promptMapper.selectById(PromptTemplateIdCodec.toValue(templateId)));
     }
 
     @Override
     public PromptTemplate get(String capability) {
-        return AiConfigPersistenceAssembler.toTemplateDomain(promptMapper.selectTemplateByCapability(capability));
+        return PromptTemplatePersistenceAssembler.toDomain(promptMapper.selectTemplateByCapability(capability));
     }
 
     @Override
     public PromptTemplateId insertTemplate(PromptTemplate template) {
-        PromptTemplateDO dataObject = AiConfigPersistenceAssembler.toObject(template);
+        PromptTemplateDO dataObject = PromptTemplatePersistenceAssembler.toObject(template);
         if (dataObject.getRegisteredAt() == null) {
             dataObject.setRegisteredAt(Instant.now());
         }
@@ -49,7 +51,7 @@ public class PromptRepositoryImpl implements PromptRepository {
 
     @Override
     public int updateTemplate(PromptTemplate template) {
-        PromptTemplateDO dataObject = AiConfigPersistenceAssembler.toObject(template);
+        PromptTemplateDO dataObject = PromptTemplatePersistenceAssembler.toObject(template);
         return promptMapper.update(
                 null,
                 new LambdaUpdateWrapper<PromptTemplateDO>()
@@ -62,19 +64,19 @@ public class PromptRepositoryImpl implements PromptRepository {
 
     @Override
     public PromptVersion getCurrentVersion(PromptTemplateId templateId) {
-        return AiConfigPersistenceAssembler.toVersionDomain(
+        return PromptVersionPersistenceAssembler.toDomain(
                 promptMapper.selectCurrentVersion(PromptTemplateIdCodec.toValue(templateId)));
     }
 
     @Override
     public List<PromptVersion> listVersions(PromptTemplateId templateId) {
-        return AiConfigPersistenceAssembler.toVersionDomainList(
+        return PromptVersionPersistenceAssembler.toDomainList(
                 promptMapper.selectVersions(PromptTemplateIdCodec.toValue(templateId)));
     }
 
     @Override
     public PromptVersionId insertVersion(PromptVersion version) {
-        PromptVersionDO dataObject = AiConfigPersistenceAssembler.toObject(version);
+        PromptVersionDO dataObject = PromptVersionPersistenceAssembler.toObject(version);
         if (dataObject.getRegisteredAt() == null) {
             dataObject.setRegisteredAt(Instant.now());
         }
@@ -89,7 +91,7 @@ public class PromptRepositoryImpl implements PromptRepository {
 
     @Override
     public List<PromptVariable> listVariables(PromptTemplateId templateId) {
-        return AiConfigPersistenceAssembler.toVariableDomainList(
+        return PromptVariablePersistenceAssembler.toDomainList(
                 promptMapper.selectVariables(PromptTemplateIdCodec.toValue(templateId)));
     }
 
@@ -101,7 +103,7 @@ public class PromptRepositoryImpl implements PromptRepository {
             return affectedRows;
         }
         for (PromptVariable variable : variables) {
-            PromptVariableDO dataObject = AiConfigPersistenceAssembler.toObject(variable);
+            PromptVariableDO dataObject = PromptVariablePersistenceAssembler.toObject(variable);
             dataObject.setTemplateId(PromptTemplateIdCodec.toValue(templateId));
             affectedRows += promptMapper.insertVariable(dataObject);
         }

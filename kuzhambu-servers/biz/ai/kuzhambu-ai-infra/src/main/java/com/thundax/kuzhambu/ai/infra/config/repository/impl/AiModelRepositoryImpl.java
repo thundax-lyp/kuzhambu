@@ -6,7 +6,7 @@ import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.domain.config.repository.AiModelRepository;
-import com.thundax.kuzhambu.ai.infra.config.persistence.assembler.AiConfigPersistenceAssembler;
+import com.thundax.kuzhambu.ai.infra.config.persistence.assembler.AiModelPersistenceAssembler;
 import com.thundax.kuzhambu.ai.infra.config.persistence.dataobject.AiModelDO;
 import com.thundax.kuzhambu.ai.infra.config.persistence.mapper.AiModelMapper;
 import java.time.Instant;
@@ -24,20 +24,19 @@ public class AiModelRepositoryImpl implements AiModelRepository {
 
     @Override
     public AiModel get(AiModelId id) {
-        return AiConfigPersistenceAssembler.toModelDomain(aiModelMapper.selectById(AiModelIdCodec.toValue(id)));
+        return AiModelPersistenceAssembler.toDomain(aiModelMapper.selectById(AiModelIdCodec.toValue(id)));
     }
 
     @Override
     public List<AiModel> list(String apiSource, Boolean enabled) {
-        return AiConfigPersistenceAssembler.toModelDomainList(
-                aiModelMapper.selectList(new LambdaQueryWrapper<AiModelDO>()
-                        .eq(apiSource != null && !apiSource.isBlank(), AiModelDO::getApiSource, apiSource)
-                        .eq(enabled != null, AiModelDO::getEnabled, enabled)));
+        return AiModelPersistenceAssembler.toDomainList(aiModelMapper.selectList(new LambdaQueryWrapper<AiModelDO>()
+                .eq(apiSource != null && !apiSource.isBlank(), AiModelDO::getApiSource, apiSource)
+                .eq(enabled != null, AiModelDO::getEnabled, enabled)));
     }
 
     @Override
     public AiModelId insert(AiModel model) {
-        AiModelDO dataObject = AiConfigPersistenceAssembler.toObject(model);
+        AiModelDO dataObject = AiModelPersistenceAssembler.toObject(model);
         if (dataObject.getRegisteredAt() == null) {
             dataObject.setRegisteredAt(Instant.now());
         }
@@ -47,7 +46,7 @@ public class AiModelRepositoryImpl implements AiModelRepository {
 
     @Override
     public int update(AiModel model) {
-        AiModelDO dataObject = AiConfigPersistenceAssembler.toObject(model);
+        AiModelDO dataObject = AiModelPersistenceAssembler.toObject(model);
         return aiModelMapper.update(
                 null,
                 new LambdaUpdateWrapper<AiModelDO>()
