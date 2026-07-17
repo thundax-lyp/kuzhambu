@@ -65,7 +65,7 @@ interface CapturedCall {
 
 const capturedCalls: CapturedCall[] = [];
 let mockDocumentRecord = {
-    id: 400000000001,
+    id: 1,
     title: "王圻文档",
     summary: "记录王圻古籍条目。",
     contentFormat: "MARKDOWN",
@@ -84,6 +84,14 @@ const waitForSelectableRow = async (table: HTMLElement) => {
     await waitFor(() => {
         expect(within(table).getAllByRole("checkbox").length).toBeGreaterThan(1);
     });
+};
+
+const openDrawerSection = async (user: ReturnType<typeof userEvent.setup>, sectionName: string) => {
+    await user.click(await screen.findByText(sectionName));
+};
+
+const openContentProcessingSection = async (user: ReturnType<typeof userEvent.setup>) => {
+    await openDrawerSection(user, "内容处理");
 };
 
 const readFetchUrl = (input: RequestInfo | URL) => {
@@ -161,7 +169,7 @@ const installFetchMock = () => {
                 failureCount: 1,
                 failures: [
                     {
-                        contentId: 400000000002,
+                        contentId: 2,
                         contentType: "WANGQI_DOCUMENT",
                         failureCode: "CONTENT_NOT_FOUND",
                         failureReason: "文档不存在",
@@ -171,7 +179,7 @@ const installFetchMock = () => {
                 successCount: 1,
                 successes: [
                     {
-                        contentId: 400000000001,
+                        contentId: 1,
                         contentType: "WANGQI_DOCUMENT",
                         resultId: 9101,
                         status: "ACTIVE"
@@ -184,7 +192,7 @@ const installFetchMock = () => {
                 failureCount: 1,
                 failures: [
                     {
-                        contentId: 400000000002,
+                        contentId: 2,
                         contentType: "WANGQI_DOCUMENT",
                         failureCode: "BATCH_VISIBILITY_FAILED",
                         failureReason: "文档不存在",
@@ -194,9 +202,9 @@ const installFetchMock = () => {
                 successCount: 1,
                 successes: [
                     {
-                        contentId: 400000000001,
+                        contentId: 1,
                         contentType: "WANGQI_DOCUMENT",
-                        resultId: 400000000001,
+                        resultId: 1,
                         status: "PRIVATE"
                     }
                 ]
@@ -207,7 +215,7 @@ const installFetchMock = () => {
                 {
                     candidateId: 5001,
                     contentType: "WANGQI_DOCUMENT",
-                    contentId: 400000000001,
+                    contentId: 1,
                     capability: "summary",
                     objectId: null,
                     resultFormat: "TEXT",
@@ -225,7 +233,7 @@ const installFetchMock = () => {
                 successes: [
                     {
                         candidateId: 5001,
-                        contentId: 400000000001,
+                        contentId: 1,
                         contentType: "WANGQI_DOCUMENT",
                         capability: "summary",
                         objectId: null,
@@ -247,7 +255,7 @@ describe("WangqiPage", () => {
         queryClient = createTestQueryClient();
         capturedCalls.length = 0;
         mockDocumentRecord = {
-            id: 400000000001,
+            id: 1,
             title: "王圻文档",
             summary: "记录王圻古籍条目。",
             contentFormat: "MARKDOWN",
@@ -288,6 +296,100 @@ describe("WangqiPage", () => {
         expect(await screen.findByText("王圻文档")).toBeInTheDocument();
     }, 30000);
 
+    it("does not render a left document index", async () => {
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <WangqiPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        const table = await screen.findByLabelText("王圻文档表格");
+        expect(table).toBeInTheDocument();
+        expect(within(table).getByRole("columnheader", { name: "文档" })).toBeInTheDocument();
+        expect(within(table).queryByRole("columnheader", { name: "摘要" })).not.toBeInTheDocument();
+        expect(within(table).getByRole("columnheader", { name: "事件时间" })).toBeInTheDocument();
+        expect(
+            within(table).queryByRole("columnheader", { name: "原始文件对象 ID" })
+        ).not.toBeInTheDocument();
+        await within(table).findByTestId("wangqi-document-edit-1-button");
+        expect(within(table).getByText("2026/01")).toBeInTheDocument();
+        expect(screen.queryByLabelText("王圻文档索引")).not.toBeInTheDocument();
+    }, 30000);
+
+    it("renders multiline summary without table ellipsis", async () => {
+        mockDocumentRecord = {
+            ...mockDocumentRecord,
+            summary: "第一行摘要\n第二行摘要"
+        };
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <WangqiPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        const firstLine = await screen.findByText("第一行摘要");
+        const secondLine = await screen.findByText("第二行摘要");
+        expect(firstLine).toHaveClass("wangqi-document-summary-line");
+        expect(secondLine).toHaveClass("wangqi-document-summary-line");
+        expect(firstLine.closest(".wangqi-document-summary-preview")).toBeInTheDocument();
+    }, 30000);
+
+    it("does not render an empty summary placeholder in the document cell", async () => {
+        mockDocumentRecord = {
+            ...mockDocumentRecord,
+            summary: ""
+        };
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <WangqiPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        const table = await screen.findByLabelText("王圻文档表格");
+        await within(table).findByTestId("wangqi-document-edit-1-button");
+
+        expect(within(table).queryByText("暂无摘要")).not.toBeInTheDocument();
+    }, 30000);
+
+    it("uses segmented drawer sections and markdown editor without content preview", async () => {
+        const user = userEvent.setup();
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <WangqiPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await user.click(await screen.findByTestId("wangqi-document-edit-1-button"));
+
+        expect(await screen.findByRole("radio", { name: "基础信息" })).toBeChecked();
+        expect(screen.getByRole("radio", { name: "摘要" })).toBeInTheDocument();
+        expect(screen.getByRole("radio", { name: "正文" })).toBeInTheDocument();
+        expect(screen.getByRole("radio", { name: "标签" })).toBeInTheDocument();
+        expect(screen.getByRole("radio", { name: "问答" })).toBeInTheDocument();
+
+        await openDrawerSection(user, "摘要");
+
+        expect(await screen.findByLabelText("王圻文档摘要")).toBeInTheDocument();
+
+        await openDrawerSection(user, "正文");
+
+        expect(await screen.findByLabelText("王圻 Markdown 编辑器")).toBeInTheDocument();
+        expect(screen.getByLabelText("王圻文档正文")).toBeInTheDocument();
+        expect(screen.getByTestId("classics-wangqi-markdown-heading-button")).toBeInTheDocument();
+        expect(screen.queryByLabelText("王圻文档正文预览")).not.toBeInTheDocument();
+    }, 30000);
+
     it("creates summary tags and qa refinement tasks from the document drawer", async () => {
         const user = userEvent.setup();
 
@@ -299,7 +401,8 @@ describe("WangqiPage", () => {
             </QueryClientProvider>
         );
 
-        await user.click(await screen.findByTestId("wangqi-document-edit-400000000001-button"));
+        await user.click(await screen.findByTestId("wangqi-document-edit-1-button"));
+        await openContentProcessingSection(user);
         await user.click(await screen.findByRole("button", { name: "创建摘要任务" }));
         await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(1));
         await user.click(await screen.findByRole("button", { name: "创建标签任务" }));
@@ -317,7 +420,7 @@ describe("WangqiPage", () => {
                 expect.objectContaining({
                     scope: "classics",
                     contentType: "WANGQI_DOCUMENT",
-                    contentId: 400000000001,
+                    contentId: 1,
                     requestedBy: 99,
                     serviceRole: "PRIMARY",
                     modelId: 1,
@@ -345,7 +448,8 @@ describe("WangqiPage", () => {
             </QueryClientProvider>
         );
 
-        await user.click(await screen.findByTestId("wangqi-document-edit-400000000001-button"));
+        await user.click(await screen.findByTestId("wangqi-document-edit-1-button"));
+        await openContentProcessingSection(user);
         await user.click(await screen.findByRole("button", { name: "创建标签任务" }));
 
         expect(aiRefinementTaskService.createTask).not.toHaveBeenCalled();
@@ -364,14 +468,15 @@ describe("WangqiPage", () => {
             </QueryClientProvider>
         );
 
-        await user.click(await screen.findByTestId("wangqi-document-edit-400000000001-button"));
+        await user.click(await screen.findByTestId("wangqi-document-edit-1-button"));
+        await openContentProcessingSection(user);
         const qaButton = await screen.findByRole("button", { name: "单文档问答" });
 
         expect(qaButton).toBeEnabled();
         await user.click(qaButton);
 
         expect(openSpy).toHaveBeenCalledWith(
-            "/discovery/qa?contextContentId=400000000001&contextContentType=WANGQI_DOCUMENT&contextMode=SINGLE_DOCUMENT&title=%E7%8E%8B%E5%9C%BB%E6%96%87%E6%A1%A3",
+            "/discovery/qa?contextContentId=1&contextContentType=WANGQI_DOCUMENT&contextMode=SINGLE_DOCUMENT&title=%E7%8E%8B%E5%9C%BB%E6%96%87%E6%A1%A3",
             "_blank",
             "noopener,noreferrer"
         );
@@ -393,6 +498,7 @@ describe("WangqiPage", () => {
         );
 
         await user.click(await screen.findByTestId("wangqi-document-edit-0-button"));
+        await openContentProcessingSection(user);
 
         expect(await screen.findByRole("button", { name: "单文档问答" })).toBeDisabled();
     }, 30000);
@@ -414,7 +520,8 @@ describe("WangqiPage", () => {
             </QueryClientProvider>
         );
 
-        await user.click(await screen.findByTestId("wangqi-document-edit-400000000001-button"));
+        await user.click(await screen.findByTestId("wangqi-document-edit-1-button"));
+        await openContentProcessingSection(user);
 
         expect(await screen.findByRole("button", { name: "单文档问答" })).toBeDisabled();
     }, 30000);
@@ -432,7 +539,7 @@ describe("WangqiPage", () => {
 
         const table = await screen.findByLabelText("王圻文档表格");
         await waitForSelectableRow(table);
-        const batchShareButton = screen.getByRole("button", { name: "批量分享" });
+        const batchShareButton = screen.getByTestId("classics-wangqi-wangqi-batch-share-button");
         selectFirstRow(table);
         await waitFor(() => {
             expect(batchShareButton).not.toBeDisabled();
@@ -440,9 +547,9 @@ describe("WangqiPage", () => {
         await user.click(batchShareButton);
 
         await waitFor(() => {
-            expect(screen.getByText("批量分享结果：成功 1，失败 1")).toBeInTheDocument();
+            expect(screen.getByText("分享结果：成功 1，失败 1")).toBeInTheDocument();
         });
-        expect(screen.getByText("WANGQI_DOCUMENT#400000000002: 文档不存在")).toBeInTheDocument();
+        expect(screen.getByText("WANGQI_DOCUMENT#2: 文档不存在")).toBeInTheDocument();
     }, 30000);
 
     it("changes selected documents visibility and shows item failures", async () => {
@@ -458,7 +565,9 @@ describe("WangqiPage", () => {
 
         const table = await screen.findByLabelText("王圻文档表格");
         await waitForSelectableRow(table);
-        const batchPrivateButton = screen.getByRole("button", { name: "批量私有" });
+        const batchPrivateButton = screen.getByTestId(
+            "classics-wangqi-wangqi-batch-private-button"
+        );
         selectFirstRow(table);
         await waitFor(() => {
             expect(batchPrivateButton).not.toBeDisabled();
@@ -466,18 +575,18 @@ describe("WangqiPage", () => {
         await user.click(batchPrivateButton);
 
         await waitFor(() => {
-            expect(screen.getByText("批量可见性结果：成功 1，失败 1")).toBeInTheDocument();
+            expect(screen.getByText("可见性结果：成功 1，失败 1")).toBeInTheDocument();
         });
         expect(capturedCalls).toContainEqual({
             body: {
-                contentIds: [400000000001],
+                contentIds: [1],
                 contentType: "WANGQI_DOCUMENT",
                 visibility: "PRIVATE"
             },
             method: "POST",
             path: "/classics/content/visibility/change"
         });
-        expect(screen.getByText("WANGQI_DOCUMENT#400000000002: 文档不存在")).toBeInTheDocument();
+        expect(screen.getByText("WANGQI_DOCUMENT#2: 文档不存在")).toBeInTheDocument();
     }, 30000);
 
     it("opens batch candidate governance drawer from selected documents", async () => {
@@ -493,7 +602,7 @@ describe("WangqiPage", () => {
 
         const table = await screen.findByLabelText("王圻文档表格");
         await waitForSelectableRow(table);
-        const batchCandidateButton = screen.getByRole("button", { name: "批量候选治理" });
+        const batchCandidateButton = screen.getByRole("button", { name: "候选治理" });
 
         expect(batchCandidateButton).toBeDisabled();
         selectFirstRow(table);
@@ -512,7 +621,7 @@ describe("WangqiPage", () => {
         expect(capturedCalls).toContainEqual({
             body: {
                 contentType: "WANGQI_DOCUMENT",
-                contentId: 400000000001,
+                contentId: 1,
                 status: "PENDING"
             },
             method: "POST",
@@ -533,7 +642,7 @@ describe("WangqiPage", () => {
                     {
                         candidateId: 5001,
                         contentType: "WANGQI_DOCUMENT",
-                        contentId: 400000000001,
+                        contentId: 1,
                         capability: "summary",
                         objectId: null
                     }
@@ -556,7 +665,8 @@ describe("WangqiPage", () => {
             </QueryClientProvider>
         );
 
-        await user.click(await screen.findByTestId("wangqi-document-edit-400000000001-button"));
+        await user.click(await screen.findByTestId("wangqi-document-edit-1-button"));
+        await openContentProcessingSection(user);
         capturedCalls.length = 0;
         await user.click(await screen.findByRole("button", { name: "mock-ai-applied" }));
 
@@ -602,7 +712,8 @@ describe("WangqiPage", () => {
             </QueryClientProvider>
         );
 
-        await user.click(await screen.findByTestId("wangqi-document-edit-400000000001-button"));
+        await user.click(await screen.findByTestId("wangqi-document-edit-1-button"));
+        await openContentProcessingSection(user);
         capturedCalls.length = 0;
         await user.click(await screen.findByRole("button", { name: "mock-ai-rejected" }));
 
@@ -675,7 +786,7 @@ describe("WangqiPage", () => {
         render(
             <WangqiVersionHistoryPanel
                 currentDocument={{
-                    id: 400000000001,
+                    id: 1,
                     title: "正文标题",
                     summary: "正文摘要",
                     contentFormat: "MARKDOWN",

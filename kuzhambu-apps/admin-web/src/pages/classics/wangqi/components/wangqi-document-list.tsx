@@ -8,10 +8,8 @@ import { KuzhambuButton } from "@/components/kuzhambu-button";
 const { Text } = Typography;
 
 const DEFAULT_COLUMN_WIDTHS = {
-    title: 260,
-    summary: 340,
+    document: 600,
     documentTime: 180,
-    storageObjectId: 160,
     visibility: 120
 };
 
@@ -35,8 +33,23 @@ const formatDateTime = (value?: string | null) => {
 
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}/${month}/${day}`;
+    return `${year}/${month}`;
+};
+
+const readPrimaryEventTime = (record: WangqiDocumentRecord) => {
+    const event = record.events?.[0];
+    return (
+        event?.occurredLabel ||
+        (event?.occurredAt ? formatDateTime(event.occurredAt) : formatDateTime(record.documentTime))
+    );
+};
+
+const readSummaryLines = (summary?: string | null) => {
+    return (summary || "")
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .slice(0, 3);
 };
 
 export interface WangqiDocumentListProps {
@@ -72,46 +85,49 @@ export const WangqiDocumentList = ({
 }: WangqiDocumentListProps) => {
     const columns: KuzhambuTableProps<WangqiDocumentRecord>["columns"] = [
         {
-            title: "标题",
+            title: "文档",
             dataIndex: "title",
             key: "title",
-            width: DEFAULT_COLUMN_WIDTHS.title,
-            render: (title: string | null | undefined, record) => (
-                <KuzhambuButton
-                    testId={`wangqi-document-edit-${record.id}-button`}
-                    type="link"
-                    className="wangqi-document-title-link"
-                    onClick={() => onOpenEdit(record)}
-                >
-                    <Text strong>{title || "未命名文档"}</Text>
-                </KuzhambuButton>
-            )
+            width: DEFAULT_COLUMN_WIDTHS.document,
+            render: (title: string | null | undefined, record) => {
+                const summaryLines = readSummaryLines(record.summary);
+                return (
+                    <span className="wangqi-document-title-cell">
+                        <KuzhambuButton
+                            testId={`wangqi-document-edit-${record.id}-button`}
+                            type="link"
+                            className="wangqi-document-title-link"
+                            onClick={() => onOpenEdit(record)}
+                        >
+                            <span className="wangqi-document-title-text">
+                                {title || "未命名文档"}
+                            </span>
+                        </KuzhambuButton>
+                        {summaryLines.length ? (
+                            <Text type="secondary" className="wangqi-document-summary-preview">
+                                {summaryLines.map((line, index) => (
+                                    <span
+                                        key={`${index}-${line}`}
+                                        className="wangqi-document-summary-line"
+                                    >
+                                        {line}
+                                    </span>
+                                ))}
+                            </Text>
+                        ) : null}
+                    </span>
+                );
+            }
         },
         {
-            title: "摘要",
-            dataIndex: "summary",
-            key: "summary",
-            width: DEFAULT_COLUMN_WIDTHS.summary,
-            ellipsis: true,
-            render: (summary?: string | null) => summary || <Text type="secondary">暂无摘要</Text>
-        },
-        {
-            title: "文档时间",
+            title: "事件时间",
             dataIndex: "documentTime",
             key: "documentTime",
             sorter: true,
             sortDirections: ["descend", "ascend"],
             sortOrder: sortDirection === "ASC" ? "ascend" : "descend",
             width: DEFAULT_COLUMN_WIDTHS.documentTime,
-            render: formatDateTime
-        },
-        {
-            title: "原始文件对象 ID",
-            dataIndex: "storageObjectId",
-            key: "storageObjectId",
-            width: DEFAULT_COLUMN_WIDTHS.storageObjectId,
-            render: (storageObjectId?: number | null) =>
-                storageObjectId ? storageObjectId : <Text type="secondary">未关联</Text>
+            render: (_value, record) => readPrimaryEventTime(record)
         },
         {
             title: "可见性",

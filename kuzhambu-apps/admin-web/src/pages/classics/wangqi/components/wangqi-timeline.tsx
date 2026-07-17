@@ -18,8 +18,19 @@ const formatDateTime = (value?: string | null) => {
 
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}/${month}/${day}`;
+    return `${year}/${month}`;
+};
+
+const readTimelineTitle = (record: WangqiDocumentRecord) => {
+    const event = record.events?.[0];
+    return (
+        event?.occurredLabel ||
+        (event?.occurredAt ? formatDateTime(event.occurredAt) : formatDateTime(record.documentTime))
+    );
+};
+
+const readTimelineItemTitle = (record: WangqiDocumentRecord) => {
+    return record.events?.[0]?.title || record.title || "未命名文档";
 };
 
 export interface WangqiTimelineProps {
@@ -68,7 +79,7 @@ export const WangqiTimeline = ({
                     <Timeline
                         items={dataSource.map((record) => ({
                             key: record.id,
-                            title: formatDateTime(record.documentTime),
+                            title: readTimelineTitle(record),
                             content: (
                                 <KuzhambuButton
                                     testId="classics-wangqi-wangqi-timeline-action-button-2"
@@ -80,7 +91,7 @@ export const WangqiTimeline = ({
                                     }}
                                 >
                                     <span className="wangqi-timeline-item-title">
-                                        {record.title || "未命名文档"}
+                                        {readTimelineItemTitle(record)}
                                     </span>
                                     <Text
                                         type="secondary"

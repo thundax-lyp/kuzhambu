@@ -1,19 +1,104 @@
 .wangqi-page {
+    --kuzhambu-page-overflow: visible;
+    --kuzhambu-page-padding: 20px 0 0;
     --wangqi-accent-color: #7c5d3b;
     --wangqi-panel-border: rgba(124, 93, 59, 0.18);
     --wangqi-panel-bg: rgba(124, 93, 59, 0.06);
+    min-width: 0;
+}
+
+.wangqi-page-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.wangqi-page-search {
+    width: 260px;
+}
+
+.wangqi-page-actions .wangqi-page-filter-active {
+    color: var(--wangqi-accent-color);
+    background: var(--wangqi-panel-bg);
+    border-color: var(--wangqi-panel-border);
+}
+
+.wangqi-page-actions .wangqi-page-filter-active:hover {
+    color: var(--wangqi-accent-color) !important;
+    background: color-mix(in srgb, var(--wangqi-accent-color) 14%, transparent) !important;
+    border-color: var(--wangqi-panel-border) !important;
+}
+
+.wangqi-document-panel {
+    display: grid;
+    min-width: 0;
+    gap: 12px;
+}
+
+.wangqi-document-toolbar {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.wangqi-document-toolbar-actions {
+    justify-content: flex-end;
+}
+
+.wangqi-result-alert {
+    margin-bottom: 0;
+}
+
+.wangqi-document-title-cell {
+    display: grid;
+    width: 100%;
+    min-width: 0;
+    gap: 6px;
+    justify-items: start;
+    text-align: left;
 }
 
 .wangqi-document-title-link {
+    display: inline-flex;
     max-width: 100%;
     height: auto;
     padding: 0;
+    justify-content: flex-start;
     text-align: left;
     white-space: normal;
 }
 
-.wangqi-document-title-link span {
+.wangqi-document-title-text {
+    display: block;
     color: var(--wangqi-accent-color);
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.45;
+}
+
+.wangqi-document-summary-preview {
+    display: grid;
+    width: 100%;
+    max-width: 100%;
+    gap: 2px;
+    justify-items: start;
+    overflow: hidden;
+    line-height: 1.6;
+    text-align: left;
+}
+
+.wangqi-document-summary-line {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wangqi-page .ant-table-thead > tr > th:nth-child(2),
+.wangqi-page .ant-table-tbody > tr > td:nth-child(2) {
+    text-align: left;
 }
 
 .wangqi-document-model-footer {
@@ -28,6 +113,14 @@
     gap: 2px;
 }
 
+.wangqi-document-model-sections {
+    min-width: 0;
+}
+
+.wangqi-document-model-section {
+    min-width: 0;
+}
+
 .wangqi-document-model-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 220px 120px;
@@ -39,7 +132,34 @@
     width: 100%;
 }
 
-.wangqi-document-model-preview,
+.wangqi-markdown-editor {
+    display: grid;
+    min-width: 0;
+    gap: 8px;
+}
+
+.wangqi-markdown-editor-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    padding: 8px;
+    background: var(--wangqi-panel-bg);
+    border: 1px solid var(--wangqi-panel-border);
+    border-radius: 8px;
+}
+
+.wangqi-markdown-editor-toolbar .ant-btn {
+    min-width: 36px;
+}
+
+.wangqi-markdown-editor-input {
+    font-family:
+        ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+        monospace;
+    line-height: 1.65;
+}
+
 .wangqi-document-model-source-file,
 .wangqi-storage-file-panel,
 .wangqi-version-history-panel {
@@ -51,10 +171,6 @@
     background: var(--wangqi-panel-bg);
     border: 1px solid var(--wangqi-panel-border);
     border-radius: 8px;
-}
-
-.wangqi-document-model-preview-content {
-    min-height: 92px;
 }
 
 .wangqi-page-drawer-panels {
