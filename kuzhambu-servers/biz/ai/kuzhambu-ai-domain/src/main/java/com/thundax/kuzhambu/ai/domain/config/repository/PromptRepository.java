@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.ai.domain.config.repository;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVariable;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVersion;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptTemplateId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
 import java.util.List;
@@ -11,7 +12,7 @@ public interface PromptRepository {
 
     PromptTemplate get(PromptTemplateId templateId);
 
-    PromptTemplate get(String capability);
+    PromptTemplate get(AiBusinessCapability capability);
 
     PromptTemplateId insertTemplate(PromptTemplate template);
 

@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVariable;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVersion;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptTemplateId;
 import com.thundax.kuzhambu.ai.domain.config.repository.PromptRepository;
 import com.thundax.kuzhambu.ai.infra.config.persistence.assembler.PromptTemplatePersistenceAssembler;
@@ -35,8 +36,9 @@ public class PromptRepositoryImpl implements PromptRepository {
     }
 
     @Override
-    public PromptTemplate get(String capability) {
-        return PromptTemplatePersistenceAssembler.toDomain(promptMapper.selectTemplateByCapability(capability));
+    public PromptTemplate get(AiBusinessCapability capability) {
+        return PromptTemplatePersistenceAssembler.toDomain(
+                promptMapper.selectTemplateByCapability(capability == null ? null : capability.value()));
     }
 
     @Override

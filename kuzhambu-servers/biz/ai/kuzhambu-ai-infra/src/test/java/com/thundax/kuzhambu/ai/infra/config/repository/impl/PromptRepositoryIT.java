@@ -109,7 +109,7 @@ class PromptRepositoryIT {
         assertEquals("classics_translate", savedTemplate.getCapability());
 
         when(mapper.selectTemplateByCapability("classics_translate")).thenReturn(savedTemplate);
-        PromptTemplate loadedTemplate = repository.get("classics_translate");
+        PromptTemplate loadedTemplate = repository.get(AiBusinessCapability.CLASSICS_TRANSLATE);
 
         assertEquals("Classics translate", loadedTemplate.getName());
         assertEquals(1, loadedTemplate.getCurrentVersionNo());

@@ -8,6 +8,7 @@ import com.thundax.kuzhambu.ai.domain.config.codec.PromptTemplateIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVariable;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVersion;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptTemplateId;
 import com.thundax.kuzhambu.ai.domain.config.repository.PromptRepository;
 import com.thundax.kuzhambu.ai.domain.config.service.PromptVariableDomainService;
@@ -47,7 +48,7 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
         if (isBlank(capability)) {
             return null;
         }
-        return promptRepository.get(capability);
+        return promptRepository.get(AiBusinessCapability.from(capability));
     }
 
     @Override
