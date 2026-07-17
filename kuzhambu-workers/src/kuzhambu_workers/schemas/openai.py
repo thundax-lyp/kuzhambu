@@ -10,7 +10,7 @@ OPENAI_COMPATIBLE_INTERNAL_API_SOURCE = "OPENAI_COMPATIBLE"
 
 class OpenAiCompatibleMessage(BaseModel):
     role: MessageRole
-    content: str
+    content: str | list[dict[str, Any]]
 
 
 class OpenAiCompatibleChatRequest(BaseModel):

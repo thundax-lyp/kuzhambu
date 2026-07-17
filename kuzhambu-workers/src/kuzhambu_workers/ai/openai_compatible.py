@@ -25,9 +25,9 @@ from kuzhambu_workers.schemas.common import UsageSummary
 @dataclass(frozen=True)
 class OpenAiChatCompletionRequest:
     model: str
-    messages: list[dict[str, str]]
+    messages: list[dict[str, Any]]
     stream: bool
-    response_format: dict[str, str] | None
+    response_format: dict[str, Any] | None
     parameters: dict[str, Any]
 
 
@@ -49,7 +49,7 @@ def invoke_chat_completion(
     request: AiInvokeRequest,
     *,
     client: httpx.Client | None = None,
-    response_format: dict[str, str] | None = None,
+    response_format: dict[str, Any] | None = None,
 ) -> OpenAiChatCompletionResult:
     invocation = prepare_openai_compatible_invocation(request.modelConfig)
     chat_request = build_chat_completion_request(
@@ -93,7 +93,7 @@ def build_chat_completion_request(
     request: AiInvokeRequest,
     *,
     stream: bool,
-    response_format: dict[str, str] | None = None,
+    response_format: dict[str, Any] | None = None,
 ) -> OpenAiChatCompletionRequest:
     invocation = prepare_openai_compatible_invocation(request.modelConfig)
     effective_response_format = response_format
@@ -220,9 +220,14 @@ def iter_chat_completion_chunks(
     request: AiInvokeRequest,
     *,
     client: httpx.Client | None = None,
+    response_format: dict[str, Any] | None = None,
 ) -> Iterator[OpenAiChatCompletionChunk]:
     invocation = prepare_openai_compatible_invocation(request.modelConfig)
-    chat_request = build_chat_completion_request(request, stream=True)
+    chat_request = build_chat_completion_request(
+        request,
+        stream=True,
+        response_format=response_format,
+    )
     body = _request_body(chat_request)
     headers = _request_headers(request.modelConfig.apiKey)
     start_ms = monotonic_ms()

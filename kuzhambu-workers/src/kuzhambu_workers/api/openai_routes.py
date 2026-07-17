@@ -8,11 +8,8 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import ValidationError
 
-from kuzhambu_workers.ai.image_generation import generate_image
-from kuzhambu_workers.ai.openai_compatible import (
-    invoke_chat_completion,
-    iter_chat_completion_chunks,
-)
+from kuzhambu_workers.ai.graph_registry import GraphRegistry
+from kuzhambu_workers.ai.openai_compatible import iter_chat_completion_chunks
 from kuzhambu_workers.core.config import load_settings
 from kuzhambu_workers.core.errors import WorkerError, protocol_failure
 from kuzhambu_workers.core.security import verify_internal_request
@@ -23,6 +20,8 @@ from kuzhambu_workers.schemas.ai import (
     AiOptions,
     AiOutputSchema,
     AiPrompt,
+    AiResult,
+    ResultFormat,
 )
 from kuzhambu_workers.schemas.common import WorkerErrorPayload, WorkerStatus
 from kuzhambu_workers.schemas.openai import (
@@ -39,6 +38,8 @@ from kuzhambu_workers.schemas.openai import (
 )
 
 router = APIRouter(prefix="/internal/openai/v1", tags=["OpenAI Compatible"])
+_REGISTRY = GraphRegistry.build_default()
+SUPPORTED_IMAGE_RESPONSE_FORMATS = frozenset({"b64_json", "url"})
 OPENAI_COMPATIBLE_NOTICE = (
     "内部 OpenAI-compatible facade。请求形态贴近 OpenAI 接口，"
     "但必须携带 requestId、traceId 和 extendParams；workers 不保存供应商配置或 API Key。"
@@ -88,6 +89,9 @@ async def image_generations(request: Request) -> JSONResponse:
     ai_request = _to_image_ai_request(parsed)
     if isinstance(ai_request, JSONResponse):
         return ai_request
+    validation_failure = _validate_image_generation_request(parsed)
+    if validation_failure is not None:
+        return validation_failure
     return _invoke_image_generation(parsed, ai_request)
 
 
@@ -153,7 +157,10 @@ def _to_ai_request(request: OpenAiCompatibleChatRequest) -> AiInvokeRequest | JS
         scope=request.scope,
         modelConfig=model_config,
         prompt=AiPrompt(messages=[message.model_dump(mode="json") for message in request.messages]),
-        input=AiInput(contentType="OPENAI_COMPATIBLE_CHAT", payload={}),
+        input=AiInput(
+            contentType="OPENAI_COMPATIBLE_CHAT",
+            payload=_chat_input_payload(request),
+        ),
         outputSchema=AiOutputSchema(type="json" if request.response_format else "text"),
         options=AiOptions(stream=request.stream, forceJson=request.response_format is not None),
     )
@@ -181,15 +188,52 @@ def _to_image_ai_request(
     )
 
 
+def _chat_input_payload(request: OpenAiCompatibleChatRequest) -> dict[str, Any]:
+    if request.response_format is None:
+        return {}
+    return {"responseFormat": request.response_format}
+
+
+def _validate_image_generation_request(
+    request: OpenAiCompatibleImageGenerationRequest,
+) -> JSONResponse | None:
+    if request.response_format not in SUPPORTED_IMAGE_RESPONSE_FORMATS:
+        return _error_json(
+            protocol_failure(
+                "MODEL_CONFIG_INVALID",
+                "OpenAI-compatible 图片生成当前仅支持 response_format=b64_json 或 url。",
+            ).to_payload(),
+            400,
+        )
+    requested_count = _requested_image_count(request)
+    if requested_count != 1:
+        return _error_json(
+            protocol_failure(
+                "MODEL_CONFIG_INVALID",
+                "OpenAI-compatible 图片生成当前仅支持 n=1。",
+                detail={"n": requested_count},
+            ).to_payload(),
+            400,
+        )
+    return None
+
+
+def _requested_image_count(request: OpenAiCompatibleImageGenerationRequest) -> int:
+    value = request.model_extra.get("n") if request.model_extra is not None else None
+    if value is None:
+        value = request.extendParams.get("n", 1)
+    if isinstance(value, int):
+        return value
+    return -1
+
+
 def _invoke_chat_completion(
     request: OpenAiCompatibleChatRequest,
     ai_request: AiInvokeRequest,
 ) -> JSONResponse:
     try:
-        result = invoke_chat_completion(
-            ai_request,
-            response_format=request.response_format,
-        )
+        graph_result = _REGISTRY.invoke(ai_request)
+        result = AiResult.model_validate(graph_result)
     except Exception as exc:
         return _error_json(_worker_error_payload(exc), 502)
 
@@ -200,15 +244,11 @@ def _invoke_chat_completion(
         choices=[
             OpenAiCompatibleChoice(
                 index=0,
-                message=OpenAiCompatibleChoiceMessage(content=result.content),
-                finish_reason=result.raw_finish_reason,
+                message=OpenAiCompatibleChoiceMessage(content=_text_payload(result)),
+                finish_reason=_raw_finish_reason(graph_result),
             )
         ],
-        usage=OpenAiCompatibleUsage(
-            prompt_tokens=result.usage.inputTokens,
-            completion_tokens=result.usage.outputTokens,
-            total_tokens=_total_tokens(result.usage.inputTokens, result.usage.outputTokens),
-        ),
+        usage=_openai_usage_from_graph_result(graph_result),
     )
     return JSONResponse(response.model_dump(mode="json"))
 
@@ -218,15 +258,20 @@ def _invoke_image_generation(
     ai_request: AiInvokeRequest,
 ) -> JSONResponse:
     try:
-        artifact = generate_image(ai_request)
+        graph_result = _REGISTRY.invoke(ai_request)
+        result = AiResult.model_validate(graph_result)
     except Exception as exc:
         return _error_json(_worker_error_payload(exc), 502)
+    artifact = _image_artifact_payload(result)
 
     if request.response_format == "b64_json":
-        data = OpenAiCompatibleImageData(b64_json=b64encode(artifact.data).decode("ascii"))
+        data = OpenAiCompatibleImageData(b64_json=b64encode(artifact["data"]).decode("ascii"))
     elif request.response_format == "url":
         metadata = _store_generated_image(
-            request, artifact.data, artifact.content_type, artifact.filename
+            request,
+            artifact["data"],
+            artifact["contentType"],
+            artifact["filename"],
         )
         data = OpenAiCompatibleImageData(url=metadata.download_path)
     else:
@@ -239,6 +284,75 @@ def _invoke_image_generation(
         )
     response = OpenAiCompatibleImageGenerationResponse(created=int(time()), data=[data])
     return JSONResponse(response.model_dump(mode="json"))
+
+
+def _text_payload(result: AiResult) -> str:
+    if result.format != ResultFormat.TEXT:
+        raise protocol_failure(
+            "WORKER_RESULT_INVALID",
+            "OpenAI-compatible chat facade 仅支持 TEXT 结果。",
+        )
+    if not isinstance(result.payload, str):
+        raise protocol_failure(
+            "WORKER_RESULT_INVALID",
+            "OpenAI-compatible chat facade TEXT 结果必须是字符串。",
+        )
+    return result.payload
+
+
+def _image_artifact_payload(result: AiResult) -> dict[str, Any]:
+    if result.format != ResultFormat.ARTIFACT:
+        raise protocol_failure(
+            "WORKER_RESULT_INVALID",
+            "OpenAI-compatible 图片生成结果必须是 ARTIFACT。",
+        )
+    if not isinstance(result.payload, dict):
+        raise protocol_failure(
+            "WORKER_RESULT_INVALID",
+            "OpenAI-compatible 图片生成结果 payload 不合法。",
+        )
+    data = result.payload.get("data")
+    content_type = result.payload.get("contentType")
+    filename = result.payload.get("filename")
+    if not isinstance(data, bytes):
+        raise protocol_failure(
+            "WORKER_RESULT_INVALID",
+            "OpenAI-compatible 图片生成结果缺少图片 bytes。",
+        )
+    if not isinstance(content_type, str) or not content_type.strip():
+        raise protocol_failure(
+            "WORKER_RESULT_INVALID",
+            "OpenAI-compatible 图片生成结果缺少 contentType。",
+        )
+    if not isinstance(filename, str) or not filename.strip():
+        raise protocol_failure(
+            "WORKER_RESULT_INVALID",
+            "OpenAI-compatible 图片生成结果缺少 filename。",
+        )
+    return {"data": data, "contentType": content_type, "filename": filename}
+
+
+def _raw_finish_reason(result: dict[str, Any]) -> str | None:
+    finish_reason = result.get("rawFinishReason")
+    if isinstance(finish_reason, str):
+        return finish_reason
+    return None
+
+
+def _openai_usage_from_graph_result(result: dict[str, Any]) -> OpenAiCompatibleUsage:
+    usage = result.get("usage")
+    if not isinstance(usage, dict):
+        return OpenAiCompatibleUsage()
+    input_tokens = usage.get("inputTokens")
+    output_tokens = usage.get("outputTokens")
+    return OpenAiCompatibleUsage(
+        prompt_tokens=input_tokens if isinstance(input_tokens, int) else None,
+        completion_tokens=output_tokens if isinstance(output_tokens, int) else None,
+        total_tokens=_total_tokens(
+            input_tokens if isinstance(input_tokens, int) else None,
+            output_tokens if isinstance(output_tokens, int) else None,
+        ),
+    )
 
 
 def _store_generated_image(
@@ -268,7 +382,10 @@ def _stream_chat_completion(
 ) -> StreamingResponse:
     async def events() -> AsyncIterator[str]:
         try:
-            for chunk in iter_chat_completion_chunks(ai_request):
+            for chunk in iter_chat_completion_chunks(
+                ai_request,
+                response_format=request.response_format,
+            ):
                 if chunk.delta:
                     yield _openai_sse(
                         {

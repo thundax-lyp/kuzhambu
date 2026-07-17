@@ -2,7 +2,10 @@ from typing import Any, TypedDict
 
 from langgraph.graph import END, START, StateGraph
 
-from kuzhambu_workers.ai.openai_compatible import invoke_chat_completion
+from kuzhambu_workers.ai.openai_compatible import (
+    OpenAiChatCompletionResult,
+    invoke_chat_completion,
+)
 from kuzhambu_workers.ai.structured_output import (
     parse_structured_output,
     requires_structured_output,
@@ -29,7 +32,7 @@ def _execute(state: BasicGraphState) -> BasicGraphState:
     if request.capability == AiCapability.IMAGE_GEN:
         raise unsupported_capability(request.capability.value)
 
-    model_result = invoke_chat_completion(request)
+    model_result = _invoke_chat_completion(request)
     result_format = _result_format(request)
     payload: str | dict[str, Any] | list[Any] = model_result.content
     if result_format == ResultFormat.STRUCTURED:
@@ -41,6 +44,7 @@ def _execute(state: BasicGraphState) -> BasicGraphState:
             "format": result_format.value,
             "payload": payload,
             "usage": model_result.usage.model_dump(mode="json"),
+            "rawFinishReason": model_result.raw_finish_reason,
         },
     }
 
@@ -51,3 +55,17 @@ def _result_format(request: AiInvokeRequest) -> ResultFormat:
     if request.capability in {AiCapability.IMAGE_ANALYSIS, AiCapability.FUSION}:
         return ResultFormat.MARKDOWN
     return ResultFormat.TEXT
+
+
+def _response_format(request: AiInvokeRequest) -> dict[str, Any] | None:
+    response_format = request.input.payload.get("responseFormat")
+    if isinstance(response_format, dict):
+        return response_format
+    return None
+
+
+def _invoke_chat_completion(request: AiInvokeRequest) -> OpenAiChatCompletionResult:
+    response_format = _response_format(request)
+    if response_format is None:
+        return invoke_chat_completion(request)
+    return invoke_chat_completion(request, response_format=response_format)

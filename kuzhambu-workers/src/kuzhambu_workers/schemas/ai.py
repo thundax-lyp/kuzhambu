@@ -63,7 +63,7 @@ class AiModelConfig(BaseModel):
 
 class AiMessage(BaseModel):
     role: MessageRole
-    content: str
+    content: str | list[dict[str, Any]]
 
 
 class AiPrompt(BaseModel):
