@@ -22,6 +22,9 @@ export default defineConfig(({ mode }) => {
             fileParallelism: true,
             maxWorkers: "75%"
         },
+        build: {
+            chunkSizeWarningLimit: 10000
+        },
         server: {
             port: 5174,
             proxy: {
