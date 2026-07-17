@@ -30,17 +30,17 @@ public class PromptRepositoryImpl implements PromptRepository {
     }
 
     @Override
-    public PromptTemplate getTemplate(PromptTemplateId templateId) {
+    public PromptTemplate get(PromptTemplateId templateId) {
         return toTemplateDomain(promptMapper.selectById(PromptTemplateIdCodec.toValue(templateId)));
     }
 
     @Override
-    public PromptTemplate getTemplate(String capability) {
+    public PromptTemplate get(String capability) {
         return toTemplateDomain(promptMapper.selectTemplateByCapability(capability));
     }
 
     @Override
-    public PromptTemplateId saveTemplate(PromptTemplate template) {
+    public PromptTemplateId insertTemplate(PromptTemplate template) {
         PromptTemplateDO dataObject = toTemplateObject(template);
         if (dataObject.getRegisteredAt() == null) {
             dataObject.setRegisteredAt(Instant.now());
@@ -73,7 +73,7 @@ public class PromptRepositoryImpl implements PromptRepository {
     }
 
     @Override
-    public PromptVersionId saveVersion(PromptVersion version) {
+    public PromptVersionId insertVersion(PromptVersion version) {
         PromptVersionDO dataObject = toVersionObject(version);
         if (dataObject.getRegisteredAt() == null) {
             dataObject.setRegisteredAt(Instant.now());

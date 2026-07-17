@@ -71,7 +71,7 @@ public class AiCapabilityApplicationServiceImpl implements AiCapabilityApplicati
         AiCapabilityMapping mapping = command.toEntity();
         validateMapping(mapping);
         Long mappingId =
-                mapping.getMappingId() == null ? aiCapabilityRepository.saveMapping(mapping) : updateMapping(mapping);
+                mapping.getMappingId() == null ? aiCapabilityRepository.insertMapping(mapping) : updateMapping(mapping);
         refreshActionStatus(mapping.getScope(), mapping.getCapability());
         return mappingId;
     }
@@ -141,7 +141,7 @@ public class AiCapabilityApplicationServiceImpl implements AiCapabilityApplicati
         AiActionStatus current = aiCapabilityRepository.getActionStatus(scope, capability);
         AiActionStatus refreshed = buildActionStatus(current, scope, capability, Instant.now());
         if (current == null) {
-            aiCapabilityRepository.saveActionStatus(refreshed);
+            aiCapabilityRepository.insertActionStatus(refreshed);
         } else {
             aiCapabilityRepository.updateActionStatus(refreshed);
         }
@@ -167,7 +167,7 @@ public class AiCapabilityApplicationServiceImpl implements AiCapabilityApplicati
             return;
         }
         AiBusinessCapability.from(mapping.getCapability());
-        AiModel model = aiModelRepository.getModelById(AiModelIdCodec.toDomain(mapping.getModelId()));
+        AiModel model = aiModelRepository.get(AiModelIdCodec.toDomain(mapping.getModelId()));
         if (!mapping.canUse(model)) {
             throw new BizException("Model capability tags do not satisfy AI capability: " + mapping.getCapability());
         }
@@ -176,8 +176,7 @@ public class AiCapabilityApplicationServiceImpl implements AiCapabilityApplicati
     private AiActionStatus buildActionStatus(
             AiActionStatus current, String scope, String capabilityName, Instant checkedAt) {
         AiCapabilityMapping mapping = aiCapabilityRepository.getMapping(scope, capabilityName);
-        AiModel model =
-                mapping == null ? null : aiModelRepository.getModelById(AiModelIdCodec.toDomain(mapping.getModelId()));
+        AiModel model = mapping == null ? null : aiModelRepository.get(AiModelIdCodec.toDomain(mapping.getModelId()));
         Long actionStatusId = current == null ? null : current.getActionStatusId();
         if (mapping == null || !mapping.isEnabled()) {
             return AiActionStatus.unavailable(

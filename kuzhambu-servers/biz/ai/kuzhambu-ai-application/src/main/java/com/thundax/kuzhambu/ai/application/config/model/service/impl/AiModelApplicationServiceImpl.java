@@ -27,12 +27,12 @@ public class AiModelApplicationServiceImpl implements AiModelApplicationService 
 
     @Override
     public AiModel get(Long id) {
-        return aiModelRepository.getModelById(AiModelIdCodec.toDomain(id));
+        return aiModelRepository.get(AiModelIdCodec.toDomain(id));
     }
 
     @Override
     public List<AiModel> list(String apiSource, Boolean enabled) {
-        return aiModelRepository.listModels(apiSource, enabled);
+        return aiModelRepository.list(apiSource, enabled);
     }
 
     @Override
@@ -41,7 +41,7 @@ public class AiModelApplicationServiceImpl implements AiModelApplicationService 
         if (model == null) {
             return null;
         }
-        AiModelId id = aiModelRepository.saveModel(model);
+        AiModelId id = aiModelRepository.insert(model);
         return AiModelIdCodec.toValue(id);
     }
 
@@ -51,7 +51,7 @@ public class AiModelApplicationServiceImpl implements AiModelApplicationService 
         if (model == null) {
             return 0;
         }
-        int affectedRows = aiModelRepository.updateModel(model);
+        int affectedRows = aiModelRepository.update(model);
         if (affectedRows > 0) {
             aiCapabilityApplicationService.refreshActionStatusesByModelId(AiModelIdCodec.toValue(model.getId()));
         }
@@ -65,6 +65,6 @@ public class AiModelApplicationServiceImpl implements AiModelApplicationService 
             return 0;
         }
         aiCapabilityApplicationService.assertModelCanBeDeleted(id);
-        return aiModelRepository.deleteModel(AiModelIdCodec.toDomain(id));
+        return aiModelRepository.delete(AiModelIdCodec.toDomain(id));
     }
 }

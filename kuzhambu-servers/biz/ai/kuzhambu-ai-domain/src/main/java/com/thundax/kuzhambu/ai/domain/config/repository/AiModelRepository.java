@@ -6,13 +6,13 @@ import java.util.List;
 
 public interface AiModelRepository {
 
-    AiModel getModelById(AiModelId id);
+    AiModel get(AiModelId id);
 
-    List<AiModel> listModels(String apiSource, Boolean enabled);
+    List<AiModel> list(String apiSource, Boolean enabled);
 
-    AiModelId saveModel(AiModel model);
+    AiModelId insert(AiModel model);
 
-    int updateModel(AiModel model);
+    int update(AiModel model);
 
-    int deleteModel(AiModelId id);
+    int delete(AiModelId id);
 }

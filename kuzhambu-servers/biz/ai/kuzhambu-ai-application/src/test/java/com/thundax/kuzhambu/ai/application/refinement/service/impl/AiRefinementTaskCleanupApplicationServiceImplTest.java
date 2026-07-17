@@ -76,17 +76,17 @@ class AiRefinementTaskCleanupApplicationServiceImplTest {
         private int deletedTerminalCount;
 
         @Override
-        public AiRefinementTask getTask(Long taskId) {
+        public AiRefinementTask get(Long taskId) {
             return null;
         }
 
         @Override
-        public Long saveTask(AiRefinementTask task) {
+        public Long insert(AiRefinementTask task) {
             return null;
         }
 
         @Override
-        public int updateTask(AiRefinementTask task) {
+        public int update(AiRefinementTask task) {
             updatedTasks.add(task);
             return 1;
         }

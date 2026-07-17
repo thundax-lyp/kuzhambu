@@ -10,7 +10,7 @@ public interface AiInvocationRepository {
 
     AiCallRecord getCallRecord(Long callId);
 
-    Long saveCallRecord(AiCallRecord callRecord);
+    Long insertCallRecord(AiCallRecord callRecord);
 
     int updateCallRecord(AiCallRecord callRecord);
 
@@ -35,7 +35,7 @@ public interface AiInvocationRepository {
 
     AiCandidate getCandidate(Long candidateId);
 
-    Long saveCandidate(AiCandidate candidate);
+    Long insertCandidate(AiCandidate candidate);
 
     int updateCandidate(AiCandidate candidate);
 

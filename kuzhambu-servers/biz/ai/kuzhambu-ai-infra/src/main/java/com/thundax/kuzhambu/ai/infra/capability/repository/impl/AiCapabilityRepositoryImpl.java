@@ -38,7 +38,7 @@ public class AiCapabilityRepositoryImpl implements AiCapabilityRepository {
     }
 
     @Override
-    public Long saveMapping(AiCapabilityMapping mapping) {
+    public Long insertMapping(AiCapabilityMapping mapping) {
         AiCapabilityMappingDO dataObject = toMappingObject(mapping);
         if (dataObject.getMappingId() == null) {
             dataObject.setMappingId(nextId());
@@ -66,7 +66,7 @@ public class AiCapabilityRepositoryImpl implements AiCapabilityRepository {
     }
 
     @Override
-    public Long saveActionStatus(AiActionStatus actionStatus) {
+    public Long insertActionStatus(AiActionStatus actionStatus) {
         AiActionStatusDO dataObject = toActionStatusObject(actionStatus);
         if (dataObject.getActionStatusId() == null) {
             dataObject.setActionStatusId(nextId());

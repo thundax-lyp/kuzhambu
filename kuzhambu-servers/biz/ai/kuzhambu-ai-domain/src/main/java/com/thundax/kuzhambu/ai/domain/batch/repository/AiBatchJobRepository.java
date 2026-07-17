@@ -7,17 +7,17 @@ import java.util.List;
 
 public interface AiBatchJobRepository {
 
-    AiBatchJob getBatchJob(Long batchId);
+    AiBatchJob get(Long batchId);
 
-    Long saveBatchJob(AiBatchJob batchJob);
+    Long insert(AiBatchJob batchJob);
 
-    int updateBatchJob(AiBatchJob batchJob);
+    int update(AiBatchJob batchJob);
 
-    Long saveImageUnderstanding(ImageUnderstandingResult result);
+    Long insertImageUnderstanding(ImageUnderstandingResult result);
 
     ImageUnderstandingResult getImageUnderstanding(Long storageObjectId, String contentHash);
 
-    Long saveEntrySplitCandidate(EntrySplitCandidate candidate);
+    Long insertEntrySplitCandidate(EntrySplitCandidate candidate);
 
     List<EntrySplitCandidate> listEntrySplitCandidates(Long candidateId);
 }

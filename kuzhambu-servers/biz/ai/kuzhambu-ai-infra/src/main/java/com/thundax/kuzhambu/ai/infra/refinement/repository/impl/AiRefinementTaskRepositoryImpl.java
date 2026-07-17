@@ -22,12 +22,12 @@ public class AiRefinementTaskRepositoryImpl implements AiRefinementTaskRepositor
     }
 
     @Override
-    public AiRefinementTask getTask(Long taskId) {
+    public AiRefinementTask get(Long taskId) {
         return toRefinementTaskDomain(aiRefinementTaskMapper.selectTask(taskId));
     }
 
     @Override
-    public Long saveTask(AiRefinementTask task) {
+    public Long insert(AiRefinementTask task) {
         AiRefinementTaskDO dataObject = toTaskObject(task);
         if (dataObject.getTaskId() == null) {
             dataObject.setTaskId(nextId());
@@ -40,7 +40,7 @@ public class AiRefinementTaskRepositoryImpl implements AiRefinementTaskRepositor
     }
 
     @Override
-    public int updateTask(AiRefinementTask task) {
+    public int update(AiRefinementTask task) {
         AiRefinementTaskDO dataObject = toTaskObject(task);
         return aiRefinementTaskMapper.update(
                 null,

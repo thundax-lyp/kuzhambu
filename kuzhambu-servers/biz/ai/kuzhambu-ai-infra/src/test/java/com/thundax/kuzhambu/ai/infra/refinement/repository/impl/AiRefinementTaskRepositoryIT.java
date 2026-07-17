@@ -71,7 +71,7 @@ class AiRefinementTaskRepositoryIT {
         task.setStartedAt(requestedAt);
         task.setCompletedAt(requestedAt);
 
-        Long taskId = repository.saveTask(task);
+        Long taskId = repository.insert(task);
 
         ArgumentCaptor<AiRefinementTaskDO> taskCaptor = ArgumentCaptor.forClass(AiRefinementTaskDO.class);
         verify(mapper).insertTask(taskCaptor.capture());
@@ -90,7 +90,7 @@ class AiRefinementTaskRepositoryIT {
                 .thenReturn(List.of(savedTask));
         when(mapper.countTasks("summary", "RUNNING", "ENTRY", 9101L, 1001L)).thenReturn(1L);
 
-        AiRefinementTask loadedTask = repository.getTask(7201L);
+        AiRefinementTask loadedTask = repository.get(7201L);
         List<AiRefinementTask> taskList = repository.listTasks("summary", "RUNNING", "ENTRY", 9101L, 1001L, 1, 20);
         long total = repository.countTasks("summary", "RUNNING", "ENTRY", 9101L, 1001L);
 

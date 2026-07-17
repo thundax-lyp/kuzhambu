@@ -109,7 +109,7 @@ class AiCapabilityApplicationServiceImplTest {
         }
 
         @Override
-        public Long saveMapping(AiCapabilityMapping mapping) {
+        public Long insertMapping(AiCapabilityMapping mapping) {
             this.mapping = mapping;
             this.mapping.setMappingId(3001L);
             return this.mapping.getMappingId();
@@ -132,7 +132,7 @@ class AiCapabilityApplicationServiceImplTest {
         }
 
         @Override
-        public Long saveActionStatus(AiActionStatus actionStatus) {
+        public Long insertActionStatus(AiActionStatus actionStatus) {
             this.actionStatus = actionStatus;
             this.actionStatus.setActionStatusId(4001L);
             return this.actionStatus.getActionStatusId();
@@ -161,28 +161,28 @@ class AiCapabilityApplicationServiceImplTest {
                 null);
 
         @Override
-        public AiModel getModelById(AiModelId modelId) {
+        public AiModel get(AiModelId modelId) {
             model.setId(modelId);
             return model;
         }
 
         @Override
-        public List<AiModel> listModels(String apiSource, Boolean enabled) {
+        public List<AiModel> list(String apiSource, Boolean enabled) {
             return new ArrayList<>();
         }
 
         @Override
-        public AiModelId saveModel(AiModel model) {
+        public AiModelId insert(AiModel model) {
             return null;
         }
 
         @Override
-        public int updateModel(AiModel model) {
+        public int update(AiModel model) {
             return 0;
         }
 
         @Override
-        public int deleteModel(AiModelId modelId) {
+        public int delete(AiModelId modelId) {
             return 0;
         }
     }

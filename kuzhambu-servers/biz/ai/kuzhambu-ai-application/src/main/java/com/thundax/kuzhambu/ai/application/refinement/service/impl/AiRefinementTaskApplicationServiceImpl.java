@@ -77,7 +77,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         task.setPromptVersionId(command.getPromptVersionId());
         task.setStreamEnabled(isStreamEnabledTask(command));
         task.setRequestedAt(now);
-        Long taskId = taskRepository.saveTask(task);
+        Long taskId = taskRepository.insert(task);
         task.setTaskId(taskId);
         scheduleTaskExecution(taskId, command);
         return task;
@@ -137,7 +137,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
             return task;
         }
         task.markCancelled(Instant.now());
-        taskRepository.updateTask(task);
+        taskRepository.update(task);
         return task;
     }
 
@@ -151,12 +151,12 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     }
 
     private void executeTask(Long taskId, AiRefinementRequestCommand command) {
-        AiRefinementTask task = taskRepository.getTask(taskId);
+        AiRefinementTask task = taskRepository.get(taskId);
         if (task == null || STATUS_CANCELLED.equals(task.getStatus())) {
             return;
         }
         task.markRunning(Instant.now());
-        taskRepository.updateTask(task);
+        taskRepository.update(task);
 
         AiCandidateResult result;
         try {
@@ -175,7 +175,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
             publishFailureEvent(taskId, command, result);
         }
 
-        AiRefinementTask latestTask = taskRepository.getTask(taskId);
+        AiRefinementTask latestTask = taskRepository.get(taskId);
         if (latestTask == null || STATUS_CANCELLED.equals(latestTask.getStatus())) {
             return;
         }
@@ -185,7 +185,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
             latestTask.setModelName(command.getModelName());
         }
         applyResult(latestTask, result);
-        taskRepository.updateTask(latestTask);
+        taskRepository.update(latestTask);
         publishTerminalEvent(taskId, latestTask, result);
     }
 
@@ -204,7 +204,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     }
 
     private void markFailedAfterUnexpectedException(Long taskId, RuntimeException exception) {
-        AiRefinementTask task = taskRepository.getTask(taskId);
+        AiRefinementTask task = taskRepository.get(taskId);
         if (task == null || isTerminal(task.getStatus())) {
             return;
         }
@@ -213,7 +213,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         task.setErrorMessage(exception.getMessage());
         task.setCompletedAt(Instant.now());
         task.setStatus(STATUS_FAILED);
-        taskRepository.updateTask(task);
+        taskRepository.update(task);
         publishTerminalEvent(
                 taskId,
                 task,
@@ -295,7 +295,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         if (taskId == null) {
             throw new BizException("AI refinement taskId is required");
         }
-        AiRefinementTask task = taskRepository.getTask(taskId);
+        AiRefinementTask task = taskRepository.get(taskId);
         if (task == null) {
             throw new BizException("AI refinement task not found or expired: " + taskId);
         }

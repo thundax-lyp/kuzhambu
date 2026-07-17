@@ -33,7 +33,7 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
     @Transactional(rollbackFor = Exception.class)
     public Long create(AiBatchJobCreateCommand command) {
         validateCreateCommand(command);
-        return aiBatchJobRepository.saveBatchJob(command.toEntity());
+        return aiBatchJobRepository.insert(command.toEntity());
     }
 
     @Override
@@ -52,7 +52,7 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
         } else {
             job.recordSuccess();
         }
-        aiBatchJobRepository.updateBatchJob(job);
+        aiBatchJobRepository.update(job);
         return AiBatchJobResult.from(job);
     }
 
@@ -66,7 +66,7 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
         } else {
             job.recordFailure();
         }
-        aiBatchJobRepository.updateBatchJob(job);
+        aiBatchJobRepository.update(job);
         return AiBatchJobResult.from(job);
     }
 
@@ -77,7 +77,7 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
         int finishedCount = job.getSuccessCount() + job.getFailedCount();
         job.setCancelledCount(Math.max(0, job.getTotalCount() - finishedCount));
         job.cancel(Instant.now());
-        aiBatchJobRepository.updateBatchJob(job);
+        aiBatchJobRepository.update(job);
         return AiBatchJobResult.from(job);
     }
 
@@ -85,7 +85,7 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
         if (batchId == null) {
             throw new BizException("AI batchId is required");
         }
-        AiBatchJob job = aiBatchJobRepository.getBatchJob(batchId);
+        AiBatchJob job = aiBatchJobRepository.get(batchId);
         if (job == null) {
             throw new BizException("AI batch job not found: " + batchId);
         }

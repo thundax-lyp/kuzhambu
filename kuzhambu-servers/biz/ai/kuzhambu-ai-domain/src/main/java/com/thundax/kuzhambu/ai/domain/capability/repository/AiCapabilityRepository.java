@@ -12,7 +12,7 @@ public interface AiCapabilityRepository {
 
     List<AiCapabilityMapping> listMappingsByModelId(Long modelId);
 
-    Long saveMapping(AiCapabilityMapping mapping);
+    Long insertMapping(AiCapabilityMapping mapping);
 
     int updateMapping(AiCapabilityMapping mapping);
 
@@ -20,7 +20,7 @@ public interface AiCapabilityRepository {
 
     List<AiActionStatus> listActionStatuses(String scope, String capability, Boolean available);
 
-    Long saveActionStatus(AiActionStatus actionStatus);
+    Long insertActionStatus(AiActionStatus actionStatus);
 
     int updateActionStatus(AiActionStatus actionStatus);
 }

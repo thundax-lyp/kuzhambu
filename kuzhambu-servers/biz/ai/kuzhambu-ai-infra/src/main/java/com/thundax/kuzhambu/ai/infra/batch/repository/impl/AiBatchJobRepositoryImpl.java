@@ -27,13 +27,13 @@ public class AiBatchJobRepositoryImpl implements AiBatchJobRepository {
     }
 
     @Override
-    public AiBatchJob getBatchJob(Long batchId) {
+    public AiBatchJob get(Long batchId) {
         return toBatchDomain(aiBatchJobMapper.selectOne(
                 new LambdaQueryWrapper<AiBatchJobDO>().eq(AiBatchJobDO::getBatchId, batchId)));
     }
 
     @Override
-    public Long saveBatchJob(AiBatchJob batchJob) {
+    public Long insert(AiBatchJob batchJob) {
         AiBatchJobDO dataObject = toBatchObject(batchJob);
         if (dataObject.getBatchId() == null) {
             dataObject.setBatchId(nextId());
@@ -46,7 +46,7 @@ public class AiBatchJobRepositoryImpl implements AiBatchJobRepository {
     }
 
     @Override
-    public int updateBatchJob(AiBatchJob batchJob) {
+    public int update(AiBatchJob batchJob) {
         AiBatchJobDO dataObject = toBatchObject(batchJob);
         return aiBatchJobMapper.update(
                 null,
@@ -62,7 +62,7 @@ public class AiBatchJobRepositoryImpl implements AiBatchJobRepository {
     }
 
     @Override
-    public Long saveImageUnderstanding(ImageUnderstandingResult result) {
+    public Long insertImageUnderstanding(ImageUnderstandingResult result) {
         ImageUnderstandingResultDO dataObject = toImageObject(result);
         if (dataObject.getUnderstandingId() == null) {
             dataObject.setUnderstandingId(nextId());
@@ -80,7 +80,7 @@ public class AiBatchJobRepositoryImpl implements AiBatchJobRepository {
     }
 
     @Override
-    public Long saveEntrySplitCandidate(EntrySplitCandidate candidate) {
+    public Long insertEntrySplitCandidate(EntrySplitCandidate candidate) {
         EntrySplitCandidateDO dataObject = toSplitObject(candidate);
         if (dataObject.getSplitCandidateId() == null) {
             dataObject.setSplitCandidateId(nextId());

@@ -9,11 +9,11 @@ import java.util.List;
 
 public interface PromptRepository {
 
-    PromptTemplate getTemplate(PromptTemplateId templateId);
+    PromptTemplate get(PromptTemplateId templateId);
 
-    PromptTemplate getTemplate(String capability);
+    PromptTemplate get(String capability);
 
-    PromptTemplateId saveTemplate(PromptTemplate template);
+    PromptTemplateId insertTemplate(PromptTemplate template);
 
     int updateTemplate(PromptTemplate template);
 
@@ -21,7 +21,7 @@ public interface PromptRepository {
 
     List<PromptVersion> listVersions(PromptTemplateId templateId);
 
-    PromptVersionId saveVersion(PromptVersion version);
+    PromptVersionId insertVersion(PromptVersion version);
 
     int markCurrentVersion(PromptTemplateId templateId, int versionNo);
 

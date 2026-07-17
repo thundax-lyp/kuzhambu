@@ -30,19 +30,19 @@ public class AiModelRepositoryImpl implements AiModelRepository {
     }
 
     @Override
-    public AiModel getModelById(AiModelId id) {
+    public AiModel get(AiModelId id) {
         return toModelDomain(aiModelMapper.selectById(AiModelIdCodec.toValue(id)));
     }
 
     @Override
-    public List<AiModel> listModels(String apiSource, Boolean enabled) {
+    public List<AiModel> list(String apiSource, Boolean enabled) {
         return toModelDomainList(aiModelMapper.selectList(new LambdaQueryWrapper<AiModelDO>()
                 .eq(apiSource != null && !apiSource.isBlank(), AiModelDO::getApiSource, apiSource)
                 .eq(enabled != null, AiModelDO::getEnabled, enabled)));
     }
 
     @Override
-    public AiModelId saveModel(AiModel model) {
+    public AiModelId insert(AiModel model) {
         AiModelDO dataObject = toModelObject(model);
         if (dataObject.getRegisteredAt() == null) {
             dataObject.setRegisteredAt(Instant.now());
@@ -52,7 +52,7 @@ public class AiModelRepositoryImpl implements AiModelRepository {
     }
 
     @Override
-    public int updateModel(AiModel model) {
+    public int update(AiModel model) {
         AiModelDO dataObject = toModelObject(model);
         return aiModelMapper.update(
                 null,
@@ -70,7 +70,7 @@ public class AiModelRepositoryImpl implements AiModelRepository {
     }
 
     @Override
-    public int deleteModel(AiModelId id) {
+    public int delete(AiModelId id) {
         return aiModelMapper.deleteById(AiModelIdCodec.toValue(id));
     }
 

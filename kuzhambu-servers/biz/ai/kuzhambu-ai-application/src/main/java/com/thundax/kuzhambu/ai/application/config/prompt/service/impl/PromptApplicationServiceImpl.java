@@ -43,7 +43,7 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
 
     @Override
     public PromptTemplate getTemplate(Long templateId) {
-        return promptRepository.getTemplate(PromptTemplateIdCodec.toDomain(templateId));
+        return promptRepository.get(PromptTemplateIdCodec.toDomain(templateId));
     }
 
     @Override
@@ -51,7 +51,7 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
         if (isBlank(capability)) {
             return null;
         }
-        return promptRepository.getTemplate(capability);
+        return promptRepository.get(capability);
     }
 
     @Override
@@ -65,7 +65,7 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
         int versionNo = nextVersionNo(templateId);
         PromptVersion version = command.toVersion(templateId, versionNo, variablesSnapshotJson(command));
         promptRepository.replaceVariables(templateId, variables);
-        promptRepository.saveVersion(version);
+        promptRepository.insertVersion(version);
         promptRepository.markCurrentVersion(templateId, versionNo);
         aiCapabilityApplicationService.refreshActionStatusesByCapability(
                 template.getCapability().value());
@@ -112,7 +112,7 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
         if (affectedRows <= 0) {
             throw new BizException("Prompt rollback failed: " + templateId + "#" + versionNo);
         }
-        PromptTemplate template = promptRepository.getTemplate(id);
+        PromptTemplate template = promptRepository.get(id);
         if (template != null) {
             aiCapabilityApplicationService.refreshActionStatusesByCapability(
                     template.getCapability().value());
@@ -152,7 +152,7 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
 
     private PromptTemplateId saveOrUpdateTemplate(PromptTemplate template) {
         if (template.getId() == null) {
-            return promptRepository.saveTemplate(template);
+            return promptRepository.insertTemplate(template);
         }
         int affectedRows = promptRepository.updateTemplate(template);
         if (affectedRows <= 0) {

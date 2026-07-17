@@ -98,7 +98,7 @@ class PromptRepositoryIT {
                 1,
                 registeredAt);
 
-        PromptTemplateId templateId = repository.saveTemplate(template);
+        PromptTemplateId templateId = repository.insertTemplate(template);
 
         ArgumentCaptor<PromptTemplateDO> templateCaptor = ArgumentCaptor.forClass(PromptTemplateDO.class);
         verify(mapper).insert(templateCaptor.capture());
@@ -107,7 +107,7 @@ class PromptRepositoryIT {
         assertEquals("classics_translate", savedTemplate.getCapability());
 
         when(mapper.selectTemplateByCapability("classics_translate")).thenReturn(savedTemplate);
-        PromptTemplate loadedTemplate = repository.getTemplate("classics_translate");
+        PromptTemplate loadedTemplate = repository.get("classics_translate");
 
         assertEquals("Classics translate", loadedTemplate.getName());
         assertEquals(1, loadedTemplate.getCurrentVersionNo());
@@ -136,7 +136,7 @@ class PromptRepositoryIT {
                 1));
 
         when(mapper.markCurrentVersion(4001L, 1)).thenReturn(1);
-        repository.saveVersion(version);
+        repository.insertVersion(version);
         int affectedRows = repository.markCurrentVersion(PromptTemplateIdCodec.toDomain(4001L), 1);
         int variableRows = repository.replaceVariables(PromptTemplateIdCodec.toDomain(4001L), variables);
 

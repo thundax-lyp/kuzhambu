@@ -81,7 +81,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         AiRefinementTask accepted;
         try {
             accepted = service.addTask(command("translate"));
-            assertEquals("PENDING", repository.getTask(accepted.getTaskId()).getStatus());
+            assertEquals("PENDING", repository.get(accepted.getTaskId()).getStatus());
             TransactionSynchronizationManager.getSynchronizations()
                     .forEach(synchronization -> synchronization.afterCommit());
         } finally {
@@ -114,9 +114,9 @@ class AiRefinementTaskApplicationServiceImplTest {
 
     private AiRefinementTask awaitTerminal(RecordingTaskRepository repository, Long taskId) {
         long deadline = System.currentTimeMillis() + 3000L;
-        AiRefinementTask task = repository.getTask(taskId);
+        AiRefinementTask task = repository.get(taskId);
         while (System.currentTimeMillis() < deadline) {
-            task = repository.getTask(taskId);
+            task = repository.get(taskId);
             if (task != null && ("SUCCEEDED".equals(task.getStatus()) || "FAILED".equals(task.getStatus()))) {
                 return task;
             }
@@ -191,12 +191,12 @@ class AiRefinementTaskApplicationServiceImplTest {
         private final Map<Long, AiRefinementTask> tasks = new ConcurrentHashMap<>();
 
         @Override
-        public AiRefinementTask getTask(Long taskId) {
+        public AiRefinementTask get(Long taskId) {
             return tasks.get(taskId);
         }
 
         @Override
-        public Long saveTask(AiRefinementTask task) {
+        public Long insert(AiRefinementTask task) {
             long taskId = sequence.incrementAndGet();
             task.setTaskId(taskId);
             tasks.put(taskId, task);
@@ -204,7 +204,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         }
 
         @Override
-        public int updateTask(AiRefinementTask task) {
+        public int update(AiRefinementTask task) {
             tasks.put(task.getTaskId(), task);
             return 1;
         }

@@ -57,7 +57,7 @@ class AiModelRepositoryIT {
                 true,
                 registeredAt);
 
-        AiModelId modelId = repository.saveModel(model);
+        AiModelId modelId = repository.insert(model);
 
         ArgumentCaptor<AiModelDO> modelCaptor = ArgumentCaptor.forClass(AiModelDO.class);
         verify(mapper).insert(modelCaptor.capture());
@@ -70,7 +70,7 @@ class AiModelRepositoryIT {
         assertEquals(registeredAt, savedModel.getRegisteredAt());
 
         when(mapper.selectById(any())).thenReturn(savedModel);
-        AiModel loadedModel = repository.getModelById(AiModelIdCodec.toDomain(2001L));
+        AiModel loadedModel = repository.get(AiModelIdCodec.toDomain(2001L));
 
         assertNotNull(loadedModel);
         assertEquals(List.of(AiModelCapability.TEXT2TEXT, AiModelCapability.IMAGE2TEXT), loadedModel.getCapabilities());
