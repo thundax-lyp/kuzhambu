@@ -7,36 +7,35 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.ai.application.capability.command.AiCapabilityMappingSaveCommand;
 import com.thundax.kuzhambu.ai.application.capability.result.AiActionStatusResult;
 import com.thundax.kuzhambu.ai.application.capability.service.AiCapabilityApplicationService;
-import com.thundax.kuzhambu.ai.application.config.service.AiServiceConfigApplicationService;
+import com.thundax.kuzhambu.ai.application.config.model.service.AiModelApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
-import com.thundax.kuzhambu.ai.application.model.command.AiModelCheckCommand;
-import com.thundax.kuzhambu.ai.application.model.service.AiModelApplicationService;
-import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiCapability;
 import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiCapabilityMapping;
-import com.thundax.kuzhambu.ai.domain.config.model.entity.AiServiceConfig;
-import com.thundax.kuzhambu.ai.domain.model.model.entity.AiModel;
-import com.thundax.kuzhambu.ai.domain.model.model.entity.AiModelCheckRecord;
+import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiApiSource;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiModelCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class AiWorkerModelConfigResolverTest {
 
     @Test
-    void resolveShouldRejectUnavailableService() {
-        FakeServiceConfigApplicationService serviceConfigService = new FakeServiceConfigApplicationService();
-        serviceConfigService.serviceConfig.setStatus("UNAVAILABLE");
-        AiWorkerModelConfigResolver resolver = newResolver(serviceConfigService, new FakeModelApplicationService());
+    void resolveShouldRejectModelWithoutBaseUrl() {
+        FakeModelApplicationService modelService = new FakeModelApplicationService();
+        modelService.model.setBaseUrl("");
+        AiWorkerModelConfigResolver resolver = newResolver(modelService);
 
         assertThatThrownBy(() -> resolver.resolve(command()))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("AI service is unavailable");
+                .hasMessageContaining("AI model baseUrl is required");
     }
 
     @Test
     void resolveShouldRejectDisabledModel() {
         FakeModelApplicationService modelService = new FakeModelApplicationService();
         modelService.model.setEnabled(false);
-        AiWorkerModelConfigResolver resolver = newResolver(new FakeServiceConfigApplicationService(), modelService);
+        AiWorkerModelConfigResolver resolver = newResolver(modelService);
 
         assertThatThrownBy(() -> resolver.resolve(command()))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -49,8 +48,7 @@ class AiWorkerModelConfigResolverTest {
         command.setScope("classics");
         command.setCapability("translate");
 
-        AiWorkerModelConfigResolver resolver =
-                newResolver(new FakeServiceConfigApplicationService(), new FakeModelApplicationService());
+        AiWorkerModelConfigResolver resolver = newResolver(new FakeModelApplicationService());
 
         var resolved = resolver.resolve(command);
 
@@ -59,10 +57,9 @@ class AiWorkerModelConfigResolverTest {
         assertThat(resolved.modelName()).isEqualTo("gpt-4o");
     }
 
-    private static AiWorkerModelConfigResolver newResolver(
-            AiServiceConfigApplicationService serviceConfigService, AiModelApplicationService modelService) {
+    private static AiWorkerModelConfigResolver newResolver(AiModelApplicationService modelService) {
         return new AiWorkerModelConfigResolver(
-                serviceConfigService, modelService, new FakeCapabilityApplicationService(), new ObjectMapper());
+                modelService, new FakeCapabilityApplicationService(), new ObjectMapper());
     }
 
     private static AiInvokeCommand command() {
@@ -72,31 +69,20 @@ class AiWorkerModelConfigResolverTest {
         return command;
     }
 
-    private static class FakeServiceConfigApplicationService implements AiServiceConfigApplicationService {
-
-        private final AiServiceConfig serviceConfig = new AiServiceConfig(
-                1L, 1001L, "PRIMARY", "OPENAI", "https://api.example", "encrypted", true, "AVAILABLE", null, null);
-
-        @Override
-        public AiServiceConfig getByServiceId(Long serviceId) {
-            return serviceConfig;
-        }
-
-        @Override
-        public AiServiceConfig getByRole(String serviceRole) {
-            return serviceConfig;
-        }
-
-        @Override
-        public Long save(AiServiceConfig serviceConfig) {
-            return null;
-        }
-    }
-
     private static class FakeModelApplicationService implements AiModelApplicationService {
 
-        private final AiModel model =
-                new AiModel(1L, 2001L, 1001L, "gpt-4o", "GPT 4o", List.of("chat"), "{}", "matched model", true, null);
+        private final AiModel model = new AiModel(
+                AiModelId.of(2001L),
+                AiApiSource.OPENAI,
+                "https://api.example",
+                "encrypted",
+                "gpt-4o",
+                "GPT 4o",
+                List.of(AiModelCapability.TEXT_TO_TEXT),
+                "{}",
+                "matched model",
+                true,
+                null);
 
         @Override
         public AiModel get(Long modelId) {
@@ -104,7 +90,7 @@ class AiWorkerModelConfigResolverTest {
         }
 
         @Override
-        public List<AiModel> list(Long serviceId, Boolean enabled) {
+        public List<AiModel> list(String apiSource, Boolean enabled) {
             return List.of(model);
         }
 
@@ -122,33 +108,18 @@ class AiWorkerModelConfigResolverTest {
         public int delete(Long modelId) {
             return 0;
         }
-
-        @Override
-        public AiModelCheckRecord check(Long modelId) {
-            return null;
-        }
-
-        @Override
-        public Long recordCheck(AiModelCheckCommand command) {
-            return null;
-        }
-
-        @Override
-        public List<AiModelCheckRecord> listCheckRecords(Long modelId) {
-            return List.of();
-        }
     }
 
     private static class FakeCapabilityApplicationService implements AiCapabilityApplicationService {
 
         @Override
-        public AiCapability getCapability(String capability) {
-            return null;
+        public AiBusinessCapability getCapability(String capability) {
+            return AiBusinessCapability.from(capability);
         }
 
         @Override
-        public List<AiCapability> listCapabilities(Boolean enabled) {
-            return List.of();
+        public List<AiBusinessCapability> listCapabilities(Boolean enabled) {
+            return List.of(AiBusinessCapability.TRANSLATE);
         }
 
         @Override

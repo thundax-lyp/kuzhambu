@@ -4,13 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.thundax.kuzhambu.ai.application.capability.result.AiActionStatusResult;
 import com.thundax.kuzhambu.ai.application.capability.service.AiCapabilityApplicationService;
-import com.thundax.kuzhambu.ai.application.config.service.AiServiceConfigApplicationService;
-import com.thundax.kuzhambu.ai.application.model.service.AiModelApplicationService;
+import com.thundax.kuzhambu.ai.application.config.model.service.AiModelApplicationService;
 import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiCapabilityMapping;
-import com.thundax.kuzhambu.ai.domain.model.model.entity.AiModelCheckRecord;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.request.AiConfigRequests.ActionStatusListRequest;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.request.AiConfigRequests.CapabilityQueryRequest;
-import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.request.AiConfigRequests.ModelIdRequest;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -36,15 +33,6 @@ class AiConfigControllerTest {
     }
 
     @Test
-    void routesShouldKeepModelCheckApiPathAndPermission() throws Exception {
-        Method method = AiConfigController.class.getDeclaredMethod("checkModel", ModelIdRequest.class);
-        PostMapping postMapping = method.getAnnotation(PostMapping.class);
-        assertEquals("model/check", postMapping.value()[0]);
-        HasPermission permission = method.getAnnotation(HasPermission.class);
-        assertEquals(List.of("ai:config:edit"), List.of(permission.value()));
-    }
-
-    @Test
     void routesShouldKeepCapabilityMappingListApiPathAndPermission() throws Exception {
         Method method = AiConfigController.class.getDeclaredMethod("listMappings", CapabilityQueryRequest.class);
         PostMapping postMapping = method.getAnnotation(PostMapping.class);
@@ -55,8 +43,7 @@ class AiConfigControllerTest {
 
     @Test
     void listActionStatusesShouldDelegateFiltersToCapabilityService() {
-        AiConfigController controller =
-                new AiConfigController(noServiceConfigService(), noModelService(), actionStatusListCapabilityService());
+        AiConfigController controller = new AiConfigController(noModelService(), actionStatusListCapabilityService());
         ActionStatusListRequest request = new ActionStatusListRequest();
         request.setScope("classics");
         request.setCapability("summary");
@@ -73,24 +60,8 @@ class AiConfigControllerTest {
     }
 
     @Test
-    void checkModelShouldDelegateToModelService() {
-        AiConfigController controller =
-                new AiConfigController(noServiceConfigService(), modelCheckService(), noCapabilityService());
-        ModelIdRequest request = new ModelIdRequest();
-        request.setModelId(9001L);
-
-        var response = controller.checkModel(request);
-
-        assertEquals(8001L, response.getCheckId());
-        assertEquals(9001L, response.getModelId());
-        assertEquals("SUCCEEDED", response.getStatus());
-        assertEquals(Instant.parse("2026-01-01T00:00:00Z"), response.getCheckedAt());
-    }
-
-    @Test
     void listMappingsShouldDelegateFiltersToCapabilityService() {
-        AiConfigController controller =
-                new AiConfigController(noServiceConfigService(), noModelService(), mappingListCapabilityService());
+        AiConfigController controller = new AiConfigController(noModelService(), mappingListCapabilityService());
         CapabilityQueryRequest request = new CapabilityQueryRequest();
         request.setScope("classics");
         request.setCapability("summary");
@@ -107,33 +78,8 @@ class AiConfigControllerTest {
         assertEquals(Instant.parse("2026-01-01T00:00:00Z"), response.get(0).getConfiguredAt());
     }
 
-    private static AiServiceConfigApplicationService noServiceConfigService() {
-        return proxy(AiServiceConfigApplicationService.class, noOpInvocationHandler("service config service"));
-    }
-
     private static AiModelApplicationService noModelService() {
         return proxy(AiModelApplicationService.class, noOpInvocationHandler("model service"));
-    }
-
-    private static AiModelApplicationService modelCheckService() {
-        return proxy(AiModelApplicationService.class, (proxy, method, args) -> {
-            if ("check".equals(method.getName())) {
-                assertEquals(9001L, args[0]);
-                return new AiModelCheckRecord(
-                        null,
-                        8001L,
-                        9001L,
-                        1001L,
-                        "gpt-4o",
-                        "SUCCEEDED",
-                        12,
-                        null,
-                        null,
-                        Instant.parse("2026-01-01T00:00:00Z"));
-            }
-            throw new UnsupportedOperationException(
-                    "model service should not be called in this test: " + method.getName());
-        });
     }
 
     private static AiCapabilityApplicationService noCapabilityService() {

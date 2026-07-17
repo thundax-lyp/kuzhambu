@@ -1,8 +1,6 @@
 package com.thundax.kuzhambu.ai.infra.capability.persistence.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.thundax.kuzhambu.ai.infra.capability.persistence.dataobject.AiActionStatusDO;
-import com.thundax.kuzhambu.ai.infra.capability.persistence.dataobject.AiCapabilityDO;
 import com.thundax.kuzhambu.ai.infra.capability.persistence.dataobject.AiCapabilityMappingDO;
 import java.util.List;
 import org.apache.ibatis.annotations.Insert;
@@ -12,7 +10,7 @@ import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 @Mapper
-public interface AiCapabilityMapper extends BaseMapper<AiCapabilityDO> {
+public interface AiCapabilityMapper {
 
     @Select("select * from ai_capability_mapping where scope = #{scope} and capability = #{capability}")
     AiCapabilityMappingDO selectMapping(@Param("scope") String scope, @Param("capability") String capability);

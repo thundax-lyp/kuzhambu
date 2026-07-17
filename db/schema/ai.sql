@@ -1,69 +1,21 @@
 SET NAMES utf8mb4;
 
-CREATE TABLE IF NOT EXISTS `ai_service_config` (
+CREATE TABLE IF NOT EXISTS `ai_model` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `service_id` bigint NOT NULL,
-    `service_role` varchar(16) NOT NULL,
     `api_source` varchar(32) NOT NULL,
     `base_url` varchar(512) NOT NULL,
     `encrypted_api_key` varchar(2048) DEFAULT NULL,
-    `enabled` tinyint(1) NOT NULL DEFAULT 1,
-    `status` varchar(16) NOT NULL DEFAULT 'UNAVAILABLE',
-    `last_checked_at` datetime(3) DEFAULT NULL,
-    `configured_at` datetime(3) NOT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_ai_service_config_id` (`service_id`),
-    UNIQUE KEY `uk_ai_service_config_role` (`service_role`),
-    KEY `idx_ai_service_config_status` (`enabled`, `status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI服务配置表';
-
-CREATE TABLE IF NOT EXISTS `ai_model` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `model_id` bigint NOT NULL,
-    `service_id` bigint NOT NULL,
     `model_name` varchar(255) NOT NULL,
     `display_name` varchar(255) NOT NULL,
-    `capability_tags_json` json NOT NULL,
+    `capabilities_json` json NOT NULL,
     `default_params_json` json DEFAULT NULL,
     `description` varchar(1024) DEFAULT NULL,
     `enabled` tinyint(1) NOT NULL DEFAULT 1,
     `registered_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_ai_model_id` (`model_id`),
-    UNIQUE KEY `uk_ai_model_service_name` (`service_id`, `model_name`),
-    KEY `idx_ai_model_enabled` (`service_id`, `enabled`)
+    UNIQUE KEY `uk_ai_model_source_name` (`api_source`, `model_name`),
+    KEY `idx_ai_model_enabled` (`api_source`, `enabled`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI模型表';
-
-CREATE TABLE IF NOT EXISTS `ai_model_check_record` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `check_id` bigint NOT NULL,
-    `model_id` bigint NOT NULL,
-    `service_id` bigint NOT NULL,
-    `model_name` varchar(255) NOT NULL,
-    `status` varchar(16) NOT NULL,
-    `latency_ms` int DEFAULT NULL,
-    `error_type` varchar(32) DEFAULT NULL,
-    `error_message` varchar(1024) DEFAULT NULL,
-    `checked_at` datetime(3) NOT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_ai_model_check_record_id` (`check_id`),
-    KEY `idx_ai_model_check_record_model` (`model_id`, `checked_at`),
-    KEY `idx_ai_model_check_record_status` (`status`, `checked_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI模型检测记录表';
-
-CREATE TABLE IF NOT EXISTS `ai_capability` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `capability` varchar(64) NOT NULL,
-    `name` varchar(128) NOT NULL,
-    `required_tags_json` json NOT NULL,
-    `output_mode` varchar(32) NOT NULL,
-    `enabled` tinyint(1) NOT NULL DEFAULT 1,
-    `priority` int NOT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_ai_capability` (`capability`),
-    UNIQUE KEY `uk_ai_capability_priority` (`priority`),
-    KEY `idx_ai_capability_enabled` (`enabled`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI能力定义表';
 
 CREATE TABLE IF NOT EXISTS `ai_capability_mapping` (
     `id` bigint NOT NULL AUTO_INCREMENT,
@@ -82,7 +34,6 @@ CREATE TABLE IF NOT EXISTS `ai_capability_mapping` (
 
 CREATE TABLE IF NOT EXISTS `ai_prompt_template` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `template_id` bigint NOT NULL,
     `scope` varchar(32) NOT NULL,
     `capability` varchar(64) NOT NULL,
     `name` varchar(255) NOT NULL,
@@ -91,39 +42,32 @@ CREATE TABLE IF NOT EXISTS `ai_prompt_template` (
     `current_version_no` int DEFAULT NULL,
     `registered_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_ai_prompt_template_id` (`template_id`),
     UNIQUE KEY `uk_ai_prompt_template_scope` (`scope`, `capability`),
     KEY `idx_ai_prompt_template_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI提示词模板表';
 
 CREATE TABLE IF NOT EXISTS `ai_prompt_version` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `prompt_version_id` bigint NOT NULL,
     `template_id` bigint NOT NULL,
     `version_no` int NOT NULL,
     `message_templates_json` json NOT NULL,
     `variables_snapshot_json` json NOT NULL,
     `output_schema_json` json DEFAULT NULL,
-    `current_key` varchar(160) DEFAULT NULL,
     `change_summary` varchar(512) DEFAULT NULL,
     `registered_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_ai_prompt_version_id` (`prompt_version_id`),
     UNIQUE KEY `uk_ai_prompt_version_no` (`template_id`, `version_no`),
-    UNIQUE KEY `uk_ai_prompt_version_current` (`current_key`),
     KEY `idx_ai_prompt_version_template` (`template_id`, `registered_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI提示词版本表';
 
 CREATE TABLE IF NOT EXISTS `ai_prompt_variable` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `variable_id` bigint NOT NULL,
     `template_id` bigint NOT NULL,
     `variable_name` varchar(128) NOT NULL,
     `required` tinyint(1) NOT NULL DEFAULT 1,
     `description` varchar(512) DEFAULT NULL,
     `priority` int NOT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_ai_prompt_variable_id` (`variable_id`),
     UNIQUE KEY `uk_ai_prompt_variable_name` (`template_id`, `variable_name`),
     UNIQUE KEY `uk_ai_prompt_variable_priority` (`priority`),
     KEY `idx_ai_prompt_variable_template` (`template_id`)

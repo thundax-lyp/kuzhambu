@@ -4,12 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.ai.application.capability.service.AiCapabilityApplicationService;
-import com.thundax.kuzhambu.ai.application.config.service.AiServiceConfigApplicationService;
+import com.thundax.kuzhambu.ai.application.config.model.service.AiModelApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
-import com.thundax.kuzhambu.ai.application.model.service.AiModelApplicationService;
 import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiCapabilityMapping;
-import com.thundax.kuzhambu.ai.domain.config.model.entity.AiServiceConfig;
-import com.thundax.kuzhambu.ai.domain.model.model.entity.AiModel;
+import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiModelCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -17,17 +17,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class AiWorkerModelConfigResolver {
 
-    private final AiServiceConfigApplicationService serviceConfigService;
     private final AiModelApplicationService modelService;
     private final AiCapabilityApplicationService capabilityService;
     private final ObjectMapper objectMapper;
 
     public AiWorkerModelConfigResolver(
-            AiServiceConfigApplicationService serviceConfigService,
             AiModelApplicationService modelService,
             AiCapabilityApplicationService capabilityService,
             ObjectMapper objectMapper) {
-        this.serviceConfigService = serviceConfigService;
         this.modelService = modelService;
         this.capabilityService = capabilityService;
         this.objectMapper = objectMapper;
@@ -39,22 +36,11 @@ public class AiWorkerModelConfigResolver {
         }
 
         AiModel model = resolveModel(command);
-        AiServiceConfig serviceConfig = resolveServiceConfig(command, model);
-
-        if (serviceConfig == null) {
-            throw new IllegalArgumentException("AI service config not found: serviceRole=%s, serviceId=%s"
-                    .formatted(command.getServiceRole(), command.getServiceId()));
+        if (model.getApiSource() == null) {
+            throw new IllegalArgumentException("AI model apiSource is required: " + command.getModelId());
         }
-        if (!serviceConfig.isAvailable()) {
-            throw new IllegalArgumentException("AI service is unavailable: serviceRole=%s, serviceId=%s"
-                    .formatted(serviceConfig.getServiceRole(), serviceConfig.getServiceId()));
-        }
-
-        if (model.getServiceId() != null
-                && serviceConfig.getServiceId() != null
-                && !model.getServiceId().equals(serviceConfig.getServiceId())) {
-            throw new IllegalArgumentException("AI service mismatch: serviceRole=%s, modelId=%s"
-                    .formatted(serviceConfig.getServiceRole(), model.getModelId()));
+        if (isBlank(model.getBaseUrl())) {
+            throw new IllegalArgumentException("AI model baseUrl is required: " + command.getModelId());
         }
 
         if (!isBlank(command.getModelName()) && !command.getModelName().equals(model.getModelName())) {
@@ -63,33 +49,20 @@ public class AiWorkerModelConfigResolver {
         }
 
         return new ResolvedModelConfig(
-                serviceConfig.getServiceId(),
-                serviceConfig.getServiceRole(),
-                model.getModelId(),
-                serviceConfig.getApiSource(),
-                serviceConfig.getBaseUrl(),
-                serviceConfig.getEncryptedApiKey(),
+                command.getServiceId(),
+                command.getServiceRole(),
+                value(model.getId()),
+                model.getApiSource() == null ? null : model.getApiSource().value(),
+                model.getBaseUrl(),
+                model.getEncryptedApiKey(),
                 model.getModelName(),
-                model.getCapabilityTags() == null ? new ArrayList<>() : new ArrayList<>(model.getCapabilityTags()),
+                model.getCapabilities() == null
+                        ? new ArrayList<>()
+                        : model.getCapabilities().stream()
+                                .map(AiModelCapability::value)
+                                .toList(),
                 parseParameters(model),
                 null);
-    }
-
-    private AiServiceConfig resolveServiceConfig(AiInvokeCommand command, AiModel model) {
-        if (!isBlank(command.getServiceRole())) {
-            AiServiceConfig byRole = serviceConfigService.getByRole(command.getServiceRole());
-            if (byRole == null && command.getServiceId() != null) {
-                return serviceConfigService.getByServiceId(command.getServiceId());
-            }
-            return byRole;
-        }
-        if (command.getServiceId() != null) {
-            return serviceConfigService.getByServiceId(command.getServiceId());
-        }
-        if (model != null && model.getServiceId() != null) {
-            return serviceConfigService.getByServiceId(model.getServiceId());
-        }
-        return null;
     }
 
     private AiModel resolveModel(AiInvokeCommand command) {
@@ -138,6 +111,10 @@ public class AiWorkerModelConfigResolver {
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private Long value(AiModelId id) {
+        return id == null ? null : id.value();
     }
 
     public record ResolvedModelConfig(

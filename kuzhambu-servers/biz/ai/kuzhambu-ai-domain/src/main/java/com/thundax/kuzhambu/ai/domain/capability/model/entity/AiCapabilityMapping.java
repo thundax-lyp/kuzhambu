@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.ai.domain.capability.model.entity;
 
-import com.thundax.kuzhambu.ai.domain.model.model.entity.AiModel;
+import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,13 +22,14 @@ public class AiCapabilityMapping {
     private boolean enabled = true;
     private Instant configuredAt;
 
-    public boolean canUse(AiCapability capabilityDefinition, AiModel model) {
-        if (!enabled || capabilityDefinition == null || model == null) {
+    public boolean canUse(AiModel model) {
+        if (!enabled || model == null) {
             return false;
         }
+        AiBusinessCapability.from(capability);
         if (!model.isEnabled()) {
             return false;
         }
-        return capabilityDefinition.isSatisfiedBy(model.getCapabilityTags());
+        return true;
     }
 }

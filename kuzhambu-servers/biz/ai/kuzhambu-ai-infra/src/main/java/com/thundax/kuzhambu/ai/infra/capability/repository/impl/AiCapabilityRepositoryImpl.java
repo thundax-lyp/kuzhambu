@@ -1,14 +1,9 @@
 package com.thundax.kuzhambu.ai.infra.capability.repository.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiActionStatus;
-import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiCapability;
 import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiCapabilityMapping;
 import com.thundax.kuzhambu.ai.domain.capability.repository.AiCapabilityRepository;
 import com.thundax.kuzhambu.ai.infra.capability.persistence.dataobject.AiActionStatusDO;
-import com.thundax.kuzhambu.ai.infra.capability.persistence.dataobject.AiCapabilityDO;
 import com.thundax.kuzhambu.ai.infra.capability.persistence.dataobject.AiCapabilityMappingDO;
 import com.thundax.kuzhambu.ai.infra.capability.persistence.mapper.AiCapabilityMapper;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
@@ -20,27 +15,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class AiCapabilityRepositoryImpl implements AiCapabilityRepository {
 
-    private static final TypeReference<List<String>> STRING_LIST_TYPE = new TypeReference<>() {};
-
     private final AiCapabilityMapper aiCapabilityMapper;
     private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public AiCapabilityRepositoryImpl(AiCapabilityMapper aiCapabilityMapper) {
         this.aiCapabilityMapper = aiCapabilityMapper;
-    }
-
-    @Override
-    public AiCapability getCapability(String capability) {
-        return toCapabilityDomain(aiCapabilityMapper.selectOne(
-                new LambdaQueryWrapper<AiCapabilityDO>().eq(AiCapabilityDO::getCapability, capability)));
-    }
-
-    @Override
-    public List<AiCapability> listCapabilities(Boolean enabled) {
-        return toCapabilityDomainList(aiCapabilityMapper.selectList(new LambdaQueryWrapper<AiCapabilityDO>()
-                .eq(enabled != null, AiCapabilityDO::getEnabled, enabled)
-                .orderByAsc(AiCapabilityDO::getPriority)));
     }
 
     @Override
@@ -102,31 +81,6 @@ public class AiCapabilityRepositoryImpl implements AiCapabilityRepository {
     @Override
     public int updateActionStatus(AiActionStatus actionStatus) {
         return aiCapabilityMapper.updateActionStatus(toActionStatusObject(actionStatus));
-    }
-
-    private AiCapability toCapabilityDomain(AiCapabilityDO dataObject) {
-        if (dataObject == null) {
-            return null;
-        }
-        return new AiCapability(
-                dataObject.getId(),
-                dataObject.getCapability(),
-                dataObject.getName(),
-                toStringList(dataObject.getRequiredTagsJson()),
-                dataObject.getOutputMode(),
-                Boolean.TRUE.equals(dataObject.getEnabled()),
-                dataObject.getPriority() == null ? 0 : dataObject.getPriority());
-    }
-
-    private List<AiCapability> toCapabilityDomainList(List<AiCapabilityDO> dataObjects) {
-        List<AiCapability> capabilities = new ArrayList<>();
-        if (dataObjects == null) {
-            return capabilities;
-        }
-        for (AiCapabilityDO dataObject : dataObjects) {
-            capabilities.add(toCapabilityDomain(dataObject));
-        }
-        return capabilities;
     }
 
     private AiCapabilityMappingDO toMappingObject(AiCapabilityMapping mapping) {
@@ -207,17 +161,6 @@ public class AiCapabilityRepositoryImpl implements AiCapabilityRepository {
             statuses.add(toActionStatusDomain(dataObject));
         }
         return statuses;
-    }
-
-    private List<String> toStringList(String json) {
-        if (json == null || json.isBlank()) {
-            return new ArrayList<>();
-        }
-        try {
-            return objectMapper.readValue(json, STRING_LIST_TYPE);
-        } catch (Exception exception) {
-            throw new IllegalArgumentException("AI capability tags can not be parsed", exception);
-        }
     }
 
     private Long nextId() {

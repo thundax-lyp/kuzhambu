@@ -46,7 +46,7 @@ vi.mock("@/components/kuzhambu-drawer", () => {
 });
 
 const template = {
-    templateId: 1001,
+    id: 1001,
     scope: "classics",
     capability: "summary",
     name: "摘要提示词",
@@ -57,13 +57,12 @@ const template = {
 };
 
 const currentVersion = {
-    promptVersionId: 2002,
+    id: 2002,
     templateId: 1001,
     versionNo: 2,
     messageTemplatesJson: '[{"role":"user","content":"{{title}}"}]',
     variablesSnapshotJson: '[{"variableName":"title","required":true,"priority":1}]',
     outputSchemaJson: '{"type":"object"}',
-    current: true,
     changeSummary: "current",
     registeredAt: "2026-07-02T00:00:00.000Z"
 };
@@ -71,9 +70,8 @@ const currentVersion = {
 const versions = [
     {
         ...currentVersion,
-        promptVersionId: 2001,
+        id: 2001,
         versionNo: 1,
-        current: false,
         changeSummary: "initial"
     },
     currentVersion
@@ -81,7 +79,7 @@ const versions = [
 
 const variables = [
     {
-        variableId: 3001,
+        id: 3001,
         templateId: 1001,
         variableName: "title",
         required: true,

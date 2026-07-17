@@ -1,11 +1,9 @@
 import {
     DeleteOutlined,
     EditOutlined,
-    HistoryOutlined,
     PlusOutlined,
     ReloadOutlined,
-    SaveOutlined,
-    ThunderboltOutlined
+    SaveOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Card, Form, Input, Popconfirm, Select, Switch, Table, Tag, Tooltip } from "antd";
@@ -17,13 +15,20 @@ import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { KuzhambuSpace, KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
 import * as service from "./model-configs-service";
 import type { AiModelChangeCommand, AiModelListQuery } from "./model-configs-service";
-import type { AiModelCheckRecord, AiModelRecord } from "./model-configs-types";
+import type { AiModelRecord } from "./model-configs-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./model-configs-page.css";
 
 type ModelFormValues = AiModelChangeCommand;
 
 const DEFAULT_PARAMS = "{}";
+const API_SOURCE_OPTIONS = ["OPENAI", "BYTEDANCE"];
+const MODEL_CAPABILITY_OPTIONS = [
+    "TEXT_TO_TEXT",
+    "TEXT_TO_IMAGE",
+    "IMAGE_TO_TEXT",
+    "IMAGE_TO_IMAGE"
+];
 
 const formatDateTime = (value?: string | null) => {
     if (!value) {
@@ -73,14 +78,6 @@ export const ModelsPage = () => {
     const [modelNameKeyword, setModelNameKeyword] = useState("");
     const [editingModel, setEditingModel] = useState<AiModelRecord | null>(null);
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const [historyModel, setHistoryModel] = useState<AiModelRecord | null>(null);
-
-    const servicesQuery = useQuery({
-        queryKey: ["ai", "model-configs", "services"],
-        queryFn: service.listModelServices,
-        enabled: canViewConfig,
-        retry: false
-    });
 
     const modelsQuery = useQuery({
         queryKey: ["ai", "model-configs", query],
@@ -88,24 +85,6 @@ export const ModelsPage = () => {
         enabled: canViewConfig,
         retry: false
     });
-
-    const historyQuery = useQuery({
-        queryKey: ["ai", "model-configs", "check-records", historyModel?.modelId],
-        queryFn: () => service.listModelCheckRecords(historyModel?.modelId || 0),
-        enabled: Boolean(historyModel?.modelId) && canViewConfig,
-        retry: false
-    });
-
-    const serviceOptions = useMemo(() => {
-        return (servicesQuery.data || []).map((record) => ({
-            label: `${record.serviceRole} / ${record.serviceId}`,
-            value: record.serviceId
-        }));
-    }, [servicesQuery.data]);
-
-    const serviceById = useMemo(() => {
-        return new Map((servicesQuery.data || []).map((record) => [record.serviceId, record]));
-    }, [servicesQuery.data]);
 
     const filteredModels = useMemo(() => {
         const keyword = modelNameKeyword.trim().toLowerCase();
@@ -161,20 +140,6 @@ export const ModelsPage = () => {
         }
     });
 
-    const checkMutation = useMutation({
-        mutationFn: service.refreshModelCheck,
-        onSuccess: async (record) => {
-            await invalidateModels();
-            if (historyModel?.modelId === record.modelId) {
-                await historyQuery.refetch();
-            }
-            message.success(record.status === "SUCCEEDED" ? "检测成功" : "检测已记录失败结果");
-        },
-        onError: (error) => {
-            message.error(error instanceof Error ? error.message : "模型检测失败");
-        }
-    });
-
     useEffect(() => {
         if (modelsQuery.isError) {
             const error = modelsQuery.error;
@@ -185,10 +150,12 @@ export const ModelsPage = () => {
     const openCreate = () => {
         setEditingModel(null);
         form.setFieldsValue({
-            serviceId: serviceOptions[0]?.value,
+            apiSource: API_SOURCE_OPTIONS[0],
+            baseUrl: "",
+            apiKey: "",
             modelName: "",
             displayName: "",
-            capabilityTags: [],
+            capabilities: [],
             defaultParamsJson: DEFAULT_PARAMS,
             description: "",
             enabled: true
@@ -199,11 +166,13 @@ export const ModelsPage = () => {
     const openEdit = (record: AiModelRecord) => {
         setEditingModel(record);
         form.setFieldsValue({
-            modelId: record.modelId,
-            serviceId: record.serviceId,
+            id: record.id,
+            apiSource: record.apiSource,
+            baseUrl: record.baseUrl || "",
+            apiKey: "",
             modelName: record.modelName,
             displayName: record.displayName || "",
-            capabilityTags: record.capabilityTags || [],
+            capabilities: record.capabilities || [],
             defaultParamsJson: normalizeJsonText(record.defaultParamsJson),
             description: record.description || "",
             enabled: record.enabled
@@ -215,11 +184,11 @@ export const ModelsPage = () => {
         const values = await form.validateFields();
         const command = {
             ...values,
-            modelId: editingModel?.modelId || values.modelId || null,
+            id: editingModel?.id || values.id || null,
             defaultParamsJson: normalizeJsonText(values.defaultParamsJson),
             displayName: values.displayName?.trim() || null,
             description: values.description?.trim() || null,
-            capabilityTags: values.capabilityTags || []
+            capabilities: values.capabilities || []
         };
         if (editingModel) {
             await changeMutation.mutateAsync(command);
@@ -230,11 +199,13 @@ export const ModelsPage = () => {
 
     const changeEnabled = async (record: AiModelRecord, enabled: boolean) => {
         await changeMutation.mutateAsync({
-            modelId: record.modelId,
-            serviceId: record.serviceId,
+            id: record.id,
+            apiSource: record.apiSource,
+            baseUrl: record.baseUrl || "",
+            apiKey: "",
             modelName: record.modelName,
             displayName: record.displayName || null,
-            capabilityTags: record.capabilityTags || [],
+            capabilities: record.capabilities || [],
             defaultParamsJson: normalizeJsonText(record.defaultParamsJson),
             description: record.description || null,
             enabled
@@ -254,18 +225,14 @@ export const ModelsPage = () => {
             key: "modelName"
         },
         {
-            title: "serviceId",
-            dataIndex: "serviceId",
-            key: "serviceId",
-            render: (value: number) => {
-                const serviceRecord = serviceById.get(value);
-                return serviceRecord ? `${serviceRecord.serviceRole} / ${value}` : value;
-            }
+            title: "apiSource",
+            dataIndex: "apiSource",
+            key: "apiSource"
         },
         {
-            title: "capabilityTags",
-            dataIndex: "capabilityTags",
-            key: "capabilityTags",
+            title: "capabilities",
+            dataIndex: "capabilities",
+            key: "capabilities",
             render: (tags: string[] = []) => (
                 <KuzhambuSpace>
                     {tags.map((tag) => (
@@ -301,22 +268,6 @@ export const ModelsPage = () => {
                         编辑
                     </KuzhambuButton>
                     <KuzhambuButton
-                        testId="ai-model-configs-model-configs-check-button"
-                        icon={<ThunderboltOutlined />}
-                        disabled={!canEditConfig}
-                        loading={checkMutation.isPending}
-                        onClick={() => checkMutation.mutate(record.modelId)}
-                    >
-                        检测
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="ai-model-configs-model-configs-check-history-button"
-                        icon={<HistoryOutlined />}
-                        onClick={() => setHistoryModel(record)}
-                    >
-                        检测历史
-                    </KuzhambuButton>
-                    <KuzhambuButton
                         testId="ai-model-configs-model-configs-disable-or-enable-button"
                         disabled={!canEditConfig}
                         onClick={() => void changeEnabled(record, !record.enabled)}
@@ -329,7 +280,7 @@ export const ModelsPage = () => {
                         okText="删除"
                         cancelText="取消"
                         disabled={!canEditConfig}
-                        onConfirm={() => deleteMutation.mutate(record.modelId)}
+                        onConfirm={() => deleteMutation.mutate(record.id)}
                     >
                         <KuzhambuButton
                             testId="ai-model-configs-model-configs-delete-button"
@@ -345,54 +296,19 @@ export const ModelsPage = () => {
         }
     ];
 
-    const historyColumns: ColumnsType<AiModelCheckRecord> = [
-        {
-            title: "status",
-            dataIndex: "status",
-            key: "status",
-            render: (status: string) => (
-                <Tag color={status === "SUCCEEDED" ? "green" : "red"}>{status}</Tag>
-            )
-        },
-        {
-            title: "latencyMs",
-            dataIndex: "latencyMs",
-            key: "latencyMs",
-            render: (value?: number | null) => value ?? "-"
-        },
-        {
-            title: "errorType",
-            dataIndex: "errorType",
-            key: "errorType",
-            render: (value?: string | null) => value || "-"
-        },
-        {
-            title: "errorMessage",
-            dataIndex: "errorMessage",
-            key: "errorMessage",
-            render: (value?: string | null) => value || "-"
-        },
-        {
-            title: "checkedAt",
-            dataIndex: "checkedAt",
-            key: "checkedAt",
-            render: formatDateTime
-        }
-    ];
-
     return (
         <KuzhambuPage
             className="model-configs-page"
             eyebrow="AI"
             title="AI 模型配置"
-            description="管理模型、能力标签和检测历史"
+            description="管理模型和能力标签"
             actions={
                 <KuzhambuSpace>
                     <Tooltip title="刷新">
                         <KuzhambuButton
                             testId="ai-model-configs-model-configs-refresh-button"
                             icon={<ReloadOutlined />}
-                            loading={modelsQuery.isFetching || servicesQuery.isFetching}
+                            loading={modelsQuery.isFetching}
                             onClick={() => void invalidateModels()}
                         />
                     </Tooltip>
@@ -410,16 +326,16 @@ export const ModelsPage = () => {
         >
             <Card className="model-configs-filter-card">
                 <Form layout="inline" className="model-configs-filter-form">
-                    <Form.Item label="服务">
+                    <Form.Item label="供应商">
                         <Select
                             allowClear
                             className="model-configs-filter-control"
-                            options={serviceOptions}
-                            value={query.serviceId ?? undefined}
-                            onChange={(serviceId) =>
+                            options={API_SOURCE_OPTIONS.map((value) => ({ label: value, value }))}
+                            value={query.apiSource ?? undefined}
+                            onChange={(apiSource) =>
                                 setQuery((current) => ({
                                     ...current,
-                                    serviceId: serviceId ?? null
+                                    apiSource: apiSource ?? null
                                 }))
                             }
                         />
@@ -466,7 +382,7 @@ export const ModelsPage = () => {
 
             <Table<AiModelRecord>
                 aria-label="AI 模型列表"
-                rowKey="modelId"
+                rowKey="id"
                 className="model-configs-table"
                 columns={columns}
                 dataSource={filteredModels}
@@ -501,15 +417,31 @@ export const ModelsPage = () => {
                 }
             >
                 <Form form={form} layout="vertical" className="model-configs-form">
-                    <Form.Item name="modelId" hidden>
+                    <Form.Item name="id" hidden>
                         <Input />
                     </Form.Item>
                     <Form.Item
-                        label="serviceId"
-                        name="serviceId"
-                        rules={[{ required: true, message: "请选择服务" }]}
+                        label="apiSource"
+                        name="apiSource"
+                        rules={[{ required: true, message: "请选择供应商" }]}
                     >
-                        <Select options={serviceOptions} />
+                        <Select
+                            options={API_SOURCE_OPTIONS.map((value) => ({ label: value, value }))}
+                        />
+                    </Form.Item>
+                    <Form.Item
+                        label="baseUrl"
+                        name="baseUrl"
+                        rules={[{ required: true, message: "请输入服务地址" }]}
+                    >
+                        <Input />
+                    </Form.Item>
+                    <Form.Item label="apiKey" name="apiKey">
+                        <Input.Password
+                            placeholder={
+                                editingModel?.apiKeyConfigured ? "已配置，留空则不更新" : ""
+                            }
+                        />
                     </Form.Item>
                     <Form.Item
                         label="modelName"
@@ -521,8 +453,14 @@ export const ModelsPage = () => {
                     <Form.Item label="displayName" name="displayName">
                         <Input />
                     </Form.Item>
-                    <Form.Item label="capabilityTags" name="capabilityTags">
-                        <Select mode="tags" tokenSeparators={[",", " "]} />
+                    <Form.Item label="capabilities" name="capabilities">
+                        <Select
+                            mode="multiple"
+                            options={MODEL_CAPABILITY_OPTIONS.map((value) => ({
+                                label: value,
+                                value
+                            }))}
+                        />
                     </Form.Item>
                     <Form.Item
                         label="defaultParamsJson"
@@ -538,22 +476,6 @@ export const ModelsPage = () => {
                         <Switch checkedChildren="启用" unCheckedChildren="禁用" />
                     </Form.Item>
                 </Form>
-            </KuzhambuDrawer>
-
-            <KuzhambuDrawer
-                open={Boolean(historyModel)}
-                title="检测历史"
-                size="large"
-                onClose={() => setHistoryModel(null)}
-            >
-                <Table<AiModelCheckRecord>
-                    aria-label="模型检测历史"
-                    rowKey="checkId"
-                    columns={historyColumns}
-                    dataSource={historyQuery.data || []}
-                    loading={historyQuery.isFetching}
-                    pagination={false}
-                />
             </KuzhambuDrawer>
         </KuzhambuPage>
     );

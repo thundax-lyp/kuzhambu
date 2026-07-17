@@ -1,15 +1,10 @@
 package com.thundax.kuzhambu.ai.domain.capability.repository;
 
 import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiActionStatus;
-import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiCapability;
 import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiCapabilityMapping;
 import java.util.List;
 
 public interface AiCapabilityRepository {
-
-    AiCapability getCapability(String capability);
-
-    List<AiCapability> listCapabilities(Boolean enabled);
 
     AiCapabilityMapping getMapping(String scope, String capability);
 

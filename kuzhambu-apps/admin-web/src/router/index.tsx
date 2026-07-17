@@ -5,7 +5,6 @@ import { CapabilityMappingsPage } from "../pages/ai/capability-mappings/capabili
 import { InvocationsPage } from "../pages/ai/invocations/invocations-page";
 import { ModelsPage } from "../pages/ai/model-configs/model-configs-page";
 import { PromptsPage } from "../pages/ai/prompts/prompts-page";
-import { ServicesPage } from "../pages/ai/services/services-page";
 import { AuditLogPage } from "../pages/audit/audit-log/audit-log-page";
 import { LoginPage } from "../pages/auth/login/login-page";
 import { QaAdminPage } from "../pages/discovery/qa-admin/qa-admin-page";
@@ -93,10 +92,6 @@ const router = createBrowserRouter(
                         {
                             path: "audit/logs",
                             element: <AuditLogPage />
-                        },
-                        {
-                            path: "ai/services",
-                            element: <ServicesPage />
                         },
                         {
                             path: "ai/models",

@@ -5,13 +5,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.thundax.kuzhambu.ai.application.capability.command.AiCapabilityMappingSaveCommand;
 import com.thundax.kuzhambu.ai.application.capability.result.AiActionStatusResult;
 import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiActionStatus;
-import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiCapability;
 import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiCapabilityMapping;
 import com.thundax.kuzhambu.ai.domain.capability.repository.AiCapabilityRepository;
-import com.thundax.kuzhambu.ai.domain.config.model.entity.AiServiceConfig;
-import com.thundax.kuzhambu.ai.domain.model.model.entity.AiModel;
-import com.thundax.kuzhambu.ai.domain.model.model.entity.AiModelCheckRecord;
-import com.thundax.kuzhambu.ai.domain.model.repository.AiModelRepository;
+import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiApiSource;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiModelCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
+import com.thundax.kuzhambu.ai.domain.config.repository.AiModelRepository;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ class AiCapabilityApplicationServiceImplTest {
     void saveMappingShouldAllowDisabledMappingWithMismatchedTags() {
         FakeCapabilityRepository capabilityRepository = new FakeCapabilityRepository();
         FakeModelRepository modelRepository = new FakeModelRepository();
-        modelRepository.model.setCapabilityTags(List.of("embedding"));
+        modelRepository.model.setCapabilities(List.of(AiModelCapability.TEXT_TO_IMAGE));
         AiCapabilityApplicationServiceImpl service =
                 new AiCapabilityApplicationServiceImpl(capabilityRepository, modelRepository);
         AiCapabilityMappingSaveCommand command = new AiCapabilityMappingSaveCommand();
@@ -63,7 +63,7 @@ class AiCapabilityApplicationServiceImplTest {
         FakeCapabilityRepository capabilityRepository = new FakeCapabilityRepository();
         capabilityRepository.setMapping(enabledMapping());
         FakeModelRepository modelRepository = new FakeModelRepository();
-        modelRepository.serviceConfig.setStatus("UNAVAILABLE");
+        modelRepository.model.setBaseUrl("");
         AiCapabilityApplicationServiceImpl service =
                 new AiCapabilityApplicationServiceImpl(capabilityRepository, modelRepository);
 
@@ -90,16 +90,6 @@ class AiCapabilityApplicationServiceImplTest {
 
         private void setMapping(AiCapabilityMapping mapping) {
             this.mapping = mapping;
-        }
-
-        @Override
-        public AiCapability getCapability(String capability) {
-            return new AiCapability(1L, capability, "摘要生成", List.of("chat", "long-context"), "JSON", true, 10);
-        }
-
-        @Override
-        public List<AiCapability> listCapabilities(Boolean enabled) {
-            return new ArrayList<>();
         }
 
         @Override
@@ -157,47 +147,31 @@ class AiCapabilityApplicationServiceImplTest {
     private static class FakeModelRepository implements AiModelRepository {
 
         private final AiModel model = new AiModel(
-                1L,
-                2001L,
-                1001L,
+                AiModelId.of(2001L),
+                AiApiSource.OPENAI,
+                "https://api.example",
+                "encrypted",
                 "gpt-4o",
                 "GPT 4o",
-                List.of("chat", "long-context"),
+                List.of(AiModelCapability.TEXT_TO_TEXT),
                 "{}",
                 "matched model",
                 true,
                 null);
-        private final AiServiceConfig serviceConfig = new AiServiceConfig(
-                1L, 1001L, "PRIMARY", "OPENAI", "https://api.example", "encrypted", true, "AVAILABLE", null, null);
 
         @Override
-        public AiServiceConfig getServiceConfigByServiceId(Long serviceId) {
-            return serviceConfig;
-        }
-
-        @Override
-        public AiServiceConfig getServiceConfigByRole(String serviceRole) {
-            return null;
-        }
-
-        @Override
-        public Long saveServiceConfig(AiServiceConfig serviceConfig) {
-            return null;
-        }
-
-        @Override
-        public AiModel getModelByModelId(Long modelId) {
-            model.setModelId(modelId);
+        public AiModel getModelById(AiModelId modelId) {
+            model.setId(modelId);
             return model;
         }
 
         @Override
-        public List<AiModel> listModels(Long serviceId, Boolean enabled) {
+        public List<AiModel> listModels(String apiSource, Boolean enabled) {
             return new ArrayList<>();
         }
 
         @Override
-        public Long saveModel(AiModel model) {
+        public AiModelId saveModel(AiModel model) {
             return null;
         }
 
@@ -207,18 +181,8 @@ class AiCapabilityApplicationServiceImplTest {
         }
 
         @Override
-        public int deleteModel(Long modelId) {
+        public int deleteModel(AiModelId modelId) {
             return 0;
-        }
-
-        @Override
-        public Long insertCheckRecord(AiModelCheckRecord checkRecord) {
-            return null;
-        }
-
-        @Override
-        public List<AiModelCheckRecord> listCheckRecords(Long modelId) {
-            return new ArrayList<>();
         }
     }
 }

@@ -13,7 +13,7 @@ export interface AiPromptTemplateQuery {
 }
 
 export interface AiPromptTemplateChangeCommand {
-    templateId?: number | null;
+    id?: number | null;
     scope: string;
     capability: string;
     name: string;
@@ -27,27 +27,27 @@ export interface AiPromptTemplateChangeCommand {
 }
 
 export interface AiPromptTemplateIdCommand {
-    templateId: number;
+    id: number;
 }
 
 export interface AiPromptVariableValidateCommand {
-    templateId: number;
+    id: number;
     providedNames: string[];
 }
 
 export interface AiPromptVersionCompareCommand {
-    templateId: number;
+    id: number;
     leftVersionNo: number;
     rightVersionNo: number;
 }
 
 export interface AiPromptVersionRollbackCommand {
-    templateId: number;
+    id: number;
     versionNo: number;
 }
 
 export interface AiPromptSuggestionCommand {
-    templateId: number;
+    id: number;
     changeSummary?: string | null;
 }
 
@@ -62,7 +62,7 @@ export const listPromptCapabilities = () => {
 
 export const getPromptTemplateByScope = (query: AiPromptTemplateQuery) => {
     return postJson<AiPromptTemplateRecord, AiPromptTemplateQuery>(
-        "/ai/prompt/template/get-by-scope",
+        "/ai/config/prompt/template/get-by-scope",
         {
             body: query
         }
@@ -71,7 +71,7 @@ export const getPromptTemplateByScope = (query: AiPromptTemplateQuery) => {
 
 export const changePromptTemplate = (command: AiPromptTemplateChangeCommand) => {
     return postJson<AiPromptTemplateRecord, AiPromptTemplateChangeCommand>(
-        "/ai/prompt/template/save",
+        "/ai/config/prompt/template/save",
         {
             body: command
         }
@@ -80,22 +80,25 @@ export const changePromptTemplate = (command: AiPromptTemplateChangeCommand) => 
 
 export const getCurrentPromptVersion = (templateId: number) => {
     return postJson<AiPromptVersionRecord, AiPromptTemplateIdCommand>(
-        "/ai/prompt/version/current",
+        "/ai/config/prompt/version/current",
         {
-            body: { templateId }
+            body: { id: templateId }
         }
     );
 };
 
 export const listPromptVersions = (templateId: number) => {
-    return postJson<AiPromptVersionRecord[], AiPromptTemplateIdCommand>("/ai/prompt/version/list", {
-        body: { templateId }
-    });
+    return postJson<AiPromptVersionRecord[], AiPromptTemplateIdCommand>(
+        "/ai/config/prompt/version/list",
+        {
+            body: { id: templateId }
+        }
+    );
 };
 
 export const previewPromptVersionCompare = (command: AiPromptVersionCompareCommand) => {
     return postJson<AiPromptVersionRecord[], AiPromptVersionCompareCommand>(
-        "/ai/prompt/version/compare",
+        "/ai/config/prompt/version/compare",
         {
             body: command
         }
@@ -104,7 +107,7 @@ export const previewPromptVersionCompare = (command: AiPromptVersionCompareComma
 
 export const changePromptVersionRollback = (command: AiPromptVersionRollbackCommand) => {
     return postJson<AiPromptVersionRecord, AiPromptVersionRollbackCommand>(
-        "/ai/prompt/version/rollback",
+        "/ai/config/prompt/version/rollback",
         {
             body: command
         }
@@ -113,22 +116,25 @@ export const changePromptVersionRollback = (command: AiPromptVersionRollbackComm
 
 export const listPromptVariables = (templateId: number) => {
     return postJson<AiPromptVariableRecord[], AiPromptTemplateIdCommand>(
-        "/ai/prompt/variable/list",
+        "/ai/config/prompt/variable/list",
         {
-            body: { templateId }
+            body: { id: templateId }
         }
     );
 };
 
 export const confirmPromptVariables = (command: AiPromptVariableValidateCommand) => {
-    return postJson<boolean, AiPromptVariableValidateCommand>("/ai/prompt/variable/validate", {
-        body: command
-    });
+    return postJson<boolean, AiPromptVariableValidateCommand>(
+        "/ai/config/prompt/variable/validate",
+        {
+            body: command
+        }
+    );
 };
 
 export const regeneratePromptSuggestion = (command: AiPromptSuggestionCommand) => {
     return postJson<AiPromptVersionRecord, AiPromptSuggestionCommand>(
-        "/ai/prompt/optimization/suggest",
+        "/ai/config/prompt/optimization/suggest",
         {
             body: command
         }

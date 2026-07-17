@@ -8,7 +8,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
-import java.time.Instant;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,87 +18,15 @@ public final class AiConfigRequests {
 
     @Getter
     @Setter
-    @Schema(name = "AiServiceIdRequest", description = "AI服务ID请求")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class ServiceIdRequest implements Serializable {
-
-        @NotNull
-        @Schema(name = "serviceId", description = "服务ID")
-        @JsonProperty(value = "serviceId")
-        private Long serviceId;
-    }
-
-    @Getter
-    @Setter
-    @Schema(name = "AiServiceRoleRequest", description = "AI服务角色请求")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class ServiceRoleRequest implements Serializable {
-
-        @NotBlank
-        @Size(max = 32)
-        @Schema(name = "serviceRole", description = "服务角色")
-        @JsonProperty(value = "serviceRole")
-        private String serviceRole;
-    }
-
-    @Getter
-    @Setter
-    @Schema(name = "AiServiceConfigSaveRequest", description = "AI服务配置保存请求")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class ServiceConfigSaveRequest implements Serializable {
-
-        @NotNull
-        @Schema(name = "serviceId", description = "服务ID")
-        @JsonProperty(value = "serviceId")
-        private Long serviceId;
-
-        @NotBlank
-        @Size(max = 32)
-        @Schema(name = "serviceRole", description = "服务角色")
-        @JsonProperty(value = "serviceRole")
-        private String serviceRole;
-
-        @NotBlank
-        @Size(max = 64)
-        @Schema(name = "apiSource", description = "API来源")
-        @JsonProperty(value = "apiSource")
-        private String apiSource;
-
-        @NotBlank
-        @Size(max = 500)
-        @Schema(name = "baseUrl", description = "模型服务基础地址")
-        @JsonProperty(value = "baseUrl")
-        private String baseUrl;
-
-        @Size(max = 1000)
-        @Schema(name = "encryptedApiKey", description = "加密后的API Key")
-        @JsonProperty(value = "encryptedApiKey")
-        private String encryptedApiKey;
-
-        @Schema(name = "enabled", description = "是否启用")
-        @JsonProperty(value = "enabled")
-        private Boolean enabled;
-
-        @Size(max = 32)
-        @Schema(name = "status", description = "服务状态")
-        @JsonProperty(value = "status")
-        private String status;
-    }
-
-    @Getter
-    @Setter
     @Schema(name = "AiModelIdRequest", description = "AI模型ID请求")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ModelIdRequest implements Serializable {
 
         @NotNull
-        @Schema(name = "modelId", description = "模型ID")
-        @JsonProperty(value = "modelId")
-        private Long modelId;
+        @Schema(name = "id", description = "模型ID")
+        @JsonProperty(value = "id")
+        private Long id;
     }
 
     @Getter
@@ -109,9 +36,9 @@ public final class AiConfigRequests {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ModelListRequest implements Serializable {
 
-        @Schema(name = "serviceId", description = "服务ID")
-        @JsonProperty(value = "serviceId")
-        private Long serviceId;
+        @Schema(name = "apiSource", description = "API来源")
+        @JsonProperty(value = "apiSource")
+        private String apiSource;
 
         @Schema(name = "enabled", description = "是否启用")
         @JsonProperty(value = "enabled")
@@ -125,14 +52,24 @@ public final class AiConfigRequests {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ModelSaveRequest implements Serializable {
 
-        @Schema(name = "modelId", description = "模型ID")
-        @JsonProperty(value = "modelId")
-        private Long modelId;
+        @Schema(name = "id", description = "模型ID")
+        @JsonProperty(value = "id")
+        private Long id;
 
-        @NotNull
-        @Schema(name = "serviceId", description = "服务ID")
-        @JsonProperty(value = "serviceId")
-        private Long serviceId;
+        @NotBlank
+        @Schema(name = "apiSource", description = "API来源")
+        @JsonProperty(value = "apiSource")
+        private String apiSource;
+
+        @NotBlank
+        @Size(max = 512)
+        @Schema(name = "baseUrl", description = "服务地址")
+        @JsonProperty(value = "baseUrl")
+        private String baseUrl;
+
+        @Schema(name = "apiKey", description = "API Key")
+        @JsonProperty(value = "apiKey")
+        private String apiKey;
 
         @NotBlank
         @Size(max = 128)
@@ -145,9 +82,9 @@ public final class AiConfigRequests {
         @JsonProperty(value = "displayName")
         private String displayName;
 
-        @Schema(name = "capabilityTags", description = "能力标签")
-        @JsonProperty(value = "capabilityTags")
-        private List<String> capabilityTags;
+        @Schema(name = "capabilities", description = "模型能力")
+        @JsonProperty(value = "capabilities")
+        private List<String> capabilities;
 
         @Schema(name = "defaultParamsJson", description = "默认参数JSON")
         @JsonProperty(value = "defaultParamsJson")
@@ -161,58 +98,6 @@ public final class AiConfigRequests {
         @Schema(name = "enabled", description = "是否启用")
         @JsonProperty(value = "enabled")
         private Boolean enabled;
-    }
-
-    @Getter
-    @Setter
-    @Schema(name = "AiModelCheckRecordRequest", description = "AI模型检测记录请求")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class ModelCheckRecordRequest implements Serializable {
-
-        @Schema(name = "checkId", description = "检测ID")
-        @JsonProperty(value = "checkId")
-        private Long checkId;
-
-        @NotNull
-        @Schema(name = "modelId", description = "模型ID")
-        @JsonProperty(value = "modelId")
-        private Long modelId;
-
-        @NotNull
-        @Schema(name = "serviceId", description = "服务ID")
-        @JsonProperty(value = "serviceId")
-        private Long serviceId;
-
-        @NotBlank
-        @Size(max = 128)
-        @Schema(name = "modelName", description = "模型名称")
-        @JsonProperty(value = "modelName")
-        private String modelName;
-
-        @NotBlank
-        @Size(max = 32)
-        @Schema(name = "status", description = "检测状态")
-        @JsonProperty(value = "status")
-        private String status;
-
-        @Schema(name = "latencyMs", description = "延迟毫秒")
-        @JsonProperty(value = "latencyMs")
-        private Integer latencyMs;
-
-        @Size(max = 64)
-        @Schema(name = "errorType", description = "错误类型")
-        @JsonProperty(value = "errorType")
-        private String errorType;
-
-        @Size(max = 500)
-        @Schema(name = "errorMessage", description = "错误信息")
-        @JsonProperty(value = "errorMessage")
-        private String errorMessage;
-
-        @Schema(name = "checkedAt", description = "检测时间")
-        @JsonProperty(value = "checkedAt")
-        private Instant checkedAt;
     }
 
     @Getter

@@ -4,15 +4,16 @@ import com.thundax.kuzhambu.ai.application.capability.command.AiCapabilityMappin
 import com.thundax.kuzhambu.ai.application.capability.result.AiActionStatusResult;
 import com.thundax.kuzhambu.ai.application.capability.service.AiCapabilityApplicationService;
 import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiActionStatus;
-import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiCapability;
 import com.thundax.kuzhambu.ai.domain.capability.model.entity.AiCapabilityMapping;
 import com.thundax.kuzhambu.ai.domain.capability.repository.AiCapabilityRepository;
-import com.thundax.kuzhambu.ai.domain.config.model.entity.AiServiceConfig;
-import com.thundax.kuzhambu.ai.domain.model.model.entity.AiModel;
-import com.thundax.kuzhambu.ai.domain.model.repository.AiModelRepository;
+import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
+import com.thundax.kuzhambu.ai.domain.config.repository.AiModelRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,13 +37,16 @@ public class AiCapabilityApplicationServiceImpl implements AiCapabilityApplicati
     }
 
     @Override
-    public AiCapability getCapability(String capability) {
-        return isBlank(capability) ? null : aiCapabilityRepository.getCapability(capability);
+    public AiBusinessCapability getCapability(String capability) {
+        return isBlank(capability) ? null : AiBusinessCapability.from(capability);
     }
 
     @Override
-    public List<AiCapability> listCapabilities(Boolean enabled) {
-        return aiCapabilityRepository.listCapabilities(enabled);
+    public List<AiBusinessCapability> listCapabilities(Boolean enabled) {
+        if (Boolean.FALSE.equals(enabled)) {
+            return List.of();
+        }
+        return Arrays.asList(AiBusinessCapability.values());
     }
 
     @Override
@@ -147,9 +151,9 @@ public class AiCapabilityApplicationServiceImpl implements AiCapabilityApplicati
         if (!mapping.isEnabled()) {
             return;
         }
-        AiCapability capability = aiCapabilityRepository.getCapability(mapping.getCapability());
-        AiModel model = aiModelRepository.getModelByModelId(mapping.getModelId());
-        if (!mapping.canUse(capability, model)) {
+        AiBusinessCapability.from(mapping.getCapability());
+        AiModel model = aiModelRepository.getModelById(AiModelId.of(mapping.getModelId()));
+        if (!mapping.canUse(model)) {
             throw new BizException("Model capability tags do not satisfy AI capability: " + mapping.getCapability());
         }
     }
@@ -157,21 +161,17 @@ public class AiCapabilityApplicationServiceImpl implements AiCapabilityApplicati
     private AiActionStatus buildActionStatus(
             AiActionStatus current, String scope, String capabilityName, Instant checkedAt) {
         AiCapabilityMapping mapping = aiCapabilityRepository.getMapping(scope, capabilityName);
-        AiCapability capability = aiCapabilityRepository.getCapability(capabilityName);
-        AiModel model = mapping == null ? null : aiModelRepository.getModelByModelId(mapping.getModelId());
+        AiModel model = mapping == null ? null : aiModelRepository.getModelById(AiModelId.of(mapping.getModelId()));
         Long actionStatusId = current == null ? null : current.getActionStatusId();
         if (mapping == null || !mapping.isEnabled()) {
             return AiActionStatus.unavailable(
                     actionStatusId, scope, capabilityName, ACTION_UNAVAILABLE_NO_MAPPING, checkedAt);
         }
-        if (!mapping.canUse(capability, model)) {
+        if (!mapping.canUse(model)) {
             return AiActionStatus.unavailable(
                     actionStatusId, scope, capabilityName, ACTION_UNAVAILABLE_MODEL_MISMATCH, checkedAt);
         }
-        AiServiceConfig serviceConfig = model.getServiceId() == null
-                ? null
-                : aiModelRepository.getServiceConfigByServiceId(model.getServiceId());
-        if (serviceConfig == null || !serviceConfig.isAvailable()) {
+        if (model.getApiSource() == null || isBlank(model.getBaseUrl())) {
             return AiActionStatus.unavailable(
                     actionStatusId, scope, capabilityName, ACTION_UNAVAILABLE_SERVICE, checkedAt);
         }

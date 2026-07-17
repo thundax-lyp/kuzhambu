@@ -1,22 +1,19 @@
 import { postJson } from "@/api/http";
-import type {
-    AiModelCheckRecord,
-    AiModelRecord,
-    AiModelServiceRecord
-} from "./model-configs-types";
-import type { AiServiceRole } from "../services/services-types";
+import type { AiModelRecord } from "./model-configs-types";
 
 export interface AiModelListQuery {
-    serviceId?: number | null;
+    apiSource?: string | null;
     enabled?: boolean | null;
 }
 
 export interface AiModelChangeCommand {
-    modelId?: number | null;
-    serviceId: number;
+    id?: number | null;
+    apiSource: string;
+    baseUrl: string;
+    apiKey?: string | null;
     modelName: string;
     displayName?: string | null;
-    capabilityTags: string[];
+    capabilities: string[];
     defaultParamsJson?: string | null;
     description?: string | null;
     enabled: boolean;
@@ -40,40 +37,8 @@ export const changeModelConfig = (command: AiModelChangeCommand) => {
     });
 };
 
-export const deleteModelConfig = (modelId: number) => {
-    return postJson<boolean, { modelId: number }>("/ai/config/model/delete", {
-        body: { modelId }
+export const deleteModelConfig = (id: number) => {
+    return postJson<boolean, { id: number }>("/ai/config/model/delete", {
+        body: { id }
     });
-};
-
-export const refreshModelCheck = (modelId: number) => {
-    return postJson<AiModelCheckRecord, { modelId: number }>("/ai/config/model/check", {
-        body: { modelId }
-    });
-};
-
-export const listModelCheckRecords = (modelId: number) => {
-    return postJson<AiModelCheckRecord[], { modelId: number }>("/ai/config/model/check-records", {
-        body: { modelId }
-    });
-};
-
-export const getModelServiceByRole = (serviceRole: string) => {
-    return postJson<AiModelServiceRecord, { serviceRole: AiServiceRole }>(
-        "/ai/config/service/get-by-role",
-        {
-            body: { serviceRole: serviceRole as AiServiceRole }
-        }
-    );
-};
-
-export const listModelServices = async () => {
-    const [primary, backup, text2image] = await Promise.all([
-        getModelServiceByRole("PRIMARY"),
-        getModelServiceByRole("BACKUP"),
-        getModelServiceByRole("TEXT2IMAGE")
-    ]);
-    return [primary, backup, text2image].filter((record): record is AiModelServiceRecord =>
-        Boolean(record?.serviceId)
-    );
 };
