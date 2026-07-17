@@ -211,6 +211,10 @@
     border-radius: 8px;
 }
 
+.wangqi-summary-modal-content-card {
+    margin-top: 14px;
+}
+
 .wangqi-rich-text-editor {
     display: grid;
     min-width: 0;

@@ -478,6 +478,20 @@ export const WangqiDocumentModel = ({
                         ) : null}
                     </Form>
                 </div>
+                <Form
+                    className="wangqi-summary-modal-card wangqi-summary-modal-content-card"
+                    colon={false}
+                    layout="vertical"
+                >
+                    <Form.Item label="正文">
+                        <TextArea
+                            aria-label="AI摘要参考正文"
+                            value={form.getFieldValue("content") || ""}
+                            readOnly
+                            autoSize={resolveTextAreaAutoSize({ minRows: 8, maxRows: 14 })}
+                        />
+                    </Form.Item>
+                </Form>
             </KuzhambuModal>
             <Form<WangqiDocumentFormValues>
                 form={form}

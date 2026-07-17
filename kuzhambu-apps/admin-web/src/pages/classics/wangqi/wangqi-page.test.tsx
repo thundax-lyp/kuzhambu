@@ -404,6 +404,7 @@ describe("WangqiPage", () => {
             await screen.findByTestId("classics-wangqi-wangqi-summary-ai-create-button")
         ).toBeInTheDocument();
         expect(screen.getByLabelText("AI摘要当前摘要")).toHaveValue("记录王圻古籍条目。");
+        expect(screen.getByLabelText("AI摘要参考正文")).toHaveValue("## 王圻");
         expect(await screen.findByLabelText("AI摘要候选摘要")).toHaveValue("文档摘要候选");
         expect(aiRefinementTaskService.createTask).not.toHaveBeenCalled();
 
