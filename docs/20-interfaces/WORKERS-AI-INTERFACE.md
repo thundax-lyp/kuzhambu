@@ -103,8 +103,61 @@ Workers 不使用回调接口。任何回调能力都不得复用当前 AI 执�
 
 - `POST /internal/ai/invoke`：一次性 JSON 响应。
 - `POST /internal/ai/stream`：SSE 流式响应。
+- `POST /internal/openai/v1/chat-completions`：内部 OpenAI-compatible chat facade，用于文本和 image2text。
+- `POST /internal/openai/v1/images/generations`：内部 OpenAI-compatible image generations facade，用于 text2image。
 
 这两个通用接口仅用于调试、平台联调和协议验证，不作为真实业务域长期集成入口。真实业务必须使用基于 usecase 定义的稳定接口，由 AI 域或对应业务域明确 path、请求模型、权限边界、审计语义和失败分类。workers 内部仍可以复用 graph registry、model adapter、artifact store 和 SSE 编码等通用能力。
+
+OpenAI-compatible facade 只用于需要以 OpenAI 接口形态对接 workers 的内部调用方。该接口仍位于 `/internal/*`，仍必须使用 HMAC 请求头，并且请求体必须包含 `requestId`、`traceId`、`model` 和本次调用的 `extendParams`。Workers 不保存供应商配置、模型 Key 或跨请求路由状态；调用方必须在每次请求中提供完整下游供应商配置。
+
+`model` 固定使用 `{apiSource}/{realModelName}` 格式：
+
+- `apiSource` 当前支持 `OPENAI` 和 `BYTEDANCE`。
+- `realModelName` 是下游供应商真实模型名。
+- `OPENAI` 请求直接按 OpenAI-compatible 协议转发。
+- `BYTEDANCE` 的 image2text 走 `chat-completions`，text2image 走 `images/generations`，下游 base URL 和 API Key 从 `extendParams` 获取。
+
+OpenAI-compatible 请求示例：
+
+```json
+{
+  "requestId": "req_20260601_000001",
+  "traceId": "trace_20260601_000001",
+  "model": "OPENAI/gpt-4o-mini",
+  "messages": [
+    {"role": "system", "content": "You are a helpful assistant."},
+    {"role": "user", "content": "hello"}
+  ],
+  "stream": false,
+  "temperature": 0.2,
+  "extendParams": {
+    "baseUrl": "https://model.example.internal/v1",
+    "apiKey": "only-present-in-process-memory",
+    "capabilityTags": ["text", "streaming_text"],
+    "timeoutMs": 60000
+  }
+}
+```
+
+ByteDance text2image 请求示例：
+
+```json
+{
+  "requestId": "req_20260601_000002",
+  "traceId": "trace_20260601_000001",
+  "model": "BYTEDANCE/doubao-seedream",
+  "prompt": "一只白瓷杯，宋代器物风格",
+  "response_format": "b64_json",
+  "extendParams": {
+    "baseUrl": "https://ark.cn-beijing.volces.com/api/v3",
+    "apiKey": "only-present-in-process-memory",
+    "size": "2K",
+    "watermark": true
+  }
+}
+```
+
+OpenAI-compatible 响应使用 OpenAI chat completion、`data: ...` chunk 或 image generations 形态返回。请求中的 OpenAI 参数扩展字段，例如 `temperature`，会转发到下游供应商；`extendParams` 中除 `baseUrl`、`apiKey`、`capabilityTags` 和 `timeoutMs` 外的字段也会作为供应商参数转发。
 
 通用接口不承载业务权限、用例级审计或稳定业务语义。后续 usecase 接口示例：
 
