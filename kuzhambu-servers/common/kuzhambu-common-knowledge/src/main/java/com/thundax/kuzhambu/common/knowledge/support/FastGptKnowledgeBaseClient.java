@@ -24,9 +24,11 @@ import com.thundax.kuzhambu.common.knowledge.model.sync.KnowledgeSyncRequest;
 import com.thundax.kuzhambu.common.knowledge.model.sync.KnowledgeSyncResult;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -39,6 +41,18 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
 
     private static final String PROVIDER = "fastgpt";
     private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<>() {};
+    private static final Set<String> RESERVED_OPTION_KEYS = Set.of(
+            "appId",
+            "chatId",
+            "collectionId",
+            "datasetId",
+            "messages",
+            "metadata",
+            "model",
+            "name",
+            "sourceId",
+            "stream",
+            "text");
 
     private final RestOperations restOperations;
     private final ObjectMapper objectMapper;
@@ -311,6 +325,11 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
 
     private void mergeOptions(Map<String, Object> payload, Map<String, Object> options) {
         if (options != null) {
+            Set<String> reservedKeys = new HashSet<>(options.keySet());
+            reservedKeys.retainAll(RESERVED_OPTION_KEYS);
+            if (!reservedKeys.isEmpty()) {
+                throw new IllegalArgumentException("FastGPT options contain reserved keys: " + reservedKeys);
+            }
             payload.putAll(options);
         }
     }
