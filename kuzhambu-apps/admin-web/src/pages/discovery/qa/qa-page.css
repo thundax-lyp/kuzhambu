@@ -1,0 +1,73 @@
+.discovery-qa-page {
+    gap: 16px;
+}
+
+.discovery-qa-page__header {
+    align-items: flex-start;
+    display: flex;
+    justify-content: space-between;
+}
+
+.discovery-qa-page__body {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
+}
+
+.discovery-qa-page__session-list,
+.discovery-qa-page__messages,
+.discovery-qa-page__sources {
+    display: grid;
+    gap: 8px;
+}
+
+.discovery-qa-page__session-list {
+    max-height: 360px;
+    overflow: auto;
+}
+
+.discovery-qa-page__message {
+    border: 1px solid #edf0f5;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.discovery-qa-page__message--user {
+    background: #f6f8ff;
+}
+
+.discovery-qa-page__message--assistant {
+    background: #ffffff;
+}
+
+.discovery-qa-page__message-header,
+.discovery-qa-page__source-header {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.discovery-qa-page__source {
+    border: 1px solid #edf0f5;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.discovery-qa-page__composer {
+    margin-top: 16px;
+}
+
+.discovery-qa-page__context-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 1100px) {
+    .discovery-qa-page__body,
+    .discovery-qa-page__context-grid {
+        grid-template-columns: 1fr;
+    }
+}
