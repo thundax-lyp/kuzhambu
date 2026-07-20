@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.starter.portal;
 
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 
@@ -29,7 +30,7 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
     "com.thundax.kuzhambu.discovery.infra.search.persistence.mapper"
 })
 @SpringBootApplication(
-        exclude = SecurityAutoConfiguration.class,
+        exclude = {SecurityAutoConfiguration.class, ManagementWebSecurityAutoConfiguration.class},
         scanBasePackages = {
             "com.thundax.kuzhambu.common",
             "com.thundax.kuzhambu.system.application",
