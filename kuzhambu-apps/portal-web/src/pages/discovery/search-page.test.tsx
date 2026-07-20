@@ -517,13 +517,13 @@ describe("DiscoverySearchPage", () => {
         const { container, getLocation, root } = renderPage();
         await flushMutations();
 
-        const nextPageButton = container.querySelector(
-            'button[aria-label="下一页"]'
-        ) as HTMLButtonElement | null;
-        expect(nextPageButton).not.toBeNull();
+        const nextPageLink = container.querySelector(
+            'a[aria-label="下一页"]'
+        ) as HTMLAnchorElement | null;
+        expect(nextPageLink).not.toBeNull();
 
         await act(async () => {
-            nextPageButton?.click();
+            nextPageLink?.click();
         });
         await flushMutations();
 

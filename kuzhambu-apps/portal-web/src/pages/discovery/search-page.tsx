@@ -1,14 +1,22 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent, type MouseEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { ArrowRight, ChevronLeft, ChevronRight, Search, SlidersHorizontal, X } from "lucide-react";
+import { ArrowRight, Search, SlidersHorizontal, X } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationNext,
+    PaginationPrevious
+} from "@/components/ui/pagination";
+import {
     Select,
     SelectContent,
+    SelectGroup,
     SelectItem,
     SelectTrigger,
     SelectValue
@@ -405,33 +413,48 @@ const DiscoveryPagination = ({
     const totalPage = Math.max(1, Math.ceil(total / pageSize));
     const canGoPrevious = currentPage > 1;
     const canGoNext = currentPage < totalPage;
+    const handlePageClick =
+        (enabled: boolean, nextPage: number) => (event: MouseEvent<HTMLAnchorElement>) => {
+            event.preventDefault();
+            if (disabled || !enabled) {
+                return;
+            }
+            onChange(nextPage, pageSize);
+        };
 
     return (
-        <nav className="portal-discovery-pagination" aria-label="搜索结果分页">
-            <span>
-                第 {currentPage} / {totalPage} 页，共 {formatCount(total)} 条
-            </span>
-            <div>
-                <Button
-                    aria-label="上一页"
-                    disabled={disabled || !canGoPrevious}
-                    size="icon"
-                    type="button"
-                    variant="outline"
-                    onClick={() => onChange(Math.max(1, currentPage - 1), pageSize)}
-                >
-                    <ChevronLeft aria-hidden="true" size={16} />
-                </Button>
-                <Button
-                    aria-label="下一页"
-                    disabled={disabled || !canGoNext}
-                    size="icon"
-                    type="button"
-                    variant="outline"
-                    onClick={() => onChange(currentPage + 1, pageSize)}
-                >
-                    <ChevronRight aria-hidden="true" size={16} />
-                </Button>
+        <div className="portal-discovery-pagination">
+            <Pagination aria-label="搜索结果分页" className="portal-discovery-pager">
+                <PaginationContent>
+                    <PaginationItem>
+                        <PaginationPrevious
+                            aria-disabled={disabled || !canGoPrevious}
+                            aria-label="上一页"
+                            data-disabled={disabled || !canGoPrevious}
+                            href="#"
+                            text=""
+                            onClick={handlePageClick(canGoPrevious, Math.max(1, currentPage - 1))}
+                        />
+                    </PaginationItem>
+                    <PaginationItem>
+                        <span className="portal-discovery-page-indicator">
+                            第 {currentPage} / {totalPage} 页
+                        </span>
+                    </PaginationItem>
+                    <PaginationItem>
+                        <PaginationNext
+                            aria-disabled={disabled || !canGoNext}
+                            aria-label="下一页"
+                            data-disabled={disabled || !canGoNext}
+                            href="#"
+                            text=""
+                            onClick={handlePageClick(canGoNext, currentPage + 1)}
+                        />
+                    </PaginationItem>
+                </PaginationContent>
+            </Pagination>
+            <div className="portal-discovery-pagination-extra">
+                <span>共 {formatCount(total)} 条</span>
                 <Select
                     value={String(pageSize)}
                     onValueChange={(value) => onChange(1, Number.parseInt(value, 10) || pageSize)}
@@ -440,15 +463,17 @@ const DiscoveryPagination = ({
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                        {PAGE_SIZE_OPTIONS.map((option) => (
-                            <SelectItem key={option} value={option}>
-                                每页 {option} 条
-                            </SelectItem>
-                        ))}
+                        <SelectGroup>
+                            {PAGE_SIZE_OPTIONS.map((option) => (
+                                <SelectItem key={option} value={option}>
+                                    每页 {option} 条
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
                     </SelectContent>
                 </Select>
             </div>
-        </nav>
+        </div>
     );
 };
 
@@ -766,7 +791,7 @@ export const DiscoverySearchPage = () => {
                             {results.map(({ group, groupIndex, item, itemIndex }) => {
                                 const hitKey = `${group.groupKey || `group-${groupIndex}`}-${item.resultRank ?? itemIndex}`;
                                 const content = (
-                                    <>
+                                    <div className="portal-discovery-hit-body">
                                         <div className="portal-discovery-hit-title">
                                             <p>
                                                 {toDisplayLabel(item.contentDomain, "其他来源")} ·{" "}
@@ -787,7 +812,7 @@ export const DiscoverySearchPage = () => {
                                                 ) ||
                                                 "暂无摘要"}
                                         </p>
-                                    </>
+                                    </div>
                                 );
 
                                 return (

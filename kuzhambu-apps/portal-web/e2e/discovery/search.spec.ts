@@ -41,28 +41,41 @@ const createSearchMockHandlers = async (page: Page) => {
         const queryText = requestBody.queryText ?? "";
 
         if (!queryText) {
+            const isSecondPage = requestBody.pageNo === 2;
             await fulfillSuccess(route, {
                 displayQueryText: "",
                 groupCount: 1,
                 queryText: "",
                 searchEventId: "search-event-empty",
-                totalCount: 1,
+                totalCount: isSecondPage ? 21 : 1,
                 groups: [
                     {
                         count: 1,
                         groupKey: "SANCAI_ENTRY",
-                        groupTitle: "三才图会",
+                        groupTitle: isSecondPage ? "王圻文档" : "三才图会",
                         items: [
-                            {
-                                contentDomain: "CLASSICS",
-                                contentId: "1000",
-                                contentType: "SANCAI_ENTRY",
-                                groupRank: 1,
-                                highlightText: "三才图会凡例",
-                                resultRank: 1,
-                                targetPath: "/classics/sancai/1000",
-                                title: "三才图会凡例"
-                            }
+                            isSecondPage
+                                ? {
+                                      contentDomain: "CLASSICS",
+                                      contentId: "2001",
+                                      contentType: "WANGQI_DOCUMENT",
+                                      groupRank: 1,
+                                      highlightText:
+                                          "明代知县王圻在万安任内审理疑案时，面对嫌犯以屠夫血迹辩解，并未轻信。他细致观察案几上陈旧血迹的分布形态，发现其呈左右分列状且集中于边缘，与屠宰痕迹不符。通过现场模拟，王圻推断血迹是凶手抱案几垫脚翻墙抛尸时留下的手印。在精准的物证推理面前，嫌犯最终认罪。此案展现了王圻重视物证、善用逻辑推理的司法智慧。",
+                                      resultRank: 11,
+                                      targetPath: "/classics/wangqi/2001",
+                                      title: '"案几血迹案"：明代知县的血迹推理术'
+                                  }
+                                : {
+                                      contentDomain: "CLASSICS",
+                                      contentId: "1000",
+                                      contentType: "SANCAI_ENTRY",
+                                      groupRank: 1,
+                                      highlightText: "三才图会凡例",
+                                      resultRank: 1,
+                                      targetPath: "/classics/sancai/1000",
+                                      title: "三才图会凡例"
+                                  }
                         ]
                     }
                 ]
@@ -139,6 +152,39 @@ test.describe("portal discovery search smoke", () => {
         await expect(page.getByText("检索失败")).toHaveCount(0);
         await expect(page.getByText("共 1 条命中")).toBeVisible();
         await expect(page.getByRole("heading", { name: "三才图会凡例" })).toBeVisible();
+    });
+
+    test("keeps page two result cards in a readable search layout", async ({ page }) => {
+        await createSearchMockHandlers(page);
+
+        await page.goto("/discovery/search?pageNo=2");
+
+        await expect(page.getByText("共 21 条命中")).toBeVisible();
+        await expect(
+            page.getByRole("heading", { name: '"案几血迹案"：明代知县的血迹推理术' })
+        ).toBeVisible();
+        await expect(page.getByText("第 2 / 3 页")).toBeVisible();
+        await expect(page.getByText("共 21 条", { exact: true })).toBeVisible();
+
+        const layout = await page.evaluate(() => {
+            const card = document.querySelector(".portal-discovery-hit");
+            const title = document.querySelector(".portal-discovery-hit-title");
+            const summary = document.querySelector(".portal-discovery-hit-summary");
+            const cardRect = card?.getBoundingClientRect();
+            const titleRect = title?.getBoundingClientRect();
+            const summaryRect = summary?.getBoundingClientRect();
+
+            return {
+                cardHeight: cardRect?.height ?? 0,
+                cardWidth: cardRect?.width ?? 0,
+                summaryHeight: summaryRect?.height ?? 0,
+                titleWidth: titleRect?.width ?? 0
+            };
+        });
+
+        expect(layout.titleWidth).toBeGreaterThan(layout.cardWidth * 0.6);
+        expect(layout.summaryHeight).toBeLessThan(110);
+        expect(layout.cardHeight).toBeLessThan(190);
     });
 
     test("searches and records click payload", async ({ page }) => {
