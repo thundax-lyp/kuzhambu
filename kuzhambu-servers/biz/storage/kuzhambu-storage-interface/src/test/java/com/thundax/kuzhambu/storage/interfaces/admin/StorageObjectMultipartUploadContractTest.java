@@ -78,21 +78,21 @@ class StorageObjectMultipartUploadContractTest {
         assertEquals("owner-1", command.getOwnerId());
         assertEquals("sancai.png", command.getOriginalFilename());
         assertEquals("image/png", command.getMimeType());
-        assertEquals("bucket-a", command.getBucketName());
-        assertEquals("path/sancai", command.getObjectKey());
-        assertEquals("provider-1", command.getProviderUploadId());
+        assertNull(command.getBucketName());
+        assertNull(command.getObjectKey());
+        assertNull(command.getProviderUploadId());
         assertEquals(100L, command.getTotalSize());
         assertEquals(5L, command.getPartSize());
 
         assertEquals("upload-1", json.get("uploadId").asText());
-        assertEquals("provider-1", json.get("providerUploadId").asText());
+        assertEquals(false, json.has("providerUploadId"));
         assertEquals(false, json.has("ownerType"));
         assertEquals(false, json.has("ownerId"));
         assertEquals("bizA", json.get("businessType").asText());
         assertEquals("sancai.png", json.get("originalFilename").asText());
         assertEquals("image/png", json.get("mimeType").asText());
-        assertEquals("bucket-a", json.get("bucketName").asText());
-        assertEquals("path/sancai", json.get("objectKey").asText());
+        assertEquals(false, json.has("bucketName"));
+        assertEquals(false, json.has("objectKey"));
         assertEquals(100L, json.get("totalSize").asLong());
         assertEquals(5L, json.get("partSize").asLong());
         assertEquals(0, json.get("uploadedPartCount").asInt());
@@ -167,10 +167,10 @@ class StorageObjectMultipartUploadContractTest {
 
         CompleteMultipartUploadCommand command = commandRef.get();
         assertEquals("upload-2", command.getUploadId());
-        assertEquals("bucket-b", command.getBucketName());
-        assertEquals("folder/sancai.bin", command.getObjectKey());
-        assertEquals(120L, command.getSize());
-        assertEquals("/api/storage/object/22/content", command.getAccessEndpoint());
+        assertNull(command.getBucketName());
+        assertNull(command.getObjectKey());
+        assertNull(command.getSize());
+        assertNull(command.getAccessEndpoint());
 
         assertEquals("22", json.get("id").asText());
         assertEquals("upload-2", json.get("uploadId").asText());

@@ -37,9 +37,9 @@ public class StorageUploadFacadeAssembler {
                 request.getBusinessType(),
                 request.getOriginalFilename(),
                 request.getMimeType(),
-                request.getBucketName(),
-                request.getObjectKey(),
-                request.getProviderUploadId(),
+                null,
+                null,
+                null,
                 request.getTotalSize(),
                 request.getPartSize());
     }
@@ -59,12 +59,7 @@ public class StorageUploadFacadeAssembler {
             CompleteMultipartUploadFacadeRequest request) {
         return request == null
                 ? null
-                : new CompleteMultipartUploadCommand(
-                        request.getUploadId(),
-                        request.getBucketName(),
-                        request.getObjectKey(),
-                        request.getSize(),
-                        request.getAccessEndpoint());
+                : new CompleteMultipartUploadCommand(request.getUploadId(), null, null, null, null);
     }
 
     public AbortMultipartUploadCommand toAbortMultipartUploadCommand(AbortMultipartUploadFacadeRequest request) {
