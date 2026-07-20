@@ -199,7 +199,14 @@ export const AuditLogDetail = ({
     open,
     onClose
 }: AuditLogDetailProps) => (
-    <KuzhambuDrawer title="审计详情" open={open} size="large" loading={loading} onClose={onClose}>
+    <KuzhambuDrawer
+        testId="audit-audit-log-audit-log-detail-drawer"
+        title="审计详情"
+        open={open}
+        size="large"
+        loading={loading}
+        onClose={onClose}
+    >
         {auditLog ? (
             <div className="audit-log-detail">
                 <Descriptions column={2} size="small" bordered>

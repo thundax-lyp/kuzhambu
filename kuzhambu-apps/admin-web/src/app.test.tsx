@@ -111,7 +111,7 @@ describe("App", () => {
                                 {
                                     id: "31",
                                     parentId: "30",
-                                    name: "世系图浏览",
+                                    name: "世系图",
                                     permission: "knowledge:graph:view",
                                     url: "/knowledge/lineage"
                                 }
@@ -197,7 +197,7 @@ describe("App", () => {
         expect(await screen.findByText("古籍管理")).toBeInTheDocument();
         expect(await screen.findByText("知识管理")).toBeInTheDocument();
         await user.click(await screen.findByRole("menuitem", { name: /知识管理/ }));
-        expect(await screen.findByText("世系图浏览")).toBeInTheDocument();
+        expect(await screen.findByText("世系图")).toBeInTheDocument();
     });
 
     it("loads permissions as part of successful login", async () => {

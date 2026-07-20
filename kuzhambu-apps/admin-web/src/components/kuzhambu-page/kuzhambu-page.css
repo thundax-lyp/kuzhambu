@@ -1,5 +1,4 @@
 .kuzhambu-page {
-    --kuzhambu-page-accent: var(--accent-blue);
     --kuzhambu-page-copy: var(--text-secondary);
     --kuzhambu-page-ink: var(--text-primary);
     --kuzhambu-page-header-margin-bottom: 10px;
@@ -36,11 +35,6 @@
 
 .kuzhambu-page .ant-typography-secondary {
     color: var(--kuzhambu-page-copy);
-}
-
-.kuzhambu-page-eyebrow {
-    color: var(--kuzhambu-page-accent);
-    letter-spacing: 0.02em;
 }
 
 .kuzhambu-page-actions {

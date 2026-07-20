@@ -25,6 +25,7 @@ export const GraphRelationDetail = ({
 }: GraphRelationDetailProps) => {
     return (
         <KuzhambuDrawer
+            testId="knowledge-graph-results-graph-relation-detail-drawer"
             title="正式关系详情"
             open={open}
             size="middle"

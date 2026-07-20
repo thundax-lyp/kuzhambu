@@ -319,6 +319,7 @@ export const ClassicsContentTagPanel = ({
                 />
 
                 <KuzhambuModal
+                    testId="classics-content-tag-editor-modal"
                     destroyOnHidden
                     okButtonProps={{
                         loading: addMutation.isPending || updateMutation.isPending

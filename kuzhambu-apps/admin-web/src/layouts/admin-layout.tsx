@@ -107,6 +107,18 @@ const getOpenKeys = (pathname: string) => {
         openKeys.push("/operations");
     }
 
+    if (pathname.startsWith("/knowledge/")) {
+        openKeys.push("/knowledge");
+    }
+
+    if (
+        pathname.startsWith("/knowledge/refinement") ||
+        pathname.startsWith("/knowledge/graph-results") ||
+        pathname.startsWith("/knowledge/quality-report")
+    ) {
+        openKeys.push("/knowledge/graph");
+    }
+
     return openKeys;
 };
 

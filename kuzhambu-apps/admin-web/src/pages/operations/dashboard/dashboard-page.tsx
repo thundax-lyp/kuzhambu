@@ -541,7 +541,6 @@ export const OperationsDashboardPage = () => {
             }
             className="dashboard-page operations-dashboard-page"
             description="集中查看内容、发现、健康巡检和长任务状态，作为运维处理入口。"
-            eyebrow="Operations"
             title="运营看板"
         >
             {!canViewDashboard ? (
@@ -841,6 +840,7 @@ export const OperationsDashboardPage = () => {
                     </section>
 
                     <KuzhambuDrawer
+                        testId="operations-dashboard-dashboard-1-drawer"
                         open={alertDrawerOpen}
                         onClose={() => setAlertDrawerOpen(false)}
                         size="small"
@@ -943,6 +943,7 @@ export const OperationsDashboardPage = () => {
                     </KuzhambuDrawer>
 
                     <KuzhambuDrawer
+                        testId="operations-dashboard-dashboard-2-drawer"
                         open={selectedHealth !== null}
                         onClose={() => setSelectedHealth(null)}
                         size="middle"

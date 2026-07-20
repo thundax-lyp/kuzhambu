@@ -109,7 +109,7 @@ describe("log service request contracts", () => {
             endDate: "2026-06-18 23:59:59"
         };
 
-        await systemLogService.pageLogs(pageRequest);
+        await systemLogService.pageEvents(pageRequest);
         expectLastCall("/sys/log/page", pageRequest);
     });
 });

@@ -518,7 +518,6 @@ export const BackupRestorePage = () => {
             <section>
                 <header className="kuzhambu-page-header">
                     <div>
-                        <Text className="kuzhambu-page-eyebrow">Operations / Backup Restore</Text>
                         <Title level={2}>备份与恢复</Title>
                         <Text type="secondary">
                             统一管理手动备份、恢复执行和 PRE_RESTORE 快照台账。
@@ -709,6 +708,7 @@ export const BackupRestorePage = () => {
             </section>
 
             <KuzhambuDrawer
+                testId="operations-backup-restore-backup-restore-1-drawer"
                 loading={backupDetailQuery.isLoading}
                 onClose={() => setBackupDetailId(null)}
                 open={backupDetailId !== null}
@@ -811,6 +811,7 @@ export const BackupRestorePage = () => {
             </KuzhambuDrawer>
 
             <KuzhambuDrawer
+                testId="operations-backup-restore-backup-restore-2-drawer"
                 loading={restoreDetailQuery.isLoading}
                 onClose={() => setRestoreDetailId(null)}
                 open={restoreDetailId !== null}

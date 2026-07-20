@@ -28,6 +28,7 @@ export const GraphVersionDetail = ({
 }: GraphVersionDetailProps) => {
     return (
         <KuzhambuDrawer
+            testId="knowledge-graph-results-graph-version-detail-drawer"
             title="图谱版本详情"
             open={open}
             size="middle"

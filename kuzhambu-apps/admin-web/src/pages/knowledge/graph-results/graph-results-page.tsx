@@ -239,7 +239,6 @@ export const GraphResultsPage = () => {
         <KuzhambuPage
             className="graph-results-page knowledge-graph-results-page"
             description="以图谱版本为主入口，独立审阅正式实体、关系和世系结果。"
-            eyebrow="Knowledge / Graph Results"
             title="正式结果读取"
         >
             <KuzhambuSpace

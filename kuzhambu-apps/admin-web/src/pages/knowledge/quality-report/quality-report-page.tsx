@@ -169,7 +169,6 @@ export const QualityReportPage = () => {
         <KuzhambuPage
             className="quality-report-page knowledge-quality-report-page"
             description="基于人工质量标注、精修状态和正式图谱事实生成质量报告快照。"
-            eyebrow="Knowledge / Quality Report"
             title="质量报告"
         >
             <KuzhambuSpace

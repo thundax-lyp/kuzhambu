@@ -137,6 +137,7 @@ export const TagExtractionDrawer = ({
 
     return (
         <KuzhambuDrawer
+            testId="knowledge-taxonomy-tag-extraction-drawer"
             className="knowledge-taxonomy-tag-extraction-drawer"
             title="AI 抽取标签"
             open={visible}

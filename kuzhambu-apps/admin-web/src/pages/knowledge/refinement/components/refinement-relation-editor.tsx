@@ -30,6 +30,7 @@ export const RefinementRelationEditor = ({
 
     return (
         <KuzhambuModal
+            testId="knowledge-refinement-relation-editor-modal"
             title={relation?.draftId ? "编辑关系草稿" : "新增关系草稿"}
             open={open}
             confirmLoading={saving}

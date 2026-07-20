@@ -4,9 +4,14 @@ import "./kuzhambu-drawer.css";
 
 export type KuzhambuDrawerSize = "full" | "large" | "middle" | "small";
 
-export interface KuzhambuDrawerProps extends Omit<DrawerProps, "size" | "width"> {
+export interface KuzhambuDrawerProps extends Omit<DrawerProps, "data-testid" | "size" | "width"> {
     size?: KuzhambuDrawerSize;
+    testId: string;
 }
+
+const shouldExposeTestId = () => {
+    return !import.meta.env.PROD || import.meta.env.VITE_EXPOSE_TEST_ID === "true";
+};
 
 export const KuzhambuDrawer = ({
     className,
@@ -14,13 +19,16 @@ export const KuzhambuDrawer = ({
     placement = "right",
     rootClassName,
     size = "small",
+    testId,
     ...drawerProps
 }: KuzhambuDrawerProps) => {
     const drawerSize = `var(--kuzhambu-drawer-${size}-width)`;
+    const testIdProps = shouldExposeTestId() ? { "data-testid": testId } : {};
 
     return (
         <Drawer
             {...drawerProps}
+            {...testIdProps}
             className={["kuzhambu-drawer", `kuzhambu-drawer-${size}`, className]
                 .filter(Boolean)
                 .join(" ")}

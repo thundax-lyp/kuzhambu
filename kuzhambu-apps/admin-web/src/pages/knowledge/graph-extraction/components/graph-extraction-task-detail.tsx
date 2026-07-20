@@ -39,6 +39,7 @@ export const GraphExtractionTaskDetail = ({
 }: GraphExtractionTaskDetailProps) => {
     return (
         <KuzhambuDrawer
+            testId="knowledge-graph-extraction-graph-extraction-task-detail-drawer"
             title="抽取任务详情"
             open={open}
             size="middle"

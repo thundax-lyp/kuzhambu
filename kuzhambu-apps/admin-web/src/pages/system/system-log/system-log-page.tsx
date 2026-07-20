@@ -97,7 +97,7 @@ export const SystemLogPage = () => {
 
     const logQuery = useQuery({
         queryKey: ["system-log", "page", query],
-        queryFn: () => service.pageLogs(query),
+        queryFn: () => service.pageEvents(query),
         enabled: canViewSystemLog,
         retry: false
     });
@@ -129,7 +129,7 @@ export const SystemLogPage = () => {
         });
     };
 
-    const searchLogs = (value: string) => {
+    const searchEvents = (value: string) => {
         setSearchText(value);
         updateQuery({ title: normalizeSearch(value) });
     };
@@ -229,8 +229,8 @@ export const SystemLogPage = () => {
             enableSearch
             searchShortcut="⌘K"
             searchValue={searchText}
-            searchPlaceholder="搜索日志标题..."
-            onSearchChange={searchLogs}
+            searchPlaceholder="检索统计事件标题..."
+            onSearchChange={searchEvents}
             filterActive={hasActiveFilters}
             filterFields={[
                 {

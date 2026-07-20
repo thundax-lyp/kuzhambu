@@ -77,6 +77,7 @@ export const DepartmentEdit = ({
 
     return (
         <KuzhambuDrawer
+            testId="system-department-department-editor-drawer"
             className="department-edit-drawer"
             title={department ? "编辑部门" : "新增部门"}
             open={Boolean(open)}

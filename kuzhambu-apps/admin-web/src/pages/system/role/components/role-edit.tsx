@@ -101,6 +101,7 @@ export const RoleEdit = ({
 
     return (
         <KuzhambuDrawer
+            testId="system-role-role-editor-drawer"
             className="role-edit-drawer"
             title={role ? "编辑角色" : "新增角色"}
             open={Boolean(open)}

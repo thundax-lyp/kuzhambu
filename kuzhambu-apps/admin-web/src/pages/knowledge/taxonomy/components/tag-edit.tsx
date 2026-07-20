@@ -115,6 +115,7 @@ export const TagEdit = ({
 
     return (
         <KuzhambuDrawer
+            testId="knowledge-taxonomy-tag-editor-drawer"
             className="knowledge-taxonomy-tag-editor"
             title={title}
             open={visible}
