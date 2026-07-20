@@ -321,7 +321,7 @@ describe("DiscoverySearchPage", () => {
                             highlightText: "礼器条目摘要",
                             resultRank: 1,
                             summary: "礼器条目摘要",
-                            targetPath: "/shares/1001",
+                            targetPath: "/classics/sancai/300000000001",
                             title: "礼器条目"
                         }
                     ]
@@ -343,7 +343,7 @@ describe("DiscoverySearchPage", () => {
         });
         await flushMutations();
 
-        expect(getLocation()).toBe("/shares/1001");
+        expect(getLocation()).toBe("/classics/sancai?id=300000000001");
         expect(mocks.previewSearchResult).not.toHaveBeenCalled();
         const previewDialog = document.body.querySelector('[role="dialog"]');
         expect(previewDialog).toBeNull();

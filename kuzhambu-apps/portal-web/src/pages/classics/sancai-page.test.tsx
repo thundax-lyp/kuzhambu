@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SancaiPage } from "./sancai-page";
 
@@ -34,13 +35,14 @@ const installFetchMock = () => {
             return apiResponse([{ categoryId: 1, id: 11, title: "卷一", volumeType: "MAIN" }]);
         }
         if (url.includes("/portal/classics/sancai/entries/get")) {
+            const entryId = Number(body.id) || 1001;
             return apiResponse({
-                id: 1001,
+                id: entryId,
                 volumeId: 11,
-                title: "天",
+                title: entryId === 300000000001 ? "礼器图" : "天",
                 originalText: "天者，万物之始。",
-                translationText: "天是万物的开端。",
-                summary: "天地门条目",
+                translationText: entryId === 300000000001 ? "礼器图详情。" : "天是万物的开端。",
+                summary: entryId === 300000000001 ? "搜索直达条目" : "天地门条目",
                 lifecycleStatus: "PUBLISHED",
                 visibility: "PUBLIC",
                 tags: [{ id: 5001, tagId: 6001, tagName: "天文", source: "MANUAL", priority: 1 }],
@@ -105,7 +107,7 @@ const installFetchMock = () => {
     });
 };
 
-const renderPage = () => {
+const renderPage = (initialEntry = "/classics/sancai") => {
     const client = new QueryClient({
         defaultOptions: {
             queries: {
@@ -116,7 +118,9 @@ const renderPage = () => {
 
     render(
         <QueryClientProvider client={client}>
-            <SancaiPage />
+            <MemoryRouter initialEntries={[initialEntry]}>
+                <SancaiPage />
+            </MemoryRouter>
         </QueryClientProvider>
     );
 };
@@ -171,5 +175,15 @@ describe("SancaiPage", () => {
             expect(within(detail).getByText("地承载万物。")).toBeTruthy();
         });
         expect(within(detail).queryByText("天是万物的开端。")).toBeNull();
+    });
+
+    it("loads entry detail from id query parameter", async () => {
+        renderPage("/classics/sancai?id=300000000001");
+
+        const detail = await screen.findByLabelText("三才图会条目详情");
+        await waitFor(() => {
+            expect(within(detail).getByText("礼器图")).toBeTruthy();
+        });
+        expect(within(detail).getByText("礼器图详情。")).toBeTruthy();
     });
 });

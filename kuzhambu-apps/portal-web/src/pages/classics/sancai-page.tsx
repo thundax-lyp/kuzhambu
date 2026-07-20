@@ -1,6 +1,7 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { BookOpen, ChevronRight, Search } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -27,13 +28,19 @@ const readEntryText = (entry: SancaiEntryRecord) => {
     );
 };
 
+const readEntryIdParam = (searchParams: URLSearchParams) => {
+    const value = Number.parseInt(searchParams.get("id") ?? "", 10);
+    return Number.isFinite(value) && value > 0 ? value : null;
+};
+
 export const SancaiPage = () => {
+    const [searchParams, setSearchParams] = useSearchParams();
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
     const [selectedVolumeId, setSelectedVolumeId] = useState<number | null>(null);
-    const [selectedEntryId, setSelectedEntryId] = useState<number | null>(null);
     const [keyword, setKeyword] = useState("");
     const [appliedKeyword, setAppliedKeyword] = useState<string | null>(null);
     const [pageNo, setPageNo] = useState(1);
+    const selectedEntryId = readEntryIdParam(searchParams);
 
     const categoriesQuery = useQuery({
         queryKey: ["portal", "classics", "sancai", "categories"],
@@ -88,28 +95,40 @@ export const SancaiPage = () => {
         return "全部公开条目";
     }, [categories, selectedCategoryId, selectedVolumeId, volumes]);
 
+    const clearSelectedEntryParam = () => {
+        const next = new URLSearchParams(searchParams);
+        next.delete("id");
+        setSearchParams(next);
+    };
+
     const applySearch = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setAppliedKeyword(keyword.trim() || null);
         setPageNo(1);
-        setSelectedEntryId(null);
+        clearSelectedEntryParam();
     };
 
     const selectCategory = (categoryId: number | null) => {
         setSelectedCategoryId(categoryId);
         setSelectedVolumeId(null);
-        setSelectedEntryId(null);
         setPageNo(1);
+        clearSelectedEntryParam();
     };
 
     const selectVolume = (volumeId: number | null) => {
         setSelectedVolumeId(volumeId);
-        setSelectedEntryId(null);
         setPageNo(1);
+        clearSelectedEntryParam();
     };
     const changePage = (nextPageNo: number) => {
         setPageNo(nextPageNo);
-        setSelectedEntryId(null);
+        clearSelectedEntryParam();
+    };
+
+    const selectEntry = (entryId: number) => {
+        const next = new URLSearchParams(searchParams);
+        next.set("id", String(entryId));
+        setSearchParams(next);
     };
 
     return (
@@ -214,7 +233,7 @@ export const SancaiPage = () => {
                                             : "sancai-entry-item"
                                     }
                                     type="button"
-                                    onClick={() => setSelectedEntryId(entry.id)}
+                                    onClick={() => selectEntry(entry.id)}
                                 >
                                     <span>{readTitle(entry, "条目")}</span>
                                     <ChevronRight size={16} />

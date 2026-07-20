@@ -156,6 +156,28 @@ const joinList = (values: string[]) => values.join(", ");
 
 const hasListValue = (value: string, token: string) => splitList(value).includes(token);
 
+const normalizeResultTargetPath = (targetPath?: string | null) => {
+    const trimmedPath = targetPath?.trim();
+    if (!trimmedPath) {
+        return null;
+    }
+
+    try {
+        const baseUrl = "http://portal.local";
+        const url = new URL(trimmedPath, baseUrl);
+        const match = /^\/classics\/sancai\/([^/]+)$/u.exec(url.pathname);
+        if (url.origin !== baseUrl || !match) {
+            return trimmedPath;
+        }
+
+        url.pathname = "/classics/sancai";
+        url.searchParams.set("id", decodeURIComponent(match[1]));
+        return `${url.pathname}${url.search}${url.hash}`;
+    } catch {
+        return trimmedPath;
+    }
+};
+
 const toIsoStartOfDay = (value: string) => {
     return value ? new Date(`${value}T00:00:00`).toISOString() : null;
 };
@@ -572,8 +594,9 @@ export const DiscoverySearchPage = () => {
             void discoverySearchService.recordSearchClickEvent(command);
         }
 
-        if (item.targetPath) {
-            navigate(item.targetPath);
+        const targetPath = normalizeResultTargetPath(item.targetPath);
+        if (targetPath) {
+            navigate(targetPath);
         }
     };
 
