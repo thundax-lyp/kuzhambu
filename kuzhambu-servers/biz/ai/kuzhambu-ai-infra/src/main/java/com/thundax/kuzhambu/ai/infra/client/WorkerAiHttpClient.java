@@ -118,20 +118,24 @@ public class WorkerAiHttpClient implements WorkerAiClient {
     public DownloadedArtifact downloadArtifact(String requestId, String traceId, String downloadPath) {
         try {
             HttpRequest request = buildGetRequest(downloadPath, requestId, traceId);
-            HttpResponse<byte[]> response = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
+            HttpResponse<byte[]> response = httpClient.send(request, boundedArtifactBodyHandler());
             if (!isSuccessful(response.statusCode())) {
                 throw new ArtifactDownloadException("ARTIFACT_DOWNLOAD failed with HTTP " + response.statusCode());
             }
+            long declaredSize = parseOptionalLong(
+                    response.headers()
+                            .firstValue("X-Kuzhambu-Artifact-Size-Bytes")
+                            .orElse(null),
+                    "X-Kuzhambu-Artifact-Size-Bytes");
+            assertArtifactSizeWithinLimit(declaredSize, "X-Kuzhambu-Artifact-Size-Bytes");
+            assertArtifactSizeWithinLimit(response.body().length, "artifact body");
             return new DownloadedArtifact(
                     response.body(),
                     response.headers().firstValue("Content-Type").orElse("application/octet-stream"),
                     resolveFilename(
                             response.headers().firstValue("Content-Disposition").orElse(null)),
                     response.headers().firstValue("X-Kuzhambu-Artifact-Sha256").orElse(null),
-                    response.headers()
-                            .firstValue("X-Kuzhambu-Artifact-Size-Bytes")
-                            .map(Long::parseLong)
-                            .orElse((long) response.body().length),
+                    declaredSize >= 0L ? declaredSize : (long) response.body().length,
                     response.headers()
                             .firstValue("X-Kuzhambu-Artifact-Expires-At")
                             .map(this::toInstant)
@@ -143,6 +147,35 @@ public class WorkerAiHttpClient implements WorkerAiClient {
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new ArtifactDownloadException("ARTIFACT_DOWNLOAD interrupted", ex);
+        }
+    }
+
+    private HttpResponse.BodyHandler<byte[]> boundedArtifactBodyHandler() {
+        return responseInfo -> {
+            long contentLength =
+                    responseInfo.headers().firstValueAsLong("Content-Length").orElse(-1L);
+            assertArtifactSizeWithinLimit(contentLength, "Content-Length");
+            return HttpResponse.BodySubscribers.ofByteArray();
+        };
+    }
+
+    private void assertArtifactSizeWithinLimit(long sizeBytes, String source) {
+        long maxSizeBytes = properties.getMaxArtifactSizeBytes();
+        if (sizeBytes < 0L || maxSizeBytes <= 0L || sizeBytes <= maxSizeBytes) {
+            return;
+        }
+        throw new ArtifactDownloadException(
+                "ARTIFACT_DOWNLOAD " + source + " exceeds max size: " + sizeBytes + " > " + maxSizeBytes);
+    }
+
+    private long parseOptionalLong(String value, String headerName) {
+        if (isBlank(value)) {
+            return -1L;
+        }
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException ex) {
+            throw new ArtifactDownloadException("ARTIFACT_DOWNLOAD invalid " + headerName + ": " + value, ex);
         }
     }
 

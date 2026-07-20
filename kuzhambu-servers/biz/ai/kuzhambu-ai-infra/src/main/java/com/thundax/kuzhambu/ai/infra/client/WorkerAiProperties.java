@@ -21,4 +21,7 @@ public class WorkerAiProperties {
 
     @Value("${kuzhambu.ai.worker.timeout-ms:60000}")
     private long timeoutMs;
+
+    @Value("${kuzhambu.ai.worker.max-artifact-size-bytes:52428800}")
+    private long maxArtifactSizeBytes;
 }
