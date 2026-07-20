@@ -204,7 +204,7 @@
     }
 
     .search-statistics-summary-filter > .ant-space-item:has(> button),
-    .search-statistics-record-filter-form > .ant-space-item:has(> button) {
+    .search-statistics-record-filter-actions {
         margin-left: 72px;
     }
 
