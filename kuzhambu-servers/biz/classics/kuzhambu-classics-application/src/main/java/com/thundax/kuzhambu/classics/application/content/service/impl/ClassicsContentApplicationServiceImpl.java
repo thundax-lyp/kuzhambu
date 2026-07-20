@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
 import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RejectAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
+import com.thundax.kuzhambu.classics.application.common.sort.SortablePrioritySwapSupport;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateApplyContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchApplyContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchRejectContentCommand;
@@ -88,12 +89,9 @@ import java.io.ByteArrayInputStream;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -173,60 +171,15 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sortTags(ContentTagSortCommand command) {
-        List<ClassicsContentTagId> orderedIdList =
-                command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
-        if (orderedIdList.isEmpty()) {
-            throw sortEmptyInput();
-        }
-
-        List<ClassicsContentTag> currentTags = repository.listTags(SortDirection.ASC);
-        if (currentTags == null || currentTags.isEmpty() || currentTags.size() != orderedIdList.size()) {
-            throw sortMissingId();
-        }
-
-        Map<Long, Integer> indexById = new HashMap<>(currentTags.size());
-        Map<Long, Integer> priorityById = new HashMap<>(currentTags.size());
-        List<ClassicsContentTagId> currentOrderedIds = new ArrayList<>(currentTags.size());
-        for (int i = 0; i < currentTags.size(); i++) {
-            ClassicsContentTag tag = currentTags.get(i);
-            if (tag == null || tag.getId() == null) {
-                throw sortDbFailure();
-            }
-            long tagId = tag.getId().value();
-            indexById.put(tagId, i);
-            priorityById.put(tagId, tag.getPriority());
-            currentOrderedIds.add(tag.getId());
-        }
-
-        for (ClassicsContentTagId orderedId : orderedIdList) {
-            if (orderedId == null || orderedId.value() == null || !indexById.containsKey(orderedId.value())) {
-                throw sortMissingId();
-            }
-        }
-
-        int temporaryPriority = repository.maxTagPriority(null, null) + 1;
-        for (int i = 0; i < currentOrderedIds.size(); i++) {
-            ClassicsContentTagId targetId = orderedIdList.get(i);
-            ClassicsContentTagId currentId = currentOrderedIds.get(i);
-            if (targetId.equals(currentId)) {
-                continue;
-            }
-
-            int targetIndex = indexById.get(targetId.value());
-            int currentPriority = priorityById.get(currentId.value());
-            int targetPriority = priorityById.get(targetId.value());
-
-            updateTagPriorityOrThrow(targetId, temporaryPriority++);
-            updateTagPriorityOrThrow(currentId, targetPriority);
-            updateTagPriorityOrThrow(targetId, currentPriority);
-
-            priorityById.put(targetId.value(), currentPriority);
-            priorityById.put(currentId.value(), targetPriority);
-            currentOrderedIds.set(i, targetId);
-            currentOrderedIds.set(targetIndex, currentId);
-            indexById.put(targetId.value(), i);
-            indexById.put(currentId.value(), targetIndex);
-        }
+        List<ClassicsContentTagId> orderedIdList = command == null ? null : command.getOrderedIds();
+        SortablePrioritySwapSupport.sort(
+                orderedIdList,
+                repository.listTags(SortDirection.ASC),
+                ClassicsContentTag::getId,
+                ClassicsContentTagId::value,
+                ClassicsContentTag::getPriority,
+                () -> repository.maxTagPriority(null, null),
+                this::updateTagPriorityOrThrow);
     }
 
     @Override
@@ -235,7 +188,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         validateTagCommand(command, false);
         ClassicsContentId contentId = ClassicsContentId.of(command.getContentId());
         ClassicsContentType contentType = command.getContentType();
-        int nextPriority = repository.maxTagPriority(command.getContentType().value(), contentId) + 1;
+        int nextPriority = repository.maxTagPriority(null, null) + 1;
         ClassicsContentTag tag;
         if (tagBindingSupport == null) {
             tag = command.toEntity();
@@ -351,59 +304,15 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     }
 
     private void sortQaPairs(ContentQaPairSortCommand command, List<ClassicsContentQaPair> currentQaPairs) {
-        List<ClassicsContentQaPairId> orderedIdList =
-                command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
-        if (orderedIdList.isEmpty()) {
-            throw sortEmptyInput();
-        }
-
-        if (currentQaPairs == null || currentQaPairs.isEmpty() || currentQaPairs.size() != orderedIdList.size()) {
-            throw sortMissingId();
-        }
-
-        Map<Long, Integer> indexById = new HashMap<>(currentQaPairs.size());
-        Map<Long, Integer> priorityById = new HashMap<>(currentQaPairs.size());
-        List<ClassicsContentQaPairId> currentOrderedIds = new ArrayList<>(currentQaPairs.size());
-        for (int i = 0; i < currentQaPairs.size(); i++) {
-            ClassicsContentQaPair qaPair = currentQaPairs.get(i);
-            if (qaPair == null || qaPair.getId() == null) {
-                throw sortDbFailure();
-            }
-            long qaId = qaPair.getId().value();
-            indexById.put(qaId, i);
-            priorityById.put(qaId, qaPair.getPriority());
-            currentOrderedIds.add(qaPair.getId());
-        }
-
-        for (ClassicsContentQaPairId orderedId : orderedIdList) {
-            if (orderedId == null || orderedId.value() == null || !indexById.containsKey(orderedId.value())) {
-                throw sortMissingId();
-            }
-        }
-
-        int temporaryPriority = repository.maxQaPairPriority() + 1;
-        for (int i = 0; i < currentOrderedIds.size(); i++) {
-            ClassicsContentQaPairId targetId = orderedIdList.get(i);
-            ClassicsContentQaPairId currentId = currentOrderedIds.get(i);
-            if (targetId.equals(currentId)) {
-                continue;
-            }
-
-            int targetIndex = indexById.get(targetId.value());
-            int currentPriority = priorityById.get(currentId.value());
-            int targetPriority = priorityById.get(targetId.value());
-
-            updateQaPairPriorityOrThrow(targetId, temporaryPriority++);
-            updateQaPairPriorityOrThrow(currentId, targetPriority);
-            updateQaPairPriorityOrThrow(targetId, currentPriority);
-
-            priorityById.put(targetId.value(), currentPriority);
-            priorityById.put(currentId.value(), targetPriority);
-            currentOrderedIds.set(i, targetId);
-            currentOrderedIds.set(targetIndex, currentId);
-            indexById.put(targetId.value(), i);
-            indexById.put(currentId.value(), targetIndex);
-        }
+        List<ClassicsContentQaPairId> orderedIdList = command == null ? null : command.getOrderedIds();
+        SortablePrioritySwapSupport.sort(
+                orderedIdList,
+                currentQaPairs,
+                ClassicsContentQaPair::getId,
+                ClassicsContentQaPairId::value,
+                ClassicsContentQaPair::getPriority,
+                repository::maxQaPairPriority,
+                this::updateQaPairPriorityOrThrow);
 
         if (!currentQaPairs.isEmpty() && currentQaPairs.get(0) != null) {
             ClassicsContentType contentType = currentQaPairs.get(0).getContentType();
@@ -1068,7 +977,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
 
     private ClassicsContentTagId insertTagWithoutVersion(ContentTagCommand command) {
         ClassicsContentId contentId = ClassicsContentId.of(command.getContentId());
-        int nextPriority = repository.maxTagPriority(command.getContentType().value(), contentId) + 1;
+        int nextPriority = repository.maxTagPriority(null, null) + 1;
         ClassicsContentTag tag;
         if (tagBindingSupport == null) {
             tag = command.toEntity();
@@ -1888,20 +1797,6 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             storage = response == null ? null : response.getStoredObject();
         }
         return SancaiEntryVersionSnapshot.ImageResource.from(image, storage);
-    }
-
-    private static BizException sortEmptyInput() {
-        return new BizException(
-                ErrorCode.SORT_EMPTY_INPUT.getCode(),
-                ErrorCode.SORT_EMPTY_INPUT.getMessageKey(),
-                ErrorCode.SORT_EMPTY_INPUT.getMessage());
-    }
-
-    private static BizException sortMissingId() {
-        return new BizException(
-                ErrorCode.SORT_MISSING_ID.getCode(),
-                ErrorCode.SORT_MISSING_ID.getMessageKey(),
-                ErrorCode.SORT_MISSING_ID.getMessage());
     }
 
     private static BizException sortDbFailure() {

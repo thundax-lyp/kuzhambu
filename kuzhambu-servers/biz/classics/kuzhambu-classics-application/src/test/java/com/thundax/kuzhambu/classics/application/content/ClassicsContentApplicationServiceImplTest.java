@@ -537,15 +537,14 @@ class ClassicsContentApplicationServiceImplTest {
         boundTag.setSource(ClassicsContentSource.MANUAL);
         boundTag.setStatus(ClassicsContentTagStatus.ACTIVE);
         boundTag.setPriority(3);
-        when(repository.maxTagPriority("SANCAI_ENTRY", ClassicsContentId.of(100L)))
-                .thenReturn(2);
+        when(repository.maxTagPriority(null, null)).thenReturn(2);
         when(tagBindingSupport.bindManualTag(command, 3)).thenReturn(boundTag);
         when(repository.insertTag(boundTag)).thenReturn(ClassicsContentTagId.of(9001L));
 
         ClassicsContentTagId id = service.addTag(command);
 
         assertEquals(9001L, id.value());
-        verify(repository).maxTagPriority("SANCAI_ENTRY", ClassicsContentId.of(100L));
+        verify(repository).maxTagPriority(null, null);
         verify(tagBindingSupport).bindManualTag(command, 3);
         ArgumentCaptor<ClassicsContentTag> syncCaptor = ArgumentCaptor.forClass(ClassicsContentTag.class);
         verify(tagBindingSupport).syncTagRef(syncCaptor.capture());

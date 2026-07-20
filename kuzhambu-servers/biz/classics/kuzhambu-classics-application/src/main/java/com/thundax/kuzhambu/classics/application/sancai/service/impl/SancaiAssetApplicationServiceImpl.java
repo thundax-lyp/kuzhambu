@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.thundax.kuzhambu.classics.application.common.sort.SortablePrioritySwapSupport;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiDraftCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageSortCommand;
@@ -56,13 +57,10 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.List;
-import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -218,60 +216,15 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sortImages(SancaiEntryImageSortCommand command) {
-        List<SancaiEntryImageId> orderedIdList =
-                command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
-        if (orderedIdList.isEmpty()) {
-            throw sortEmptyInput();
-        }
-
-        List<SancaiEntryImage> currentImages = repository.listImages(SortDirection.ASC);
-        if (currentImages == null || currentImages.isEmpty() || currentImages.size() != orderedIdList.size()) {
-            throw sortMissingId();
-        }
-
-        Map<Long, Integer> indexById = new HashMap<>(currentImages.size());
-        Map<Long, Integer> priorityById = new HashMap<>(currentImages.size());
-        List<SancaiEntryImageId> currentOrderedIds = new ArrayList<>(currentImages.size());
-        for (int i = 0; i < currentImages.size(); i++) {
-            SancaiEntryImage image = currentImages.get(i);
-            if (image == null || image.getId() == null) {
-                throw sortDbFailure();
-            }
-            long imageId = image.getId().value();
-            indexById.put(imageId, i);
-            priorityById.put(imageId, image.getPriority());
-            currentOrderedIds.add(image.getId());
-        }
-
-        for (SancaiEntryImageId orderedId : orderedIdList) {
-            if (orderedId == null || orderedId.value() == null || !indexById.containsKey(orderedId.value())) {
-                throw sortMissingId();
-            }
-        }
-
-        int temporaryPriority = repository.maxPriority() + 1;
-        for (int i = 0; i < currentOrderedIds.size(); i++) {
-            SancaiEntryImageId targetId = orderedIdList.get(i);
-            SancaiEntryImageId currentId = currentOrderedIds.get(i);
-            if (targetId.equals(currentId)) {
-                continue;
-            }
-
-            int targetIndex = indexById.get(targetId.value());
-            int currentPriority = priorityById.get(currentId.value());
-            int targetPriority = priorityById.get(targetId.value());
-
-            updatePriorityOrThrow(targetId, temporaryPriority++);
-            updatePriorityOrThrow(currentId, targetPriority);
-            updatePriorityOrThrow(targetId, currentPriority);
-
-            priorityById.put(targetId.value(), currentPriority);
-            priorityById.put(currentId.value(), targetPriority);
-            currentOrderedIds.set(i, targetId);
-            currentOrderedIds.set(targetIndex, currentId);
-            indexById.put(targetId.value(), i);
-            indexById.put(currentId.value(), targetIndex);
-        }
+        List<SancaiEntryImageId> orderedIdList = command == null ? null : command.getOrderedIds();
+        SortablePrioritySwapSupport.sort(
+                orderedIdList,
+                repository.listImages(SortDirection.ASC),
+                SancaiEntryImage::getId,
+                SancaiEntryImageId::value,
+                SancaiEntryImage::getPriority,
+                repository::maxPriority,
+                this::updatePriorityOrThrow);
     }
 
     @Override
@@ -874,20 +827,6 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         if (repository.updatePriority(image) != 1) {
             throw sortDbFailure();
         }
-    }
-
-    private static BizException sortEmptyInput() {
-        return new BizException(
-                ErrorCode.SORT_EMPTY_INPUT.getCode(),
-                ErrorCode.SORT_EMPTY_INPUT.getMessageKey(),
-                ErrorCode.SORT_EMPTY_INPUT.getMessage());
-    }
-
-    private static BizException sortMissingId() {
-        return new BizException(
-                ErrorCode.SORT_MISSING_ID.getCode(),
-                ErrorCode.SORT_MISSING_ID.getMessageKey(),
-                ErrorCode.SORT_MISSING_ID.getMessage());
     }
 
     private static BizException sortDbFailure() {

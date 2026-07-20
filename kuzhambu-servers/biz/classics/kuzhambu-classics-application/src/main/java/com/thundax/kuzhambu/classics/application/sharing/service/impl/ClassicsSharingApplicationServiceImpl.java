@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.thundax.kuzhambu.classics.application.common.sort.SortablePrioritySwapSupport;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsContentPermissionSupport;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
@@ -60,10 +61,8 @@ import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -452,60 +451,15 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sortTargets(ClassicsShareTargetSortCommand command) {
-        List<ClassicsShareTargetId> orderedIdList =
-                command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
-        if (orderedIdList.isEmpty()) {
-            throw sortEmptyInput();
-        }
-
-        List<ClassicsShareTarget> currentTargets = repository.listTargets(SortDirection.ASC);
-        if (currentTargets == null || currentTargets.isEmpty() || currentTargets.size() != orderedIdList.size()) {
-            throw sortMissingId();
-        }
-
-        Map<Long, Integer> indexById = new HashMap<>(currentTargets.size());
-        Map<Long, Integer> priorityById = new HashMap<>(currentTargets.size());
-        List<ClassicsShareTargetId> currentOrderedIds = new ArrayList<>(currentTargets.size());
-        for (int i = 0; i < currentTargets.size(); i++) {
-            ClassicsShareTarget target = currentTargets.get(i);
-            if (target == null || target.getId() == null) {
-                throw sortDbFailure();
-            }
-            long targetId = target.getId().value();
-            indexById.put(targetId, i);
-            priorityById.put(targetId, target.getPriority());
-            currentOrderedIds.add(target.getId());
-        }
-
-        for (ClassicsShareTargetId orderedId : orderedIdList) {
-            if (orderedId == null || orderedId.value() == null || !indexById.containsKey(orderedId.value())) {
-                throw sortMissingId();
-            }
-        }
-
-        int temporaryPriority = repository.maxTargetPriority() + 1;
-        for (int i = 0; i < currentOrderedIds.size(); i++) {
-            ClassicsShareTargetId targetId = orderedIdList.get(i);
-            ClassicsShareTargetId currentId = currentOrderedIds.get(i);
-            if (targetId.equals(currentId)) {
-                continue;
-            }
-
-            int targetIndex = indexById.get(targetId.value());
-            int currentPriority = priorityById.get(currentId.value());
-            int targetPriority = priorityById.get(targetId.value());
-
-            updateTargetPriorityOrThrow(targetId, temporaryPriority++);
-            updateTargetPriorityOrThrow(currentId, targetPriority);
-            updateTargetPriorityOrThrow(targetId, currentPriority);
-
-            priorityById.put(targetId.value(), currentPriority);
-            priorityById.put(currentId.value(), targetPriority);
-            currentOrderedIds.set(i, targetId);
-            currentOrderedIds.set(targetIndex, currentId);
-            indexById.put(targetId.value(), i);
-            indexById.put(currentId.value(), targetIndex);
-        }
+        List<ClassicsShareTargetId> orderedIdList = command == null ? null : command.getOrderedIds();
+        SortablePrioritySwapSupport.sort(
+                orderedIdList,
+                repository.listTargets(SortDirection.ASC),
+                ClassicsShareTarget::getId,
+                ClassicsShareTargetId::value,
+                ClassicsShareTarget::getPriority,
+                repository::maxTargetPriority,
+                this::updateTargetPriorityOrThrow);
     }
 
     @Override
@@ -913,20 +867,6 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
 
     private static BizException permissionDenied() {
         return new BizException("PERMISSION_DENIED");
-    }
-
-    private static BizException sortEmptyInput() {
-        return new BizException(
-                ErrorCode.SORT_EMPTY_INPUT.getCode(),
-                ErrorCode.SORT_EMPTY_INPUT.getMessageKey(),
-                ErrorCode.SORT_EMPTY_INPUT.getMessage());
-    }
-
-    private static BizException sortMissingId() {
-        return new BizException(
-                ErrorCode.SORT_MISSING_ID.getCode(),
-                ErrorCode.SORT_MISSING_ID.getMessageKey(),
-                ErrorCode.SORT_MISSING_ID.getMessage());
     }
 
     private static BizException sortDbFailure() {
