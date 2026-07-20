@@ -24,10 +24,12 @@ import com.thundax.kuzhambu.discovery.application.qa.service.KnowledgeQaApplicat
 import com.thundax.kuzhambu.discovery.application.qa.support.QaSourceAssembler;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaTraceAssembler;
 import com.thundax.kuzhambu.discovery.application.search.support.DiscoveryKnowledgeEnhancementProvider;
+import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaKnowledgeSyncItem;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaMessage;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaRetrievalTrace;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSource;
+import com.thundax.kuzhambu.discovery.domain.qa.repository.QaKnowledgeSyncItemRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaMessageRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaRetrievalTraceRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSessionRepository;
@@ -65,10 +67,14 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
     private static final String DEFAULT_AI_FAILURE_REASON = "Discovery AI answer generation failed";
     private static final String SINGLE_DOCUMENT_CONTEXT_MODE = "SINGLE_DOCUMENT";
     private static final String WANGQI_DOCUMENT_CONTEXT_TYPE = "WANGQI_DOCUMENT";
+    private static final String SYNC_STATUS_SUCCEEDED = "SUCCEEDED";
+    private static final int LOCAL_RETRIEVAL_LIMIT = 20;
+    private static final int LOCAL_RETRIEVAL_RESULT_LIMIT = 3;
 
     private final KnowledgeBaseClient knowledgeBaseClient;
     private final ClassicsFacade classicsFacade;
     private final AiFacade aiFacade;
+    private final QaKnowledgeSyncItemRepository qaKnowledgeSyncItemRepository;
     private final QaSessionRepository qaSessionRepository;
     private final QaMessageRepository qaMessageRepository;
     private final QaSourceRepository qaSourceRepository;
@@ -81,6 +87,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             KnowledgeBaseClient knowledgeBaseClient,
             ClassicsFacade classicsFacade,
             AiFacade aiFacade,
+            QaKnowledgeSyncItemRepository qaKnowledgeSyncItemRepository,
             QaSessionRepository qaSessionRepository,
             QaMessageRepository qaMessageRepository,
             QaSourceRepository qaSourceRepository,
@@ -91,6 +98,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         this.knowledgeBaseClient = knowledgeBaseClient;
         this.classicsFacade = classicsFacade;
         this.aiFacade = aiFacade;
+        this.qaKnowledgeSyncItemRepository = qaKnowledgeSyncItemRepository;
         this.qaSessionRepository = qaSessionRepository;
         this.qaMessageRepository = qaMessageRepository;
         this.qaSourceRepository = qaSourceRepository;
@@ -173,6 +181,41 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         }
 
         if (chatResult == null) {
+            LocalRetrievalAnswer localAnswer = buildLocalRetrievalAnswer(question);
+            if (localAnswer != null) {
+                QaMessage answerMessage =
+                        createLocalRetrievalAnswerMessage(command, model, contextTurnCount, now, localAnswer.answer());
+                Long answerMessagePk = qaMessageRepository.save(answerMessage);
+                answerMessage.setId(answerMessagePk);
+                answerMessage.setMessageId(answerMessagePk);
+                answerMessage.setAnsweredAt(new Date());
+                List<QaSource> sourceEntities = saveLocalRetrievalSources(localAnswer.sources(), answerMessagePk);
+                saveTrace(
+                        command,
+                        session,
+                        answerMessage,
+                        question,
+                        providerRequest,
+                        localRetrievalChatResult(localAnswer, model),
+                        now,
+                        new Date(),
+                        "Provider failed; answered by local retrieval: " + providerFailureReason);
+                return new ChatCompletionResult(
+                        command.getSessionId(),
+                        questionMessagePk,
+                        answerMessagePk,
+                        question,
+                        ANSWER_STATUS_SUCCEEDED,
+                        null,
+                        List.of(new ChatCompletionResult.ChatCompletionChoice(
+                                0,
+                                new ChatCompletionResult.ChatCompletionMessage(
+                                        MESSAGE_ROLE_ASSISTANT, localAnswer.answer()),
+                                "stop")),
+                        sourcesToResult(sourceEntities),
+                        null,
+                        Map.of("fallback", "local-keyword-retrieval"));
+            }
             QaMessage failedMessage =
                     createFailureMessage(command.getSessionId(), model, contextTurnCount, failureReason, now);
             Long failedMessagePk = qaMessageRepository.save(failedMessage);
@@ -377,6 +420,177 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                     source.getSourcePath() == null ? Map.of() : Map.of("sourcePath", source.getSourcePath())));
         }
         return results;
+    }
+
+    private LocalRetrievalAnswer buildLocalRetrievalAnswer(String question) {
+        if (qaKnowledgeSyncItemRepository == null) {
+            return null;
+        }
+        List<QaKnowledgeSyncItem> syncItems =
+                qaKnowledgeSyncItemRepository.listBySyncStatus(SYNC_STATUS_SUCCEEDED, LOCAL_RETRIEVAL_LIMIT);
+        if (syncItems == null || syncItems.isEmpty()) {
+            return null;
+        }
+        List<ScoredKnowledge> scoredKnowledge = new ArrayList<>();
+        for (QaKnowledgeSyncItem syncItem : syncItems) {
+            ClassicsQaKnowledgeFacadeDto knowledge = loadKnowledge(syncItem);
+            if (knowledge == null) {
+                continue;
+            }
+            scoredKnowledge.add(new ScoredKnowledge(knowledge, localMatchScore(question, knowledge)));
+        }
+        if (scoredKnowledge.isEmpty()) {
+            return null;
+        }
+        List<ClassicsQaKnowledgeFacadeDto> matchedSources = scoredKnowledge.stream()
+                .filter(item -> item.score() > 0)
+                .sorted((left, right) -> Integer.compare(right.score(), left.score()))
+                .limit(LOCAL_RETRIEVAL_RESULT_LIMIT)
+                .map(ScoredKnowledge::knowledge)
+                .toList();
+        if (matchedSources.isEmpty()) {
+            return new LocalRetrievalAnswer("我在已同步知识库中没有检索到与「" + question + "」直接相关的内容。", List.of());
+        }
+        return new LocalRetrievalAnswer(localRetrievalAnswerText(question, matchedSources), matchedSources);
+    }
+
+    private ClassicsQaKnowledgeFacadeDto loadKnowledge(QaKnowledgeSyncItem syncItem) {
+        if (syncItem == null || StringUtils.isBlank(syncItem.getContentType()) || syncItem.getContentId() == null) {
+            return null;
+        }
+        ClassicsQaKnowledgeFacadeResponse response =
+                classicsFacade.getQaKnowledge(ClassicsQaKnowledgeFacadeRequest.builder()
+                        .contentType(syncItem.getContentType())
+                        .contentId(String.valueOf(syncItem.getContentId()))
+                        .build());
+        return response == null ? null : response.getKnowledge();
+    }
+
+    private int localMatchScore(String question, ClassicsQaKnowledgeFacadeDto knowledge) {
+        String normalizedQuestion = StringUtils.defaultString(question).trim().toLowerCase();
+        String haystack = localSearchText(knowledge).toLowerCase();
+        if (StringUtils.isBlank(normalizedQuestion) || StringUtils.isBlank(haystack)) {
+            return 0;
+        }
+        int score = haystack.contains(normalizedQuestion) ? 10 : 0;
+        for (String token : localSearchTokens(normalizedQuestion)) {
+            if (haystack.contains(token)) {
+                score++;
+            }
+        }
+        return score;
+    }
+
+    private List<String> localSearchTokens(String normalizedQuestion) {
+        String[] parts = normalizedQuestion.split("[\\s,，。！？!?:：;；、]+");
+        List<String> tokens = new ArrayList<>();
+        for (String part : parts) {
+            if (part.length() >= 2) {
+                tokens.add(part);
+            }
+        }
+        if (normalizedQuestion.length() >= 2 && normalizedQuestion.length() <= 24) {
+            tokens.add(normalizedQuestion);
+        }
+        String compactQuestion = normalizedQuestion.replaceAll("[\\s,，。！？!?:：;；、]+", "");
+        for (int index = 0; index + 2 <= compactQuestion.length(); index++) {
+            tokens.add(compactQuestion.substring(index, index + 2));
+        }
+        return tokens;
+    }
+
+    private String localSearchText(ClassicsQaKnowledgeFacadeDto knowledge) {
+        if (knowledge == null) {
+            return "";
+        }
+        List<String> values = new ArrayList<>();
+        values.add(knowledge.getTitle());
+        values.add(knowledge.getCategoryPath());
+        values.add(knowledge.getSummary());
+        values.add(knowledge.getBody());
+        values.add(knowledge.getOriginalText());
+        values.add(knowledge.getTranslationText());
+        values.add(knowledge.getOriginalExcerpts());
+        if (knowledge.getTags() != null) {
+            values.addAll(knowledge.getTags());
+        }
+        if (knowledge.getQaPairs() != null) {
+            for (ClassicsQaKnowledgeFacadeDto.QaPair qaPair : knowledge.getQaPairs()) {
+                if (qaPair != null) {
+                    values.add(qaPair.getQuestion());
+                    values.add(qaPair.getAnswer());
+                }
+            }
+        }
+        return values.stream().filter(StringUtils::isNotBlank).collect(Collectors.joining("\n"));
+    }
+
+    private String localRetrievalAnswerText(String question, List<ClassicsQaKnowledgeFacadeDto> sources) {
+        StringBuilder answer = new StringBuilder();
+        answer.append("我在已同步知识库中检索到与「").append(question).append("」相关的内容：");
+        for (int index = 0; index < sources.size(); index++) {
+            ClassicsQaKnowledgeFacadeDto source = sources.get(index);
+            answer.append("\n\n")
+                    .append(index + 1)
+                    .append(". ")
+                    .append(StringUtils.defaultIfBlank(source.getTitle(), source.getSourceId()))
+                    .append("：")
+                    .append(localSnippet(source));
+        }
+        return answer.toString();
+    }
+
+    private String localSnippet(ClassicsQaKnowledgeFacadeDto knowledge) {
+        String snippet = StringUtils.defaultIfBlank(
+                knowledge.getSummary(),
+                StringUtils.defaultIfBlank(
+                        knowledge.getBody(),
+                        StringUtils.defaultIfBlank(knowledge.getTranslationText(), knowledge.getOriginalText())));
+        if (StringUtils.isBlank(snippet)) {
+            return "该来源暂无摘要。";
+        }
+        String normalized = snippet.replaceAll("\\s+", " ").trim();
+        return normalized.length() <= 160 ? normalized : normalized.substring(0, 160) + "...";
+    }
+
+    private List<QaSource> saveLocalRetrievalSources(List<ClassicsQaKnowledgeFacadeDto> sources, Long messageId) {
+        if (sources == null || sources.isEmpty()) {
+            return List.of();
+        }
+        List<QaSource> sourceEntities = new ArrayList<>();
+        for (int index = 0; index < sources.size(); index++) {
+            QaSource sourceEntity = qaSourceAssembler.toDomain(sources.get(index), messageId, index + 1);
+            Long sourcePk = qaSourceRepository.save(sourceEntity);
+            sourceEntity.setId(sourcePk);
+            if (sourceEntity.getSourceId() == null) {
+                sourceEntity.setSourceId(sourcePk);
+            }
+            sourceEntities.add(sourceEntity);
+        }
+        return sourceEntities;
+    }
+
+    private KnowledgeChatResult localRetrievalChatResult(LocalRetrievalAnswer answer, String model) {
+        return new KnowledgeChatResult(
+                "local-keyword-retrieval",
+                "chat.completion",
+                null,
+                model,
+                List.of(new KnowledgeChatChoice(
+                        0, new KnowledgeChatMessage(MESSAGE_ROLE_ASSISTANT, answer.answer()), "stop")),
+                null,
+                answer.sources().stream()
+                        .map(source -> new KnowledgeChatSource(
+                                source.getSourceId(),
+                                source.getKnowledgeBase(),
+                                source.getContentType(),
+                                source.getContentId(),
+                                source.getTitle(),
+                                localSnippet(source),
+                                null,
+                                Map.of("sourcePath", StringUtils.defaultString(source.getSourcePath()))))
+                        .toList(),
+                Map.of("fallback", "local-keyword-retrieval"));
     }
 
     private ChatCompletionResult.ChatUsageResult toUsageResult(KnowledgeChatResult chatResult) {
@@ -808,6 +1022,24 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                 null);
     }
 
+    private QaMessage createLocalRetrievalAnswerMessage(
+            ChatCompletionCommand command, String model, int contextTurnCount, Date sentAt, String answer) {
+        return new QaMessage(
+                null,
+                null,
+                command.getSessionId(),
+                MESSAGE_ROLE_ASSISTANT,
+                answer,
+                ANSWER_STATUS_SUCCEEDED,
+                model,
+                contextTurnCount,
+                null,
+                "local-keyword-retrieval",
+                "stop",
+                sentAt,
+                null);
+    }
+
     private QaMessage createFailureMessage(
             Long sessionId, String model, int contextTurnCount, String failureReason, Date sentAt) {
         return new QaMessage(
@@ -889,4 +1121,8 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
     }
 
     private record AiAnswerPayload(String answer, String finishReason) {}
+
+    private record LocalRetrievalAnswer(String answer, List<ClassicsQaKnowledgeFacadeDto> sources) {}
+
+    private record ScoredKnowledge(ClassicsQaKnowledgeFacadeDto knowledge, int score) {}
 }

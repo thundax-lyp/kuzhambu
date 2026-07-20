@@ -87,6 +87,11 @@ public class KuzhambuKnowledgeConfiguration {
             requireText(fastGpt.getBaseUrl(), "kuzhambu.knowledge.fastgpt.base-url");
             requireText(fastGpt.getApiKey(), "kuzhambu.knowledge.fastgpt.api-key");
             requireText(fastGpt.getAppId(), "kuzhambu.knowledge.fastgpt.app-id");
+            requireText(fastGpt.getKnowledgeBaseId(), "kuzhambu.knowledge.fastgpt.knowledge-base-id");
+            if (!fastGpt.getKnowledgeBaseId().matches("^[0-9a-fA-F]{24}$")) {
+                throw new IllegalStateException(
+                        "Invalid FastGPT knowledge configuration. Configure kuzhambu.knowledge.fastgpt.knowledge-base-id with an existing dataset ObjectId.");
+            }
             if (fastGpt.getTimeout() == null
                     || fastGpt.getTimeout().isNegative()
                     || fastGpt.getTimeout().isZero()) {

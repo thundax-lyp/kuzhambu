@@ -22,6 +22,7 @@ public class KuzhambuKnowledgeProperties {
         private String apiKey;
         private String chatApiKey;
         private String appId;
+        private String knowledgeBaseId;
         private Duration timeout = Duration.ofSeconds(10);
     }
 }

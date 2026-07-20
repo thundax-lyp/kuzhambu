@@ -258,6 +258,7 @@ Admin：
 
 - Discovery 通过 `kuzhambu-common-knowledge` 的 OpenAI-compatible adapter 访问外部知识库能力。
 - Discovery 负责将 Classics 可消费内容同步为知识条目，并记录 `sourceId`、`contentType`、`contentId`、`knowledgeBaseName`、`currentVersionNo`、`knowledgeRevision`、`syncStatus`、`failureReason`、`syncedAt` 和 `updatedAt`。
+- FastGPT 知识库必须由 FastGPT 管理面预先创建，并通过 `KUZHAMBU_KNOWLEDGE_FASTGPT_KNOWLEDGE_BASE_ID` 配置给 admin-server；该值必须是既有 FastGPT dataset 的 24 位 ObjectId，不能是本地别名。admin-server 只使用既有知识库写入 collection 和执行同步，不具备创建 FastGPT 知识库的能力。
 - Discovery 问答请求只接收会话、消息、上下文内容和逻辑模型，不接收 provider 路由参数。
 - provider 请求、外部知识库、外部条目、外部会话、耗时、失败原因和 raw 响应写入 provider trace。
 

@@ -117,36 +117,54 @@ public class FastGptKnowledgeBaseClientTest {
     }
 
     @Test
-    public void shouldCreateKnowledgeBaseWithFastGptDatasetDefaultsAndStringId() {
+    public void shouldUpsertKnowledgeItemWithExistingKnowledgeBaseIdWithoutCreatingDataset() {
         RestTemplate restTemplate =
                 new RestTemplateBuilder().rootUri("http://fastgpt.local").build();
         MockRestServiceServer server =
                 MockRestServiceServer.bindTo(restTemplate).build();
-        server.expect(requestTo("http://fastgpt.local/api/core/dataset/list"))
-                .andRespond(withSuccess("{\"data\":{\"list\":[]}}", MediaType.APPLICATION_JSON));
-        server.expect(requestTo("http://fastgpt.local/api/core/dataset/create"))
+        server.expect(requestTo("http://fastgpt.local/api/core/dataset/collection/create/text"))
                 .andExpect(
                         content()
                                 .json(
                                         """
                                 {
-                                  "parentId": null,
-                                  "type": "dataset",
-                                  "name": "kuzhambu-qa",
-                                  "intro": "QA",
-                                  "avatar": "",
-                                  "vectorModel": "",
-                                  "agentModel": "",
-                                  "vlmModel": ""
+                                  "datasetId": "6a4f51e5ef72393d430a8e31",
+                                  "name": "三才",
+                                  "text": "三才指天地人。"
                                 }
                                 """))
-                .andRespond(withSuccess("{\"code\":200,\"data\":\"dataset-1\"}", MediaType.APPLICATION_JSON));
+                .andRespond(withSuccess(
+                        "{\"code\":200,\"data\":{\"collectionId\":\"item-1\"}}", MediaType.APPLICATION_JSON));
 
         FastGptKnowledgeBaseClient client = new FastGptKnowledgeBaseClient(
                 restTemplate, new ObjectMapper(), fastGptProperties("http://fastgpt.local", "fastgpt-test"));
 
         assertEquals(
-                "dataset-1",
+                "item-1",
+                client.upsertKnowledgeItem(
+                                new com.thundax.kuzhambu.common.knowledge.model.item.KnowledgeItemUpsertRequest(
+                                        "kuzhambu-qa",
+                                        "SANCAI_ENTRY:3001",
+                                        "三才",
+                                        "三才指天地人。",
+                                        null,
+                                        Map.of("knowledgeBaseId", "6a4f51e5ef72393d430a8e31")))
+                        .knowledgeItemId());
+        server.verify();
+    }
+
+    @Test
+    public void shouldResolveKnowledgeBaseFromConfigurationWithoutCreatingDataset() {
+        RestTemplate restTemplate =
+                new RestTemplateBuilder().rootUri("http://fastgpt.local").build();
+        MockRestServiceServer server =
+                MockRestServiceServer.bindTo(restTemplate).build();
+
+        FastGptKnowledgeBaseClient client = new FastGptKnowledgeBaseClient(
+                restTemplate, new ObjectMapper(), fastGptProperties("http://fastgpt.local", "fastgpt-test"));
+
+        assertEquals(
+                "6a4f51e5ef72393d430a8e31",
                 client.ensureKnowledgeBase(new KnowledgeBaseEnsureRequest("kuzhambu-qa", "QA", null))
                         .knowledgeBaseId());
         server.verify();
@@ -157,6 +175,7 @@ public class FastGptKnowledgeBaseClientTest {
         properties.setBaseUrl(baseUrl);
         properties.setApiKey(apiKey);
         properties.setAppId("app-1");
+        properties.setKnowledgeBaseId("6a4f51e5ef72393d430a8e31");
         properties.setTimeout(Duration.ofSeconds(10));
         return properties;
     }

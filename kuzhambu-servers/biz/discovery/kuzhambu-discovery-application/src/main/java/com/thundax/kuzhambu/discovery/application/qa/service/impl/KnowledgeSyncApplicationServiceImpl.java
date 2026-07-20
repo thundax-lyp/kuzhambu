@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.knowledge.client.KnowledgeBaseClient;
 import com.thundax.kuzhambu.common.knowledge.model.base.KnowledgeBaseEnsureRequest;
+import com.thundax.kuzhambu.common.knowledge.model.base.KnowledgeBaseResult;
 import com.thundax.kuzhambu.common.knowledge.model.item.KnowledgeItemDeleteRequest;
 import com.thundax.kuzhambu.common.knowledge.model.item.KnowledgeItemResult;
 import com.thundax.kuzhambu.common.knowledge.model.item.KnowledgeItemUpsertRequest;
@@ -227,6 +228,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
             SyncKnowledgeContentCommand command, QaKnowledgeSyncItem existingItem, String triggerType) {
         String sourceId = sourceId(command);
         Date now = new Date();
+        String externalKnowledgeBaseId = existingItem == null ? null : existingItem.getExternalKnowledgeBaseId();
         try {
             ClassicsQaKnowledgeFacadeResponse sourceResponse =
                     classicsFacade.getQaKnowledge(ClassicsQaKnowledgeFacadeRequest.builder()
@@ -253,6 +255,8 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
             String knowledgeRevision = knowledgeRevisionCalculator.calculate(document.knowledge());
             Integer currentVersionNo = chooseVersionNo(command, document);
             String knowledgeBaseName = resolveKnowledgeBaseName(document);
+            KnowledgeBaseResult knowledgeBase = ensureKnowledgeBase(knowledgeBaseName);
+            externalKnowledgeBaseId = knowledgeBase.knowledgeBaseId();
 
             KnowledgeItemResult itemResult = knowledgeBaseClient.upsertKnowledgeItem(new KnowledgeItemUpsertRequest(
                     knowledgeBaseName,
@@ -260,13 +264,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
                     title,
                     renderedKnowledge,
                     buildItemMetadata(command, currentVersionNo, document, knowledgeRevision),
-                    Map.of(
-                            "requestId",
-                            StringUtils.defaultString(command.getRequestId()),
-                            "traceId",
-                            StringUtils.defaultString(command.getTraceId()),
-                            "triggerType",
-                            StringUtils.defaultString(triggerType))));
+                    buildSyncOptions(command, triggerType)));
             if (itemResult == null || StringUtils.isBlank(itemResult.knowledgeItemId())) {
                 throw new BizException(
                         "DISCOVERY-30013", "discovery.qa.sync.upsert-failed", "Knowledge item upsert failed");
@@ -308,7 +306,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
             failedItem.setCurrentVersionNo(command.getCurrentVersionNo());
             failedItem.setKnowledgeRevision(null);
             failedItem.setProvider(resolveProvider());
-            failedItem.setExternalKnowledgeBaseId(null);
+            failedItem.setExternalKnowledgeBaseId(externalKnowledgeBaseId);
             failedItem.setExternalKnowledgeItemId(null);
             failedItem.setSyncStatus(SYNC_STATUS_FAILED);
             failedItem.setFailureReason(errorMessage(ex));
@@ -393,8 +391,20 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
     }
 
     private void ensureKnowledgeBase() {
-        knowledgeBaseClient.ensureKnowledgeBase(new KnowledgeBaseEnsureRequest(
-                KNOWLEDGE_BASE_NAME, "Discovery QA Knowledge Base", Collections.emptyMap()));
+        ensureKnowledgeBase(KNOWLEDGE_BASE_NAME);
+    }
+
+    private KnowledgeBaseResult ensureKnowledgeBase(String knowledgeBaseName) {
+        return knowledgeBaseClient.ensureKnowledgeBase(new KnowledgeBaseEnsureRequest(
+                knowledgeBaseName, "Discovery QA Knowledge Base", Collections.emptyMap()));
+    }
+
+    private Map<String, Object> buildSyncOptions(SyncKnowledgeContentCommand command, String triggerType) {
+        Map<String, Object> options = new HashMap<>();
+        options.put("requestId", StringUtils.defaultString(command.getRequestId()));
+        options.put("traceId", StringUtils.defaultString(command.getTraceId()));
+        options.put("triggerType", StringUtils.defaultString(triggerType));
+        return options;
     }
 
     private String resolveProvider() {
