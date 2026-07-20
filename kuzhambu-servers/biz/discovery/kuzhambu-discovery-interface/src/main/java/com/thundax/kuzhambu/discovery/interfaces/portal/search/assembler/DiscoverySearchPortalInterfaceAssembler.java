@@ -14,6 +14,9 @@ import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.respon
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.response.DiscoverySearchPreviewResponse;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.response.DiscoverySearchResponse;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.Date;
@@ -38,8 +41,8 @@ public final class DiscoverySearchPortalInterfaceAssembler {
                 request.getTagNames(),
                 request.getContentStatuses(),
                 PUBLIC_VISIBILITY_SCOPE,
-                parseDate(request.getDateFrom()),
-                parseDate(request.getDateTo()),
+                parseDateFrom(request.getDateFrom()),
+                parseDateTo(request.getDateTo()),
                 request.getPageNo() == null ? 1 : request.getPageNo(),
                 request.getPageSize() == null ? 20 : request.getPageSize(),
                 PORTAL_OPERATOR_TYPE,
@@ -167,12 +170,33 @@ public final class DiscoverySearchPortalInterfaceAssembler {
                 .build();
     }
 
-    private static Date parseDate(String value) {
+    private static Date parseDateFrom(String value) {
+        return parseDate(value, false);
+    }
+
+    private static Date parseDateTo(String value) {
+        return parseDate(value, true);
+    }
+
+    private static Date parseDate(String value, boolean endOfDay) {
         if (value == null || value.isBlank()) {
             return null;
         }
+        String trimmedValue = value.trim();
         try {
-            return Date.from(Instant.parse(value));
+            return Date.from(Instant.parse(trimmedValue));
+        } catch (DateTimeParseException exception) {
+            return parseLocalDate(trimmedValue, endOfDay);
+        }
+    }
+
+    private static Date parseLocalDate(String value, boolean endOfDay) {
+        try {
+            LocalDate date = LocalDate.parse(value);
+            Instant instant = endOfDay
+                    ? date.atTime(LocalTime.MAX).toInstant(ZoneOffset.UTC)
+                    : date.atStartOfDay().toInstant(ZoneOffset.UTC);
+            return Date.from(instant);
         } catch (DateTimeParseException exception) {
             return null;
         }
