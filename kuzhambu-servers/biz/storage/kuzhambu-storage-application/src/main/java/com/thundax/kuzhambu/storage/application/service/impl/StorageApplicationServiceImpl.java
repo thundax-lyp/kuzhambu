@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import com.thundax.kuzhambu.common.core.sort.SortablePrioritySwapSupport;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.application.service.command.AddStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageCommand;
@@ -137,86 +138,14 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
                     ErrorCode.SORT_EMPTY_INPUT.getMessage());
         }
 
-        List<StoredObject> allStorage = dao.list(null, null, null, null, null, null, null, SortDirection.ASC);
-        if (allStorage == null || allStorage.isEmpty()) {
-            throw new BizException(
-                    ErrorCode.SORT_MISSING_ID.getCode(),
-                    ErrorCode.SORT_MISSING_ID.getMessageKey(),
-                    ErrorCode.SORT_MISSING_ID.getMessage());
-        }
-
-        Set<Long> orderedIdValues = new LinkedHashSet<>();
-        for (StoredObjectId orderedId : orderedIdList) {
-            if (orderedId != null) {
-                orderedIdValues.add(orderedId.value());
-            }
-        }
-        List<StoredObject> currentStorage = new ArrayList<>();
-        for (StoredObject storage : allStorage) {
-            if (storage != null
-                    && storage.getId() != null
-                    && orderedIdValues.contains(storage.getId().value())) {
-                currentStorage.add(storage);
-            }
-        }
-        if (currentStorage.size() != orderedIdList.size()) {
-            throw new BizException(
-                    ErrorCode.SORT_MISSING_ID.getCode(),
-                    ErrorCode.SORT_MISSING_ID.getMessageKey(),
-                    ErrorCode.SORT_MISSING_ID.getMessage());
-        }
-
-        Map<Long, Integer> indexById = new HashMap<>(currentStorage.size());
-        Map<Long, Integer> priorityById = new HashMap<>(currentStorage.size());
-        List<StoredObjectId> currentOrderedIds = new ArrayList<>(currentStorage.size());
-
-        for (int i = 0; i < currentStorage.size(); i++) {
-            StoredObject storage = currentStorage.get(i);
-            if (storage == null || storage.getId() == null) {
-                throw new BizException(
-                        ErrorCode.SORT_DB_FAILURE.getCode(),
-                        ErrorCode.SORT_DB_FAILURE.getMessageKey(),
-                        ErrorCode.SORT_DB_FAILURE.getMessage());
-            }
-            long storageId = storage.getId().value();
-            indexById.put(storageId, i);
-            priorityById.put(storageId, storage.getPriority());
-            currentOrderedIds.add(storage.getId());
-        }
-
-        for (StoredObjectId orderedId : orderedIdList) {
-            if (orderedId == null || !indexById.containsKey(orderedId.value())) {
-                throw new BizException(
-                        ErrorCode.SORT_MISSING_ID.getCode(),
-                        ErrorCode.SORT_MISSING_ID.getMessageKey(),
-                        ErrorCode.SORT_MISSING_ID.getMessage());
-            }
-        }
-
-        int temporaryPriority = dao.maxPriority() + PRIORITY_STEP;
-        for (int i = 0; i < currentOrderedIds.size(); i++) {
-            StoredObjectId targetId = orderedIdList.get(i);
-            StoredObjectId currentId = currentOrderedIds.get(i);
-            if (targetId.equals(currentId)) {
-                continue;
-            }
-
-            int targetIndex = indexById.get(targetId.value());
-            int currentPriority = priorityById.get(currentId.value());
-            int targetPriority = priorityById.get(targetId.value());
-
-            updatePriorityOrThrow(targetId, temporaryPriority++, "暂态更新失败");
-            updatePriorityOrThrow(currentId, targetPriority, "交换更新失败");
-            updatePriorityOrThrow(targetId, currentPriority, "交换更新失败");
-
-            priorityById.put(targetId.value(), currentPriority);
-            priorityById.put(currentId.value(), targetPriority);
-
-            currentOrderedIds.set(i, targetId);
-            currentOrderedIds.set(targetIndex, currentId);
-            indexById.put(targetId.value(), i);
-            indexById.put(currentId.value(), targetIndex);
-        }
+        SortablePrioritySwapSupport.sort(
+                orderedIdList,
+                dao.list(null, null, null, null, null, null, null, SortDirection.ASC),
+                StoredObject::getId,
+                StoredObjectId::value,
+                StoredObject::getPriority,
+                dao::maxPriority,
+                this::updatePriorityOrThrow);
     }
 
     @Override
@@ -470,6 +399,10 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
             throw new BizException(
                     ErrorCode.SORT_DB_FAILURE.getCode(), ErrorCode.SORT_DB_FAILURE.getMessageKey(), message);
         }
+    }
+
+    private void updatePriorityOrThrow(StoredObjectId id, int priority) {
+        updatePriorityOrThrow(id, priority, ErrorCode.SORT_DB_FAILURE.getMessage());
     }
 
     private void deleteStoredObjectContent(StoredObject storage) {
