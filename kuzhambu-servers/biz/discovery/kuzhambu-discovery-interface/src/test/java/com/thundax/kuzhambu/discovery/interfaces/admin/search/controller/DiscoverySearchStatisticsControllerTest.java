@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchStatisticsSummaryQuery;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchEventResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResult;
@@ -174,15 +175,15 @@ class DiscoverySearchStatisticsControllerTest {
         SearchApplicationService service = mock(SearchApplicationService.class);
         DiscoverySearchStatisticsQueryController controller = new DiscoverySearchStatisticsQueryController(service);
         DiscoverySearchRequest request = new DiscoverySearchRequest();
-        request.setQueryText("");
+        request.setQueryText("辞官");
         request.setPageNo(1);
         request.setPageSize(20);
         when(service.search(any()))
                 .thenReturn(new SearchEventResult(
                         "s-1",
-                        "",
-                        "",
-                        "",
+                        "辞官",
+                        "辞官",
+                        "辞官",
                         "KEYWORD_SEARCH",
                         null,
                         1,
@@ -210,8 +211,13 @@ class DiscoverySearchStatisticsControllerTest {
                                         "/classics/sancai/1001"))))));
 
         var response = controller.search(request);
+        ArgumentCaptor<SearchQuery> queryCaptor = ArgumentCaptor.forClass(SearchQuery.class);
 
-        verify(service).search(any());
+        verify(service).search(queryCaptor.capture());
+        assertEquals("辞官", queryCaptor.getValue().getQueryText());
+        assertEquals("ADMIN", queryCaptor.getValue().getOperatorType());
+        assertTrue(queryCaptor.getValue().getRequestId() != null);
+        assertTrue(queryCaptor.getValue().getTraceId() != null);
         assertEquals("s-1", response.getSearchEventId());
         assertEquals(1, response.getTotalCount());
         assertEquals("1001", response.getGroups().get(0).getItems().get(0).getContentId());

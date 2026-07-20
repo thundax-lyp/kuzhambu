@@ -244,7 +244,7 @@ describe("discovery admin service contracts", () => {
             knowledgeBases: ["SANCAI_ENTRY"],
             pageNo: 1,
             pageSize: 10,
-            queryText: "礼器",
+            queryText: "辞官",
             tagNames: ["礼制"],
             visibilityScopes: ["PUBLIC"]
         });
@@ -257,7 +257,7 @@ describe("discovery admin service contracts", () => {
                 knowledgeBases: ["SANCAI_ENTRY"],
                 pageNo: 1,
                 pageSize: 10,
-                queryText: "礼器",
+                queryText: "辞官",
                 tagNames: ["礼制"],
                 visibilityScopes: ["PUBLIC"]
             }

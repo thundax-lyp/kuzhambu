@@ -66,18 +66,23 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
     public SearchEventResult search(SearchQuery query) {
         validateSearchQuery(query);
         long startNanos = System.nanoTime();
-        QueryUnderstandingResult understandingResult = queryUnderstandingApplicationService.understand(query);
-        var keyword = searchDomainService.normalizeKeyword(resolveSearchText(query, understandingResult));
-        var scope = searchDomainService.normalizeScope(toSearchScope(query));
-        int pageNo = searchDomainService.normalizePageNo(query.getPageNo());
-        int pageSize = searchDomainService.normalizePageSize(query.getPageSize());
+        QueryUnderstandingResult understandingResult = null;
+        String normalizedQueryText =
+                searchDomainService.normalizeKeyword(query.getQueryText()).getNormalizedText();
+        SearchScope scope = searchDomainService.normalizeScope(toSearchScope(query));
         try {
+            understandingResult = queryUnderstandingApplicationService.understand(query);
+            var keyword = searchDomainService.normalizeKeyword(resolveSearchText(query, understandingResult));
+            normalizedQueryText = keyword.getNormalizedText();
+            scope = searchDomainService.normalizeScope(toSearchScope(query));
+            int pageNo = searchDomainService.normalizePageNo(query.getPageNo());
+            int pageSize = searchDomainService.normalizePageSize(query.getPageSize());
             SearchPageResult searchPage = searchIndexGateway.search(keyword, scope, pageNo, pageSize);
             List<SearchGroupResult> groups = searchPage.safeGroups();
             SearchEvent searchEvent = buildSucceededSearchEvent(
                     query,
                     understandingResult,
-                    keyword.getNormalizedText(),
+                    normalizedQueryText,
                     scope,
                     searchPage.getTotalCount(),
                     groups,
@@ -86,26 +91,20 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
             return toSearchResult(searchEvent, groups);
         } catch (BizException exception) {
             searchEventRepository.save(buildFailedSearchEvent(
-                    query,
-                    understandingResult,
-                    keyword.getNormalizedText(),
-                    scope,
-                    elapsedMillis(startNanos),
-                    exception));
+                    query, understandingResult, normalizedQueryText, scope, elapsedMillis(startNanos), exception));
             throw exception;
         } catch (UnsupportedOperationException exception) {
             searchEventRepository.save(buildFailedSearchEvent(
-                    query,
-                    understandingResult,
-                    keyword.getNormalizedText(),
-                    scope,
-                    elapsedMillis(startNanos),
-                    exception));
+                    query, understandingResult, normalizedQueryText, scope, elapsedMillis(startNanos), exception));
             throw new BizException(
                     "DISCOVERY-20001",
                     "discovery.search.backend.not-implemented",
                     "Search backend is not implemented",
                     exception);
+        } catch (RuntimeException exception) {
+            searchEventRepository.save(buildFailedSearchEvent(
+                    query, understandingResult, normalizedQueryText, scope, elapsedMillis(startNanos), exception));
+            throw exception;
         }
     }
 

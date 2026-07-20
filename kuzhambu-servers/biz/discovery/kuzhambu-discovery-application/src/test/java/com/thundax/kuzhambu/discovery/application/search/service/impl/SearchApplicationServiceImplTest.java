@@ -709,6 +709,55 @@ class SearchApplicationServiceImplTest {
         assertTrue(searchEventCaptor.getValue().getSearchLatencyMs() >= 0);
     }
 
+    @Test
+    void searchShouldPersistFailureLogWhenQueryUnderstandingFails() {
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
+        SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
+        SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
+        QueryUnderstandingApplicationService queryUnderstandingApplicationService =
+                mock(QueryUnderstandingApplicationService.class);
+        SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
+                searchEventRepository,
+                searchClickEventRepository,
+                new SearchDomainService(),
+                searchIndexGateway,
+                queryUnderstandingApplicationService);
+        SearchQuery query = new SearchQuery(
+                "辞官",
+                List.of("SANCAI_ENTRY"),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                null,
+                null,
+                1,
+                20,
+                "ANONYMOUS",
+                null,
+                "req-query-understanding",
+                "trace-query-understanding");
+        when(queryUnderstandingApplicationService.understand(query))
+                .thenThrow(new BizException(
+                        "DISCOVERY-20004",
+                        "discovery.search.query-understanding.result-parse-failed",
+                        "Query understanding result parse failed"));
+
+        BizException exception = assertThrows(BizException.class, () -> service.search(query));
+        ArgumentCaptor<SearchEvent> searchEventCaptor = ArgumentCaptor.forClass(SearchEvent.class);
+
+        assertEquals("DISCOVERY-20004", exception.getCode());
+        verify(searchEventRepository).save(searchEventCaptor.capture());
+        verify(searchIndexGateway, times(0)).search(any(), any(), any(Integer.class), any(Integer.class));
+        assertEquals("FAILED", searchEventCaptor.getValue().getSearchStatus());
+        assertEquals("DISCOVERY-20004", searchEventCaptor.getValue().getFailureCode());
+        assertEquals("辞官", searchEventCaptor.getValue().getQueryText());
+        assertEquals("辞官", searchEventCaptor.getValue().getNormalizedQueryText());
+        assertEquals(
+                "KEYWORD_SEARCH", searchEventCaptor.getValue().getIntentType().value());
+        assertTrue(searchEventCaptor.getValue().getSearchLatencyMs() >= 0);
+    }
+
     private SearchPageResult searchPageResult(int totalCount, SearchGroupResult... groups) {
         return new SearchPageResult(totalCount, List.of(groups));
     }
