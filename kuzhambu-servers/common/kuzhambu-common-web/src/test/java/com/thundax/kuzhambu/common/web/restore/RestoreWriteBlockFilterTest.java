@@ -2,12 +2,14 @@ package com.thundax.kuzhambu.common.web.restore;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -72,6 +74,31 @@ public class RestoreWriteBlockFilterTest {
 
         assertTrue(chain.invoked);
         assertEquals(HttpStatus.OK.value(), response.getStatus());
+    }
+
+    @Test
+    public void shouldTreatNullAllowedPathsAsEmptyList() throws ServletException, IOException {
+        RestoreWriteBlockProperties properties = new RestoreWriteBlockProperties();
+        properties.setAllowedPaths(null);
+        RestoreWriteBlockFilter filter = filter(blockedState(), properties);
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        CountingFilterChain chain = new CountingFilterChain();
+
+        filter.doFilter(new MockHttpServletRequest("POST", "/api/operations/restore/execute"), response, chain);
+
+        assertFalse(chain.invoked);
+        assertEquals(HttpStatus.LOCKED.value(), response.getStatus());
+    }
+
+    @Test
+    public void shouldExposeAllowedPathsAsImmutableListWithoutNullElements() {
+        RestoreWriteBlockProperties properties = new RestoreWriteBlockProperties();
+        properties.setAllowedPaths(java.util.Arrays.asList("/api/auth/captcha", null));
+
+        assertEquals(List.of("/api/auth/captcha"), properties.getAllowedPaths());
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> properties.getAllowedPaths().clear());
     }
 
     private RestoreWriteBlockFilter filter(RestoreWriteBlockState state, RestoreWriteBlockProperties properties) {

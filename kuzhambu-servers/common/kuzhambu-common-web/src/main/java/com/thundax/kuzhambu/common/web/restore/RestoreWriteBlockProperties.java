@@ -1,7 +1,9 @@
 package com.thundax.kuzhambu.common.web.restore;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "kuzhambu.web.restore-write-block")
@@ -37,10 +39,14 @@ public class RestoreWriteBlockProperties {
     }
 
     public List<String> getAllowedPaths() {
-        return allowedPaths;
+        return Collections.unmodifiableList(allowedPaths);
     }
 
     public void setAllowedPaths(List<String> allowedPaths) {
-        this.allowedPaths = new ArrayList<>(allowedPaths);
+        if (allowedPaths == null) {
+            this.allowedPaths = new ArrayList<>();
+            return;
+        }
+        this.allowedPaths = allowedPaths.stream().filter(Objects::nonNull).toList();
     }
 }
