@@ -391,9 +391,16 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         storage.setRemarks(command.getRemarks());
         applyFileMetadata(command.getOriginalFilename(), command.getContentType(), storage);
         try {
-            applyStoredObject(storage, storedObjectContentRepository.save(storage, command.getInputStream()));
+            applyStoredObject(
+                    storage,
+                    storedObjectContentRepository.save(
+                            storage, StorageInputStreamLimiter.limit(command.getInputStream(), command.getSize())));
         } catch (IOException exception) {
             return StorageUploadResult.builder().error(exception.getMessage()).build();
+        }
+        if (!Long.valueOf(command.getSize()).equals(storage.getSize())) {
+            deleteStoredObjectContent(storage);
+            return StorageUploadResult.builder().error("文件大小与声明大小不一致").build();
         }
         storage.setId(create(toCreateStorageCommand(storage)));
         return StorageUploadResult.builder().storage(storage).build();
@@ -452,6 +459,14 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         if (updated != 1) {
             throw new BizException(
                     ErrorCode.SORT_DB_FAILURE.getCode(), ErrorCode.SORT_DB_FAILURE.getMessageKey(), message);
+        }
+    }
+
+    private void deleteStoredObjectContent(StoredObject storage) {
+        try {
+            storedObjectContentRepository.delete(storage);
+        } catch (IOException ignored) {
+            // best-effort cleanup for rejected uploads
         }
     }
 

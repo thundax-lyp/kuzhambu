@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.application.service.command.CompleteMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.service.command.InitMultipartUploadCommand;
+import com.thundax.kuzhambu.storage.application.service.command.UploadMultipartPartCommand;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
@@ -117,6 +118,22 @@ class MultipartUploadApplicationServiceImplTest {
 
         verify(contentRepository, never()).save(any(), any());
         verify(storageApplicationService, never()).create(any());
+    }
+
+    @Test
+    void uploadPartShouldRejectSizeOutsideSessionRule() throws Exception {
+        MultipartUploadRepository multipartUploadRepository = mock(MultipartUploadRepository.class);
+        StoredObjectContentRepository contentRepository = mock(StoredObjectContentRepository.class);
+        MultipartUploadApplicationServiceImpl service = new MultipartUploadApplicationServiceImpl(
+                multipartUploadRepository, contentRepository, mock(StorageApplicationService.class));
+        when(multipartUploadRepository.getMultipartSessionByUploadId(UPLOAD_ID)).thenReturn(session());
+
+        assertThrows(
+                RuntimeException.class,
+                () -> service.uploadPart(new UploadMultipartPartCommand(
+                        UPLOAD_ID, 1, "etag-1", 4L, new ByteArrayInputStream("data".getBytes()))));
+
+        verify(contentRepository, never()).save(any(), any());
     }
 
     private static MultipartUploadSession session() {

@@ -34,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 @BizExceptionBoundary
 public class MultipartUploadApplicationServiceImpl implements MultipartUploadApplicationService {
     private static final String EXTENSION_SEPARATOR = ".";
+    private static final long MAX_MULTIPART_UPLOAD_SIZE = 20L * 1024L * 1024L;
 
     private final MultipartUploadRepository multipartUploadRepository;
     private final StoredObjectContentRepository storedObjectContentRepository;
@@ -58,6 +59,7 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
         if (session.getOwnerType() == null || StringUtils.isBlank(session.getOwnerId())) {
             throw new BizException("Multipart upload owner can not be empty");
         }
+        validateMultipartSize(session);
         Date now = new Date();
         if (StringUtils.isBlank(session.getUploadId())) {
             session.setUploadId(UuidHelper.compact());
@@ -88,6 +90,7 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
             throw new BizException("Multipart upload part number must start from 1");
         }
         MultipartUploadSession session = requireActiveMultipartSession(part.getUploadId());
+        validateMultipartPart(session, part);
         if (multipartUploadRepository.getMultipartPart(part.getUploadId(), part.getPartNumber()) != null) {
             throw new BizException("Multipart upload part already exists: " + part.getPartNumber());
         }
@@ -126,9 +129,24 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
         try (InputStream stream = inputStream) {
             StoredObject partStorage = new StoredObject();
             partStorage.setObjectKey(part.getPartPath());
-            storedObjectContentRepository.save(partStorage, stream);
+            StoredObject savedStorage = storedObjectContentRepository.save(
+                    partStorage, StorageInputStreamLimiter.limit(stream, part.getSize()));
+            if (!part.getSize().equals(savedStorage.getSize())) {
+                deleteMultipartPartContent(part);
+                throw new BizException("Multipart upload part size mismatch: " + part.getPartNumber());
+            }
         } catch (IOException exception) {
             throw new BizException("Multipart upload part save failed: " + exception.getMessage());
+        }
+    }
+
+    private void deleteMultipartPartContent(MultipartUploadPart part) {
+        try {
+            StoredObject partStorage = new StoredObject();
+            partStorage.setObjectKey(part.getPartPath());
+            storedObjectContentRepository.delete(partStorage);
+        } catch (IOException ignored) {
+            // best-effort cleanup for rejected multipart parts
         }
     }
 
@@ -254,6 +272,43 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
             return 0;
         }
         return (int) ((totalSize + partSize - 1) / partSize);
+    }
+
+    private void validateMultipartSize(MultipartUploadSession session) {
+        if (session.getTotalSize() == null || session.getTotalSize() <= 0L) {
+            throw new BizException("Multipart upload total size must be greater than 0");
+        }
+        if (session.getTotalSize() > MAX_MULTIPART_UPLOAD_SIZE) {
+            throw new BizException("Multipart upload total size exceeds limit");
+        }
+        if (session.getPartSize() == null || session.getPartSize() <= 0L) {
+            throw new BizException("Multipart upload part size must be greater than 0");
+        }
+        if (session.getPartSize() > session.getTotalSize()) {
+            throw new BizException("Multipart upload part size can not exceed total size");
+        }
+    }
+
+    private void validateMultipartPart(MultipartUploadSession session, MultipartUploadPart part) {
+        if (part.getSize() == null || part.getSize() <= 0L) {
+            throw new BizException("Multipart upload part size must be greater than 0");
+        }
+        int expectedPartCount = expectedPartCount(session);
+        if (expectedPartCount <= 0 || part.getPartNumber() > expectedPartCount) {
+            throw new BizException("Multipart upload part number exceeds expected count: " + part.getPartNumber());
+        }
+        long expectedSize = expectedPartSize(session, part.getPartNumber(), expectedPartCount);
+        if (part.getSize() != expectedSize) {
+            throw new BizException("Multipart upload part size mismatch: " + part.getPartNumber());
+        }
+    }
+
+    private long expectedPartSize(MultipartUploadSession session, int partNumber, int expectedPartCount) {
+        if (partNumber < expectedPartCount) {
+            return session.getPartSize();
+        }
+        long remaining = session.getTotalSize() % session.getPartSize();
+        return remaining == 0L ? session.getPartSize() : remaining;
     }
 
     private StoredObject toCompletedStorage(MultipartUploadSession session, CompleteMultipartUploadCommand command) {

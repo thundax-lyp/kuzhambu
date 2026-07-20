@@ -29,6 +29,7 @@ import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectReferen
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectRepository;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -51,8 +52,7 @@ class StorageApplicationServiceUploadTest {
             StoredObject storage = invocation.getArgument(0);
             storage.setBucketName("local");
             storage.setObjectKey("artifact/" + storage.getOriginalFilename());
-            storage.setSize(
-                    (long) invocation.<ByteArrayInputStream>getArgument(1).readAllBytes().length);
+            storage.setSize((long) invocation.<InputStream>getArgument(1).readAllBytes().length);
             storage.setAccessEndpoint("/api/storage/object/100/content");
             storage.setObjectStatus(StoredObjectStatus.ACTIVE);
             storage.setReferenceStatus(StoredObjectReferenceStatus.REFERENCED);
@@ -128,6 +128,39 @@ class StorageApplicationServiceUploadTest {
 
         assertTrue(result.hasError());
         assertEquals("write failed", result.getError());
+    }
+
+    @Test
+    void uploadShouldRejectWhenStoredSizeDiffersFromDeclaredSize() throws Exception {
+        StoredObjectRepository repository = mock(StoredObjectRepository.class);
+        StoredObjectReferenceRepository referenceRepository = mock(StoredObjectReferenceRepository.class);
+        StoredObjectContentRepository contentRepository = mock(StoredObjectContentRepository.class);
+        StorageApplicationServiceImpl service =
+                new StorageApplicationServiceImpl(repository, referenceRepository, contentRepository);
+        when(contentRepository.save(any(), any())).thenAnswer(invocation -> {
+            StoredObject storage = invocation.getArgument(0);
+            storage.setBucketName("local");
+            storage.setObjectKey("artifact/" + storage.getOriginalFilename());
+            storage.setSize(PAYLOAD.length - 1L);
+            return storage;
+        });
+
+        StorageUploadResult result = service.upload(new UploadStorageObjectCommand(
+                new ByteArrayInputStream(PAYLOAD),
+                ORIGINAL_FILENAME,
+                CONTENT_TYPE,
+                PAYLOAD.length,
+                null,
+                StorageOwnerType.USER,
+                "u-1",
+                null,
+                null,
+                null));
+
+        assertTrue(result.hasError());
+        assertEquals("文件大小与声明大小不一致", result.getError());
+        verify(contentRepository).delete(any());
+        verify(repository, never()).insert(any());
     }
 
     @Test
