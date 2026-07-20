@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.storage.domain.object.codec.MultipartUploadPartIdCod
 import com.thundax.kuzhambu.storage.domain.object.codec.MultipartUploadSessionIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.MultipartUploadStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.MultipartUploadPartId;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.MultipartUploadSessionId;
 import com.thundax.kuzhambu.storage.domain.object.repository.MultipartUploadRepository;
@@ -68,6 +69,17 @@ public class MultipartUploadRepositoryImpl implements MultipartUploadRepository 
                         .set(MultipartUploadSessionDO::getUploadStatus, dataObject.getUploadStatus())
                         .set(MultipartUploadSessionDO::getCompletedDate, dataObject.getCompletedDate())
                         .set(MultipartUploadSessionDO::getAbortedDate, dataObject.getAbortedDate()));
+    }
+
+    @Override
+    public int updateMultipartSessionStatus(
+            String uploadId, MultipartUploadStatus currentStatus, MultipartUploadStatus nextStatus) {
+        return sessionMapper.update(
+                null,
+                new LambdaUpdateWrapper<MultipartUploadSessionDO>()
+                        .eq(MultipartUploadSessionDO::getUploadId, uploadId)
+                        .eq(MultipartUploadSessionDO::getUploadStatus, currentStatus.value())
+                        .set(MultipartUploadSessionDO::getUploadStatus, nextStatus.value()));
     }
 
     @Override

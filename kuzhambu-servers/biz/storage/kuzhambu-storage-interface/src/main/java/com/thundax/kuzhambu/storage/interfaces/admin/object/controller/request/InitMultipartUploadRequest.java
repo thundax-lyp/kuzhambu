@@ -23,6 +23,18 @@ public class InitMultipartUploadRequest {
     @Size(max = 40, message = "\"业务类型\"长度不能超过40")
     private String businessType;
 
+    @Schema(name = "ownerType", description = "引用所有者类型")
+    @JsonProperty("ownerType")
+    @NotBlank(message = "ownerType不能为空")
+    @Size(max = 64, message = "\"引用所有者类型\"长度不能超过64")
+    private String ownerType;
+
+    @Schema(name = "ownerId", description = "引用所有者ID")
+    @JsonProperty("ownerId")
+    @NotBlank(message = "ownerId不能为空")
+    @Size(max = 64, message = "\"引用所有者ID\"长度不能超过64")
+    private String ownerId;
+
     @Schema(name = "originalFilename", description = "原始文件名")
     @JsonProperty("originalFilename")
     @NotBlank(message = "originalFilename不能为空")

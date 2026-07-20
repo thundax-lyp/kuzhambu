@@ -55,6 +55,9 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
         if (session == null) {
             throw new BizException("Multipart upload session can not be null");
         }
+        if (session.getOwnerType() == null || StringUtils.isBlank(session.getOwnerId())) {
+            throw new BizException("Multipart upload owner can not be empty");
+        }
         Date now = new Date();
         if (StringUtils.isBlank(session.getUploadId())) {
             session.setUploadId(UuidHelper.compact());
@@ -103,6 +106,7 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
     public StoredObject complete(CompleteMultipartUploadCommand command) {
         String uploadId = command == null ? null : command.getUploadId();
         MultipartUploadSession session = requireActiveMultipartSession(uploadId);
+        claimCompleting(session);
         List<MultipartUploadPart> parts = multipartUploadRepository.listMultipartParts(uploadId);
         validateMultipartParts(session, parts);
 
@@ -207,10 +211,20 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
             throw new BizException("Multipart upload session not found: " + uploadId);
         }
         if (MultipartUploadStatus.COMPLETED == session.getUploadStatus()
-                || MultipartUploadStatus.ABORTED == session.getUploadStatus()) {
+                || MultipartUploadStatus.ABORTED == session.getUploadStatus()
+                || MultipartUploadStatus.COMPLETING == session.getUploadStatus()) {
             throw new BizException("Multipart upload session is closed: " + uploadId);
         }
         return session;
+    }
+
+    private void claimCompleting(MultipartUploadSession session) {
+        int updated = multipartUploadRepository.updateMultipartSessionStatus(
+                session.getUploadId(), session.getUploadStatus(), MultipartUploadStatus.COMPLETING);
+        if (updated != 1) {
+            throw new BizException("Multipart upload session status conflict: " + session.getUploadId());
+        }
+        session.setUploadStatus(MultipartUploadStatus.COMPLETING);
     }
 
     private void validateMultipartParts(MultipartUploadSession session, List<MultipartUploadPart> parts) {

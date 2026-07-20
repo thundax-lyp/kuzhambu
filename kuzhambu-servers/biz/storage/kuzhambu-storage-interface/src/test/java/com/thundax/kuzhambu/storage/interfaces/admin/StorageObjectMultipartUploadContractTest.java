@@ -17,6 +17,7 @@ import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPa
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.MultipartUploadStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
@@ -57,6 +58,8 @@ class StorageObjectMultipartUploadContractTest {
         InitMultipartUploadRequest request = new InitMultipartUploadRequest();
         request.setUploadId("upload-1");
         request.setBusinessType("bizA");
+        request.setOwnerType(StorageOwnerType.USER.value());
+        request.setOwnerId("owner-1");
         request.setOriginalFilename("sancai.png");
         request.setMimeType("image/png");
         request.setBucketName("bucket-a");
@@ -71,6 +74,8 @@ class StorageObjectMultipartUploadContractTest {
         InitMultipartUploadCommand command = commandRef.get();
         assertEquals("upload-1", command.getUploadId());
         assertEquals("bizA", command.getBusinessType());
+        assertEquals(StorageOwnerType.USER, command.getOwnerType());
+        assertEquals("owner-1", command.getOwnerId());
         assertEquals("sancai.png", command.getOriginalFilename());
         assertEquals("image/png", command.getMimeType());
         assertEquals("bucket-a", command.getBucketName());
