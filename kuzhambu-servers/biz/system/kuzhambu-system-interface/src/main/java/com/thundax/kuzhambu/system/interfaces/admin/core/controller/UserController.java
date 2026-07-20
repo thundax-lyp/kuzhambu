@@ -92,6 +92,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -240,6 +241,7 @@ public class UserController {
     @SysLogger(value = "添加")
     @PostMapping(value = "create")
     @WrappedApiResponse
+    @Transactional(rollbackFor = Exception.class)
     public UserResponse add(@Valid @RequestBody UserSaveRequest request) {
         // 解密密码（数据需要加密传输）
         String password = Sm2Crypto.decrypt(request.getLoginPass(), getPrivateKey(request.getToken()));
@@ -287,6 +289,7 @@ public class UserController {
     @SysLogger(value = "更新")
     @PostMapping(value = "update")
     @WrappedApiResponse
+    @Transactional(rollbackFor = Exception.class)
     public UserResponse update(@Valid @RequestBody UserSaveRequest request) {
         // 解密密码（数据需要加密传输）
         if (StringUtils.isNotBlank(request.getLoginPass())) {
