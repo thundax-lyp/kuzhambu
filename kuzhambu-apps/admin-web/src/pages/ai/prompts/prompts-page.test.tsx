@@ -1,6 +1,7 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { App } from "antd";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { replacePermissions } from "@/auth/permission-storage";
 import { queryClient } from "@/query/query-client";
 import { PromptsPage } from "./prompts-page";
@@ -126,6 +127,13 @@ const renderPage = () =>
         </App>
     );
 
+const openSelectAndChoose = async (label: string, optionText: string) => {
+    const select = await screen.findByRole("combobox", { name: label });
+    fireEvent.mouseDown(select);
+    const options = await screen.findAllByText(optionText);
+    await userEvent.click(options.at(-1)!);
+};
+
 describe("PromptsPage", () => {
     beforeEach(() => {
         queryClient.clear();
@@ -214,8 +222,7 @@ describe("PromptsPage", () => {
 
         await screen.findByText("摘要提示词");
         fireEvent.click(screen.getByRole("button", { name: "编辑 摘要提示词" }));
-        fireEvent.mouseDown(await screen.findByLabelText("提示词能力"));
-        fireEvent.click(await screen.findByText("古籍翻译"));
+        await openSelectAndChoose("提示词能力", "古籍翻译");
         fireEvent.click(screen.getByTestId("ai-prompts-prompts-view-variables-button"));
 
         const variableDialog = await screen.findByRole("dialog", { name: "能力变量" });

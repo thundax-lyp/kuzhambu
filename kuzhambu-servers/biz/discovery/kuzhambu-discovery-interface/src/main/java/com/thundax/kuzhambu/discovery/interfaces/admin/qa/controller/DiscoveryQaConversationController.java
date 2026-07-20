@@ -1,7 +1,5 @@
 package com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
@@ -19,21 +17,22 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Tag(name = "发现模块-Admin 问答会话", description = "Discovery Admin 问答会话接口")
 @SysLogger(module = {"发现", "知识助手"})
 @RequestMapping("/api/discovery/qa")
 @WrappedApiController
 public class DiscoveryQaConversationController {
-
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private final QaApplicationService qaApplicationService;
     private final KnowledgeQaApplicationService knowledgeQaApplicationService;
@@ -162,42 +161,42 @@ public class DiscoveryQaConversationController {
                 paramType = "header",
                 dataTypeClass = String.class),
     })
-    public String chatCompletionsStream(@Valid @RequestBody DiscoveryQaRequests.ChatCompletionsRequest request) {
-        return emitChatCompletion(request);
+    public SseEmitter chatCompletionsStream(@Valid @RequestBody DiscoveryQaRequests.ChatCompletionsRequest request) {
+        SseEmitter emitter = new SseEmitter(0L);
+        CompletableFuture.runAsync(() -> emitChatCompletion(request, emitter));
+        return emitter;
     }
 
-    private String emitChatCompletion(DiscoveryQaRequests.ChatCompletionsRequest request) {
-        StringBuilder body = new StringBuilder();
+    private void emitChatCompletion(DiscoveryQaRequests.ChatCompletionsRequest request, SseEmitter emitter) {
         try {
             Map<String, Object> started = new LinkedHashMap<>();
             started.put("sessionId", request.getSessionId());
-            appendEvent(body, "started", started);
+            sendEvent(emitter, "started", started);
             DiscoveryQaResponses.ChatCompletionsResponse response =
                     DiscoveryQaPortalInterfaceAssembler.toChatCompletionsResponse(
                             knowledgeQaApplicationService.chatCompletion(
                                     DiscoveryQaPortalInterfaceAssembler.toChatCompletionCommand(request, false)));
             String answer = response == null ? null : response.getAnswer();
             if (StringUtils.isNotBlank(answer)) {
-                appendEvent(body, "delta", Map.of("content", answer));
+                sendEvent(emitter, "delta", Map.of("content", answer));
             }
-            appendEvent(body, "completed", response);
+            sendEvent(emitter, "completed", response);
+            emitter.complete();
         } catch (Exception ex) {
-            appendBestEffortError(body, ex);
+            sendBestEffortError(emitter, ex);
         }
-        return body.toString();
     }
 
-    private void appendEvent(StringBuilder body, String name, Object data) throws JsonProcessingException {
-        body.append("event: ").append(name).append('\n');
-        body.append("data: ").append(OBJECT_MAPPER.writeValueAsString(data)).append("\n\n");
+    private void sendEvent(SseEmitter emitter, String name, Object data) throws IOException {
+        emitter.send(SseEmitter.event().name(name).data(data));
     }
 
-    private void appendBestEffortError(StringBuilder body, Exception ex) {
+    private void sendBestEffortError(SseEmitter emitter, Exception ex) {
         try {
-            appendEvent(body, "error", Map.of("message", toClientErrorMessage(ex)));
-        } catch (JsonProcessingException ignored) {
-            body.append("event: error\n");
-            body.append("data: {\"message\":\"问答生成失败\"}\n\n");
+            sendEvent(emitter, "error", Map.of("message", toClientErrorMessage(ex)));
+            emitter.complete();
+        } catch (IOException sendEx) {
+            emitter.completeWithError(sendEx);
         }
     }
 

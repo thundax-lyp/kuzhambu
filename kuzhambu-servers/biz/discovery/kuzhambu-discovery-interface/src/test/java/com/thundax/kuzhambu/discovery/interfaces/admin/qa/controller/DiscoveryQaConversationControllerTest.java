@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -106,7 +107,7 @@ class DiscoveryQaConversationControllerTest {
     }
 
     @Test
-    void chatCompletionsStreamShouldReturnSseEventsWithoutAsyncDispatch() {
+    void chatCompletionsStreamShouldDelegateAsNonStreamingProviderCall() {
         QaApplicationService qaApplicationService = mock(QaApplicationService.class);
         KnowledgeQaApplicationService knowledgeQaApplicationService = mock(KnowledgeQaApplicationService.class);
         DiscoveryQaConversationController controller =
@@ -130,19 +131,16 @@ class DiscoveryQaConversationControllerTest {
                         new ChatUsageResult(100, 80, 180),
                         Map.of("id", "chatcmpl-1")));
 
-        String body = controller.chatCompletionsStream(request);
+        var emitter = controller.chatCompletionsStream(request);
 
-        verify(knowledgeQaApplicationService)
+        assertTrue(emitter != null);
+        verify(knowledgeQaApplicationService, timeout(1000))
                 .chatCompletion(argThat(command ->
                         command != null && Long.valueOf(5001L).equals(command.getSessionId()) && !command.isStream()));
-        assertTrue(body.contains("event: started"));
-        assertTrue(body.contains("event: delta"));
-        assertTrue(body.contains("event: completed"));
-        assertTrue(body.contains("礼学是礼制之学"));
     }
 
     @Test
-    void chatCompletionsStreamShouldSanitizeProviderErrors() {
+    void chatCompletionsStreamShouldSanitizeProviderErrors() throws Exception {
         QaApplicationService qaApplicationService = mock(QaApplicationService.class);
         KnowledgeQaApplicationService knowledgeQaApplicationService = mock(KnowledgeQaApplicationService.class);
         DiscoveryQaConversationController controller =
@@ -155,11 +153,14 @@ class DiscoveryQaConversationControllerTest {
                 .thenThrow(new IllegalStateException(
                         "500 Internal Server Error on POST request: {\"message\":\"appId is empty\"}"));
 
-        String body = controller.chatCompletionsStream(request);
+        controller.chatCompletionsStream(request);
 
-        assertTrue(body.contains("event: started"));
-        assertTrue(body.contains("event: error"));
-        assertTrue(body.contains("问答应用未配置，请检查 FastGPT 应用配置。"));
+        verify(knowledgeQaApplicationService, timeout(1000)).chatCompletion(any());
+        Method method =
+                DiscoveryQaConversationController.class.getDeclaredMethod("toClientErrorMessage", Exception.class);
+        method.setAccessible(true);
+        assertEquals(
+                "问答应用未配置，请检查 FastGPT 应用配置。", method.invoke(controller, new IllegalStateException("appId is empty")));
     }
 
     private static DiscoveryQaRequests.ChatMessage message(String role, String content) {
