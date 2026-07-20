@@ -90,9 +90,6 @@ public final class AiConfigResponses {
 
         @JsonProperty(value = "enabled")
         private Boolean enabled;
-
-        @JsonProperty(value = "priority")
-        private Integer priority;
     }
 
     @Getter
@@ -119,9 +116,6 @@ public final class AiConfigResponses {
 
         @JsonProperty(value = "enabled")
         private Boolean enabled;
-
-        @JsonProperty(value = "priority")
-        private Integer priority;
 
         @JsonProperty(value = "configuredAt")
         private Instant configuredAt;

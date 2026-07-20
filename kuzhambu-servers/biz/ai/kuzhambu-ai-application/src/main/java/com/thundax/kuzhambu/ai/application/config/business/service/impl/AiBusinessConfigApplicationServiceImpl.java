@@ -53,6 +53,13 @@ public class AiBusinessConfigApplicationServiceImpl implements AiBusinessConfigA
     @Transactional(rollbackFor = Exception.class)
     public Long save(AiBusinessConfig config) {
         validateConfig(config);
+        if (config.getId() == null) {
+            config.setPriority(aiBusinessConfigRepository.maxPriority() + 1);
+        } else {
+            AiBusinessConfig existing = aiBusinessConfigRepository.get(config.getId());
+            config.setPriority(
+                    existing == null ? aiBusinessConfigRepository.maxPriority() + 1 : existing.getPriority());
+        }
         AiBusinessConfigId id = aiBusinessConfigRepository.insert(config);
         return AiBusinessConfigIdCodec.toValue(id);
     }
@@ -64,6 +71,8 @@ public class AiBusinessConfigApplicationServiceImpl implements AiBusinessConfigA
             throw new BizException("AI business config id is required");
         }
         validateConfig(config);
+        AiBusinessConfig existing = aiBusinessConfigRepository.get(config.getId());
+        config.setPriority(existing == null ? aiBusinessConfigRepository.maxPriority() + 1 : existing.getPriority());
         return aiBusinessConfigRepository.update(config);
     }
 

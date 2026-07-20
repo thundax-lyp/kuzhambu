@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.ai.infra.config.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiBusinessConfigIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiBusinessConfig;
@@ -71,6 +72,16 @@ public class AiBusinessConfigRepositoryImpl implements AiBusinessConfigRepositor
                         .set(AiBusinessConfigDO::getDefaultParamsJson, dataObject.getDefaultParamsJson())
                         .set(AiBusinessConfigDO::getEnabled, dataObject.getEnabled())
                         .set(AiBusinessConfigDO::getPriority, dataObject.getPriority()));
+    }
+
+    @Override
+    public int maxPriority() {
+        List<Object> values =
+                aiBusinessConfigMapper.selectObjs(new QueryWrapper<AiBusinessConfigDO>().select("max(priority)"));
+        if (values == null || values.isEmpty() || values.get(0) == null) {
+            return 0;
+        }
+        return ((Number) values.get(0)).intValue();
     }
 
     @Override

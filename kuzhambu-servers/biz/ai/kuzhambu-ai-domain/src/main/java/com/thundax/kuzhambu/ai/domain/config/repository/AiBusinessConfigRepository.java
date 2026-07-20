@@ -17,5 +17,7 @@ public interface AiBusinessConfigRepository {
 
     int update(AiBusinessConfig config);
 
+    int maxPriority();
+
     int delete(AiBusinessConfigId id);
 }
