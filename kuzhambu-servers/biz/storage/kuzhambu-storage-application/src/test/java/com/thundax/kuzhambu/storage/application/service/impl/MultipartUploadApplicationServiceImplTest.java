@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -98,6 +99,8 @@ class MultipartUploadApplicationServiceImplTest {
         assertArrayEquals("onetwothree".getBytes(), savedBytes.get());
         verify(contentRepository).save(any(), any());
         verify(storageApplicationService).create(any());
+        verify(contentRepository, times(3)).delete(any());
+        verify(multipartUploadRepository).deleteMultipartParts(UPLOAD_ID);
     }
 
     @Test

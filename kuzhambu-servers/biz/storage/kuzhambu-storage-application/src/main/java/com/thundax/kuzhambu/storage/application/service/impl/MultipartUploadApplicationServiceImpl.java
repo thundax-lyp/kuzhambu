@@ -122,6 +122,7 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
         session.setUploadedPartCount(parts.size());
         session.setCompletedDate(now);
         multipartUploadRepository.updateMultipartSession(session);
+        cleanupCompletedMultipartParts(session.getUploadId(), parts);
         return storage;
     }
 
@@ -148,6 +149,13 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
         } catch (IOException ignored) {
             // best-effort cleanup for rejected multipart parts
         }
+    }
+
+    private void cleanupCompletedMultipartParts(String uploadId, List<MultipartUploadPart> parts) {
+        for (MultipartUploadPart part : parts) {
+            deleteMultipartPartContent(part);
+        }
+        multipartUploadRepository.deleteMultipartParts(uploadId);
     }
 
     private void persistCompletedMultipartStorage(
