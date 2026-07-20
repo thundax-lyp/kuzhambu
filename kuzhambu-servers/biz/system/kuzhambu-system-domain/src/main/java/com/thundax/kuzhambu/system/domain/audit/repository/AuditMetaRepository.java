@@ -10,5 +10,5 @@ public interface AuditMetaRepository {
 
     AuditMetaId insert(AuditMeta meta);
 
-    int update(AuditMeta meta);
+    int updateIfVersion(AuditMeta meta, long expectedVersion);
 }

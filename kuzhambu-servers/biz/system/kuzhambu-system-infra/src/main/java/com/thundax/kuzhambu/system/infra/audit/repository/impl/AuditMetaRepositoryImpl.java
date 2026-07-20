@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.system.infra.audit.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.system.domain.audit.codec.AuditMetaIdCodec;
 import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditMeta;
@@ -48,7 +49,11 @@ public class AuditMetaRepositoryImpl implements AuditMetaRepository {
     }
 
     @Override
-    public int update(AuditMeta meta) {
-        return mapper.updateById(AuditMetaPersistenceAssembler.toObject(meta));
+    public int updateIfVersion(AuditMeta meta, long expectedVersion) {
+        AuditMetaDO dataObject = AuditMetaPersistenceAssembler.toObject(meta);
+        LambdaUpdateWrapper<AuditMetaDO> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(AuditMetaDO::getId, dataObject.getId());
+        wrapper.eq(AuditMetaDO::getVersion, expectedVersion);
+        return mapper.update(dataObject, wrapper);
     }
 }
