@@ -194,11 +194,13 @@
         "知识治理/知识图谱/质量报告",
         "知识治理/世系图",
         "知识治理/标签配置",
-        "搜索问答",
-        "搜索问答/检索",
-        "搜索问答/检索统计",
-        "搜索问答/智能问答",
-        "搜索问答/问答调试",
+        "知识库",
+        "知识库/检索",
+        "知识库/检索/检索",
+        "知识库/检索/检索统计",
+        "知识库/问答",
+        "知识库/问答/问答",
+        "知识库/问答/问答运维",
         "运营运维",
         "运营运维/运营看板",
         "运营运维/健康检查",
@@ -227,9 +229,11 @@
         "古籍管理/明代习俗",
         "古籍管理/内容导出",
         "古籍管理/分享管理",
-        "搜索问答",
-        "搜索问答/检索",
-        "搜索问答/智能问答",
+        "知识库",
+        "知识库/检索",
+        "知识库/检索/检索",
+        "知识库/问答",
+        "知识库/问答/问答",
         "运营运维",
         "运营运维/运营看板",
         "运营运维/健康检查",
@@ -791,48 +795,70 @@
     },
     {
       "id": 18,
-      "name": "搜索问答",
+      "name": "知识库",
       "perms": ["discovery"],
       "priority": 80,
       "icon": "open-api",
       "url": "/discovery",
-      "remarks": "检索和智能问答根菜单",
+      "remarks": "知识检索和知识问答根菜单",
       "children": [
         {
-          "id": 19,
+          "id": 43,
           "name": "检索",
           "perms": ["discovery:search:view"],
           "priority": 80,
           "icon": "open-api",
           "url": "/discovery/search",
-          "remarks": "三类古籍检索"
+          "remarks": "知识库检索分组",
+          "children": [
+            {
+              "id": 19,
+              "name": "检索",
+              "perms": ["discovery:search:view"],
+              "priority": 80,
+              "icon": "open-api",
+              "url": "/discovery/search",
+              "remarks": "三类古籍检索"
+            },
+            {
+              "id": 20,
+              "name": "检索统计",
+              "perms": ["discovery:search:view"],
+              "priority": 78,
+              "icon": "logs",
+              "url": "/discovery/search-statistics",
+              "remarks": "检索统计和索引重建"
+            }
+          ]
         },
         {
-          "id": 20,
-          "name": "检索统计",
-          "perms": ["discovery:search:view"],
-          "priority": 78,
-          "icon": "logs",
-          "url": "/discovery/search-statistics",
-          "remarks": "检索统计和索引重建"
-        },
-        {
-          "id": 21,
-          "name": "智能问答",
+          "id": 44,
+          "name": "问答",
           "perms": ["discovery:qa:view", "discovery:qa:edit"],
           "priority": 75,
           "icon": "open-api",
           "url": "/discovery/qa",
-          "remarks": "跨知识库智能问答"
-        },
-        {
-          "id": 22,
-          "name": "问答调试",
-          "perms": ["discovery:qa:view"],
-          "priority": 70,
-          "icon": "logs",
-          "url": "/discovery/qa-admin",
-          "remarks": "问答上下文调试"
+          "remarks": "知识库问答分组",
+          "children": [
+            {
+              "id": 21,
+              "name": "问答",
+              "perms": ["discovery:qa:view", "discovery:qa:edit"],
+              "priority": 75,
+              "icon": "open-api",
+              "url": "/discovery/qa",
+              "remarks": "跨知识库问答"
+            },
+            {
+              "id": 22,
+              "name": "问答运维",
+              "perms": ["discovery:qa:view"],
+              "priority": 70,
+              "icon": "logs",
+              "url": "/discovery/qa-admin",
+              "remarks": "知识库同步、问答来源和轨迹排查"
+            }
+          ]
         }
       ]
     },
