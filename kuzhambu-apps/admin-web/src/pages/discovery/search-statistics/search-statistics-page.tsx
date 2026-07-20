@@ -499,22 +499,24 @@ export const SearchStatisticsPage = () => {
                                             onChange={(value) => setRecordDateRange(value)}
                                         />
                                     </label>
-                                    <KuzhambuButton
-                                        testId="discovery-search-statistics-search-statistics-query-events-button"
-                                        loading={pageMutation.isPending}
-                                        onClick={queryEvents}
-                                        type="primary"
-                                    >
-                                        查询记录
-                                    </KuzhambuButton>
-                                    <KuzhambuButton
-                                        ariaLabel="重置"
-                                        disabled={!hasActiveEventFilters && !pageResult}
-                                        testId="discovery-search-statistics-search-statistics-clear-result-button"
-                                        onClick={resetEventFilters}
-                                    >
-                                        重置
-                                    </KuzhambuButton>
+                                    <KuzhambuSpace className="search-statistics-record-filter-actions">
+                                        <KuzhambuButton
+                                            testId="discovery-search-statistics-search-statistics-query-events-button"
+                                            loading={pageMutation.isPending}
+                                            onClick={queryEvents}
+                                            type="primary"
+                                        >
+                                            查询记录
+                                        </KuzhambuButton>
+                                        <KuzhambuButton
+                                            ariaLabel="重置"
+                                            disabled={!hasActiveEventFilters && !pageResult}
+                                            testId="discovery-search-statistics-search-statistics-clear-result-button"
+                                            onClick={resetEventFilters}
+                                        >
+                                            重置
+                                        </KuzhambuButton>
+                                    </KuzhambuSpace>
                                 </KuzhambuSpace>
                             </Card>
 
