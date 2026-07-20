@@ -14,5 +14,4 @@ public class TagCategoryUpdateCommand {
     private TagCategoryId id;
     private String name;
     private String description;
-    private int priority;
 }

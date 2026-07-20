@@ -15,6 +15,5 @@ public class TagCategoryCreateCommand {
     private TagCategoryId id;
     private String name;
     private String description;
-    private int priority;
     private TagCategoryStatus status;
 }

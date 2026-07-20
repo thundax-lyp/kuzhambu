@@ -108,16 +108,12 @@ public final class KnowledgeTaxonomyInterfaceAssembler {
                 TagCategoryIdCodec.toDomain(request.getId()),
                 request.getName(),
                 request.getDescription(),
-                request.getPriority(),
                 request.getStatus() == null ? TagCategoryStatus.ENABLED : TagCategoryStatus.from(request.getStatus()));
     }
 
     public static TagCategoryUpdateCommand toCategoryUpdateCommand(TagCategoryUpdateRequest request) {
         return new TagCategoryUpdateCommand(
-                TagCategoryIdCodec.toDomain(request.getId()),
-                request.getName(),
-                request.getDescription(),
-                request.getPriority());
+                TagCategoryIdCodec.toDomain(request.getId()), request.getName(), request.getDescription());
     }
 
     public static TagCategoryStatusCommand toCategoryStatusCommand(TagCategoryStatusRequest request) {
@@ -318,7 +314,6 @@ public final class KnowledgeTaxonomyInterfaceAssembler {
         response.setId(result == null ? null : result.getId());
         response.setName(result == null ? null : result.getName());
         response.setDescription(result == null ? null : result.getDescription());
-        response.setPriority(result == null ? null : result.getPriority());
         response.setStatus(result == null ? null : result.getStatus());
         return response;
     }

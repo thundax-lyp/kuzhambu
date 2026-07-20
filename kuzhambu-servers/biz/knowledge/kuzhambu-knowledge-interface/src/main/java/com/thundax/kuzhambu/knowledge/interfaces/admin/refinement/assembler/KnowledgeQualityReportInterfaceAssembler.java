@@ -125,7 +125,6 @@ public final class KnowledgeQualityReportInterfaceAssembler {
                 .description(result == null ? null : result.getDescription())
                 .suggestion(result == null ? null : result.getSuggestion())
                 .href(result == null ? null : result.getHref())
-                .priority(result == null ? null : result.getPriority())
                 .build();
     }
 
