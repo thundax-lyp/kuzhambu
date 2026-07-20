@@ -402,7 +402,7 @@ class ClassicsSharingApplicationServiceImplTest {
     }
 
     @Test
-    void batchCreateLinksShouldRejectUnconfirmedPrivateContentBeforeWriting() {
+    void batchCreateLinksShouldReturnFailureForUnconfirmedPrivateContent() {
         ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
         ClassicsContentApplicationService contentApplicationService = mock(ClassicsContentApplicationService.class);
         SancaiRepository sancaiRepository = mock(SancaiRepository.class);
@@ -423,17 +423,18 @@ class ClassicsSharingApplicationServiceImplTest {
         entry.setVisibility(SancaiEntryVisibility.PRIVATE);
         when(sancaiRepository.getEntryById(SancaiEntryId.of(101L))).thenReturn(entry);
 
-        assertThrows(
-                BizException.class,
-                () -> service.batchCreateLinks(new BatchShareCreateCommand(
-                        null,
-                        ClassicsShareVisibility.PUBLIC,
-                        ClassicsShareLinkStatus.ACTIVE,
-                        null,
-                        null,
-                        false,
-                        List.of(new ShareTargetCreateCommand(
-                                ClassicsContentType.SANCAI_ENTRY, ClassicsContentId.of(101L))))));
+        ClassicsBatchOperationResult result = service.batchCreateLinks(new BatchShareCreateCommand(
+                null,
+                ClassicsShareVisibility.PUBLIC,
+                ClassicsShareLinkStatus.ACTIVE,
+                null,
+                null,
+                false,
+                List.of(new ShareTargetCreateCommand(ClassicsContentType.SANCAI_ENTRY, ClassicsContentId.of(101L)))));
+
+        assertEquals(0, result.getSuccessCount());
+        assertEquals(1, result.getFailureCount());
+        assertEquals("PRIVATE_CONTENT_UNCONFIRMED", result.getFailures().get(0).getFailureCode());
         verify(sharingRepository, never()).insertLink(any());
         verify(sharingRepository, never()).insertTarget(any());
     }

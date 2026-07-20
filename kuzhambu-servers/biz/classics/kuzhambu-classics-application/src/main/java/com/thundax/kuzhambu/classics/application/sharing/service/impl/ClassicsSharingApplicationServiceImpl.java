@@ -76,6 +76,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     public static final String PRIVATE_SHARE_AUTH_REQUIRED_CODE = "CLASSICS-14002";
     private static final String SHARE_VIEW_PERMISSION = "classics:sharing:view";
+    private static final String PRIVATE_CONTENT_UNCONFIRMED = "PRIVATE_CONTENT_UNCONFIRMED";
 
     private final ClassicsSharingRepository repository;
     private final ClassicsContentApplicationService contentApplicationService;
@@ -182,9 +183,6 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
                 || command.getTargets().isEmpty()) {
             return ClassicsBatchOperationResult.empty();
         }
-        if (!command.isPrivateContentConfirmed()) {
-            ensureNoPrivateBatchTarget(command.getTargets());
-        }
         List<ClassicsBatchOperationItemResult> successes = new ArrayList<>();
         List<ClassicsBatchOperationItemResult> failures = new ArrayList<>();
         Set<String> targetKeys = new HashSet<>();
@@ -199,6 +197,11 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
             if (targetKey == null || !targetKeys.add(targetKey)) {
                 failures.add(
                         ClassicsBatchOperationItemResult.failure(contentType, contentId, "DUPLICATE_TARGET", "重复分享目标"));
+                continue;
+            }
+            if (isUnconfirmedPrivatePublicShare(target, command.getVisibility(), command.isPrivateContentConfirmed())) {
+                failures.add(ClassicsBatchOperationItemResult.failure(
+                        contentType, contentId, PRIVATE_CONTENT_UNCONFIRMED, "私有古籍内容不允许公开分享"));
                 continue;
             }
             if (!canShareTarget(
@@ -637,19 +640,6 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         persistVersionMarker(content);
     }
 
-    private void ensureNoPrivateBatchTarget(List<ShareTargetCreateCommand> targets) {
-        for (ShareTargetCreateCommand target : targets) {
-            if (target == null || target.getContentType() == null || target.getContentId() == null) {
-                continue;
-            }
-            Versionable content =
-                    loadContent(target.getContentType(), target.getContentId().value());
-            if (content != null && visibilityOf(content) != ClassicsSharedContentVisibility.PUBLIC) {
-                throw privateContentCannotBePublicShared();
-            }
-        }
-    }
-
     private static void ensureUniqueTargets(List<ShareTargetCreateCommand> targets) {
         if (targets == null || targets.isEmpty()) {
             return;
@@ -700,6 +690,23 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
             return true;
         }
         return ClassicsContentPermissionSupport.canShare(content.contentType(), operatorPermissions);
+    }
+
+    private boolean isUnconfirmedPrivatePublicShare(
+            ShareTargetCreateCommand target, ClassicsShareVisibility shareVisibility, boolean allowPrivateContent) {
+        if (shareVisibility != ClassicsShareVisibility.PUBLIC
+                || allowPrivateContent
+                || target == null
+                || target.getContentType() == null
+                || target.getContentId() == null) {
+            return false;
+        }
+        Versionable content =
+                loadContent(target.getContentType(), target.getContentId().value());
+        if (content == null) {
+            throw shareContentNotFound();
+        }
+        return visibilityOf(content) != ClassicsSharedContentVisibility.PUBLIC;
     }
 
     private static boolean requiresPrivateSharePermission(
