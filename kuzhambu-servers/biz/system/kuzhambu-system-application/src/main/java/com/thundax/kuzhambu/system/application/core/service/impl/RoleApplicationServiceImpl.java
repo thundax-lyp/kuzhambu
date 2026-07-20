@@ -38,14 +38,12 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
     private static final int PRIORITY_STEP = 1;
 
     private final RoleRepository dao;
-    private final List<CacheChangedListener> cacheChangedListeners;
+    private final ObjectProvider<List<CacheChangedListener>> cacheChangedListeners;
 
     public RoleApplicationServiceImpl(
             RoleRepository dao, ObjectProvider<List<CacheChangedListener>> cacheChangedListeners) {
         this.dao = dao;
-        this.cacheChangedListeners = cacheChangedListeners == null
-                ? Collections.emptyList()
-                : cacheChangedListeners.getIfAvailable(Collections::emptyList);
+        this.cacheChangedListeners = cacheChangedListeners;
     }
 
     public Role get(RoleId id) {
@@ -189,12 +187,18 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
     }
 
     private void notifyCacheChanged() {
-        cacheChangedListeners.forEach(CacheChangedListener::onRoleCacheChanged);
+        listeners().forEach(CacheChangedListener::onRoleCacheChanged);
     }
 
     public interface CacheChangedListener {
 
         void onRoleCacheChanged();
+    }
+
+    private List<CacheChangedListener> listeners() {
+        return cacheChangedListeners == null
+                ? Collections.emptyList()
+                : cacheChangedListeners.getIfAvailable(Collections::emptyList);
     }
 
     private List<Long> toValues(List<RoleId> ids) {

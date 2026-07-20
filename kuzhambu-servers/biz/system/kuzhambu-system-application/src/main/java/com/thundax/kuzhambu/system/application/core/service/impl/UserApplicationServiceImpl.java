@@ -31,13 +31,17 @@ public class UserApplicationServiceImpl implements UserApplicationService {
 
     private final UserRepository dao;
     private final List<UserDeleteCascadeHandler> deleteCascadeHandlers;
+    private final ObjectProvider<List<RoleApplicationServiceImpl.CacheChangedListener>> roleCacheChangedListeners;
 
     public UserApplicationServiceImpl(
-            UserRepository dao, ObjectProvider<List<UserDeleteCascadeHandler>> deleteCascadeHandlers) {
+            UserRepository dao,
+            ObjectProvider<List<UserDeleteCascadeHandler>> deleteCascadeHandlers,
+            ObjectProvider<List<RoleApplicationServiceImpl.CacheChangedListener>> roleCacheChangedListeners) {
         this.dao = dao;
         this.deleteCascadeHandlers = deleteCascadeHandlers == null
                 ? Collections.emptyList()
                 : deleteCascadeHandlers.getIfAvailable(Collections::emptyList);
+        this.roleCacheChangedListeners = roleCacheChangedListeners;
     }
 
     public User get(UserId id) {
@@ -100,6 +104,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
             if (!roleIdList.isEmpty()) {
                 dao.insertUserRole(UserIdCodec.toValue(userId), RoleIdCodec.toValues(roleIdList));
             }
+            notifyRoleCacheChanged();
         }
     }
 
@@ -109,7 +114,9 @@ public class UserApplicationServiceImpl implements UserApplicationService {
         User user = new User();
         user.setId(command.getId());
         user.setStatus(command.getStatus());
-        return dao.updateStatus(user);
+        int result = dao.updateStatus(user);
+        notifyRoleCacheChanged();
+        return result;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -123,6 +130,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
             deleteCascadeHandler.beforeDelete(user);
         }
         dao.deleteUserRole(UserIdCodec.toValue(id));
+        notifyRoleCacheChanged();
 
         return dao.deleteById(id);
     }
@@ -138,6 +146,16 @@ public class UserApplicationServiceImpl implements UserApplicationService {
         Role role = new Role();
         role.setId(RoleIdCodec.toDomain(id));
         return role;
+    }
+
+    private void notifyRoleCacheChanged() {
+        roleCacheChangedListeners().forEach(RoleApplicationServiceImpl.CacheChangedListener::onRoleCacheChanged);
+    }
+
+    private List<RoleApplicationServiceImpl.CacheChangedListener> roleCacheChangedListeners() {
+        return roleCacheChangedListeners == null
+                ? Collections.emptyList()
+                : roleCacheChangedListeners.getIfAvailable(Collections::emptyList);
     }
 
     private User toUser(CreateUserCommand command) {

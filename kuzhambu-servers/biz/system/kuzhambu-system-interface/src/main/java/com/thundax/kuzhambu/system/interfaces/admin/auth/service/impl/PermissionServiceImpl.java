@@ -11,6 +11,8 @@ import com.thundax.kuzhambu.common.security.permission.PrefixPermissionMatcher;
 import com.thundax.kuzhambu.system.application.core.query.CurrentUserQuery;
 import com.thundax.kuzhambu.system.application.core.service.CurrentUserApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
+import com.thundax.kuzhambu.system.application.core.service.impl.MenuApplicationServiceImpl;
+import com.thundax.kuzhambu.system.application.core.service.impl.RoleApplicationServiceImpl;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAccessToken;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAuthSession;
 import com.thundax.kuzhambu.system.domain.auth.repository.PrincipalAccessTokenRepository;
@@ -28,14 +30,19 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 @Service
-public class PermissionServiceImpl implements PermissionService {
+public class PermissionServiceImpl
+        implements PermissionService,
+                RoleApplicationServiceImpl.CacheChangedListener,
+                MenuApplicationServiceImpl.CacheChangedListener {
 
     private static final String SESSION_VALUE_PERMISSIONS = "PERMISSIONS";
+    private static final String SESSION_VALUE_PERMISSION_VERSION = "PERMISSION_VERSION";
     private static final int SAFETY_SECONDS = 10;
 
     private final PrincipalAccessTokenRepository principalAccessTokenRepository;
@@ -43,6 +50,7 @@ public class PermissionServiceImpl implements PermissionService {
     private final UserApplicationService userService;
     private final CurrentUserApplicationService currentUserService;
     private final PermissionMatcher permissionMatcher = new PrefixPermissionMatcher();
+    private final AtomicLong permissionVersion = new AtomicLong();
 
     public PermissionServiceImpl(
             PrincipalAccessTokenRepository principalAccessTokenRepository,
@@ -65,8 +73,7 @@ public class PermissionServiceImpl implements PermissionService {
             return Collections.emptySet();
         }
         Set<String> permissions = new HashSet<>(loadPermissions(userId));
-        session.getValues().put(SESSION_VALUE_PERMISSIONS, new HashSet<>(permissions));
-        principalAuthSessionRepository.insert(session, expiredSeconds(session));
+        savePermissions(session, permissions);
         return new HashSet<>(permissions);
     }
 
@@ -76,12 +83,46 @@ public class PermissionServiceImpl implements PermissionService {
         if (session == null) {
             return null;
         }
+        if (!isCurrentPermissionVersion(session)) {
+            return refreshPermissions(session);
+        }
         return toPermissionSet(session.getValues().get(SESSION_VALUE_PERMISSIONS));
     }
 
     @Override
     public boolean isPermitted(String token, String permission) {
         return permissionMatcher.matches(getPermissions(token), permission);
+    }
+
+    @Override
+    public void onRoleCacheChanged() {
+        permissionVersion.incrementAndGet();
+    }
+
+    @Override
+    public void onMenuCacheChanged() {
+        permissionVersion.incrementAndGet();
+    }
+
+    private Set<String> refreshPermissions(PrincipalAuthSession session) {
+        if (session.getPrincipalKey() == null || session.getPrincipalKey().getPrincipalId() == null) {
+            return Collections.emptySet();
+        }
+        Set<String> permissions = new HashSet<>(
+                loadPermissions(String.valueOf(session.getPrincipalKey().getPrincipalId())));
+        savePermissions(session, permissions);
+        return new HashSet<>(permissions);
+    }
+
+    private void savePermissions(PrincipalAuthSession session, Set<String> permissions) {
+        session.getValues().put(SESSION_VALUE_PERMISSIONS, new HashSet<>(permissions));
+        session.getValues().put(SESSION_VALUE_PERMISSION_VERSION, permissionVersion.get());
+        principalAuthSessionRepository.insert(session, expiredSeconds(session));
+    }
+
+    private boolean isCurrentPermissionVersion(PrincipalAuthSession session) {
+        Object sessionVersion = session.getValues().get(SESSION_VALUE_PERMISSION_VERSION);
+        return sessionVersion instanceof Number && ((Number) sessionVersion).longValue() == permissionVersion.get();
     }
 
     private Set<String> loadPermissions(String userId) {

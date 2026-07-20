@@ -26,14 +26,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class MenuApplicationServiceImpl implements MenuApplicationService {
 
     private final MenuRepository dao;
-    private final List<CacheChangedListener> cacheChangedListeners;
+    private final ObjectProvider<List<CacheChangedListener>> cacheChangedListeners;
 
     public MenuApplicationServiceImpl(
             MenuRepository dao, ObjectProvider<List<CacheChangedListener>> cacheChangedListeners) {
         this.dao = dao;
-        this.cacheChangedListeners = cacheChangedListeners == null
-                ? Collections.emptyList()
-                : cacheChangedListeners.getIfAvailable(Collections::emptyList);
+        this.cacheChangedListeners = cacheChangedListeners;
     }
 
     public Menu get(MenuId id) {
@@ -132,7 +130,7 @@ public class MenuApplicationServiceImpl implements MenuApplicationService {
     }
 
     private void notifyCacheChanged() {
-        cacheChangedListeners.forEach(CacheChangedListener::onMenuCacheChanged);
+        listeners().forEach(CacheChangedListener::onMenuCacheChanged);
     }
 
     private Integer maxRankValue(MenuQuery query) {
@@ -142,6 +140,12 @@ public class MenuApplicationServiceImpl implements MenuApplicationService {
     public interface CacheChangedListener {
 
         void onMenuCacheChanged();
+    }
+
+    private List<CacheChangedListener> listeners() {
+        return cacheChangedListeners == null
+                ? Collections.emptyList()
+                : cacheChangedListeners.getIfAvailable(Collections::emptyList);
     }
 
     private Menu toMenu(CreateMenuCommand command) {
