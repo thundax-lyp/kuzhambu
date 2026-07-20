@@ -325,7 +325,7 @@ export const QaPage = () => {
         <main className="kuzhambu-page qa-page discovery-qa-page">
             <header className="discovery-qa-page__header">
                 <div>
-                    <Title level={2}>智能问答</Title>
+                    <Title level={2}>问答</Title>
                     <Text type="secondary">跨知识库提问，保留会话、回答和来源引用。</Text>
                 </div>
                 <KuzhambuButton

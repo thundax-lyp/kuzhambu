@@ -82,7 +82,7 @@ describe("QaPage", () => {
     it("renders intelligent qa shell", async () => {
         renderPage();
 
-        expect(screen.getByRole("heading", { name: "智能问答" })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { name: "问答" })).toBeInTheDocument();
         expect(screen.getByLabelText("问题")).toBeInTheDocument();
         expect(screen.getByRole("button", { name: "发送问题" })).toBeInTheDocument();
         await waitFor(() => {
