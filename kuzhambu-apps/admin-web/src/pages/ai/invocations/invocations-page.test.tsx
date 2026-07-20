@@ -12,28 +12,6 @@ vi.mock("./invocations-service", () => ({
     pageInvocationCalls: vi.fn()
 }));
 
-vi.mock("@/components/kuzhambu-drawer", () => {
-    const mockDrawer = ({
-        children,
-        open,
-        title
-    }: {
-        children: React.ReactNode;
-        open?: boolean;
-        title?: React.ReactNode;
-    }) =>
-        open ? (
-            <div>
-                <h3>{title}</h3>
-                {children}
-            </div>
-        ) : null;
-
-    return {
-        KuzhambuDrawer: mockDrawer
-    };
-});
-
 const callRecord = {
     callId: 9001,
     batchId: null,
@@ -117,20 +95,25 @@ describe("InvocationsPage", () => {
     it("renders summary metrics and call records", async () => {
         renderPage();
 
-        expect(await screen.findByRole("heading", { name: "AI 调用统计" })).toBeInTheDocument();
-        expect(await screen.findAllByText("summary")).not.toHaveLength(0);
-        expect(screen.getByText("gpt-4o")).toBeInTheDocument();
-        expect(screen.getByText("totalCostAmount")).toBeInTheDocument();
+        expect(await screen.findByRole("heading", { name: "调用统计" })).toBeInTheDocument();
+        expect(screen.getByRole("tab", { name: "统计概览" })).toBeInTheDocument();
+        expect(screen.getByRole("tab", { name: "调用记录" })).toBeInTheDocument();
+        expect(await screen.findByText("摘要生成")).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole("tab", { name: "调用记录" }));
+
+        expect(screen.getByText("entry")).toBeInTheDocument();
     });
 
-    it("opens call detail drawer", async () => {
+    it("expands call detail by clicking call row", async () => {
         renderPage();
-        await screen.findByText("gpt-4o");
+        fireEvent.click(await screen.findByRole("tab", { name: "调用记录" }));
+        await screen.findByText("entry");
 
-        fireEvent.click(screen.getByRole("button", { name: /详情/ }));
+        expect(screen.queryByText("req-1")).not.toBeInTheDocument();
+        fireEvent.click(screen.getByText("entry"));
 
-        expect(await screen.findByRole("heading", { name: "调用详情" })).toBeInTheDocument();
-        expect(screen.getByText("req-1")).toBeInTheDocument();
+        expect(await screen.findByText("req-1")).toBeInTheDocument();
         expect(screen.getByText("trace-1")).toBeInTheDocument();
     });
 });
