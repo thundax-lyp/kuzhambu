@@ -1201,8 +1201,9 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             return;
         }
 
+        int priority = repository.maxTagPriority(null, null) + 1;
         for (int i = 0; i < snapshot.tags().size(); i++) {
-            insertMingTagFromSnapshot(snapshot.tags().get(i), entry, i + 1);
+            insertMingTagFromSnapshot(snapshot.tags().get(i), entry, priority++);
         }
     }
 
@@ -1217,8 +1218,9 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         if (snapshot == null || snapshot.qaPairs() == null) {
             return;
         }
+        int priority = repository.maxQaPairPriority() + 1;
         for (int i = 0; i < snapshot.qaPairs().size(); i++) {
-            insertMingQaPairFromSnapshot(snapshot.qaPairs().get(i), entry, i + 1);
+            insertMingQaPairFromSnapshot(snapshot.qaPairs().get(i), entry, priority++);
         }
     }
 
@@ -1227,7 +1229,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         if (snapshot == null || entry == null || entry.contentId() == null) {
             return;
         }
-        int priority = snapshot.priority() == null ? fallbackPriority : snapshot.priority();
+        int priority = fallbackPriority;
         if (tagBindingSupport == null) {
             ContentTagCommand command = new ContentTagCommand(
                     null,
@@ -1296,7 +1298,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 parseSource(snapshot.source()));
         ClassicsContentQaPair qaPair = command.toEntity();
         qaPair.setId(null);
-        qaPair.setPriority(snapshot.priority() == null ? fallbackPriority : snapshot.priority());
+        qaPair.setPriority(fallbackPriority);
         repository.insertQaPair(qaPair);
     }
 

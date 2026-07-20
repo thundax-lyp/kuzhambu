@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 class SancaiEntryVersionRestorerTest {
 
     @Test
-    void restoreSnapshotShouldRestoreContentAndMoveEntryToTargetVolumeTail() {
+    void restoreSnapshotShouldRestoreContentAndMoveEntryToGlobalTail() {
         FakeRepository repository = new FakeRepository();
         SancaiEntryVersionRestorer restorer = new SancaiEntryVersionRestorer(repository, new ObjectMapper());
 
@@ -124,8 +124,7 @@ class SancaiEntryVersionRestorerTest {
         }
 
         @Override
-        public int maxEntryPriorityByVolumeId(SancaiVolumeId volumeId) {
-            assertEquals(SancaiVolumeId.of(10L), volumeId);
+        public int maxEntryPriority() {
             return 7;
         }
 

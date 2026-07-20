@@ -1096,8 +1096,7 @@ class ClassicsContentApplicationServiceImplTest {
         }
 
         @Override
-        public int maxEntryPriorityByVolumeId(SancaiVolumeId volumeId) {
-            assertEquals(SancaiVolumeId.of(10L), volumeId);
+        public int maxEntryPriority() {
             return 7;
         }
 
