@@ -188,6 +188,7 @@ Admin：
 
 当前协议要求：
 
+- Portal 搜索接口允许 `queryText` 为空字符串；空搜索词用于默认打开搜索页时按筛选和分页返回默认结果。
 - Portal 搜索接口返回 `searchEventId`、`queryText`、`displayQueryText`、`totalCount`、`groupCount` 和分组结果。
 - 分组结果包含 `groupKey`、`groupTitle`、`count` 和 `items`。
 - 结果项固定保留 `highlightText` 字段，即使当前阶段不实现高亮。

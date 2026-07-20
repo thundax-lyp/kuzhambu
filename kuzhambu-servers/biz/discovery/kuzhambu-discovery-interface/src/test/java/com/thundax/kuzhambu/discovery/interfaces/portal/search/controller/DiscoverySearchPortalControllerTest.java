@@ -1,7 +1,6 @@
 package com.thundax.kuzhambu.discovery.interfaces.portal.search.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -10,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchEventResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPreviewResult;
@@ -18,10 +18,10 @@ import com.thundax.kuzhambu.discovery.application.search.service.SearchApplicati
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchClickEventRequest;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchPreviewRequest;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchRequest;
-import jakarta.validation.constraints.NotBlank;
 import java.lang.reflect.Method;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -101,8 +101,38 @@ class DiscoverySearchPortalControllerTest {
     }
 
     @Test
-    void searchRequestShouldRejectBlankQueryText() throws Exception {
-        assertNotNull(DiscoverySearchRequest.class.getDeclaredField("queryText").getAnnotation(NotBlank.class));
+    void searchRequestShouldAllowBlankQueryText() {
+        SearchApplicationService service = mock(SearchApplicationService.class);
+        DiscoverySearchPortalController controller = new DiscoverySearchPortalController(service);
+        DiscoverySearchRequest request = new DiscoverySearchRequest();
+        request.setQueryText("");
+        request.setPageNo(1);
+        request.setPageSize(20);
+        when(service.search(any()))
+                .thenReturn(new SearchEventResult(
+                        "s-empty",
+                        "",
+                        "",
+                        "",
+                        "KEYWORD_SEARCH",
+                        null,
+                        0,
+                        0,
+                        "SUCCEEDED",
+                        null,
+                        null,
+                        null,
+                        "req-empty",
+                        "trace-empty",
+                        1_718_000_000_000L,
+                        List.of()));
+        ArgumentCaptor<SearchQuery> queryCaptor = ArgumentCaptor.forClass(SearchQuery.class);
+
+        var response = controller.search(request);
+
+        verify(service).search(queryCaptor.capture());
+        assertEquals("", queryCaptor.getValue().getQueryText());
+        assertEquals(0, response.getTotalCount());
     }
 
     @Test

@@ -66,6 +66,14 @@ export const HomePage = () => {
                 </div>
             </header>
 
+            <section className="portal-home-search" aria-label="首页知识检索入口">
+                <Link className="portal-home-search-link" to="/discovery/search">
+                    <Search aria-hidden="true" size={22} />
+                    <span>搜索古籍、人物、礼制、图谱线索</span>
+                    <strong>搜索</strong>
+                </Link>
+            </section>
+
             <section className="portal-grid" aria-label="门户能力">
                 {sections.map((section) => {
                     const Icon = section.icon;

@@ -115,6 +115,26 @@ const getFilterOption = (container: HTMLElement, groupLabel: string, optionText:
     );
 };
 
+const emptySearchResponse = {
+    displayQueryText: "",
+    groupCount: 0,
+    groups: [],
+    queryText: "",
+    searchEventId: "EVT-EMPTY",
+    totalCount: 0
+};
+
+const clickButtonByText = async (container: HTMLElement, buttonText: string) => {
+    const button = Array.from(container.querySelectorAll("button")).find(
+        (candidate) => candidate.textContent === buttonText
+    );
+    expect(button).toBeDefined();
+
+    await act(async () => {
+        button?.click();
+    });
+};
+
 describe("DiscoverySearchPage", () => {
     afterEach(() => {
         mocks.previewSearchResult.mockReset();
@@ -123,8 +143,34 @@ describe("DiscoverySearchPage", () => {
         document.body.innerHTML = "";
     });
 
+    it("requests an empty query when the page opens without q", async () => {
+        mocks.searchDiscovery.mockResolvedValueOnce(emptySearchResponse);
+
+        const { container, root } = renderPage();
+        await flushMutations();
+
+        expect(mocks.searchDiscovery).toHaveBeenCalledWith({
+            categoryCodes: [],
+            contentStatuses: [],
+            dateFrom: null,
+            dateTo: null,
+            knowledgeBases: [],
+            pageNo: 1,
+            pageSize: 10,
+            queryText: "",
+            tagNames: [],
+            visibilityScopes: []
+        });
+        expect(container.textContent).toContain("共 0 条命中");
+        expect(container.textContent).not.toContain("等待检索");
+
+        act(() => {
+            root.unmount();
+        });
+    });
+
     it("submits query and renders grouped discovery results", async () => {
-        mocks.searchDiscovery.mockResolvedValueOnce({
+        mocks.searchDiscovery.mockResolvedValueOnce(emptySearchResponse).mockResolvedValueOnce({
             displayQueryText: "礼器",
             groupCount: 1,
             groups: [
@@ -154,6 +200,7 @@ describe("DiscoverySearchPage", () => {
         });
 
         const { container, root } = renderPage();
+        await flushMutations();
 
         setInputValue(container, "queryText", "礼器");
 
@@ -300,19 +347,14 @@ describe("DiscoverySearchPage", () => {
         const queryInput = container.querySelector(
             'input[name="queryText"]'
         ) as HTMLInputElement | null;
-        const categoryInput = container.querySelector(
-            'input[name="categoryCodes"]'
-        ) as HTMLInputElement | null;
         expect(queryInput?.value).toBe("礼器");
-        expect(categoryInput?.value).toBe("SANCAI_ENTRY");
         expect(getFilterOption(container, "知识库", "三才图会")?.getAttribute("aria-pressed")).toBe(
             "true"
         );
-        expect(getFilterOption(container, "可见性", "公开内容")?.getAttribute("aria-pressed")).toBe(
-            "true"
-        );
+        expect(container.querySelector('input[name="categoryCodes"]')).toBeNull();
+        expect(container.textContent).not.toContain("可见性");
         expect(mocks.searchDiscovery).toHaveBeenCalledWith({
-            categoryCodes: ["SANCAI_ENTRY"],
+            categoryCodes: [],
             contentStatuses: [],
             dateFrom: null,
             dateTo: null,
@@ -321,7 +363,7 @@ describe("DiscoverySearchPage", () => {
             pageSize: 20,
             queryText: "礼器",
             tagNames: [],
-            visibilityScopes: ["PUBLIC"]
+            visibilityScopes: []
         });
 
         act(() => {
@@ -329,8 +371,8 @@ describe("DiscoverySearchPage", () => {
         });
     });
 
-    it("syncs submitted search filters to url params without pagination", async () => {
-        mocks.searchDiscovery.mockResolvedValueOnce({
+    it("syncs submitted search filters and pagination to url params", async () => {
+        mocks.searchDiscovery.mockResolvedValueOnce(emptySearchResponse).mockResolvedValueOnce({
             displayQueryText: "官制",
             groupCount: 0,
             groups: [],
@@ -343,7 +385,7 @@ describe("DiscoverySearchPage", () => {
             "/discovery/search?pageNo=2&pageSize=20"
         );
         setInputValue(container, "queryText", "官制");
-        setInputValue(container, "categoryCodes", "WANGQI_DOCUMENT");
+        await clickButtonByText(container, "高级筛选");
         await clickFilterOption(container, "知识库", "王圻文档");
 
         const submitButton = container.querySelector(
@@ -357,12 +399,12 @@ describe("DiscoverySearchPage", () => {
 
         expect(getLocation()).toContain("q=%E5%AE%98%E5%88%B6");
         expect(getLocation()).toContain("knowledgeBases=WANGQI_DOCUMENT");
-        expect(getLocation()).toContain("categoryCodes=WANGQI_DOCUMENT");
-        expect(getLocation()).not.toContain("pageNo=");
-        expect(getLocation()).not.toContain("pageSize=");
+        expect(getLocation()).toContain("pageNo=2");
+        expect(getLocation()).toContain("pageSize=20");
+        expect(getLocation()).not.toContain("categoryCodes=");
         expect(mocks.searchDiscovery).toHaveBeenCalledWith(
             expect.objectContaining({
-                categoryCodes: ["WANGQI_DOCUMENT"],
+                categoryCodes: [],
                 knowledgeBases: ["WANGQI_DOCUMENT"],
                 pageNo: 2,
                 pageSize: 20,
@@ -376,7 +418,7 @@ describe("DiscoverySearchPage", () => {
     });
 
     it("submits advanced filter controls only after an explicit search action", async () => {
-        mocks.searchDiscovery.mockResolvedValueOnce({
+        mocks.searchDiscovery.mockResolvedValueOnce(emptySearchResponse).mockResolvedValueOnce({
             displayQueryText: "礼俗",
             groupCount: 0,
             groups: [],
@@ -387,16 +429,13 @@ describe("DiscoverySearchPage", () => {
 
         const { container, root } = renderPage();
         setInputValue(container, "queryText", "礼俗");
-        setInputValue(container, "categoryCodes", "RITUAL, CUSTOM");
-        setInputValue(container, "tagNames", "礼制、民俗");
+        await clickButtonByText(container, "高级筛选");
         setInputValue(container, "dateFrom", "2026-01-02");
         setInputValue(container, "dateTo", "2026-01-31");
         await clickFilterOption(container, "知识库", "三才图会");
         await clickFilterOption(container, "知识库", "明代习俗");
-        await clickFilterOption(container, "状态", "已发布");
-        await clickFilterOption(container, "可见性", "非公开内容");
 
-        expect(mocks.searchDiscovery).not.toHaveBeenCalled();
+        expect(mocks.searchDiscovery).toHaveBeenCalledTimes(1);
 
         const submitButton = container.querySelector(
             'button[type="submit"]'
@@ -408,16 +447,16 @@ describe("DiscoverySearchPage", () => {
         await flushMutations();
 
         expect(mocks.searchDiscovery).toHaveBeenCalledWith({
-            categoryCodes: ["RITUAL", "CUSTOM"],
-            contentStatuses: ["PUBLISHED"],
+            categoryCodes: [],
+            contentStatuses: [],
             dateFrom: new Date("2026-01-02T00:00:00").toISOString(),
             dateTo: new Date("2026-01-31T23:59:59").toISOString(),
             knowledgeBases: ["SANCAI_ENTRY", "MING_CUSTOMS"],
             pageNo: 1,
             pageSize: 10,
             queryText: "礼俗",
-            tagNames: ["礼制", "民俗"],
-            visibilityScopes: ["PRIVATE"]
+            tagNames: [],
+            visibilityScopes: []
         });
 
         act(() => {

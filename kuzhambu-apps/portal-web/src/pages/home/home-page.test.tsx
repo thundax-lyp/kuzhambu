@@ -40,6 +40,10 @@ describe("HomePage", () => {
                 expect.objectContaining({ href: "/discovery/search", text: "进入检索" }),
                 expect.objectContaining({ href: "/discovery/qa", text: "进入问答" }),
                 expect.objectContaining({
+                    href: "/discovery/search",
+                    text: "搜索古籍、人物、礼制、图谱线索搜索"
+                }),
+                expect.objectContaining({
                     href: "/classics/sancai",
                     text: "三才图会浏览已发布的三才图会条目、译文与配图"
                 }),
