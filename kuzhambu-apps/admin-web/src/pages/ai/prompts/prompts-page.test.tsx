@@ -16,8 +16,7 @@ vi.mock("./prompts-service", () => ({
     listPromptTemplates: vi.fn(),
     listPromptVariables: vi.fn(),
     listPromptVersions: vi.fn(),
-    previewPromptVersionCompare: vi.fn(),
-    regeneratePromptSuggestion: vi.fn()
+    previewPromptVersionCompare: vi.fn()
 }));
 
 vi.mock("@/components/kuzhambu-drawer", () => {
@@ -44,6 +43,37 @@ vi.mock("@/components/kuzhambu-drawer", () => {
         KuzhambuDrawer: mockDrawer
     };
 });
+
+vi.mock("@/components/kuzhambu-modal", () => {
+    const mockModal = ({
+        children,
+        footer,
+        open,
+        title
+    }: {
+        children: React.ReactNode;
+        footer?: React.ReactNode;
+        open?: boolean;
+        title?: React.ReactNode;
+    }) =>
+        open ? (
+            <div role="dialog" aria-label={String(title)}>
+                <h3>{title}</h3>
+                {children}
+                {footer}
+            </div>
+        ) : null;
+
+    return {
+        KuzhambuModal: mockModal
+    };
+});
+
+vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => ({
+    useKuzhambuConfirm: () => ({
+        danger: vi.fn()
+    })
+}));
 
 const template = {
     id: 1001,
@@ -108,6 +138,14 @@ describe("PromptsPage", () => {
                 outputMode: "JSON",
                 enabled: true,
                 priority: 1
+            },
+            {
+                capability: "classics_translate",
+                name: "古籍翻译",
+                requiredTags: ["chat"],
+                outputMode: "TEXT",
+                enabled: true,
+                priority: 2
             }
         ]);
         vi.mocked(service.listPromptTemplates).mockResolvedValue([template]);
@@ -116,10 +154,6 @@ describe("PromptsPage", () => {
         vi.mocked(service.listPromptVariables).mockResolvedValue(variables);
         vi.mocked(service.confirmPromptVariables).mockResolvedValue(true);
         vi.mocked(service.previewPromptVersionCompare).mockResolvedValue(versions);
-        vi.mocked(service.regeneratePromptSuggestion).mockResolvedValue({
-            ...currentVersion,
-            changeSummary: "建议改写"
-        });
         vi.mocked(service.changePromptTemplate).mockResolvedValue(template);
         vi.mocked(service.changePromptVersionRollback).mockResolvedValue(currentVersion);
     });
@@ -164,11 +198,31 @@ describe("PromptsPage", () => {
         fireEvent.click(screen.getByRole("button", { name: "编辑 摘要提示词" }));
 
         expect(await screen.findByRole("heading", { name: "编辑提示词" })).toBeInTheDocument();
-        expect(await screen.findByText("版本列表")).toBeInTheDocument();
-        await waitFor(() => {
-            expect(screen.getByText("title")).toBeInTheDocument();
-        });
+        expect(await screen.findByText("版本")).toBeInTheDocument();
+        expect(screen.getByRole("table", { name: "提示词版本列表" })).toBeInTheDocument();
+        fireEvent.click(screen.getByTestId("ai-prompts-prompts-view-variables-button"));
+        const variableDialog = await screen.findByRole("dialog", { name: "能力变量" });
+        expect(within(variableDialog).getByText("bodyText")).toBeInTheDocument();
+        expect(within(variableDialog).getByText("contentType")).toBeInTheDocument();
+        expect(within(variableDialog).getByText("内容类型")).toBeInTheDocument();
+        expect(within(variableDialog).queryByRole("columnheader", { name: "变量名" })).toBeNull();
         expect(screen.queryByText("变量快照 JSON")).not.toBeInTheDocument();
+    });
+
+    it("updates variable modal content when capability changes", async () => {
+        renderPage();
+
+        await screen.findByText("摘要提示词");
+        fireEvent.click(screen.getByRole("button", { name: "编辑 摘要提示词" }));
+        fireEvent.mouseDown(await screen.findByLabelText("提示词能力"));
+        fireEvent.click(await screen.findByText("古籍翻译"));
+        fireEvent.click(screen.getByTestId("ai-prompts-prompts-view-variables-button"));
+
+        const variableDialog = await screen.findByRole("dialog", { name: "能力变量" });
+        expect(within(variableDialog).getByText("contextPath")).toBeInTheDocument();
+        expect(within(variableDialog).getByText("sourceText")).toBeInTheDocument();
+        expect(within(variableDialog).getByText("待翻译的源文本")).toBeInTheDocument();
+        expect(within(variableDialog).queryByText("bodyText")).not.toBeInTheDocument();
     });
 
     it("opens create drawer", async () => {
@@ -179,7 +233,23 @@ describe("PromptsPage", () => {
 
         expect(await screen.findByRole("heading", { name: "新建提示词" })).toBeInTheDocument();
         expect(screen.getByRole("button", { name: /创建模板/ })).toBeInTheDocument();
-        expect(screen.queryByText("版本列表")).not.toBeInTheDocument();
+        expect(screen.queryByText("版本")).not.toBeInTheDocument();
+    });
+
+    it("blocks unsupported prompt variables for a fixed capability", async () => {
+        renderPage();
+
+        await screen.findByText("摘要提示词");
+        fireEvent.click(screen.getByRole("button", { name: "编辑 摘要提示词" }));
+
+        const userMessage = await screen.findByLabelText("用户消息正文");
+        fireEvent.change(userMessage, { target: { value: "{{unknownName}}" } });
+        fireEvent.click(screen.getByRole("button", { name: /保存新版本/ }));
+
+        expect(await screen.findByText("当前能力不支持变量：unknownName")).toBeInTheDocument();
+        await waitFor(() => {
+            expect(service.changePromptTemplate).not.toHaveBeenCalled();
+        });
     });
 
     it("changes prompt enabled state from table switch", async () => {

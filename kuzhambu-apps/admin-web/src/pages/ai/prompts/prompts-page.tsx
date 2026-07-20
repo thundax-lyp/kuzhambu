@@ -433,7 +433,7 @@ export const PromptsPage = () => {
             )
         },
         {
-            title: "注册时间",
+            title: "日期",
             dataIndex: "registeredAt",
             key: "registeredAt",
             width: DEFAULT_COLUMN_WIDTHS.registeredAt,
