@@ -173,6 +173,8 @@ export const SearchStatisticsPage = () => {
         rebuildProgressPercent = 100;
         rebuildProgressStatus = "success";
     }
+    const shouldShowRebuildProgress =
+        rebuildMutation.isPending || rebuildMutation.isError || rebuildResult !== null;
 
     const pageColumns: ColumnsType<DiscoverySearchEventRecord> = [
         { title: "检索编号", dataIndex: "searchEventId", key: "searchEventId", width: 160 },
@@ -584,11 +586,14 @@ export const SearchStatisticsPage = () => {
                                 <Text className="search-statistics-rebuild-status" type="secondary">
                                     {rebuildStatusText}
                                 </Text>
-                                <Progress
-                                    percent={rebuildProgressPercent}
-                                    showInfo={false}
-                                    status={rebuildProgressStatus}
-                                />
+                                {shouldShowRebuildProgress ? (
+                                    <Progress
+                                        aria-label="索引重建进度"
+                                        percent={rebuildProgressPercent}
+                                        showInfo={false}
+                                        status={rebuildProgressStatus}
+                                    />
+                                ) : null}
                             </KuzhambuSpace>
                         </Card>
                     ) : null}

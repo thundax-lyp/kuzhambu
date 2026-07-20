@@ -134,6 +134,10 @@ describe("SearchStatisticsPage", () => {
         await user.click(screen.getByText("索引重建"));
 
         expect(screen.getByRole("button", { name: "触发重建" })).toBeInTheDocument();
+        expect(screen.queryByLabelText("索引重建进度")).not.toBeInTheDocument();
+        await user.click(screen.getByRole("button", { name: "触发重建" }));
+
+        expect(await screen.findByLabelText("索引重建进度")).toBeInTheDocument();
         expect(screen.queryByRole("button", { name: "查询记录" })).not.toBeInTheDocument();
     }, 30000);
 
