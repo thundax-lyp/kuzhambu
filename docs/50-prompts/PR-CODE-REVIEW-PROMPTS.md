@@ -6,6 +6,7 @@
 
 * 使用 `git diff main...HEAD` 确定本次变更。
 * 阅读必要的上下文代码，但只报告由本次变更引入或暴露的问题。
+* 如果 diff 涉及 `Sortable`、`priority`、`orderedIds`、`*SortRequest` 或排序接口，先阅读 `docs/30-designs/SORT-ORDERING-SPECIAL-DESIGN.md`，并以该专项设计作为排序规则依据。
 * 不要修改代码，只输出审查结果。
 
 重点检查：
