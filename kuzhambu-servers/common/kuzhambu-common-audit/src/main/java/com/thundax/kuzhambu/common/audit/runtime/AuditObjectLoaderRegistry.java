@@ -13,12 +13,23 @@ public class AuditObjectLoaderRegistry {
     public AuditObjectLoaderRegistry(List<AuditObjectLoader> loaderList) {
         if (loaderList != null) {
             for (AuditObjectLoader loader : loaderList) {
-                loaders.put(loader.objectType(), loader);
+                String objectType = loader.objectType();
+                if (!hasText(objectType)) {
+                    throw new IllegalStateException("Audit object loader objectType must not be blank.");
+                }
+                AuditObjectLoader previous = loaders.putIfAbsent(objectType, loader);
+                if (previous != null) {
+                    throw new IllegalStateException("Duplicate audit object loader objectType: " + objectType);
+                }
             }
         }
     }
 
     public AuditObjectLoader get(String objectType) {
         return loaders.get(objectType);
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.trim().isEmpty();
     }
 }
