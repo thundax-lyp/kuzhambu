@@ -137,14 +137,28 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
                     ErrorCode.SORT_EMPTY_INPUT.getMessage());
         }
 
-        List<StoredObject> currentStorage = dao.list(null, null, null, null, null, null, null, SortDirection.ASC);
-        if (currentStorage == null || currentStorage.isEmpty()) {
+        List<StoredObject> allStorage = dao.list(null, null, null, null, null, null, null, SortDirection.ASC);
+        if (allStorage == null || allStorage.isEmpty()) {
             throw new BizException(
                     ErrorCode.SORT_MISSING_ID.getCode(),
                     ErrorCode.SORT_MISSING_ID.getMessageKey(),
                     ErrorCode.SORT_MISSING_ID.getMessage());
         }
 
+        Set<Long> orderedIdValues = new LinkedHashSet<>();
+        for (StoredObjectId orderedId : orderedIdList) {
+            if (orderedId != null) {
+                orderedIdValues.add(orderedId.value());
+            }
+        }
+        List<StoredObject> currentStorage = new ArrayList<>();
+        for (StoredObject storage : allStorage) {
+            if (storage != null
+                    && storage.getId() != null
+                    && orderedIdValues.contains(storage.getId().value())) {
+                currentStorage.add(storage);
+            }
+        }
         if (currentStorage.size() != orderedIdList.size()) {
             throw new BizException(
                     ErrorCode.SORT_MISSING_ID.getCode(),
