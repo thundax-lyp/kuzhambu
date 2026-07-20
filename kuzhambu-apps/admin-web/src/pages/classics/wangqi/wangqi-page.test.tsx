@@ -754,10 +754,10 @@ describe("WangqiPage", () => {
         expect(
             await screen.findByTestId("classics-wangqi-document-qa-ai-modal")
         ).toBeInTheDocument();
-        expect(await screen.findByLabelText("AI问答依据标题")).toHaveValue("王圻文档");
-        expect(screen.getByLabelText("AI问答依据摘要")).toHaveValue("记录王圻古籍条目。");
-        expect(screen.getByLabelText("AI问答依据正文")).toHaveValue("## 王圻");
-        expect(screen.getByLabelText("AI问答依据已有问答")).toHaveTextContent("已有问题？");
+        expect(await screen.findByLabelText("问答依据标题")).toHaveValue("王圻文档");
+        expect(screen.getByLabelText("问答依据摘要")).toHaveValue("记录王圻古籍条目。");
+        expect(screen.getByLabelText("问答依据正文")).toHaveValue("## 王圻");
+        expect(screen.getByLabelText("问答依据已有问答")).toHaveTextContent("已有问题？");
 
         await user.click(screen.getByTestId("classics-wangqi-document-qa-ai-generate-button"));
 

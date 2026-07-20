@@ -1126,7 +1126,7 @@ export const WangqiPage = () => {
                         <div className="wangqi-page-drawer-panels">
                             <Card
                                 size="small"
-                                title="AI 问答"
+                                title="问答生成"
                                 extra={
                                     <KuzhambuSpaceCompact>
                                         <Tooltip title={singleDocumentQaDisabledReason}>

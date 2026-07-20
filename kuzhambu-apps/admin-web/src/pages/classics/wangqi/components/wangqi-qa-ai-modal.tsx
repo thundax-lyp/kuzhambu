@@ -267,7 +267,7 @@ export const WangqiQaAiModal = ({
 
     const createQaTask = () => {
         if (!onCreateQaTask) {
-            messageApi.warning("请先保存王圻文档后再使用 AI 问答");
+            messageApi.warning("请先保存王圻文档后再生成问答");
             return;
         }
         onCreateQaTask(currentQaPairs);
@@ -337,11 +337,11 @@ export const WangqiQaAiModal = ({
                 className="wangqi-qa-modal"
                 title={
                     <div className="wangqi-summary-modal-title">
-                        <span>AI 问答</span>
+                        <span>问答生成</span>
                         <KuzhambuButton
                             testId="classics-wangqi-document-qa-ai-generate-button"
                             type="primary"
-                            ariaLabel="生成 AI 问答"
+                            ariaLabel="生成问答"
                             icon={<FileTextOutlined />}
                             loading={creatingQaTask}
                             onClick={createQaTask}
@@ -398,7 +398,7 @@ export const WangqiQaAiModal = ({
                         showIcon
                         type="info"
                         title="候选问答暂未返回"
-                        description="AI 任务仍在跟踪中，系统会继续刷新候选问答。"
+                        description="生成任务仍在跟踪中，系统会继续刷新候选问答。"
                     />
                 ) : null}
                 <div className="wangqi-summary-modal-compare-grid">
@@ -419,8 +419,8 @@ export const WangqiQaAiModal = ({
                             />
                         )}
                     </section>
-                    <section className="wangqi-summary-modal-card" aria-label="AI候选问答">
-                        <Text strong>AI 问答</Text>
+                    <section className="wangqi-summary-modal-card" aria-label="候选问答">
+                        <Text strong>候选问答</Text>
                         {latestQaCandidate ? (
                             <AiCandidatePayloadEditor
                                 key={`${latestQaCandidate.candidateId}-${
@@ -437,20 +437,20 @@ export const WangqiQaAiModal = ({
                                 image={Empty.PRESENTED_IMAGE_SIMPLE}
                                 description={
                                     creatingQaTask || qaCandidatesQuery.isFetching
-                                        ? "AI 问答生成中"
+                                        ? "问答生成中"
                                         : "暂无候选问答，可先点击生成问答"
                                 }
                             />
                         )}
                     </section>
                 </div>
-                <section className="wangqi-summary-modal-card" aria-label="AI问答生成依据">
+                <section className="wangqi-summary-modal-card" aria-label="问答生成依据">
                     <Text strong>生成依据</Text>
                     <div className="wangqi-tags-modal-source-grid">
                         <label>
                             <Text type="secondary">标题</Text>
                             <Input
-                                aria-label="AI问答依据标题"
+                                aria-label="问答依据标题"
                                 readOnly
                                 value={document.title || "未命名文档"}
                             />
@@ -458,7 +458,7 @@ export const WangqiQaAiModal = ({
                         <label>
                             <Text type="secondary">摘要</Text>
                             <Input.TextArea
-                                aria-label="AI问答依据摘要"
+                                aria-label="问答依据摘要"
                                 readOnly
                                 autoSize={resolveTextAreaAutoSize({ minRows: 2, maxRows: 4 })}
                                 value={document.summary || "暂无摘要"}
@@ -467,13 +467,13 @@ export const WangqiQaAiModal = ({
                         <label>
                             <Text type="secondary">正文</Text>
                             <Input.TextArea
-                                aria-label="AI问答依据正文"
+                                aria-label="问答依据正文"
                                 readOnly
                                 autoSize={resolveTextAreaAutoSize({ minRows: 4, maxRows: 8 })}
                                 value={document.content || "暂无正文"}
                             />
                         </label>
-                        <div aria-label="AI问答依据已有问答">
+                        <div aria-label="问答依据已有问答">
                             <Text type="secondary">已有问答</Text>
                             {currentQaPairs.length ? (
                                 <KuzhambuSpace orientation="vertical" size="small">

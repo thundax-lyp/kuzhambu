@@ -566,13 +566,13 @@ test.describe("classics wangqi page", () => {
 
         await page.getByLabel("编辑王圻文档", { exact: true }).getByText("问答").click();
         await page.getByTestId("classics-wangqi-document-qa-ai-button").click();
-        await expect(page.getByRole("dialog", { name: "AI 问答" })).toBeVisible();
-        await expect(page.getByLabel("AI问答依据标题")).toHaveValue("王圻文档");
-        await expect(page.getByLabel("AI问答依据摘要")).toHaveValue("记录王圻古籍条目。");
-        await expect(page.getByLabel("AI问答依据正文")).toHaveValue(
+        await expect(page.getByRole("dialog", { name: "问答生成" })).toBeVisible();
+        await expect(page.getByLabel("问答依据标题")).toHaveValue("王圻文档");
+        await expect(page.getByLabel("问答依据摘要")).toHaveValue("记录王圻古籍条目。");
+        await expect(page.getByLabel("问答依据正文")).toHaveValue(
             "<h2>王圻</h2><script>alert(1)</script>"
         );
-        await expect(page.getByLabel("AI问答依据已有问答")).toContainText("已有问题？");
+        await expect(page.getByLabel("问答依据已有问答")).toContainText("已有问题？");
         await page.getByTestId("classics-wangqi-document-qa-ai-generate-button").click();
         await expect(page.getByText("问答任务已完成")).toBeVisible();
         await expect(page.getByLabel("问答问题 1")).toHaveValue("王圻是谁？");
