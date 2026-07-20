@@ -372,27 +372,32 @@ export const SearchStatisticsPage = () => {
                                 size={12}
                                 style={{ width: "100%" }}
                             >
-                                <KuzhambuSpace className="search-statistics-summary-filter" wrap>
-                                    <label>
-                                        <Text type="secondary">起始时间</Text>
-                                        <RangePicker
-                                            aria-label="统计时间范围"
-                                            format={DATE_TIME_FORMAT}
-                                            showTime
-                                            value={summaryDateRange}
-                                            onChange={(value) => setSummaryDateRange(value)}
-                                        />
-                                    </label>
-                                    <KuzhambuButton
-                                        ariaLabel="统计"
-                                        testId="discovery-search-statistics-search-statistics-action-button"
-                                        loading={analysisQuery.isFetching}
-                                        onClick={refreshSummary}
-                                        type="primary"
+                                <Card size="small">
+                                    <KuzhambuSpace
+                                        className="search-statistics-summary-filter"
+                                        wrap
                                     >
-                                        统计
-                                    </KuzhambuButton>
-                                </KuzhambuSpace>
+                                        <label>
+                                            <Text type="secondary">起始时间</Text>
+                                            <RangePicker
+                                                aria-label="统计时间范围"
+                                                format={DATE_TIME_FORMAT}
+                                                showTime
+                                                value={summaryDateRange}
+                                                onChange={(value) => setSummaryDateRange(value)}
+                                            />
+                                        </label>
+                                        <KuzhambuButton
+                                            ariaLabel="统计"
+                                            testId="discovery-search-statistics-search-statistics-action-button"
+                                            loading={analysisQuery.isFetching}
+                                            onClick={refreshSummary}
+                                            type="primary"
+                                        >
+                                            统计
+                                        </KuzhambuButton>
+                                    </KuzhambuSpace>
+                                </Card>
                                 <div className="search-statistics-summary-metrics">
                                     {summaryMetrics.map((metric) => (
                                         <article
@@ -456,12 +461,8 @@ export const SearchStatisticsPage = () => {
                     ) : null}
 
                     {activePanel === "records" ? (
-                        <Card size="small">
-                            <KuzhambuSpace
-                                orientation="vertical"
-                                size={12}
-                                style={{ width: "100%" }}
-                            >
+                        <>
+                            <Card className="search-statistics-record-filter-card" size="small">
                                 <KuzhambuSpace
                                     className="search-statistics-record-filter-form"
                                     wrap
@@ -473,7 +474,7 @@ export const SearchStatisticsPage = () => {
                                             aria-label="搜索词"
                                             value={queryText}
                                             onChange={(event) => setQueryText(event.target.value)}
-                                            style={{ width: 180 }}
+                                            style={{ width: 160 }}
                                         />
                                     </label>
                                     <label>
@@ -485,7 +486,7 @@ export const SearchStatisticsPage = () => {
                                             onChange={(event) =>
                                                 setSearchStatuses(event.target.value)
                                             }
-                                            style={{ width: 160 }}
+                                            style={{ width: 136 }}
                                         />
                                     </label>
                                     <label>
@@ -515,43 +516,51 @@ export const SearchStatisticsPage = () => {
                                         重置
                                     </KuzhambuButton>
                                 </KuzhambuSpace>
+                            </Card>
 
-                                <Table
-                                    aria-label="检索记录表格"
-                                    columns={pageColumns}
-                                    dataSource={pageResult?.records ?? []}
-                                    expandable={{
-                                        expandedRowKeys,
-                                        expandedRowRender: renderRecordDetail,
-                                        onExpand: expandRecord
-                                    }}
-                                    loading={pageMutation.isPending}
-                                    pagination={{
-                                        current: currentPageNo,
-                                        pageSize: currentPageSize,
-                                        total: totalCount,
-                                        showSizeChanger: true,
-                                        showTotal: (total) => `共 ${total} 条`,
-                                        onChange: (nextPageNo, nextPageSize) => {
-                                            loadEventPage(
-                                                buildEventQuery({
-                                                    pageNo: nextPageNo,
-                                                    pageSize: nextPageSize
-                                                })
-                                            );
-                                        }
-                                    }}
-                                    rowKey={readRecordKey}
-                                    size="small"
-                                    scroll={{ x: 1120 }}
-                                />
-                                <Text type="secondary">
-                                    {pageResult
-                                        ? `共 ${pageResult.count ?? pageResult.totalCount ?? 0} 条记录`
-                                        : "暂无检索记录。"}
-                                </Text>
-                            </KuzhambuSpace>
-                        </Card>
+                            <Card className="search-statistics-record-table-card" size="small">
+                                <KuzhambuSpace
+                                    orientation="vertical"
+                                    size={12}
+                                    style={{ width: "100%" }}
+                                >
+                                    <Table
+                                        aria-label="检索记录表格"
+                                        columns={pageColumns}
+                                        dataSource={pageResult?.records ?? []}
+                                        expandable={{
+                                            expandedRowKeys,
+                                            expandedRowRender: renderRecordDetail,
+                                            onExpand: expandRecord
+                                        }}
+                                        loading={pageMutation.isPending}
+                                        pagination={{
+                                            current: currentPageNo,
+                                            pageSize: currentPageSize,
+                                            total: totalCount,
+                                            showSizeChanger: true,
+                                            showTotal: (total) => `共 ${total} 条`,
+                                            onChange: (nextPageNo, nextPageSize) => {
+                                                loadEventPage(
+                                                    buildEventQuery({
+                                                        pageNo: nextPageNo,
+                                                        pageSize: nextPageSize
+                                                    })
+                                                );
+                                            }
+                                        }}
+                                        rowKey={readRecordKey}
+                                        size="small"
+                                        scroll={{ x: 1120 }}
+                                    />
+                                    <Text type="secondary">
+                                        {pageResult
+                                            ? `共 ${pageResult.count ?? pageResult.totalCount ?? 0} 条记录`
+                                            : "暂无检索记录。"}
+                                    </Text>
+                                </KuzhambuSpace>
+                            </Card>
+                        </>
                     ) : null}
 
                     {activePanel === "rebuild" ? (
