@@ -36,7 +36,7 @@
 | --- | --- | --- | --- |
 | Search | 跨库搜索 | 已完成 | 固定覆盖 Classics 三类内容源 |
 | Search | 分组、排序、高亮、筛选 | 已完成 | Portal 展示和后端查询字段已对齐 |
-| Search | 权限过滤 | 已完成 | PUBLIC 匿名可见，非公开内容按 System 权限裁剪 |
+| Search | 权限过滤 | 已完成 | Discovery 搜索索引只承载 PUBLIC 内容，非公开内容不进入检索读模型 |
 | Search | 日志、点击、分析 | 已完成 | 检索统计事件、点击事件和 Admin summary 已接通 |
 | Search | 增量同步 | 已完成 | afterCommit 发 MQ，Discovery 消费端按版本幂等更新 |
 | Query | 查询理解、清洗、改写 | 已完成 | AI 调度和结果落库已接通 |

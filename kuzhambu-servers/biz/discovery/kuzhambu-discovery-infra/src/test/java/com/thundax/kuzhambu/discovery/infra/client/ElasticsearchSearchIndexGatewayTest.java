@@ -251,7 +251,7 @@ class ElasticsearchSearchIndexGatewayTest {
     }
 
     @Test
-    void previewShouldApplyContentIdentityAndDeletedCriteriaOnly() {
+    void previewShouldApplyPublicVisibilityCriteria() {
         DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
         ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
         @SuppressWarnings("unchecked")
@@ -278,7 +278,7 @@ class ElasticsearchSearchIndexGatewayTest {
         assertEquals("正文", preview.getBodyText());
         assertTrue(fieldNames.contains("contentType"));
         assertTrue(fieldNames.contains("contentId"));
-        assertFalse(fieldNames.contains("visibility"));
+        assertTrue(fieldNames.contains("visibility"));
         assertFalse(fieldNames.contains("knowledgeBase"));
         assertTrue(fieldNames.contains("deleted"));
     }
@@ -364,6 +364,54 @@ class ElasticsearchSearchIndexGatewayTest {
 
         verify(operations)
                 .save(any(List.class), any(org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.class));
+    }
+
+    @Test
+    void rebuildIndexShouldOnlySavePublicDocuments() {
+        DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
+        ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
+        IndexOperations indexOperations = mock(IndexOperations.class);
+        ArgumentCaptor<List<DiscoverySearchDocument>> documentsCaptor = ArgumentCaptor.forClass(List.class);
+        when(operations.indexOps(any(org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.class)))
+                .thenReturn(indexOperations);
+        when(indexOperations.exists()).thenReturn(false);
+        when(indexOperations.create()).thenReturn(true);
+        when(indexOperations.createMapping(DiscoverySearchDocument.class)).thenReturn(Document.create());
+        when(indexOperations.putMapping(any(Document.class))).thenReturn(true);
+        ElasticsearchSearchIndexGateway gateway =
+                new ElasticsearchSearchIndexGateway(properties, operations, new DiscoverySearchDocumentAssembler());
+
+        gateway.rebuildIndex(List.of(sourceContent("1001", "PUBLIC"), sourceContent("1002", "PRIVATE")));
+
+        verify(operations)
+                .save(
+                        documentsCaptor.capture(),
+                        any(org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.class));
+        assertEquals(1, documentsCaptor.getValue().size());
+        assertEquals("1001", documentsCaptor.getValue().get(0).getContentId());
+        assertEquals("PUBLIC", documentsCaptor.getValue().get(0).getVisibility());
+    }
+
+    @Test
+    void upsertDocumentsShouldDeleteNonPublicDocumentsAndSavePublicDocumentsOnly() {
+        DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
+        ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
+        ArgumentCaptor<List<DiscoverySearchDocument>> documentsCaptor = ArgumentCaptor.forClass(List.class);
+        ElasticsearchSearchIndexGateway gateway =
+                new ElasticsearchSearchIndexGateway(properties, operations, new DiscoverySearchDocumentAssembler());
+
+        gateway.upsertDocuments(List.of(sourceContent("1001", "PUBLIC"), sourceContent("1002", "PRIVATE")));
+
+        verify(operations)
+                .delete(
+                        eq("SANCAI_ENTRY:1002"),
+                        any(org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.class));
+        verify(operations)
+                .save(
+                        documentsCaptor.capture(),
+                        any(org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.class));
+        assertEquals(1, documentsCaptor.getValue().size());
+        assertEquals("1001", documentsCaptor.getValue().get(0).getContentId());
     }
 
     @Test
@@ -458,5 +506,24 @@ class ElasticsearchSearchIndexGatewayTest {
                 false,
                 null,
                 "/classics/sancai/" + contentId);
+    }
+
+    private SearchSourceContent sourceContent(String contentId, String visibility) {
+        return new SearchSourceContent(
+                "CLASSICS",
+                "SANCAI_ENTRY",
+                contentId,
+                "SANCAI_ENTRY",
+                "11",
+                "天文",
+                "黄帝",
+                "摘要",
+                List.of("正文"),
+                List.of(),
+                "PUBLISHED",
+                visibility,
+                3,
+                null,
+                null);
     }
 }

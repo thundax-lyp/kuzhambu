@@ -42,6 +42,7 @@ import org.springframework.stereotype.Service;
 public class SearchApplicationServiceImpl implements SearchApplicationService {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final String PUBLIC_VISIBILITY = "PUBLIC";
 
     private final SearchEventRepository searchEventRepository;
     private final SearchClickEventRepository searchClickEventRepository;
@@ -282,7 +283,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
                 query.getCategoryCodes(),
                 query.getTagNames(),
                 query.getContentStatuses(),
-                query.getVisibilityScopes(),
+                List.of(PUBLIC_VISIBILITY),
                 Collections.emptyList(),
                 query.getDateFrom(),
                 query.getDateTo());
@@ -359,6 +360,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
         if (query.getQueryText() == null) {
             query.setQueryText("");
         }
+        query.setVisibilityScopes(List.of(PUBLIC_VISIBILITY));
     }
 
     private void validatePreviewQuery(SearchPreviewQuery query) {

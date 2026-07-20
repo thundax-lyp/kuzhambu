@@ -264,7 +264,7 @@ class SearchApplicationServiceImplTest {
     }
 
     @Test
-    void searchShouldFilterPrivateResultsForAnonymousOperator() {
+    void searchShouldForcePublicScopeForAnonymousOperator() {
         SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
         SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
         SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
@@ -308,7 +308,7 @@ class SearchApplicationServiceImplTest {
         assertEquals("1001", result.getGroups().get(0).getItems().get(0).getContentId());
         ArgumentCaptor<SearchScope> scopeCaptor = ArgumentCaptor.forClass(SearchScope.class);
         verify(searchIndexGateway).search(any(), scopeCaptor.capture(), any(Integer.class), any(Integer.class));
-        assertEquals(List.of("PUBLIC", "PRIVATE"), scopeCaptor.getValue().getVisibilityScopes());
+        assertEquals(List.of("PUBLIC"), scopeCaptor.getValue().getVisibilityScopes());
         assertTrue(scopeCaptor.getValue().getPrivateKnowledgeBases().isEmpty());
     }
 

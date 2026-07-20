@@ -22,6 +22,7 @@ import java.util.UUID;
 
 public final class DiscoverySearchPortalInterfaceAssembler {
 
+    private static final List<String> PUBLIC_VISIBILITY_SCOPE = List.of("PUBLIC");
     private static final String PORTAL_OPERATOR_TYPE = "ANONYMOUS";
 
     private DiscoverySearchPortalInterfaceAssembler() {}
@@ -36,7 +37,7 @@ public final class DiscoverySearchPortalInterfaceAssembler {
                 request.getCategoryCodes(),
                 request.getTagNames(),
                 request.getContentStatuses(),
-                request.getVisibilityScopes(),
+                PUBLIC_VISIBILITY_SCOPE,
                 parseDate(request.getDateFrom()),
                 parseDate(request.getDateTo()),
                 request.getPageNo() == null ? 1 : request.getPageNo(),

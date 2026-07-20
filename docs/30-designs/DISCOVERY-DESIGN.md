@@ -82,6 +82,7 @@ Discovery 拥有搜索查询、检索统计事件、问答会话、问答消息�
 当前规则：
 
 - 索引文档是派生读模型，不承载业务真相。
+- 搜索索引只承载 `visibility = PUBLIC` 的内容；非 `PUBLIC` 内容不得写入索引，增量同步遇到非 `PUBLIC` 内容时必须移除既有索引文档。
 - `sourceVersionNo` 固定使用 Classics 内容表上的 `currentVersionNo`。
 - `DELETE` 不做物理删除，而是先写入删除态；物理清理由计划任务按保留期清理。
 

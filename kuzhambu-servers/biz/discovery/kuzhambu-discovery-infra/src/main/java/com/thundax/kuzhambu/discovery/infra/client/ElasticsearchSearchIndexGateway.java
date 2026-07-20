@@ -29,6 +29,7 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
 
     private static final int HIGHLIGHT_CONTEXT_LENGTH = 60;
     private static final int FALLBACK_LENGTH = 160;
+    private static final String PUBLIC_VISIBILITY = "PUBLIC";
 
     private final DiscoverySearchIndexProperties properties;
     private final ElasticsearchOperations elasticsearchOperations;
@@ -69,6 +70,7 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
     public SearchPreviewResult getPreview(String contentType, String contentId) {
         ElasticsearchOperations operations = requireOperations("preview");
         Criteria criteria = new Criteria("contentType").is(contentType).and(new Criteria("contentId").is(contentId));
+        criteria = appendPublicVisibilityFilter(criteria);
         criteria = criteria.and(new Criteria("deleted").is(false));
         CriteriaQuery query = new CriteriaQuery(criteria);
         query.setPageable(PageRequest.of(0, 1));
@@ -92,13 +94,15 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
         }
         indexOperations.create();
         indexOperations.putMapping(indexOperations.createMapping(DiscoverySearchDocument.class));
-        saveDocuments(operations, toDocuments(sourceContents));
+        saveDocuments(operations, toPublicDocuments(sourceContents));
     }
 
     @Override
     public void upsertDocuments(List<SearchSourceContent> sourceContents) {
         ElasticsearchOperations operations = requireOperations("upsert");
-        saveDocuments(operations, toDocuments(sourceContents));
+        List<DiscoverySearchDocument> documents = toDocuments(sourceContents);
+        deleteNonPublicDocuments(operations, documents);
+        saveDocuments(operations, publicDocuments(documents));
     }
 
     @Override
@@ -181,6 +185,33 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
         return documents;
     }
 
+    private List<DiscoverySearchDocument> toPublicDocuments(List<SearchSourceContent> sourceContents) {
+        return publicDocuments(toDocuments(sourceContents));
+    }
+
+    private List<DiscoverySearchDocument> publicDocuments(List<DiscoverySearchDocument> documents) {
+        if (documents == null || documents.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return documents.stream().filter(this::isPublicDocument).toList();
+    }
+
+    private void deleteNonPublicDocuments(ElasticsearchOperations operations, List<DiscoverySearchDocument> documents) {
+        if (documents == null || documents.isEmpty()) {
+            return;
+        }
+        for (DiscoverySearchDocument document : documents) {
+            if (isPublicDocument(document) || document.getDocumentId() == null) {
+                continue;
+            }
+            operations.delete(document.getDocumentId(), indexCoordinates());
+        }
+    }
+
+    private boolean isPublicDocument(DiscoverySearchDocument document) {
+        return document != null && PUBLIC_VISIBILITY.equalsIgnoreCase(document.getVisibility());
+    }
+
     private void saveDocuments(ElasticsearchOperations operations, List<DiscoverySearchDocument> documents) {
         if (documents.isEmpty()) {
             return;
@@ -195,13 +226,14 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
     private Criteria buildCriteria(String keyword, SearchScope searchScope) {
         Criteria criteria = baseKeywordCriteria(keyword);
         if (searchScope == null) {
+            criteria = appendPublicVisibilityFilter(criteria);
             return criteria.and(new Criteria("deleted").is(false));
         }
         criteria = appendInFilter(criteria, "knowledgeBase", searchScope.getKnowledgeBases());
         criteria = appendInFilter(criteria, "categoryCode", searchScope.getCategoryCodes());
         criteria = appendInFilter(criteria, "tagNames", searchScope.getTagNames());
         criteria = appendInFilter(criteria, "status", searchScope.getContentStatuses());
-        criteria = appendVisibilityPermissionFilter(criteria, searchScope);
+        criteria = appendPublicVisibilityFilter(criteria);
         criteria = criteria.and(new Criteria("deleted").is(false));
         if (searchScope.getDateFrom() != null) {
             criteria = criteria.and(new Criteria("updatedAt")
@@ -238,12 +270,8 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
         return criteria.and(new Criteria(fieldName).in(filteredValues.toArray()));
     }
 
-    private Criteria appendVisibilityPermissionFilter(Criteria criteria, SearchScope searchScope) {
-        List<String> visibilityScopes = normalizedValues(searchScope.getVisibilityScopes());
-        if (visibilityScopes.isEmpty()) {
-            return criteria;
-        }
-        return criteria.and(new Criteria("visibility").in(visibilityScopes.toArray()));
+    private Criteria appendPublicVisibilityFilter(Criteria criteria) {
+        return criteria.and(new Criteria("visibility").is(PUBLIC_VISIBILITY));
     }
 
     private List<String> normalizedValues(List<String> values) {
