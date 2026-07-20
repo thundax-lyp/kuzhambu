@@ -121,14 +121,12 @@ public class StorageObjectController {
     @SysLogger(value = "排序")
     @PostMapping(value = "sort")
     public Boolean sort(@Valid @RequestBody StorageSortRequest request) {
-        storageApplicationService.sort(new StorageSortCommand(
-                RequestListHelper.map(
-                        RequestListHelper.presentUnique(
-                                request == null ? null : request.getOrderedIds(),
-                                "orderedIds",
-                                AdminResponseExceptions::invalidParameter),
-                        StoredObjectIdCodec::toDomain),
-                request == null ? null : request.getSortDirection()));
+        storageApplicationService.sort(new StorageSortCommand(RequestListHelper.map(
+                RequestListHelper.presentUnique(
+                        request == null ? null : request.getOrderedIds(),
+                        "orderedIds",
+                        AdminResponseExceptions::invalidParameter),
+                StoredObjectIdCodec::toDomain)));
         return true;
     }
 
