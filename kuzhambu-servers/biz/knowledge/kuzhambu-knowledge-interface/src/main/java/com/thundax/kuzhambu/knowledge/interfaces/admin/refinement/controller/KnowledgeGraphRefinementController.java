@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@Tag(name = "知识模块-图谱精修", description = "知识图谱精修工作台")
+@Tag(name = "知识模块-图谱精修", description = "知识图谱工作台")
 @SysLogger(module = {"知识", "图谱精修"})
 @RequestMapping("/api/knowledge/refinement")
 @WrappedApiController
