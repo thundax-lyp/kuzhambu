@@ -46,7 +46,7 @@ public final class ApiSurfaceArchitectureRuleSupport {
                     .forEach(path -> collectSortRequestFieldViolations(root, path, violations));
         }
 
-        assertTrue("Sort requests must only expose orderedIds and sortDirection: " + violations, violations.isEmpty());
+        assertTrue("Sort requests must only expose orderedIds: " + violations, violations.isEmpty());
     }
 
     public static void assertSortRequestsAreAllowed(Path sourceRoot, Collection<String> allowedRequestNames)
@@ -80,7 +80,11 @@ public final class ApiSurfaceArchitectureRuleSupport {
     private static boolean isRequestOrResponseSource(Path path) {
         String normalized = ArchitectureSourceSupport.normalizePath(path);
         return path.getFileName().toString().endsWith(".java")
-                && (normalized.contains("/controller/request/") || normalized.contains("/controller/response/"));
+                && normalized.contains("-interface/src/main/java/")
+                && (path.getFileName().toString().contains("Request")
+                        || path.getFileName().toString().contains("Response")
+                        || normalized.contains("/controller/request/")
+                        || normalized.contains("/controller/response/"));
     }
 
     private static void collectPriorityExposureViolations(Path root, Path path, List<String> violations) {
@@ -95,9 +99,7 @@ public final class ApiSurfaceArchitectureRuleSupport {
         Matcher matcher = FIELD_PATTERN.matcher(content);
         while (matcher.find()) {
             String fieldName = matcher.group(1);
-            if (!"orderedIds".equals(fieldName)
-                    && !"sortDirection".equals(fieldName)
-                    && !"serialVersionUID".equals(fieldName)) {
+            if (!"orderedIds".equals(fieldName) && !"serialVersionUID".equals(fieldName)) {
                 violations.add(ArchitectureSourceSupport.repositoryPath(root, path) + " field=" + fieldName);
             }
         }

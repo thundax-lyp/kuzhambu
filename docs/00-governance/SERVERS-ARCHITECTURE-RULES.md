@@ -92,6 +92,8 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 - `SERVERS_INTERFACE_ENTRY_PACKAGE`：后台 HTTP 入口必须位于 `interfaces/admin/<subdomain>/controller/` 包，前台 HTTP 入口必须位于 `interfaces/portal/<subdomain>/controller/` 包。
 - `SERVERS_INTERFACE_REQUEST_RESPONSE_LOCAL`：`interfaces.admin.<subdomain>` 下的 Controller 只能使用同一子域的 `controller.request`、`controller.response` 和 `assembler` 模型；`interfaces.portal.<subdomain>` 同理，公共协议模型必须先提升到 application 或 common 明确包。
 - `SERVERS_INTERFACE_NO_DOMAIN_MODEL_EXPOSE`：接口层 `Controller` 方法签名和 `Response` 字段不得直接暴露 `domain.{domain}.model` 类型。
+- `SERVERS_INTERFACE_NO_PRIORITY_PROTOCOL_FIELD`：业务域 `*-interface` 模块内 `*Request` / `*Response` 协议模型不得声明或序列化 `priority` 字段；`priority` 是后端内部排序权重，不属于对外 API 契约。
+- `SERVERS_INTERFACE_SORT_REQUEST_ORDERED_IDS_ONLY`：接口层 `*SortRequest` 只能接收 `orderedIds`；排序接口不得接收 `priority`、`sortDirection` 或业务作用域字段，后端根据 ID 列表读取当前集合并交换内部 `priority`。
 - `SERVERS_STARTER_NO_CONTROLLER`：`starter` 模块不得定义业务 `Controller`。
 - `SERVERS_INTERFACE_OPENAPI_MODULE_GROUP`：OpenAPI 文档必须按业务 module 注册 `GroupedOpenApi` 分组，并使用 `addOpenApiMethodFilter` 根据接口方法声明类所属包归组；不得把多个业务 module 混入同一个默认分组。
 

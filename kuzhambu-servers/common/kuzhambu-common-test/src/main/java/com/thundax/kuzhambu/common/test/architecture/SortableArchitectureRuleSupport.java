@@ -34,7 +34,7 @@ public final class SortableArchitectureRuleSupport {
                     .forEach(path -> collectSortCommandFieldViolations(root, path, violations));
         }
 
-        assertTrue("Sort commands must only expose orderedIds and sortDirection: " + violations, violations.isEmpty());
+        assertTrue("Sort commands must only expose orderedIds: " + violations, violations.isEmpty());
     }
 
     public static void assertSortMethodsAreTransactional(Path sourceRoot) throws IOException {
@@ -82,9 +82,7 @@ public final class SortableArchitectureRuleSupport {
         Matcher matcher = FIELD_PATTERN.matcher(content);
         while (matcher.find()) {
             String fieldName = matcher.group(1);
-            if (!"orderedIds".equals(fieldName)
-                    && !"sortDirection".equals(fieldName)
-                    && !"serialVersionUID".equals(fieldName)) {
+            if (!"orderedIds".equals(fieldName) && !"serialVersionUID".equals(fieldName)) {
                 violations.add(ArchitectureSourceSupport.repositoryPath(root, path) + " field=" + fieldName);
             }
         }
