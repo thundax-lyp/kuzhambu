@@ -156,9 +156,16 @@ const joinList = (values: string[]) => values.join(", ");
 
 const hasListValue = (value: string, token: string) => splitList(value).includes(token);
 
-const normalizeResultTargetPath = (targetPath?: string | null) => {
+const normalizeResultTargetPath = (
+    targetPath?: string | null,
+    contentType?: string | null,
+    contentId?: number | string | null
+) => {
     const trimmedPath = targetPath?.trim();
     if (!trimmedPath) {
+        if (contentType === "SANCAI_ENTRY" && contentId) {
+            return `/discovery/search-item?type=SANCAI_ENTRY&id=${encodeURIComponent(String(contentId))}`;
+        }
         return null;
     }
 
@@ -166,13 +173,17 @@ const normalizeResultTargetPath = (targetPath?: string | null) => {
         const baseUrl = "http://portal.local";
         const url = new URL(trimmedPath, baseUrl);
         const match = /^\/classics\/sancai\/([^/]+)$/u.exec(url.pathname);
-        if (url.origin !== baseUrl || !match) {
+        if (url.origin !== baseUrl) {
             return trimmedPath;
         }
 
-        url.pathname = "/classics/sancai";
-        url.searchParams.set("id", decodeURIComponent(match[1]));
-        return `${url.pathname}${url.search}${url.hash}`;
+        if (match) {
+            return `/discovery/search-item?type=SANCAI_ENTRY&id=${encodeURIComponent(decodeURIComponent(match[1]))}`;
+        }
+        if (url.pathname === "/classics/sancai" && url.searchParams.get("id")) {
+            return `/discovery/search-item?type=SANCAI_ENTRY&id=${encodeURIComponent(url.searchParams.get("id") ?? "")}`;
+        }
+        return trimmedPath;
     } catch {
         return trimmedPath;
     }
@@ -594,7 +605,11 @@ export const DiscoverySearchPage = () => {
             void discoverySearchService.recordSearchClickEvent(command);
         }
 
-        const targetPath = normalizeResultTargetPath(item.targetPath);
+        const targetPath = normalizeResultTargetPath(
+            item.targetPath,
+            item.contentType,
+            item.contentId
+        );
         if (targetPath) {
             navigate(targetPath);
         }
@@ -754,10 +769,14 @@ export const DiscoverySearchPage = () => {
                                 const content = (
                                     <div className="portal-discovery-hit-body">
                                         <div className="portal-discovery-hit-title">
-                                            <p>
-                                                {toDisplayLabel(item.contentDomain, "其他来源")} ·{" "}
-                                                {toDisplayLabel(item.contentType, "其他类型")}
-                                            </p>
+                                            <div className="portal-discovery-hit-tags">
+                                                <span>
+                                                    {toDisplayLabel(item.contentDomain, "其他来源")}
+                                                </span>
+                                                <span>
+                                                    {toDisplayLabel(item.contentType, "其他类型")}
+                                                </span>
+                                            </div>
                                             <h3>
                                                 {renderQueryHighlight(
                                                     item.title || "未命名结果",

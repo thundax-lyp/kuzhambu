@@ -21,6 +21,17 @@ export interface SancaiEntryRecord {
     id: number;
     volumeId?: number | null;
     title?: string | null;
+    author?: string | null;
+    authorName?: string | null;
+    sourceTitle?: string | null;
+    bodyHtml?: string | null;
+    bodyMarkdown?: string | null;
+    summaryHtml?: string | null;
+    summaryMarkdown?: string | null;
+    originalHtml?: string | null;
+    originalMarkdown?: string | null;
+    translationHtml?: string | null;
+    translationMarkdown?: string | null;
     originalText?: string | null;
     translationText?: string | null;
     summary?: string | null;

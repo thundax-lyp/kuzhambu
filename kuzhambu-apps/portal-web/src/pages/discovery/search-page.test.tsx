@@ -343,7 +343,7 @@ describe("DiscoverySearchPage", () => {
         });
         await flushMutations();
 
-        expect(getLocation()).toBe("/classics/sancai?id=300000000001");
+        expect(getLocation()).toBe("/discovery/search-item?type=SANCAI_ENTRY&id=300000000001");
         expect(mocks.previewSearchResult).not.toHaveBeenCalled();
         const previewDialog = document.body.querySelector('[role="dialog"]');
         expect(previewDialog).toBeNull();
