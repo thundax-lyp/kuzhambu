@@ -358,6 +358,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         if (content == null) {
             return null;
         }
+        repository.lockContentForVersion(content.contentType(), content.contentId());
         if (!versioningService.needsVersion(content)) {
             return repository.latestVersion(content.contentType(), content.contentId());
         }
@@ -1451,6 +1452,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     }
 
     private ClassicsContentVersion createRestoredVersion(Versionable content, ClassicsContentVersion restoredFrom) {
+        repository.lockContentForVersion(content.contentType(), content.contentId());
         ClassicsContentVersion version = versioningService.newVersion(
                 content,
                 versioningService.nextVersionNo(repository.latestVersionNo(content.contentType(), content.contentId())),

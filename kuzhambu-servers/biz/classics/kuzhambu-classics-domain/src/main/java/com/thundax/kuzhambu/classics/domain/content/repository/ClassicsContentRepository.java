@@ -66,6 +66,8 @@ public interface ClassicsContentRepository {
         return version == null ? 0 : version.getVersionNo();
     }
 
+    default void lockContentForVersion(ClassicsContentType contentType, ClassicsContentId contentId) {}
+
     ClassicsContentVersionId insertVersion(ClassicsContentVersion version);
 
     ClassicsContentVersion getVersionById(ClassicsContentVersionId id);
