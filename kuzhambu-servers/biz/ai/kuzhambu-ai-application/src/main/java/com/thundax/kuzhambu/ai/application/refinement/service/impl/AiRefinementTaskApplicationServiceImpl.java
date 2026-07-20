@@ -44,6 +44,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     private static final String STATUS_PARTIAL = "PARTIAL";
     private static final String STATUS_CANCELLED = "CANCELLED";
     private static final int RESULT_PREVIEW_MAX_LENGTH = 500;
+    private static final int STREAM_EVENT_HISTORY_LIMIT = 100;
     private static final Duration STREAM_SUBSCRIBE_TIMEOUT = Duration.ofMinutes(10L);
 
     private final AiRefinementTaskRepository taskRepository;
@@ -122,7 +123,13 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         }
         TaskStreamHub hub = streamHubs.computeIfAbsent(taskId, ignored -> new TaskStreamHub());
         publishSnapshotIfTerminal(hub, task);
-        hub.subscribe(eventConsumer, STREAM_SUBSCRIBE_TIMEOUT);
+        try {
+            hub.subscribe(eventConsumer, STREAM_SUBSCRIBE_TIMEOUT);
+        } finally {
+            if (hub.hasTerminalEvent()) {
+                streamHubs.remove(taskId, hub);
+            }
+        }
     }
 
     @Override
@@ -138,7 +145,10 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
             return task;
         }
         task.markCancelled(Instant.now());
-        taskRepository.update(task);
+        if (taskRepository.updateWhenStatusIn(task, List.of(STATUS_PENDING, STATUS_RUNNING)) == 0) {
+            return getRequiredTask(taskId);
+        }
+        publishTerminalEvent(taskId, task, null);
         return task;
     }
 
@@ -157,7 +167,9 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
             return;
         }
         task.markRunning(Instant.now());
-        taskRepository.update(task);
+        if (taskRepository.updateWhenStatusIn(task, List.of(STATUS_PENDING)) == 0) {
+            return;
+        }
 
         AiCandidateResult result;
         try {
@@ -186,7 +198,13 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
             latestTask.setModelName(command.getModelName());
         }
         applyResult(latestTask, result);
-        taskRepository.update(latestTask);
+        if (taskRepository.updateWhenStatusIn(latestTask, List.of(STATUS_RUNNING)) == 0) {
+            AiRefinementTask finalTask = taskRepository.get(taskId);
+            if (finalTask != null && isTerminal(finalTask.getStatus())) {
+                publishTerminalEvent(taskId, finalTask, null);
+            }
+            return;
+        }
         publishTerminalEvent(taskId, latestTask, result);
     }
 
@@ -214,7 +232,9 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         task.setErrorMessage(exception.getMessage());
         task.setCompletedAt(Instant.now());
         task.setStatus(STATUS_FAILED);
-        taskRepository.update(task);
+        if (taskRepository.updateWhenStatusIn(task, List.of(STATUS_PENDING, STATUS_RUNNING)) == 0) {
+            return;
+        }
         publishTerminalEvent(
                 taskId,
                 task,
@@ -370,14 +390,17 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         }
         TaskStreamHub hub = streamHubs.computeIfAbsent(taskId, ignored -> new TaskStreamHub());
         if (hub.hasTerminalEvent()) {
+            streamHubs.remove(taskId, hub);
             return;
         }
         if (STATUS_SUCCEEDED.equals(task.getStatus())) {
             hub.publish(toCompletedEvent(task, result));
+            streamHubs.remove(taskId, hub);
             return;
         }
         if (isTerminal(task.getStatus())) {
             hub.publish(toErrorEvent(task));
+            streamHubs.remove(taskId, hub);
         }
     }
 
@@ -458,6 +481,9 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
             List<Consumer<AiStreamEventResult>> currentConsumers;
             synchronized (this) {
                 events.add(event);
+                if (events.size() > STREAM_EVENT_HISTORY_LIMIT) {
+                    events.remove(0);
+                }
                 if (event.isCompleted() || event.isError()) {
                     terminalEvent = true;
                     terminalLatch.countDown();
