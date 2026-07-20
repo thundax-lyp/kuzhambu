@@ -74,6 +74,7 @@ const SAMPLE_QUERIES = [
 
 const DEFAULT_PAGE_SIZE = "10";
 const PAGE_SIZE_OPTIONS = ["10", "20", "50"] as const;
+const SEARCH_ITEM_CONTENT_TYPES = new Set(["SANCAI_ENTRY", "WANGQI_DOCUMENT", "MING_CUSTOMS"]);
 
 interface SearchFormState {
     categoryCodes: string;
@@ -162,31 +163,46 @@ const normalizeResultTargetPath = (
     contentId?: number | string | null
 ) => {
     const trimmedPath = targetPath?.trim();
-    if (!trimmedPath) {
-        if (contentType === "SANCAI_ENTRY" && contentId) {
-            return `/discovery/search-item?type=SANCAI_ENTRY&id=${encodeURIComponent(String(contentId))}`;
-        }
-        return null;
-    }
+    if (trimmedPath) {
+        try {
+            const baseUrl = "http://portal.local";
+            const url = new URL(trimmedPath, baseUrl);
+            const sancaiMatch = /^\/classics\/sancai\/([^/]+)$/u.exec(url.pathname);
+            const wangqiMatch = /^\/classics\/wangqi\/([^/]+)$/u.exec(url.pathname);
+            const mingCustomsMatch = /^\/classics\/ming-customs\/([^/]+)$/u.exec(url.pathname);
+            if (url.origin !== baseUrl) {
+                return trimmedPath;
+            }
 
-    try {
-        const baseUrl = "http://portal.local";
-        const url = new URL(trimmedPath, baseUrl);
-        const match = /^\/classics\/sancai\/([^/]+)$/u.exec(url.pathname);
-        if (url.origin !== baseUrl) {
+            if (sancaiMatch) {
+                return `/discovery/search-item?type=SANCAI_ENTRY&id=${encodeURIComponent(decodeURIComponent(sancaiMatch[1]))}`;
+            }
+            if (url.pathname === "/classics/sancai" && url.searchParams.get("id")) {
+                return `/discovery/search-item?type=SANCAI_ENTRY&id=${encodeURIComponent(url.searchParams.get("id") ?? "")}`;
+            }
+            if (wangqiMatch) {
+                return `/discovery/search-item?type=WANGQI_DOCUMENT&id=${encodeURIComponent(decodeURIComponent(wangqiMatch[1]))}`;
+            }
+            if (url.pathname === "/classics/wangqi" && url.searchParams.get("id")) {
+                return `/discovery/search-item?type=WANGQI_DOCUMENT&id=${encodeURIComponent(url.searchParams.get("id") ?? "")}`;
+            }
+            if (mingCustomsMatch) {
+                return `/discovery/search-item?type=MING_CUSTOMS&id=${encodeURIComponent(decodeURIComponent(mingCustomsMatch[1]))}`;
+            }
+            if (url.pathname === "/classics/ming-customs" && url.searchParams.get("id")) {
+                return `/discovery/search-item?type=MING_CUSTOMS&id=${encodeURIComponent(url.searchParams.get("id") ?? "")}`;
+            }
+            return trimmedPath;
+        } catch {
             return trimmedPath;
         }
-
-        if (match) {
-            return `/discovery/search-item?type=SANCAI_ENTRY&id=${encodeURIComponent(decodeURIComponent(match[1]))}`;
-        }
-        if (url.pathname === "/classics/sancai" && url.searchParams.get("id")) {
-            return `/discovery/search-item?type=SANCAI_ENTRY&id=${encodeURIComponent(url.searchParams.get("id") ?? "")}`;
-        }
-        return trimmedPath;
-    } catch {
-        return trimmedPath;
     }
+
+    if (contentType && SEARCH_ITEM_CONTENT_TYPES.has(contentType) && contentId) {
+        return `/discovery/search-item?type=${encodeURIComponent(contentType)}&id=${encodeURIComponent(String(contentId))}`;
+    }
+
+    return null;
 };
 
 const toIsoStartOfDay = (value: string) => {

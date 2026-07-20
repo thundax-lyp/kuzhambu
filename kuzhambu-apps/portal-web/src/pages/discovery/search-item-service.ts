@@ -1,15 +1,21 @@
 import { buildApiUrl, postJson } from "@/api/http";
 import type { SancaiEntryRecord } from "@/pages/classics/sancai-types";
+import type { DiscoverySearchPreviewResponse } from "./search-types";
 
-export type DiscoverySearchItemType = "SANCAI_ENTRY";
+export type DiscoverySearchItemType = "SANCAI_ENTRY" | "WANGQI_DOCUMENT" | "MING_CUSTOMS";
 
-export interface DiscoverySearchItemModel {
-    entry: SancaiEntryRecord;
-    type: DiscoverySearchItemType;
-}
+export type DiscoverySearchItemModel =
+    | {
+          entry: SancaiEntryRecord;
+          type: "SANCAI_ENTRY";
+      }
+    | {
+          preview: DiscoverySearchPreviewResponse;
+          type: "WANGQI_DOCUMENT" | "MING_CUSTOMS";
+      };
 
 export const isDiscoverySearchItemType = (value: string | null): value is DiscoverySearchItemType =>
-    value === "SANCAI_ENTRY";
+    value === "SANCAI_ENTRY" || value === "WANGQI_DOCUMENT" || value === "MING_CUSTOMS";
 
 export const getSearchItem = async (
     type: DiscoverySearchItemType,
@@ -21,7 +27,20 @@ export const getSearchItem = async (
                 entry: await getSancaiEntry(id),
                 type
             };
+        case "WANGQI_DOCUMENT":
+        case "MING_CUSTOMS":
+            return {
+                preview: await getSearchPreview(type, id),
+                type
+            };
     }
+};
+
+const getSearchPreview = (type: Exclude<DiscoverySearchItemType, "SANCAI_ENTRY">, id: number) => {
+    return postJson<DiscoverySearchPreviewResponse>("/portal/discovery/search/preview", {
+        contentId: String(id),
+        contentType: type
+    });
 };
 
 const getSancaiEntry = (id: number) => {

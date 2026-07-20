@@ -353,6 +353,100 @@ describe("DiscoverySearchPage", () => {
         });
     });
 
+    it("normalizes Wangqi document result clicks into the unified item page", async () => {
+        mocks.searchDiscovery.mockResolvedValueOnce({
+            displayQueryText: "王圻",
+            groupCount: 1,
+            groups: [
+                {
+                    count: 1,
+                    groupKey: "WANGQI_DOCUMENT",
+                    groupTitle: "王圻文档",
+                    items: [
+                        {
+                            contentDomain: "CLASSICS",
+                            contentId: "5",
+                            contentType: "WANGQI_DOCUMENT",
+                            groupRank: 1,
+                            highlightText: "王圻文档摘要",
+                            resultRank: 1,
+                            summary: "王圻文档摘要",
+                            targetPath: "/classics/wangqi/5",
+                            title: "王圻文档"
+                        }
+                    ]
+                }
+            ],
+            queryText: "王圻",
+            searchEventId: "EVT-1009",
+            totalCount: 1
+        });
+
+        const { container, getLocation, root } = renderPage(
+            "/discovery/search?q=%E7%8E%8B%E5%9C%BB"
+        );
+        await flushMutations();
+        const resultButton = getResultButton(container, "王圻文档");
+
+        await act(async () => {
+            resultButton?.click();
+        });
+        await flushMutations();
+
+        expect(getLocation()).toBe("/discovery/search-item?type=WANGQI_DOCUMENT&id=5");
+
+        act(() => {
+            root.unmount();
+        });
+    });
+
+    it("normalizes Ming customs result clicks into the unified item page", async () => {
+        mocks.searchDiscovery.mockResolvedValueOnce({
+            displayQueryText: "节令",
+            groupCount: 1,
+            groups: [
+                {
+                    count: 1,
+                    groupKey: "MING_CUSTOMS",
+                    groupTitle: "明代习俗",
+                    items: [
+                        {
+                            contentDomain: "CLASSICS",
+                            contentId: "3001",
+                            contentType: "MING_CUSTOMS",
+                            groupRank: 1,
+                            highlightText: "明代习俗摘要",
+                            resultRank: 1,
+                            summary: "明代习俗摘要",
+                            targetPath: "/classics/ming-customs/3001",
+                            title: "元旦朝贺"
+                        }
+                    ]
+                }
+            ],
+            queryText: "节令",
+            searchEventId: "EVT-1010",
+            totalCount: 1
+        });
+
+        const { container, getLocation, root } = renderPage(
+            "/discovery/search?q=%E8%8A%82%E4%BB%A4"
+        );
+        await flushMutations();
+        const resultButton = getResultButton(container, "元旦朝贺");
+
+        await act(async () => {
+            resultButton?.click();
+        });
+        await flushMutations();
+
+        expect(getLocation()).toBe("/discovery/search-item?type=MING_CUSTOMS&id=3001");
+
+        act(() => {
+            root.unmount();
+        });
+    });
+
     it("restores search form from url state and searches automatically", async () => {
         mocks.searchDiscovery.mockResolvedValueOnce({
             displayQueryText: "礼器",

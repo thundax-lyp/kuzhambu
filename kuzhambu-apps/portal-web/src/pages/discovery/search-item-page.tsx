@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import type { SancaiEntryRecord } from "@/pages/classics/sancai-types";
 import * as searchItemService from "./search-item-service";
 import type { DiscoverySearchItemModel, DiscoverySearchItemType } from "./search-item-service";
+import type { DiscoverySearchPreviewResponse } from "./search-types";
 
 import "./search-item-page.css";
 
@@ -24,6 +25,45 @@ const readTitle = (entry: SancaiEntryRecord) => entry.title?.trim() || `条目 $
 const readAuthor = (entry: SancaiEntryRecord) => entry.authorName?.trim() || entry.author?.trim();
 
 const readSourceTitle = (entry: SancaiEntryRecord) => entry.sourceTitle?.trim() || "三才图会";
+
+const SEARCH_ITEM_TYPE_LABELS: Record<DiscoverySearchItemType, string> = {
+    MING_CUSTOMS: "明代习俗",
+    SANCAI_ENTRY: "三才图会",
+    WANGQI_DOCUMENT: "王圻文档"
+};
+
+const INTERNAL_TAG_LABELS: Record<string, string> = {
+    FESTIVAL: "岁时节令",
+    RITUAL: "礼制"
+};
+
+const hasChineseText = (value: string) => /[\u3400-\u9fff]/u.test(value);
+
+const isInternalCode = (value: string) => /^[A-Z][A-Z0-9_/-]*$/u.test(value);
+
+const readDisplayTagName = (value?: string | null) => {
+    const tagName = value?.trim();
+    if (!tagName) {
+        return null;
+    }
+    if (INTERNAL_TAG_LABELS[tagName]) {
+        return INTERNAL_TAG_LABELS[tagName];
+    }
+    if (hasChineseText(tagName)) {
+        return tagName;
+    }
+    return isInternalCode(tagName) ? null : tagName;
+};
+
+const readModelTitle = (model: DiscoverySearchItemModel) => {
+    switch (model.type) {
+        case "SANCAI_ENTRY":
+            return readTitle(model.entry);
+        case "WANGQI_DOCUMENT":
+        case "MING_CUSTOMS":
+            return model.preview.title?.trim() || `条目 ${model.preview.contentId ?? ""}`.trim();
+    }
+};
 
 const escapeHtml = (value: string) =>
     value
@@ -140,7 +180,57 @@ const renderSearchItem = (model: DiscoverySearchItemModel) => {
     switch (model.type) {
         case "SANCAI_ENTRY":
             return <SancaiEntryRenderer entry={model.entry} />;
+        case "WANGQI_DOCUMENT":
+        case "MING_CUSTOMS":
+            return <SearchPreviewRenderer preview={model.preview} type={model.type} />;
     }
+};
+
+const SearchPreviewRenderer = ({
+    preview,
+    type
+}: {
+    preview: DiscoverySearchPreviewResponse;
+    type: Exclude<DiscoverySearchItemType, "SANCAI_ENTRY">;
+}) => {
+    const metaLabel =
+        readDisplayTagName(preview.categoryName) ?? readDisplayTagName(preview.categoryCode);
+    const tagNames = Array.from(
+        new Set(
+            (preview.tagNames ?? [])
+                .map((tagName) => readDisplayTagName(tagName))
+                .filter((tagName): tagName is string => Boolean(tagName))
+                .filter((tagName) => tagName !== metaLabel)
+        )
+    );
+
+    return (
+        <article className="discovery-search-item-article">
+            <div className="discovery-search-item-tags discovery-search-item-tags--meta">
+                <span className="discovery-search-item-tag discovery-search-item-tag--source">
+                    {SEARCH_ITEM_TYPE_LABELS[type]}
+                </span>
+                {metaLabel ? (
+                    <span className="discovery-search-item-tag discovery-search-item-tag--meta">
+                        {metaLabel}
+                    </span>
+                ) : null}
+            </div>
+
+            {tagNames.length ? (
+                <div className="discovery-search-item-tags" aria-label="内容标签">
+                    {tagNames.map((tagName) => (
+                        <span key={tagName} className="discovery-search-item-tag">
+                            {tagName}
+                        </span>
+                    ))}
+                </div>
+            ) : null}
+
+            <RichTextSection text={preview.summary} title="提要" />
+            <RichTextSection markdown={preview.bodyText} text={preview.bodyText} title="正文" />
+        </article>
+    );
 };
 
 const SancaiEntryRenderer = ({ entry }: { entry: SancaiEntryRecord }) => {
@@ -223,7 +313,7 @@ export const DiscoverySearchItemPage = () => {
                 <div className="discovery-search-item-heading">
                     <FileText size={22} />
                     <div>
-                        <h1>{item ? readTitle(item.entry) : "内容详情"}</h1>
+                        <h1>{item ? readModelTitle(item) : "内容详情"}</h1>
                     </div>
                 </div>
 

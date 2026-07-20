@@ -44,6 +44,30 @@ const installFetchMock = () => {
             });
         }
 
+        if (url.includes("/portal/discovery/search/preview")) {
+            if (body.contentType === "WANGQI_DOCUMENT") {
+                return apiResponse({
+                    bodyText: "王圻文档正文应该展示",
+                    categoryName: "王圻文档",
+                    contentId: String(body.contentId),
+                    contentType: "WANGQI_DOCUMENT",
+                    summary: "王圻文档摘要应该展示",
+                    tagNames: ["王圻", "明代"],
+                    title: "王圻与张居正"
+                });
+            }
+
+            return apiResponse({
+                bodyText: "明代习俗正文应该展示",
+                categoryCode: "RITUAL",
+                contentId: String(body.contentId),
+                contentType: "MING_CUSTOMS",
+                summary: "明代习俗摘要应该展示",
+                tagNames: ["RITUAL", "朝贺"],
+                title: "岁时礼仪：元旦朝贺"
+            });
+        }
+
         return apiResponse(null);
     });
 };
@@ -102,6 +126,56 @@ describe("DiscoverySearchItemPage", () => {
         expect(getEntryCall).toBeTruthy();
         expect(JSON.parse(String(getEntryCall?.[1]?.body))).toMatchObject({
             id: 300000000003
+        });
+    });
+
+    it("renders Wangqi document preview from url type without requesting Sancai detail", async () => {
+        renderPage("/discovery/search-item?type=WANGQI_DOCUMENT&id=5");
+
+        const detail = await screen.findByLabelText("检索内容详情");
+        expect(await within(detail).findByText("王圻与张居正")).toBeTruthy();
+        expect(within(detail).getByText("王圻文档摘要应该展示")).toBeTruthy();
+        expect(within(detail).getByText("王圻文档正文应该展示")).toBeTruthy();
+        expect(within(detail).getByText("王圻")).toBeTruthy();
+        expect(
+            vi
+                .mocked(globalThis.fetch)
+                .mock.calls.some(([input]) =>
+                    String(input).includes("/portal/classics/sancai/entries/get")
+                )
+        ).toBe(false);
+        const previewCall = vi
+            .mocked(globalThis.fetch)
+            .mock.calls.find(([input]) => String(input).includes("/search/preview"));
+        expect(JSON.parse(String(previewCall?.[1]?.body))).toMatchObject({
+            contentId: "5",
+            contentType: "WANGQI_DOCUMENT"
+        });
+    });
+
+    it("renders Ming customs preview from url type without requesting Sancai detail", async () => {
+        renderPage("/discovery/search-item?type=MING_CUSTOMS&id=3001");
+
+        const detail = await screen.findByLabelText("检索内容详情");
+        expect(await within(detail).findByText("岁时礼仪：元旦朝贺")).toBeTruthy();
+        expect(within(detail).getByText("明代习俗摘要应该展示")).toBeTruthy();
+        expect(within(detail).getByText("明代习俗正文应该展示")).toBeTruthy();
+        expect(within(detail).getByText("礼制")).toBeTruthy();
+        expect(within(detail).getByText("朝贺")).toBeTruthy();
+        expect(detail.textContent).not.toContain("RITUAL");
+        expect(
+            vi
+                .mocked(globalThis.fetch)
+                .mock.calls.some(([input]) =>
+                    String(input).includes("/portal/classics/sancai/entries/get")
+                )
+        ).toBe(false);
+        const previewCall = vi
+            .mocked(globalThis.fetch)
+            .mock.calls.find(([input]) => String(input).includes("/search/preview"));
+        expect(JSON.parse(String(previewCall?.[1]?.body))).toMatchObject({
+            contentId: "3001",
+            contentType: "MING_CUSTOMS"
         });
     });
 });
