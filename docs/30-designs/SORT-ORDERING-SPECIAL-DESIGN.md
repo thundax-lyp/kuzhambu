@@ -34,10 +34,8 @@
 
 ## 4. 排序契约
 ### 4.1 请求入参
-- 仅允许：
-  - `orderedIds`
-  - `sortDirection`
-- `sortDirection` 只允许 `ASC` 或 `DESC`，默认 `ASC`。
+- 仅允许提交 `orderedIds`。
+- 不允许提交 `sortDirection` 或业务作用域参数。
 - 不允许提交 `priority`。
 
 ### 4.2 创建契约
@@ -48,7 +46,7 @@
 - 创建行为与排序行为共用同一 `priority` 体系。
 
 ### 4.3 服务端规则
-- 先按当前 `sortDirection` 读取完整排序集合。
+- 读取完整排序集合。
 - 校验 `orderedIds` 非空、无重复、与当前集合一致。
 - 采用交换式序列完成重排。
 - 整个过程必须在事务内完成。
@@ -88,7 +86,7 @@
 ## 6. 服务与接口边界
 - `application` 层负责排序算法。
 - `domain` 层负责仓储能力与实体定义。
-- `interface` 层负责接收 `orderedIds` 与 `sortDirection`。
+- `interface` 层只负责接收 `orderedIds`。
 - `infra` 层只负责持久化更新。
 
 ## 7. 验收标准
