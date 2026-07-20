@@ -253,10 +253,10 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int changeReferenceStatus(ChangeStorageReferenceStatusCommand command) {
-        StoredObject storage = new StoredObject();
-        storage.setId(command.getId());
-        storage.setReferenceStatus(command.getReferenceStatus());
-        return dao.updateReferenceStatus(storage);
+        if (command == null || command.getId() == null) {
+            return 0;
+        }
+        return updateReferenceStatusByObjectId(command.getId());
     }
 
     @Override
@@ -292,33 +292,28 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         if (!toInsert.isEmpty()) {
             businessRepository.insertReferences(toInsert);
         }
-        updateReferenceStatusByObjectId(impactedObjectIds, StoredObjectReferenceStatus.REFERENCED);
+        updateReferenceStatusByObjectId(impactedObjectIds);
+    }
+
+    private int updateReferenceStatusByObjectId(StoredObjectId objectId) {
+        if (objectId == null) {
+            return 0;
+        }
+        long referenceCount = businessRepository.countByObjectId(objectId);
+        StoredObjectReferenceStatus referenceStatus =
+                referenceCount > 0 ? StoredObjectReferenceStatus.REFERENCED : StoredObjectReferenceStatus.UNREFERENCED;
+        StoredObject target = new StoredObject();
+        target.setId(objectId);
+        target.setReferenceStatus(referenceStatus);
+        return dao.updateReferenceStatus(target);
     }
 
     private void updateReferenceStatusByObjectId(Set<StoredObjectId> objectIds) {
-        updateReferenceStatusByObjectId(objectIds, null);
-    }
-
-    private void updateReferenceStatusByObjectId(
-            Set<StoredObjectId> objectIds, StoredObjectReferenceStatus forcedStatus) {
         if (objectIds == null || objectIds.isEmpty()) {
             return;
         }
         for (StoredObjectId objectId : objectIds) {
-            if (objectId == null) {
-                continue;
-            }
-            StoredObjectReferenceStatus referenceStatus = forcedStatus;
-            if (referenceStatus == null) {
-                long referenceCount = businessRepository.countByObjectId(objectId);
-                referenceStatus = referenceCount > 0
-                        ? StoredObjectReferenceStatus.REFERENCED
-                        : StoredObjectReferenceStatus.UNREFERENCED;
-            }
-            StoredObject target = new StoredObject();
-            target.setId(objectId);
-            target.setReferenceStatus(referenceStatus);
-            dao.updateReferenceStatus(target);
+            updateReferenceStatusByObjectId(objectId);
         }
     }
 

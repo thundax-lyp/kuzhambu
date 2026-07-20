@@ -217,6 +217,7 @@ class StorageApplicationServiceUploadTest {
         StorageApplicationServiceImpl service = new StorageApplicationServiceImpl(
                 storageRepository, referenceRepository, mock(StoredObjectContentRepository.class));
         when(referenceRepository.exists(any())).thenReturn(true);
+        when(referenceRepository.countByObjectId(StoredObjectId.of(100L))).thenReturn(1L);
 
         service.addReferences(new AddStorageReferencesCommand(List.of(
                 new StoredObjectReference(StoredObjectId.of(100L), "owner-1", StorageOwnerType.USER.value(), null))));
@@ -226,6 +227,23 @@ class StorageApplicationServiceUploadTest {
                 .updateReferenceStatus(argThat(storage -> storage != null
                         && StoredObjectId.of(100L).equals(storage.getId())
                         && StoredObjectReferenceStatus.REFERENCED == storage.getReferenceStatus()));
+    }
+
+    @Test
+    void addReferencesShouldNotMarkReferencedWhenOwnerIsInvalid() {
+        StoredObjectReferenceRepository referenceRepository = mock(StoredObjectReferenceRepository.class);
+        StoredObjectRepository storageRepository = mock(StoredObjectRepository.class);
+        StorageApplicationServiceImpl service = new StorageApplicationServiceImpl(
+                storageRepository, referenceRepository, mock(StoredObjectContentRepository.class));
+        when(referenceRepository.countByObjectId(StoredObjectId.of(100L))).thenReturn(0L);
+
+        service.addReferences(new AddStorageReferencesCommand(List.of(
+                new StoredObjectReference(StoredObjectId.of(100L), null, StorageOwnerType.USER.value(), null))));
+
+        verify(referenceRepository, never()).insertReferences(any());
+        verify(storageRepository)
+                .updateReferenceStatus(argThat(storage -> storage.getId().equals(StoredObjectId.of(100L))
+                        && storage.getReferenceStatus() == StoredObjectReferenceStatus.UNREFERENCED));
     }
 
     @Test
