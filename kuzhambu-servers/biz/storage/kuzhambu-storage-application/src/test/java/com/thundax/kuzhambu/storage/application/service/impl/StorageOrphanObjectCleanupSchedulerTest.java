@@ -48,10 +48,10 @@ class StorageOrphanObjectCleanupSchedulerTest {
 
         int count = scheduler(repository, store).cleanupExpiredOrphans();
 
-        assertEquals(1, count);
+        assertEquals(0, count);
         assertEquals(List.of(StoredObjectId.of(1002L)), repository.objectStatusUpdatedIds);
-        assertEquals(List.of(StoredObjectId.of(1002L)), repository.physicalDeletedIds);
-        assertEquals(StoredObjectStatus.DELETED, store.deletedObjects.get(0).getObjectStatus());
+        assertEquals(List.of(), repository.physicalDeletedIds);
+        assertEquals(List.of(), store.deletedObjects);
     }
 
     @Test
@@ -147,10 +147,11 @@ class StorageOrphanObjectCleanupSchedulerTest {
     }
 
     @Test
-    void cleanupShouldDeleteWhenNoReferencesAndKeepWhenHasReferences() {
+    void cleanupShouldMarkActiveOrphanAndDeletePreviouslyMarkedOrphan() {
         FakeRepository repository = new FakeRepository();
         RecordingStore store = new RecordingStore();
         repository.objects.add(storage(1007L, StoredObjectStatus.ACTIVE, 13));
+        repository.objects.add(storage(1009L, StoredObjectStatus.DELETED, 13));
         repository.objects.add(storage(1008L, StoredObjectStatus.DELETED, 13));
         repository.referencedIds.add(1008L);
 
@@ -159,12 +160,12 @@ class StorageOrphanObjectCleanupSchedulerTest {
         assertEquals(1, count);
         assertEquals(List.of(StoredObjectId.of(1007L)), repository.objectStatusUpdatedIds);
         assertEquals(1, store.deletedObjects.size());
-        assertEquals(StoredObjectId.of(1007L), store.deletedObjects.get(0).getId());
+        assertEquals(StoredObjectId.of(1009L), store.deletedObjects.get(0).getId());
         assertEquals(StoredObjectStatus.DELETED, store.deletedObjects.get(0).getObjectStatus());
         assertEquals(
                 StoredObjectReferenceStatus.UNREFERENCED,
                 store.deletedObjects.get(0).getReferenceStatus());
-        assertEquals(List.of(StoredObjectId.of(1007L)), repository.physicalDeletedIds);
+        assertEquals(List.of(StoredObjectId.of(1009L)), repository.physicalDeletedIds);
     }
 
     private static StoredObject storage(long id, StoredObjectStatus objectStatus, long storedHoursAgo) {
