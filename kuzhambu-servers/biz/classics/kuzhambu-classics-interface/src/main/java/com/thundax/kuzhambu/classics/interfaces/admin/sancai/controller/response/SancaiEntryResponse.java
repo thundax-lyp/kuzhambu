@@ -51,9 +51,6 @@ public class SancaiEntryResponse implements Serializable {
     @JsonProperty("refinementStatus")
     private String refinementStatus;
 
-    @JsonProperty("priority")
-    private Integer priority;
-
     @JsonProperty("currentVersionId")
     private Long currentVersionId;
 

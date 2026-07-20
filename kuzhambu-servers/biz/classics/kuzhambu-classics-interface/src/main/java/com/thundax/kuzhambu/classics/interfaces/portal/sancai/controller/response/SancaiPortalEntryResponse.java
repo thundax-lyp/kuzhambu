@@ -52,9 +52,6 @@ public class SancaiPortalEntryResponse implements Serializable {
     @JsonProperty("refinementStatus")
     private String refinementStatus;
 
-    @JsonProperty("priority")
-    private Integer priority;
-
     @JsonProperty("contentUpdatedAt")
     private Date contentUpdatedAt;
 
@@ -84,9 +81,6 @@ public class SancaiPortalEntryResponse implements Serializable {
 
         @JsonProperty("source")
         private String source;
-
-        @JsonProperty("priority")
-        private Integer priority;
     }
 
     @Getter
@@ -106,9 +100,6 @@ public class SancaiPortalEntryResponse implements Serializable {
 
         @JsonProperty("currentUsed")
         private Boolean currentUsed;
-
-        @JsonProperty("priority")
-        private Integer priority;
 
         @JsonProperty("previewUrl")
         private String previewUrl;

@@ -51,6 +51,11 @@ class AiModelApplicationServiceImplTest {
         }
 
         @Override
+        public int maxPriority() {
+            return 1;
+        }
+
+        @Override
         public AiBusinessConfigId insert(AiBusinessConfig config) {
             return null;
         }

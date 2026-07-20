@@ -21,9 +21,6 @@ public class SancaiPortalCategoryResponse implements Serializable {
     @JsonProperty("categoryType")
     private String categoryType;
 
-    @JsonProperty("priority")
-    private Integer priority;
-
     @JsonProperty("publicEntryCount")
     private Long publicEntryCount;
 

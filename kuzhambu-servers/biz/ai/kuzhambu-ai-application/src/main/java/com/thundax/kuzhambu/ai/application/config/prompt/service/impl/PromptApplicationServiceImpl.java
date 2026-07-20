@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,7 +68,7 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
         int versionNo = nextVersionNo(templateId);
         PromptVersion version = command.toVersion(templateId, versionNo, variablesSnapshotJson(command));
         promptRepository.replaceVariables(templateId, variables);
-        promptRepository.insertVersion(version);
+        insertVersion(version);
         promptRepository.markCurrentVersion(templateId, versionNo);
         return PromptTemplateIdCodec.toValue(templateId);
     }
@@ -159,6 +160,15 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
     private int nextVersionNo(PromptTemplateId templateId) {
         PromptVersion current = promptRepository.getCurrentVersion(templateId);
         return current == null ? 1 : current.getVersionNo() + 1;
+    }
+
+    private void insertVersion(PromptVersion version) {
+        try {
+            promptRepository.insertVersion(version);
+        } catch (DataIntegrityViolationException ex) {
+            throw new BizException("Prompt version conflict, please retry: "
+                    + version.getTemplateId().value() + "#" + version.getVersionNo());
+        }
     }
 
     private PromptVersion findVersion(Long templateId, int versionNo) {

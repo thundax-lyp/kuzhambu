@@ -46,8 +46,4 @@ public class StorageObjectResponse implements Serializable {
     @Schema(name = "referenceStatus", description = "引用状态")
     @JsonProperty(value = "referenceStatus")
     private String referenceStatus;
-
-    @Schema(name = "priority", description = "排序值")
-    @JsonProperty(value = "priority")
-    private Integer priority;
 }

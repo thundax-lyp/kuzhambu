@@ -90,8 +90,6 @@ public class DictApplicationServiceImpl implements DictApplicationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sort(DictSortCommand command) {
-        SortDirection effectiveDirection =
-                command == null || command.getSortDirection() == null ? SortDirection.ASC : command.getSortDirection();
         List<DictId> orderedIdList =
                 command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
         if (orderedIdList.isEmpty()) {
@@ -143,7 +141,7 @@ public class DictApplicationServiceImpl implements DictApplicationService {
             }
         }
 
-        List<Dict> currentDicts = dao.listByType(dictType, effectiveDirection);
+        List<Dict> currentDicts = dao.listByType(dictType, SortDirection.ASC);
         if (currentDicts == null || currentDicts.isEmpty()) {
             throw new BizException(
                     ErrorCode.SORT_MISSING_ID.getCode(),

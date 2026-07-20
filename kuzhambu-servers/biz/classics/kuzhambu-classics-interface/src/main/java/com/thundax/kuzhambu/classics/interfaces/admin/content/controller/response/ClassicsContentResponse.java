@@ -40,9 +40,6 @@ public class ClassicsContentResponse implements Serializable {
     @JsonProperty("status")
     private String status;
 
-    @JsonProperty("priority")
-    private Integer priority;
-
     @JsonProperty("exportKind")
     private String exportKind;
 

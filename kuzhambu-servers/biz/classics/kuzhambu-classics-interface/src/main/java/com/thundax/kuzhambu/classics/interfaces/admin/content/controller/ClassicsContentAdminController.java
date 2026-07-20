@@ -177,18 +177,12 @@ public class ClassicsContentAdminController {
     @SysLogger(value = "标签排序")
     @PostMapping("tags/sort")
     public Boolean sortTags(@Valid @RequestBody ClassicsContentTagSortRequest request) {
-        String contentType = validContentTagType(request == null ? null : request.getContentType());
-        Long contentId = requireParameter(request == null ? null : request.getContentId(), "contentId");
-        service.sortTags(new ContentTagSortCommand(
-                contentType,
-                ClassicsContentIdCodec.toDomain(contentId),
-                RequestListHelper.map(
-                        RequestListHelper.presentUnique(
-                                request == null ? null : request.getOrderedIds(),
-                                "orderedIds",
-                                AdminResponseExceptions::invalidParameter),
-                        ClassicsContentTagIdCodec::toDomain),
-                request == null ? null : request.getSortDirection()));
+        service.sortTags(new ContentTagSortCommand(RequestListHelper.map(
+                RequestListHelper.presentUnique(
+                        request == null ? null : request.getOrderedIds(),
+                        "orderedIds",
+                        AdminResponseExceptions::invalidParameter),
+                ClassicsContentTagIdCodec::toDomain)));
         return true;
     }
 
@@ -352,14 +346,12 @@ public class ClassicsContentAdminController {
     @SysLogger(value = "问答排序")
     @PostMapping("qa-pairs/sort")
     public Boolean sortQaPairs(@Valid @RequestBody ClassicsContentQaPairSortRequest request) {
-        service.sortQaPairs(new ContentQaPairSortCommand(
-                RequestListHelper.map(
-                        RequestListHelper.presentUnique(
-                                request == null ? null : request.getOrderedIds(),
-                                "orderedIds",
-                                AdminResponseExceptions::invalidParameter),
-                        ClassicsContentQaPairIdCodec::toDomain),
-                request == null ? null : request.getSortDirection()));
+        service.sortQaPairs(new ContentQaPairSortCommand(RequestListHelper.map(
+                RequestListHelper.presentUnique(
+                        request == null ? null : request.getOrderedIds(),
+                        "orderedIds",
+                        AdminResponseExceptions::invalidParameter),
+                ClassicsContentQaPairIdCodec::toDomain)));
         return true;
     }
 

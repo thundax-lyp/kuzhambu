@@ -83,7 +83,6 @@ public final class PromptInterfaceAssembler {
                 .variableName(variable.getVariableName())
                 .required(variable.isRequired())
                 .description(variable.getDescription())
-                .priority(variable.getPriority())
                 .build();
     }
 
@@ -101,7 +100,6 @@ public final class PromptInterfaceAssembler {
             item.setVariableName(request.getVariableName());
             item.setRequired(request.getRequired() == null || request.getRequired());
             item.setDescription(request.getDescription());
-            item.setPriority(request.getPriority());
             items.add(item);
         }
         return items;

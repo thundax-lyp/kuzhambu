@@ -218,19 +218,13 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sortImages(SancaiEntryImageSortCommand command) {
-        SortDirection effectiveDirection =
-                command == null || command.getSortDirection() == null ? SortDirection.ASC : command.getSortDirection();
-        SancaiEntryId entryId = command == null ? null : command.getEntryId();
-        if (entryId == null) {
-            throw sortMissingId();
-        }
         List<SancaiEntryImageId> orderedIdList =
                 command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
         if (orderedIdList.isEmpty()) {
             throw sortEmptyInput();
         }
 
-        List<SancaiEntryImage> currentImages = repository.listImagesByEntryId(entryId, effectiveDirection);
+        List<SancaiEntryImage> currentImages = repository.listImages(SortDirection.ASC);
         if (currentImages == null || currentImages.isEmpty() || currentImages.size() != orderedIdList.size()) {
             throw sortMissingId();
         }

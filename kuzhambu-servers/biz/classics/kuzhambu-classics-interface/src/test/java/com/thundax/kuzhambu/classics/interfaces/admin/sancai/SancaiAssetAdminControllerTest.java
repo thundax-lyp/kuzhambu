@@ -202,7 +202,6 @@ class SancaiAssetAdminControllerTest {
         assertEquals(true, controller.changeCurrentImage(currentRequest));
 
         SancaiEntryImageSortRequest sortRequest = new SancaiEntryImageSortRequest();
-        sortRequest.setEntryId(3001L);
         sortRequest.setOrderedIds(List.of(8002L));
 
         assertEquals(true, controller.sortImages(sortRequest));
@@ -325,7 +324,6 @@ class SancaiAssetAdminControllerTest {
                     }
                     if ("sortImages".equals(method.getName())) {
                         SancaiEntryImageSortCommand command = (SancaiEntryImageSortCommand) args[0];
-                        assertEquals(SancaiEntryId.of(3001L), command.getEntryId());
                         assertEquals(List.of(SancaiEntryImageId.of(8002L)), command.getOrderedIds());
                         return null;
                     }

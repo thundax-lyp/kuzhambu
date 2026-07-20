@@ -13,14 +13,20 @@ import com.thundax.kuzhambu.ai.domain.refinement.model.entity.AiRefinementTask;
 import com.thundax.kuzhambu.ai.domain.refinement.repository.AiRefinementTaskRepository;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 class AiRefinementTaskApplicationServiceImplTest {
+
+    private static final Executor DIRECT_EXECUTOR = Runnable::run;
 
     @Test
     void addTaskShouldMarkSancaiImageAnalysisStreamAndPersistSucceededCandidate() {
@@ -36,7 +42,7 @@ class AiRefinementTaskApplicationServiceImplTest {
                 null,
                 null));
         AiRefinementTaskApplicationServiceImpl service =
-                new AiRefinementTaskApplicationServiceImpl(repository, refinementService);
+                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
 
         AiRefinementTask accepted = service.addTask(command(AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE.value()));
         AiRefinementTask completed = awaitTerminal(repository, accepted.getTaskId());
@@ -64,7 +70,7 @@ class AiRefinementTaskApplicationServiceImplTest {
                 "WORKER_PROTOCOL_FAILURE",
                 "Worker stream ended without completed event"));
         AiRefinementTaskApplicationServiceImpl service =
-                new AiRefinementTaskApplicationServiceImpl(repository, refinementService);
+                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
 
         AiRefinementTask accepted = service.addTask(command(AiBusinessCapability.CLASSICS_IMAGE_GENERATE.value()));
         AiRefinementTask completed = awaitTerminal(repository, accepted.getTaskId());
@@ -92,7 +98,7 @@ class AiRefinementTaskApplicationServiceImplTest {
                 null,
                 null));
         AiRefinementTaskApplicationServiceImpl service =
-                new AiRefinementTaskApplicationServiceImpl(repository, refinementService);
+                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
 
         TransactionSynchronizationManager.initSynchronization();
         AiRefinementTask accepted;
@@ -124,7 +130,7 @@ class AiRefinementTaskApplicationServiceImplTest {
                 null,
                 null));
         AiRefinementTaskApplicationServiceImpl service =
-                new AiRefinementTaskApplicationServiceImpl(repository, refinementService);
+                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
 
         AiRefinementRequestCommand command = command("translate");
         AiRefinementTask accepted = service.addTask(command);
@@ -133,6 +139,58 @@ class AiRefinementTaskApplicationServiceImplTest {
         assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE.value(), command.getCapability());
         assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE.value(), completed.getCapability());
         assertEquals("SUCCEEDED", completed.getStatus());
+    }
+
+    @Test
+    void conditionalUpdateShouldKeepCancelledWhenWorkerCompletionArrivesLate() {
+        RecordingTaskRepository repository = new RecordingTaskRepository();
+        AiRefinementTask task = task(AiBusinessCapability.CLASSICS_TRANSLATE.value(), "RUNNING");
+        repository.insertWithTaskId(task);
+        AiRefinementTask staleRunningTask = repository.get(task.getTaskId());
+        staleRunningTask.markSucceeded(101L, 201L, "TEXT", "译文", Instant.now());
+        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
+                101L,
+                201L,
+                "SUCCEEDED",
+                AiBusinessCapability.CLASSICS_TRANSLATE.value(),
+                null,
+                "TEXT",
+                "译文",
+                null,
+                null));
+        AiRefinementTaskApplicationServiceImpl service =
+                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
+
+        service.cancelTask(task.getTaskId(), task.getRequestedBy());
+        int updated = repository.updateWhenStatusIn(staleRunningTask, List.of("RUNNING"));
+
+        assertEquals(0, updated);
+        assertEquals("CANCELLED", repository.get(task.getTaskId()).getStatus());
+        assertNull(repository.get(task.getTaskId()).getCallId());
+    }
+
+    @Test
+    void cancelTaskShouldPublishStreamTerminalEvent() throws Exception {
+        RecordingTaskRepository repository = new RecordingTaskRepository();
+        AiRefinementTask task = task(AiBusinessCapability.CLASSICS_IMAGE_GENERATE.value(), "RUNNING");
+        task.setStreamEnabled(true);
+        repository.insertWithTaskId(task);
+        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(null);
+        AiRefinementTaskApplicationServiceImpl service =
+                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
+        List<String> statuses = new ArrayList<>();
+        CompletableFuture<Void> subscription =
+                CompletableFuture.runAsync(() -> service.streamTaskEvents(task.getTaskId(), event -> {
+                    if (event.isError()) {
+                        statuses.add(event.getStatus());
+                    }
+                }));
+
+        Thread.sleep(20L);
+        service.cancelTask(task.getTaskId(), task.getRequestedBy());
+        subscription.get(1L, TimeUnit.SECONDS);
+
+        assertEquals(List.of("CANCELLED"), statuses);
     }
 
     private AiRefinementRequestCommand command(String capability) {
@@ -152,6 +210,27 @@ class AiRefinementTaskApplicationServiceImplTest {
         command.setPromptMessagesJson("[{\"role\":\"user\",\"content\":\"hello\"}]");
         command.setInputPayloadJson("{\"text\":\"hello\"}");
         return command;
+    }
+
+    private AiRefinementTask task(String capability, String status) {
+        AiRefinementTask task = new AiRefinementTask();
+        task.setTaskId(9001L);
+        task.setScope("classics");
+        task.setCapability(capability);
+        task.setContentType("SANCAI_ENTRY");
+        task.setContentId(10L);
+        task.setObjectId(20L);
+        task.setRequestedBy(30L);
+        task.setRequestId("req-1");
+        task.setTraceId("trace-1");
+        task.setStatus(status);
+        task.setServiceRole("PRIMARY");
+        task.setModelId(40L);
+        task.setModelName("model-a");
+        task.setPromptVersionId(50L);
+        task.setRequestedAt(Instant.now());
+        task.setStartedAt(Instant.now());
+        return task;
     }
 
     private AiRefinementTask awaitTerminal(RecordingTaskRepository repository, Long taskId) {
@@ -234,20 +313,34 @@ class AiRefinementTaskApplicationServiceImplTest {
 
         @Override
         public AiRefinementTask get(Long taskId) {
-            return tasks.get(taskId);
+            return copy(tasks.get(taskId));
         }
 
         @Override
         public Long insert(AiRefinementTask task) {
             long taskId = sequence.incrementAndGet();
             task.setTaskId(taskId);
-            tasks.put(taskId, task);
+            tasks.put(taskId, copy(task));
             return taskId;
+        }
+
+        void insertWithTaskId(AiRefinementTask task) {
+            tasks.put(task.getTaskId(), copy(task));
         }
 
         @Override
         public int update(AiRefinementTask task) {
-            tasks.put(task.getTaskId(), task);
+            tasks.put(task.getTaskId(), copy(task));
+            return 1;
+        }
+
+        @Override
+        public int updateWhenStatusIn(AiRefinementTask task, Collection<String> statuses) {
+            AiRefinementTask current = tasks.get(task.getTaskId());
+            if (current == null || statuses == null || !statuses.contains(current.getStatus())) {
+                return 0;
+            }
+            tasks.put(task.getTaskId(), copy(task));
             return 1;
         }
 
@@ -282,5 +375,39 @@ class AiRefinementTaskApplicationServiceImplTest {
         public int deleteExpiredTerminalTasks(Instant threshold) {
             return 0;
         }
+    }
+
+    private static AiRefinementTask copy(AiRefinementTask task) {
+        if (task == null) {
+            return null;
+        }
+        return new AiRefinementTask(
+                task.getId(),
+                task.getTaskId(),
+                task.getScope(),
+                task.getCapability(),
+                task.getContentType(),
+                task.getContentId(),
+                task.getObjectId(),
+                task.getRequestedBy(),
+                task.getRequestId(),
+                task.getTraceId(),
+                task.getStatus(),
+                task.getServiceRole(),
+                task.getModelId(),
+                task.getModelName(),
+                task.getPromptVersionId(),
+                task.getCallId(),
+                task.getCandidateId(),
+                task.getResultFormat(),
+                task.getResultPreview(),
+                task.getFailureStage(),
+                task.getErrorType(),
+                task.getErrorMessage(),
+                task.isStreamEnabled(),
+                task.getRequestedAt(),
+                task.getStartedAt(),
+                task.getCompletedAt(),
+                task.getCancelledAt());
     }
 }

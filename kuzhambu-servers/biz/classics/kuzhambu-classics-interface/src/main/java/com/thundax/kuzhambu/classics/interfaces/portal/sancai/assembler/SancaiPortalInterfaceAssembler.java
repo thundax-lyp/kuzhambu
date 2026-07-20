@@ -57,7 +57,6 @@ public final class SancaiPortalInterfaceAssembler {
                         category.getCategoryType() == null
                                 ? null
                                 : category.getCategoryType().value())
-                .priority(category.getPriority())
                 .publicEntryCount(overview == null ? 0L : overview.getPublicEntryCount())
                 .illustratedEntryCount(overview == null ? 0L : overview.getIllustratedEntryCount())
                 .thumbnailUrl(
@@ -82,7 +81,6 @@ public final class SancaiPortalInterfaceAssembler {
                         volume.getVolumeType() == null
                                 ? null
                                 : volume.getVolumeType().value())
-                .priority(volume.getPriority())
                 .build();
     }
 
@@ -129,7 +127,6 @@ public final class SancaiPortalInterfaceAssembler {
                         entry.getRefinementStatus() == null
                                 ? null
                                 : entry.getRefinementStatus().value())
-                .priority(entry.getPriority())
                 .contentUpdatedAt(entry.getContentUpdatedAt())
                 .tags(toTagResponses(tags))
                 .images(toImageResponses(images))
@@ -164,7 +161,6 @@ public final class SancaiPortalInterfaceAssembler {
                         .tagId(value(tag.getTagId()))
                         .tagName(tag.getTagNameSnapshot())
                         .source(tag.getSource() == null ? null : tag.getSource().value())
-                        .priority(tag.getPriority())
                         .build();
     }
 
@@ -182,7 +178,6 @@ public final class SancaiPortalInterfaceAssembler {
                                         ? null
                                         : image.getImageType().value())
                         .currentUsed(image.isCurrentUsed())
-                        .priority(image.getPriority())
                         .previewUrl(contentUrl)
                         .downloadUrl(contentUrl == null ? null : contentUrl + "?download=true")
                         .build();

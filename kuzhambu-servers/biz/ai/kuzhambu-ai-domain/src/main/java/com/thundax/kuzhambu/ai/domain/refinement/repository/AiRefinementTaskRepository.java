@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.ai.domain.refinement.repository;
 
 import com.thundax.kuzhambu.ai.domain.refinement.model.entity.AiRefinementTask;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 
 public interface AiRefinementTaskRepository {
@@ -11,6 +12,8 @@ public interface AiRefinementTaskRepository {
     Long insert(AiRefinementTask task);
 
     int update(AiRefinementTask task);
+
+    int updateWhenStatusIn(AiRefinementTask task, Collection<String> statuses);
 
     List<AiRefinementTask> listTasks(
             String capability,

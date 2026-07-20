@@ -181,9 +181,5 @@ public final class AiConfigRequests {
         @Schema(name = "enabled", description = "是否启用")
         @JsonProperty(value = "enabled")
         private Boolean enabled;
-
-        @Schema(name = "priority", description = "全局排序值")
-        @JsonProperty(value = "priority")
-        private Integer priority;
     }
 }

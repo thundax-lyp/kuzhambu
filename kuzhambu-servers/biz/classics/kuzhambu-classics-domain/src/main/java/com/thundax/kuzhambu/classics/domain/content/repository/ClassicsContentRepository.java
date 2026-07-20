@@ -23,6 +23,8 @@ public interface ClassicsContentRepository {
 
     List<ClassicsContentTag> listTags(String contentType, ClassicsContentId contentId, SortDirection sortDirection);
 
+    List<ClassicsContentTag> listTags(SortDirection sortDirection);
+
     int maxTagPriority(String contentType, ClassicsContentId contentId);
 
     ClassicsContentTagId insertTag(ClassicsContentTag tag);

@@ -15,7 +15,14 @@ public class AuditSnapshotAssemblerRegistry {
     public AuditSnapshotAssemblerRegistry(List<AuditSnapshotAssembler> assemblerList) {
         if (assemblerList != null) {
             for (AuditSnapshotAssembler assembler : assemblerList) {
-                assemblers.put(assembler.objectType(), assembler);
+                String objectType = assembler.objectType();
+                if (!hasText(objectType)) {
+                    throw new IllegalStateException("Audit snapshot assembler objectType must not be blank.");
+                }
+                AuditSnapshotAssembler previous = assemblers.putIfAbsent(objectType, assembler);
+                if (previous != null) {
+                    throw new IllegalStateException("Duplicate audit snapshot assembler objectType: " + objectType);
+                }
             }
         }
     }
@@ -28,5 +35,9 @@ public class AuditSnapshotAssemblerRegistry {
         List<AuditSnapshotAssembler> result = new ArrayList<>(assemblers.values());
         result.sort(Comparator.comparing(AuditSnapshotAssembler::objectType));
         return result;
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.trim().isEmpty();
     }
 }

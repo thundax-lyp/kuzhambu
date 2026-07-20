@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.ai.infra.client;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.sun.net.httpserver.HttpExchange;
@@ -9,6 +10,7 @@ import com.sun.net.httpserver.HttpServer;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
+import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService.ArtifactDownloadException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -230,6 +232,51 @@ class WorkerAiHttpClientTest {
         assertEquals("未完成片段", events.get(0).getDeltaText());
     }
 
+    @Test
+    void downloadArtifactShouldRejectOversizeContentLength() throws IOException {
+        startServer(
+                "/artifact/large",
+                exchange -> respondBinary(exchange, 200, "too-large".getBytes(StandardCharsets.UTF_8)));
+        WorkerAiHttpClient client = new WorkerAiHttpClient(properties(4L), new WorkerAiSignatureSupport(), null);
+
+        ArtifactDownloadException exception = assertThrows(
+                ArtifactDownloadException.class, () -> client.downloadArtifact("req-1", "trace-1", "/artifact/large"));
+
+        assertTrue(hasMessage(exception, "Content-Length exceeds max size"));
+    }
+
+    @Test
+    void downloadArtifactShouldRejectOversizeWorkerSizeHeader() throws IOException {
+        startServer("/artifact/declared-large", exchange -> {
+            exchange.getResponseHeaders().set("X-Kuzhambu-Artifact-Size-Bytes", "9");
+            respondBinary(exchange, 200, "ok".getBytes(StandardCharsets.UTF_8));
+        });
+        WorkerAiHttpClient client = new WorkerAiHttpClient(properties(4L), new WorkerAiSignatureSupport(), null);
+
+        ArtifactDownloadException exception = assertThrows(
+                ArtifactDownloadException.class,
+                () -> client.downloadArtifact("req-1", "trace-1", "/artifact/declared-large"));
+
+        assertTrue(exception.getMessage().contains("X-Kuzhambu-Artifact-Size-Bytes exceeds max size"));
+    }
+
+    @Test
+    void downloadArtifactShouldRejectOversizeActualBody() throws IOException {
+        startServer("/artifact/chunked-large", exchange -> {
+            exchange.getResponseHeaders().set("Content-Type", "application/octet-stream");
+            exchange.sendResponseHeaders(200, 0);
+            exchange.getResponseBody().write("too-large".getBytes(StandardCharsets.UTF_8));
+            exchange.close();
+        });
+        WorkerAiHttpClient client = new WorkerAiHttpClient(properties(4L), new WorkerAiSignatureSupport(), null);
+
+        ArtifactDownloadException exception = assertThrows(
+                ArtifactDownloadException.class,
+                () -> client.downloadArtifact("req-1", "trace-1", "/artifact/chunked-large"));
+
+        assertTrue(exception.getMessage().contains("artifact body exceeds max size"));
+    }
+
     private void startServer(String path, ExchangeHandler handler) throws IOException {
         server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         server.createContext(path, exchange -> {
@@ -244,11 +291,27 @@ class WorkerAiHttpClientTest {
     }
 
     private WorkerAiProperties properties() {
+        return properties(50L * 1024L * 1024L);
+    }
+
+    private boolean hasMessage(Throwable throwable, String fragment) {
+        Throwable current = throwable;
+        while (current != null) {
+            if (current.getMessage() != null && current.getMessage().contains(fragment)) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
+    }
+
+    private WorkerAiProperties properties(long maxArtifactSizeBytes) {
         WorkerAiProperties properties = new WorkerAiProperties();
         properties.setBaseUrl("http://127.0.0.1:" + server.getAddress().getPort());
         properties.setInternalSecret("worker-secret");
         properties.setServiceName("kuzhambu-ai-test");
         properties.setTimeoutMs(3000);
+        properties.setMaxArtifactSizeBytes(maxArtifactSizeBytes);
         return properties;
     }
 
@@ -275,6 +338,13 @@ class WorkerAiHttpClientTest {
     private void respond(HttpExchange exchange, int statusCode, String body) throws IOException {
         byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().set("Content-Type", "application/json; charset=utf-8");
+        respondBinary(exchange, statusCode, bytes);
+    }
+
+    private void respondBinary(HttpExchange exchange, int statusCode, byte[] bytes) throws IOException {
+        if (exchange.getResponseHeaders().getFirst("Content-Type") == null) {
+            exchange.getResponseHeaders().set("Content-Type", "application/octet-stream");
+        }
         exchange.sendResponseHeaders(statusCode, bytes.length);
         exchange.getResponseBody().write(bytes);
         exchange.close();

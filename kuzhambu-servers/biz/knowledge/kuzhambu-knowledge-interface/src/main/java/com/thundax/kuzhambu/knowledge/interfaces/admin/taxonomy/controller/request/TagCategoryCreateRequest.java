@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,11 +32,6 @@ public class TagCategoryCreateRequest {
     @JsonProperty(value = "description")
     @Size(max = 512, message = "\"分类描述\"长度不能超过512")
     private String description;
-
-    @Schema(name = "priority", description = "分类排序值")
-    @JsonProperty(value = "priority")
-    @NotNull(message = "\"优先级\"不能为空")
-    private Integer priority;
 
     @Schema(name = "status", description = "分类状态")
     @JsonProperty(value = "status")

@@ -151,13 +151,12 @@ class SancaiAdminControllerTest {
                 {
                   "id": 2,
                   "title": "天文",
-                  "categoryType": "FORMAL",
-                  "priority": 10
+                  "categoryType": "FORMAL"
                 }
                 """,
                 SancaiCategoryRequest.class);
         assertEquals(2L, categoryRequest.getId());
-        assertJsonFields(categoryRequest, "id", "title", "categoryType", "priority");
+        assertJsonFields(categoryRequest, "id", "title", "categoryType");
 
         SancaiVolumeRequest volumeRequest = OBJECT_MAPPER.readValue(
                 """
@@ -165,13 +164,12 @@ class SancaiAdminControllerTest {
                   "id": 101,
                   "categoryId": 2,
                   "title": "天文卷一",
-                  "volumeType": "MAIN",
-                  "priority": 101
+                  "volumeType": "MAIN"
                 }
                 """,
                 SancaiVolumeRequest.class);
         assertEquals(101L, volumeRequest.getId());
-        assertJsonFields(volumeRequest, "id", "categoryId", "title", "volumeType", "priority");
+        assertJsonFields(volumeRequest, "id", "categoryId", "title", "volumeType");
 
         SancaiEntryRequest entryRequest = OBJECT_MAPPER.readValue(
                 """
@@ -236,25 +234,21 @@ class SancaiAdminControllerTest {
                         .id(2L)
                         .title("天文")
                         .categoryType("FORMAL")
-                        .priority(10)
                         .build(),
                 "id",
                 "title",
-                "categoryType",
-                "priority");
+                "categoryType");
         assertJsonFields(
                 SancaiVolumeResponse.builder()
                         .id(101L)
                         .categoryId(2L)
                         .title("天文卷一")
                         .volumeType("MAIN")
-                        .priority(101)
                         .build(),
                 "id",
                 "categoryId",
                 "title",
-                "volumeType",
-                "priority");
+                "volumeType");
         assertJsonFields(
                 SancaiEntryResponse.builder()
                         .id(3001L)
@@ -269,7 +263,6 @@ class SancaiAdminControllerTest {
                         .imageStatus("READY")
                         .visualAssetStatus("READY")
                         .refinementStatus("COMPLETE")
-                        .priority(1)
                         .currentVersionId(9001L)
                         .currentVersionNo(1)
                         .currentVersionedAt(new java.util.Date(1_000L))
@@ -284,7 +277,6 @@ class SancaiAdminControllerTest {
                                 .tagNameSnapshot("天文")
                                 .source("MANUAL")
                                 .status("ACTIVE")
-                                .priority(1)
                                 .build()))
                         .build(),
                 "id",
@@ -299,7 +291,6 @@ class SancaiAdminControllerTest {
                 "imageStatus",
                 "visualAssetStatus",
                 "refinementStatus",
-                "priority",
                 "currentVersionId",
                 "currentVersionNo",
                 "currentVersionedAt",
@@ -349,7 +340,6 @@ class SancaiAdminControllerTest {
         categoryRequest.setId(2L);
         categoryRequest.setTitle("天文");
         categoryRequest.setCategoryType("FORMAL");
-        categoryRequest.setPriority(10);
         assertEquals("天文", controller.getCategory(categoryRequest).getTitle());
         assertEquals(2L, controller.addCategory(categoryRequest).getId());
         assertEquals(2L, controller.updateCategory(categoryRequest).getId());
@@ -365,7 +355,6 @@ class SancaiAdminControllerTest {
         volumeRequest.setCategoryId(2L);
         volumeRequest.setTitle("天文卷一");
         volumeRequest.setVolumeType("MAIN");
-        volumeRequest.setPriority(101);
         assertEquals("天文卷一", controller.getVolume(volumeRequest).getTitle());
         assertEquals(101L, controller.addVolume(volumeRequest).getId());
         assertEquals(101L, controller.updateVolume(volumeRequest).getId());
@@ -485,7 +474,7 @@ class SancaiAdminControllerTest {
                         assertEquals(2L, command.getId());
                         assertEquals("天文", command.getTitle());
                         assertEquals(SancaiCategoryType.FORMAL, command.getCategoryType());
-                        assertEquals(10, command.getPriority());
+                        assertEquals(null, command.getPriority());
                         return SancaiCategoryId.of(2L);
                     }
                     if ("updateCategory".equals(method.getName())) {
@@ -493,7 +482,7 @@ class SancaiAdminControllerTest {
                         assertEquals(2L, command.getId());
                         assertEquals("天文", command.getTitle());
                         assertEquals(SancaiCategoryType.FORMAL, command.getCategoryType());
-                        assertEquals(10, command.getPriority());
+                        assertEquals(null, command.getPriority());
                         return SancaiCategoryId.of(2L);
                     }
                     if ("deleteCategory".equals(method.getName())) {
@@ -516,7 +505,7 @@ class SancaiAdminControllerTest {
                         assertEquals(2L, command.getCategoryId());
                         assertEquals("天文卷一", command.getTitle());
                         assertEquals(SancaiVolumeType.MAIN, command.getVolumeType());
-                        assertEquals(101, command.getPriority());
+                        assertEquals(null, command.getPriority());
                         return SancaiVolumeId.of(101L);
                     }
                     if ("deleteVolume".equals(method.getName())) {

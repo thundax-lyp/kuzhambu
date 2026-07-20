@@ -161,7 +161,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         category.setCategoryId(categoryId);
         category.setName(name);
         category.setDescription(trimOptionalText(effective.getDescription()));
-        category.setPriority(command.getPriority());
+        category.setPriority(tagCategoryRepository.maxPriority() + 1);
         category.setStatus(effective.getStatus() == null ? TagCategoryStatus.ENABLED : effective.getStatus());
 
         if (tagCategoryRepository.countByName(name, categoryId) > 0) {
@@ -184,7 +184,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         updated.setId(category.getId());
         updated.setName(name);
         updated.setDescription(trimOptionalText(effective.getDescription()));
-        updated.setPriority(command.getPriority());
+        updated.setPriority(category.getPriority());
         updated.setStatus(category.getStatus());
 
         if (tagCategoryRepository.countByName(name, categoryId) > 0) {

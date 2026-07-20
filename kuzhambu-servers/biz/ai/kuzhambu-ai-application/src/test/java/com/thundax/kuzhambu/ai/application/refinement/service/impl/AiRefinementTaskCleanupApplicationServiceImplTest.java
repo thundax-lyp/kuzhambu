@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.ai.domain.refinement.model.entity.AiRefinementTask;
 import com.thundax.kuzhambu.ai.domain.refinement.repository.AiRefinementTaskRepository;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.env.MockEnvironment;
@@ -153,6 +154,11 @@ class AiRefinementTaskCleanupApplicationServiceImplTest {
         public int update(AiRefinementTask task) {
             updatedTasks.add(task);
             return 1;
+        }
+
+        @Override
+        public int updateWhenStatusIn(AiRefinementTask task, Collection<String> statuses) {
+            return update(task);
         }
 
         @Override

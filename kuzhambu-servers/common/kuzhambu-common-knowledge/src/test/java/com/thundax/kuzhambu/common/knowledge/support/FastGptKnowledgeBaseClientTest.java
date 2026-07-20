@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.common.knowledge.support;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
@@ -167,6 +168,48 @@ public class FastGptKnowledgeBaseClientTest {
                 "6a4f51e5ef72393d430a8e31",
                 client.ensureKnowledgeBase(new KnowledgeBaseEnsureRequest("kuzhambu-qa", "QA", null))
                         .knowledgeBaseId());
+        server.verify();
+    }
+
+    @Test
+    public void shouldRejectReservedOptionKeysForKnowledgeItemUpsert() {
+        RestTemplate restTemplate =
+                new RestTemplateBuilder().rootUri("http://fastgpt.local").build();
+        MockRestServiceServer server =
+                MockRestServiceServer.bindTo(restTemplate).build();
+        FastGptKnowledgeBaseClient client = new FastGptKnowledgeBaseClient(
+                restTemplate, new ObjectMapper(), fastGptProperties("http://fastgpt.local", "fastgpt-test"));
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> client.upsertKnowledgeItem(
+                        new com.thundax.kuzhambu.common.knowledge.model.item.KnowledgeItemUpsertRequest(
+                                "kuzhambu-qa",
+                                "SANCAI_ENTRY:3001",
+                                "三才",
+                                "三才指天地人。",
+                                null,
+                                Map.of("datasetId", "other-dataset"))));
+        server.verify();
+    }
+
+    @Test
+    public void shouldRejectReservedOptionKeysForChat() {
+        RestTemplate restTemplate =
+                new RestTemplateBuilder().rootUri("http://fastgpt.local").build();
+        MockRestServiceServer server =
+                MockRestServiceServer.bindTo(restTemplate).build();
+        FastGptKnowledgeBaseClient client = new FastGptKnowledgeBaseClient(
+                restTemplate, new ObjectMapper(), fastGptProperties("http://fastgpt.local", "fastgpt-test"));
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> client.chat(new KnowledgeChatRequest(
+                        "kuzhambu-qa",
+                        List.of(new KnowledgeChatMessage("user", "question")),
+                        false,
+                        null,
+                        Map.of("messages", List.of(Map.of("role", "system", "content", "override"))))));
         server.verify();
     }
 

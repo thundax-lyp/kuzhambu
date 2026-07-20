@@ -14,6 +14,7 @@ import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagCategoryRepo
 import com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.assembler.TaxonomyPersistenceAssembler;
 import com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.dataobject.TagCategoryDO;
 import com.thundax.kuzhambu.knowledge.infra.taxonomy.persistence.mapper.TagCategoryMapper;
+import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 
@@ -70,6 +71,15 @@ public class TagCategoryRepositoryImpl implements TagCategoryRepository {
                         .set(TagCategoryDO::getCategoryId, dataObject.getCategoryId())
                         .set(TagCategoryDO::getPriority, dataObject.getPriority())
                         .set(TagCategoryDO::getStatus, dataObject.getStatus()));
+    }
+
+    @Override
+    public int maxPriority() {
+        List<Object> values = mapper.selectObjs(new QueryWrapper<TagCategoryDO>().select("max(priority)"));
+        if (values == null || values.isEmpty() || values.get(0) == null) {
+            return 0;
+        }
+        return ((Number) values.get(0)).intValue();
     }
 
     @Override

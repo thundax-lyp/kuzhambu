@@ -27,10 +27,6 @@ public class TagCategoryResponse implements Serializable {
     @JsonProperty(value = "description")
     private String description;
 
-    @Schema(name = "priority", description = "分类排序值")
-    @JsonProperty(value = "priority")
-    private Integer priority;
-
     @Schema(name = "status", description = "分类状态")
     @JsonProperty(value = "status")
     private String status;

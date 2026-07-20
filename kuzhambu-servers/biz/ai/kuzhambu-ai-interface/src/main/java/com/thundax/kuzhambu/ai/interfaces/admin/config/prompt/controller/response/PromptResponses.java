@@ -95,8 +95,5 @@ public final class PromptResponses {
 
         @JsonProperty(value = "description")
         private String description;
-
-        @JsonProperty(value = "priority")
-        private Integer priority;
     }
 }

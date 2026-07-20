@@ -62,7 +62,6 @@ public final class QualityReportResponses {
         private String description;
         private String suggestion;
         private String href;
-        private Integer priority;
     }
 
     @Getter

@@ -255,11 +255,9 @@ public class RoleController {
     @HasPermission(value = "sys:role:edit")
     @SysLogger(value = "排序")
     @PostMapping(value = "sort")
-    public Boolean updatePriority(@Valid @RequestBody RoleSortRequest request) {
-        roleService.sort(new RoleSortCommand(
-                RequestListHelper.map(
-                        readOrderedIds(request == null ? null : request.getOrderedIds()), RoleIdCodec::toDomain),
-                request == null ? null : request.getSortDirection()));
+    public Boolean sort(@Valid @RequestBody RoleSortRequest request) {
+        roleService.sort(new RoleSortCommand(RequestListHelper.map(
+                readOrderedIds(request == null ? null : request.getOrderedIds()), RoleIdCodec::toDomain)));
         return true;
     }
 

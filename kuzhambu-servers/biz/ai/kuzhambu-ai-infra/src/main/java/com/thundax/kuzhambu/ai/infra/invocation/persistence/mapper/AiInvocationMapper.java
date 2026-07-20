@@ -143,6 +143,7 @@ public interface AiInvocationMapper extends BaseMapper<AiCallRecordDO> {
                 applied_at = #{appliedAt},
                 rejected_at = #{rejectedAt}
             where candidate_id = #{candidateId}
+              and status = 'PENDING'
             """)
     int updateCandidate(AiCandidateDO dataObject);
 }

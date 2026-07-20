@@ -452,15 +452,13 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sortTargets(ClassicsShareTargetSortCommand command) {
-        SortDirection effectiveDirection =
-                command == null || command.getSortDirection() == null ? SortDirection.ASC : command.getSortDirection();
         List<ClassicsShareTargetId> orderedIdList =
                 command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
         if (orderedIdList.isEmpty()) {
             throw sortEmptyInput();
         }
 
-        List<ClassicsShareTarget> currentTargets = repository.listTargets(effectiveDirection);
+        List<ClassicsShareTarget> currentTargets = repository.listTargets(SortDirection.ASC);
         if (currentTargets == null || currentTargets.isEmpty() || currentTargets.size() != orderedIdList.size()) {
             throw sortMissingId();
         }

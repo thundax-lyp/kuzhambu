@@ -56,15 +56,12 @@ class SancaiContentAdminControllerTest {
         SancaiContentSortRequest sortRequest = OBJECT_MAPPER.readValue(
                 """
                 {
-                  "entryId": 3001,
-                  "orderedIds": [9001, 9002],
-                  "sortDirection": "ASC"
+                  "orderedIds": [9001, 9002]
                 }
                 """,
                 SancaiContentSortRequest.class);
-        assertEquals(3001L, sortRequest.getEntryId());
         assertEquals(List.of(9001L, 9002L), sortRequest.getOrderedIds());
-        assertJsonFields(sortRequest, "entryId", "orderedIds", "sortDirection");
+        assertJsonFields(sortRequest, "orderedIds");
 
         JsonNode response = OBJECT_MAPPER.valueToTree(SancaiContentAdminControllerTest.contentController()
                 .listContents(request)
@@ -91,7 +88,6 @@ class SancaiContentAdminControllerTest {
         controller.deleteContent(request);
 
         SancaiContentSortRequest sortRequest = new SancaiContentSortRequest();
-        sortRequest.setEntryId(3001L);
         sortRequest.setOrderedIds(List.of(9001L, 9002L));
         assertEquals(true, controller.sortContents(sortRequest));
     }
@@ -125,9 +121,7 @@ class SancaiContentAdminControllerTest {
                         return null;
                     }
                     if ("sortQaPairs".equals(method.getName())) {
-                        assertEquals("SANCAI_ENTRY", args[0]);
-                        assertEquals(ClassicsContentId.of(3001L), args[1]);
-                        ContentQaPairSortCommand command = (ContentQaPairSortCommand) args[2];
+                        ContentQaPairSortCommand command = (ContentQaPairSortCommand) args[0];
                         assertEquals(
                                 List.of(ClassicsContentQaPairId.of(9001L), ClassicsContentQaPairId.of(9002L)),
                                 command.getOrderedIds());

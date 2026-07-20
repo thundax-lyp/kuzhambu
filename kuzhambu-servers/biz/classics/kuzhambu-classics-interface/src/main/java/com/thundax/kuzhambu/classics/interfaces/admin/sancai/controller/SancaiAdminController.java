@@ -433,14 +433,12 @@ public class SancaiAdminController {
     @SysLogger(value = "门类排序")
     @PostMapping("categories/sort")
     public Boolean sortCategories(@Valid @RequestBody SancaiCategorySortRequest request) {
-        service.sortCategories(new SancaiCategorySortCommand(
-                RequestListHelper.map(
-                        RequestListHelper.presentUnique(
-                                request == null ? null : request.getOrderedIds(),
-                                "orderedIds",
-                                AdminResponseExceptions::invalidParameter),
-                        SancaiCategoryIdCodec::toDomain),
-                request == null ? null : request.getSortDirection()));
+        service.sortCategories(new SancaiCategorySortCommand(RequestListHelper.map(
+                RequestListHelper.presentUnique(
+                        request == null ? null : request.getOrderedIds(),
+                        "orderedIds",
+                        AdminResponseExceptions::invalidParameter),
+                SancaiCategoryIdCodec::toDomain)));
         return true;
     }
 
@@ -456,14 +454,12 @@ public class SancaiAdminController {
     @SysLogger(value = "卷排序")
     @PostMapping("volumes/sort")
     public Boolean sortVolumes(@Valid @RequestBody SancaiVolumeSortRequest request) {
-        service.sortVolumes(new SancaiVolumeSortCommand(
-                RequestListHelper.map(
-                        RequestListHelper.presentUnique(
-                                request == null ? null : request.getOrderedIds(),
-                                "orderedIds",
-                                AdminResponseExceptions::invalidParameter),
-                        SancaiVolumeIdCodec::toDomain),
-                request == null ? null : request.getSortDirection()));
+        service.sortVolumes(new SancaiVolumeSortCommand(RequestListHelper.map(
+                RequestListHelper.presentUnique(
+                        request == null ? null : request.getOrderedIds(),
+                        "orderedIds",
+                        AdminResponseExceptions::invalidParameter),
+                SancaiVolumeIdCodec::toDomain)));
         return true;
     }
 
@@ -479,14 +475,12 @@ public class SancaiAdminController {
     @SysLogger(value = "条目排序")
     @PostMapping("entries/sort")
     public Boolean sortEntries(@Valid @RequestBody SancaiEntrySortRequest request) {
-        service.sortEntries(new SancaiEntrySortCommand(
-                RequestListHelper.map(
-                        RequestListHelper.presentUnique(
-                                request == null ? null : request.getOrderedIds(),
-                                "orderedIds",
-                                AdminResponseExceptions::invalidParameter),
-                        SancaiEntryIdCodec::toDomain),
-                request == null ? null : request.getSortDirection()));
+        service.sortEntries(new SancaiEntrySortCommand(RequestListHelper.map(
+                RequestListHelper.presentUnique(
+                        request == null ? null : request.getOrderedIds(),
+                        "orderedIds",
+                        AdminResponseExceptions::invalidParameter),
+                SancaiEntryIdCodec::toDomain)));
         return true;
     }
 

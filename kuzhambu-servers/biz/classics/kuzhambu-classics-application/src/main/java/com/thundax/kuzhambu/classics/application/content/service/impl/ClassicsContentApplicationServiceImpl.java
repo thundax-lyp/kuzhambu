@@ -173,17 +173,13 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sortTags(ContentTagSortCommand command) {
-        SortDirection effectiveDirection =
-                command == null || command.getSortDirection() == null ? SortDirection.ASC : command.getSortDirection();
-        String contentType = command == null ? null : command.getContentType();
-        ClassicsContentId contentId = command == null ? null : command.getContentId();
         List<ClassicsContentTagId> orderedIdList =
                 command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
-        if (StringUtils.isBlank(contentType) || contentId == null || orderedIdList.isEmpty()) {
+        if (orderedIdList.isEmpty()) {
             throw sortEmptyInput();
         }
 
-        List<ClassicsContentTag> currentTags = repository.listTags(contentType, contentId, effectiveDirection);
+        List<ClassicsContentTag> currentTags = repository.listTags(SortDirection.ASC);
         if (currentTags == null || currentTags.isEmpty() || currentTags.size() != orderedIdList.size()) {
             throw sortMissingId();
         }
@@ -208,7 +204,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             }
         }
 
-        int temporaryPriority = repository.maxTagPriority(contentType, contentId) + 1;
+        int temporaryPriority = repository.maxTagPriority(null, null) + 1;
         for (int i = 0; i < currentOrderedIds.size(); i++) {
             ClassicsContentTagId targetId = orderedIdList.get(i);
             ClassicsContentTagId currentId = currentOrderedIds.get(i);
@@ -345,17 +341,13 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sortQaPairs(ContentQaPairSortCommand command) {
-        SortDirection effectiveDirection =
-                command == null || command.getSortDirection() == null ? SortDirection.ASC : command.getSortDirection();
-        sortQaPairs(command, repository.listQaPairs(effectiveDirection));
+        sortQaPairs(command, repository.listQaPairs(SortDirection.ASC));
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sortQaPairs(String contentType, ClassicsContentId contentId, ContentQaPairSortCommand command) {
-        SortDirection effectiveDirection =
-                command == null || command.getSortDirection() == null ? SortDirection.ASC : command.getSortDirection();
-        sortQaPairs(command, repository.listQaPairs(contentType, contentId, effectiveDirection));
+        sortQaPairs(command, repository.listQaPairs(contentType, contentId, SortDirection.ASC));
     }
 
     private void sortQaPairs(ContentQaPairSortCommand command, List<ClassicsContentQaPair> currentQaPairs) {

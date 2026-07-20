@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.ai.application.refinement.service.impl;
 
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.refinement.command.AiRefinementRequestCommand;
+import com.thundax.kuzhambu.ai.application.refinement.configuration.AiRefinementExecutorConfiguration;
 import com.thundax.kuzhambu.ai.application.refinement.result.AiCandidateResult;
 import com.thundax.kuzhambu.ai.application.refinement.service.AiRefinementApplicationService;
 import com.thundax.kuzhambu.ai.application.refinement.service.AiRefinementTaskApplicationService;
@@ -18,10 +19,12 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -44,16 +47,21 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     private static final String STATUS_PARTIAL = "PARTIAL";
     private static final String STATUS_CANCELLED = "CANCELLED";
     private static final int RESULT_PREVIEW_MAX_LENGTH = 500;
+    private static final int STREAM_EVENT_HISTORY_LIMIT = 100;
     private static final Duration STREAM_SUBSCRIBE_TIMEOUT = Duration.ofMinutes(10L);
 
     private final AiRefinementTaskRepository taskRepository;
     private final AiRefinementApplicationService refinementApplicationService;
+    private final Executor taskExecutor;
     private final ConcurrentHashMap<Long, TaskStreamHub> streamHubs = new ConcurrentHashMap<>();
 
     public AiRefinementTaskApplicationServiceImpl(
-            AiRefinementTaskRepository taskRepository, AiRefinementApplicationService refinementApplicationService) {
+            AiRefinementTaskRepository taskRepository,
+            AiRefinementApplicationService refinementApplicationService,
+            @Qualifier(AiRefinementExecutorConfiguration.TASK_EXECUTOR) Executor taskExecutor) {
         this.taskRepository = taskRepository;
         this.refinementApplicationService = refinementApplicationService;
+        this.taskExecutor = taskExecutor;
     }
 
     @Override
@@ -122,7 +130,13 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         }
         TaskStreamHub hub = streamHubs.computeIfAbsent(taskId, ignored -> new TaskStreamHub());
         publishSnapshotIfTerminal(hub, task);
-        hub.subscribe(eventConsumer, STREAM_SUBSCRIBE_TIMEOUT);
+        try {
+            hub.subscribe(eventConsumer, STREAM_SUBSCRIBE_TIMEOUT);
+        } finally {
+            if (hub.hasTerminalEvent()) {
+                streamHubs.remove(taskId, hub);
+            }
+        }
     }
 
     @Override
@@ -138,7 +152,10 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
             return task;
         }
         task.markCancelled(Instant.now());
-        taskRepository.update(task);
+        if (taskRepository.updateWhenStatusIn(task, List.of(STATUS_PENDING, STATUS_RUNNING)) == 0) {
+            return getRequiredTask(taskId);
+        }
+        publishTerminalEvent(taskId, task, null);
         return task;
     }
 
@@ -157,7 +174,9 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
             return;
         }
         task.markRunning(Instant.now());
-        taskRepository.update(task);
+        if (taskRepository.updateWhenStatusIn(task, List.of(STATUS_PENDING)) == 0) {
+            return;
+        }
 
         AiCandidateResult result;
         try {
@@ -186,12 +205,18 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
             latestTask.setModelName(command.getModelName());
         }
         applyResult(latestTask, result);
-        taskRepository.update(latestTask);
+        if (taskRepository.updateWhenStatusIn(latestTask, List.of(STATUS_RUNNING)) == 0) {
+            AiRefinementTask finalTask = taskRepository.get(taskId);
+            if (finalTask != null && isTerminal(finalTask.getStatus())) {
+                publishTerminalEvent(taskId, finalTask, null);
+            }
+            return;
+        }
         publishTerminalEvent(taskId, latestTask, result);
     }
 
     private void scheduleTaskExecution(Long taskId, AiRefinementRequestCommand command) {
-        Runnable task = () -> CompletableFuture.runAsync(() -> executeTaskSafely(taskId, command));
+        Runnable task = () -> CompletableFuture.runAsync(() -> executeTaskSafely(taskId, command), taskExecutor);
         if (!TransactionSynchronizationManager.isSynchronizationActive()) {
             task.run();
             return;
@@ -214,7 +239,9 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         task.setErrorMessage(exception.getMessage());
         task.setCompletedAt(Instant.now());
         task.setStatus(STATUS_FAILED);
-        taskRepository.update(task);
+        if (taskRepository.updateWhenStatusIn(task, List.of(STATUS_PENDING, STATUS_RUNNING)) == 0) {
+            return;
+        }
         publishTerminalEvent(
                 taskId,
                 task,
@@ -370,14 +397,17 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         }
         TaskStreamHub hub = streamHubs.computeIfAbsent(taskId, ignored -> new TaskStreamHub());
         if (hub.hasTerminalEvent()) {
+            streamHubs.remove(taskId, hub);
             return;
         }
         if (STATUS_SUCCEEDED.equals(task.getStatus())) {
             hub.publish(toCompletedEvent(task, result));
+            streamHubs.remove(taskId, hub);
             return;
         }
         if (isTerminal(task.getStatus())) {
             hub.publish(toErrorEvent(task));
+            streamHubs.remove(taskId, hub);
         }
     }
 
@@ -458,6 +488,9 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
             List<Consumer<AiStreamEventResult>> currentConsumers;
             synchronized (this) {
                 events.add(event);
+                if (events.size() > STREAM_EVENT_HISTORY_LIMIT) {
+                    events.remove(0);
+                }
                 if (event.isCompleted() || event.isError()) {
                     terminalEvent = true;
                     terminalLatch.countDown();

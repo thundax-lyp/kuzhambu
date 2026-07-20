@@ -1,7 +1,6 @@
 package com.thundax.kuzhambu.classics.application.sancai.command;
 
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiCategoryId;
-import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,5 +14,4 @@ import lombok.Setter;
 public class SancaiCategorySortCommand {
 
     private List<SancaiCategoryId> orderedIds;
-    private SortDirection sortDirection;
 }

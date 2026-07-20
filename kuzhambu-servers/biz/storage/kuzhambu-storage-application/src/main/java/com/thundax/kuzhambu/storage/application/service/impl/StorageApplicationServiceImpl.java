@@ -127,8 +127,6 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sort(StorageSortCommand command) {
-        SortDirection effectiveDirection =
-                command == null || command.getSortDirection() == null ? SortDirection.ASC : command.getSortDirection();
         List<StoredObjectId> orderedIdList =
                 command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
         if (orderedIdList.isEmpty()) {
@@ -138,7 +136,7 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
                     ErrorCode.SORT_EMPTY_INPUT.getMessage());
         }
 
-        List<StoredObject> currentStorage = dao.list(null, null, null, null, null, null, null, effectiveDirection);
+        List<StoredObject> currentStorage = dao.list(null, null, null, null, null, null, null, SortDirection.ASC);
         if (currentStorage == null || currentStorage.isEmpty()) {
             throw new BizException(
                     ErrorCode.SORT_MISSING_ID.getCode(),

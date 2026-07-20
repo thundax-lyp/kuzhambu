@@ -383,26 +383,22 @@ class SancaiAssetApplicationServiceImplTest {
     }
 
     @Test
-    void sortImagesShouldUseEntryScopedImageList() {
+    void sortImagesShouldUseGlobalImageList() {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
         SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(repository, null, null, null);
         SancaiEntryImage first = image(8001L, 3001L, 7001L);
         first.setPriority(1);
         SancaiEntryImage second = image(8002L, 3001L, 7002L);
         second.setPriority(2);
-        when(repository.listImagesByEntryId(
-                        SancaiEntryId.of(3001L), com.thundax.kuzhambu.common.core.sort.SortDirection.ASC))
+        when(repository.listImages(com.thundax.kuzhambu.common.core.sort.SortDirection.ASC))
                 .thenReturn(List.of(first, second));
         when(repository.maxPriority()).thenReturn(9);
         when(repository.updatePriority(org.mockito.ArgumentMatchers.any())).thenReturn(1);
 
-        service.sortImages(new SancaiEntryImageSortCommand(
-                SancaiEntryId.of(3001L),
-                List.of(SancaiEntryImageId.of(8002L), SancaiEntryImageId.of(8001L)),
-                com.thundax.kuzhambu.common.core.sort.SortDirection.ASC));
+        service.sortImages(
+                new SancaiEntryImageSortCommand(List.of(SancaiEntryImageId.of(8002L), SancaiEntryImageId.of(8001L))));
 
-        verify(repository)
-                .listImagesByEntryId(SancaiEntryId.of(3001L), com.thundax.kuzhambu.common.core.sort.SortDirection.ASC);
+        verify(repository).listImages(com.thundax.kuzhambu.common.core.sort.SortDirection.ASC);
         ArgumentCaptor<SancaiEntryImage> priorityCaptor = ArgumentCaptor.forClass(SancaiEntryImage.class);
         verify(repository, times(3)).updatePriority(priorityCaptor.capture());
         assertEquals(

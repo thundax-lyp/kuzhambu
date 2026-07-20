@@ -1098,6 +1098,11 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         }
 
         @Override
+        public List<ClassicsContentTag> listTags(com.thundax.kuzhambu.common.core.sort.SortDirection sortDirection) {
+            return tags;
+        }
+
+        @Override
         public int maxTagPriority(String contentType, ClassicsContentId contentId) {
             return tags.size();
         }

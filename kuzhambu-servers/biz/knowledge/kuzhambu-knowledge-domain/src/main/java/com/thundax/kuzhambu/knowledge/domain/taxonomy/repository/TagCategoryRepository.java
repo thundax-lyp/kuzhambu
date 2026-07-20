@@ -17,6 +17,8 @@ public interface TagCategoryRepository {
 
     int update(TagCategory entity);
 
+    int maxPriority();
+
     int updateStatus(TagCategory entity);
 
     int countByName(String name, TagCategoryId excludedId);

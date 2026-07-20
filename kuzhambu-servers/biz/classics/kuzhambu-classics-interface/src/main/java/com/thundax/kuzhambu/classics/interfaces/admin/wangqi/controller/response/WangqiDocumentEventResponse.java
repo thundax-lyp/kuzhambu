@@ -38,8 +38,4 @@ public class WangqiDocumentEventResponse implements Serializable {
     @Schema(name = "summary", description = "事件摘要")
     @JsonProperty("summary")
     private String summary;
-
-    @Schema(name = "priority", description = "事件排序")
-    @JsonProperty("priority")
-    private Integer priority;
 }

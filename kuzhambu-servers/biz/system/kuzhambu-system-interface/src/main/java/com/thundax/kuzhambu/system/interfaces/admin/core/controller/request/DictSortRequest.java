@@ -3,7 +3,6 @@ package com.thundax.kuzhambu.system.interfaces.admin.core.controller.request;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
@@ -21,8 +20,4 @@ public class DictSortRequest {
     @JsonProperty(value = "orderedIds")
     @NotEmpty(message = "orderedIds不能为空")
     private List<String> orderedIds;
-
-    @Schema(name = "sortDirection", description = "排序方向")
-    @JsonProperty(value = "sortDirection")
-    private SortDirection sortDirection = SortDirection.ASC;
 }

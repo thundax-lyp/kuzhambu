@@ -8,6 +8,7 @@ import com.thundax.kuzhambu.ai.infra.refinement.persistence.mapper.AiRefinementT
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.springframework.stereotype.Repository;
 
@@ -41,11 +42,28 @@ public class AiRefinementTaskRepositoryImpl implements AiRefinementTaskRepositor
 
     @Override
     public int update(AiRefinementTask task) {
+        return updateWithWrapper(
+                task,
+                new LambdaUpdateWrapper<AiRefinementTaskDO>().eq(AiRefinementTaskDO::getTaskId, task.getTaskId()));
+    }
+
+    @Override
+    public int updateWhenStatusIn(AiRefinementTask task, Collection<String> statuses) {
+        if (statuses == null || statuses.isEmpty()) {
+            return 0;
+        }
+        return updateWithWrapper(
+                task,
+                new LambdaUpdateWrapper<AiRefinementTaskDO>()
+                        .eq(AiRefinementTaskDO::getTaskId, task.getTaskId())
+                        .in(AiRefinementTaskDO::getStatus, statuses));
+    }
+
+    private int updateWithWrapper(AiRefinementTask task, LambdaUpdateWrapper<AiRefinementTaskDO> updateWrapper) {
         AiRefinementTaskDO dataObject = toTaskObject(task);
         return aiRefinementTaskMapper.update(
                 null,
-                new LambdaUpdateWrapper<AiRefinementTaskDO>()
-                        .eq(AiRefinementTaskDO::getTaskId, dataObject.getTaskId())
+                updateWrapper
                         .set(AiRefinementTaskDO::getScope, dataObject.getScope())
                         .set(AiRefinementTaskDO::getCapability, dataObject.getCapability())
                         .set(AiRefinementTaskDO::getContentType, dataObject.getContentType())

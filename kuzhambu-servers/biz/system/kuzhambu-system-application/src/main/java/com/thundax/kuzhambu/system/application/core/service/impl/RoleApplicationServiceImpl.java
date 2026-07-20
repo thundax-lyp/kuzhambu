@@ -85,8 +85,6 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sort(RoleSortCommand command) {
-        SortDirection effectiveDirection =
-                command == null || command.getSortDirection() == null ? SortDirection.ASC : command.getSortDirection();
         List<RoleId> orderedIdList =
                 command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
         if (orderedIdList.isEmpty()) {
@@ -122,7 +120,7 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
             }
         }
 
-        List<Role> currentRoles = dao.list(effectiveDirection);
+        List<Role> currentRoles = dao.list(SortDirection.ASC);
         if (currentRoles == null || currentRoles.isEmpty()) {
             throw new BizException(
                     ErrorCode.SORT_MISSING_ID.getCode(),
