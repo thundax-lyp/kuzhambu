@@ -94,7 +94,6 @@ public final class SancaiAssetInterfaceAssembler {
                                         : image.getImageType().value())
                         .title(image.getTitle())
                         .currentUsed(image.isCurrentUsed())
-                        .priority(image.getPriority())
                         .build();
     }
 

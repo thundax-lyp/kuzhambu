@@ -43,9 +43,6 @@ public class ClassicsSharePortalTargetResponse implements Serializable {
     @JsonProperty("targetStatus")
     private String targetStatus;
 
-    @JsonProperty("priority")
-    private Integer priority;
-
     @Getter
     @Builder
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -98,9 +95,6 @@ public class ClassicsSharePortalTargetResponse implements Serializable {
 
         @JsonProperty("currentUsed")
         private Boolean currentUsed;
-
-        @JsonProperty("priority")
-        private Integer priority;
 
         @JsonProperty("storageObject")
         private ResourceResponse storageObject;

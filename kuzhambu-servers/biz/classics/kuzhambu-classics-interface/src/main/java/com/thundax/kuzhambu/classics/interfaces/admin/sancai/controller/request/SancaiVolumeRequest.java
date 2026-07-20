@@ -22,7 +22,4 @@ public class SancaiVolumeRequest {
 
     @JsonProperty("volumeType")
     private String volumeType;
-
-    @JsonProperty("priority")
-    private Integer priority;
 }

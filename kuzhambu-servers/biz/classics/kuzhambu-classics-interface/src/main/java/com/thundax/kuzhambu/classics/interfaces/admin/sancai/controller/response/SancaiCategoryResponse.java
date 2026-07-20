@@ -20,7 +20,4 @@ public class SancaiCategoryResponse implements Serializable {
 
     @JsonProperty("categoryType")
     private String categoryType;
-
-    @JsonProperty("priority")
-    private Integer priority;
 }

@@ -19,7 +19,4 @@ public class SancaiCategoryRequest {
 
     @JsonProperty("categoryType")
     private String categoryType;
-
-    @JsonProperty("priority")
-    private Integer priority;
 }

@@ -213,15 +213,13 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sortKeywords(MingCustomsKeywordSortCommand command) {
-        SortDirection effectiveDirection =
-                command == null || command.getSortDirection() == null ? SortDirection.ASC : command.getSortDirection();
         List<MingCustomsKeywordId> orderedIdList =
                 command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
         if (orderedIdList.isEmpty()) {
             throw sortEmptyInput();
         }
 
-        List<MingCustomsKeyword> currentKeywords = repository.listKeywords(effectiveDirection);
+        List<MingCustomsKeyword> currentKeywords = repository.listKeywords(SortDirection.ASC);
         if (currentKeywords == null || currentKeywords.isEmpty() || currentKeywords.size() != orderedIdList.size()) {
             throw sortMissingId();
         }

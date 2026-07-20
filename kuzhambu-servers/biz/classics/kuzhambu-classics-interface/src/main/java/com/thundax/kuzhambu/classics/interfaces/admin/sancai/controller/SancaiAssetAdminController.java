@@ -213,15 +213,12 @@ public class SancaiAssetAdminController {
     @SysLogger(value = "图片排序")
     @PostMapping("images/sort")
     public Boolean sortImages(@Valid @RequestBody SancaiEntryImageSortRequest request) {
-        service.sortImages(new SancaiEntryImageSortCommand(
-                SancaiEntryIdCodec.toDomain(requireLong(request == null ? null : request.getEntryId(), "entryId")),
-                RequestListHelper.map(
-                        RequestListHelper.presentUnique(
-                                request == null ? null : request.getOrderedIds(),
-                                "orderedIds",
-                                AdminResponseExceptions::invalidParameter),
-                        SancaiEntryImageIdCodec::toDomain),
-                request == null ? null : request.getSortDirection()));
+        service.sortImages(new SancaiEntryImageSortCommand(RequestListHelper.map(
+                RequestListHelper.presentUnique(
+                        request == null ? null : request.getOrderedIds(),
+                        "orderedIds",
+                        AdminResponseExceptions::invalidParameter),
+                SancaiEntryImageIdCodec::toDomain)));
         return true;
     }
 

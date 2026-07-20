@@ -189,15 +189,13 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sortCategories(SancaiCategorySortCommand command) {
-        SortDirection effectiveDirection =
-                command == null || command.getSortDirection() == null ? SortDirection.ASC : command.getSortDirection();
         List<SancaiCategoryId> orderedIdList =
                 command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
         if (orderedIdList.isEmpty()) {
             throw sortEmptyInput();
         }
 
-        List<SancaiCategory> currentCategories = repository.listCategories(effectiveDirection);
+        List<SancaiCategory> currentCategories = repository.listCategories(SortDirection.ASC);
         if (currentCategories == null
                 || currentCategories.isEmpty()
                 || currentCategories.size() != orderedIdList.size()) {
@@ -247,15 +245,13 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sortVolumes(SancaiVolumeSortCommand command) {
-        SortDirection effectiveDirection =
-                command == null || command.getSortDirection() == null ? SortDirection.ASC : command.getSortDirection();
         List<SancaiVolumeId> orderedIdList =
                 command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
         if (orderedIdList.isEmpty()) {
             throw sortEmptyInput();
         }
 
-        List<SancaiVolume> currentVolumes = repository.listVolumes(effectiveDirection);
+        List<SancaiVolume> currentVolumes = repository.listVolumes(SortDirection.ASC);
         if (currentVolumes == null || currentVolumes.isEmpty() || currentVolumes.size() != orderedIdList.size()) {
             throw sortMissingId();
         }
@@ -303,15 +299,13 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sortEntries(SancaiEntrySortCommand command) {
-        SortDirection effectiveDirection =
-                command == null || command.getSortDirection() == null ? SortDirection.ASC : command.getSortDirection();
         List<SancaiEntryId> orderedIdList =
                 command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
         if (orderedIdList.isEmpty()) {
             throw sortEmptyInput();
         }
 
-        List<SancaiEntry> currentEntries = repository.listEntries(effectiveDirection);
+        List<SancaiEntry> currentEntries = repository.listEntries(SortDirection.ASC);
         if (currentEntries == null || currentEntries.isEmpty() || currentEntries.size() != orderedIdList.size()) {
             throw sortMissingId();
         }

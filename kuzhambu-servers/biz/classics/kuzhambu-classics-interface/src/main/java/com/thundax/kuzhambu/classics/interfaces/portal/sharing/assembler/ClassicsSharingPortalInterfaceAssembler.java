@@ -108,7 +108,6 @@ public final class ClassicsSharingPortalInterfaceAssembler {
                 .images(deleted ? null : toImageResponses(target, snapshot, shareToken, resourcePathPrefix))
                 .contentVisibilitySnapshot(value(target.getContentVisibilitySnapshot()))
                 .targetStatus(value(target.getTargetStatus()))
-                .priority(target.getPriority())
                 .build();
     }
 
@@ -156,7 +155,6 @@ public final class ClassicsSharingPortalInterfaceAssembler {
                 .imageType(textValue(image.get("imageType")))
                 .title(textValue(image.get("title")))
                 .currentUsed(booleanValue(image.get("currentUsed")))
-                .priority(intValue(image.get("priority")))
                 .storageObject(toResourceResponse(
                         storageObjectId,
                         textValue(image.get("originalFilename")),
@@ -207,10 +205,6 @@ public final class ClassicsSharingPortalInterfaceAssembler {
         return node == null || node.isNull() ? null : node.asLong();
     }
 
-    private static Integer intValue(JsonNode node) {
-        return node == null || node.isNull() ? null : node.asInt();
-    }
-
     private static Boolean booleanValue(JsonNode node) {
         return node == null || node.isNull() ? null : node.asBoolean();
     }
@@ -253,7 +247,6 @@ public final class ClassicsSharingPortalInterfaceAssembler {
                 .titleSnapshot(item.getTitleSnapshot())
                 .contentVisibilitySnapshot(value(item.getContentVisibilitySnapshot()))
                 .targetStatus(value(item.getTargetStatus()))
-                .priority(item.getPriority())
                 .build();
     }
 

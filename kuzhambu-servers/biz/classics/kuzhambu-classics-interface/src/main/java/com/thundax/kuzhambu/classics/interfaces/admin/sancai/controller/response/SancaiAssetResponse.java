@@ -34,9 +34,6 @@ public class SancaiAssetResponse implements Serializable {
     @JsonProperty("currentUsed")
     private Boolean currentUsed;
 
-    @JsonProperty("priority")
-    private Integer priority;
-
     @JsonProperty("originalFilename")
     private String originalFilename;
 

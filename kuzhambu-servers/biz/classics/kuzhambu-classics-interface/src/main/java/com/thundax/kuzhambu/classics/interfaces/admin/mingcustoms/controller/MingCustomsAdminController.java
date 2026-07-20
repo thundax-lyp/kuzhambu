@@ -157,14 +157,12 @@ public class MingCustomsAdminController {
     @SysLogger(value = "关键词排序")
     @PostMapping("keywords/sort")
     public Boolean sortKeywords(@Valid @RequestBody MingCustomsKeywordSortRequest request) {
-        service.sortKeywords(new MingCustomsKeywordSortCommand(
-                RequestListHelper.map(
-                        RequestListHelper.presentUnique(
-                                request == null ? null : request.getOrderedIds(),
-                                "orderedIds",
-                                AdminResponseExceptions::invalidParameter),
-                        MingCustomsKeywordIdCodec::toDomain),
-                request == null ? null : request.getSortDirection()));
+        service.sortKeywords(new MingCustomsKeywordSortCommand(RequestListHelper.map(
+                RequestListHelper.presentUnique(
+                        request == null ? null : request.getOrderedIds(),
+                        "orderedIds",
+                        AdminResponseExceptions::invalidParameter),
+                MingCustomsKeywordIdCodec::toDomain)));
         return true;
     }
 

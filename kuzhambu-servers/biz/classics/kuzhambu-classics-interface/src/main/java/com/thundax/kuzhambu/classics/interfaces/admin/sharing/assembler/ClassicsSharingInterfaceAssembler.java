@@ -145,7 +145,6 @@ public final class ClassicsSharingInterfaceAssembler {
                 .titleSnapshot(target.getTitleSnapshot())
                 .contentVisibilitySnapshot(value(target.getContentVisibilitySnapshot()))
                 .targetStatus(value(target.getTargetStatus()))
-                .priority(target.getPriority())
                 .build();
     }
 

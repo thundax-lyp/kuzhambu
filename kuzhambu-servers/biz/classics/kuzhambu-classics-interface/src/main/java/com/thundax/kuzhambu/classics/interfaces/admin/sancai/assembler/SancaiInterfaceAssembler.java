@@ -84,10 +84,7 @@ public final class SancaiInterfaceAssembler {
 
     public static SancaiCategoryCommand toCommand(SancaiCategoryRequest request) {
         return new SancaiCategoryCommand(
-                request.getId(),
-                request.getTitle(),
-                fromCategoryType(request.getCategoryType()),
-                request.getPriority());
+                request.getId(), request.getTitle(), fromCategoryType(request.getCategoryType()), null);
     }
 
     public static SancaiVolumeCommand toCommand(SancaiVolumeRequest request) {
@@ -96,7 +93,7 @@ public final class SancaiInterfaceAssembler {
                 request.getCategoryId(),
                 request.getTitle(),
                 fromVolumeType(request.getVolumeType()),
-                request.getPriority());
+                null);
     }
 
     public static List<DictResponse> toCategoryTypes() {
@@ -140,7 +137,6 @@ public final class SancaiInterfaceAssembler {
                 .imageStatus(value(entity.getImageStatus()))
                 .visualAssetStatus(value(entity.getVisualAssetStatus()))
                 .refinementStatus(value(entity.getRefinementStatus()))
-                .priority(entity.getPriority())
                 .currentVersionId(ClassicsContentVersionIdCodec.toValue(entity.getCurrentVersionId()))
                 .currentVersionNo(entity.getCurrentVersionNo())
                 .currentVersionedAt(entity.getCurrentVersionedAt())
@@ -179,7 +175,6 @@ public final class SancaiInterfaceAssembler {
                 .id(entity.getId() == null ? null : entity.getId().value())
                 .title(entity.getTitle())
                 .categoryType(value(entity.getCategoryType()))
-                .priority(entity.getPriority())
                 .build();
     }
 
@@ -195,7 +190,6 @@ public final class SancaiInterfaceAssembler {
                                 : entity.getCategoryId().value())
                 .title(entity.getTitle())
                 .volumeType(value(entity.getVolumeType()))
-                .priority(entity.getPriority())
                 .build();
     }
 

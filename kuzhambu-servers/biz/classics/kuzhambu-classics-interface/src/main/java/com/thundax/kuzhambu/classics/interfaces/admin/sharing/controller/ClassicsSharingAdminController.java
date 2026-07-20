@@ -130,14 +130,12 @@ public class ClassicsSharingAdminController {
     @SysLogger(value = "目标排序")
     @PostMapping("targets/sort")
     public Boolean sortTargets(@Valid @RequestBody ClassicsShareTargetSortRequest request) {
-        service.sortTargets(new ClassicsShareTargetSortCommand(
-                RequestListHelper.map(
-                        RequestListHelper.presentUnique(
-                                request == null ? null : request.getOrderedIds(),
-                                "orderedIds",
-                                AdminResponseExceptions::invalidParameter),
-                        ClassicsShareTargetIdCodec::toDomain),
-                request == null ? null : request.getSortDirection()));
+        service.sortTargets(new ClassicsShareTargetSortCommand(RequestListHelper.map(
+                RequestListHelper.presentUnique(
+                        request == null ? null : request.getOrderedIds(),
+                        "orderedIds",
+                        AdminResponseExceptions::invalidParameter),
+                ClassicsShareTargetIdCodec::toDomain)));
         return true;
     }
 

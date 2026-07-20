@@ -452,7 +452,6 @@ class ClassicsContentAdminControllerTest {
         assertEquals("礼制", listed.get("tagNameSnapshot").asText());
         assertEquals("MANUAL", listed.get("source").asText());
         assertEquals("ACTIVE", listed.get("status").asText());
-        assertEquals(1, listed.get("priority").asInt());
     }
 
     @Test
@@ -492,13 +491,11 @@ class ClassicsContentAdminControllerTest {
     }
 
     @Test
-    void sortTagsShouldMapScopedRequestToCommand() {
+    void sortTagsShouldMapOrderedIdsToCommand() {
         ClassicsContentAdminController controller = controller();
         var request =
                 new com.thundax.kuzhambu.classics.interfaces.admin.content.controller.request
                         .ClassicsContentTagSortRequest();
-        request.setContentType("SANCAI_ENTRY");
-        request.setContentId(456L);
         request.setOrderedIds(List.of(2L, 1L));
 
         assertTrue(controller.sortTags(request));
@@ -789,8 +786,6 @@ class ClassicsContentAdminControllerTest {
                     }
                     if ("sortTags".equals(method.getName())) {
                         ContentTagSortCommand command = (ContentTagSortCommand) args[0];
-                        assertEquals("SANCAI_ENTRY", command.getContentType());
-                        assertEquals(456L, command.getContentId().value());
                         assertEquals(
                                 List.of(2L, 1L),
                                 command.getOrderedIds().stream()

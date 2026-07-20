@@ -89,6 +89,13 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
     }
 
     @Override
+    public List<ClassicsContentTag> listTags(SortDirection sortDirection) {
+        return ClassicsContentPersistenceAssembler.toTagDomainList(
+                tagMapper.selectList(new LambdaQueryWrapper<ClassicsContentTagDO>()
+                        .orderBy(true, sortDirection != SortDirection.DESC, ClassicsContentTagDO::getPriority)));
+    }
+
+    @Override
     public int maxTagPriority(String contentType, ClassicsContentId contentId) {
         return maxPriority(tagMapper.selectObjs(new QueryWrapper<ClassicsContentTagDO>()
                 .select("max(priority)")

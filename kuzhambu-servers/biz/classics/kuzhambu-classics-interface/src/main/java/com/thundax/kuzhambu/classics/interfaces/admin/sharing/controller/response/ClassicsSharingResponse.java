@@ -81,8 +81,5 @@ public class ClassicsSharingResponse implements Serializable {
 
         @JsonProperty("targetStatus")
         private String targetStatus;
-
-        @JsonProperty("priority")
-        private Integer priority;
     }
 }

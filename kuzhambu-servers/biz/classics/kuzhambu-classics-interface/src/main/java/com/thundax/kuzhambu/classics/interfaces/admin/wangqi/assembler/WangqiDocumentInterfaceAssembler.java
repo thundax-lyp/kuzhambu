@@ -135,7 +135,6 @@ public final class WangqiDocumentInterfaceAssembler {
                         .occurredAt(event.getOccurredAt())
                         .occurredLabel(event.getOccurredLabel())
                         .summary(event.getSummary())
-                        .priority(event.getPriority())
                         .build();
     }
 

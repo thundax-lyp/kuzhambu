@@ -21,7 +21,4 @@ public class SancaiPortalVolumeResponse implements Serializable {
 
     @JsonProperty("volumeType")
     private String volumeType;
-
-    @JsonProperty("priority")
-    private Integer priority;
 }
