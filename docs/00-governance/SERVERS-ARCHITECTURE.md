@@ -48,7 +48,7 @@
 - `kuzhambu-servers/biz/classics/`：古籍域，承载三才图会、王圻文档、明代习俗和分享。
 - `kuzhambu-servers/biz/ai/`：AI 生产域，承载 AI 配置、提示词和 AI 内容精修。
 - `kuzhambu-servers/biz/knowledge/`：知识组织域，承载标签、同义词、实体关系精修和知识图谱。
-- `kuzhambu-servers/biz/discovery/`：知识发现域，承载搜索和智能问答。
+- `kuzhambu-servers/biz/discovery/`：知识发现域，承载知识检索和知识问答。
 - `kuzhambu-servers/biz/operations/`：运营运维域，承载看板、报表、任务台账和维护操作记录。
 - `kuzhambu-servers/starter/kuzhambu-admin-starter/`：后台启动应用，只负责后台运行时装配。
 - `kuzhambu-servers/starter/kuzhambu-portal-starter/`：前台启动应用，只负责前台运行时装配。

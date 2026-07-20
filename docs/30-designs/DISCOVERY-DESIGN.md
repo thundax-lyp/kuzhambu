@@ -2,7 +2,7 @@
 
 ## Purpose
 
-本文档定义 Discovery 域设计，覆盖跨库搜索和智能问答。
+本文档定义 Discovery 域设计，覆盖跨库知识检索和知识问答。
 
 当前阶段已完成 `Search` 子能力域运行时闭环，并完成 Discovery QA 的 Portal 问答和 Admin 运维闭环。
 
@@ -167,7 +167,7 @@ Admin 入口：
 Portal/Admin 通用入口：
 
 - 跨库搜索。
-- OpenAI-compatible 智能问答。
+- OpenAI-compatible 知识问答。
 - 王圻文档单文档追加式问答。
 - 会话列表、删除和导出。
 
