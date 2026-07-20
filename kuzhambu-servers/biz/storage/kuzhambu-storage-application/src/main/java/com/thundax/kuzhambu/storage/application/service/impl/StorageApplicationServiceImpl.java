@@ -22,6 +22,7 @@ import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContentRepository;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectReferenceRepository;
@@ -411,6 +412,19 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         if (storage == null) {
             return false;
         }
+        if (StoredObjectStatus.ACTIVE != storage.getObjectStatus()) {
+            return false;
+        }
+        if (query.getReferenceStatus() != null && query.getReferenceStatus() != storage.getReferenceStatus()) {
+            return false;
+        }
+        if (StringUtils.isNotBlank(query.getReferenceOwnerType())
+                || StringUtils.isNotBlank(query.getReferenceOwnerId())) {
+            return StringUtils.isNotBlank(query.getReferenceOwnerType())
+                    && StringUtils.isNotBlank(query.getReferenceOwnerId())
+                    && businessRepository.exists(new StoredObjectReference(
+                            query.getId(), query.getReferenceOwnerId(), query.getReferenceOwnerType(), null));
+        }
         return StoredObjectReferenceStatus.REFERENCED == storage.getReferenceStatus();
     }
 
@@ -422,6 +436,9 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         StoredObject storage = get(id);
         if (storage == null) {
             throw new BizException("Storage object not found: " + StoredObjectIdCodec.toStringValue(id));
+        }
+        if (StoredObjectStatus.ACTIVE != storage.getObjectStatus()) {
+            throw new BizException("Storage object is not active: " + StoredObjectIdCodec.toStringValue(id));
         }
         try {
             return new StoredObjectContent(storage, storedObjectContentRepository.open(storage));

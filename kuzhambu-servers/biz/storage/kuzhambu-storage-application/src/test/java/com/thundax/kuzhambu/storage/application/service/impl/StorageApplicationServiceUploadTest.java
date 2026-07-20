@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.storage.application.service.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -15,6 +16,7 @@ import static org.mockito.Mockito.when;
 import com.thundax.kuzhambu.storage.application.service.command.AddStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.service.command.RemoveStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.service.command.UploadStorageObjectCommand;
+import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
 import com.thundax.kuzhambu.storage.application.service.result.StorageUploadResult;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
@@ -216,5 +218,44 @@ class StorageApplicationServiceUploadTest {
                 .updateReferenceStatus(argThat(storage -> storage.getId().equals(StoredObjectId.of(101L))
                         && storage.getReferenceStatus() == StoredObjectReferenceStatus.REFERENCED));
         verify(storageRepository, times(2)).updateReferenceStatus(any());
+    }
+
+    @Test
+    void existsReadableContentShouldRequireMatchingOwnerReference() {
+        StoredObjectReferenceRepository referenceRepository = mock(StoredObjectReferenceRepository.class);
+        StoredObjectRepository storageRepository = mock(StoredObjectRepository.class);
+        StorageApplicationServiceImpl service = new StorageApplicationServiceImpl(
+                storageRepository, referenceRepository, mock(StoredObjectContentRepository.class));
+        StoredObject storage = storage(StoredObjectId.of(100L), StoredObjectStatus.ACTIVE);
+        storage.setReferenceStatus(StoredObjectReferenceStatus.REFERENCED);
+        when(storageRepository.getById(StoredObjectId.of(100L))).thenReturn(storage);
+        when(referenceRepository.exists(any())).thenReturn(false);
+
+        StorageQuery query = new StorageQuery();
+        query.setId(StoredObjectId.of(100L));
+        query.setReferenceOwnerType(StorageOwnerType.USER.value());
+        query.setReferenceOwnerId("owner-2");
+
+        assertFalse(service.existsReadableContent(query));
+    }
+
+    @Test
+    void openReadableContentShouldRejectInactiveObject() {
+        StoredObjectRepository storageRepository = mock(StoredObjectRepository.class);
+        StorageApplicationServiceImpl service = new StorageApplicationServiceImpl(
+                storageRepository,
+                mock(StoredObjectReferenceRepository.class),
+                mock(StoredObjectContentRepository.class));
+        StoredObject storage = storage(StoredObjectId.of(100L), StoredObjectStatus.DELETING);
+        when(storageRepository.getById(StoredObjectId.of(100L))).thenReturn(storage);
+
+        assertThrows(RuntimeException.class, () -> service.openReadableContent(StoredObjectId.of(100L)));
+    }
+
+    private static StoredObject storage(StoredObjectId id, StoredObjectStatus status) {
+        StoredObject storage = new StoredObject();
+        storage.setId(id);
+        storage.setObjectStatus(status);
+        return storage;
     }
 }
