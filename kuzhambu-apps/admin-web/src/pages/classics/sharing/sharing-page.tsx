@@ -590,6 +590,7 @@ export const SharingPage = () => {
             />
 
             <KuzhambuDrawer
+                testId="classics-sharing-sharing-drawer"
                 destroyOnClose
                 open={Boolean(selectedShareId)}
                 title="分享详情"

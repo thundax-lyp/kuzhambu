@@ -1,22 +1,26 @@
 package com.thundax.kuzhambu.discovery.application.search.service;
 
 import com.thundax.kuzhambu.common.core.page.PageResult;
-import com.thundax.kuzhambu.discovery.application.search.command.SearchClickCreateCommand;
-import com.thundax.kuzhambu.discovery.application.search.query.SearchAnalysisSummaryQuery;
-import com.thundax.kuzhambu.discovery.application.search.query.SearchLogPageQuery;
+import com.thundax.kuzhambu.discovery.application.search.command.SearchClickEventCreateCommand;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchEventPageQuery;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchPreviewQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
-import com.thundax.kuzhambu.discovery.application.search.result.SearchAnalysisSummaryResult;
-import com.thundax.kuzhambu.discovery.application.search.result.SearchLogResult;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchStatisticsSummaryQuery;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchEventResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchPreviewResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchStatisticsSummaryResult;
 
 public interface SearchApplicationService {
 
-    SearchLogResult search(SearchQuery query);
+    SearchEventResult search(SearchQuery query);
 
-    Boolean recordClick(SearchClickCreateCommand command);
+    SearchPreviewResult getPreview(SearchPreviewQuery query);
 
-    PageResult<SearchLogResult> pageLogs(SearchLogPageQuery query);
+    Boolean recordClick(SearchClickEventCreateCommand command);
 
-    SearchLogResult getLog(String searchLogId);
+    PageResult<SearchEventResult> pageEvents(SearchEventPageQuery query);
 
-    SearchAnalysisSummaryResult getAnalysisSummary(SearchAnalysisSummaryQuery query);
+    SearchEventResult getEvent(String searchEventId);
+
+    SearchStatisticsSummaryResult getStatisticsSummary(SearchStatisticsSummaryQuery query);
 }

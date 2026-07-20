@@ -100,6 +100,11 @@ public class AiRefinementTaskRepositoryImpl implements AiRefinementTaskRepositor
     }
 
     @Override
+    public List<AiRefinementTask> listActiveTasks() {
+        return toRefinementTaskDomainList(aiRefinementTaskMapper.selectActiveTasks());
+    }
+
+    @Override
     public List<AiRefinementTask> listExpiredRunningTasks(Instant threshold) {
         return toRefinementTaskDomainList(aiRefinementTaskMapper.selectExpiredRunningTasks(threshold));
     }

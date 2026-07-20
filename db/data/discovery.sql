@@ -1,7 +1,7 @@
 SET NAMES utf8mb4;
 
 -- Search has no required seed data.
-INSERT INTO `discovery_search_query_log` (
+INSERT INTO `discovery_search_query_event` (
     `query_id`, `user_id`, `raw_query`, `normalized_query`, `intent`, `rewritten_query`,
     `filters_json`, `expanded_terms_json`, `linked_entities_json`, `result_count`, `searched_at`
 ) VALUES (
@@ -28,12 +28,12 @@ INSERT INTO `discovery_search_query_log` (
     `result_count` = VALUES(`result_count`),
     `searched_at` = VALUES(`searched_at`);
 
-INSERT INTO `discovery_search_log` (
-    `search_log_id`, `query_text`, `normalized_query_text`, `display_query_text`, `intent_type`,
+INSERT INTO `discovery_search_event` (
+    `search_event_id`, `query_text`, `normalized_query_text`, `display_query_text`, `intent_type`,
     `search_scopes_json`, `result_total_count`, `group_total_count`, `search_latency_ms`, `search_status`,
     `failure_code`, `failure_message`, `operator_type`, `operator_id`, `request_id`, `trace_id`, `created_at`
 ) VALUES (
-    'sample-search-log-1001',
+    'sample-search-event-1001',
     '世系图',
     '世系图',
     '世系图',
@@ -68,14 +68,14 @@ INSERT INTO `discovery_search_log` (
     `trace_id` = VALUES(`trace_id`),
     `created_at` = VALUES(`created_at`);
 
-INSERT INTO `discovery_search_click` (
-    `id`, `search_click_id`, `search_log_id`, `content_domain`, `content_type`, `content_id`,
+INSERT INTO `discovery_search_click_event` (
+    `id`, `search_click_event_id`, `search_event_id`, `content_domain`, `content_type`, `content_id`,
     `content_title`, `result_group_key`, `result_rank`, `group_rank`, `target_path`,
     `operator_type`, `operator_id`, `request_id`, `trace_id`, `created_at`
 ) VALUES (
     1101,
     '1101',
-    'sample-search-log-1001',
+    'sample-search-event-1001',
     'CLASSICS',
     'SANCAI_ENTRY',
     '300000000604',
@@ -90,7 +90,7 @@ INSERT INTO `discovery_search_click` (
     'seed-trace-1101',
     '2026-02-27 04:10:30.000'
 ) ON DUPLICATE KEY UPDATE
-    `search_log_id` = VALUES(`search_log_id`),
+    `search_event_id` = VALUES(`search_event_id`),
     `content_domain` = VALUES(`content_domain`),
     `content_type` = VALUES(`content_type`),
     `content_id` = VALUES(`content_id`),

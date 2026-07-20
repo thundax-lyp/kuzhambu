@@ -1,42 +1,33 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent, type MouseEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { ArrowRight, Search } from "lucide-react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Search, SlidersHorizontal, X } from "lucide-react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationNext,
+    PaginationPrevious
+} from "@/components/ui/pagination";
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue
+} from "@/components/ui/select";
 import * as discoverySearchService from "./search-service";
 import type {
-    DiscoverySearchClickRequest,
+    DiscoverySearchClickEventRequest,
     DiscoverySearchGroupResponse,
     DiscoverySearchItemResponse,
     DiscoverySearchRequest
 } from "./search-types";
-
-const SEARCH_FIELDS = [
-    {
-        description: "古籍、实体、标签都可以直接输入",
-        key: "primary",
-        label: "搜索词",
-        name: "queryText",
-        placeholder: "例如：朱熹、礼制、三才图会"
-    },
-    {
-        description: "面向分类门类的精确过滤",
-        key: "categoryCodes",
-        label: "门类",
-        name: "categoryCodes",
-        placeholder: "SANCAI_ENTRY, WANGQI_DOCUMENT"
-    },
-    {
-        description: "支持标签名精确过滤",
-        key: "tagNames",
-        label: "标签",
-        name: "tagNames",
-        placeholder: "礼制, 建筑, 民俗"
-    }
-] as const;
 
 const KNOWLEDGE_BASE_OPTIONS = [
     {
@@ -53,47 +44,28 @@ const KNOWLEDGE_BASE_OPTIONS = [
     }
 ] as const;
 
-const STATUS_OPTIONS = [
-    {
-        label: "已发布",
-        value: "PUBLISHED"
-    },
-    {
-        label: "草稿",
-        value: "DRAFT"
-    },
-    {
-        label: "已归档",
-        value: "ARCHIVED"
-    }
-] as const;
-
-const VISIBILITY_OPTIONS = [
-    {
-        label: "公开内容",
-        value: "PUBLIC"
-    },
-    {
-        label: "非公开内容",
-        value: "PRIVATE"
-    }
-] as const;
+const DISPLAY_LABELS: Record<string, string> = {
+    CLASSICS: "古籍内容",
+    MING_CUSTOMS: "明代习俗",
+    PRIVATE: "内部可见",
+    PUBLIC: "公开可见",
+    PUBLISHED: "已发布",
+    SANCAI_ENTRY: "三才图会",
+    WANGQI_DOCUMENT: "王圻文档"
+};
 
 const SAMPLE_QUERIES = [
     {
-        categoryCodes: "",
         knowledgeBases: "SANCAI_ENTRY",
         label: "三才图会",
         queryText: "图谱里的礼器"
     },
     {
-        categoryCodes: "",
         knowledgeBases: "WANGQI_DOCUMENT",
         label: "王圻文档",
         queryText: "明代官制"
     },
     {
-        categoryCodes: "",
         knowledgeBases: "MING_CUSTOMS",
         label: "明代习俗",
         queryText: "节令"
@@ -101,6 +73,8 @@ const SAMPLE_QUERIES = [
 ] as const;
 
 const DEFAULT_PAGE_SIZE = "10";
+const PAGE_SIZE_OPTIONS = ["10", "20", "50"] as const;
+const SEARCH_ITEM_CONTENT_TYPES = new Set(["SANCAI_ENTRY", "WANGQI_DOCUMENT", "MING_CUSTOMS"]);
 
 interface SearchFormState {
     categoryCodes: string;
@@ -128,18 +102,22 @@ const INITIAL_FORM_STATE: SearchFormState = {
     visibilityScopes: ""
 };
 
+const hasAdvancedFilters = (form: SearchFormState) => {
+    return Boolean(form.dateFrom || form.dateTo || form.knowledgeBases);
+};
+
 const toFormState = (searchParams: URLSearchParams): SearchFormState => {
     return {
-        categoryCodes: searchParams.get("categoryCodes") ?? "",
-        contentStatuses: searchParams.get("contentStatuses") ?? "",
+        categoryCodes: "",
+        contentStatuses: "",
         dateFrom: searchParams.get("dateFrom") ?? "",
         dateTo: searchParams.get("dateTo") ?? "",
         knowledgeBases: searchParams.get("knowledgeBases") ?? "",
         pageNo: searchParams.get("pageNo") ?? INITIAL_FORM_STATE.pageNo,
         pageSize: searchParams.get("pageSize") ?? INITIAL_FORM_STATE.pageSize,
         queryText: searchParams.get("q") ?? "",
-        tagNames: searchParams.get("tagNames") ?? "",
-        visibilityScopes: searchParams.get("visibilityScopes") ?? ""
+        tagNames: "",
+        visibilityScopes: ""
     };
 };
 
@@ -154,14 +132,14 @@ const toSearchParams = (form: SearchFormState) => {
     const searchParams = new URLSearchParams();
     appendParam(searchParams, "q", form.queryText);
     appendParam(searchParams, "knowledgeBases", form.knowledgeBases);
-    appendParam(searchParams, "categoryCodes", form.categoryCodes);
-    appendParam(searchParams, "tagNames", form.tagNames);
-    appendParam(searchParams, "contentStatuses", form.contentStatuses);
-    appendParam(searchParams, "visibilityScopes", form.visibilityScopes);
     appendParam(searchParams, "dateFrom", form.dateFrom);
     appendParam(searchParams, "dateTo", form.dateTo);
-    appendParam(searchParams, "pageNo", form.pageNo);
-    appendParam(searchParams, "pageSize", form.pageSize);
+    if (form.pageNo !== INITIAL_FORM_STATE.pageNo) {
+        appendParam(searchParams, "pageNo", form.pageNo);
+    }
+    if (form.pageSize !== INITIAL_FORM_STATE.pageSize) {
+        appendParam(searchParams, "pageSize", form.pageSize);
+    }
 
     return searchParams;
 };
@@ -179,6 +157,54 @@ const joinList = (values: string[]) => values.join(", ");
 
 const hasListValue = (value: string, token: string) => splitList(value).includes(token);
 
+const normalizeResultTargetPath = (
+    targetPath?: string | null,
+    contentType?: string | null,
+    contentId?: number | string | null
+) => {
+    const trimmedPath = targetPath?.trim();
+    if (trimmedPath) {
+        try {
+            const baseUrl = "http://portal.local";
+            const url = new URL(trimmedPath, baseUrl);
+            const sancaiMatch = /^\/classics\/sancai\/([^/]+)$/u.exec(url.pathname);
+            const wangqiMatch = /^\/classics\/wangqi\/([^/]+)$/u.exec(url.pathname);
+            const mingCustomsMatch = /^\/classics\/ming-customs\/([^/]+)$/u.exec(url.pathname);
+            if (url.origin !== baseUrl) {
+                return trimmedPath;
+            }
+
+            if (sancaiMatch) {
+                return `/discovery/search-item?type=SANCAI_ENTRY&id=${encodeURIComponent(decodeURIComponent(sancaiMatch[1]))}`;
+            }
+            if (url.pathname === "/classics/sancai" && url.searchParams.get("id")) {
+                return `/discovery/search-item?type=SANCAI_ENTRY&id=${encodeURIComponent(url.searchParams.get("id") ?? "")}`;
+            }
+            if (wangqiMatch) {
+                return `/discovery/search-item?type=WANGQI_DOCUMENT&id=${encodeURIComponent(decodeURIComponent(wangqiMatch[1]))}`;
+            }
+            if (url.pathname === "/classics/wangqi" && url.searchParams.get("id")) {
+                return `/discovery/search-item?type=WANGQI_DOCUMENT&id=${encodeURIComponent(url.searchParams.get("id") ?? "")}`;
+            }
+            if (mingCustomsMatch) {
+                return `/discovery/search-item?type=MING_CUSTOMS&id=${encodeURIComponent(decodeURIComponent(mingCustomsMatch[1]))}`;
+            }
+            if (url.pathname === "/classics/ming-customs" && url.searchParams.get("id")) {
+                return `/discovery/search-item?type=MING_CUSTOMS&id=${encodeURIComponent(url.searchParams.get("id") ?? "")}`;
+            }
+            return trimmedPath;
+        } catch {
+            return trimmedPath;
+        }
+    }
+
+    if (contentType && SEARCH_ITEM_CONTENT_TYPES.has(contentType) && contentId) {
+        return `/discovery/search-item?type=${encodeURIComponent(contentType)}&id=${encodeURIComponent(String(contentId))}`;
+    }
+
+    return null;
+};
+
 const toIsoStartOfDay = (value: string) => {
     return value ? new Date(`${value}T00:00:00`).toISOString() : null;
 };
@@ -189,6 +215,25 @@ const toIsoEndOfDay = (value: string) => {
 
 const formatCount = (value?: number | null) => {
     return value ?? 0;
+};
+
+const toDisplayLabel = (value?: string | null, fallback = "未标注") => {
+    if (!value) {
+        return fallback;
+    }
+
+    return DISPLAY_LABELS[value] ?? fallback;
+};
+
+const flattenGroups = (groups: DiscoverySearchGroupResponse[]) => {
+    return groups.flatMap((group, groupIndex) =>
+        (group.items ?? []).map((item, itemIndex) => ({
+            group,
+            groupIndex,
+            item,
+            itemIndex
+        }))
+    );
 };
 
 const toRequest = (form: SearchFormState): DiscoverySearchRequest => {
@@ -204,14 +249,6 @@ const toRequest = (form: SearchFormState): DiscoverySearchRequest => {
         tagNames: splitList(form.tagNames),
         visibilityScopes: splitList(form.visibilityScopes)
     };
-};
-
-const formatItemMeta = (item: DiscoverySearchItemResponse) => {
-    return [
-        item.contentDomain || "未知域",
-        item.contentType || "未知类型",
-        `全局 ${item.resultRank ?? "-"} / 组内 ${item.groupRank ?? "-"}`
-    ].join(" · ");
 };
 
 const renderHighlightText = (highlightText: string | null | undefined) => {
@@ -241,13 +278,45 @@ const renderHighlightText = (highlightText: string | null | undefined) => {
     return nodes;
 };
 
+const escapeRegExp = (value: string) => {
+    return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+};
+
+const renderQueryHighlight = (text: string, queryText: string) => {
+    const terms = splitList(queryText).filter((term) => term.length > 0);
+    if (!terms.length) {
+        return text;
+    }
+
+    const pattern = new RegExp(`(${terms.map(escapeRegExp).join("|")})`, "giu");
+    const nodes: Array<string | JSX.Element> = [];
+    let lastIndex = 0;
+    let match = pattern.exec(text);
+
+    while (match) {
+        if (match.index > lastIndex) {
+            nodes.push(text.slice(lastIndex, match.index));
+        }
+
+        nodes.push(<mark key={`query-mark-${match.index}`}>{match[0]}</mark>);
+        lastIndex = match.index + match[0].length;
+        match = pattern.exec(text);
+    }
+
+    if (lastIndex < text.length) {
+        nodes.push(text.slice(lastIndex));
+    }
+
+    return nodes.length ? nodes : text;
+};
+
 const createClickCommand = (
-    searchLogId: string,
+    searchEventId: string,
     group: DiscoverySearchGroupResponse,
     item: DiscoverySearchItemResponse
-): DiscoverySearchClickRequest | null => {
+): DiscoverySearchClickEventRequest | null => {
     if (
-        !searchLogId ||
+        !searchEventId ||
         !group.groupKey ||
         !item.contentDomain ||
         !item.contentType ||
@@ -266,7 +335,7 @@ const createClickCommand = (
         groupRank: item.groupRank,
         resultGroupKey: group.groupKey,
         resultRank: item.resultRank,
-        searchLogId,
+        searchEventId,
         targetPath: item.targetPath ?? null
     };
 };
@@ -317,44 +386,136 @@ const MultiOptionControl = ({
     );
 };
 
+interface DiscoveryPaginationProps {
+    currentPage: number;
+    disabled: boolean;
+    pageSize: number;
+    total: number;
+    onChange: (pageNo: number, pageSize: number) => void;
+}
+
+const DiscoveryPagination = ({
+    currentPage,
+    disabled,
+    pageSize,
+    total,
+    onChange
+}: DiscoveryPaginationProps) => {
+    const totalPage = Math.max(1, Math.ceil(total / pageSize));
+    const canGoPrevious = currentPage > 1;
+    const canGoNext = currentPage < totalPage;
+    const handlePageClick =
+        (enabled: boolean, nextPage: number) => (event: MouseEvent<HTMLAnchorElement>) => {
+            event.preventDefault();
+            if (disabled || !enabled) {
+                return;
+            }
+            onChange(nextPage, pageSize);
+        };
+
+    return (
+        <div className="portal-discovery-pagination">
+            <Pagination aria-label="搜索结果分页" className="portal-discovery-pager">
+                <PaginationContent>
+                    <PaginationItem>
+                        <PaginationPrevious
+                            aria-disabled={disabled || !canGoPrevious}
+                            aria-label="上一页"
+                            data-disabled={disabled || !canGoPrevious}
+                            href="#"
+                            text=""
+                            onClick={handlePageClick(canGoPrevious, Math.max(1, currentPage - 1))}
+                        />
+                    </PaginationItem>
+                    <PaginationItem>
+                        <span className="portal-discovery-page-indicator">
+                            第 {currentPage} / {totalPage} 页
+                        </span>
+                    </PaginationItem>
+                    <PaginationItem>
+                        <PaginationNext
+                            aria-disabled={disabled || !canGoNext}
+                            aria-label="下一页"
+                            data-disabled={disabled || !canGoNext}
+                            href="#"
+                            text=""
+                            onClick={handlePageClick(canGoNext, currentPage + 1)}
+                        />
+                    </PaginationItem>
+                </PaginationContent>
+            </Pagination>
+            <div className="portal-discovery-pagination-extra">
+                <span>共 {formatCount(total)} 条</span>
+                <Select
+                    value={String(pageSize)}
+                    onValueChange={(value) => onChange(1, Number.parseInt(value, 10) || pageSize)}
+                >
+                    <SelectTrigger aria-label="每页数量" size="sm">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectGroup>
+                            {PAGE_SIZE_OPTIONS.map((option) => (
+                                <SelectItem key={option} value={option}>
+                                    每页 {option} 条
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </SelectContent>
+                </Select>
+            </div>
+        </div>
+    );
+};
+
 export const DiscoverySearchPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
+    const navigate = useNavigate();
     const [form, setForm] = useState<SearchFormState>(() => toFormState(searchParams));
+    const [showAdvancedFilters, setShowAdvancedFilters] = useState(() =>
+        hasAdvancedFilters(toFormState(searchParams))
+    );
+    const submittedFormRef = useRef<SearchFormState | null>(null);
     const searchMutation = useMutation({
         mutationFn: (request: DiscoverySearchRequest) =>
             discoverySearchService.searchDiscovery(request)
     });
-    const { mutate: runSearch, reset: resetSearch } = searchMutation;
+    const { mutate: runSearch } = searchMutation;
 
     useEffect(() => {
-        const nextForm = toFormState(searchParams);
-        const request = toRequest(nextForm);
+        const submittedForm = submittedFormRef.current;
+        submittedFormRef.current = null;
 
-        if (request.queryText) {
-            runSearch(request);
-            return;
+        const nextForm = submittedForm ?? toFormState(searchParams);
+        if (!submittedForm) {
+            setForm(nextForm);
         }
 
-        resetSearch();
-    }, [runSearch, resetSearch, searchParams]);
+        setShowAdvancedFilters(hasAdvancedFilters(nextForm));
+        const request = toRequest(nextForm);
 
-    const requestPreview = useMemo(() => toRequest(form), [form]);
+        runSearch(request);
+    }, [runSearch, searchParams]);
+
     const response = searchMutation.data;
-    const groups = response?.groups ?? [];
+    const results = useMemo(() => flattenGroups(response?.groups ?? []), [response?.groups]);
+    const currentPageNo = Number.parseInt(form.pageNo, 10) || 1;
+    const currentPageSize = Number.parseInt(form.pageSize, 10) || 10;
+    const totalCount = response?.totalCount ?? results.length;
     const summaryText = useMemo(() => {
         if (searchMutation.isPending) {
             return "正在检索知识中心";
         }
 
         if (searchMutation.isError) {
-            return "检索失败，请调整条件后重试";
+            return "检索暂时不可用，请稍后重试";
         }
 
         if (!response) {
-            return "等待输入关键词后发起检索";
+            return "";
         }
 
-        return `共 ${formatCount(response.totalCount)} 条命中，分布在 ${formatCount(response.groupCount)} 个分组中`;
+        return `共 ${formatCount(response.totalCount)} 条命中`;
     }, [response, searchMutation.isError, searchMutation.isPending]);
 
     const updateField = (key: keyof SearchFormState, value: string) => {
@@ -381,13 +542,13 @@ export const DiscoverySearchPage = () => {
     const applySample = (sample: (typeof SAMPLE_QUERIES)[number]) => {
         setForm((current) => ({
             ...current,
-            categoryCodes: sample.categoryCodes,
             knowledgeBases: sample.knowledgeBases,
             queryText: sample.queryText
         }));
     };
 
     const handleReset = () => {
+        submittedFormRef.current = null;
         setForm(INITIAL_FORM_STATE);
         setSearchParams(new URLSearchParams());
     };
@@ -406,24 +567,45 @@ export const DiscoverySearchPage = () => {
             return;
         }
 
+        submittedFormRef.current = nextForm;
         setSearchParams(nextSearchParams);
     };
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        const request = toRequest(form);
+        const nextForm = {
+            ...form,
+            pageNo: INITIAL_FORM_STATE.pageNo
+        };
+        const request = toRequest(nextForm);
 
-        if (!request.queryText) {
-            setSearchParams(new URLSearchParams());
-            return;
-        }
-
-        const nextSearchParams = toSearchParams(form);
+        const nextSearchParams = toSearchParams(nextForm);
         if (nextSearchParams.toString() === searchParams.toString()) {
             runSearch(request);
             return;
         }
 
+        setForm(nextForm);
+        submittedFormRef.current = nextForm;
+        setSearchParams(nextSearchParams);
+    };
+
+    const handlePageChange = (pageNo: number, pageSize: number) => {
+        const nextForm = {
+            ...form,
+            pageNo: String(pageNo),
+            pageSize: String(pageSize)
+        };
+        const request = toRequest(nextForm);
+
+        const nextSearchParams = toSearchParams(nextForm);
+        if (nextSearchParams.toString() === searchParams.toString()) {
+            runSearch(request);
+            return;
+        }
+
+        setForm(nextForm);
+        submittedFormRef.current = nextForm;
         setSearchParams(nextSearchParams);
     };
 
@@ -431,12 +613,21 @@ export const DiscoverySearchPage = () => {
         group: DiscoverySearchGroupResponse,
         item: DiscoverySearchItemResponse
     ) => {
-        const command = response?.searchLogId
-            ? createClickCommand(response.searchLogId, group, item)
+        const command = response?.searchEventId
+            ? createClickCommand(response.searchEventId, group, item)
             : null;
 
         if (command) {
-            void discoverySearchService.recordSearchClick(command);
+            void discoverySearchService.recordSearchClickEvent(command);
+        }
+
+        const targetPath = normalizeResultTargetPath(
+            item.targetPath,
+            item.contentType,
+            item.contentId
+        );
+        if (targetPath) {
+            navigate(targetPath);
         }
     };
 
@@ -455,272 +646,186 @@ export const DiscoverySearchPage = () => {
                 </Button>
             </header>
 
-            <section className="portal-discovery-hero">
-                <div className="portal-discovery-copy">
-                    <p className="portal-discovery-tag">
-                        <Search aria-hidden="true" size={16} />
-                        先把词找准，再把来源找全
-                    </p>
-                    <h2>以知识为中心的跨库搜索入口</h2>
-                    <p>
-                        这里会把检索词、知识库、门类、标签和可见性条件一起提交给 Discovery
-                        后端，再按知识分组返回结果，方便直接跳转到内容页或继续追踪命中来源。
-                    </p>
-                </div>
-                <div className="portal-discovery-stat">
-                    <span>当前草稿</span>
-                    <strong>{requestPreview.queryText || "未填写关键词"}</strong>
-                    <small>
-                        预设分页 {requestPreview.pageNo ?? 1} / {requestPreview.pageSize ?? 10}
-                    </small>
-                </div>
-            </section>
-
-            <form className="portal-discovery-layout" onSubmit={handleSubmit}>
-                <Card className="portal-discovery-panel">
-                    <div className="portal-discovery-panel-header">
-                        <div>
-                            <p className="portal-kicker">检索条件</p>
-                            <h2>查询与过滤</h2>
-                        </div>
-                        <div className="portal-discovery-samples">
-                            {SAMPLE_QUERIES.map((sample) => (
-                                <Button
-                                    key={sample.label}
-                                    type="button"
-                                    variant="outline"
-                                    onClick={() => applySample(sample)}
-                                >
-                                    {sample.label}
-                                </Button>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="portal-discovery-form-grid">
-                        {SEARCH_FIELDS.map((field) => (
-                            <Label key={field.key} className="portal-filter-field">
-                                <span>{field.label}</span>
-                                <Input
-                                    name={field.name}
-                                    placeholder={field.placeholder}
-                                    value={form[field.name]}
-                                    onChange={(event) =>
-                                        updateField(field.name, event.target.value)
-                                    }
-                                />
-                                <em>{field.description}</em>
-                            </Label>
-                        ))}
-
-                        <MultiOptionControl
-                            description="可多选，提交后由后端按知识库范围过滤"
-                            label="知识库"
-                            name="knowledgeBases"
-                            options={KNOWLEDGE_BASE_OPTIONS}
-                            value={form.knowledgeBases}
-                            onToggle={toggleListValue}
+            <form className="portal-discovery-search" onSubmit={handleSubmit}>
+                <section className="portal-discovery-hero" aria-label="Discovery 搜索">
+                    <h2>一词入检，先见古籍中的相关线索</h2>
+                    <Label className="portal-discovery-search-box">
+                        <span className="portal-search-label">搜索词</span>
+                        <Search aria-hidden="true" size={22} />
+                        <Input
+                            autoFocus
+                            name="queryText"
+                            placeholder="朱熹、礼制、三才图会"
+                            value={form.queryText}
+                            onChange={(event) => updateField("queryText", event.target.value)}
                         />
-
-                        <MultiOptionControl
-                            description="可多选，只作为内容状态条件提交"
-                            label="状态"
-                            name="contentStatuses"
-                            options={STATUS_OPTIONS}
-                            value={form.contentStatuses}
-                            onToggle={toggleListValue}
-                        />
-
-                        <MultiOptionControl
-                            description="可多选，仅限定结果范围，不代表当前账号权限"
-                            label="可见性"
-                            name="visibilityScopes"
-                            options={VISIBILITY_OPTIONS}
-                            value={form.visibilityScopes}
-                            onToggle={toggleListValue}
-                        />
-
-                        <Label className="portal-filter-field">
-                            <span>起始日期</span>
-                            <Input
-                                name="dateFrom"
-                                type="date"
-                                value={form.dateFrom}
-                                onChange={(event) => updateField("dateFrom", event.target.value)}
-                            />
-                            <em>按 ISO-8601 起始时间提交</em>
-                        </Label>
-
-                        <Label className="portal-filter-field">
-                            <span>结束日期</span>
-                            <Input
-                                name="dateTo"
-                                type="date"
-                                value={form.dateTo}
-                                onChange={(event) => updateField("dateTo", event.target.value)}
-                            />
-                            <em>按 ISO-8601 结束时间提交</em>
-                        </Label>
-
-                        <Label className="portal-filter-field">
-                            <span>页码</span>
-                            <Input
-                                name="pageNo"
-                                min={1}
-                                type="number"
-                                value={form.pageNo}
-                                onChange={(event) => updateField("pageNo", event.target.value)}
-                            />
-                            <em>默认从第 1 页开始</em>
-                        </Label>
-
-                        <Label className="portal-filter-field">
-                            <span>每页数量</span>
-                            <Input
-                                name="pageSize"
-                                min={1}
-                                type="number"
-                                value={form.pageSize}
-                                onChange={(event) => updateField("pageSize", event.target.value)}
-                            />
-                            <em>默认每页 10 条</em>
-                        </Label>
-                    </div>
-
-                    <div className="portal-discovery-actions">
-                        <Button type="button" variant="outline" onClick={handleReset}>
-                            重置条件
-                        </Button>
-                        <Button type="button" variant="outline" onClick={handleClearFilters}>
-                            清除筛选条件
-                        </Button>
+                        {form.queryText ? (
+                            <Button
+                                aria-label="清空搜索词"
+                                className="portal-discovery-clear-query"
+                                size="icon"
+                                type="button"
+                                variant="ghost"
+                                onClick={() => updateField("queryText", "")}
+                            >
+                                <X aria-hidden="true" size={18} />
+                            </Button>
+                        ) : null}
                         <Button disabled={searchMutation.isPending} type="submit">
                             {searchMutation.isPending ? "检索中..." : "开始检索"}
                         </Button>
+                    </Label>
+                    <div className="portal-discovery-quick-row">
+                        <span>试试：</span>
+                        {SAMPLE_QUERIES.map((sample) => (
+                            <Button
+                                key={sample.label}
+                                type="button"
+                                variant="outline"
+                                onClick={() => applySample(sample)}
+                            >
+                                {sample.label}
+                            </Button>
+                        ))}
                     </div>
-                </Card>
+                    <div className="portal-discovery-toolbar">
+                        <Button
+                            aria-expanded={showAdvancedFilters}
+                            type="button"
+                            variant="outline"
+                            onClick={() => setShowAdvancedFilters((current) => !current)}
+                        >
+                            <SlidersHorizontal aria-hidden="true" size={16} />
+                            高级筛选
+                        </Button>
+                        <Button type="button" variant="ghost" onClick={handleClearFilters}>
+                            清除筛选条件
+                        </Button>
+                    </div>
+                </section>
 
-                <aside className="portal-discovery-sidebar">
-                    <Card className="portal-discovery-summary">
-                        <div>
-                            <p className="portal-kicker">检索摘要</p>
-                            <h2>{summaryText}</h2>
+                {showAdvancedFilters ? (
+                    <Card className="portal-discovery-panel">
+                        <div className="portal-discovery-panel-header">
+                            <div>
+                                <p className="portal-kicker">高级筛选</p>
+                                <h2>限定知识库和时间</h2>
+                            </div>
                         </div>
-                        <dl>
-                            <div>
-                                <dt>搜索日志</dt>
-                                <dd>{response?.searchLogId ?? "-"}</dd>
-                            </div>
-                            <div>
-                                <dt>回显词</dt>
-                                <dd>
-                                    {response?.displayQueryText ?? requestPreview.queryText ?? "-"}
-                                </dd>
-                            </div>
-                            <div>
-                                <dt>总命中</dt>
-                                <dd>{formatCount(response?.totalCount)}</dd>
-                            </div>
-                            <div>
-                                <dt>分组数</dt>
-                                <dd>{formatCount(response?.groupCount)}</dd>
-                            </div>
-                        </dl>
-                    </Card>
 
-                    <Card className="portal-discovery-summary portal-discovery-summary-soft">
-                        <div>
-                            <p className="portal-kicker">检索提示</p>
-                            <h2>结果点击会回传搜索日志</h2>
+                        <div className="portal-discovery-form-grid">
+                            <MultiOptionControl
+                                description="可多选，提交后由后端按知识库范围过滤"
+                                label="知识库"
+                                name="knowledgeBases"
+                                options={KNOWLEDGE_BASE_OPTIONS}
+                                value={form.knowledgeBases}
+                                onToggle={toggleListValue}
+                            />
+
+                            <Label className="portal-filter-field">
+                                <span>起始日期</span>
+                                <Input
+                                    name="dateFrom"
+                                    type="date"
+                                    value={form.dateFrom}
+                                    onChange={(event) =>
+                                        updateField("dateFrom", event.target.value)
+                                    }
+                                />
+                                <em>按 ISO-8601 起始时间提交</em>
+                            </Label>
+
+                            <Label className="portal-filter-field">
+                                <span>结束日期</span>
+                                <Input
+                                    name="dateTo"
+                                    type="date"
+                                    value={form.dateTo}
+                                    onChange={(event) => updateField("dateTo", event.target.value)}
+                                />
+                                <em>按 ISO-8601 结束时间提交</em>
+                            </Label>
                         </div>
-                        <p>
-                            每个结果项都会携带分组键、全局排序和组内排序，点击后会发送点击日志，方便后端后续做重排、命中分析和路径追踪。
-                        </p>
+
+                        <div className="portal-discovery-actions">
+                            <Button type="button" variant="outline" onClick={handleReset}>
+                                重置条件
+                            </Button>
+                            <Button type="button" variant="outline" onClick={handleClearFilters}>
+                                清除筛选条件
+                            </Button>
+                            <Button disabled={searchMutation.isPending} type="submit">
+                                {searchMutation.isPending ? "检索中..." : "开始检索"}
+                            </Button>
+                        </div>
                     </Card>
-                </aside>
+                ) : null}
             </form>
 
             <section className="portal-discovery-results" aria-label="Discovery 搜索结果">
+                {response || searchMutation.isPending || searchMutation.isError ? (
+                    <div className="portal-discovery-result-summary">
+                        <strong>{summaryText}</strong>
+                    </div>
+                ) : null}
+
                 {searchMutation.isError ? (
                     <Card className="portal-empty">
-                        <strong>检索失败</strong>
-                        <p>请检查输入条件后重新提交搜索。</p>
+                        <strong>检索暂时不可用</strong>
+                        <p>服务恢复后会按当前搜索词和筛选条件继续检索。</p>
                     </Card>
                 ) : null}
 
-                {!response && !searchMutation.isPending ? (
-                    <Card className="portal-empty">
-                        <strong>等待检索</strong>
-                        <p>输入关键词后点击“开始检索”，系统会按知识分组返回命中项。</p>
-                    </Card>
-                ) : null}
-
-                {groups.map((group, index) => {
-                    const groupKey = group.groupKey || `group-${index}`;
-                    const items = group.items ?? [];
-
-                    return (
-                        <Card className="portal-discovery-group" key={groupKey}>
-                            <header>
-                                <div>
-                                    <p>{group.groupKey || "未命名分组"}</p>
-                                    <h2>{group.groupTitle || `检索分组 ${index + 1}`}</h2>
-                                </div>
-                                <strong>{formatCount(group.count)} 条</strong>
-                            </header>
-
-                            {items.length ? (
-                                <div className="portal-discovery-hit-list">
-                                    {items.map((item, itemIndex) => {
-                                        const hitKey = `${groupKey}-${item.resultRank ?? itemIndex}`;
-                                        const content = (
-                                            <>
-                                                <div className="portal-discovery-hit-title">
-                                                    <p>
-                                                        {item.contentDomain || "未知域"} ·{" "}
-                                                        {item.contentType || "未知类型"}
-                                                    </p>
-                                                    <h3>{item.title || "未命名结果"}</h3>
-                                                </div>
-                                                <p className="portal-discovery-hit-summary">
-                                                    {renderHighlightText(item.highlightText) ||
-                                                        item.summary ||
-                                                        "暂无摘要"}
-                                                </p>
-                                                <div className="portal-discovery-hit-meta">
-                                                    <span>{formatItemMeta(item)}</span>
-                                                    <span>
-                                                        跳转路径 {item.targetPath || "未提供"}
-                                                    </span>
-                                                </div>
-                                            </>
-                                        );
-
-                                        return item.targetPath ? (
-                                            <Link
-                                                className="portal-discovery-hit"
-                                                key={hitKey}
-                                                to={item.targetPath}
-                                                onClick={() => handleClick(group, item)}
-                                            >
-                                                {content}
-                                                <span className="portal-discovery-hit-arrow">
-                                                    <ArrowRight aria-hidden="true" size={16} />
+                {results.length ? (
+                    <Card className="portal-discovery-group">
+                        <div className="portal-discovery-hit-list">
+                            {results.map(({ group, groupIndex, item, itemIndex }) => {
+                                const hitKey = `${group.groupKey || `group-${groupIndex}`}-${item.resultRank ?? itemIndex}`;
+                                const content = (
+                                    <div className="portal-discovery-hit-body">
+                                        <div className="portal-discovery-hit-title">
+                                            <div className="portal-discovery-hit-tags">
+                                                <span>
+                                                    {toDisplayLabel(item.contentDomain, "其他来源")}
                                                 </span>
-                                            </Link>
-                                        ) : (
-                                            <Card className="portal-discovery-hit" key={hitKey}>
-                                                {content}
-                                            </Card>
-                                        );
-                                    })}
-                                </div>
-                            ) : (
-                                <div className="portal-empty">该分组暂无可见结果。</div>
-                            )}
-                        </Card>
-                    );
-                })}
+                                                <span>
+                                                    {toDisplayLabel(item.contentType, "其他类型")}
+                                                </span>
+                                            </div>
+                                            <h3>
+                                                {renderQueryHighlight(
+                                                    item.title || "未命名结果",
+                                                    form.queryText
+                                                )}
+                                            </h3>
+                                        </div>
+                                        <p className="portal-discovery-hit-summary">
+                                            {renderHighlightText(item.highlightText) ||
+                                                renderQueryHighlight(
+                                                    item.summary || "",
+                                                    form.queryText
+                                                ) ||
+                                                "暂无摘要"}
+                                        </p>
+                                    </div>
+                                );
+
+                                return (
+                                    <button
+                                        aria-label={`打开搜索结果：${item.title || "未命名结果"}`}
+                                        className="portal-discovery-hit"
+                                        key={hitKey}
+                                        type="button"
+                                        onClick={() => handleClick(group, item)}
+                                    >
+                                        {content}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </Card>
+                ) : null}
 
                 {shouldShowZeroResult ? (
                     <Card className="portal-empty">
@@ -730,6 +835,16 @@ export const DiscoverySearchPage = () => {
                             清除筛选条件
                         </Button>
                     </Card>
+                ) : null}
+
+                {response ? (
+                    <DiscoveryPagination
+                        currentPage={currentPageNo}
+                        disabled={searchMutation.isPending}
+                        pageSize={currentPageSize}
+                        total={totalCount}
+                        onChange={handlePageChange}
+                    />
                 ) : null}
             </section>
         </main>

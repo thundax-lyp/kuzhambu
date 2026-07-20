@@ -105,6 +105,7 @@ export const CategoryEdit = ({
 
     return (
         <KuzhambuDrawer
+            testId="knowledge-taxonomy-category-editor-drawer"
             className="knowledge-taxonomy-category-editor"
             title={title}
             open={visible}

@@ -196,6 +196,7 @@ export const TagDetailDrawer = ({
 
     return (
         <KuzhambuDrawer
+            testId="knowledge-taxonomy-tag-detail-drawer"
             className="knowledge-taxonomy-tag-detail-drawer"
             title={reviewMode ? "审核标签" : "标签详情"}
             open={open}

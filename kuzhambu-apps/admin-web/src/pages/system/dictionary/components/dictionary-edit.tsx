@@ -75,6 +75,7 @@ export const DictionaryEdit = ({
 
     return (
         <KuzhambuDrawer
+            testId="system-dictionary-dictionary-editor-drawer"
             className="dictionary-edit-drawer"
             title={dictionary ? "编辑字典项" : "新增字典项"}
             open={Boolean(open)}

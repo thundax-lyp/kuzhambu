@@ -21,9 +21,9 @@ public class QueryUnderstandingRepositoryImpl implements QueryUnderstandingRepos
     }
 
     @Override
-    public QueryUnderstanding getBySearchLogId(String searchLogId) {
+    public QueryUnderstanding getBySearchEventId(String searchEventId) {
         return QueryUnderstandingPersistenceAssembler.toDomain(mapper.selectOne(new QueryWrapper<QueryUnderstandingDO>()
-                .eq("search_log_id", searchLogId)
+                .eq("search_event_id", searchEventId)
                 .last("limit 1")));
     }
 

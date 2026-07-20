@@ -60,13 +60,17 @@ KUZHAMBU_KNOWLEDGE_ENABLED=true
 KUZHAMBU_KNOWLEDGE_PROVIDER=fastgpt
 KUZHAMBU_KNOWLEDGE_FASTGPT_BASE_URL=${KUZHAMBU_FASTGPT_BASE_URL}
 KUZHAMBU_KNOWLEDGE_FASTGPT_API_KEY=...
+KUZHAMBU_KNOWLEDGE_FASTGPT_CHAT_API_KEY=...
 KUZHAMBU_KNOWLEDGE_FASTGPT_APP_ID=...
 KUZHAMBU_KNOWLEDGE_FASTGPT_APPID=...
-KUZHAMBU_KNOWLEDGE_FASTGPT_TIMEOUT=180s
+KUZHAMBU_KNOWLEDGE_FASTGPT_KNOWLEDGE_BASE_ID=...
+KUZHAMBU_KNOWLEDGE_FASTGPT_TIMEOUT=10s
 ```
 
 `KUZHAMBU_FASTGPT_API_KEY` 和 `KUZHAMBU_KNOWLEDGE_FASTGPT_API_KEY` 使用同一个 FastGPT OpenAPI key。
+`KUZHAMBU_KNOWLEDGE_FASTGPT_CHAT_API_KEY` 是应用级 OpenAI-compatible chat key；为空时适配器会用 `${KUZHAMBU_KNOWLEDGE_FASTGPT_API_KEY}-${KUZHAMBU_KNOWLEDGE_FASTGPT_APP_ID}` 推导。
 `KUZHAMBU_KNOWLEDGE_FASTGPT_APPID` 是 `appId` 绑定兼容变量；保留 `KUZHAMBU_KNOWLEDGE_FASTGPT_APP_ID` 作为可读配置，避免不同 binder 对 `appId` 的环境变量归一化差异。
+`KUZHAMBU_KNOWLEDGE_FASTGPT_KNOWLEDGE_BASE_ID` 是已存在的 FastGPT dataset/知识库 ObjectId，必须使用 FastGPT `datasets._id` 的 24 位十六进制值，不能使用 `kb_kuzhambu_qa` 这类本地别名。Admin starter 只允许使用该 ID 写入 collection 和执行同步，不允许创建新的 FastGPT 知识库。当前 FastGPT 没有可复用 dataset 时，应先由 FastGPT 管理侧准备知识库，再填写该配置；不要启动已启用 FastGPT provider 的 admin starter 去隐式创建知识库。
 
 ## 模型配置边界
 
@@ -77,14 +81,17 @@ KUZHAMBU_KNOWLEDGE_FASTGPT_TIMEOUT=180s
 
 不要为了通过冒烟临时配置虚假的 embedding 模型。涉及向量化、语义召回或依赖 embedding 的知识库能力时，应在证据中标记为当前环境限制，而不是用错误模型兜底。
 
+Discovery QA 发布必须复用已存在的 FastGPT 知识库。创建知识库属于 FastGPT 管理面操作，不属于 admin-server 运行时职责；如果 `KUZHAMBU_KNOWLEDGE_FASTGPT_KNOWLEDGE_BASE_ID` 未配置，启用 FastGPT provider 的本地服务应启动失败，而不是在发布接口中尝试自动创建知识库。
+
 ## 配置顺序
 
 1. 从 Docker 主机读取 `DEFAULT_ROOT_PSW`。
 2. 登录 FastGPT 或调用 OpenAPI，确认 `kuzhambu-dev` API key 存在。
 3. 将 FastGPT 管理配置和 Knowledge Provider 配置写入 `../kuzhambu/dev.env`。
 4. 用 `../kuzhambu/dev.env` 中的主 LLM 参数写入 FastGPT LLM 模型配置。
-5. 不配置 embedding；仅保留 FastGPT 默认分词/文本切分能力。
-6. 重启本地 admin/portal starter 后执行 Discovery QA 冒烟。
+5. 确认目标 FastGPT 知识库已经存在，并把 dataset ID 写入 `KUZHAMBU_KNOWLEDGE_FASTGPT_KNOWLEDGE_BASE_ID`。
+6. 不配置 embedding；仅保留 FastGPT 默认分词/文本切分能力。
+7. 重启本地 admin/portal starter 后执行 Discovery QA 冒烟。
 
 ## Docker 配置步骤
 
@@ -134,9 +141,10 @@ curl -fsS -X POST "$KUZHAMBU_FASTGPT_BASE_URL/api/core/app/create" \
 ```sh
 KUZHAMBU_KNOWLEDGE_FASTGPT_APP_ID=<app-id>
 KUZHAMBU_KNOWLEDGE_FASTGPT_APPID=<app-id>
+KUZHAMBU_KNOWLEDGE_FASTGPT_KNOWLEDGE_BASE_ID=<existing-dataset-id>
 ```
 
-当前开发环境没有 embedding 模型时，FastGPT app 只能作为 LLM 对话预检；依赖 dataset、collection、向量召回或来源引用的 QA 冒烟必须记录为未通过，不能伪造 embedding 或来源。
+当前开发环境没有 embedding 模型时，FastGPT app 只能作为 LLM 对话预检；依赖向量召回的 QA 冒烟必须记录为当前环境限制。Discovery QA 发布可向已存在知识库写入 collection，但不得由 admin-server 自动创建知识库。
 
 ## API Key 同步
 
@@ -145,6 +153,7 @@ KUZHAMBU_KNOWLEDGE_FASTGPT_APPID=<app-id>
 ```sh
 KUZHAMBU_FASTGPT_API_KEY=<fastgpt-openapi-key>
 KUZHAMBU_KNOWLEDGE_FASTGPT_API_KEY=<fastgpt-openapi-key>
+KUZHAMBU_KNOWLEDGE_FASTGPT_CHAT_API_KEY=<fastgpt-openapi-key>-<app-id>
 ```
 
 如果直接调用 FastGPT OpenAI-compatible chat 接口验证 app，优先使用 FastGPT 官方兼容写法：
@@ -176,4 +185,5 @@ set +a
 
 test "$KUZHAMBU_KNOWLEDGE_ENABLED" = "true"
 test -n "$KUZHAMBU_KNOWLEDGE_FASTGPT_API_KEY"
+test -n "$KUZHAMBU_KNOWLEDGE_FASTGPT_APP_ID"
 ```

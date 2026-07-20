@@ -20,7 +20,9 @@ public class KuzhambuKnowledgeProperties {
 
         private String baseUrl = "http://localhost:13000";
         private String apiKey;
+        private String chatApiKey;
         private String appId;
+        private String knowledgeBaseId;
         private Duration timeout = Duration.ofSeconds(10);
     }
 }

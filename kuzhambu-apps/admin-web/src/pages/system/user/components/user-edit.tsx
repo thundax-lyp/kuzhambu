@@ -165,6 +165,7 @@ export const UserEdit = ({
 
     return (
         <KuzhambuDrawer
+            testId="system-user-user-editor-drawer"
             className="user-edit-drawer"
             title={title}
             open={visible}

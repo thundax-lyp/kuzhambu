@@ -27,6 +27,7 @@ export const SancaiCategoryModel = ({
 
     return (
         <KuzhambuModal
+            testId="classics-sancai-sancai-category-editor-modal"
             title={category ? "编辑门类" : "新增门类"}
             open
             footer={

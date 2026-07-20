@@ -183,7 +183,6 @@ export const CleanupPage = () => {
         <KuzhambuPage
             className="cleanup-page operations-cleanup-page"
             description="支持手动触发清理任务，并查看清理台账、详情与失败项。"
-            eyebrow="Operations"
             title="清理任务台账"
         >
             <section>
@@ -409,6 +408,7 @@ export const CleanupPage = () => {
             </section>
 
             <KuzhambuDrawer
+                testId="operations-cleanup-cleanup-drawer"
                 loading={cleanupDetailQuery.isLoading}
                 onClose={closeDrawer}
                 open={canOpenDrawer}

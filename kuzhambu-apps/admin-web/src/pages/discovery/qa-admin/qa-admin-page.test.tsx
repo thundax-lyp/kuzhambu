@@ -158,7 +158,7 @@ describe("QaAdminPage", () => {
         const user = userEvent.setup();
         renderPage();
 
-        expect(await screen.findByRole("heading", { name: "问答运维台" })).toBeInTheDocument();
+        expect(await screen.findByRole("heading", { name: "问答运维" })).toBeInTheDocument();
         expect(await screen.findByText("kuzhambu-qa")).toBeInTheDocument();
         expect(screen.getByText("AVAILABLE")).toBeInTheDocument();
 

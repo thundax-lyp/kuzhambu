@@ -17,7 +17,10 @@ import { KuzhambuSpace, KuzhambuSpaceCompact } from "@/components/kuzhambu-space
 import { AiCandidateBatchDrawer } from "@/pages/classics/common/components/ai-candidate-batch-drawer";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
-import type { AiRefinementTaskCapability } from "@/pages/classics/common/ai-refinement-task-types";
+import type {
+    AiRefinementTaskCapability,
+    AiRefinementTaskRecord
+} from "@/pages/classics/common/ai-refinement-task-types";
 import * as contentService from "@/pages/classics/common/classics-content-service";
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
@@ -36,7 +39,9 @@ import type {
 } from "@/pages/classics/common/classics-export-types";
 import { WangqiDocumentList } from "./components/wangqi-document-list";
 import { WangqiDocumentModel } from "./components/wangqi-document-model";
+import { WangqiQaAiModal, type WangqiQaTaskPair } from "./components/wangqi-qa-ai-modal";
 import { WangqiStorageFilePanel } from "./components/wangqi-storage-file-panel";
+import { WangqiTagAiModal } from "./components/wangqi-tag-ai-modal";
 import { WangqiTimeline } from "./components/wangqi-timeline";
 import { WangqiVersionHistoryPanel } from "./components/wangqi-version-history-panel";
 import * as wangqiService from "./wangqi-service";
@@ -81,13 +86,19 @@ const createEventId = (prefix: string) => {
 
 const WANGQI_REFINEMENT_PROMPT: Record<AiRefinementTaskCapability, string> = {
     summary: "你是古籍整理助理。请基于输入文稿生成简洁、准确、可直接回填到后台的中文摘要。",
-    tags: "你是古籍标签治理助理。请基于输入文稿提取稳定、短小、适合后台统一标签库复用的中文标签。",
-    qa: "你是古籍问答治理助理。请基于输入文稿生成可用于知识库检索的中文问答对。"
+    tags: '你是古籍标签治理助理。请基于输入文稿、已有摘要和已有标签提取稳定、短小、适合后台统一标签库复用的中文标签。只返回 JSON，格式为 {"tags":["标签"]}，不要解释。',
+    qa: '你是古籍问答治理助理。请基于输入文稿、已有摘要和已有问答生成可用于知识库检索的中文问答对。只返回 JSON，格式为 {"qaPairs":[{"question":"问题","answer":"答案"}]}，不要解释。'
 };
+
+interface RefinementTaskContext {
+    existingQaPairs?: WangqiQaTaskPair[];
+    existingTags?: string[];
+}
 
 const buildPromptMessagesJson = (
     document: WangqiDocumentRecord,
-    capability: AiRefinementTaskCapability
+    capability: AiRefinementTaskCapability,
+    context: RefinementTaskContext = {}
 ) => {
     return JSON.stringify([
         {
@@ -99,18 +110,43 @@ const buildPromptMessagesJson = (
             content: [
                 `标题：${document.title || "未命名文档"}`,
                 `现有摘要：${document.summary || "暂无"}`,
+                ...(capability === "tags"
+                    ? [
+                          `已有标签：${
+                              context.existingTags?.length
+                                  ? context.existingTags.join("、")
+                                  : "暂无"
+                          }`
+                      ]
+                    : []),
+                ...(capability === "qa"
+                    ? [
+                          `已有问答：${
+                              context.existingQaPairs?.length
+                                  ? context.existingQaPairs
+                                        .map((pair) => `Q：${pair.question} A：${pair.answer}`)
+                                        .join("；")
+                                  : "暂无"
+                          }`
+                      ]
+                    : []),
                 `正文：${document.content || "暂无正文"}`
             ].join("\n")
         }
     ]);
 };
 
-const buildInputPayloadJson = (document: WangqiDocumentRecord) => {
+const buildInputPayloadJson = (
+    document: WangqiDocumentRecord,
+    context: RefinementTaskContext = {}
+) => {
     return JSON.stringify({
         title: document.title || null,
         summary: document.summary || null,
         content: document.content || null,
-        contentFormat: document.contentFormat || null
+        contentFormat: document.contentFormat || null,
+        existingQaPairs: context.existingQaPairs || [],
+        existingTags: context.existingTags || []
     });
 };
 
@@ -181,6 +217,11 @@ export const WangqiPage = () => {
     const [exportJobsDrawerOpen, setExportJobsDrawerOpen] = useState(false);
     const [creatingRefinementCapability, setCreatingRefinementCapability] =
         useState<AiRefinementTaskCapability | null>(null);
+    const [summaryTrackingTask, setSummaryTrackingTask] = useState<AiRefinementTaskRecord | null>(
+        null
+    );
+    const [tagTrackingTask, setTagTrackingTask] = useState<AiRefinementTaskRecord | null>(null);
+    const [qaTrackingTask, setQaTrackingTask] = useState<AiRefinementTaskRecord | null>(null);
     const handledSucceededTaskIdsRef = useRef<Set<number>>(new Set());
 
     const hasActiveFilters = Boolean(
@@ -272,6 +313,10 @@ export const WangqiPage = () => {
     );
     const tagRefinementTasks = useMemo(
         () => refinementTasks.filter((task) => task.capability === "tags"),
+        [refinementTasks]
+    );
+    const summaryRefinementTasks = useMemo(
+        () => refinementTasks.filter((task) => task.capability === "summary"),
         [refinementTasks]
     );
     const qaRefinementTasks = useMemo(
@@ -484,7 +529,16 @@ export const WangqiPage = () => {
     });
     const createRefinementTaskMutation = useMutation({
         mutationFn: aiRefinementTaskService.createTask,
-        onSuccess: async () => {
+        onSuccess: async (task, command) => {
+            if (command.capability === "summary") {
+                setSummaryTrackingTask(task);
+            }
+            if (command.capability === "tags") {
+                setTagTrackingTask(task);
+            }
+            if (command.capability === "qa") {
+                setQaTrackingTask(task);
+            }
             await invalidateRefinementTasks();
             messageApi.success("王圻精修任务已创建");
         },
@@ -544,6 +598,9 @@ export const WangqiPage = () => {
         setEditorMode("create");
         setEditingDocument(null);
         setSelectedVersionId(null);
+        setSummaryTrackingTask(null);
+        setTagTrackingTask(null);
+        setQaTrackingTask(null);
         setEditorOpen(true);
     };
 
@@ -551,6 +608,9 @@ export const WangqiPage = () => {
         setEditorMode("edit");
         setEditingDocument(document);
         setSelectedVersionId(null);
+        setSummaryTrackingTask(null);
+        setTagTrackingTask(null);
+        setQaTrackingTask(null);
         setEditorOpen(true);
     };
 
@@ -561,6 +621,9 @@ export const WangqiPage = () => {
         setEditorOpen(false);
         setEditingDocument(null);
         setSelectedVersionId(null);
+        setSummaryTrackingTask(null);
+        setTagTrackingTask(null);
+        setQaTrackingTask(null);
         handledSucceededTaskIdsRef.current.clear();
     };
 
@@ -697,7 +760,8 @@ export const WangqiPage = () => {
 
     const createRefinementTask = (
         document: WangqiDocumentRecord,
-        capability: AiRefinementTaskCapability
+        capability: AiRefinementTaskCapability,
+        context: RefinementTaskContext = {}
     ) => {
         const requestedBy = currentUserQuery.data?.id;
         if (!requestedBy) {
@@ -720,9 +784,14 @@ export const WangqiPage = () => {
             modelName: DEFAULT_REFINEMENT_MODEL_NAME,
             requestId: createEventId(`wangqi-${capability}-request`),
             traceId: createEventId(`wangqi-${capability}-trace`),
-            promptMessagesJson: buildPromptMessagesJson(document, capability),
-            promptVariablesJson: JSON.stringify({ capability, title: document.title || null }),
-            inputPayloadJson: buildInputPayloadJson(document),
+            promptMessagesJson: buildPromptMessagesJson(document, capability, context),
+            promptVariablesJson: JSON.stringify({
+                capability,
+                existingQaPairs: context.existingQaPairs || [],
+                existingTags: context.existingTags || [],
+                title: document.title || null
+            }),
+            inputPayloadJson: buildInputPayloadJson(document, context),
             locale: "zh-CN"
         });
     };
@@ -947,6 +1016,7 @@ export const WangqiPage = () => {
                 </div>
             </KuzhambuPage>
             <KuzhambuDrawer
+                testId="classics-wangqi-wangqi-drawer"
                 aria-label="王圻导出任务"
                 destroyOnHidden
                 open={exportJobsDrawerOpen}
@@ -990,6 +1060,8 @@ export const WangqiPage = () => {
                 open={editorOpen}
                 saving={saveMutation.isPending}
                 creatingSummaryTask={creatingRefinementCapability === "summary"}
+                summaryTasks={summaryRefinementTasks}
+                summaryTrackingTask={summaryTrackingTask}
                 onCreateSummaryTask={
                     editorMode === "edit" && activeDocument
                         ? () => createRefinementTask(activeDocument, "summary")
@@ -1002,14 +1074,18 @@ export const WangqiPage = () => {
                         <div className="wangqi-page-drawer-panels">
                             <Card size="small" title="AI 标签">
                                 <KuzhambuSpace wrap>
-                                    <KuzhambuButton
-                                        testId="classics-wangqi-wangqi-action-button-4"
-                                        type="primary"
-                                        onClick={() => createRefinementTask(activeDocument, "tags")}
-                                        loading={creatingRefinementCapability === "tags"}
-                                    >
-                                        生成标签
-                                    </KuzhambuButton>
+                                    <WangqiTagAiModal
+                                        creatingTagTask={creatingRefinementCapability === "tags"}
+                                        document={activeDocument}
+                                        tagTasks={tagRefinementTasks}
+                                        tagTrackingTask={tagTrackingTask}
+                                        onChanged={invalidateWangqi}
+                                        onCreateTagTask={(existingTags) =>
+                                            createRefinementTask(activeDocument, "tags", {
+                                                existingTags
+                                            })
+                                        }
+                                    />
                                 </KuzhambuSpace>
                                 <div className="wangqi-refinement-task-list">
                                     {tagRefinementTasks.length ? (
@@ -1050,7 +1126,7 @@ export const WangqiPage = () => {
                         <div className="wangqi-page-drawer-panels">
                             <Card
                                 size="small"
-                                title="AI 问答"
+                                title="问答生成"
                                 extra={
                                     <KuzhambuSpaceCompact>
                                         <Tooltip title={singleDocumentQaDisabledReason}>
@@ -1062,16 +1138,18 @@ export const WangqiPage = () => {
                                                 单文档问答
                                             </KuzhambuButton>
                                         </Tooltip>
-                                        <KuzhambuButton
-                                            testId="classics-wangqi-wangqi-action-button-5"
-                                            type="primary"
-                                            onClick={() =>
-                                                createRefinementTask(activeDocument, "qa")
+                                        <WangqiQaAiModal
+                                            creatingQaTask={creatingRefinementCapability === "qa"}
+                                            document={activeDocument}
+                                            qaTasks={qaRefinementTasks}
+                                            qaTrackingTask={qaTrackingTask}
+                                            onChanged={invalidateWangqi}
+                                            onCreateQaTask={(existingQaPairs) =>
+                                                createRefinementTask(activeDocument, "qa", {
+                                                    existingQaPairs
+                                                })
                                             }
-                                            loading={creatingRefinementCapability === "qa"}
-                                        >
-                                            生成问答
-                                        </KuzhambuButton>
+                                        />
                                     </KuzhambuSpaceCompact>
                                 }
                             >

@@ -47,6 +47,7 @@ export const MingCustomsTagCloud = ({
                 标签云
             </KuzhambuButton>
             <KuzhambuDrawer
+                testId="classics-ming-customs-ming-customs-keyword-cloud-drawer"
                 aria-label="明代习俗标签云"
                 destroyOnHidden
                 loading={tagCloudQuery.isLoading}

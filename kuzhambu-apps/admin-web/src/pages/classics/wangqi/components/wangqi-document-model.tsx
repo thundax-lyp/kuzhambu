@@ -22,6 +22,8 @@ import {
     type WangqiDocumentFormValues
 } from "./wangqi-document-form-values";
 import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
+import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
+import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
 import type { WangqiDocumentCommand } from "../wangqi-service";
 import type { WangqiDocumentRecord } from "../wangqi-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
@@ -31,6 +33,7 @@ const { TextArea } = Input;
 const SUMMARY_CANDIDATE_POLL_INTERVAL_MS = 3000;
 
 type WangqiDocumentModelSection = "basic" | "tags" | "qa" | "source" | "versions";
+type SummaryTaskAlertType = "success" | "info" | "warning" | "error";
 
 export interface WangqiDocumentModelProps {
     document?: WangqiDocumentRecord | null;
@@ -43,10 +46,66 @@ export interface WangqiDocumentModelProps {
     tagContent?: ReactNode;
     versionContent?: ReactNode;
     creatingSummaryTask?: boolean;
+    summaryTasks?: AiRefinementTaskRecord[];
+    summaryTrackingTask?: AiRefinementTaskRecord | null;
     onCreateSummaryTask?: () => void;
     onClose: () => void;
     onSave: (command: WangqiDocumentCommand) => void;
 }
+
+const SUMMARY_TASK_STATUS_LABELS: Record<string, string> = {
+    PENDING: "排队中",
+    RUNNING: "运行中",
+    SUCCEEDED: "已完成",
+    PARTIAL: "部分完成",
+    FAILED: "失败",
+    CANCELLED: "已取消"
+};
+
+const SUMMARY_TASK_ALERT_TYPES: Record<string, SummaryTaskAlertType> = {
+    PENDING: "info",
+    RUNNING: "info",
+    SUCCEEDED: "success",
+    PARTIAL: "warning",
+    FAILED: "error",
+    CANCELLED: "warning"
+};
+
+const sortTasksByNewest = (left: AiRefinementTaskRecord, right: AiRefinementTaskRecord) => {
+    if (left.requestedAt && right.requestedAt && left.requestedAt !== right.requestedAt) {
+        return right.requestedAt.localeCompare(left.requestedAt);
+    }
+    return right.taskId - left.taskId;
+};
+
+const getSummaryTaskDescription = (task: AiRefinementTaskRecord) => {
+    const failureText = aiRefinementTaskService.getTaskFailureText(
+        task.failureStage,
+        task.errorType,
+        task.errorMessage
+    );
+    if (failureText) {
+        return failureText;
+    }
+    if (task.status === "SUCCEEDED" || task.status === "PARTIAL") {
+        if (!task.candidateId) {
+            return "任务已完成，正在等待候选摘要落库并回填。";
+        }
+        return "任务完成后会刷新候选摘要并回填到 AI 摘要输入框。";
+    }
+    if (task.status === "PENDING" || task.status === "RUNNING") {
+        return "任务执行期间会持续刷新状态，完成后回填候选摘要。";
+    }
+    return "可重新生成摘要任务。";
+};
+
+const isSummaryTaskActive = (task?: AiRefinementTaskRecord) => {
+    return task?.status === "PENDING" || task?.status === "RUNNING";
+};
+
+const isSummaryTaskCompleted = (task?: AiRefinementTaskRecord) => {
+    return task?.status === "SUCCEEDED" || task?.status === "PARTIAL";
+};
 
 interface WangqiRichTextEditorProps {
     value?: string;
@@ -161,6 +220,8 @@ export const WangqiDocumentModel = ({
     tagContent,
     versionContent,
     creatingSummaryTask = false,
+    summaryTasks = [],
+    summaryTrackingTask,
     onCreateSummaryTask,
     onClose,
     onSave
@@ -172,6 +233,57 @@ export const WangqiDocumentModel = ({
     const [summaryDraft, setSummaryDraft] = useState("");
     const [loadedSummaryCandidateId, setLoadedSummaryCandidateId] = useState<number | null>(null);
     const documentId = mode === "edit" ? document?.id : undefined;
+    const latestSummaryTaskFromList = useMemo(() => {
+        return [...summaryTasks]
+            .filter((task) => task.capability === "summary")
+            .sort(sortTasksByNewest)[0];
+    }, [summaryTasks]);
+    const trackedSummaryTaskFromList = useMemo(() => {
+        return summaryTasks.find((task) => task.taskId === summaryTrackingTask?.taskId);
+    }, [summaryTasks, summaryTrackingTask?.taskId]);
+    const summaryTrackingTaskId = summaryTrackingTask?.taskId;
+    const trackedSummaryTaskQuery = useQuery({
+        queryKey: ["classics", "wangqi", "refinement", "task", summaryTrackingTaskId],
+        queryFn: () => aiRefinementTaskService.getTask({ taskId: summaryTrackingTaskId ?? 0 }),
+        enabled: isSummaryModalOpen && Boolean(summaryTrackingTaskId),
+        retry: false,
+        refetchInterval: (query) => {
+            const task = query.state.data;
+            if (!summaryTrackingTaskId) {
+                return false;
+            }
+            if (!task) {
+                return SUMMARY_CANDIDATE_POLL_INTERVAL_MS;
+            }
+            if (isSummaryTaskActive(task)) {
+                return SUMMARY_CANDIDATE_POLL_INTERVAL_MS;
+            }
+            if (isSummaryTaskCompleted(task) && !task.candidateId) {
+                return SUMMARY_CANDIDATE_POLL_INTERVAL_MS;
+            }
+            return false;
+        }
+    });
+    const latestSummaryTask =
+        trackedSummaryTaskQuery.data ||
+        trackedSummaryTaskFromList ||
+        summaryTrackingTask ||
+        latestSummaryTaskFromList;
+    const latestSummaryTaskId = latestSummaryTask?.taskId;
+    const trackedSummaryCandidateId =
+        summaryTrackingTaskId && latestSummaryTask?.taskId === summaryTrackingTaskId
+            ? latestSummaryTask.candidateId
+            : null;
+    const isLatestSummaryTaskCompleted = isSummaryTaskCompleted(latestSummaryTask);
+    const shouldPollSummaryCandidates =
+        creatingSummaryTask ||
+        isSummaryTaskActive(latestSummaryTask) ||
+        Boolean(
+            summaryTrackingTaskId &&
+            isLatestSummaryTaskCompleted &&
+            trackedSummaryCandidateId &&
+            loadedSummaryCandidateId !== trackedSummaryCandidateId
+        );
 
     const summaryCandidatesQuery = useQuery({
         queryKey: ["ai", "candidates", "WANGQI_DOCUMENT", documentId, "summary", "modal"],
@@ -184,16 +296,23 @@ export const WangqiDocumentModel = ({
             }),
         enabled: isSummaryModalOpen && Boolean(documentId),
         retry: false,
-        refetchInterval: () => (creatingSummaryTask ? SUMMARY_CANDIDATE_POLL_INTERVAL_MS : false)
+        refetchInterval: () =>
+            shouldPollSummaryCandidates ? SUMMARY_CANDIDATE_POLL_INTERVAL_MS : false
     });
+    const { refetch: refetchSummaryCandidates } = summaryCandidatesQuery;
 
     const latestSummaryCandidate = useMemo(() => {
+        if (creatingSummaryTask || (summaryTrackingTaskId && !trackedSummaryCandidateId)) {
+            return undefined;
+        }
         const candidates = summaryCandidatesQuery.data || [];
         return [...candidates]
             .filter(
                 (candidate) =>
                     candidate.capability === "summary" &&
                     candidate.status === "PENDING" &&
+                    (!trackedSummaryCandidateId ||
+                        candidate.candidateId === trackedSummaryCandidateId) &&
                     typeof candidate.resultPayload === "string" &&
                     candidate.resultPayload.trim().length > 0
             )
@@ -207,7 +326,50 @@ export const WangqiDocumentModel = ({
                 }
                 return right.candidateId - left.candidateId;
             })[0];
-    }, [summaryCandidatesQuery.data]);
+    }, [
+        creatingSummaryTask,
+        summaryCandidatesQuery.data,
+        summaryTrackingTaskId,
+        trackedSummaryCandidateId
+    ]);
+    const summaryTaskAlert = useMemo(() => {
+        if (creatingSummaryTask) {
+            return {
+                description: "任务创建成功后会自动进入状态跟踪。",
+                title: "正在创建摘要任务",
+                type: "info" as const
+            };
+        }
+        if (summaryTrackingTaskId && !latestSummaryTask) {
+            return {
+                description: "任务已提交，正在等待任务状态返回。",
+                title: "正在跟踪摘要任务",
+                type: "info" as const
+            };
+        }
+        if (latestSummaryTask) {
+            const statusLabel =
+                SUMMARY_TASK_STATUS_LABELS[latestSummaryTask.status] || latestSummaryTask.status;
+            return {
+                description: getSummaryTaskDescription(latestSummaryTask),
+                title: `摘要任务${statusLabel}`,
+                type: SUMMARY_TASK_ALERT_TYPES[latestSummaryTask.status] || ("info" as const)
+            };
+        }
+        if (summaryCandidatesQuery.isFetching) {
+            return {
+                description: "任务完成后会自动刷新 AI 摘要。",
+                title: "正在加载候选摘要",
+                type: "info" as const
+            };
+        }
+        return null;
+    }, [
+        creatingSummaryTask,
+        latestSummaryTask,
+        summaryCandidatesQuery.isFetching,
+        summaryTrackingTaskId
+    ]);
 
     useEffect(() => {
         if (!open) {
@@ -229,6 +391,19 @@ export const WangqiDocumentModel = ({
         }, 0);
         return () => window.clearTimeout(timer);
     }, [isSummaryModalOpen, latestSummaryCandidate, loadedSummaryCandidateId]);
+
+    useEffect(() => {
+        if (!isSummaryModalOpen || !isLatestSummaryTaskCompleted) {
+            return;
+        }
+        void refetchSummaryCandidates();
+    }, [
+        isSummaryModalOpen,
+        isLatestSummaryTaskCompleted,
+        latestSummaryTaskId,
+        trackedSummaryCandidateId,
+        refetchSummaryCandidates
+    ]);
 
     const closeModel = () => {
         setActiveSection("basic");
@@ -320,7 +495,7 @@ export const WangqiDocumentModel = ({
                         {mode === "edit" ? (
                             <div className="wangqi-document-summary-field-action">
                                 <KuzhambuButton
-                                    testId="classics-wangqi-wangqi-summary-ai-button"
+                                    testId="classics-wangqi-document-summary-ai-button"
                                     type="primary"
                                     ariaLabel="AI 摘要"
                                     icon={<FileTextOutlined />}
@@ -361,6 +536,7 @@ export const WangqiDocumentModel = ({
 
     return (
         <KuzhambuDrawer
+            testId="classics-wangqi-document-editor-drawer"
             title={mode === "create" ? "新增王圻文档" : "编辑王圻文档"}
             open={open}
             size="large"
@@ -378,13 +554,13 @@ export const WangqiDocumentModel = ({
             footer={
                 <div className="wangqi-document-model-footer">
                     <KuzhambuButton
-                        testId="classics-wangqi-wangqi-document-cancel-button"
+                        testId="classics-wangqi-document-cancel-button"
                         onClick={closeModel}
                     >
                         取消
                     </KuzhambuButton>
                     <KuzhambuButton
-                        testId="classics-wangqi-wangqi-document-create-button"
+                        testId="classics-wangqi-document-save-button"
                         type="primary"
                         loading={saving}
                         onClick={saveDocument}
@@ -395,20 +571,36 @@ export const WangqiDocumentModel = ({
             }
         >
             <KuzhambuModal
-                title="AI 摘要"
+                testId="classics-wangqi-document-summary-ai-modal"
+                className="wangqi-summary-modal"
+                title={
+                    <div className="wangqi-summary-modal-title">
+                        <span>AI 摘要</span>
+                        <KuzhambuButton
+                            testId="classics-wangqi-document-summary-ai-generate-button"
+                            type="primary"
+                            ariaLabel="生成 AI 摘要"
+                            icon={<FileTextOutlined />}
+                            loading={creatingSummaryTask}
+                            onClick={requestSummaryTask}
+                        >
+                            生成摘要
+                        </KuzhambuButton>
+                    </div>
+                }
                 open={isSummaryModalOpen}
                 width={880}
                 destroyOnHidden
                 footer={
                     <div className="wangqi-summary-modal-footer">
                         <KuzhambuButton
-                            testId="classics-wangqi-wangqi-summary-ai-cancel-button"
+                            testId="classics-wangqi-document-summary-ai-cancel-button"
                             onClick={closeSummaryModal}
                         >
                             取消
                         </KuzhambuButton>
                         <KuzhambuButton
-                            testId="classics-wangqi-wangqi-summary-ai-apply-button"
+                            testId="classics-wangqi-document-summary-ai-apply-button"
                             type="primary"
                             disabled={!summaryDraft.trim()}
                             onClick={applySummaryDraft}
@@ -419,24 +611,12 @@ export const WangqiDocumentModel = ({
                 }
                 onCancel={closeSummaryModal}
             >
-                <div className="wangqi-summary-modal-toolbar">
-                    <KuzhambuButton
-                        testId="classics-wangqi-wangqi-summary-ai-create-button"
-                        type="primary"
-                        ariaLabel="摘要"
-                        icon={<FileTextOutlined />}
-                        loading={creatingSummaryTask}
-                        onClick={requestSummaryTask}
-                    >
-                        摘要
-                    </KuzhambuButton>
-                </div>
-                {creatingSummaryTask || summaryCandidatesQuery.isFetching ? (
+                {summaryTaskAlert ? (
                     <KuzhambuAlert
                         showIcon
-                        type="info"
-                        title={creatingSummaryTask ? "正在创建摘要任务" : "正在加载候选摘要"}
-                        description="任务完成后会自动刷新 AI 摘要。"
+                        type={summaryTaskAlert.type}
+                        title={summaryTaskAlert.title}
+                        description={summaryTaskAlert.description}
                     />
                 ) : null}
                 <div className="wangqi-summary-modal-compare-grid">
@@ -464,12 +644,20 @@ export const WangqiDocumentModel = ({
                                 onChange={(event) => setSummaryDraft(event.target.value)}
                             />
                         </Form.Item>
-                        {summaryCandidatesQuery.isError ? (
+                        {summaryCandidatesQuery.isError && !shouldPollSummaryCandidates ? (
                             <KuzhambuAlert
                                 showIcon
                                 type="warning"
                                 title="候选摘要加载失败"
-                                description="AI 任务可能仍在执行，请稍后重新打开。"
+                                description="请稍后重试加载候选摘要。"
+                            />
+                        ) : null}
+                        {summaryCandidatesQuery.isError && shouldPollSummaryCandidates ? (
+                            <KuzhambuAlert
+                                showIcon
+                                type="info"
+                                title="候选摘要暂未返回"
+                                description="AI 任务仍在跟踪中，系统会继续刷新候选摘要。"
                             />
                         ) : null}
                     </Form>

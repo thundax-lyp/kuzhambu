@@ -336,7 +336,7 @@ public class KnowledgeQualityReportApplicationServiceImpl implements KnowledgeQu
                     annotation.getObjectKey(),
                     annotationTitle(annotation),
                     annotation.getComment(),
-                    "进入知识图谱精修工作台处理该人工标注。",
+                    "进入知识图谱工作台处理该人工标注。",
                     "/knowledge/refinement",
                     priority,
                     now));

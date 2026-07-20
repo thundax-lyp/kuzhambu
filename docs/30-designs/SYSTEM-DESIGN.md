@@ -27,7 +27,7 @@ com.thundax.kuzhambu.system.infra
 
 System 拥有平台用户、角色、菜单、权限资源、认证运行态和业务审计事实。其他业务域只能通过 System application 能力读取当前用户、权限判断、会话状态和写入业务审计，不得直接访问 System 底层表。
 
-System 不拥有业务内容、文件对象、AI 任务、搜索问答或运营报表。
+System 不拥有业务内容、文件对象、AI 任务、知识库检索问答或运营报表。
 
 ## DDD Model
 

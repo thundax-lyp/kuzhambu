@@ -13,6 +13,8 @@ import com.thundax.kuzhambu.classics.facade.dto.ClassicsQaKnowledgeFacadeDto;
 import com.thundax.kuzhambu.classics.facade.request.ClassicsQaKnowledgeFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsQaKnowledgeFacadeResponse;
 import com.thundax.kuzhambu.common.knowledge.client.KnowledgeBaseClient;
+import com.thundax.kuzhambu.common.knowledge.model.base.KnowledgeBaseEnsureRequest;
+import com.thundax.kuzhambu.common.knowledge.model.base.KnowledgeBaseResult;
 import com.thundax.kuzhambu.common.knowledge.model.health.KnowledgeHealthResult;
 import com.thundax.kuzhambu.common.knowledge.model.item.KnowledgeItemDeleteRequest;
 import com.thundax.kuzhambu.common.knowledge.model.item.KnowledgeItemResult;
@@ -29,6 +31,7 @@ import com.thundax.kuzhambu.discovery.domain.qa.repository.QaKnowledgeSyncBatchR
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaKnowledgeSyncItemRepository;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class KnowledgeSyncApplicationServiceImplTest {
 
@@ -41,6 +44,8 @@ class KnowledgeSyncApplicationServiceImplTest {
 
         when(knowledgeBaseClient.health())
                 .thenReturn(new KnowledgeHealthResult(true, "fastgpt", "available", Map.of("provider", "fastgpt")));
+        when(knowledgeBaseClient.ensureKnowledgeBase(any(KnowledgeBaseEnsureRequest.class)))
+                .thenReturn(new KnowledgeBaseResult("kb-1", "kuzhambu-qa", Map.of()));
         when(classicsFacade.getQaKnowledge(any(ClassicsQaKnowledgeFacadeRequest.class)))
                 .thenReturn(ClassicsQaKnowledgeFacadeResponse.builder()
                         .knowledge(buildKnowledge())
@@ -80,6 +85,8 @@ class KnowledgeSyncApplicationServiceImplTest {
 
         when(knowledgeBaseClient.health())
                 .thenReturn(new KnowledgeHealthResult(true, "fastgpt", "available", Map.of("provider", "fastgpt")));
+        when(knowledgeBaseClient.ensureKnowledgeBase(any(KnowledgeBaseEnsureRequest.class)))
+                .thenReturn(new KnowledgeBaseResult("kb-1", "kuzhambu-qa", Map.of()));
         when(classicsFacade.getQaKnowledge(any(ClassicsQaKnowledgeFacadeRequest.class)))
                 .thenReturn(ClassicsQaKnowledgeFacadeResponse.builder()
                         .knowledge(buildKnowledge())
@@ -103,7 +110,9 @@ class KnowledgeSyncApplicationServiceImplTest {
 
         assertEquals("FAILED", result.getSyncStatus());
         assertEquals("Knowledge item upsert failed", result.getFailureReason());
-        verify(itemRepository).save(any(QaKnowledgeSyncItem.class));
+        ArgumentCaptor<QaKnowledgeSyncItem> syncItemCaptor = ArgumentCaptor.forClass(QaKnowledgeSyncItem.class);
+        verify(itemRepository).save(syncItemCaptor.capture());
+        assertEquals("kb-1", syncItemCaptor.getValue().getExternalKnowledgeBaseId());
     }
 
     @Test

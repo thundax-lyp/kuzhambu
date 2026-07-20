@@ -129,9 +129,11 @@
       "menus": [
         "仪表盘",
         "知识治理",
-        "知识治理/知识图谱精修",
-        "知识治理/世系图浏览",
-        "知识治理/质量报告",
+        "知识治理/知识图谱",
+        "知识治理/知识图谱/图谱工作台",
+        "知识治理/知识图谱/图谱结果",
+        "知识治理/知识图谱/质量报告",
+        "知识治理/世系图",
         "运营运维",
         "运营运维/健康检查",
         "运营运维/备份恢复",
@@ -186,14 +188,19 @@
         "古籍管理/内容导出",
         "古籍管理/分享管理",
         "知识治理",
-        "知识治理/知识图谱精修",
-        "知识治理/世系图浏览",
-        "知识治理/标签与同义词",
-        "搜索问答",
-        "搜索问答/检索",
-        "搜索问答/搜索日志",
-        "搜索问答/智能问答",
-        "搜索问答/问答调试",
+        "知识治理/知识图谱",
+        "知识治理/知识图谱/图谱工作台",
+        "知识治理/知识图谱/图谱结果",
+        "知识治理/知识图谱/质量报告",
+        "知识治理/世系图",
+        "知识治理/标签配置",
+        "知识库",
+        "知识库/检索",
+        "知识库/检索/检索",
+        "知识库/检索/检索统计",
+        "知识库/问答",
+        "知识库/问答/问答",
+        "知识库/问答/问答运维",
         "运营运维",
         "运营运维/运营看板",
         "运营运维/健康检查",
@@ -222,9 +229,11 @@
         "古籍管理/明代习俗",
         "古籍管理/内容导出",
         "古籍管理/分享管理",
-        "搜索问答",
-        "搜索问答/检索",
-        "搜索问答/智能问答",
+        "知识库",
+        "知识库/检索",
+        "知识库/检索/检索",
+        "知识库/问答",
+        "知识库/问答/问答",
         "运营运维",
         "运营运维/运营看板",
         "运营运维/健康检查",
@@ -724,16 +733,45 @@
       "children": [
         {
           "id": 14,
-          "name": "知识图谱精修",
-          "perms": ["knowledge:refinement:view", "knowledge:refinement:edit"],
+          "name": "知识图谱",
+          "perms": ["knowledge:graph:view"],
           "priority": 80,
-          "icon": "submissions",
-          "url": "/knowledge/refinement",
-          "remarks": "知识图谱精修工作台"
+          "icon": "book",
+          "url": "/knowledge/graph",
+          "remarks": "知识图谱治理分组",
+          "children": [
+            {
+              "id": 41,
+              "name": "图谱工作台",
+              "perms": ["knowledge:refinement:view", "knowledge:refinement:edit"],
+              "priority": 82,
+              "icon": "submissions",
+              "url": "/knowledge/refinement",
+              "remarks": "知识图谱工作台"
+            },
+            {
+              "id": 42,
+              "name": "图谱结果",
+              "perms": ["knowledge:graph:view"],
+              "priority": 81,
+              "icon": "book",
+              "url": "/knowledge/graph-results",
+              "remarks": "知识图谱结果浏览"
+            },
+            {
+              "id": 16,
+              "name": "质量报告",
+              "perms": ["knowledge:quality-report:view", "knowledge:quality-report:generate"],
+              "priority": 78,
+              "icon": "logs",
+              "url": "/knowledge/quality-report",
+              "remarks": "Knowledge 质量报告生成和展示"
+            }
+          ]
         },
         {
           "id": 15,
-          "name": "世系图浏览",
+          "name": "世系图",
           "perms": ["knowledge:graph:view"],
           "priority": 79,
           "icon": "book",
@@ -741,17 +779,8 @@
           "remarks": "正式世系图独立浏览入口"
         },
         {
-          "id": 16,
-          "name": "质量报告",
-          "perms": ["knowledge:quality-report:view", "knowledge:quality-report:generate"],
-          "priority": 78,
-          "icon": "logs",
-          "url": "/knowledge/quality-report",
-          "remarks": "Knowledge 质量报告生成和展示"
-        },
-        {
           "id": 17,
-          "name": "标签与同义词",
+          "name": "标签配置",
           "perms": [
             "knowledge:taxonomy:view",
             "knowledge:taxonomy:edit",
@@ -766,48 +795,70 @@
     },
     {
       "id": 18,
-      "name": "搜索问答",
+      "name": "知识库",
       "perms": ["discovery"],
       "priority": 80,
       "icon": "open-api",
       "url": "/discovery",
-      "remarks": "检索和智能问答根菜单",
+      "remarks": "知识检索和知识问答根菜单",
       "children": [
         {
-          "id": 19,
+          "id": 43,
           "name": "检索",
           "perms": ["discovery:search:view"],
           "priority": 80,
           "icon": "open-api",
           "url": "/discovery/search",
-          "remarks": "三类古籍检索"
+          "remarks": "知识库检索分组",
+          "children": [
+            {
+              "id": 19,
+              "name": "检索",
+              "perms": ["discovery:search:view"],
+              "priority": 80,
+              "icon": "open-api",
+              "url": "/discovery/search",
+              "remarks": "三类古籍检索"
+            },
+            {
+              "id": 20,
+              "name": "检索统计",
+              "perms": ["discovery:search:view"],
+              "priority": 78,
+              "icon": "logs",
+              "url": "/discovery/search-statistics",
+              "remarks": "检索统计和索引重建"
+            }
+          ]
         },
         {
-          "id": 20,
-          "name": "搜索日志",
-          "perms": ["discovery:search:view"],
-          "priority": 78,
-          "icon": "logs",
-          "url": "/discovery/search-admin",
-          "remarks": "检索日志和索引重建"
-        },
-        {
-          "id": 21,
-          "name": "智能问答",
+          "id": 44,
+          "name": "问答",
           "perms": ["discovery:qa:view", "discovery:qa:edit"],
           "priority": 75,
           "icon": "open-api",
           "url": "/discovery/qa",
-          "remarks": "跨知识库智能问答"
-        },
-        {
-          "id": 22,
-          "name": "问答调试",
-          "perms": ["discovery:qa:view"],
-          "priority": 70,
-          "icon": "logs",
-          "url": "/discovery/qa-admin",
-          "remarks": "问答上下文调试"
+          "remarks": "知识库问答分组",
+          "children": [
+            {
+              "id": 21,
+              "name": "问答",
+              "perms": ["discovery:qa:view", "discovery:qa:edit"],
+              "priority": 75,
+              "icon": "open-api",
+              "url": "/discovery/qa",
+              "remarks": "跨知识库问答"
+            },
+            {
+              "id": 22,
+              "name": "问答运维",
+              "perms": ["discovery:qa:view"],
+              "priority": 70,
+              "icon": "logs",
+              "url": "/discovery/qa-admin",
+              "remarks": "知识库同步、问答来源和轨迹排查"
+            }
+          ]
         }
       ]
     },

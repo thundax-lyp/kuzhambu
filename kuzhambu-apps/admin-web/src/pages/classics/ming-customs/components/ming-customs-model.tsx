@@ -58,6 +58,7 @@ export const MingCustomsModel = ({
 
     return (
         <KuzhambuDrawer
+            testId="classics-ming-customs-ming-customs-editor-drawer"
             title={mode === "create" ? "新增明代习俗" : "编辑明代习俗"}
             open={open}
             size="middle"

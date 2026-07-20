@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import * as qaConsumerService from "./qa/qa-service";
 import * as qaService from "./qa-admin/qa-admin-service";
 import * as searchConsumerService from "./search/search-service";
-import * as searchService from "./search-admin/search-admin-service";
+import * as searchService from "./search-statistics/search-statistics-service";
 
 const postJson = vi.hoisted(() => vi.fn());
 
@@ -14,6 +15,88 @@ vi.mock("@/api/http", () => ({
 describe("discovery admin service contracts", () => {
     beforeEach(() => {
         postJson.mockReset();
+    });
+
+    it("maps qa consumer endpoints and request bodies", async () => {
+        await qaConsumerService.createQaSession({
+            ownerUserId: 1001,
+            scope: "PORTAL",
+            title: "知识中心问答"
+        });
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa/session/open", {
+            body: {
+                ownerUserId: 1001,
+                scope: "PORTAL",
+                title: "知识中心问答"
+            }
+        });
+
+        await qaConsumerService.pageQaSessions({
+            ownerUserId: 1001,
+            pageNo: 1,
+            pageSize: 20,
+            scope: "PORTAL"
+        });
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa/session/page", {
+            body: {
+                ownerUserId: 1001,
+                pageNo: 1,
+                pageSize: 20,
+                scope: "PORTAL"
+            }
+        });
+
+        await qaConsumerService.getQaSession({ ownerUserId: 1001, sessionId: "7001" });
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa/session/get", {
+            body: {
+                ownerUserId: 1001,
+                sessionId: "7001"
+            }
+        });
+
+        await qaConsumerService.deleteQaSession({ ownerUserId: 1001, sessionId: "7001" });
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa/session/delete", {
+            body: {
+                ownerUserId: 1001,
+                sessionId: "7001"
+            }
+        });
+
+        await qaConsumerService.createQaSessionExport({
+            format: "CSV",
+            ownerUserId: 1001,
+            sessionId: "7001"
+        });
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa/session/export", {
+            body: {
+                format: "CSV",
+                ownerUserId: 1001,
+                sessionId: "7001"
+            }
+        });
+
+        await qaConsumerService.createQaChatCompletion({
+            messages: [{ content: "礼学是什么？", role: "user" }],
+            metadata: {
+                contextMode: "GENERAL",
+                sessionId: "7001"
+            },
+            model: "kuzhambu-qa",
+            sessionId: "7001",
+            stream: false
+        });
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa/chat/completions", {
+            body: {
+                messages: [{ content: "礼学是什么？", role: "user" }],
+                metadata: {
+                    contextMode: "GENERAL",
+                    sessionId: "7001"
+                },
+                model: "kuzhambu-qa",
+                sessionId: "7001",
+                stream: false
+            }
+        });
     });
 
     it("maps qa admin endpoints and request bodies", async () => {
@@ -122,7 +205,7 @@ describe("discovery admin service contracts", () => {
     });
 
     it("maps search admin endpoints and request bodies", async () => {
-        await searchService.pageSearchLogs({
+        await searchService.pageSearchEvents({
             dateFrom: "2026-01-01T00:00:00.000Z",
             dateTo: "2026-01-02T23:59:59.000Z",
             intentTypes: ["REWRITE"],
@@ -132,7 +215,7 @@ describe("discovery admin service contracts", () => {
             queryText: "礼器",
             searchStatuses: ["SUCCESS"]
         });
-        expect(postJson).toHaveBeenLastCalledWith("/discovery/search-admin/logs/page", {
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/search-statistics/events/page", {
             body: {
                 dateFrom: "2026-01-01T00:00:00.000Z",
                 dateTo: "2026-01-02T23:59:59.000Z",
@@ -145,15 +228,15 @@ describe("discovery admin service contracts", () => {
             }
         });
 
-        await searchService.getSearchLogDetail({ searchLogId: "LOG-1001" });
-        expect(postJson).toHaveBeenLastCalledWith("/discovery/search-admin/logs/get", {
+        await searchService.getSearchEventDetail({ searchEventId: "EVT-1001" });
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/search-statistics/events/get", {
             body: {
-                searchLogId: "LOG-1001"
+                searchEventId: "EVT-1001"
             }
         });
 
         await searchService.rebuildSearchIndex({ confirm: true });
-        expect(postJson).toHaveBeenLastCalledWith("/discovery/search-admin/index/rebuild", {
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/search-statistics/index/rebuild", {
             body: {
                 confirm: true
             }
@@ -169,7 +252,7 @@ describe("discovery admin service contracts", () => {
             knowledgeBases: ["SANCAI_ENTRY"],
             pageNo: 1,
             pageSize: 10,
-            queryText: "礼器",
+            queryText: "辞官",
             tagNames: ["礼制"],
             visibilityScopes: ["PUBLIC"]
         });
@@ -182,7 +265,7 @@ describe("discovery admin service contracts", () => {
                 knowledgeBases: ["SANCAI_ENTRY"],
                 pageNo: 1,
                 pageSize: 10,
-                queryText: "礼器",
+                queryText: "辞官",
                 tagNames: ["礼制"],
                 visibilityScopes: ["PUBLIC"]
             }
@@ -196,7 +279,7 @@ describe("discovery admin service contracts", () => {
             groupRank: 1,
             resultGroupKey: "SANCAI_ENTRY",
             resultRank: 1,
-            searchLogId: "LOG-1001",
+            searchEventId: "EVT-1001",
             targetPath: "/classics/sancai"
         });
         expect(postJson).toHaveBeenLastCalledWith("/discovery/search/click", {
@@ -208,8 +291,19 @@ describe("discovery admin service contracts", () => {
                 groupRank: 1,
                 resultGroupKey: "SANCAI_ENTRY",
                 resultRank: 1,
-                searchLogId: "LOG-1001",
+                searchEventId: "EVT-1001",
                 targetPath: "/classics/sancai"
+            }
+        });
+
+        await searchConsumerService.previewSearchResult({
+            contentId: "1001",
+            contentType: "SANCAI_ENTRY"
+        });
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/search/preview", {
+            body: {
+                contentId: "1001",
+                contentType: "SANCAI_ENTRY"
             }
         });
     });

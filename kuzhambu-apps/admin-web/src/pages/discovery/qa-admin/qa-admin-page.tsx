@@ -275,8 +275,7 @@ export const QaAdminPage = () => {
             <section>
                 <header className="kuzhambu-page-header">
                     <div>
-                        <Text className="kuzhambu-page-eyebrow">Discovery / QA Admin</Text>
-                        <Title level={2}>问答运维台</Title>
+                        <Title level={2}>问答运维</Title>
                         <Text type="secondary">
                             查看知识库健康、同步状态、会话来源和 Provider 轨迹。
                         </Text>

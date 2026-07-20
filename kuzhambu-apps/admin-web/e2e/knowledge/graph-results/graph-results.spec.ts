@@ -50,9 +50,16 @@ const mockShellApis = async (page: Page) => {
                 displayParams: '{"icon":"knowledge"}'
             },
             {
-                id: "graph-results",
+                id: "knowledge-graph",
                 parentId: "knowledge",
-                name: "正式结果读取",
+                name: "知识图谱",
+                url: "/knowledge/graph",
+                displayParams: '{"icon":"book"}'
+            },
+            {
+                id: "graph-results",
+                parentId: "knowledge-graph",
+                name: "图谱结果",
                 url: "/knowledge/graph-results",
                 displayParams: '{"icon":"submissions"}'
             }

@@ -27,10 +27,12 @@ import com.thundax.kuzhambu.discovery.application.qa.result.ChatCompletionResult
 import com.thundax.kuzhambu.discovery.application.qa.support.QaSourceAssembler;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaTraceAssembler;
 import com.thundax.kuzhambu.discovery.application.search.support.DiscoveryKnowledgeEnhancementProvider;
+import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaKnowledgeSyncItem;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaMessage;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaRetrievalTrace;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSource;
+import com.thundax.kuzhambu.discovery.domain.qa.repository.QaKnowledgeSyncItemRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaMessageRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaRetrievalTraceRepository;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSessionRepository;
@@ -56,6 +58,7 @@ class KnowledgeQaApplicationServiceImplTest {
                 knowledgeBaseClient,
                 classicsFacade,
                 aiFacade,
+                mock(QaKnowledgeSyncItemRepository.class),
                 sessionRepository,
                 mock(QaMessageRepository.class),
                 mock(QaSourceRepository.class),
@@ -87,6 +90,7 @@ class KnowledgeQaApplicationServiceImplTest {
                 knowledgeBaseClient,
                 classicsFacade,
                 aiFacade,
+                mock(QaKnowledgeSyncItemRepository.class),
                 sessionRepository,
                 messageRepository,
                 sourceRepository,
@@ -154,6 +158,7 @@ class KnowledgeQaApplicationServiceImplTest {
                 knowledgeBaseClient,
                 classicsFacade,
                 aiFacade,
+                mock(QaKnowledgeSyncItemRepository.class),
                 sessionRepository,
                 messageRepository,
                 mock(QaSourceRepository.class),
@@ -183,6 +188,7 @@ class KnowledgeQaApplicationServiceImplTest {
                 knowledgeBaseClient,
                 classicsFacade,
                 aiFacade,
+                mock(QaKnowledgeSyncItemRepository.class),
                 sessionRepository,
                 messageRepository,
                 mock(QaSourceRepository.class),
@@ -220,10 +226,11 @@ class KnowledgeQaApplicationServiceImplTest {
     }
 
     @Test
-    void chatCompletionShouldPersistFailedKnowledgeAnswerAndTrace() {
+    void chatCompletionShouldFallbackToLocalRetrievalWhenKnowledgeProviderFails() {
         KnowledgeBaseClient knowledgeBaseClient = mock(KnowledgeBaseClient.class);
         ClassicsFacade classicsFacade = mock(ClassicsFacade.class);
         AiFacade aiFacade = mock(AiFacade.class);
+        QaKnowledgeSyncItemRepository syncItemRepository = mock(QaKnowledgeSyncItemRepository.class);
         QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
         QaMessageRepository messageRepository = mock(QaMessageRepository.class);
         QaSourceRepository sourceRepository = mock(QaSourceRepository.class);
@@ -233,6 +240,7 @@ class KnowledgeQaApplicationServiceImplTest {
                 knowledgeBaseClient,
                 classicsFacade,
                 aiFacade,
+                syncItemRepository,
                 sessionRepository,
                 messageRepository,
                 sourceRepository,
@@ -247,24 +255,27 @@ class KnowledgeQaApplicationServiceImplTest {
                         List.of("天地人"), null, List.of()));
         when(knowledgeBaseClient.chat(any(KnowledgeChatRequest.class)))
                 .thenThrow(new IllegalStateException("System not embedding model"));
+        when(syncItemRepository.listBySyncStatus("SUCCEEDED", 20)).thenReturn(List.of(sancaiSyncItem()));
+        when(classicsFacade.getQaKnowledge(any(ClassicsQaKnowledgeFacadeRequest.class)))
+                .thenReturn(sancaiKnowledge());
+        when(sourceRepository.save(any(QaSource.class))).thenReturn(6103L);
         when(traceRepository.save(any(QaRetrievalTrace.class))).thenReturn(6203L);
 
         ChatCompletionResult result = service.chatCompletion(command());
 
-        assertEquals("FAILED", result.getAnswerStatus());
-        assertEquals("System not embedding model", result.getFailureReason());
+        assertEquals("SUCCEEDED", result.getAnswerStatus());
+        assertEquals(null, result.getFailureReason());
         ArgumentCaptor<QaMessage> messageCaptor = ArgumentCaptor.forClass(QaMessage.class);
         verify(messageRepository, org.mockito.Mockito.times(2)).save(messageCaptor.capture());
         assertEquals("什么是三才？", messageCaptor.getAllValues().get(0).getContent());
-        QaMessage failedMessage = messageCaptor.getAllValues().get(1);
-        assertEquals("assistant", failedMessage.getRole());
-        assertEquals("", failedMessage.getContent());
-        assertEquals("FAILED", failedMessage.getAnswerStatus());
-        assertEquals("System not embedding model", failedMessage.getFailureReason());
-        verify(sourceRepository, never()).save(any(QaSource.class));
+        QaMessage answerMessage = messageCaptor.getAllValues().get(1);
+        assertEquals("assistant", answerMessage.getRole());
+        assertTrue(answerMessage.getContent().contains("三才指天地人"));
+        assertEquals("SUCCEEDED", answerMessage.getAnswerStatus());
+        verify(sourceRepository).save(any(QaSource.class));
         ArgumentCaptor<QaRetrievalTrace> traceCaptor = ArgumentCaptor.forClass(QaRetrievalTrace.class);
         verify(traceRepository).save(traceCaptor.capture());
-        assertEquals("System not embedding model", traceCaptor.getValue().getFailureReason());
+        assertTrue(traceCaptor.getValue().getFailureReason().contains("Provider failed; answered by local retrieval"));
     }
 
     @Test
@@ -276,6 +287,7 @@ class KnowledgeQaApplicationServiceImplTest {
                 knowledgeBaseClient,
                 classicsFacade,
                 aiFacade,
+                mock(QaKnowledgeSyncItemRepository.class),
                 mock(QaSessionRepository.class),
                 mock(QaMessageRepository.class),
                 mock(QaSourceRepository.class),
@@ -408,6 +420,25 @@ class KnowledgeQaApplicationServiceImplTest {
                 null);
     }
 
+    private static QaKnowledgeSyncItem sancaiSyncItem() {
+        return new QaKnowledgeSyncItem(
+                1L,
+                "SANCAI_ENTRY:3001",
+                "SANCAI_ENTRY",
+                3001L,
+                "kuzhambu-qa",
+                1,
+                "revision",
+                "fastgpt",
+                "kb_kuzhambu_qa",
+                "item_3001",
+                "SUCCEEDED",
+                null,
+                new Date(),
+                new Date(),
+                new Date());
+    }
+
     private static ClassicsQaKnowledgeFacadeResponse qaKnowledge() {
         return ClassicsQaKnowledgeFacadeResponse.builder()
                 .knowledge(ClassicsQaKnowledgeFacadeDto.builder()
@@ -428,6 +459,26 @@ class KnowledgeQaApplicationServiceImplTest {
                                 .question("王圻是谁")
                                 .answer("明代学者")
                                 .build()))
+                        .build())
+                .build();
+    }
+
+    private static ClassicsQaKnowledgeFacadeResponse sancaiKnowledge() {
+        return ClassicsQaKnowledgeFacadeResponse.builder()
+                .knowledge(ClassicsQaKnowledgeFacadeDto.builder()
+                        .sourceId("SANCAI_ENTRY:3001")
+                        .contentType("SANCAI_ENTRY")
+                        .contentId("3001")
+                        .knowledgeBase("kuzhambu-qa")
+                        .currentVersionNo(1)
+                        .visibility("PUBLIC")
+                        .status("ACTIVE")
+                        .sourcePath("/classics/sancai/3001")
+                        .title("三才")
+                        .categoryPath("术语")
+                        .summary("三才指天地人，是传统知识分类中的核心概念。")
+                        .body("三才指天地人。")
+                        .tags(List.of("三才"))
                         .build())
                 .build();
     }

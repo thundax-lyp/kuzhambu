@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thundax.kuzhambu.common.web.request.PageRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,7 +18,6 @@ public class DiscoverySearchRequest extends PageRequest {
 
     @Schema(name = "queryText", description = "搜索词")
     @JsonProperty(value = "queryText")
-    @NotBlank(message = "\"搜索词\"不能为空")
     private String queryText;
 
     @Schema(name = "knowledgeBases", description = "知识库范围")

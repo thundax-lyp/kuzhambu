@@ -487,6 +487,8 @@ CSS Selector
 
 - Playwright 测试业务控件时优先使用 `getByTestId` 作为明确技术锚点；`getByRole(..., { name })` 用于验证用户可感知语义、可访问名称或没有必要新增技术锚点的简单控件。
 - `data-testid` / `testId` 不替代可访问名称。图标按钮、无文本按钮、表格、搜索框等仍需通过可见文本、DOM `aria-label` / `aria-labelledby` 或组件封装层的 `ariaLabel` 提供业务语义。
+- 页面和页面私有组件使用 `Kuzhambu*` 交互封装时，优先传组件层 `testId`，不要直接写 `data-testid`；封装组件内部统一根据 `import.meta.env.PROD` 和 `VITE_EXPOSE_TEST_ID` 决定是否渲染 `data-testid`。
+- 新增面向业务交互定位的 `Kuzhambu*` 共享组件时，应像 `KuzhambuButton`、`KuzhambuModal`、`KuzhambuDrawer` 一样暴露语义明确的 `testId` prop，并在组件测试中覆盖开发环境保留、生产默认擦除、生产测试构建保留。
 - 若 E2E 使用生产式构建产物，构建时必须设置 `VITE_EXPOSE_TEST_ID=true` 保留 `data-testid`；生产发布构建不得设置该变量。
 - Playwright 测试禁止使用 `waitForTimeout`。
 - Playwright 测试禁止使用复杂 CSS selector。

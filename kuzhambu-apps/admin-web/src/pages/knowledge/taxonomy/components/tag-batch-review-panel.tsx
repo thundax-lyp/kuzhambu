@@ -74,6 +74,7 @@ export const TagBatchReviewPanel = ({
 
     return (
         <KuzhambuDrawer
+            testId="knowledge-taxonomy-tag-batch-review-panel-drawer"
             className="knowledge-taxonomy-tag-batch-review-panel"
             title={title}
             open={open}

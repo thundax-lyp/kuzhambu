@@ -187,7 +187,6 @@ export const ActionStatusPage = () => {
     return (
         <KuzhambuPage
             className="action-status-page"
-            eyebrow="AI"
             title="AI 动作状态"
             description="检查 scope + capability 的可用状态和不可用原因"
             actions={

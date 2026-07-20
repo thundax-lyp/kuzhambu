@@ -30,7 +30,7 @@
 .sancai-detail-kicker {
     margin: 0;
     color: #6b7280;
-    font-size: 12px;
+    font-size: 15px;
 }
 
 .sancai-browser-title h1,
@@ -78,7 +78,7 @@
 
 .sancai-category-summary span:last-child {
     color: #6b7280;
-    font-size: 12px;
+    font-size: 14px;
 }
 
 .sancai-browser-content {
@@ -133,6 +133,7 @@
     background: transparent;
     color: #1f2933;
     padding: 10px 8px;
+    font-size: 16px;
     text-align: left;
 }
 
@@ -152,11 +153,6 @@
 .sancai-entry-detail {
     border-radius: 6px;
     padding: 20px;
-}
-
-.sancai-detail-summary {
-    color: #4b5563;
-    line-height: 1.7;
 }
 
 .sancai-image-strip {
@@ -184,61 +180,39 @@
 .sancai-tag-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin: 10px 0;
+    gap: 10px;
+    margin: 14px 0;
 }
 
 .sancai-tag {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
     border: 1px solid #d8ccb8;
+    border-radius: 999px;
     background: #f7efe1;
     color: #4b3825;
-    padding: 3px 8px;
-    font-size: 12px;
+    padding: 4px 11px;
+    font-size: 15px;
+    line-height: 1.35;
 }
 
-.sancai-visual-summary {
-    display: grid;
-    grid-template-columns: minmax(120px, 180px) minmax(0, 1fr);
-    gap: 14px;
-    align-items: start;
+.sancai-detail-section {
     border-top: 1px solid #ece4d7;
-    border-bottom: 1px solid #ece4d7;
-    margin: 14px 0;
-    padding: 14px 0;
+    margin-top: 18px;
+    padding-top: 16px;
 }
 
-.sancai-visual-summary img {
-    width: 100%;
-    aspect-ratio: 4 / 3;
-    border: 1px solid #e5dfd3;
-    object-fit: cover;
-    background: #f8f3e8;
-}
-
-.sancai-visual-summary h3 {
+.sancai-detail-section h3 {
     margin: 0 0 8px;
-    font-size: 14px;
+    font-size: 20px;
 }
 
-.sancai-visual-summary p {
+.sancai-detail-section p {
     margin: 0;
-    color: #4b5563;
-    line-height: 1.7;
-}
-
-.sancai-detail-columns {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-}
-
-.sancai-detail-columns h3 {
-    margin-bottom: 8px;
-    font-size: 14px;
-}
-
-.sancai-detail-columns p {
-    line-height: 1.8;
+    color: #374151;
+    font-size: 18px;
+    line-height: 1.95;
     white-space: pre-wrap;
 }
 
@@ -253,9 +227,7 @@
     }
 
     .sancai-browser,
-    .sancai-content-grid,
-    .sancai-detail-columns,
-    .sancai-visual-summary {
+    .sancai-content-grid {
         grid-template-columns: 1fr;
     }
 

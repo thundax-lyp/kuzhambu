@@ -171,7 +171,6 @@ export const OperationsTasksPage = () => {
             className="tasks-page operations-tasks-page"
             description="集中查看长任务状态、筛选执行记录，并快速返回运营看板或相关运维入口。"
             title="运营任务台账"
-            eyebrow="Operations"
         >
             <div>
                 <section className="operations-tasks-body">
@@ -362,6 +361,7 @@ export const OperationsTasksPage = () => {
                 </section>
 
                 <KuzhambuDrawer
+                    testId="operations-tasks-tasks-drawer"
                     open={isTaskDetailOpen}
                     size="middle"
                     title={detailRecord ? `长任务详情 #${detailRecord.snapshotId}` : "长任务详情"}

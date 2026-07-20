@@ -141,6 +141,7 @@ const AiModelEditForm = ({ canEdit, model, open, saving, onClose, onSave }: AiMo
 
     return (
         <KuzhambuDrawer
+            testId="ai-ai-models-ai-model-editor-drawer"
             open={open}
             title={model ? "编辑模型" : "新增模型"}
             size="large"

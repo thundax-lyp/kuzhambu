@@ -18,6 +18,7 @@ export const RefinementEntityDeleteModal = ({
 }: RefinementEntityDeleteModalProps) => {
     return (
         <KuzhambuModal
+            testId="knowledge-refinement-entity-delete-modal"
             title="删除实体草稿"
             open={open}
             confirmLoading={deleting}

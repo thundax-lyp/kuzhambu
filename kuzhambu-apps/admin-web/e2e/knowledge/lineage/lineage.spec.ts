@@ -52,7 +52,7 @@ const mockShellApis = async (page: Page) => {
             {
                 id: "lineage",
                 parentId: "knowledge",
-                name: "世系图浏览",
+                name: "世系图",
                 url: "/knowledge/lineage",
                 displayParams: '{"icon":"submissions"}'
             }

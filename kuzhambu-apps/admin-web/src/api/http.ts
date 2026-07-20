@@ -34,6 +34,11 @@ interface EventStreamOptions {
     signal?: AbortSignal;
 }
 
+interface PostEventStreamOptions<TBody> extends RequestOptions<TBody> {
+    onChunk: (chunk: string) => void;
+    signal?: AbortSignal;
+}
+
 interface AccessTokenPayload {
     token: string;
     refreshToken?: string;
@@ -56,6 +61,18 @@ const isSuccessCode = (code: string | undefined) => {
 
 const isAuthInvalid = (response: Response, code: string | number | undefined) => {
     return response.status === 401 || code === AUTH_INVALID_CODE;
+};
+
+const safeReadApiResponse = async <T>(response: Response) => {
+    const text = await response.text();
+    if (!text.trim()) {
+        return null;
+    }
+    try {
+        return JSON.parse(text) as ApiResponse<T>;
+    } catch {
+        return null;
+    }
 };
 
 const shouldRefreshBeforeRequest = () => {
@@ -86,8 +103,8 @@ const requestTokenRefresh = async () => {
         })
     });
 
-    const payload = (await response.json()) as ApiResponse<AccessTokenPayload>;
-    if (!response.ok || !isSuccessCode(payload.code) || !payload.data?.token) {
+    const payload = await safeReadApiResponse<AccessTokenPayload>(response);
+    if (!response.ok || !isSuccessCode(payload?.code) || !payload?.data?.token) {
         clearAccessToken();
         return null;
     }
@@ -140,6 +157,27 @@ const requestJson = async <TResponse, TBody = unknown>(
 
     const payload = (await response.json()) as ApiResponse<TResponse>;
     return { response, payload };
+};
+
+const requestPostEventStream = async <TBody>(
+    path: string,
+    options: PostEventStreamOptions<TBody>,
+    token: string | null
+) => {
+    const headers: HeadersInit = {
+        Accept: "text/event-stream",
+        "Content-Type": "application/json"
+    };
+    if (token) {
+        headers[ACCESS_TOKEN_HEADER] = token;
+    }
+
+    return fetch(`${ADMIN_API_BASE_URL}${path}`, {
+        body: options.body === undefined ? undefined : JSON.stringify(options.body),
+        headers,
+        method: "POST",
+        signal: options.signal
+    });
 };
 
 const requestGetJson = async <TResponse>(path: string, token: string | null) => {
@@ -400,6 +438,48 @@ export const getEventStream = async (path: string, options: EventStreamOptions) 
     });
 
     if (!response.ok) {
+        throw new ApiError(response.status, `流式请求失败：${response.status}`);
+    }
+    if (!response.body) {
+        throw new ApiError("EMPTY_STREAM", "流式响应为空");
+    }
+
+    const decoder = new TextDecoder();
+    const reader = response.body.getReader();
+    try {
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) {
+                break;
+            }
+            options.onChunk(decoder.decode(value, { stream: true }));
+        }
+        options.onChunk(decoder.decode());
+    } finally {
+        reader.releaseLock();
+    }
+};
+
+export const postEventStream = async <TBody = unknown>(
+    path: string,
+    options: PostEventStreamOptions<TBody>
+) => {
+    await refreshAccessTokenIfNeeded();
+
+    const token = getAccessToken();
+    let response = await requestPostEventStream(path, options, token);
+
+    if (!response.ok && isAuthInvalid(response, response.status) && getRefreshToken()) {
+        const refreshedToken = await refreshAccessToken();
+        if (refreshedToken?.token) {
+            response = await requestPostEventStream(path, options, refreshedToken.token);
+        }
+    }
+
+    if (!response.ok) {
+        if (isAuthInvalid(response, response.status)) {
+            clearAccessToken();
+        }
         throw new ApiError(response.status, `流式请求失败：${response.status}`);
     }
     if (!response.body) {

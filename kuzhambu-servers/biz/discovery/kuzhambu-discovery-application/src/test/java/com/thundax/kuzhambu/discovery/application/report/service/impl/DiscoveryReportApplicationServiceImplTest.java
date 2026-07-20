@@ -7,8 +7,8 @@ import static org.mockito.Mockito.when;
 import com.thundax.kuzhambu.discovery.application.report.result.DiscoveryReportSummaryResult;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSessionRepository;
-import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchLog;
-import com.thundax.kuzhambu.discovery.domain.search.repository.SearchLogRepository;
+import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchEvent;
+import com.thundax.kuzhambu.discovery.domain.search.repository.SearchEventRepository;
 import java.util.Date;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -17,16 +17,16 @@ class DiscoveryReportApplicationServiceImplTest {
 
     @Test
     void summaryShouldAggregateSearchQaTopQueryAndWeeklyBuckets() {
-        SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
         QaSessionRepository qaSessionRepository = mock(QaSessionRepository.class);
         DiscoveryReportApplicationServiceImpl service =
-                new DiscoveryReportApplicationServiceImpl(searchLogRepository, qaSessionRepository);
-        when(searchLogRepository.listByCreatedAtRange(date(1_718_000_000_000L), date(1_720_419_200_000L)))
+                new DiscoveryReportApplicationServiceImpl(searchEventRepository, qaSessionRepository);
+        when(searchEventRepository.listByCreatedAtRange(date(1_718_000_000_000L), date(1_720_419_200_000L)))
                 .thenReturn(List.of(
-                        searchLog("礼制", null, null, 100L, date(1_718_000_000_000L)),
-                        searchLog("原始礼制", "礼制", null, 200L, date(1_718_172_800_000L)),
-                        searchLog("原始礼制检索", "礼制归一", "礼制", null, date(1_718_259_200_000L)),
-                        searchLog("祭祀", null, null, null, date(1_718_777_600_000L))));
+                        searchEvent("礼制", null, null, 100L, date(1_718_000_000_000L)),
+                        searchEvent("原始礼制", "礼制", null, 200L, date(1_718_172_800_000L)),
+                        searchEvent("原始礼制检索", "礼制归一", "礼制", null, date(1_718_259_200_000L)),
+                        searchEvent("祭祀", null, null, null, date(1_718_777_600_000L))));
         when(qaSessionRepository.listByOpenedAtRange(date(1_718_000_000_000L), date(1_720_419_200_000L)))
                 .thenReturn(List.of(qaSession(date(1_718_086_400_000L)), qaSession(date(1_718_864_000_000L))));
 
@@ -46,14 +46,14 @@ class DiscoveryReportApplicationServiceImplTest {
 
     @Test
     void summaryShouldReturnZeroAverageSearchLatencyWhenNoLatencySamples() {
-        SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
         QaSessionRepository qaSessionRepository = mock(QaSessionRepository.class);
         DiscoveryReportApplicationServiceImpl service =
-                new DiscoveryReportApplicationServiceImpl(searchLogRepository, qaSessionRepository);
-        when(searchLogRepository.listByCreatedAtRange(date(1_718_000_000_000L), date(1_720_419_200_000L)))
+                new DiscoveryReportApplicationServiceImpl(searchEventRepository, qaSessionRepository);
+        when(searchEventRepository.listByCreatedAtRange(date(1_718_000_000_000L), date(1_720_419_200_000L)))
                 .thenReturn(List.of(
-                        searchLog("礼制", null, null, null, date(1_718_000_000_000L)),
-                        searchLog("祭祀", null, null, null, date(1_718_777_600_000L))));
+                        searchEvent("礼制", null, null, null, date(1_718_000_000_000L)),
+                        searchEvent("祭祀", null, null, null, date(1_718_777_600_000L))));
         when(qaSessionRepository.listByOpenedAtRange(date(1_718_000_000_000L), date(1_720_419_200_000L)))
                 .thenReturn(List.of());
 
@@ -64,19 +64,19 @@ class DiscoveryReportApplicationServiceImplTest {
         assertEquals(0L, result.getAvgSearchLatencyMs());
     }
 
-    private static SearchLog searchLog(
+    private static SearchEvent searchEvent(
             String queryText,
             String normalizedQueryText,
             String displayQueryText,
             Long searchLatencyMs,
             Date createdAt) {
-        SearchLog searchLog = new SearchLog();
-        searchLog.setQueryText(queryText);
-        searchLog.setNormalizedQueryText(normalizedQueryText);
-        searchLog.setDisplayQueryText(displayQueryText);
-        searchLog.setSearchLatencyMs(searchLatencyMs);
-        searchLog.setCreatedAt(createdAt);
-        return searchLog;
+        SearchEvent searchEvent = new SearchEvent();
+        searchEvent.setQueryText(queryText);
+        searchEvent.setNormalizedQueryText(normalizedQueryText);
+        searchEvent.setDisplayQueryText(displayQueryText);
+        searchEvent.setSearchLatencyMs(searchLatencyMs);
+        searchEvent.setCreatedAt(createdAt);
+        return searchEvent;
     }
 
     private static QaSession qaSession(Date openedAt) {

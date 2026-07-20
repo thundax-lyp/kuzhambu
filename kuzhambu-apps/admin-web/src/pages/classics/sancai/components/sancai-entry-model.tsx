@@ -1216,6 +1216,7 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
 
     return (
         <KuzhambuDrawer
+            testId="classics-sancai-sancai-entry-editor-drawer"
             title={mode === "create" ? "新增条目" : "编辑条目"}
             open={open}
             size="large"
@@ -1259,6 +1260,7 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
             onClose={onCancel}
         >
             <KuzhambuModal
+                testId="classics-sancai-sancai-entry-ai-translation-modal"
                 title="AI翻译"
                 open={isTranslationModalOpen}
                 width={960}

@@ -306,7 +306,6 @@ export const CapabilityMappingsPage = () => {
     return (
         <KuzhambuPage
             className="capability-mappings-page"
-            eyebrow="AI"
             title="AI 能力映射"
             description="配置 scope + capability 到启用模型的治理映射"
             actions={
@@ -408,6 +407,7 @@ export const CapabilityMappingsPage = () => {
             />
 
             <KuzhambuDrawer
+                testId="ai-capability-mappings-capability-mappings-drawer"
                 open={drawerOpen}
                 title={editingMapping ? "配置模型" : "新增映射"}
                 size="large"

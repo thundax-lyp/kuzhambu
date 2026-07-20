@@ -314,6 +314,7 @@ export const ClassicsContentQaPanel = ({
                 />
 
                 <KuzhambuModal
+                    testId="classics-content-qa-editor-modal"
                     destroyOnHidden
                     okButtonProps={{
                         loading: addMutation.isPending || updateMutation.isPending

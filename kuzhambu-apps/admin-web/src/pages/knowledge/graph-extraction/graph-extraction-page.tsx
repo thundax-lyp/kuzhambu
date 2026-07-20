@@ -207,7 +207,6 @@ export const GraphExtractionPage = () => {
         <KuzhambuPage
             className="graph-extraction-page knowledge-graph-extraction-page"
             description="统一管理 Knowledge 抽取任务、候选结果和正式应用动作。"
-            eyebrow="Knowledge / Graph Extraction"
             title="知识抽取任务"
         >
             <KuzhambuSpace

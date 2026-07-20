@@ -1,6 +1,7 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { BookOpen, ChevronRight, Search } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,22 +19,19 @@ const readTitle = (value: { id: number; title?: string | null }, fallback: strin
     return value.title?.trim() || `${fallback} ${value.id}`;
 };
 
-const readEntryText = (entry: SancaiEntryRecord) => {
-    return (
-        entry.summary?.trim() ||
-        entry.translationText?.trim() ||
-        entry.originalText?.trim() ||
-        "暂无内容摘要"
-    );
+const readEntryIdParam = (searchParams: URLSearchParams) => {
+    const value = Number.parseInt(searchParams.get("id") ?? "", 10);
+    return Number.isFinite(value) && value > 0 ? value : null;
 };
 
 export const SancaiPage = () => {
+    const [searchParams, setSearchParams] = useSearchParams();
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
     const [selectedVolumeId, setSelectedVolumeId] = useState<number | null>(null);
-    const [selectedEntryId, setSelectedEntryId] = useState<number | null>(null);
     const [keyword, setKeyword] = useState("");
     const [appliedKeyword, setAppliedKeyword] = useState<string | null>(null);
     const [pageNo, setPageNo] = useState(1);
+    const selectedEntryId = readEntryIdParam(searchParams);
 
     const categoriesQuery = useQuery({
         queryKey: ["portal", "classics", "sancai", "categories"],
@@ -85,31 +83,43 @@ export const SancaiPage = () => {
         if (category) {
             return readTitle(category, "门类");
         }
-        return "全部公开条目";
+        return "全部条目";
     }, [categories, selectedCategoryId, selectedVolumeId, volumes]);
+
+    const clearSelectedEntryParam = () => {
+        const next = new URLSearchParams(searchParams);
+        next.delete("id");
+        setSearchParams(next);
+    };
 
     const applySearch = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setAppliedKeyword(keyword.trim() || null);
         setPageNo(1);
-        setSelectedEntryId(null);
+        clearSelectedEntryParam();
     };
 
     const selectCategory = (categoryId: number | null) => {
         setSelectedCategoryId(categoryId);
         setSelectedVolumeId(null);
-        setSelectedEntryId(null);
         setPageNo(1);
+        clearSelectedEntryParam();
     };
 
     const selectVolume = (volumeId: number | null) => {
         setSelectedVolumeId(volumeId);
-        setSelectedEntryId(null);
         setPageNo(1);
+        clearSelectedEntryParam();
     };
     const changePage = (nextPageNo: number) => {
         setPageNo(nextPageNo);
-        setSelectedEntryId(null);
+        clearSelectedEntryParam();
+    };
+
+    const selectEntry = (entryId: number) => {
+        const next = new URLSearchParams(searchParams);
+        next.set("id", String(entryId));
+        setSearchParams(next);
     };
 
     return (
@@ -119,7 +129,7 @@ export const SancaiPage = () => {
                     <div className="sancai-browser-title">
                         <BookOpen size={20} />
                         <div>
-                            <p>Classics</p>
+                            <p>古籍</p>
                             <h1>三才图会</h1>
                         </div>
                     </div>
@@ -128,7 +138,7 @@ export const SancaiPage = () => {
                         variant={selectedCategoryId === null ? "default" : "ghost"}
                         onClick={() => selectCategory(null)}
                     >
-                        全部公开条目
+                        全部条目
                     </Button>
                     <div className="sancai-nav-list">
                         {categories.map((category) => (
@@ -165,8 +175,8 @@ export const SancaiPage = () => {
                         </div>
                         <form className="sancai-search-form" onSubmit={applySearch}>
                             <Input
-                                aria-label="搜索三才图会公开条目"
-                                placeholder="搜索公开条目"
+                                aria-label="搜索三才图会条目"
+                                placeholder="搜索条目"
                                 value={keyword}
                                 onChange={(event) => setKeyword(event.target.value)}
                             />
@@ -198,12 +208,12 @@ export const SancaiPage = () => {
                     </div>
 
                     <div className="sancai-content-grid">
-                        <div className="sancai-entry-list" aria-label="三才图会公开条目列表">
+                        <div className="sancai-entry-list" aria-label="三才图会条目列表">
                             {entriesQuery.isLoading ? (
-                                <p className="sancai-muted">正在加载公开条目...</p>
+                                <p className="sancai-muted">正在加载条目...</p>
                             ) : null}
                             {!entriesQuery.isLoading && entries.length === 0 ? (
-                                <p className="sancai-muted">暂无公开条目</p>
+                                <p className="sancai-muted">暂无条目</p>
                             ) : null}
                             {entries.map((entry) => (
                                 <button
@@ -214,7 +224,7 @@ export const SancaiPage = () => {
                                             : "sancai-entry-item"
                                     }
                                     type="button"
-                                    onClick={() => setSelectedEntryId(entry.id)}
+                                    onClick={() => selectEntry(entry.id)}
                                 >
                                     <span>{readTitle(entry, "条目")}</span>
                                     <ChevronRight size={16} />
@@ -244,7 +254,6 @@ export const SancaiPage = () => {
                         <Card className="sancai-entry-detail" aria-label="三才图会条目详情">
                             {selectedEntry ? (
                                 <>
-                                    <p className="sancai-detail-kicker">公开已发布</p>
                                     <h2>{readTitle(selectedEntry, "条目")}</h2>
                                     {selectedEntry.images?.length ? (
                                         <div
@@ -282,46 +291,39 @@ export const SancaiPage = () => {
                                             ))}
                                         </div>
                                     ) : null}
-                                    <p className="sancai-detail-summary">
-                                        {readEntryText(selectedEntry)}
-                                    </p>
-                                    {selectedEntry.currentVisualAsset ? (
-                                        <section className="sancai-visual-summary">
-                                            {selectedEntry.currentVisualAsset
-                                                .generatedPreviewUrl ? (
-                                                <img
-                                                    alt="三才图会视觉处理生成图"
-                                                    src={
-                                                        selectedEntry.currentVisualAsset
-                                                            .generatedPreviewUrl
-                                                    }
-                                                />
-                                            ) : null}
-                                            <div>
-                                                <h3>视觉处理</h3>
-                                                <p>
-                                                    {selectedEntry.currentVisualAsset
-                                                        .visualDescription ||
-                                                        selectedEntry.currentVisualAsset
-                                                            .fusionDescription ||
-                                                        "暂无视觉描述"}
-                                                </p>
-                                            </div>
+                                    {selectedEntry.summary?.trim() ? (
+                                        <section className="sancai-detail-section">
+                                            <h3>提要</h3>
+                                            <p>{selectedEntry.summary}</p>
                                         </section>
                                     ) : null}
-                                    <div className="sancai-detail-columns">
-                                        <section>
+                                    {selectedEntry.originalText?.trim() ? (
+                                        <section className="sancai-detail-section">
                                             <h3>原文</h3>
-                                            <p>{selectedEntry.originalText || "暂无原文"}</p>
+                                            <p>{selectedEntry.originalText}</p>
                                         </section>
-                                        <section>
+                                    ) : null}
+                                    {selectedEntry.translationText?.trim() ? (
+                                        <section className="sancai-detail-section">
                                             <h3>译文</h3>
-                                            <p>{selectedEntry.translationText || "暂无译文"}</p>
+                                            <p>{selectedEntry.translationText}</p>
                                         </section>
-                                    </div>
+                                    ) : null}
+                                    {selectedEntry.currentVisualAsset?.visualDescription?.trim() ||
+                                    selectedEntry.currentVisualAsset?.fusionDescription?.trim() ? (
+                                        <section className="sancai-detail-section">
+                                            <h3>图像说明</h3>
+                                            <p>
+                                                {selectedEntry.currentVisualAsset
+                                                    ?.visualDescription ||
+                                                    selectedEntry.currentVisualAsset
+                                                        ?.fusionDescription}
+                                            </p>
+                                        </section>
+                                    ) : null}
                                 </>
                             ) : (
-                                <p className="sancai-muted">请选择一个公开条目查看详情</p>
+                                <p className="sancai-muted">请选择一个条目查看详情</p>
                             )}
                         </Card>
                     </div>

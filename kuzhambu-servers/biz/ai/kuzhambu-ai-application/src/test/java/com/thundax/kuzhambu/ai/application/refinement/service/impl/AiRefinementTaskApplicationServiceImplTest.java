@@ -269,6 +269,11 @@ class AiRefinementTaskApplicationServiceImplTest {
         }
 
         @Override
+        public List<AiRefinementTask> listActiveTasks() {
+            return List.of();
+        }
+
+        @Override
         public List<AiRefinementTask> listExpiredRunningTasks(Instant threshold) {
             return List.of();
         }

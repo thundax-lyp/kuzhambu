@@ -341,7 +341,6 @@ export const OperationsHealthPage = () => {
         return (
             <KuzhambuPage
                 className="health-page operations-health-page"
-                eyebrow="Operations"
                 title="健康检查"
                 description="查看组件健康检查、探针来源和运行状态。"
             >
@@ -353,7 +352,6 @@ export const OperationsHealthPage = () => {
     return (
         <KuzhambuPage
             className="health-page operations-health-page"
-            eyebrow="Operations"
             title="健康检查"
             description="查看组件健康检查、探针来源和运行状态。"
         >
@@ -536,6 +534,7 @@ export const OperationsHealthPage = () => {
                 </div>
             </Card>
             <KuzhambuDrawer
+                testId="operations-health-health-1-drawer"
                 open={selectedHealth !== null}
                 size="middle"
                 title={selectedHealth ? `健康详情 #${selectedHealth.checkId}` : "健康详情"}
@@ -584,6 +583,7 @@ export const OperationsHealthPage = () => {
                 </div>
             </KuzhambuDrawer>
             <KuzhambuDrawer
+                testId="operations-health-health-2-drawer"
                 open={alertCheckId !== null}
                 size="middle"
                 title={alertCheckId ? `关联告警 #${alertCheckId}` : "关联告警"}

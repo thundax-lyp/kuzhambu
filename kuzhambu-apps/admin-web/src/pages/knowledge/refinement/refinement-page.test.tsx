@@ -167,9 +167,7 @@ describe("RefinementPage", () => {
             </QueryClientProvider>
         );
 
-        expect(
-            await screen.findByRole("heading", { name: "知识图谱精修工作台" })
-        ).toBeInTheDocument();
+        expect(await screen.findByRole("heading", { name: "知识图谱工作台" })).toBeInTheDocument();
         expect(await screen.findByLabelText("知识图谱精修任务表格")).toBeInTheDocument();
         expect(screen.getByText("SANCAI_ENTRY")).toBeInTheDocument();
     }, 30000);

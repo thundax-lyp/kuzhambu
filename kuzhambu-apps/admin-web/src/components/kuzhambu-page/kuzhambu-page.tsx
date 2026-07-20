@@ -9,7 +9,6 @@ interface KuzhambuPageProps {
     children: ReactNode;
     className?: string;
     description?: ReactNode;
-    eyebrow?: ReactNode;
     title: ReactNode;
 }
 
@@ -18,14 +17,12 @@ export const KuzhambuPage = ({
     children,
     className,
     description,
-    eyebrow,
     title
 }: KuzhambuPageProps) => {
     return (
         <main className={["kuzhambu-page", className].filter(Boolean).join(" ")}>
             <header className="kuzhambu-page-header">
                 <div>
-                    {eyebrow ? <Text className="kuzhambu-page-eyebrow">{eyebrow}</Text> : null}
                     <Title level={2}>{title}</Title>
                     {description ? <Text type="secondary">{description}</Text> : null}
                 </div>

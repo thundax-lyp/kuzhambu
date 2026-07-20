@@ -18,7 +18,7 @@ public class QueryUnderstandingDO {
     private Long id;
 
     private String queryUnderstandingId;
-    private String searchLogId;
+    private String searchEventId;
     private String queryText;
     private String normalizedQueryText;
     private String rewrittenQueryText;

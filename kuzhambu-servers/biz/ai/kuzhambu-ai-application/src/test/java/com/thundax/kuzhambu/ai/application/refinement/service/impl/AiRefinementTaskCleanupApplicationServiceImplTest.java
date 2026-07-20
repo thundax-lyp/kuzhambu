@@ -9,6 +9,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.springframework.mock.env.MockEnvironment;
 
 class AiRefinementTaskCleanupApplicationServiceImplTest {
 
@@ -20,7 +21,7 @@ class AiRefinementTaskCleanupApplicationServiceImplTest {
         repository.deletedTerminalCount = 3;
 
         AiRefinementTaskCleanupApplicationServiceImpl service =
-                new AiRefinementTaskCleanupApplicationServiceImpl(repository) {
+                new AiRefinementTaskCleanupApplicationServiceImpl(repository, new MockEnvironment()) {
                     @Override
                     protected Instant now() {
                         return Instant.parse("2026-07-01T12:00:00Z");
@@ -45,7 +46,7 @@ class AiRefinementTaskCleanupApplicationServiceImplTest {
         repository.deletedTerminalCount = 1;
 
         AiRefinementTaskCleanupApplicationServiceImpl service =
-                new AiRefinementTaskCleanupApplicationServiceImpl(repository) {
+                new AiRefinementTaskCleanupApplicationServiceImpl(repository, new MockEnvironment()) {
                     @Override
                     protected Instant now() {
                         return Instant.parse("2026-07-01T12:00:00Z");
@@ -56,6 +57,68 @@ class AiRefinementTaskCleanupApplicationServiceImplTest {
 
         assertEquals(0, result.expiredRunningCount());
         assertEquals(1, result.deletedTerminalCount());
+        assertEquals(0, repository.updatedTasks.size());
+    }
+
+    @Test
+    void startupCleanupShouldCloseAllActiveTasksAsRestartOrphans() {
+        RecordingTaskRepository repository = new RecordingTaskRepository();
+        repository.activeTasks.add(task(2001L, "PENDING"));
+        repository.activeTasks.add(task(2002L, "RUNNING"));
+
+        AiRefinementTaskCleanupApplicationServiceImpl service =
+                new AiRefinementTaskCleanupApplicationServiceImpl(repository, new MockEnvironment()) {
+                    @Override
+                    protected Instant now() {
+                        return Instant.parse("2026-07-01T12:00:00Z");
+                    }
+                };
+
+        int closedCount = service.closeInterruptedActiveTasks();
+
+        assertEquals(2, closedCount);
+        assertEquals(2, repository.updatedTasks.size());
+        assertEquals("FAILED", repository.updatedTasks.get(0).getStatus());
+        assertEquals("TASK_ORPHANED_BY_RESTART", repository.updatedTasks.get(0).getErrorType());
+        assertEquals("WORKER_RESULT", repository.updatedTasks.get(0).getFailureStage());
+        assertEquals("服务重启后任务执行上下文已丢失，系统自动关闭", repository.updatedTasks.get(0).getErrorMessage());
+        assertEquals(
+                Instant.parse("2026-07-01T12:00:00Z"),
+                repository.updatedTasks.get(0).getCompletedAt());
+    }
+
+    @Test
+    void startupEventShouldOnlyCloseTasksForAdminStarter() {
+        RecordingTaskRepository repository = new RecordingTaskRepository();
+        repository.activeTasks.add(task(3001L, "RUNNING"));
+        MockEnvironment environment =
+                new MockEnvironment().withProperty("spring.application.name", "kuzhambu-admin-starter");
+
+        AiRefinementTaskCleanupApplicationServiceImpl service =
+                new AiRefinementTaskCleanupApplicationServiceImpl(repository, environment) {
+                    @Override
+                    protected Instant now() {
+                        return Instant.parse("2026-07-01T12:00:00Z");
+                    }
+                };
+
+        service.closeInterruptedActiveTasksOnStartup();
+
+        assertEquals(1, repository.updatedTasks.size());
+    }
+
+    @Test
+    void startupEventShouldSkipPortalStarter() {
+        RecordingTaskRepository repository = new RecordingTaskRepository();
+        repository.activeTasks.add(task(3001L, "RUNNING"));
+        MockEnvironment environment =
+                new MockEnvironment().withProperty("spring.application.name", "kuzhambu-portal-starter");
+
+        AiRefinementTaskCleanupApplicationServiceImpl service =
+                new AiRefinementTaskCleanupApplicationServiceImpl(repository, environment);
+
+        service.closeInterruptedActiveTasksOnStartup();
+
         assertEquals(0, repository.updatedTasks.size());
     }
 
@@ -70,6 +133,7 @@ class AiRefinementTaskCleanupApplicationServiceImplTest {
     private static final class RecordingTaskRepository implements AiRefinementTaskRepository {
 
         private final List<AiRefinementTask> expiredRunningTasks = new ArrayList<>();
+        private final List<AiRefinementTask> activeTasks = new ArrayList<>();
         private final List<AiRefinementTask> updatedTasks = new ArrayList<>();
         private Instant listExpiredRunningThreshold;
         private Instant deletedTerminalThreshold;
@@ -106,6 +170,11 @@ class AiRefinementTaskCleanupApplicationServiceImplTest {
         @Override
         public long countTasks(String capability, String status, String contentType, Long contentId, Long requestedBy) {
             return 0;
+        }
+
+        @Override
+        public List<AiRefinementTask> listActiveTasks() {
+            return activeTasks;
         }
 
         @Override

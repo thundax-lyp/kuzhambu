@@ -195,7 +195,6 @@ export const OperationsReportsPage = () => {
     return (
         <KuzhambuPage
             className="reports-page operations-reports-page"
-            eyebrow="Operations"
             title="报表管理"
             description="生成周报、月报，查看 HTML/PDF 产物状态，并定位失败原因。"
             actions={
@@ -441,6 +440,7 @@ export const OperationsReportsPage = () => {
             </section>
 
             <KuzhambuDrawer
+                testId="operations-reports-reports-drawer"
                 title="报表详情"
                 open={detailReportId !== null}
                 onClose={closeDetail}

@@ -8,6 +8,7 @@ import java.util.Arrays;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 
@@ -28,7 +29,8 @@ class PortalStarterArchitectureTest extends AbstractArchitectureTest {
         SpringBootApplication application = KuzhambuPortalApplication.class.getAnnotation(SpringBootApplication.class);
         MapperScan mapperScan = KuzhambuPortalApplication.class.getAnnotation(MapperScan.class);
 
-        Assertions.assertThat(application.exclude()).contains(SecurityAutoConfiguration.class);
+        Assertions.assertThat(application.exclude())
+                .contains(SecurityAutoConfiguration.class, ManagementWebSecurityAutoConfiguration.class);
         Assertions.assertThat(application.scanBasePackages())
                 .contains(
                         "com.thundax.kuzhambu.system.application",

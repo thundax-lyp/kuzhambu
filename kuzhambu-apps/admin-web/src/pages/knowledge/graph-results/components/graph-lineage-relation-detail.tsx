@@ -25,6 +25,7 @@ export const GraphLineageRelationDetail = ({
 }: GraphLineageRelationDetailProps) => {
     return (
         <KuzhambuDrawer
+            testId="knowledge-graph-results-graph-lineage-relation-detail-drawer"
             title="正式世系关系详情"
             open={open}
             size="middle"

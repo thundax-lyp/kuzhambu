@@ -42,10 +42,25 @@ vi.mock("@/service/current-user-service", () => ({
 
 vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
     createTask: vi.fn(() =>
-        Promise.resolve({ id: 9001, status: "PENDING", capability: "summary" })
+        Promise.resolve({
+            taskId: 9001,
+            status: "PENDING",
+            capability: "summary",
+            contentType: "WANGQI_DOCUMENT",
+            contentId: 1
+        })
     ),
-    getTask: vi.fn(),
-    pageTasks: vi.fn(() => Promise.resolve({ items: [], totalCount: 0, pageNo: 1, pageSize: 10 })),
+    getTaskFailureText: vi.fn(() => null),
+    getTask: vi.fn(() =>
+        Promise.resolve({
+            taskId: 9001,
+            status: "PENDING",
+            capability: "summary",
+            contentType: "WANGQI_DOCUMENT",
+            contentId: 1
+        })
+    ),
+    pageTasks: vi.fn(() => Promise.resolve({ items: [], total: 0, pageNo: 1, pageSize: 10 })),
     cancelTask: vi.fn()
 }));
 
@@ -74,6 +89,68 @@ let mockDocumentRecord = {
     storageObjectId: 7001,
     visibility: "PUBLIC"
 };
+let mockSummaryCandidates = [
+    {
+        candidateId: 5001,
+        contentType: "WANGQI_DOCUMENT",
+        contentId: 1,
+        capability: "summary",
+        objectId: null,
+        resultFormat: "TEXT",
+        resultPayload: "文档摘要候选",
+        status: "PENDING",
+        requestedAt: "2026-01-01T00:00:00.000+00:00"
+    }
+];
+let mockTagCandidates = [
+    {
+        candidateId: 6001,
+        contentType: "WANGQI_DOCUMENT",
+        contentId: 1,
+        capability: "tags",
+        objectId: null,
+        resultFormat: "STRUCTURED",
+        resultPayload: JSON.stringify({ tags: ["经部", "文献"] }),
+        status: "PENDING",
+        requestedAt: "2026-01-01T00:00:00.000+00:00"
+    }
+];
+let mockTagRecords = [
+    {
+        id: 8101,
+        tagId: 9101,
+        contentType: "WANGQI_DOCUMENT",
+        contentId: 1,
+        tagNameSnapshot: "史部",
+        source: "MANUAL",
+        status: "ACTIVE"
+    }
+];
+let mockQaCandidates = [
+    {
+        candidateId: 7001,
+        contentType: "WANGQI_DOCUMENT",
+        contentId: 1,
+        capability: "qa",
+        objectId: null,
+        resultFormat: "STRUCTURED",
+        resultPayload: JSON.stringify({
+            qaPairs: [{ question: "王圻是谁？", answer: "王圻是明代学者。" }]
+        }),
+        status: "PENDING",
+        requestedAt: "2026-01-01T00:00:00.000+00:00"
+    }
+];
+let mockQaRecords = [
+    {
+        id: 8201,
+        contentType: "WANGQI_DOCUMENT",
+        contentId: 1,
+        question: "已有问题？",
+        answer: "已有答案。",
+        source: "MANUAL"
+    }
+];
 
 const selectFirstRow = (table: HTMLElement) => {
     const checkbox = within(table).getAllByRole("checkbox")[1];
@@ -160,13 +237,13 @@ const installFetchMock = () => {
             path.endsWith("/classics/content/tags/list") &&
             body?.contentType === "WANGQI_DOCUMENT"
         ) {
-            return apiResponse([]);
+            return apiResponse(mockTagRecords);
         }
         if (
             path.endsWith("/classics/content/qa-pairs/list") &&
             body?.contentType === "WANGQI_DOCUMENT"
         ) {
-            return apiResponse([]);
+            return apiResponse(mockQaRecords);
         }
         if (path.endsWith("/classics/shares/batch/create")) {
             return apiResponse({
@@ -215,19 +292,21 @@ const installFetchMock = () => {
             });
         }
         if (path.endsWith("/ai/invocation/candidate/list")) {
-            return apiResponse([
-                {
-                    candidateId: 5001,
-                    contentType: "WANGQI_DOCUMENT",
-                    contentId: 1,
-                    capability: "summary",
-                    objectId: null,
-                    resultFormat: "TEXT",
-                    resultPayload: "文档摘要候选",
-                    status: "PENDING",
-                    requestedAt: "2026-01-01T00:00:00.000+00:00"
-                }
-            ]);
+            if (body?.capability === "tags") {
+                return apiResponse(mockTagCandidates);
+            }
+            if (body?.capability === "qa") {
+                return apiResponse(mockQaCandidates);
+            }
+            return apiResponse(mockSummaryCandidates);
+        }
+        if (path.endsWith("/classics/content/ai-candidates/change")) {
+            return apiResponse({
+                contentId: 1,
+                contentType: "WANGQI_DOCUMENT",
+                versionId: 9101,
+                versionNo: 2
+            });
         }
         if (path.endsWith("/classics/content/ai-candidates/batch/reject")) {
             return apiResponse({
@@ -256,6 +335,12 @@ describe("WangqiPage", () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        vi.mocked(aiRefinementTaskService.pageTasks).mockResolvedValue({
+            items: [],
+            total: 0,
+            pageNo: 1,
+            pageSize: 10
+        });
         queryClient = createTestQueryClient();
         capturedCalls.length = 0;
         mockDocumentRecord = {
@@ -268,6 +353,68 @@ describe("WangqiPage", () => {
             storageObjectId: 7001,
             visibility: "PUBLIC"
         };
+        mockSummaryCandidates = [
+            {
+                candidateId: 5001,
+                contentType: "WANGQI_DOCUMENT",
+                contentId: 1,
+                capability: "summary",
+                objectId: null,
+                resultFormat: "TEXT",
+                resultPayload: "文档摘要候选",
+                status: "PENDING",
+                requestedAt: "2026-01-01T00:00:00.000+00:00"
+            }
+        ];
+        mockTagCandidates = [
+            {
+                candidateId: 6001,
+                contentType: "WANGQI_DOCUMENT",
+                contentId: 1,
+                capability: "tags",
+                objectId: null,
+                resultFormat: "STRUCTURED",
+                resultPayload: JSON.stringify({ tags: ["经部", "文献"] }),
+                status: "PENDING",
+                requestedAt: "2026-01-01T00:00:00.000+00:00"
+            }
+        ];
+        mockTagRecords = [
+            {
+                id: 8101,
+                tagId: 9101,
+                contentType: "WANGQI_DOCUMENT",
+                contentId: 1,
+                tagNameSnapshot: "史部",
+                source: "MANUAL",
+                status: "ACTIVE"
+            }
+        ];
+        mockQaCandidates = [
+            {
+                candidateId: 7001,
+                contentType: "WANGQI_DOCUMENT",
+                contentId: 1,
+                capability: "qa",
+                objectId: null,
+                resultFormat: "STRUCTURED",
+                resultPayload: JSON.stringify({
+                    qaPairs: [{ question: "王圻是谁？", answer: "王圻是明代学者。" }]
+                }),
+                status: "PENDING",
+                requestedAt: "2026-01-01T00:00:00.000+00:00"
+            }
+        ];
+        mockQaRecords = [
+            {
+                id: 8201,
+                contentType: "WANGQI_DOCUMENT",
+                contentId: 1,
+                question: "已有问题？",
+                answer: "已有答案。",
+                source: "MANUAL"
+            }
+        ];
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         replacePermissions([
             "classics:wangqi:view",
@@ -394,6 +541,28 @@ describe("WangqiPage", () => {
     it("opens summary ai modal and creates task inside the modal", async () => {
         const user = userEvent.setup();
 
+        vi.mocked(aiRefinementTaskService.pageTasks).mockImplementation(async (query) => {
+            if (query.contentType === "WANGQI_DOCUMENT" && query.contentId === 1) {
+                return {
+                    items: [
+                        {
+                            taskId: 9001,
+                            status: "RUNNING",
+                            capability: "summary",
+                            contentType: "WANGQI_DOCUMENT",
+                            contentId: 1,
+                            requestedAt: "2026-01-01T00:00:00.000+00:00"
+                        }
+                    ],
+                    total: 1,
+                    pageNo: 1,
+                    pageSize: 10
+                };
+            }
+
+            return { items: [], total: 0, pageNo: 1, pageSize: 10 };
+        });
+
         render(
             <QueryClientProvider client={queryClient}>
                 <AntdApp>
@@ -405,17 +574,19 @@ describe("WangqiPage", () => {
         await user.click(await screen.findByTestId("wangqi-document-edit-1-button"));
         await user.click(await screen.findByRole("button", { name: "AI 摘要" }));
 
+        expect(await screen.findByText("摘要任务运行中")).toBeInTheDocument();
         expect(
-            await screen.findByTestId("classics-wangqi-wangqi-summary-ai-create-button")
+            await screen.findByTestId("classics-wangqi-document-summary-ai-generate-button")
         ).toBeInTheDocument();
         expect(screen.getByLabelText("AI摘要当前摘要")).toHaveValue("记录王圻古籍条目。");
         expect(screen.getByLabelText("AI摘要参考正文")).toHaveValue("## 王圻");
         expect(await screen.findByLabelText("AI摘要候选摘要")).toHaveValue("文档摘要候选");
         expect(aiRefinementTaskService.createTask).not.toHaveBeenCalled();
 
-        await user.click(screen.getByTestId("classics-wangqi-wangqi-summary-ai-create-button"));
+        await user.click(screen.getByTestId("classics-wangqi-document-summary-ai-generate-button"));
 
         await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(1));
+        expect(await screen.findByText("摘要任务排队中")).toBeInTheDocument();
         expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).toEqual(
             expect.objectContaining({
                 capability: "summary",
@@ -441,10 +612,70 @@ describe("WangqiPage", () => {
         await user.click(await screen.findByRole("button", { name: "AI 摘要" }));
         await user.clear(await screen.findByLabelText("AI摘要候选摘要"));
         await user.type(screen.getByLabelText("AI摘要候选摘要"), "采用后的摘要");
-        await user.click(screen.getByTestId("classics-wangqi-wangqi-summary-ai-apply-button"));
+        await user.click(screen.getByTestId("classics-wangqi-document-summary-ai-apply-button"));
 
         await waitFor(() => {
             expect(screen.getByLabelText("王圻文档摘要")).toHaveValue("采用后的摘要");
+        });
+    }, 30000);
+
+    it("tracks generated summary task until the returned candidate fills the draft", async () => {
+        const user = userEvent.setup();
+
+        vi.mocked(aiRefinementTaskService.createTask).mockImplementationOnce(async () => {
+            mockSummaryCandidates = [
+                ...mockSummaryCandidates,
+                {
+                    candidateId: 5002,
+                    contentType: "WANGQI_DOCUMENT",
+                    contentId: 1,
+                    capability: "summary",
+                    objectId: null,
+                    resultFormat: "TEXT",
+                    resultPayload: "新生成摘要候选",
+                    status: "PENDING",
+                    requestedAt: "2026-01-01T00:01:00.000+00:00"
+                }
+            ];
+            return {
+                taskId: 9100,
+                status: "PENDING",
+                capability: "summary",
+                contentType: "WANGQI_DOCUMENT",
+                contentId: 1
+            };
+        });
+        vi.mocked(aiRefinementTaskService.getTask).mockResolvedValueOnce({
+            taskId: 9100,
+            status: "SUCCEEDED",
+            capability: "summary",
+            contentType: "WANGQI_DOCUMENT",
+            contentId: 1,
+            candidateId: 5002,
+            requestedAt: "2026-01-01T00:01:00.000+00:00"
+        });
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <WangqiPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await user.click(await screen.findByTestId("wangqi-document-edit-1-button"));
+        await user.click(await screen.findByRole("button", { name: "AI 摘要" }));
+        await waitFor(() => {
+            expect(screen.getByLabelText("AI摘要候选摘要")).toHaveValue("文档摘要候选");
+        });
+
+        await user.click(screen.getByTestId("classics-wangqi-document-summary-ai-generate-button"));
+
+        await waitFor(() =>
+            expect(aiRefinementTaskService.getTask).toHaveBeenCalledWith({ taskId: 9100 })
+        );
+        await waitFor(() => {
+            expect(screen.getByLabelText("AI摘要候选摘要")).toHaveValue("新生成摘要候选");
         });
     }, 30000);
 
@@ -462,14 +693,20 @@ describe("WangqiPage", () => {
         await user.click(await screen.findByTestId("wangqi-document-edit-1-button"));
         await user.click(await screen.findByRole("button", { name: "AI 摘要" }));
         await user.click(
-            await screen.findByTestId("classics-wangqi-wangqi-summary-ai-create-button")
+            await screen.findByTestId("classics-wangqi-document-summary-ai-generate-button")
         );
         await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(1));
         await openTagsSection(user);
-        await user.click(await screen.findByRole("button", { name: "生成标签" }));
+        await user.click(await screen.findByTestId("classics-wangqi-document-tags-ai-button"));
+        await user.click(
+            await screen.findByTestId("classics-wangqi-document-tags-ai-generate-button")
+        );
         await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(2));
         await openQaSection(user);
-        await user.click(await screen.findByRole("button", { name: "生成问答" }));
+        await user.click(await screen.findByTestId("classics-wangqi-document-qa-ai-button"));
+        await user.click(
+            await screen.findByTestId("classics-wangqi-document-qa-ai-generate-button")
+        );
         await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(3));
 
         expect(currentUserService.getCurrentUserInfo).toHaveBeenCalled();
@@ -495,6 +732,158 @@ describe("WangqiPage", () => {
         });
     }, 30000);
 
+    it("opens qa ai modal tracks task and applies candidate qa pairs", async () => {
+        const user = userEvent.setup();
+
+        vi.mocked(aiRefinementTaskService.createTask).mockResolvedValueOnce({
+            taskId: 9300,
+            status: "PENDING",
+            capability: "qa",
+            contentType: "WANGQI_DOCUMENT",
+            contentId: 1
+        });
+        vi.mocked(aiRefinementTaskService.getTask).mockResolvedValueOnce({
+            taskId: 9300,
+            status: "SUCCEEDED",
+            capability: "qa",
+            contentType: "WANGQI_DOCUMENT",
+            contentId: 1,
+            candidateId: 7001,
+            requestedAt: "2026-01-01T00:01:00.000+00:00"
+        });
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <WangqiPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await user.click(await screen.findByTestId("wangqi-document-edit-1-button"));
+        await openQaSection(user);
+        await user.click(await screen.findByTestId("classics-wangqi-document-qa-ai-button"));
+        expect(
+            await screen.findByTestId("classics-wangqi-document-qa-ai-modal")
+        ).toBeInTheDocument();
+        expect(await screen.findByLabelText("问答依据标题")).toHaveValue("王圻文档");
+        expect(screen.getByLabelText("问答依据摘要")).toHaveValue("记录王圻古籍条目。");
+        expect(screen.getByLabelText("问答依据正文")).toHaveValue("## 王圻");
+        expect(screen.getByLabelText("问答依据已有问答")).toHaveTextContent("已有问题？");
+
+        await user.click(screen.getByTestId("classics-wangqi-document-qa-ai-generate-button"));
+
+        await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(1));
+        const taskPayload = vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0];
+        expect(taskPayload?.promptMessagesJson).toContain("已有问答：Q：已有问题？ A：已有答案。");
+        expect(taskPayload?.promptVariablesJson).toContain(
+            '"existingQaPairs":[{"question":"已有问题？","answer":"已有答案。"}]'
+        );
+        expect(taskPayload?.inputPayloadJson).toContain(
+            '"existingQaPairs":[{"question":"已有问题？","answer":"已有答案。"}]'
+        );
+        await waitFor(() =>
+            expect(aiRefinementTaskService.getTask).toHaveBeenCalledWith({ taskId: 9300 })
+        );
+        expect(await screen.findByText("问答任务已完成")).toBeInTheDocument();
+        expect(await screen.findByLabelText("问答问题 1")).toHaveValue("王圻是谁？");
+        expect(screen.getByLabelText("问答答案 1")).toHaveValue("王圻是明代学者。");
+
+        await user.click(screen.getByTestId("classics-wangqi-document-qa-ai-apply-button"));
+
+        await waitFor(() => {
+            expect(
+                capturedCalls.find((call) =>
+                    call.path.endsWith("/classics/content/ai-candidates/change")
+                )?.body
+            ).toEqual(
+                expect.objectContaining({
+                    candidateId: 7001,
+                    contentId: 1,
+                    contentType: "WANGQI_DOCUMENT",
+                    capability: "qa",
+                    resultFormat: "STRUCTURED",
+                    resultPayload: JSON.stringify({
+                        qaPairs: [{ question: "王圻是谁？", answer: "王圻是明代学者。" }]
+                    })
+                })
+            );
+        });
+    }, 30000);
+
+    it("opens tag ai modal tracks task and applies candidate tags", async () => {
+        const user = userEvent.setup();
+
+        vi.mocked(aiRefinementTaskService.createTask).mockResolvedValueOnce({
+            taskId: 9200,
+            status: "PENDING",
+            capability: "tags",
+            contentType: "WANGQI_DOCUMENT",
+            contentId: 1
+        });
+        vi.mocked(aiRefinementTaskService.getTask).mockResolvedValueOnce({
+            taskId: 9200,
+            status: "SUCCEEDED",
+            capability: "tags",
+            contentType: "WANGQI_DOCUMENT",
+            contentId: 1,
+            candidateId: 6001,
+            requestedAt: "2026-01-01T00:01:00.000+00:00"
+        });
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <WangqiPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await user.click(await screen.findByTestId("wangqi-document-edit-1-button"));
+        await openTagsSection(user);
+        await user.click(await screen.findByTestId("classics-wangqi-document-tags-ai-button"));
+        expect(
+            await screen.findByTestId("classics-wangqi-document-tags-ai-modal")
+        ).toBeInTheDocument();
+        expect(await screen.findByLabelText("AI标签依据标题")).toHaveValue("王圻文档");
+        expect(screen.getByLabelText("AI标签依据摘要")).toHaveValue("记录王圻古籍条目。");
+        expect(screen.getByLabelText("AI标签依据正文")).toHaveValue("## 王圻");
+        expect(screen.getByLabelText("AI标签依据已有标签")).toHaveTextContent("史部");
+
+        await user.click(screen.getByTestId("classics-wangqi-document-tags-ai-generate-button"));
+
+        await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(1));
+        const taskPayload = vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0];
+        expect(taskPayload?.promptMessagesJson).toContain("已有标签：史部");
+        expect(taskPayload?.promptVariablesJson).toContain('"existingTags":["史部"]');
+        expect(taskPayload?.inputPayloadJson).toContain('"existingTags":["史部"]');
+        await waitFor(() =>
+            expect(aiRefinementTaskService.getTask).toHaveBeenCalledWith({ taskId: 9200 })
+        );
+        expect(await screen.findByText("标签任务已完成")).toBeInTheDocument();
+        expect(await screen.findByLabelText("候选标签 1")).toHaveValue("经部");
+        expect(screen.getByLabelText("候选标签 2")).toHaveValue("文献");
+
+        await user.click(screen.getByTestId("classics-wangqi-document-tags-ai-apply-button"));
+
+        await waitFor(() => {
+            expect(
+                capturedCalls.find((call) =>
+                    call.path.endsWith("/classics/content/ai-candidates/change")
+                )?.body
+            ).toEqual(
+                expect.objectContaining({
+                    candidateId: 6001,
+                    contentId: 1,
+                    contentType: "WANGQI_DOCUMENT",
+                    capability: "tags",
+                    resultFormat: "STRUCTURED",
+                    resultPayload: JSON.stringify({ tags: ["经部", "文献"] })
+                })
+            );
+        });
+    }, 30000);
+
     it("does not create refinement task when document content is empty", async () => {
         const user = userEvent.setup();
         mockDocumentRecord = {
@@ -512,7 +901,10 @@ describe("WangqiPage", () => {
 
         await user.click(await screen.findByTestId("wangqi-document-edit-1-button"));
         await openTagsSection(user);
-        await user.click(await screen.findByRole("button", { name: "生成标签" }));
+        await user.click(await screen.findByTestId("classics-wangqi-document-tags-ai-button"));
+        await user.click(
+            await screen.findByTestId("classics-wangqi-document-tags-ai-generate-button")
+        );
 
         expect(aiRefinementTaskService.createTask).not.toHaveBeenCalled();
         expect(await screen.findByText("正文为空，无法创建 AI 精修任务")).toBeInTheDocument();

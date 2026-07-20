@@ -14,22 +14,24 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.common.security.context.KuzhambuSubject;
 import com.thundax.kuzhambu.common.security.context.KuzhambuSubjectType;
-import com.thundax.kuzhambu.discovery.application.search.command.SearchClickCreateCommand;
-import com.thundax.kuzhambu.discovery.application.search.query.SearchAnalysisSummaryQuery;
-import com.thundax.kuzhambu.discovery.application.search.query.SearchLogPageQuery;
+import com.thundax.kuzhambu.discovery.application.search.command.SearchClickEventCreateCommand;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchEventPageQuery;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchPreviewQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchStatisticsSummaryQuery;
 import com.thundax.kuzhambu.discovery.application.search.result.QueryUnderstandingResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPageResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchPreviewResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchResult;
 import com.thundax.kuzhambu.discovery.application.search.service.QueryUnderstandingApplicationService;
 import com.thundax.kuzhambu.discovery.application.search.support.SearchIndexGateway;
-import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchLog;
+import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchEvent;
 import com.thundax.kuzhambu.discovery.domain.search.model.enums.SearchIntentType;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchKeyword;
 import com.thundax.kuzhambu.discovery.domain.search.model.valueobject.SearchScope;
-import com.thundax.kuzhambu.discovery.domain.search.repository.SearchClickRepository;
-import com.thundax.kuzhambu.discovery.domain.search.repository.SearchLogRepository;
+import com.thundax.kuzhambu.discovery.domain.search.repository.SearchClickEventRepository;
+import com.thundax.kuzhambu.discovery.domain.search.repository.SearchEventRepository;
 import com.thundax.kuzhambu.discovery.domain.service.SearchDomainService;
 import java.util.Date;
 import java.util.List;
@@ -47,14 +49,14 @@ class SearchApplicationServiceImplTest {
 
     @Test
     void searchShouldTranslateBackendNotImplementedToBizException() {
-        SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
-        SearchClickRepository searchClickRepository = mock(SearchClickRepository.class);
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
+        SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
         SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
         QueryUnderstandingApplicationService queryUnderstandingApplicationService =
                 mock(QueryUnderstandingApplicationService.class);
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
-                searchLogRepository,
-                searchClickRepository,
+                searchEventRepository,
+                searchClickEventRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
@@ -80,25 +82,25 @@ class SearchApplicationServiceImplTest {
                 .thenThrow(new UnsupportedOperationException("not ready"));
 
         BizException exception = assertThrows(BizException.class, () -> service.search(query));
-        ArgumentCaptor<SearchLog> searchLogCaptor = ArgumentCaptor.forClass(SearchLog.class);
+        ArgumentCaptor<SearchEvent> searchEventCaptor = ArgumentCaptor.forClass(SearchEvent.class);
 
         assertEquals("DISCOVERY-20001", exception.getCode());
-        verify(searchLogRepository).save(searchLogCaptor.capture());
-        assertEquals("FAILED", searchLogCaptor.getValue().getSearchStatus());
-        assertEquals("DISCOVERY-20001", searchLogCaptor.getValue().getFailureCode());
-        assertTrue(searchLogCaptor.getValue().getSearchLatencyMs() >= 0);
+        verify(searchEventRepository).save(searchEventCaptor.capture());
+        assertEquals("FAILED", searchEventCaptor.getValue().getSearchStatus());
+        assertEquals("DISCOVERY-20001", searchEventCaptor.getValue().getFailureCode());
+        assertTrue(searchEventCaptor.getValue().getSearchLatencyMs() >= 0);
     }
 
     @Test
     void searchShouldReturnGroupedResultsWhenGatewaySucceeds() {
-        SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
-        SearchClickRepository searchClickRepository = mock(SearchClickRepository.class);
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
+        SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
         SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
         QueryUnderstandingApplicationService queryUnderstandingApplicationService =
                 mock(QueryUnderstandingApplicationService.class);
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
-                searchLogRepository,
-                searchClickRepository,
+                searchEventRepository,
+                searchClickEventRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
@@ -141,17 +143,17 @@ class SearchApplicationServiceImplTest {
                         "黄帝", "黄帝 传说", "NATURAL_LANGUAGE_SEARCH", List.of("轩辕"), List.of(), "req-1", "trace-1"));
 
         var result = service.search(query);
-        ArgumentCaptor<SearchLog> searchLogCaptor = ArgumentCaptor.forClass(SearchLog.class);
+        ArgumentCaptor<SearchEvent> searchEventCaptor = ArgumentCaptor.forClass(SearchEvent.class);
 
-        verify(searchLogRepository).save(searchLogCaptor.capture());
+        verify(searchEventRepository).save(searchEventCaptor.capture());
         assertEquals(1, result.getGroups().size());
         assertEquals(1, result.getResultTotalCount());
         assertEquals("黄帝 传说", result.getDisplayQueryText());
         assertEquals("NATURAL_LANGUAGE_SEARCH", result.getIntentType());
-        assertEquals("SUCCEEDED", searchLogCaptor.getValue().getSearchStatus());
-        assertEquals("黄帝 传说", searchLogCaptor.getValue().getDisplayQueryText());
-        assertTrue(searchLogCaptor.getValue().getSearchLatencyMs() >= 0);
-        assertEquals(searchLogCaptor.getValue().getSearchLogId(), result.getSearchLogId());
+        assertEquals("SUCCEEDED", searchEventCaptor.getValue().getSearchStatus());
+        assertEquals("黄帝 传说", searchEventCaptor.getValue().getDisplayQueryText());
+        assertTrue(searchEventCaptor.getValue().getSearchLatencyMs() >= 0);
+        assertEquals(searchEventCaptor.getValue().getSearchEventId(), result.getSearchEventId());
         assertTrue(result.getSearchScopesJson().contains("SANCAI_ENTRY"));
         assertTrue(result.getSearchScopesJson().contains("\"categoryCodes\":[\"11\"]"));
         assertTrue(result.getSearchScopesJson().contains("\"tagNames\":[\"上古\"]"));
@@ -166,14 +168,14 @@ class SearchApplicationServiceImplTest {
 
     @Test
     void searchShouldAllowBlankQueryForDefaultPublishedContentList() {
-        SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
-        SearchClickRepository searchClickRepository = mock(SearchClickRepository.class);
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
+        SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
         SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
         QueryUnderstandingApplicationService queryUnderstandingApplicationService =
                 mock(QueryUnderstandingApplicationService.class);
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
-                searchLogRepository,
-                searchClickRepository,
+                searchEventRepository,
+                searchClickEventRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
@@ -203,27 +205,74 @@ class SearchApplicationServiceImplTest {
 
         var result = service.search(query);
         ArgumentCaptor<SearchKeyword> keywordCaptor = ArgumentCaptor.forClass(SearchKeyword.class);
-        ArgumentCaptor<SearchLog> searchLogCaptor = ArgumentCaptor.forClass(SearchLog.class);
+        ArgumentCaptor<SearchEvent> searchEventCaptor = ArgumentCaptor.forClass(SearchEvent.class);
 
         verify(searchIndexGateway).search(keywordCaptor.capture(), any(), any(Integer.class), any(Integer.class));
-        verify(searchLogRepository).save(searchLogCaptor.capture());
+        verify(searchEventRepository).save(searchEventCaptor.capture());
         assertEquals("", keywordCaptor.getValue().getNormalizedText());
         assertEquals(20, result.getResultTotalCount());
-        assertEquals(20, searchLogCaptor.getValue().getResultTotalCount());
-        assertEquals("SUCCEEDED", searchLogCaptor.getValue().getSearchStatus());
-        assertEquals("", searchLogCaptor.getValue().getNormalizedQueryText());
+        assertEquals(20, searchEventCaptor.getValue().getResultTotalCount());
+        assertEquals("SUCCEEDED", searchEventCaptor.getValue().getSearchStatus());
+        assertEquals("", searchEventCaptor.getValue().getNormalizedQueryText());
     }
 
     @Test
-    void searchShouldFilterPrivateResultsForAnonymousOperator() {
-        SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
-        SearchClickRepository searchClickRepository = mock(SearchClickRepository.class);
+    void searchShouldNormalizeNullQueryTextToBlankSearch() {
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
+        SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
         SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
         QueryUnderstandingApplicationService queryUnderstandingApplicationService =
                 mock(QueryUnderstandingApplicationService.class);
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
-                searchLogRepository,
-                searchClickRepository,
+                searchEventRepository,
+                searchClickEventRepository,
+                new SearchDomainService(),
+                searchIndexGateway,
+                queryUnderstandingApplicationService);
+        SearchQuery query = new SearchQuery(
+                null,
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                null,
+                null,
+                1,
+                20,
+                "ANONYMOUS",
+                null,
+                "req-null-query",
+                "trace-null-query");
+        when(queryUnderstandingApplicationService.understand(query))
+                .thenReturn(new QueryUnderstandingResult(
+                        "", "", "KEYWORD_SEARCH", List.of(), List.of(), "req-null-query", "trace-null-query"));
+        when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
+                .thenReturn(searchPageResult(0));
+        ArgumentCaptor<SearchKeyword> keywordCaptor = ArgumentCaptor.forClass(SearchKeyword.class);
+        ArgumentCaptor<SearchEvent> searchEventCaptor = ArgumentCaptor.forClass(SearchEvent.class);
+
+        var result = service.search(query);
+
+        verify(searchIndexGateway).search(keywordCaptor.capture(), any(), any(Integer.class), any(Integer.class));
+        verify(searchEventRepository).save(searchEventCaptor.capture());
+        assertEquals("", query.getQueryText());
+        assertEquals("", keywordCaptor.getValue().getRawText());
+        assertEquals("", result.getQueryText());
+        assertEquals("", searchEventCaptor.getValue().getQueryText());
+        assertEquals("SUCCEEDED", searchEventCaptor.getValue().getSearchStatus());
+    }
+
+    @Test
+    void searchShouldForcePublicScopeForAnonymousOperator() {
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
+        SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
+        SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
+        QueryUnderstandingApplicationService queryUnderstandingApplicationService =
+                mock(QueryUnderstandingApplicationService.class);
+        SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
+                searchEventRepository,
+                searchClickEventRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
@@ -259,7 +308,7 @@ class SearchApplicationServiceImplTest {
         assertEquals("1001", result.getGroups().get(0).getItems().get(0).getContentId());
         ArgumentCaptor<SearchScope> scopeCaptor = ArgumentCaptor.forClass(SearchScope.class);
         verify(searchIndexGateway).search(any(), scopeCaptor.capture(), any(Integer.class), any(Integer.class));
-        assertEquals(List.of("PUBLIC", "PRIVATE"), scopeCaptor.getValue().getVisibilityScopes());
+        assertEquals(List.of("PUBLIC"), scopeCaptor.getValue().getVisibilityScopes());
         assertTrue(scopeCaptor.getValue().getPrivateKnowledgeBases().isEmpty());
     }
 
@@ -267,14 +316,14 @@ class SearchApplicationServiceImplTest {
     void searchShouldPushPermissionScopeToGatewayBeforePagination() {
         KuzhambuContextHolder.setSubject(new KuzhambuSubject(
                 "admin-1", KuzhambuSubjectType.ADMIN_USER, "admin", "token-1", Set.of("classics:sancai:view")));
-        SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
-        SearchClickRepository searchClickRepository = mock(SearchClickRepository.class);
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
+        SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
         SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
         QueryUnderstandingApplicationService queryUnderstandingApplicationService =
                 mock(QueryUnderstandingApplicationService.class);
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
-                searchLogRepository,
-                searchClickRepository,
+                searchEventRepository,
+                searchClickEventRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
@@ -315,21 +364,21 @@ class SearchApplicationServiceImplTest {
         assertEquals("1001", result.getGroups().get(0).getItems().get(0).getContentId());
         verify(searchIndexGateway, times(1))
                 .search(any(), scopeCaptor.capture(), any(Integer.class), any(Integer.class));
-        assertEquals(List.of("SANCAI_ENTRY"), scopeCaptor.getValue().getPrivateKnowledgeBases());
+        assertTrue(scopeCaptor.getValue().getPrivateKnowledgeBases().isEmpty());
     }
 
     @Test
     void searchShouldKeepPrivateResultsWhenSubjectHasContentPermission() {
         KuzhambuContextHolder.setSubject(new KuzhambuSubject(
                 "admin-1", KuzhambuSubjectType.ADMIN_USER, "admin", "token-1", Set.of("classics:sancai:view")));
-        SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
-        SearchClickRepository searchClickRepository = mock(SearchClickRepository.class);
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
+        SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
         SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
         QueryUnderstandingApplicationService queryUnderstandingApplicationService =
                 mock(QueryUnderstandingApplicationService.class);
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
-                searchLogRepository,
-                searchClickRepository,
+                searchEventRepository,
+                searchClickEventRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
@@ -364,17 +413,17 @@ class SearchApplicationServiceImplTest {
     }
 
     @Test
-    void searchShouldConstrainPrivateScopeForFullContentPermission() {
+    void searchShouldNotInferPrivateScopeFromFullContentPermission() {
         KuzhambuContextHolder.setSubject(new KuzhambuSubject(
                 "admin-1", KuzhambuSubjectType.ADMIN_USER, "admin", "token-1", Set.of("classics:content:view")));
-        SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
-        SearchClickRepository searchClickRepository = mock(SearchClickRepository.class);
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
+        SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
         SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
         QueryUnderstandingApplicationService queryUnderstandingApplicationService =
                 mock(QueryUnderstandingApplicationService.class);
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
-                searchLogRepository,
-                searchClickRepository,
+                searchEventRepository,
+                searchClickEventRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
@@ -406,26 +455,74 @@ class SearchApplicationServiceImplTest {
         assertEquals(0, result.getGroupTotalCount());
         assertTrue(result.getGroups().isEmpty());
         verify(searchIndexGateway).search(any(), scopeCaptor.capture(), any(Integer.class), any(Integer.class));
-        assertEquals(
-                List.of("SANCAI_ENTRY", "WANGQI_DOCUMENT", "MING_CUSTOMS"),
-                scopeCaptor.getValue().getPrivateKnowledgeBases());
+        assertTrue(scopeCaptor.getValue().getPrivateKnowledgeBases().isEmpty());
     }
 
     @Test
-    void recordClickShouldPersistCommandPayload() {
-        SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
-        SearchClickRepository searchClickRepository = mock(SearchClickRepository.class);
+    void previewShouldUseSearchPermissionScope() {
+        KuzhambuContextHolder.setSubject(new KuzhambuSubject(
+                "admin-1", KuzhambuSubjectType.ADMIN_USER, "admin", "token-1", Set.of("classics:wangqi:view")));
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
+        SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
         SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
         QueryUnderstandingApplicationService queryUnderstandingApplicationService =
                 mock(QueryUnderstandingApplicationService.class);
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
-                searchLogRepository,
-                searchClickRepository,
+                searchEventRepository,
+                searchClickEventRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
-        when(searchLogRepository.getBySearchLogId("s-1"))
-                .thenReturn(new SearchLog(
+        SearchPreviewResult preview = new SearchPreviewResult();
+        preview.setContentType("WANGQI_DOCUMENT");
+        preview.setContentId("doc-1");
+        when(searchIndexGateway.getPreview(any(), any())).thenReturn(preview);
+
+        SearchPreviewResult result = service.getPreview(
+                new SearchPreviewQuery("WANGQI_DOCUMENT", "doc-1", "ANONYMOUS", null, "req-preview", "trace-preview"));
+
+        assertEquals("doc-1", result.getContentId());
+        verify(searchIndexGateway).getPreview("WANGQI_DOCUMENT", "doc-1");
+    }
+
+    @Test
+    void previewShouldHideMissingOrUnauthorizedDocument() {
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
+        SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
+        SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
+        QueryUnderstandingApplicationService queryUnderstandingApplicationService =
+                mock(QueryUnderstandingApplicationService.class);
+        SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
+                searchEventRepository,
+                searchClickEventRepository,
+                new SearchDomainService(),
+                searchIndexGateway,
+                queryUnderstandingApplicationService);
+        when(searchIndexGateway.getPreview(any(), any())).thenReturn(null);
+
+        BizException exception = assertThrows(
+                BizException.class,
+                () -> service.getPreview(new SearchPreviewQuery(
+                        "SANCAI_ENTRY", "1001", "ANONYMOUS", null, "req-preview", "trace-preview")));
+
+        assertEquals("DISCOVERY-20003", exception.getCode());
+    }
+
+    @Test
+    void recordClickShouldPersistCommandPayload() {
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
+        SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
+        SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
+        QueryUnderstandingApplicationService queryUnderstandingApplicationService =
+                mock(QueryUnderstandingApplicationService.class);
+        SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
+                searchEventRepository,
+                searchClickEventRepository,
+                new SearchDomainService(),
+                searchIndexGateway,
+                queryUnderstandingApplicationService);
+        when(searchEventRepository.getBySearchEventId("s-1"))
+                .thenReturn(new SearchEvent(
                         1L,
                         "s-1",
                         "黄帝",
@@ -445,7 +542,7 @@ class SearchApplicationServiceImplTest {
                         null,
                         new Date()));
 
-        Boolean result = service.recordClick(new SearchClickCreateCommand(
+        Boolean result = service.recordClick(new SearchClickEventCreateCommand(
                 "s-1",
                 "CLASSICS",
                 "SANCAI_ENTRY",
@@ -460,28 +557,28 @@ class SearchApplicationServiceImplTest {
                 null,
                 null));
 
-        verify(searchClickRepository).save(any());
+        verify(searchClickEventRepository).save(any());
         assertTrue(result);
     }
 
     @Test
-    void recordClickShouldRejectUnknownSearchLogId() {
-        SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
-        SearchClickRepository searchClickRepository = mock(SearchClickRepository.class);
+    void recordClickShouldRejectUnknownSearchEventId() {
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
+        SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
         SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
         QueryUnderstandingApplicationService queryUnderstandingApplicationService =
                 mock(QueryUnderstandingApplicationService.class);
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
-                searchLogRepository,
-                searchClickRepository,
+                searchEventRepository,
+                searchClickEventRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
-        when(searchLogRepository.getBySearchLogId("missing")).thenReturn(null);
+        when(searchEventRepository.getBySearchEventId("missing")).thenReturn(null);
 
         BizException exception = assertThrows(
                 BizException.class,
-                () -> service.recordClick(new SearchClickCreateCommand(
+                () -> service.recordClick(new SearchClickEventCreateCommand(
                         "missing",
                         "CLASSICS",
                         "SANCAI_ENTRY",
@@ -500,24 +597,24 @@ class SearchApplicationServiceImplTest {
     }
 
     @Test
-    void pageLogsShouldUseFirstIntentAndStatusFilter() {
-        SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
-        SearchClickRepository searchClickRepository = mock(SearchClickRepository.class);
+    void pageEventsShouldUseFirstIntentAndStatusFilter() {
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
+        SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
         SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
         QueryUnderstandingApplicationService queryUnderstandingApplicationService =
                 mock(QueryUnderstandingApplicationService.class);
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
-                searchLogRepository,
-                searchClickRepository,
+                searchEventRepository,
+                searchClickEventRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
-        when(searchLogRepository.page("黄帝", "ENTITY", "SUCCEEDED", "user-1", 1, 20))
+        when(searchEventRepository.page("黄帝", "ENTITY", "SUCCEEDED", "user-1", 1, 20))
                 .thenReturn(PageResult.of(
                         1,
                         20,
                         1,
-                        List.of(new SearchLog(
+                        List.of(new SearchEvent(
                                 1L,
                                 "s-1",
                                 "黄帝",
@@ -537,40 +634,40 @@ class SearchApplicationServiceImplTest {
                                 "trace-1",
                                 new Date(1_718_000_000_000L)))));
 
-        var result = service.pageLogs(new SearchLogPageQuery(
+        var result = service.pageEvents(new SearchEventPageQuery(
                 "黄帝", List.of("ENTITY", "KEYWORD"), List.of("SUCCEEDED", "FAILED"), "user-1", null, null, 1, 20));
 
-        verify(searchLogRepository).page("黄帝", "ENTITY", "SUCCEEDED", "user-1", 1, 20);
+        verify(searchEventRepository).page("黄帝", "ENTITY", "SUCCEEDED", "user-1", 1, 20);
         assertEquals(1, result.getRecords().size());
-        assertEquals("s-1", result.getRecords().get(0).getSearchLogId());
+        assertEquals("s-1", result.getRecords().get(0).getSearchEventId());
     }
 
     @Test
-    void getAnalysisSummaryShouldAggregateSearchLogsAndClicks() {
-        SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
-        SearchClickRepository searchClickRepository = mock(SearchClickRepository.class);
+    void getStatisticsSummaryShouldAggregateSearchEventsAndClicks() {
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
+        SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
         SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
         QueryUnderstandingApplicationService queryUnderstandingApplicationService =
                 mock(QueryUnderstandingApplicationService.class);
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
-                searchLogRepository,
-                searchClickRepository,
+                searchEventRepository,
+                searchClickEventRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
         Date dateFrom = new Date(1_718_000_000_000L);
         Date dateTo = new Date(1_720_419_200_000L);
-        when(searchLogRepository.listByCreatedAtRange(dateFrom, dateTo))
+        when(searchEventRepository.listByCreatedAtRange(dateFrom, dateTo))
                 .thenReturn(List.of(
-                        searchLog("黄帝", "SUCCEEDED", 3),
-                        searchLog("黄帝", "SUCCEEDED", 0),
-                        searchLog("天文", "FAILED", 0),
-                        searchLog("地理", "SUCCEEDED", 1),
-                        searchLog("地理", "SUCCEEDED", 2),
-                        searchLog("礼制", "SUCCEEDED", 1)));
-        when(searchClickRepository.countByCreatedAtRange(dateFrom, dateTo)).thenReturn(7L);
+                        searchEvent("黄帝", "SUCCEEDED", 3),
+                        searchEvent("黄帝", "SUCCEEDED", 0),
+                        searchEvent("天文", "FAILED", 0),
+                        searchEvent("地理", "SUCCEEDED", 1),
+                        searchEvent("地理", "SUCCEEDED", 2),
+                        searchEvent("礼制", "SUCCEEDED", 1)));
+        when(searchClickEventRepository.countByCreatedAtRange(dateFrom, dateTo)).thenReturn(7L);
 
-        var result = service.getAnalysisSummary(new SearchAnalysisSummaryQuery(dateFrom, dateTo));
+        var result = service.getStatisticsSummary(new SearchStatisticsSummaryQuery(dateFrom, dateTo));
 
         assertEquals(6L, result.getSearchCount());
         assertEquals(1L, result.getFailedSearchCount());
@@ -584,30 +681,30 @@ class SearchApplicationServiceImplTest {
     }
 
     @Test
-    void getAnalysisSummaryShouldLimitTopQueriesToTen() {
-        SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
-        SearchClickRepository searchClickRepository = mock(SearchClickRepository.class);
+    void getStatisticsSummaryShouldLimitTopQueriesToTen() {
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
+        SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
-                searchLogRepository,
-                searchClickRepository,
+                searchEventRepository,
+                searchClickEventRepository,
                 new SearchDomainService(),
                 mock(SearchIndexGateway.class),
                 mock(QueryUnderstandingApplicationService.class));
-        when(searchLogRepository.listByCreatedAtRange(null, null))
+        when(searchEventRepository.listByCreatedAtRange(null, null))
                 .thenReturn(List.of(
-                        searchLog("q01", "SUCCEEDED", 1),
-                        searchLog("q02", "SUCCEEDED", 1),
-                        searchLog("q03", "SUCCEEDED", 1),
-                        searchLog("q04", "SUCCEEDED", 1),
-                        searchLog("q05", "SUCCEEDED", 1),
-                        searchLog("q06", "SUCCEEDED", 1),
-                        searchLog("q07", "SUCCEEDED", 1),
-                        searchLog("q08", "SUCCEEDED", 1),
-                        searchLog("q09", "SUCCEEDED", 1),
-                        searchLog("q10", "SUCCEEDED", 1),
-                        searchLog("q11", "SUCCEEDED", 1)));
+                        searchEvent("q01", "SUCCEEDED", 1),
+                        searchEvent("q02", "SUCCEEDED", 1),
+                        searchEvent("q03", "SUCCEEDED", 1),
+                        searchEvent("q04", "SUCCEEDED", 1),
+                        searchEvent("q05", "SUCCEEDED", 1),
+                        searchEvent("q06", "SUCCEEDED", 1),
+                        searchEvent("q07", "SUCCEEDED", 1),
+                        searchEvent("q08", "SUCCEEDED", 1),
+                        searchEvent("q09", "SUCCEEDED", 1),
+                        searchEvent("q10", "SUCCEEDED", 1),
+                        searchEvent("q11", "SUCCEEDED", 1)));
 
-        var result = service.getAnalysisSummary(new SearchAnalysisSummaryQuery(null, null));
+        var result = service.getStatisticsSummary(new SearchStatisticsSummaryQuery(null, null));
 
         assertEquals(10, result.getTopQueries().size());
         assertEquals("q01", result.getTopQueries().get(0).getQueryText());
@@ -616,14 +713,14 @@ class SearchApplicationServiceImplTest {
 
     @Test
     void searchShouldPersistFailureLogAndRethrowBizException() {
-        SearchLogRepository searchLogRepository = mock(SearchLogRepository.class);
-        SearchClickRepository searchClickRepository = mock(SearchClickRepository.class);
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
+        SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
         SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
         QueryUnderstandingApplicationService queryUnderstandingApplicationService =
                 mock(QueryUnderstandingApplicationService.class);
         SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
-                searchLogRepository,
-                searchClickRepository,
+                searchEventRepository,
+                searchClickEventRepository,
                 new SearchDomainService(),
                 searchIndexGateway,
                 queryUnderstandingApplicationService);
@@ -649,22 +746,71 @@ class SearchApplicationServiceImplTest {
                 .thenThrow(new BizException("DISCOVERY-29999", "discovery.search.test", "boom"));
 
         BizException exception = assertThrows(BizException.class, () -> service.search(query));
-        ArgumentCaptor<SearchLog> searchLogCaptor = ArgumentCaptor.forClass(SearchLog.class);
+        ArgumentCaptor<SearchEvent> searchEventCaptor = ArgumentCaptor.forClass(SearchEvent.class);
 
         assertEquals("DISCOVERY-29999", exception.getCode());
-        verify(searchLogRepository, times(1)).save(searchLogCaptor.capture());
-        assertEquals("FAILED", searchLogCaptor.getValue().getSearchStatus());
-        assertEquals("DISCOVERY-29999", searchLogCaptor.getValue().getFailureCode());
-        assertEquals("boom", searchLogCaptor.getValue().getFailureMessage());
-        assertTrue(searchLogCaptor.getValue().getSearchLatencyMs() >= 0);
+        verify(searchEventRepository, times(1)).save(searchEventCaptor.capture());
+        assertEquals("FAILED", searchEventCaptor.getValue().getSearchStatus());
+        assertEquals("DISCOVERY-29999", searchEventCaptor.getValue().getFailureCode());
+        assertEquals("boom", searchEventCaptor.getValue().getFailureMessage());
+        assertTrue(searchEventCaptor.getValue().getSearchLatencyMs() >= 0);
+    }
+
+    @Test
+    void searchShouldPersistFailureLogWhenQueryUnderstandingFails() {
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
+        SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
+        SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
+        QueryUnderstandingApplicationService queryUnderstandingApplicationService =
+                mock(QueryUnderstandingApplicationService.class);
+        SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
+                searchEventRepository,
+                searchClickEventRepository,
+                new SearchDomainService(),
+                searchIndexGateway,
+                queryUnderstandingApplicationService);
+        SearchQuery query = new SearchQuery(
+                "辞官",
+                List.of("SANCAI_ENTRY"),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                null,
+                null,
+                1,
+                20,
+                "ANONYMOUS",
+                null,
+                "req-query-understanding",
+                "trace-query-understanding");
+        when(queryUnderstandingApplicationService.understand(query))
+                .thenThrow(new BizException(
+                        "DISCOVERY-20004",
+                        "discovery.search.query-understanding.result-parse-failed",
+                        "Query understanding result parse failed"));
+
+        BizException exception = assertThrows(BizException.class, () -> service.search(query));
+        ArgumentCaptor<SearchEvent> searchEventCaptor = ArgumentCaptor.forClass(SearchEvent.class);
+
+        assertEquals("DISCOVERY-20004", exception.getCode());
+        verify(searchEventRepository).save(searchEventCaptor.capture());
+        verify(searchIndexGateway, times(0)).search(any(), any(), any(Integer.class), any(Integer.class));
+        assertEquals("FAILED", searchEventCaptor.getValue().getSearchStatus());
+        assertEquals("DISCOVERY-20004", searchEventCaptor.getValue().getFailureCode());
+        assertEquals("辞官", searchEventCaptor.getValue().getQueryText());
+        assertEquals("辞官", searchEventCaptor.getValue().getNormalizedQueryText());
+        assertEquals(
+                "KEYWORD_SEARCH", searchEventCaptor.getValue().getIntentType().value());
+        assertTrue(searchEventCaptor.getValue().getSearchLatencyMs() >= 0);
     }
 
     private SearchPageResult searchPageResult(int totalCount, SearchGroupResult... groups) {
         return new SearchPageResult(totalCount, List.of(groups));
     }
 
-    private SearchLog searchLog(String queryText, String searchStatus, Integer resultTotalCount) {
-        return new SearchLog(
+    private SearchEvent searchEvent(String queryText, String searchStatus, Integer resultTotalCount) {
+        return new SearchEvent(
                 1L,
                 "s-" + queryText + "-" + searchStatus + "-" + resultTotalCount,
                 queryText,

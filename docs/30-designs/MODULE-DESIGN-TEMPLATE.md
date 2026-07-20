@@ -64,7 +64,7 @@
 - 本模块拥有的数据：
 - 本模块只读引用的数据：
 - 禁止跨域直接访问的数据：
-- Flyway 脚本归属：
+- Schema/data 脚本归属：
 
 ## Observability
 

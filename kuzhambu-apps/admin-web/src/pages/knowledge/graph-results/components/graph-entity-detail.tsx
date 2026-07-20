@@ -25,6 +25,7 @@ export const GraphEntityDetail = ({
 }: GraphEntityDetailProps) => {
     return (
         <KuzhambuDrawer
+            testId="knowledge-graph-results-graph-entity-detail-drawer"
             title="正式实体详情"
             open={open}
             size="middle"

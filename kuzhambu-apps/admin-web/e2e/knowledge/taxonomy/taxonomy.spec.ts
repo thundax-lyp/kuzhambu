@@ -50,7 +50,7 @@ const mockShellApis = async (page: Page) => {
             {
                 id: "taxonomy",
                 parentId: "knowledge",
-                name: "标签与同义词",
+                name: "标签配置",
                 url: "/knowledge/taxonomy",
                 displayParams: '{"icon":"taxonomy"}'
             }

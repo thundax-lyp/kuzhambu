@@ -104,7 +104,6 @@ export const LineagePage = () => {
         <KuzhambuPage
             className="lineage-page knowledge-lineage-page"
             description="以正式世系版本为入口浏览节点、关系和来源线索。"
-            eyebrow="Knowledge / Lineage"
             title="世系图浏览"
         >
             {canViewLineage ? (

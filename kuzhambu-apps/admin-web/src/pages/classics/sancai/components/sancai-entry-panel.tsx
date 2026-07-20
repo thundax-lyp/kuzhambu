@@ -872,6 +872,7 @@ export const SancaiEntryPanel = ({
                 onView={selectEntry}
             />
             <KuzhambuDrawer
+                testId="classics-sancai-sancai-entry-panel-drawer"
                 destroyOnClose={false}
                 open={isExportJobsDrawerOpen}
                 size="large"

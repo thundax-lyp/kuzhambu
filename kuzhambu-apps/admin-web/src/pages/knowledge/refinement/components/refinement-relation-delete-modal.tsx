@@ -18,6 +18,7 @@ export const RefinementRelationDeleteModal = ({
 }: RefinementRelationDeleteModalProps) => {
     return (
         <KuzhambuModal
+            testId="knowledge-refinement-relation-delete-modal"
             title="删除关系草稿"
             open={open}
             confirmLoading={deleting}

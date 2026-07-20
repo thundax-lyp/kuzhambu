@@ -1,4 +1,4 @@
-import { EyeOutlined, ReloadOutlined } from "@ant-design/icons";
+import { ReloadOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
 import {
     App,
@@ -6,8 +6,6 @@ import {
     DatePicker,
     Descriptions,
     Form,
-    Input,
-    InputNumber,
     Select,
     Statistic,
     Table,
@@ -19,13 +17,13 @@ import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { KuzhambuTabs } from "@/components/kuzhambu-tabs";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from "@/types/page";
 import * as service from "./invocations-service";
 import type { AiCallRecordPageQuery, AiInvocationSummaryQuery } from "./invocations-service";
-import type { AiCallRecord, AiTopCapabilityRecord } from "./invocations-types";
+import type { AiCallRecord } from "./invocations-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./invocations-page.css";
 
@@ -34,25 +32,31 @@ const { RangePicker } = DatePicker;
 type DateRangeValue = [Dayjs | null, Dayjs | null] | null;
 type SummaryFormValues = AiInvocationSummaryQuery & { period?: DateRangeValue };
 type CallsFormValues = AiCallRecordPageQuery & { requestedAt?: DateRangeValue };
-
-const SCOPE_OPTIONS = [
-    { label: "classics", value: "classics" },
-    { label: "knowledge", value: "knowledge" },
-    { label: "discovery", value: "discovery" },
-    { label: "platform", value: "platform" }
-];
-
-const SERVICE_ROLE_OPTIONS = [
-    { label: "PRIMARY", value: "PRIMARY" },
-    { label: "BACKUP", value: "BACKUP" }
-];
+const DATE_TIME_FORMAT = "YYYYMMDD HH:mm";
 
 const STATUS_OPTIONS = [
-    { label: "SUCCEEDED", value: "SUCCEEDED" },
-    { label: "FAILED", value: "FAILED" },
-    { label: "PENDING", value: "PENDING" },
-    { label: "RUNNING", value: "RUNNING" }
+    { label: "成功", value: "SUCCEEDED" },
+    { label: "失败", value: "FAILED" },
+    { label: "待处理", value: "PENDING" },
+    { label: "运行中", value: "RUNNING" }
 ];
+
+const CAPABILITY_LABELS: Record<string, string> = {
+    classics_summary: "古籍摘要",
+    classics_tags: "古籍标签",
+    classics_tagging: "古籍标签",
+    classics_qa: "古籍问答",
+    classics_translate: "古籍翻译",
+    classics_image_describe: "古籍图片理解",
+    classics_image_generate: "古籍图片生成",
+    classics_image_prompt_fusion: "古籍图文融合",
+    classics_visual_describe: "古籍视觉描述",
+    discovery_query_understanding: "查询理解",
+    discovery_answer_generation: "回答生成",
+    knowledge_graph_extract: "知识图谱抽取",
+    platform_prompt_optimize: "提示词优化",
+    platform_version_summary: "版本摘要"
+};
 
 const defaultPeriod: DateRangeValue = [dayjs().subtract(7, "day"), dayjs()];
 
@@ -63,35 +67,31 @@ const rangeToIso = (range?: DateRangeValue) => ({
     end: range?.[1]?.toISOString() || null
 });
 
-const optionToBoolean = (value?: string) => {
-    if (value === "true") {
-        return true;
-    }
-    if (value === "false") {
-        return false;
-    }
-    return null;
-};
-
 const formatDateTime = (value?: string | null) => {
     if (!value) {
         return "-";
     }
-    const timestamp = Date.parse(value);
-    if (Number.isNaN(timestamp)) {
+    const timestamp = dayjs(value);
+    if (!timestamp.isValid()) {
         return value;
     }
-    return new Intl.DateTimeFormat("zh-CN", {
-        dateStyle: "medium",
-        timeStyle: "short"
-    }).format(new Date(timestamp));
+    return timestamp.format(DATE_TIME_FORMAT);
 };
 
-const formatMoney = (value?: number | string | null) => {
-    if (value == null || value === "") {
-        return "0";
+const formatStatus = (status?: string | null) => {
+    if (status === "SUCCEEDED") {
+        return "成功";
     }
-    return String(value);
+    if (status === "FAILED") {
+        return "失败";
+    }
+    if (status === "PENDING") {
+        return "待处理";
+    }
+    if (status === "RUNNING") {
+        return "运行中";
+    }
+    return status || "-";
 };
 
 const formatWarnings = (value?: string | null) => {
@@ -111,9 +111,7 @@ const buildSummaryQuery = (values: SummaryFormValues): AiInvocationSummaryQuery 
         periodStart: range.start,
         periodEnd: range.end,
         bucketType: values.bucketType || "DAY",
-        scope: values.scope || null,
-        capability: values.capability || null,
-        serviceRole: values.serviceRole || null
+        capability: values.capability || null
     };
 };
 
@@ -124,14 +122,7 @@ const buildCallsQuery = (
 ): AiCallRecordPageQuery => {
     const range = rangeToIso(values.requestedAt);
     return {
-        scope: values.scope || null,
-        capability: values.capability || null,
-        contentType: values.contentType || null,
-        contentId: values.contentId || null,
         status: values.status || null,
-        serviceRole: values.serviceRole || null,
-        modelName: values.modelName || null,
-        fallbackUsed: optionToBoolean(String(values.fallbackUsed ?? "")),
         requestedAtStart: range.start,
         requestedAtEnd: range.end,
         pageNo,
@@ -151,7 +142,6 @@ export const InvocationsPage = () => {
         pageNo: DEFAULT_PAGE_NO,
         pageSize: DEFAULT_PAGE_SIZE
     });
-    const [selectedCall, setSelectedCall] = useState<AiCallRecord | null>(null);
 
     const capabilitiesQuery = useQuery({
         queryKey: ["ai", "invocations", "capabilities"],
@@ -176,10 +166,28 @@ export const InvocationsPage = () => {
 
     const capabilityOptions = useMemo(() => {
         return (capabilitiesQuery.data || []).map((record) => ({
-            label: `${record.name} / ${record.capability}`,
+            label: record.name || CAPABILITY_LABELS[record.capability] || record.capability,
             value: record.capability
         }));
     }, [capabilitiesQuery.data]);
+
+    const capabilityLabelMap = useMemo(() => {
+        return (capabilitiesQuery.data || []).reduce<Record<string, string>>(
+            (labels, record) => ({
+                ...labels,
+                [record.capability]:
+                    record.name || CAPABILITY_LABELS[record.capability] || record.capability
+            }),
+            { ...CAPABILITY_LABELS }
+        );
+    }, [capabilitiesQuery.data]);
+
+    const formatCapability = (capability?: string | null) => {
+        if (!capability) {
+            return "-";
+        }
+        return capabilityLabelMap[capability] || capability;
+    };
 
     useEffect(() => {
         if (summaryResult.isError) {
@@ -222,111 +230,63 @@ export const InvocationsPage = () => {
     const summary = summaryResult.data;
     const callPage = callsResult.data;
 
-    const topCapabilityColumns: ColumnsType<AiTopCapabilityRecord> = [
-        {
-            title: "capability",
-            dataIndex: "capability",
-            key: "capability"
-        },
-        {
-            title: "invocationCount",
-            dataIndex: "invocationCount",
-            key: "invocationCount"
-        }
-    ];
-
     const callColumns: ColumnsType<AiCallRecord> = [
         {
-            title: "callId",
-            dataIndex: "callIdText",
-            key: "callId",
-            render: (_, record) => readCallId(record)
-        },
-        {
-            title: "scope",
-            dataIndex: "scope",
-            key: "scope"
-        },
-        {
-            title: "capability",
+            title: "能力",
             dataIndex: "capability",
-            key: "capability"
+            key: "capability",
+            render: formatCapability
         },
         {
-            title: "contentType",
+            title: "内容类型",
             dataIndex: "contentType",
             key: "contentType",
             render: (value?: string | null) => value || "-"
         },
         {
-            title: "contentId",
+            title: "内容ID",
             dataIndex: "contentId",
             key: "contentId",
             render: (value?: number | null) => value ?? "-"
         },
         {
-            title: "serviceRole",
-            dataIndex: "serviceRole",
-            key: "serviceRole",
-            render: (value?: string | null) => value || "-"
-        },
-        {
-            title: "modelName",
+            title: "模型名称",
             dataIndex: "modelName",
             key: "modelName",
             render: (value?: string | null) => value || "-"
         },
         {
-            title: "status",
+            title: "状态",
             dataIndex: "status",
             key: "status",
             render: (status?: string | null) => (
-                <Tag color={status === "SUCCEEDED" ? "green" : "red"}>{status || "-"}</Tag>
+                <Tag color={status === "SUCCEEDED" ? "green" : "red"}>{formatStatus(status)}</Tag>
             )
         },
         {
-            title: "fallbackUsed",
-            dataIndex: "fallbackUsed",
-            key: "fallbackUsed",
-            render: (value?: boolean | null) => (value ? "是" : "否")
-        },
-        {
-            title: "latencyMs",
+            title: "耗时毫秒",
             dataIndex: "latencyMs",
             key: "latencyMs",
             render: (value?: number | null) => value ?? "-"
         },
         {
-            title: "costAmount",
-            dataIndex: "costAmount",
-            key: "costAmount",
-            render: formatMoney
-        },
-        {
-            title: "requestedAt",
+            title: "请求时间",
             dataIndex: "requestedAt",
             key: "requestedAt",
+            className: "invocations-nowrap-column",
             render: formatDateTime
-        },
-        {
-            key: "actions",
-            render: (_, record) => (
-                <KuzhambuButton
-                    testId="ai-invocations-invocations-detail-button"
-                    icon={<EyeOutlined />}
-                    onClick={() => setSelectedCall(record)}
-                >
-                    详情
-                </KuzhambuButton>
-            )
         }
     ];
+    const topCapabilities = summary?.topCapabilities || [];
+    const topCapabilityMaxCount = Math.max(
+        ...topCapabilities.map((record) => record.invocationCount),
+        1
+    );
 
     return (
         <KuzhambuPage
             className="invocations-page"
-            eyebrow="AI"
-            title="AI 调用统计"
+            title="调用统计"
             description="查看调用指标、能力排行、调用记录和详情"
             actions={
                 <Tooltip title="刷新">
@@ -342,193 +302,217 @@ export const InvocationsPage = () => {
                 </Tooltip>
             }
         >
-            <Card className="invocations-filter-card">
-                <Form
-                    form={summaryForm}
-                    layout="inline"
-                    className="invocations-filter-form"
-                    initialValues={{ period: defaultPeriod, bucketType: "DAY" }}
-                >
-                    <Form.Item label="周期" name="period">
-                        <RangePicker aria-label="周期" showTime />
-                    </Form.Item>
-                    <Form.Item label="bucketType" name="bucketType">
-                        <Select
-                            className="invocations-filter-control"
-                            options={[
-                                { label: "DAY", value: "DAY" },
-                                { label: "HOUR", value: "HOUR" }
-                            ]}
-                        />
-                    </Form.Item>
-                    <Form.Item label="scope" name="scope">
-                        <Select
-                            allowClear
-                            className="invocations-filter-control"
-                            options={SCOPE_OPTIONS}
-                        />
-                    </Form.Item>
-                    <Form.Item label="capability" name="capability">
-                        <Select
-                            allowClear
-                            className="invocations-filter-control"
-                            options={capabilityOptions}
-                        />
-                    </Form.Item>
-                    <Form.Item label="serviceRole" name="serviceRole">
-                        <Select
-                            allowClear
-                            className="invocations-filter-control"
-                            options={SERVICE_ROLE_OPTIONS}
-                        />
-                    </Form.Item>
-                    <Form.Item>
-                        <KuzhambuButton
-                            testId="ai-invocations-invocations-refresh-button-2"
-                            type="primary"
-                            onClick={() => void refreshSummary()}
-                        >
-                            刷新
-                        </KuzhambuButton>
-                    </Form.Item>
-                </Form>
-            </Card>
+            <KuzhambuTabs
+                testId="ai-invocations-invocations-tabs"
+                items={[
+                    {
+                        key: "summary",
+                        label: "统计概览",
+                        children: (
+                            <>
+                                <Card className="invocations-filter-card">
+                                    <Form
+                                        form={summaryForm}
+                                        layout="inline"
+                                        className="invocations-filter-form"
+                                        initialValues={{
+                                            period: defaultPeriod,
+                                            bucketType: "DAY"
+                                        }}
+                                    >
+                                        <Form.Item label="周期" name="period">
+                                            <RangePicker
+                                                aria-label="周期"
+                                                format={DATE_TIME_FORMAT}
+                                                showTime
+                                            />
+                                        </Form.Item>
+                                        <Form.Item label="统计粒度" name="bucketType">
+                                            <Select
+                                                className="invocations-filter-control"
+                                                options={[
+                                                    { label: "按天", value: "DAY" },
+                                                    { label: "按小时", value: "HOUR" }
+                                                ]}
+                                            />
+                                        </Form.Item>
+                                        <Form.Item label="能力" name="capability">
+                                            <Select
+                                                allowClear
+                                                className="invocations-filter-control"
+                                                options={capabilityOptions}
+                                            />
+                                        </Form.Item>
+                                        <Form.Item>
+                                            <KuzhambuButton
+                                                testId="ai-invocations-invocations-refresh-button-2"
+                                                type="primary"
+                                                onClick={() => void refreshSummary()}
+                                            >
+                                                刷新
+                                            </KuzhambuButton>
+                                        </Form.Item>
+                                    </Form>
+                                </Card>
 
-            <div className="invocations-metrics">
-                <Card>
-                    <Statistic title="invocationCount" value={summary?.invocationCount || 0} />
-                </Card>
-                <Card>
-                    <Statistic
-                        title="succeededInvocationCount"
-                        value={summary?.succeededInvocationCount || 0}
-                    />
-                </Card>
-                <Card>
-                    <Statistic
-                        title="failedInvocationCount"
-                        value={summary?.failedInvocationCount || 0}
-                    />
-                </Card>
-                <Card>
-                    <Statistic title="avgLatencyMs" value={summary?.avgLatencyMs || 0} />
-                </Card>
-                <Card>
-                    <Statistic
-                        title="totalCostAmount"
-                        value={formatMoney(summary?.totalCostAmount)}
-                    />
-                </Card>
-            </div>
+                                <div className="invocations-metrics">
+                                    <Card>
+                                        <Statistic
+                                            title="调用次数"
+                                            value={summary?.invocationCount || 0}
+                                        />
+                                    </Card>
+                                    <Card>
+                                        <Statistic
+                                            title="成功调用次数"
+                                            value={summary?.succeededInvocationCount || 0}
+                                        />
+                                    </Card>
+                                    <Card>
+                                        <Statistic
+                                            title="失败调用次数"
+                                            value={summary?.failedInvocationCount || 0}
+                                        />
+                                    </Card>
+                                    <Card>
+                                        <Statistic
+                                            title="平均耗时毫秒"
+                                            value={summary?.avgLatencyMs || 0}
+                                        />
+                                    </Card>
+                                </div>
 
-            <Card className="invocations-section-card" title="能力排行">
-                <Table<AiTopCapabilityRecord>
-                    aria-label="AI 能力排行"
-                    rowKey="capability"
-                    columns={topCapabilityColumns}
-                    dataSource={summary?.topCapabilities || []}
-                    loading={summaryResult.isFetching}
-                    pagination={false}
-                    size="small"
-                />
-            </Card>
+                                <Card className="invocations-section-card" title="能力排行">
+                                    <div
+                                        aria-label="AI 能力排行"
+                                        className="invocations-capability-bars"
+                                    >
+                                        {topCapabilities.length > 0 ? (
+                                            topCapabilities.map((record) => (
+                                                <div
+                                                    className="invocations-capability-bar-row"
+                                                    key={record.capability}
+                                                >
+                                                    <div className="invocations-capability-bar-label">
+                                                        {formatCapability(record.capability)}
+                                                    </div>
+                                                    <div className="invocations-capability-bar-track">
+                                                        <div
+                                                            className="invocations-capability-bar-fill"
+                                                            style={{
+                                                                width: `${Math.max(
+                                                                    (record.invocationCount /
+                                                                        topCapabilityMaxCount) *
+                                                                        100,
+                                                                    4
+                                                                )}%`
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div className="invocations-capability-bar-value">
+                                                        {record.invocationCount}
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="invocations-capability-bar-empty">
+                                                暂无能力排行
+                                            </div>
+                                        )}
+                                    </div>
+                                </Card>
+                            </>
+                        )
+                    },
+                    {
+                        key: "calls",
+                        label: "调用记录",
+                        children: (
+                            <Card className="invocations-section-card">
+                                <Form
+                                    form={callsForm}
+                                    layout="inline"
+                                    className="invocations-filter-form"
+                                >
+                                    <Form.Item label="状态" name="status">
+                                        <Select
+                                            allowClear
+                                            className="invocations-filter-control"
+                                            options={STATUS_OPTIONS}
+                                        />
+                                    </Form.Item>
+                                    <Form.Item label="请求时间" name="requestedAt">
+                                        <RangePicker
+                                            aria-label="请求时间"
+                                            format={DATE_TIME_FORMAT}
+                                            showTime
+                                        />
+                                    </Form.Item>
+                                    <Form.Item>
+                                        <KuzhambuSpace>
+                                            <KuzhambuButton
+                                                testId="ai-invocations-invocations-query-button"
+                                                type="primary"
+                                                onClick={() => void searchCalls()}
+                                            >
+                                                查询
+                                            </KuzhambuButton>
+                                            <KuzhambuButton
+                                                testId="ai-invocations-invocations-reset-button"
+                                                onClick={resetCalls}
+                                            >
+                                                重置
+                                            </KuzhambuButton>
+                                        </KuzhambuSpace>
+                                    </Form.Item>
+                                </Form>
 
-            <Card className="invocations-section-card" title="调用记录">
-                <Form form={callsForm} layout="inline" className="invocations-filter-form">
-                    <Form.Item label="status" name="status">
-                        <Select
-                            allowClear
-                            className="invocations-filter-control"
-                            options={STATUS_OPTIONS}
-                        />
-                    </Form.Item>
-                    <Form.Item label="contentType" name="contentType">
-                        <Input className="invocations-filter-control" />
-                    </Form.Item>
-                    <Form.Item label="contentId" name="contentId">
-                        <InputNumber className="invocations-filter-control" />
-                    </Form.Item>
-                    <Form.Item label="modelName" name="modelName">
-                        <Input className="invocations-filter-control" />
-                    </Form.Item>
-                    <Form.Item label="fallbackUsed" name="fallbackUsed">
-                        <Select
-                            allowClear
-                            className="invocations-filter-control"
-                            options={[
-                                { label: "是", value: "true" },
-                                { label: "否", value: "false" }
-                            ]}
-                        />
-                    </Form.Item>
-                    <Form.Item label="requestedAt" name="requestedAt">
-                        <RangePicker aria-label="requestedAt" showTime />
-                    </Form.Item>
-                    <Form.Item>
-                        <KuzhambuSpace>
-                            <KuzhambuButton
-                                testId="ai-invocations-invocations-query-button"
-                                type="primary"
-                                onClick={() => void searchCalls()}
-                            >
-                                查询
-                            </KuzhambuButton>
-                            <KuzhambuButton
-                                testId="ai-invocations-invocations-reset-button"
-                                onClick={resetCalls}
-                            >
-                                重置
-                            </KuzhambuButton>
-                        </KuzhambuSpace>
-                    </Form.Item>
-                </Form>
-
-                <Table<AiCallRecord>
-                    aria-label="AI 调用记录"
-                    rowKey={readCallId}
-                    className="invocations-table"
-                    columns={callColumns}
-                    dataSource={callPage?.records || []}
-                    loading={callsResult.isFetching}
-                    pagination={{
-                        current: callsQuery.pageNo || DEFAULT_PAGE_NO,
-                        pageSize: callsQuery.pageSize || DEFAULT_PAGE_SIZE,
-                        pageSizeOptions: PAGE_SIZE_OPTIONS,
-                        showSizeChanger: true,
-                        total: callPage?.totalCount ?? callPage?.count ?? 0
-                    }}
-                    onChange={handleTableChange}
-                />
-            </Card>
-
-            <KuzhambuDrawer
-                open={Boolean(selectedCall)}
-                title="调用详情"
-                size="large"
-                onClose={() => setSelectedCall(null)}
-            >
-                {selectedCall ? <CallDetail call={selectedCall} /> : null}
-            </KuzhambuDrawer>
+                                <Table<AiCallRecord>
+                                    aria-label="AI 调用记录"
+                                    rowKey={readCallId}
+                                    className="invocations-table"
+                                    columns={callColumns}
+                                    dataSource={callPage?.records || []}
+                                    loading={callsResult.isFetching}
+                                    pagination={{
+                                        current: callsQuery.pageNo || DEFAULT_PAGE_NO,
+                                        pageSize: callsQuery.pageSize || DEFAULT_PAGE_SIZE,
+                                        pageSizeOptions: PAGE_SIZE_OPTIONS,
+                                        showSizeChanger: true,
+                                        total: callPage?.totalCount ?? callPage?.count ?? 0
+                                    }}
+                                    expandable={{
+                                        expandedRowRender: (record) => <CallDetail call={record} />,
+                                        expandRowByClick: true,
+                                        rowExpandable: () => true
+                                    }}
+                                    onChange={handleTableChange}
+                                />
+                            </Card>
+                        )
+                    }
+                ]}
+            />
         </KuzhambuPage>
     );
 };
 
 const CallDetail = ({ call }: { call: AiCallRecord }) => (
     <Descriptions column={1} size="small">
-        <Descriptions.Item label="requestId">{call.requestId || "-"}</Descriptions.Item>
-        <Descriptions.Item label="traceId">{call.traceId || "-"}</Descriptions.Item>
-        <Descriptions.Item label="promptVersionId">{call.promptVersionId || "-"}</Descriptions.Item>
-        <Descriptions.Item label="streamUsed">{call.streamUsed ? "是" : "否"}</Descriptions.Item>
-        <Descriptions.Item label="streamCompleted">
+        <Descriptions.Item label="请求ID">{call.requestId || "-"}</Descriptions.Item>
+        <Descriptions.Item label="链路ID">{call.traceId || "-"}</Descriptions.Item>
+        <Descriptions.Item label="提示词版本ID">{call.promptVersionId || "-"}</Descriptions.Item>
+        <Descriptions.Item label="是否流式">{call.streamUsed ? "是" : "否"}</Descriptions.Item>
+        <Descriptions.Item label="流式是否完成">
             {call.streamCompleted ? "是" : "否"}
         </Descriptions.Item>
-        <Descriptions.Item label="inputTokens">{call.inputTokens ?? "-"}</Descriptions.Item>
-        <Descriptions.Item label="outputTokens">{call.outputTokens ?? "-"}</Descriptions.Item>
-        <Descriptions.Item label="failureStage">{call.failureStage || "-"}</Descriptions.Item>
-        <Descriptions.Item label="resultFormat">{call.resultFormat || "-"}</Descriptions.Item>
-        <Descriptions.Item label="errorType">{call.errorType || "-"}</Descriptions.Item>
-        <Descriptions.Item label="errorMessage">{call.errorMessage || "-"}</Descriptions.Item>
-        <Descriptions.Item label="warningsJson">
+        <Descriptions.Item label="输入 Tokens">{call.inputTokens ?? "-"}</Descriptions.Item>
+        <Descriptions.Item label="输出 Tokens">{call.outputTokens ?? "-"}</Descriptions.Item>
+        <Descriptions.Item label="失败阶段">{call.failureStage || "-"}</Descriptions.Item>
+        <Descriptions.Item label="结果格式">{call.resultFormat || "-"}</Descriptions.Item>
+        <Descriptions.Item label="错误类型">{call.errorType || "-"}</Descriptions.Item>
+        <Descriptions.Item label="错误信息">{call.errorMessage || "-"}</Descriptions.Item>
+        <Descriptions.Item label="警告 JSON">
             <pre className="invocations-warnings">{formatWarnings(call.warningsJson)}</pre>
         </Descriptions.Item>
     </Descriptions>

@@ -185,16 +185,33 @@
     justify-content: flex-start;
 }
 
-.wangqi-summary-modal-footer,
-.wangqi-summary-modal-toolbar {
+.wangqi-summary-modal-footer {
     display: flex;
     gap: 8px;
     justify-content: flex-end;
 }
 
-.wangqi-summary-modal-toolbar {
-    justify-content: flex-start;
-    margin-bottom: 12px;
+.wangqi-summary-modal-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 0;
+    gap: 12px;
+    min-height: 32px;
+    padding-inline-end: 52px;
+}
+
+.wangqi-summary-modal-title > span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wangqi-summary-modal .ant-modal-close,
+.wangqi-tags-modal .ant-modal-close,
+.wangqi-qa-modal .ant-modal-close {
+    top: 21px;
 }
 
 .wangqi-summary-modal-compare-grid {
@@ -307,6 +324,18 @@
     gap: 6px;
     margin-top: 12px;
     color: var(--text-secondary);
+}
+
+.wangqi-tags-modal-source-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.wangqi-tags-modal-source-grid label {
+    display: grid;
+    gap: 4px;
 }
 
 .wangqi-storage-file-panel-actions {

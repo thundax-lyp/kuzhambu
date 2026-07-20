@@ -434,16 +434,9 @@ export const RefinementPage = () => {
         <KuzhambuPage
             className="knowledge-refinement-page refinement-page"
             description="围绕待精修任务完成实体、关系确认和应用回正式事实。"
-            eyebrow="Knowledge / Refinement"
-            title="知识图谱精修工作台"
+            title="知识图谱工作台"
         >
             <KuzhambuSpace className="knowledge-refinement-layout" orientation="vertical" size={16}>
-                <KuzhambuAlert
-                    banner
-                    title="本页支持打开精修任务、修订实体关系草稿、标注质量问题并应用回正式事实。"
-                    type="info"
-                />
-
                 <section aria-labelledby="knowledge-refinement-task-section">
                     <div className="knowledge-refinement-section-header">
                         <Title id="knowledge-refinement-task-section" level={4}>

@@ -413,6 +413,7 @@ export const AiCandidateBatchDrawer = ({
 
     return (
         <KuzhambuDrawer
+            testId="classics-common-ai-candidate-batch-drawer"
             title="AI 候选批量治理"
             open={open}
             size="large"

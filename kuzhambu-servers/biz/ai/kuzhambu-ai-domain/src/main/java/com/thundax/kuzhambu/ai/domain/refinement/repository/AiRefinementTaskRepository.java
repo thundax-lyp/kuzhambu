@@ -23,6 +23,8 @@ public interface AiRefinementTaskRepository {
 
     long countTasks(String capability, String status, String contentType, Long contentId, Long requestedBy);
 
+    List<AiRefinementTask> listActiveTasks();
+
     List<AiRefinementTask> listExpiredRunningTasks(Instant threshold);
 
     int deleteExpiredTerminalTasks(Instant threshold);

@@ -50,9 +50,16 @@ const mockShellApis = async (page: Page) => {
                 displayParams: '{"icon":"knowledge"}'
             },
             {
-                id: "refinement",
+                id: "knowledge-graph",
                 parentId: "knowledge",
-                name: "知识图谱精修工作台",
+                name: "知识图谱",
+                url: "/knowledge/graph",
+                displayParams: '{"icon":"book"}'
+            },
+            {
+                id: "refinement",
+                parentId: "knowledge-graph",
+                name: "图谱工作台",
                 url: "/knowledge/refinement",
                 displayParams: '{"icon":"submissions"}'
             }
@@ -307,7 +314,7 @@ test.describe("admin refinement smoke", () => {
 
         await page.goto("/knowledge/refinement");
 
-        await expect(page.getByRole("heading", { name: "知识图谱精修工作台" })).toBeVisible();
+        await expect(page.getByRole("heading", { name: "知识图谱工作台" })).toBeVisible();
         await expect(page.getByRole("table", { name: "知识图谱精修任务表格" })).toContainText(
             "9001"
         );

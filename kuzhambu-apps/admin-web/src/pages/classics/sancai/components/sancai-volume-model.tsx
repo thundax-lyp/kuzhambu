@@ -35,6 +35,7 @@ export const SancaiVolumeModel = ({
 
     return (
         <KuzhambuModal
+            testId="classics-sancai-sancai-volume-editor-modal"
             title={volume ? "编辑卷目" : "新增卷目"}
             open
             footer={

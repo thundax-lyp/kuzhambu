@@ -4,5 +4,7 @@ public interface AiRefinementTaskCleanupApplicationService {
 
     CleanupResult cleanupExpiredTasks();
 
+    int closeInterruptedActiveTasks();
+
     record CleanupResult(int expiredRunningCount, int deletedTerminalCount) {}
 }

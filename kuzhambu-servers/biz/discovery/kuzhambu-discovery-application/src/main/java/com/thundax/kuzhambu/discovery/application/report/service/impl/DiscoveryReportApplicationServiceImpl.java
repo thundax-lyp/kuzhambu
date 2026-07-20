@@ -8,8 +8,8 @@ import com.thundax.kuzhambu.discovery.application.report.result.DiscoveryReportS
 import com.thundax.kuzhambu.discovery.application.report.service.DiscoveryReportApplicationService;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSessionRepository;
-import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchLog;
-import com.thundax.kuzhambu.discovery.domain.search.repository.SearchLogRepository;
+import com.thundax.kuzhambu.discovery.domain.search.model.entity.SearchEvent;
+import com.thundax.kuzhambu.discovery.domain.search.repository.SearchEventRepository;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,41 +27,41 @@ public class DiscoveryReportApplicationServiceImpl implements DiscoveryReportApp
 
     private static final int TOP_QUERY_LIMIT = 10;
 
-    private final SearchLogRepository searchLogRepository;
+    private final SearchEventRepository searchEventRepository;
     private final QaSessionRepository qaSessionRepository;
 
     public DiscoveryReportApplicationServiceImpl(
-            SearchLogRepository searchLogRepository, QaSessionRepository qaSessionRepository) {
-        this.searchLogRepository = searchLogRepository;
+            SearchEventRepository searchEventRepository, QaSessionRepository qaSessionRepository) {
+        this.searchEventRepository = searchEventRepository;
         this.qaSessionRepository = qaSessionRepository;
     }
 
     @Override
     public DiscoveryReportSummaryResult summary(Date periodStart, Date periodEnd, String bucketType) {
-        List<SearchLog> searchLogs = searchLogRepository.listByCreatedAtRange(periodStart, periodEnd);
+        List<SearchEvent> searchEvents = searchEventRepository.listByCreatedAtRange(periodStart, periodEnd);
         List<QaSession> qaSessions = qaSessionRepository.listByOpenedAtRange(periodStart, periodEnd);
         return new DiscoveryReportSummaryResult(
                 periodStart,
                 periodEnd,
-                (long) searchLogs.size(),
+                (long) searchEvents.size(),
                 (long) qaSessions.size(),
-                averageSearchLatencyMs(searchLogs),
-                buildTopQueries(searchLogs),
-                buildSearchTrendSeries(periodStart, periodEnd, bucketType, searchLogs),
+                averageSearchLatencyMs(searchEvents),
+                buildTopQueries(searchEvents),
+                buildSearchTrendSeries(periodStart, periodEnd, bucketType, searchEvents),
                 buildQaTrendSeries(periodStart, periodEnd, bucketType, qaSessions));
     }
 
-    private Long averageSearchLatencyMs(List<SearchLog> searchLogs) {
-        return Math.round(searchLogs.stream()
-                .map(SearchLog::getSearchLatencyMs)
+    private Long averageSearchLatencyMs(List<SearchEvent> searchEvents) {
+        return Math.round(searchEvents.stream()
+                .map(SearchEvent::getSearchLatencyMs)
                 .filter(latencyMs -> latencyMs != null)
                 .mapToLong(Long::longValue)
                 .average()
                 .orElse(0D));
     }
 
-    private List<TopQueryResult> buildTopQueries(List<SearchLog> searchLogs) {
-        return searchLogs.stream()
+    private List<TopQueryResult> buildTopQueries(List<SearchEvent> searchEvents) {
+        return searchEvents.stream()
                 .map(this::resolveQueryText)
                 .filter(StringUtils::isNotBlank)
                 .collect(Collectors.groupingBy(queryText -> queryText, Collectors.counting()))
@@ -74,10 +74,10 @@ public class DiscoveryReportApplicationServiceImpl implements DiscoveryReportApp
     }
 
     private List<SearchTrendPointResult> buildSearchTrendSeries(
-            Date periodStart, Date periodEnd, String bucketType, List<SearchLog> searchLogs) {
+            Date periodStart, Date periodEnd, String bucketType, List<SearchEvent> searchEvents) {
         Map<String, Long> bucketCounts = new LinkedHashMap<>();
-        for (SearchLog searchLog : searchLogs) {
-            Date createdAt = searchLog == null ? null : searchLog.getCreatedAt();
+        for (SearchEvent searchEvent : searchEvents) {
+            Date createdAt = searchEvent == null ? null : searchEvent.getCreatedAt();
             if (createdAt == null || outOfRange(createdAt, periodStart, periodEnd)) {
                 continue;
             }
@@ -113,17 +113,17 @@ public class DiscoveryReportApplicationServiceImpl implements DiscoveryReportApp
         return (periodStart != null && value.before(periodStart)) || (periodEnd != null && value.after(periodEnd));
     }
 
-    private String resolveQueryText(SearchLog searchLog) {
-        if (searchLog == null) {
+    private String resolveQueryText(SearchEvent searchEvent) {
+        if (searchEvent == null) {
             return null;
         }
-        if (StringUtils.isNotBlank(searchLog.getDisplayQueryText())) {
-            return searchLog.getDisplayQueryText();
+        if (StringUtils.isNotBlank(searchEvent.getDisplayQueryText())) {
+            return searchEvent.getDisplayQueryText();
         }
-        if (StringUtils.isNotBlank(searchLog.getNormalizedQueryText())) {
-            return searchLog.getNormalizedQueryText();
+        if (StringUtils.isNotBlank(searchEvent.getNormalizedQueryText())) {
+            return searchEvent.getNormalizedQueryText();
         }
-        return searchLog.getQueryText();
+        return searchEvent.getQueryText();
     }
 
     private String toBucket(Date value, String bucketType) {

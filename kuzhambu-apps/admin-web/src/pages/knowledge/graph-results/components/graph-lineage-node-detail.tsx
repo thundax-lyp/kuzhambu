@@ -25,6 +25,7 @@ export const GraphLineageNodeDetail = ({
 }: GraphLineageNodeDetailProps) => {
     return (
         <KuzhambuDrawer
+            testId="knowledge-graph-results-graph-lineage-node-detail-drawer"
             title="正式世系节点详情"
             open={open}
             size="middle"

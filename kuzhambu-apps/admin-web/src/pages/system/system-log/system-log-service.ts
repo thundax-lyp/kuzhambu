@@ -14,7 +14,7 @@ export interface LogPageQuery {
     endDate?: string | null;
 }
 
-export const pageLogs = (request: LogPageQuery = {}) => {
+export const pageEvents = (request: LogPageQuery = {}) => {
     return postJson<Page<LogRecord>, LogPageQuery>("/sys/log/page", {
         body: request
     });

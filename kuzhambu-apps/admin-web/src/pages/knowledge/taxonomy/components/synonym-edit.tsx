@@ -96,6 +96,7 @@ export const SynonymEdit = ({
 
     return (
         <KuzhambuDrawer
+            testId="knowledge-taxonomy-synonym-editor-drawer"
             className="knowledge-taxonomy-synonym-editor"
             title={title}
             open={visible}

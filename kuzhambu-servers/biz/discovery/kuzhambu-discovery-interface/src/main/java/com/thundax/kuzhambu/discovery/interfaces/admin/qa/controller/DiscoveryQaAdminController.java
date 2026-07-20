@@ -29,8 +29,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@Tag(name = "发现模块-Admin 问答", description = "Discovery Admin 问答调试接口")
-@SysLogger(module = {"发现", "问答调试"})
+@Tag(name = "发现模块-Admin 问答", description = "Discovery Admin 问答运维接口")
+@SysLogger(module = {"发现", "问答运维"})
 @RequestMapping("/api/discovery/qa-admin")
 @WrappedApiController
 public class DiscoveryQaAdminController {

@@ -140,5 +140,5 @@ Knowledge 负责把古籍内容组织成可治理、可检索、可增强问答�
 - [CLASSICS-REQUIREMENTS.md](./CLASSICS-REQUIREMENTS.md)：提供知识组织覆盖的古籍内容范围和生命周期规则。
 - [AI-REQUIREMENTS.md](./AI-REQUIREMENTS.md)：提供实体关系提取和标签提取所需 AI 能力。
 - [WORKERS-REQUIREMENTS.md](./WORKERS-REQUIREMENTS.md)：定义 workers 边界；Knowledge 不直接调用 AI workers。
-- [DISCOVERY-REQUIREMENTS.md](./DISCOVERY-REQUIREMENTS.md)：消费标签、同义词、实体和图谱增强搜索问答。
+- [DISCOVERY-REQUIREMENTS.md](./DISCOVERY-REQUIREMENTS.md)：消费标签、同义词、实体和图谱增强知识检索和知识问答。
 - [SYSTEM-REQUIREMENTS.md](./SYSTEM-REQUIREMENTS.md)：承载标签治理和精修操作审计。

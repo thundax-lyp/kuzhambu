@@ -34,7 +34,6 @@ export interface KuzhambuListPageProps<RecordType extends object = object> exten
     description?: ReactNode;
     enableFilter?: boolean;
     enableSearch?: boolean;
-    eyebrow?: ReactNode;
     filterActive?: boolean;
     filter?: ReactNode | ((filterState: KuzhambuListPageFilterState) => ReactNode);
     filterClassName?: string;
@@ -70,7 +69,6 @@ export const KuzhambuListPage = <RecordType extends object = object>({
     description,
     enableFilter = false,
     enableSearch = false,
-    eyebrow,
     filterActive = false,
     filter,
     filterClassName,
@@ -204,7 +202,6 @@ export const KuzhambuListPage = <RecordType extends object = object>({
             actions={headerActions}
             className={pageClassName}
             description={description}
-            eyebrow={eyebrow}
             title={title}
         >
             {enableFilter && (resolvedFilter || filterFields?.length) ? (

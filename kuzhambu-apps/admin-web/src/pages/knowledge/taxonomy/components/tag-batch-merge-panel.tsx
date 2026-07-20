@@ -147,6 +147,7 @@ export const TagBatchMergePanel = ({
 
     return (
         <KuzhambuDrawer
+            testId="knowledge-taxonomy-tag-batch-merge-panel-drawer"
             className="knowledge-taxonomy-tag-batch-merge-panel"
             title="批量合并标签"
             open={open}

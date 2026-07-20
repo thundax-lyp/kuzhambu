@@ -10,20 +10,11 @@ export interface AiInvocationSummaryQuery {
     periodStart?: string | null;
     periodEnd?: string | null;
     bucketType?: string | null;
-    scope?: string | null;
     capability?: string | null;
-    serviceRole?: string | null;
 }
 
 export interface AiCallRecordPageQuery {
-    scope?: string | null;
-    capability?: string | null;
-    contentType?: string | null;
-    contentId?: number | null;
     status?: string | null;
-    serviceRole?: string | null;
-    modelName?: string | null;
-    fallbackUsed?: boolean | null;
     requestedAtStart?: string | null;
     requestedAtEnd?: string | null;
     pageNo?: number;

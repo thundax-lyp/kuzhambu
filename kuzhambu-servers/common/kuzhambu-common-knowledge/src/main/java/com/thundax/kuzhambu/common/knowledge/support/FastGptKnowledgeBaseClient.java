@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.common.knowledge.support;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -86,29 +87,14 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
     @Override
     public KnowledgeBaseResult ensureKnowledgeBase(KnowledgeBaseEnsureRequest request) {
         Assert.notNull(request, "Knowledge base ensure request must not be null");
-        KnowledgeBasePageResult existing = listKnowledgeBases(new KnowledgeBaseListRequest(1, 20, request.name()));
-        for (KnowledgeBaseResult knowledgeBase : existing.knowledgeBases()) {
-            if (request.name().equals(knowledgeBase.name())) {
-                return knowledgeBase;
-            }
-        }
-        Map<String, Object> payload = new LinkedHashMap<>();
-        payload.put("type", "dataset");
-        putIfHasText(payload, "name", request.name());
-        putIfHasText(payload, "intro", request.description());
-        mergeOptions(payload, request.options());
-        JsonNode body = post("/api/core/dataset/create", payload);
-        JsonNode data = dataNode(body);
         return new KnowledgeBaseResult(
-                textValue(data, "datasetId", textValue(data, "_id", textValue(data, "id", null))),
-                textValue(data, "name", request.name()),
-                rawMap(body));
+                configuredKnowledgeBaseId(), request.name(), Map.of("managedBy", "external-fastgpt"));
     }
 
     @Override
     public KnowledgeItemPageResult listKnowledgeItems(KnowledgeItemListRequest request) {
         Assert.notNull(request, "Knowledge item list request must not be null");
-        String knowledgeBaseId = resolveKnowledgeBaseId(request.knowledgeBaseName());
+        String knowledgeBaseId = configuredKnowledgeBaseId();
         Map<String, Object> payload = new LinkedHashMap<>();
         putIfHasText(payload, "datasetId", knowledgeBaseId);
         putIfNotNull(payload, "pageNum", request.pageNum());
@@ -133,9 +119,7 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
     @Override
     public KnowledgeItemResult upsertKnowledgeItem(KnowledgeItemUpsertRequest request) {
         Assert.notNull(request, "Knowledge item upsert request must not be null");
-        String knowledgeBaseId = ensureKnowledgeBase(
-                        new KnowledgeBaseEnsureRequest(request.knowledgeBaseName(), null, null))
-                .knowledgeBaseId();
+        String knowledgeBaseId = configuredKnowledgeBaseId();
         Map<String, Object> payload = new LinkedHashMap<>();
         putIfHasText(payload, "datasetId", knowledgeBaseId);
         putIfHasText(payload, "name", request.title());
@@ -155,7 +139,7 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
     @Override
     public KnowledgeSyncResult syncKnowledgeItem(KnowledgeSyncRequest request) {
         Assert.notNull(request, "Knowledge sync request must not be null");
-        String knowledgeBaseId = resolveKnowledgeBaseId(request.knowledgeBaseName());
+        String knowledgeBaseId = configuredKnowledgeBaseId();
         Map<String, Object> payload = new LinkedHashMap<>();
         putIfHasText(payload, "datasetId", knowledgeBaseId);
         putIfHasText(payload, "collectionId", request.knowledgeItemId());
@@ -169,7 +153,7 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
     @Override
     public KnowledgeSyncResult deleteKnowledgeItem(KnowledgeItemDeleteRequest request) {
         Assert.notNull(request, "Knowledge item delete request must not be null");
-        String knowledgeBaseId = resolveKnowledgeBaseId(request.knowledgeBaseName());
+        String knowledgeBaseId = configuredKnowledgeBaseId();
         Map<String, Object> payload = new LinkedHashMap<>();
         putIfHasText(payload, "datasetId", knowledgeBaseId);
         putIfHasText(payload, "collectionId", request.knowledgeItemId());
@@ -194,7 +178,7 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
         payload.put("messages", chatMessages(request.messages()));
         putIfNotNull(payload, "metadata", request.metadata());
         mergeOptions(payload, request.options());
-        JsonNode body = post("/api/v1/chat/completions", payload);
+        JsonNode body = post("/api/v1/chat/completions", payload, chatHeaders());
         String content = extractChatContent(body);
         String id = textValue(body, "id", textOption(request.metadata(), "chatId"));
         String model = textValue(body, "model", request.model());
@@ -210,20 +194,40 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
     }
 
     private JsonNode post(String path, Map<String, Object> payload) {
-        return restOperations
-                .exchange(path, HttpMethod.POST, new HttpEntity<>(payload, headers()), JsonNode.class)
-                .getBody();
+        return post(path, payload, headers());
     }
 
-    private String resolveKnowledgeBaseId(String knowledgeBaseName) {
-        Assert.hasText(knowledgeBaseName, "Knowledge base name must not be blank");
-        KnowledgeBasePageResult result = listKnowledgeBases(new KnowledgeBaseListRequest(1, 20, knowledgeBaseName));
-        for (KnowledgeBaseResult knowledgeBase : result.knowledgeBases()) {
-            if (knowledgeBaseName.equals(knowledgeBase.name())) {
-                return knowledgeBase.knowledgeBaseId();
-            }
+    private JsonNode post(String path, Map<String, Object> payload, HttpHeaders headers) {
+        String response = restOperations
+                .exchange(path, HttpMethod.POST, new HttpEntity<>(writeJson(payload), headers), String.class)
+                .getBody();
+        return readJson(response);
+    }
+
+    private String writeJson(Object payload) {
+        try {
+            return objectMapper.writeValueAsString(payload);
+        } catch (JsonProcessingException ex) {
+            throw new IllegalArgumentException("Failed to serialize FastGPT request payload", ex);
         }
-        throw new IllegalStateException("Knowledge base does not exist: " + knowledgeBaseName);
+    }
+
+    private JsonNode readJson(String response) {
+        if (!StringUtils.hasText(response)) {
+            return objectMapper.createObjectNode();
+        }
+        try {
+            return objectMapper.readTree(response);
+        } catch (JsonProcessingException ex) {
+            throw new IllegalStateException("Failed to parse FastGPT response payload", ex);
+        }
+    }
+
+    private String configuredKnowledgeBaseId() {
+        if (StringUtils.hasText(properties.getKnowledgeBaseId())) {
+            return properties.getKnowledgeBaseId();
+        }
+        throw new IllegalStateException("Missing FastGPT knowledge base id configuration");
     }
 
     private HttpHeaders headers() {
@@ -232,6 +236,24 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         return headers;
+    }
+
+    private HttpHeaders chatHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(resolveChatApiKey());
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+        return headers;
+    }
+
+    private String resolveChatApiKey() {
+        if (StringUtils.hasText(properties.getChatApiKey())) {
+            return properties.getChatApiKey();
+        }
+        if (StringUtils.hasText(properties.getApiKey()) && StringUtils.hasText(properties.getAppId())) {
+            return properties.getApiKey() + "-" + properties.getAppId();
+        }
+        return properties.getApiKey();
     }
 
     private List<Map<String, Object>> chatMessages(List<KnowledgeChatMessage> messages) {
@@ -316,6 +338,19 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
             return fallback;
         }
         return value.asText(fallback);
+    }
+
+    private String idValue(JsonNode node, String... fieldNames) {
+        if (node != null && node.isTextual()) {
+            return node.asText();
+        }
+        for (String fieldName : fieldNames) {
+            String value = textValue(node, fieldName, null);
+            if (StringUtils.hasText(value)) {
+                return value;
+            }
+        }
+        return null;
     }
 
     private Long longValue(JsonNode node, String fieldName, Long fallback) {

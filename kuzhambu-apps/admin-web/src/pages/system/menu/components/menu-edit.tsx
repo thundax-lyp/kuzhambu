@@ -83,6 +83,7 @@ export const MenuEdit = ({ open, menu, parentOptions, saving, onClose, onSave }:
 
     return (
         <KuzhambuDrawer
+            testId="system-menu-menu-editor-drawer"
             className="menu-edit-drawer"
             title={menu ? "编辑菜单" : "新增菜单"}
             open={Boolean(open)}

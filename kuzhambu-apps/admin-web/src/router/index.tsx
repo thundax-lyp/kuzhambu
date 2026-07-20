@@ -5,9 +5,10 @@ import { AiModelsPage } from "../pages/ai/ai-models/ai-models-page";
 import { PromptsPage } from "../pages/ai/prompts/prompts-page";
 import { AuditLogPage } from "../pages/audit/audit-log/audit-log-page";
 import { LoginPage } from "../pages/auth/login/login-page";
+import { QaPage } from "../pages/discovery/qa/qa-page";
 import { QaAdminPage } from "../pages/discovery/qa-admin/qa-admin-page";
 import { SearchPage } from "../pages/discovery/search/search-page";
-import { SearchAdminPage } from "../pages/discovery/search-admin/search-admin-page";
+import { SearchStatisticsPage } from "../pages/discovery/search-statistics/search-statistics-page";
 import { MingCustomsPage } from "../pages/classics/ming-customs/ming-customs-page";
 import { SancaiPage } from "../pages/classics/sancai/sancai-page";
 import { WangqiPage } from "../pages/classics/wangqi/wangqi-page";
@@ -121,6 +122,10 @@ const router = createBrowserRouter(
                             element: <SharingPage />
                         },
                         {
+                            path: "knowledge/graph",
+                            element: <RefinementPage />
+                        },
+                        {
                             path: "knowledge/graph-extraction",
                             element: <GraphExtractionPage />
                         },
@@ -153,8 +158,12 @@ const router = createBrowserRouter(
                             element: <QaAdminPage />
                         },
                         {
-                            path: "discovery/search-admin",
-                            element: <SearchAdminPage />
+                            path: "discovery/qa",
+                            element: <QaPage />
+                        },
+                        {
+                            path: "discovery/search-statistics",
+                            element: <SearchStatisticsPage />
                         },
                         {
                             path: "operations/dashboard",
