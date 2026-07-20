@@ -206,6 +206,7 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void change(ChangeStorageCommand command) {
         dao.update(toStoredObject(command));
     }
