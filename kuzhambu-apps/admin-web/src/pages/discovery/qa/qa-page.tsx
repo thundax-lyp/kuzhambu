@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Bubble, Sender, type BubbleItemType } from "@ant-design/x";
+import { CloseOutlined } from "@ant-design/icons";
 import { Empty, Input, Tag, Typography } from "antd";
 import { forwardRef, useMemo, useState, type ComponentProps, type ElementRef } from "react";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
@@ -429,7 +430,7 @@ export const QaPage = () => {
                                             void deleteSession(sessionId);
                                         }}
                                     >
-                                        删除
+                                        <CloseOutlined />
                                     </KuzhambuButton>
                                 </div>
                             );
