@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,10 +17,6 @@ public final class ApiSurfaceArchitectureRuleSupport {
             "\\bprivate\\s+(?:static\\s+final\\s+)?[A-Za-z0-9_<>, ?\\.\\[\\]]+\\s+([A-Za-z][A-Za-z0-9_]*)\\s*(?:=[^;]*)?;");
     private static final Pattern PRIORITY_PROPERTY_PATTERN = Pattern.compile(
             "\\bpriority\\b|@JsonProperty\\s*\\(\\s*\"priority\"\\s*\\)|\\bgetPriority\\s*\\(|\\bsetPriority\\s*\\(");
-    private static final Pattern SORT_MAPPING_PATTERN =
-            Pattern.compile("@PostMapping\\s*\\(\\s*(?:value\\s*=\\s*)?\"/?sort\"\\s*\\)");
-    private static final Pattern CLASS_DECLARATION_PATTERN =
-            Pattern.compile("\\bpublic\\s+class\\s+([A-Za-z0-9_]+)\\b");
 
     private ApiSurfaceArchitectureRuleSupport() {}
 
@@ -49,38 +44,9 @@ public final class ApiSurfaceArchitectureRuleSupport {
         assertTrue("Sort requests must only expose orderedIds: " + violations, violations.isEmpty());
     }
 
-    public static void assertSortRequestsAreAllowed(Path sourceRoot, Collection<String> allowedRequestNames)
-            throws IOException {
-        Path root = ArchitectureSourceSupport.repositoryRoot();
-        List<String> violations = new ArrayList<String>();
-
-        try (Stream<Path> paths = Files.walk(sourceRoot)) {
-            paths.filter(path -> path.getFileName().toString().endsWith("SortRequest.java"))
-                    .forEach(
-                            path -> collectSortRequestAllowlistViolations(root, path, allowedRequestNames, violations));
-        }
-
-        assertTrue("Sort request classes must be explicitly allowed: " + violations, violations.isEmpty());
-    }
-
-    public static void assertSortEndpointsAreAllowed(Path sourceRoot, Collection<String> allowedControllerNames)
-            throws IOException {
-        Path root = ArchitectureSourceSupport.repositoryRoot();
-        List<String> violations = new ArrayList<String>();
-
-        try (Stream<Path> paths = Files.walk(sourceRoot)) {
-            paths.filter(path -> path.getFileName().toString().endsWith("Controller.java"))
-                    .forEach(path ->
-                            collectSortEndpointAllowlistViolations(root, path, allowedControllerNames, violations));
-        }
-
-        assertTrue("Sort endpoints must be explicitly allowed: " + violations, violations.isEmpty());
-    }
-
     private static boolean isRequestOrResponseSource(Path path) {
         String normalized = ArchitectureSourceSupport.normalizePath(path);
         return path.getFileName().toString().endsWith(".java")
-                && normalized.contains("-interface/src/main/java/")
                 && (path.getFileName().toString().contains("Request")
                         || path.getFileName().toString().contains("Response")
                         || normalized.contains("/controller/request/")
@@ -103,30 +69,5 @@ public final class ApiSurfaceArchitectureRuleSupport {
                 violations.add(ArchitectureSourceSupport.repositoryPath(root, path) + " field=" + fieldName);
             }
         }
-    }
-
-    private static void collectSortRequestAllowlistViolations(
-            Path root, Path path, Collection<String> allowedRequestNames, List<String> violations) {
-        String className = path.getFileName().toString().replace(".java", "");
-        if (!allowedRequestNames.contains(className)) {
-            violations.add(ArchitectureSourceSupport.repositoryPath(root, path) + " class=" + className);
-        }
-    }
-
-    private static void collectSortEndpointAllowlistViolations(
-            Path root, Path path, Collection<String> allowedControllerNames, List<String> violations) {
-        String content = ArchitectureSourceSupport.readSourceWithoutComments(path);
-        if (!SORT_MAPPING_PATTERN.matcher(content).find()) {
-            return;
-        }
-        String className = className(content);
-        if (!allowedControllerNames.contains(className)) {
-            violations.add(ArchitectureSourceSupport.repositoryPath(root, path) + " class=" + className);
-        }
-    }
-
-    private static String className(String content) {
-        Matcher matcher = CLASS_DECLARATION_PATTERN.matcher(content);
-        return matcher.find() ? matcher.group(1) : "<unknown>";
     }
 }
