@@ -63,6 +63,7 @@ import java.util.HexFormat;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -87,6 +88,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     private static final String SHOWCASE_FAILURE_INTERNAL = "INTERNAL_FAILURE";
     private static final String SHOWCASE_FAILURE_PRIVATE_UNCONFIRMED = "VISIBILITY_RISK_UNCONFIRMED";
     private static final int SHOWCASE_FAILURE_MESSAGE_MAX_LENGTH = 512;
+    private static final long MAX_SHOWCASE_ARTIFACT_SIZE_BYTES = 50L * 1024L * 1024L;
     private static final String SANCAI_IMAGE_CONTENT_PATH_PREFIX = "/api/classics/sancai/assets/images/";
     private static final String SANCAI_IMAGE_CONTENT_PATH_SEPARATOR = "/";
     private static final String SANCAI_IMAGE_CONTENT_PATH_SUFFIX = "/content";
@@ -330,14 +332,14 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public SancaiShowcaseId requestShowcase(SancaiShowcaseCommand command) {
         SancaiShowcaseJobResult result = requestShowcaseJob(command);
         return result == null ? null : result.getShowcaseId();
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public SancaiShowcaseJobResult requestShowcaseJob(SancaiShowcaseCommand command) {
         validateShowcaseCommand(command);
         SancaiShowcase showcase = command == null ? new SancaiShowcase() : command.toEntity();
@@ -729,13 +731,33 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
                 || artifact.getContent().isBlank()) {
             return new byte[0];
         }
+        validateShowcaseArtifactSizeBeforeDecode(artifact);
+        byte[] content;
         if ("TEXT".equalsIgnoreCase(artifact.getEncoding())) {
-            return artifact.getContent().getBytes(StandardCharsets.UTF_8);
+            content = artifact.getContent().getBytes(StandardCharsets.UTF_8);
+        } else if ("BASE64".equalsIgnoreCase(artifact.getEncoding())) {
+            content = Base64.getDecoder().decode(artifact.getContent());
+        } else {
+            content = artifact.getContent().getBytes(StandardCharsets.UTF_8);
         }
-        if ("BASE64".equalsIgnoreCase(artifact.getEncoding())) {
-            return Base64.getDecoder().decode(artifact.getContent());
+        validateShowcaseArtifactSize(content.length);
+        return content;
+    }
+
+    private static void validateShowcaseArtifactSizeBeforeDecode(WorkerRenderDtos.Artifact artifact) {
+        if (artifact.getSizeBytes() != null) {
+            validateShowcaseArtifactSize(artifact.getSizeBytes());
         }
-        return artifact.getContent().getBytes(StandardCharsets.UTF_8);
+        if ("BASE64".equalsIgnoreCase(artifact.getEncoding())
+                && artifact.getContent().length() > (MAX_SHOWCASE_ARTIFACT_SIZE_BYTES * 4 / 3 + 4)) {
+            throw new BizException("三才静态展示产物超过大小限制");
+        }
+    }
+
+    private static void validateShowcaseArtifactSize(long sizeBytes) {
+        if (sizeBytes > MAX_SHOWCASE_ARTIFACT_SIZE_BYTES) {
+            throw new BizException("三才静态展示产物超过大小限制");
+        }
     }
 
     private void validateShowcaseArtifact(WorkerRenderDtos.Artifact artifact, byte[] content) {

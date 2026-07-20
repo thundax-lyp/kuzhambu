@@ -314,6 +314,32 @@ class ClassicsContentApplicationServiceImplTest {
     }
 
     @Test
+    void createExportJobShouldMarkFailedWhenArtifactExceedsSizeLimit() {
+        ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
+        WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
+        StorageFacade storageFacade = mock(StorageFacade.class);
+        ContentExportCommand command = new ContentExportCommand();
+        command.setExportKind(ClassicsExportKind.CONTENT_DATASET);
+        command.setContentType(ClassicsContentType.SANCAI_ENTRY);
+        command.setExportFormat(ClassicsExportFormat.HTML);
+        command.setScopeType(ClassicsExportScopeType.CATEGORY);
+        command.setScopeJson("{\"title\":\"export\"}");
+        when(repository.insertExportJob(any())).thenReturn(ClassicsContentExportJobId.of(900000000007L));
+        WorkerRenderDtos.WorkerRenderResponse response = renderSuccessResponse("too-large.zip");
+        response.getArtifact().setSizeBytes(50L * 1024L * 1024L + 1L);
+        when(workerRenderClient.renderClassicsExport(any())).thenReturn(response);
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, null, workerRenderClient, storageFacade, null, null, null);
+
+        ClassicsExportJobResult result = service.createExportJob(command);
+
+        assertEquals(ClassicsContentExportJobId.of(900000000007L), result.getJobId());
+        assertEquals(ClassicsExportStatus.FAILED, result.getStatus());
+        verify(repository).markExportJobFailed(ClassicsContentExportJobId.of(900000000007L));
+        verify(storageFacade, never()).upload(any(UploadStorageFacadeRequest.class));
+    }
+
+    @Test
     void createExportJobShouldRejectPrivateScopeWithoutExportPermissionBeforeWriting() {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
         WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);

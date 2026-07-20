@@ -96,6 +96,7 @@ import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -111,6 +112,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private static final String DEFAULT_TITLE = "classics-export";
     private static final String EXPORT_OWNER_TYPE = "CLASSICS_CONTENT_EXPORT_JOB";
     private static final String EXPORT_OWNER_ID_PREFIX = "export-job:";
+    private static final long MAX_RENDER_ARTIFACT_SIZE_BYTES = 50L * 1024L * 1024L;
 
     private final ClassicsContentRepository repository;
     private final WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer;
@@ -1304,7 +1306,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public ClassicsExportJobResult createExportJob(ContentExportCommand command) {
         requirePrivateExportPermission(command);
         ClassicsContentExportJob job = command.toEntity();
@@ -1779,13 +1781,33 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 || artifact.getContent().isBlank()) {
             return new byte[0];
         }
+        validateArtifactSizeBeforeDecode(artifact);
+        byte[] content;
         if ("TEXT".equalsIgnoreCase(artifact.getEncoding())) {
-            return artifact.getContent().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            content = artifact.getContent().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        } else if ("BASE64".equalsIgnoreCase(artifact.getEncoding())) {
+            content = Base64.getDecoder().decode(artifact.getContent());
+        } else {
+            throw new BizException("暂不支持的导出产物编码: " + artifact.getEncoding());
         }
-        if ("BASE64".equalsIgnoreCase(artifact.getEncoding())) {
-            return Base64.getDecoder().decode(artifact.getContent());
+        validateArtifactSize(content.length);
+        return content;
+    }
+
+    private static void validateArtifactSizeBeforeDecode(WorkerRenderDtos.Artifact artifact) {
+        if (artifact.getSizeBytes() != null) {
+            validateArtifactSize(artifact.getSizeBytes());
         }
-        throw new BizException("暂不支持的导出产物编码: " + artifact.getEncoding());
+        if ("BASE64".equalsIgnoreCase(artifact.getEncoding())
+                && artifact.getContent().length() > (MAX_RENDER_ARTIFACT_SIZE_BYTES * 4 / 3 + 4)) {
+            throw new BizException("导出产物超过大小限制");
+        }
+    }
+
+    private static void validateArtifactSize(long sizeBytes) {
+        if (sizeBytes > MAX_RENDER_ARTIFACT_SIZE_BYTES) {
+            throw new BizException("导出产物超过大小限制");
+        }
     }
 
     private boolean isSuccess(WorkerRenderDtos.WorkerRenderResponse response) {
