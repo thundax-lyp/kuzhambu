@@ -56,6 +56,7 @@ export const WangqiTimeline = ({
                 时间线
             </KuzhambuButton>
             <KuzhambuDrawer
+                testId="classics-wangqi-wangqi-timeline-drawer"
                 aria-label="王圻文档时间线"
                 destroyOnHidden
                 loading={loading}
