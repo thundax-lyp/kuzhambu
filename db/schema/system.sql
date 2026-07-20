@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS `system_role` (
     `priority` int NOT NULL DEFAULT 0,
     `remarks` varchar(512) DEFAULT NULL,
     PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_system_role_priority` (`priority`),
     KEY `idx_system_role_status` (`status`, `priority`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='后台角色表';
 
@@ -67,6 +68,7 @@ CREATE TABLE IF NOT EXISTS `system_dict` (
     `priority` int NOT NULL DEFAULT 0,
     `remarks` varchar(512) DEFAULT NULL,
     PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_system_dict_priority` (`priority`),
     KEY `idx_system_dict_type_priority` (`type`, `priority`, `id`),
     KEY `idx_system_dict_type_value` (`type`, `value`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='后台字典表';
