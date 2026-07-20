@@ -314,6 +314,32 @@ class ClassicsContentApplicationServiceImplTest {
     }
 
     @Test
+    void createExportJobShouldMarkFailedWhenArtifactExceedsSizeLimit() {
+        ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
+        WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
+        StorageFacade storageFacade = mock(StorageFacade.class);
+        ContentExportCommand command = new ContentExportCommand();
+        command.setExportKind(ClassicsExportKind.CONTENT_DATASET);
+        command.setContentType(ClassicsContentType.SANCAI_ENTRY);
+        command.setExportFormat(ClassicsExportFormat.HTML);
+        command.setScopeType(ClassicsExportScopeType.CATEGORY);
+        command.setScopeJson("{\"title\":\"export\"}");
+        when(repository.insertExportJob(any())).thenReturn(ClassicsContentExportJobId.of(900000000007L));
+        WorkerRenderDtos.WorkerRenderResponse response = renderSuccessResponse("too-large.zip");
+        response.getArtifact().setSizeBytes(50L * 1024L * 1024L + 1L);
+        when(workerRenderClient.renderClassicsExport(any())).thenReturn(response);
+        ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(
+                repository, null, null, null, workerRenderClient, storageFacade, null, null, null);
+
+        ClassicsExportJobResult result = service.createExportJob(command);
+
+        assertEquals(ClassicsContentExportJobId.of(900000000007L), result.getJobId());
+        assertEquals(ClassicsExportStatus.FAILED, result.getStatus());
+        verify(repository).markExportJobFailed(ClassicsContentExportJobId.of(900000000007L));
+        verify(storageFacade, never()).upload(any(UploadStorageFacadeRequest.class));
+    }
+
+    @Test
     void createExportJobShouldRejectPrivateScopeWithoutExportPermissionBeforeWriting() {
         ClassicsContentRepository repository = mock(ClassicsContentRepository.class);
         WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
@@ -537,15 +563,14 @@ class ClassicsContentApplicationServiceImplTest {
         boundTag.setSource(ClassicsContentSource.MANUAL);
         boundTag.setStatus(ClassicsContentTagStatus.ACTIVE);
         boundTag.setPriority(3);
-        when(repository.maxTagPriority("SANCAI_ENTRY", ClassicsContentId.of(100L)))
-                .thenReturn(2);
+        when(repository.maxTagPriority(null, null)).thenReturn(2);
         when(tagBindingSupport.bindManualTag(command, 3)).thenReturn(boundTag);
         when(repository.insertTag(boundTag)).thenReturn(ClassicsContentTagId.of(9001L));
 
         ClassicsContentTagId id = service.addTag(command);
 
         assertEquals(9001L, id.value());
-        verify(repository).maxTagPriority("SANCAI_ENTRY", ClassicsContentId.of(100L));
+        verify(repository).maxTagPriority(null, null);
         verify(tagBindingSupport).bindManualTag(command, 3);
         ArgumentCaptor<ClassicsContentTag> syncCaptor = ArgumentCaptor.forClass(ClassicsContentTag.class);
         verify(tagBindingSupport).syncTagRef(syncCaptor.capture());
@@ -1097,8 +1122,7 @@ class ClassicsContentApplicationServiceImplTest {
         }
 
         @Override
-        public int maxEntryPriorityByVolumeId(SancaiVolumeId volumeId) {
-            assertEquals(SancaiVolumeId.of(10L), volumeId);
+        public int maxEntryPriority() {
             return 7;
         }
 

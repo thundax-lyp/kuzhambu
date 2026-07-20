@@ -36,12 +36,10 @@ import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import com.thundax.kuzhambu.common.core.sort.SortablePrioritySwapSupport;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -189,165 +187,43 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sortCategories(SancaiCategorySortCommand command) {
-        List<SancaiCategoryId> orderedIdList =
-                command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
-        if (orderedIdList.isEmpty()) {
-            throw sortEmptyInput();
-        }
-
-        List<SancaiCategory> currentCategories = repository.listCategories(SortDirection.ASC);
-        if (currentCategories == null
-                || currentCategories.isEmpty()
-                || currentCategories.size() != orderedIdList.size()) {
-            throw sortMissingId();
-        }
-
-        Map<Long, Integer> indexById = new HashMap<>(currentCategories.size());
-        Map<Long, Integer> priorityById = new HashMap<>(currentCategories.size());
-        List<SancaiCategoryId> currentOrderedIds = new ArrayList<>(currentCategories.size());
-        for (int i = 0; i < currentCategories.size(); i++) {
-            SancaiCategory category = currentCategories.get(i);
-            if (category == null || category.getId() == null) {
-                throw sortDbFailure();
-            }
-            long categoryId = category.getId().value();
-            indexById.put(categoryId, i);
-            priorityById.put(categoryId, category.getPriority());
-            currentOrderedIds.add(category.getId());
-        }
-
-        validateOrderedIds(orderedIdList, indexById);
-        int temporaryPriority = repository.maxCategoryPriority() + 1;
-        for (int i = 0; i < currentOrderedIds.size(); i++) {
-            SancaiCategoryId targetId = orderedIdList.get(i);
-            SancaiCategoryId currentId = currentOrderedIds.get(i);
-            if (targetId.equals(currentId)) {
-                continue;
-            }
-
-            int targetIndex = indexById.get(targetId.value());
-            int currentPriority = priorityById.get(currentId.value());
-            int targetPriority = priorityById.get(targetId.value());
-
-            updateCategoryPriorityOrThrow(targetId, temporaryPriority++);
-            updateCategoryPriorityOrThrow(currentId, targetPriority);
-            updateCategoryPriorityOrThrow(targetId, currentPriority);
-
-            priorityById.put(targetId.value(), currentPriority);
-            priorityById.put(currentId.value(), targetPriority);
-            currentOrderedIds.set(i, targetId);
-            currentOrderedIds.set(targetIndex, currentId);
-            indexById.put(targetId.value(), i);
-            indexById.put(currentId.value(), targetIndex);
-        }
+        List<SancaiCategoryId> orderedIdList = command == null ? null : command.getOrderedIds();
+        SortablePrioritySwapSupport.sort(
+                orderedIdList,
+                repository.listCategories(SortDirection.ASC),
+                SancaiCategory::getId,
+                SancaiCategoryId::value,
+                SancaiCategory::getPriority,
+                repository::maxCategoryPriority,
+                this::updateCategoryPriorityOrThrow);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sortVolumes(SancaiVolumeSortCommand command) {
-        List<SancaiVolumeId> orderedIdList =
-                command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
-        if (orderedIdList.isEmpty()) {
-            throw sortEmptyInput();
-        }
-
-        List<SancaiVolume> currentVolumes = repository.listVolumes(SortDirection.ASC);
-        if (currentVolumes == null || currentVolumes.isEmpty() || currentVolumes.size() != orderedIdList.size()) {
-            throw sortMissingId();
-        }
-
-        Map<Long, Integer> indexById = new HashMap<>(currentVolumes.size());
-        Map<Long, Integer> priorityById = new HashMap<>(currentVolumes.size());
-        List<SancaiVolumeId> currentOrderedIds = new ArrayList<>(currentVolumes.size());
-        for (int i = 0; i < currentVolumes.size(); i++) {
-            SancaiVolume volume = currentVolumes.get(i);
-            if (volume == null || volume.getId() == null) {
-                throw sortDbFailure();
-            }
-            long volumeId = volume.getId().value();
-            indexById.put(volumeId, i);
-            priorityById.put(volumeId, volume.getPriority());
-            currentOrderedIds.add(volume.getId());
-        }
-
-        validateOrderedIds(orderedIdList, indexById);
-        int temporaryPriority = repository.maxVolumePriority() + 1;
-        for (int i = 0; i < currentOrderedIds.size(); i++) {
-            SancaiVolumeId targetId = orderedIdList.get(i);
-            SancaiVolumeId currentId = currentOrderedIds.get(i);
-            if (targetId.equals(currentId)) {
-                continue;
-            }
-
-            int targetIndex = indexById.get(targetId.value());
-            int currentPriority = priorityById.get(currentId.value());
-            int targetPriority = priorityById.get(targetId.value());
-
-            updateVolumePriorityOrThrow(targetId, temporaryPriority++);
-            updateVolumePriorityOrThrow(currentId, targetPriority);
-            updateVolumePriorityOrThrow(targetId, currentPriority);
-
-            priorityById.put(targetId.value(), currentPriority);
-            priorityById.put(currentId.value(), targetPriority);
-            currentOrderedIds.set(i, targetId);
-            currentOrderedIds.set(targetIndex, currentId);
-            indexById.put(targetId.value(), i);
-            indexById.put(currentId.value(), targetIndex);
-        }
+        List<SancaiVolumeId> orderedIdList = command == null ? null : command.getOrderedIds();
+        SortablePrioritySwapSupport.sort(
+                orderedIdList,
+                repository.listVolumes(SortDirection.ASC),
+                SancaiVolume::getId,
+                SancaiVolumeId::value,
+                SancaiVolume::getPriority,
+                repository::maxVolumePriority,
+                this::updateVolumePriorityOrThrow);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sortEntries(SancaiEntrySortCommand command) {
-        List<SancaiEntryId> orderedIdList =
-                command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
-        if (orderedIdList.isEmpty()) {
-            throw sortEmptyInput();
-        }
-
-        List<SancaiEntry> currentEntries = repository.listEntries(SortDirection.ASC);
-        if (currentEntries == null || currentEntries.isEmpty() || currentEntries.size() != orderedIdList.size()) {
-            throw sortMissingId();
-        }
-
-        Map<Long, Integer> indexById = new HashMap<>(currentEntries.size());
-        Map<Long, Integer> priorityById = new HashMap<>(currentEntries.size());
-        List<SancaiEntryId> currentOrderedIds = new ArrayList<>(currentEntries.size());
-        for (int i = 0; i < currentEntries.size(); i++) {
-            SancaiEntry entry = currentEntries.get(i);
-            if (entry == null || entry.getId() == null) {
-                throw sortDbFailure();
-            }
-            long entryId = entry.getId().value();
-            indexById.put(entryId, i);
-            priorityById.put(entryId, entry.getPriority());
-            currentOrderedIds.add(entry.getId());
-        }
-
-        validateOrderedIds(orderedIdList, indexById);
-        int temporaryPriority = repository.maxEntryPriority() + 1;
-        for (int i = 0; i < currentOrderedIds.size(); i++) {
-            SancaiEntryId targetId = orderedIdList.get(i);
-            SancaiEntryId currentId = currentOrderedIds.get(i);
-            if (targetId.equals(currentId)) {
-                continue;
-            }
-
-            int targetIndex = indexById.get(targetId.value());
-            int currentPriority = priorityById.get(currentId.value());
-            int targetPriority = priorityById.get(targetId.value());
-
-            updateEntryPriorityOrThrow(targetId, temporaryPriority++);
-            updateEntryPriorityOrThrow(currentId, targetPriority);
-            updateEntryPriorityOrThrow(targetId, currentPriority);
-
-            priorityById.put(targetId.value(), currentPriority);
-            priorityById.put(currentId.value(), targetPriority);
-            currentOrderedIds.set(i, targetId);
-            currentOrderedIds.set(targetIndex, currentId);
-            indexById.put(targetId.value(), i);
-            indexById.put(currentId.value(), targetIndex);
-        }
+        List<SancaiEntryId> orderedIdList = command == null ? null : command.getOrderedIds();
+        SortablePrioritySwapSupport.sort(
+                orderedIdList,
+                repository.listEntries(SortDirection.ASC),
+                SancaiEntry::getId,
+                SancaiEntryId::value,
+                SancaiEntry::getPriority,
+                repository::maxEntryPriority,
+                this::updateEntryPriorityOrThrow);
     }
 
     @Override
@@ -550,22 +426,6 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         repository.deleteEntryById(id);
     }
 
-    private static void validateOrderedIds(List<? extends Object> orderedIds, Map<Long, Integer> indexById) {
-        for (Object item : orderedIds) {
-            Long idValue = null;
-            if (item instanceof SancaiCategoryId) {
-                idValue = ((SancaiCategoryId) item).value();
-            } else if (item instanceof SancaiVolumeId) {
-                idValue = ((SancaiVolumeId) item).value();
-            } else if (item instanceof SancaiEntryId) {
-                idValue = ((SancaiEntryId) item).value();
-            }
-            if (idValue == null || !indexById.containsKey(idValue)) {
-                throw sortMissingId();
-            }
-        }
-    }
-
     private void updateCategoryPriorityOrThrow(SancaiCategoryId id, int priority) {
         SancaiCategory category = new SancaiCategory();
         category.setId(id);
@@ -591,20 +451,6 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
         if (repository.updateEntryPriority(entry) != 1) {
             throw sortDbFailure();
         }
-    }
-
-    private static BizException sortEmptyInput() {
-        return new BizException(
-                ErrorCode.SORT_EMPTY_INPUT.getCode(),
-                ErrorCode.SORT_EMPTY_INPUT.getMessageKey(),
-                ErrorCode.SORT_EMPTY_INPUT.getMessage());
-    }
-
-    private static BizException sortMissingId() {
-        return new BizException(
-                ErrorCode.SORT_MISSING_ID.getCode(),
-                ErrorCode.SORT_MISSING_ID.getMessageKey(),
-                ErrorCode.SORT_MISSING_ID.getMessage());
     }
 
     private static BizException sortDbFailure() {

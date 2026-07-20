@@ -128,8 +128,9 @@ public class WangqiDocumentVersionRestorer {
         if (snapshot.tags() == null) {
             return;
         }
+        int priority = contentRepository.maxTagPriority(null, null) + 1;
         for (int i = 0; i < snapshot.tags().size(); i++) {
-            insertTagFromSnapshot(snapshot.tags().get(i), document, i + 1);
+            insertTagFromSnapshot(snapshot.tags().get(i), document, priority++);
         }
     }
 
@@ -144,8 +145,9 @@ public class WangqiDocumentVersionRestorer {
         if (snapshot == null || snapshot.qaPairs() == null) {
             return;
         }
+        int priority = contentRepository.maxQaPairPriority() + 1;
         for (int i = 0; i < snapshot.qaPairs().size(); i++) {
-            insertQaPairFromSnapshot(snapshot.qaPairs().get(i), document, i + 1);
+            insertQaPairFromSnapshot(snapshot.qaPairs().get(i), document, priority++);
         }
     }
 
@@ -154,7 +156,7 @@ public class WangqiDocumentVersionRestorer {
         if (snapshot == null || document == null || document.contentId() == null) {
             return;
         }
-        int priority = snapshot.priority() == null ? fallbackPriority : snapshot.priority();
+        int priority = fallbackPriority;
         if (tagBindingSupport == null) {
             ContentTagCommand command = new ContentTagCommand(
                     null,
@@ -227,7 +229,7 @@ public class WangqiDocumentVersionRestorer {
                 parseSource(snapshot.source()));
         ClassicsContentQaPair qaPair = command.toEntity();
         qaPair.setId(null);
-        qaPair.setPriority(snapshot.priority() == null ? fallbackPriority : snapshot.priority());
+        qaPair.setPriority(fallbackPriority);
         contentRepository.insertQaPair(qaPair);
     }
 

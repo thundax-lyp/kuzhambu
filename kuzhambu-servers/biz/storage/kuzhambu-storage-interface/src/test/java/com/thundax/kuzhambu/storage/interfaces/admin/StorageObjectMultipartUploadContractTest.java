@@ -17,6 +17,7 @@ import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPa
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.MultipartUploadStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
@@ -57,6 +58,8 @@ class StorageObjectMultipartUploadContractTest {
         InitMultipartUploadRequest request = new InitMultipartUploadRequest();
         request.setUploadId("upload-1");
         request.setBusinessType("bizA");
+        request.setOwnerType(StorageOwnerType.USER.value());
+        request.setOwnerId("owner-1");
         request.setOriginalFilename("sancai.png");
         request.setMimeType("image/png");
         request.setBucketName("bucket-a");
@@ -71,23 +74,25 @@ class StorageObjectMultipartUploadContractTest {
         InitMultipartUploadCommand command = commandRef.get();
         assertEquals("upload-1", command.getUploadId());
         assertEquals("bizA", command.getBusinessType());
+        assertEquals(StorageOwnerType.USER, command.getOwnerType());
+        assertEquals("owner-1", command.getOwnerId());
         assertEquals("sancai.png", command.getOriginalFilename());
         assertEquals("image/png", command.getMimeType());
-        assertEquals("bucket-a", command.getBucketName());
-        assertEquals("path/sancai", command.getObjectKey());
-        assertEquals("provider-1", command.getProviderUploadId());
+        assertNull(command.getBucketName());
+        assertNull(command.getObjectKey());
+        assertNull(command.getProviderUploadId());
         assertEquals(100L, command.getTotalSize());
         assertEquals(5L, command.getPartSize());
 
         assertEquals("upload-1", json.get("uploadId").asText());
-        assertEquals("provider-1", json.get("providerUploadId").asText());
+        assertEquals(false, json.has("providerUploadId"));
         assertEquals(false, json.has("ownerType"));
         assertEquals(false, json.has("ownerId"));
         assertEquals("bizA", json.get("businessType").asText());
         assertEquals("sancai.png", json.get("originalFilename").asText());
         assertEquals("image/png", json.get("mimeType").asText());
-        assertEquals("bucket-a", json.get("bucketName").asText());
-        assertEquals("path/sancai", json.get("objectKey").asText());
+        assertEquals(false, json.has("bucketName"));
+        assertEquals(false, json.has("objectKey"));
         assertEquals(100L, json.get("totalSize").asLong());
         assertEquals(5L, json.get("partSize").asLong());
         assertEquals(0, json.get("uploadedPartCount").asInt());
@@ -162,10 +167,10 @@ class StorageObjectMultipartUploadContractTest {
 
         CompleteMultipartUploadCommand command = commandRef.get();
         assertEquals("upload-2", command.getUploadId());
-        assertEquals("bucket-b", command.getBucketName());
-        assertEquals("folder/sancai.bin", command.getObjectKey());
-        assertEquals(120L, command.getSize());
-        assertEquals("/api/storage/object/22/content", command.getAccessEndpoint());
+        assertNull(command.getBucketName());
+        assertNull(command.getObjectKey());
+        assertNull(command.getSize());
+        assertNull(command.getAccessEndpoint());
 
         assertEquals("22", json.get("id").asText());
         assertEquals("upload-2", json.get("uploadId").asText());

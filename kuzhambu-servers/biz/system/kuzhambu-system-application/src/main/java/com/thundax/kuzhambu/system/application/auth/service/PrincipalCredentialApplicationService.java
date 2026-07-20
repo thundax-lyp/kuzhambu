@@ -26,4 +26,7 @@ public interface PrincipalCredentialApplicationService {
 
     @LayerPublicApi(reason = "统一认证主体登录时更新凭据验证状态的业务入口")
     void changeVerifyState(PrincipalCredentialCommand command);
+
+    @LayerPublicApi(reason = "统一认证主体登录失败时记录凭据失败次数的业务入口")
+    PrincipalCredential recordFailure(PrincipalCredentialCommand command);
 }

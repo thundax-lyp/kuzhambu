@@ -18,12 +18,14 @@ import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalRefres
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalRefreshTokenId;
 import com.thundax.kuzhambu.system.domain.auth.repository.PrincipalRefreshTokenRepository;
 import io.lettuce.core.RedisClient;
+import io.lettuce.core.SetArgs;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 import jakarta.annotation.PreDestroy;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,7 +41,9 @@ public class PrincipalRefreshTokenRepositoryImpl implements PrincipalRefreshToke
     private static final String TOKEN_HASH_PREFIX = CACHE_SECTION + "HASH_";
     private static final String TOKEN_CODE_PREFIX = CACHE_SECTION + "TOKEN_CODE_";
     private static final String PRINCIPAL_INDEX_PREFIX = CACHE_SECTION + "PRINCIPAL_";
+    private static final String TOKEN_LOCK_PREFIX = CACHE_SECTION + "LOCK_";
     private static final int SAFETY_SECONDS = 5;
+    private static final int TOKEN_LOCK_SECONDS = 5;
 
     private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
     private final RedisClient redisClient;
@@ -129,6 +133,33 @@ public class PrincipalRefreshTokenRepositoryImpl implements PrincipalRefreshToke
         Assert.notNull(refreshToken.getStatus(), "status can not be null");
         putToken(refreshToken, tokenHash);
         return 1;
+    }
+
+    @Override
+    public int markUsedIfActive(PrincipalRefreshToken refreshToken, Date now) {
+        Assert.notNull(refreshToken, "refreshToken can not be null");
+        String tokenHash = tokenHashById(refreshToken.getId());
+        if (StringUtils.isBlank(tokenHash)) {
+            return 0;
+        }
+        String lockKey = TOKEN_LOCK_PREFIX + tokenHash;
+        String lockValue = UUID.randomUUID().toString();
+        String locked = redis().set(lockKey, lockValue, SetArgs.Builder.nx().ex(TOKEN_LOCK_SECONDS));
+        if (!StringUtils.equals("OK", locked)) {
+            return 0;
+        }
+        try {
+            PrincipalRefreshToken latestToken = getByTokenHash(tokenHash);
+            if (latestToken == null || !latestToken.canRefresh(now)) {
+                return 0;
+            }
+            latestToken.markUsed();
+            return updateStatus(latestToken);
+        } finally {
+            if (StringUtils.equals(lockValue, redis().get(lockKey))) {
+                redis().del(lockKey);
+            }
+        }
     }
 
     private void putToken(PrincipalRefreshToken refreshToken, String tokenHash) {

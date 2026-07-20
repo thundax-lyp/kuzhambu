@@ -86,15 +86,19 @@ public class PrincipalAuthApplicationServiceImpl implements PrincipalAuthApplica
             credential.setFailedLimit(passwordPolicy.getMaxFailedCount());
         }
         Date lockedUntil = new Date(now.getTime() + passwordPolicy.getLockSeconds() * 1000L);
-        credential.markFailed(lockedUntil);
-        principalCredentialService.changeVerifyState(new PrincipalCredentialCommand(credential));
-        if (credential.isLocked(now)) {
+        credential.setLockedUntil(lockedUntil);
+        PrincipalCredential latestCredential =
+                principalCredentialService.recordFailure(new PrincipalCredentialCommand(credential));
+        if (latestCredential == null) {
+            throw new InvalidPasswordException();
+        }
+        if (latestCredential.isLocked(now)) {
             throw new BizException("帐号已被锁定，请等待（" + passwordPolicy.getLockSeconds() + "）秒后自动解锁!");
         }
         throw new BizException("密码输入错误"
-                + credential.getFailedLimit()
+                + latestCredential.getFailedLimit()
                 + "次后将被锁定，剩余"
-                + (credential.getFailedLimit() - credential.getFailedCount())
+                + Math.max(latestCredential.getFailedLimit() - latestCredential.getFailedCount(), 0)
                 + "次");
     }
 

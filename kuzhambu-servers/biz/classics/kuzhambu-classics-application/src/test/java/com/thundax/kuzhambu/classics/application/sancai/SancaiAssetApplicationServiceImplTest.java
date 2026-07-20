@@ -500,6 +500,28 @@ class SancaiAssetApplicationServiceImplTest {
     }
 
     @Test
+    void requestShowcaseShouldMarkFailedWhenArtifactExceedsSizeLimit() {
+        SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
+        WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);
+        StorageFacade storageFacade = mock(StorageFacade.class);
+        SancaiAssetApplicationServiceImpl service =
+                new SancaiAssetApplicationServiceImpl(repository, workerRenderClient, storageFacade, null);
+        SancaiShowcaseId showcaseId = SancaiShowcaseId.of(9002L);
+        WorkerRenderDtos.WorkerRenderResponse response = successRenderResponse();
+        response.getArtifact().setSizeBytes(50L * 1024L * 1024L + 1L);
+        when(repository.insertShowcase(org.mockito.ArgumentMatchers.any())).thenReturn(showcaseId);
+        when(workerRenderClient.renderSancaiShowcase(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(response);
+
+        SancaiShowcaseId result = service.requestShowcase(
+                new SancaiShowcaseCommand(null, SancaiShowcaseStatus.REQUESTED, "{\"title\":\"demo\"}", null, 0, null));
+
+        assertEquals(9002L, result.value());
+        verify(repository).markShowcaseFailed(showcaseId, "INTERNAL_FAILURE", "三才静态展示生成失败");
+        verify(storageFacade, never()).upload(org.mockito.ArgumentMatchers.any(UploadStorageFacadeRequest.class));
+    }
+
+    @Test
     void requestShowcaseShouldMarkFailedWhenWorkerFails() {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
         WorkerRenderClient workerRenderClient = mock(WorkerRenderClient.class);

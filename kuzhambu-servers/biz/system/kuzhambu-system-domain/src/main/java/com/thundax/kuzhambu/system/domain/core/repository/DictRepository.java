@@ -18,7 +18,7 @@ public interface DictRepository {
 
     int maxPriority();
 
-    List<Dict> listByType(String type, SortDirection sortDirection);
+    List<Dict> list(SortDirection sortDirection);
 
     DictId insert(Dict dict);
 

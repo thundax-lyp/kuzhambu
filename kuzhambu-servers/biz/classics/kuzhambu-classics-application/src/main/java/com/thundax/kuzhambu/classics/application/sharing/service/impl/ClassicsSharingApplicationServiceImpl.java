@@ -53,6 +53,7 @@ import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import com.thundax.kuzhambu.common.core.sort.SortablePrioritySwapSupport;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
 import com.thundax.kuzhambu.storage.facade.request.OpenStorageFacadeRequest;
@@ -60,10 +61,8 @@ import com.thundax.kuzhambu.storage.facade.response.OpenStorageFacadeResponse;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -77,6 +76,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     public static final String PRIVATE_SHARE_AUTH_REQUIRED_CODE = "CLASSICS-14002";
     private static final String SHARE_VIEW_PERMISSION = "classics:sharing:view";
+    private static final String PRIVATE_CONTENT_UNCONFIRMED = "PRIVATE_CONTENT_UNCONFIRMED";
 
     private final ClassicsSharingRepository repository;
     private final ClassicsContentApplicationService contentApplicationService;
@@ -183,9 +183,6 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
                 || command.getTargets().isEmpty()) {
             return ClassicsBatchOperationResult.empty();
         }
-        if (!command.isPrivateContentConfirmed()) {
-            ensureNoPrivateBatchTarget(command.getTargets());
-        }
         List<ClassicsBatchOperationItemResult> successes = new ArrayList<>();
         List<ClassicsBatchOperationItemResult> failures = new ArrayList<>();
         Set<String> targetKeys = new HashSet<>();
@@ -200,6 +197,11 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
             if (targetKey == null || !targetKeys.add(targetKey)) {
                 failures.add(
                         ClassicsBatchOperationItemResult.failure(contentType, contentId, "DUPLICATE_TARGET", "重复分享目标"));
+                continue;
+            }
+            if (isUnconfirmedPrivatePublicShare(target, command.getVisibility(), command.isPrivateContentConfirmed())) {
+                failures.add(ClassicsBatchOperationItemResult.failure(
+                        contentType, contentId, PRIVATE_CONTENT_UNCONFIRMED, "私有古籍内容不允许公开分享"));
                 continue;
             }
             if (!canShareTarget(
@@ -452,60 +454,15 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sortTargets(ClassicsShareTargetSortCommand command) {
-        List<ClassicsShareTargetId> orderedIdList =
-                command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
-        if (orderedIdList.isEmpty()) {
-            throw sortEmptyInput();
-        }
-
-        List<ClassicsShareTarget> currentTargets = repository.listTargets(SortDirection.ASC);
-        if (currentTargets == null || currentTargets.isEmpty() || currentTargets.size() != orderedIdList.size()) {
-            throw sortMissingId();
-        }
-
-        Map<Long, Integer> indexById = new HashMap<>(currentTargets.size());
-        Map<Long, Integer> priorityById = new HashMap<>(currentTargets.size());
-        List<ClassicsShareTargetId> currentOrderedIds = new ArrayList<>(currentTargets.size());
-        for (int i = 0; i < currentTargets.size(); i++) {
-            ClassicsShareTarget target = currentTargets.get(i);
-            if (target == null || target.getId() == null) {
-                throw sortDbFailure();
-            }
-            long targetId = target.getId().value();
-            indexById.put(targetId, i);
-            priorityById.put(targetId, target.getPriority());
-            currentOrderedIds.add(target.getId());
-        }
-
-        for (ClassicsShareTargetId orderedId : orderedIdList) {
-            if (orderedId == null || orderedId.value() == null || !indexById.containsKey(orderedId.value())) {
-                throw sortMissingId();
-            }
-        }
-
-        int temporaryPriority = repository.maxTargetPriority() + 1;
-        for (int i = 0; i < currentOrderedIds.size(); i++) {
-            ClassicsShareTargetId targetId = orderedIdList.get(i);
-            ClassicsShareTargetId currentId = currentOrderedIds.get(i);
-            if (targetId.equals(currentId)) {
-                continue;
-            }
-
-            int targetIndex = indexById.get(targetId.value());
-            int currentPriority = priorityById.get(currentId.value());
-            int targetPriority = priorityById.get(targetId.value());
-
-            updateTargetPriorityOrThrow(targetId, temporaryPriority++);
-            updateTargetPriorityOrThrow(currentId, targetPriority);
-            updateTargetPriorityOrThrow(targetId, currentPriority);
-
-            priorityById.put(targetId.value(), currentPriority);
-            priorityById.put(currentId.value(), targetPriority);
-            currentOrderedIds.set(i, targetId);
-            currentOrderedIds.set(targetIndex, currentId);
-            indexById.put(targetId.value(), i);
-            indexById.put(currentId.value(), targetIndex);
-        }
+        List<ClassicsShareTargetId> orderedIdList = command == null ? null : command.getOrderedIds();
+        SortablePrioritySwapSupport.sort(
+                orderedIdList,
+                repository.listTargets(SortDirection.ASC),
+                ClassicsShareTarget::getId,
+                ClassicsShareTargetId::value,
+                ClassicsShareTarget::getPriority,
+                repository::maxTargetPriority,
+                this::updateTargetPriorityOrThrow);
     }
 
     @Override
@@ -683,19 +640,6 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         persistVersionMarker(content);
     }
 
-    private void ensureNoPrivateBatchTarget(List<ShareTargetCreateCommand> targets) {
-        for (ShareTargetCreateCommand target : targets) {
-            if (target == null || target.getContentType() == null || target.getContentId() == null) {
-                continue;
-            }
-            Versionable content =
-                    loadContent(target.getContentType(), target.getContentId().value());
-            if (content != null && visibilityOf(content) != ClassicsSharedContentVisibility.PUBLIC) {
-                throw privateContentCannotBePublicShared();
-            }
-        }
-    }
-
     private static void ensureUniqueTargets(List<ShareTargetCreateCommand> targets) {
         if (targets == null || targets.isEmpty()) {
             return;
@@ -746,6 +690,23 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
             return true;
         }
         return ClassicsContentPermissionSupport.canShare(content.contentType(), operatorPermissions);
+    }
+
+    private boolean isUnconfirmedPrivatePublicShare(
+            ShareTargetCreateCommand target, ClassicsShareVisibility shareVisibility, boolean allowPrivateContent) {
+        if (shareVisibility != ClassicsShareVisibility.PUBLIC
+                || allowPrivateContent
+                || target == null
+                || target.getContentType() == null
+                || target.getContentId() == null) {
+            return false;
+        }
+        Versionable content =
+                loadContent(target.getContentType(), target.getContentId().value());
+        if (content == null) {
+            throw shareContentNotFound();
+        }
+        return visibilityOf(content) != ClassicsSharedContentVisibility.PUBLIC;
     }
 
     private static boolean requiresPrivateSharePermission(
@@ -913,20 +874,6 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
 
     private static BizException permissionDenied() {
         return new BizException("PERMISSION_DENIED");
-    }
-
-    private static BizException sortEmptyInput() {
-        return new BizException(
-                ErrorCode.SORT_EMPTY_INPUT.getCode(),
-                ErrorCode.SORT_EMPTY_INPUT.getMessageKey(),
-                ErrorCode.SORT_EMPTY_INPUT.getMessage());
-    }
-
-    private static BizException sortMissingId() {
-        return new BizException(
-                ErrorCode.SORT_MISSING_ID.getCode(),
-                ErrorCode.SORT_MISSING_ID.getMessageKey(),
-                ErrorCode.SORT_MISSING_ID.getMessage());
     }
 
     private static BizException sortDbFailure() {

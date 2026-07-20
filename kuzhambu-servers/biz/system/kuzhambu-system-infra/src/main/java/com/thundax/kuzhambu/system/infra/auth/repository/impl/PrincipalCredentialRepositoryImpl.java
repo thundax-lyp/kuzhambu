@@ -109,6 +109,12 @@ public class PrincipalCredentialRepositoryImpl implements PrincipalCredentialRep
                         .set(PrincipalCredentialDO::getLastVerifiedAt, dataObject.getLastVerifiedAt()));
     }
 
+    @Override
+    public int recordFailure(PrincipalCredential principalCredential) {
+        PrincipalCredentialDO dataObject = PrincipalCredentialPersistenceAssembler.toObject(principalCredential);
+        return mapper.recordFailure(dataObject.getId(), dataObject.getFailedLimit(), dataObject.getLockedUntil());
+    }
+
     private LambdaQueryWrapper<PrincipalCredentialDO> principalKeyWrapper(PrincipalKey principalKey) {
         LambdaQueryWrapper<PrincipalCredentialDO> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(

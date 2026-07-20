@@ -16,6 +16,7 @@ import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContent
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentSource;
+import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportStatus;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentExportJobId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
@@ -328,6 +329,31 @@ public class ClassicsContentRepositoryImpl implements ClassicsContentRepository 
                         ClassicsContentQaPairDO::getContentId,
                         ClassicsContentIdCodec.toValue(contentId))
                 .eq(ClassicsContentQaPairDO::getSource, ClassicsContentSource.AI.value()));
+    }
+
+    @Override
+    public void lockContentForVersion(ClassicsContentType contentType, ClassicsContentId contentId) {
+        Long id = ClassicsContentIdCodec.toValue(contentId);
+        if (contentType == null || id == null) {
+            return;
+        }
+        switch (contentType) {
+            case SANCAI_ENTRY ->
+                sancaiMapper.selectObjs(new QueryWrapper<SancaiEntryDO>()
+                        .select("id")
+                        .eq("id", id)
+                        .last("for update"));
+            case WANGQI_DOCUMENT ->
+                wangqiDocumentMapper.selectObjs(new QueryWrapper<WangqiDocumentDO>()
+                        .select("id")
+                        .eq("id", id)
+                        .last("for update"));
+            case MING_CUSTOMS ->
+                mingCustomsEntryMapper.selectObjs(new QueryWrapper<MingCustomsEntryDO>()
+                        .select("id")
+                        .eq("id", id)
+                        .last("for update"));
+        }
     }
 
     public List<ClassicsContentVersion> listVersions(String contentType, ClassicsContentId contentId) {

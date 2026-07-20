@@ -9,7 +9,9 @@ import java.io.IOException;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -41,13 +43,18 @@ public class StorageOrphanObjectCleanupScheduler {
     public int cleanupExpiredOrphans() {
         Instant threshold = Instant.now(clock).minus(ORPHAN_ALIVE_TIME);
         List<StoredObject> activeOrphans = repository.listExpiredActiveUnreferenced(threshold);
+        Set<StoredObjectId> markedThisRun = new HashSet<>();
         for (StoredObject orphan : activeOrphans) {
             orphan.setObjectStatus(com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus.DELETED);
             repository.updateObjectStatus(orphan);
+            markedThisRun.add(orphan.getId());
         }
         List<StoredObject> candidates = repository.listExpiredDeletedUnreferenced(threshold);
         int count = 0;
         for (StoredObject candidate : candidates) {
+            if (markedThisRun.contains(candidate.getId())) {
+                continue;
+            }
             delete(candidate);
             count += repository.physicalDeleteById(candidate.getId());
         }

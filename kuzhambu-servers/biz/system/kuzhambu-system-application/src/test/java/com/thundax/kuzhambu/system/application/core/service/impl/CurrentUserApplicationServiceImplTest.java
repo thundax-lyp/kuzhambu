@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.system.application.core.service.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
@@ -10,6 +11,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
 import com.thundax.kuzhambu.storage.facade.request.ListStorageFacadeRequest;
@@ -22,10 +24,20 @@ import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalCredentialApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
 import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserAvatarCommand;
+import com.thundax.kuzhambu.system.application.core.query.CurrentUserQuery;
+import com.thundax.kuzhambu.system.application.core.query.MenuQuery;
+import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
+import com.thundax.kuzhambu.system.application.core.query.UserQuery;
 import com.thundax.kuzhambu.system.application.core.result.UserAvatarResult;
 import com.thundax.kuzhambu.system.application.core.service.MenuApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.RoleApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
+import com.thundax.kuzhambu.system.domain.core.model.enums.UserPrivilege;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.AccessRank;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.MenuId;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -38,6 +50,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 class CurrentUserApplicationServiceImplTest {
+
+    private static final int TOO_LARGE_AVATAR_BYTES = 5 * 1024 * 1024 + 1;
 
     @Test
     void getAvatarInputStreamShouldUseStorageFacade() throws Exception {
@@ -115,6 +129,25 @@ class CurrentUserApplicationServiceImplTest {
     }
 
     @Test
+    void changeAvatarShouldRejectOversizedUploadBeforeDecoding() {
+        StorageFacade storageFacade = mock(StorageFacade.class);
+        CurrentUserApplicationServiceImpl service = service(storageFacade);
+
+        when(storageFacade.list(any(ListStorageFacadeRequest.class)))
+                .thenReturn(ListStorageFacadeResponse.builder()
+                        .storedObjects(List.of())
+                        .build());
+
+        byte[] tooLargeBytes = new byte[TOO_LARGE_AVATAR_BYTES];
+        assertThrows(
+                BizException.class,
+                () -> service.changeAvatar(new ChangeCurrentUserAvatarCommand(
+                        UserId.of(100L), new ByteArrayInputStream(tooLargeBytes), "avatar.png")));
+
+        verify(storageFacade, never()).upload(any(UploadStorageFacadeRequest.class));
+    }
+
+    @Test
     void removeAvatarShouldUseStorageFacade() {
         StorageFacade storageFacade = mock(StorageFacade.class);
         CurrentUserApplicationServiceImpl service = service(storageFacade);
@@ -134,14 +167,61 @@ class CurrentUserApplicationServiceImplTest {
         assertEquals(7001L, removeCaptor.getValue().getStorageObjectId());
     }
 
+    @Test
+    void listAccessibleMenusShouldBatchLoadMenusForNormalUser() {
+        UserApplicationService userService = mock(UserApplicationService.class);
+        RoleApplicationService roleService = mock(RoleApplicationService.class);
+        MenuApplicationService menuService = mock(MenuApplicationService.class);
+        CurrentUserApplicationServiceImpl service =
+                service(userService, roleService, menuService, mock(StorageFacade.class));
+
+        Role role = new Role();
+        role.setId(RoleId.of(1L));
+        Menu grantedMenu = menu(10L, 3);
+        Menu deniedMenu = menu(11L, 8);
+        when(userService.listUserRoles(any(UserQuery.class))).thenReturn(List.of(role));
+        when(roleService.listRoleMenus(any(RoleQuery.class))).thenReturn(List.of(grantedMenu, deniedMenu));
+        when(menuService.list(any(MenuQuery.class))).thenReturn(List.of(grantedMenu, deniedMenu));
+
+        CurrentUserQuery query = new CurrentUserQuery();
+        query.setUserId(UserId.of(100L));
+        query.setPrivilege(UserPrivilege.NORMAL);
+        query.setRank(AccessRank.of(5));
+
+        List<Menu> menus = service.listAccessibleMenus(query);
+
+        assertEquals(List.of(grantedMenu), menus);
+        verify(menuService).list(any(MenuQuery.class));
+        verify(menuService, never()).get(any(MenuId.class));
+    }
+
     private static CurrentUserApplicationServiceImpl service(StorageFacade storageFacade) {
-        return new CurrentUserApplicationServiceImpl(
+        return service(
                 mock(UserApplicationService.class),
                 mock(RoleApplicationService.class),
                 mock(MenuApplicationService.class),
+                storageFacade);
+    }
+
+    private static CurrentUserApplicationServiceImpl service(
+            UserApplicationService userService,
+            RoleApplicationService roleService,
+            MenuApplicationService menuService,
+            StorageFacade storageFacade) {
+        return new CurrentUserApplicationServiceImpl(
+                userService,
+                roleService,
+                menuService,
                 mock(PrincipalIdentityApplicationService.class),
                 mock(PrincipalCredentialApplicationService.class),
                 storageFacade);
+    }
+
+    private static Menu menu(long id, int rank) {
+        Menu menu = new Menu();
+        menu.setId(MenuId.of(id));
+        menu.setRank(AccessRank.of(rank));
+        return menu;
     }
 
     private static StorageObjectFacadeDto avatar(long userId, long storageObjectId) {

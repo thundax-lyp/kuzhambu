@@ -103,8 +103,8 @@ public class DictRepositoryImpl implements DictRepository {
     }
 
     @Override
-    public List<Dict> listByType(String type, SortDirection sortDirection) {
-        return DictPersistenceAssembler.toDomainList(mapper.selectList(buildListByTypeWrapper(type, sortDirection)));
+    public List<Dict> list(SortDirection sortDirection) {
+        return DictPersistenceAssembler.toDomainList(mapper.selectList(buildSortWrapper(sortDirection)));
     }
 
     @Override
@@ -178,11 +178,8 @@ public class DictRepositoryImpl implements DictRepository {
         return wrapper;
     }
 
-    private QueryWrapper<DictDO> buildListByTypeWrapper(String type, SortDirection sortDirection) {
+    private QueryWrapper<DictDO> buildSortWrapper(SortDirection sortDirection) {
         QueryWrapper<DictDO> wrapper = new QueryWrapper<>();
-        if (StringUtils.isNotBlank(type)) {
-            wrapper.eq("type", type);
-        }
         if (SortDirection.DESC == sortDirection) {
             wrapper.orderByDesc("priority");
         } else {

@@ -6,6 +6,7 @@ import java.util.Arrays;
 public enum MultipartUploadStatus {
     INITIATED,
     UPLOADING,
+    COMPLETING,
     COMPLETED,
     ABORTED;
 

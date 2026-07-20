@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.system.application.audit.service.impl;
 
 import com.thundax.kuzhambu.common.audit.model.enums.AuditAction;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
@@ -91,7 +92,7 @@ public class AuditApplicationServiceImpl implements AuditApplicationService {
             meta = new AuditMeta();
             meta.setObjectType(command.getObjectType());
             meta.setObjectId(command.getObjectId());
-            meta.setVersion(1L);
+            meta.setVersion(0L);
             meta.setLastAction(log.getAction());
             meta.setLastOperatorType(log.getOperatorType());
             meta.setLastOperatorId(log.getOperatorId());
@@ -114,7 +115,9 @@ public class AuditApplicationServiceImpl implements AuditApplicationService {
         if (meta.getCreatedLogId() == null) {
             meta.setCreatedLogId(logId);
         }
-        auditMetaRepository.update(meta);
+        if (auditMetaRepository.updateIfVersion(meta, previousVersion) != 1) {
+            throw new BizException("审计版本已被并发更新，请重试");
+        }
         return logId;
     }
 

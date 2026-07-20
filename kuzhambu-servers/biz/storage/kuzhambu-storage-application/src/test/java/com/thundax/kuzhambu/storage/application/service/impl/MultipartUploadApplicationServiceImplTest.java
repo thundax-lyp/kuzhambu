@@ -3,13 +3,19 @@ package com.thundax.kuzhambu.storage.application.service.impl;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.application.service.command.CompleteMultipartUploadCommand;
+import com.thundax.kuzhambu.storage.application.service.command.InitMultipartUploadCommand;
+import com.thundax.kuzhambu.storage.application.service.command.UploadMultipartPartCommand;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
@@ -33,6 +39,22 @@ class MultipartUploadApplicationServiceImplTest {
     private static final String PART_PATH_3 = "multipart/upload-1/3.part";
 
     @Test
+    void initShouldRejectMissingOwner() {
+        MultipartUploadRepository multipartUploadRepository = mock(MultipartUploadRepository.class);
+        MultipartUploadApplicationServiceImpl service = new MultipartUploadApplicationServiceImpl(
+                multipartUploadRepository,
+                mock(StoredObjectContentRepository.class),
+                mock(StorageApplicationService.class));
+
+        assertThrows(
+                RuntimeException.class,
+                () -> service.init(new InitMultipartUploadCommand(
+                        UPLOAD_ID, null, null, "biz", "multipart-file.txt", "text/plain", null, null, null, 9L, 3L)));
+
+        verify(multipartUploadRepository, never()).insertMultipartSession(any());
+    }
+
+    @Test
     void completeShouldMergeMultipartPartsAndPersistAsSingleObject() throws Exception {
         MultipartUploadRepository multipartUploadRepository = mock(MultipartUploadRepository.class);
         StoredObjectContentRepository contentRepository = mock(StoredObjectContentRepository.class);
@@ -41,6 +63,9 @@ class MultipartUploadApplicationServiceImplTest {
                 multipartUploadRepository, contentRepository, storageApplicationService);
 
         when(multipartUploadRepository.getMultipartSessionByUploadId(UPLOAD_ID)).thenReturn(session());
+        when(multipartUploadRepository.updateMultipartSessionStatus(
+                        eq(UPLOAD_ID), eq(MultipartUploadStatus.UPLOADING), eq(MultipartUploadStatus.COMPLETING)))
+                .thenReturn(1);
         when(multipartUploadRepository.listMultipartParts(UPLOAD_ID)).thenReturn(parts());
 
         AtomicReference<byte[]> savedBytes = new AtomicReference<>();
@@ -74,6 +99,44 @@ class MultipartUploadApplicationServiceImplTest {
         assertArrayEquals("onetwothree".getBytes(), savedBytes.get());
         verify(contentRepository).save(any(), any());
         verify(storageApplicationService).create(any());
+        verify(contentRepository, times(3)).delete(any());
+        verify(multipartUploadRepository).deleteMultipartParts(UPLOAD_ID);
+    }
+
+    @Test
+    void completeShouldRejectWhenCompletingClaimFails() throws Exception {
+        MultipartUploadRepository multipartUploadRepository = mock(MultipartUploadRepository.class);
+        StoredObjectContentRepository contentRepository = mock(StoredObjectContentRepository.class);
+        StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
+        MultipartUploadApplicationServiceImpl service = new MultipartUploadApplicationServiceImpl(
+                multipartUploadRepository, contentRepository, storageApplicationService);
+        when(multipartUploadRepository.getMultipartSessionByUploadId(UPLOAD_ID)).thenReturn(session());
+        when(multipartUploadRepository.updateMultipartSessionStatus(
+                        eq(UPLOAD_ID), eq(MultipartUploadStatus.UPLOADING), eq(MultipartUploadStatus.COMPLETING)))
+                .thenReturn(0);
+
+        assertThrows(
+                RuntimeException.class,
+                () -> service.complete(new CompleteMultipartUploadCommand(UPLOAD_ID, null, null, null, null)));
+
+        verify(contentRepository, never()).save(any(), any());
+        verify(storageApplicationService, never()).create(any());
+    }
+
+    @Test
+    void uploadPartShouldRejectSizeOutsideSessionRule() throws Exception {
+        MultipartUploadRepository multipartUploadRepository = mock(MultipartUploadRepository.class);
+        StoredObjectContentRepository contentRepository = mock(StoredObjectContentRepository.class);
+        MultipartUploadApplicationServiceImpl service = new MultipartUploadApplicationServiceImpl(
+                multipartUploadRepository, contentRepository, mock(StorageApplicationService.class));
+        when(multipartUploadRepository.getMultipartSessionByUploadId(UPLOAD_ID)).thenReturn(session());
+
+        assertThrows(
+                RuntimeException.class,
+                () -> service.uploadPart(new UploadMultipartPartCommand(
+                        UPLOAD_ID, 1, "etag-1", 4L, new ByteArrayInputStream("data".getBytes()))));
+
+        verify(contentRepository, never()).save(any(), any());
     }
 
     private static MultipartUploadSession session() {

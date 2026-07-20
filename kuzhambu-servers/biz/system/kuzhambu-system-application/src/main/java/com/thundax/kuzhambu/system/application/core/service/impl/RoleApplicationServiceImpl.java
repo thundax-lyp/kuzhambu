@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import com.thundax.kuzhambu.common.core.sort.SortablePrioritySwapSupport;
 import com.thundax.kuzhambu.system.application.core.command.AssignRoleUsersCommand;
 import com.thundax.kuzhambu.system.application.core.command.ChangeRoleInfoCommand;
 import com.thundax.kuzhambu.system.application.core.command.ChangeRoleStatusCommand;
@@ -23,9 +24,7 @@ import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
 import com.thundax.kuzhambu.system.domain.core.repository.RoleRepository;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
@@ -39,14 +38,12 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
     private static final int PRIORITY_STEP = 1;
 
     private final RoleRepository dao;
-    private final List<CacheChangedListener> cacheChangedListeners;
+    private final ObjectProvider<List<CacheChangedListener>> cacheChangedListeners;
 
     public RoleApplicationServiceImpl(
             RoleRepository dao, ObjectProvider<List<CacheChangedListener>> cacheChangedListeners) {
         this.dao = dao;
-        this.cacheChangedListeners = cacheChangedListeners == null
-                ? Collections.emptyList()
-                : cacheChangedListeners.getIfAvailable(Collections::emptyList);
+        this.cacheChangedListeners = cacheChangedListeners;
     }
 
     public Role get(RoleId id) {
@@ -94,96 +91,15 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
                     ErrorCode.SORT_EMPTY_INPUT.getMessage());
         }
 
-        List<Role> selectedRoles = dao.listByIds(toValues(orderedIdList));
-        if (selectedRoles == null || selectedRoles.isEmpty()) {
-            throw new BizException(
-                    ErrorCode.SORT_MISSING_ID.getCode(),
-                    ErrorCode.SORT_MISSING_ID.getMessageKey(),
-                    ErrorCode.SORT_MISSING_ID.getMessage());
-        }
-
-        for (Role role : selectedRoles) {
-            if (role == null || role.getId() == null) {
-                throw new BizException(
-                        ErrorCode.SORT_DB_FAILURE.getCode(),
-                        ErrorCode.SORT_DB_FAILURE.getMessageKey(),
-                        ErrorCode.SORT_DB_FAILURE.getMessage());
-            }
-        }
-
-        for (RoleId orderedId : orderedIdList) {
-            if (orderedId == null || orderedId.value() == null) {
-                throw new BizException(
-                        ErrorCode.SORT_MISSING_ID.getCode(),
-                        ErrorCode.SORT_MISSING_ID.getMessageKey(),
-                        ErrorCode.SORT_MISSING_ID.getMessage());
-            }
-        }
-
         List<Role> currentRoles = dao.list(SortDirection.ASC);
-        if (currentRoles == null || currentRoles.isEmpty()) {
-            throw new BizException(
-                    ErrorCode.SORT_MISSING_ID.getCode(),
-                    ErrorCode.SORT_MISSING_ID.getMessageKey(),
-                    ErrorCode.SORT_MISSING_ID.getMessage());
-        }
-        if (currentRoles.size() != orderedIdList.size()) {
-            throw new BizException(
-                    ErrorCode.SORT_MISSING_ID.getCode(),
-                    ErrorCode.SORT_MISSING_ID.getMessageKey(),
-                    ErrorCode.SORT_MISSING_ID.getMessage());
-        }
-
-        Map<Long, Integer> indexById = new HashMap<>(currentRoles.size());
-        Map<Long, Integer> priorityById = new HashMap<>(currentRoles.size());
-        List<RoleId> currentOrderedIds = new ArrayList<>(currentRoles.size());
-        for (int i = 0; i < currentRoles.size(); i++) {
-            Role role = currentRoles.get(i);
-            if (role == null || role.getId() == null) {
-                throw new BizException(
-                        ErrorCode.SORT_DB_FAILURE.getCode(),
-                        ErrorCode.SORT_DB_FAILURE.getMessageKey(),
-                        ErrorCode.SORT_DB_FAILURE.getMessage());
-            }
-            long roleId = role.getId().value();
-            indexById.put(roleId, i);
-            priorityById.put(roleId, role.getPriority());
-            currentOrderedIds.add(role.getId());
-        }
-
-        for (RoleId orderedId : orderedIdList) {
-            if (!indexById.containsKey(orderedId.value())) {
-                throw new BizException(
-                        ErrorCode.SORT_MISSING_ID.getCode(),
-                        ErrorCode.SORT_MISSING_ID.getMessageKey(),
-                        ErrorCode.SORT_MISSING_ID.getMessage());
-            }
-        }
-
-        int temporaryPriority = dao.maxPriority() + PRIORITY_STEP;
-        for (int i = 0; i < currentOrderedIds.size(); i++) {
-            RoleId targetId = orderedIdList.get(i);
-            RoleId currentId = currentOrderedIds.get(i);
-            if (targetId.equals(currentId)) {
-                continue;
-            }
-
-            int targetIndex = indexById.get(targetId.value());
-            int currentPriority = priorityById.get(currentId.value());
-            int targetPriority = priorityById.get(targetId.value());
-
-            updatePriorityOrThrow(targetId, temporaryPriority++, "暂态更新失败");
-            updatePriorityOrThrow(currentId, targetPriority, "交换更新失败");
-            updatePriorityOrThrow(targetId, currentPriority, "交换更新失败");
-
-            priorityById.put(targetId.value(), currentPriority);
-            priorityById.put(currentId.value(), targetPriority);
-
-            currentOrderedIds.set(i, targetId);
-            currentOrderedIds.set(targetIndex, currentId);
-            indexById.put(targetId.value(), i);
-            indexById.put(currentId.value(), targetIndex);
-        }
+        SortablePrioritySwapSupport.sort(
+                orderedIdList,
+                currentRoles,
+                Role::getId,
+                RoleId::value,
+                Role::getPriority,
+                dao::maxPriority,
+                (id, priority) -> updatePriorityOrThrow(id, priority, "排序更新失败"));
     }
 
     @Override
@@ -271,12 +187,18 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
     }
 
     private void notifyCacheChanged() {
-        cacheChangedListeners.forEach(CacheChangedListener::onRoleCacheChanged);
+        listeners().forEach(CacheChangedListener::onRoleCacheChanged);
     }
 
     public interface CacheChangedListener {
 
         void onRoleCacheChanged();
+    }
+
+    private List<CacheChangedListener> listeners() {
+        return cacheChangedListeners == null
+                ? Collections.emptyList()
+                : cacheChangedListeners.getIfAvailable(Collections::emptyList);
     }
 
     private List<Long> toValues(List<RoleId> ids) {

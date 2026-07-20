@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.discovery.infra.client;
 
+import com.thundax.kuzhambu.common.elasticsearch.support.ElasticsearchOperationsSupport;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPageResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPreviewResult;
@@ -62,7 +63,7 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
         SearchHits<DiscoverySearchDocument> searchHits =
                 operations.search(query, DiscoverySearchDocument.class, indexCoordinates());
         return new SearchPageResult(
-                toIntTotalHits(searchHits.getTotalHits()),
+                ElasticsearchOperationsSupport.toIntTotalHits(searchHits.getTotalHits()),
                 toGroupedResults(searchHits.getSearchHits(), keyword == null ? null : keyword.getNormalizedText()));
     }
 
@@ -80,20 +81,14 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
         if (hits == null || hits.isEmpty()) {
             return null;
         }
-        DiscoverySearchDocument document =
-                hits.get(0) == null ? null : hits.get(0).getContent();
+        DiscoverySearchDocument document = ElasticsearchOperationsSupport.firstContent(hits);
         return toPreviewResult(document);
     }
 
     @Override
     public void rebuildIndex(List<SearchSourceContent> sourceContents) {
         ElasticsearchOperations operations = requireOperations("rebuild");
-        var indexOperations = operations.indexOps(indexCoordinates());
-        if (indexOperations.exists()) {
-            indexOperations.delete();
-        }
-        indexOperations.create();
-        indexOperations.putMapping(indexOperations.createMapping(DiscoverySearchDocument.class));
+        ElasticsearchOperationsSupport.recreateIndex(operations, indexCoordinates(), DiscoverySearchDocument.class);
         saveDocuments(operations, toPublicDocuments(sourceContents));
     }
 
@@ -162,13 +157,8 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
     }
 
     private ElasticsearchOperations requireOperations(String operation) {
-        if (elasticsearchOperations == null) {
-            throw new UnsupportedOperationException("Discovery search backend is not implemented for "
-                    + operation
-                    + " on index "
-                    + properties.getIndexName());
-        }
-        return elasticsearchOperations;
+        return ElasticsearchOperationsSupport.requireOperations(
+                elasticsearchOperations, "Discovery search", operation, properties.getIndexName());
     }
 
     private List<DiscoverySearchDocument> toDocuments(List<SearchSourceContent> sourceContents) {
@@ -216,11 +206,8 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
         if (documents.isEmpty()) {
             return;
         }
-        int batchSize = properties.getBatchSize() <= 0 ? 200 : properties.getBatchSize();
-        for (int start = 0; start < documents.size(); start += batchSize) {
-            int end = Math.min(start + batchSize, documents.size());
-            operations.save(documents.subList(start, end), indexCoordinates());
-        }
+        ElasticsearchOperationsSupport.saveInBatches(
+                operations, documents, indexCoordinates(), properties.getBatchSize());
     }
 
     private Criteria buildCriteria(String keyword, SearchScope searchScope) {
@@ -260,10 +247,7 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
         if (values == null || values.isEmpty()) {
             return criteria;
         }
-        List<String> filteredValues = values.stream()
-                .filter(value -> value != null && !value.isBlank())
-                .map(String::trim)
-                .toList();
+        List<String> filteredValues = ElasticsearchOperationsSupport.normalizedValues(values);
         if (filteredValues.isEmpty()) {
             return criteria;
         }
@@ -272,16 +256,6 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
 
     private Criteria appendPublicVisibilityFilter(Criteria criteria) {
         return criteria.and(new Criteria("visibility").is(PUBLIC_VISIBILITY));
-    }
-
-    private List<String> normalizedValues(List<String> values) {
-        if (values == null || values.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return values.stream()
-                .filter(value -> value != null && !value.isBlank())
-                .map(String::trim)
-                .toList();
     }
 
     private List<SearchGroupResult> toGroupedResults(List<SearchHit<DiscoverySearchDocument>> hits, String keyword) {
@@ -350,10 +324,6 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
                 document.getSourcePath());
     }
 
-    private int toIntTotalHits(long totalHits) {
-        return totalHits > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) totalHits;
-    }
-
     private String groupTitle(String contentType) {
         return switch (contentType) {
             case "SANCAI_ENTRY" -> "三才图会";
@@ -414,6 +384,6 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
     }
 
     private IndexCoordinates indexCoordinates() {
-        return IndexCoordinates.of(properties.getIndexName());
+        return ElasticsearchOperationsSupport.indexCoordinates(properties.getIndexName());
     }
 }

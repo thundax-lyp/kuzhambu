@@ -45,7 +45,7 @@ public class SancaiEntryVersionRestorer {
 
         SancaiEntry restored = toEntry(snapshot);
         restored.setId(current.getId());
-        restored.setPriority(repository.maxEntryPriorityByVolumeId(restored.getVolumeId()) + 1);
+        restored.setPriority(repository.maxEntryPriority() + 1);
         restored.setContentUpdatedAt(new Date());
         updateRestoredEntryOrThrow(restored);
         return restored;

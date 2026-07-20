@@ -27,12 +27,10 @@ import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import com.thundax.kuzhambu.common.core.sort.SortablePrioritySwapSupport;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -213,60 +211,15 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sortKeywords(MingCustomsKeywordSortCommand command) {
-        List<MingCustomsKeywordId> orderedIdList =
-                command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
-        if (orderedIdList.isEmpty()) {
-            throw sortEmptyInput();
-        }
-
-        List<MingCustomsKeyword> currentKeywords = repository.listKeywords(SortDirection.ASC);
-        if (currentKeywords == null || currentKeywords.isEmpty() || currentKeywords.size() != orderedIdList.size()) {
-            throw sortMissingId();
-        }
-
-        Map<Long, Integer> indexById = new HashMap<>(currentKeywords.size());
-        Map<Long, Integer> priorityById = new HashMap<>(currentKeywords.size());
-        List<MingCustomsKeywordId> currentOrderedIds = new ArrayList<>(currentKeywords.size());
-        for (int i = 0; i < currentKeywords.size(); i++) {
-            MingCustomsKeyword keyword = currentKeywords.get(i);
-            if (keyword == null || keyword.getId() == null) {
-                throw sortDbFailure();
-            }
-            long keywordId = keyword.getId().value();
-            indexById.put(keywordId, i);
-            priorityById.put(keywordId, keyword.getPriority());
-            currentOrderedIds.add(keyword.getId());
-        }
-
-        for (MingCustomsKeywordId orderedId : orderedIdList) {
-            if (orderedId == null || orderedId.value() == null || !indexById.containsKey(orderedId.value())) {
-                throw sortMissingId();
-            }
-        }
-
-        int temporaryPriority = repository.maxPriority() + 1;
-        for (int i = 0; i < currentOrderedIds.size(); i++) {
-            MingCustomsKeywordId targetId = orderedIdList.get(i);
-            MingCustomsKeywordId currentId = currentOrderedIds.get(i);
-            if (targetId.equals(currentId)) {
-                continue;
-            }
-
-            int targetIndex = indexById.get(targetId.value());
-            int currentPriority = priorityById.get(currentId.value());
-            int targetPriority = priorityById.get(targetId.value());
-
-            updatePriorityOrThrow(targetId, temporaryPriority++);
-            updatePriorityOrThrow(currentId, targetPriority);
-            updatePriorityOrThrow(targetId, currentPriority);
-
-            priorityById.put(targetId.value(), currentPriority);
-            priorityById.put(currentId.value(), targetPriority);
-            currentOrderedIds.set(i, targetId);
-            currentOrderedIds.set(targetIndex, currentId);
-            indexById.put(targetId.value(), i);
-            indexById.put(currentId.value(), targetIndex);
-        }
+        List<MingCustomsKeywordId> orderedIdList = command == null ? null : command.getOrderedIds();
+        SortablePrioritySwapSupport.sort(
+                orderedIdList,
+                repository.listKeywords(SortDirection.ASC),
+                MingCustomsKeyword::getId,
+                MingCustomsKeywordId::value,
+                MingCustomsKeyword::getPriority,
+                repository::maxPriority,
+                this::updatePriorityOrThrow);
     }
 
     @Override
@@ -317,20 +270,6 @@ public class MingCustomsApplicationServiceImpl implements MingCustomsApplication
                 .filter(keyword -> keyword != null && id.equals(keyword.getId()))
                 .findFirst()
                 .orElse(null);
-    }
-
-    private static BizException sortEmptyInput() {
-        return new BizException(
-                ErrorCode.SORT_EMPTY_INPUT.getCode(),
-                ErrorCode.SORT_EMPTY_INPUT.getMessageKey(),
-                ErrorCode.SORT_EMPTY_INPUT.getMessage());
-    }
-
-    private static BizException sortMissingId() {
-        return new BizException(
-                ErrorCode.SORT_MISSING_ID.getCode(),
-                ErrorCode.SORT_MISSING_ID.getMessageKey(),
-                ErrorCode.SORT_MISSING_ID.getMessage());
     }
 
     private static BizException sortDbFailure() {

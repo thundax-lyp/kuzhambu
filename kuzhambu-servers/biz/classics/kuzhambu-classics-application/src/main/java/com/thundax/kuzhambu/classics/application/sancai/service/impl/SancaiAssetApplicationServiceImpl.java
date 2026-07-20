@@ -40,6 +40,7 @@ import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import com.thundax.kuzhambu.common.core.sort.SortablePrioritySwapSupport;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
 import com.thundax.kuzhambu.storage.facade.request.BindStorageOwnerFacadeRequest;
@@ -56,15 +57,13 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.List;
-import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -89,6 +88,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     private static final String SHOWCASE_FAILURE_INTERNAL = "INTERNAL_FAILURE";
     private static final String SHOWCASE_FAILURE_PRIVATE_UNCONFIRMED = "VISIBILITY_RISK_UNCONFIRMED";
     private static final int SHOWCASE_FAILURE_MESSAGE_MAX_LENGTH = 512;
+    private static final long MAX_SHOWCASE_ARTIFACT_SIZE_BYTES = 50L * 1024L * 1024L;
     private static final String SANCAI_IMAGE_CONTENT_PATH_PREFIX = "/api/classics/sancai/assets/images/";
     private static final String SANCAI_IMAGE_CONTENT_PATH_SEPARATOR = "/";
     private static final String SANCAI_IMAGE_CONTENT_PATH_SUFFIX = "/content";
@@ -218,60 +218,15 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sortImages(SancaiEntryImageSortCommand command) {
-        List<SancaiEntryImageId> orderedIdList =
-                command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
-        if (orderedIdList.isEmpty()) {
-            throw sortEmptyInput();
-        }
-
-        List<SancaiEntryImage> currentImages = repository.listImages(SortDirection.ASC);
-        if (currentImages == null || currentImages.isEmpty() || currentImages.size() != orderedIdList.size()) {
-            throw sortMissingId();
-        }
-
-        Map<Long, Integer> indexById = new HashMap<>(currentImages.size());
-        Map<Long, Integer> priorityById = new HashMap<>(currentImages.size());
-        List<SancaiEntryImageId> currentOrderedIds = new ArrayList<>(currentImages.size());
-        for (int i = 0; i < currentImages.size(); i++) {
-            SancaiEntryImage image = currentImages.get(i);
-            if (image == null || image.getId() == null) {
-                throw sortDbFailure();
-            }
-            long imageId = image.getId().value();
-            indexById.put(imageId, i);
-            priorityById.put(imageId, image.getPriority());
-            currentOrderedIds.add(image.getId());
-        }
-
-        for (SancaiEntryImageId orderedId : orderedIdList) {
-            if (orderedId == null || orderedId.value() == null || !indexById.containsKey(orderedId.value())) {
-                throw sortMissingId();
-            }
-        }
-
-        int temporaryPriority = repository.maxPriority() + 1;
-        for (int i = 0; i < currentOrderedIds.size(); i++) {
-            SancaiEntryImageId targetId = orderedIdList.get(i);
-            SancaiEntryImageId currentId = currentOrderedIds.get(i);
-            if (targetId.equals(currentId)) {
-                continue;
-            }
-
-            int targetIndex = indexById.get(targetId.value());
-            int currentPriority = priorityById.get(currentId.value());
-            int targetPriority = priorityById.get(targetId.value());
-
-            updatePriorityOrThrow(targetId, temporaryPriority++);
-            updatePriorityOrThrow(currentId, targetPriority);
-            updatePriorityOrThrow(targetId, currentPriority);
-
-            priorityById.put(targetId.value(), currentPriority);
-            priorityById.put(currentId.value(), targetPriority);
-            currentOrderedIds.set(i, targetId);
-            currentOrderedIds.set(targetIndex, currentId);
-            indexById.put(targetId.value(), i);
-            indexById.put(currentId.value(), targetIndex);
-        }
+        List<SancaiEntryImageId> orderedIdList = command == null ? null : command.getOrderedIds();
+        SortablePrioritySwapSupport.sort(
+                orderedIdList,
+                repository.listImages(SortDirection.ASC),
+                SancaiEntryImage::getId,
+                SancaiEntryImageId::value,
+                SancaiEntryImage::getPriority,
+                repository::maxPriority,
+                this::updatePriorityOrThrow);
     }
 
     @Override
@@ -377,14 +332,14 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public SancaiShowcaseId requestShowcase(SancaiShowcaseCommand command) {
         SancaiShowcaseJobResult result = requestShowcaseJob(command);
         return result == null ? null : result.getShowcaseId();
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public SancaiShowcaseJobResult requestShowcaseJob(SancaiShowcaseCommand command) {
         validateShowcaseCommand(command);
         SancaiShowcase showcase = command == null ? new SancaiShowcase() : command.toEntity();
@@ -776,13 +731,33 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
                 || artifact.getContent().isBlank()) {
             return new byte[0];
         }
+        validateShowcaseArtifactSizeBeforeDecode(artifact);
+        byte[] content;
         if ("TEXT".equalsIgnoreCase(artifact.getEncoding())) {
-            return artifact.getContent().getBytes(StandardCharsets.UTF_8);
+            content = artifact.getContent().getBytes(StandardCharsets.UTF_8);
+        } else if ("BASE64".equalsIgnoreCase(artifact.getEncoding())) {
+            content = Base64.getDecoder().decode(artifact.getContent());
+        } else {
+            content = artifact.getContent().getBytes(StandardCharsets.UTF_8);
         }
-        if ("BASE64".equalsIgnoreCase(artifact.getEncoding())) {
-            return Base64.getDecoder().decode(artifact.getContent());
+        validateShowcaseArtifactSize(content.length);
+        return content;
+    }
+
+    private static void validateShowcaseArtifactSizeBeforeDecode(WorkerRenderDtos.Artifact artifact) {
+        if (artifact.getSizeBytes() != null) {
+            validateShowcaseArtifactSize(artifact.getSizeBytes());
         }
-        return artifact.getContent().getBytes(StandardCharsets.UTF_8);
+        if ("BASE64".equalsIgnoreCase(artifact.getEncoding())
+                && artifact.getContent().length() > (MAX_SHOWCASE_ARTIFACT_SIZE_BYTES * 4 / 3 + 4)) {
+            throw new BizException("三才静态展示产物超过大小限制");
+        }
+    }
+
+    private static void validateShowcaseArtifactSize(long sizeBytes) {
+        if (sizeBytes > MAX_SHOWCASE_ARTIFACT_SIZE_BYTES) {
+            throw new BizException("三才静态展示产物超过大小限制");
+        }
     }
 
     private void validateShowcaseArtifact(WorkerRenderDtos.Artifact artifact, byte[] content) {
@@ -874,20 +849,6 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         if (repository.updatePriority(image) != 1) {
             throw sortDbFailure();
         }
-    }
-
-    private static BizException sortEmptyInput() {
-        return new BizException(
-                ErrorCode.SORT_EMPTY_INPUT.getCode(),
-                ErrorCode.SORT_EMPTY_INPUT.getMessageKey(),
-                ErrorCode.SORT_EMPTY_INPUT.getMessage());
-    }
-
-    private static BizException sortMissingId() {
-        return new BizException(
-                ErrorCode.SORT_MISSING_ID.getCode(),
-                ErrorCode.SORT_MISSING_ID.getMessageKey(),
-                ErrorCode.SORT_MISSING_ID.getMessage());
     }
 
     private static BizException sortDbFailure() {

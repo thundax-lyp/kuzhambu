@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import com.thundax.kuzhambu.common.core.sort.SortablePrioritySwapSupport;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.application.service.command.AddStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageCommand;
@@ -22,6 +23,7 @@ import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContentRepository;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectReferenceRepository;
@@ -136,75 +138,18 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
                     ErrorCode.SORT_EMPTY_INPUT.getMessage());
         }
 
-        List<StoredObject> currentStorage = dao.list(null, null, null, null, null, null, null, SortDirection.ASC);
-        if (currentStorage == null || currentStorage.isEmpty()) {
-            throw new BizException(
-                    ErrorCode.SORT_MISSING_ID.getCode(),
-                    ErrorCode.SORT_MISSING_ID.getMessageKey(),
-                    ErrorCode.SORT_MISSING_ID.getMessage());
-        }
-
-        if (currentStorage.size() != orderedIdList.size()) {
-            throw new BizException(
-                    ErrorCode.SORT_MISSING_ID.getCode(),
-                    ErrorCode.SORT_MISSING_ID.getMessageKey(),
-                    ErrorCode.SORT_MISSING_ID.getMessage());
-        }
-
-        Map<Long, Integer> indexById = new HashMap<>(currentStorage.size());
-        Map<Long, Integer> priorityById = new HashMap<>(currentStorage.size());
-        List<StoredObjectId> currentOrderedIds = new ArrayList<>(currentStorage.size());
-
-        for (int i = 0; i < currentStorage.size(); i++) {
-            StoredObject storage = currentStorage.get(i);
-            if (storage == null || storage.getId() == null) {
-                throw new BizException(
-                        ErrorCode.SORT_DB_FAILURE.getCode(),
-                        ErrorCode.SORT_DB_FAILURE.getMessageKey(),
-                        ErrorCode.SORT_DB_FAILURE.getMessage());
-            }
-            long storageId = storage.getId().value();
-            indexById.put(storageId, i);
-            priorityById.put(storageId, storage.getPriority());
-            currentOrderedIds.add(storage.getId());
-        }
-
-        for (StoredObjectId orderedId : orderedIdList) {
-            if (orderedId == null || !indexById.containsKey(orderedId.value())) {
-                throw new BizException(
-                        ErrorCode.SORT_MISSING_ID.getCode(),
-                        ErrorCode.SORT_MISSING_ID.getMessageKey(),
-                        ErrorCode.SORT_MISSING_ID.getMessage());
-            }
-        }
-
-        int temporaryPriority = dao.maxPriority() + PRIORITY_STEP;
-        for (int i = 0; i < currentOrderedIds.size(); i++) {
-            StoredObjectId targetId = orderedIdList.get(i);
-            StoredObjectId currentId = currentOrderedIds.get(i);
-            if (targetId.equals(currentId)) {
-                continue;
-            }
-
-            int targetIndex = indexById.get(targetId.value());
-            int currentPriority = priorityById.get(currentId.value());
-            int targetPriority = priorityById.get(targetId.value());
-
-            updatePriorityOrThrow(targetId, temporaryPriority++, "暂态更新失败");
-            updatePriorityOrThrow(currentId, targetPriority, "交换更新失败");
-            updatePriorityOrThrow(targetId, currentPriority, "交换更新失败");
-
-            priorityById.put(targetId.value(), currentPriority);
-            priorityById.put(currentId.value(), targetPriority);
-
-            currentOrderedIds.set(i, targetId);
-            currentOrderedIds.set(targetIndex, currentId);
-            indexById.put(targetId.value(), i);
-            indexById.put(currentId.value(), targetIndex);
-        }
+        SortablePrioritySwapSupport.sort(
+                orderedIdList,
+                dao.list(null, null, null, null, null, null, null, SortDirection.ASC),
+                StoredObject::getId,
+                StoredObjectId::value,
+                StoredObject::getPriority,
+                dao::maxPriority,
+                this::updatePriorityOrThrow);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void change(ChangeStorageCommand command) {
         dao.update(toStoredObject(command));
     }
@@ -252,10 +197,10 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int changeReferenceStatus(ChangeStorageReferenceStatusCommand command) {
-        StoredObject storage = new StoredObject();
-        storage.setId(command.getId());
-        storage.setReferenceStatus(command.getReferenceStatus());
-        return dao.updateReferenceStatus(storage);
+        if (command == null || command.getId() == null) {
+            return 0;
+        }
+        return updateReferenceStatusByObjectId(command.getId());
     }
 
     @Override
@@ -291,33 +236,28 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         if (!toInsert.isEmpty()) {
             businessRepository.insertReferences(toInsert);
         }
-        updateReferenceStatusByObjectId(impactedObjectIds, StoredObjectReferenceStatus.REFERENCED);
+        updateReferenceStatusByObjectId(impactedObjectIds);
+    }
+
+    private int updateReferenceStatusByObjectId(StoredObjectId objectId) {
+        if (objectId == null) {
+            return 0;
+        }
+        long referenceCount = businessRepository.countByObjectId(objectId);
+        StoredObjectReferenceStatus referenceStatus =
+                referenceCount > 0 ? StoredObjectReferenceStatus.REFERENCED : StoredObjectReferenceStatus.UNREFERENCED;
+        StoredObject target = new StoredObject();
+        target.setId(objectId);
+        target.setReferenceStatus(referenceStatus);
+        return dao.updateReferenceStatus(target);
     }
 
     private void updateReferenceStatusByObjectId(Set<StoredObjectId> objectIds) {
-        updateReferenceStatusByObjectId(objectIds, null);
-    }
-
-    private void updateReferenceStatusByObjectId(
-            Set<StoredObjectId> objectIds, StoredObjectReferenceStatus forcedStatus) {
         if (objectIds == null || objectIds.isEmpty()) {
             return;
         }
         for (StoredObjectId objectId : objectIds) {
-            if (objectId == null) {
-                continue;
-            }
-            StoredObjectReferenceStatus referenceStatus = forcedStatus;
-            if (referenceStatus == null) {
-                long referenceCount = businessRepository.countByObjectId(objectId);
-                referenceStatus = referenceCount > 0
-                        ? StoredObjectReferenceStatus.REFERENCED
-                        : StoredObjectReferenceStatus.UNREFERENCED;
-            }
-            StoredObject target = new StoredObject();
-            target.setId(objectId);
-            target.setReferenceStatus(referenceStatus);
-            dao.updateReferenceStatus(target);
+            updateReferenceStatusByObjectId(objectId);
         }
     }
 
@@ -390,9 +330,16 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         storage.setRemarks(command.getRemarks());
         applyFileMetadata(command.getOriginalFilename(), command.getContentType(), storage);
         try {
-            applyStoredObject(storage, storedObjectContentRepository.save(storage, command.getInputStream()));
+            applyStoredObject(
+                    storage,
+                    storedObjectContentRepository.save(
+                            storage, StorageInputStreamLimiter.limit(command.getInputStream(), command.getSize())));
         } catch (IOException exception) {
             return StorageUploadResult.builder().error(exception.getMessage()).build();
+        }
+        if (!Long.valueOf(command.getSize()).equals(storage.getSize())) {
+            deleteStoredObjectContent(storage);
+            return StorageUploadResult.builder().error("文件大小与声明大小不一致").build();
         }
         storage.setId(create(toCreateStorageCommand(storage)));
         return StorageUploadResult.builder().storage(storage).build();
@@ -411,6 +358,19 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         if (storage == null) {
             return false;
         }
+        if (StoredObjectStatus.ACTIVE != storage.getObjectStatus()) {
+            return false;
+        }
+        if (query.getReferenceStatus() != null && query.getReferenceStatus() != storage.getReferenceStatus()) {
+            return false;
+        }
+        if (StringUtils.isNotBlank(query.getReferenceOwnerType())
+                || StringUtils.isNotBlank(query.getReferenceOwnerId())) {
+            return StringUtils.isNotBlank(query.getReferenceOwnerType())
+                    && StringUtils.isNotBlank(query.getReferenceOwnerId())
+                    && businessRepository.exists(new StoredObjectReference(
+                            query.getId(), query.getReferenceOwnerId(), query.getReferenceOwnerType(), null));
+        }
         return StoredObjectReferenceStatus.REFERENCED == storage.getReferenceStatus();
     }
 
@@ -422,6 +382,9 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         StoredObject storage = get(id);
         if (storage == null) {
             throw new BizException("Storage object not found: " + StoredObjectIdCodec.toStringValue(id));
+        }
+        if (StoredObjectStatus.ACTIVE != storage.getObjectStatus()) {
+            throw new BizException("Storage object is not active: " + StoredObjectIdCodec.toStringValue(id));
         }
         try {
             return new StoredObjectContent(storage, storedObjectContentRepository.open(storage));
@@ -435,6 +398,18 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         if (updated != 1) {
             throw new BizException(
                     ErrorCode.SORT_DB_FAILURE.getCode(), ErrorCode.SORT_DB_FAILURE.getMessageKey(), message);
+        }
+    }
+
+    private void updatePriorityOrThrow(StoredObjectId id, int priority) {
+        updatePriorityOrThrow(id, priority, ErrorCode.SORT_DB_FAILURE.getMessage());
+    }
+
+    private void deleteStoredObjectContent(StoredObject storage) {
+        try {
+            storedObjectContentRepository.delete(storage);
+        } catch (IOException ignored) {
+            // best-effort cleanup for rejected uploads
         }
     }
 

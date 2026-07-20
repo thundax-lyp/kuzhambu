@@ -74,6 +74,7 @@ import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import com.thundax.kuzhambu.common.core.sort.SortablePrioritySwapSupport;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
@@ -88,16 +89,14 @@ import java.io.ByteArrayInputStream;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -113,6 +112,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private static final String DEFAULT_TITLE = "classics-export";
     private static final String EXPORT_OWNER_TYPE = "CLASSICS_CONTENT_EXPORT_JOB";
     private static final String EXPORT_OWNER_ID_PREFIX = "export-job:";
+    private static final long MAX_RENDER_ARTIFACT_SIZE_BYTES = 50L * 1024L * 1024L;
 
     private final ClassicsContentRepository repository;
     private final WangqiDocumentVersionRestorer wangqiDocumentVersionRestorer;
@@ -173,60 +173,15 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void sortTags(ContentTagSortCommand command) {
-        List<ClassicsContentTagId> orderedIdList =
-                command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
-        if (orderedIdList.isEmpty()) {
-            throw sortEmptyInput();
-        }
-
-        List<ClassicsContentTag> currentTags = repository.listTags(SortDirection.ASC);
-        if (currentTags == null || currentTags.isEmpty() || currentTags.size() != orderedIdList.size()) {
-            throw sortMissingId();
-        }
-
-        Map<Long, Integer> indexById = new HashMap<>(currentTags.size());
-        Map<Long, Integer> priorityById = new HashMap<>(currentTags.size());
-        List<ClassicsContentTagId> currentOrderedIds = new ArrayList<>(currentTags.size());
-        for (int i = 0; i < currentTags.size(); i++) {
-            ClassicsContentTag tag = currentTags.get(i);
-            if (tag == null || tag.getId() == null) {
-                throw sortDbFailure();
-            }
-            long tagId = tag.getId().value();
-            indexById.put(tagId, i);
-            priorityById.put(tagId, tag.getPriority());
-            currentOrderedIds.add(tag.getId());
-        }
-
-        for (ClassicsContentTagId orderedId : orderedIdList) {
-            if (orderedId == null || orderedId.value() == null || !indexById.containsKey(orderedId.value())) {
-                throw sortMissingId();
-            }
-        }
-
-        int temporaryPriority = repository.maxTagPriority(null, null) + 1;
-        for (int i = 0; i < currentOrderedIds.size(); i++) {
-            ClassicsContentTagId targetId = orderedIdList.get(i);
-            ClassicsContentTagId currentId = currentOrderedIds.get(i);
-            if (targetId.equals(currentId)) {
-                continue;
-            }
-
-            int targetIndex = indexById.get(targetId.value());
-            int currentPriority = priorityById.get(currentId.value());
-            int targetPriority = priorityById.get(targetId.value());
-
-            updateTagPriorityOrThrow(targetId, temporaryPriority++);
-            updateTagPriorityOrThrow(currentId, targetPriority);
-            updateTagPriorityOrThrow(targetId, currentPriority);
-
-            priorityById.put(targetId.value(), currentPriority);
-            priorityById.put(currentId.value(), targetPriority);
-            currentOrderedIds.set(i, targetId);
-            currentOrderedIds.set(targetIndex, currentId);
-            indexById.put(targetId.value(), i);
-            indexById.put(currentId.value(), targetIndex);
-        }
+        List<ClassicsContentTagId> orderedIdList = command == null ? null : command.getOrderedIds();
+        SortablePrioritySwapSupport.sort(
+                orderedIdList,
+                repository.listTags(SortDirection.ASC),
+                ClassicsContentTag::getId,
+                ClassicsContentTagId::value,
+                ClassicsContentTag::getPriority,
+                () -> repository.maxTagPriority(null, null),
+                this::updateTagPriorityOrThrow);
     }
 
     @Override
@@ -235,7 +190,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         validateTagCommand(command, false);
         ClassicsContentId contentId = ClassicsContentId.of(command.getContentId());
         ClassicsContentType contentType = command.getContentType();
-        int nextPriority = repository.maxTagPriority(command.getContentType().value(), contentId) + 1;
+        int nextPriority = repository.maxTagPriority(null, null) + 1;
         ClassicsContentTag tag;
         if (tagBindingSupport == null) {
             tag = command.toEntity();
@@ -351,59 +306,15 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     }
 
     private void sortQaPairs(ContentQaPairSortCommand command, List<ClassicsContentQaPair> currentQaPairs) {
-        List<ClassicsContentQaPairId> orderedIdList =
-                command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
-        if (orderedIdList.isEmpty()) {
-            throw sortEmptyInput();
-        }
-
-        if (currentQaPairs == null || currentQaPairs.isEmpty() || currentQaPairs.size() != orderedIdList.size()) {
-            throw sortMissingId();
-        }
-
-        Map<Long, Integer> indexById = new HashMap<>(currentQaPairs.size());
-        Map<Long, Integer> priorityById = new HashMap<>(currentQaPairs.size());
-        List<ClassicsContentQaPairId> currentOrderedIds = new ArrayList<>(currentQaPairs.size());
-        for (int i = 0; i < currentQaPairs.size(); i++) {
-            ClassicsContentQaPair qaPair = currentQaPairs.get(i);
-            if (qaPair == null || qaPair.getId() == null) {
-                throw sortDbFailure();
-            }
-            long qaId = qaPair.getId().value();
-            indexById.put(qaId, i);
-            priorityById.put(qaId, qaPair.getPriority());
-            currentOrderedIds.add(qaPair.getId());
-        }
-
-        for (ClassicsContentQaPairId orderedId : orderedIdList) {
-            if (orderedId == null || orderedId.value() == null || !indexById.containsKey(orderedId.value())) {
-                throw sortMissingId();
-            }
-        }
-
-        int temporaryPriority = repository.maxQaPairPriority() + 1;
-        for (int i = 0; i < currentOrderedIds.size(); i++) {
-            ClassicsContentQaPairId targetId = orderedIdList.get(i);
-            ClassicsContentQaPairId currentId = currentOrderedIds.get(i);
-            if (targetId.equals(currentId)) {
-                continue;
-            }
-
-            int targetIndex = indexById.get(targetId.value());
-            int currentPriority = priorityById.get(currentId.value());
-            int targetPriority = priorityById.get(targetId.value());
-
-            updateQaPairPriorityOrThrow(targetId, temporaryPriority++);
-            updateQaPairPriorityOrThrow(currentId, targetPriority);
-            updateQaPairPriorityOrThrow(targetId, currentPriority);
-
-            priorityById.put(targetId.value(), currentPriority);
-            priorityById.put(currentId.value(), targetPriority);
-            currentOrderedIds.set(i, targetId);
-            currentOrderedIds.set(targetIndex, currentId);
-            indexById.put(targetId.value(), i);
-            indexById.put(currentId.value(), targetIndex);
-        }
+        List<ClassicsContentQaPairId> orderedIdList = command == null ? null : command.getOrderedIds();
+        SortablePrioritySwapSupport.sort(
+                orderedIdList,
+                currentQaPairs,
+                ClassicsContentQaPair::getId,
+                ClassicsContentQaPairId::value,
+                ClassicsContentQaPair::getPriority,
+                repository::maxQaPairPriority,
+                this::updateQaPairPriorityOrThrow);
 
         if (!currentQaPairs.isEmpty() && currentQaPairs.get(0) != null) {
             ClassicsContentType contentType = currentQaPairs.get(0).getContentType();
@@ -449,6 +360,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         if (content == null) {
             return null;
         }
+        repository.lockContentForVersion(content.contentType(), content.contentId());
         if (!versioningService.needsVersion(content)) {
             return repository.latestVersion(content.contentType(), content.contentId());
         }
@@ -1068,7 +980,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
 
     private ClassicsContentTagId insertTagWithoutVersion(ContentTagCommand command) {
         ClassicsContentId contentId = ClassicsContentId.of(command.getContentId());
-        int nextPriority = repository.maxTagPriority(command.getContentType().value(), contentId) + 1;
+        int nextPriority = repository.maxTagPriority(null, null) + 1;
         ClassicsContentTag tag;
         if (tagBindingSupport == null) {
             tag = command.toEntity();
@@ -1292,8 +1204,9 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             return;
         }
 
+        int priority = repository.maxTagPriority(null, null) + 1;
         for (int i = 0; i < snapshot.tags().size(); i++) {
-            insertMingTagFromSnapshot(snapshot.tags().get(i), entry, i + 1);
+            insertMingTagFromSnapshot(snapshot.tags().get(i), entry, priority++);
         }
     }
 
@@ -1308,8 +1221,9 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         if (snapshot == null || snapshot.qaPairs() == null) {
             return;
         }
+        int priority = repository.maxQaPairPriority() + 1;
         for (int i = 0; i < snapshot.qaPairs().size(); i++) {
-            insertMingQaPairFromSnapshot(snapshot.qaPairs().get(i), entry, i + 1);
+            insertMingQaPairFromSnapshot(snapshot.qaPairs().get(i), entry, priority++);
         }
     }
 
@@ -1318,7 +1232,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         if (snapshot == null || entry == null || entry.contentId() == null) {
             return;
         }
-        int priority = snapshot.priority() == null ? fallbackPriority : snapshot.priority();
+        int priority = fallbackPriority;
         if (tagBindingSupport == null) {
             ContentTagCommand command = new ContentTagCommand(
                     null,
@@ -1387,12 +1301,12 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 parseSource(snapshot.source()));
         ClassicsContentQaPair qaPair = command.toEntity();
         qaPair.setId(null);
-        qaPair.setPriority(snapshot.priority() == null ? fallbackPriority : snapshot.priority());
+        qaPair.setPriority(fallbackPriority);
         repository.insertQaPair(qaPair);
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public ClassicsExportJobResult createExportJob(ContentExportCommand command) {
         requirePrivateExportPermission(command);
         ClassicsContentExportJob job = command.toEntity();
@@ -1540,6 +1454,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     }
 
     private ClassicsContentVersion createRestoredVersion(Versionable content, ClassicsContentVersion restoredFrom) {
+        repository.lockContentForVersion(content.contentType(), content.contentId());
         ClassicsContentVersion version = versioningService.newVersion(
                 content,
                 versioningService.nextVersionNo(repository.latestVersionNo(content.contentType(), content.contentId())),
@@ -1866,13 +1781,33 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 || artifact.getContent().isBlank()) {
             return new byte[0];
         }
+        validateArtifactSizeBeforeDecode(artifact);
+        byte[] content;
         if ("TEXT".equalsIgnoreCase(artifact.getEncoding())) {
-            return artifact.getContent().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            content = artifact.getContent().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        } else if ("BASE64".equalsIgnoreCase(artifact.getEncoding())) {
+            content = Base64.getDecoder().decode(artifact.getContent());
+        } else {
+            throw new BizException("暂不支持的导出产物编码: " + artifact.getEncoding());
         }
-        if ("BASE64".equalsIgnoreCase(artifact.getEncoding())) {
-            return Base64.getDecoder().decode(artifact.getContent());
+        validateArtifactSize(content.length);
+        return content;
+    }
+
+    private static void validateArtifactSizeBeforeDecode(WorkerRenderDtos.Artifact artifact) {
+        if (artifact.getSizeBytes() != null) {
+            validateArtifactSize(artifact.getSizeBytes());
         }
-        throw new BizException("暂不支持的导出产物编码: " + artifact.getEncoding());
+        if ("BASE64".equalsIgnoreCase(artifact.getEncoding())
+                && artifact.getContent().length() > (MAX_RENDER_ARTIFACT_SIZE_BYTES * 4 / 3 + 4)) {
+            throw new BizException("导出产物超过大小限制");
+        }
+    }
+
+    private static void validateArtifactSize(long sizeBytes) {
+        if (sizeBytes > MAX_RENDER_ARTIFACT_SIZE_BYTES) {
+            throw new BizException("导出产物超过大小限制");
+        }
     }
 
     private boolean isSuccess(WorkerRenderDtos.WorkerRenderResponse response) {
@@ -1888,20 +1823,6 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             storage = response == null ? null : response.getStoredObject();
         }
         return SancaiEntryVersionSnapshot.ImageResource.from(image, storage);
-    }
-
-    private static BizException sortEmptyInput() {
-        return new BizException(
-                ErrorCode.SORT_EMPTY_INPUT.getCode(),
-                ErrorCode.SORT_EMPTY_INPUT.getMessageKey(),
-                ErrorCode.SORT_EMPTY_INPUT.getMessage());
-    }
-
-    private static BizException sortMissingId() {
-        return new BizException(
-                ErrorCode.SORT_MISSING_ID.getCode(),
-                ErrorCode.SORT_MISSING_ID.getMessageKey(),
-                ErrorCode.SORT_MISSING_ID.getMessage());
     }
 
     private static BizException sortDbFailure() {

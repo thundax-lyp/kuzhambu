@@ -324,14 +324,14 @@ public class StorageObjectController {
                 ? null
                 : new InitMultipartUploadCommand(
                         request.getUploadId(),
-                        null,
-                        null,
+                        StringUtils.trimToNull(request.getOwnerId()),
+                        ownerTypeFrom(request.getOwnerType()),
                         request.getBusinessType(),
                         request.getOriginalFilename(),
                         request.getMimeType(),
-                        request.getBucketName(),
-                        request.getObjectKey(),
-                        request.getProviderUploadId(),
+                        null,
+                        null,
+                        null,
                         request.getTotalSize(),
                         request.getPartSize());
     }
@@ -352,12 +352,7 @@ public class StorageObjectController {
     private CompleteMultipartUploadCommand toCompleteMultipartUploadCommand(CompleteMultipartUploadRequest request) {
         return request == null
                 ? null
-                : new CompleteMultipartUploadCommand(
-                        request.getUploadId(),
-                        request.getBucketName(),
-                        request.getObjectKey(),
-                        request.getSize(),
-                        request.getAccessEndpoint());
+                : new CompleteMultipartUploadCommand(request.getUploadId(), null, null, null, null);
     }
 
     private AbortMultipartUploadCommand toAbortMultipartUploadCommand(AbortMultipartUploadRequest request) {

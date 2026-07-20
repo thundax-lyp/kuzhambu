@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.storage.application.facade.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -14,6 +15,8 @@ import com.thundax.kuzhambu.storage.application.service.MultipartUploadApplicati
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
 import com.thundax.kuzhambu.storage.application.service.command.AddStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageReferenceStatusCommand;
+import com.thundax.kuzhambu.storage.application.service.command.CompleteMultipartUploadCommand;
+import com.thundax.kuzhambu.storage.application.service.command.InitMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
@@ -164,7 +167,12 @@ class StorageFacadeImplTest {
         assertEquals(2, response.getUploadedPartCount());
         assertEquals(MultipartUploadStatus.INITIATED.value(), response.getUploadStatus());
 
-        verify(multipartUploadApplicationService).init(any());
+        ArgumentCaptor<InitMultipartUploadCommand> commandCaptor =
+                ArgumentCaptor.forClass(InitMultipartUploadCommand.class);
+        verify(multipartUploadApplicationService).init(commandCaptor.capture());
+        assertNull(commandCaptor.getValue().getBucketName());
+        assertNull(commandCaptor.getValue().getObjectKey());
+        assertNull(commandCaptor.getValue().getProviderUploadId());
     }
 
     @Test
@@ -216,6 +224,14 @@ class StorageFacadeImplTest {
 
         assertEquals(7002L, response.getStorageObjectId());
         assertEquals("upload-1", response.getUploadId());
+
+        ArgumentCaptor<CompleteMultipartUploadCommand> commandCaptor =
+                ArgumentCaptor.forClass(CompleteMultipartUploadCommand.class);
+        verify(multipartUploadApplicationService).complete(commandCaptor.capture());
+        assertNull(commandCaptor.getValue().getBucketName());
+        assertNull(commandCaptor.getValue().getObjectKey());
+        assertNull(commandCaptor.getValue().getSize());
+        assertNull(commandCaptor.getValue().getAccessEndpoint());
     }
 
     @Test
