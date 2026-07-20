@@ -177,27 +177,13 @@ describe("QaPage", () => {
         ).toBeInTheDocument();
     });
 
-    it("creates a new empty conversation explicitly", async () => {
+    it("starts a local new conversation draft explicitly", async () => {
         const user = userEvent.setup();
         renderPage();
 
         await user.click(screen.getByRole("button", { name: "新建对话" }));
 
-        await waitFor(() => {
-            expect(mocks.createQaSession).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    contextContentId: null,
-                    contextContentType: null,
-                    contextMode: "GENERAL",
-                    ownerUserId: 1001,
-                    requestId: null,
-                    scope: "PORTAL",
-                    title: "新对话",
-                    traceId: null
-                }),
-                expect.anything()
-            );
-        });
+        expect(mocks.createQaSession).not.toHaveBeenCalled();
         expect(mocks.createQaChatCompletionStream).not.toHaveBeenCalled();
     });
 

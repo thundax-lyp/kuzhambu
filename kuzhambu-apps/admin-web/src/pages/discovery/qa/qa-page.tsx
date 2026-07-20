@@ -268,22 +268,10 @@ export const QaPage = () => {
         return nextSessionId;
     };
 
-    const createNewSession = async () => {
+    const createNewSession = () => {
         setOperationMessage(null);
         setForm(INITIAL_FORM_STATE);
-        const session = await openSessionMutation.mutateAsync(toOpenSessionRequest(ownerUserId));
-        const nextSessionId = toSessionId(session.sessionId);
-        if (nextSessionId === null) {
-            setOperationMessage("新建对话失败：会话未返回会话号");
-            return;
-        }
-
-        setSelectedSessionId(nextSessionId);
-        setTimelineBySession((current) => ({
-            ...current,
-            [nextSessionId]: []
-        }));
-        void sessionsQuery.refetch();
+        setSelectedSessionId(null);
     };
 
     const deleteSession = async (sessionId: string) => {
@@ -396,7 +384,7 @@ export const QaPage = () => {
                     testId="discovery-qa-create-session-button"
                     loading={openSessionMutation.isPending}
                     type="primary"
-                    onClick={() => void createNewSession()}
+                    onClick={createNewSession}
                 >
                     新建对话
                 </KuzhambuButton>
@@ -531,6 +519,11 @@ export const QaPage = () => {
                         <components.SendButton
                             aria-label="发送问题"
                             data-testid="discovery-qa-send-question-button"
+                            onClickCapture={(event) => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                void submitQuestion();
+                            }}
                         />
                     )}
                 />
