@@ -1,11 +1,16 @@
 package com.thundax.kuzhambu.common.test.integration;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.Cursor;
+import org.springframework.data.redis.core.ScanOptions;
 
 public class IntegrationRedisCleaner {
+
+    private static final int SCAN_COUNT = 1000;
+    private static final int DELETE_BATCH_SIZE = 500;
 
     private final RedisConnectionFactory connectionFactory;
 
@@ -19,14 +24,33 @@ public class IntegrationRedisCleaner {
         }
         RedisConnection connection = connectionFactory.getConnection();
         try {
-            Set<byte[]> keys = connection.keys((prefix + "*").getBytes(StandardCharsets.UTF_8));
-            if (keys == null || keys.isEmpty()) {
-                return 0L;
+            ScanOptions options = ScanOptions.scanOptions()
+                    .match(prefix + "*")
+                    .count(SCAN_COUNT)
+                    .build();
+            long deleted = 0L;
+            List<byte[]> batch = new ArrayList<byte[]>();
+            try (Cursor<byte[]> cursor = connection.scan(options)) {
+                while (cursor.hasNext()) {
+                    batch.add(cursor.next());
+                    if (batch.size() >= DELETE_BATCH_SIZE) {
+                        deleted += deleteBatch(connection, batch);
+                    }
+                }
             }
-            return connection.del(keys.toArray(new byte[keys.size()][]));
+            return deleted + deleteBatch(connection, batch);
         } finally {
             connection.close();
         }
+    }
+
+    private long deleteBatch(RedisConnection connection, List<byte[]> batch) {
+        if (batch.isEmpty()) {
+            return 0L;
+        }
+        long deleted = connection.del(batch.toArray(new byte[batch.size()][]));
+        batch.clear();
+        return deleted;
     }
 
     private boolean isBlank(String value) {

@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 import javax.sql.DataSource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.support.EncodedResource;
@@ -51,11 +52,12 @@ public class IntegrationDatabaseScriptRunner {
         }
         try {
             List<Path> scripts = new ArrayList<Path>();
-            Files.list(directory)
-                    .filter(Files::isRegularFile)
-                    .filter(path -> path.getFileName().toString().endsWith(".sql"))
-                    .sorted()
-                    .forEach(scripts::add);
+            try (Stream<Path> paths = Files.list(directory)) {
+                paths.filter(Files::isRegularFile)
+                        .filter(path -> path.getFileName().toString().endsWith(".sql"))
+                        .sorted()
+                        .forEach(scripts::add);
+            }
             return scripts;
         } catch (IOException e) {
             throw new IllegalStateException("Failed to list integration SQL scripts: " + directory, e);

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.stream.Stream;
 
 public class IntegrationOssCleaner {
 
@@ -22,7 +23,9 @@ public class IntegrationOssCleaner {
                 Files.createDirectories(rootPath);
                 return;
             }
-            Files.list(rootPath).forEach(this::deleteRecursively);
+            try (Stream<Path> paths = Files.list(rootPath)) {
+                paths.forEach(this::deleteRecursively);
+            }
         } catch (IOException e) {
             throw new IllegalStateException("Failed to clean integration OSS root: " + rootPath, e);
         }
@@ -30,7 +33,9 @@ public class IntegrationOssCleaner {
 
     private void deleteRecursively(Path path) {
         try {
-            Files.walk(path).sorted(Comparator.reverseOrder()).forEach(this::deleteIfExists);
+            try (Stream<Path> paths = Files.walk(path)) {
+                paths.sorted(Comparator.reverseOrder()).forEach(this::deleteIfExists);
+            }
         } catch (IOException e) {
             throw new IllegalStateException("Failed to clean integration OSS path: " + path, e);
         }
