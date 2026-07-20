@@ -38,8 +38,8 @@ discovery_qa_knowledge_sync_batch
 discovery_qa_knowledge_sync_item
 discovery_qa_session
 discovery_query_understanding
-discovery_search_click
-discovery_search_log
+discovery_search_click_event
+discovery_search_event
 knowledge_entity
 knowledge_graph_extraction_task
 knowledge_graph_version

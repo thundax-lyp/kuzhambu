@@ -56,7 +56,7 @@ pnpm --filter @kuzhambu/portal-web run e2e -- e2e/discovery/search.spec.ts e2e/d
     - `queryText: "礼学"`
     - `highlightText: "<mark>礼学</mark> 与礼制"`
   - `POST /api/portal/discovery/search/click` 路径请求被断言包含：
-    - `searchLogId`
+    - `searchEventId`
     - `contentType`
     - `contentId`
     - `resultGroupKey`

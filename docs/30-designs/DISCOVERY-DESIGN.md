@@ -18,12 +18,12 @@ kuzhambu-servers/biz/discovery/
 
 ## Business Boundary
 
-Discovery 拥有搜索查询、搜索日志、问答会话、问答消息、来源引用、provider trace 和知识同步状态。Discovery 消费 Classics 内容、Knowledge 同义词和实体、公共 Knowledge Base adapter、System 权限上下文。
+Discovery 拥有搜索查询、检索统计事件、问答会话、问答消息、来源引用、provider trace 和知识同步状态。Discovery 消费 Classics 内容、Knowledge 同义词和实体、公共 Knowledge Base adapter、System 权限上下文。
 
 当前阶段固定边界：
 
 - Search 内容源只接 `SANCAI_ENTRY`、`WANGQI_DOCUMENT`、`MING_CUSTOMS`。
-- Search 结果只消费用户当前可见内容；权限过滤必须发生在结果出参前。
+- Search 查询只消费未删除内容；权限组只控制搜索接口入口，结果字段必须保持有限输出。
 - Search 当前不接入 Knowledge 图谱读取，不以知识图谱作为必需前置。
 - Search 查询理解可通过 AI 域 usecase 调度；正式 Discovery QA 问答不依赖 Workers 作为运行时入口。
 
@@ -31,8 +31,8 @@ Discovery 拥有搜索查询、搜索日志、问答会话、问答消息、来�
 
 - `SearchQuery`
 - `SearchResultGroup`
-- `SearchLog`
-- `SearchClick`
+- `SearchEvent`
+- `SearchClickEvent`
 - `QueryUnderstanding`
 - `QaSession`
 - `QaMessage`
@@ -42,8 +42,8 @@ Discovery 拥有搜索查询、搜索日志、问答会话、问答消息、来�
 
 ### Search 子域模型
 
-- `SearchLog`：记录一次搜索请求的输入、范围、结果数量和失败摘要。
-- `SearchClick`：记录一次搜索结果点击，保存内容快照标识和命中位置。
+- `SearchEvent`：记录一次搜索请求的输入、范围、结果数量和失败摘要。
+- `SearchClickEvent`：记录一次搜索结果点击，保存内容快照标识和命中位置。
 - `QueryUnderstanding`：记录查询清洗、改写、实体识别和同义词扩展的结果；当前阶段允许是占位结构。
 - `SearchScope`：承载知识库、门类、标签、状态、可见性和时间范围。
 - `SearchKeyword`：承载原始 query、清洗后 query 和展示 query。
@@ -55,8 +55,8 @@ Discovery 拥有搜索查询、搜索日志、问答会话、问答消息、来�
 
 核心表：
 
-- `discovery_search_log`
-- `discovery_search_click`
+- `discovery_search_event`
+- `discovery_search_click_event`
 - `discovery_query_understanding`
 - `discovery_qa_session`
 - `discovery_qa_message`
@@ -87,10 +87,10 @@ Discovery 拥有搜索查询、搜索日志、问答会话、问答消息、来�
 
 ### Search 表结构
 
-`discovery_search_log`
+`discovery_search_event`
 
 - 主键：`id bigint`
-- 业务号：`search_log_id varchar(64)`
+- 业务号：`search_event_id varchar(64)`
 - 核心字段：`query_text`、`normalized_query_text`、`display_query_text`、`intent_type`
 - 检索范围：`search_scopes_json`
 - 结果摘要：`result_total_count`、`group_total_count`
@@ -98,11 +98,11 @@ Discovery 拥有搜索查询、搜索日志、问答会话、问答消息、来�
 - 请求上下文：`operator_type`、`operator_id`、`request_id`、`trace_id`
 - 时间字段：`created_at`
 
-`discovery_search_click`
+`discovery_search_click_event`
 
 - 主键：`id bigint`
-- 业务号：`search_click_id varchar(64)`
-- 关联字段：`search_log_id`
+- 业务号：`search_click_event_id varchar(64)`
+- 关联字段：`search_event_id`
 - 内容字段：`content_domain`、`content_type`、`content_id`、`content_title`
 - 命中位置：`result_group_key`、`result_rank`、`group_rank`
 - 跳转字段：`target_path`
@@ -113,7 +113,7 @@ Discovery 拥有搜索查询、搜索日志、问答会话、问答消息、来�
 
 - 主键：`id bigint`
 - 业务号：`query_understanding_id varchar(64)`
-- 关联字段：`search_log_id`
+- 关联字段：`search_event_id`
 - 查询字段：`query_text`、`normalized_query_text`、`rewritten_query_text`
 - 理解字段：`intent_type`、`recognized_entities_json`、`expanded_synonyms_json`
 - 状态字段：`understanding_status`、`failure_code`、`failure_message`
@@ -124,7 +124,7 @@ Discovery 拥有搜索查询、搜索日志、问答会话、问答消息、来�
 
 - Search 相关表固定采用“数据库主键 + 业务号”双轨。
 - `search_scopes_json`、`recognized_entities_json`、`expanded_synonyms_json` 当前只做 JSON 原样存取，不拆分二级列。
-- 搜索索引是派生读模型，不替代 `discovery_search_log` 等业务表。
+- 搜索索引是派生读模型，不替代 `discovery_search_event` 等业务表。
 
 ## Application Layer
 
@@ -140,9 +140,9 @@ Application 层负责权限过滤、查询理解、同义词扩展、实体增�
 
 - `SearchApplicationService`
   - `search(SearchQuery)`
-  - `recordClick(SearchClickCreateCommand)`
-  - `pageLogs(SearchLogPageQuery)`
-  - `getLog(String searchLogId)`
+  - `recordClick(SearchClickEventCreateCommand)`
+  - `pageEvents(SearchEventPageQuery)`
+  - `getEvent(String searchEventId)`
 - `SearchIndexApplicationService`
   - `rebuildIndex()`
   - `syncDocument(SearchIndexSyncCommand)`
@@ -176,20 +176,25 @@ Portal/Admin 通用入口：
 Portal/Common：
 
 - `POST /api/portal/discovery/search/search`
+- `POST /api/portal/discovery/search/preview`
 - `POST /api/portal/discovery/search/click`
 
 Admin：
 
-- `POST /api/discovery/search-admin/logs/page`
-- `POST /api/discovery/search-admin/logs/get`
-- `POST /api/discovery/search-admin/index/rebuild`
+- `POST /api/discovery/search/preview`
+- `POST /api/discovery/search-statistics/events/page`
+- `POST /api/discovery/search-statistics/events/get`
+- `POST /api/discovery/search-statistics/index/rebuild`
 
 当前协议要求：
 
-- Portal 搜索接口返回 `searchLogId`、`queryText`、`displayQueryText`、`totalCount`、`groupCount` 和分组结果。
+- Portal 搜索接口返回 `searchEventId`、`queryText`、`displayQueryText`、`totalCount`、`groupCount` 和分组结果。
 - 分组结果包含 `groupKey`、`groupTitle`、`count` 和 `items`。
 - 结果项固定保留 `highlightText` 字段，即使当前阶段不实现高亮。
-- Admin 日志接口权限码固定为 `discovery:search:view`。
+- Portal/Admin 搜索预览接口只展示 Search 索引派生读模型中的有限字段；能从搜索结果命中的内容即可按 `contentType`、`contentId` 和 `deleted=false` 读取预览，不再二次执行可见性权限判断。
+- Portal/Admin 搜索结果点击默认打开内部预览抽屉，通过 `contentType` 与 `contentId` 内部传递数据并调用 Search 预览接口。
+- `targetPath` 只作为来源元数据和点击事件字段保留，不作为 Portal/Admin 搜索页的前端路由跳转依据。
+- Admin 检索统计接口权限码固定为 `discovery:search:view`。
 
 ### QA 当前接口口径
 
@@ -284,7 +289,7 @@ Admin：
 
 Discovery 是 `discovery_*` 表的唯一写入方。搜索索引是派生读模型，不替代 Classics 内容真相源。
 
-Search 子域的搜索日志、点击日志和查询理解记录均由 Discovery 自身写入；Classics 只提供可搜索内容，不写入 `discovery_*` 表。
+Search 子域的检索统计事件、点击事件和查询理解记录均由 Discovery 自身写入；Classics 只提供可搜索内容，不写入 `discovery_*` 表。
 
 Search 索引同步消息由 Classics 写路径发出，但 Elasticsearch 文档写入、删除态控制和物理清理由 Discovery 独占负责。
 
@@ -316,6 +321,6 @@ Search 索引同步消息由 Classics 写路径发出，但 Elasticsearch 文档
 ### Search 当前阶段验收
 
 - Search 子域的 domain / application / infra / interface 包结构完整可落代码。
-- `discovery_search_log`、`discovery_search_click`、`discovery_query_understanding` 的字段定义已稳定。
-- Portal 搜索、点击接口与 Admin 日志分页、详情接口的路径和字段已稳定。
+- `discovery_search_event`、`discovery_search_click_event`、`discovery_query_understanding` 的字段定义已稳定。
+- Portal 搜索、点击接口与 Admin 检索统计事件分页、详情接口的路径和字段已稳定。
 - Elasticsearch 入口、真实检索抽象、增量同步规则和删除态清理规则已稳定。

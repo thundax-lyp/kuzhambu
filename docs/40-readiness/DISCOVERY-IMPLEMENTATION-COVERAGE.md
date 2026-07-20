@@ -9,9 +9,9 @@
 ## Completion Summary
 
 - Search 已接入 Classics 三类内容源：`SANCAI_ENTRY`、`WANGQI_DOCUMENT`、`MING_CUSTOMS`。
-- Elasticsearch 默认适配、索引文档映射、全量重建、增量同步、删除态清理和点击日志已完成。
+- Elasticsearch 默认适配、索引文档映射、全量重建、增量同步、删除态清理和点击事件已完成。
 - Portal 搜索已支持分组展示、筛选、关键词高亮、URL 状态恢复、结果深链、点击回写和无结果空态。
-- Admin 搜索运维已支持搜索日志、搜索分析 summary、热门搜索词、失败次数、零结果次数、点击数和平均搜索耗时。
+- Admin 搜索运维已支持检索统计事件、检索统计 summary、热门搜索词、失败次数、零结果次数、点击数和平均搜索耗时。
 - 查询理解已接入 Knowledge 同义词、标签和实体提示，并通过 AI 执行 query understanding / rewrite。
 - QA 已完成 Portal `chat/completions`、会话持久化、来源引用、知识同步、provider trace 和 Admin 运维页。
 - 王圻单文档 QA 已完成上下文 URL、首问/追问上下文透传、后端上下文校验和 AI trace 展示。
@@ -26,7 +26,7 @@
 
 ## Validation Evidence
 
-- Search / QA runtime、索引同步、搜索高亮、搜索分析、Portal 搜索状态、王圻单文档问答上下文已完成阶段性验证。
+- Search / QA runtime、索引同步、搜索高亮、检索统计、Portal 搜索状态、王圻单文档问答上下文已完成阶段性验证。
 - Playwright 冒烟与 Knowledge 方向查询证据见 `docs/40-readiness/KNOWLEDGE-RUNTIME-SMOKE-EVIDENCE.md`。
 - Discovery QA dev 冒烟证据归档于 `/tmp/discovery-quality-qa-20260709153738/`。
 
@@ -37,7 +37,7 @@
 | Search | 跨库搜索 | 已完成 | 固定覆盖 Classics 三类内容源 |
 | Search | 分组、排序、高亮、筛选 | 已完成 | Portal 展示和后端查询字段已对齐 |
 | Search | 权限过滤 | 已完成 | PUBLIC 匿名可见，非公开内容按 System 权限裁剪 |
-| Search | 日志、点击、分析 | 已完成 | 搜索日志、点击日志和 Admin summary 已接通 |
+| Search | 日志、点击、分析 | 已完成 | 检索统计事件、点击事件和 Admin summary 已接通 |
 | Search | 增量同步 | 已完成 | afterCommit 发 MQ，Discovery 消费端按版本幂等更新 |
 | Query | 查询理解、清洗、改写 | 已完成 | AI 调度和结果落库已接通 |
 | Query | 同义词和实体增强 | 已完成 | 消费 Knowledge 读协作服务 |

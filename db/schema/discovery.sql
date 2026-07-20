@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS `discovery_search_config` (
     UNIQUE KEY `uk_discovery_search_config_key` (`config_key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='搜索配置表';
 
-CREATE TABLE IF NOT EXISTS `discovery_search_query_log` (
+CREATE TABLE IF NOT EXISTS `discovery_search_query_event` (
     `id` bigint NOT NULL AUTO_INCREMENT,
     `query_id` bigint NOT NULL,
     `user_id` bigint DEFAULT NULL,
@@ -26,15 +26,15 @@ CREATE TABLE IF NOT EXISTS `discovery_search_query_log` (
     `result_count` int NOT NULL DEFAULT 0,
     `searched_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_discovery_search_query_log_id` (`query_id`),
-    KEY `idx_discovery_search_query_log_user` (`user_id`, `searched_at`),
-    KEY `idx_discovery_search_query_log_intent` (`intent`, `searched_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='搜索查询日志表';
+    UNIQUE KEY `uk_discovery_search_query_event_id` (`query_id`),
+    KEY `idx_discovery_search_query_event_user` (`user_id`, `searched_at`),
+    KEY `idx_discovery_search_query_event_intent` (`intent`, `searched_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='搜索查询事件表';
 
-CREATE TABLE IF NOT EXISTS `discovery_search_click` (
+CREATE TABLE IF NOT EXISTS `discovery_search_click_event` (
     `id` bigint NOT NULL,
-    `search_click_id` varchar(64) NOT NULL,
-    `search_log_id` varchar(64) NOT NULL,
+    `search_click_event_id` varchar(64) NOT NULL,
+    `search_event_id` varchar(64) NOT NULL,
     `content_domain` varchar(64) DEFAULT NULL,
     `content_type` varchar(64) NOT NULL,
     `content_id` varchar(64) NOT NULL,
@@ -49,15 +49,15 @@ CREATE TABLE IF NOT EXISTS `discovery_search_click` (
     `trace_id` varchar(128) DEFAULT NULL,
     `created_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_discovery_search_click_id` (`search_click_id`),
-    KEY `idx_discovery_search_click_log` (`search_log_id`, `created_at`),
-    KEY `idx_discovery_search_click_content` (`content_type`, `content_id`),
-    KEY `idx_discovery_search_click_operator` (`operator_id`, `created_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='搜索点击日志表';
+    UNIQUE KEY `uk_discovery_search_click_event_id` (`search_click_event_id`),
+    KEY `idx_discovery_search_click_event_event` (`search_event_id`, `created_at`),
+    KEY `idx_discovery_search_click_event_content` (`content_type`, `content_id`),
+    KEY `idx_discovery_search_click_event_operator` (`operator_id`, `created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='检索点击事件表';
 
-CREATE TABLE IF NOT EXISTS `discovery_search_log` (
+CREATE TABLE IF NOT EXISTS `discovery_search_event` (
     `id` bigint NOT NULL AUTO_INCREMENT,
-    `search_log_id` varchar(64) NOT NULL,
+    `search_event_id` varchar(64) NOT NULL,
     `query_text` varchar(512) NOT NULL,
     `normalized_query_text` varchar(512) DEFAULT NULL,
     `display_query_text` varchar(512) DEFAULT NULL,
@@ -75,16 +75,16 @@ CREATE TABLE IF NOT EXISTS `discovery_search_log` (
     `trace_id` varchar(128) DEFAULT NULL,
     `created_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_discovery_search_log_id` (`search_log_id`),
-    KEY `idx_discovery_search_log_status` (`search_status`, `created_at`),
-    KEY `idx_discovery_search_log_operator` (`operator_id`, `created_at`),
-    KEY `idx_discovery_search_log_intent` (`intent_type`, `created_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='搜索日志表';
+    UNIQUE KEY `uk_discovery_search_event_id` (`search_event_id`),
+    KEY `idx_discovery_search_event_status` (`search_status`, `created_at`),
+    KEY `idx_discovery_search_event_operator` (`operator_id`, `created_at`),
+    KEY `idx_discovery_search_event_intent` (`intent_type`, `created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='检索统计事件表';
 
 CREATE TABLE IF NOT EXISTS `discovery_query_understanding` (
     `id` bigint NOT NULL,
     `query_understanding_id` varchar(64) NOT NULL,
-    `search_log_id` varchar(64) DEFAULT NULL,
+    `search_event_id` varchar(64) DEFAULT NULL,
     `query_text` varchar(512) NOT NULL,
     `normalized_query_text` varchar(512) DEFAULT NULL,
     `rewritten_query_text` varchar(1024) DEFAULT NULL,
@@ -99,7 +99,7 @@ CREATE TABLE IF NOT EXISTS `discovery_query_understanding` (
     `created_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_discovery_query_understanding_id` (`query_understanding_id`),
-    KEY `idx_discovery_query_understanding_log` (`search_log_id`),
+    KEY `idx_discovery_query_understanding_event` (`search_event_id`),
     KEY `idx_discovery_query_understanding_status` (`understanding_status`, `created_at`),
     KEY `idx_discovery_query_understanding_intent` (`intent_type`, `created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='查询理解记录表';
