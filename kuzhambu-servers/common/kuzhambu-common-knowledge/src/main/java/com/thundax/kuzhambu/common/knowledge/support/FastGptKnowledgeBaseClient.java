@@ -93,16 +93,19 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
             }
         }
         Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("parentId", null);
         payload.put("type", "dataset");
         putIfHasText(payload, "name", request.name());
         putIfHasText(payload, "intro", request.description());
+        payload.put("avatar", "");
+        payload.put("vectorModel", "");
+        payload.put("agentModel", "");
+        payload.put("vlmModel", "");
         mergeOptions(payload, request.options());
         JsonNode body = post("/api/core/dataset/create", payload);
         JsonNode data = dataNode(body);
         return new KnowledgeBaseResult(
-                textValue(data, "datasetId", textValue(data, "_id", textValue(data, "id", null))),
-                textValue(data, "name", request.name()),
-                rawMap(body));
+                idValue(data, "datasetId", "_id", "id"), textValue(data, "name", request.name()), rawMap(body));
     }
 
     @Override
@@ -194,7 +197,7 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
         payload.put("messages", chatMessages(request.messages()));
         putIfNotNull(payload, "metadata", request.metadata());
         mergeOptions(payload, request.options());
-        JsonNode body = post("/api/v1/chat/completions", payload);
+        JsonNode body = post("/api/v1/chat/completions", payload, chatHeaders());
         String content = extractChatContent(body);
         String id = textValue(body, "id", textOption(request.metadata(), "chatId"));
         String model = textValue(body, "model", request.model());
@@ -210,8 +213,12 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
     }
 
     private JsonNode post(String path, Map<String, Object> payload) {
+        return post(path, payload, headers());
+    }
+
+    private JsonNode post(String path, Map<String, Object> payload, HttpHeaders headers) {
         return restOperations
-                .exchange(path, HttpMethod.POST, new HttpEntity<>(payload, headers()), JsonNode.class)
+                .exchange(path, HttpMethod.POST, new HttpEntity<>(payload, headers), JsonNode.class)
                 .getBody();
     }
 
@@ -232,6 +239,24 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         return headers;
+    }
+
+    private HttpHeaders chatHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(resolveChatApiKey());
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+        return headers;
+    }
+
+    private String resolveChatApiKey() {
+        if (StringUtils.hasText(properties.getChatApiKey())) {
+            return properties.getChatApiKey();
+        }
+        if (StringUtils.hasText(properties.getApiKey()) && StringUtils.hasText(properties.getAppId())) {
+            return properties.getApiKey() + "-" + properties.getAppId();
+        }
+        return properties.getApiKey();
     }
 
     private List<Map<String, Object>> chatMessages(List<KnowledgeChatMessage> messages) {
@@ -316,6 +341,19 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
             return fallback;
         }
         return value.asText(fallback);
+    }
+
+    private String idValue(JsonNode node, String... fieldNames) {
+        if (node != null && node.isTextual()) {
+            return node.asText();
+        }
+        for (String fieldName : fieldNames) {
+            String value = textValue(node, fieldName, null);
+            if (StringUtils.hasText(value)) {
+                return value;
+            }
+        }
+        return null;
     }
 
     private Long longValue(JsonNode node, String fieldName, Long fallback) {

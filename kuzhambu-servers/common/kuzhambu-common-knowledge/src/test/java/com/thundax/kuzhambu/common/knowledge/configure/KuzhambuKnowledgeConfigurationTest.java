@@ -31,7 +31,9 @@ public class KuzhambuKnowledgeConfigurationTest {
     public void shouldCreateFastGptKnowledgeClientWhenEnabled() {
         contextRunner
                 .withPropertyValues(
-                        "kuzhambu.knowledge.enabled=true", "kuzhambu.knowledge.fastgpt.api-key=fastgpt-test")
+                        "kuzhambu.knowledge.enabled=true",
+                        "kuzhambu.knowledge.fastgpt.api-key=fastgpt-test",
+                        "kuzhambu.knowledge.fastgpt.app-id=app-1")
                 .run(context -> assertTrue(context.getBean(KnowledgeBaseClient.class) != null));
     }
 

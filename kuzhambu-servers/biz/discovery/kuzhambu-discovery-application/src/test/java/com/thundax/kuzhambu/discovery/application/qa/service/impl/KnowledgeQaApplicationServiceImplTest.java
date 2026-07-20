@@ -252,7 +252,7 @@ class KnowledgeQaApplicationServiceImplTest {
         ChatCompletionResult result = service.chatCompletion(command());
 
         assertEquals("FAILED", result.getAnswerStatus());
-        assertEquals("System not embedding model", result.getFailureReason());
+        assertEquals("问答生成失败，请稍后重试。", result.getFailureReason());
         ArgumentCaptor<QaMessage> messageCaptor = ArgumentCaptor.forClass(QaMessage.class);
         verify(messageRepository, org.mockito.Mockito.times(2)).save(messageCaptor.capture());
         assertEquals("什么是三才？", messageCaptor.getAllValues().get(0).getContent());
@@ -260,7 +260,7 @@ class KnowledgeQaApplicationServiceImplTest {
         assertEquals("assistant", failedMessage.getRole());
         assertEquals("", failedMessage.getContent());
         assertEquals("FAILED", failedMessage.getAnswerStatus());
-        assertEquals("System not embedding model", failedMessage.getFailureReason());
+        assertEquals("问答生成失败，请稍后重试。", failedMessage.getFailureReason());
         verify(sourceRepository, never()).save(any(QaSource.class));
         ArgumentCaptor<QaRetrievalTrace> traceCaptor = ArgumentCaptor.forClass(QaRetrievalTrace.class);
         verify(traceRepository).save(traceCaptor.capture());

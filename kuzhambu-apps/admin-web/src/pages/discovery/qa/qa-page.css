@@ -1,78 +1,156 @@
 .discovery-qa-page {
-    gap: 16px;
+    background: #f7f7f4;
+    display: grid;
+    gap: 0;
+    grid-template-columns: 280px minmax(0, 1fr);
+    min-height: calc(100vh - 96px);
+    overflow: hidden;
+    padding: 0;
 }
 
-.discovery-qa-page__header {
-    align-items: flex-start;
-    display: flex;
-    justify-content: space-between;
-}
-
-.discovery-qa-page__body {
+.discovery-qa-page__sidebar {
+    background: #ffffff;
+    border-right: 1px solid #e7e5df;
     display: grid;
     gap: 16px;
-    grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
-}
-
-.discovery-qa-page__session-list,
-.discovery-qa-page__messages,
-.discovery-qa-page__sources {
-    display: grid;
-    gap: 8px;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    min-height: 0;
+    padding: 20px;
 }
 
 .discovery-qa-page__session-list {
-    max-height: 360px;
+    align-content: start;
+    display: grid;
+    gap: 8px;
+    min-height: 0;
     overflow: auto;
 }
 
-.discovery-qa-page__message {
-    border: 1px solid #edf0f5;
-    border-radius: 8px;
-    padding: 12px;
+.discovery-qa-page__session-list .ant-btn {
+    justify-content: flex-start;
+    overflow: hidden;
+    text-align: left;
+    text-overflow: ellipsis;
 }
 
-.discovery-qa-page__message--user {
-    background: #f6f8ff;
+.discovery-qa-page__chat {
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+    min-height: 0;
+    padding: 28px min(7vw, 88px) 24px;
 }
 
-.discovery-qa-page__message--assistant {
+.discovery-qa-page__chat-header {
+    align-items: flex-start;
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+    margin: 0 auto 20px;
+    max-width: 920px;
+    width: 100%;
+}
+
+.discovery-qa-page__chat-header .ant-typography {
+    margin: 0;
+}
+
+.discovery-qa-page__notice {
+    margin: 0 auto 12px;
+    max-width: 920px;
+    width: 100%;
+}
+
+.discovery-qa-page__messages {
+    min-height: 0;
+    overflow: auto;
+    padding: 8px 0 24px;
+}
+
+.discovery-qa-page__messages .ant-bubble-list {
+    margin: 0 auto;
+    max-width: 920px;
+}
+
+.discovery-qa-page__messages .ant-bubble {
+    margin-bottom: 14px;
+}
+
+.discovery-qa-page__empty {
+    align-content: center;
+    display: grid;
+    justify-items: center;
+    min-height: 100%;
+    text-align: center;
+}
+
+.discovery-qa-page__empty .ant-typography {
+    margin: 0;
+}
+
+.discovery-qa-page__sources {
+    display: flex;
+    gap: 8px;
+    margin: 0 auto 12px;
+    max-width: 920px;
+    overflow-x: auto;
+    width: 100%;
+}
+
+.discovery-qa-page__source {
     background: #ffffff;
+    border: 1px solid #e7e5df;
+    border-radius: 8px;
+    flex: 0 0 min(280px, 80vw);
+    padding: 10px;
 }
 
-.discovery-qa-page__message-header,
 .discovery-qa-page__source-header {
     align-items: center;
     display: flex;
     gap: 8px;
     justify-content: space-between;
-    margin-bottom: 8px;
-}
-
-.discovery-qa-page__source {
-    border: 1px solid #edf0f5;
-    border-radius: 8px;
-    padding: 10px;
+    margin-bottom: 6px;
 }
 
 .discovery-qa-page__composer {
-    margin-top: 16px;
+    background: #ffffff;
+    border-color: #dedbd2;
+    box-shadow: 0 12px 36px rgb(31 35 40 / 10%);
+    margin: 0 auto;
+    max-width: 920px;
+    width: 100%;
 }
 
 .discovery-qa-page__composer .ant-sender-input {
-    max-height: 192px;
-    min-height: 96px;
-}
-
-.discovery-qa-page__context-grid {
-    display: grid;
-    gap: 12px;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-height: 180px;
+    min-height: 72px;
 }
 
 @media (max-width: 1100px) {
-    .discovery-qa-page__body,
-    .discovery-qa-page__context-grid {
+    .discovery-qa-page {
         grid-template-columns: 1fr;
+        min-height: auto;
+        overflow: visible;
+    }
+
+    .discovery-qa-page__sidebar {
+        border-bottom: 1px solid #e7e5df;
+        border-right: 0;
+        grid-template-rows: auto auto auto;
+    }
+
+    .discovery-qa-page__session-list {
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(180px, max-content);
+        overflow-x: auto;
+    }
+
+    .discovery-qa-page__chat {
+        min-height: calc(100vh - 220px);
+        padding: 24px 16px;
+    }
+
+    .discovery-qa-page__chat-header {
+        display: grid;
     }
 }

@@ -18,26 +18,30 @@ const mocks = vi.hoisted(() => ({
         filename: "discovery-qa-session-7001.csv",
         sessionId: "7001"
     })),
-    createQaChatCompletion: vi.fn(async () => ({
-        answerStatus: "SUCCEEDED",
-        choices: [
-            {
-                message: {
-                    content: "礼学可作为礼制相关内容的检索扩展。"
+    createQaChatCompletion: vi.fn(),
+    createQaChatCompletionStream: vi.fn(async ({ onDelta }) => {
+        onDelta?.("礼学可作为礼制相关内容的检索扩展。");
+        return {
+            answerStatus: "SUCCEEDED",
+            choices: [
+                {
+                    message: {
+                        content: "礼学可作为礼制相关内容的检索扩展。"
+                    }
                 }
-            }
-        ],
-        sessionId: "7001",
-        sources: [
-            {
-                contentId: 1001,
-                contentType: "SANCAI_ENTRY",
-                knowledgeBase: "SANCAI_ENTRY",
-                sourceId: "SANCAI_ENTRY:1001",
-                titleSnapshot: "礼制条目"
-            }
-        ]
-    })),
+            ],
+            sessionId: "7001",
+            sources: [
+                {
+                    contentId: 1001,
+                    contentType: "SANCAI_ENTRY",
+                    knowledgeBase: "SANCAI_ENTRY",
+                    sourceId: "SANCAI_ENTRY:1001",
+                    titleSnapshot: "礼制条目"
+                }
+            ]
+        };
+    }),
     getQaSession: vi.fn(async () => ({
         openedAt: 1700000000000,
         sessionId: "7001",
@@ -71,6 +75,12 @@ describe("QaPage", () => {
     beforeEach(() => {
         queryClient.clear();
         Object.values(mocks).forEach((mock) => mock.mockClear());
+        mocks.createQaSession.mockImplementation(async () => ({
+            contextMode: "GENERAL",
+            openedAt: 1700000000000,
+            sessionId: "7001",
+            title: "知识中心问答"
+        }));
     });
 
     afterEach(() => {
@@ -82,9 +92,16 @@ describe("QaPage", () => {
     it("renders intelligent qa shell", async () => {
         renderPage();
 
-        expect(screen.getByRole("heading", { name: "问答" })).toBeInTheDocument();
+        expect(screen.getByRole("heading", { name: "知识助手" })).toBeInTheDocument();
         expect(screen.getByLabelText("问题")).toBeInTheDocument();
         expect(screen.getByRole("button", { name: "发送问题" })).toBeInTheDocument();
+        expect(screen.getByRole("button", { name: "新建对话" })).toBeInTheDocument();
+        expect(screen.queryByText("全库问答")).not.toBeInTheDocument();
+        expect(screen.queryByLabelText("上下文模式")).not.toBeInTheDocument();
+        expect(screen.queryByLabelText("上下文类型")).not.toBeInTheDocument();
+        expect(screen.queryByLabelText("上下文 ID")).not.toBeInTheDocument();
+        expect(screen.queryByLabelText("请求 ID")).not.toBeInTheDocument();
+        expect(screen.queryByLabelText("Trace ID")).not.toBeInTheDocument();
         await waitFor(() => {
             expect(mocks.pageQaSessions).toHaveBeenCalledWith({
                 ownerUserId: 1001,
@@ -105,21 +122,36 @@ describe("QaPage", () => {
         await waitFor(() => {
             expect(mocks.createQaSession).toHaveBeenCalledWith(
                 expect.objectContaining({
+                    contextContentId: null,
+                    contextContentType: null,
                     contextMode: "GENERAL",
                     ownerUserId: 1001,
+                    requestId: null,
                     scope: "PORTAL",
-                    title: "知识中心问答"
+                    title: "新对话",
+                    traceId: null
                 }),
                 expect.anything()
             );
         });
         await waitFor(() => {
-            expect(mocks.createQaChatCompletion).toHaveBeenCalledWith(
+            expect(mocks.createQaChatCompletionStream).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    messages: [{ content: "礼学和礼制有什么关系？", role: "user" }],
-                    model: "kuzhambu-qa",
-                    sessionId: "7001",
-                    stream: false
+                    command: {
+                        messages: [{ content: "礼学和礼制有什么关系？", role: "user" }],
+                        metadata: {
+                            contextContentId: null,
+                            contextContentType: null,
+                            contextMode: "GENERAL",
+                            sessionId: "7001"
+                        },
+                        model: "kuzhambu-qa",
+                        requestId: null,
+                        sessionId: "7001",
+                        stream: true,
+                        traceId: null
+                    },
+                    onDelta: expect.any(Function)
                 }),
                 expect.anything()
             );
@@ -128,7 +160,7 @@ describe("QaPage", () => {
         expect(screen.getByText("礼学可作为礼制相关内容的检索扩展。")).toBeInTheDocument();
         expect(screen.getByText("礼制条目")).toBeInTheDocument();
 
-        await user.click(screen.getByRole("button", { name: "导出 CSV" }));
+        await user.click(screen.getByRole("button", { name: "导出对话" }));
         await waitFor(() => {
             expect(mocks.createQaSessionExport).toHaveBeenCalledWith(
                 {
@@ -140,19 +172,55 @@ describe("QaPage", () => {
             );
         });
         expect(
-            await screen.findByText("导出成功：discovery-qa-session-7001.csv")
+            await screen.findByText("导出完成：discovery-qa-session-7001.csv")
         ).toBeInTheDocument();
     });
 
-    it("locks Wangqi single document context from url", async () => {
+    it("creates a new empty conversation explicitly", async () => {
+        const user = userEvent.setup();
+        renderPage();
+
+        await user.click(screen.getByRole("button", { name: "新建对话" }));
+
+        await waitFor(() => {
+            expect(mocks.createQaSession).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    contextContentId: null,
+                    contextContentType: null,
+                    contextMode: "GENERAL",
+                    ownerUserId: 1001,
+                    requestId: null,
+                    scope: "PORTAL",
+                    title: "新对话",
+                    traceId: null
+                }),
+                expect.anything()
+            );
+        });
+        expect(mocks.createQaChatCompletionStream).not.toHaveBeenCalled();
+    });
+
+    it("shows visible error when first message cannot open a session", async () => {
+        mocks.createQaSession.mockRejectedValueOnce(new Error("创建会话失败"));
+        const user = userEvent.setup();
+        renderPage();
+
+        await user.type(screen.getByLabelText("问题"), "礼学和礼制有什么关系？");
+        await user.click(screen.getByRole("button", { name: "发送问题" }));
+
+        expect(await screen.findByText("创建会话失败")).toBeInTheDocument();
+        expect(screen.getByLabelText("问题")).toHaveValue("礼学和礼制有什么关系？");
+        expect(mocks.createQaChatCompletionStream).not.toHaveBeenCalled();
+    });
+
+    it("ignores url context filters and keeps full-library qa", async () => {
         renderPage(
             "/discovery/qa?contextContentType=WANGQI_DOCUMENT&contextContentId=3001&contextMode=SINGLE_DOCUMENT&title=%E7%8E%8B%E5%9C%BB%E5%AE%98%E5%88%B6"
         );
 
-        expect(screen.getByLabelText("上下文模式")).toBeDisabled();
-        expect(screen.getByLabelText("上下文类型")).toBeDisabled();
-        expect(screen.getByLabelText("上下文 ID")).toBeDisabled();
-        expect(screen.getByDisplayValue("王圻官制")).toBeInTheDocument();
-        expect(screen.getByDisplayValue("3001")).toBeInTheDocument();
+        expect(screen.getByRole("heading", { name: "知识助手" })).toBeInTheDocument();
+        expect(screen.queryByDisplayValue("王圻官制")).not.toBeInTheDocument();
+        expect(screen.queryByDisplayValue("3001")).not.toBeInTheDocument();
+        expect(screen.queryByLabelText("上下文模式")).not.toBeInTheDocument();
     });
 });

@@ -1,12 +1,14 @@
 package com.thundax.kuzhambu.common.knowledge.support;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.common.knowledge.configure.KuzhambuKnowledgeProperties;
+import com.thundax.kuzhambu.common.knowledge.model.base.KnowledgeBaseEnsureRequest;
 import com.thundax.kuzhambu.common.knowledge.model.base.KnowledgeBaseListRequest;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatMessage;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatRequest;
@@ -55,7 +57,7 @@ public class FastGptKnowledgeBaseClientTest {
         MockRestServiceServer server =
                 MockRestServiceServer.bindTo(restTemplate).build();
         server.expect(requestTo("http://fastgpt.local/api/v1/chat/completions"))
-                .andExpect(header(HttpHeaders.AUTHORIZATION, "Bearer fastgpt-test"))
+                .andExpect(header(HttpHeaders.AUTHORIZATION, "Bearer fastgpt-test-app-1"))
                 .andRespond(withSuccess(
                         """
                         {"choices":[{"message":{"content":"answer from fastgpt"}}]}
@@ -77,6 +79,76 @@ public class FastGptKnowledgeBaseClientTest {
                         .get(0)
                         .message()
                         .content());
+        server.verify();
+    }
+
+    @Test
+    public void shouldPreferConfiguredChatApiKeyForChatRequests() {
+        RestTemplate restTemplate =
+                new RestTemplateBuilder().rootUri("http://fastgpt.local").build();
+        MockRestServiceServer server =
+                MockRestServiceServer.bindTo(restTemplate).build();
+        server.expect(requestTo("http://fastgpt.local/api/v1/chat/completions"))
+                .andExpect(header(HttpHeaders.AUTHORIZATION, "Bearer fastgpt-chat-test"))
+                .andRespond(withSuccess(
+                        """
+                        {"choices":[{"message":{"content":"answer from app key"}}]}
+                        """,
+                        MediaType.APPLICATION_JSON));
+
+        KuzhambuKnowledgeProperties.FastGpt properties = fastGptProperties("http://fastgpt.local", "fastgpt-test");
+        properties.setChatApiKey("fastgpt-chat-test");
+        FastGptKnowledgeBaseClient client =
+                new FastGptKnowledgeBaseClient(restTemplate, new ObjectMapper(), properties);
+
+        assertEquals(
+                "answer from app key",
+                client.chat(new KnowledgeChatRequest(
+                                "kuzhambu-qa",
+                                List.of(new KnowledgeChatMessage("user", "question")),
+                                false,
+                                null,
+                                null))
+                        .choices()
+                        .get(0)
+                        .message()
+                        .content());
+        server.verify();
+    }
+
+    @Test
+    public void shouldCreateKnowledgeBaseWithFastGptDatasetDefaultsAndStringId() {
+        RestTemplate restTemplate =
+                new RestTemplateBuilder().rootUri("http://fastgpt.local").build();
+        MockRestServiceServer server =
+                MockRestServiceServer.bindTo(restTemplate).build();
+        server.expect(requestTo("http://fastgpt.local/api/core/dataset/list"))
+                .andRespond(withSuccess("{\"data\":{\"list\":[]}}", MediaType.APPLICATION_JSON));
+        server.expect(requestTo("http://fastgpt.local/api/core/dataset/create"))
+                .andExpect(
+                        content()
+                                .json(
+                                        """
+                                {
+                                  "parentId": null,
+                                  "type": "dataset",
+                                  "name": "kuzhambu-qa",
+                                  "intro": "QA",
+                                  "avatar": "",
+                                  "vectorModel": "",
+                                  "agentModel": "",
+                                  "vlmModel": ""
+                                }
+                                """))
+                .andRespond(withSuccess("{\"code\":200,\"data\":\"dataset-1\"}", MediaType.APPLICATION_JSON));
+
+        FastGptKnowledgeBaseClient client = new FastGptKnowledgeBaseClient(
+                restTemplate, new ObjectMapper(), fastGptProperties("http://fastgpt.local", "fastgpt-test"));
+
+        assertEquals(
+                "dataset-1",
+                client.ensureKnowledgeBase(new KnowledgeBaseEnsureRequest("kuzhambu-qa", "QA", null))
+                        .knowledgeBaseId());
         server.verify();
     }
 

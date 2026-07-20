@@ -1,4 +1,4 @@
-import { postJson } from "@/api/http";
+import { postEventStream, postJson } from "@/api/http";
 import type {
     DiscoveryQaChatCompletionRecord,
     DiscoveryQaChatMessage,
@@ -48,9 +48,25 @@ export interface DiscoveryQaChatCompletionCommand {
     traceId?: string | null;
 }
 
+export interface DiscoveryQaChatCompletionStreamEvent {
+    content?: string | null;
+    message?: string | null;
+    response?: DiscoveryQaChatCompletionRecord | null;
+    sessionId?: string | null;
+}
+
+export interface DiscoveryQaChatCompletionStreamCommand {
+    command: DiscoveryQaChatCompletionCommand;
+    onCompleted?: (response: DiscoveryQaChatCompletionRecord) => void;
+    onDelta?: (content: string) => void;
+    onError?: (message: string) => void;
+    onStarted?: (sessionId?: string | null) => void;
+    signal?: AbortSignal;
+}
+
 export const createQaSession = (command: DiscoveryQaOpenSessionCommand) => {
     return postJson<DiscoveryQaSessionRecord, DiscoveryQaOpenSessionCommand>(
-        "/portal/discovery/qa/session/open",
+        "/discovery/qa/session/open",
         {
             body: command
         }
@@ -59,7 +75,7 @@ export const createQaSession = (command: DiscoveryQaOpenSessionCommand) => {
 
 export const pageQaSessions = (query: DiscoveryQaSessionPageQuery) => {
     return postJson<DiscoveryQaSessionPageRecord, DiscoveryQaSessionPageQuery>(
-        "/portal/discovery/qa/session/page",
+        "/discovery/qa/session/page",
         {
             body: query
         }
@@ -68,7 +84,7 @@ export const pageQaSessions = (query: DiscoveryQaSessionPageQuery) => {
 
 export const getQaSession = (query: DiscoveryQaGetSessionQuery) => {
     return postJson<DiscoveryQaSessionRecord, DiscoveryQaGetSessionQuery>(
-        "/portal/discovery/qa/session/get",
+        "/discovery/qa/session/get",
         {
             body: query
         }
@@ -77,7 +93,7 @@ export const getQaSession = (query: DiscoveryQaGetSessionQuery) => {
 
 export const createQaSessionExport = (command: DiscoveryQaExportSessionCommand) => {
     return postJson<DiscoveryQaExportSessionRecord, DiscoveryQaExportSessionCommand>(
-        "/portal/discovery/qa/session/export",
+        "/discovery/qa/session/export",
         {
             body: command
         }
@@ -86,9 +102,100 @@ export const createQaSessionExport = (command: DiscoveryQaExportSessionCommand) 
 
 export const createQaChatCompletion = (command: DiscoveryQaChatCompletionCommand) => {
     return postJson<DiscoveryQaChatCompletionRecord, DiscoveryQaChatCompletionCommand>(
-        "/portal/discovery/qa/chat/completions",
+        "/discovery/qa/chat/completions",
         {
             body: command
         }
     );
+};
+
+const parseSseBlock = (block: string) => {
+    const lines = block.split(/\r?\n/);
+    let event = "message";
+    const dataLines: string[] = [];
+
+    lines.forEach((line) => {
+        if (line.startsWith("event:")) {
+            event = line.slice("event:".length).trim();
+            return;
+        }
+        if (line.startsWith("data:")) {
+            dataLines.push(line.slice("data:".length).trimStart());
+        }
+    });
+
+    if (!dataLines.length) {
+        return null;
+    }
+
+    return {
+        data: JSON.parse(dataLines.join("\n")) as DiscoveryQaChatCompletionStreamEvent,
+        event
+    };
+};
+
+export const createQaChatCompletionStream = async ({
+    command,
+    onCompleted,
+    onDelta,
+    onError,
+    onStarted,
+    signal
+}: DiscoveryQaChatCompletionStreamCommand): Promise<DiscoveryQaChatCompletionRecord> => {
+    let completedResponse: DiscoveryQaChatCompletionRecord | null = null;
+    let pending = "";
+
+    const handleBlock = (block: string) => {
+        const message = parseSseBlock(block);
+        if (!message) {
+            return;
+        }
+
+        if (message.event === "started") {
+            onStarted?.(message.data.sessionId);
+            return;
+        }
+        if (message.event === "delta" && message.data.content) {
+            onDelta?.(message.data.content);
+            return;
+        }
+        if (message.event === "completed") {
+            const response =
+                message.data.response ??
+                (message.data as unknown as DiscoveryQaChatCompletionRecord);
+            completedResponse = response;
+            onCompleted?.(response);
+            return;
+        }
+        if (message.event === "error") {
+            onError?.(message.data.message ?? "回答生成失败");
+        }
+    };
+
+    await postEventStream<DiscoveryQaChatCompletionCommand>(
+        "/discovery/qa/chat/completions/stream",
+        {
+            body: {
+                ...command,
+                stream: true
+            },
+            onChunk: (chunk) => {
+                pending += chunk;
+                const blocks = pending.split(/\r?\n\r?\n/);
+                pending = blocks.pop() ?? "";
+                blocks.forEach(handleBlock);
+            },
+            signal
+        }
+    );
+
+    if (pending.trim()) {
+        handleBlock(pending);
+    }
+    const finalResponse = completedResponse as DiscoveryQaChatCompletionRecord | null;
+    if (!finalResponse) {
+        throw new Error("流式响应未返回完成事件");
+    }
+
+    return finalResponse;
 };

@@ -1,8 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Bubble, Sender, type BubbleItemType } from "@ant-design/x";
-import { Card, Empty, Input, Select, Tag, Typography } from "antd";
+import { Empty, Input, Tag, Typography } from "antd";
 import { forwardRef, useMemo, useState, type ComponentProps, type ElementRef } from "react";
-import { useSearchParams } from "react-router-dom";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import * as service from "./qa-service";
@@ -18,20 +17,8 @@ const { Text, Title } = Typography;
 const DEFAULT_OWNER_USER_ID = "1001";
 const DEFAULT_PAGE_SIZE = 20;
 const FIXED_MODEL = "kuzhambu-qa";
-const SINGLE_DOCUMENT_MODE = "SINGLE_DOCUMENT";
-const WANGQI_DOCUMENT_TYPE = "WANGQI_DOCUMENT";
-
-const CONTEXT_MODE_OPTIONS = [
-    { label: "通用问答", value: "GENERAL" },
-    { label: "单文档追问", value: SINGLE_DOCUMENT_MODE }
-];
-
-const CONTEXT_TYPE_OPTIONS = [
-    { label: "未限定", value: "" },
-    { label: "王圻文档", value: WANGQI_DOCUMENT_TYPE },
-    { label: "三才图会", value: "SANCAI_ENTRY" },
-    { label: "明代习俗", value: "MING_CUSTOMS" }
-];
+const FULL_LIBRARY_CONTEXT_MODE = "GENERAL";
+const FULL_LIBRARY_SESSION_TITLE = "新对话";
 const QaSenderInput = forwardRef<
     ElementRef<typeof Input.TextArea>,
     ComponentProps<typeof Input.TextArea>
@@ -40,14 +27,7 @@ QaSenderInput.displayName = "QaSenderInput";
 const QA_SENDER_COMPONENTS = { input: QaSenderInput };
 
 interface QaFormState {
-    contextContentId: string;
-    contextContentType: string;
-    contextMode: string;
-    ownerUserId: string;
     question: string;
-    requestId: string;
-    sessionTitle: string;
-    traceId: string;
 }
 
 interface QaTimelineMessage {
@@ -60,38 +40,8 @@ interface QaTimelineMessage {
 
 type QaTimeline = Record<string, QaTimelineMessage[]>;
 
-const toInitialFormState = (searchParams: URLSearchParams): QaFormState => {
-    const contextMode = searchParams.get("contextMode");
-    const contextContentType = searchParams.get("contextContentType");
-    const contextContentId = searchParams.get("contextContentId");
-    const title = searchParams.get("title");
-    if (
-        contextMode === SINGLE_DOCUMENT_MODE &&
-        contextContentType === WANGQI_DOCUMENT_TYPE &&
-        contextContentId
-    ) {
-        return {
-            contextContentId,
-            contextContentType,
-            contextMode,
-            ownerUserId: DEFAULT_OWNER_USER_ID,
-            question: "",
-            requestId: "",
-            sessionTitle: title?.trim() || "王圻文档问答",
-            traceId: ""
-        };
-    }
-
-    return {
-        contextContentId: "",
-        contextContentType: "",
-        contextMode: "GENERAL",
-        ownerUserId: DEFAULT_OWNER_USER_ID,
-        question: "",
-        requestId: "",
-        sessionTitle: "知识中心问答",
-        traceId: ""
-    };
+const INITIAL_FORM_STATE: QaFormState = {
+    question: ""
 };
 
 const parseNumber = (value: string) => {
@@ -102,11 +52,6 @@ const parseNumber = (value: string) => {
 
     const parsed = Number.parseInt(trimmed, 10);
     return Number.isNaN(parsed) ? null : parsed;
-};
-
-const parseString = (value: string) => {
-    const trimmed = value.trim();
-    return trimmed.length ? trimmed : null;
 };
 
 const toSessionId = (value?: string | null) => {
@@ -140,16 +85,16 @@ const extractAnswerText = (response?: DiscoveryQaChatCompletionRecord | null) =>
     return response?.choices?.[0]?.message?.content?.trim() || "";
 };
 
-const toOpenSessionRequest = (form: QaFormState) => {
+const toOpenSessionRequest = (ownerUserId: number | null) => {
     return {
-        contextContentId: parseNumber(form.contextContentId),
-        contextContentType: parseString(form.contextContentType),
-        contextMode: parseString(form.contextMode),
-        ownerUserId: parseNumber(form.ownerUserId),
-        requestId: parseString(form.requestId),
+        contextContentId: null,
+        contextContentType: null,
+        contextMode: FULL_LIBRARY_CONTEXT_MODE,
+        ownerUserId,
+        requestId: null,
         scope: "PORTAL",
-        title: parseString(form.sessionTitle),
-        traceId: parseString(form.traceId)
+        title: FULL_LIBRARY_SESSION_TITLE,
+        traceId: null
     };
 };
 
@@ -178,12 +123,11 @@ const toBubbleTagColor = (status: QaTimelineMessage["status"]) => {
 };
 
 export const QaPage = () => {
-    const [searchParams] = useSearchParams();
-    const [form, setForm] = useState<QaFormState>(() => toInitialFormState(searchParams));
+    const [form, setForm] = useState<QaFormState>(INITIAL_FORM_STATE);
     const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
     const [timelineBySession, setTimelineBySession] = useState<QaTimeline>({});
     const [operationMessage, setOperationMessage] = useState<string | null>(null);
-    const ownerUserId = parseNumber(form.ownerUserId);
+    const ownerUserId = parseNumber(DEFAULT_OWNER_USER_ID);
 
     const sessionsQuery = useQuery({
         queryFn: () =>
@@ -207,7 +151,9 @@ export const QaPage = () => {
     });
 
     const openSessionMutation = useMutation({ mutationFn: service.createQaSession });
-    const chatCompletionMutation = useMutation({ mutationFn: service.createQaChatCompletion });
+    const chatCompletionMutation = useMutation({
+        mutationFn: service.createQaChatCompletionStream
+    });
     const exportSessionMutation = useMutation({
         mutationFn: service.createQaSessionExport,
         onSuccess: (result) => {
@@ -215,7 +161,7 @@ export const QaPage = () => {
                 setOperationMessage(result.failureReason ?? "导出失败");
                 return;
             }
-            setOperationMessage(`导出成功：${result.filename ?? "问答会话.csv"}`);
+            setOperationMessage(`导出完成：${result.filename ?? "问答会话.csv"}`);
         },
         onError: (error) => {
             setOperationMessage(error instanceof Error ? error.message : "导出失败");
@@ -253,10 +199,6 @@ export const QaPage = () => {
             variant: message.role === "user" ? "filled" : "outlined"
         }));
     }, [messages]);
-    const hasFixedContext =
-        form.contextMode === SINGLE_DOCUMENT_MODE &&
-        form.contextContentType === WANGQI_DOCUMENT_TYPE &&
-        Boolean(form.contextContentId);
 
     const updateField = (key: keyof QaFormState, value: string) => {
         setForm((current) => ({
@@ -290,7 +232,7 @@ export const QaPage = () => {
             return selectedSessionId;
         }
 
-        const session = await openSessionMutation.mutateAsync(toOpenSessionRequest(form));
+        const session = await openSessionMutation.mutateAsync(toOpenSessionRequest(ownerUserId));
         const nextSessionId = toSessionId(session.sessionId);
         if (nextSessionId === null) {
             throw new Error("会话未返回会话号");
@@ -305,6 +247,24 @@ export const QaPage = () => {
         return nextSessionId;
     };
 
+    const createNewSession = async () => {
+        setOperationMessage(null);
+        setForm(INITIAL_FORM_STATE);
+        const session = await openSessionMutation.mutateAsync(toOpenSessionRequest(ownerUserId));
+        const nextSessionId = toSessionId(session.sessionId);
+        if (nextSessionId === null) {
+            setOperationMessage("新建对话失败：会话未返回会话号");
+            return;
+        }
+
+        setSelectedSessionId(nextSessionId);
+        setTimelineBySession((current) => ({
+            ...current,
+            [nextSessionId]: []
+        }));
+        void sessionsQuery.refetch();
+    };
+
     const submitQuestion = async (questionValue = form.question) => {
         const question = questionValue.trim();
         if (!question) {
@@ -312,48 +272,73 @@ export const QaPage = () => {
         }
 
         setOperationMessage(null);
-        const nextSessionId = await ensureSessionId();
-        const assistantMessageId = createMessageId();
-        appendMessage(nextSessionId, {
-            content: question,
-            id: createMessageId(),
-            role: "user",
-            status: "succeeded"
-        });
-        appendMessage(nextSessionId, {
-            content: "正在生成回答...",
-            id: assistantMessageId,
-            role: "assistant",
-            status: "loading"
-        });
-        updateField("question", "");
-
+        let nextSessionId: string | null = null;
+        let assistantMessageId: string | null = null;
         try {
-            const response = await chatCompletionMutation.mutateAsync({
-                messages: [{ content: question, role: "user" }],
-                metadata: {
-                    contextContentId: parseNumber(form.contextContentId),
-                    contextContentType: parseString(form.contextContentType),
-                    contextMode: parseString(form.contextMode),
-                    sessionId: nextSessionId
-                },
-                model: FIXED_MODEL,
-                requestId: parseString(form.requestId),
-                sessionId: nextSessionId,
-                stream: false,
-                traceId: parseString(form.traceId)
+            nextSessionId = await ensureSessionId();
+            const activeSessionId = nextSessionId;
+            assistantMessageId = createMessageId();
+            const activeAssistantMessageId = assistantMessageId;
+            appendMessage(activeSessionId, {
+                content: question,
+                id: createMessageId(),
+                role: "user",
+                status: "succeeded"
             });
-            const answerText = extractAnswerText(response);
-            updateMessage(nextSessionId, assistantMessageId, {
+            appendMessage(activeSessionId, {
+                content: "正在生成回答...",
+                id: activeAssistantMessageId,
+                role: "assistant",
+                status: "loading"
+            });
+            updateField("question", "");
+
+            let streamedAnswer = "";
+            const response = await chatCompletionMutation.mutateAsync({
+                command: {
+                    messages: [{ content: question, role: "user" }],
+                    metadata: {
+                        contextContentId: null,
+                        contextContentType: null,
+                        contextMode: FULL_LIBRARY_CONTEXT_MODE,
+                        sessionId: activeSessionId
+                    },
+                    model: FIXED_MODEL,
+                    requestId: null,
+                    sessionId: activeSessionId,
+                    stream: true,
+                    traceId: null
+                },
+                onDelta: (content) => {
+                    streamedAnswer += content;
+                    updateMessage(activeSessionId, activeAssistantMessageId, {
+                        content: streamedAnswer,
+                        status: "loading"
+                    });
+                },
+                onError: (message) => {
+                    updateMessage(activeSessionId, activeAssistantMessageId, {
+                        content: message,
+                        status: "failed"
+                    });
+                }
+            });
+            const answerText = extractAnswerText(response) || streamedAnswer;
+            updateMessage(activeSessionId, activeAssistantMessageId, {
                 content: answerText || response.failureReason || "未返回回答内容",
                 sources: response.sources ?? [],
                 status: response.answerStatus === "FAILED" ? "failed" : "succeeded"
             });
         } catch (error) {
-            updateMessage(nextSessionId, assistantMessageId, {
-                content: error instanceof Error ? error.message : "回答生成失败",
-                status: "failed"
-            });
+            const message = error instanceof Error ? error.message : "回答生成失败";
+            if (nextSessionId !== null && assistantMessageId !== null) {
+                updateMessage(nextSessionId, assistantMessageId, {
+                    content: message,
+                    status: "failed"
+                });
+                return;
+            }
+            setOperationMessage(message);
         }
     };
 
@@ -370,10 +355,42 @@ export const QaPage = () => {
 
     return (
         <main className="kuzhambu-page qa-page discovery-qa-page">
-            <header className="discovery-qa-page__header">
-                <div>
-                    <Title level={2}>问答</Title>
-                    <Text type="secondary">跨知识库提问，保留会话、回答和来源引用。</Text>
+            <aside className="discovery-qa-page__sidebar">
+                <KuzhambuButton
+                    block
+                    testId="discovery-qa-create-session-button"
+                    loading={openSessionMutation.isPending}
+                    type="primary"
+                    onClick={() => void createNewSession()}
+                >
+                    新建对话
+                </KuzhambuButton>
+                <div className="discovery-qa-page__session-list" aria-label="问答会话">
+                    {sessions.length ? (
+                        sessions.map((session) => {
+                            const sessionId = toSessionId(session.sessionId);
+                            if (sessionId === null) {
+                                return null;
+                            }
+
+                            return (
+                                <KuzhambuButton
+                                    key={sessionId}
+                                    block
+                                    testId="discovery-qa-select-session-button"
+                                    type={sessionId === selectedSessionId ? "primary" : "default"}
+                                    onClick={() => setSelectedSessionId(sessionId)}
+                                >
+                                    {sessionTitle(session)}
+                                </KuzhambuButton>
+                            );
+                        })
+                    ) : (
+                        <Empty
+                            image={Empty.PRESENTED_IMAGE_SIMPLE}
+                            description={sessionsQuery.isPending ? "正在加载对话" : "还没有对话"}
+                        />
+                    )}
                 </div>
                 <KuzhambuButton
                     testId="discovery-qa-export-session-button"
@@ -381,203 +398,93 @@ export const QaPage = () => {
                     loading={exportSessionMutation.isPending}
                     onClick={exportCurrentSession}
                 >
-                    导出 CSV
+                    导出对话
                 </KuzhambuButton>
-            </header>
+            </aside>
 
-            {operationMessage ? <Text type="secondary">{operationMessage}</Text> : null}
+            <section className="discovery-qa-page__chat">
+                <header className="discovery-qa-page__chat-header">
+                    <div>
+                        <Title level={2}>知识助手</Title>
+                        <Text type="secondary">提问后，我会在知识库中查询并附上来源。</Text>
+                    </div>
+                    {selectedSession ? (
+                        <Text type="secondary">
+                            {sessionTitle(selectedSession)} · {formatTime(selectedSession.openedAt)}
+                        </Text>
+                    ) : null}
+                </header>
 
-            <section className="discovery-qa-page__body">
-                <Card title="会话" size="small">
-                    <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
-                        <label>
-                            <Text type="secondary">用户 ID</Text>
-                            <Input
-                                aria-label="用户 ID"
-                                value={form.ownerUserId}
-                                onChange={(event) => updateField("ownerUserId", event.target.value)}
-                            />
-                        </label>
-                        <div className="discovery-qa-page__session-list" aria-label="问答会话">
-                            {sessions.length ? (
-                                sessions.map((session) => {
-                                    const sessionId = toSessionId(session.sessionId);
-                                    if (sessionId === null) {
-                                        return null;
-                                    }
+                {operationMessage ? (
+                    <Text className="discovery-qa-page__notice" type="secondary">
+                        {operationMessage}
+                    </Text>
+                ) : null}
 
-                                    return (
-                                        <KuzhambuButton
-                                            key={sessionId}
-                                            testId="discovery-qa-select-session-button"
-                                            type={
-                                                sessionId === selectedSessionId
-                                                    ? "primary"
-                                                    : "default"
-                                            }
-                                            onClick={() => setSelectedSessionId(sessionId)}
-                                        >
-                                            {sessionTitle(session)}
-                                        </KuzhambuButton>
-                                    );
-                                })
-                            ) : (
-                                <Empty
-                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                    description={
-                                        sessionsQuery.isPending
-                                            ? "会话加载中"
-                                            : "暂无会话，首次提问将自动创建"
-                                    }
-                                />
-                            )}
-                        </div>
-                    </KuzhambuSpace>
-                </Card>
-
-                <Card title="问答" size="small">
-                    <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
-                        <div className="discovery-qa-page__context-grid">
-                            <label>
-                                <Text type="secondary">会话标题</Text>
-                                <Input
-                                    aria-label="会话标题"
-                                    value={form.sessionTitle}
-                                    onChange={(event) =>
-                                        updateField("sessionTitle", event.target.value)
-                                    }
-                                />
-                            </label>
-                            <label>
-                                <Text type="secondary">上下文模式</Text>
-                                <Select
-                                    aria-label="上下文模式"
-                                    disabled={hasFixedContext}
-                                    options={CONTEXT_MODE_OPTIONS}
-                                    value={form.contextMode}
-                                    onChange={(value) => updateField("contextMode", value)}
-                                />
-                            </label>
-                            <label>
-                                <Text type="secondary">上下文类型</Text>
-                                <Select
-                                    aria-label="上下文类型"
-                                    disabled={hasFixedContext}
-                                    options={CONTEXT_TYPE_OPTIONS}
-                                    value={form.contextContentType}
-                                    onChange={(value) => updateField("contextContentType", value)}
-                                />
-                            </label>
-                            <label>
-                                <Text type="secondary">上下文 ID</Text>
-                                <Input
-                                    aria-label="上下文 ID"
-                                    disabled={hasFixedContext}
-                                    value={form.contextContentId}
-                                    onChange={(event) =>
-                                        updateField("contextContentId", event.target.value)
-                                    }
-                                />
-                            </label>
-                            <label>
-                                <Text type="secondary">请求 ID</Text>
-                                <Input
-                                    aria-label="请求 ID"
-                                    value={form.requestId}
-                                    onChange={(event) =>
-                                        updateField("requestId", event.target.value)
-                                    }
-                                />
-                            </label>
-                            <label>
-                                <Text type="secondary">Trace ID</Text>
-                                <Input
-                                    aria-label="Trace ID"
-                                    value={form.traceId}
-                                    onChange={(event) => updateField("traceId", event.target.value)}
-                                />
-                            </label>
-                        </div>
-
-                        <div className="discovery-qa-page__messages" aria-label="问答消息">
-                            {bubbleItems.length ? (
-                                <Bubble.List
-                                    autoScroll
-                                    items={bubbleItems}
-                                    role={{
-                                        ai: {
-                                            placement: "start",
-                                            shape: "corner"
-                                        },
-                                        user: {
-                                            placement: "end",
-                                            shape: "corner"
-                                        }
-                                    }}
-                                />
-                            ) : (
-                                <Empty
-                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                    description="尚未提问"
-                                />
-                            )}
-                        </div>
-
-                        <Sender
-                            autoSize={false}
-                            className="discovery-qa-page__composer"
-                            components={QA_SENDER_COMPONENTS}
-                            loading={
-                                openSessionMutation.isPending || chatCompletionMutation.isPending
-                            }
-                            placeholder="输入要追问的内容"
-                            submitType="enter"
-                            value={form.question}
-                            onChange={(value) => updateField("question", value)}
-                            onSubmit={(message) => void submitQuestion(message)}
-                            suffix={(_, { components }) => (
-                                <components.SendButton
-                                    aria-label="发送问题"
-                                    data-testid="discovery-qa-send-question-button"
-                                />
-                            )}
+                <div className="discovery-qa-page__messages" aria-label="问答消息">
+                    {bubbleItems.length ? (
+                        <Bubble.List
+                            autoScroll
+                            items={bubbleItems}
+                            role={{
+                                ai: {
+                                    placement: "start",
+                                    shape: "corner"
+                                },
+                                user: {
+                                    placement: "end",
+                                    shape: "corner"
+                                }
+                            }}
                         />
-                    </KuzhambuSpace>
-                </Card>
-            </section>
-
-            <Card title="最近来源" size="small">
-                <div className="discovery-qa-page__sources" aria-label="回答来源">
-                    {latestAssistantMessage?.sources?.length ? (
-                        latestAssistantMessage.sources.map((source, index) => (
-                            <article
-                                key={toSourceKey(source, index)}
-                                className="discovery-qa-page__source"
-                            >
-                                <div className="discovery-qa-page__source-header">
-                                    <Text strong>{source.titleSnapshot ?? source.sourceId}</Text>
-                                    <Tag>{source.knowledgeBase ?? source.contentType ?? "-"}</Tag>
-                                </div>
-                                <Text type="secondary">
-                                    {source.snippet ??
-                                        source.locationLabel ??
-                                        source.sourcePath ??
-                                        "-"}
-                                </Text>
-                            </article>
-                        ))
                     ) : (
-                        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无来源" />
+                        <div className="discovery-qa-page__empty">
+                            <Title level={3}>我能帮你解答什么？</Title>
+                            <Text type="secondary">问一个问题，开始新的对话。</Text>
+                        </div>
                     )}
                 </div>
-            </Card>
 
-            {selectedSession ? (
-                <Text type="secondary">
-                    当前会话：{sessionTitle(selectedSession)}，打开时间：
-                    {formatTime(selectedSession.openedAt)}
-                </Text>
-            ) : null}
+                <div className="discovery-qa-page__sources" aria-label="回答来源">
+                    {latestAssistantMessage?.sources?.length
+                        ? latestAssistantMessage.sources.map((source, index) => (
+                              <article
+                                  key={toSourceKey(source, index)}
+                                  className="discovery-qa-page__source"
+                              >
+                                  <div className="discovery-qa-page__source-header">
+                                      <Text strong>{source.titleSnapshot ?? source.sourceId}</Text>
+                                      <Tag>{source.knowledgeBase ?? source.contentType ?? "-"}</Tag>
+                                  </div>
+                                  <Text type="secondary">
+                                      {source.snippet ??
+                                          source.locationLabel ??
+                                          source.sourcePath ??
+                                          "-"}
+                                  </Text>
+                              </article>
+                          ))
+                        : null}
+                </div>
+
+                <Sender
+                    autoSize={false}
+                    className="discovery-qa-page__composer"
+                    components={QA_SENDER_COMPONENTS}
+                    loading={openSessionMutation.isPending || chatCompletionMutation.isPending}
+                    placeholder="发送消息"
+                    submitType="enter"
+                    value={form.question}
+                    onChange={(value) => updateField("question", value)}
+                    onSubmit={(message) => void submitQuestion(message)}
+                    suffix={(_, { components }) => (
+                        <components.SendButton
+                            aria-label="发送问题"
+                            data-testid="discovery-qa-send-question-button"
+                        />
+                    )}
+                />
+            </section>
         </main>
     );
 };

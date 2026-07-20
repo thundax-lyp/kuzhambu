@@ -23,7 +23,7 @@ describe("discovery admin service contracts", () => {
             scope: "PORTAL",
             title: "知识中心问答"
         });
-        expect(postJson).toHaveBeenLastCalledWith("/portal/discovery/qa/session/open", {
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa/session/open", {
             body: {
                 ownerUserId: 1001,
                 scope: "PORTAL",
@@ -37,7 +37,7 @@ describe("discovery admin service contracts", () => {
             pageSize: 20,
             scope: "PORTAL"
         });
-        expect(postJson).toHaveBeenLastCalledWith("/portal/discovery/qa/session/page", {
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa/session/page", {
             body: {
                 ownerUserId: 1001,
                 pageNo: 1,
@@ -47,7 +47,7 @@ describe("discovery admin service contracts", () => {
         });
 
         await qaConsumerService.getQaSession({ ownerUserId: 1001, sessionId: "7001" });
-        expect(postJson).toHaveBeenLastCalledWith("/portal/discovery/qa/session/get", {
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa/session/get", {
             body: {
                 ownerUserId: 1001,
                 sessionId: "7001"
@@ -59,7 +59,7 @@ describe("discovery admin service contracts", () => {
             ownerUserId: 1001,
             sessionId: "7001"
         });
-        expect(postJson).toHaveBeenLastCalledWith("/portal/discovery/qa/session/export", {
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa/session/export", {
             body: {
                 format: "CSV",
                 ownerUserId: 1001,
@@ -77,7 +77,7 @@ describe("discovery admin service contracts", () => {
             sessionId: "7001",
             stream: false
         });
-        expect(postJson).toHaveBeenLastCalledWith("/portal/discovery/qa/chat/completions", {
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa/chat/completions", {
             body: {
                 messages: [{ content: "礼学是什么？", role: "user" }],
                 metadata: {

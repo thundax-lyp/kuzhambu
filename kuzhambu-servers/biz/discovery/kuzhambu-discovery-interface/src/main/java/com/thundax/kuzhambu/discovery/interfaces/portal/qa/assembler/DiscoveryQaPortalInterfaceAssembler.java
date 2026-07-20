@@ -47,6 +47,11 @@ public final class DiscoveryQaPortalInterfaceAssembler {
     }
 
     public static ChatCompletionCommand toChatCompletionCommand(DiscoveryQaRequests.ChatCompletionsRequest request) {
+        return toChatCompletionCommand(request, request != null && Boolean.TRUE.equals(request.getStream()));
+    }
+
+    public static ChatCompletionCommand toChatCompletionCommand(
+            DiscoveryQaRequests.ChatCompletionsRequest request, boolean stream) {
         if (request == null) {
             return null;
         }
@@ -60,7 +65,7 @@ public final class DiscoveryQaPortalInterfaceAssembler {
                                 .map(message ->
                                         new ChatCompletionCommand.ChatMessage(message.getRole(), message.getContent()))
                                 .toList(),
-                Boolean.TRUE.equals(request.getStream()),
+                stream,
                 request.getMetadata(),
                 request.getOptions(),
                 request.getRequestId(),

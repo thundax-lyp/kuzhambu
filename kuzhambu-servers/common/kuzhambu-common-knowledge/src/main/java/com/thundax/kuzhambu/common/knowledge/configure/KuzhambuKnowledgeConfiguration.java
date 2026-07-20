@@ -86,6 +86,7 @@ public class KuzhambuKnowledgeConfiguration {
             }
             requireText(fastGpt.getBaseUrl(), "kuzhambu.knowledge.fastgpt.base-url");
             requireText(fastGpt.getApiKey(), "kuzhambu.knowledge.fastgpt.api-key");
+            requireText(fastGpt.getAppId(), "kuzhambu.knowledge.fastgpt.app-id");
             if (fastGpt.getTimeout() == null
                     || fastGpt.getTimeout().isNegative()
                     || fastGpt.getTimeout().isZero()) {

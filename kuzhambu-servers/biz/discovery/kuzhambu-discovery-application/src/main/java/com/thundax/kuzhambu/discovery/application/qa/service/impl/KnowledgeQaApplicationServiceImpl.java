@@ -60,7 +60,8 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
     private static final String MESSAGE_ROLE_ASSISTANT = "assistant";
     private static final String ANSWER_STATUS_SUCCEEDED = "SUCCEEDED";
     private static final String ANSWER_STATUS_FAILED = "FAILED";
-    private static final String DEFAULT_FAILURE_REASON = "Knowledge base chat request failed";
+    private static final String DEFAULT_FAILURE_REASON = "问答生成失败，请稍后重试。";
+    private static final String TRACE_FAILURE_REASON = "Knowledge base chat request failed";
     private static final String DEFAULT_AI_FAILURE_REASON = "Discovery AI answer generation failed";
     private static final String SINGLE_DOCUMENT_CONTEXT_MODE = "SINGLE_DOCUMENT";
     private static final String WANGQI_DOCUMENT_CONTEXT_TYPE = "WANGQI_DOCUMENT";
@@ -160,10 +161,12 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
 
         KnowledgeChatResult chatResult = null;
         String failureReason = null;
+        String providerFailureReason = null;
         try {
             chatResult = knowledgeBaseClient.chat(providerRequest);
         } catch (Exception ex) {
-            failureReason = StringUtils.defaultIfBlank(ex.getMessage(), DEFAULT_FAILURE_REASON);
+            failureReason = DEFAULT_FAILURE_REASON;
+            providerFailureReason = StringUtils.defaultIfBlank(ex.getMessage(), TRACE_FAILURE_REASON);
         } finally {
             session.setLastMessageAt(new Date());
             qaSessionRepository.update(session);
@@ -175,7 +178,8 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             Long failedMessagePk = qaMessageRepository.save(failedMessage);
             failedMessage.setId(failedMessagePk);
             failedMessage.setMessageId(failedMessagePk);
-            saveTrace(command, session, failedMessage, question, providerRequest, null, now, now, failureReason);
+            saveTrace(
+                    command, session, failedMessage, question, providerRequest, null, now, now, providerFailureReason);
 
             return new ChatCompletionResult(
                     command.getSessionId(),

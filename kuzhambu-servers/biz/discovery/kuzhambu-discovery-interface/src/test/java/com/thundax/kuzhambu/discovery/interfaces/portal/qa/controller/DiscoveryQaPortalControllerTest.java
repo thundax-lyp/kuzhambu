@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -28,6 +29,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -67,6 +69,16 @@ class DiscoveryQaPortalControllerTest {
                 DiscoveryQaPortalController.class,
                 "chatCompletions",
                 "chat/completions",
+                DiscoveryQaRequests.ChatCompletionsRequest.class);
+        assertPostMapping(
+                DiscoveryQaPortalController.class,
+                "chatCompletionsStream",
+                "chat/completions/stream",
+                DiscoveryQaRequests.ChatCompletionsRequest.class);
+        assertPostMappingProduces(
+                DiscoveryQaPortalController.class,
+                "chatCompletionsStream",
+                MediaType.TEXT_EVENT_STREAM_VALUE,
                 DiscoveryQaRequests.ChatCompletionsRequest.class);
     }
 
@@ -386,6 +398,38 @@ class DiscoveryQaPortalControllerTest {
         assertEquals("chatcmpl-1", response.getRaw().get("id"));
     }
 
+    @Test
+    void chatCompletionsStreamShouldDelegateAsNonStreamingProviderCall() {
+        QaApplicationService service = mock(QaApplicationService.class);
+        KnowledgeQaApplicationService knowledgeQaApplicationService = mock(KnowledgeQaApplicationService.class);
+        DiscoveryQaPortalController controller =
+                new DiscoveryQaPortalController(service, knowledgeQaApplicationService);
+        DiscoveryQaRequests.ChatCompletionsRequest request = new DiscoveryQaRequests.ChatCompletionsRequest();
+        request.setSessionId("5001");
+        request.setModel("kuzhambu-qa");
+        request.setMessages(List.of(message("user", "黄帝是谁")));
+        request.setStream(true);
+        when(knowledgeQaApplicationService.chatCompletion(any()))
+                .thenReturn(new ChatCompletionResult(
+                        5001L,
+                        7001L,
+                        7002L,
+                        "黄帝是谁",
+                        "SUCCEEDED",
+                        null,
+                        List.of(new ChatCompletionChoice(0, new ChatCompletionMessage("assistant", "黄帝是上古帝王"), "stop")),
+                        List.of(),
+                        new ChatUsageResult(100, 80, 180),
+                        Map.of("id", "chatcmpl-1")));
+
+        var emitter = controller.chatCompletionsStream(request);
+
+        assertTrue(emitter != null);
+        verify(knowledgeQaApplicationService, timeout(1000))
+                .chatCompletion(argThat(command ->
+                        command != null && Long.valueOf(5001L).equals(command.getSessionId()) && !command.isStream()));
+    }
+
     private DiscoveryQaRequests.ChatMessage message(String role, String content) {
         DiscoveryQaRequests.ChatMessage message = new DiscoveryQaRequests.ChatMessage();
         message.setRole(role);
@@ -453,6 +497,13 @@ class DiscoveryQaPortalControllerTest {
         Method method = type.getDeclaredMethod(methodName, parameters);
         PostMapping mapping = method.getAnnotation(PostMapping.class);
         assertEquals(expectedPath, mapping.value()[0]);
+    }
+
+    private void assertPostMappingProduces(
+            Class<?> type, String methodName, String expectedProduces, Class<?>... parameters) throws Exception {
+        Method method = type.getDeclaredMethod(methodName, parameters);
+        PostMapping mapping = method.getAnnotation(PostMapping.class);
+        assertEquals(expectedProduces, mapping.produces()[0]);
     }
 
     private void assertJsonFields(Object value, String... fieldNames) throws Exception {
