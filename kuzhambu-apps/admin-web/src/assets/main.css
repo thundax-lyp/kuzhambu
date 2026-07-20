@@ -215,8 +215,40 @@ button {
     overflow-x: hidden;
     overflow-y: auto;
     padding-bottom: 16px;
+    scrollbar-color: transparent transparent;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
     background: transparent;
     border-inline-end: 0 !important;
+}
+
+.nav-menu:hover,
+.nav-menu:focus-within {
+    scrollbar-color: color-mix(in srgb, var(--text-muted) 42%, transparent) transparent;
+}
+
+.nav-menu::-webkit-scrollbar {
+    width: 8px;
+}
+
+.nav-menu::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.nav-menu::-webkit-scrollbar-thumb {
+    background: transparent;
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background-clip: padding-box;
+}
+
+.nav-menu:hover::-webkit-scrollbar-thumb,
+.nav-menu:focus-within::-webkit-scrollbar-thumb {
+    background-color: color-mix(in srgb, var(--text-muted) 36%, transparent);
+}
+
+.nav-menu::-webkit-scrollbar-thumb:hover {
+    background-color: color-mix(in srgb, var(--text-secondary) 54%, transparent);
 }
 
 .nav-menu .ant-menu-submenu-title,
