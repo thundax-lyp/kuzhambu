@@ -17,7 +17,7 @@ public final class QueryUnderstandingPersistenceAssembler {
         QueryUnderstandingDO dataObject = new QueryUnderstandingDO();
         dataObject.setId(entity.getId());
         dataObject.setQueryUnderstandingId(entity.getQueryUnderstandingId());
-        dataObject.setSearchLogId(entity.getSearchLogId());
+        dataObject.setSearchEventId(entity.getSearchEventId());
         dataObject.setQueryText(entity.getQueryText());
         dataObject.setNormalizedQueryText(entity.getNormalizedQueryText());
         dataObject.setRewrittenQueryText(entity.getRewrittenQueryText());
@@ -40,7 +40,7 @@ public final class QueryUnderstandingPersistenceAssembler {
         QueryUnderstanding entity = new QueryUnderstanding();
         entity.setId(dataObject.getId());
         entity.setQueryUnderstandingId(dataObject.getQueryUnderstandingId());
-        entity.setSearchLogId(dataObject.getSearchLogId());
+        entity.setSearchEventId(dataObject.getSearchEventId());
         entity.setQueryText(dataObject.getQueryText());
         entity.setNormalizedQueryText(dataObject.getNormalizedQueryText());
         entity.setRewrittenQueryText(dataObject.getRewrittenQueryText());

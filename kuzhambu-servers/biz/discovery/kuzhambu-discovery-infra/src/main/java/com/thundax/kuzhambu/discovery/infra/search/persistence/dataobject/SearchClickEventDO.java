@@ -11,23 +11,24 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@TableName("discovery_query_understanding")
-public class QueryUnderstandingDO {
+@TableName("discovery_search_click_event")
+public class SearchClickEventDO {
 
     @TableId(type = IdType.INPUT)
     private Long id;
 
-    private String queryUnderstandingId;
+    private String searchClickEventId;
     private String searchEventId;
-    private String queryText;
-    private String normalizedQueryText;
-    private String rewrittenQueryText;
-    private String intentType;
-    private String recognizedEntitiesJson;
-    private String expandedSynonymsJson;
-    private String understandingStatus;
-    private String failureCode;
-    private String failureMessage;
+    private String contentDomain;
+    private String contentType;
+    private String contentId;
+    private String contentTitle;
+    private String resultGroupKey;
+    private Integer resultRank;
+    private Integer groupRank;
+    private String targetPath;
+    private String operatorType;
+    private String operatorId;
     private String requestId;
     private String traceId;
     private Date createdAt;

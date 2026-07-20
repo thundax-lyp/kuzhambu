@@ -11,7 +11,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@Schema(name = "DiscoverySearchAdminRequest", description = "Discovery 后台搜索请求")
+@Schema(name = "DiscoverySearchStatisticsRequest", description = "Discovery 后台搜索请求")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DiscoverySearchRequest extends PageRequest {

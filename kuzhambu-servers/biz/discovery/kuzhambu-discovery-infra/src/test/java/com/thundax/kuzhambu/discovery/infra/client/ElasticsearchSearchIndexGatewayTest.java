@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.discovery.infra.client;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -211,7 +212,7 @@ class ElasticsearchSearchIndexGatewayTest {
     }
 
     @Test
-    void searchShouldApplyPrivateKnowledgeBasePermissionCriteria() {
+    void searchShouldApplyExplicitVisibilityCriteriaWithoutPrivateKnowledgeBasePermissionCriteria() {
         DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
         ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
         @SuppressWarnings("unchecked")
@@ -246,7 +247,60 @@ class ElasticsearchSearchIndexGatewayTest {
                 .map(field -> field.getName())
                 .collect(Collectors.toSet());
         assertTrue(fieldNames.contains("visibility"));
-        assertTrue(fieldNames.contains("knowledgeBase"));
+        assertFalse(fieldNames.contains("knowledgeBase"));
+    }
+
+    @Test
+    void previewShouldApplyContentIdentityAndDeletedCriteriaOnly() {
+        DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
+        ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
+        @SuppressWarnings("unchecked")
+        SearchHits<DiscoverySearchDocument> searchHits = mock(SearchHits.class);
+        ArgumentCaptor<CriteriaQuery> queryCaptor = ArgumentCaptor.forClass(CriteriaQuery.class);
+        SearchHit<DiscoverySearchDocument> searchHit = searchHit(document("1001", "标题", "摘要", "正文", 1));
+        when(searchHits.getSearchHits()).thenReturn(List.of(searchHit));
+        when(operations.search(
+                        queryCaptor.capture(),
+                        eq(DiscoverySearchDocument.class),
+                        any(org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.class)))
+                .thenReturn(searchHits);
+        ElasticsearchSearchIndexGateway gateway =
+                new ElasticsearchSearchIndexGateway(properties, operations, new DiscoverySearchDocumentAssembler());
+
+        var preview = gateway.getPreview("SANCAI_ENTRY", "1001");
+
+        Set<String> fieldNames = flattenCriteria(queryCaptor.getValue().getCriteria()).stream()
+                .map(Criteria::getField)
+                .filter(field -> field != null && field.getName() != null)
+                .map(field -> field.getName())
+                .collect(Collectors.toSet());
+        assertEquals("1001", preview.getContentId());
+        assertEquals("正文", preview.getBodyText());
+        assertTrue(fieldNames.contains("contentType"));
+        assertTrue(fieldNames.contains("contentId"));
+        assertFalse(fieldNames.contains("visibility"));
+        assertFalse(fieldNames.contains("knowledgeBase"));
+        assertTrue(fieldNames.contains("deleted"));
+    }
+
+    @Test
+    void previewShouldReturnNullWhenNoHit() {
+        DiscoverySearchIndexProperties properties = new DiscoverySearchIndexProperties();
+        ElasticsearchOperations operations = mock(ElasticsearchOperations.class);
+        @SuppressWarnings("unchecked")
+        SearchHits<DiscoverySearchDocument> searchHits = mock(SearchHits.class);
+        when(searchHits.getSearchHits()).thenReturn(List.of());
+        when(operations.search(
+                        any(CriteriaQuery.class),
+                        eq(DiscoverySearchDocument.class),
+                        any(org.springframework.data.elasticsearch.core.mapping.IndexCoordinates.class)))
+                .thenReturn(searchHits);
+        ElasticsearchSearchIndexGateway gateway =
+                new ElasticsearchSearchIndexGateway(properties, operations, new DiscoverySearchDocumentAssembler());
+
+        var preview = gateway.getPreview("SANCAI_ENTRY", "1001");
+
+        assertEquals(null, preview);
     }
 
     @Test

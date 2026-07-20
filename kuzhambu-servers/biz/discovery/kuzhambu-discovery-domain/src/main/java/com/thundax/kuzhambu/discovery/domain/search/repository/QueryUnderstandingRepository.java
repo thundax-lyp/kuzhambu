@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.discovery.domain.search.model.entity.QueryUnderstand
 
 public interface QueryUnderstandingRepository {
 
-    QueryUnderstanding getBySearchLogId(String searchLogId);
+    QueryUnderstanding getBySearchEventId(String searchEventId);
 
     Long save(QueryUnderstanding entity);
 

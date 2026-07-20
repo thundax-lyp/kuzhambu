@@ -1,14 +1,18 @@
 package com.thundax.kuzhambu.discovery.interfaces.portal.search.assembler;
 
 import com.thundax.kuzhambu.common.core.exception.BizException;
-import com.thundax.kuzhambu.discovery.application.search.command.SearchClickCreateCommand;
+import com.thundax.kuzhambu.discovery.application.search.command.SearchClickEventCreateCommand;
+import com.thundax.kuzhambu.discovery.application.search.query.SearchPreviewQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchEventResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResult;
-import com.thundax.kuzhambu.discovery.application.search.result.SearchLogResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchPreviewResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchResult;
-import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchClickRequest;
+import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchClickEventRequest;
+import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchPreviewRequest;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchRequest;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.response.DiscoverySearchGroupResponse;
+import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.response.DiscoverySearchPreviewResponse;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.response.DiscoverySearchResponse;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
@@ -44,12 +48,12 @@ public final class DiscoverySearchPortalInterfaceAssembler {
                 newTraceId());
     }
 
-    public static SearchClickCreateCommand toCommand(DiscoverySearchClickRequest request) {
+    public static SearchClickEventCreateCommand toCommand(DiscoverySearchClickEventRequest request) {
         if (request == null) {
             return null;
         }
-        return new SearchClickCreateCommand(
-                request.getSearchLogId(),
+        return new SearchClickEventCreateCommand(
+                request.getSearchEventId(),
                 request.getContentDomain(),
                 request.getContentType(),
                 request.getContentId(),
@@ -64,17 +68,54 @@ public final class DiscoverySearchPortalInterfaceAssembler {
                 newTraceId());
     }
 
-    public static DiscoverySearchResponse toResponse(SearchLogResult result) {
+    public static SearchPreviewQuery toQuery(DiscoverySearchPreviewRequest request) {
+        if (request == null) {
+            return null;
+        }
+        return new SearchPreviewQuery(
+                request.getContentType(),
+                request.getContentId(),
+                PORTAL_OPERATOR_TYPE,
+                null,
+                newRequestId(),
+                newTraceId());
+    }
+
+    public static DiscoverySearchResponse toResponse(SearchEventResult result) {
         if (result == null) {
             return null;
         }
         return DiscoverySearchResponse.builder()
-                .searchLogId(result.getSearchLogId())
+                .searchEventId(result.getSearchEventId())
                 .queryText(result.getQueryText())
                 .displayQueryText(result.getDisplayQueryText())
                 .totalCount(result.getResultTotalCount())
                 .groupCount(result.getGroupTotalCount())
                 .groups(toGroupResponses(result.getGroups()))
+                .build();
+    }
+
+    public static DiscoverySearchPreviewResponse toResponse(SearchPreviewResult result) {
+        if (result == null) {
+            return null;
+        }
+        return DiscoverySearchPreviewResponse.builder()
+                .contentDomain(result.getContentDomain())
+                .contentType(result.getContentType())
+                .contentId(result.getContentId())
+                .knowledgeBase(result.getKnowledgeBase())
+                .categoryCode(result.getCategoryCode())
+                .categoryName(result.getCategoryName())
+                .title(result.getTitle())
+                .summary(result.getSummary())
+                .bodyText(result.getBodyText())
+                .tagNames(result.getTagNames())
+                .contentStatus(result.getContentStatus())
+                .visibility(result.getVisibility())
+                .sourceVersionNo(result.getSourceVersionNo())
+                .publishedAt(result.getPublishedAt())
+                .updatedAt(result.getUpdatedAt())
+                .targetPath(result.getTargetPath())
                 .build();
     }
 

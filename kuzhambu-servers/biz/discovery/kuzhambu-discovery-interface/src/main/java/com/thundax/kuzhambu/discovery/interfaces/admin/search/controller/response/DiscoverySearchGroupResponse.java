@@ -11,7 +11,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-@Schema(name = "DiscoverySearchAdminGroupResponse", description = "Discovery 后台搜索分组响应")
+@Schema(name = "DiscoverySearchStatisticsGroupResponse", description = "Discovery 后台搜索分组响应")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DiscoverySearchGroupResponse implements Serializable {
@@ -34,7 +34,7 @@ public class DiscoverySearchGroupResponse implements Serializable {
 
     @Getter
     @Builder
-    @Schema(name = "DiscoverySearchAdminItemResponse", description = "Discovery 后台搜索结果项响应")
+    @Schema(name = "DiscoverySearchStatisticsItemResponse", description = "Discovery 后台搜索结果项响应")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class DiscoverySearchItemResponse implements Serializable {

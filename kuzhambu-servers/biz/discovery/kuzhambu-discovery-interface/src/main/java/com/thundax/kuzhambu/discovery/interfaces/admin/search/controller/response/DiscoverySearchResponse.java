@@ -11,14 +11,14 @@ import lombok.Getter;
 
 @Getter
 @Builder
-@Schema(name = "DiscoverySearchAdminResponse", description = "Discovery 后台搜索响应")
+@Schema(name = "DiscoverySearchStatisticsResponse", description = "Discovery 后台搜索响应")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DiscoverySearchResponse implements Serializable {
 
-    @Schema(name = "searchLogId", description = "搜索日志号")
-    @JsonProperty(value = "searchLogId")
-    private String searchLogId;
+    @Schema(name = "searchEventId", description = "检索统计事件号")
+    @JsonProperty(value = "searchEventId")
+    private String searchEventId;
 
     @Schema(name = "queryText", description = "原始搜索词")
     @JsonProperty(value = "queryText")

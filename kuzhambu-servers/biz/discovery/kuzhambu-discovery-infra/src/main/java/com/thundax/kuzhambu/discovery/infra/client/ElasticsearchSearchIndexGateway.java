@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.discovery.infra.client;
 
 import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchPageResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchPreviewResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchSourceContent;
 import com.thundax.kuzhambu.discovery.application.search.support.SearchIndexGateway;
@@ -25,10 +26,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
-
-    private static final String PUBLIC_VISIBILITY = "PUBLIC";
-    private static final String PRIVATE_VISIBILITY = "PRIVATE";
-    private static final String NO_MATCH_VISIBILITY = "__NO_MATCH__";
 
     private static final int HIGHLIGHT_CONTEXT_LENGTH = 60;
     private static final int FALLBACK_LENGTH = 160;
@@ -66,6 +63,24 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
         return new SearchPageResult(
                 toIntTotalHits(searchHits.getTotalHits()),
                 toGroupedResults(searchHits.getSearchHits(), keyword == null ? null : keyword.getNormalizedText()));
+    }
+
+    @Override
+    public SearchPreviewResult getPreview(String contentType, String contentId) {
+        ElasticsearchOperations operations = requireOperations("preview");
+        Criteria criteria = new Criteria("contentType").is(contentType).and(new Criteria("contentId").is(contentId));
+        criteria = criteria.and(new Criteria("deleted").is(false));
+        CriteriaQuery query = new CriteriaQuery(criteria);
+        query.setPageable(PageRequest.of(0, 1));
+        List<SearchHit<DiscoverySearchDocument>> hits = operations
+                .search(query, DiscoverySearchDocument.class, indexCoordinates())
+                .getSearchHits();
+        if (hits == null || hits.isEmpty()) {
+            return null;
+        }
+        DiscoverySearchDocument document =
+                hits.get(0) == null ? null : hits.get(0).getContent();
+        return toPreviewResult(document);
     }
 
     @Override
@@ -225,26 +240,10 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
 
     private Criteria appendVisibilityPermissionFilter(Criteria criteria, SearchScope searchScope) {
         List<String> visibilityScopes = normalizedValues(searchScope.getVisibilityScopes());
-        List<String> privateKnowledgeBases = normalizedValues(searchScope.getPrivateKnowledgeBases());
-        boolean allowPublic = visibilityScopes.isEmpty() || containsIgnoreCase(visibilityScopes, PUBLIC_VISIBILITY);
-        boolean allowPrivate = (visibilityScopes.isEmpty() || containsIgnoreCase(visibilityScopes, PRIVATE_VISIBILITY))
-                && !privateKnowledgeBases.isEmpty();
-        if (allowPublic && allowPrivate) {
-            return criteria.and(Criteria.or()
-                    .subCriteria(new Criteria("visibility").is(PUBLIC_VISIBILITY))
-                    .subCriteria(Criteria.and()
-                            .subCriteria(new Criteria("visibility").is(PRIVATE_VISIBILITY))
-                            .subCriteria(new Criteria("knowledgeBase").in(privateKnowledgeBases.toArray()))));
+        if (visibilityScopes.isEmpty()) {
+            return criteria;
         }
-        if (allowPublic) {
-            return criteria.and(new Criteria("visibility").is(PUBLIC_VISIBILITY));
-        }
-        if (allowPrivate) {
-            return criteria.and(new Criteria("visibility")
-                    .is(PRIVATE_VISIBILITY)
-                    .and(new Criteria("knowledgeBase").in(privateKnowledgeBases.toArray())));
-        }
-        return criteria.and(new Criteria("visibility").is(NO_MATCH_VISIBILITY));
+        return criteria.and(new Criteria("visibility").in(visibilityScopes.toArray()));
     }
 
     private List<String> normalizedValues(List<String> values) {
@@ -255,10 +254,6 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
                 .filter(value -> value != null && !value.isBlank())
                 .map(String::trim)
                 .toList();
-    }
-
-    private boolean containsIgnoreCase(List<String> values, String expected) {
-        return values.stream().anyMatch(value -> expected.equalsIgnoreCase(value));
     }
 
     private List<SearchGroupResult> toGroupedResults(List<SearchHit<DiscoverySearchDocument>> hits, String keyword) {
@@ -300,6 +295,31 @@ public class ElasticsearchSearchIndexGateway implements SearchIndexGateway {
                         entry.getValue().size(),
                         entry.getValue()))
                 .toList();
+    }
+
+    private SearchPreviewResult toPreviewResult(DiscoverySearchDocument document) {
+        if (document == null) {
+            return null;
+        }
+        return new SearchPreviewResult(
+                document.getContentDomain(),
+                document.getContentType(),
+                document.getContentId(),
+                document.getKnowledgeBase(),
+                document.getCategoryCode(),
+                document.getCategoryName(),
+                document.getTitle(),
+                document.getSummary(),
+                document.getBodyText(),
+                document.getTagNames(),
+                document.getStatus(),
+                document.getVisibility(),
+                document.getSourceVersionNo(),
+                document.getPublishedAt() == null
+                        ? null
+                        : document.getPublishedAt().toEpochMilli(),
+                document.getUpdatedAt() == null ? null : document.getUpdatedAt().toEpochMilli(),
+                document.getSourcePath());
     }
 
     private int toIntTotalHits(long totalHits) {

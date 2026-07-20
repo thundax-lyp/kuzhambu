@@ -12,15 +12,15 @@ import org.junit.jupiter.api.Test;
 class SearchMapperParameterTest {
 
     @Test
-    void searchLogRangeMapperShouldDeclareParamNames() throws NoSuchMethodException {
-        Method method = SearchLogMapper.class.getMethod("selectByCreatedAtRange", Date.class, Date.class);
+    void searchEventRangeMapperShouldDeclareParamNames() throws NoSuchMethodException {
+        Method method = SearchEventMapper.class.getMethod("selectByCreatedAtRange", Date.class, Date.class);
 
         assertEquals(List.of("createdAtStart", "createdAtEnd"), paramNames(method));
     }
 
     @Test
-    void searchClickRangeMapperShouldDeclareParamNames() throws NoSuchMethodException {
-        Method method = SearchClickMapper.class.getMethod("countByCreatedAtRange", Date.class, Date.class);
+    void searchClickEventRangeMapperShouldDeclareParamNames() throws NoSuchMethodException {
+        Method method = SearchClickEventMapper.class.getMethod("countByCreatedAtRange", Date.class, Date.class);
 
         assertEquals(List.of("createdAtStart", "createdAtEnd"), paramNames(method));
     }

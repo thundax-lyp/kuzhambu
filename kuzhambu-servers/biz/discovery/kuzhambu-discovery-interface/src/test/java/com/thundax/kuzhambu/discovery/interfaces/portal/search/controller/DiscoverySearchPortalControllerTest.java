@@ -10,11 +10,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchEventResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchGroupResult;
-import com.thundax.kuzhambu.discovery.application.search.result.SearchLogResult;
+import com.thundax.kuzhambu.discovery.application.search.result.SearchPreviewResult;
 import com.thundax.kuzhambu.discovery.application.search.result.SearchResult;
 import com.thundax.kuzhambu.discovery.application.search.service.SearchApplicationService;
-import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchClickRequest;
+import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchClickEventRequest;
+import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchPreviewRequest;
 import com.thundax.kuzhambu.discovery.interfaces.portal.search.controller.request.DiscoverySearchRequest;
 import jakarta.validation.constraints.NotBlank;
 import java.lang.reflect.Method;
@@ -31,7 +33,10 @@ class DiscoverySearchPortalControllerTest {
     void routesShouldKeepPortalApiPaths() throws Exception {
         assertRequestMapping(DiscoverySearchPortalController.class, "/api/portal/discovery/search");
         assertPostMapping(DiscoverySearchPortalController.class, "search", "search", DiscoverySearchRequest.class);
-        assertPostMapping(DiscoverySearchPortalController.class, "click", "click", DiscoverySearchClickRequest.class);
+        assertPostMapping(
+                DiscoverySearchPortalController.class, "preview", "preview", DiscoverySearchPreviewRequest.class);
+        assertPostMapping(
+                DiscoverySearchPortalController.class, "click", "click", DiscoverySearchClickEventRequest.class);
     }
 
     @Test
@@ -66,10 +71,10 @@ class DiscoverySearchPortalControllerTest {
                 "pageNo",
                 "pageSize");
 
-        DiscoverySearchClickRequest clickRequest = OBJECT_MAPPER.readValue(
+        DiscoverySearchClickEventRequest clickRequest = OBJECT_MAPPER.readValue(
                 """
                 {
-                  "searchLogId": "s-1",
+                  "searchEventId": "s-1",
                   "contentDomain": "CLASSICS",
                   "contentType": "SANCAI_ENTRY",
                   "contentId": "1001",
@@ -80,11 +85,11 @@ class DiscoverySearchPortalControllerTest {
                   "targetPath": "/classics/sancai/1001"
                 }
                 """,
-                DiscoverySearchClickRequest.class);
-        assertEquals("s-1", clickRequest.getSearchLogId());
+                DiscoverySearchClickEventRequest.class);
+        assertEquals("s-1", clickRequest.getSearchEventId());
         assertJsonFields(
                 clickRequest,
-                "searchLogId",
+                "searchEventId",
                 "contentDomain",
                 "contentType",
                 "contentId",
@@ -109,7 +114,7 @@ class DiscoverySearchPortalControllerTest {
         request.setPageNo(1);
         request.setPageSize(20);
         when(service.search(any()))
-                .thenReturn(new SearchLogResult(
+                .thenReturn(new SearchEventResult(
                         "s-1",
                         "黄帝",
                         "黄帝",
@@ -143,17 +148,53 @@ class DiscoverySearchPortalControllerTest {
         var response = controller.search(request);
 
         verify(service).search(any());
-        assertEquals("s-1", response.getSearchLogId());
+        assertEquals("s-1", response.getSearchEventId());
         assertEquals(1, response.getGroups().size());
         assertEquals("1001", response.getGroups().get(0).getItems().get(0).getContentId());
+    }
+
+    @Test
+    void previewShouldMapSearchIndexDocumentFields() {
+        SearchApplicationService service = mock(SearchApplicationService.class);
+        DiscoverySearchPortalController controller = new DiscoverySearchPortalController(service);
+        DiscoverySearchPreviewRequest request = new DiscoverySearchPreviewRequest();
+        request.setContentType("SANCAI_ENTRY");
+        request.setContentId("1001");
+        when(service.getPreview(any()))
+                .thenReturn(new SearchPreviewResult(
+                        "CLASSICS",
+                        "SANCAI_ENTRY",
+                        "1001",
+                        "SANCAI_ENTRY",
+                        "11",
+                        "天文",
+                        "黄帝",
+                        "摘要",
+                        "正文",
+                        List.of("上古"),
+                        "PUBLISHED",
+                        "PUBLIC",
+                        3,
+                        1_767_225_600_000L,
+                        1_767_312_000_000L,
+                        "/classics/sancai/1001"));
+
+        var response = controller.preview(request);
+
+        verify(service)
+                .getPreview(argThat(
+                        query -> "SANCAI_ENTRY".equals(query.getContentType()) && "1001".equals(query.getContentId())));
+        assertEquals("黄帝", response.getTitle());
+        assertEquals("正文", response.getBodyText());
+        assertEquals("/classics/sancai/1001", response.getTargetPath());
     }
 
     @Test
     void clickShouldDelegateToApplicationService() {
         SearchApplicationService service = mock(SearchApplicationService.class);
         DiscoverySearchPortalController controller = new DiscoverySearchPortalController(service);
-        DiscoverySearchClickRequest request = new DiscoverySearchClickRequest();
-        request.setSearchLogId("s-1");
+        DiscoverySearchClickEventRequest request = new DiscoverySearchClickEventRequest();
+        request.setSearchEventId("s-1");
         request.setContentDomain("CLASSICS");
         request.setContentType("SANCAI_ENTRY");
         request.setContentId("1001");
@@ -166,7 +207,7 @@ class DiscoverySearchPortalControllerTest {
         Boolean result = controller.click(request);
 
         verify(service)
-                .recordClick(argThat(command -> "s-1".equals(command.getSearchLogId())
+                .recordClick(argThat(command -> "s-1".equals(command.getSearchEventId())
                         && "SANCAI_ENTRY".equals(command.getResultGroupKey())
                         && "/classics/sancai/1001".equals(command.getTargetPath())));
         assertTrue(result);
