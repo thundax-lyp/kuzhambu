@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import com.thundax.kuzhambu.common.core.sort.SortablePrioritySwapSupport;
 import com.thundax.kuzhambu.system.application.core.command.ChangeDictInfoCommand;
 import com.thundax.kuzhambu.system.application.core.command.CreateDictCommand;
 import com.thundax.kuzhambu.system.application.core.command.DictSortCommand;
@@ -16,10 +17,7 @@ import com.thundax.kuzhambu.system.domain.core.model.valueobject.DictId;
 import com.thundax.kuzhambu.system.domain.core.repository.DictRepository;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -99,114 +97,15 @@ public class DictApplicationServiceImpl implements DictApplicationService {
                     ErrorCode.SORT_EMPTY_INPUT.getMessage());
         }
 
-        List<Dict> selectedDicts = dao.listByIds(toValues(orderedIdList));
-        Map<Long, String> typeById = new HashMap<>();
-        String dictType = null;
-        if (selectedDicts == null || selectedDicts.isEmpty()) {
-            throw new BizException(
-                    ErrorCode.SORT_MISSING_ID.getCode(),
-                    ErrorCode.SORT_MISSING_ID.getMessageKey(),
-                    ErrorCode.SORT_MISSING_ID.getMessage());
-        }
-        for (Dict dict : selectedDicts) {
-            if (dict == null || dict.getId() == null) {
-                continue;
-            }
-            Long idValue = dict.getId().value();
-            typeById.put(idValue, dict.getType());
-            if (dictType == null) {
-                dictType = dict.getType();
-            }
-        }
-
-        for (DictId orderedId : orderedIdList) {
-            if (orderedId == null || orderedId.value() == null) {
-                throw new BizException(
-                        ErrorCode.SORT_MISSING_ID.getCode(),
-                        ErrorCode.SORT_MISSING_ID.getMessageKey(),
-                        ErrorCode.SORT_MISSING_ID.getMessage());
-            }
-            String currentType = typeById.get(orderedId.value());
-            if (StringUtils.isEmpty(dictType)) {
-                throw new BizException(
-                        ErrorCode.SORT_MISSING_ID.getCode(),
-                        ErrorCode.SORT_MISSING_ID.getMessageKey(),
-                        ErrorCode.SORT_MISSING_ID.getMessage());
-            }
-            if (!Objects.equals(dictType, currentType)) {
-                throw new BizException(
-                        ErrorCode.SORT_MISSING_ID.getCode(),
-                        ErrorCode.SORT_MISSING_ID.getMessageKey(),
-                        ErrorCode.SORT_MISSING_ID.getMessage());
-            }
-        }
-
-        List<Dict> currentDicts = dao.listByType(dictType, SortDirection.ASC);
-        if (currentDicts == null || currentDicts.isEmpty()) {
-            throw new BizException(
-                    ErrorCode.SORT_MISSING_ID.getCode(),
-                    ErrorCode.SORT_MISSING_ID.getMessageKey(),
-                    ErrorCode.SORT_MISSING_ID.getMessage());
-        }
-
-        if (currentDicts.size() != orderedIdList.size()) {
-            throw new BizException(
-                    ErrorCode.SORT_MISSING_ID.getCode(),
-                    ErrorCode.SORT_MISSING_ID.getMessageKey(),
-                    ErrorCode.SORT_MISSING_ID.getMessage());
-        }
-
-        Map<Long, Integer> indexById = new HashMap<>(currentDicts.size());
-        Map<Long, Integer> priorityById = new HashMap<>(currentDicts.size());
-        List<DictId> currentOrderedIds = new ArrayList<>(currentDicts.size());
-
-        for (int i = 0; i < currentDicts.size(); i++) {
-            Dict dict = currentDicts.get(i);
-            if (dict == null || dict.getId() == null) {
-                throw new BizException(
-                        ErrorCode.SORT_DB_FAILURE.getCode(),
-                        ErrorCode.SORT_DB_FAILURE.getMessageKey(),
-                        ErrorCode.SORT_DB_FAILURE.getMessage());
-            }
-            long dictId = dict.getId().value();
-            indexById.put(dictId, i);
-            priorityById.put(dictId, dict.getPriority());
-            currentOrderedIds.add(dict.getId());
-        }
-
-        for (DictId orderedId : orderedIdList) {
-            if (!indexById.containsKey(orderedId.value())) {
-                throw new BizException(
-                        ErrorCode.SORT_MISSING_ID.getCode(),
-                        ErrorCode.SORT_MISSING_ID.getMessageKey(),
-                        ErrorCode.SORT_MISSING_ID.getMessage());
-            }
-        }
-
-        int temporaryPriority = dao.maxPriority() + PRIORITY_STEP;
-        for (int i = 0; i < currentOrderedIds.size(); i++) {
-            DictId targetId = orderedIdList.get(i);
-            DictId currentId = currentOrderedIds.get(i);
-            if (targetId.equals(currentId)) {
-                continue;
-            }
-
-            int targetIndex = indexById.get(targetId.value());
-            int currentPriority = priorityById.get(currentId.value());
-            int targetPriority = priorityById.get(targetId.value());
-
-            updatePriorityOrThrow(targetId, temporaryPriority++, "暂态更新失败");
-            updatePriorityOrThrow(currentId, targetPriority, "交换更新失败");
-            updatePriorityOrThrow(targetId, currentPriority, "交换更新失败");
-
-            priorityById.put(targetId.value(), currentPriority);
-            priorityById.put(currentId.value(), targetPriority);
-
-            currentOrderedIds.set(i, targetId);
-            currentOrderedIds.set(targetIndex, currentId);
-            indexById.put(targetId.value(), i);
-            indexById.put(currentId.value(), targetIndex);
-        }
+        List<Dict> currentDicts = dao.list(SortDirection.ASC);
+        SortablePrioritySwapSupport.sort(
+                orderedIdList,
+                currentDicts,
+                Dict::getId,
+                DictId::value,
+                Dict::getPriority,
+                dao::maxPriority,
+                (id, priority) -> updatePriorityOrThrow(id, priority, "排序更新失败"));
     }
 
     @Override
