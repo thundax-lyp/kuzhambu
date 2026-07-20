@@ -66,4 +66,11 @@ public class PrincipalCredentialApplicationServiceImpl implements PrincipalCrede
     public void changeVerifyState(PrincipalCredentialCommand command) {
         principalCredentialRepository.updateVerifyState(command.getPrincipalCredential());
     }
+
+    @Override
+    public PrincipalCredential recordFailure(PrincipalCredentialCommand command) {
+        PrincipalCredential credential = command.getPrincipalCredential();
+        principalCredentialRepository.recordFailure(credential);
+        return principalCredentialRepository.getById(credential.getId());
+    }
 }
