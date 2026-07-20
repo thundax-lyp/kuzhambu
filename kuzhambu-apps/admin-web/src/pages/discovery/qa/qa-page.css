@@ -59,6 +59,11 @@
     margin-top: 16px;
 }
 
+.discovery-qa-page__composer .ant-sender-input {
+    max-height: 192px;
+    min-height: 96px;
+}
+
 .discovery-qa-page__context-grid {
     display: grid;
     gap: 12px;

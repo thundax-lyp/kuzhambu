@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { Bubble, Sender, type BubbleItemType } from "@ant-design/x";
 import { Card, Empty, Input, Select, Tag, Typography } from "antd";
-import { useMemo, useState, type FormEvent } from "react";
+import { forwardRef, useMemo, useState, type ComponentProps, type ElementRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
@@ -13,7 +14,6 @@ import type {
 import "./qa-page.css";
 
 const { Text, Title } = Typography;
-const { TextArea } = Input;
 
 const DEFAULT_OWNER_USER_ID = "1001";
 const DEFAULT_PAGE_SIZE = 20;
@@ -32,6 +32,12 @@ const CONTEXT_TYPE_OPTIONS = [
     { label: "三才图会", value: "SANCAI_ENTRY" },
     { label: "明代习俗", value: "MING_CUSTOMS" }
 ];
+const QaSenderInput = forwardRef<
+    ElementRef<typeof Input.TextArea>,
+    ComponentProps<typeof Input.TextArea>
+>((props, ref) => <Input.TextArea {...props} ref={ref} aria-label="问题" />);
+QaSenderInput.displayName = "QaSenderInput";
+const QA_SENDER_COMPONENTS = { input: QaSenderInput };
 
 interface QaFormState {
     contextContentId: string;
@@ -151,6 +157,26 @@ const toSourceKey = (source: DiscoveryQaSourceRecord, index: number) => {
     return source.sourceId ?? `${source.contentType ?? "SOURCE"}-${source.contentId ?? index}`;
 };
 
+const toBubbleStatus = (status: QaTimelineMessage["status"]) => {
+    if (status === "loading") {
+        return "loading";
+    }
+    if (status === "failed") {
+        return "error";
+    }
+    return "success";
+};
+
+const toBubbleTagColor = (status: QaTimelineMessage["status"]) => {
+    if (status === "failed") {
+        return "red";
+    }
+    if (status === "loading") {
+        return "processing";
+    }
+    return "blue";
+};
+
 export const QaPage = () => {
     const [searchParams] = useSearchParams();
     const [form, setForm] = useState<QaFormState>(() => toInitialFormState(searchParams));
@@ -200,11 +226,33 @@ export const QaPage = () => {
         const data = sessionsQuery.data;
         return data?.items ?? data?.records ?? [];
     }, [sessionsQuery.data]);
-    const messages = selectedSessionId ? (timelineBySession[selectedSessionId] ?? []) : [];
+    const messages = useMemo(() => {
+        return selectedSessionId ? (timelineBySession[selectedSessionId] ?? []) : [];
+    }, [selectedSessionId, timelineBySession]);
     const selectedSession = selectedSessionQuery.data;
     const latestAssistantMessage = [...messages]
         .reverse()
         .find((message) => message.role === "assistant" && message.sources?.length);
+    const bubbleItems = useMemo<BubbleItemType[]>(() => {
+        return messages.map((message) => ({
+            content:
+                message.content ||
+                (message.status === "loading" ? "正在生成回答..." : "未返回回答内容"),
+            footer: (
+                <KuzhambuSpace size={8}>
+                    <Tag color={toBubbleTagColor(message.status)}>{message.status}</Tag>
+                    {message.sources?.length ? (
+                        <Text type="secondary">{message.sources.length} 个来源</Text>
+                    ) : null}
+                </KuzhambuSpace>
+            ),
+            key: message.id,
+            loading: message.status === "loading",
+            role: message.role === "user" ? "user" : "ai",
+            status: toBubbleStatus(message.status),
+            variant: message.role === "user" ? "filled" : "outlined"
+        }));
+    }, [messages]);
     const hasFixedContext =
         form.contextMode === SINGLE_DOCUMENT_MODE &&
         form.contextContentType === WANGQI_DOCUMENT_TYPE &&
@@ -257,9 +305,8 @@ export const QaPage = () => {
         return nextSessionId;
     };
 
-    const submitQuestion = async (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        const question = form.question.trim();
+    const submitQuestion = async (questionValue = form.question) => {
+        const question = questionValue.trim();
         if (!question) {
             return;
         }
@@ -453,25 +500,21 @@ export const QaPage = () => {
                         </div>
 
                         <div className="discovery-qa-page__messages" aria-label="问答消息">
-                            {messages.length ? (
-                                messages.map((message) => (
-                                    <article
-                                        key={message.id}
-                                        className={`discovery-qa-page__message discovery-qa-page__message--${message.role}`}
-                                    >
-                                        <div className="discovery-qa-page__message-header">
-                                            <Text strong>
-                                                {message.role === "user" ? "提问" : "回答"}
-                                            </Text>
-                                            <Tag
-                                                color={message.status === "failed" ? "red" : "blue"}
-                                            >
-                                                {message.status}
-                                            </Tag>
-                                        </div>
-                                        <Text>{message.content}</Text>
-                                    </article>
-                                ))
+                            {bubbleItems.length ? (
+                                <Bubble.List
+                                    autoScroll
+                                    items={bubbleItems}
+                                    role={{
+                                        ai: {
+                                            placement: "start",
+                                            shape: "corner"
+                                        },
+                                        user: {
+                                            placement: "end",
+                                            shape: "corner"
+                                        }
+                                    }}
+                                />
                             ) : (
                                 <Empty
                                     image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -480,34 +523,25 @@ export const QaPage = () => {
                             )}
                         </div>
 
-                        <form className="discovery-qa-page__composer" onSubmit={submitQuestion}>
-                            <KuzhambuSpace
-                                orientation="vertical"
-                                size={12}
-                                style={{ width: "100%" }}
-                            >
-                                <TextArea
-                                    aria-label="问题"
-                                    autoSize={{ minRows: 3, maxRows: 6 }}
-                                    value={form.question}
-                                    onChange={(event) =>
-                                        updateField("question", event.target.value)
-                                    }
-                                    placeholder="输入要追问的内容"
+                        <Sender
+                            autoSize={false}
+                            className="discovery-qa-page__composer"
+                            components={QA_SENDER_COMPONENTS}
+                            loading={
+                                openSessionMutation.isPending || chatCompletionMutation.isPending
+                            }
+                            placeholder="输入要追问的内容"
+                            submitType="enter"
+                            value={form.question}
+                            onChange={(value) => updateField("question", value)}
+                            onSubmit={(message) => void submitQuestion(message)}
+                            suffix={(_, { components }) => (
+                                <components.SendButton
+                                    aria-label="发送问题"
+                                    data-testid="discovery-qa-send-question-button"
                                 />
-                                <KuzhambuButton
-                                    testId="discovery-qa-send-question-button"
-                                    htmlType="submit"
-                                    loading={
-                                        openSessionMutation.isPending ||
-                                        chatCompletionMutation.isPending
-                                    }
-                                    type="primary"
-                                >
-                                    发送问题
-                                </KuzhambuButton>
-                            </KuzhambuSpace>
-                        </form>
+                            )}
+                        />
                     </KuzhambuSpace>
                 </Card>
             </section>

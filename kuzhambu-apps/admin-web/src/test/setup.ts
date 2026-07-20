@@ -46,6 +46,17 @@ class ResizeObserverMock {
     disconnect = vi.fn();
 }
 
+class IntersectionObserverMock implements IntersectionObserver {
+    readonly root = null;
+    readonly rootMargin = "";
+    readonly thresholds = [];
+
+    disconnect = vi.fn();
+    observe = vi.fn();
+    takeRecords = vi.fn((): IntersectionObserverEntry[] => []);
+    unobserve = vi.fn();
+}
+
 Object.defineProperty(window, "ResizeObserver", {
     writable: true,
     value: ResizeObserverMock
@@ -54,4 +65,14 @@ Object.defineProperty(window, "ResizeObserver", {
 Object.defineProperty(globalThis, "ResizeObserver", {
     writable: true,
     value: ResizeObserverMock
+});
+
+Object.defineProperty(window, "IntersectionObserver", {
+    writable: true,
+    value: IntersectionObserverMock
+});
+
+Object.defineProperty(globalThis, "IntersectionObserver", {
+    writable: true,
+    value: IntersectionObserverMock
 });
