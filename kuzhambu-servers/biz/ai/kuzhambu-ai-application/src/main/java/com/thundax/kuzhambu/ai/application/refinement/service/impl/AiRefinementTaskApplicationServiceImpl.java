@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.ai.application.refinement.service.impl;
 
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.refinement.command.AiRefinementRequestCommand;
+import com.thundax.kuzhambu.ai.application.refinement.configuration.AiRefinementExecutorConfiguration;
 import com.thundax.kuzhambu.ai.application.refinement.result.AiCandidateResult;
 import com.thundax.kuzhambu.ai.application.refinement.service.AiRefinementApplicationService;
 import com.thundax.kuzhambu.ai.application.refinement.service.AiRefinementTaskApplicationService;
@@ -18,10 +19,12 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -49,12 +52,16 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
 
     private final AiRefinementTaskRepository taskRepository;
     private final AiRefinementApplicationService refinementApplicationService;
+    private final Executor taskExecutor;
     private final ConcurrentHashMap<Long, TaskStreamHub> streamHubs = new ConcurrentHashMap<>();
 
     public AiRefinementTaskApplicationServiceImpl(
-            AiRefinementTaskRepository taskRepository, AiRefinementApplicationService refinementApplicationService) {
+            AiRefinementTaskRepository taskRepository,
+            AiRefinementApplicationService refinementApplicationService,
+            @Qualifier(AiRefinementExecutorConfiguration.TASK_EXECUTOR) Executor taskExecutor) {
         this.taskRepository = taskRepository;
         this.refinementApplicationService = refinementApplicationService;
+        this.taskExecutor = taskExecutor;
     }
 
     @Override
@@ -209,7 +216,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     }
 
     private void scheduleTaskExecution(Long taskId, AiRefinementRequestCommand command) {
-        Runnable task = () -> CompletableFuture.runAsync(() -> executeTaskSafely(taskId, command));
+        Runnable task = () -> CompletableFuture.runAsync(() -> executeTaskSafely(taskId, command), taskExecutor);
         if (!TransactionSynchronizationManager.isSynchronizationActive()) {
             task.run();
             return;

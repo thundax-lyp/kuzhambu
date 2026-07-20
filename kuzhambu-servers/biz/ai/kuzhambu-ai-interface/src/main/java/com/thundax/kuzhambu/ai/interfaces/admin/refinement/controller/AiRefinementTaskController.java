@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller;
 
 import com.thundax.kuzhambu.ai.application.batch.command.AiBatchJobCreateCommand;
 import com.thundax.kuzhambu.ai.application.batch.service.AiBatchJobApplicationService;
+import com.thundax.kuzhambu.ai.application.refinement.configuration.AiRefinementExecutorConfiguration;
 import com.thundax.kuzhambu.ai.application.refinement.service.AiRefinementTaskApplicationService;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.assembler.AiRefinementInterfaceAssembler;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.request.AiRefinementRequests;
@@ -19,6 +20,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,12 +38,15 @@ public class AiRefinementTaskController {
 
     private final AiRefinementTaskApplicationService taskApplicationService;
     private final AiBatchJobApplicationService batchJobApplicationService;
+    private final Executor streamExecutor;
 
     public AiRefinementTaskController(
             AiRefinementTaskApplicationService taskApplicationService,
-            AiBatchJobApplicationService batchJobApplicationService) {
+            AiBatchJobApplicationService batchJobApplicationService,
+            @Qualifier(AiRefinementExecutorConfiguration.STREAM_EXECUTOR) Executor streamExecutor) {
         this.taskApplicationService = taskApplicationService;
         this.batchJobApplicationService = batchJobApplicationService;
+        this.streamExecutor = streamExecutor;
     }
 
     @Operation(summary = "创建AI精修任务", description = "ai:refinement:edit")
@@ -90,14 +96,15 @@ public class AiRefinementTaskController {
     @GetMapping(value = "stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamTask(@RequestParam(value = "taskId") Long taskId) {
         SseEmitter emitter = new SseEmitter(600_000L);
-        CompletableFuture.runAsync(() -> {
+        Runnable subscription = () -> {
             try {
                 taskApplicationService.streamTaskEvents(taskId, event -> sendEvent(emitter, event));
                 emitter.complete();
             } catch (RuntimeException exception) {
                 emitter.completeWithError(exception);
             }
-        });
+        };
+        CompletableFuture.runAsync(subscription, streamExecutor);
         return emitter;
     }
 

@@ -18,6 +18,7 @@ import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -26,6 +27,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 class AiRefinementTaskControllerTest {
+
+    private static final Executor DIRECT_EXECUTOR = Runnable::run;
 
     @Test
     void routesShouldKeepTaskApiPathsAndPermissions() throws Exception {
@@ -77,8 +80,8 @@ class AiRefinementTaskControllerTest {
 
     @Test
     void controllerShouldMapTaskLifecycleResponses() {
-        AiRefinementTaskController controller =
-                new AiRefinementTaskController(new FakeTaskApplicationService(), new NoOpBatchJobService());
+        AiRefinementTaskController controller = new AiRefinementTaskController(
+                new FakeTaskApplicationService(), new NoOpBatchJobService(), DIRECT_EXECUTOR);
 
         AiRefinementRequests.RefinementRequest addRequest = new AiRefinementRequests.RefinementRequest();
         addRequest.setCapability("summary");

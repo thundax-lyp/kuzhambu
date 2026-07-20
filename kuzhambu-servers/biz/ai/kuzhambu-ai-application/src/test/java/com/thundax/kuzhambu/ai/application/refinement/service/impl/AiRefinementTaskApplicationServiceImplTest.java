@@ -18,12 +18,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 class AiRefinementTaskApplicationServiceImplTest {
+
+    private static final Executor DIRECT_EXECUTOR = Runnable::run;
 
     @Test
     void addTaskShouldMarkSancaiImageAnalysisStreamAndPersistSucceededCandidate() {
@@ -39,7 +42,7 @@ class AiRefinementTaskApplicationServiceImplTest {
                 null,
                 null));
         AiRefinementTaskApplicationServiceImpl service =
-                new AiRefinementTaskApplicationServiceImpl(repository, refinementService);
+                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
 
         AiRefinementTask accepted = service.addTask(command(AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE.value()));
         AiRefinementTask completed = awaitTerminal(repository, accepted.getTaskId());
@@ -67,7 +70,7 @@ class AiRefinementTaskApplicationServiceImplTest {
                 "WORKER_PROTOCOL_FAILURE",
                 "Worker stream ended without completed event"));
         AiRefinementTaskApplicationServiceImpl service =
-                new AiRefinementTaskApplicationServiceImpl(repository, refinementService);
+                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
 
         AiRefinementTask accepted = service.addTask(command(AiBusinessCapability.CLASSICS_IMAGE_GENERATE.value()));
         AiRefinementTask completed = awaitTerminal(repository, accepted.getTaskId());
@@ -95,7 +98,7 @@ class AiRefinementTaskApplicationServiceImplTest {
                 null,
                 null));
         AiRefinementTaskApplicationServiceImpl service =
-                new AiRefinementTaskApplicationServiceImpl(repository, refinementService);
+                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
 
         TransactionSynchronizationManager.initSynchronization();
         AiRefinementTask accepted;
@@ -127,7 +130,7 @@ class AiRefinementTaskApplicationServiceImplTest {
                 null,
                 null));
         AiRefinementTaskApplicationServiceImpl service =
-                new AiRefinementTaskApplicationServiceImpl(repository, refinementService);
+                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
 
         AiRefinementRequestCommand command = command("translate");
         AiRefinementTask accepted = service.addTask(command);
@@ -156,7 +159,7 @@ class AiRefinementTaskApplicationServiceImplTest {
                 null,
                 null));
         AiRefinementTaskApplicationServiceImpl service =
-                new AiRefinementTaskApplicationServiceImpl(repository, refinementService);
+                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
 
         service.cancelTask(task.getTaskId(), task.getRequestedBy());
         int updated = repository.updateWhenStatusIn(staleRunningTask, List.of("RUNNING"));
@@ -174,7 +177,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         repository.insertWithTaskId(task);
         StubRefinementApplicationService refinementService = new StubRefinementApplicationService(null);
         AiRefinementTaskApplicationServiceImpl service =
-                new AiRefinementTaskApplicationServiceImpl(repository, refinementService);
+                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
         List<String> statuses = new ArrayList<>();
         CompletableFuture<Void> subscription =
                 CompletableFuture.runAsync(() -> service.streamTaskEvents(task.getTaskId(), event -> {
