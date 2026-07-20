@@ -65,7 +65,7 @@ class SystemAdminManagementContractTest {
         assertPostMapping(RoleController.class, "add", "create", RoleSaveRequest.class);
         assertPostMapping(RoleController.class, "update", "update", RoleSaveRequest.class);
         assertPostMapping(RoleController.class, "updateStatus", "enable", List.class);
-        assertPostMapping(RoleController.class, "updatePriority", "sort", RoleSortRequest.class);
+        assertPostMapping(RoleController.class, "sort", "sort", RoleSortRequest.class);
         assertPostMapping(RoleController.class, "delete", "delete", List.class);
         assertPostMapping(RoleController.class, "menuTree", "menu/tree");
         assertPostMapping(RoleController.class, "userTree", "user/tree");
@@ -138,9 +138,9 @@ class SystemAdminManagementContractTest {
                 OBJECT_MAPPER.readValue("{\"id\":\"role-1\",\"enable\":true}", RoleStatusRequest.class);
         assertJsonFields(roleStatusRequest, "id", "enable");
 
-        RoleSortRequest roleSortRequest = OBJECT_MAPPER.readValue(
-                "{\"orderedIds\":[\"role-1\",\"role-2\"],\"sortDirection\":\"ASC\"}", RoleSortRequest.class);
-        assertJsonFields(roleSortRequest, "orderedIds", "sortDirection");
+        RoleSortRequest roleSortRequest =
+                OBJECT_MAPPER.readValue("{\"orderedIds\":[\"role-1\",\"role-2\"]}", RoleSortRequest.class);
+        assertJsonFields(roleSortRequest, "orderedIds");
 
         MenuSaveRequest menuSaveRequest = OBJECT_MAPPER.readValue(
                 """

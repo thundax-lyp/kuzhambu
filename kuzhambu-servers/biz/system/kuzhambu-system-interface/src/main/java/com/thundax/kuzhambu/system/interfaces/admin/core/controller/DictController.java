@@ -176,10 +176,8 @@ public class DictController {
     })
     @PostMapping(value = "sort")
     public Boolean sort(@Valid @RequestBody DictSortRequest request) {
-        dictService.sort(new DictSortCommand(
-                RequestListHelper.map(
-                        readOrderedIds(request == null ? null : request.getOrderedIds()), DictIdCodec::toDomain),
-                request == null ? null : request.getSortDirection()));
+        dictService.sort(new DictSortCommand(RequestListHelper.map(
+                readOrderedIds(request == null ? null : request.getOrderedIds()), DictIdCodec::toDomain)));
         return true;
     }
 
