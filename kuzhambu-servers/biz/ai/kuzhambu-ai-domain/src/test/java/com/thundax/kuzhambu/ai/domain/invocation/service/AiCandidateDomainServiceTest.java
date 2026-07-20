@@ -117,6 +117,35 @@ class AiCandidateDomainServiceTest {
         assertSame(candidate, repository.getLastUpdatedCandidate());
     }
 
+    @Test
+    void markAppliedShouldFailWhenCandidateIsNotPending() {
+        AiCandidate candidate = candidate(1L, "SANCAI_ENTRY", 2L, "summary", "REJECTED");
+        FakeRepository repository = new FakeRepository(candidate);
+        AiCandidateDomainService service = new AiCandidateDomainService(repository);
+
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> service.markApplied(1L, "JSON", "{\"text\":\"ok\"}", Instant.parse("2026-06-22T02:00:00Z")));
+
+        assertEquals("AI-INVOCATION-409", exception.getCode());
+        assertEquals("ai.candidate.not-pending", exception.getMessageKey());
+        assertEquals(0, repository.getUpdateCandidateCount());
+    }
+
+    @Test
+    void rejectShouldFailWhenCandidateIsNotPending() {
+        AiCandidate candidate = candidate(1L, "SANCAI_ENTRY", 2L, "summary", "APPLIED");
+        FakeRepository repository = new FakeRepository(candidate);
+        AiCandidateDomainService service = new AiCandidateDomainService(repository);
+
+        DomainException exception =
+                assertThrows(DomainException.class, () -> service.reject(1L, "USER_REJECTED", "not useful"));
+
+        assertEquals("AI-INVOCATION-409", exception.getCode());
+        assertEquals("ai.candidate.not-pending", exception.getMessageKey());
+        assertEquals(0, repository.getUpdateCandidateCount());
+    }
+
     private AiCandidate candidate(Long id, String contentType, Long contentId, String capability, String status) {
         AiCandidate candidate = new AiCandidate();
         candidate.setCandidateId(id);

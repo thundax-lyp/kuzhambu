@@ -50,6 +50,7 @@ public class AiCandidateDomainService {
             throw new DomainException(
                     "AI-INVOCATION-404", "ai.candidate.not-found", "AI candidate not found: " + candidateId);
         }
+        requirePending(candidate, candidateId);
         candidate.markApplied(appliedAt);
         candidate.setResultFormat(resultFormat);
         candidate.setResultPayload(resultPayload);
@@ -67,6 +68,7 @@ public class AiCandidateDomainService {
             throw new DomainException(
                     "AI-INVOCATION-404", "ai.candidate.not-found", "AI candidate not found: " + candidateId);
         }
+        requirePending(candidate, candidateId);
         candidate.reject(errorType, errorMessage);
         int updated = repository.updateCandidate(candidate);
         if (updated != 1) {
@@ -74,5 +76,12 @@ public class AiCandidateDomainService {
                     "AI-INVOCATION-409", "ai.candidate.update-failed", "AI candidate update failed: " + candidateId);
         }
         return candidate;
+    }
+
+    private void requirePending(AiCandidate candidate, Long candidateId) {
+        if (!candidate.isPending()) {
+            throw new DomainException(
+                    "AI-INVOCATION-409", "ai.candidate.not-pending", "AI candidate is not pending: " + candidateId);
+        }
     }
 }
