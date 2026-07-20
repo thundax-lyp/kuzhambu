@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS `storage_object` (
     `remarks` varchar(512) DEFAULT NULL,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_storage_object_key` (`bucket_name`, `object_key`),
+    UNIQUE KEY `uk_storage_object_priority` (`priority`),
     KEY `idx_storage_object_status` (`object_status`, `reference_status`),
     KEY `idx_storage_object_cleanup` (`object_status`, `reference_status`, `stored_at`),
     KEY `idx_storage_object_mime_type` (`mime_type`)
