@@ -31,6 +31,11 @@ export interface DiscoveryQaGetSessionQuery {
     sessionId: string;
 }
 
+export interface DiscoveryQaDeleteSessionCommand {
+    ownerUserId?: number | null;
+    sessionId: string;
+}
+
 export interface DiscoveryQaExportSessionCommand {
     format?: string | null;
     ownerUserId?: number | null;
@@ -89,6 +94,12 @@ export const getQaSession = (query: DiscoveryQaGetSessionQuery) => {
             body: query
         }
     );
+};
+
+export const deleteQaSession = (command: DiscoveryQaDeleteSessionCommand) => {
+    return postJson<void, DiscoveryQaDeleteSessionCommand>("/discovery/qa/session/delete", {
+        body: command
+    });
 };
 
 export const createQaSessionExport = (command: DiscoveryQaExportSessionCommand) => {

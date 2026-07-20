@@ -47,8 +47,9 @@ const mocks = vi.hoisted(() => ({
         sessionId: "7001",
         title: "知识中心问答"
     })),
+    deleteQaSession: vi.fn(async () => undefined),
     pageQaSessions: vi.fn(async () => ({
-        items: [],
+        items: [] as Array<{ openedAt: number; sessionId: string; title: string }>,
         pageNo: 1,
         pageSize: 20,
         total: 0
@@ -128,7 +129,7 @@ describe("QaPage", () => {
                     ownerUserId: 1001,
                     requestId: null,
                     scope: "PORTAL",
-                    title: "新对话",
+                    title: "礼学和礼制有什么关系？",
                     traceId: null
                 }),
                 expect.anything()
@@ -198,6 +199,55 @@ describe("QaPage", () => {
             );
         });
         expect(mocks.createQaChatCompletionStream).not.toHaveBeenCalled();
+    });
+
+    it("truncates first question as automatic conversation title", async () => {
+        const user = userEvent.setup();
+        renderPage();
+
+        await user.type(
+            screen.getByLabelText("问题"),
+            "这是一段很长很长的提问，用来验证对话标题会被截断显示"
+        );
+        await user.click(screen.getByRole("button", { name: "发送问题" }));
+
+        await waitFor(() => {
+            expect(mocks.createQaSession).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    title: "这是一段很长很长的提问，用来验证对话标题会被截断..."
+                }),
+                expect.anything()
+            );
+        });
+    });
+
+    it("deletes a conversation from the session list", async () => {
+        mocks.pageQaSessions.mockResolvedValueOnce({
+            items: [
+                {
+                    openedAt: 1700000000000,
+                    sessionId: "7001",
+                    title: "礼学和礼制有什么关系？"
+                }
+            ],
+            pageNo: 1,
+            pageSize: 20,
+            total: 1
+        });
+        const user = userEvent.setup();
+        renderPage();
+
+        await user.click(await screen.findByTestId("discovery-qa-delete-session-button"));
+
+        await waitFor(() => {
+            expect(mocks.deleteQaSession).toHaveBeenCalledWith(
+                {
+                    ownerUserId: 1001,
+                    sessionId: "7001"
+                },
+                expect.anything()
+            );
+        });
     });
 
     it("shows visible error when first message cannot open a session", async () => {

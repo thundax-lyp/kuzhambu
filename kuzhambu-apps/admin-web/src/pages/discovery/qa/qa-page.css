@@ -26,11 +26,21 @@
     overflow: auto;
 }
 
-.discovery-qa-page__session-list .ant-btn {
+.discovery-qa-page__session-item {
+    display: grid;
+    gap: 6px;
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.discovery-qa-page__session-item .ant-btn:first-child {
     justify-content: flex-start;
     overflow: hidden;
     text-align: left;
     text-overflow: ellipsis;
+}
+
+.discovery-qa-page__delete-session {
+    padding-inline: 10px;
 }
 
 .discovery-qa-page__chat {
@@ -143,6 +153,10 @@
         grid-auto-flow: column;
         grid-auto-columns: minmax(180px, max-content);
         overflow-x: auto;
+    }
+
+    .discovery-qa-page__session-item {
+        min-width: 220px;
     }
 
     .discovery-qa-page__chat {

@@ -19,6 +19,7 @@ const DEFAULT_PAGE_SIZE = 20;
 const FIXED_MODEL = "kuzhambu-qa";
 const FULL_LIBRARY_CONTEXT_MODE = "GENERAL";
 const FULL_LIBRARY_SESSION_TITLE = "新对话";
+const SESSION_TITLE_MAX_LENGTH = 24;
 const QaSenderInput = forwardRef<
     ElementRef<typeof Input.TextArea>,
     ComponentProps<typeof Input.TextArea>
@@ -85,7 +86,18 @@ const extractAnswerText = (response?: DiscoveryQaChatCompletionRecord | null) =>
     return response?.choices?.[0]?.message?.content?.trim() || "";
 };
 
-const toOpenSessionRequest = (ownerUserId: number | null) => {
+const toConversationTitle = (question: string) => {
+    const normalizedQuestion = question.replace(/\s+/g, " ").trim();
+    if (!normalizedQuestion) {
+        return FULL_LIBRARY_SESSION_TITLE;
+    }
+    if (normalizedQuestion.length <= SESSION_TITLE_MAX_LENGTH) {
+        return normalizedQuestion;
+    }
+    return `${normalizedQuestion.slice(0, SESSION_TITLE_MAX_LENGTH)}...`;
+};
+
+const toOpenSessionRequest = (ownerUserId: number | null, title = FULL_LIBRARY_SESSION_TITLE) => {
     return {
         contextContentId: null,
         contextContentType: null,
@@ -93,7 +105,7 @@ const toOpenSessionRequest = (ownerUserId: number | null) => {
         ownerUserId,
         requestId: null,
         scope: "PORTAL",
-        title: FULL_LIBRARY_SESSION_TITLE,
+        title,
         traceId: null
     };
 };
@@ -153,6 +165,12 @@ export const QaPage = () => {
     const openSessionMutation = useMutation({ mutationFn: service.createQaSession });
     const chatCompletionMutation = useMutation({
         mutationFn: service.createQaChatCompletionStream
+    });
+    const deleteSessionMutation = useMutation({
+        mutationFn: service.deleteQaSession,
+        onError: (error) => {
+            setOperationMessage(error instanceof Error ? error.message : "删除对话失败");
+        }
     });
     const exportSessionMutation = useMutation({
         mutationFn: service.createQaSessionExport,
@@ -227,12 +245,14 @@ export const QaPage = () => {
         }));
     };
 
-    const ensureSessionId = async () => {
+    const ensureSessionId = async (question: string) => {
         if (selectedSessionId !== null) {
             return selectedSessionId;
         }
 
-        const session = await openSessionMutation.mutateAsync(toOpenSessionRequest(ownerUserId));
+        const session = await openSessionMutation.mutateAsync(
+            toOpenSessionRequest(ownerUserId, toConversationTitle(question))
+        );
         const nextSessionId = toSessionId(session.sessionId);
         if (nextSessionId === null) {
             throw new Error("会话未返回会话号");
@@ -265,6 +285,20 @@ export const QaPage = () => {
         void sessionsQuery.refetch();
     };
 
+    const deleteSession = async (sessionId: string) => {
+        setOperationMessage(null);
+        await deleteSessionMutation.mutateAsync({ ownerUserId, sessionId });
+        setTimelineBySession((current) => {
+            const next = { ...current };
+            delete next[sessionId];
+            return next;
+        });
+        if (selectedSessionId === sessionId) {
+            setSelectedSessionId(null);
+        }
+        void sessionsQuery.refetch();
+    };
+
     const submitQuestion = async (questionValue = form.question) => {
         const question = questionValue.trim();
         if (!question) {
@@ -275,7 +309,7 @@ export const QaPage = () => {
         let nextSessionId: string | null = null;
         let assistantMessageId: string | null = null;
         try {
-            nextSessionId = await ensureSessionId();
+            nextSessionId = await ensureSessionId(question);
             const activeSessionId = nextSessionId;
             assistantMessageId = createMessageId();
             const activeAssistantMessageId = assistantMessageId;
@@ -374,15 +408,30 @@ export const QaPage = () => {
                             }
 
                             return (
-                                <KuzhambuButton
-                                    key={sessionId}
-                                    block
-                                    testId="discovery-qa-select-session-button"
-                                    type={sessionId === selectedSessionId ? "primary" : "default"}
-                                    onClick={() => setSelectedSessionId(sessionId)}
-                                >
-                                    {sessionTitle(session)}
-                                </KuzhambuButton>
+                                <div key={sessionId} className="discovery-qa-page__session-item">
+                                    <KuzhambuButton
+                                        block
+                                        testId="discovery-qa-select-session-button"
+                                        type={
+                                            sessionId === selectedSessionId ? "primary" : "default"
+                                        }
+                                        onClick={() => setSelectedSessionId(sessionId)}
+                                    >
+                                        {sessionTitle(session)}
+                                    </KuzhambuButton>
+                                    <KuzhambuButton
+                                        aria-label={`删除对话 ${sessionTitle(session)}`}
+                                        className="discovery-qa-page__delete-session"
+                                        disabled={deleteSessionMutation.isPending}
+                                        testId="discovery-qa-delete-session-button"
+                                        onClick={(event) => {
+                                            event.stopPropagation();
+                                            void deleteSession(sessionId);
+                                        }}
+                                    >
+                                        删除
+                                    </KuzhambuButton>
+                                </div>
                             );
                         })
                     ) : (

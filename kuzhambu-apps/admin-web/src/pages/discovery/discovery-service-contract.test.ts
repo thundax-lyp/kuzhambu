@@ -54,6 +54,14 @@ describe("discovery admin service contracts", () => {
             }
         });
 
+        await qaConsumerService.deleteQaSession({ ownerUserId: 1001, sessionId: "7001" });
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa/session/delete", {
+            body: {
+                ownerUserId: 1001,
+                sessionId: "7001"
+            }
+        });
+
         await qaConsumerService.createQaSessionExport({
             format: "CSV",
             ownerUserId: 1001,
