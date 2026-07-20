@@ -78,6 +78,13 @@ AI 候选记录固定补充以下字段口径：
 
 文件类 AI 结果不得把大文件内容直接作为正式业务结果保存；只允许以 `artifactReferenceJson` 保存 Workers 返回的 `temporary artifact reference` 摘要。
 
+排序字段规则：
+
+- `ai_prompt_variable.priority` 和 `ai_entry_split_candidate.priority` 表达 AI 域内可信的后端内部全局排序权重，不表示父级对象内的第几个位置。
+- 该值必须全局唯一；不同 `template_id` 或不同 `candidate_id` 下也不得复用同一个 `priority`。
+- 查询仍可按父级过滤后使用 `priority asc` 展示局部列表，但排序权重的分配、去重和冲突处理以全局唯一为准。
+- 前端协议不得读写 `priority`；排序时只提交对象 ID 顺序，由后端在事务内交换或重算内部排序权重。
+
 ## Application Layer
 
 - `AiServiceConfigApplicationService`

@@ -122,10 +122,6 @@ public final class PromptRequests {
         @Schema(name = "description", description = "变量说明")
         @JsonProperty(value = "description")
         private String description;
-
-        @Schema(name = "priority", description = "排序值")
-        @JsonProperty(value = "priority")
-        private Integer priority;
     }
 
     @Getter
