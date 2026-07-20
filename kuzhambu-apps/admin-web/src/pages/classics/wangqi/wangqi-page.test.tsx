@@ -335,6 +335,12 @@ describe("WangqiPage", () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        vi.mocked(aiRefinementTaskService.pageTasks).mockResolvedValue({
+            items: [],
+            total: 0,
+            pageNo: 1,
+            pageSize: 10
+        });
         queryClient = createTestQueryClient();
         capturedCalls.length = 0;
         mockDocumentRecord = {
@@ -535,20 +541,26 @@ describe("WangqiPage", () => {
     it("opens summary ai modal and creates task inside the modal", async () => {
         const user = userEvent.setup();
 
-        vi.mocked(aiRefinementTaskService.pageTasks).mockResolvedValueOnce({
-            items: [
-                {
-                    taskId: 9001,
-                    status: "RUNNING",
-                    capability: "summary",
-                    contentType: "WANGQI_DOCUMENT",
-                    contentId: 1,
-                    requestedAt: "2026-01-01T00:00:00.000+00:00"
-                }
-            ],
-            total: 1,
-            pageNo: 1,
-            pageSize: 10
+        vi.mocked(aiRefinementTaskService.pageTasks).mockImplementation(async (query) => {
+            if (query.contentType === "WANGQI_DOCUMENT" && query.contentId === 1) {
+                return {
+                    items: [
+                        {
+                            taskId: 9001,
+                            status: "RUNNING",
+                            capability: "summary",
+                            contentType: "WANGQI_DOCUMENT",
+                            contentId: 1,
+                            requestedAt: "2026-01-01T00:00:00.000+00:00"
+                        }
+                    ],
+                    total: 1,
+                    pageNo: 1,
+                    pageSize: 10
+                };
+            }
+
+            return { items: [], total: 0, pageNo: 1, pageSize: 10 };
         });
 
         render(
