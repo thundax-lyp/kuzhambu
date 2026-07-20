@@ -1,34 +1,26 @@
 package com.thundax.kuzhambu.system.interfaces.admin.auth.service.impl;
 
-import com.thundax.kuzhambu.common.core.id.UuidHelper;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.web.exception.AdminResponseExceptions;
 import com.thundax.kuzhambu.system.application.auth.command.AuthenticateIdentityCommand;
 import com.thundax.kuzhambu.system.application.auth.command.AuthenticatePasswordCommand;
-import com.thundax.kuzhambu.system.application.auth.configure.AuthProperties;
 import com.thundax.kuzhambu.system.application.auth.exception.InvalidPasswordException;
 import com.thundax.kuzhambu.system.application.auth.query.PrincipalIdentityQuery;
+import com.thundax.kuzhambu.system.application.auth.result.AdminAccessTokenResult;
+import com.thundax.kuzhambu.system.application.auth.result.AdminTokenQueryResult;
+import com.thundax.kuzhambu.system.application.auth.result.AdminTokenRefreshResult;
+import com.thundax.kuzhambu.system.application.auth.service.AdminTokenApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalAuthApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.dto.PrincipalPasswordPolicyDTO;
 import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
-import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAccessToken;
-import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAuthSession;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalLoginEvent;
-import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalRefreshToken;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalAuthenticationMethod;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalCredentialType;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
-import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalLoginEventType;
-import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalTokenStatus;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalType;
-import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalAccessTokenCode;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
-import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalRefreshTokenCode;
-import com.thundax.kuzhambu.system.domain.auth.repository.PrincipalAccessTokenRepository;
-import com.thundax.kuzhambu.system.domain.auth.repository.PrincipalAuthSessionRepository;
-import com.thundax.kuzhambu.system.domain.auth.repository.PrincipalLoginEventRepository;
-import com.thundax.kuzhambu.system.domain.auth.repository.PrincipalRefreshTokenRepository;
 import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
@@ -42,25 +34,16 @@ import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthAcce
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthTokenQueryResult;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.result.AuthTokenRefreshResult;
 import com.thundax.kuzhambu.system.interfaces.admin.configure.LoginProperties;
-import java.util.Date;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AdminAuthServiceImpl implements AdminAuthService {
 
-    private static final int SESSION_RUNTIME_SAFETY_SECONDS = 10;
-    private static final String ADMIN_CLIENT_ID = "admin-api";
-
-    private final AuthProperties properties;
     private final LoginProperties loginProperties;
-    private final PrincipalAuthSessionRepository principalAuthSessionRepository;
     private final PermissionService permissionService;
+    private final AdminTokenApplicationService adminTokenService;
     private final PrincipalAuthApplicationService principalAuthService;
     private final PrincipalIdentityApplicationService principalIdentityService;
     private final UserApplicationService userService;
@@ -71,27 +54,16 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     @Autowired(required = false)
     private GithubLoginProvider githubLoginProvider;
 
-    @Autowired(required = false)
-    private PrincipalAccessTokenRepository principalAccessTokenRepository;
-
-    @Autowired(required = false)
-    private PrincipalRefreshTokenRepository principalRefreshTokenRepository;
-
-    @Autowired(required = false)
-    private PrincipalLoginEventRepository principalLoginEventRepository;
-
     public AdminAuthServiceImpl(
-            AuthProperties properties,
             LoginProperties loginProperties,
-            PrincipalAuthSessionRepository principalAuthSessionRepository,
             PermissionService permissionService,
+            AdminTokenApplicationService adminTokenService,
             PrincipalAuthApplicationService principalAuthService,
             PrincipalIdentityApplicationService principalIdentityService,
             UserApplicationService userService) {
-        this.properties = properties;
         this.loginProperties = loginProperties;
-        this.principalAuthSessionRepository = principalAuthSessionRepository;
         this.permissionService = permissionService;
+        this.adminTokenService = adminTokenService;
         this.principalAuthService = principalAuthService;
         this.principalIdentityService = principalIdentityService;
         this.userService = userService;
@@ -107,59 +79,74 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         if (identityType == null) {
             identityType = PrincipalIdentityType.USER_ACCOUNT;
         }
-        return createAccessToken(
+        AuthAccessTokenResult result = toInterfaceResult(adminTokenService.createAccessToken(
                 command.getUserId(),
                 command.getLoginName(),
                 command.getIp(),
                 command.getUserAgent(),
                 authenticationMethod,
-                identityType);
+                identityType));
+        if (result != null) {
+            permissionService.createPermissions(result.getToken(), UserIdCodec.toStringValue(command.getUserId()));
+        }
+        return result;
     }
 
     @Override
     public AuthAccessTokenResult getAccessToken(AdminAuthQuery query) {
-        return getAccessToken(query.getToken());
+        return toInterfaceResult(adminTokenService.getAccessToken(query.getToken()));
     }
 
     @Override
     public int deleteAccessTokensByUserId(AdminAuthCommand command) {
-        return deleteAccessTokensByUserId(command.getUserId());
+        return adminTokenService.deleteAccessTokensByUserId(command.getUserId());
     }
 
     @Override
     public boolean validateToken(AdminAuthCommand command) {
-        return validateToken(command.getAccessToken());
+        return adminTokenService.validateToken(tokenValue(command.getAccessToken()));
     }
 
     @Override
     public void activeAccessToken(AdminAuthCommand command) {
-        activeAccessToken(command.getAccessToken());
+        adminTokenService.activeAccessToken(tokenValue(command.getAccessToken()));
     }
 
     @Override
     public void deleteAccessToken(AdminAuthCommand command) {
-        deleteAccessToken(command.getAccessToken(), command.getIp(), command.getUserAgent());
+        adminTokenService.deleteAccessToken(
+                tokenValue(command.getAccessToken()), command.getIp(), command.getUserAgent());
     }
 
     @Override
     public AuthTokenQueryResult getTokenInfo(AdminAuthQuery query) {
-        return queryToken(query.getToken());
+        return toInterfaceResult(adminTokenService.getTokenInfo(query.getToken()));
     }
 
     @Override
     public AuthTokenRefreshResult refreshAccessToken(AdminAuthCommand command) {
-        return refreshAccessToken(
-                command.getClientId(), command.getRefreshToken(), command.getIp(), command.getUserAgent());
+        try {
+            AuthTokenRefreshResult result = toInterfaceResult(adminTokenService.refreshAccessToken(
+                    command.getClientId(), command.getRefreshToken(), command.getIp(), command.getUserAgent()));
+            if (result != null && result.getAccessToken() != null) {
+                permissionService.createPermissions(
+                        result.getAccessToken().getToken(),
+                        result.getAccessToken().getUserId());
+            }
+            return result;
+        } catch (BizException e) {
+            throw AdminResponseExceptions.invalidToken();
+        }
     }
 
     @Override
     public void invalidateSessionByToken(AdminAuthCommand command) {
-        invalidateSessionByToken(command.getToken(), command.getReason());
+        adminTokenService.invalidateSessionByToken(command.getToken(), command.getReason());
     }
 
     @Override
     public int invalidateSessionsByUserId(AdminAuthCommand command) {
-        return invalidateSessionsByUserId(command.getUserId(), command.getReason());
+        return adminTokenService.invalidateSessionsByUserId(command.getUserId(), command.getReason());
     }
 
     @Override
@@ -185,7 +172,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
     @Override
     public void recordLoginFailed(AdminAuthCommand command) {
-        recordLoginFailed(
+        adminTokenService.recordLoginFailed(
                 command.getAuthenticationMethod(),
                 command.getIdentityType(),
                 command.getIp(),
@@ -196,211 +183,6 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     @Override
     public void validatePassword(AdminAuthCommand command) {
         validatePassword(command.getUser(), command.getPlainPassword());
-    }
-
-    @NonNull
-    private AuthAccessTokenResult createAccessToken(UserId userId) {
-        return createAccessToken(userId, null);
-    }
-
-    @NonNull
-    private AuthAccessTokenResult createAccessToken(UserId userId, String loginName) {
-        return createAccessToken(userId, loginName, null, null);
-    }
-
-    @NonNull
-    private AuthAccessTokenResult createAccessToken(UserId userId, String loginName, String ip, String userAgent) {
-        return createAccessToken(
-                userId,
-                loginName,
-                ip,
-                userAgent,
-                PrincipalAuthenticationMethod.PASSWORD,
-                PrincipalIdentityType.USER_ACCOUNT);
-    }
-
-    @NonNull
-    private AuthAccessTokenResult createAccessToken(
-            UserId userId,
-            String loginName,
-            String ip,
-            String userAgent,
-            PrincipalAuthenticationMethod authenticationMethod,
-            PrincipalIdentityType identityType) {
-        Date now = new Date();
-        String token = UuidHelper.compact();
-        PrincipalAccessToken accessToken = buildPrincipalAccessToken(
-                token,
-                ADMIN_CLIENT_ID,
-                PrincipalKey.of(PrincipalType.USER, UserIdCodec.toValue(userId)),
-                new LinkedHashSet<>(),
-                now,
-                properties.getLoginExpiredSeconds());
-        PrincipalAuthSession session = PrincipalAuthSession.create(
-                accessToken.getPrincipalKey(), ADMIN_CLIENT_ID, now, properties.getLoginExpiredSeconds());
-        principalAuthSessionRepository.insert(session, runtimeExpiredSeconds(properties.getLoginExpiredSeconds()));
-        accessToken.setSessionId(session.getId());
-        accessToken.setId(requirePrincipalAccessTokenRepository().insert(accessToken, token));
-        permissionService.createPermissions(token, UserIdCodec.toStringValue(userId));
-        String refreshToken = createPrincipalRefreshToken(accessToken, ADMIN_CLIENT_ID, now);
-        if (StringUtils.isNotBlank(loginName)) {
-            writeLoginEvent(
-                    accessToken.getPrincipalKey(),
-                    ADMIN_CLIENT_ID,
-                    PrincipalLoginEventType.LOGIN_SUCCESS,
-                    authenticationMethod,
-                    identityType,
-                    ip,
-                    userAgent,
-                    PrincipalLoginEvent.REASON_NONE);
-        }
-        return new AuthAccessTokenResult(token, refreshToken, accessToken);
-    }
-
-    private AuthAccessTokenResult getAccessToken(String token) {
-        if (StringUtils.isBlank(token)) {
-            return null;
-        }
-        PrincipalAccessToken accessToken =
-                requirePrincipalAccessTokenRepository().getByToken(token);
-        if (accessToken == null
-                || !StringUtils.equals(ADMIN_CLIENT_ID, accessToken.getClientId())
-                || !accessToken.canAccess(new Date())) {
-            return null;
-        }
-        PrincipalAuthSession session = getActivePrincipalAuthSession(accessToken, new Date());
-        if (session == null) {
-            return null;
-        }
-        return new AuthAccessTokenResult(token, null, accessToken);
-    }
-
-    private int deleteAccessTokensByUserId(UserId userId) {
-        int count = 0;
-        List<PrincipalAccessToken> tokens = requirePrincipalAccessTokenRepository()
-                .listByPrincipalKeyAndClientIdAndStatus(
-                        PrincipalKey.of(PrincipalType.USER, UserIdCodec.toValue(userId)),
-                        ADMIN_CLIENT_ID,
-                        PrincipalTokenStatus.ACTIVE);
-        for (PrincipalAccessToken token : tokens) {
-            if (token != null && token.isActive()) {
-                token.revoke();
-                requirePrincipalAccessTokenRepository().updateStatus(token);
-                principalAuthSessionRepository.deleteById(token.getSessionId());
-                count++;
-            }
-        }
-        return count;
-    }
-
-    private boolean validateToken(AuthAccessTokenResult accessToken) {
-        return accessToken != null
-                && accessToken.getPrincipalAccessToken() != null
-                && accessToken.getPrincipalAccessToken().canAccess(new Date());
-    }
-
-    private void activeAccessToken(AuthAccessTokenResult accessToken) {
-        touchPrincipalAuthSession(accessToken.getPrincipalAccessToken());
-    }
-
-    private void deleteAccessToken(AuthAccessTokenResult accessToken) {
-        deleteAccessToken(accessToken, null, null);
-    }
-
-    private void deleteAccessToken(AuthAccessTokenResult accessToken, String ip, String userAgent) {
-        if (accessToken == null) {
-            return;
-        }
-        PrincipalAccessToken principalAccessToken = accessToken.getPrincipalAccessToken();
-        if (principalAccessToken != null && principalAccessToken.isActive()) {
-            principalAccessToken.revoke();
-            requirePrincipalAccessTokenRepository().updateStatus(principalAccessToken);
-        }
-        deletePrincipalAuthSession(principalAccessToken);
-        if (principalAccessToken != null) {
-            writeLoginEvent(
-                    principalAccessToken.getPrincipalKey(),
-                    principalAccessToken.getClientId(),
-                    PrincipalLoginEventType.LOGOUT,
-                    PrincipalAuthenticationMethod.PASSWORD,
-                    null,
-                    ip,
-                    userAgent,
-                    PrincipalLoginEvent.REASON_USER_LOGOUT);
-        }
-    }
-
-    private AuthTokenQueryResult queryToken(String token) {
-        AuthAccessTokenResult accessToken = getAccessToken(token);
-        if (accessToken == null || !validateToken(accessToken)) {
-            return AuthTokenQueryResult.inactive(token);
-        }
-        PrincipalAuthSession session = getActivePrincipalAuthSession(accessToken.getPrincipalAccessToken(), new Date());
-        if (session == null) {
-            return AuthTokenQueryResult.inactive(token);
-        }
-        User user = getUser(UserIdCodec.toDomain(session.getPrincipalKey().getPrincipalId()));
-        if (user == null || !user.isEnable()) {
-            return AuthTokenQueryResult.inactive(token);
-        }
-        return AuthTokenQueryResult.active(token, session, user, getAccountLoginName(user.getId()));
-    }
-
-    private AuthTokenRefreshResult refreshAccessToken(String clientId, String refreshToken) {
-        return refreshAccessToken(clientId, refreshToken, null, null);
-    }
-
-    private AuthTokenRefreshResult refreshAccessToken(
-            String clientId, String refreshToken, String ip, String userAgent) {
-        if (principalRefreshTokenRepository == null) {
-            throw AdminResponseExceptions.invalidToken();
-        }
-        String requestedClientId = StringUtils.defaultIfBlank(clientId, ADMIN_CLIENT_ID);
-        PrincipalRefreshToken current = principalRefreshTokenRepository.getByToken(refreshToken);
-        Date now = new Date();
-        if (current == null
-                || !current.canRefresh(now)
-                || !StringUtils.equals(requestedClientId, current.getClientId())) {
-            throw AdminResponseExceptions.invalidToken();
-        }
-        if (principalRefreshTokenRepository.markUsedIfActive(current, now) != 1) {
-            throw AdminResponseExceptions.invalidToken();
-        }
-
-        AuthAccessTokenResult accessToken = createAccessToken(
-                UserIdCodec.toDomain(current.getPrincipalKey().getPrincipalId()), null, ip, userAgent);
-        writeLoginEvent(
-                current.getPrincipalKey(),
-                requestedClientId,
-                PrincipalLoginEventType.TOKEN_REFRESH,
-                PrincipalAuthenticationMethod.REFRESH_TOKEN,
-                null,
-                ip,
-                userAgent,
-                PrincipalLoginEvent.REASON_NONE);
-        return new AuthTokenRefreshResult(accessToken, accessToken.getRefreshToken());
-    }
-
-    private void invalidateSessionByToken(String token, String reason) {
-        invalidatePrincipalAuthSession(token);
-    }
-
-    private int invalidateSessionsByUserId(UserId userId, String reason) {
-        List<PrincipalAccessToken> tokens = requirePrincipalAccessTokenRepository()
-                .listByPrincipalKeyAndClientIdAndStatus(
-                        PrincipalKey.of(PrincipalType.USER, UserIdCodec.toValue(userId)),
-                        ADMIN_CLIENT_ID,
-                        PrincipalTokenStatus.ACTIVE);
-        int count = 0;
-        for (PrincipalAccessToken token : tokens) {
-            if (token != null && token.isActive()) {
-                token.revoke();
-                requirePrincipalAccessTokenRepository().updateStatus(token);
-                principalAuthSessionRepository.deleteById(token.getSessionId());
-                count++;
-            }
-        }
-        return count;
     }
 
     private User authenticatePassword(String loginName, String plainPassword) {
@@ -417,7 +199,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
                     plainPassword,
                     passwordPolicy()));
         } catch (InvalidPasswordException e) {
-            recordLoginFailed(
+            adminTokenService.recordLoginFailed(
                     PrincipalAuthenticationMethod.PASSWORD,
                     PrincipalIdentityType.USER_ACCOUNT,
                     ip,
@@ -428,7 +210,7 @@ public class AdminAuthServiceImpl implements AdminAuthService {
 
         User user = getUser(UserIdCodec.toDomain(identity.getPrincipalKey().getPrincipalId()));
         if (user == null) {
-            recordLoginFailed(
+            adminTokenService.recordLoginFailed(
                     PrincipalAuthenticationMethod.PASSWORD,
                     PrincipalIdentityType.USER_ACCOUNT,
                     ip,
@@ -437,10 +219,8 @@ public class AdminAuthServiceImpl implements AdminAuthService {
             throw AdminResponseExceptions.invalidUsernamePassword();
         }
         if (!user.isEnable()) {
-            writeLoginEvent(
+            writeLoginFailed(
                     identity.getPrincipalKey(),
-                    ADMIN_CLIENT_ID,
-                    PrincipalLoginEventType.LOGIN_FAILED,
                     PrincipalAuthenticationMethod.PASSWORD,
                     PrincipalIdentityType.USER_ACCOUNT,
                     ip,
@@ -503,23 +283,6 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         authenticatePassword(loginName, plainPassword);
     }
 
-    private void recordLoginFailed(
-            PrincipalAuthenticationMethod authenticationMethod,
-            PrincipalIdentityType identityType,
-            String ip,
-            String userAgent,
-            String reason) {
-        writeLoginEvent(
-                null,
-                ADMIN_CLIENT_ID,
-                PrincipalLoginEventType.LOGIN_FAILED,
-                authenticationMethod,
-                identityType,
-                ip,
-                userAgent,
-                reason);
-    }
-
     private User authenticateIdentity(
             PrincipalIdentityType identityType,
             String identityValue,
@@ -531,21 +294,19 @@ public class AdminAuthServiceImpl implements AdminAuthService {
             identity = principalAuthService.authenticateIdentity(
                     new AuthenticateIdentityCommand(identityType, identityValue));
         } catch (InvalidPasswordException e) {
-            recordLoginFailed(
+            adminTokenService.recordLoginFailed(
                     authenticationMethod, identityType, ip, userAgent, PrincipalLoginEvent.REASON_IDENTITY_NOT_FOUND);
             throw AdminResponseExceptions.invalidUsernamePassword();
         }
         User user = getUser(UserIdCodec.toDomain(identity.getPrincipalKey().getPrincipalId()));
         if (user == null) {
-            recordLoginFailed(
+            adminTokenService.recordLoginFailed(
                     authenticationMethod, identityType, ip, userAgent, PrincipalLoginEvent.REASON_PRINCIPAL_NOT_FOUND);
             throw AdminResponseExceptions.invalidUsernamePassword();
         }
         if (!user.isEnable()) {
-            writeLoginEvent(
+            writeLoginFailed(
                     identity.getPrincipalKey(),
-                    ADMIN_CLIENT_ID,
-                    PrincipalLoginEventType.LOGIN_FAILED,
                     authenticationMethod,
                     identityType,
                     ip,
@@ -556,139 +317,18 @@ public class AdminAuthServiceImpl implements AdminAuthService {
         return user;
     }
 
-    private PrincipalAuthSession getActivePrincipalAuthSession(PrincipalAccessToken accessToken, Date now) {
-        if (accessToken == null || accessToken.getSessionId() == null) {
-            return null;
-        }
-        PrincipalAuthSession session = principalAuthSessionRepository.getById(accessToken.getSessionId());
-        if (session == null || session.isExpired(now)) {
-            return null;
-        }
-        return session;
-    }
-
-    private User getUser(UserId userId) {
-        return userService.get(userId);
-    }
-
-    private PrincipalAuthSession getActivePrincipalAuthSession(PrincipalRefreshToken refreshToken, Date now) {
-        if (refreshToken == null || refreshToken.getSessionId() == null) {
-            return null;
-        }
-        PrincipalAuthSession session = principalAuthSessionRepository.getById(refreshToken.getSessionId());
-        if (session == null || session.isExpired(now)) {
-            return null;
-        }
-        return session;
-    }
-
-    private void touchPrincipalAuthSession(PrincipalAccessToken accessToken) {
-        PrincipalAuthSession session = getActivePrincipalAuthSession(accessToken, new Date());
-        if (session == null) {
-            return;
-        }
-        Date now = new Date();
-        principalAuthSessionRepository.touch(session.getId(), now, runtimeExpiredSeconds());
-    }
-
-    private void deletePrincipalAuthSession(PrincipalAccessToken accessToken) {
-        if (accessToken != null) {
-            principalAuthSessionRepository.deleteById(accessToken.getSessionId());
-        }
-    }
-
-    private void invalidatePrincipalAuthSession(String token) {
-        AuthAccessTokenResult accessToken = getAccessToken(token);
-        if (accessToken != null && accessToken.getPrincipalAccessToken() != null) {
-            PrincipalAccessToken principalAccessToken = accessToken.getPrincipalAccessToken();
-            principalAccessToken.revoke();
-            requirePrincipalAccessTokenRepository().updateStatus(principalAccessToken);
-            principalAuthSessionRepository.deleteById(principalAccessToken.getSessionId());
-        }
-    }
-
-    private void writeLoginEvent(
+    private void writeLoginFailed(
             PrincipalKey principalKey,
-            String clientId,
-            PrincipalLoginEventType eventType,
             PrincipalAuthenticationMethod authenticationMethod,
             PrincipalIdentityType identityType,
             String ip,
             String userAgent,
             String reason) {
-        if (principalLoginEventRepository == null) {
-            return;
-        }
-        PrincipalLoginEvent event = new PrincipalLoginEvent();
-        event.setPrincipalKey(principalKey);
-        event.setClientId(clientId);
-        event.setEventType(eventType);
-        event.setAuthenticationMethod(authenticationMethod);
-        event.setIdentityType(identityType);
-        event.setOccurredAt(new Date());
-        event.setIp(ip);
-        event.setUserAgent(userAgent);
-        event.setReason(reason);
-        principalLoginEventRepository.insert(event);
+        adminTokenService.recordLoginFailed(principalKey, authenticationMethod, identityType, ip, userAgent, reason);
     }
 
-    private int runtimeExpiredSeconds() {
-        return runtimeExpiredSeconds(properties.getLoginExpiredSeconds());
-    }
-
-    private int runtimeExpiredSeconds(long ttlSeconds) {
-        return (int) ttlSeconds + SESSION_RUNTIME_SAFETY_SECONDS;
-    }
-
-    private String createPrincipalRefreshToken(PrincipalAccessToken accessToken, String clientId, Date issuedAt) {
-        String refreshToken = UuidHelper.compact();
-        PrincipalRefreshToken entity = new PrincipalRefreshToken();
-        entity.setTokenCode(PrincipalRefreshTokenCode.of(UuidHelper.compact()));
-        entity.setAccessTokenId(accessToken.getId());
-        entity.setClientId(clientId);
-        entity.setSessionId(accessToken.getSessionId());
-        entity.setPrincipalKey(accessToken.getPrincipalKey());
-        entity.setIssuedAt(issuedAt);
-        entity.setExpireAt(new Date(issuedAt.getTime() + refreshTokenTtlSeconds(clientId) * 1000L));
-        entity.setStatus(PrincipalTokenStatus.ACTIVE);
-        entity.setId(requirePrincipalRefreshTokenRepository().insert(entity, refreshToken));
-        return refreshToken;
-    }
-
-    private PrincipalAccessToken buildPrincipalAccessToken(
-            String token,
-            String clientId,
-            PrincipalKey principalKey,
-            Set<String> scopes,
-            Date issuedAt,
-            long ttlSeconds) {
-        PrincipalAccessToken entity = new PrincipalAccessToken();
-        entity.setTokenCode(PrincipalAccessTokenCode.of(UuidHelper.compact()));
-        entity.setClientId(clientId);
-        entity.setPrincipalKey(principalKey);
-        entity.setScopes(scopes == null ? new LinkedHashSet<>() : new LinkedHashSet<>(scopes));
-        entity.setIssuedAt(issuedAt);
-        entity.setExpireAt(new Date(issuedAt.getTime() + ttlSeconds * 1000L));
-        entity.setStatus(PrincipalTokenStatus.ACTIVE);
-        return entity;
-    }
-
-    private PrincipalAccessTokenRepository requirePrincipalAccessTokenRepository() {
-        if (principalAccessTokenRepository == null) {
-            throw new IllegalStateException("principal access token dao 未配置");
-        }
-        return principalAccessTokenRepository;
-    }
-
-    private PrincipalRefreshTokenRepository requirePrincipalRefreshTokenRepository() {
-        if (principalRefreshTokenRepository == null) {
-            throw new IllegalStateException("principal refresh token dao 未配置");
-        }
-        return principalRefreshTokenRepository;
-    }
-
-    private long refreshTokenTtlSeconds(String clientId) {
-        return 2592000L;
+    private User getUser(UserId userId) {
+        return userService.get(userId);
     }
 
     private String getAccountLoginName(UserId userId) {
@@ -710,5 +350,38 @@ public class AdminAuthServiceImpl implements AdminAuthService {
     private PrincipalPasswordPolicyDTO passwordPolicy() {
         return new PrincipalPasswordPolicyDTO(
                 loginProperties.getEnable(), loginProperties.getMaxFailCount(), loginProperties.getLockTime());
+    }
+
+    private AuthAccessTokenResult toInterfaceResult(AdminAccessTokenResult result) {
+        if (result == null) {
+            return null;
+        }
+        return new AuthAccessTokenResult(result.getToken(), result.getRefreshToken(), result.getPrincipalAccessToken());
+    }
+
+    private String tokenValue(AuthAccessTokenResult result) {
+        if (result == null) {
+            return null;
+        }
+        return result.getToken();
+    }
+
+    private AuthTokenQueryResult toInterfaceResult(AdminTokenQueryResult result) {
+        if (result == null) {
+            return null;
+        }
+        if (!result.isActive()) {
+            return AuthTokenQueryResult.inactive(result.getToken());
+        }
+        return AuthTokenQueryResult.active(
+                result.getToken(), result.getSession(), result.getUser(), result.getUsername());
+    }
+
+    private AuthTokenRefreshResult toInterfaceResult(AdminTokenRefreshResult result) {
+        if (result == null) {
+            return null;
+        }
+        AuthAccessTokenResult accessToken = toInterfaceResult(result.getAccessToken());
+        return new AuthTokenRefreshResult(accessToken, result.getRefreshToken());
     }
 }
