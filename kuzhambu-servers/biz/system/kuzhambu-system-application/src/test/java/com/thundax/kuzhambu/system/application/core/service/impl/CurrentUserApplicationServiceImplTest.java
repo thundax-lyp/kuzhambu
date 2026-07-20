@@ -24,10 +24,20 @@ import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalCredentialApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
 import com.thundax.kuzhambu.system.application.core.command.ChangeCurrentUserAvatarCommand;
+import com.thundax.kuzhambu.system.application.core.query.CurrentUserQuery;
+import com.thundax.kuzhambu.system.application.core.query.MenuQuery;
+import com.thundax.kuzhambu.system.application.core.query.RoleQuery;
+import com.thundax.kuzhambu.system.application.core.query.UserQuery;
 import com.thundax.kuzhambu.system.application.core.result.UserAvatarResult;
 import com.thundax.kuzhambu.system.application.core.service.MenuApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.RoleApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
+import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
+import com.thundax.kuzhambu.system.domain.core.model.enums.UserPrivilege;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.AccessRank;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.MenuId;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -157,14 +167,61 @@ class CurrentUserApplicationServiceImplTest {
         assertEquals(7001L, removeCaptor.getValue().getStorageObjectId());
     }
 
+    @Test
+    void listAccessibleMenusShouldBatchLoadMenusForNormalUser() {
+        UserApplicationService userService = mock(UserApplicationService.class);
+        RoleApplicationService roleService = mock(RoleApplicationService.class);
+        MenuApplicationService menuService = mock(MenuApplicationService.class);
+        CurrentUserApplicationServiceImpl service =
+                service(userService, roleService, menuService, mock(StorageFacade.class));
+
+        Role role = new Role();
+        role.setId(RoleId.of(1L));
+        Menu grantedMenu = menu(10L, 3);
+        Menu deniedMenu = menu(11L, 8);
+        when(userService.listUserRoles(any(UserQuery.class))).thenReturn(List.of(role));
+        when(roleService.listRoleMenus(any(RoleQuery.class))).thenReturn(List.of(grantedMenu, deniedMenu));
+        when(menuService.list(any(MenuQuery.class))).thenReturn(List.of(grantedMenu, deniedMenu));
+
+        CurrentUserQuery query = new CurrentUserQuery();
+        query.setUserId(UserId.of(100L));
+        query.setPrivilege(UserPrivilege.NORMAL);
+        query.setRank(AccessRank.of(5));
+
+        List<Menu> menus = service.listAccessibleMenus(query);
+
+        assertEquals(List.of(grantedMenu), menus);
+        verify(menuService).list(any(MenuQuery.class));
+        verify(menuService, never()).get(any(MenuId.class));
+    }
+
     private static CurrentUserApplicationServiceImpl service(StorageFacade storageFacade) {
-        return new CurrentUserApplicationServiceImpl(
+        return service(
                 mock(UserApplicationService.class),
                 mock(RoleApplicationService.class),
                 mock(MenuApplicationService.class),
+                storageFacade);
+    }
+
+    private static CurrentUserApplicationServiceImpl service(
+            UserApplicationService userService,
+            RoleApplicationService roleService,
+            MenuApplicationService menuService,
+            StorageFacade storageFacade) {
+        return new CurrentUserApplicationServiceImpl(
+                userService,
+                roleService,
+                menuService,
                 mock(PrincipalIdentityApplicationService.class),
                 mock(PrincipalCredentialApplicationService.class),
                 storageFacade);
+    }
+
+    private static Menu menu(long id, int rank) {
+        Menu menu = new Menu();
+        menu.setId(MenuId.of(id));
+        menu.setRank(AccessRank.of(rank));
+        return menu;
     }
 
     private static StorageObjectFacadeDto avatar(long userId, long storageObjectId) {

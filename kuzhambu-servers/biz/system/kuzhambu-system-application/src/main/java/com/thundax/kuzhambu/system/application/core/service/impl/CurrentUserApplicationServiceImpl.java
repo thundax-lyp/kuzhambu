@@ -227,14 +227,13 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
                 .flatMap(role -> roleService.listRoleMenus(roleQuery(role)).stream())
                 .map(Menu::getId)
                 .distinct()
-                .filter(menuId -> {
-                    Menu menu = menuService.get(menuId);
-                    return menu != null && query.getRank().canAccess(menu.getRank());
-                })
                 .collect(Collectors.toList());
         MenuQuery menuQuery = new MenuQuery();
         menuQuery.setIds(menuIds);
-        return sortedMenus(menuService.list(menuQuery));
+        List<Menu> menus = sortedMenus(menuService.list(menuQuery)).stream()
+                .filter(menu -> menu != null && query.getRank().canAccess(menu.getRank()))
+                .collect(Collectors.toList());
+        return sortedMenus(menus);
     }
 
     private RoleQuery roleQuery(Role role) {
