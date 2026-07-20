@@ -2,7 +2,7 @@
 
 ## Purpose
 
-本文档定义 kuzhambu 的工程级数据库红线。具体业务表结构仍以各模块设计文档和 Flyway 脚本为准。
+本文档定义 kuzhambu 的工程级数据库红线。当前项目仍处于初建阶段，具体业务表结构以 `db/schema/` 和 `db/data/` 为准，不维护增量迁移脚本。
 
 ## Platform
 
@@ -28,6 +28,10 @@
 
 ## SQL Files
 
+- 当前阶段固定采用重建式初始化：先删除目标库中本项目业务表，再执行 `db/schema/` 下的业务域建表脚本，最后执行 `db/data/` 下的初始化数据脚本。
+- 本地开发、联调和 E2E 冒烟需要额外数据时，在基础数据导入后再执行 `db/data/test.sql`。
+- 当前阶段不得新增 Flyway、Liquibase 或手写 migration 脚本；表结构变更必须直接更新对应业务域的 `db/schema/*.sql`，初始化数据变更必须直接更新对应业务域的 `db/data/*.sql`。
+- 只有项目进入需要保留历史数据的迁移阶段，并由治理文档明确调整规则后，才允许引入增量迁移目录和迁移脚本。
 - 业务域 schema 文件固定放在 `db/schema/`。
 - 业务域初始化数据文件固定放在 `db/data/`。
 - 复杂初始化数据允许在 `db/data-source/` 维护结构化源文件，再由仓库级脚本生成 `db/data/` 下的 SQL 产物。
@@ -40,6 +44,8 @@
 - 当前 schema 文件固定为 `system.sql`、`storage.sql`、`classics.sql`、`ai.sql`、`knowledge.sql`、`discovery.sql`、`operations.sql`。
 - 当前初始化数据文件固定为 `system.sql`、`storage.sql`、`classics.sql`、`ai.sql`、`knowledge.sql`、`discovery.sql`、`operations.sql`。
 - SQL 文件名必须与业务域名称保持一致。
+- `db/data/test.sql` 只保存本地开发、联调和 E2E 冒烟需要的测试数据，不属于生产初始化数据；导入前必须确认目标库是 dev/test 环境。
+- `db/data/test.sql` 必须幂等，使用明确测试 ID 范围清理后再插入，测试 ID 默认保留 `990000000000` 以上区间，避免与基础种子和人工业务数据冲突。
 - 设计阶段允许随业务域归并同步重命名表名、索引名和初始化数据引用。
 
 ## Table Types
