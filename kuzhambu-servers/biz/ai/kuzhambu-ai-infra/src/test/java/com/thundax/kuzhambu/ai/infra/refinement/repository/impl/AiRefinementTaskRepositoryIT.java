@@ -88,16 +88,19 @@ class AiRefinementTaskRepositoryIT {
         when(mapper.selectTask(7201L)).thenReturn(savedTask);
         when(mapper.selectTasks("summary", "RUNNING", "ENTRY", 9101L, 1001L, 0, 20))
                 .thenReturn(List.of(savedTask));
+        when(mapper.selectActiveTasks()).thenReturn(List.of(savedTask));
         when(mapper.countTasks("summary", "RUNNING", "ENTRY", 9101L, 1001L)).thenReturn(1L);
 
         AiRefinementTask loadedTask = repository.get(7201L);
         List<AiRefinementTask> taskList = repository.listTasks("summary", "RUNNING", "ENTRY", 9101L, 1001L, 1, 20);
+        List<AiRefinementTask> activeTasks = repository.listActiveTasks();
         long total = repository.countTasks("summary", "RUNNING", "ENTRY", 9101L, 1001L);
 
         assertEquals("gpt-test", loadedTask.getModelName());
         assertEquals("摘要文本", loadedTask.getResultPreview());
         assertTrue(loadedTask.isStreamEnabled());
         assertEquals(1, taskList.size());
+        assertEquals(1, activeTasks.size());
         assertEquals("WORKER_RESULT", taskList.get(0).getFailureStage());
         assertEquals(1L, total);
     }

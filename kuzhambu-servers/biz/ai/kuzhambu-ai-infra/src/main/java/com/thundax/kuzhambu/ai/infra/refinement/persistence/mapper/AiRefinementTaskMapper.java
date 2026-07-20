@@ -55,6 +55,14 @@ public interface AiRefinementTaskMapper extends BaseMapper<AiRefinementTaskDO> {
             """
             select * from ai_refinement_task
             where status in ('PENDING', 'RUNNING')
+            order by requested_at asc
+            """)
+    List<AiRefinementTaskDO> selectActiveTasks();
+
+    @Select(
+            """
+            select * from ai_refinement_task
+            where status in ('PENDING', 'RUNNING')
               and requested_at < #{threshold}
             """)
     List<AiRefinementTaskDO> selectExpiredRunningTasks(java.time.Instant threshold);
