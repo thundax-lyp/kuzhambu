@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.system.application.core.service.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
@@ -10,6 +11,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
 import com.thundax.kuzhambu.storage.facade.request.ListStorageFacadeRequest;
@@ -38,6 +40,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 class CurrentUserApplicationServiceImplTest {
+
+    private static final int TOO_LARGE_AVATAR_BYTES = 5 * 1024 * 1024 + 1;
 
     @Test
     void getAvatarInputStreamShouldUseStorageFacade() throws Exception {
@@ -112,6 +116,25 @@ class CurrentUserApplicationServiceImplTest {
         assertEquals("100", uploadCaptor.getValue().getOwnerId());
         assertEquals("ACTIVE", uploadCaptor.getValue().getObjectStatus());
         assertEquals("avatar", uploadCaptor.getValue().getRemarks());
+    }
+
+    @Test
+    void changeAvatarShouldRejectOversizedUploadBeforeDecoding() {
+        StorageFacade storageFacade = mock(StorageFacade.class);
+        CurrentUserApplicationServiceImpl service = service(storageFacade);
+
+        when(storageFacade.list(any(ListStorageFacadeRequest.class)))
+                .thenReturn(ListStorageFacadeResponse.builder()
+                        .storedObjects(List.of())
+                        .build());
+
+        byte[] tooLargeBytes = new byte[TOO_LARGE_AVATAR_BYTES];
+        assertThrows(
+                BizException.class,
+                () -> service.changeAvatar(new ChangeCurrentUserAvatarCommand(
+                        UserId.of(100L), new ByteArrayInputStream(tooLargeBytes), "avatar.png")));
+
+        verify(storageFacade, never()).upload(any(UploadStorageFacadeRequest.class));
     }
 
     @Test

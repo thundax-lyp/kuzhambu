@@ -78,6 +78,8 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
     private static final String IMAGE_JPEG = "image/jpeg";
     private static final int MAX_AVATAR_WIDTH = 400;
     private static final int MAX_AVATAR_HEIGHT = 400;
+    private static final int MAX_AVATAR_UPLOAD_BYTES = 5 * 1024 * 1024;
+    private static final long MAX_AVATAR_PIXELS = 4096L * 4096L;
     private static final float IMAGE_QUALITY = 0.8f;
 
     private final UserApplicationService userService;
@@ -336,12 +338,16 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
 
     private byte[] readAvatarBytes(InputStream inputStream) {
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            Thumbnails.Builder<?> builder = Thumbnails.of(inputStream);
+            byte[] sourceBytes = readBoundedBytes(inputStream);
+            Thumbnails.Builder<?> builder = Thumbnails.of(new ByteArrayInputStream(sourceBytes));
             BufferedImage image = builder.scale(1.0f).asBufferedImage();
 
             int originWidth = image.getWidth();
             int originHeight = image.getHeight();
             if (originWidth <= 0 || originHeight <= 0) {
+                throw invalidParameter("avatar");
+            }
+            if ((long) originWidth * (long) originHeight > MAX_AVATAR_PIXELS) {
                 throw invalidParameter("avatar");
             }
 
@@ -358,10 +364,28 @@ public class CurrentUserApplicationServiceImpl implements CurrentUserApplication
             builder.outputQuality(IMAGE_QUALITY);
             builder.toOutputStream(outputStream);
             return outputStream.toByteArray();
+        } catch (BizException e) {
+            throw e;
         } catch (IOException e) {
             throw storageFailure(e.getMessage());
         } catch (RuntimeException e) {
             throw invalidParameter("avatar");
+        }
+    }
+
+    private byte[] readBoundedBytes(InputStream inputStream) throws IOException {
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[8192];
+            int read;
+            int total = 0;
+            while ((read = inputStream.read(buffer)) != -1) {
+                total += read;
+                if (total > MAX_AVATAR_UPLOAD_BYTES) {
+                    throw invalidParameter("avatar");
+                }
+                outputStream.write(buffer, 0, read);
+            }
+            return outputStream.toByteArray();
         }
     }
 
