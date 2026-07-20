@@ -33,7 +33,6 @@ type DiscoverySearchPayload = ApiPayload;
 const createSearchMockHandlers = async (page: Page) => {
     const searchRequests: DiscoverySearchPayload[] = [];
     let clickPayload: Record<string, unknown> | null = null;
-    let previewPayload: Record<string, unknown> | null = null;
 
     await page.route("**/kuzhambu-api/api/portal/discovery/search/search", async (route) => {
         const requestBody = readRequestBody(route.request().postData()) as DiscoverySearchPayload;
@@ -116,27 +115,9 @@ const createSearchMockHandlers = async (page: Page) => {
         await fulfillSuccess(route, true);
     });
 
-    await page.route("**/kuzhambu-api/api/portal/discovery/search/preview", async (route) => {
-        previewPayload = readRequestBody(route.request().postData());
-        await fulfillSuccess(route, {
-            bodyText: "礼制条目的 ES 索引正文",
-            categoryName: "礼制",
-            contentId: "1001",
-            contentStatus: "PUBLISHED",
-            contentType: "SANCAI_ENTRY",
-            knowledgeBase: "SANCAI_ENTRY",
-            summary: "礼制条目的 ES 摘要",
-            tagNames: ["礼学"],
-            targetPath: "/knowledge/atlas?level=detail&entityId=1001",
-            title: "礼制条目",
-            visibility: "PUBLIC"
-        });
-    });
-
     return {
         getSearchRequests: () => searchRequests,
-        getClickPayload: () => clickPayload,
-        getPreviewPayload: () => previewPayload
+        getClickPayload: () => clickPayload
     };
 };
 
@@ -234,8 +215,8 @@ test.describe("portal discovery search smoke", () => {
         await expect(page.getByText("SANCAI_ENTRY")).toHaveCount(0);
         await expect(page.locator("mark", { hasText: "礼学" }).first()).toBeVisible();
 
-        await page.getByRole("button", { name: "打开搜索预览：礼制条目" }).click();
-        await expect(page).toHaveURL(/\/discovery\/search/);
+        await page.getByRole("button", { name: "打开搜索结果：礼制条目" }).click();
+        await expect(page).toHaveURL(/\/knowledge\/atlas\?level=detail&entityId=1001/);
 
         expect(mocks.getClickPayload()).toMatchObject({
             contentType: "SANCAI_ENTRY",
@@ -243,17 +224,6 @@ test.describe("portal discovery search smoke", () => {
             resultGroupKey: "SANCAI_ENTRY",
             searchEventId: "search-event-1"
         });
-        expect(mocks.getPreviewPayload()).toMatchObject({
-            contentType: "SANCAI_ENTRY",
-            contentId: "1001"
-        });
-        const previewDialog = page.getByRole("dialog", { name: "礼制条目" });
-        await expect(previewDialog).toBeVisible();
-        await expect(previewDialog.getByText("正文", { exact: true })).toBeVisible();
-        await expect(previewDialog.getByText("礼制条目的 ES 索引正文")).toBeVisible();
-        await expect(previewDialog.getByText("来源路径", { exact: true })).toHaveCount(0);
-        await expect(previewDialog.getByText("可见性", { exact: true })).toHaveCount(0);
-        await expect(previewDialog.getByText("状态", { exact: true })).toHaveCount(0);
-        await expect(previewDialog.getByRole("button", { name: "关闭预览" })).toBeVisible();
+        await expect(page.getByRole("dialog")).toHaveCount(0);
     });
 });

@@ -665,9 +665,6 @@ a {
 }
 
 .portal-discovery-hit {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 14px;
     width: 100%;
     padding: 16px;
     border: 1px solid var(--line-subtle);
@@ -730,89 +727,6 @@ a {
     flex-wrap: wrap;
     gap: 10px 16px;
     font-size: 12px;
-}
-
-.portal-discovery-hit-arrow {
-    display: inline-flex;
-    align-self: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border: 1px solid var(--line-subtle);
-    border-radius: 999px;
-    background: var(--surface-panel);
-    color: var(--accent-blue);
-}
-
-.portal-search-preview-sheet {
-    max-width: 520px;
-    overflow: hidden;
-}
-
-.portal-search-preview-body {
-    display: grid;
-    gap: 18px;
-    overflow: auto;
-    padding: 0 16px 8px;
-}
-
-.portal-search-preview-meta {
-    display: grid;
-    gap: 10px;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    margin: 0;
-}
-
-.portal-search-preview-meta div {
-    border: 1px solid var(--line-subtle);
-    border-radius: 8px;
-    padding: 10px 12px;
-}
-
-.portal-search-preview-meta dt,
-.portal-search-preview-section h3 {
-    color: var(--text-muted);
-    font-size: 12px;
-    font-weight: 600;
-    margin: 0 0 6px;
-}
-
-.portal-search-preview-meta dd,
-.portal-search-preview-section p {
-    margin: 0;
-}
-
-.portal-search-preview-section {
-    display: grid;
-    gap: 8px;
-}
-
-.portal-search-preview-section p {
-    color: var(--text-secondary);
-    line-height: 1.75;
-    white-space: pre-wrap;
-    word-break: break-word;
-}
-
-.portal-search-preview-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.portal-search-preview-tags span {
-    background: rgba(151, 116, 55, 0.1);
-    border: 1px solid rgba(151, 116, 55, 0.18);
-    border-radius: 999px;
-    color: var(--accent-brown);
-    font-size: 12px;
-    padding: 5px 10px;
-}
-
-.portal-search-preview-footer {
-    align-items: center;
-    border-top: 1px solid var(--line-subtle);
-    justify-content: flex-end;
 }
 
 .portal-qa-hero {

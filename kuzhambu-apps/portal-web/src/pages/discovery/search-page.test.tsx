@@ -79,9 +79,9 @@ const setInputValue = (container: HTMLElement, name: string, value: string) => {
     });
 };
 
-const getPreviewButton = (container: HTMLElement, title: string) => {
+const getResultButton = (container: HTMLElement, title: string) => {
     return container.querySelector(
-        `button[aria-label="打开搜索预览：${title}"]`
+        `button[aria-label="打开搜索结果：${title}"]`
     ) as HTMLButtonElement | null;
 };
 
@@ -231,7 +231,7 @@ describe("DiscoverySearchPage", () => {
             totalCount: 2
         });
 
-        const { container, root } = renderPage();
+        const { container, getLocation, root } = renderPage();
         await flushMutations();
 
         setInputValue(container, "queryText", "礼器");
@@ -277,7 +277,7 @@ describe("DiscoverySearchPage", () => {
         expect(container.textContent).not.toContain("DO_NOT_RENDER_RESPONSE_TRACE");
         expect(container.textContent).not.toContain("DO_NOT_RENDER_ITEM_TRACE");
 
-        const resultButton = getPreviewButton(container, "礼器条目");
+        const resultButton = getResultButton(container, "礼器条目");
         expect(resultButton?.textContent).toContain("礼器条目");
 
         await act(async () => {
@@ -295,17 +295,15 @@ describe("DiscoverySearchPage", () => {
             searchEventId: "EVT-1001",
             targetPath: "/shares/1001"
         });
-        expect(mocks.previewSearchResult).toHaveBeenCalledWith({
-            contentId: "1001",
-            contentType: "SANCAI_ENTRY"
-        });
+        expect(mocks.previewSearchResult).not.toHaveBeenCalled();
+        expect(getLocation()).toBe("/shares/1001");
 
         act(() => {
             root.unmount();
         });
     });
 
-    it("opens a search preview sheet when a result is clicked", async () => {
+    it("navigates to the result page when a result is clicked", async () => {
         mocks.searchDiscovery.mockResolvedValueOnce({
             displayQueryText: "礼器",
             groupCount: 1,
@@ -333,40 +331,22 @@ describe("DiscoverySearchPage", () => {
             searchEventId: "EVT-1008",
             totalCount: 1
         });
-        mocks.previewSearchResult.mockResolvedValueOnce({
-            bodyText: "来自 ES 索引的正文",
-            categoryName: "器用",
-            contentId: "1001",
-            contentStatus: "PUBLISHED",
-            contentType: "SANCAI_ENTRY",
-            knowledgeBase: "SANCAI_ENTRY",
-            summary: "索引摘要",
-            tagNames: ["礼制"],
-            targetPath: "/shares/1001",
-            title: "礼器条目",
-            visibility: "PUBLIC"
-        });
 
-        const { container, root } = renderPage("/discovery/search?q=%E7%A4%BC%E5%99%A8");
+        const { container, getLocation, root } = renderPage(
+            "/discovery/search?q=%E7%A4%BC%E5%99%A8"
+        );
         await flushMutations();
-        const resultButton = getPreviewButton(container, "礼器条目");
+        const resultButton = getResultButton(container, "礼器条目");
 
         await act(async () => {
             resultButton?.click();
         });
         await flushMutations();
 
-        expect(mocks.previewSearchResult).toHaveBeenCalledWith({
-            contentId: "1001",
-            contentType: "SANCAI_ENTRY"
-        });
+        expect(getLocation()).toBe("/shares/1001");
+        expect(mocks.previewSearchResult).not.toHaveBeenCalled();
         const previewDialog = document.body.querySelector('[role="dialog"]');
-        expect(previewDialog?.textContent).toContain("检索预览");
-        expect(previewDialog?.textContent).toContain("正文");
-        expect(previewDialog?.textContent).toContain("来自 ES 索引的正文");
-        expect(previewDialog?.textContent).not.toContain("来源路径");
-        expect(previewDialog?.textContent).not.toContain("/shares/1001");
-        expect(previewDialog?.textContent).toContain("关闭预览");
+        expect(previewDialog).toBeNull();
 
         act(() => {
             root.unmount();

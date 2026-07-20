@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type MouseEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { ArrowRight, Search, SlidersHorizontal, X } from "lucide-react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Search, SlidersHorizontal, X } from "lucide-react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -21,21 +21,11 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select";
-import {
-    Sheet,
-    SheetClose,
-    SheetContent,
-    SheetDescription,
-    SheetFooter,
-    SheetHeader,
-    SheetTitle
-} from "@/components/ui/sheet";
 import * as discoverySearchService from "./search-service";
 import type {
     DiscoverySearchClickEventRequest,
     DiscoverySearchGroupResponse,
     DiscoverySearchItemResponse,
-    DiscoverySearchPreviewRequest,
     DiscoverySearchRequest
 } from "./search-types";
 
@@ -165,41 +155,6 @@ const splitList = (value: string) => {
 const joinList = (values: string[]) => values.join(", ");
 
 const hasListValue = (value: string, token: string) => splitList(value).includes(token);
-
-const splitPreviewBody = (value?: string | null) => {
-    const text = value?.trim();
-    if (!text) {
-        return ["暂无正文。"];
-    }
-    const sourceParagraphs = text
-        .replace(/\r\n/gu, "\n")
-        .replace(/\r/gu, "\n")
-        .split(/\n+/gu)
-        .map((paragraph) => paragraph.trim())
-        .filter(Boolean);
-
-    return sourceParagraphs.flatMap((paragraph) => {
-        if (paragraph.length <= 180) {
-            return [paragraph];
-        }
-        const sentences = paragraph.match(/[^。！？!?；;]+[。！？!?；;]?/gu) ?? [paragraph];
-        const chunks: string[] = [];
-        let current = "";
-        sentences.forEach((sentence) => {
-            const next = `${current}${sentence}`;
-            if (current && next.length > 180) {
-                chunks.push(current);
-                current = sentence;
-                return;
-            }
-            current = next;
-        });
-        if (current) {
-            chunks.push(current);
-        }
-        return chunks;
-    });
-};
 
 const toIsoStartOfDay = (value: string) => {
     return value ? new Date(`${value}T00:00:00`).toISOString() : null;
@@ -336,19 +291,6 @@ const createClickCommand = (
     };
 };
 
-const createPreviewRequest = (
-    item: DiscoverySearchItemResponse
-): DiscoverySearchPreviewRequest | null => {
-    if (!item.contentType || !item.contentId) {
-        return null;
-    }
-
-    return {
-        contentId: item.contentId,
-        contentType: item.contentType
-    };
-};
-
 interface MultiOptionControlProps {
     description: string;
     label: string;
@@ -479,6 +421,7 @@ const DiscoveryPagination = ({
 
 export const DiscoverySearchPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
+    const navigate = useNavigate();
     const [form, setForm] = useState<SearchFormState>(() => toFormState(searchParams));
     const [showAdvancedFilters, setShowAdvancedFilters] = useState(() =>
         hasAdvancedFilters(toFormState(searchParams))
@@ -487,10 +430,6 @@ export const DiscoverySearchPage = () => {
     const searchMutation = useMutation({
         mutationFn: (request: DiscoverySearchRequest) =>
             discoverySearchService.searchDiscovery(request)
-    });
-    const previewMutation = useMutation({
-        mutationFn: (request: DiscoverySearchPreviewRequest) =>
-            discoverySearchService.previewSearchResult(request)
     });
     const { mutate: runSearch } = searchMutation;
 
@@ -633,9 +572,8 @@ export const DiscoverySearchPage = () => {
             void discoverySearchService.recordSearchClickEvent(command);
         }
 
-        const previewRequest = createPreviewRequest(item);
-        if (previewRequest) {
-            previewMutation.mutate(previewRequest);
+        if (item.targetPath) {
+            navigate(item.targetPath);
         }
     };
 
@@ -817,16 +755,13 @@ export const DiscoverySearchPage = () => {
 
                                 return (
                                     <button
-                                        aria-label={`打开搜索预览：${item.title || "未命名结果"}`}
+                                        aria-label={`打开搜索结果：${item.title || "未命名结果"}`}
                                         className="portal-discovery-hit"
                                         key={hitKey}
                                         type="button"
                                         onClick={() => handleClick(group, item)}
                                     >
                                         {content}
-                                        <span className="portal-discovery-hit-arrow">
-                                            <ArrowRight aria-hidden="true" size={16} />
-                                        </span>
                                     </button>
                                 );
                             })}
@@ -854,89 +789,6 @@ export const DiscoverySearchPage = () => {
                     />
                 ) : null}
             </section>
-
-            <Sheet
-                open={
-                    previewMutation.isPending ||
-                    Boolean(previewMutation.data) ||
-                    previewMutation.isError
-                }
-                onOpenChange={(open) => {
-                    if (!open) {
-                        previewMutation.reset();
-                    }
-                }}
-            >
-                <SheetContent className="portal-search-preview-sheet">
-                    <SheetHeader>
-                        <SheetDescription>检索预览</SheetDescription>
-                        <SheetTitle>{previewMutation.data?.title ?? "搜索命中内容"}</SheetTitle>
-                    </SheetHeader>
-
-                    <div className="portal-search-preview-body">
-                        {previewMutation.isPending ? (
-                            <div className="portal-empty">正在读取搜索预览。</div>
-                        ) : null}
-
-                        {previewMutation.isError ? (
-                            <div className="portal-empty">当前内容不可预览或已经不可见。</div>
-                        ) : null}
-
-                        {previewMutation.data ? (
-                            <>
-                                <dl className="portal-search-preview-meta">
-                                    <div>
-                                        <dt>知识库</dt>
-                                        <dd>
-                                            {toDisplayLabel(
-                                                previewMutation.data.knowledgeBase,
-                                                "-"
-                                            )}
-                                        </dd>
-                                    </div>
-                                    <div>
-                                        <dt>门类</dt>
-                                        <dd>
-                                            {previewMutation.data.categoryName ??
-                                                previewMutation.data.categoryCode ??
-                                                "-"}
-                                        </dd>
-                                    </div>
-                                </dl>
-                                {previewMutation.data.summary ? (
-                                    <section className="portal-search-preview-section">
-                                        <h3>摘要</h3>
-                                        <p>{previewMutation.data.summary}</p>
-                                    </section>
-                                ) : null}
-                                <section className="portal-search-preview-section">
-                                    <h3>正文</h3>
-                                    {splitPreviewBody(previewMutation.data.bodyText).map(
-                                        (paragraph, index) => (
-                                            <p key={`${paragraph}-${index}`}>{paragraph}</p>
-                                        )
-                                    )}
-                                </section>
-                                {previewMutation.data.tagNames?.length ? (
-                                    <div className="portal-search-preview-tags">
-                                        {previewMutation.data.tagNames.map((tagName) => (
-                                            <span key={tagName}>{tagName}</span>
-                                        ))}
-                                    </div>
-                                ) : null}
-                            </>
-                        ) : null}
-                    </div>
-
-                    <SheetFooter className="portal-search-preview-footer">
-                        <SheetClose asChild>
-                            <Button type="button" variant="outline">
-                                关闭预览
-                            </Button>
-                        </SheetClose>
-                    </SheetFooter>
-                </SheetContent>
-            </Sheet>
         </main>
     );
 };
