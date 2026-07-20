@@ -101,7 +101,7 @@ public class AccessTokenAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
         User currentUser = userService.get(UserIdCodec.toDomain(Long.valueOf(accessToken.getUserId())));
-        if (currentUser.getId() == null || !currentUser.isEnable()) {
+        if (currentUser == null || currentUser.getId() == null || !currentUser.isEnable()) {
             writeError(response);
             return;
         }
