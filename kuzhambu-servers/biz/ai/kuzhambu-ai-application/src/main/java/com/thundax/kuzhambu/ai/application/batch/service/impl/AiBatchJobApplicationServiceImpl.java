@@ -48,7 +48,10 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
     public AiBatchJobResult recordSuccess(Long batchId) {
         AiBatchJob job = getRequired(batchId);
         if (STATUS_CANCELLED.equals(job.getStatus())) {
-            job.setSuccessCount(job.getSuccessCount() + 1);
+            consumeCancelledSlot(job);
+            if (job.getSuccessCount() + job.getFailedCount() < job.getTotalCount()) {
+                job.setSuccessCount(job.getSuccessCount() + 1);
+            }
         } else {
             job.recordSuccess();
         }
@@ -62,7 +65,10 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
         AiBatchJob job = getRequired(batchId);
         job.setFailureSummaryJson(failureSummaryJson);
         if (STATUS_CANCELLED.equals(job.getStatus())) {
-            job.setFailedCount(job.getFailedCount() + 1);
+            consumeCancelledSlot(job);
+            if (job.getSuccessCount() + job.getFailedCount() < job.getTotalCount()) {
+                job.setFailedCount(job.getFailedCount() + 1);
+            }
         } else {
             job.recordFailure();
         }
@@ -99,6 +105,12 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
                 || isBlank(command.getContentType())
                 || command.getTotalCount() <= 0) {
             throw new BizException("AI batch job create command is incomplete");
+        }
+    }
+
+    private void consumeCancelledSlot(AiBatchJob job) {
+        if (job.getCancelledCount() > 0) {
+            job.setCancelledCount(job.getCancelledCount() - 1);
         }
     }
 
