@@ -105,15 +105,16 @@ describe("App", () => {
                                 },
                                 {
                                     id: "30",
-                                    name: "知识管理",
+                                    name: "知识治理",
                                     displayParams: '{"icon":"knowledge"}'
                                 },
                                 {
                                     id: "31",
                                     parentId: "30",
-                                    name: "世系图",
+                                    name: "知识图谱",
                                     permission: "knowledge:graph:view",
-                                    url: "/knowledge/lineage"
+                                    displayParams: '{"icon":"knowledge-graph"}',
+                                    url: "/knowledge/graph"
                                 }
                             ]
                         }),
@@ -195,9 +196,9 @@ describe("App", () => {
         await waitFor(() => expect(hasPermission("sys:user:view")).toBe(true));
         expect(hasPermission("sys:role:edit")).toBe(false);
         expect(await screen.findByText("古籍管理")).toBeInTheDocument();
-        expect(await screen.findByText("知识管理")).toBeInTheDocument();
-        await user.click(await screen.findByRole("menuitem", { name: /知识管理/ }));
-        expect(await screen.findByText("世系图")).toBeInTheDocument();
+        expect(await screen.findByText("知识治理")).toBeInTheDocument();
+        await user.click(await screen.findByRole("menuitem", { name: /知识治理/ }));
+        expect(await screen.findByText("知识图谱")).toBeInTheDocument();
     });
 
     it("loads permissions as part of successful login", async () => {

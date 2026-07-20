@@ -122,6 +122,10 @@ const router = createBrowserRouter(
                             element: <SharingPage />
                         },
                         {
+                            path: "knowledge/graph",
+                            element: <RefinementPage />
+                        },
+                        {
                             path: "knowledge/graph-extraction",
                             element: <GraphExtractionPage />
                         },
