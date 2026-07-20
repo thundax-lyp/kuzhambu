@@ -1,11 +1,18 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { ArrowRight, Search, SlidersHorizontal, X } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Search, SlidersHorizontal, X } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue
+} from "@/components/ui/select";
 import {
     Sheet,
     SheetClose,
@@ -39,6 +46,16 @@ const KNOWLEDGE_BASE_OPTIONS = [
     }
 ] as const;
 
+const DISPLAY_LABELS: Record<string, string> = {
+    CLASSICS: "古籍内容",
+    MING_CUSTOMS: "明代习俗",
+    PRIVATE: "内部可见",
+    PUBLIC: "公开可见",
+    PUBLISHED: "已发布",
+    SANCAI_ENTRY: "三才图会",
+    WANGQI_DOCUMENT: "王圻文档"
+};
+
 const SAMPLE_QUERIES = [
     {
         knowledgeBases: "SANCAI_ENTRY",
@@ -58,6 +75,7 @@ const SAMPLE_QUERIES = [
 ] as const;
 
 const DEFAULT_PAGE_SIZE = "10";
+const PAGE_SIZE_OPTIONS = ["10", "20", "50"] as const;
 
 interface SearchFormState {
     categoryCodes: string;
@@ -187,6 +205,25 @@ const formatCount = (value?: number | null) => {
     return value ?? 0;
 };
 
+const toDisplayLabel = (value?: string | null, fallback = "未标注") => {
+    if (!value) {
+        return fallback;
+    }
+
+    return DISPLAY_LABELS[value] ?? fallback;
+};
+
+const flattenGroups = (groups: DiscoverySearchGroupResponse[]) => {
+    return groups.flatMap((group, groupIndex) =>
+        (group.items ?? []).map((item, itemIndex) => ({
+            group,
+            groupIndex,
+            item,
+            itemIndex
+        }))
+    );
+};
+
 const toRequest = (form: SearchFormState): DiscoverySearchRequest => {
     return {
         categoryCodes: splitList(form.categoryCodes),
@@ -200,14 +237,6 @@ const toRequest = (form: SearchFormState): DiscoverySearchRequest => {
         tagNames: splitList(form.tagNames),
         visibilityScopes: splitList(form.visibilityScopes)
     };
-};
-
-const formatItemMeta = (item: DiscoverySearchItemResponse) => {
-    return [
-        item.contentDomain || "未知域",
-        item.contentType || "未知类型",
-        `全局 ${item.resultRank ?? "-"} / 组内 ${item.groupRank ?? "-"}`
-    ].join(" · ");
 };
 
 const renderHighlightText = (highlightText: string | null | undefined) => {
@@ -235,6 +264,38 @@ const renderHighlightText = (highlightText: string | null | undefined) => {
     }
 
     return nodes;
+};
+
+const escapeRegExp = (value: string) => {
+    return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+};
+
+const renderQueryHighlight = (text: string, queryText: string) => {
+    const terms = splitList(queryText).filter((term) => term.length > 0);
+    if (!terms.length) {
+        return text;
+    }
+
+    const pattern = new RegExp(`(${terms.map(escapeRegExp).join("|")})`, "giu");
+    const nodes: Array<string | JSX.Element> = [];
+    let lastIndex = 0;
+    let match = pattern.exec(text);
+
+    while (match) {
+        if (match.index > lastIndex) {
+            nodes.push(text.slice(lastIndex, match.index));
+        }
+
+        nodes.push(<mark key={`query-mark-${match.index}`}>{match[0]}</mark>);
+        lastIndex = match.index + match[0].length;
+        match = pattern.exec(text);
+    }
+
+    if (lastIndex < text.length) {
+        nodes.push(text.slice(lastIndex));
+    }
+
+    return nodes.length ? nodes : text;
 };
 
 const createClickCommand = (
@@ -326,6 +387,71 @@ const MultiOptionControl = ({
     );
 };
 
+interface DiscoveryPaginationProps {
+    currentPage: number;
+    disabled: boolean;
+    pageSize: number;
+    total: number;
+    onChange: (pageNo: number, pageSize: number) => void;
+}
+
+const DiscoveryPagination = ({
+    currentPage,
+    disabled,
+    pageSize,
+    total,
+    onChange
+}: DiscoveryPaginationProps) => {
+    const totalPage = Math.max(1, Math.ceil(total / pageSize));
+    const canGoPrevious = currentPage > 1;
+    const canGoNext = currentPage < totalPage;
+
+    return (
+        <nav className="portal-discovery-pagination" aria-label="搜索结果分页">
+            <span>
+                第 {currentPage} / {totalPage} 页，共 {formatCount(total)} 条
+            </span>
+            <div>
+                <Button
+                    aria-label="上一页"
+                    disabled={disabled || !canGoPrevious}
+                    size="icon"
+                    type="button"
+                    variant="outline"
+                    onClick={() => onChange(Math.max(1, currentPage - 1), pageSize)}
+                >
+                    <ChevronLeft aria-hidden="true" size={16} />
+                </Button>
+                <Button
+                    aria-label="下一页"
+                    disabled={disabled || !canGoNext}
+                    size="icon"
+                    type="button"
+                    variant="outline"
+                    onClick={() => onChange(currentPage + 1, pageSize)}
+                >
+                    <ChevronRight aria-hidden="true" size={16} />
+                </Button>
+                <Select
+                    value={String(pageSize)}
+                    onValueChange={(value) => onChange(1, Number.parseInt(value, 10) || pageSize)}
+                >
+                    <SelectTrigger aria-label="每页数量" size="sm">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {PAGE_SIZE_OPTIONS.map((option) => (
+                            <SelectItem key={option} value={option}>
+                                每页 {option} 条
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+        </nav>
+    );
+};
+
 export const DiscoverySearchPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const [form, setForm] = useState<SearchFormState>(() => toFormState(searchParams));
@@ -358,23 +484,25 @@ export const DiscoverySearchPage = () => {
         runSearch(request);
     }, [runSearch, searchParams]);
 
-    const requestPreview = useMemo(() => toRequest(form), [form]);
     const response = searchMutation.data;
-    const groups = response?.groups ?? [];
+    const results = useMemo(() => flattenGroups(response?.groups ?? []), [response?.groups]);
+    const currentPageNo = Number.parseInt(form.pageNo, 10) || 1;
+    const currentPageSize = Number.parseInt(form.pageSize, 10) || 10;
+    const totalCount = response?.totalCount ?? results.length;
     const summaryText = useMemo(() => {
         if (searchMutation.isPending) {
             return "正在检索知识中心";
         }
 
         if (searchMutation.isError) {
-            return "检索失败，请调整条件后重试";
+            return "检索暂时不可用，请稍后重试";
         }
 
         if (!response) {
             return "";
         }
 
-        return `共 ${formatCount(response.totalCount)} 条命中，分布在 ${formatCount(response.groupCount)} 个分组中`;
+        return `共 ${formatCount(response.totalCount)} 条命中`;
     }, [response, searchMutation.isError, searchMutation.isPending]);
 
     const updateField = (key: keyof SearchFormState, value: string) => {
@@ -432,29 +560,39 @@ export const DiscoverySearchPage = () => {
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        const request = toRequest(form);
+        const nextForm = {
+            ...form,
+            pageNo: INITIAL_FORM_STATE.pageNo
+        };
+        const request = toRequest(nextForm);
 
-        const nextSearchParams = toSearchParams(form);
+        const nextSearchParams = toSearchParams(nextForm);
         if (nextSearchParams.toString() === searchParams.toString()) {
             runSearch(request);
             return;
         }
 
-        submittedFormRef.current = form;
+        setForm(nextForm);
+        submittedFormRef.current = nextForm;
         setSearchParams(nextSearchParams);
     };
 
-    const handlePaginationSubmit = (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        const request = toRequest(form);
+    const handlePageChange = (pageNo: number, pageSize: number) => {
+        const nextForm = {
+            ...form,
+            pageNo: String(pageNo),
+            pageSize: String(pageSize)
+        };
+        const request = toRequest(nextForm);
 
-        const nextSearchParams = toSearchParams(form);
+        const nextSearchParams = toSearchParams(nextForm);
         if (nextSearchParams.toString() === searchParams.toString()) {
             runSearch(request);
             return;
         }
 
-        submittedFormRef.current = form;
+        setForm(nextForm);
+        submittedFormRef.current = nextForm;
         setSearchParams(nextSearchParams);
     };
 
@@ -612,85 +750,64 @@ export const DiscoverySearchPage = () => {
                 {response || searchMutation.isPending || searchMutation.isError ? (
                     <div className="portal-discovery-result-summary">
                         <strong>{summaryText}</strong>
-                        {response?.searchEventId ? (
-                            <span>事件 {response.searchEventId}</span>
-                        ) : null}
-                        {response ? (
-                            <span>
-                                回显词：
-                                {response.displayQueryText ?? requestPreview.queryText ?? "-"}
-                            </span>
-                        ) : null}
                     </div>
                 ) : null}
 
                 {searchMutation.isError ? (
                     <Card className="portal-empty">
-                        <strong>检索失败</strong>
-                        <p>请检查输入条件后重新提交搜索。</p>
+                        <strong>检索暂时不可用</strong>
+                        <p>服务恢复后会按当前搜索词和筛选条件继续检索。</p>
                     </Card>
                 ) : null}
 
-                {groups.map((group, index) => {
-                    const groupKey = group.groupKey || `group-${index}`;
-                    const items = group.items ?? [];
+                {results.length ? (
+                    <Card className="portal-discovery-group">
+                        <div className="portal-discovery-hit-list">
+                            {results.map(({ group, groupIndex, item, itemIndex }) => {
+                                const hitKey = `${group.groupKey || `group-${groupIndex}`}-${item.resultRank ?? itemIndex}`;
+                                const content = (
+                                    <>
+                                        <div className="portal-discovery-hit-title">
+                                            <p>
+                                                {toDisplayLabel(item.contentDomain, "其他来源")} ·{" "}
+                                                {toDisplayLabel(item.contentType, "其他类型")}
+                                            </p>
+                                            <h3>
+                                                {renderQueryHighlight(
+                                                    item.title || "未命名结果",
+                                                    form.queryText
+                                                )}
+                                            </h3>
+                                        </div>
+                                        <p className="portal-discovery-hit-summary">
+                                            {renderHighlightText(item.highlightText) ||
+                                                renderQueryHighlight(
+                                                    item.summary || "",
+                                                    form.queryText
+                                                ) ||
+                                                "暂无摘要"}
+                                        </p>
+                                    </>
+                                );
 
-                    return (
-                        <Card className="portal-discovery-group" key={groupKey}>
-                            <header>
-                                <div>
-                                    <p>{group.groupKey || "未命名分组"}</p>
-                                    <h2>{group.groupTitle || `检索分组 ${index + 1}`}</h2>
-                                </div>
-                                <strong>{formatCount(group.count)} 条</strong>
-                            </header>
-
-                            {items.length ? (
-                                <div className="portal-discovery-hit-list">
-                                    {items.map((item, itemIndex) => {
-                                        const hitKey = `${groupKey}-${item.resultRank ?? itemIndex}`;
-                                        const content = (
-                                            <>
-                                                <div className="portal-discovery-hit-title">
-                                                    <p>
-                                                        {item.contentDomain || "未知域"} ·{" "}
-                                                        {item.contentType || "未知类型"}
-                                                    </p>
-                                                    <h3>{item.title || "未命名结果"}</h3>
-                                                </div>
-                                                <p className="portal-discovery-hit-summary">
-                                                    {renderHighlightText(item.highlightText) ||
-                                                        item.summary ||
-                                                        "暂无摘要"}
-                                                </p>
-                                                <div className="portal-discovery-hit-meta">
-                                                    <span>{formatItemMeta(item)}</span>
-                                                </div>
-                                            </>
-                                        );
-
-                                        return (
-                                            <button
-                                                aria-label={`打开搜索预览：${item.title || "未命名结果"}`}
-                                                className="portal-discovery-hit"
-                                                key={hitKey}
-                                                type="button"
-                                                onClick={() => handleClick(group, item)}
-                                            >
-                                                {content}
-                                                <span className="portal-discovery-hit-arrow">
-                                                    <ArrowRight aria-hidden="true" size={16} />
-                                                </span>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            ) : (
-                                <div className="portal-empty">该分组暂无可见结果。</div>
-                            )}
-                        </Card>
-                    );
-                })}
+                                return (
+                                    <button
+                                        aria-label={`打开搜索预览：${item.title || "未命名结果"}`}
+                                        className="portal-discovery-hit"
+                                        key={hitKey}
+                                        type="button"
+                                        onClick={() => handleClick(group, item)}
+                                    >
+                                        {content}
+                                        <span className="portal-discovery-hit-arrow">
+                                            <ArrowRight aria-hidden="true" size={16} />
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </Card>
+                ) : null}
 
                 {shouldShowZeroResult ? (
                     <Card className="portal-empty">
@@ -703,37 +820,13 @@ export const DiscoverySearchPage = () => {
                 ) : null}
 
                 {response ? (
-                    <form
-                        className="portal-discovery-pagination"
-                        aria-label="搜索结果分页"
-                        onSubmit={handlePaginationSubmit}
-                    >
-                        <Label className="portal-filter-field">
-                            <span>页码</span>
-                            <Input
-                                name="pageNo"
-                                min={1}
-                                type="number"
-                                value={form.pageNo}
-                                onChange={(event) => updateField("pageNo", event.target.value)}
-                            />
-                        </Label>
-
-                        <Label className="portal-filter-field">
-                            <span>每页数量</span>
-                            <Input
-                                name="pageSize"
-                                min={1}
-                                type="number"
-                                value={form.pageSize}
-                                onChange={(event) => updateField("pageSize", event.target.value)}
-                            />
-                        </Label>
-
-                        <Button disabled={searchMutation.isPending} type="submit">
-                            应用分页
-                        </Button>
-                    </form>
+                    <DiscoveryPagination
+                        currentPage={currentPageNo}
+                        disabled={searchMutation.isPending}
+                        pageSize={currentPageSize}
+                        total={totalCount}
+                        onChange={handlePageChange}
+                    />
                 ) : null}
             </section>
 
@@ -769,7 +862,12 @@ export const DiscoverySearchPage = () => {
                                 <dl className="portal-search-preview-meta">
                                     <div>
                                         <dt>知识库</dt>
-                                        <dd>{previewMutation.data.knowledgeBase ?? "-"}</dd>
+                                        <dd>
+                                            {toDisplayLabel(
+                                                previewMutation.data.knowledgeBase,
+                                                "-"
+                                            )}
+                                        </dd>
                                     </div>
                                     <div>
                                         <dt>门类</dt>

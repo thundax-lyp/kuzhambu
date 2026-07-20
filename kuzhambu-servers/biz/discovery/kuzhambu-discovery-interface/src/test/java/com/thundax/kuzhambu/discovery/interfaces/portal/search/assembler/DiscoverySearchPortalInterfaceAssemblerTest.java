@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.discovery.interfaces.portal.search.assembler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.thundax.kuzhambu.discovery.application.search.command.SearchClickEventCreateCommand;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchPreviewQuery;
@@ -23,6 +24,20 @@ class DiscoverySearchPortalInterfaceAssemblerTest {
         assertEquals("ANONYMOUS", query.getOperatorType());
         assertNotNull(query.getRequestId());
         assertNotNull(query.getTraceId());
+    }
+
+    @Test
+    void toQueryShouldNormalizeNullQueryTextAndIgnoreInvalidDateFilters() {
+        DiscoverySearchRequest request = new DiscoverySearchRequest();
+        request.setQueryText(null);
+        request.setDateFrom("not-a-date");
+        request.setDateTo("also-not-a-date");
+
+        SearchQuery query = DiscoverySearchPortalInterfaceAssembler.toQuery(request);
+
+        assertEquals("", query.getQueryText());
+        assertNull(query.getDateFrom());
+        assertNull(query.getDateTo());
     }
 
     @Test

@@ -169,10 +169,25 @@ describe("DiscoverySearchPage", () => {
         });
     });
 
-    it("submits query and renders grouped discovery results", async () => {
+    it("does not blame search conditions when the search request fails", async () => {
+        mocks.searchDiscovery.mockRejectedValueOnce(new Error("network down"));
+
+        const { container, root } = renderPage();
+        await flushMutations();
+
+        expect(container.textContent).toContain("检索暂时不可用");
+        expect(container.textContent).not.toContain("检查输入条件");
+        expect(container.textContent).not.toContain("调整条件");
+
+        act(() => {
+            root.unmount();
+        });
+    });
+
+    it("submits query and renders ordered discovery results without internal codes", async () => {
         mocks.searchDiscovery.mockResolvedValueOnce(emptySearchResponse).mockResolvedValueOnce({
             displayQueryText: "礼器",
-            groupCount: 1,
+            groupCount: 2,
             groups: [
                 {
                     count: 1,
@@ -191,12 +206,29 @@ describe("DiscoverySearchPage", () => {
                             title: "礼器条目"
                         }
                     ]
+                },
+                {
+                    count: 1,
+                    groupKey: "WANGQI_DOCUMENT",
+                    groupTitle: "王圻文档",
+                    items: [
+                        {
+                            contentDomain: "CLASSICS",
+                            contentId: "1002",
+                            contentType: "WANGQI_DOCUMENT",
+                            groupRank: 1,
+                            resultRank: 2,
+                            summary: "王圻文档中的礼器线索",
+                            targetPath: "/shares/1002",
+                            title: "王圻礼器"
+                        }
+                    ]
                 }
             ],
             permissionDebugTrace: "DO_NOT_RENDER_RESPONSE_TRACE",
             queryText: "礼器",
             searchEventId: "EVT-1001",
-            totalCount: 1
+            totalCount: 2
         });
 
         const { container, root } = renderPage();
@@ -226,10 +258,22 @@ describe("DiscoverySearchPage", () => {
             tagNames: [],
             visibilityScopes: []
         });
-        expect(container.textContent).toContain("共 1 条命中");
+        expect(container.textContent).toContain("共 2 条命中");
         expect(container.textContent).toContain("三才图会");
+        expect(container.textContent).toContain("王圻文档");
         expect(container.textContent).toContain("礼器条目");
         expect(container.textContent).toContain("礼器条目摘要");
+        expect(container.textContent?.indexOf("礼器条目")).toBeLessThan(
+            container.textContent?.indexOf("王圻礼器") ?? Number.POSITIVE_INFINITY
+        );
+        expect(container.querySelector("mark")?.textContent).toBe("礼器");
+        expect(container.textContent).not.toContain("EVT-1001");
+        expect(container.textContent).not.toContain("回显词");
+        expect(container.textContent).not.toContain("全局");
+        expect(container.textContent).not.toContain("组内");
+        expect(container.textContent).not.toContain("CLASSICS");
+        expect(container.textContent).not.toContain("SANCAI_ENTRY");
+        expect(container.textContent).not.toContain("WANGQI_DOCUMENT");
         expect(container.textContent).not.toContain("DO_NOT_RENDER_RESPONSE_TRACE");
         expect(container.textContent).not.toContain("DO_NOT_RENDER_ITEM_TRACE");
 
@@ -399,18 +443,99 @@ describe("DiscoverySearchPage", () => {
 
         expect(getLocation()).toContain("q=%E5%AE%98%E5%88%B6");
         expect(getLocation()).toContain("knowledgeBases=WANGQI_DOCUMENT");
-        expect(getLocation()).toContain("pageNo=2");
+        expect(getLocation()).not.toContain("pageNo=2");
         expect(getLocation()).toContain("pageSize=20");
         expect(getLocation()).not.toContain("categoryCodes=");
         expect(mocks.searchDiscovery).toHaveBeenCalledWith(
             expect.objectContaining({
                 categoryCodes: [],
                 knowledgeBases: ["WANGQI_DOCUMENT"],
-                pageNo: 2,
+                pageNo: 1,
                 pageSize: 20,
                 queryText: "官制"
             })
         );
+
+        act(() => {
+            root.unmount();
+        });
+    });
+
+    it("changes result pages through the pagination component", async () => {
+        mocks.searchDiscovery
+            .mockResolvedValueOnce({
+                displayQueryText: "",
+                groupCount: 1,
+                groups: [
+                    {
+                        count: 1,
+                        groupKey: "SANCAI_ENTRY",
+                        groupTitle: "三才图会",
+                        items: [
+                            {
+                                contentDomain: "CLASSICS",
+                                contentId: "1001",
+                                contentType: "SANCAI_ENTRY",
+                                groupRank: 1,
+                                resultRank: 1,
+                                summary: "第一页摘要",
+                                title: "第一页结果"
+                            }
+                        ]
+                    }
+                ],
+                queryText: "",
+                searchEventId: "EVT-PAGE-1",
+                totalCount: 21
+            })
+            .mockResolvedValueOnce({
+                displayQueryText: "",
+                groupCount: 1,
+                groups: [
+                    {
+                        count: 1,
+                        groupKey: "SANCAI_ENTRY",
+                        groupTitle: "三才图会",
+                        items: [
+                            {
+                                contentDomain: "CLASSICS",
+                                contentId: "1011",
+                                contentType: "SANCAI_ENTRY",
+                                groupRank: 1,
+                                resultRank: 11,
+                                summary: "第二页摘要",
+                                title: "第二页结果"
+                            }
+                        ]
+                    }
+                ],
+                queryText: "",
+                searchEventId: "EVT-PAGE-2",
+                totalCount: 21
+            });
+
+        const { container, getLocation, root } = renderPage();
+        await flushMutations();
+
+        const nextPageButton = container.querySelector(
+            'button[aria-label="下一页"]'
+        ) as HTMLButtonElement | null;
+        expect(nextPageButton).not.toBeNull();
+
+        await act(async () => {
+            nextPageButton?.click();
+        });
+        await flushMutations();
+
+        expect(mocks.searchDiscovery).toHaveBeenLastCalledWith(
+            expect.objectContaining({
+                pageNo: 2,
+                pageSize: 10,
+                queryText: ""
+            })
+        );
+        expect(getLocation()).toContain("pageNo=2");
+        expect(container.textContent).toContain("第二页结果");
 
         act(() => {
             root.unmount();

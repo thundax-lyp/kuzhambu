@@ -101,11 +101,11 @@ class DiscoverySearchPortalControllerTest {
     }
 
     @Test
-    void searchRequestShouldAllowBlankQueryText() {
+    void searchRequestShouldAllowNullQueryText() {
         SearchApplicationService service = mock(SearchApplicationService.class);
         DiscoverySearchPortalController controller = new DiscoverySearchPortalController(service);
         DiscoverySearchRequest request = new DiscoverySearchRequest();
-        request.setQueryText("");
+        request.setQueryText(null);
         request.setPageNo(1);
         request.setPageSize(20);
         when(service.search(any()))

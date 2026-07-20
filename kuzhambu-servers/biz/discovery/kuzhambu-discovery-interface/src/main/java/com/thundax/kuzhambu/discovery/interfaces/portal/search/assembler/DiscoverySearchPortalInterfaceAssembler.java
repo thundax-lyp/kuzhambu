@@ -1,6 +1,5 @@
 package com.thundax.kuzhambu.discovery.interfaces.portal.search.assembler;
 
-import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.discovery.application.search.command.SearchClickEventCreateCommand;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchPreviewQuery;
 import com.thundax.kuzhambu.discovery.application.search.query.SearchQuery;
@@ -32,14 +31,14 @@ public final class DiscoverySearchPortalInterfaceAssembler {
             return null;
         }
         return new SearchQuery(
-                request.getQueryText(),
+                normalizeQueryText(request.getQueryText()),
                 request.getKnowledgeBases(),
                 request.getCategoryCodes(),
                 request.getTagNames(),
                 request.getContentStatuses(),
                 request.getVisibilityScopes(),
-                parseDate(request.getDateFrom(), "dateFrom"),
-                parseDate(request.getDateTo(), "dateTo"),
+                parseDate(request.getDateFrom()),
+                parseDate(request.getDateTo()),
                 request.getPageNo() == null ? 1 : request.getPageNo(),
                 request.getPageSize() == null ? 20 : request.getPageSize(),
                 PORTAL_OPERATOR_TYPE,
@@ -167,19 +166,19 @@ public final class DiscoverySearchPortalInterfaceAssembler {
                 .build();
     }
 
-    private static Date parseDate(String value, String fieldName) {
+    private static Date parseDate(String value) {
         if (value == null || value.isBlank()) {
             return null;
         }
         try {
             return Date.from(Instant.parse(value));
         } catch (DateTimeParseException exception) {
-            throw new BizException(
-                    "DISCOVERY-40001",
-                    "discovery.search.request.invalid-date",
-                    fieldName + " must be ISO-8601 format",
-                    exception);
+            return null;
         }
+    }
+
+    private static String normalizeQueryText(String queryText) {
+        return queryText == null ? "" : queryText;
     }
 
     private static String newRequestId() {

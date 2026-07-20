@@ -601,9 +601,9 @@ a {
 }
 
 .portal-discovery-pagination {
-    display: grid;
-    grid-template-columns: minmax(120px, 0.35fr) minmax(120px, 0.35fr) auto;
-    align-items: end;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     gap: 12px;
     padding: 16px;
     border: 1px solid var(--line-subtle);
@@ -611,10 +611,19 @@ a {
     background: var(--surface-panel);
 }
 
+.portal-discovery-pagination > div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.portal-discovery-pagination > span {
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
 .portal-discovery-pagination [data-slot="button"] {
-    min-height: 40px;
-    padding: 0 16px;
-    white-space: nowrap;
+    min-height: 32px;
 }
 
 .portal-discovery-group {
@@ -623,29 +632,6 @@ a {
     border-color: transparent;
     background: transparent;
     box-shadow: none;
-}
-
-.portal-discovery-group header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
-}
-
-.portal-discovery-group header p {
-    margin: 0 0 8px;
-    font-size: 13px;
-}
-
-.portal-discovery-group header strong {
-    flex: 0 0 auto;
-    padding: 4px 10px;
-    border: 1px solid color-mix(in srgb, var(--accent-jade) 36%, var(--line-subtle));
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--accent-jade) 12%, var(--surface-panel));
-    color: var(--accent-jade);
-    font-size: 13px;
-    white-space: nowrap;
 }
 
 .portal-discovery-hit-list {
@@ -1308,7 +1294,6 @@ a {
     }
 
     .portal-discovery-hero,
-    .portal-discovery-pagination,
     .portal-discovery-form-grid,
     .portal-qa-hero,
     .portal-qa-grid,
@@ -1317,8 +1302,12 @@ a {
         grid-template-columns: 1fr;
     }
 
+    .portal-discovery-pagination {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
     .portal-discovery-panel-header,
-    .portal-discovery-group header,
     .portal-qa-panel-header,
     .portal-qa-source-title {
         align-items: flex-start;

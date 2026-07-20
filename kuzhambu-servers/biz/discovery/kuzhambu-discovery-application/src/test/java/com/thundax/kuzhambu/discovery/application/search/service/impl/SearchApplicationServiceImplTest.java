@@ -217,6 +217,53 @@ class SearchApplicationServiceImplTest {
     }
 
     @Test
+    void searchShouldNormalizeNullQueryTextToBlankSearch() {
+        SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
+        SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);
+        SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
+        QueryUnderstandingApplicationService queryUnderstandingApplicationService =
+                mock(QueryUnderstandingApplicationService.class);
+        SearchApplicationServiceImpl service = new SearchApplicationServiceImpl(
+                searchEventRepository,
+                searchClickEventRepository,
+                new SearchDomainService(),
+                searchIndexGateway,
+                queryUnderstandingApplicationService);
+        SearchQuery query = new SearchQuery(
+                null,
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                null,
+                null,
+                1,
+                20,
+                "ANONYMOUS",
+                null,
+                "req-null-query",
+                "trace-null-query");
+        when(queryUnderstandingApplicationService.understand(query))
+                .thenReturn(new QueryUnderstandingResult(
+                        "", "", "KEYWORD_SEARCH", List.of(), List.of(), "req-null-query", "trace-null-query"));
+        when(searchIndexGateway.search(any(), any(), any(Integer.class), any(Integer.class)))
+                .thenReturn(searchPageResult(0));
+        ArgumentCaptor<SearchKeyword> keywordCaptor = ArgumentCaptor.forClass(SearchKeyword.class);
+        ArgumentCaptor<SearchEvent> searchEventCaptor = ArgumentCaptor.forClass(SearchEvent.class);
+
+        var result = service.search(query);
+
+        verify(searchIndexGateway).search(keywordCaptor.capture(), any(), any(Integer.class), any(Integer.class));
+        verify(searchEventRepository).save(searchEventCaptor.capture());
+        assertEquals("", query.getQueryText());
+        assertEquals("", keywordCaptor.getValue().getRawText());
+        assertEquals("", result.getQueryText());
+        assertEquals("", searchEventCaptor.getValue().getQueryText());
+        assertEquals("SUCCEEDED", searchEventCaptor.getValue().getSearchStatus());
+    }
+
+    @Test
     void searchShouldFilterPrivateResultsForAnonymousOperator() {
         SearchEventRepository searchEventRepository = mock(SearchEventRepository.class);
         SearchClickEventRepository searchClickEventRepository = mock(SearchClickEventRepository.class);

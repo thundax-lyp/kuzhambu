@@ -65,6 +65,7 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
     @Override
     public SearchEventResult search(SearchQuery query) {
         validateSearchQuery(query);
+        normalizeSearchQuery(query);
         long startNanos = System.nanoTime();
         QueryUnderstandingResult understandingResult = null;
         String normalizedQueryText =
@@ -351,6 +352,12 @@ public class SearchApplicationServiceImpl implements SearchApplicationService {
     private void validateSearchQuery(SearchQuery query) {
         if (query == null) {
             throw new BizException("Search query is required");
+        }
+    }
+
+    private void normalizeSearchQuery(SearchQuery query) {
+        if (query.getQueryText() == null) {
+            query.setQueryText("");
         }
     }
 

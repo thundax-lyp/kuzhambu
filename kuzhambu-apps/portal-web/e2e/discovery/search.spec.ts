@@ -38,6 +38,37 @@ const createSearchMockHandlers = async (page: Page) => {
     await page.route("**/kuzhambu-api/api/portal/discovery/search/search", async (route) => {
         const requestBody = readRequestBody(route.request().postData()) as DiscoverySearchPayload;
         searchRequests.push(requestBody);
+        const queryText = requestBody.queryText ?? "";
+
+        if (!queryText) {
+            await fulfillSuccess(route, {
+                displayQueryText: "",
+                groupCount: 1,
+                queryText: "",
+                searchEventId: "search-event-empty",
+                totalCount: 1,
+                groups: [
+                    {
+                        count: 1,
+                        groupKey: "SANCAI_ENTRY",
+                        groupTitle: "三才图会",
+                        items: [
+                            {
+                                contentDomain: "CLASSICS",
+                                contentId: "1000",
+                                contentType: "SANCAI_ENTRY",
+                                groupRank: 1,
+                                highlightText: "三才图会凡例",
+                                resultRank: 1,
+                                targetPath: "/classics/sancai/1000",
+                                title: "三才图会凡例"
+                            }
+                        ]
+                    }
+                ]
+            });
+            return;
+        }
 
         await fulfillSuccess(route, {
             displayQueryText: "礼学",
@@ -52,7 +83,7 @@ const createSearchMockHandlers = async (page: Page) => {
                     groupTitle: "三才图会",
                     items: [
                         {
-                            contentDomain: "三才图会",
+                            contentDomain: "CLASSICS",
                             contentId: "1001",
                             contentType: "SANCAI_ENTRY",
                             groupRank: 1,
@@ -97,16 +128,33 @@ const createSearchMockHandlers = async (page: Page) => {
 };
 
 test.describe("portal discovery search smoke", () => {
+    test("loads default discovery results with an empty query", async ({ page }) => {
+        const mocks = await createSearchMockHandlers(page);
+
+        await page.goto("/discovery/search");
+
+        await expect
+            .poll(() => mocks.getSearchRequests().some((payload) => payload.queryText === ""))
+            .toBe(true);
+        await expect(page.getByText("检索失败")).toHaveCount(0);
+        await expect(page.getByText("共 1 条命中")).toBeVisible();
+        await expect(page.getByRole("heading", { name: "三才图会凡例" })).toBeVisible();
+    });
+
     test("searches and records click payload", async ({ page }) => {
         const mocks = await createSearchMockHandlers(page);
 
         await page.goto("/discovery/search");
         await page.getByRole("textbox", { name: "搜索词" }).fill("礼学");
+        await page.getByRole("button", { name: "高级筛选" }).click();
         await page
             .getByRole("group", { name: "知识库" })
             .getByRole("button", { name: "三才图会" })
             .click();
-        await page.getByRole("button", { name: "开始检索" }).click();
+        await page
+            .getByLabel("Discovery 搜索", { exact: true })
+            .getByRole("button", { name: "开始检索" })
+            .click();
 
         await expect
             .poll(() => mocks.getSearchRequests().some((payload) => payload.queryText === "礼学"))
@@ -130,8 +178,14 @@ test.describe("portal discovery search smoke", () => {
         await expect(page).toHaveURL(/knowledgeBases=SANCAI_ENTRY/);
 
         await expect(page.getByText("共 1 条命中")).toBeVisible();
-        await expect(page.getByRole("heading", { name: "三才图会" })).toBeVisible();
+        await expect(page.getByRole("heading", { name: "三才图会" })).toHaveCount(0);
         await expect(page.getByRole("heading", { name: "礼制条目" })).toBeVisible();
+        await expect(page.getByText("古籍内容 · 三才图会")).toBeVisible();
+        await expect(page.getByText("search-event-1")).toHaveCount(0);
+        await expect(page.getByText("回显词")).toHaveCount(0);
+        await expect(page.getByText("全局")).toHaveCount(0);
+        await expect(page.getByText("组内")).toHaveCount(0);
+        await expect(page.getByText("SANCAI_ENTRY")).toHaveCount(0);
         await expect(page.locator("mark", { hasText: "礼学" }).first()).toBeVisible();
 
         await page.getByRole("button", { name: "打开搜索预览：礼制条目" }).click();
