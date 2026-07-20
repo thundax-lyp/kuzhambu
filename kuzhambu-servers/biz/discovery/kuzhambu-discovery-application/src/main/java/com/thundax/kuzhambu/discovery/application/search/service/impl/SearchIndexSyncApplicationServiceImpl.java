@@ -25,7 +25,14 @@ public class SearchIndexSyncApplicationServiceImpl implements SearchIndexSyncApp
     @Override
     public Boolean syncUpsert(String contentType, String contentId, Integer currentVersionNo) {
         SearchSourceContent currentContent = searchContentProvider.getPublicContent(contentType, contentId);
-        if (currentContent == null || currentContent.getCurrentVersionNo() == null || currentVersionNo == null) {
+        if (currentContent == null) {
+            if (currentVersionNo == null) {
+                return Boolean.FALSE;
+            }
+            searchIndexGateway.markDocumentDeleted(contentType, contentId, currentVersionNo, null);
+            return Boolean.TRUE;
+        }
+        if (currentContent.getCurrentVersionNo() == null || currentVersionNo == null) {
             return Boolean.FALSE;
         }
         if (!currentVersionNo.equals(currentContent.getCurrentVersionNo())) {

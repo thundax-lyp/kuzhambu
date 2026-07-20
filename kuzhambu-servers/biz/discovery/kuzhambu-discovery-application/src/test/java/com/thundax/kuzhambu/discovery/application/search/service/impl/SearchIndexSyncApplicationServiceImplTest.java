@@ -63,7 +63,7 @@ class SearchIndexSyncApplicationServiceImplTest {
     }
 
     @Test
-    void syncUpsertShouldSkipWhenCurrentPublicContentDoesNotExist() {
+    void syncUpsertShouldMarkDeletedWhenCurrentPublicContentDoesNotExist() {
         SearchContentProvider searchContentProvider = mock(SearchContentProvider.class);
         SearchIndexGateway searchIndexGateway = mock(SearchIndexGateway.class);
         SearchIndexSyncApplicationServiceImpl service =
@@ -72,7 +72,8 @@ class SearchIndexSyncApplicationServiceImplTest {
 
         Boolean synced = service.syncUpsert("SANCAI_ENTRY", "1001", 4);
 
-        assertFalse(synced);
+        assertTrue(synced);
+        verify(searchIndexGateway).markDocumentDeleted("SANCAI_ENTRY", "1001", 4, null);
         verify(searchIndexGateway, never()).upsertDocuments(org.mockito.ArgumentMatchers.anyList());
     }
 
