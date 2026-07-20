@@ -430,6 +430,28 @@ class DiscoveryQaPortalControllerTest {
                         command != null && Long.valueOf(5001L).equals(command.getSessionId()) && !command.isStream()));
     }
 
+    @Test
+    void chatCompletionsStreamShouldSanitizeProviderErrors() throws Exception {
+        QaApplicationService service = mock(QaApplicationService.class);
+        KnowledgeQaApplicationService knowledgeQaApplicationService = mock(KnowledgeQaApplicationService.class);
+        DiscoveryQaPortalController controller =
+                new DiscoveryQaPortalController(service, knowledgeQaApplicationService);
+        DiscoveryQaRequests.ChatCompletionsRequest request = new DiscoveryQaRequests.ChatCompletionsRequest();
+        request.setSessionId("5001");
+        request.setModel("kuzhambu-qa");
+        request.setMessages(List.of(message("user", "黄帝是谁")));
+        when(knowledgeQaApplicationService.chatCompletion(any()))
+                .thenThrow(new IllegalStateException("500 Internal Server Error: appId is empty"));
+
+        var emitter = controller.chatCompletionsStream(request);
+
+        assertTrue(emitter != null);
+        verify(knowledgeQaApplicationService, timeout(1000)).chatCompletion(any());
+        Method method = DiscoveryQaPortalController.class.getDeclaredMethod("toClientErrorMessage");
+        method.setAccessible(true);
+        assertEquals("问答生成失败，请稍后重试。", method.invoke(controller));
+    }
+
     private DiscoveryQaRequests.ChatMessage message(String role, String content) {
         DiscoveryQaRequests.ChatMessage message = new DiscoveryQaRequests.ChatMessage();
         message.setRole(role);

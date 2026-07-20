@@ -125,10 +125,14 @@ public class DiscoveryQaPortalController {
 
     private void sendBestEffortError(SseEmitter emitter, Exception ex) {
         try {
-            sendEvent(emitter, "error", Map.of("message", ex.getMessage() == null ? "问答生成失败" : ex.getMessage()));
+            sendEvent(emitter, "error", Map.of("message", toClientErrorMessage()));
             emitter.complete();
         } catch (IOException sendEx) {
             emitter.completeWithError(sendEx);
         }
+    }
+
+    private String toClientErrorMessage() {
+        return "问答生成失败，请稍后重试。";
     }
 }

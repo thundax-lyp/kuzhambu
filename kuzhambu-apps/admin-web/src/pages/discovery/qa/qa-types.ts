@@ -3,11 +3,24 @@ export interface DiscoveryQaSessionRecord {
     contextContentType?: string | null;
     contextMode?: string | null;
     lastMessageAt?: number | null;
+    messages?: DiscoveryQaSessionMessageRecord[] | null;
     openedAt?: number | null;
     scope?: string | null;
     sessionId?: string | null;
     status?: string | null;
     title?: string | null;
+}
+
+export interface DiscoveryQaSessionMessageRecord {
+    answeredAt?: number | null;
+    content?: string | null;
+    contextTurnCount?: number | null;
+    failureReason?: string | null;
+    messageId?: string | null;
+    messageStatus?: string | null;
+    role?: string | null;
+    sentAt?: number | null;
+    sessionId?: string | null;
 }
 
 export interface DiscoveryQaSessionPageRecord {

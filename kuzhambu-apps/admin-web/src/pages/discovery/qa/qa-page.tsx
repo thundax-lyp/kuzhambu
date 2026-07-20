@@ -9,6 +9,7 @@ import * as service from "./qa-service";
 import type {
     DiscoveryQaChatCompletionRecord,
     DiscoveryQaSessionRecord,
+    DiscoveryQaSessionMessageRecord,
     DiscoveryQaSourceRecord
 } from "./qa-types";
 import "./qa-page.css";
@@ -135,6 +136,33 @@ const toBubbleTagColor = (status: QaTimelineMessage["status"]) => {
     return "blue";
 };
 
+const toTimelineRole = (role?: string | null): QaTimelineMessage["role"] => {
+    return role?.toUpperCase() === "USER" ? "user" : "assistant";
+};
+
+const toTimelineStatus = (
+    message: DiscoveryQaSessionMessageRecord
+): QaTimelineMessage["status"] => {
+    const status = message.messageStatus?.toUpperCase();
+    if (status === "FAILED") {
+        return "failed";
+    }
+    if (status === "PROCESSING") {
+        return "loading";
+    }
+    return "succeeded";
+};
+
+const toTimelineMessages = (session?: DiscoveryQaSessionRecord | null): QaTimelineMessage[] => {
+    const sessionId = toSessionId(session?.sessionId) ?? "session";
+    return (session?.messages ?? []).map((message, index) => ({
+        content: message.content ?? message.failureReason ?? "",
+        id: message.messageId ?? `${sessionId}-history-${index}`,
+        role: toTimelineRole(message.role),
+        status: toTimelineStatus(message)
+    }));
+};
+
 export const QaPage = () => {
     const [form, setForm] = useState<QaFormState>(INITIAL_FORM_STATE);
     const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
@@ -192,8 +220,14 @@ export const QaPage = () => {
         return data?.items ?? data?.records ?? [];
     }, [sessionsQuery.data]);
     const messages = useMemo(() => {
-        return selectedSessionId ? (timelineBySession[selectedSessionId] ?? []) : [];
-    }, [selectedSessionId, timelineBySession]);
+        if (selectedSessionId === null) {
+            return [];
+        }
+        const currentTimeline = timelineBySession[selectedSessionId] ?? [];
+        return currentTimeline.length
+            ? currentTimeline
+            : toTimelineMessages(selectedSessionQuery.data);
+    }, [selectedSessionId, selectedSessionQuery.data, timelineBySession]);
     const selectedSession = selectedSessionQuery.data;
     const latestAssistantMessage = [...messages]
         .reverse()

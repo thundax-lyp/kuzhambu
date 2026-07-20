@@ -187,6 +187,53 @@ describe("QaPage", () => {
         expect(mocks.createQaChatCompletionStream).not.toHaveBeenCalled();
     });
 
+    it("renders messages from an existing session detail", async () => {
+        mocks.pageQaSessions.mockResolvedValueOnce({
+            items: [
+                {
+                    openedAt: 1700000000000,
+                    sessionId: "7001",
+                    title: "既有对话"
+                }
+            ],
+            pageNo: 1,
+            pageSize: 20,
+            total: 1
+        });
+        mocks.getQaSession.mockResolvedValueOnce({
+            messages: [
+                {
+                    content: "礼学是什么？",
+                    messageId: "8001",
+                    messageStatus: "SENT",
+                    role: "USER",
+                    sessionId: "7001"
+                },
+                {
+                    content: "礼学是礼制相关的学问。",
+                    messageId: "8002",
+                    messageStatus: "SUCCEEDED",
+                    role: "ASSISTANT",
+                    sessionId: "7001"
+                }
+            ],
+            openedAt: 1700000000000,
+            sessionId: "7001",
+            title: "既有对话"
+        });
+        const user = userEvent.setup();
+        renderPage();
+
+        await user.click(await screen.findByRole("button", { name: "既有对话" }));
+
+        expect(await screen.findByText("礼学是什么？")).toBeInTheDocument();
+        expect(screen.getByText("礼学是礼制相关的学问。")).toBeInTheDocument();
+        expect(mocks.getQaSession).toHaveBeenCalledWith({
+            ownerUserId: 1001,
+            sessionId: "7001"
+        });
+    });
+
     it("truncates first question as automatic conversation title", async () => {
         const user = userEvent.setup();
         renderPage();
