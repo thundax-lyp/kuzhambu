@@ -363,8 +363,9 @@ public class AdminAuthServiceImpl implements AdminAuthService {
                 || !StringUtils.equals(requestedClientId, current.getClientId())) {
             throw AdminResponseExceptions.invalidToken();
         }
-        current.markUsed();
-        principalRefreshTokenRepository.updateStatus(current);
+        if (principalRefreshTokenRepository.markUsedIfActive(current, now) != 1) {
+            throw AdminResponseExceptions.invalidToken();
+        }
 
         AuthAccessTokenResult accessToken = createAccessToken(
                 UserIdCodec.toDomain(current.getPrincipalKey().getPrincipalId()), null, ip, userAgent);
