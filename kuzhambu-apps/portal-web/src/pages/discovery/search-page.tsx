@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { ArrowRight, Search } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
@@ -6,11 +6,21 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+    Sheet,
+    SheetClose,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle
+} from "@/components/ui/sheet";
 import * as discoverySearchService from "./search-service";
 import type {
-    DiscoverySearchClickRequest,
+    DiscoverySearchClickEventRequest,
     DiscoverySearchGroupResponse,
     DiscoverySearchItemResponse,
+    DiscoverySearchPreviewRequest,
     DiscoverySearchRequest
 } from "./search-types";
 
@@ -160,8 +170,6 @@ const toSearchParams = (form: SearchFormState) => {
     appendParam(searchParams, "visibilityScopes", form.visibilityScopes);
     appendParam(searchParams, "dateFrom", form.dateFrom);
     appendParam(searchParams, "dateTo", form.dateTo);
-    appendParam(searchParams, "pageNo", form.pageNo);
-    appendParam(searchParams, "pageSize", form.pageSize);
 
     return searchParams;
 };
@@ -178,6 +186,41 @@ const splitList = (value: string) => {
 const joinList = (values: string[]) => values.join(", ");
 
 const hasListValue = (value: string, token: string) => splitList(value).includes(token);
+
+const splitPreviewBody = (value?: string | null) => {
+    const text = value?.trim();
+    if (!text) {
+        return ["暂无正文。"];
+    }
+    const sourceParagraphs = text
+        .replace(/\r\n/gu, "\n")
+        .replace(/\r/gu, "\n")
+        .split(/\n+/gu)
+        .map((paragraph) => paragraph.trim())
+        .filter(Boolean);
+
+    return sourceParagraphs.flatMap((paragraph) => {
+        if (paragraph.length <= 180) {
+            return [paragraph];
+        }
+        const sentences = paragraph.match(/[^。！？!?；;]+[。！？!?；;]?/gu) ?? [paragraph];
+        const chunks: string[] = [];
+        let current = "";
+        sentences.forEach((sentence) => {
+            const next = `${current}${sentence}`;
+            if (current && next.length > 180) {
+                chunks.push(current);
+                current = sentence;
+                return;
+            }
+            current = next;
+        });
+        if (current) {
+            chunks.push(current);
+        }
+        return chunks;
+    });
+};
 
 const toIsoStartOfDay = (value: string) => {
     return value ? new Date(`${value}T00:00:00`).toISOString() : null;
@@ -242,12 +285,12 @@ const renderHighlightText = (highlightText: string | null | undefined) => {
 };
 
 const createClickCommand = (
-    searchLogId: string,
+    searchEventId: string,
     group: DiscoverySearchGroupResponse,
     item: DiscoverySearchItemResponse
-): DiscoverySearchClickRequest | null => {
+): DiscoverySearchClickEventRequest | null => {
     if (
-        !searchLogId ||
+        !searchEventId ||
         !group.groupKey ||
         !item.contentDomain ||
         !item.contentType ||
@@ -266,8 +309,21 @@ const createClickCommand = (
         groupRank: item.groupRank,
         resultGroupKey: group.groupKey,
         resultRank: item.resultRank,
-        searchLogId,
+        searchEventId,
         targetPath: item.targetPath ?? null
+    };
+};
+
+const createPreviewRequest = (
+    item: DiscoverySearchItemResponse
+): DiscoverySearchPreviewRequest | null => {
+    if (!item.contentType || !item.contentId) {
+        return null;
+    }
+
+    return {
+        contentId: item.contentId,
+        contentType: item.contentType
     };
 };
 
@@ -320,14 +376,25 @@ const MultiOptionControl = ({
 export const DiscoverySearchPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const [form, setForm] = useState<SearchFormState>(() => toFormState(searchParams));
+    const submittedFormRef = useRef<SearchFormState | null>(null);
     const searchMutation = useMutation({
         mutationFn: (request: DiscoverySearchRequest) =>
             discoverySearchService.searchDiscovery(request)
     });
+    const previewMutation = useMutation({
+        mutationFn: (request: DiscoverySearchPreviewRequest) =>
+            discoverySearchService.previewSearchResult(request)
+    });
     const { mutate: runSearch, reset: resetSearch } = searchMutation;
 
     useEffect(() => {
-        const nextForm = toFormState(searchParams);
+        const submittedForm = submittedFormRef.current;
+        submittedFormRef.current = null;
+
+        const nextForm = submittedForm ?? toFormState(searchParams);
+        if (!submittedForm) {
+            setForm(nextForm);
+        }
         const request = toRequest(nextForm);
 
         if (request.queryText) {
@@ -388,6 +455,7 @@ export const DiscoverySearchPage = () => {
     };
 
     const handleReset = () => {
+        submittedFormRef.current = null;
         setForm(INITIAL_FORM_STATE);
         setSearchParams(new URLSearchParams());
     };
@@ -406,6 +474,7 @@ export const DiscoverySearchPage = () => {
             return;
         }
 
+        submittedFormRef.current = nextForm;
         setSearchParams(nextSearchParams);
     };
 
@@ -414,6 +483,7 @@ export const DiscoverySearchPage = () => {
         const request = toRequest(form);
 
         if (!request.queryText) {
+            submittedFormRef.current = null;
             setSearchParams(new URLSearchParams());
             return;
         }
@@ -424,6 +494,7 @@ export const DiscoverySearchPage = () => {
             return;
         }
 
+        submittedFormRef.current = form;
         setSearchParams(nextSearchParams);
     };
 
@@ -431,12 +502,17 @@ export const DiscoverySearchPage = () => {
         group: DiscoverySearchGroupResponse,
         item: DiscoverySearchItemResponse
     ) => {
-        const command = response?.searchLogId
-            ? createClickCommand(response.searchLogId, group, item)
+        const command = response?.searchEventId
+            ? createClickCommand(response.searchEventId, group, item)
             : null;
 
         if (command) {
-            void discoverySearchService.recordSearchClick(command);
+            void discoverySearchService.recordSearchClickEvent(command);
+        }
+
+        const previewRequest = createPreviewRequest(item);
+        if (previewRequest) {
+            previewMutation.mutate(previewRequest);
         }
     };
 
@@ -608,8 +684,8 @@ export const DiscoverySearchPage = () => {
                         </div>
                         <dl>
                             <div>
-                                <dt>搜索日志</dt>
-                                <dd>{response?.searchLogId ?? "-"}</dd>
+                                <dt>检索统计事件</dt>
+                                <dd>{response?.searchEventId ?? "-"}</dd>
                             </div>
                             <div>
                                 <dt>回显词</dt>
@@ -631,10 +707,10 @@ export const DiscoverySearchPage = () => {
                     <Card className="portal-discovery-summary portal-discovery-summary-soft">
                         <div>
                             <p className="portal-kicker">检索提示</p>
-                            <h2>结果点击会回传搜索日志</h2>
+                            <h2>结果点击会回传检索统计事件</h2>
                         </div>
                         <p>
-                            每个结果项都会携带分组键、全局排序和组内排序，点击后会发送点击日志，方便后端后续做重排、命中分析和路径追踪。
+                            每个结果项都会携带分组键、全局排序和组内排序，点击后会发送点击事件，方便后端后续做重排、命中分析和路径追踪。
                         </p>
                     </Card>
                 </aside>
@@ -689,29 +765,23 @@ export const DiscoverySearchPage = () => {
                                                 </p>
                                                 <div className="portal-discovery-hit-meta">
                                                     <span>{formatItemMeta(item)}</span>
-                                                    <span>
-                                                        跳转路径 {item.targetPath || "未提供"}
-                                                    </span>
                                                 </div>
                                             </>
                                         );
 
-                                        return item.targetPath ? (
-                                            <Link
+                                        return (
+                                            <button
+                                                aria-label={`打开搜索预览：${item.title || "未命名结果"}`}
                                                 className="portal-discovery-hit"
                                                 key={hitKey}
-                                                to={item.targetPath}
+                                                type="button"
                                                 onClick={() => handleClick(group, item)}
                                             >
                                                 {content}
                                                 <span className="portal-discovery-hit-arrow">
                                                     <ArrowRight aria-hidden="true" size={16} />
                                                 </span>
-                                            </Link>
-                                        ) : (
-                                            <Card className="portal-discovery-hit" key={hitKey}>
-                                                {content}
-                                            </Card>
+                                            </button>
                                         );
                                     })}
                                 </div>
@@ -732,6 +802,84 @@ export const DiscoverySearchPage = () => {
                     </Card>
                 ) : null}
             </section>
+
+            <Sheet
+                open={
+                    previewMutation.isPending ||
+                    Boolean(previewMutation.data) ||
+                    previewMutation.isError
+                }
+                onOpenChange={(open) => {
+                    if (!open) {
+                        previewMutation.reset();
+                    }
+                }}
+            >
+                <SheetContent className="portal-search-preview-sheet">
+                    <SheetHeader>
+                        <SheetDescription>检索预览</SheetDescription>
+                        <SheetTitle>{previewMutation.data?.title ?? "搜索命中内容"}</SheetTitle>
+                    </SheetHeader>
+
+                    <div className="portal-search-preview-body">
+                        {previewMutation.isPending ? (
+                            <div className="portal-empty">正在读取搜索预览。</div>
+                        ) : null}
+
+                        {previewMutation.isError ? (
+                            <div className="portal-empty">当前内容不可预览或已经不可见。</div>
+                        ) : null}
+
+                        {previewMutation.data ? (
+                            <>
+                                <dl className="portal-search-preview-meta">
+                                    <div>
+                                        <dt>知识库</dt>
+                                        <dd>{previewMutation.data.knowledgeBase ?? "-"}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>门类</dt>
+                                        <dd>
+                                            {previewMutation.data.categoryName ??
+                                                previewMutation.data.categoryCode ??
+                                                "-"}
+                                        </dd>
+                                    </div>
+                                </dl>
+                                {previewMutation.data.summary ? (
+                                    <section className="portal-search-preview-section">
+                                        <h3>摘要</h3>
+                                        <p>{previewMutation.data.summary}</p>
+                                    </section>
+                                ) : null}
+                                <section className="portal-search-preview-section">
+                                    <h3>正文</h3>
+                                    {splitPreviewBody(previewMutation.data.bodyText).map(
+                                        (paragraph, index) => (
+                                            <p key={`${paragraph}-${index}`}>{paragraph}</p>
+                                        )
+                                    )}
+                                </section>
+                                {previewMutation.data.tagNames?.length ? (
+                                    <div className="portal-search-preview-tags">
+                                        {previewMutation.data.tagNames.map((tagName) => (
+                                            <span key={tagName}>{tagName}</span>
+                                        ))}
+                                    </div>
+                                ) : null}
+                            </>
+                        ) : null}
+                    </div>
+
+                    <SheetFooter className="portal-search-preview-footer">
+                        <SheetClose asChild>
+                            <Button type="button" variant="outline">
+                                关闭预览
+                            </Button>
+                        </SheetClose>
+                    </SheetFooter>
+                </SheetContent>
+            </Sheet>
         </main>
     );
 };

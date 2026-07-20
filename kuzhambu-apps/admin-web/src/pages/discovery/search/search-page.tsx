@@ -1,27 +1,47 @@
 import { useMutation } from "@tanstack/react-query";
 import { SearchOutlined } from "@ant-design/icons";
-import { DatePicker, Empty, Input, Pagination, Select, Spin, Tag } from "antd";
+import {
+    DatePicker,
+    Descriptions,
+    Empty,
+    Input,
+    Pagination,
+    Select,
+    Spin,
+    Tag,
+    Typography
+} from "antd";
 import dayjs from "dayjs";
 import type { Dayjs } from "dayjs";
-import { useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import * as service from "./search-service";
 import type { DiscoverySearchGroupRecord, DiscoverySearchItemRecord } from "./search-types";
-import type { DiscoverySearchClickCommand, DiscoverySearchQuery } from "./search-service";
+import type {
+    DiscoverySearchClickEventCommand,
+    DiscoverySearchPreviewQuery,
+    DiscoverySearchQuery
+} from "./search-service";
 import "./search-page.css";
 
 const DEFAULT_PAGE_NO = "1";
 const DEFAULT_PAGE_SIZE = "10";
 const PUBLIC_VISIBILITY_SCOPE = "PUBLIC";
 const PUBLISHED_CONTENT_STATUS = "PUBLISHED";
+const PREVIEW_PARAGRAPH_MAX_LENGTH = 360;
 
 const KNOWLEDGE_BASE_OPTIONS = [
     { label: "三才图会", value: "SANCAI_ENTRY" },
     { label: "王圻文档", value: "WANGQI_DOCUMENT" },
     { label: "明代习俗", value: "MING_CUSTOMS" }
 ];
+
+const toKnowledgeBaseLabel = (value?: string | null) => {
+    return KNOWLEDGE_BASE_OPTIONS.find((option) => option.value === value)?.label || value || "-";
+};
 
 interface SearchResultEntry {
     group: DiscoverySearchGroupRecord;
@@ -84,8 +104,6 @@ const toSearchParams = (form: SearchFormState) => {
     appendListParam(searchParams, "knowledgeBases", form.knowledgeBases);
     appendParam(searchParams, "dateFrom", form.dateFrom);
     appendParam(searchParams, "dateTo", form.dateTo);
-    appendParam(searchParams, "pageNo", form.pageNo);
-    appendParam(searchParams, "pageSize", form.pageSize);
     return searchParams;
 };
 
@@ -171,13 +189,57 @@ const toPlainHighlightText = (value?: string | null) => {
     return (value ?? "").replace(/<mark>(.*?)<\/mark>/giu, "$1").trim();
 };
 
+const chunkPreviewParagraph = (paragraph: string) => {
+    if (paragraph.length <= PREVIEW_PARAGRAPH_MAX_LENGTH) {
+        return [paragraph];
+    }
+
+    const sentences =
+        paragraph.match(/[^。！？!?；;]+[。！？!?；;]?/gu)?.map((sentence) => sentence.trim()) ??
+        [];
+    const units = sentences.length > 1 ? sentences : Array.from(paragraph);
+    const paragraphs: string[] = [];
+    let currentParagraph = "";
+
+    units.forEach((unit) => {
+        if (
+            currentParagraph &&
+            currentParagraph.length + unit.length > PREVIEW_PARAGRAPH_MAX_LENGTH
+        ) {
+            paragraphs.push(currentParagraph);
+            currentParagraph = unit;
+            return;
+        }
+        currentParagraph += unit;
+    });
+
+    if (currentParagraph) {
+        paragraphs.push(currentParagraph);
+    }
+
+    return paragraphs;
+};
+
+const splitPreviewBody = (value?: string | null) => {
+    const bodyText = (value ?? "").trim();
+    if (!bodyText) {
+        return [];
+    }
+
+    return bodyText
+        .split(/\r?\n+/u)
+        .map((paragraph) => paragraph.trim())
+        .filter(Boolean)
+        .flatMap(chunkPreviewParagraph);
+};
+
 const createClickCommand = (
-    searchLogId: string,
+    searchEventId: string,
     group: DiscoverySearchGroupRecord,
     item: DiscoverySearchItemRecord
-): DiscoverySearchClickCommand | null => {
+): DiscoverySearchClickEventCommand | null => {
     if (
-        !searchLogId ||
+        !searchEventId ||
         !group.groupKey ||
         !item.contentDomain ||
         !item.contentType ||
@@ -196,21 +258,45 @@ const createClickCommand = (
         groupRank: item.groupRank,
         resultGroupKey: group.groupKey,
         resultRank: item.resultRank,
-        searchLogId,
+        searchEventId,
         targetPath: item.targetPath ?? null
+    };
+};
+
+const createPreviewQuery = (
+    item: DiscoverySearchItemRecord
+): DiscoverySearchPreviewQuery | null => {
+    if (!item.contentType || !item.contentId) {
+        return null;
+    }
+
+    return {
+        contentId: item.contentId,
+        contentType: item.contentType
     };
 };
 
 export const SearchPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const [form, setForm] = useState<SearchFormState>(() => toFormState(searchParams));
+    const [previewResult, setPreviewResult] = useState<SearchResultEntry | null>(null);
+    const submittedFormRef = useRef<SearchFormState | null>(null);
     const searchMutation = useMutation({
         mutationFn: service.searchDiscovery
+    });
+    const previewMutation = useMutation({
+        mutationFn: service.previewSearchResult
     });
     const { mutate: runSearch } = searchMutation;
 
     useEffect(() => {
-        const nextForm = toFormState(searchParams);
+        const submittedForm = submittedFormRef.current;
+        submittedFormRef.current = null;
+
+        const nextForm = submittedForm ?? toFormState(searchParams);
+        if (!submittedForm) {
+            setForm(nextForm);
+        }
         const request = toRequest(nextForm);
         runSearch(request);
     }, [runSearch, searchParams]);
@@ -253,6 +339,7 @@ export const SearchPage = () => {
             return;
         }
 
+        submittedFormRef.current = nextForm;
         setSearchParams(nextSearchParams);
     };
 
@@ -280,12 +367,28 @@ export const SearchPage = () => {
     };
 
     const recordClick = (group: DiscoverySearchGroupRecord, item: DiscoverySearchItemRecord) => {
-        const command = response?.searchLogId
-            ? createClickCommand(response.searchLogId, group, item)
+        const command = response?.searchEventId
+            ? createClickCommand(response.searchEventId, group, item)
             : null;
         if (command) {
             void service.clickSearchResult(command);
         }
+    };
+
+    const openPreview = (result: SearchResultEntry) => {
+        recordClick(result.group, result.item);
+        setPreviewResult(result);
+        const previewQuery = createPreviewQuery(result.item);
+        if (previewQuery) {
+            previewMutation.mutate(previewQuery);
+            return;
+        }
+        previewMutation.reset();
+    };
+
+    const closePreview = () => {
+        setPreviewResult(null);
+        previewMutation.reset();
     };
 
     const shouldShowZeroResult =
@@ -296,17 +399,16 @@ export const SearchPage = () => {
     const renderResultTitle = (result: SearchResultEntry) => {
         const title = result.item.title || "未命名结果";
         const titleContent = renderQueryHighlight(title, form.queryText);
-        if (!result.item.targetPath) {
-            return <span>{titleContent}</span>;
-        }
 
         return (
-            <Link
-                to={result.item.targetPath}
-                onClick={() => recordClick(result.group, result.item)}
+            <button
+                aria-label={`打开搜索预览：${title}`}
+                className="search-page-result-title-button"
+                type="button"
+                onClick={() => openPreview(result)}
             >
                 {titleContent}
-            </Link>
+            </button>
         );
     };
     const renderResultSummary = (result: SearchResultEntry) => {
@@ -367,76 +469,162 @@ export const SearchPage = () => {
             </section>
         </Spin>
     );
+    const previewData = previewMutation.data;
+    const previewTitle = previewData?.title || previewResult?.item.title || "搜索命中预览";
+    const previewErrorMessage =
+        previewMutation.error instanceof Error ? previewMutation.error.message : null;
+    const previewBodyParagraphs = splitPreviewBody(previewData?.bodyText);
+    const previewMetaItems = [
+        {
+            key: "knowledgeBase",
+            label: "知识库",
+            children: toKnowledgeBaseLabel(previewData?.knowledgeBase)
+        },
+        {
+            key: "category",
+            label: "门类",
+            children: previewData?.categoryName || previewData?.categoryCode || "-"
+        }
+    ];
 
     return (
-        <KuzhambuListPage<SearchResultEntry>
-            pageClassName="search-page"
-            title="检索"
-            description="公开已发布内容。"
-            subjectName="内容"
-            enableFilter
-            filterText="高级"
-            enableSearch
-            searchShortcut="⌘K"
-            searchValue={form.queryText}
-            searchPlaceholder="搜索公开已发布内容..."
-            onSearchChange={(queryText) => updateField("queryText", queryText)}
-            filterActive={hasActiveFilters}
-            filterFields={[
-                {
-                    name: "queryText",
-                    label: "搜索词",
-                    render: () => (
-                        <Input
-                            placeholder="输入古籍、实体或正文关键词"
-                            value={form.queryText}
-                            onChange={(event) => updateField("queryText", event.target.value)}
-                        />
-                    )
-                },
-                {
-                    name: "knowledgeBases",
-                    label: "知识库",
-                    render: () => (
-                        <Select
-                            mode="multiple"
-                            allowClear
-                            options={KNOWLEDGE_BASE_OPTIONS}
-                            placeholder="全部知识库"
-                            value={form.knowledgeBases}
-                            onChange={(value) => updateField("knowledgeBases", value)}
-                        />
-                    )
-                },
-                {
-                    name: "dateRange",
-                    label: "时间范围",
-                    render: () => (
-                        <DatePicker.RangePicker
-                            value={[
-                                form.dateFrom ? dayjs(form.dateFrom) : null,
-                                form.dateTo ? dayjs(form.dateTo) : null
-                            ]}
-                            onChange={updateDateRange}
-                        />
-                    )
+        <>
+            <KuzhambuListPage<SearchResultEntry>
+                pageClassName="search-page"
+                title="检索"
+                description="公开已发布内容。"
+                subjectName="内容"
+                enableFilter
+                filterText="高级"
+                enableSearch
+                searchShortcut="⌘K"
+                searchValue={form.queryText}
+                searchPlaceholder="搜索公开已发布内容..."
+                onSearchChange={(queryText) => updateField("queryText", queryText)}
+                filterActive={hasActiveFilters}
+                filterFields={[
+                    {
+                        name: "queryText",
+                        label: "搜索词",
+                        render: () => (
+                            <Input
+                                placeholder="输入古籍、实体或正文关键词"
+                                value={form.queryText}
+                                onChange={(event) => updateField("queryText", event.target.value)}
+                            />
+                        )
+                    },
+                    {
+                        name: "knowledgeBases",
+                        label: "知识库",
+                        render: () => (
+                            <Select
+                                mode="multiple"
+                                allowClear
+                                options={KNOWLEDGE_BASE_OPTIONS}
+                                placeholder="全部知识库"
+                                value={form.knowledgeBases}
+                                onChange={(value) => updateField("knowledgeBases", value)}
+                            />
+                        )
+                    },
+                    {
+                        name: "dateRange",
+                        label: "时间范围",
+                        render: () => (
+                            <DatePicker.RangePicker
+                                value={[
+                                    form.dateFrom ? dayjs(form.dateFrom) : null,
+                                    form.dateTo ? dayjs(form.dateTo) : null
+                                ]}
+                                onChange={updateDateRange}
+                            />
+                        )
+                    }
+                ]}
+                onFilterApply={submitSearch}
+                onFilterReset={clearFilters}
+                pageActions={
+                    <KuzhambuButton
+                        ariaLabel="搜索"
+                        icon={<SearchOutlined />}
+                        loading={searchMutation.isPending}
+                        testId="discovery-search-submit-button"
+                        type="primary"
+                        onClick={submitSearch}
+                    >
+                        搜索
+                    </KuzhambuButton>
                 }
-            ]}
-            onFilterApply={submitSearch}
-            onFilterReset={clearFilters}
-            pageActions={
-                <KuzhambuButton
-                    ariaLabel="搜索"
-                    icon={<SearchOutlined />}
-                    loading={searchMutation.isPending}
-                    testId="discovery-search-submit-button"
-                    type="primary"
-                    onClick={submitSearch}
-                >
-                    搜索
-                </KuzhambuButton>
-            }
-            content={resultContent}
-        />
+                content={resultContent}
+            />
+            <KuzhambuDrawer
+                destroyOnClose
+                open={Boolean(previewResult)}
+                size="large"
+                testId="discovery-search-preview-drawer"
+                title={previewTitle}
+                footer={
+                    <KuzhambuButton
+                        testId="discovery-search-preview-close-button"
+                        onClick={closePreview}
+                    >
+                        关闭预览
+                    </KuzhambuButton>
+                }
+                onClose={closePreview}
+            >
+                <Spin spinning={previewMutation.isPending}>
+                    {previewMutation.isError ? (
+                        <Empty
+                            description={
+                                previewErrorMessage
+                                    ? `预览失败：${previewErrorMessage}`
+                                    : "当前内容不可预览或已经不可见"
+                            }
+                        />
+                    ) : null}
+                    {previewData ? (
+                        <div className="search-page-preview">
+                            <Descriptions
+                                bordered
+                                column={1}
+                                items={previewMetaItems}
+                                size="small"
+                            />
+                            {previewData.summary ? (
+                                <section className="search-page-preview-section">
+                                    <Typography.Title level={5}>摘要</Typography.Title>
+                                    <Typography.Paragraph>
+                                        {previewData.summary}
+                                    </Typography.Paragraph>
+                                </section>
+                            ) : null}
+                            <section className="search-page-preview-section">
+                                <Typography.Title level={5}>正文</Typography.Title>
+                                {previewBodyParagraphs.length ? (
+                                    previewBodyParagraphs.map((paragraph, index) => (
+                                        <Typography.Paragraph key={`preview-body-${index}`}>
+                                            {paragraph}
+                                        </Typography.Paragraph>
+                                    ))
+                                ) : (
+                                    <Typography.Paragraph>暂无正文。</Typography.Paragraph>
+                                )}
+                            </section>
+                            {previewData.tagNames?.length ? (
+                                <div className="search-page-preview-tags">
+                                    {previewData.tagNames.map((tagName) => (
+                                        <Tag color="blue" key={tagName}>
+                                            {tagName}
+                                        </Tag>
+                                    ))}
+                                </div>
+                            ) : null}
+                        </div>
+                    ) : null}
+                </Spin>
+            </KuzhambuDrawer>
+        </>
     );
 };

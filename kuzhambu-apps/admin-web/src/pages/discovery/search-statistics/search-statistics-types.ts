@@ -1,6 +1,6 @@
 import type { Page } from "@/types/page";
 
-export interface DiscoverySearchLogRecord {
+export interface DiscoverySearchEventRecord {
     createdAt?: string | null;
     displayQueryText?: string | null;
     groupTotalCount?: number | null;
@@ -8,11 +8,11 @@ export interface DiscoverySearchLogRecord {
     operatorId?: string | null;
     queryText?: string | null;
     resultTotalCount?: number | null;
-    searchLogId?: string | null;
+    searchEventId?: string | null;
     searchStatus?: string | null;
 }
 
-export interface DiscoverySearchLogDetailRecord {
+export interface DiscoverySearchEventDetailRecord {
     createdAt?: string | null;
     displayQueryText?: string | null;
     failureCode?: string | null;
@@ -24,23 +24,23 @@ export interface DiscoverySearchLogDetailRecord {
     queryText?: string | null;
     requestId?: string | null;
     resultTotalCount?: number | null;
-    searchLogId?: string | null;
+    searchEventId?: string | null;
     searchScopesJson?: string | null;
     searchStatus?: string | null;
     traceId?: string | null;
 }
 
-export type DiscoverySearchLogPageRecord = Page<DiscoverySearchLogRecord>;
+export type DiscoverySearchEventPageRecord = Page<DiscoverySearchEventRecord>;
 
-export interface DiscoverySearchAnalysisTopQueryRecord {
+export interface DiscoverySearchStatisticsTopQueryRecord {
     count?: number | null;
     queryText?: string | null;
 }
 
-export interface DiscoverySearchAnalysisSummaryRecord {
+export interface DiscoverySearchStatisticsSummaryRecord {
     clickCount?: number | null;
     failedSearchCount?: number | null;
     searchCount?: number | null;
-    topQueries?: DiscoverySearchAnalysisTopQueryRecord[] | null;
+    topQueries?: DiscoverySearchStatisticsTopQueryRecord[] | null;
     zeroResultSearchCount?: number | null;
 }

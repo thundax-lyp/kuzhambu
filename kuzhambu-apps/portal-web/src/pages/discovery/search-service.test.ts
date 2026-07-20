@@ -53,4 +53,23 @@ describe("discovery search service", () => {
             visibilityScopes: ["PUBLIC"]
         });
     });
+
+    it("posts search preview identity in request body", async () => {
+        mocks.postJson.mockResolvedValueOnce({
+            bodyText: "正文",
+            contentId: "1001",
+            contentType: "SANCAI_ENTRY",
+            title: "礼器"
+        });
+
+        await discoverySearchService.previewSearchResult({
+            contentId: "1001",
+            contentType: "SANCAI_ENTRY"
+        });
+
+        expect(mocks.postJson).toHaveBeenCalledWith("/portal/discovery/search/preview", {
+            contentId: "1001",
+            contentType: "SANCAI_ENTRY"
+        });
+    });
 });

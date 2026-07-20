@@ -11,7 +11,7 @@ export interface DiscoverySearchRequest {
     visibilityScopes: string[];
 }
 
-export interface DiscoverySearchClickRequest {
+export interface DiscoverySearchClickEventRequest {
     contentDomain: string;
     contentId: string;
     contentTitle?: string | null;
@@ -19,8 +19,32 @@ export interface DiscoverySearchClickRequest {
     groupRank: number;
     resultGroupKey: string;
     resultRank: number;
-    searchLogId: string;
+    searchEventId: string;
     targetPath?: string | null;
+}
+
+export interface DiscoverySearchPreviewRequest {
+    contentId: string;
+    contentType: string;
+}
+
+export interface DiscoverySearchPreviewResponse {
+    bodyText?: string | null;
+    categoryCode?: string | null;
+    categoryName?: string | null;
+    contentDomain?: string | null;
+    contentId?: string | null;
+    contentStatus?: string | null;
+    contentType?: string | null;
+    knowledgeBase?: string | null;
+    publishedAt?: number | null;
+    sourceVersionNo?: number | null;
+    summary?: string | null;
+    tagNames?: string[] | null;
+    targetPath?: string | null;
+    title?: string | null;
+    updatedAt?: number | null;
+    visibility?: string | null;
 }
 
 export interface DiscoverySearchItemResponse {
@@ -47,6 +71,6 @@ export interface DiscoverySearchResponse {
     groupCount?: number | null;
     groups?: DiscoverySearchGroupResponse[] | null;
     queryText?: string | null;
-    searchLogId?: string | null;
+    searchEventId?: string | null;
     totalCount?: number | null;
 }

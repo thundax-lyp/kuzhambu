@@ -6,7 +6,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { DiscoverySearchPage } from "./search-page";
 
 const mocks = vi.hoisted(() => ({
-    recordSearchClick: vi.fn(),
+    previewSearchResult: vi.fn(),
+    recordSearchClickEvent: vi.fn(),
     searchDiscovery: vi.fn()
 }));
 
@@ -78,6 +79,12 @@ const setInputValue = (container: HTMLElement, name: string, value: string) => {
     });
 };
 
+const getPreviewButton = (container: HTMLElement, title: string) => {
+    return container.querySelector(
+        `button[aria-label="打开搜索预览：${title}"]`
+    ) as HTMLButtonElement | null;
+};
+
 const clickFilterOption = async (
     container: HTMLElement,
     groupLabel: string,
@@ -110,7 +117,8 @@ const getFilterOption = (container: HTMLElement, groupLabel: string, optionText:
 
 describe("DiscoverySearchPage", () => {
     afterEach(() => {
-        mocks.recordSearchClick.mockReset();
+        mocks.previewSearchResult.mockReset();
+        mocks.recordSearchClickEvent.mockReset();
         mocks.searchDiscovery.mockReset();
         document.body.innerHTML = "";
     });
@@ -141,7 +149,7 @@ describe("DiscoverySearchPage", () => {
             ],
             permissionDebugTrace: "DO_NOT_RENDER_RESPONSE_TRACE",
             queryText: "礼器",
-            searchLogId: "LOG-1001",
+            searchEventId: "EVT-1001",
             totalCount: 1
         });
 
@@ -178,16 +186,14 @@ describe("DiscoverySearchPage", () => {
         expect(container.textContent).not.toContain("DO_NOT_RENDER_RESPONSE_TRACE");
         expect(container.textContent).not.toContain("DO_NOT_RENDER_ITEM_TRACE");
 
-        const resultLink = container.querySelector(
-            'a[href="/shares/1001"]'
-        ) as HTMLAnchorElement | null;
-        expect(resultLink?.textContent).toContain("礼器条目");
+        const resultButton = getPreviewButton(container, "礼器条目");
+        expect(resultButton?.textContent).toContain("礼器条目");
 
         await act(async () => {
-            resultLink?.click();
+            resultButton?.click();
         });
 
-        expect(mocks.recordSearchClick).toHaveBeenCalledWith({
+        expect(mocks.recordSearchClickEvent).toHaveBeenCalledWith({
             contentDomain: "CLASSICS",
             contentId: "1001",
             contentTitle: "礼器条目",
@@ -195,9 +201,81 @@ describe("DiscoverySearchPage", () => {
             groupRank: 1,
             resultGroupKey: "SANCAI_ENTRY",
             resultRank: 1,
-            searchLogId: "LOG-1001",
+            searchEventId: "EVT-1001",
             targetPath: "/shares/1001"
         });
+        expect(mocks.previewSearchResult).toHaveBeenCalledWith({
+            contentId: "1001",
+            contentType: "SANCAI_ENTRY"
+        });
+
+        act(() => {
+            root.unmount();
+        });
+    });
+
+    it("opens a search preview sheet when a result is clicked", async () => {
+        mocks.searchDiscovery.mockResolvedValueOnce({
+            displayQueryText: "礼器",
+            groupCount: 1,
+            groups: [
+                {
+                    count: 1,
+                    groupKey: "SANCAI_ENTRY",
+                    groupTitle: "三才图会",
+                    items: [
+                        {
+                            contentDomain: "CLASSICS",
+                            contentId: "1001",
+                            contentType: "SANCAI_ENTRY",
+                            groupRank: 1,
+                            highlightText: "礼器条目摘要",
+                            resultRank: 1,
+                            summary: "礼器条目摘要",
+                            targetPath: "/shares/1001",
+                            title: "礼器条目"
+                        }
+                    ]
+                }
+            ],
+            queryText: "礼器",
+            searchEventId: "EVT-1008",
+            totalCount: 1
+        });
+        mocks.previewSearchResult.mockResolvedValueOnce({
+            bodyText: "来自 ES 索引的正文",
+            categoryName: "器用",
+            contentId: "1001",
+            contentStatus: "PUBLISHED",
+            contentType: "SANCAI_ENTRY",
+            knowledgeBase: "SANCAI_ENTRY",
+            summary: "索引摘要",
+            tagNames: ["礼制"],
+            targetPath: "/shares/1001",
+            title: "礼器条目",
+            visibility: "PUBLIC"
+        });
+
+        const { container, root } = renderPage("/discovery/search?q=%E7%A4%BC%E5%99%A8");
+        await flushMutations();
+        const resultButton = getPreviewButton(container, "礼器条目");
+
+        await act(async () => {
+            resultButton?.click();
+        });
+        await flushMutations();
+
+        expect(mocks.previewSearchResult).toHaveBeenCalledWith({
+            contentId: "1001",
+            contentType: "SANCAI_ENTRY"
+        });
+        const previewDialog = document.body.querySelector('[role="dialog"]');
+        expect(previewDialog?.textContent).toContain("检索预览");
+        expect(previewDialog?.textContent).toContain("正文");
+        expect(previewDialog?.textContent).toContain("来自 ES 索引的正文");
+        expect(previewDialog?.textContent).not.toContain("来源路径");
+        expect(previewDialog?.textContent).not.toContain("/shares/1001");
+        expect(previewDialog?.textContent).toContain("关闭预览");
 
         act(() => {
             root.unmount();
@@ -210,7 +288,7 @@ describe("DiscoverySearchPage", () => {
             groupCount: 0,
             groups: [],
             queryText: "礼器",
-            searchLogId: "LOG-1002",
+            searchEventId: "EVT-1002",
             totalCount: 0
         });
 
@@ -251,17 +329,19 @@ describe("DiscoverySearchPage", () => {
         });
     });
 
-    it("syncs submitted search state to url params", async () => {
+    it("syncs submitted search filters to url params without pagination", async () => {
         mocks.searchDiscovery.mockResolvedValueOnce({
             displayQueryText: "官制",
             groupCount: 0,
             groups: [],
             queryText: "官制",
-            searchLogId: "LOG-1003",
+            searchEventId: "EVT-1003",
             totalCount: 0
         });
 
-        const { container, getLocation, root } = renderPage();
+        const { container, getLocation, root } = renderPage(
+            "/discovery/search?pageNo=2&pageSize=20"
+        );
         setInputValue(container, "queryText", "官制");
         setInputValue(container, "categoryCodes", "WANGQI_DOCUMENT");
         await clickFilterOption(container, "知识库", "王圻文档");
@@ -278,10 +358,14 @@ describe("DiscoverySearchPage", () => {
         expect(getLocation()).toContain("q=%E5%AE%98%E5%88%B6");
         expect(getLocation()).toContain("knowledgeBases=WANGQI_DOCUMENT");
         expect(getLocation()).toContain("categoryCodes=WANGQI_DOCUMENT");
+        expect(getLocation()).not.toContain("pageNo=");
+        expect(getLocation()).not.toContain("pageSize=");
         expect(mocks.searchDiscovery).toHaveBeenCalledWith(
             expect.objectContaining({
                 categoryCodes: ["WANGQI_DOCUMENT"],
                 knowledgeBases: ["WANGQI_DOCUMENT"],
+                pageNo: 2,
+                pageSize: 20,
                 queryText: "官制"
             })
         );
@@ -297,7 +381,7 @@ describe("DiscoverySearchPage", () => {
             groupCount: 0,
             groups: [],
             queryText: "礼俗",
-            searchLogId: "LOG-1004",
+            searchEventId: "EVT-1004",
             totalCount: 0
         });
 
@@ -365,7 +449,7 @@ describe("DiscoverySearchPage", () => {
                 }
             ],
             queryText: "礼器",
-            searchLogId: "LOG-1005",
+            searchEventId: "EVT-1005",
             totalCount: 1
         });
 
@@ -388,7 +472,7 @@ describe("DiscoverySearchPage", () => {
                 groupCount: 0,
                 groups: [],
                 queryText: "官制",
-                searchLogId: "LOG-1006",
+                searchEventId: "EVT-1006",
                 totalCount: 0
             })
             .mockResolvedValueOnce({
@@ -396,7 +480,7 @@ describe("DiscoverySearchPage", () => {
                 groupCount: 0,
                 groups: [],
                 queryText: "官制",
-                searchLogId: "LOG-1007",
+                searchEventId: "EVT-1007",
                 totalCount: 0
             });
 

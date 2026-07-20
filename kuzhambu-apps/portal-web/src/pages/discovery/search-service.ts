@@ -1,6 +1,8 @@
 import { postJson } from "@/api/http";
 import type {
-    DiscoverySearchClickRequest,
+    DiscoverySearchClickEventRequest,
+    DiscoverySearchPreviewRequest,
+    DiscoverySearchPreviewResponse,
     DiscoverySearchRequest,
     DiscoverySearchResponse
 } from "./search-types";
@@ -27,9 +29,16 @@ export const searchDiscovery = (request: DiscoverySearchRequest) => {
     );
 };
 
-export const recordSearchClick = (request: DiscoverySearchClickRequest) => {
-    return postJson<boolean, DiscoverySearchClickRequest>(
+export const recordSearchClickEvent = (request: DiscoverySearchClickEventRequest) => {
+    return postJson<boolean, DiscoverySearchClickEventRequest>(
         "/portal/discovery/search/click",
+        request
+    );
+};
+
+export const previewSearchResult = (request: DiscoverySearchPreviewRequest) => {
+    return postJson<DiscoverySearchPreviewResponse, DiscoverySearchPreviewRequest>(
+        "/portal/discovery/search/preview",
         request
     );
 };

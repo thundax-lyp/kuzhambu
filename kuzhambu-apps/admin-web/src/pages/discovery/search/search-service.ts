@@ -1,5 +1,5 @@
 import { postJson } from "@/api/http";
-import type { DiscoverySearchResultRecord } from "./search-types";
+import type { DiscoverySearchPreviewRecord, DiscoverySearchResultRecord } from "./search-types";
 
 export interface DiscoverySearchQuery {
     categoryCodes: string[];
@@ -14,7 +14,7 @@ export interface DiscoverySearchQuery {
     visibilityScopes: string[];
 }
 
-export interface DiscoverySearchClickCommand {
+export interface DiscoverySearchClickEventCommand {
     contentDomain: string;
     contentId: string;
     contentTitle?: string | null;
@@ -22,8 +22,13 @@ export interface DiscoverySearchClickCommand {
     groupRank: number;
     resultGroupKey: string;
     resultRank: number;
-    searchLogId: string;
+    searchEventId: string;
     targetPath?: string | null;
+}
+
+export interface DiscoverySearchPreviewQuery {
+    contentId: string;
+    contentType: string;
 }
 
 export const searchDiscovery = (query: DiscoverySearchQuery) => {
@@ -32,8 +37,17 @@ export const searchDiscovery = (query: DiscoverySearchQuery) => {
     });
 };
 
-export const clickSearchResult = (command: DiscoverySearchClickCommand) => {
-    return postJson<boolean, DiscoverySearchClickCommand>("/discovery/search/click", {
+export const clickSearchResult = (command: DiscoverySearchClickEventCommand) => {
+    return postJson<boolean, DiscoverySearchClickEventCommand>("/discovery/search/click", {
         body: command
     });
+};
+
+export const previewSearchResult = (query: DiscoverySearchPreviewQuery) => {
+    return postJson<DiscoverySearchPreviewRecord, DiscoverySearchPreviewQuery>(
+        "/discovery/search/preview",
+        {
+            body: query
+        }
+    );
 };
