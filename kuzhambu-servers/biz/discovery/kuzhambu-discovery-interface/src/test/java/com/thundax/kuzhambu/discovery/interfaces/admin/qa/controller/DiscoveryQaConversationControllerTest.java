@@ -22,6 +22,7 @@ import com.thundax.kuzhambu.discovery.interfaces.portal.qa.controller.request.Di
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -111,7 +112,7 @@ class DiscoveryQaConversationControllerTest {
         QaApplicationService qaApplicationService = mock(QaApplicationService.class);
         KnowledgeQaApplicationService knowledgeQaApplicationService = mock(KnowledgeQaApplicationService.class);
         DiscoveryQaConversationStreamController controller =
-                new DiscoveryQaConversationStreamController(knowledgeQaApplicationService);
+                new DiscoveryQaConversationStreamController(knowledgeQaApplicationService, Runnable::run);
         DiscoveryQaRequests.ChatCompletionsRequest request = new DiscoveryQaRequests.ChatCompletionsRequest();
         request.setSessionId("5001");
         request.setModel("kuzhambu-qa");
@@ -147,7 +148,7 @@ class DiscoveryQaConversationControllerTest {
         QaApplicationService qaApplicationService = mock(QaApplicationService.class);
         KnowledgeQaApplicationService knowledgeQaApplicationService = mock(KnowledgeQaApplicationService.class);
         DiscoveryQaConversationStreamController controller =
-                new DiscoveryQaConversationStreamController(knowledgeQaApplicationService);
+                new DiscoveryQaConversationStreamController(knowledgeQaApplicationService, Runnable::run);
         DiscoveryQaRequests.ChatCompletionsRequest request = new DiscoveryQaRequests.ChatCompletionsRequest();
         request.setSessionId("5001");
         request.setModel("kuzhambu-qa");
@@ -166,11 +167,36 @@ class DiscoveryQaConversationControllerTest {
                 "问答应用未配置，请检查 FastGPT 应用配置。", method.invoke(controller, new IllegalStateException("appId is empty")));
     }
 
+    @Test
+    void chatCompletionsStreamShouldSubmitWorkToInjectedExecutor() {
+        KnowledgeQaApplicationService knowledgeQaApplicationService = mock(KnowledgeQaApplicationService.class);
+        RecordingExecutor executor = new RecordingExecutor();
+        DiscoveryQaConversationStreamController controller =
+                new DiscoveryQaConversationStreamController(knowledgeQaApplicationService, executor);
+        DiscoveryQaRequests.ChatCompletionsRequest request = new DiscoveryQaRequests.ChatCompletionsRequest();
+        request.setSessionId("5001");
+
+        controller.chatCompletionsStream(request);
+
+        assertTrue(executor.submitted);
+        verify(knowledgeQaApplicationService, org.mockito.Mockito.never()).chatCompletionStream(any(), any());
+    }
+
     private static DiscoveryQaRequests.ChatMessage message(String role, String content) {
         DiscoveryQaRequests.ChatMessage message = new DiscoveryQaRequests.ChatMessage();
         message.setRole(role);
         message.setContent(content);
         return message;
+    }
+
+    private static final class RecordingExecutor implements Executor {
+
+        private boolean submitted;
+
+        @Override
+        public void execute(Runnable command) {
+            submitted = true;
+        }
     }
 
     private static void assertRequestMapping(Class<?> type, String expectedPath) {

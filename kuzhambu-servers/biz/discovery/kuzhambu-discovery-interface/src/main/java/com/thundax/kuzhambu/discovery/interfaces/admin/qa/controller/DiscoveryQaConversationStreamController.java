@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.IgnoreSysLogger;
 import com.thundax.kuzhambu.discovery.application.qa.service.KnowledgeQaApplicationService;
+import com.thundax.kuzhambu.discovery.interfaces.common.DiscoveryQaStreamExecutorConfiguration;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.assembler.DiscoveryQaPortalInterfaceAssembler;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.controller.request.DiscoveryQaRequests;
 import com.thundax.kuzhambu.discovery.interfaces.portal.qa.controller.response.DiscoveryQaResponses;
@@ -17,7 +18,10 @@ import java.io.UncheckedIOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionException;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,10 +34,16 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RestController
 public class DiscoveryQaConversationStreamController {
 
-    private final KnowledgeQaApplicationService knowledgeQaApplicationService;
+    private static final long STREAM_TIMEOUT_MILLIS = 600_000L;
 
-    public DiscoveryQaConversationStreamController(KnowledgeQaApplicationService knowledgeQaApplicationService) {
+    private final KnowledgeQaApplicationService knowledgeQaApplicationService;
+    private final Executor streamExecutor;
+
+    public DiscoveryQaConversationStreamController(
+            KnowledgeQaApplicationService knowledgeQaApplicationService,
+            @Qualifier(DiscoveryQaStreamExecutorConfiguration.QA_STREAM_EXECUTOR) Executor streamExecutor) {
         this.knowledgeQaApplicationService = knowledgeQaApplicationService;
+        this.streamExecutor = streamExecutor;
     }
 
     @Operation(summary = "OpenAI 风格流式提问", description = "Admin 知识助手 OpenAI 风格 SSE 提问")
@@ -48,8 +58,19 @@ public class DiscoveryQaConversationStreamController {
                 dataTypeClass = String.class),
     })
     public SseEmitter chatCompletionsStream(@Valid @RequestBody DiscoveryQaRequests.ChatCompletionsRequest request) {
-        SseEmitter emitter = new SseEmitter(0L);
-        CompletableFuture.runAsync(() -> emitChatCompletion(request, emitter));
+        SseEmitter emitter = new SseEmitter(STREAM_TIMEOUT_MILLIS);
+        try {
+            CompletableFuture<Void> future =
+                    CompletableFuture.runAsync(() -> emitChatCompletion(request, emitter), streamExecutor);
+            emitter.onTimeout(() -> {
+                future.cancel(true);
+                emitter.complete();
+            });
+            emitter.onError(error -> future.cancel(true));
+            emitter.onCompletion(() -> future.cancel(true));
+        } catch (RejectedExecutionException ex) {
+            emitter.completeWithError(ex);
+        }
         return emitter;
     }
 
