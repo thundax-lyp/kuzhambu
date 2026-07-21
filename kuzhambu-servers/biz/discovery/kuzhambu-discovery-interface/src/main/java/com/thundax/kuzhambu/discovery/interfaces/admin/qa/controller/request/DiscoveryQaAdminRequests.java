@@ -90,6 +90,27 @@ public final class DiscoveryQaAdminRequests {
 
     @Getter
     @Setter
+    @ToString
+    @Schema(name = "QaSessionPageRequest", description = "Discovery QA 会话分页请求")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class QaSessionPageRequest extends PageRequest {
+
+        @Schema(name = "title", description = "标题")
+        @JsonProperty(value = "title")
+        private String title;
+
+        @Schema(name = "openedAtStart", description = "创建开始时间")
+        @JsonProperty(value = "openedAtStart")
+        private java.util.Date openedAtStart;
+
+        @Schema(name = "openedAtEnd", description = "创建结束时间")
+        @JsonProperty(value = "openedAtEnd")
+        private java.util.Date openedAtEnd;
+    }
+
+    @Getter
+    @Setter
     @Schema(name = "DiscoveryQaSessionGetRequest", description = "Discovery QA 会话详情请求")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -133,31 +154,5 @@ public final class DiscoveryQaAdminRequests {
         @Schema(name = "format", description = "导出格式")
         @JsonProperty(value = "format")
         private String format;
-    }
-
-    @Getter
-    @Setter
-    @Schema(name = "DiscoveryQaSourceListRequest", description = "Discovery QA 来源列表请求")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class QaSourceListRequest {
-
-        @Schema(name = "messageId", description = "消息号")
-        @JsonProperty(value = "messageId")
-        @NotBlank(message = "\"消息号\"不能为空")
-        private String messageId;
-    }
-
-    @Getter
-    @Setter
-    @Schema(name = "DiscoveryQaTraceGetRequest", description = "Discovery QA 检索轨迹请求")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class QaTraceGetRequest {
-
-        @Schema(name = "traceId", description = "轨迹号")
-        @JsonProperty(value = "traceId")
-        @NotBlank(message = "\"轨迹号\"不能为空")
-        private String traceId;
     }
 }

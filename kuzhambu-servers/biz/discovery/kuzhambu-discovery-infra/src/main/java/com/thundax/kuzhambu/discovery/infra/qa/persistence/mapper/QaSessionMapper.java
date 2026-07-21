@@ -19,7 +19,8 @@ public interface QaSessionMapper extends BaseMapper<QaSessionDO> {
               and (#{openedAtEnd} is null or opened_at <= #{openedAtEnd})
             order by opened_at desc
             """)
-    List<QaSessionDO> selectByOpenedAtRange(Date openedAtStart, Date openedAtEnd);
+    List<QaSessionDO> selectByOpenedAtRange(
+            @Param("openedAtStart") Date openedAtStart, @Param("openedAtEnd") Date openedAtEnd);
 
     @Update(
             """

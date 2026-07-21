@@ -17,9 +17,11 @@ import com.thundax.kuzhambu.classics.facade.dto.ClassicsQaKnowledgeFacadeDto;
 import com.thundax.kuzhambu.classics.facade.request.ClassicsQaKnowledgeFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsQaKnowledgeFacadeResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.ExportQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.OpenQaSessionCommand;
+import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionPageQuery;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionExportResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionResult;
@@ -312,6 +314,26 @@ class QaApplicationServiceImplTest {
 
         assertEquals(1, results.size());
         assertEquals(5001L, results.get(0).getSessionId());
+    }
+
+    @Test
+    void pageSessionsShouldDelegateFilteredPagingToRepository() {
+        QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
+        QaApplicationServiceImpl service = service(sessionRepository);
+        Date openedAtStart = new Date(1_718_000_000_000L);
+        Date openedAtEnd = new Date(1_718_086_400_000L);
+        when(sessionRepository.page("黄帝", openedAtStart, openedAtEnd, 2, 100))
+                .thenReturn(PageResult.of(2, 100, 101, List.of(openSession())));
+
+        PageResult<QaSessionResult> result =
+                service.pageSessions(new QaSessionPageQuery(" 黄帝 ", openedAtStart, openedAtEnd, 2, 500));
+
+        assertEquals(2, result.getPageNo());
+        assertEquals(100, result.getPageSize());
+        assertEquals(101, result.getTotalCount());
+        assertEquals(5001L, result.getRecords().get(0).getSessionId());
+        verify(sessionRepository).page("黄帝", openedAtStart, openedAtEnd, 2, 100);
+        verify(sessionRepository, never()).listByOpenedAtRange(any(), any());
     }
 
     @Test

@@ -51,6 +51,7 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
             "com.thundax.kuzhambu.ai.infra",
             "com.thundax.kuzhambu.discovery.application",
             "com.thundax.kuzhambu.discovery.infra",
+            "com.thundax.kuzhambu.discovery.interfaces.common",
             "com.thundax.kuzhambu.discovery.interfaces.portal"
         })
 public class KuzhambuPortalApplication {

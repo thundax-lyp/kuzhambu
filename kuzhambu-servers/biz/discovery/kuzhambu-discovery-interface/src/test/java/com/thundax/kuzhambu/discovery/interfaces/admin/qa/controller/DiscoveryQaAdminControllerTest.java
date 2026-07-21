@@ -16,18 +16,17 @@ import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionComm
 import com.thundax.kuzhambu.discovery.application.qa.command.ExportQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.SyncKnowledgeContentCommand;
 import com.thundax.kuzhambu.discovery.application.qa.query.KnowledgeSyncItemPageQuery;
+import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionPageQuery;
 import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeHealthResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeSyncItemResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaMessageResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionExportResult;
-import com.thundax.kuzhambu.discovery.application.qa.result.QaSourceResult;
-import com.thundax.kuzhambu.discovery.application.qa.result.QaTraceResult;
+import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionResult;
 import com.thundax.kuzhambu.discovery.application.qa.service.KnowledgeSyncApplicationService;
 import com.thundax.kuzhambu.discovery.application.qa.service.QaApplicationService;
 import com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.request.DiscoveryQaAdminRequests;
 import java.lang.reflect.Method;
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +49,11 @@ class DiscoveryQaAdminControllerTest {
                 DiscoveryQaAdminRequests.QaSessionGetRequest.class);
         assertPostMapping(
                 DiscoveryQaAdminController.class,
+                "pageSessions",
+                "session/page",
+                DiscoveryQaAdminRequests.QaSessionPageRequest.class);
+        assertPostMapping(
+                DiscoveryQaAdminController.class,
                 "deleteSession",
                 "session/delete",
                 DiscoveryQaAdminRequests.QaSessionDeleteRequest.class);
@@ -58,16 +62,6 @@ class DiscoveryQaAdminControllerTest {
                 "exportSession",
                 "session/export",
                 DiscoveryQaAdminRequests.QaSessionExportRequest.class);
-        assertPostMapping(
-                DiscoveryQaAdminController.class,
-                "listSources",
-                "source/list",
-                DiscoveryQaAdminRequests.QaSourceListRequest.class);
-        assertPostMapping(
-                DiscoveryQaAdminController.class,
-                "getTrace",
-                "trace/get",
-                DiscoveryQaAdminRequests.QaTraceGetRequest.class);
         assertPostMapping(DiscoveryQaAdminController.class, "getKnowledgeHealth", "knowledge/health");
         assertPostMapping(DiscoveryQaAdminController.class, "rebuildKnowledge", "knowledge/rebuild");
         assertPostMapping(
@@ -120,22 +114,6 @@ class DiscoveryQaAdminControllerTest {
         assertEquals("CSV", sessionExportRequest.getFormat());
         assertJsonFields(sessionExportRequest, "sessionId", "requesterUserId", "format");
 
-        DiscoveryQaAdminRequests.QaSourceListRequest sourceListRequest = OBJECT_MAPPER.readValue(
-                """
-                        {"messageId":"7002"}
-                        """,
-                DiscoveryQaAdminRequests.QaSourceListRequest.class);
-        assertEquals("7002", sourceListRequest.getMessageId());
-        assertJsonFields(sourceListRequest, "messageId");
-
-        DiscoveryQaAdminRequests.QaTraceGetRequest traceGetRequest = OBJECT_MAPPER.readValue(
-                """
-                        {"traceId":"8001"}
-                        """,
-                DiscoveryQaAdminRequests.QaTraceGetRequest.class);
-        assertEquals("8001", traceGetRequest.getTraceId());
-        assertJsonFields(traceGetRequest, "traceId");
-
         DiscoveryQaAdminRequests.KnowledgeSyncRequest syncRequest = OBJECT_MAPPER.readValue(
                 """
                         {"contentType":"SANCAI_ENTRY","contentId":10001,"currentVersionNo":3}
@@ -156,6 +134,16 @@ class DiscoveryQaAdminControllerTest {
         assertEquals(2, syncPageRequest.getPageNo());
         assertEquals(10, syncPageRequest.getPageSize());
         assertJsonFields(syncPageRequest, "contentType", "syncStatus", "pageNo", "pageSize");
+
+        DiscoveryQaAdminRequests.QaSessionPageRequest sessionPageRequest = OBJECT_MAPPER.readValue(
+                """
+                        {"title":"礼器","openedAtStart":"2026-01-01T00:00:00.000Z","openedAtEnd":"2026-01-31T23:59:59.999Z","pageNo":1,"pageSize":10}
+                        """,
+                DiscoveryQaAdminRequests.QaSessionPageRequest.class);
+        assertEquals("礼器", sessionPageRequest.getTitle());
+        assertEquals(1, sessionPageRequest.getPageNo());
+        assertEquals(10, sessionPageRequest.getPageSize());
+        assertJsonFields(sessionPageRequest, "title", "openedAtStart", "openedAtEnd", "pageNo", "pageSize");
     }
 
     @Test
@@ -165,9 +153,9 @@ class DiscoveryQaAdminControllerTest {
         DiscoveryQaAdminController controller = new DiscoveryQaAdminController(qaService, syncService);
 
         when(qaService.getSessionDetail(5001L)).thenReturn(sampleSessionDetail());
+        when(qaService.pageSessions(any(QaSessionPageQuery.class)))
+                .thenReturn(PageResult.of(1, 10, 1, List.of(sampleSession())));
         when(qaService.exportSession(any(ExportQaSessionCommand.class))).thenReturn(sampleExportResult());
-        when(qaService.listSourcesByMessageId(7002L)).thenReturn(List.of(sampleSource()));
-        when(qaService.getTraceByTraceId(8001L)).thenReturn(sampleTrace());
         when(syncService.health())
                 .thenReturn(new KnowledgeHealthResult(true, "fastgpt", null, Map.of("provider", "fastgpt")));
         when(syncService.rebuild()).thenReturn(9001L);
@@ -181,6 +169,19 @@ class DiscoveryQaAdminControllerTest {
         var sessionResponse = controller.getSession(sessionRequest);
         assertEquals("5001", sessionResponse.getSessionId());
         assertEquals(1_718_000_200_000L, sessionResponse.getRemovedAt());
+
+        DiscoveryQaAdminRequests.QaSessionPageRequest sessionPageRequest =
+                new DiscoveryQaAdminRequests.QaSessionPageRequest();
+        sessionPageRequest.setTitle("黄帝");
+        sessionPageRequest.setOpenedAtStart(new Date(1_718_000_000_000L));
+        sessionPageRequest.setOpenedAtEnd(new Date(1_718_086_400_000L));
+        sessionPageRequest.setPageNo(1);
+        sessionPageRequest.setPageSize(10);
+        var sessionPageResponse = controller.pageSessions(sessionPageRequest);
+        assertNotNull(sessionPageResponse);
+        assertEquals(1, sessionPageResponse.getPageNo());
+        assertEquals("5001", sessionPageResponse.getRecords().get(0).getSessionId());
+        assertEquals("黄帝问答", sessionPageResponse.getRecords().get(0).getTitle());
 
         DiscoveryQaAdminRequests.QaSessionDeleteRequest deleteRequest =
                 new DiscoveryQaAdminRequests.QaSessionDeleteRequest();
@@ -201,22 +202,6 @@ class DiscoveryQaAdminControllerTest {
         assertEquals("discovery-qa-session-5001-7001.csv", exportResponse.getFilename());
         assertEquals("text/csv; charset=UTF-8", exportResponse.getContentType());
 
-        DiscoveryQaAdminRequests.QaSourceListRequest sourceRequest = new DiscoveryQaAdminRequests.QaSourceListRequest();
-        sourceRequest.setMessageId("7002");
-        var sources = controller.listSources(sourceRequest);
-        assertEquals(1, sources.size());
-        assertEquals("9001", sources.get(0).getSourceId());
-
-        DiscoveryQaAdminRequests.QaTraceGetRequest traceRequest = new DiscoveryQaAdminRequests.QaTraceGetRequest();
-        traceRequest.setTraceId("8001");
-        var traceResponse = controller.getTrace(traceRequest);
-        assertNotNull(traceResponse);
-        assertEquals("8001", traceResponse.getTraceId());
-        assertEquals("9001", traceResponse.getAiCallId());
-        assertEquals("SUCCEEDED", traceResponse.getAiStatus());
-        assertEquals("WORKER_PROTOCOL_FAILURE", traceResponse.getAiErrorType());
-        assertEquals("worker returned invalid response", traceResponse.getAiErrorMessage());
-
         var healthResponse = controller.getKnowledgeHealth();
         assertEquals("AVAILABLE", healthResponse.getStatus());
         assertEquals("fastgpt", healthResponse.getProvider());
@@ -231,7 +216,8 @@ class DiscoveryQaAdminControllerTest {
         var syncResponse = controller.syncKnowledge(syncRequest);
         assertNotNull(syncResponse);
         assertEquals("SANCAI_ENTRY", syncResponse.getContentType());
-        assertEquals("SYNCHRONIZED", syncResponse.getSyncStatus());
+        assertEquals("黄帝", syncResponse.getTitle());
+        assertEquals("SUCCEEDED", syncResponse.getSyncStatus());
 
         DiscoveryQaAdminRequests.KnowledgeSyncPageRequest syncPageRequest =
                 new DiscoveryQaAdminRequests.KnowledgeSyncPageRequest();
@@ -246,6 +232,11 @@ class DiscoveryQaAdminControllerTest {
         assertEquals(1, syncPageResponse.getCount());
 
         verify(qaService).getSessionDetail(5001L);
+        ArgumentCaptor<QaSessionPageQuery> sessionPageQuery = ArgumentCaptor.forClass(QaSessionPageQuery.class);
+        verify(qaService).pageSessions(sessionPageQuery.capture());
+        assertEquals("黄帝", sessionPageQuery.getValue().getTitle());
+        assertEquals(1, sessionPageQuery.getValue().getPageNo());
+        assertEquals(10, sessionPageQuery.getValue().getPageSize());
         ArgumentCaptor<DeleteQaSessionCommand> deleteCommand = ArgumentCaptor.forClass(DeleteQaSessionCommand.class);
         verify(qaService).deleteSession(deleteCommand.capture());
         assertEquals(5001L, deleteCommand.getValue().getSessionId());
@@ -256,9 +247,6 @@ class DiscoveryQaAdminControllerTest {
         assertEquals(1001L, exportCommand.getValue().getRequesterUserId());
         assertEquals(Boolean.TRUE, exportCommand.getValue().getAdminOperation());
         assertEquals("CSV", exportCommand.getValue().getFormat());
-        verify(qaService).listSourcesByMessageId(7002L);
-        verify(qaService).getTraceByTraceId(8001L);
-
         verify(syncService).health();
         verify(syncService).rebuild();
 
@@ -296,9 +284,19 @@ class DiscoveryQaAdminControllerTest {
         return result;
     }
 
-    private QaSourceResult sampleSource() {
-        return new QaSourceResult(
-                9001L, "SANCAI_ENTRY", 1001L, "SANCAI", "黄帝", "卷一", "上古帝王", 1, BigDecimal.ONE, "CITED");
+    private QaSessionResult sampleSession() {
+        return new QaSessionResult(
+                5001L,
+                1001L,
+                "黄帝问答",
+                "GLOBAL",
+                "SEARCH",
+                "SANCAI_ENTRY",
+                10001L,
+                "OPEN",
+                1_718_000_000_000L,
+                1_718_000_100_000L,
+                null);
     }
 
     private QaSessionExportResult sampleExportResult() {
@@ -315,39 +313,19 @@ class DiscoveryQaAdminControllerTest {
                 "text/csv; charset=UTF-8");
     }
 
-    private QaTraceResult sampleTrace() {
-        QaTraceResult trace = new QaTraceResult();
-        trace.setTraceId(8001L);
-        trace.setMessageId(7002L);
-        trace.setRawQuestion("黄帝是谁");
-        trace.setProvider("kuzhambu-qa");
-        trace.setExternalKnowledgeBaseId("kb-1");
-        trace.setExternalKnowledgeItemIds("[\"item-1\",\"item-2\"]");
-        trace.setExternalChatId("chat-1");
-        trace.setProviderRequestId("1001");
-        trace.setLatencyMs(120L);
-        trace.setFailureReason("none");
-        trace.setRaw("{\"foo\":\"bar\"}");
-        trace.setAiCallId(9001L);
-        trace.setAiStatus("SUCCEEDED");
-        trace.setAiErrorType("WORKER_PROTOCOL_FAILURE");
-        trace.setAiErrorMessage("worker returned invalid response");
-        trace.setRetrievedAt(new Date(1_718_000_070_000L));
-        return trace;
-    }
-
     private KnowledgeSyncItemResult sampleSyncItem() {
         return new KnowledgeSyncItemResult(
                 "SANCAI_ENTRY:10001",
                 "SANCAI_ENTRY",
                 10001L,
+                "黄帝",
                 "kuzhambu-qa",
                 3,
                 "hash-xxx",
                 "fastgpt",
                 "kb-1",
                 "item-1",
-                "SYNCHRONIZED",
+                "SUCCEEDED",
                 null,
                 1_718_000_100_000L,
                 1_718_000_000_000L,

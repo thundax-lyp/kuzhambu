@@ -53,6 +53,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
             "com.thundax.kuzhambu.discovery.domain",
             "com.thundax.kuzhambu.discovery.application",
             "com.thundax.kuzhambu.discovery.infra",
+            "com.thundax.kuzhambu.discovery.interfaces.common",
             "com.thundax.kuzhambu.discovery.interfaces.admin"
         })
 public class KuzhambuAdminApplication {

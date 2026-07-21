@@ -542,7 +542,7 @@ describe("WangqiPage", () => {
         const user = userEvent.setup();
 
         vi.mocked(aiRefinementTaskService.pageTasks).mockImplementation(async (query) => {
-            if (query.contentType === "WANGQI_DOCUMENT" && query.contentId === 1) {
+            if (query?.contentType === "WANGQI_DOCUMENT" && query.contentId === 1) {
                 return {
                     items: [
                         {

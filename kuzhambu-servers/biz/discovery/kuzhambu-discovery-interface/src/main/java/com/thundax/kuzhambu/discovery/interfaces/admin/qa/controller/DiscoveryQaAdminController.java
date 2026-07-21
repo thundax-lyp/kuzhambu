@@ -11,6 +11,7 @@ import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionComm
 import com.thundax.kuzhambu.discovery.application.qa.command.ExportQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.SyncKnowledgeContentCommand;
 import com.thundax.kuzhambu.discovery.application.qa.query.KnowledgeSyncItemPageQuery;
+import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionPageQuery;
 import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeSyncItemResult;
 import com.thundax.kuzhambu.discovery.application.qa.service.KnowledgeSyncApplicationService;
 import com.thundax.kuzhambu.discovery.application.qa.service.QaApplicationService;
@@ -23,7 +24,6 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.List;
 import java.util.Objects;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -127,6 +127,24 @@ public class DiscoveryQaAdminController {
                 qaApplicationService.getSessionDetail(DiscoveryInterfaceIdCodec.toLongValue(request.getSessionId())));
     }
 
+    @Operation(summary = "分页查询会话", description = "Discovery QA 会话分页")
+    @HasPermission("discovery:qa:view")
+    @IgnoreSysLogger
+    @PostMapping("session/page")
+    @ApiImplicitParams({
+        @ApiImplicitParam(
+                name = AccessTokenNames.HEADER_TOKEN,
+                value = "令牌",
+                paramType = "header",
+                dataTypeClass = String.class),
+    })
+    public PageResponse<DiscoveryQaAdminResponses.QaSessionResponse> pageSessions(
+            @Valid @RequestBody DiscoveryQaAdminRequests.QaSessionPageRequest request) {
+        return PageResponseHelper.fromPageResult(
+                qaApplicationService.pageSessions(toSessionPageQuery(request)),
+                DiscoveryQaAdminInterfaceAssembler::toSessionResponse);
+    }
+
     @Operation(summary = "删除会话", description = "Discovery QA Admin 软删除会话")
     @HasPermission("discovery:qa:edit")
     @IgnoreSysLogger
@@ -159,40 +177,6 @@ public class DiscoveryQaAdminController {
                 qaApplicationService.exportSession(toExportSessionCommand(request)));
     }
 
-    @Operation(summary = "获取来源列表", description = "Discovery QA 来源列表")
-    @HasPermission("discovery:qa:view")
-    @IgnoreSysLogger
-    @PostMapping("source/list")
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-                name = AccessTokenNames.HEADER_TOKEN,
-                value = "令牌",
-                paramType = "header",
-                dataTypeClass = String.class),
-    })
-    public List<DiscoveryQaAdminResponses.QaSourceResponse> listSources(
-            @Valid @RequestBody DiscoveryQaAdminRequests.QaSourceListRequest request) {
-        return DiscoveryQaAdminInterfaceAssembler.toSourceResponses(qaApplicationService.listSourcesByMessageId(
-                DiscoveryInterfaceIdCodec.toLongValue(request.getMessageId())));
-    }
-
-    @Operation(summary = "获取检索轨迹", description = "Discovery QA 检索轨迹")
-    @HasPermission("discovery:qa:view")
-    @IgnoreSysLogger
-    @PostMapping("trace/get")
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-                name = AccessTokenNames.HEADER_TOKEN,
-                value = "令牌",
-                paramType = "header",
-                dataTypeClass = String.class),
-    })
-    public DiscoveryQaAdminResponses.QaTraceResponse getTrace(
-            @Valid @RequestBody DiscoveryQaAdminRequests.QaTraceGetRequest request) {
-        return DiscoveryQaAdminInterfaceAssembler.toTraceResponse(
-                qaApplicationService.getTraceByTraceId(DiscoveryInterfaceIdCodec.toLongValue(request.getTraceId())));
-    }
-
     private static SyncKnowledgeContentCommand toSyncContentCommand(
             DiscoveryQaAdminRequests.KnowledgeSyncRequest request) {
         return new SyncKnowledgeContentCommand(
@@ -222,6 +206,18 @@ public class DiscoveryQaAdminController {
                 null,
                 null,
                 true);
+    }
+
+    private static QaSessionPageQuery toSessionPageQuery(DiscoveryQaAdminRequests.QaSessionPageRequest request) {
+        if (request == null) {
+            return new QaSessionPageQuery(null, null, null, 0, 0);
+        }
+        return new QaSessionPageQuery(
+                request.getTitle(),
+                request.getOpenedAtStart(),
+                request.getOpenedAtEnd(),
+                Objects.requireNonNullElse(request.getPageNo(), 0),
+                Objects.requireNonNullElse(request.getPageSize(), 0));
     }
 
     private static ExportQaSessionCommand toExportSessionCommand(

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import * as qaConsumerService from "./qa/qa-service";
-import * as qaService from "./qa-admin/qa-admin-service";
+import * as qaService from "./qa-console/qa-console-service";
 import * as searchConsumerService from "./search/search-service";
 import * as searchService from "./search-statistics/search-statistics-service";
 
@@ -102,7 +102,7 @@ describe("discovery admin service contracts", () => {
         });
     });
 
-    it("maps qa admin endpoints and request bodies", async () => {
+    it("maps qa console endpoints and request bodies", async () => {
         await qaService.getKnowledgeHealth();
         expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/knowledge/health");
 
@@ -135,14 +135,14 @@ describe("discovery admin service contracts", () => {
             contentType: "SANCAI_ENTRY",
             pageNo: 1,
             pageSize: 10,
-            syncStatus: "SYNCED"
+            syncStatus: "SUCCEEDED"
         });
         expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/knowledge/sync/page", {
             body: {
                 contentType: "SANCAI_ENTRY",
                 pageNo: 1,
                 pageSize: 10,
-                syncStatus: "SYNCED"
+                syncStatus: "SUCCEEDED"
             }
         });
 
@@ -150,6 +150,23 @@ describe("discovery admin service contracts", () => {
         expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/session/get", {
             body: {
                 sessionId: "2001"
+            }
+        });
+
+        await qaService.pageQaSessions({
+            openedAtEnd: "2026-01-31T23:59:59.999Z",
+            openedAtStart: "2026-01-01T00:00:00.000Z",
+            pageNo: 1,
+            pageSize: 10,
+            title: "礼器"
+        });
+        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/session/page", {
+            body: {
+                openedAtEnd: "2026-01-31T23:59:59.999Z",
+                openedAtStart: "2026-01-01T00:00:00.000Z",
+                pageNo: 1,
+                pageSize: 10,
+                title: "礼器"
             }
         });
 
@@ -174,27 +191,14 @@ describe("discovery admin service contracts", () => {
             }
         });
 
-        await qaService.listQaSources({ messageId: "4001" });
-        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/source/list", {
-            body: {
-                messageId: "4001"
-            }
-        });
-
-        await qaService.getQaTrace({ traceId: "9001" });
-        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/trace/get", {
-            body: {
-                traceId: "9001"
-            }
-        });
-
         const calledUrls = postJson.mock.calls.map(([url]) => String(url));
         expect(calledUrls.join("\n")).not.toMatch(/fastgpt|provider|dataset|collection/iu);
+        expect(calledUrls.join("\n")).not.toMatch(/source\/list|trace\/get/iu);
     });
 
-    it("keeps qa admin service on Discovery APIs without provider direct urls", () => {
+    it("keeps qa console service on Discovery APIs without provider direct urls", () => {
         const serviceSource = readFileSync(
-            resolve(process.cwd(), "src/pages/discovery/qa-admin/qa-admin-service.ts"),
+            resolve(process.cwd(), "src/pages/discovery/qa-console/qa-console-service.ts"),
             "utf-8"
         );
 

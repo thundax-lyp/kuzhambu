@@ -1,7 +1,10 @@
 package com.thundax.kuzhambu.discovery.infra.qa.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
 import com.thundax.kuzhambu.discovery.domain.qa.repository.QaSessionRepository;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.assembler.QaPersistenceAssembler;
@@ -9,6 +12,7 @@ import com.thundax.kuzhambu.discovery.infra.qa.persistence.dataobject.QaSessionD
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.mapper.QaSessionMapper;
 import java.util.Date;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -38,6 +42,18 @@ public class QaSessionRepositoryImpl implements QaSessionRepository {
     }
 
     @Override
+    public PageResult<QaSession> page(String title, Date openedAtStart, Date openedAtEnd, int pageNo, int pageSize) {
+        Page<QaSessionDO> page = new Page<>(pageNo, pageSize);
+        IPage<QaSessionDO> dataObjectPage =
+                mapper.selectPage(page, buildPageWrapper(title, openedAtStart, openedAtEnd));
+        return PageResult.of(
+                (int) dataObjectPage.getCurrent(),
+                (int) dataObjectPage.getSize(),
+                dataObjectPage.getTotal(),
+                QaPersistenceAssembler.toSessionDomainList(dataObjectPage.getRecords()));
+    }
+
+    @Override
     public List<QaSession> listByOwnerUserId(String ownerType, String ownerId, Integer limit) {
         if (ownerType == null || ownerId == null) {
             return List.of();
@@ -51,6 +67,21 @@ public class QaSessionRepositoryImpl implements QaSessionRepository {
             wrapper.last("limit " + limit);
         }
         return QaPersistenceAssembler.toSessionDomainList(mapper.selectList(wrapper));
+    }
+
+    private QueryWrapper<QaSessionDO> buildPageWrapper(String title, Date openedAtStart, Date openedAtEnd) {
+        QueryWrapper<QaSessionDO> wrapper = new QueryWrapper<>();
+        if (StringUtils.isNotBlank(title)) {
+            wrapper.like("title", title);
+        }
+        if (openedAtStart != null) {
+            wrapper.ge("opened_at", openedAtStart);
+        }
+        if (openedAtEnd != null) {
+            wrapper.le("opened_at", openedAtEnd);
+        }
+        wrapper.orderByDesc("opened_at").orderByDesc("session_id");
+        return wrapper;
     }
 
     @Override

@@ -2,15 +2,22 @@ import { postJson } from "@/api/http";
 import type {
     DiscoveryQaSessionExportRecord,
     DiscoveryQaSessionDetailRecord,
-    DiscoveryQaSourceRecord,
+    DiscoveryQaSessionPageRecord,
     KnowledgeHealthRecord,
     KnowledgeSyncItemPageRecord,
-    KnowledgeSyncItemRecord,
-    ProviderTraceRecord
-} from "./qa-admin-types";
+    KnowledgeSyncItemRecord
+} from "./qa-console-types";
 
 export interface DiscoveryQaSessionGetCommand {
     sessionId: string;
+}
+
+export interface DiscoveryQaSessionPageQuery {
+    openedAtEnd?: string | null;
+    openedAtStart?: string | null;
+    pageNo?: number | null;
+    pageSize?: number | null;
+    title?: string | null;
 }
 
 export interface DiscoveryQaSessionDeleteCommand {
@@ -22,14 +29,6 @@ export interface DiscoveryQaSessionExportCommand {
     format?: string | null;
     requesterUserId?: number | null;
     sessionId: string;
-}
-
-export interface DiscoveryQaSourceListCommand {
-    messageId: string;
-}
-
-export interface DiscoveryQaTraceGetCommand {
-    traceId: string;
 }
 
 export interface KnowledgeRebuildCommand {
@@ -89,6 +88,15 @@ export const getQaSession = (command: DiscoveryQaSessionGetCommand) => {
     );
 };
 
+export const pageQaSessions = (query: DiscoveryQaSessionPageQuery = {}) => {
+    return postJson<DiscoveryQaSessionPageRecord, DiscoveryQaSessionPageQuery>(
+        "/discovery/qa-admin/session/page",
+        {
+            body: query
+        }
+    );
+};
+
 export const deleteQaSession = (command: DiscoveryQaSessionDeleteCommand) => {
     return postJson<void, DiscoveryQaSessionDeleteCommand>("/discovery/qa-admin/session/delete", {
         body: command
@@ -98,24 +106,6 @@ export const deleteQaSession = (command: DiscoveryQaSessionDeleteCommand) => {
 export const createQaSessionExport = (command: DiscoveryQaSessionExportCommand) => {
     return postJson<DiscoveryQaSessionExportRecord, DiscoveryQaSessionExportCommand>(
         "/discovery/qa-admin/session/export",
-        {
-            body: command
-        }
-    );
-};
-
-export const listQaSources = (command: DiscoveryQaSourceListCommand) => {
-    return postJson<DiscoveryQaSourceRecord[], DiscoveryQaSourceListCommand>(
-        "/discovery/qa-admin/source/list",
-        {
-            body: command
-        }
-    );
-};
-
-export const getQaTrace = (command: DiscoveryQaTraceGetCommand) => {
-    return postJson<ProviderTraceRecord, DiscoveryQaTraceGetCommand>(
-        "/discovery/qa-admin/trace/get",
         {
             body: command
         }

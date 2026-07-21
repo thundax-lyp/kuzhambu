@@ -123,7 +123,8 @@ CREATE TABLE IF NOT EXISTS `discovery_qa_session` (
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_discovery_qa_session_id` (`session_id`),
     KEY `idx_discovery_qa_session_owner` (`owner_type`, `owner_id`, `last_message_at`),
-    KEY `idx_discovery_qa_session_context` (`context_content_type`, `context_content_id`)
+    KEY `idx_discovery_qa_session_context` (`context_content_type`, `context_content_id`),
+    KEY `idx_discovery_qa_session_removed_opened` (`removed_at`, `opened_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='问答会话表';
 
 CREATE TABLE IF NOT EXISTS `discovery_qa_message` (
