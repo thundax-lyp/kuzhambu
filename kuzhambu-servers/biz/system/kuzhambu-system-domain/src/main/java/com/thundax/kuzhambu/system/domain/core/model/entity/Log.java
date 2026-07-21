@@ -1,7 +1,9 @@
 package com.thundax.kuzhambu.system.domain.core.model.entity;
 
+import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.enums.LogType;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.LogId;
+import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import java.util.Date;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -16,7 +18,7 @@ import lombok.Setter;
 public class Log {
     private LogId id;
 
-    private String userId;
+    private UserId userId;
 
     private LogType type;
     private Date logDate;
@@ -54,6 +56,14 @@ public class Log {
 
     public void setType(LogType type) {
         this.type = type;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = UserIdCodec.toDomain(userId);
+    }
+
+    public void setUserId(UserId userId) {
+        this.userId = userId;
     }
 
     private static boolean endsWithIgnoreCase(String value, String suffix) {

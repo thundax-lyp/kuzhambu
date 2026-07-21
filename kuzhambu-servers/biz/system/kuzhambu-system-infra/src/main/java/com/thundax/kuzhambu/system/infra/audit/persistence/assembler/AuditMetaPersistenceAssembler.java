@@ -5,6 +5,8 @@ import com.thundax.kuzhambu.system.domain.audit.codec.AuditLogIdCodec;
 import com.thundax.kuzhambu.system.domain.audit.codec.AuditMetaIdCodec;
 import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditMeta;
 import com.thundax.kuzhambu.system.domain.audit.model.enums.AuditOperatorType;
+import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditObjectRef;
+import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditOperatorRef;
 import com.thundax.kuzhambu.system.infra.audit.persistence.dataobject.AuditMetaDO;
 
 public final class AuditMetaPersistenceAssembler {
@@ -41,13 +43,12 @@ public final class AuditMetaPersistenceAssembler {
         }
         AuditMeta entity = new AuditMeta();
         entity.setId(AuditMetaIdCodec.toDomain(dataObject.getId()));
-        entity.setObjectType(dataObject.getObjectType());
-        entity.setObjectId(dataObject.getObjectId());
+        entity.setObjectRef(AuditObjectRef.of(dataObject.getObjectType(), dataObject.getObjectId()));
         entity.setVersion(dataObject.getVersion());
         entity.setLastLogId(AuditLogIdCodec.toDomain(dataObject.getLastLogId()));
         entity.setLastAction(AuditAction.from(dataObject.getLastAction()));
-        entity.setLastOperatorType(AuditOperatorType.from(dataObject.getLastOperatorType()));
-        entity.setLastOperatorId(dataObject.getLastOperatorId());
+        entity.setLastOperatorRef(AuditOperatorRef.of(
+                AuditOperatorType.from(dataObject.getLastOperatorType()), dataObject.getLastOperatorId()));
         entity.setLastOperatorName(dataObject.getLastOperatorName());
         entity.setLastOperatedAt(dataObject.getLastOperatedAt());
         entity.setCreatedLogId(AuditLogIdCodec.toDomain(dataObject.getCreatedLogId()));

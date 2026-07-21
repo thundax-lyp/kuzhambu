@@ -6,6 +6,7 @@ import com.alicp.jetcache.anno.CreateCache;
 import com.thundax.kuzhambu.common.cache.CacheDTO;
 import com.thundax.kuzhambu.common.cache.KuzhambuCacheNames;
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalAuthSessionIdCodec;
+import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalClientIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAuthSession;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalType;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalAuthSessionId;
@@ -44,7 +45,7 @@ public class PrincipalAuthSessionRepositoryImpl implements PrincipalAuthSessionR
         Assert.notNull(session, "session can not be null");
         Assert.notNull(session.getId(), "id can not be null");
         Assert.notNull(session.getPrincipalKey(), "principalKey can not be null");
-        Assert.hasText(session.getClientId(), "clientId can not be blank");
+        Assert.notNull(session.getClientId(), "clientId can not be null");
         if (expireSeconds <= 0) {
             return;
         }
@@ -77,7 +78,7 @@ public class PrincipalAuthSessionRepositoryImpl implements PrincipalAuthSessionR
         return PrincipalAuthSession.restore(
                 PrincipalAuthSessionIdCodec.toDomain(cacheDTO.id),
                 PrincipalKey.of(PrincipalType.from(cacheDTO.principalType), cacheDTO.principalId),
-                cacheDTO.clientId,
+                PrincipalClientIdCodec.toDomain(cacheDTO.clientId),
                 toEntityValues(cacheDTO.values),
                 cacheDTO.issuedAt,
                 cacheDTO.lastAccessTime,
@@ -89,7 +90,7 @@ public class PrincipalAuthSessionRepositoryImpl implements PrincipalAuthSessionR
         cacheDTO.id = PrincipalAuthSessionIdCodec.toValue(session.getId());
         cacheDTO.principalType = session.getPrincipalKey().getPrincipalType().value();
         cacheDTO.principalId = session.getPrincipalKey().getPrincipalId();
-        cacheDTO.clientId = session.getClientId();
+        cacheDTO.clientId = PrincipalClientIdCodec.toValue(session.getClientId());
         cacheDTO.values = toCacheValues(session.getValues());
         cacheDTO.issuedAt = session.getIssuedAt();
         cacheDTO.lastAccessTime = session.getLastAccessTime();

@@ -6,6 +6,7 @@ import com.thundax.kuzhambu.common.rocketmq.KuzhambuMqSender;
 import com.thundax.kuzhambu.system.application.core.command.CreateLogCommand;
 import com.thundax.kuzhambu.system.application.core.query.LogQuery;
 import com.thundax.kuzhambu.system.application.core.service.LogApplicationService;
+import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Log;
 import com.thundax.kuzhambu.system.interfaces.admin.configure.KuzhambuProperties;
 import com.thundax.kuzhambu.system.interfaces.admin.core.service.SysLogMessageService;
@@ -92,7 +93,7 @@ public class SysLogMessageServiceImpl implements SysLogMessageService {
     private CreateLogCommand toCreateCommand(Log log) {
         return new CreateLogCommand(
                 log.getId(),
-                log.getUserId(),
+                UserIdCodec.toStringValue(log.getUserId()),
                 log.getType(),
                 log.getLogDate(),
                 log.getTitle(),

@@ -9,11 +9,13 @@ import com.thundax.kuzhambu.common.core.crypto.Sha256Digest;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalAccessTokenIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalAuthSessionIdCodec;
+import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalClientIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAccessToken;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalTokenStatus;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalType;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalAccessTokenCode;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalAccessTokenId;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalClientId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.auth.repository.PrincipalAccessTokenRepository;
 import io.lettuce.core.RedisClient;
@@ -80,7 +82,7 @@ public class PrincipalAccessTokenRepositoryImpl implements PrincipalAccessTokenR
 
     @Override
     public List<PrincipalAccessToken> listByPrincipalKeyAndClientIdAndStatus(
-            PrincipalKey principalKey, String clientId, PrincipalTokenStatus status) {
+            PrincipalKey principalKey, PrincipalClientId clientId, PrincipalTokenStatus status) {
         if (principalKey == null || status == null) {
             return new ArrayList<>();
         }
@@ -98,7 +100,7 @@ public class PrincipalAccessTokenRepositoryImpl implements PrincipalAccessTokenR
     }
 
     @Override
-    public int countByClientIdAndStatus(String clientId, PrincipalTokenStatus status) {
+    public int countByClientIdAndStatus(PrincipalClientId clientId, PrincipalTokenStatus status) {
         if (status == null) {
             return 0;
         }
@@ -191,17 +193,19 @@ public class PrincipalAccessTokenRepositoryImpl implements PrincipalAccessTokenR
         return clientIndexKey(accessToken.getClientId(), accessToken.getStatus());
     }
 
-    private String clientIndexKey(String clientId, PrincipalTokenStatus status) {
-        return CLIENT_INDEX_PREFIX + StringUtils.defaultIfBlank(clientId, "DEFAULT") + "_" + status.value();
+    private String clientIndexKey(PrincipalClientId clientId, PrincipalTokenStatus status) {
+        return CLIENT_INDEX_PREFIX + StringUtils.defaultIfBlank(PrincipalClientIdCodec.toValue(clientId), "DEFAULT")
+                + "_" + status.value();
     }
 
-    private String principalIndexKey(PrincipalKey principalKey, String clientId, PrincipalTokenStatus status) {
+    private String principalIndexKey(
+            PrincipalKey principalKey, PrincipalClientId clientId, PrincipalTokenStatus status) {
         return PRINCIPAL_INDEX_PREFIX
                 + principalKey.getPrincipalType().value()
                 + "_"
                 + principalKey.getPrincipalId()
                 + "_"
-                + StringUtils.defaultIfBlank(clientId, "DEFAULT")
+                + StringUtils.defaultIfBlank(PrincipalClientIdCodec.toValue(clientId), "DEFAULT")
                 + "_"
                 + status.value();
     }
@@ -232,7 +236,7 @@ public class PrincipalAccessTokenRepositoryImpl implements PrincipalAccessTokenR
         PrincipalAccessToken accessToken = new PrincipalAccessToken();
         accessToken.setId(PrincipalAccessTokenIdCodec.toDomain(cacheDTO.id));
         accessToken.setTokenCode(PrincipalAccessTokenCode.ofNullable(cacheDTO.tokenCode));
-        accessToken.setClientId(cacheDTO.clientId);
+        accessToken.setClientId(PrincipalClientIdCodec.toDomain(cacheDTO.clientId));
         accessToken.setSessionId(PrincipalAuthSessionIdCodec.toDomain(cacheDTO.sessionId));
         accessToken.setPrincipalKey(PrincipalKey.of(PrincipalType.from(cacheDTO.principalType), cacheDTO.principalId));
         accessToken.setScopes(new LinkedHashSet<>(cacheDTO.scopes));
@@ -248,7 +252,7 @@ public class PrincipalAccessTokenRepositoryImpl implements PrincipalAccessTokenR
         cacheDTO.tokenCode = accessToken.getTokenCode() == null
                 ? null
                 : accessToken.getTokenCode().value();
-        cacheDTO.clientId = accessToken.getClientId();
+        cacheDTO.clientId = PrincipalClientIdCodec.toValue(accessToken.getClientId());
         cacheDTO.sessionId = PrincipalAuthSessionIdCodec.toValue(accessToken.getSessionId());
         cacheDTO.principalType =
                 accessToken.getPrincipalKey().getPrincipalType().value();

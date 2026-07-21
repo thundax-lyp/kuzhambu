@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.system.domain.auth.repository;
 
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalRefreshToken;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalTokenStatus;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalClientId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalRefreshTokenCode;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalRefreshTokenId;
@@ -17,7 +18,7 @@ public interface PrincipalRefreshTokenRepository {
     PrincipalRefreshToken getByToken(String token);
 
     List<PrincipalRefreshToken> listByPrincipalKeyAndClientIdAndStatus(
-            PrincipalKey principalKey, String clientId, PrincipalTokenStatus status);
+            PrincipalKey principalKey, PrincipalClientId clientId, PrincipalTokenStatus status);
 
     PrincipalRefreshTokenId insert(PrincipalRefreshToken refreshToken, String token);
 
