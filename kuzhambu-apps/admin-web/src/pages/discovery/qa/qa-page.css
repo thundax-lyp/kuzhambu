@@ -1,41 +1,94 @@
+body:has(.discovery-qa-page) {
+    --surface-page: #eef3f6;
+    --surface-panel: #fbfcfd;
+    --surface-soft: #f4f7fa;
+    --surface-hover: #e7f0f6;
+    --text-primary: #17212b;
+    --text-secondary: #516474;
+    --text-muted: #738394;
+}
+
 .discovery-qa-page {
-    background: #f7f7f4;
+    background: #f3f6f8;
     display: grid;
     gap: 0;
-    grid-template-columns: 280px minmax(0, 1fr);
+    grid-template-columns: 264px minmax(0, 1fr);
     min-height: calc(100vh - 96px);
     overflow: hidden;
     padding: 0;
 }
 
 .discovery-qa-page__sidebar {
-    background: #ffffff;
-    border-right: 1px solid #e7e5df;
+    background: #fbfcfd;
+    border-right: 1px solid #d8e0e7;
     display: grid;
-    gap: 16px;
+    gap: 14px;
     grid-template-rows: auto minmax(0, 1fr) auto;
     min-height: 0;
-    padding: 20px;
+    padding: 18px 16px;
+}
+
+.discovery-qa-page__sidebar > .ant-btn-primary {
+    background: #123d59;
+    border-color: #123d59;
+    border-radius: 8px;
+    box-shadow: none;
+    font-size: 14px;
+    font-weight: 500;
+    height: 38px;
 }
 
 .discovery-qa-page__session-list {
     align-content: start;
     display: grid;
-    gap: 8px;
+    gap: 6px;
     min-height: 0;
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 .discovery-qa-page__session-item {
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
     position: relative;
 }
 
-.discovery-qa-page__session-item .ant-btn:first-child {
+.discovery-qa-page__select-session {
+    background: #ffffff;
+    border-color: #dbe3ea;
+    border-radius: 8px;
+    color: #243746;
+    display: flex;
+    font-size: 13px;
+    height: 34px;
     justify-content: flex-start;
+    max-width: 100%;
+    min-width: 0;
     overflow: hidden;
     padding-right: 40px;
     text-align: left;
     text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+}
+
+.discovery-qa-page__select-session > span:not(.anticon),
+.discovery-qa-page__session-item
+    [data-testid="discovery-qa-select-session-button"]
+    > span:not(.anticon) {
+    display: block;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.discovery-qa-page__select-session.ant-btn-primary {
+    background: #e7f0f6;
+    border-color: #9bb6c8;
+    color: #123d59;
 }
 
 .discovery-qa-page__delete-session {
@@ -70,7 +123,7 @@
     display: grid;
     grid-template-rows: auto auto minmax(0, 1fr) auto auto;
     min-height: 0;
-    padding: 28px min(7vw, 88px) 24px;
+    padding: 24px min(6vw, 72px) 20px;
 }
 
 .discovery-qa-page__chat-header {
@@ -78,13 +131,26 @@
     display: flex;
     gap: 16px;
     justify-content: space-between;
-    margin: 0 auto 20px;
+    margin: 0 auto 14px;
     max-width: 920px;
     width: 100%;
 }
 
 .discovery-qa-page__chat-header .ant-typography {
     margin: 0;
+}
+
+.discovery-qa-page__chat-header h2.ant-typography {
+    color: #17212b;
+    font-size: 24px;
+    font-weight: 650;
+    letter-spacing: 0;
+    line-height: 1.25;
+}
+
+.discovery-qa-page__chat-header .ant-typography-secondary {
+    color: #667789;
+    font-size: 13px;
 }
 
 .discovery-qa-page__notice {
@@ -96,7 +162,12 @@
 .discovery-qa-page__messages {
     min-height: 0;
     overflow: auto;
-    padding: 8px 0 24px;
+    padding: 8px 0 18px;
+}
+
+.discovery-qa-page__messages:has(.discovery-qa-page__empty) {
+    display: grid;
+    overflow: hidden;
 }
 
 .discovery-qa-page__messages .ant-bubble-list {
@@ -105,19 +176,129 @@
 }
 
 .discovery-qa-page__messages .ant-bubble {
-    margin-bottom: 14px;
+    margin-bottom: 8px;
+}
+
+.discovery-qa-page__messages .ant-bubble-content {
+    border-radius: 10px;
+    font-size: 15px;
+    line-height: 1.7;
+    padding: 9px 13px;
+}
+
+.discovery-qa-page__messages .ant-bubble-footer {
+    color: #667789;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.discovery-qa-page__messages .ant-bubble-avatar {
+    flex: 0 0 60px;
+    width: 60px;
+}
+
+.discovery-qa-page__messages .ant-bubble-start .ant-bubble-avatar {
+    margin-right: 12px;
+}
+
+.discovery-qa-page__messages .ant-bubble-end .ant-bubble-avatar {
+    margin-left: 12px;
+}
+
+.discovery-qa-page__avatar {
+    align-items: center;
+    background: #f7efe3;
+    border: 1px solid #d7c0a0;
+    border-radius: 999px;
+    display: inline-flex;
+    height: 60px;
+    justify-content: center;
+    overflow: hidden;
+    padding: 2px;
+    position: relative;
+    width: 60px;
+}
+
+.discovery-qa-page__avatar img {
+    border-radius: inherit;
+    filter: saturate(0.92) contrast(1.04);
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    width: 100%;
+}
+
+.discovery-qa-page__avatar--assistant {
+    border-color: #c8aa7d;
+}
+
+.discovery-qa-page__avatar--user {
+    border-color: #9fb7c8;
+}
+
+.discovery-qa-page__avatar--user img {
+    transform: scaleX(-1);
+}
+
+.discovery-qa-page__assistant-content {
+    color: #17212b;
+    white-space: pre-wrap;
+}
+
+.discovery-qa-page__stream-caret {
+    animation: discovery-qa-caret 880ms ease-in-out infinite;
+    background: #2f6f91;
+    border-radius: 999px;
+    display: inline-block;
+    height: 1.2em;
+    margin-left: 3px;
+    transform: translateY(0.2em);
+    width: 2px;
+}
+
+.discovery-qa-page__message-status {
+    align-items: center;
+    display: inline-flex;
+    font-size: 14px;
+    justify-content: center;
+    line-height: 1;
+}
+
+.discovery-qa-page__message-status--failed {
+    color: #c2410c;
+}
+
+.discovery-qa-page__message-status--loading {
+    color: #2563eb;
+}
+
+.discovery-qa-page__message-status--succeeded {
+    color: #15803d;
 }
 
 .discovery-qa-page__empty {
-    align-content: center;
+    align-content: start;
     display: grid;
     justify-items: center;
-    min-height: 100%;
+    margin: 68px auto 0;
+    max-width: 440px;
     text-align: center;
 }
 
 .discovery-qa-page__empty .ant-typography {
     margin: 0;
+}
+
+.discovery-qa-page__empty h3.ant-typography {
+    color: #17212b;
+    font-size: 22px;
+    font-weight: 650;
+    line-height: 1.3;
+}
+
+.discovery-qa-page__empty .ant-typography-secondary {
+    color: #667789;
+    font-size: 13px;
 }
 
 .discovery-qa-page__sources {
@@ -131,7 +312,7 @@
 
 .discovery-qa-page__source {
     background: #ffffff;
-    border: 1px solid #e7e5df;
+    border: 1px solid #d8e0e7;
     border-radius: 8px;
     flex: 0 0 min(280px, 80vw);
     padding: 10px;
@@ -147,16 +328,78 @@
 
 .discovery-qa-page__composer {
     background: #ffffff;
-    border-color: #dedbd2;
-    box-shadow: 0 12px 36px rgb(31 35 40 / 10%);
+    border-color: #cfd9e2;
+    border-radius: 12px;
+    box-shadow: 0 14px 34px rgb(20 45 65 / 10%);
     margin: 0 auto;
     max-width: 920px;
     width: 100%;
 }
 
+.discovery-qa-page__composer:focus-within {
+    border-color: #2f6f91;
+    box-shadow:
+        0 0 0 3px rgb(47 111 145 / 14%),
+        0 14px 34px rgb(20 45 65 / 10%);
+}
+
 .discovery-qa-page__composer .ant-sender-input {
-    max-height: 180px;
-    min-height: 72px;
+    color: #17212b;
+    font-size: 14px;
+    line-height: 1.6;
+    max-height: 160px;
+    min-height: 64px;
+    padding: 12px 14px;
+}
+
+.discovery-qa-page__composer .ant-sender-input:focus {
+    border-color: transparent;
+    box-shadow: none;
+    outline: none;
+}
+
+.discovery-qa-page__composer .ant-sender-actions .ant-btn,
+.discovery-qa-page__composer .ant-sender-actions button {
+    align-items: center;
+    background: #2f6f91;
+    border-color: #2f6f91;
+    box-shadow: none;
+    color: #ffffff;
+    display: inline-flex;
+    height: 34px;
+    justify-content: center;
+    transition:
+        background-color 160ms ease,
+        border-color 160ms ease,
+        transform 160ms ease;
+    width: 34px;
+}
+
+.discovery-qa-page__composer .ant-sender-actions .ant-btn:hover,
+.discovery-qa-page__composer .ant-sender-actions button:hover {
+    background: #245b78;
+    border-color: #245b78;
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.discovery-qa-page__composer .ant-sender-actions .ant-btn:disabled,
+.discovery-qa-page__composer .ant-sender-actions button:disabled {
+    background: #d6e0e7;
+    border-color: #d6e0e7;
+    color: #7b8b98;
+    transform: none;
+}
+
+@keyframes discovery-qa-caret {
+    0%,
+    100% {
+        opacity: 0.25;
+    }
+
+    50% {
+        opacity: 1;
+    }
 }
 
 html[data-theme="dark"] .discovery-qa-page {

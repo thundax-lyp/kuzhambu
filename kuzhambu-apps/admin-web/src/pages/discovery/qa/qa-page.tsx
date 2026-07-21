@@ -1,10 +1,24 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Bubble, Sender, type BubbleItemType } from "@ant-design/x";
-import { CloseOutlined } from "@ant-design/icons";
-import { Empty, Input, Tag, Typography } from "antd";
-import { forwardRef, useMemo, useState, type ComponentProps, type ElementRef } from "react";
+import {
+    CheckCircleOutlined,
+    CloseOutlined,
+    ExclamationCircleOutlined,
+    LoadingOutlined
+} from "@ant-design/icons";
+import { Empty, Input, Tag, Tooltip, Typography } from "antd";
+import {
+    forwardRef,
+    useMemo,
+    useState,
+    type ComponentProps,
+    type ElementRef,
+    type ReactNode
+} from "react";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import ancientReaderAvatar from "@/assets/ancient-reader-avatar-face.jpg";
+import ancientScholarAvatar from "@/assets/ancient-scholar-avatar-face.jpg";
 import * as service from "./qa-service";
 import type {
     DiscoveryQaChatCompletionRecord,
@@ -67,8 +81,7 @@ const formatTime = (value?: number | null) => {
     }
 
     return new Intl.DateTimeFormat("zh-CN", {
-        dateStyle: "medium",
-        timeStyle: "short"
+        dateStyle: "medium"
     }).format(new Date(value));
 };
 
@@ -117,23 +130,30 @@ const toSourceKey = (source: DiscoveryQaSourceRecord, index: number) => {
 };
 
 const toBubbleStatus = (status: QaTimelineMessage["status"]) => {
-    if (status === "loading") {
-        return "loading";
-    }
     if (status === "failed") {
         return "error";
     }
-    return "success";
+    return undefined;
 };
 
-const toBubbleTagColor = (status: QaTimelineMessage["status"]) => {
+const toBubbleStatusLabel = (status: QaTimelineMessage["status"]) => {
     if (status === "failed") {
-        return "red";
+        return "回答失败";
     }
     if (status === "loading") {
-        return "processing";
+        return "正在生成";
     }
-    return "blue";
+    return "已完成";
+};
+
+const toBubbleStatusIcon = (status: QaTimelineMessage["status"]): ReactNode => {
+    if (status === "failed") {
+        return <ExclamationCircleOutlined />;
+    }
+    if (status === "loading") {
+        return <LoadingOutlined spin />;
+    }
+    return <CheckCircleOutlined />;
 };
 
 const toTimelineRole = (role?: string | null): QaTimelineMessage["role"] => {
@@ -233,24 +253,64 @@ export const QaPage = () => {
         .reverse()
         .find((message) => message.role === "assistant" && message.sources?.length);
     const bubbleItems = useMemo<BubbleItemType[]>(() => {
-        return messages.map((message) => ({
-            content:
+        return messages.map((message) => {
+            const content =
                 message.content ||
-                (message.status === "loading" ? "正在生成回答..." : "未返回回答内容"),
-            footer: (
-                <KuzhambuSpace size={8}>
-                    <Tag color={toBubbleTagColor(message.status)}>{message.status}</Tag>
-                    {message.sources?.length ? (
-                        <Text type="secondary">{message.sources.length} 个来源</Text>
-                    ) : null}
-                </KuzhambuSpace>
-            ),
-            key: message.id,
-            loading: message.status === "loading",
-            role: message.role === "user" ? "user" : "ai",
-            status: toBubbleStatus(message.status),
-            variant: message.role === "user" ? "filled" : "outlined"
-        }));
+                (message.status === "loading" ? "正在检索知识库..." : "未返回回答内容");
+
+            return {
+                avatar: (
+                    <span
+                        aria-label={message.role === "user" ? "用户" : "古籍助手"}
+                        className={`discovery-qa-page__avatar discovery-qa-page__avatar--${message.role}`}
+                        role="img"
+                    >
+                        <img
+                            alt=""
+                            aria-hidden="true"
+                            src={
+                                message.role === "user" ? ancientReaderAvatar : ancientScholarAvatar
+                            }
+                        />
+                    </span>
+                ),
+                content:
+                    message.role === "assistant" ? (
+                        <span className="discovery-qa-page__assistant-content">
+                            {content}
+                            {message.status === "loading" && message.content ? (
+                                <span
+                                    aria-hidden="true"
+                                    className="discovery-qa-page__stream-caret"
+                                />
+                            ) : null}
+                        </span>
+                    ) : (
+                        content
+                    ),
+                footer: (
+                    <KuzhambuSpace size={8}>
+                        <Tooltip title={toBubbleStatusLabel(message.status)}>
+                            <span
+                                aria-label={toBubbleStatusLabel(message.status)}
+                                className={`discovery-qa-page__message-status discovery-qa-page__message-status--${message.status}`}
+                                role="img"
+                            >
+                                {toBubbleStatusIcon(message.status)}
+                            </span>
+                        </Tooltip>
+                        {message.sources?.length ? (
+                            <Text type="secondary">{message.sources.length} 个来源</Text>
+                        ) : null}
+                    </KuzhambuSpace>
+                ),
+                key: message.id,
+                loading: false,
+                role: message.role === "user" ? "user" : "ai",
+                status: toBubbleStatus(message.status),
+                variant: message.role === "user" ? "filled" : "outlined"
+            };
+        });
     }, [messages]);
 
     const updateField = (key: keyof QaFormState, value: string) => {
@@ -343,7 +403,7 @@ export const QaPage = () => {
                 status: "succeeded"
             });
             appendMessage(activeSessionId, {
-                content: "正在生成回答...",
+                content: "",
                 id: activeAssistantMessageId,
                 role: "assistant",
                 status: "loading"
@@ -434,6 +494,7 @@ export const QaPage = () => {
                                 <div key={sessionId} className="discovery-qa-page__session-item">
                                     <KuzhambuButton
                                         block
+                                        className="discovery-qa-page__select-session"
                                         testId="discovery-qa-select-session-button"
                                         type={
                                             sessionId === selectedSessionId ? "primary" : "default"
