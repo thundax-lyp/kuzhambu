@@ -4,7 +4,10 @@ import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
 import { QaConsolePage } from "./qa-console-page";
 
+const stableDisplayDateTimestamp = Date.UTC(2023, 10, 15, 12, 0, 0);
+
 const mocks = vi.hoisted(() => ({
+    confirmDanger: vi.fn(),
     createQaSessionExport: vi.fn(),
     deleteQaSession: vi.fn(),
     getKnowledgeHealth: vi.fn(),
@@ -13,6 +16,12 @@ const mocks = vi.hoisted(() => ({
     pageKnowledgeSyncItems: vi.fn(),
     rebuildKnowledge: vi.fn(),
     createKnowledgeSync: vi.fn()
+}));
+
+vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => ({
+    useKuzhambuConfirm: () => ({
+        danger: mocks.confirmDanger
+    })
 }));
 
 vi.mock("./qa-console-service", () => ({
@@ -62,6 +71,9 @@ const switchPanel = async (user: ReturnType<typeof userEvent.setup>, panelName: 
 describe("QaConsolePage", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        mocks.confirmDanger.mockImplementation(({ onConfirm }: { onConfirm: () => void }) =>
+            onConfirm()
+        );
         vi.stubEnv("VITE_FASTGPT_CONSOLE_URL", "https://fastgpt.example.com");
         mocks.getKnowledgeHealth.mockResolvedValue({
             checkedAt: 1700000000000,
@@ -122,8 +134,8 @@ describe("QaConsolePage", () => {
                     currentVersionNo: 2,
                     knowledgeRevision: "rev-2",
                     syncStatus: "SUCCEEDED",
-                    syncedAt: 1700000000000,
-                    updatedAt: 1700000001000
+                    syncedAt: stableDisplayDateTimestamp,
+                    updatedAt: stableDisplayDateTimestamp + 1000
                 }
             ]
         });
@@ -242,7 +254,28 @@ describe("QaConsolePage", () => {
         );
     }, 30000);
 
-    it("deletes session from table action", async () => {
+    it("exports session from table action", async () => {
+        renderPage();
+
+        fireEvent.click(screen.getByText("会话管理"));
+        expect(await screen.findByText("礼器问答")).toBeInTheDocument();
+        fireEvent.click(
+            screen.getByTestId("discovery-qa-console-qa-console-export-session-button")
+        );
+
+        await waitFor(() => {
+            expect(mocks.createQaSessionExport.mock.calls[0]?.[0]).toEqual({
+                format: "CSV",
+                requesterUserId: 1001,
+                sessionId: "2001"
+            });
+        });
+        expect(
+            await screen.findByText("会话 2001 导出已创建：discovery-qa-session-2001-7001.csv")
+        ).toBeInTheDocument();
+    }, 30000);
+
+    it("confirms delete and keeps removed session discoverable for audit", async () => {
         mocks.pageQaSessions
             .mockResolvedValueOnce({
                 pageNo: 1,
@@ -266,10 +299,21 @@ describe("QaConsolePage", () => {
             .mockResolvedValueOnce({
                 pageNo: 1,
                 pageSize: 10,
-                count: 0,
-                totalCount: 0,
-                totalPage: 0,
-                records: []
+                count: 1,
+                totalCount: 1,
+                totalPage: 1,
+                records: [
+                    {
+                        ownerUserId: 1001,
+                        sessionId: "2001",
+                        title: "礼器问答",
+                        status: "REMOVED",
+                        scope: "PORTAL",
+                        contextMode: "QA",
+                        contextContentType: "SANCAI_ENTRY",
+                        openedAt: 1700000000000
+                    }
+                ]
             });
         renderPage();
 
@@ -288,6 +332,12 @@ describe("QaConsolePage", () => {
         fireEvent.click(
             screen.getByTestId("discovery-qa-console-qa-console-delete-session-button")
         );
+        expect(mocks.confirmDanger).toHaveBeenCalledWith(
+            expect.objectContaining({
+                okText: "删除",
+                title: "删除问答会话"
+            })
+        );
         await waitFor(() => {
             expect(mocks.deleteQaSession.mock.calls[0]?.[0]).toEqual({
                 requesterUserId: 1001,
@@ -298,8 +348,10 @@ describe("QaConsolePage", () => {
             expect(mocks.pageQaSessions).toHaveBeenCalledTimes(2);
         });
         expect(screen.getByText("会话 2001 已删除")).toBeInTheDocument();
-        await waitFor(() => {
-            expect(screen.queryByText("礼器问答")).not.toBeInTheDocument();
-        });
+        expect(await screen.findByText("礼器问答")).toBeInTheDocument();
+        expect(screen.getByText("已删除")).toBeInTheDocument();
+        expect(
+            screen.getByTestId("discovery-qa-console-qa-console-delete-session-button")
+        ).toBeDisabled();
     }, 30000);
 });

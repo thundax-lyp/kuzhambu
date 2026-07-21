@@ -13,6 +13,7 @@ import {
 import type { ColumnsType } from "antd/es/table";
 import type { Dayjs } from "dayjs";
 import { useCallback, useEffect, useState } from "react";
+import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import * as service from "./qa-console-service";
@@ -43,6 +44,16 @@ const formatContentType = (value?: string | null) => {
 
 const formatSyncStatus = (value?: string | null) => {
     return SYNC_STATUS_OPTIONS.find((option) => option.value === value)?.label ?? value ?? "-";
+};
+
+const formatSessionStatus = (value?: string | null) => {
+    if (value === "OPEN") {
+        return "打开";
+    }
+    if (value === "REMOVED") {
+        return "已删除";
+    }
+    return value ?? "-";
 };
 
 const formatSyncStatusColor = (value?: string | null) => {
@@ -110,6 +121,7 @@ const formatSyncItemKey = (record: KnowledgeSyncItemRecord) => {
 };
 
 export const QaConsolePage = () => {
+    const confirm = useKuzhambuConfirm();
     const [activePanel, setActivePanel] = useState<QaConsolePanel>("health");
     const requesterUserId = "1001";
     const fastGptConsoleUrl = parseString(import.meta.env.VITE_FASTGPT_CONSOLE_URL);
@@ -287,6 +299,45 @@ export const QaConsolePage = () => {
         });
     };
 
+    const confirmDeleteSession = (targetSessionId: string) => {
+        const nextSessionId = parseString(targetSessionId);
+        if (nextSessionId === null) {
+            return;
+        }
+
+        confirm.danger({
+            title: "删除问答会话",
+            message: `确认删除会话 ${nextSessionId}？`,
+            description: "删除后 Portal 不再展示该会话，Admin 仍保留审计查看和导出入口。",
+            okText: "删除",
+            onConfirm: () => deleteCurrentSession(nextSessionId)
+        });
+    };
+
+    const exportSessionMutation = useMutation({
+        mutationFn: service.createQaSessionExport,
+        onSuccess: (record, variables) => {
+            const exportName = record.filename ?? record.exportStatus ?? "-";
+            setSessionOperationText(`会话 ${variables.sessionId} 导出已创建：${exportName}`);
+        },
+        onError: (error) => {
+            setSessionOperationText(error instanceof Error ? error.message : "会话导出失败");
+        }
+    });
+
+    const exportCurrentSession = (targetSessionId: string) => {
+        const nextSessionId = parseString(targetSessionId);
+        if (nextSessionId === null) {
+            return;
+        }
+
+        exportSessionMutation.mutate({
+            format: "CSV",
+            requesterUserId: parseNumber(requesterUserId),
+            sessionId: nextSessionId
+        });
+    };
+
     useEffect(() => {
         if (activePanel === "sessions" && !sessionPageData && !isSessionPagePending) {
             mutateSessionPage(buildSessionPageQuery());
@@ -323,6 +374,17 @@ export const QaConsolePage = () => {
             render: (value?: number | null) => formatDate(value)
         },
         {
+            title: "状态",
+            dataIndex: "status",
+            key: "status",
+            width: 96,
+            render: (value?: string | null) => (
+                <Tag color={value === "REMOVED" ? "default" : "processing"}>
+                    {formatSessionStatus(value)}
+                </Tag>
+            )
+        },
+        {
             fixed: "right",
             key: "actions",
             render: (_, record) => (
@@ -342,12 +404,24 @@ export const QaConsolePage = () => {
                         查看
                     </KuzhambuButton>
                     <KuzhambuButton
+                        testId="discovery-qa-console-qa-console-export-session-button"
+                        loading={exportSessionMutation.isPending}
+                        onClick={(event) => {
+                            event.stopPropagation();
+                            exportCurrentSession(String(record.sessionId ?? ""));
+                        }}
+                        size="small"
+                    >
+                        导出
+                    </KuzhambuButton>
+                    <KuzhambuButton
                         testId="discovery-qa-console-qa-console-delete-session-button"
                         danger
+                        disabled={record.status === "REMOVED"}
                         loading={deleteSessionMutation.isPending}
                         onClick={(event) => {
                             event.stopPropagation();
-                            deleteCurrentSession(String(record.sessionId ?? ""));
+                            confirmDeleteSession(String(record.sessionId ?? ""));
                         }}
                         size="small"
                     >

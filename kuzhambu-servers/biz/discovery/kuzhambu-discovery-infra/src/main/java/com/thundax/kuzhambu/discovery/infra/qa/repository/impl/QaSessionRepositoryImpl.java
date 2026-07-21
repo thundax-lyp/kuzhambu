@@ -80,7 +80,7 @@ public class QaSessionRepositoryImpl implements QaSessionRepository {
         if (openedAtEnd != null) {
             wrapper.le("opened_at", openedAtEnd);
         }
-        wrapper.isNull(REMOVED_AT_COLUMN).orderByDesc("opened_at").orderByDesc("session_id");
+        wrapper.orderByDesc("opened_at").orderByDesc("session_id");
         return wrapper;
     }
 

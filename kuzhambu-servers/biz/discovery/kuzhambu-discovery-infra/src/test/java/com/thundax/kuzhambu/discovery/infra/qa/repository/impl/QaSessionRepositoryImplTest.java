@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.discovery.infra.qa.repository.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -120,7 +121,7 @@ class QaSessionRepositoryImplTest {
         assertTrue(sqlSegment.contains("title LIKE"));
         assertTrue(sqlSegment.contains("opened_at >="));
         assertTrue(sqlSegment.contains("opened_at <="));
-        assertTrue(sqlSegment.contains("removed_at IS NULL"));
+        assertFalse(sqlSegment.contains("removed_at IS NULL"));
         assertTrue(sqlSegment.contains("ORDER BY opened_at DESC,session_id DESC"));
     }
 

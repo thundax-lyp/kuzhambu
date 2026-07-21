@@ -1,9 +1,8 @@
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App } from "antd";
 import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { replacePermissions } from "@/auth/permission-storage";
-import { queryClient } from "@/query/query-client";
 import { PromptsPage } from "./prompts-page";
 import * as service from "./prompts-service";
 
@@ -120,10 +119,19 @@ const variables = [
     }
 ];
 
+const createTestQueryClient = () =>
+    new QueryClient({
+        defaultOptions: {
+            queries: {
+                retry: false
+            }
+        }
+    });
+
 const renderPage = () =>
     render(
         <App>
-            <QueryClientProvider client={queryClient}>
+            <QueryClientProvider client={createTestQueryClient()}>
                 <PromptsPage />
             </QueryClientProvider>
         </App>
@@ -138,7 +146,6 @@ const openSelectAndChoose = async (label: string, optionText: string) => {
 
 describe("PromptsPage", () => {
     beforeEach(() => {
-        queryClient.clear();
         replacePermissions(["ai:prompt:view", "ai:prompt:edit"]);
         vi.mocked(service.listPromptCapabilities).mockResolvedValue([
             {
@@ -170,7 +177,6 @@ describe("PromptsPage", () => {
 
     afterEach(() => {
         cleanup();
-        queryClient.clear();
         vi.clearAllMocks();
     });
 
@@ -210,7 +216,11 @@ describe("PromptsPage", () => {
         expect(await screen.findByRole("heading", { name: "编辑提示词" })).toBeInTheDocument();
         expect(await screen.findByText("版本")).toBeInTheDocument();
         expect(screen.getByRole("table", { name: "提示词版本列表" })).toBeInTheDocument();
-        fireEvent.click(screen.getByTestId("ai-prompts-prompts-view-variables-button"));
+        const variablesButton = screen.getByTestId("ai-prompts-prompts-view-variables-button");
+        await waitFor(() => {
+            expect(variablesButton).not.toBeDisabled();
+        });
+        fireEvent.click(variablesButton);
         const variableDialog = await screen.findByTestId("ai-prompts-prompt-variables-modal");
         expect(within(variableDialog).getByText("bodyText")).toBeInTheDocument();
         expect(within(variableDialog).getByText("contentType")).toBeInTheDocument();
@@ -225,10 +235,14 @@ describe("PromptsPage", () => {
         await screen.findByText("摘要提示词");
         fireEvent.click(screen.getByRole("button", { name: "编辑 摘要提示词" }));
         await openSelectAndChoose("提示词能力", "古籍翻译");
-        fireEvent.click(screen.getByTestId("ai-prompts-prompts-view-variables-button"));
+        const variablesButton = screen.getByTestId("ai-prompts-prompts-view-variables-button");
+        await waitFor(() => {
+            expect(variablesButton).not.toBeDisabled();
+        });
+        fireEvent.click(variablesButton);
 
         const variableDialog = await screen.findByTestId("ai-prompts-prompt-variables-modal");
-        expect(within(variableDialog).getByText("contextPath")).toBeInTheDocument();
+        expect(await within(variableDialog).findByText("contextPath")).toBeInTheDocument();
         expect(within(variableDialog).getByText("sourceText")).toBeInTheDocument();
         expect(within(variableDialog).getByText("待翻译的源文本")).toBeInTheDocument();
         expect(within(variableDialog).queryByText("bodyText")).not.toBeInTheDocument();
