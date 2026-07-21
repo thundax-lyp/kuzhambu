@@ -72,6 +72,58 @@ public final class DiscoveryQaAdminResponses {
 
     @Getter
     @Builder
+    @Schema(name = "DiscoveryQaSessionResponse", description = "Discovery QA 会话响应")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class QaSessionResponse implements Serializable {
+
+        @Schema(name = "sessionId", description = "会话号")
+        @JsonProperty(value = "sessionId")
+        private String sessionId;
+
+        @Schema(name = "ownerUserId", description = "拥有者用户号")
+        @JsonProperty(value = "ownerUserId")
+        private Long ownerUserId;
+
+        @Schema(name = "title", description = "标题")
+        @JsonProperty(value = "title")
+        private String title;
+
+        @Schema(name = "scope", description = "作用域")
+        @JsonProperty(value = "scope")
+        private String scope;
+
+        @Schema(name = "contextMode", description = "上下文模式")
+        @JsonProperty(value = "contextMode")
+        private String contextMode;
+
+        @Schema(name = "contextContentType", description = "上下文内容类型")
+        @JsonProperty(value = "contextContentType")
+        private String contextContentType;
+
+        @Schema(name = "contextContentId", description = "上下文内容标识")
+        @JsonProperty(value = "contextContentId")
+        private Long contextContentId;
+
+        @Schema(name = "status", description = "状态")
+        @JsonProperty(value = "status")
+        private String status;
+
+        @Schema(name = "openedAt", description = "创建时间")
+        @JsonProperty(value = "openedAt")
+        private Long openedAt;
+
+        @Schema(name = "lastMessageAt", description = "最后消息时间")
+        @JsonProperty(value = "lastMessageAt")
+        private Long lastMessageAt;
+
+        @Schema(name = "removedAt", description = "删除时间")
+        @JsonProperty(value = "removedAt")
+        private Long removedAt;
+    }
+
+    @Getter
+    @Builder
     @Schema(name = "DiscoveryQaSessionExportResponse", description = "Discovery QA 会话导出响应")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -260,6 +312,10 @@ public final class DiscoveryQaAdminResponses {
         @Schema(name = "contentId", description = "内容号")
         @JsonProperty(value = "contentId")
         private Long contentId;
+
+        @Schema(name = "title", description = "标题")
+        @JsonProperty(value = "title")
+        private String title;
 
         @Schema(name = "knowledgeBaseName", description = "知识库名称")
         @JsonProperty(value = "knowledgeBaseName")

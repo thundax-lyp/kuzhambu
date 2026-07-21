@@ -90,6 +90,27 @@ public final class DiscoveryQaAdminRequests {
 
     @Getter
     @Setter
+    @ToString
+    @Schema(name = "QaSessionPageRequest", description = "Discovery QA 会话分页请求")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class QaSessionPageRequest extends PageRequest {
+
+        @Schema(name = "title", description = "标题")
+        @JsonProperty(value = "title")
+        private String title;
+
+        @Schema(name = "openedAtStart", description = "创建开始时间")
+        @JsonProperty(value = "openedAtStart")
+        private java.util.Date openedAtStart;
+
+        @Schema(name = "openedAtEnd", description = "创建结束时间")
+        @JsonProperty(value = "openedAtEnd")
+        private java.util.Date openedAtEnd;
+    }
+
+    @Getter
+    @Setter
     @Schema(name = "DiscoveryQaSessionGetRequest", description = "Discovery QA 会话详情请求")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)

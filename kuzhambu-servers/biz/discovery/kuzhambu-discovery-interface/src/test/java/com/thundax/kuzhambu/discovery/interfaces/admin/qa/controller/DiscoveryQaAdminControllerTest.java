@@ -16,11 +16,13 @@ import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionComm
 import com.thundax.kuzhambu.discovery.application.qa.command.ExportQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.SyncKnowledgeContentCommand;
 import com.thundax.kuzhambu.discovery.application.qa.query.KnowledgeSyncItemPageQuery;
+import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionPageQuery;
 import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeHealthResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeSyncItemResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaMessageResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionExportResult;
+import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSourceResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaTraceResult;
 import com.thundax.kuzhambu.discovery.application.qa.service.KnowledgeSyncApplicationService;
@@ -48,6 +50,11 @@ class DiscoveryQaAdminControllerTest {
                 "getSession",
                 "session/get",
                 DiscoveryQaAdminRequests.QaSessionGetRequest.class);
+        assertPostMapping(
+                DiscoveryQaAdminController.class,
+                "pageSessions",
+                "session/page",
+                DiscoveryQaAdminRequests.QaSessionPageRequest.class);
         assertPostMapping(
                 DiscoveryQaAdminController.class,
                 "deleteSession",
@@ -156,6 +163,16 @@ class DiscoveryQaAdminControllerTest {
         assertEquals(2, syncPageRequest.getPageNo());
         assertEquals(10, syncPageRequest.getPageSize());
         assertJsonFields(syncPageRequest, "contentType", "syncStatus", "pageNo", "pageSize");
+
+        DiscoveryQaAdminRequests.QaSessionPageRequest sessionPageRequest = OBJECT_MAPPER.readValue(
+                """
+                        {"title":"礼器","openedAtStart":"2026-01-01T00:00:00.000Z","openedAtEnd":"2026-01-31T23:59:59.999Z","pageNo":1,"pageSize":10}
+                        """,
+                DiscoveryQaAdminRequests.QaSessionPageRequest.class);
+        assertEquals("礼器", sessionPageRequest.getTitle());
+        assertEquals(1, sessionPageRequest.getPageNo());
+        assertEquals(10, sessionPageRequest.getPageSize());
+        assertJsonFields(sessionPageRequest, "title", "openedAtStart", "openedAtEnd", "pageNo", "pageSize");
     }
 
     @Test
@@ -165,6 +182,8 @@ class DiscoveryQaAdminControllerTest {
         DiscoveryQaAdminController controller = new DiscoveryQaAdminController(qaService, syncService);
 
         when(qaService.getSessionDetail(5001L)).thenReturn(sampleSessionDetail());
+        when(qaService.pageSessions(any(QaSessionPageQuery.class)))
+                .thenReturn(PageResult.of(1, 10, 1, List.of(sampleSession())));
         when(qaService.exportSession(any(ExportQaSessionCommand.class))).thenReturn(sampleExportResult());
         when(qaService.listSourcesByMessageId(7002L)).thenReturn(List.of(sampleSource()));
         when(qaService.getTraceByTraceId(8001L)).thenReturn(sampleTrace());
@@ -181,6 +200,19 @@ class DiscoveryQaAdminControllerTest {
         var sessionResponse = controller.getSession(sessionRequest);
         assertEquals("5001", sessionResponse.getSessionId());
         assertEquals(1_718_000_200_000L, sessionResponse.getRemovedAt());
+
+        DiscoveryQaAdminRequests.QaSessionPageRequest sessionPageRequest =
+                new DiscoveryQaAdminRequests.QaSessionPageRequest();
+        sessionPageRequest.setTitle("黄帝");
+        sessionPageRequest.setOpenedAtStart(new Date(1_718_000_000_000L));
+        sessionPageRequest.setOpenedAtEnd(new Date(1_718_086_400_000L));
+        sessionPageRequest.setPageNo(1);
+        sessionPageRequest.setPageSize(10);
+        var sessionPageResponse = controller.pageSessions(sessionPageRequest);
+        assertNotNull(sessionPageResponse);
+        assertEquals(1, sessionPageResponse.getPageNo());
+        assertEquals("5001", sessionPageResponse.getRecords().get(0).getSessionId());
+        assertEquals("黄帝问答", sessionPageResponse.getRecords().get(0).getTitle());
 
         DiscoveryQaAdminRequests.QaSessionDeleteRequest deleteRequest =
                 new DiscoveryQaAdminRequests.QaSessionDeleteRequest();
@@ -231,7 +263,8 @@ class DiscoveryQaAdminControllerTest {
         var syncResponse = controller.syncKnowledge(syncRequest);
         assertNotNull(syncResponse);
         assertEquals("SANCAI_ENTRY", syncResponse.getContentType());
-        assertEquals("SYNCHRONIZED", syncResponse.getSyncStatus());
+        assertEquals("黄帝", syncResponse.getTitle());
+        assertEquals("SUCCEEDED", syncResponse.getSyncStatus());
 
         DiscoveryQaAdminRequests.KnowledgeSyncPageRequest syncPageRequest =
                 new DiscoveryQaAdminRequests.KnowledgeSyncPageRequest();
@@ -246,6 +279,11 @@ class DiscoveryQaAdminControllerTest {
         assertEquals(1, syncPageResponse.getCount());
 
         verify(qaService).getSessionDetail(5001L);
+        ArgumentCaptor<QaSessionPageQuery> sessionPageQuery = ArgumentCaptor.forClass(QaSessionPageQuery.class);
+        verify(qaService).pageSessions(sessionPageQuery.capture());
+        assertEquals("黄帝", sessionPageQuery.getValue().getTitle());
+        assertEquals(1, sessionPageQuery.getValue().getPageNo());
+        assertEquals(10, sessionPageQuery.getValue().getPageSize());
         ArgumentCaptor<DeleteQaSessionCommand> deleteCommand = ArgumentCaptor.forClass(DeleteQaSessionCommand.class);
         verify(qaService).deleteSession(deleteCommand.capture());
         assertEquals(5001L, deleteCommand.getValue().getSessionId());
@@ -296,6 +334,21 @@ class DiscoveryQaAdminControllerTest {
         return result;
     }
 
+    private QaSessionResult sampleSession() {
+        return new QaSessionResult(
+                5001L,
+                1001L,
+                "黄帝问答",
+                "GLOBAL",
+                "SEARCH",
+                "SANCAI_ENTRY",
+                10001L,
+                "OPEN",
+                1_718_000_000_000L,
+                1_718_000_100_000L,
+                null);
+    }
+
     private QaSourceResult sampleSource() {
         return new QaSourceResult(
                 9001L, "SANCAI_ENTRY", 1001L, "SANCAI", "黄帝", "卷一", "上古帝王", 1, BigDecimal.ONE, "CITED");
@@ -341,13 +394,14 @@ class DiscoveryQaAdminControllerTest {
                 "SANCAI_ENTRY:10001",
                 "SANCAI_ENTRY",
                 10001L,
+                "黄帝",
                 "kuzhambu-qa",
                 3,
                 "hash-xxx",
                 "fastgpt",
                 "kb-1",
                 "item-1",
-                "SYNCHRONIZED",
+                "SUCCEEDED",
                 null,
                 1_718_000_100_000L,
                 1_718_000_000_000L,

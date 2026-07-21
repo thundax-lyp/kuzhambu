@@ -5,6 +5,7 @@ import com.thundax.kuzhambu.discovery.application.qa.result.KnowledgeSyncItemRes
 import com.thundax.kuzhambu.discovery.application.qa.result.QaMessageResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionExportResult;
+import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSourceResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaTraceResult;
 import com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.response.DiscoveryQaAdminResponses;
@@ -16,6 +17,25 @@ public final class DiscoveryQaAdminInterfaceAssembler {
     private DiscoveryQaAdminInterfaceAssembler() {}
 
     private static final String DEFAULT_KNOWLEDGE_BASE_NAME = "kuzhambu-qa";
+
+    public static DiscoveryQaAdminResponses.QaSessionResponse toSessionResponse(QaSessionResult result) {
+        if (result == null) {
+            return null;
+        }
+        return DiscoveryQaAdminResponses.QaSessionResponse.builder()
+                .sessionId(DiscoveryInterfaceIdCodec.toStringValue(result.getSessionId()))
+                .ownerUserId(result.getOwnerUserId())
+                .title(result.getTitle())
+                .scope(result.getScope())
+                .contextMode(result.getContextMode())
+                .contextContentType(result.getContextContentType())
+                .contextContentId(result.getContextContentId())
+                .status(result.getStatus())
+                .openedAt(result.getOpenedAt())
+                .lastMessageAt(result.getLastMessageAt())
+                .removedAt(result.getRemovedAt())
+                .build();
+    }
 
     public static DiscoveryQaAdminResponses.QaSessionDetailResponse toSessionDetailResponse(
             QaSessionDetailResult result) {
@@ -123,6 +143,7 @@ public final class DiscoveryQaAdminInterfaceAssembler {
                 .sourceId(result.getSourceId())
                 .contentType(result.getContentType())
                 .contentId(result.getContentId())
+                .title(result.getTitle())
                 .knowledgeBaseName(result.getKnowledgeBaseName())
                 .currentVersionNo(result.getCurrentVersionNo())
                 .knowledgeRevision(result.getKnowledgeRevision())
