@@ -1,0 +1,31 @@
+.qa-console-page {
+    display: block;
+}
+
+.qa-console-page .ant-card + .ant-card {
+    margin-top: 12px;
+}
+
+.qa-console-segmented {
+    align-self: flex-start;
+}
+
+.qa-console-form-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.qa-console-batch-compensation {
+    padding-top: 12px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.qa-console-message {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 12px;
+    border: 1px solid #d9d9d9;
+    border-radius: 6px;
+}
