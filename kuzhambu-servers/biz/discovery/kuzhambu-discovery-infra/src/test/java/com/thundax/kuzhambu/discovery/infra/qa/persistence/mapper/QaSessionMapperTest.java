@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.discovery.infra.qa.persistence.mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Method;
@@ -14,12 +15,14 @@ import org.junit.jupiter.api.Test;
 class QaSessionMapperTest {
 
     @Test
-    void selectByOpenedAtRangeShouldFilterRemovedSessions() throws NoSuchMethodException {
+    void selectByOpenedAtRangeShouldKeepHistoricalSessions() throws NoSuchMethodException {
         Method method = selectByOpenedAtRangeMethod();
 
         String sql = String.join("\n", method.getAnnotation(Select.class).value());
 
-        assertTrue(sql.contains("removed_at is null"));
+        assertFalse(sql.contains("removed_at is null"));
+        assertTrue(sql.contains("opened_at >="));
+        assertTrue(sql.contains("opened_at <="));
     }
 
     @Test
