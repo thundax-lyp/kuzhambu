@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.ai.facade.AiFacade;
+import com.thundax.kuzhambu.ai.facade.DiscoveryAiStreamHandler;
 import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.response.DiscoveryAiFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
@@ -144,6 +145,62 @@ class KnowledgeQaApplicationServiceImplTest {
         assertEquals("SUCCEEDED", trace.getAiStatus());
         assertTrue(trace.getRaw().contains("\"aiRequest\""));
         assertTrue(trace.getRaw().contains("\"aiResponse\""));
+    }
+
+    @Test
+    void chatCompletionStreamShouldStreamSingleDocumentAiDeltas() {
+        KnowledgeBaseClient knowledgeBaseClient = mock(KnowledgeBaseClient.class);
+        ClassicsFacade classicsFacade = mock(ClassicsFacade.class);
+        AiFacade aiFacade = mock(AiFacade.class);
+        QaSessionRepository sessionRepository = mock(QaSessionRepository.class);
+        QaMessageRepository messageRepository = mock(QaMessageRepository.class);
+        QaSourceRepository sourceRepository = mock(QaSourceRepository.class);
+        QaRetrievalTraceRepository traceRepository = mock(QaRetrievalTraceRepository.class);
+        DiscoveryKnowledgeEnhancementProvider enhancementProvider = mock(DiscoveryKnowledgeEnhancementProvider.class);
+        KnowledgeQaApplicationServiceImpl service = new KnowledgeQaApplicationServiceImpl(
+                knowledgeBaseClient,
+                classicsFacade,
+                aiFacade,
+                mock(QaKnowledgeSyncItemRepository.class),
+                sessionRepository,
+                messageRepository,
+                sourceRepository,
+                traceRepository,
+                new QaSourceAssembler(),
+                new QaTraceAssembler(),
+                enhancementProvider);
+        when(sessionRepository.getBySessionId(5001L)).thenReturn(wangqiSingleDocumentSession());
+        when(messageRepository.save(any(QaMessage.class))).thenReturn(6001L, 6002L);
+        when(classicsFacade.getQaKnowledge(any(ClassicsQaKnowledgeFacadeRequest.class)))
+                .thenReturn(qaKnowledge());
+        when(aiFacade.streamDiscoveryAnswer(any(DiscoveryAiFacadeRequest.class), any(DiscoveryAiStreamHandler.class)))
+                .thenAnswer(invocation -> {
+                    DiscoveryAiStreamHandler handler = invocation.getArgument(1);
+                    handler.onDelta("王圻");
+                    handler.onDelta("文档答案");
+                    return DiscoveryAiFacadeResponse.builder()
+                            .callId(9103L)
+                            .status("SUCCEEDED")
+                            .capability("answer_generation")
+                            .resultFormat("JSON")
+                            .resultPayload("{\"answer\":\"王圻文档答案\",\"sources\":[],\"finishReason\":\"stop\"}")
+                            .build();
+                });
+        when(sourceRepository.save(any(QaSource.class))).thenReturn(6101L);
+        when(traceRepository.save(any(QaRetrievalTrace.class))).thenReturn(6201L);
+        when(enhancementProvider.enhance("这份文档说了什么？"))
+                .thenReturn(new DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult(
+                        List.of("礼学", "典礼"), null, List.of()));
+        List<String> deltas = new java.util.ArrayList<>();
+
+        ChatCompletionResult result = service.chatCompletionStream(wangqiCommand(3001L), deltas::add);
+
+        assertEquals(List.of("王圻", "文档答案"), deltas);
+        assertEquals("王圻文档答案", result.getChoices().get(0).getMessage().getContent());
+        verify(aiFacade, never()).generateDiscoveryAnswer(any(DiscoveryAiFacadeRequest.class));
+        verify(aiFacade)
+                .streamDiscoveryAnswer(any(DiscoveryAiFacadeRequest.class), any(DiscoveryAiStreamHandler.class));
+        verify(knowledgeBaseClient, never()).chatStream(any(KnowledgeChatRequest.class), any());
     }
 
     @Test

@@ -6,16 +6,18 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { DiscoveryQaPage } from "./qa-page";
 
 const mocks = vi.hoisted(() => ({
-    createQaChatCompletion: vi.fn(),
+    createQaChatCompletionStream: vi.fn(),
     deleteQaSession: vi.fn(),
     exportQaSession: vi.fn(),
     getQaSession: vi.fn(),
     openQaSession: vi.fn(),
     pageQaSessions: vi.fn(),
+    postEventStream: vi.fn(),
     postJson: vi.fn()
 }));
 
 vi.mock("@/api/http", () => ({
+    postEventStream: mocks.postEventStream,
     postJson: mocks.postJson
 }));
 
@@ -87,12 +89,13 @@ const flushAsyncWork = async () => {
 
 describe("DiscoveryQaPage", () => {
     afterEach(() => {
-        mocks.createQaChatCompletion.mockReset();
+        mocks.createQaChatCompletionStream.mockReset();
         mocks.deleteQaSession.mockReset();
         mocks.exportQaSession.mockReset();
         mocks.getQaSession.mockReset();
         mocks.openQaSession.mockReset();
         mocks.pageQaSessions.mockReset();
+        mocks.postEventStream.mockReset();
         mocks.postJson.mockReset();
         document.body.innerHTML = "";
     });
@@ -112,7 +115,7 @@ describe("DiscoveryQaPage", () => {
             status: "OPEN",
             title: "知识中心问答"
         });
-        mocks.createQaChatCompletion.mockResolvedValueOnce({
+        mocks.createQaChatCompletionStream.mockResolvedValueOnce({
             answerStatus: "SUCCEEDED",
             model: "kuzhambu-qa",
             choices: [
@@ -167,12 +170,15 @@ describe("DiscoveryQaPage", () => {
             title: "知识中心问答",
             traceId: null
         });
-        expect(mocks.createQaChatCompletion.mock.calls[0]?.[0]).toMatchObject({
-            model: "kuzhambu-qa",
-            messages: [{ content: "礼器是什么？", role: "user" }],
-            metadata: { contextContentId: null, contextContentType: null, sessionId: "2001" },
-            sessionId: "2001",
-            stream: false
+        expect(mocks.createQaChatCompletionStream.mock.calls[0]?.[0]).toMatchObject({
+            onDelta: expect.any(Function),
+            request: {
+                model: "kuzhambu-qa",
+                messages: [{ content: "礼器是什么？", role: "user" }],
+                metadata: { contextContentId: null, contextContentType: null, sessionId: "2001" },
+                sessionId: "2001",
+                stream: true
+            }
         });
         expect(container.textContent).toContain("礼器常见于典章与礼仪条目。");
         expect(container.textContent).toContain("礼器条目");
@@ -237,7 +243,7 @@ describe("DiscoveryQaPage", () => {
             status: "OPEN",
             title: "王圻官制"
         });
-        mocks.createQaChatCompletion.mockResolvedValueOnce({
+        mocks.createQaChatCompletionStream.mockResolvedValueOnce({
             answerStatus: "SUCCEEDED",
             choices: [
                 {
@@ -270,13 +276,15 @@ describe("DiscoveryQaPage", () => {
             contextMode: "SINGLE_DOCUMENT",
             title: "王圻官制"
         });
-        expect(mocks.createQaChatCompletion.mock.calls[0]?.[0]).toMatchObject({
-            sessionId: "3002",
-            metadata: {
-                contextContentId: 3001,
-                contextContentType: "WANGQI_DOCUMENT",
-                contextMode: "SINGLE_DOCUMENT",
-                sessionId: "3002"
+        expect(mocks.createQaChatCompletionStream.mock.calls[0]?.[0]).toMatchObject({
+            request: {
+                sessionId: "3002",
+                metadata: {
+                    contextContentId: 3001,
+                    contextContentType: "WANGQI_DOCUMENT",
+                    contextMode: "SINGLE_DOCUMENT",
+                    sessionId: "3002"
+                }
             }
         });
 
@@ -426,7 +434,7 @@ describe("DiscoveryQaPage", () => {
             status: "OPEN",
             title: "古籍问答"
         });
-        mocks.createQaChatCompletion
+        mocks.createQaChatCompletionStream
             .mockResolvedValueOnce({
                 answerStatus: "SUCCEEDED",
                 choices: [
@@ -472,14 +480,16 @@ describe("DiscoveryQaPage", () => {
         });
 
         expect(mocks.openQaSession).not.toHaveBeenCalled();
-        expect(mocks.createQaChatCompletion).toHaveBeenCalledTimes(1);
-        expect(mocks.createQaChatCompletion.mock.calls[0]?.[0]).toMatchObject({
-            sessionId: "5001",
-            metadata: {
-                contextContentId: 2002,
-                contextContentType: "SANCAI_ENTRY",
-                contextMode: "GENERAL",
-                sessionId: "5001"
+        expect(mocks.createQaChatCompletionStream).toHaveBeenCalledTimes(1);
+        expect(mocks.createQaChatCompletionStream.mock.calls[0]?.[0]).toMatchObject({
+            request: {
+                sessionId: "5001",
+                metadata: {
+                    contextContentId: 2002,
+                    contextContentType: "SANCAI_ENTRY",
+                    contextMode: "GENERAL",
+                    sessionId: "5001"
+                }
             }
         });
 
@@ -489,14 +499,16 @@ describe("DiscoveryQaPage", () => {
             await new Promise((resolve) => setTimeout(resolve, 0));
         });
 
-        expect(mocks.createQaChatCompletion).toHaveBeenCalledTimes(2);
-        expect(mocks.createQaChatCompletion.mock.calls[1]![0]).toMatchObject({
-            sessionId: "5001",
-            metadata: {
-                contextContentId: 2002,
-                contextContentType: "SANCAI_ENTRY",
-                contextMode: "GENERAL",
-                sessionId: "5001"
+        expect(mocks.createQaChatCompletionStream).toHaveBeenCalledTimes(2);
+        expect(mocks.createQaChatCompletionStream.mock.calls[1]![0]).toMatchObject({
+            request: {
+                sessionId: "5001",
+                metadata: {
+                    contextContentId: 2002,
+                    contextContentType: "SANCAI_ENTRY",
+                    contextMode: "GENERAL",
+                    sessionId: "5001"
+                }
             }
         });
 
@@ -525,7 +537,7 @@ describe("DiscoveryQaPage", () => {
             status: "OPEN",
             title: "知识中心问答"
         });
-        mocks.createQaChatCompletion
+        mocks.createQaChatCompletionStream
             .mockRejectedValueOnce(new Error("provider down"))
             .mockResolvedValueOnce({
                 answerStatus: "SUCCEEDED",
@@ -568,7 +580,7 @@ describe("DiscoveryQaPage", () => {
             await new Promise((resolve) => setTimeout(resolve, 0));
         });
 
-        expect(mocks.createQaChatCompletion).toHaveBeenCalledTimes(2);
+        expect(mocks.createQaChatCompletionStream).toHaveBeenCalledTimes(2);
         const sourceText = container.textContent ?? "";
         expect(sourceText).toContain("礼器条目");
         expect(container.querySelector(".portal-qa-source-list a")).toBeNull();
@@ -641,21 +653,54 @@ describe("DiscoveryQaPage", () => {
         await qaService.getQaSession({ ownerUserId: 1001, sessionId: "2001" });
         await qaService.deleteQaSession({ ownerUserId: 1001, sessionId: "2001" });
         await qaService.exportQaSession({ format: "CSV", ownerUserId: 1001, sessionId: "2001" });
-        await qaService.createQaChatCompletion({
-            messages: [{ content: "礼器是什么？", role: "user" }],
-            metadata: { sessionId: "2001" },
-            model: "kuzhambu-qa",
-            sessionId: "2001",
-            stream: false
+        mocks.postEventStream.mockImplementationOnce(async (_url, options) => {
+            options.onChunk(
+                'event:completed\ndata:{"sessionId":"2001","choices":[{"message":{"content":"礼器答案"}}]}\n\n'
+            );
+        });
+        await qaService.createQaChatCompletionStream({
+            request: {
+                messages: [{ content: "礼器是什么？", role: "user" }],
+                metadata: { sessionId: "2001" },
+                model: "kuzhambu-qa",
+                sessionId: "2001",
+                stream: true
+            }
         });
 
         const calledUrls = mocks.postJson.mock.calls.map(([url]) => String(url));
-        expect(calledUrls).toContain("/portal/discovery/qa/chat/completions");
+        const calledStreamUrls = mocks.postEventStream.mock.calls.map(([url]) => String(url));
+        expect(calledStreamUrls).toContain("/portal/discovery/qa/chat/completions/stream");
         expect(calledUrls).toContain("/portal/discovery/qa/session/delete");
         expect(calledUrls).toContain("/portal/discovery/qa/session/export");
-        expect(calledUrls.join("\n")).not.toContain("/portal/discovery/qa/question/ask");
-        expect(calledUrls.join("\n")).not.toMatch(
+        expect([...calledUrls, ...calledStreamUrls].join("\n")).not.toContain(
+            "/portal/discovery/qa/question/ask"
+        );
+        expect([...calledUrls, ...calledStreamUrls].join("\n")).not.toMatch(
             /https?:\/\/|fastgpt|dataset|collection|appId|baseUrl/iu
         );
+    });
+
+    it("preserves portal qa stream error event message", async () => {
+        const qaService = await vi.importActual<typeof import("./qa-service")>("./qa-service");
+        const onError = vi.fn();
+        mocks.postEventStream.mockImplementationOnce(async (_url, options) => {
+            options.onChunk('event:error\ndata:{"message":"FastGPT appId 未配置"}\n\n');
+        });
+
+        await expect(
+            qaService.createQaChatCompletionStream({
+                onError,
+                request: {
+                    messages: [{ content: "礼器是什么？", role: "user" }],
+                    metadata: { sessionId: "2001" },
+                    model: "kuzhambu-qa",
+                    sessionId: "2001",
+                    stream: true
+                }
+            })
+        ).rejects.toThrow("FastGPT appId 未配置");
+
+        expect(onError).toHaveBeenCalledWith("FastGPT appId 未配置");
     });
 });

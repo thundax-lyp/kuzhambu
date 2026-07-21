@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.common.knowledge.configure;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -36,6 +37,21 @@ public class KuzhambuKnowledgeConfigurationTest {
                         "kuzhambu.knowledge.fastgpt.app-id=app-1",
                         "kuzhambu.knowledge.fastgpt.knowledge-base-id=6a4f51e5ef72393d430a8e31")
                 .run(context -> assertTrue(context.getBean(KnowledgeBaseClient.class) != null));
+    }
+
+    @Test
+    public void shouldBindFastGptAppIdFromAppidPropertyName() {
+        contextRunner
+                .withPropertyValues(
+                        "kuzhambu.knowledge.enabled=true",
+                        "kuzhambu.knowledge.fastgpt.api-key=fastgpt-test",
+                        "kuzhambu.knowledge.fastgpt.appid=app-1",
+                        "kuzhambu.knowledge.fastgpt.knowledge-base-id=6a4f51e5ef72393d430a8e31")
+                .run(context -> assertEquals(
+                        "app-1",
+                        context.getBean(KuzhambuKnowledgeProperties.class)
+                                .getFastgpt()
+                                .getAppId()));
     }
 
     @Test

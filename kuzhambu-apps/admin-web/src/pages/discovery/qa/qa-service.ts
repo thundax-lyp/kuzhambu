@@ -69,6 +69,13 @@ export interface DiscoveryQaChatCompletionStreamCommand {
     signal?: AbortSignal;
 }
 
+class DiscoveryQaStreamError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "DiscoveryQaStreamError";
+    }
+}
+
 export const createQaSession = (command: DiscoveryQaOpenSessionCommand) => {
     return postJson<DiscoveryQaSessionRecord, DiscoveryQaOpenSessionCommand>(
         "/discovery/qa/session/open",
@@ -179,7 +186,9 @@ export const createQaChatCompletionStream = async ({
             return;
         }
         if (message.event === "error") {
-            onError?.(message.data.message ?? "回答生成失败");
+            const errorMessage = message.data.message ?? "回答生成失败";
+            onError?.(errorMessage);
+            throw new DiscoveryQaStreamError(errorMessage);
         }
     };
 

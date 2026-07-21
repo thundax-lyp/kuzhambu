@@ -13,6 +13,8 @@ import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocation
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiRequest;
 import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiResult;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 
@@ -45,12 +47,14 @@ class DiscoveryAiApplicationServiceImplTest {
         CapturingInvocationService invocationService = new CapturingInvocationService();
         DiscoveryAiApplicationServiceImpl service =
                 new DiscoveryAiApplicationServiceImpl(invocationService, resolver, null);
+        List<String> deltas = new ArrayList<>();
 
-        DiscoveryAiResult result = service.streamAnswer(request(false));
+        DiscoveryAiResult result = service.streamAnswer(request(false), event -> deltas.add(event.getDeltaText()));
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertNotNull(result);
         assertTrue(invocationService.streamInvoked());
+        assertEquals(List.of("王圻", "文档答案"), deltas);
         assertEquals("DISCOVERY_ANSWER_GENERATION_STREAM", capturedCommand.getOperation());
         assertEquals("/internal/ai/discovery/answer-generation/stream", capturedCommand.getWorkerPath());
         assertEquals(AiBusinessCapability.DISCOVERY_ANSWER_GENERATION.value(), capturedCommand.getCapability());
@@ -143,6 +147,8 @@ class DiscoveryAiApplicationServiceImplTest {
         public AiInvokeResult stream(AiInvokeCommand command, Consumer<AiStreamEventResult> eventConsumer) {
             captured = command;
             streamInvoked = true;
+            eventConsumer.accept(delta("王圻"));
+            eventConsumer.accept(delta("文档答案"));
             AiInvokeResult result = new AiInvokeResult();
             result.setCallId(201L);
             result.setCandidateId(null);
@@ -161,6 +167,15 @@ class DiscoveryAiApplicationServiceImplTest {
 
         private boolean streamInvoked() {
             return streamInvoked;
+        }
+
+        private AiStreamEventResult delta(String content) {
+            AiStreamEventResult event = new AiStreamEventResult();
+            event.setEventType("delta");
+            event.setRequestId("req-1");
+            event.setTraceId("trace-1");
+            event.setDeltaText(content);
+            return event;
         }
     }
 }

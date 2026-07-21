@@ -6,14 +6,17 @@ import * as qaService from "./qa-admin/qa-admin-service";
 import * as searchConsumerService from "./search/search-service";
 import * as searchService from "./search-statistics/search-statistics-service";
 
+const postEventStream = vi.hoisted(() => vi.fn());
 const postJson = vi.hoisted(() => vi.fn());
 
 vi.mock("@/api/http", () => ({
+    postEventStream,
     postJson
 }));
 
 describe("discovery admin service contracts", () => {
     beforeEach(() => {
+        postEventStream.mockReset();
         postJson.mockReset();
     });
 
@@ -202,6 +205,28 @@ describe("discovery admin service contracts", () => {
         expect(serviceSource).toContain("/discovery/qa-admin/session/delete");
         expect(serviceSource).toContain("/discovery/qa-admin/session/export");
         expect(serviceSource).not.toMatch(/https?:\/\/|fastgpt|dataset|collection|appId|baseUrl/iu);
+    });
+
+    it("preserves qa consumer stream error event message", async () => {
+        const onError = vi.fn();
+        postEventStream.mockImplementationOnce(async (_url, options) => {
+            options.onChunk('event:error\ndata:{"message":"FastGPT appId 未配置"}\n\n');
+        });
+
+        await expect(
+            qaConsumerService.createQaChatCompletionStream({
+                command: {
+                    messages: [{ content: "礼器是什么？", role: "user" }],
+                    metadata: { sessionId: "7001" },
+                    model: "kuzhambu-qa",
+                    sessionId: "7001",
+                    stream: true
+                },
+                onError
+            })
+        ).rejects.toThrow("FastGPT appId 未配置");
+
+        expect(onError).toHaveBeenCalledWith("FastGPT appId 未配置");
     });
 
     it("maps search admin endpoints and request bodies", async () => {

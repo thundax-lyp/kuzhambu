@@ -5,6 +5,7 @@ import com.thundax.kuzhambu.ai.application.discovery.support.DiscoveryAiWorkerUs
 import com.thundax.kuzhambu.ai.application.discovery.support.DiscoveryAiWorkerUsecaseSpec;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
+import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.support.AiWorkerModelConfigResolver;
 import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiRequest;
@@ -12,6 +13,7 @@ import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiRes
 import com.thundax.kuzhambu.ai.domain.discovery.service.DiscoveryAiDomainService;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import java.util.function.Consumer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -37,31 +39,37 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
 
     @Override
     public DiscoveryAiResult understandQuery(DiscoveryAiRequest request) {
-        return invoke(request, "DISCOVERY_QUERY_UNDERSTANDING");
+        return invoke(request, "DISCOVERY_QUERY_UNDERSTANDING", null);
     }
 
     @Override
     public DiscoveryAiResult rewriteQuery(DiscoveryAiRequest request) {
-        return invoke(request, "DISCOVERY_QUERY_REWRITE");
+        return invoke(request, "DISCOVERY_QUERY_REWRITE", null);
     }
 
     @Override
     public DiscoveryAiResult generateAnswer(DiscoveryAiRequest request) {
-        return invoke(request, "DISCOVERY_ANSWER_GENERATION");
+        return invoke(request, "DISCOVERY_ANSWER_GENERATION", null);
     }
 
     @Override
     public DiscoveryAiResult streamAnswer(DiscoveryAiRequest request) {
-        return invoke(request, "DISCOVERY_ANSWER_GENERATION_STREAM");
+        return streamAnswer(request, event -> {});
     }
 
-    private DiscoveryAiResult invoke(DiscoveryAiRequest request, String usecase) {
+    @Override
+    public DiscoveryAiResult streamAnswer(DiscoveryAiRequest request, Consumer<AiStreamEventResult> eventConsumer) {
+        return invoke(request, "DISCOVERY_ANSWER_GENERATION_STREAM", eventConsumer);
+    }
+
+    private DiscoveryAiResult invoke(
+            DiscoveryAiRequest request, String usecase, Consumer<AiStreamEventResult> eventConsumer) {
         validateRequest(request);
         DiscoveryAiWorkerUsecaseSpec spec = resolver.resolve(usecase);
         AiInvokeCommand command = toInvokeCommand(request, spec);
         enrichModelConfig(command);
         AiInvokeResult result = spec.stream()
-                ? invocationApplicationService.stream(command, event -> {})
+                ? invocationApplicationService.stream(command, eventConsumer == null ? event -> {} : eventConsumer)
                 : invocationApplicationService.invoke(command);
         return toDiscoveryResult(result);
     }

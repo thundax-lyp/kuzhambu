@@ -20,6 +20,7 @@ import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatResult;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatSource;
 import com.thundax.kuzhambu.discovery.application.qa.command.ChatCompletionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.result.ChatCompletionResult;
+import com.thundax.kuzhambu.discovery.application.qa.service.ChatCompletionStreamHandler;
 import com.thundax.kuzhambu.discovery.application.qa.service.KnowledgeQaApplicationService;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaSourceAssembler;
 import com.thundax.kuzhambu.discovery.application.qa.support.QaTraceAssembler;
@@ -271,6 +272,174 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                 chatResult.raw());
     }
 
+    @Override
+    public ChatCompletionResult chatCompletionStream(
+            ChatCompletionCommand command, ChatCompletionStreamHandler streamHandler) {
+        validateCommand(command);
+
+        QaSession session = qaSessionRepository.getBySessionId(command.getSessionId());
+        if (session == null) {
+            throw new BizException("DISCOVERY-30001", "discovery.qa.session.not-found", "QA session does not exist");
+        }
+        if (session.isRemoved()) {
+            throw new BizException(
+                    "QA_SESSION_ALREADY_REMOVED",
+                    "discovery.qa.session.already-removed",
+                    "QA session has already been removed");
+        }
+        validateContextMetadata(command, session);
+
+        String model = resolveModel(command, session);
+        String question = extractLatestQuestion(command.getMessages());
+        DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult enhancement =
+                discoveryKnowledgeEnhancementProvider.enhance(question);
+        ClassicsQaKnowledgeFacadeDto singleDocumentKnowledge =
+                isWangqiSingleDocumentSession(session) ? requireSingleDocumentKnowledge(session) : null;
+        DiscoveryAiFacadeRequest aiRequest = singleDocumentKnowledge == null
+                ? null
+                : buildSingleDocumentAiRequest(command, session, model, question, singleDocumentKnowledge);
+        Date now = new Date();
+        int contextTurnCount = contextTurnCount(command);
+
+        QaMessage questionMessage = new QaMessage(
+                null,
+                null,
+                command.getSessionId(),
+                MESSAGE_ROLE_USER,
+                question,
+                "SENT",
+                model,
+                contextTurnCount,
+                null,
+                null,
+                null,
+                now,
+                null);
+        Long questionMessagePk = qaMessageRepository.save(questionMessage);
+        questionMessage.setId(questionMessagePk);
+        questionMessage.setMessageId(questionMessagePk);
+        if (aiRequest != null) {
+            return completeSingleDocumentWithAi(
+                    command,
+                    session,
+                    model,
+                    question,
+                    contextTurnCount,
+                    questionMessagePk,
+                    aiRequest,
+                    singleDocumentKnowledge,
+                    now,
+                    streamHandler);
+        }
+        KnowledgeChatRequest providerRequest = toKnowledgeChatRequest(command, session, model, question, enhancement);
+
+        KnowledgeChatResult chatResult = null;
+        String failureReason = null;
+        String providerFailureReason = null;
+        try {
+            chatResult = knowledgeBaseClient.chatStream(providerRequest, streamHandler::onDelta);
+        } catch (Exception ex) {
+            failureReason = DEFAULT_FAILURE_REASON;
+            providerFailureReason = StringUtils.defaultIfBlank(ex.getMessage(), TRACE_FAILURE_REASON);
+        } finally {
+            session.setLastMessageAt(new Date());
+            qaSessionRepository.update(session);
+        }
+
+        if (chatResult == null) {
+            LocalRetrievalAnswer localAnswer = buildLocalRetrievalAnswer(question);
+            if (localAnswer != null) {
+                if (StringUtils.isNotBlank(localAnswer.answer())) {
+                    streamHandler.onDelta(localAnswer.answer());
+                }
+                QaMessage answerMessage =
+                        createLocalRetrievalAnswerMessage(command, model, contextTurnCount, now, localAnswer.answer());
+                Long answerMessagePk = qaMessageRepository.save(answerMessage);
+                answerMessage.setId(answerMessagePk);
+                answerMessage.setMessageId(answerMessagePk);
+                answerMessage.setAnsweredAt(new Date());
+                List<QaSource> sourceEntities = saveLocalRetrievalSources(localAnswer.sources(), answerMessagePk);
+                saveTrace(
+                        command,
+                        session,
+                        answerMessage,
+                        question,
+                        providerRequest,
+                        localRetrievalChatResult(localAnswer, model),
+                        now,
+                        new Date(),
+                        "Provider failed; answered by local retrieval: " + providerFailureReason);
+                return new ChatCompletionResult(
+                        command.getSessionId(),
+                        questionMessagePk,
+                        answerMessagePk,
+                        question,
+                        ANSWER_STATUS_SUCCEEDED,
+                        null,
+                        List.of(new ChatCompletionResult.ChatCompletionChoice(
+                                0,
+                                new ChatCompletionResult.ChatCompletionMessage(
+                                        MESSAGE_ROLE_ASSISTANT, localAnswer.answer()),
+                                "stop")),
+                        sourcesToResult(sourceEntities),
+                        null,
+                        Map.of("fallback", "local-keyword-retrieval"));
+            }
+            QaMessage failedMessage =
+                    createFailureMessage(command.getSessionId(), model, contextTurnCount, failureReason, now);
+            Long failedMessagePk = qaMessageRepository.save(failedMessage);
+            failedMessage.setId(failedMessagePk);
+            failedMessage.setMessageId(failedMessagePk);
+            saveTrace(
+                    command, session, failedMessage, question, providerRequest, null, now, now, providerFailureReason);
+
+            return new ChatCompletionResult(
+                    command.getSessionId(),
+                    questionMessagePk,
+                    failedMessagePk,
+                    question,
+                    ANSWER_STATUS_FAILED,
+                    failureReason,
+                    List.of(),
+                    List.of(),
+                    null,
+                    Map.of());
+        }
+
+        List<KnowledgeChatChoice> choices = chatResult.choices() == null ? List.of() : chatResult.choices();
+        String answer = resolveAnswer(choices);
+
+        QaMessage answerMessage =
+                createAnswerMessage(command, model, contextTurnCount, chatResult, now, answer, choices);
+        Long answerMessagePk = qaMessageRepository.save(answerMessage);
+        answerMessage.setId(answerMessagePk);
+        answerMessage.setMessageId(answerMessagePk);
+        answerMessage.setAnsweredAt(new Date());
+
+        List<QaSource> sourceEntities = qaSourceAssembler.toKnowledgeDomainList(chatResult.sources(), answerMessagePk);
+        for (QaSource sourceEntity : sourceEntities) {
+            Long sourcePk = qaSourceRepository.save(sourceEntity);
+            sourceEntity.setId(sourcePk);
+            if (sourceEntity.getSourceId() == null) {
+                sourceEntity.setSourceId(sourcePk);
+            }
+        }
+
+        saveTrace(command, session, answerMessage, question, providerRequest, chatResult, now, new Date(), null);
+
+        return new ChatCompletionResult(
+                command.getSessionId(),
+                questionMessagePk,
+                answerMessagePk,
+                question,
+                ANSWER_STATUS_SUCCEEDED,
+                null,
+                choicesToResult(choices),
+                sourcesToResult(sourceEntities),
+                toUsageResult(chatResult),
+                chatResult.raw());
+    }
+
     DiscoveryAiFacadeRequest buildSingleDocumentAiRequest(
             ChatCompletionCommand command, QaSession session, String model, String question) {
         ClassicsQaKnowledgeFacadeDto knowledge = requireSingleDocumentKnowledge(session);
@@ -318,10 +487,36 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             DiscoveryAiFacadeRequest aiRequest,
             ClassicsQaKnowledgeFacadeDto knowledge,
             Date startedAt) {
+        return completeSingleDocumentWithAi(
+                command,
+                session,
+                model,
+                question,
+                contextTurnCount,
+                questionMessagePk,
+                aiRequest,
+                knowledge,
+                startedAt,
+                null);
+    }
+
+    private ChatCompletionResult completeSingleDocumentWithAi(
+            ChatCompletionCommand command,
+            QaSession session,
+            String model,
+            String question,
+            int contextTurnCount,
+            Long questionMessagePk,
+            DiscoveryAiFacadeRequest aiRequest,
+            ClassicsQaKnowledgeFacadeDto knowledge,
+            Date startedAt,
+            ChatCompletionStreamHandler streamHandler) {
         DiscoveryAiFacadeResponse aiResponse = null;
         String failureReason = null;
         try {
-            aiResponse = aiFacade.generateDiscoveryAnswer(aiRequest);
+            aiResponse = streamHandler == null
+                    ? aiFacade.generateDiscoveryAnswer(aiRequest)
+                    : aiFacade.streamDiscoveryAnswer(aiRequest, streamHandler::onDelta);
             if (!isAiSucceeded(aiResponse)) {
                 failureReason = aiFailureReason(aiResponse);
             }

@@ -12,6 +12,7 @@ import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestControllerAdvice
 public class ApiResponseBodyAdvice implements ResponseBodyAdvice<Object> {
@@ -51,7 +52,9 @@ public class ApiResponseBodyAdvice implements ResponseBodyAdvice<Object> {
         }
 
         Class<?> parameterType = returnType.getParameterType();
-        return !ApiResponse.class.isAssignableFrom(parameterType) && !String.class.isAssignableFrom(parameterType);
+        return !ApiResponse.class.isAssignableFrom(parameterType)
+                && !String.class.isAssignableFrom(parameterType)
+                && !SseEmitter.class.isAssignableFrom(parameterType);
     }
 
     private boolean isJsonContent(MediaType selectedContentType) {

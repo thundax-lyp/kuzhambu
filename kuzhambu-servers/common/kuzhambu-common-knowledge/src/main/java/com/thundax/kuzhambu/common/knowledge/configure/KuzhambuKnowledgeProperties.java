@@ -23,6 +23,13 @@ public class KuzhambuKnowledgeProperties {
         private String chatApiKey;
         private String appId;
         private String knowledgeBaseId;
+        private SyncMode syncMode = SyncMode.AUTO;
         private Duration timeout = Duration.ofSeconds(10);
+
+        public enum SyncMode {
+            AUTO,
+            ENABLED,
+            DISABLED
+        }
     }
 }

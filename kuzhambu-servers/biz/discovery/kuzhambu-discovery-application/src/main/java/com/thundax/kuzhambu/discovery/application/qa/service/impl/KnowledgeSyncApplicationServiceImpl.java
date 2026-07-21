@@ -122,7 +122,8 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
         for (ClassicsQaKnowledgeFacadeRequest source : syncSources) {
             SyncKnowledgeContentCommand command = new SyncKnowledgeContentCommand(
                     source.getContentType(), parseContentId(source.getContentId()), 0, null, null);
-            KnowledgeSyncItemResult syncResult = syncContent(command, null, TRIGGER_FULL_REBUILD);
+            KnowledgeSyncItemResult syncResult = syncContent(
+                    command, qaKnowledgeSyncItemRepository.getBySourceId(sourceId(command)), TRIGGER_FULL_REBUILD);
             if (SYNC_STATUS_SUCCEEDED.equalsIgnoreCase(syncResult.getSyncStatus())) {
                 successCount++;
             } else {
@@ -271,9 +272,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
             }
 
             KnowledgeSyncResult syncResult = knowledgeBaseClient.syncKnowledgeItem(new KnowledgeSyncRequest(
-                    knowledgeBaseName,
-                    itemResult.knowledgeItemId(),
-                    Map.of("sourceId", sourceId, "trigger", triggerType)));
+                    knowledgeBaseName, itemResult.knowledgeItemId(), Map.of("trigger", triggerType)));
 
             QaKnowledgeSyncItem syncItem = existingItem == null ? new QaKnowledgeSyncItem() : existingItem;
             syncItem.setSourceId(sourceId);

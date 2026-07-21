@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.header;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,12 +14,15 @@ import com.thundax.kuzhambu.common.knowledge.model.base.KnowledgeBaseEnsureReque
 import com.thundax.kuzhambu.common.knowledge.model.base.KnowledgeBaseListRequest;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatMessage;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatRequest;
+import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatResult;
+import com.thundax.kuzhambu.common.knowledge.model.sync.KnowledgeSyncRequest;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
@@ -80,6 +84,120 @@ public class FastGptKnowledgeBaseClientTest {
                         .get(0)
                         .message()
                         .content());
+        server.verify();
+    }
+
+    @Test
+    public void shouldStreamOpenAiCompatibleChatDeltas() {
+        RestTemplate restTemplate =
+                new RestTemplateBuilder().rootUri("http://fastgpt.local").build();
+        MockRestServiceServer server =
+                MockRestServiceServer.bindTo(restTemplate).build();
+        server.expect(requestTo("http://fastgpt.local/api/v1/chat/completions"))
+                .andExpect(header(HttpHeaders.AUTHORIZATION, "Bearer fastgpt-test-app-1"))
+                .andExpect(header(HttpHeaders.ACCEPT, MediaType.TEXT_EVENT_STREAM_VALUE))
+                .andExpect(
+                        content()
+                                .json(
+                                        """
+                                {
+                                  "appId": "app-1",
+                                  "chatId": "chat-1",
+                                  "model": "kuzhambu-qa",
+                                  "stream": true,
+                                  "messages": [{"role":"user","content":"question"}]
+                                }
+                                """))
+                .andRespond(withSuccess(
+                        """
+                        data: {"choices":[{"delta":{"content":"礼学"},"index":0,"finish_reason":null}]}
+
+                        data: {"choices":[{"delta":{"content":"是礼制之学"},"index":0,"finish_reason":null}]}
+
+                        data: {"choices":[{"delta":{},"index":0,"finish_reason":"stop"}]}
+
+                        """,
+                        MediaType.TEXT_EVENT_STREAM));
+
+        FastGptKnowledgeBaseClient client = new FastGptKnowledgeBaseClient(
+                restTemplate, new ObjectMapper(), fastGptProperties("http://fastgpt.local", "fastgpt-test"));
+        List<String> deltas = new java.util.ArrayList<>();
+
+        assertEquals(
+                "礼学是礼制之学",
+                client.chatStream(
+                                new KnowledgeChatRequest(
+                                        "kuzhambu-qa",
+                                        List.of(new KnowledgeChatMessage("user", "question")),
+                                        true,
+                                        Map.of("chatId", "chat-1"),
+                                        null),
+                                deltas::add)
+                        .choices()
+                        .get(0)
+                        .message()
+                        .content());
+        assertEquals(List.of("礼学", "是礼制之学"), deltas);
+        server.verify();
+    }
+
+    @Test
+    public void shouldKeepFastGptStreamFinalPayloadUsageAndSources() {
+        RestTemplate restTemplate =
+                new RestTemplateBuilder().rootUri("http://fastgpt.local").build();
+        MockRestServiceServer server =
+                MockRestServiceServer.bindTo(restTemplate).build();
+        server.expect(requestTo("http://fastgpt.local/api/v1/chat/completions"))
+                .andExpect(header(HttpHeaders.AUTHORIZATION, "Bearer fastgpt-test-app-1"))
+                .andExpect(header(HttpHeaders.ACCEPT, MediaType.TEXT_EVENT_STREAM_VALUE))
+                .andRespond(withSuccess(
+                        """
+                        data: {"choices":[{"delta":{"content":"礼学"},"index":0,"finish_reason":null}]}
+
+                        data: {"choices":[{"delta":{"content":"是礼制之学"},"index":0,"finish_reason":null}]}
+
+                        data: {"choices":[{"delta":{},"index":0,"finish_reason":"stop"}]}
+
+                        event: final
+                        data: {"id":"chatcmpl-1","object":"chat.completion","created":1783156800,"model":"fast-model","choices":[{"index":0,"message":{"content":"礼学是礼制之学"},"finish_reason":"stop"}],"usage":{"prompt_tokens":10,"completion_tokens":20,"total_tokens":30},"responseData":{"quoteList":[{"sourceId":"WANGQI_DOCUMENT:2001","knowledgeBase":"WANGQI_DOCUMENT","contentType":"WANGQI_DOCUMENT","contentId":"2001","title":"王圻文档","snippet":"礼制摘录","score":0.82,"sourcePath":"/doc/2001"}]}}
+
+                        data: [DONE]
+
+                        """,
+                        MediaType.TEXT_EVENT_STREAM));
+
+        FastGptKnowledgeBaseClient client = new FastGptKnowledgeBaseClient(
+                restTemplate, new ObjectMapper(), fastGptProperties("http://fastgpt.local", "fastgpt-test"));
+        List<String> deltas = new java.util.ArrayList<>();
+
+        KnowledgeChatResult result = client.chatStream(
+                new KnowledgeChatRequest(
+                        "kuzhambu-qa",
+                        List.of(new KnowledgeChatMessage("user", "question")),
+                        true,
+                        Map.of("chatId", "chat-1"),
+                        null),
+                deltas::add);
+
+        assertEquals("chatcmpl-1", result.id());
+        assertEquals(1783156800L, result.created());
+        assertEquals("fast-model", result.model());
+        assertEquals("礼学是礼制之学", result.choices().get(0).message().content());
+        assertEquals(List.of("礼学", "是礼制之学"), deltas);
+        assertEquals(10, result.usage().promptTokens());
+        assertEquals(20, result.usage().completionTokens());
+        assertEquals(30, result.usage().totalTokens());
+        assertEquals("WANGQI_DOCUMENT:2001", result.sources().get(0).sourceId());
+        assertEquals("WANGQI_DOCUMENT", result.sources().get(0).knowledgeBase());
+        assertEquals("WANGQI_DOCUMENT", result.sources().get(0).contentType());
+        assertEquals("2001", result.sources().get(0).contentId());
+        assertEquals("王圻文档", result.sources().get(0).title());
+        assertEquals("礼制摘录", result.sources().get(0).snippet());
+        assertEquals(0.82, result.sources().get(0).score());
+        assertEquals("/doc/2001", result.sources().get(0).raw().get("sourcePath"));
+        assertEquals("fastgpt", result.raw().get("provider"));
+        assertEquals(true, result.raw().get("stream"));
+        assertEquals("chatcmpl-1", result.raw().get("id"));
         server.verify();
     }
 
@@ -210,6 +328,112 @@ public class FastGptKnowledgeBaseClientTest {
                         false,
                         null,
                         Map.of("messages", List.of(Map.of("role", "system", "content", "override"))))));
+        server.verify();
+    }
+
+    @Test
+    public void shouldTreatKnowledgeItemSyncAsCompletedWhenSyncModeIsDisabled() {
+        RestTemplate restTemplate =
+                new RestTemplateBuilder().rootUri("http://fastgpt.local").build();
+        MockRestServiceServer server =
+                MockRestServiceServer.bindTo(restTemplate).build();
+        KuzhambuKnowledgeProperties.FastGpt properties = fastGptProperties("http://fastgpt.local", "fastgpt-test");
+        properties.setSyncMode(KuzhambuKnowledgeProperties.FastGpt.SyncMode.DISABLED);
+        FastGptKnowledgeBaseClient client =
+                new FastGptKnowledgeBaseClient(restTemplate, new ObjectMapper(), properties);
+
+        assertEquals(
+                "SUCCEEDED",
+                client.syncKnowledgeItem(new KnowledgeSyncRequest("kuzhambu-qa", "item-1", Map.of("trigger", "FULL")))
+                        .status());
+        server.verify();
+    }
+
+    @Test
+    public void shouldCallFastGptSyncEndpointWhenAutoDetectsEmbeddingDataset() {
+        RestTemplate restTemplate =
+                new RestTemplateBuilder().rootUri("http://fastgpt.local").build();
+        MockRestServiceServer server =
+                MockRestServiceServer.bindTo(restTemplate).build();
+        server.expect(requestTo("http://fastgpt.local/api/core/dataset/list"))
+                .andRespond(withSuccess(
+                        """
+                        {"data":[{"_id":"6a4f51e5ef72393d430a8e31","vectorModel":{"type":"embedding","model":"bge-m3"}}]}
+                        """,
+                        MediaType.APPLICATION_JSON));
+        server.expect(requestTo("http://fastgpt.local/api/core/dataset/collection/sync"))
+                .andExpect(
+                        content()
+                                .json(
+                                        """
+                                {
+                                  "datasetId": "6a4f51e5ef72393d430a8e31",
+                                  "collectionId": "item-1",
+                                  "trigger": "FULL"
+                                }
+                                """))
+                .andRespond(withSuccess(
+                        "{\"code\":200,\"data\":{\"syncId\":\"sync-1\",\"status\":\"RUNNING\"}}",
+                        MediaType.APPLICATION_JSON));
+        FastGptKnowledgeBaseClient client = new FastGptKnowledgeBaseClient(
+                restTemplate, new ObjectMapper(), fastGptProperties("http://fastgpt.local", "fastgpt-test"));
+
+        assertEquals(
+                "RUNNING",
+                client.syncKnowledgeItem(new KnowledgeSyncRequest("kuzhambu-qa", "item-1", Map.of("trigger", "FULL")))
+                        .status());
+        server.verify();
+    }
+
+    @Test
+    public void shouldSkipFastGptSyncEndpointWhenAutoDetectsNonEmbeddingDataset() {
+        RestTemplate restTemplate =
+                new RestTemplateBuilder().rootUri("http://fastgpt.local").build();
+        MockRestServiceServer server =
+                MockRestServiceServer.bindTo(restTemplate).build();
+        server.expect(requestTo("http://fastgpt.local/api/core/dataset/list"))
+                .andRespond(withSuccess(
+                        """
+                        {"data":[{"_id":"6a4f51e5ef72393d430a8e31","vectorModel":null}]}
+                        """,
+                        MediaType.APPLICATION_JSON));
+        FastGptKnowledgeBaseClient client = new FastGptKnowledgeBaseClient(
+                restTemplate, new ObjectMapper(), fastGptProperties("http://fastgpt.local", "fastgpt-test"));
+
+        assertEquals(
+                "SUCCEEDED",
+                client.syncKnowledgeItem(new KnowledgeSyncRequest("kuzhambu-qa", "item-1", Map.of("trigger", "FULL")))
+                        .status());
+        server.verify();
+    }
+
+    @Test
+    public void shouldTreatNotSupportSyncAsCompletedInAutoMode() {
+        RestTemplate restTemplate =
+                new RestTemplateBuilder().rootUri("http://fastgpt.local").build();
+        MockRestServiceServer server =
+                MockRestServiceServer.bindTo(restTemplate).build();
+        server.expect(requestTo("http://fastgpt.local/api/core/dataset/list"))
+                .andRespond(withSuccess(
+                        """
+                        {"data":[{"_id":"6a4f51e5ef72393d430a8e31","vectorModel":{"type":"embedding","model":"bge-m3"}}]}
+                        """,
+                        MediaType.APPLICATION_JSON));
+        server.expect(requestTo("http://fastgpt.local/api/core/dataset/collection/sync"))
+                .andRespond(
+                        withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .body(
+                                        """
+                                {"code":501001,"statusText":"notSupportSync","message":"common:core.dataset.error.notSupportSync"}
+                                """));
+        FastGptKnowledgeBaseClient client = new FastGptKnowledgeBaseClient(
+                restTemplate, new ObjectMapper(), fastGptProperties("http://fastgpt.local", "fastgpt-test"));
+
+        assertEquals(
+                "SUCCEEDED",
+                client.syncKnowledgeItem(new KnowledgeSyncRequest("kuzhambu-qa", "item-1", Map.of("trigger", "FULL")))
+                        .status());
         server.verify();
     }
 

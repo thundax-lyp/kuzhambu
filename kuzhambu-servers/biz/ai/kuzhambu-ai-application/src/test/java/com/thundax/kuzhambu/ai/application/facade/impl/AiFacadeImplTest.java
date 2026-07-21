@@ -14,6 +14,7 @@ import com.thundax.kuzhambu.ai.application.batch.command.AiBatchJobCreateCommand
 import com.thundax.kuzhambu.ai.application.batch.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.discovery.service.DiscoveryAiApplicationService;
 import com.thundax.kuzhambu.ai.application.facade.assembler.AiFacadeAssembler;
+import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.knowledge.service.impl.KnowledgeAiExtractionApplicationServiceImpl;
 import com.thundax.kuzhambu.ai.application.report.result.AiReportSummaryResult;
 import com.thundax.kuzhambu.ai.application.report.result.AiReportSummaryResult.TopCapabilityResult;
@@ -248,6 +249,59 @@ class AiFacadeImplTest {
         assertNull(response.getResultPayload());
         assertEquals("WORKER_STREAM", response.getErrorType());
         assertEquals("stream interrupted", response.getErrorMessage());
+    }
+
+    @Test
+    void streamDiscoveryAnswerShouldForwardDeltaEventsAndMapFinalResponse() {
+        DiscoveryAiApplicationService discoveryAiApplicationService = mock(DiscoveryAiApplicationService.class);
+        when(discoveryAiApplicationService.streamAnswer(any(), any())).thenAnswer(invocation -> {
+            DiscoveryAiRequest request = invocation.getArgument(0);
+            assertEquals("req-answer", request.getRequestId());
+            assertFalse(request.isStream());
+            @SuppressWarnings("unchecked")
+            java.util.function.Consumer<AiStreamEventResult> eventConsumer = invocation.getArgument(1);
+            eventConsumer.accept(deltaEvent("王圻"));
+            eventConsumer.accept(deltaEvent("文档答案"));
+            return new DiscoveryAiResult(
+                    702L,
+                    null,
+                    "SUCCEEDED",
+                    AiBusinessCapability.DISCOVERY_ANSWER_GENERATION.value(),
+                    "JSON",
+                    "{\"answer\":\"王圻文档答案\"}",
+                    null,
+                    null);
+        });
+        AiFacadeImpl facade = newFacade(
+                mock(AiReportApplicationService.class),
+                mock(AiBatchJobApplicationService.class),
+                discoveryAiApplicationService,
+                mock(KnowledgeAiExtractionApplicationServiceImpl.class),
+                mock(AiInvocationRepository.class),
+                mock(AiCandidateDomainService.class));
+        List<String> deltas = new java.util.ArrayList<>();
+
+        var response = facade.streamDiscoveryAnswer(
+                DiscoveryAiFacadeRequest.builder()
+                        .serviceId(21L)
+                        .serviceRole("DISCOVERY")
+                        .modelId(31L)
+                        .modelName("gpt-5")
+                        .promptVersionId(41L)
+                        .requestId("req-answer")
+                        .traceId("trace-answer")
+                        .promptMessagesJson("[\"answer-prompt\"]")
+                        .inputPayloadJson("{\"question\":\"王圻是谁\"}")
+                        .stream(false)
+                        .forceJson(true)
+                        .locale("zh-CN")
+                        .build(),
+                deltas::add);
+
+        assertEquals(List.of("王圻", "文档答案"), deltas);
+        assertEquals(702L, response.getCallId());
+        assertEquals("SUCCEEDED", response.getStatus());
+        assertEquals("{\"answer\":\"王圻文档答案\"}", response.getResultPayload());
     }
 
     @Test
@@ -543,5 +597,12 @@ class AiFacadeImplTest {
         candidate.setModelName("gpt-5");
         candidate.setRequestedAt(Instant.parse("2025-02-01T10:15:30Z"));
         return candidate;
+    }
+
+    private static AiStreamEventResult deltaEvent(String content) {
+        AiStreamEventResult event = new AiStreamEventResult();
+        event.setEventType("delta");
+        event.setDeltaText(content);
+        return event;
     }
 }
