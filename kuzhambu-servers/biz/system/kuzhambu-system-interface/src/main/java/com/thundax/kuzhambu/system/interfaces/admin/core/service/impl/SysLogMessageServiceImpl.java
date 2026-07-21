@@ -6,7 +6,10 @@ import com.thundax.kuzhambu.common.rocketmq.KuzhambuMqSender;
 import com.thundax.kuzhambu.system.application.core.command.CreateLogCommand;
 import com.thundax.kuzhambu.system.application.core.query.LogQuery;
 import com.thundax.kuzhambu.system.application.core.service.LogApplicationService;
+import com.thundax.kuzhambu.system.domain.core.codec.LogIdCodec;
+import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Log;
+import com.thundax.kuzhambu.system.domain.core.model.enums.LogType;
 import com.thundax.kuzhambu.system.interfaces.admin.configure.KuzhambuProperties;
 import com.thundax.kuzhambu.system.interfaces.admin.core.service.SysLogMessageService;
 import java.io.File;
@@ -40,7 +43,7 @@ public class SysLogMessageServiceImpl implements SysLogMessageService {
     @Override
     public void saveLog(Log sysLog) {
         try {
-            String payload = objectMapper.writeValueAsString(sysLog);
+            String payload = objectMapper.writeValueAsString(SysLogDTO.from(sysLog));
             mqSender.send(buildMessage(payload).withHeader("kuzhambu-message-type", "sys-log"));
         } catch (Exception e) {
             log.warn("can not serialize sys-log message", e);
@@ -50,13 +53,13 @@ public class SysLogMessageServiceImpl implements SysLogMessageService {
     @Override
     public void consumeLog(String payload) {
         try {
-            Log sysLog = objectMapper.readValue(payload, Log.class);
+            SysLogDTO sysLog = objectMapper.readValue(payload, SysLogDTO.class);
             if (sysLog != null) {
-                sysLog.setId(logService.create(toCreateCommand(sysLog)));
+                logService.create(sysLog.toCreateCommand());
 
                 try {
                     String filename = LOG_FILENAME_FORMAT.format(
-                                    sysLog.getLogDate().toInstant().atZone(ZoneId.systemDefault()))
+                                    sysLog.logDate().toInstant().atZone(ZoneId.systemDefault()))
                             + LOG_EXTEND_NAME;
                     File logFile = new File(logProperties().getStoragePath(), filename);
 
@@ -89,18 +92,49 @@ public class SysLogMessageServiceImpl implements SysLogMessageService {
         return KuzhambuMqMessage.forTopicWithTag(sysLogProperties.getTopic(), sysLogProperties.getTag(), null, payload);
     }
 
-    private CreateLogCommand toCreateCommand(Log log) {
-        return new CreateLogCommand(
-                log.getId(),
-                log.getUserId(),
-                log.getType(),
-                log.getLogDate(),
-                log.getTitle(),
-                log.getRemoteAddr(),
-                log.getUserAgent(),
-                log.getMethod(),
-                log.getRequestUri(),
-                log.getRequestParams(),
-                log.getRemarks());
+    private record SysLogDTO(
+            Long id,
+            String userId,
+            String type,
+            Date logDate,
+            String title,
+            String remoteAddr,
+            String userAgent,
+            String method,
+            String requestUri,
+            String requestParams,
+            String remarks) {
+
+        private static SysLogDTO from(Log log) {
+            return log == null
+                    ? null
+                    : new SysLogDTO(
+                            LogIdCodec.toValue(log.getId()),
+                            UserIdCodec.toStringValue(log.getUserId()),
+                            log.getType() == null ? null : log.getType().value(),
+                            log.getLogDate(),
+                            log.getTitle(),
+                            log.getRemoteAddr(),
+                            log.getUserAgent(),
+                            log.getMethod(),
+                            log.getRequestUri(),
+                            log.getRequestParams(),
+                            log.getRemarks());
+        }
+
+        private CreateLogCommand toCreateCommand() {
+            return new CreateLogCommand(
+                    LogIdCodec.toDomain(id),
+                    userId,
+                    type == null ? null : LogType.from(type),
+                    logDate,
+                    title,
+                    remoteAddr,
+                    userAgent,
+                    method,
+                    requestUri,
+                    requestParams,
+                    remarks);
+        }
     }
 }

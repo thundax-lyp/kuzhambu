@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.system.infra.auth.persistence.assembler;
 
+import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalClientIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalLoginEventIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalLoginEvent;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalAuthenticationMethod;
@@ -23,7 +24,7 @@ public final class PrincipalLoginEventPersistenceAssembler {
         dataObject.setId(PrincipalLoginEventIdCodec.toValue(entity.getId()));
         dataObject.setPrincipalType(principalTypeValue(entity.getPrincipalKey()));
         dataObject.setPrincipalId(principalIdValue(entity.getPrincipalKey()));
-        dataObject.setClientId(entity.getClientId());
+        dataObject.setClientId(PrincipalClientIdCodec.toValue(entity.getClientId()));
         dataObject.setEventType(eventTypeValue(entity.getEventType()));
         dataObject.setAuthenticationMethod(authenticationMethodValue(entity.getAuthenticationMethod()));
         dataObject.setIdentityType(identityTypeValue(entity.getIdentityType()));
@@ -41,7 +42,7 @@ public final class PrincipalLoginEventPersistenceAssembler {
         PrincipalLoginEvent entity = new PrincipalLoginEvent();
         entity.setId(PrincipalLoginEventIdCodec.toDomain(dataObject.getId()));
         entity.setPrincipalKey(principalKeyFrom(dataObject.getPrincipalType(), dataObject.getPrincipalId()));
-        entity.setClientId(dataObject.getClientId());
+        entity.setClientId(PrincipalClientIdCodec.toDomain(dataObject.getClientId()));
         entity.setEventType(eventTypeFrom(dataObject.getEventType()));
         entity.setAuthenticationMethod(authenticationMethodFrom(dataObject.getAuthenticationMethod()));
         entity.setIdentityType(identityTypeFrom(dataObject.getIdentityType()));

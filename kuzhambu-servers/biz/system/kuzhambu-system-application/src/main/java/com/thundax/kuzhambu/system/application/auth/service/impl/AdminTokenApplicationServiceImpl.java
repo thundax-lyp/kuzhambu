@@ -21,6 +21,7 @@ import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalLoginEventTy
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalTokenStatus;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalType;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalAccessTokenCode;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalClientId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalRefreshTokenCode;
 import com.thundax.kuzhambu.system.domain.auth.repository.PrincipalAccessTokenRepository;
@@ -43,7 +44,7 @@ import org.springframework.stereotype.Service;
 public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationService {
 
     private static final int SESSION_RUNTIME_SAFETY_SECONDS = 10;
-    private static final String ADMIN_CLIENT_ID = "admin-api";
+    private static final PrincipalClientId ADMIN_CLIENT_ID = PrincipalClientId.of("admin-api");
 
     private final AuthProperties properties;
     private final PrincipalAuthSessionRepository principalAuthSessionRepository;
@@ -119,7 +120,7 @@ public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationSe
         PrincipalAccessToken accessToken =
                 requirePrincipalAccessTokenRepository().getByToken(token);
         if (accessToken == null
-                || !StringUtils.equals(ADMIN_CLIENT_ID, accessToken.getClientId())
+                || !ADMIN_CLIENT_ID.equals(accessToken.getClientId())
                 || !accessToken.canAccess(new Date())) {
             return null;
         }
@@ -216,12 +217,11 @@ public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationSe
         if (refreshTokenRepository == null) {
             throw invalidToken();
         }
-        String requestedClientId = StringUtils.defaultIfBlank(clientId, ADMIN_CLIENT_ID);
+        PrincipalClientId requestedClientId =
+                PrincipalClientId.of(StringUtils.defaultIfBlank(clientId, ADMIN_CLIENT_ID.value()));
         PrincipalRefreshToken current = refreshTokenRepository.getByToken(refreshToken);
         Date now = new Date();
-        if (current == null
-                || !current.canRefresh(now)
-                || !StringUtils.equals(requestedClientId, current.getClientId())) {
+        if (current == null || !current.canRefresh(now) || !requestedClientId.equals(current.getClientId())) {
             throw invalidToken();
         }
         if (refreshTokenRepository.markUsedIfActive(current, now) != 1) {
@@ -318,7 +318,7 @@ public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationSe
 
     private void writeLoginEvent(
             PrincipalKey principalKey,
-            String clientId,
+            PrincipalClientId clientId,
             PrincipalLoginEventType eventType,
             PrincipalAuthenticationMethod authenticationMethod,
             PrincipalIdentityType identityType,
@@ -350,7 +350,8 @@ public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationSe
         return (int) ttlSeconds + SESSION_RUNTIME_SAFETY_SECONDS;
     }
 
-    private String createPrincipalRefreshToken(PrincipalAccessToken accessToken, String clientId, Date issuedAt) {
+    private String createPrincipalRefreshToken(
+            PrincipalAccessToken accessToken, PrincipalClientId clientId, Date issuedAt) {
         String refreshToken = UuidHelper.compact();
         PrincipalRefreshToken entity = new PrincipalRefreshToken();
         entity.setTokenCode(PrincipalRefreshTokenCode.of(UuidHelper.compact()));
@@ -367,7 +368,7 @@ public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationSe
 
     private PrincipalAccessToken buildPrincipalAccessToken(
             String token,
-            String clientId,
+            PrincipalClientId clientId,
             PrincipalKey principalKey,
             Set<String> scopes,
             Date issuedAt,
@@ -399,7 +400,7 @@ public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationSe
         return repository;
     }
 
-    private long refreshTokenTtlSeconds(String clientId) {
+    private long refreshTokenTtlSeconds(PrincipalClientId clientId) {
         return 2592000L;
     }
 

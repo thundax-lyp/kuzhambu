@@ -24,6 +24,7 @@ import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageOwnerRef;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContentRepository;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectReferenceRepository;
@@ -209,11 +210,9 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         if (command == null) {
             return 0;
         }
-        String referenceOwnerType =
-                command.getOwnerType() == null ? null : command.getOwnerType().value();
-        String referenceOwnerId = command.getOwnerId();
-        Set<StoredObjectId> impactedObjectIds = impactedObjectIdsByOwner(referenceOwnerType, referenceOwnerId);
-        int removed = businessRepository.deleteByOwner(referenceOwnerType, referenceOwnerId);
+        StorageOwnerRef ownerRef = StorageOwnerRef.ofNullable(command.getOwnerType(), command.getOwnerId());
+        Set<StoredObjectId> impactedObjectIds = impactedObjectIdsByOwner(ownerRef);
+        int removed = businessRepository.deleteByOwner(ownerRef);
         updateReferenceStatusByObjectId(impactedObjectIds);
         return removed;
     }
@@ -261,9 +260,9 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         }
     }
 
-    private Set<StoredObjectId> impactedObjectIdsByOwner(String referenceOwnerType, String referenceOwnerId) {
+    private Set<StoredObjectId> impactedObjectIdsByOwner(StorageOwnerRef ownerRef) {
         Set<StoredObjectId> objectIds = new LinkedHashSet<>();
-        for (StoredObjectId objectId : businessRepository.listObjectIdsByOwner(referenceOwnerType, referenceOwnerId)) {
+        for (StoredObjectId objectId : businessRepository.listObjectIdsByOwner(ownerRef)) {
             if (objectId != null) {
                 objectIds.add(objectId);
             }

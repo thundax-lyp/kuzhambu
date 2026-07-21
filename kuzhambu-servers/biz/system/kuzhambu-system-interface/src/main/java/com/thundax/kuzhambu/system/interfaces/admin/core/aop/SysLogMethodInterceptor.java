@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.util.RequestIpUtils;
+import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Log;
 import com.thundax.kuzhambu.system.domain.core.model.enums.LogType;
 import com.thundax.kuzhambu.system.interfaces.admin.core.service.SysLogMessageService;
@@ -127,7 +128,7 @@ public class SysLogMethodInterceptor implements MethodInterceptor {
         titleParts.add(value);
 
         Log log = new Log();
-        log.setUserId(KuzhambuContextHolder.currentSubjectId());
+        log.setUserId(UserIdCodec.toDomain(KuzhambuContextHolder.currentSubjectId()));
         log.setTitle(StringUtils.join(titleParts, TITLE_SEPARATOR));
 
         log.setLogDate(new Date());
@@ -140,7 +141,7 @@ public class SysLogMethodInterceptor implements MethodInterceptor {
         if (StringUtils.isEmpty(category)) {
             log.setType(LogType.ACCESS);
         } else {
-            log.setType(category);
+            log.setType(LogType.from(category));
         }
 
         if (requestBody != null) {

@@ -21,6 +21,7 @@ import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSe
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.MultipartUploadStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.MultipartUploadId;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.domain.object.repository.MultipartUploadRepository;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContentRepository;
@@ -34,6 +35,7 @@ import org.junit.jupiter.api.Test;
 class MultipartUploadApplicationServiceImplTest {
 
     private static final String UPLOAD_ID = "upload-1";
+    private static final MultipartUploadId UPLOAD_ID_REF = MultipartUploadId.of(UPLOAD_ID);
     private static final String PART_PATH_1 = "multipart/upload-1/1.part";
     private static final String PART_PATH_2 = "multipart/upload-1/2.part";
     private static final String PART_PATH_3 = "multipart/upload-1/3.part";
@@ -62,11 +64,12 @@ class MultipartUploadApplicationServiceImplTest {
         MultipartUploadApplicationServiceImpl service = new MultipartUploadApplicationServiceImpl(
                 multipartUploadRepository, contentRepository, storageApplicationService);
 
-        when(multipartUploadRepository.getMultipartSessionByUploadId(UPLOAD_ID)).thenReturn(session());
+        when(multipartUploadRepository.getMultipartSessionByUploadId(UPLOAD_ID_REF))
+                .thenReturn(session());
         when(multipartUploadRepository.updateMultipartSessionStatus(
-                        eq(UPLOAD_ID), eq(MultipartUploadStatus.UPLOADING), eq(MultipartUploadStatus.COMPLETING)))
+                        eq(UPLOAD_ID_REF), eq(MultipartUploadStatus.UPLOADING), eq(MultipartUploadStatus.COMPLETING)))
                 .thenReturn(1);
-        when(multipartUploadRepository.listMultipartParts(UPLOAD_ID)).thenReturn(parts());
+        when(multipartUploadRepository.listMultipartParts(UPLOAD_ID_REF)).thenReturn(parts());
 
         AtomicReference<byte[]> savedBytes = new AtomicReference<>();
         when(contentRepository.open(any())).thenAnswer(invocation -> {
@@ -100,7 +103,7 @@ class MultipartUploadApplicationServiceImplTest {
         verify(contentRepository).save(any(), any());
         verify(storageApplicationService).create(any());
         verify(contentRepository, times(3)).delete(any());
-        verify(multipartUploadRepository).deleteMultipartParts(UPLOAD_ID);
+        verify(multipartUploadRepository).deleteMultipartParts(UPLOAD_ID_REF);
     }
 
     @Test
@@ -110,9 +113,10 @@ class MultipartUploadApplicationServiceImplTest {
         StorageApplicationService storageApplicationService = mock(StorageApplicationService.class);
         MultipartUploadApplicationServiceImpl service = new MultipartUploadApplicationServiceImpl(
                 multipartUploadRepository, contentRepository, storageApplicationService);
-        when(multipartUploadRepository.getMultipartSessionByUploadId(UPLOAD_ID)).thenReturn(session());
+        when(multipartUploadRepository.getMultipartSessionByUploadId(UPLOAD_ID_REF))
+                .thenReturn(session());
         when(multipartUploadRepository.updateMultipartSessionStatus(
-                        eq(UPLOAD_ID), eq(MultipartUploadStatus.UPLOADING), eq(MultipartUploadStatus.COMPLETING)))
+                        eq(UPLOAD_ID_REF), eq(MultipartUploadStatus.UPLOADING), eq(MultipartUploadStatus.COMPLETING)))
                 .thenReturn(0);
 
         assertThrows(
@@ -129,7 +133,8 @@ class MultipartUploadApplicationServiceImplTest {
         StoredObjectContentRepository contentRepository = mock(StoredObjectContentRepository.class);
         MultipartUploadApplicationServiceImpl service = new MultipartUploadApplicationServiceImpl(
                 multipartUploadRepository, contentRepository, mock(StorageApplicationService.class));
-        when(multipartUploadRepository.getMultipartSessionByUploadId(UPLOAD_ID)).thenReturn(session());
+        when(multipartUploadRepository.getMultipartSessionByUploadId(UPLOAD_ID_REF))
+                .thenReturn(session());
 
         assertThrows(
                 RuntimeException.class,

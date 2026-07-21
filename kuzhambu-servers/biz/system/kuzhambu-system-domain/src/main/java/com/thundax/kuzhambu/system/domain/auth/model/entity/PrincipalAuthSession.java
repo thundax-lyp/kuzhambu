@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.system.domain.auth.model.entity;
 
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalAuthSessionId;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalClientId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -20,18 +21,18 @@ public class PrincipalAuthSession {
 
     private PrincipalAuthSessionId id;
     private PrincipalKey principalKey;
-    private String clientId;
+    private PrincipalClientId clientId;
     private Map<String, Object> values = new LinkedHashMap<>();
     private Date issuedAt;
     private Date lastAccessTime;
     private Date expireAt;
 
     public static PrincipalAuthSession create(
-            PrincipalKey principalKey, String clientId, Date issuedAt, long ttlSeconds) {
+            PrincipalKey principalKey, PrincipalClientId clientId, Date issuedAt, long ttlSeconds) {
         if (principalKey == null) {
             throw new IllegalArgumentException("principalKey can not be null");
         }
-        if (clientId == null || clientId.isBlank()) {
+        if (clientId == null) {
             throw new IllegalArgumentException("clientId can not be blank");
         }
         if (issuedAt == null) {
@@ -50,15 +51,20 @@ public class PrincipalAuthSession {
                 new Date(issuedAt.getTime() + ttlSeconds * 1000L));
     }
 
+    public static PrincipalAuthSession create(
+            PrincipalKey principalKey, String clientId, Date issuedAt, long ttlSeconds) {
+        return create(principalKey, PrincipalClientId.ofNullable(clientId), issuedAt, ttlSeconds);
+    }
+
     public static PrincipalAuthSession restore(
             PrincipalAuthSessionId id,
             PrincipalKey principalKey,
-            String clientId,
+            PrincipalClientId clientId,
             Map<String, Object> values,
             Date issuedAt,
             Date lastAccessTime,
             Date expireAt) {
-        if (id == null || principalKey == null || clientId == null || clientId.isBlank()) {
+        if (id == null || principalKey == null || clientId == null) {
             throw new IllegalArgumentException("principal auth session state can not be null");
         }
         return new PrincipalAuthSession(
@@ -69,6 +75,18 @@ public class PrincipalAuthSession {
                 issuedAt,
                 lastAccessTime,
                 expireAt);
+    }
+
+    public static PrincipalAuthSession restore(
+            PrincipalAuthSessionId id,
+            PrincipalKey principalKey,
+            String clientId,
+            Map<String, Object> values,
+            Date issuedAt,
+            Date lastAccessTime,
+            Date expireAt) {
+        return restore(
+                id, principalKey, PrincipalClientId.ofNullable(clientId), values, issuedAt, lastAccessTime, expireAt);
     }
 
     public boolean isExpired(Date now) {
@@ -91,6 +109,14 @@ public class PrincipalAuthSession {
             values = new LinkedHashMap<>();
         }
         return values;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = PrincipalClientId.ofNullable(clientId);
+    }
+
+    public void setClientId(PrincipalClientId clientId) {
+        this.clientId = clientId;
     }
 
     private static String nextHexSnowflakeId() {

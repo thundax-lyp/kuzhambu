@@ -9,10 +9,12 @@ import com.thundax.kuzhambu.common.core.crypto.Sha256Digest;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalAccessTokenIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalAuthSessionIdCodec;
+import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalClientIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalRefreshTokenIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalRefreshToken;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalTokenStatus;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalType;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalClientId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalRefreshTokenCode;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalRefreshTokenId;
@@ -89,7 +91,7 @@ public class PrincipalRefreshTokenRepositoryImpl implements PrincipalRefreshToke
 
     @Override
     public List<PrincipalRefreshToken> listByPrincipalKeyAndClientIdAndStatus(
-            PrincipalKey principalKey, String clientId, PrincipalTokenStatus status) {
+            PrincipalKey principalKey, PrincipalClientId clientId, PrincipalTokenStatus status) {
         if (principalKey == null || status == null) {
             return new ArrayList<>();
         }
@@ -199,13 +201,14 @@ public class PrincipalRefreshTokenRepositoryImpl implements PrincipalRefreshToke
         return principalIndexKey(refreshToken.getPrincipalKey(), refreshToken.getClientId(), refreshToken.getStatus());
     }
 
-    private String principalIndexKey(PrincipalKey principalKey, String clientId, PrincipalTokenStatus status) {
+    private String principalIndexKey(
+            PrincipalKey principalKey, PrincipalClientId clientId, PrincipalTokenStatus status) {
         return PRINCIPAL_INDEX_PREFIX
                 + principalKey.getPrincipalType().value()
                 + "_"
                 + principalKey.getPrincipalId()
                 + "_"
-                + StringUtils.defaultIfBlank(clientId, "DEFAULT")
+                + StringUtils.defaultIfBlank(PrincipalClientIdCodec.toValue(clientId), "DEFAULT")
                 + "_"
                 + status.value();
     }
@@ -237,7 +240,7 @@ public class PrincipalRefreshTokenRepositoryImpl implements PrincipalRefreshToke
         refreshToken.setId(PrincipalRefreshTokenIdCodec.toDomain(cacheDTO.id));
         refreshToken.setTokenCode(PrincipalRefreshTokenCode.ofNullable(cacheDTO.tokenCode));
         refreshToken.setAccessTokenId(PrincipalAccessTokenIdCodec.toDomain(cacheDTO.accessTokenId));
-        refreshToken.setClientId(cacheDTO.clientId);
+        refreshToken.setClientId(PrincipalClientIdCodec.toDomain(cacheDTO.clientId));
         refreshToken.setSessionId(PrincipalAuthSessionIdCodec.toDomain(cacheDTO.sessionId));
         refreshToken.setPrincipalKey(PrincipalKey.of(PrincipalType.from(cacheDTO.principalType), cacheDTO.principalId));
         refreshToken.setIssuedAt(cacheDTO.issuedAt);
@@ -251,7 +254,7 @@ public class PrincipalRefreshTokenRepositoryImpl implements PrincipalRefreshToke
         cacheDTO.id = PrincipalRefreshTokenIdCodec.toValue(refreshToken.getId());
         cacheDTO.tokenCode = refreshToken.getTokenCode().value();
         cacheDTO.accessTokenId = PrincipalAccessTokenIdCodec.toValue(refreshToken.getAccessTokenId());
-        cacheDTO.clientId = refreshToken.getClientId();
+        cacheDTO.clientId = PrincipalClientIdCodec.toValue(refreshToken.getClientId());
         cacheDTO.sessionId = PrincipalAuthSessionIdCodec.toValue(refreshToken.getSessionId());
         cacheDTO.principalType =
                 refreshToken.getPrincipalKey().getPrincipalType().value();

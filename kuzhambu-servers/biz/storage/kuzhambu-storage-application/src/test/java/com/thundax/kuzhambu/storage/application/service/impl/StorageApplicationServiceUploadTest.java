@@ -23,6 +23,7 @@ import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectRefer
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageOwnerRef;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContentRepository;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectReferenceRepository;
@@ -252,12 +253,13 @@ class StorageApplicationServiceUploadTest {
         StoredObjectRepository storageRepository = mock(StoredObjectRepository.class);
         StorageApplicationServiceImpl service = new StorageApplicationServiceImpl(
                 storageRepository, referenceRepository, mock(StoredObjectContentRepository.class));
-        when(referenceRepository.listObjectIdsByOwner("USER", "owner-1"))
+        StorageOwnerRef ownerRef = StorageOwnerRef.of(StorageOwnerType.USER, "owner-1");
+        when(referenceRepository.listObjectIdsByOwner(ownerRef))
                 .thenReturn(List.of(StoredObjectId.of(100L), StoredObjectId.of(101L)));
         when(referenceRepository.countByObjectId(StoredObjectId.of(100L))).thenReturn(0L);
         when(referenceRepository.countByObjectId(StoredObjectId.of(101L))).thenReturn(1L);
 
-        when(referenceRepository.deleteByOwner("USER", "owner-1")).thenReturn(2);
+        when(referenceRepository.deleteByOwner(ownerRef)).thenReturn(2);
 
         int removed = service.removeReferences(new RemoveStorageReferencesCommand(StorageOwnerType.USER, "owner-1"));
 

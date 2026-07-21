@@ -28,7 +28,7 @@ pnpm run test
 pnpm run build
 ```
 
-默认开发服务端口为 `5173`，后台接口代理目标通过 `.env` 中的 `VITE_ADMIN_API_BASE_URL` 配置。
+默认开发服务端口为 `5173`，后台接口代理目标优先通过 `.env` 中的 `VITE_ADMIN_API_BASE_URL` 配置；未配置完整 URL 时，使用 `KUZHAMBU_ADMIN_SERVER_PORT` 组装本地 starter 地址。
 
 ## 路由规划
 

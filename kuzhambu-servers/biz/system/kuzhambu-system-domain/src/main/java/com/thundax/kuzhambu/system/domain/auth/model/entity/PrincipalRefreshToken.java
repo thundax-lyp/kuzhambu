@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.system.domain.auth.model.entity;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalTokenStatus;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalAccessTokenId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalAuthSessionId;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalClientId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalRefreshTokenCode;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalRefreshTokenId;
@@ -20,7 +21,7 @@ public class PrincipalRefreshToken {
     private PrincipalRefreshTokenId id;
     private PrincipalRefreshTokenCode tokenCode;
     private PrincipalAccessTokenId accessTokenId;
-    private String clientId;
+    private PrincipalClientId clientId;
     private PrincipalAuthSessionId sessionId;
     private PrincipalKey principalKey;
     private Date issuedAt;
@@ -29,6 +30,14 @@ public class PrincipalRefreshToken {
 
     public boolean canRefresh(Date now) {
         return isActive() && !isExpired(now);
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = PrincipalClientId.ofNullable(clientId);
+    }
+
+    public void setClientId(PrincipalClientId clientId) {
+        this.clientId = clientId;
     }
 
     public void markUsed() {

@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.system.domain.auth.model.entity;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalAuthenticationMethod;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalLoginEventType;
+import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalClientId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalLoginEventId;
 import java.util.Date;
@@ -34,7 +35,7 @@ public class PrincipalLoginEvent {
 
     private PrincipalLoginEventId id;
     private PrincipalKey principalKey;
-    private String clientId;
+    private PrincipalClientId clientId;
     private PrincipalLoginEventType eventType;
     private PrincipalAuthenticationMethod authenticationMethod;
     private PrincipalIdentityType identityType;
@@ -42,4 +43,12 @@ public class PrincipalLoginEvent {
     private String ip;
     private String userAgent;
     private String reason;
+
+    public void setClientId(String clientId) {
+        this.clientId = PrincipalClientId.ofNullable(clientId);
+    }
+
+    public void setClientId(PrincipalClientId clientId) {
+        this.clientId = clientId;
+    }
 }

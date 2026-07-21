@@ -1,12 +1,12 @@
 package com.thundax.kuzhambu.system.infra.core.persistence.assembler;
 
 import com.thundax.kuzhambu.system.domain.core.codec.LogIdCodec;
+import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Log;
 import com.thundax.kuzhambu.system.domain.core.model.enums.LogType;
 import com.thundax.kuzhambu.system.infra.core.persistence.dataobject.LogDO;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.lang3.StringUtils;
 
 public final class LogPersistenceAssembler {
 
@@ -18,7 +18,7 @@ public final class LogPersistenceAssembler {
         }
         LogDO dataObject = new LogDO();
         dataObject.setId(LogIdCodec.toValue(entity.getId()));
-        dataObject.setUserId(StringUtils.isBlank(entity.getUserId()) ? null : Long.valueOf(entity.getUserId()));
+        dataObject.setUserId(UserIdCodec.toValue(entity.getUserId()));
         dataObject.setType(typeValue(entity.getType()));
         dataObject.setLogDate(entity.getLogDate());
         dataObject.setTitle(entity.getTitle());
@@ -36,7 +36,7 @@ public final class LogPersistenceAssembler {
         }
         Log entity = new Log();
         entity.setId(LogIdCodec.toDomain(dataObject.getId()));
-        entity.setUserId(dataObject.getUserId() == null ? null : String.valueOf(dataObject.getUserId()));
+        entity.setUserId(UserIdCodec.toDomain(dataObject.getUserId()));
         entity.setType(typeFrom(dataObject.getType()));
         entity.setLogDate(dataObject.getLogDate());
         entity.setTitle(dataObject.getTitle());

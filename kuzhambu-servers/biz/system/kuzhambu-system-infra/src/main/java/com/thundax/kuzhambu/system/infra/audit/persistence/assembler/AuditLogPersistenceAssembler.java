@@ -10,6 +10,8 @@ import com.thundax.kuzhambu.system.domain.audit.codec.AuditMetaIdCodec;
 import com.thundax.kuzhambu.system.domain.audit.model.entity.AuditLog;
 import com.thundax.kuzhambu.system.domain.audit.model.enums.AuditOperatorType;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditChangedField;
+import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditObjectRef;
+import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditOperatorRef;
 import com.thundax.kuzhambu.system.infra.audit.persistence.dataobject.AuditLogDO;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -63,14 +65,13 @@ public final class AuditLogPersistenceAssembler {
         AuditLog entity = new AuditLog();
         entity.setId(AuditLogIdCodec.toDomain(dataObject.getId()));
         entity.setMetaId(AuditMetaIdCodec.toDomain(dataObject.getMetaId()));
-        entity.setObjectType(dataObject.getObjectType());
-        entity.setObjectId(dataObject.getObjectId());
+        entity.setObjectRef(AuditObjectRef.of(dataObject.getObjectType(), dataObject.getObjectId()));
         entity.setVersion(dataObject.getVersion());
         entity.setPreviousVersion(dataObject.getPreviousVersion());
         entity.setAction(AuditAction.from(dataObject.getAction()));
         entity.setIdempotencyKey(dataObject.getIdempotencyKey());
-        entity.setOperatorType(AuditOperatorType.from(dataObject.getOperatorType()));
-        entity.setOperatorId(dataObject.getOperatorId());
+        entity.setOperatorRef(
+                AuditOperatorRef.of(AuditOperatorType.from(dataObject.getOperatorType()), dataObject.getOperatorId()));
         entity.setOperatorName(dataObject.getOperatorName());
         entity.setSource(dataObject.getSource());
         entity.setRequestId(dataObject.getRequestId());

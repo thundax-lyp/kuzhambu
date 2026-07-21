@@ -50,15 +50,17 @@ vi.mock("@/components/kuzhambu-modal", () => {
         children,
         footer,
         open,
+        testId,
         title
     }: {
         children: React.ReactNode;
         footer?: React.ReactNode;
         open?: boolean;
+        testId?: string;
         title?: React.ReactNode;
     }) =>
         open ? (
-            <div role="dialog" aria-label={String(title)}>
+            <div role="dialog" aria-label={String(title)} data-testid={testId}>
                 <h3>{title}</h3>
                 {children}
                 {footer}
@@ -209,7 +211,7 @@ describe("PromptsPage", () => {
         expect(await screen.findByText("版本")).toBeInTheDocument();
         expect(screen.getByRole("table", { name: "提示词版本列表" })).toBeInTheDocument();
         fireEvent.click(screen.getByTestId("ai-prompts-prompts-view-variables-button"));
-        const variableDialog = await screen.findByRole("dialog", { name: "能力变量" });
+        const variableDialog = await screen.findByTestId("ai-prompts-prompt-variables-modal");
         expect(within(variableDialog).getByText("bodyText")).toBeInTheDocument();
         expect(within(variableDialog).getByText("contentType")).toBeInTheDocument();
         expect(within(variableDialog).getByText("内容类型")).toBeInTheDocument();
@@ -225,7 +227,7 @@ describe("PromptsPage", () => {
         await openSelectAndChoose("提示词能力", "古籍翻译");
         fireEvent.click(screen.getByTestId("ai-prompts-prompts-view-variables-button"));
 
-        const variableDialog = await screen.findByRole("dialog", { name: "能力变量" });
+        const variableDialog = await screen.findByTestId("ai-prompts-prompt-variables-modal");
         expect(within(variableDialog).getByText("contextPath")).toBeInTheDocument();
         expect(within(variableDialog).getByText("sourceText")).toBeInTheDocument();
         expect(within(variableDialog).getByText("待翻译的源文本")).toBeInTheDocument();

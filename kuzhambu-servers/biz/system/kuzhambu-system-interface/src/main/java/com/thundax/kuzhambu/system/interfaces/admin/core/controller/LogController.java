@@ -30,7 +30,6 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -85,14 +84,10 @@ public class LogController {
     }
 
     private User getLogUser(Log log) {
-        if (log == null || StringUtils.isBlank(log.getUserId())) {
+        if (log == null || log.getUserId() == null) {
             return null;
         }
-        try {
-            return userService.get(UserIdCodec.toDomain(Long.valueOf(log.getUserId())));
-        } catch (NumberFormatException ignored) {
-            return null;
-        }
+        return userService.get(log.getUserId());
     }
 
     private String getAccountLoginName(User user) {
