@@ -23,6 +23,7 @@ export interface KnowledgeSyncItemRecord {
     sourceId?: string | null;
     syncStatus?: string | null;
     syncedAt?: number | null;
+    title?: string | null;
     updatedAt?: number | null;
 }
 
@@ -72,6 +73,8 @@ export interface DiscoveryQaSessionDetailRecord {
     status?: string | null;
     title?: string | null;
 }
+
+export type DiscoveryQaSessionPageRecord = Page<DiscoveryQaSessionDetailRecord>;
 
 export interface DiscoveryQaSessionExportRecord {
     completedAt?: number | null;

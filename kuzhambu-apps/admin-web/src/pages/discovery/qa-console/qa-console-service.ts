@@ -2,15 +2,24 @@ import { postJson } from "@/api/http";
 import type {
     DiscoveryQaSessionExportRecord,
     DiscoveryQaSessionDetailRecord,
+    DiscoveryQaSessionPageRecord,
     DiscoveryQaSourceRecord,
     KnowledgeHealthRecord,
     KnowledgeSyncItemPageRecord,
     KnowledgeSyncItemRecord,
     ProviderTraceRecord
-} from "./qa-admin-types";
+} from "./qa-console-types";
 
 export interface DiscoveryQaSessionGetCommand {
     sessionId: string;
+}
+
+export interface DiscoveryQaSessionPageQuery {
+    openedAtEnd?: string | null;
+    openedAtStart?: string | null;
+    pageNo?: number | null;
+    pageSize?: number | null;
+    title?: string | null;
 }
 
 export interface DiscoveryQaSessionDeleteCommand {
@@ -85,6 +94,15 @@ export const getQaSession = (command: DiscoveryQaSessionGetCommand) => {
         "/discovery/qa-admin/session/get",
         {
             body: command
+        }
+    );
+};
+
+export const pageQaSessions = (query: DiscoveryQaSessionPageQuery = {}) => {
+    return postJson<DiscoveryQaSessionPageRecord, DiscoveryQaSessionPageQuery>(
+        "/discovery/qa-admin/session/page",
+        {
+            body: query
         }
     );
 };

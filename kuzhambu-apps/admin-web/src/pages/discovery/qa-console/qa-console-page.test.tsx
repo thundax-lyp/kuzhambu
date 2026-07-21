@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
-import { QaAdminPage } from "./qa-admin-page";
+import { QaConsolePage } from "./qa-console-page";
 
 const mocks = vi.hoisted(() => ({
     createQaSessionExport: vi.fn(),
@@ -10,20 +10,20 @@ const mocks = vi.hoisted(() => ({
     getKnowledgeHealth: vi.fn(),
     getQaSession: vi.fn(),
     getQaTrace: vi.fn(),
-    listQaSources: vi.fn(),
+    pageQaSessions: vi.fn(),
     pageKnowledgeSyncItems: vi.fn(),
     rebuildKnowledge: vi.fn(),
     createKnowledgeSync: vi.fn()
 }));
 
-vi.mock("./qa-admin-service", () => ({
+vi.mock("./qa-console-service", () => ({
     createQaSessionExport: mocks.createQaSessionExport,
     deleteQaSession: mocks.deleteQaSession,
     getKnowledgeHealth: mocks.getKnowledgeHealth,
     getQaSession: mocks.getQaSession,
     getQaSessionDetail: mocks.getQaSession,
     getQaTrace: mocks.getQaTrace,
-    listQaSources: mocks.listQaSources,
+    pageQaSessions: mocks.pageQaSessions,
     pageKnowledgeSyncItems: mocks.pageKnowledgeSyncItems,
     rebuildKnowledge: mocks.rebuildKnowledge,
     createKnowledgeSync: mocks.createKnowledgeSync
@@ -43,7 +43,7 @@ const renderPage = () => {
     return render(
         <QueryClientProvider client={testQueryClient}>
             <AntdApp>
-                <QaAdminPage />
+                <QaConsolePage />
             </AntdApp>
         </QueryClientProvider>
     );
@@ -57,7 +57,11 @@ const findButtonByNormalizedText = (text: string) => {
     return button as HTMLButtonElement;
 };
 
-describe("QaAdminPage", () => {
+const switchPanel = async (user: ReturnType<typeof userEvent.setup>, panelName: string) => {
+    await user.click(screen.getByText(panelName));
+};
+
+describe("QaConsolePage", () => {
     beforeEach(() => {
         vi.clearAllMocks();
         mocks.getKnowledgeHealth.mockResolvedValue({
@@ -84,6 +88,25 @@ describe("QaAdminPage", () => {
                 }
             ]
         });
+        mocks.pageQaSessions.mockResolvedValue({
+            pageNo: 1,
+            pageSize: 10,
+            count: 1,
+            totalCount: 1,
+            totalPage: 1,
+            records: [
+                {
+                    ownerUserId: 1001,
+                    sessionId: "2001",
+                    title: "礼器问答",
+                    status: "OPEN",
+                    scope: "PORTAL",
+                    contextMode: "QA",
+                    contextContentType: "SANCAI_ENTRY",
+                    openedAt: 1700000000000
+                }
+            ]
+        });
         mocks.getQaTrace.mockResolvedValue({
             aiCallId: 9101,
             aiErrorMessage: null,
@@ -99,19 +122,6 @@ describe("QaAdminPage", () => {
             raw: '{"answer":"礼器答案"}',
             retrievedAt: "2026-01-01 10:00:00"
         });
-        mocks.listQaSources.mockResolvedValue([
-            {
-                contentId: 1001,
-                contentType: "SANCAI_ENTRY",
-                knowledgeBase: "kuzhambu-qa",
-                score: 0.91,
-                sourceId: "5001",
-                sourceRank: 1,
-                sourceStatus: "AVAILABLE",
-                snippet: "礼器，礼之所用也。",
-                titleSnapshot: "礼器条目"
-            }
-        ]);
         mocks.pageKnowledgeSyncItems.mockResolvedValue({
             pageNo: 1,
             pageSize: 10,
@@ -123,10 +133,11 @@ describe("QaAdminPage", () => {
                     sourceId: "SANCAI_ENTRY:1001",
                     contentType: "SANCAI_ENTRY",
                     contentId: 1001,
+                    title: "黄帝",
                     knowledgeBaseName: "kuzhambu-qa",
                     currentVersionNo: 2,
                     knowledgeRevision: "rev-2",
-                    syncStatus: "SYNCED",
+                    syncStatus: "SUCCEEDED",
                     syncedAt: 1700000000000,
                     updatedAt: 1700000001000
                 }
@@ -137,7 +148,8 @@ describe("QaAdminPage", () => {
             sourceId: "SANCAI_ENTRY:1001",
             contentType: "SANCAI_ENTRY",
             contentId: 1001,
-            syncStatus: "SYNCED"
+            title: "黄帝",
+            syncStatus: "SUCCEEDED"
         });
         mocks.deleteQaSession.mockResolvedValue(undefined);
         mocks.createQaSessionExport.mockResolvedValue({
@@ -162,40 +174,43 @@ describe("QaAdminPage", () => {
         expect(await screen.findByText("kuzhambu-qa")).toBeInTheDocument();
         expect(screen.getByText("AVAILABLE")).toBeInTheDocument();
 
-        await user.click(screen.getByRole("button", { name: "重建知识库" }));
+        await switchPanel(user, "知识文档");
+        await user.click(screen.getByRole("button", { name: "全部同步" }));
 
         await waitFor(() => {
             expect(mocks.rebuildKnowledge.mock.calls[0]?.[0]).toEqual({});
         });
-        expect(await screen.findByText("3")).toBeInTheDocument();
     }, 30000);
 
     it("renders sync table and applies contentType and syncStatus filters", async () => {
         const user = userEvent.setup();
         renderPage();
 
-        await user.clear(screen.getByLabelText("同步状态"));
-        await user.type(screen.getByLabelText("同步状态"), "SYNCED");
-        await user.click(screen.getByRole("button", { name: "查询同步" }));
+        await switchPanel(user, "知识文档");
+        expect(screen.getByRole("combobox", { name: "内容类型" })).toBeInTheDocument();
+        expect(screen.getByRole("combobox", { name: "同步状态" })).toBeInTheDocument();
+        await user.click(screen.getByRole("button", { name: /查\s*询/u }));
 
         await waitFor(() => {
             expect(mocks.pageKnowledgeSyncItems.mock.calls.at(-1)?.[0]).toEqual({
                 contentType: "SANCAI_ENTRY",
                 pageNo: 1,
                 pageSize: 10,
-                syncStatus: "SYNCED"
+                syncStatus: null
             });
         });
-        expect(await screen.findByText("SANCAI_ENTRY:1001")).toBeInTheDocument();
-        expect(screen.getByText(/rev-2/u)).toBeInTheDocument();
+        expect(await screen.findByText("黄帝")).toBeInTheDocument();
+        expect(screen.getAllByText("三才图会").length).toBeGreaterThan(1);
+        expect(screen.getByText("成功")).toBeInTheDocument();
+        expect(screen.getAllByText("2023-11-15").length).toBeGreaterThan(0);
     }, 30000);
 
     it("supports row sync action", async () => {
-        const user = userEvent.setup();
         renderPage();
 
-        await user.click(screen.getByRole("button", { name: "查询同步" }));
-        await screen.findByText("SANCAI_ENTRY:1001");
+        fireEvent.click(screen.getByText("知识文档"));
+        fireEvent.click(screen.getByRole("button", { name: /查\s*询/u }));
+        await screen.findByText("黄帝");
         fireEvent.click(findButtonByNormalizedText("同步"));
 
         await waitFor(() => {
@@ -207,82 +222,66 @@ describe("QaAdminPage", () => {
         });
     }, 30000);
 
-    it("loads session sources and provider trace with formatted raw json", async () => {
+    it("loads session table and opens details drawer", async () => {
         const user = userEvent.setup();
-        const writeText = vi.fn().mockResolvedValue(undefined);
-        Object.defineProperty(navigator, "clipboard", {
-            configurable: true,
-            value: { writeText }
-        });
         renderPage();
 
-        await user.click(screen.getByRole("button", { name: "加载会话" }));
-        expect(await screen.findByText("礼器问答")).toBeInTheDocument();
-        expect(screen.getByText("礼器在哪里出现？")).toBeInTheDocument();
-
-        await user.click(screen.getByRole("button", { name: "加载来源" }));
-        expect(await screen.findByText("礼器条目")).toBeInTheDocument();
-
-        await user.click(screen.getByRole("button", { name: "加载轨迹" }));
-        expect(await screen.findByText("kb-1")).toBeInTheDocument();
-        expect(screen.getByText("9101")).toBeInTheDocument();
-        expect(screen.getByText("SUCCEEDED")).toBeInTheDocument();
-        expect(screen.getByText(/"answer": "礼器答案"/u)).toBeInTheDocument();
-
-        await user.click(screen.getByRole("button", { name: /复\s*制/u }));
-
-        expect(writeText).toHaveBeenCalledWith("9101");
-    }, 30000);
-
-    it("disables AI call id copy when trace has no AI call id", async () => {
-        const user = userEvent.setup();
-        mocks.getQaTrace.mockResolvedValueOnce({
-            traceId: "9002",
-            provider: "FASTGPT",
-            raw: null
-        });
-        renderPage();
-
-        await user.click(screen.getByRole("button", { name: "加载轨迹" }));
-
+        await switchPanel(user, "会话管理");
+        await user.click(screen.getByRole("button", { name: /查\s*询/u }));
         await waitFor(() => {
-            expect(mocks.getQaTrace).toHaveBeenCalled();
+            expect(mocks.pageQaSessions.mock.calls.at(-1)?.[0]).toEqual({
+                openedAtEnd: null,
+                openedAtStart: null,
+                pageNo: 1,
+                pageSize: 10,
+                title: null
+            });
         });
-        expect(screen.getByRole("button", { name: /复\s*制/u })).toBeDisabled();
+        expect(await screen.findByText("礼器问答")).toBeInTheDocument();
+        fireEvent.click(screen.getByTestId("discovery-qa-console-qa-console-view-session-button"));
+        await waitFor(() => {
+            expect(mocks.getQaSession.mock.calls[0]?.[0]).toEqual({ sessionId: "2001" });
+        });
+        expect(await screen.findByText("礼器在哪里出现？")).toBeInTheDocument();
     }, 30000);
 
-    it("deletes session, shows removed status, and exports deleted session", async () => {
+    it("links diagnostics to FastGPT", async () => {
         const user = userEvent.setup();
-        const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+        renderPage();
+        await switchPanel(user, "问答诊断");
+
+        expect(screen.getByText("知识条目、分段、召回配置以 FastGPT 为准。")).toBeInTheDocument();
+        expect(screen.getByRole("link", { name: "FastGPT 控制台" })).toHaveAttribute(
+            "href",
+            "http://localhost:13000"
+        );
+    }, 30000);
+
+    it("deletes session from table action", async () => {
         renderPage();
 
-        await user.click(screen.getByRole("button", { name: "加载会话" }));
+        fireEvent.click(screen.getByText("会话管理"));
+        fireEvent.click(screen.getByRole("button", { name: /查\s*询/u }));
+        await waitFor(() => {
+            expect(mocks.pageQaSessions.mock.calls.at(-1)?.[0]).toEqual({
+                openedAtEnd: null,
+                openedAtStart: null,
+                pageNo: 1,
+                pageSize: 10,
+                title: null
+            });
+        });
         expect(await screen.findByText("礼器问答")).toBeInTheDocument();
 
-        await user.click(screen.getByRole("button", { name: "删除会话" }));
+        fireEvent.click(
+            screen.getByTestId("discovery-qa-console-qa-console-delete-session-button")
+        );
         await waitFor(() => {
             expect(mocks.deleteQaSession.mock.calls[0]?.[0]).toEqual({
                 requesterUserId: 1001,
                 sessionId: "2001"
             });
         });
-        expect(confirmSpy).toHaveBeenCalledWith("确认删除会话 2001？");
-        expect(await screen.findByText("REMOVED")).toBeInTheDocument();
         expect(screen.getByText("会话 2001 已删除")).toBeInTheDocument();
-
-        await user.click(screen.getByRole("button", { name: "导出 CSV" }));
-        await waitFor(() => {
-            expect(mocks.createQaSessionExport.mock.calls[0]?.[0]).toEqual({
-                format: "CSV",
-                requesterUserId: 1001,
-                sessionId: "2001"
-            });
-        });
-        expect(
-            await screen.findByText(/导出成功：discovery-qa-session-2001-7001\.csv/u)
-        ).toBeInTheDocument();
-        expect(screen.getByText(/对象号 8001/u)).toBeInTheDocument();
-
-        confirmSpy.mockRestore();
     }, 30000);
 });
