@@ -85,6 +85,49 @@ export const postJson = async <T, P extends object = object>(path: string, body:
     return payload.data as T;
 };
 
+interface PostEventStreamOptions<P extends object = object> {
+    body: P;
+    onChunk: (chunk: string) => void;
+    signal?: AbortSignal;
+}
+
+export const postEventStream = async <P extends object = object>(
+    path: string,
+    options: PostEventStreamOptions<P>
+) => {
+    const response = await fetch(buildApiUrl(path), {
+        body: JSON.stringify(options.body),
+        headers: {
+            Accept: "text/event-stream",
+            "Content-Type": "application/json"
+        },
+        method: "POST",
+        signal: options.signal
+    });
+
+    if (!response.ok) {
+        throw new Error(`Portal stream request failed: ${response.status}`);
+    }
+    if (!response.body) {
+        throw new Error("Portal stream response is empty");
+    }
+
+    const decoder = new TextDecoder();
+    const reader = response.body.getReader();
+    try {
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) {
+                break;
+            }
+            options.onChunk(decoder.decode(value, { stream: true }));
+        }
+        options.onChunk(decoder.decode());
+    } finally {
+        reader.releaseLock();
+    }
+};
+
 export const postJsonWithAccessToken = async <T, P extends object = object>(
     path: string,
     body: P,

@@ -204,7 +204,9 @@ export const DiscoveryQaPage = () => {
     });
 
     const openSessionMutation = useMutation({ mutationFn: qaService.openQaSession });
-    const chatCompletionMutation = useMutation({ mutationFn: qaService.createQaChatCompletion });
+    const chatCompletionMutation = useMutation({
+        mutationFn: qaService.createQaChatCompletionStream
+    });
     const deleteSessionMutation = useMutation({ mutationFn: qaService.deleteQaSession });
     const exportSessionMutation = useMutation({ mutationFn: qaService.exportQaSession });
 
@@ -370,33 +372,43 @@ export const DiscoveryQaPage = () => {
         }
 
         const selectedContext = selectedSession ?? null;
+        let streamedAnswer = "";
         let response: DiscoveryQaChatCompletionResponse;
         try {
             response = await chatCompletionMutation.mutateAsync({
-                messages: [
-                    {
-                        content: questionText,
-                        role: "user"
-                    }
-                ],
-                metadata: {
-                    contextContentId:
-                        parseNumber(String(selectedContext?.contextContentId ?? "")) ??
-                        parseNumber(form.contextContentId),
-                    contextContentType:
-                        parseString(selectedContext?.contextContentType ?? "") ??
-                        parseString(form.contextContentType),
-                    contextMode:
-                        parseString(selectedContext?.contextMode ?? "") ??
-                        parseString(form.contextMode),
-                    sessionId
+                onDelta: (content) => {
+                    streamedAnswer += content;
+                    updateTimeline(sessionId, assistantMessageId, {
+                        content: streamedAnswer,
+                        status: "loading"
+                    });
                 },
-                model: FIXED_MODEL,
-                options: {},
-                requestId: parseString(form.requestId),
-                sessionId,
-                stream: false,
-                traceId: parseString(form.traceId)
+                request: {
+                    messages: [
+                        {
+                            content: questionText,
+                            role: "user"
+                        }
+                    ],
+                    metadata: {
+                        contextContentId:
+                            parseNumber(String(selectedContext?.contextContentId ?? "")) ??
+                            parseNumber(form.contextContentId),
+                        contextContentType:
+                            parseString(selectedContext?.contextContentType ?? "") ??
+                            parseString(form.contextContentType),
+                        contextMode:
+                            parseString(selectedContext?.contextMode ?? "") ??
+                            parseString(form.contextMode),
+                        sessionId
+                    },
+                    model: FIXED_MODEL,
+                    options: {},
+                    requestId: parseString(form.requestId),
+                    sessionId,
+                    stream: true,
+                    traceId: parseString(form.traceId)
+                }
             });
         } catch (error) {
             updateTimeline(sessionId, assistantMessageId, {
@@ -409,7 +421,7 @@ export const DiscoveryQaPage = () => {
             throw error;
         }
 
-        const answerText = extractCompletionMessage(response);
+        const answerText = extractCompletionMessage(response) || streamedAnswer;
         const hasAnswer = Boolean(answerText);
         const isSucceeded = hasAnswer && response.answerStatus !== "FAILED";
 
