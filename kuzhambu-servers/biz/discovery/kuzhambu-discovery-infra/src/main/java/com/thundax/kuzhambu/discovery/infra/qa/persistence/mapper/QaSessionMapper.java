@@ -17,9 +17,11 @@ public interface QaSessionMapper extends BaseMapper<QaSessionDO> {
             select * from discovery_qa_session
             where (#{openedAtStart} is null or opened_at >= #{openedAtStart})
               and (#{openedAtEnd} is null or opened_at <= #{openedAtEnd})
+              and removed_at is null
             order by opened_at desc
             """)
-    List<QaSessionDO> selectByOpenedAtRange(Date openedAtStart, Date openedAtEnd);
+    List<QaSessionDO> selectByOpenedAtRange(
+            @Param("openedAtStart") Date openedAtStart, @Param("openedAtEnd") Date openedAtEnd);
 
     @Update(
             """
