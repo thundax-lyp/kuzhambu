@@ -6,7 +6,7 @@ import { PromptsPage } from "../pages/ai/prompts/prompts-page";
 import { AuditLogPage } from "../pages/audit/audit-log/audit-log-page";
 import { LoginPage } from "../pages/auth/login/login-page";
 import { QaPage } from "../pages/discovery/qa/qa-page";
-import { QaAdminPage } from "../pages/discovery/qa-admin/qa-admin-page";
+import { QaConsolePage } from "../pages/discovery/qa-console/qa-console-page";
 import { SearchPage } from "../pages/discovery/search/search-page";
 import { SearchStatisticsPage } from "../pages/discovery/search-statistics/search-statistics-page";
 import { MingCustomsPage } from "../pages/classics/ming-customs/ming-customs-page";
@@ -155,7 +155,11 @@ const router = createBrowserRouter(
                         },
                         {
                             path: "discovery/qa-admin",
-                            element: <QaAdminPage />
+                            element: <Navigate to="/discovery/qa-console" replace />
+                        },
+                        {
+                            path: "discovery/qa-console",
+                            element: <QaConsolePage />
                         },
                         {
                             path: "discovery/qa",
