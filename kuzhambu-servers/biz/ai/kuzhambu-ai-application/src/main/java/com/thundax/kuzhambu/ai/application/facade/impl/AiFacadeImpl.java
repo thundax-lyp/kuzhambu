@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationReposito
 import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainService;
 import com.thundax.kuzhambu.ai.domain.knowledge.service.KnowledgeAiExtractionDomainService;
 import com.thundax.kuzhambu.ai.facade.AiFacade;
+import com.thundax.kuzhambu.ai.facade.DiscoveryAiStreamHandler;
 import com.thundax.kuzhambu.ai.facade.dto.AiCallRecordFacadeDto;
 import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
 import com.thundax.kuzhambu.ai.facade.request.AiBatchJobFailureFacadeRequest;
@@ -29,6 +30,7 @@ import com.thundax.kuzhambu.ai.facade.response.DiscoveryAiFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.KnowledgeAiExtractionFacadeResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Service
 public class AiFacadeImpl implements AiFacade {
@@ -78,6 +80,17 @@ public class AiFacadeImpl implements AiFacade {
     public DiscoveryAiFacadeResponse generateDiscoveryAnswer(DiscoveryAiFacadeRequest request) {
         return aiFacadeAssembler.toFacadeResponse(
                 discoveryAiApplicationService.generateAnswer(aiFacadeAssembler.toDomainRequest(request)));
+    }
+
+    @Override
+    public DiscoveryAiFacadeResponse streamDiscoveryAnswer(
+            DiscoveryAiFacadeRequest request, DiscoveryAiStreamHandler streamHandler) {
+        return aiFacadeAssembler.toFacadeResponse(
+                discoveryAiApplicationService.streamAnswer(aiFacadeAssembler.toDomainRequest(request), event -> {
+                    if (event != null && StringUtils.hasText(event.getDeltaText()) && streamHandler != null) {
+                        streamHandler.onDelta(event.getDeltaText());
+                    }
+                }));
     }
 
     @Override

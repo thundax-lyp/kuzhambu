@@ -26,6 +26,9 @@ public interface AiFacade {
 
     DiscoveryAiFacadeResponse generateDiscoveryAnswer(DiscoveryAiFacadeRequest request);
 
+    DiscoveryAiFacadeResponse streamDiscoveryAnswer(
+            DiscoveryAiFacadeRequest request, DiscoveryAiStreamHandler streamHandler);
+
     KnowledgeAiExtractionFacadeResponse extractKnowledgeRelations(KnowledgeAiExtractionFacadeRequest request);
 
     KnowledgeAiExtractionFacadeResponse extractKnowledgeGraph(KnowledgeAiExtractionFacadeRequest request);

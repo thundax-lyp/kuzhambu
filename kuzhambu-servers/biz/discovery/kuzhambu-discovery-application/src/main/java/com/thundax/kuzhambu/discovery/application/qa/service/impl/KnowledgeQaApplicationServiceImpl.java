@@ -319,7 +319,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
         questionMessage.setId(questionMessagePk);
         questionMessage.setMessageId(questionMessagePk);
         if (aiRequest != null) {
-            ChatCompletionResult result = completeSingleDocumentWithAi(
+            return completeSingleDocumentWithAi(
                     command,
                     session,
                     model,
@@ -328,12 +328,8 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
                     questionMessagePk,
                     aiRequest,
                     singleDocumentKnowledge,
-                    now);
-            String answer = firstAnswerContent(result);
-            if (StringUtils.isNotBlank(answer)) {
-                streamHandler.onDelta(answer);
-            }
-            return result;
+                    now,
+                    streamHandler);
         }
         KnowledgeChatRequest providerRequest = toKnowledgeChatRequest(command, session, model, question, enhancement);
 
@@ -491,10 +487,36 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             DiscoveryAiFacadeRequest aiRequest,
             ClassicsQaKnowledgeFacadeDto knowledge,
             Date startedAt) {
+        return completeSingleDocumentWithAi(
+                command,
+                session,
+                model,
+                question,
+                contextTurnCount,
+                questionMessagePk,
+                aiRequest,
+                knowledge,
+                startedAt,
+                null);
+    }
+
+    private ChatCompletionResult completeSingleDocumentWithAi(
+            ChatCompletionCommand command,
+            QaSession session,
+            String model,
+            String question,
+            int contextTurnCount,
+            Long questionMessagePk,
+            DiscoveryAiFacadeRequest aiRequest,
+            ClassicsQaKnowledgeFacadeDto knowledge,
+            Date startedAt,
+            ChatCompletionStreamHandler streamHandler) {
         DiscoveryAiFacadeResponse aiResponse = null;
         String failureReason = null;
         try {
-            aiResponse = aiFacade.generateDiscoveryAnswer(aiRequest);
+            aiResponse = streamHandler == null
+                    ? aiFacade.generateDiscoveryAnswer(aiRequest)
+                    : aiFacade.streamDiscoveryAnswer(aiRequest, streamHandler::onDelta);
             if (!isAiSucceeded(aiResponse)) {
                 failureReason = aiFailureReason(aiResponse);
             }
@@ -1061,17 +1083,6 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             return null;
         }
         return StringUtils.defaultString(firstChoice.message().content(), null);
-    }
-
-    private String firstAnswerContent(ChatCompletionResult result) {
-        if (result == null || result.getChoices() == null || result.getChoices().isEmpty()) {
-            return null;
-        }
-        ChatCompletionResult.ChatCompletionChoice choice = result.getChoices().get(0);
-        if (choice == null || choice.getMessage() == null) {
-            return null;
-        }
-        return choice.getMessage().getContent();
     }
 
     private String resolveModel(ChatCompletionCommand command, QaSession session) {

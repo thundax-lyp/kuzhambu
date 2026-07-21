@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.thundax.kuzhambu.ai.facade.AiFacade;
+import com.thundax.kuzhambu.ai.facade.DiscoveryAiStreamHandler;
 import com.thundax.kuzhambu.ai.facade.dto.AiCallRecordFacadeDto;
 import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
 import com.thundax.kuzhambu.ai.facade.request.AiBatchJobFailureFacadeRequest;
@@ -1196,6 +1197,12 @@ class KnowledgeGraphExtractionApplicationServiceTest {
 
         @Override
         public DiscoveryAiFacadeResponse generateDiscoveryAnswer(DiscoveryAiFacadeRequest request) {
+            return null;
+        }
+
+        @Override
+        public DiscoveryAiFacadeResponse streamDiscoveryAnswer(
+                DiscoveryAiFacadeRequest request, DiscoveryAiStreamHandler streamHandler) {
             return null;
         }
 
