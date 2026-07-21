@@ -19,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 public class ApiResponseBodyAdviceTest {
 
@@ -139,6 +140,21 @@ public class ApiResponseBodyAdviceTest {
         assertSame(body, result);
     }
 
+    @Test
+    public void shouldKeepSseEmitterUnwrapped() throws Exception {
+        SseEmitter body = new SseEmitter();
+
+        Object result = advice.beforeBodyWrite(
+                body,
+                returnType(WrappedController.class, "stream"),
+                MediaType.TEXT_EVENT_STREAM,
+                MappingJackson2HttpMessageConverter.class,
+                null,
+                null);
+
+        assertSame(body, result);
+    }
+
     private MethodParameter returnType(Class<?> controllerClass, String methodName) throws Exception {
         Method method = controllerClass.getDeclaredMethod(methodName);
         return new MethodParameter(method, -1);
@@ -185,6 +201,10 @@ public class ApiResponseBodyAdviceTest {
         }
 
         public PageResponse<Object> page() {
+            return null;
+        }
+
+        public SseEmitter stream() {
             return null;
         }
     }

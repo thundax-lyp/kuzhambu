@@ -70,13 +70,8 @@ class DiscoveryQaPortalControllerTest {
                 "chatCompletions",
                 "chat/completions",
                 DiscoveryQaRequests.ChatCompletionsRequest.class);
-        assertPostMapping(
-                DiscoveryQaPortalController.class,
-                "chatCompletionsStream",
-                "chat/completions/stream",
-                DiscoveryQaRequests.ChatCompletionsRequest.class);
         assertPostMappingProduces(
-                DiscoveryQaPortalController.class,
+                DiscoveryQaPortalStreamController.class,
                 "chatCompletionsStream",
                 MediaType.TEXT_EVENT_STREAM_VALUE,
                 DiscoveryQaRequests.ChatCompletionsRequest.class);
@@ -399,17 +394,17 @@ class DiscoveryQaPortalControllerTest {
     }
 
     @Test
-    void chatCompletionsStreamShouldDelegateAsNonStreamingProviderCall() {
+    void chatCompletionsStreamShouldDelegateAsStreamingProviderCall() {
         QaApplicationService service = mock(QaApplicationService.class);
         KnowledgeQaApplicationService knowledgeQaApplicationService = mock(KnowledgeQaApplicationService.class);
-        DiscoveryQaPortalController controller =
-                new DiscoveryQaPortalController(service, knowledgeQaApplicationService);
+        DiscoveryQaPortalStreamController controller =
+                new DiscoveryQaPortalStreamController(knowledgeQaApplicationService);
         DiscoveryQaRequests.ChatCompletionsRequest request = new DiscoveryQaRequests.ChatCompletionsRequest();
         request.setSessionId("5001");
         request.setModel("kuzhambu-qa");
         request.setMessages(List.of(message("user", "黄帝是谁")));
         request.setStream(true);
-        when(knowledgeQaApplicationService.chatCompletion(any()))
+        when(knowledgeQaApplicationService.chatCompletionStream(any(), any()))
                 .thenReturn(new ChatCompletionResult(
                         5001L,
                         7001L,
@@ -426,28 +421,31 @@ class DiscoveryQaPortalControllerTest {
 
         assertTrue(emitter != null);
         verify(knowledgeQaApplicationService, timeout(1000))
-                .chatCompletion(argThat(command ->
-                        command != null && Long.valueOf(5001L).equals(command.getSessionId()) && !command.isStream()));
+                .chatCompletionStream(
+                        argThat(command -> command != null
+                                && Long.valueOf(5001L).equals(command.getSessionId())
+                                && command.isStream()),
+                        any());
     }
 
     @Test
     void chatCompletionsStreamShouldSanitizeProviderErrors() throws Exception {
         QaApplicationService service = mock(QaApplicationService.class);
         KnowledgeQaApplicationService knowledgeQaApplicationService = mock(KnowledgeQaApplicationService.class);
-        DiscoveryQaPortalController controller =
-                new DiscoveryQaPortalController(service, knowledgeQaApplicationService);
+        DiscoveryQaPortalStreamController controller =
+                new DiscoveryQaPortalStreamController(knowledgeQaApplicationService);
         DiscoveryQaRequests.ChatCompletionsRequest request = new DiscoveryQaRequests.ChatCompletionsRequest();
         request.setSessionId("5001");
         request.setModel("kuzhambu-qa");
         request.setMessages(List.of(message("user", "黄帝是谁")));
-        when(knowledgeQaApplicationService.chatCompletion(any()))
+        when(knowledgeQaApplicationService.chatCompletionStream(any(), any()))
                 .thenThrow(new IllegalStateException("500 Internal Server Error: appId is empty"));
 
         var emitter = controller.chatCompletionsStream(request);
 
         assertTrue(emitter != null);
-        verify(knowledgeQaApplicationService, timeout(1000)).chatCompletion(any());
-        Method method = DiscoveryQaPortalController.class.getDeclaredMethod("toClientErrorMessage");
+        verify(knowledgeQaApplicationService, timeout(1000)).chatCompletionStream(any(), any());
+        Method method = DiscoveryQaPortalStreamController.class.getDeclaredMethod("toClientErrorMessage");
         method.setAccessible(true);
         assertEquals("问答生成失败，请稍后重试。", method.invoke(controller));
     }

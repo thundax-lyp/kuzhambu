@@ -5,4 +5,6 @@ import com.thundax.kuzhambu.discovery.application.qa.result.ChatCompletionResult
 
 public interface KnowledgeQaApplicationService {
     ChatCompletionResult chatCompletion(ChatCompletionCommand command);
+
+    ChatCompletionResult chatCompletionStream(ChatCompletionCommand command, ChatCompletionStreamHandler streamHandler);
 }

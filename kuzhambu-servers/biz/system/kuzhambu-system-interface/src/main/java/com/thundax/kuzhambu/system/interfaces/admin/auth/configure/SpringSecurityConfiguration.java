@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.system.interfaces.admin.auth.security.filter.AccessT
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.AdminAuthService;
 import com.thundax.kuzhambu.system.interfaces.admin.auth.service.PermissionService;
 import com.thundax.kuzhambu.system.interfaces.admin.configure.KuzhambuProperties;
+import jakarta.servlet.DispatcherType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -62,6 +63,7 @@ public class SpringSecurityConfiguration {
                         requests.requestMatchers(excludePaths.toArray(new String[0]))
                                 .permitAll();
                     }
+                    requests.dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll();
                     requests.requestMatchers("/api/**")
                             .authenticated()
                             .anyRequest()

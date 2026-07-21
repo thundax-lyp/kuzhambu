@@ -63,7 +63,7 @@ class DiscoveryQaConversationControllerTest {
                 "chat/completions",
                 DiscoveryQaRequests.ChatCompletionsRequest.class);
         assertPostMappingProduces(
-                DiscoveryQaConversationController.class,
+                DiscoveryQaConversationStreamController.class,
                 "chatCompletionsStream",
                 "chat/completions/stream",
                 MediaType.TEXT_EVENT_STREAM_VALUE,
@@ -107,18 +107,18 @@ class DiscoveryQaConversationControllerTest {
     }
 
     @Test
-    void chatCompletionsStreamShouldDelegateAsNonStreamingProviderCall() {
+    void chatCompletionsStreamShouldDelegateAsStreamingProviderCall() {
         QaApplicationService qaApplicationService = mock(QaApplicationService.class);
         KnowledgeQaApplicationService knowledgeQaApplicationService = mock(KnowledgeQaApplicationService.class);
-        DiscoveryQaConversationController controller =
-                new DiscoveryQaConversationController(qaApplicationService, knowledgeQaApplicationService);
+        DiscoveryQaConversationStreamController controller =
+                new DiscoveryQaConversationStreamController(knowledgeQaApplicationService);
         DiscoveryQaRequests.ChatCompletionsRequest request = new DiscoveryQaRequests.ChatCompletionsRequest();
         request.setSessionId("5001");
         request.setModel("kuzhambu-qa");
         request.setMessages(List.of(message("user", "礼学是什么？")));
         request.setStream(true);
 
-        when(knowledgeQaApplicationService.chatCompletion(any()))
+        when(knowledgeQaApplicationService.chatCompletionStream(any(), any()))
                 .thenReturn(new ChatCompletionResult(
                         5001L,
                         7001L,
@@ -135,29 +135,32 @@ class DiscoveryQaConversationControllerTest {
 
         assertTrue(emitter != null);
         verify(knowledgeQaApplicationService, timeout(1000))
-                .chatCompletion(argThat(command ->
-                        command != null && Long.valueOf(5001L).equals(command.getSessionId()) && !command.isStream()));
+                .chatCompletionStream(
+                        argThat(command -> command != null
+                                && Long.valueOf(5001L).equals(command.getSessionId())
+                                && command.isStream()),
+                        any());
     }
 
     @Test
     void chatCompletionsStreamShouldSanitizeProviderErrors() throws Exception {
         QaApplicationService qaApplicationService = mock(QaApplicationService.class);
         KnowledgeQaApplicationService knowledgeQaApplicationService = mock(KnowledgeQaApplicationService.class);
-        DiscoveryQaConversationController controller =
-                new DiscoveryQaConversationController(qaApplicationService, knowledgeQaApplicationService);
+        DiscoveryQaConversationStreamController controller =
+                new DiscoveryQaConversationStreamController(knowledgeQaApplicationService);
         DiscoveryQaRequests.ChatCompletionsRequest request = new DiscoveryQaRequests.ChatCompletionsRequest();
         request.setSessionId("5001");
         request.setModel("kuzhambu-qa");
         request.setMessages(List.of(message("user", "礼学是什么？")));
-        when(knowledgeQaApplicationService.chatCompletion(any()))
+        when(knowledgeQaApplicationService.chatCompletionStream(any(), any()))
                 .thenThrow(new IllegalStateException(
                         "500 Internal Server Error on POST request: {\"message\":\"appId is empty\"}"));
 
         controller.chatCompletionsStream(request);
 
-        verify(knowledgeQaApplicationService, timeout(1000)).chatCompletion(any());
-        Method method =
-                DiscoveryQaConversationController.class.getDeclaredMethod("toClientErrorMessage", Exception.class);
+        verify(knowledgeQaApplicationService, timeout(1000)).chatCompletionStream(any(), any());
+        Method method = DiscoveryQaConversationStreamController.class.getDeclaredMethod(
+                "toClientErrorMessage", Exception.class);
         method.setAccessible(true);
         assertEquals(
                 "问答应用未配置，请检查 FastGPT 应用配置。", method.invoke(controller, new IllegalStateException("appId is empty")));
