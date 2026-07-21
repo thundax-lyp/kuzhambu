@@ -43,6 +43,13 @@ const mocks = vi.hoisted(() => ({
         };
     }),
     getQaSession: vi.fn(async () => ({
+        messages: [] as Array<{
+            content: string;
+            messageId: string;
+            messageStatus: string;
+            role: string;
+            sessionId: string;
+        }>,
         openedAt: 1700000000000,
         sessionId: "7001",
         title: "知识中心问答"
