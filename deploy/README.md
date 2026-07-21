@@ -26,6 +26,11 @@ The Java starters use API-specific context paths:
 - `admin-starter`: `/kuzhambu-admin-api`
 - `portal-starter`: `/kuzhambu-api`
 
+Nginx renders its upstream configuration from the same starter port variables that Compose passes to the Java services:
+
+- `KUZHAMBU_ADMIN_SERVER_PORT`, default `20010`
+- `KUZHAMBU_PORTAL_SERVER_PORT`, default `20020`
+
 The frontend web routes stay under `/kuzhambu-admin/` and `/kuzhambu/`.
 
 ## Internal Operations Routes
