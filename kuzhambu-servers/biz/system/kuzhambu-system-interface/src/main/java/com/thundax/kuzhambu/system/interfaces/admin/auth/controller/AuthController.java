@@ -25,7 +25,6 @@ import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalAuthenticati
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionToken;
-import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Log;
 import com.thundax.kuzhambu.system.domain.core.model.entity.User;
 import com.thundax.kuzhambu.system.domain.core.model.enums.LogType;
@@ -345,7 +344,7 @@ public class AuthController {
 
     private void writeLog(HttpServletRequest currentRequest, String title, User user, String loginName) {
         Log log = new Log();
-        log.setUserId(UserIdCodec.toStringValue(user.getId()));
+        log.setUserId(user.getId());
         log.setTitle("系统-登录-" + title);
         log.setLogDate(new Date());
         log.setRemoteAddr(RequestIpUtils.getIpAddr(currentRequest));

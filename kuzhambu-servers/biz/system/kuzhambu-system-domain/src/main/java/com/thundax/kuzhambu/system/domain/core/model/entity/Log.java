@@ -1,11 +1,9 @@
 package com.thundax.kuzhambu.system.domain.core.model.entity;
 
-import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.enums.LogType;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.LogId;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import java.util.Date;
-import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,43 +28,4 @@ public class Log {
     private String requestParams;
     private String remarks;
     private Date createDate;
-
-    public void setRequestParamMap(Map<String, String[]> paramMap) {
-        if (paramMap != null) {
-            StringBuilder params = new StringBuilder();
-            for (Map.Entry<String, String[]> param : paramMap.entrySet()) {
-                params.append("".equals(params.toString()) ? "" : "&")
-                        .append(param.getKey())
-                        .append("=");
-                String paramValue = "";
-                if (param.getValue() != null && param.getValue().length > 0) {
-                    paramValue = param.getValue()[0];
-                }
-                String safeParamValue = endsWithIgnoreCase(param.getKey(), "password") ? "" : paramValue;
-                params.append(safeParamValue.length() > 100 ? safeParamValue.substring(0, 100) : safeParamValue);
-            }
-            String requestParams = params.toString();
-            this.setRequestParams(requestParams.length() > 300 ? requestParams.substring(0, 300) : requestParams);
-        }
-    }
-
-    public void setType(String type) {
-        this.type = type == null || type.isBlank() ? null : LogType.from(type);
-    }
-
-    public void setType(LogType type) {
-        this.type = type;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = UserIdCodec.toDomain(userId);
-    }
-
-    public void setUserId(UserId userId) {
-        this.userId = userId;
-    }
-
-    private static boolean endsWithIgnoreCase(String value, String suffix) {
-        return value != null && suffix != null && value.toLowerCase().endsWith(suffix.toLowerCase());
-    }
 }
