@@ -280,7 +280,9 @@ describe("DiscoverySearchPage", () => {
         const resultLink = getResultLink(container, "礼器条目");
         expect(resultLink?.textContent).toContain("礼器条目");
         expect(resultLink?.getAttribute("target")).toBe("_blank");
-        expect(resultLink?.getAttribute("href")).toBe("/shares/1001");
+        expect(resultLink?.getAttribute("href")).toBe(
+            "/discovery/search-item?type=SANCAI_ENTRY&id=1001"
+        );
 
         await act(async () => {
             resultLink?.click();
@@ -323,7 +325,7 @@ describe("DiscoverySearchPage", () => {
                             highlightText: "礼器条目摘要",
                             resultRank: 1,
                             summary: "礼器条目摘要",
-                            targetPath: "/classics/sancai/300000000001",
+                            targetPath: "javascript:alert(1)",
                             title: "礼器条目"
                         }
                     ]
@@ -340,7 +342,7 @@ describe("DiscoverySearchPage", () => {
         await flushMutations();
         const resultLink = getResultLink(container, "礼器条目");
         expect(resultLink?.getAttribute("href")).toBe(
-            "/discovery/search-item?type=SANCAI_ENTRY&id=300000000001"
+            "/discovery/search-item?type=SANCAI_ENTRY&id=1001"
         );
         expect(resultLink?.getAttribute("target")).toBe("_blank");
         expect(resultLink?.getAttribute("rel")).toBe("noreferrer");

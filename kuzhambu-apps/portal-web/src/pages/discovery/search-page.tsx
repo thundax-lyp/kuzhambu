@@ -157,47 +157,7 @@ const joinList = (values: string[]) => values.join(", ");
 
 const hasListValue = (value: string, token: string) => splitList(value).includes(token);
 
-const normalizeResultTargetPath = (
-    targetPath?: string | null,
-    contentType?: string | null,
-    contentId?: number | string | null
-) => {
-    const trimmedPath = targetPath?.trim();
-    if (trimmedPath) {
-        try {
-            const baseUrl = "http://portal.local";
-            const url = new URL(trimmedPath, baseUrl);
-            const sancaiMatch = /^\/classics\/sancai\/([^/]+)$/u.exec(url.pathname);
-            const wangqiMatch = /^\/classics\/wangqi\/([^/]+)$/u.exec(url.pathname);
-            const mingCustomsMatch = /^\/classics\/ming-customs\/([^/]+)$/u.exec(url.pathname);
-            if (url.origin !== baseUrl) {
-                return trimmedPath;
-            }
-
-            if (sancaiMatch) {
-                return `/discovery/search-item?type=SANCAI_ENTRY&id=${encodeURIComponent(decodeURIComponent(sancaiMatch[1]))}`;
-            }
-            if (url.pathname === "/classics/sancai" && url.searchParams.get("id")) {
-                return `/discovery/search-item?type=SANCAI_ENTRY&id=${encodeURIComponent(url.searchParams.get("id") ?? "")}`;
-            }
-            if (wangqiMatch) {
-                return `/discovery/search-item?type=WANGQI_DOCUMENT&id=${encodeURIComponent(decodeURIComponent(wangqiMatch[1]))}`;
-            }
-            if (url.pathname === "/classics/wangqi" && url.searchParams.get("id")) {
-                return `/discovery/search-item?type=WANGQI_DOCUMENT&id=${encodeURIComponent(url.searchParams.get("id") ?? "")}`;
-            }
-            if (mingCustomsMatch) {
-                return `/discovery/search-item?type=MING_CUSTOMS&id=${encodeURIComponent(decodeURIComponent(mingCustomsMatch[1]))}`;
-            }
-            if (url.pathname === "/classics/ming-customs" && url.searchParams.get("id")) {
-                return `/discovery/search-item?type=MING_CUSTOMS&id=${encodeURIComponent(url.searchParams.get("id") ?? "")}`;
-            }
-            return trimmedPath;
-        } catch {
-            return trimmedPath;
-        }
-    }
-
+const toSearchItemPath = (contentType?: string | null, contentId?: number | string | null) => {
     if (contentType && SEARCH_ITEM_CONTENT_TYPES.has(contentType) && contentId) {
         return `/discovery/search-item?type=${encodeURIComponent(contentType)}&id=${encodeURIComponent(String(contentId))}`;
     }
@@ -762,8 +722,7 @@ export const DiscoverySearchPage = () => {
                         <div className="portal-discovery-hit-list">
                             {results.map(({ group, groupIndex, item, itemIndex }) => {
                                 const hitKey = `${group.groupKey || `group-${groupIndex}`}-${item.resultRank ?? itemIndex}`;
-                                const targetPath = normalizeResultTargetPath(
-                                    item.targetPath,
+                                const targetPath = toSearchItemPath(
                                     item.contentType,
                                     item.contentId
                                 );
