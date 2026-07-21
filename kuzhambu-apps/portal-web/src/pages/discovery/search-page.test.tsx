@@ -20,7 +20,7 @@ const LocationProbe = ({ onChange }: { onChange: (value: string) => void }) => {
     return null;
 };
 
-const renderPage = (initialEntry = "/discovery/search") => {
+const renderPage = (initialEntry = "/discovery/search", basename?: string) => {
     const container = document.createElement("div");
     document.body.appendChild(container);
     const locations: string[] = [];
@@ -40,7 +40,7 @@ const renderPage = (initialEntry = "/discovery/search") => {
     act(() => {
         root.render(
             <QueryClientProvider client={queryClient}>
-                <MemoryRouter initialEntries={[initialEntry]}>
+                <MemoryRouter basename={basename} initialEntries={[initialEntry]}>
                     <DiscoverySearchPage />
                     <LocationProbe onChange={(value) => locations.push(value)} />
                 </MemoryRouter>
@@ -337,12 +337,13 @@ describe("DiscoverySearchPage", () => {
         });
 
         const { container, getLocation, root } = renderPage(
-            "/discovery/search?q=%E7%A4%BC%E5%99%A8"
+            "/kuzhambu/discovery/search?q=%E7%A4%BC%E5%99%A8",
+            "/kuzhambu"
         );
         await flushMutations();
         const resultLink = getResultLink(container, "礼器条目");
         expect(resultLink?.getAttribute("href")).toBe(
-            "/discovery/search-item?type=SANCAI_ENTRY&id=1001"
+            "/kuzhambu/discovery/search-item?type=SANCAI_ENTRY&id=1001"
         );
         expect(resultLink?.getAttribute("target")).toBe("_blank");
         expect(resultLink?.getAttribute("rel")).toBe("noreferrer");

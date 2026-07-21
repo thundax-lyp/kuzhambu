@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type MouseEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Search, SlidersHorizontal, X } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -757,17 +757,17 @@ export const DiscoverySearchPage = () => {
 
                                 if (targetPath) {
                                     return (
-                                        <a
+                                        <Link
                                             aria-label={`打开搜索结果：${item.title || "未命名结果"}`}
                                             className="portal-discovery-hit"
-                                            href={targetPath}
                                             key={hitKey}
                                             rel="noreferrer"
                                             target="_blank"
+                                            to={targetPath}
                                             onClick={() => recordResultClick(group, item)}
                                         >
                                             {content}
-                                        </a>
+                                        </Link>
                                     );
                                 }
 
