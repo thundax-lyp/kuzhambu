@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.discovery.application.qa.query;
 
+import java.util.Date;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,9 +11,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class QaSessionPageQuery {
-    private Long ownerUserId;
-    private String status;
-    private String scope;
+    private String title;
+    private Date openedAtStart;
+    private Date openedAtEnd;
     private int pageNo;
     private int pageSize;
 }

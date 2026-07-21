@@ -6,9 +6,11 @@ import com.thundax.kuzhambu.classics.facade.request.ClassicsQaKnowledgeFacadeReq
 import com.thundax.kuzhambu.classics.facade.response.ClassicsQaKnowledgeFacadeResponse;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.application.qa.command.DeleteQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.ExportQaSessionCommand;
 import com.thundax.kuzhambu.discovery.application.qa.command.OpenQaSessionCommand;
+import com.thundax.kuzhambu.discovery.application.qa.query.QaSessionPageQuery;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaMessageResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionExportResult;
@@ -34,6 +36,7 @@ import com.thundax.kuzhambu.storage.facade.request.UploadStorageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +68,8 @@ public class QaApplicationServiceImpl implements QaApplicationService {
     private static final String DELETED_STATUS = "DELETED";
     private static final String REMOVED_STATUS = "REMOVED";
     private static final String INACTIVE_STATUS = "INACTIVE";
+    private static final int DEFAULT_PAGE_NO = 1;
+    private static final int DEFAULT_PAGE_SIZE = 10;
     private final QaSessionRepository qaSessionRepository;
     private final QaMessageRepository qaMessageRepository;
     private final QaSourceRepository qaSourceRepository;
@@ -211,6 +216,31 @@ public class QaApplicationServiceImpl implements QaApplicationService {
     }
 
     @Override
+    public PageResult<QaSessionResult> pageSessions(QaSessionPageQuery query) {
+        int pageNo = normalizePageNo(query == null ? null : query.getPageNo());
+        int pageSize = normalizePageSize(query == null ? null : query.getPageSize());
+        int start = (pageNo - 1) * pageSize;
+        String title = StringUtils.trimToNull(query == null ? null : query.getTitle());
+
+        List<QaSession> allSessions = qaSessionRepository.listByOpenedAtRange(
+                query == null ? null : query.getOpenedAtStart(), query == null ? null : query.getOpenedAtEnd());
+        List<QaSession> filteredSessions = (allSessions == null ? List.<QaSession>of() : allSessions)
+                .stream()
+                        .filter(session -> title == null || StringUtils.containsIgnoreCase(session.getTitle(), title))
+                        .sorted(Comparator.comparing(
+                                QaSession::getOpenedAt, Comparator.nullsLast(Comparator.reverseOrder())))
+                        .toList();
+
+        List<QaSessionResult> pageItems = filteredSessions.stream()
+                .skip(start)
+                .limit(pageSize)
+                .map(this::toSessionResult)
+                .toList();
+
+        return PageResult.of(pageNo, pageSize, filteredSessions.size(), pageItems);
+    }
+
+    @Override
     public QaSessionDetailResult getPortalSessionDetail(Long sessionId, String ownerType, String ownerId) {
         QaSession session = requireSession(sessionId);
         requireOwner(session, ownerType, ownerId);
@@ -303,6 +333,17 @@ public class QaApplicationServiceImpl implements QaApplicationService {
                         ? null
                         : session.getLastMessageAt().getTime(),
                 session.getRemovedAt() == null ? null : session.getRemovedAt().getTime());
+    }
+
+    private int normalizePageNo(Integer pageNo) {
+        return pageNo == null || pageNo <= 0 ? DEFAULT_PAGE_NO : pageNo;
+    }
+
+    private int normalizePageSize(Integer pageSize) {
+        if (pageSize == null || pageSize <= 0) {
+            return DEFAULT_PAGE_SIZE;
+        }
+        return pageSize;
     }
 
     private void validateOpenSessionCommand(OpenQaSessionCommand command) {
