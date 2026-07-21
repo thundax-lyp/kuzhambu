@@ -92,6 +92,72 @@
     background: var(--knowledge-surface-soft);
 }
 
+.knowledge-shell,
+.knowledge-atlas-shell,
+.knowledge-quality-shell,
+.knowledge-lineage-shell {
+    --knowledge-text-strong: var(--text-primary);
+    --knowledge-text-body: var(--text-secondary);
+    --knowledge-text-accent: var(--accent-blue);
+    --knowledge-accent-ink: var(--accent-jade);
+    --knowledge-line-soft: var(--line-subtle);
+    --knowledge-surface-card: var(--surface-panel);
+    --knowledge-surface-soft: var(--surface-soft);
+    --knowledge-shadow-soft: 0 14px 34px rgba(70, 58, 38, 0.08);
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--surface-panel) 54%, transparent),
+            transparent 380px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            transparent 0 34px,
+            color-mix(in srgb, var(--paper-fiber) 54%, transparent) 35px,
+            transparent 36px
+        ),
+        var(--surface-page);
+    color: var(--text-primary);
+}
+
+.knowledge-shell::before,
+.knowledge-atlas-shell::before,
+.knowledge-quality-shell::before {
+    background: none;
+}
+
+.knowledge-hero-copy,
+.knowledge-search-card,
+.knowledge-stat-card,
+.knowledge-guide-card,
+.knowledge-update-card,
+.knowledge-atlas-filter-panel,
+.knowledge-atlas-stage,
+.knowledge-atlas-detail-panel,
+.knowledge-quality-stat-card,
+.knowledge-quality-trend-panel,
+.knowledge-quality-issue-panel,
+.knowledge-quality-source-panel,
+.knowledge-lineage-filter,
+.knowledge-lineage-stage,
+.knowledge-lineage-detail {
+    border-color: var(--line-subtle);
+    border-radius: 8px;
+    background: var(--surface-panel);
+    box-shadow: var(--knowledge-shadow-soft);
+}
+
+.knowledge-guide-icon,
+.knowledge-primary-action {
+    border-color: var(--accent-jade);
+    background: var(--accent-jade);
+    color: #fffaf1;
+}
+
+.knowledge-hero-copy::after {
+    display: none;
+}
+
 @media (max-width: 960px) {
     .knowledge-atlas-header,
     .knowledge-quality-header {

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type MouseEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Search, SlidersHorizontal, X } from "lucide-react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -157,47 +157,7 @@ const joinList = (values: string[]) => values.join(", ");
 
 const hasListValue = (value: string, token: string) => splitList(value).includes(token);
 
-const normalizeResultTargetPath = (
-    targetPath?: string | null,
-    contentType?: string | null,
-    contentId?: number | string | null
-) => {
-    const trimmedPath = targetPath?.trim();
-    if (trimmedPath) {
-        try {
-            const baseUrl = "http://portal.local";
-            const url = new URL(trimmedPath, baseUrl);
-            const sancaiMatch = /^\/classics\/sancai\/([^/]+)$/u.exec(url.pathname);
-            const wangqiMatch = /^\/classics\/wangqi\/([^/]+)$/u.exec(url.pathname);
-            const mingCustomsMatch = /^\/classics\/ming-customs\/([^/]+)$/u.exec(url.pathname);
-            if (url.origin !== baseUrl) {
-                return trimmedPath;
-            }
-
-            if (sancaiMatch) {
-                return `/discovery/search-item?type=SANCAI_ENTRY&id=${encodeURIComponent(decodeURIComponent(sancaiMatch[1]))}`;
-            }
-            if (url.pathname === "/classics/sancai" && url.searchParams.get("id")) {
-                return `/discovery/search-item?type=SANCAI_ENTRY&id=${encodeURIComponent(url.searchParams.get("id") ?? "")}`;
-            }
-            if (wangqiMatch) {
-                return `/discovery/search-item?type=WANGQI_DOCUMENT&id=${encodeURIComponent(decodeURIComponent(wangqiMatch[1]))}`;
-            }
-            if (url.pathname === "/classics/wangqi" && url.searchParams.get("id")) {
-                return `/discovery/search-item?type=WANGQI_DOCUMENT&id=${encodeURIComponent(url.searchParams.get("id") ?? "")}`;
-            }
-            if (mingCustomsMatch) {
-                return `/discovery/search-item?type=MING_CUSTOMS&id=${encodeURIComponent(decodeURIComponent(mingCustomsMatch[1]))}`;
-            }
-            if (url.pathname === "/classics/ming-customs" && url.searchParams.get("id")) {
-                return `/discovery/search-item?type=MING_CUSTOMS&id=${encodeURIComponent(url.searchParams.get("id") ?? "")}`;
-            }
-            return trimmedPath;
-        } catch {
-            return trimmedPath;
-        }
-    }
-
+const toSearchItemPath = (contentType?: string | null, contentId?: number | string | null) => {
     if (contentType && SEARCH_ITEM_CONTENT_TYPES.has(contentType) && contentId) {
         return `/discovery/search-item?type=${encodeURIComponent(contentType)}&id=${encodeURIComponent(String(contentId))}`;
     }
@@ -470,7 +430,6 @@ const DiscoveryPagination = ({
 
 export const DiscoverySearchPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
-    const navigate = useNavigate();
     const [form, setForm] = useState<SearchFormState>(() => toFormState(searchParams));
     const [showAdvancedFilters, setShowAdvancedFilters] = useState(() =>
         hasAdvancedFilters(toFormState(searchParams))
@@ -609,7 +568,7 @@ export const DiscoverySearchPage = () => {
         setSearchParams(nextSearchParams);
     };
 
-    const handleClick = (
+    const recordResultClick = (
         group: DiscoverySearchGroupResponse,
         item: DiscoverySearchItemResponse
     ) => {
@@ -620,15 +579,6 @@ export const DiscoverySearchPage = () => {
         if (command) {
             void discoverySearchService.recordSearchClickEvent(command);
         }
-
-        const targetPath = normalizeResultTargetPath(
-            item.targetPath,
-            item.contentType,
-            item.contentId
-        );
-        if (targetPath) {
-            navigate(targetPath);
-        }
     };
 
     const shouldShowZeroResult =
@@ -636,16 +586,6 @@ export const DiscoverySearchPage = () => {
 
     return (
         <main className="portal-shell">
-            <header className="portal-header">
-                <div>
-                    <p className="portal-kicker">知识中心 · Discovery</p>
-                    <h1>发现检索台</h1>
-                </div>
-                <Button asChild className="portal-action" size="lg" variant="outline">
-                    <Link to="/">返回首页</Link>
-                </Button>
-            </header>
-
             <form className="portal-discovery-search" onSubmit={handleSubmit}>
                 <section className="portal-discovery-hero" aria-label="Discovery 搜索">
                     <h2>一词入检，先见古籍中的相关线索</h2>
@@ -782,6 +722,10 @@ export const DiscoverySearchPage = () => {
                         <div className="portal-discovery-hit-list">
                             {results.map(({ group, groupIndex, item, itemIndex }) => {
                                 const hitKey = `${group.groupKey || `group-${groupIndex}`}-${item.resultRank ?? itemIndex}`;
+                                const targetPath = toSearchItemPath(
+                                    item.contentType,
+                                    item.contentId
+                                );
                                 const content = (
                                     <div className="portal-discovery-hit-body">
                                         <div className="portal-discovery-hit-title">
@@ -811,13 +755,29 @@ export const DiscoverySearchPage = () => {
                                     </div>
                                 );
 
+                                if (targetPath) {
+                                    return (
+                                        <Link
+                                            aria-label={`打开搜索结果：${item.title || "未命名结果"}`}
+                                            className="portal-discovery-hit"
+                                            key={hitKey}
+                                            rel="noreferrer"
+                                            target="_blank"
+                                            to={targetPath}
+                                            onClick={() => recordResultClick(group, item)}
+                                        >
+                                            {content}
+                                        </Link>
+                                    );
+                                }
+
                                 return (
                                     <button
                                         aria-label={`打开搜索结果：${item.title || "未命名结果"}`}
                                         className="portal-discovery-hit"
                                         key={hitKey}
                                         type="button"
-                                        onClick={() => handleClick(group, item)}
+                                        onClick={() => recordResultClick(group, item)}
                                     >
                                         {content}
                                     </button>
