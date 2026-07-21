@@ -70,6 +70,13 @@ export interface DiscoveryQaChatCompletionStreamRequest {
     signal?: AbortSignal;
 }
 
+class DiscoveryQaStreamError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "DiscoveryQaStreamError";
+    }
+}
+
 const parseSseBlock = (block: string) => {
     const lines = block.split(/\r?\n/);
     let event = "message";
@@ -129,7 +136,9 @@ export const createQaChatCompletionStream = async ({
             return;
         }
         if (message.event === "error") {
-            onError?.(message.data.message ?? "回答生成失败");
+            const errorMessage = message.data.message ?? "回答生成失败";
+            onError?.(errorMessage);
+            throw new DiscoveryQaStreamError(errorMessage);
         }
     };
 

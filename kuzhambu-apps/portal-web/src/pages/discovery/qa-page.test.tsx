@@ -680,4 +680,27 @@ describe("DiscoveryQaPage", () => {
             /https?:\/\/|fastgpt|dataset|collection|appId|baseUrl/iu
         );
     });
+
+    it("preserves portal qa stream error event message", async () => {
+        const qaService = await vi.importActual<typeof import("./qa-service")>("./qa-service");
+        const onError = vi.fn();
+        mocks.postEventStream.mockImplementationOnce(async (_url, options) => {
+            options.onChunk('event:error\ndata:{"message":"FastGPT appId 未配置"}\n\n');
+        });
+
+        await expect(
+            qaService.createQaChatCompletionStream({
+                onError,
+                request: {
+                    messages: [{ content: "礼器是什么？", role: "user" }],
+                    metadata: { sessionId: "2001" },
+                    model: "kuzhambu-qa",
+                    sessionId: "2001",
+                    stream: true
+                }
+            })
+        ).rejects.toThrow("FastGPT appId 未配置");
+
+        expect(onError).toHaveBeenCalledWith("FastGPT appId 未配置");
+    });
 });
