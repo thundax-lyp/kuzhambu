@@ -79,10 +79,10 @@ const setInputValue = (container: HTMLElement, name: string, value: string) => {
     });
 };
 
-const getResultButton = (container: HTMLElement, title: string) => {
+const getResultLink = (container: HTMLElement, title: string) => {
     return container.querySelector(
-        `button[aria-label="打开搜索结果：${title}"]`
-    ) as HTMLButtonElement | null;
+        `a[aria-label="打开搜索结果：${title}"]`
+    ) as HTMLAnchorElement | null;
 };
 
 const clickFilterOption = async (
@@ -277,11 +277,13 @@ describe("DiscoverySearchPage", () => {
         expect(container.textContent).not.toContain("DO_NOT_RENDER_RESPONSE_TRACE");
         expect(container.textContent).not.toContain("DO_NOT_RENDER_ITEM_TRACE");
 
-        const resultButton = getResultButton(container, "礼器条目");
-        expect(resultButton?.textContent).toContain("礼器条目");
+        const resultLink = getResultLink(container, "礼器条目");
+        expect(resultLink?.textContent).toContain("礼器条目");
+        expect(resultLink?.getAttribute("target")).toBe("_blank");
+        expect(resultLink?.getAttribute("href")).toBe("/shares/1001");
 
         await act(async () => {
-            resultButton?.click();
+            resultLink?.click();
         });
 
         expect(mocks.recordSearchClickEvent).toHaveBeenCalledWith({
@@ -296,14 +298,14 @@ describe("DiscoverySearchPage", () => {
             targetPath: "/shares/1001"
         });
         expect(mocks.previewSearchResult).not.toHaveBeenCalled();
-        expect(getLocation()).toBe("/shares/1001");
+        expect(getLocation()).toBe("/discovery/search?q=%E7%A4%BC%E5%99%A8");
 
         act(() => {
             root.unmount();
         });
     });
 
-    it("navigates to the result page when a result is clicked", async () => {
+    it("opens the unified item page in a new tab when a result is clicked", async () => {
         mocks.searchDiscovery.mockResolvedValueOnce({
             displayQueryText: "礼器",
             groupCount: 1,
@@ -336,14 +338,19 @@ describe("DiscoverySearchPage", () => {
             "/discovery/search?q=%E7%A4%BC%E5%99%A8"
         );
         await flushMutations();
-        const resultButton = getResultButton(container, "礼器条目");
+        const resultLink = getResultLink(container, "礼器条目");
+        expect(resultLink?.getAttribute("href")).toBe(
+            "/discovery/search-item?type=SANCAI_ENTRY&id=300000000001"
+        );
+        expect(resultLink?.getAttribute("target")).toBe("_blank");
+        expect(resultLink?.getAttribute("rel")).toBe("noreferrer");
 
         await act(async () => {
-            resultButton?.click();
+            resultLink?.click();
         });
         await flushMutations();
 
-        expect(getLocation()).toBe("/discovery/search-item?type=SANCAI_ENTRY&id=300000000001");
+        expect(getLocation()).toBe("/discovery/search?q=%E7%A4%BC%E5%99%A8");
         expect(mocks.previewSearchResult).not.toHaveBeenCalled();
         const previewDialog = document.body.querySelector('[role="dialog"]');
         expect(previewDialog).toBeNull();
@@ -386,14 +393,17 @@ describe("DiscoverySearchPage", () => {
             "/discovery/search?q=%E7%8E%8B%E5%9C%BB"
         );
         await flushMutations();
-        const resultButton = getResultButton(container, "王圻文档");
+        const resultLink = getResultLink(container, "王圻文档");
+        expect(resultLink?.getAttribute("href")).toBe(
+            "/discovery/search-item?type=WANGQI_DOCUMENT&id=5"
+        );
 
         await act(async () => {
-            resultButton?.click();
+            resultLink?.click();
         });
         await flushMutations();
 
-        expect(getLocation()).toBe("/discovery/search-item?type=WANGQI_DOCUMENT&id=5");
+        expect(getLocation()).toBe("/discovery/search?q=%E7%8E%8B%E5%9C%BB");
 
         act(() => {
             root.unmount();
@@ -433,14 +443,17 @@ describe("DiscoverySearchPage", () => {
             "/discovery/search?q=%E8%8A%82%E4%BB%A4"
         );
         await flushMutations();
-        const resultButton = getResultButton(container, "元旦朝贺");
+        const resultLink = getResultLink(container, "元旦朝贺");
+        expect(resultLink?.getAttribute("href")).toBe(
+            "/discovery/search-item?type=MING_CUSTOMS&id=3001"
+        );
 
         await act(async () => {
-            resultButton?.click();
+            resultLink?.click();
         });
         await flushMutations();
 
-        expect(getLocation()).toBe("/discovery/search-item?type=MING_CUSTOMS&id=3001");
+        expect(getLocation()).toBe("/discovery/search?q=%E8%8A%82%E4%BB%A4");
 
         act(() => {
             root.unmount();

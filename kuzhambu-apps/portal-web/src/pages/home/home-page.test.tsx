@@ -1,7 +1,8 @@
 import { createRoot } from "react-dom/client";
 import { act } from "react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, describe, expect, it } from "vitest";
+import { PortalLayout } from "@/components/portal-layout";
 import { HomePage } from "./home-page";
 
 const renderPage = () => {
@@ -12,7 +13,11 @@ const renderPage = () => {
     act(() => {
         root.render(
             <MemoryRouter>
-                <HomePage />
+                <Routes>
+                    <Route element={<PortalLayout />}>
+                        <Route path="/" element={<HomePage />} />
+                    </Route>
+                </Routes>
             </MemoryRouter>
         );
     });
@@ -25,7 +30,7 @@ describe("HomePage", () => {
         document.body.innerHTML = "";
     });
 
-    it("exposes discovery navigation entry points", () => {
+    it("exposes content portal navigation entry points", () => {
         const { container, root } = renderPage();
 
         const links = Array.from(container.querySelectorAll("a")).map((link) => ({
@@ -35,30 +40,28 @@ describe("HomePage", () => {
 
         expect(links).toEqual(
             expect.arrayContaining([
-                expect.objectContaining({ href: "/classics/sancai", text: "进入三才图会" }),
-                expect.objectContaining({ href: "/knowledge", text: "进入知识馆" }),
-                expect.objectContaining({ href: "/discovery/search", text: "进入检索" }),
-                expect.objectContaining({ href: "/discovery/qa", text: "进入问答" }),
+                expect.objectContaining({ href: "/classics/sancai", text: "浏览三才图会" }),
+                expect.objectContaining({ href: "/knowledge", text: "知识图谱" }),
                 expect.objectContaining({
                     href: "/discovery/search",
-                    text: "搜索古籍、人物、礼制、图谱线索搜索"
+                    text: "搜索条目、图像、人物、地名、典籍...搜索"
                 }),
+                expect.objectContaining({ href: "/discovery/search", text: "进入知识检索" }),
+                expect.objectContaining({ href: "/shares", text: "公开分享" }),
+                expect.objectContaining({ href: "/discovery/qa", text: "问答" }),
                 expect.objectContaining({
                     href: "/classics/sancai",
-                    text: "三才图会浏览已发布的三才图会条目、译文与配图"
+                    text: "凤凰三才图会 · 鸟兽 · 百鸟部黄帝时，凤凰集于岐山之阳，其羽五色各异……05-18"
                 }),
                 expect.objectContaining({
-                    href: "/knowledge",
-                    text: "知识图谱馆进入知识首页，查看图谱、质量与来源导览"
+                    href: "/knowledge/atlas",
+                    text: "古都图志历代都城图景与建置沿革，考镜古今。"
                 }),
                 expect.objectContaining({
                     href: "/discovery/search",
-                    text: "知识检索围绕实体、标签和关系组织检索"
+                    text: "长安与洛阳：两京建置与城市格局比较86 条相关"
                 }),
-                expect.objectContaining({
-                    href: "/discovery/qa",
-                    text: "问答工作台先建会话，再看来源、轨迹与回答"
-                })
+                expect.objectContaining({ href: "/knowledge", text: "关于三才翰典" })
             ])
         );
 

@@ -1,7 +1,19 @@
 .sancai-portal-page {
     min-height: 100vh;
-    background: #f6f4ef;
-    color: #1f2933;
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--surface-panel) 54%, transparent),
+            transparent 380px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            transparent 0 34px,
+            color-mix(in srgb, var(--paper-fiber) 54%, transparent) 35px,
+            transparent 36px
+        ),
+        var(--surface-page);
+    color: var(--text-primary);
     padding: 24px;
 }
 
@@ -9,12 +21,16 @@
     display: grid;
     grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
     min-height: calc(100vh - 48px);
-    border: 1px solid #ded8cc;
-    background: #fffdf8;
+    border: 1px solid var(--line-subtle);
+    border-radius: 8px;
+    background: var(--surface-panel);
+    box-shadow: var(--shadow-soft);
+    overflow: hidden;
 }
 
 .sancai-browser-nav {
-    border-right: 1px solid #ded8cc;
+    border-right: 1px solid var(--line-subtle);
+    background: color-mix(in srgb, var(--surface-soft) 42%, transparent);
     padding: 20px;
 }
 
@@ -29,7 +45,7 @@
 .sancai-browser-toolbar p,
 .sancai-detail-kicker {
     margin: 0;
-    color: #6b7280;
+    color: var(--text-secondary);
     font-size: 15px;
 }
 
@@ -59,9 +75,9 @@
     width: 38px;
     height: 38px;
     flex: 0 0 auto;
-    border: 1px solid rgba(222, 216, 204, 0.9);
+    border: 1px solid var(--line-subtle);
     object-fit: cover;
-    background: #f8f3e8;
+    background: var(--surface-muted);
 }
 
 .sancai-category-summary {
@@ -77,7 +93,7 @@
 }
 
 .sancai-category-summary span:last-child {
-    color: #6b7280;
+    color: var(--text-secondary);
     font-size: 14px;
 }
 
@@ -117,8 +133,9 @@
 }
 
 .sancai-entry-list {
-    border: 1px solid #e5dfd3;
-    background: #fffaf0;
+    border: 1px solid var(--line-subtle);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--surface-panel) 82%, white);
     padding: 10px;
 }
 
@@ -129,17 +146,18 @@
     align-items: center;
     justify-content: space-between;
     border: 0;
-    border-bottom: 1px solid #eee5d6;
+    border-bottom: 1px solid var(--line-subtle);
     background: transparent;
-    color: #1f2933;
+    color: var(--text-primary);
     padding: 10px 8px;
     font-size: 16px;
     text-align: left;
 }
 
 .sancai-entry-item.is-active {
-    background: #273f3b;
-    color: #ffffff;
+    border-radius: 6px;
+    background: var(--accent-jade);
+    color: #fffaf1;
 }
 
 .sancai-pagination {
@@ -151,7 +169,9 @@
 }
 
 .sancai-entry-detail {
+    border: 1px solid var(--line-subtle);
     border-radius: 6px;
+    background: color-mix(in srgb, var(--surface-panel) 88%, white);
     padding: 20px;
 }
 
@@ -167,14 +187,14 @@
     width: 132px;
     height: 88px;
     flex: 0 0 auto;
-    border: 1px solid #e5dfd3;
+    border: 1px solid var(--line-subtle);
     object-fit: cover;
-    background: #f8f3e8;
+    background: var(--surface-muted);
 }
 
 .sancai-entry-image.is-cover {
-    border-color: #273f3b;
-    box-shadow: 0 0 0 2px rgba(39, 63, 59, 0.16);
+    border-color: var(--accent-jade);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-jade) 18%, transparent);
 }
 
 .sancai-tag-list {
@@ -188,17 +208,17 @@
     display: inline-flex;
     align-items: center;
     min-height: 30px;
-    border: 1px solid #d8ccb8;
+    border: 1px solid color-mix(in srgb, var(--accent-jade) 28%, var(--line-subtle));
     border-radius: 999px;
-    background: #f7efe1;
-    color: #4b3825;
+    background: color-mix(in srgb, var(--surface-soft) 72%, white);
+    color: color-mix(in srgb, var(--accent-blue) 72%, var(--text-primary));
     padding: 4px 11px;
     font-size: 15px;
     line-height: 1.35;
 }
 
 .sancai-detail-section {
-    border-top: 1px solid #ece4d7;
+    border-top: 1px solid var(--line-subtle);
     margin-top: 18px;
     padding-top: 16px;
 }
@@ -210,14 +230,14 @@
 
 .sancai-detail-section p {
     margin: 0;
-    color: #374151;
+    color: var(--text-primary);
     font-size: 18px;
     line-height: 1.95;
     white-space: pre-wrap;
 }
 
 .sancai-muted {
-    color: #6b7280;
+    color: var(--text-secondary);
     margin: 12px;
 }
 
@@ -233,7 +253,7 @@
 
     .sancai-browser-nav {
         border-right: 0;
-        border-bottom: 1px solid #ded8cc;
+        border-bottom: 1px solid var(--line-subtle);
     }
 
     .sancai-browser-toolbar,

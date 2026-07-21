@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type MouseEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Search, SlidersHorizontal, X } from "lucide-react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -470,7 +470,6 @@ const DiscoveryPagination = ({
 
 export const DiscoverySearchPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
-    const navigate = useNavigate();
     const [form, setForm] = useState<SearchFormState>(() => toFormState(searchParams));
     const [showAdvancedFilters, setShowAdvancedFilters] = useState(() =>
         hasAdvancedFilters(toFormState(searchParams))
@@ -609,7 +608,7 @@ export const DiscoverySearchPage = () => {
         setSearchParams(nextSearchParams);
     };
 
-    const handleClick = (
+    const recordResultClick = (
         group: DiscoverySearchGroupResponse,
         item: DiscoverySearchItemResponse
     ) => {
@@ -620,15 +619,6 @@ export const DiscoverySearchPage = () => {
         if (command) {
             void discoverySearchService.recordSearchClickEvent(command);
         }
-
-        const targetPath = normalizeResultTargetPath(
-            item.targetPath,
-            item.contentType,
-            item.contentId
-        );
-        if (targetPath) {
-            navigate(targetPath);
-        }
     };
 
     const shouldShowZeroResult =
@@ -636,16 +626,6 @@ export const DiscoverySearchPage = () => {
 
     return (
         <main className="portal-shell">
-            <header className="portal-header">
-                <div>
-                    <p className="portal-kicker">知识中心 · Discovery</p>
-                    <h1>发现检索台</h1>
-                </div>
-                <Button asChild className="portal-action" size="lg" variant="outline">
-                    <Link to="/">返回首页</Link>
-                </Button>
-            </header>
-
             <form className="portal-discovery-search" onSubmit={handleSubmit}>
                 <section className="portal-discovery-hero" aria-label="Discovery 搜索">
                     <h2>一词入检，先见古籍中的相关线索</h2>
@@ -782,6 +762,11 @@ export const DiscoverySearchPage = () => {
                         <div className="portal-discovery-hit-list">
                             {results.map(({ group, groupIndex, item, itemIndex }) => {
                                 const hitKey = `${group.groupKey || `group-${groupIndex}`}-${item.resultRank ?? itemIndex}`;
+                                const targetPath = normalizeResultTargetPath(
+                                    item.targetPath,
+                                    item.contentType,
+                                    item.contentId
+                                );
                                 const content = (
                                     <div className="portal-discovery-hit-body">
                                         <div className="portal-discovery-hit-title">
@@ -811,13 +796,29 @@ export const DiscoverySearchPage = () => {
                                     </div>
                                 );
 
+                                if (targetPath) {
+                                    return (
+                                        <a
+                                            aria-label={`打开搜索结果：${item.title || "未命名结果"}`}
+                                            className="portal-discovery-hit"
+                                            href={targetPath}
+                                            key={hitKey}
+                                            rel="noreferrer"
+                                            target="_blank"
+                                            onClick={() => recordResultClick(group, item)}
+                                        >
+                                            {content}
+                                        </a>
+                                    );
+                                }
+
                                 return (
                                     <button
                                         aria-label={`打开搜索结果：${item.title || "未命名结果"}`}
                                         className="portal-discovery-hit"
                                         key={hitKey}
                                         type="button"
-                                        onClick={() => handleClick(group, item)}
+                                        onClick={() => recordResultClick(group, item)}
                                     >
                                         {content}
                                     </button>
