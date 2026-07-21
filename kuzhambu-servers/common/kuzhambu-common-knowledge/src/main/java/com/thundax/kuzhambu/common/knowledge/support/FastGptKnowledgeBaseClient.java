@@ -14,6 +14,7 @@ import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatChoice;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatMessage;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatRequest;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatResult;
+import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatStreamHandler;
 import com.thundax.kuzhambu.common.knowledge.model.health.KnowledgeHealthResult;
 import com.thundax.kuzhambu.common.knowledge.model.item.KnowledgeItemDeleteRequest;
 import com.thundax.kuzhambu.common.knowledge.model.item.KnowledgeItemListRequest;
@@ -22,6 +23,10 @@ import com.thundax.kuzhambu.common.knowledge.model.item.KnowledgeItemResult;
 import com.thundax.kuzhambu.common.knowledge.model.item.KnowledgeItemUpsertRequest;
 import com.thundax.kuzhambu.common.knowledge.model.sync.KnowledgeSyncRequest;
 import com.thundax.kuzhambu.common.knowledge.model.sync.KnowledgeSyncResult;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -33,8 +38,11 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestOperations;
 
 public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
@@ -57,6 +65,8 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
     private final RestOperations restOperations;
     private final ObjectMapper objectMapper;
     private final KuzhambuKnowledgeProperties.FastGpt properties;
+    private final Object syncMonitor = new Object();
+    private volatile Boolean supportsSyncCache;
 
     public FastGptKnowledgeBaseClient(
             RestOperations restOperations, ObjectMapper objectMapper, KuzhambuKnowledgeProperties.FastGpt properties) {
@@ -153,6 +163,27 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
     @Override
     public KnowledgeSyncResult syncKnowledgeItem(KnowledgeSyncRequest request) {
         Assert.notNull(request, "Knowledge sync request must not be null");
+        KuzhambuKnowledgeProperties.FastGpt.SyncMode syncMode = properties.getSyncMode();
+        if (KuzhambuKnowledgeProperties.FastGpt.SyncMode.DISABLED.equals(syncMode)) {
+            return skippedSyncResult(request, "DISABLED");
+        }
+        if (KuzhambuKnowledgeProperties.FastGpt.SyncMode.AUTO.equals(syncMode) && !supportsFastGptSync()) {
+            return skippedSyncResult(request, "NOT_SUPPORTED");
+        }
+        try {
+            synchronized (syncMonitor) {
+                return doSyncKnowledgeItem(request);
+            }
+        } catch (RestClientResponseException ex) {
+            if (KuzhambuKnowledgeProperties.FastGpt.SyncMode.AUTO.equals(syncMode) && isNotSupportSync(ex)) {
+                supportsSyncCache = false;
+                return skippedSyncResult(request, "NOT_SUPPORTED");
+            }
+            throw ex;
+        }
+    }
+
+    private KnowledgeSyncResult doSyncKnowledgeItem(KnowledgeSyncRequest request) {
         String knowledgeBaseId = configuredKnowledgeBaseId();
         Map<String, Object> payload = new LinkedHashMap<>();
         putIfHasText(payload, "datasetId", knowledgeBaseId);
@@ -161,7 +192,19 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
         JsonNode body = post("/api/core/dataset/collection/sync", payload);
         JsonNode data = dataNode(body);
         return new KnowledgeSyncResult(
-                textValue(data, "syncId", textValue(data, "id", null)), textValue(data, "status", null), rawMap(body));
+                textValue(data, "syncId", textValue(data, "id", request.knowledgeItemId())),
+                textValue(data, "status", "SUCCEEDED"),
+                rawMap(body));
+    }
+
+    private KnowledgeSyncResult skippedSyncResult(KnowledgeSyncRequest request, String reason) {
+        Map<String, Object> raw = new LinkedHashMap<>();
+        putIfHasText(raw, "provider", PROVIDER);
+        putIfHasText(raw, "knowledgeItemId", request.knowledgeItemId());
+        putIfHasText(raw, "syncMode", properties.getSyncMode().name());
+        putIfHasText(raw, "skipReason", reason);
+        putIfNotNull(raw, "options", request.options());
+        return new KnowledgeSyncResult(request.knowledgeItemId(), "SUCCEEDED", raw);
     }
 
     @Override
@@ -184,14 +227,7 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
     @Override
     public KnowledgeChatResult chat(KnowledgeChatRequest request) {
         Assert.notNull(request, "Knowledge chat request must not be null");
-        Map<String, Object> payload = new LinkedHashMap<>();
-        putIfHasText(payload, "appId", properties.getAppId());
-        putIfHasText(payload, "chatId", textOption(request.metadata(), "chatId"));
-        putIfHasText(payload, "model", request.model());
-        payload.put("stream", request.stream());
-        payload.put("messages", chatMessages(request.messages()));
-        putIfNotNull(payload, "metadata", request.metadata());
-        mergeOptions(payload, request.options());
+        Map<String, Object> payload = chatPayload(request, request.stream());
         JsonNode body = post("/api/v1/chat/completions", payload, chatHeaders());
         String content = extractChatContent(body);
         String id = textValue(body, "id", textOption(request.metadata(), "chatId"));
@@ -205,6 +241,131 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
                 null,
                 Collections.emptyList(),
                 rawMap(body));
+    }
+
+    @Override
+    public KnowledgeChatResult chatStream(KnowledgeChatRequest request, KnowledgeChatStreamHandler streamHandler) {
+        Assert.notNull(request, "Knowledge chat request must not be null");
+        Assert.notNull(streamHandler, "Knowledge chat stream handler must not be null");
+        Map<String, Object> payload = chatPayload(request, true);
+        String content = restOperations.execute(
+                "/api/v1/chat/completions",
+                HttpMethod.POST,
+                clientRequest -> {
+                    clientRequest.getHeaders().putAll(chatStreamHeaders());
+                    byte[] body = writeJson(payload).getBytes(StandardCharsets.UTF_8);
+                    clientRequest.getHeaders().setContentLength(body.length);
+                    clientRequest.getBody().write(body);
+                },
+                response -> readChatStream(response, streamHandler));
+        String id = textOption(request.metadata(), "chatId");
+        Map<String, Object> raw = new LinkedHashMap<>();
+        raw.put("provider", PROVIDER);
+        raw.put("stream", true);
+        return new KnowledgeChatResult(
+                id,
+                "chat.completion",
+                null,
+                request.model(),
+                List.of(new KnowledgeChatChoice(0, new KnowledgeChatMessage("assistant", content), "stop")),
+                null,
+                Collections.emptyList(),
+                raw);
+    }
+
+    private Map<String, Object> chatPayload(KnowledgeChatRequest request, boolean stream) {
+        Map<String, Object> payload = new LinkedHashMap<>();
+        putIfHasText(payload, "appId", properties.getAppId());
+        putIfHasText(payload, "chatId", textOption(request.metadata(), "chatId"));
+        putIfHasText(payload, "model", request.model());
+        payload.put("stream", stream);
+        payload.put("messages", chatMessages(request.messages()));
+        putIfNotNull(payload, "metadata", request.metadata());
+        mergeOptions(payload, request.options());
+        return payload;
+    }
+
+    private String readChatStream(ClientHttpResponse response, KnowledgeChatStreamHandler streamHandler)
+            throws IOException {
+        StringBuilder content = new StringBuilder();
+        StringBuilder eventBlock = new StringBuilder();
+        try (BufferedReader reader =
+                new BufferedReader(new InputStreamReader(response.getBody(), StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (line.isBlank()) {
+                    if (appendChatStreamBlock(eventBlock.toString(), content, streamHandler)) {
+                        return content.toString();
+                    }
+                    eventBlock.setLength(0);
+                    continue;
+                }
+                eventBlock.append(line).append('\n');
+            }
+        }
+        appendChatStreamBlock(eventBlock.toString(), content, streamHandler);
+        return content.toString();
+    }
+
+    private boolean appendChatStreamBlock(
+            String eventBlock, StringBuilder content, KnowledgeChatStreamHandler streamHandler) {
+        if (!StringUtils.hasText(eventBlock)) {
+            return false;
+        }
+        for (String line : eventBlock.split("\\R")) {
+            if (!line.startsWith("data:")) {
+                continue;
+            }
+            String data = line.substring("data:".length()).trim();
+            if (!StringUtils.hasText(data)) {
+                continue;
+            }
+            if ("[DONE]".equals(data)) {
+                return true;
+            }
+            String delta = extractChatStreamDelta(data);
+            if (StringUtils.hasText(delta)) {
+                content.append(delta);
+                streamHandler.onDelta(delta);
+            }
+            if (isChatStreamFinished(data)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isChatStreamFinished(String data) {
+        try {
+            JsonNode body = objectMapper.readTree(data);
+            JsonNode choices = body.path("choices");
+            if (!choices.isArray() || choices.isEmpty()) {
+                return false;
+            }
+            JsonNode choice = choices.get(0);
+            return StringUtils.hasText(textValue(choice, "finish_reason", textValue(choice, "finishReason", null)));
+        } catch (JsonProcessingException ex) {
+            throw new IllegalStateException("Failed to parse FastGPT stream payload", ex);
+        }
+    }
+
+    private String extractChatStreamDelta(String data) {
+        try {
+            JsonNode body = objectMapper.readTree(data);
+            JsonNode choices = body.path("choices");
+            if (choices.isArray() && choices.size() > 0) {
+                JsonNode choice = choices.get(0);
+                String delta = textValue(choice.path("delta"), "content", null);
+                if (StringUtils.hasText(delta)) {
+                    return delta;
+                }
+                return textValue(choice.path("message"), "content", null);
+            }
+            JsonNode dataNode = dataNode(body);
+            return textValue(dataNode, "content", textValue(dataNode, "answer", null));
+        } catch (JsonProcessingException ex) {
+            throw new IllegalStateException("Failed to parse FastGPT stream payload", ex);
+        }
     }
 
     private JsonNode post(String path, Map<String, Object> payload) {
@@ -257,6 +418,12 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
         headers.setBearerAuth(resolveChatApiKey());
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+        return headers;
+    }
+
+    private HttpHeaders chatStreamHeaders() {
+        HttpHeaders headers = chatHeaders();
+        headers.setAccept(List.of(MediaType.TEXT_EVENT_STREAM));
         return headers;
     }
 
@@ -314,6 +481,66 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
             return records;
         }
         return data.isArray() ? data : objectMapper.createArrayNode();
+    }
+
+    private boolean supportsFastGptSync() {
+        Boolean cachedValue = supportsSyncCache;
+        if (cachedValue != null) {
+            return cachedValue;
+        }
+        Boolean detectedValue = detectSupportsFastGptSync();
+        if (detectedValue != null) {
+            supportsSyncCache = detectedValue;
+            return detectedValue;
+        }
+        return true;
+    }
+
+    private Boolean detectSupportsFastGptSync() {
+        String knowledgeBaseId = configuredKnowledgeBaseId();
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("pageNum", 1);
+        payload.put("pageSize", 100);
+        JsonNode body;
+        try {
+            body = post("/api/core/dataset/list", payload);
+        } catch (RestClientException ex) {
+            return null;
+        }
+        JsonNode listNode = listNode(dataNode(body));
+        if (!listNode.isArray()) {
+            return null;
+        }
+        for (JsonNode item : listNode) {
+            String itemId = textValue(item, "_id", textValue(item, "datasetId", textValue(item, "id", null)));
+            if (knowledgeBaseId.equals(itemId)) {
+                return hasEmbeddingVectorModel(item);
+            }
+        }
+        return null;
+    }
+
+    private boolean hasEmbeddingVectorModel(JsonNode dataset) {
+        JsonNode vectorModel = dataset.path("vectorModel");
+        if (vectorModel.isMissingNode() || vectorModel.isNull()) {
+            return false;
+        }
+        if (vectorModel.isTextual()) {
+            return StringUtils.hasText(vectorModel.asText());
+        }
+        return StringUtils.hasText(textValue(vectorModel, "model", null))
+                || "embedding".equalsIgnoreCase(textValue(vectorModel, "type", null));
+    }
+
+    private boolean isNotSupportSync(RestClientResponseException ex) {
+        JsonNode body;
+        try {
+            body = readJson(ex.getResponseBodyAsString());
+        } catch (RuntimeException parseException) {
+            return false;
+        }
+        return body.path("code").asInt() == 501001
+                || "notSupportSync".equalsIgnoreCase(textValue(body, "statusText", null));
     }
 
     private Map<String, Object> rawMap(JsonNode body) {

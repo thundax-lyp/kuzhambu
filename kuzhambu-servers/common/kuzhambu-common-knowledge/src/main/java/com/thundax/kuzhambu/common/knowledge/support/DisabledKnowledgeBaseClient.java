@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.common.knowledge.model.base.KnowledgeBasePageResult;
 import com.thundax.kuzhambu.common.knowledge.model.base.KnowledgeBaseResult;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatRequest;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatResult;
+import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatStreamHandler;
 import com.thundax.kuzhambu.common.knowledge.model.health.KnowledgeHealthResult;
 import com.thundax.kuzhambu.common.knowledge.model.item.KnowledgeItemDeleteRequest;
 import com.thundax.kuzhambu.common.knowledge.model.item.KnowledgeItemListRequest;
@@ -59,6 +60,11 @@ public class DisabledKnowledgeBaseClient implements KnowledgeBaseClient {
 
     @Override
     public KnowledgeChatResult chat(KnowledgeChatRequest request) {
+        throw disabled();
+    }
+
+    @Override
+    public KnowledgeChatResult chatStream(KnowledgeChatRequest request, KnowledgeChatStreamHandler streamHandler) {
         throw disabled();
     }
 
