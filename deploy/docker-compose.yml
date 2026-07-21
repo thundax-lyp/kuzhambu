@@ -49,8 +49,8 @@ services:
       - workers
     environment:
       JAVA_OPTS: ${JAVA_OPTS:-"-Xms512m -Xmx512m"}
-      SERVER_PORT: 20010
-      SERVER_SERVLET_CONTEXT_PATH: ${ADMIN_CONTEXT_PATH:-/kuzhambu-admin-api}
+      KUZHAMBU_ADMIN_SERVER_PORT: ${KUZHAMBU_ADMIN_SERVER_PORT:-20010}
+      KUZHAMBU_ADMIN_SERVER_CONTEXT_PATH: ${ADMIN_CONTEXT_PATH:-/kuzhambu-admin-api}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-local}
       KUZHAMBU_DB_DRIVER: com.mysql.cj.jdbc.Driver
       KUZHAMBU_DB_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-kuzhambu}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
@@ -120,8 +120,8 @@ services:
       - workers
     environment:
       JAVA_OPTS: ${JAVA_OPTS:-"-Xms512m -Xmx512m"}
-      SERVER_PORT: 20011
-      SERVER_SERVLET_CONTEXT_PATH: ${PORTAL_CONTEXT_PATH:-/kuzhambu-api}
+      KUZHAMBU_PORTAL_SERVER_PORT: ${KUZHAMBU_PORTAL_SERVER_PORT:-20020}
+      KUZHAMBU_PORTAL_SERVER_CONTEXT_PATH: ${PORTAL_CONTEXT_PATH:-/kuzhambu-api}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-local}
       KUZHAMBU_DB_DRIVER: com.mysql.cj.jdbc.Driver
       KUZHAMBU_DB_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-kuzhambu}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true

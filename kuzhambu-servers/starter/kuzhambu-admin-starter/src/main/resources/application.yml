@@ -1,7 +1,7 @@
 server:
-  port: ${SERVER_PORT:20010}
+  port: ${KUZHAMBU_ADMIN_SERVER_PORT:${SERVER_PORT:20010}}
   servlet:
-    context-path: ${SERVER_SERVLET_CONTEXT_PATH:/kuzhambu-admin-api}
+    context-path: ${KUZHAMBU_ADMIN_SERVER_CONTEXT_PATH:${SERVER_SERVLET_CONTEXT_PATH:/kuzhambu-admin-api}}
 
 spring:
   application:
