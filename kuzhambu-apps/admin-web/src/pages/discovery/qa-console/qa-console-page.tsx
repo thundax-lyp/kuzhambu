@@ -24,7 +24,6 @@ const { Text, Title } = Typography;
 const { RangePicker } = DatePicker;
 
 const DEFAULT_PAGE_SIZE = 10;
-const FASTGPT_CONSOLE_URL = "http://localhost:13000";
 
 type QaConsolePanel = "health" | "sync" | "sessions" | "diagnostics";
 
@@ -113,6 +112,7 @@ const formatSyncItemKey = (record: KnowledgeSyncItemRecord) => {
 export const QaConsolePage = () => {
     const [activePanel, setActivePanel] = useState<QaConsolePanel>("health");
     const requesterUserId = "1001";
+    const fastGptConsoleUrl = parseString(import.meta.env.VITE_FASTGPT_CONSOLE_URL);
     const [sessionTitle, setSessionTitle] = useState("");
     const [sessionOpenedRange, setSessionOpenedRange] = useState<
         [Dayjs | null, Dayjs | null] | null
@@ -160,22 +160,6 @@ export const QaConsolePage = () => {
         isPending: isSessionPagePending,
         mutate: mutateSessionPage
     } = sessionPageMutation;
-    const deleteSessionMutation = useMutation({
-        mutationFn: service.deleteQaSession,
-        onSuccess: (_, variables) => {
-            const deletedSessionId = parseString(variables.sessionId);
-            setSessionDetail((current) => ({
-                ...(current ?? {}),
-                sessionId: current?.sessionId ?? deletedSessionId,
-                status: "REMOVED"
-            }));
-            setSessionDrawerOpen(false);
-            setSessionOperationText(`会话 ${deletedSessionId ?? "-"} 已删除`);
-        },
-        onError: (error) => {
-            setSessionOperationText(error instanceof Error ? error.message : "会话删除失败");
-        }
-    });
     const syncItems = syncPageData?.records ?? [];
     const syncColumns: ColumnsType<KnowledgeSyncItemRecord> = [
         {
@@ -215,10 +199,8 @@ export const QaConsolePage = () => {
             render: (value?: number | null) => formatDate(value)
         },
         {
-            title: "操作",
             fixed: "right",
-            key: "action",
-            width: 100,
+            key: "actions",
             render: (_, record) => (
                 <KuzhambuButton
                     testId="discovery-qa-console-qa-console-sync-button"
@@ -256,18 +238,6 @@ export const QaConsolePage = () => {
         }
     }, [activePanel, isSyncPagePending, loadSyncItems, syncPageData]);
 
-    const deleteCurrentSession = (targetSessionId: string) => {
-        const nextSessionId = parseString(targetSessionId);
-        if (nextSessionId === null) {
-            return;
-        }
-
-        deleteSessionMutation.mutate({
-            requesterUserId: parseNumber(requesterUserId),
-            sessionId: nextSessionId
-        });
-    };
-
     const buildSessionPageQuery = useCallback(
         (pageNo = sessionPageNo) => ({
             openedAtEnd: sessionOpenedRange?.[1]?.endOf("day").toISOString() ?? null,
@@ -286,6 +256,36 @@ export const QaConsolePage = () => {
         },
         [buildSessionPageQuery, mutateSessionPage, sessionPageNo]
     );
+
+    const deleteSessionMutation = useMutation({
+        mutationFn: service.deleteQaSession,
+        onSuccess: (_, variables) => {
+            const deletedSessionId = parseString(variables.sessionId);
+            setSessionDetail((current) => ({
+                ...(current ?? {}),
+                sessionId: current?.sessionId ?? deletedSessionId,
+                status: "REMOVED"
+            }));
+            setSessionDrawerOpen(false);
+            setSessionOperationText(`会话 ${deletedSessionId ?? "-"} 已删除`);
+            mutateSessionPage(buildSessionPageQuery());
+        },
+        onError: (error) => {
+            setSessionOperationText(error instanceof Error ? error.message : "会话删除失败");
+        }
+    });
+
+    const deleteCurrentSession = (targetSessionId: string) => {
+        const nextSessionId = parseString(targetSessionId);
+        if (nextSessionId === null) {
+            return;
+        }
+
+        deleteSessionMutation.mutate({
+            requesterUserId: parseNumber(requesterUserId),
+            sessionId: nextSessionId
+        });
+    };
 
     useEffect(() => {
         if (activePanel === "sessions" && !sessionPageData && !isSessionPagePending) {
@@ -323,10 +323,8 @@ export const QaConsolePage = () => {
             render: (value?: number | null) => formatDate(value)
         },
         {
-            title: "操作",
             fixed: "right",
-            key: "action",
-            width: 140,
+            key: "actions",
             render: (_, record) => (
                 <KuzhambuSpace size={8}>
                     <KuzhambuButton
@@ -665,7 +663,8 @@ export const QaConsolePage = () => {
                                     知识条目、分段、召回配置以 FastGPT 为准。
                                 </Text>
                                 <KuzhambuButton
-                                    href={FASTGPT_CONSOLE_URL}
+                                    disabled={!fastGptConsoleUrl}
+                                    href={fastGptConsoleUrl ?? undefined}
                                     target="_blank"
                                     testId="discovery-qa-console-fastgpt-console-link"
                                     type="primary"

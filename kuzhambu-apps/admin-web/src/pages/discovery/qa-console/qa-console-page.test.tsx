@@ -64,6 +64,7 @@ const switchPanel = async (user: ReturnType<typeof userEvent.setup>, panelName: 
 describe("QaConsolePage", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        vi.stubEnv("VITE_FASTGPT_CONSOLE_URL", "https://fastgpt.example.com");
         mocks.getKnowledgeHealth.mockResolvedValue({
             checkedAt: 1700000000000,
             knowledgeBaseName: "kuzhambu-qa",
@@ -163,6 +164,7 @@ describe("QaConsolePage", () => {
 
     afterEach(() => {
         cleanup();
+        vi.unstubAllEnvs();
         vi.restoreAllMocks();
     });
 
@@ -253,15 +255,42 @@ describe("QaConsolePage", () => {
         expect(screen.getByText("知识条目、分段、召回配置以 FastGPT 为准。")).toBeInTheDocument();
         expect(screen.getByRole("link", { name: "FastGPT 控制台" })).toHaveAttribute(
             "href",
-            "http://localhost:13000"
+            "https://fastgpt.example.com"
         );
     }, 30000);
 
     it("deletes session from table action", async () => {
+        mocks.pageQaSessions
+            .mockResolvedValueOnce({
+                pageNo: 1,
+                pageSize: 10,
+                count: 1,
+                totalCount: 1,
+                totalPage: 1,
+                records: [
+                    {
+                        ownerUserId: 1001,
+                        sessionId: "2001",
+                        title: "礼器问答",
+                        status: "OPEN",
+                        scope: "PORTAL",
+                        contextMode: "QA",
+                        contextContentType: "SANCAI_ENTRY",
+                        openedAt: 1700000000000
+                    }
+                ]
+            })
+            .mockResolvedValueOnce({
+                pageNo: 1,
+                pageSize: 10,
+                count: 0,
+                totalCount: 0,
+                totalPage: 0,
+                records: []
+            });
         renderPage();
 
         fireEvent.click(screen.getByText("会话管理"));
-        fireEvent.click(screen.getByRole("button", { name: /查\s*询/u }));
         await waitFor(() => {
             expect(mocks.pageQaSessions.mock.calls.at(-1)?.[0]).toEqual({
                 openedAtEnd: null,
@@ -282,6 +311,12 @@ describe("QaConsolePage", () => {
                 sessionId: "2001"
             });
         });
+        await waitFor(() => {
+            expect(mocks.pageQaSessions).toHaveBeenCalledTimes(2);
+        });
         expect(screen.getByText("会话 2001 已删除")).toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.queryByText("礼器问答")).not.toBeInTheDocument();
+        });
     }, 30000);
 });
