@@ -16,6 +16,7 @@ import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.MultipartUploadStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.MultipartUploadId;
 import com.thundax.kuzhambu.storage.domain.object.repository.MultipartUploadRepository;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContentRepository;
 import java.io.IOException;
@@ -89,9 +90,9 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
         if (part.getPartNumber() == null || part.getPartNumber() <= 0) {
             throw new BizException("Multipart upload part number must start from 1");
         }
-        MultipartUploadSession session = requireActiveMultipartSession(part.getUploadId());
+        MultipartUploadSession session = requireActiveMultipartSession(part.getUploadIdRef());
         validateMultipartPart(session, part);
-        if (multipartUploadRepository.getMultipartPart(part.getUploadId(), part.getPartNumber()) != null) {
+        if (multipartUploadRepository.getMultipartPart(part.getUploadIdRef(), part.getPartNumber()) != null) {
             throw new BizException("Multipart upload part already exists: " + part.getPartNumber());
         }
         part.setPartPath(resolveMultipartPartObjectKey(session, part.getPartNumber()));
@@ -99,7 +100,7 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
         part.setId(multipartUploadRepository.insertMultipartPart(part));
 
         session.setUploadStatus(MultipartUploadStatus.UPLOADING);
-        session.setUploadedPartCount(multipartUploadRepository.countMultipartParts(session.getUploadId()));
+        session.setUploadedPartCount(multipartUploadRepository.countMultipartParts(session.getUploadIdRef()));
         multipartUploadRepository.updateMultipartSession(session);
         return part;
     }
@@ -107,7 +108,7 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public StoredObject complete(CompleteMultipartUploadCommand command) {
-        String uploadId = command == null ? null : command.getUploadId();
+        MultipartUploadId uploadId = MultipartUploadId.ofNullable(command == null ? null : command.getUploadId());
         MultipartUploadSession session = requireActiveMultipartSession(uploadId);
         claimCompleting(session);
         List<MultipartUploadPart> parts = multipartUploadRepository.listMultipartParts(uploadId);
@@ -122,7 +123,7 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
         session.setUploadedPartCount(parts.size());
         session.setCompletedDate(now);
         multipartUploadRepository.updateMultipartSession(session);
-        cleanupCompletedMultipartParts(session.getUploadId(), parts);
+        cleanupCompletedMultipartParts(session.getUploadIdRef(), parts);
         return storage;
     }
 
@@ -151,7 +152,7 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
         }
     }
 
-    private void cleanupCompletedMultipartParts(String uploadId, List<MultipartUploadPart> parts) {
+    private void cleanupCompletedMultipartParts(MultipartUploadId uploadId, List<MultipartUploadPart> parts) {
         for (MultipartUploadPart part : parts) {
             deleteMultipartPartContent(part);
         }
@@ -210,8 +211,9 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public int abort(AbortMultipartUploadCommand command) {
-        MultipartUploadSession session = requireActiveMultipartSession(command == null ? null : command.getUploadId());
-        List<MultipartUploadPart> parts = multipartUploadRepository.listMultipartParts(session.getUploadId());
+        MultipartUploadSession session = requireActiveMultipartSession(
+                MultipartUploadId.ofNullable(command == null ? null : command.getUploadId()));
+        List<MultipartUploadPart> parts = multipartUploadRepository.listMultipartParts(session.getUploadIdRef());
         for (MultipartUploadPart part : parts) {
             StoredObject partStorage = new StoredObject();
             partStorage.setObjectKey(part.getPartPath());
@@ -221,32 +223,32 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
                 throw new BizException("Multipart upload part delete failed: " + exception.getMessage());
             }
         }
-        multipartUploadRepository.deleteMultipartParts(session.getUploadId());
+        multipartUploadRepository.deleteMultipartParts(session.getUploadIdRef());
         Date now = new Date();
         session.setUploadStatus(MultipartUploadStatus.ABORTED);
         session.setAbortedDate(now);
         return multipartUploadRepository.updateMultipartSession(session);
     }
 
-    private MultipartUploadSession requireActiveMultipartSession(String uploadId) {
-        if (StringUtils.isBlank(uploadId)) {
+    private MultipartUploadSession requireActiveMultipartSession(MultipartUploadId uploadId) {
+        if (uploadId == null) {
             throw new BizException("Multipart upload id can not be empty");
         }
         MultipartUploadSession session = multipartUploadRepository.getMultipartSessionByUploadId(uploadId);
         if (session == null) {
-            throw new BizException("Multipart upload session not found: " + uploadId);
+            throw new BizException("Multipart upload session not found: " + uploadId.value());
         }
         if (MultipartUploadStatus.COMPLETED == session.getUploadStatus()
                 || MultipartUploadStatus.ABORTED == session.getUploadStatus()
                 || MultipartUploadStatus.COMPLETING == session.getUploadStatus()) {
-            throw new BizException("Multipart upload session is closed: " + uploadId);
+            throw new BizException("Multipart upload session is closed: " + uploadId.value());
         }
         return session;
     }
 
     private void claimCompleting(MultipartUploadSession session) {
         int updated = multipartUploadRepository.updateMultipartSessionStatus(
-                session.getUploadId(), session.getUploadStatus(), MultipartUploadStatus.COMPLETING);
+                session.getUploadIdRef(), session.getUploadStatus(), MultipartUploadStatus.COMPLETING);
         if (updated != 1) {
             throw new BizException("Multipart upload session status conflict: " + session.getUploadId());
         }

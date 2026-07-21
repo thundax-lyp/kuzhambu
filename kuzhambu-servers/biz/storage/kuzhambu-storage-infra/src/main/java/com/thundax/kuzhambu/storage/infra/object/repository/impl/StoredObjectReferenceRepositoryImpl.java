@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageOwnerRef;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectReferenceRepository;
 import com.thundax.kuzhambu.storage.infra.object.persistence.assembler.StoragePersistenceAssembler;
@@ -46,16 +47,16 @@ public class StoredObjectReferenceRepositoryImpl implements StoredObjectReferenc
     }
 
     @Override
-    public List<StoredObjectId> listObjectIdsByOwner(String referenceOwnerType, String referenceOwnerId) {
-        if (StringUtils.isBlank(referenceOwnerType) && StringUtils.isBlank(referenceOwnerId)) {
+    public List<StoredObjectId> listObjectIdsByOwner(StorageOwnerRef ownerRef) {
+        if (ownerRef == null) {
             return List.of();
         }
         LambdaQueryWrapper<StoredObjectReferenceDO> wrapper = new LambdaQueryWrapper<>();
-        if (StringUtils.isNotBlank(referenceOwnerType)) {
-            wrapper.eq(StoredObjectReferenceDO::getReferenceOwnerType, referenceOwnerType);
+        if (ownerRef.ownerType() != null) {
+            wrapper.eq(StoredObjectReferenceDO::getReferenceOwnerType, ownerRef.ownerTypeValue());
         }
-        if (StringUtils.isNotBlank(referenceOwnerId)) {
-            wrapper.eq(StoredObjectReferenceDO::getReferenceOwnerId, referenceOwnerId);
+        if (StringUtils.isNotBlank(ownerRef.ownerId())) {
+            wrapper.eq(StoredObjectReferenceDO::getReferenceOwnerId, ownerRef.ownerId());
         }
         return mapper.selectObjs(wrapper.select(StoredObjectReferenceDO::getObjectId)).stream()
                 .filter(Objects::nonNull)
@@ -107,10 +108,13 @@ public class StoredObjectReferenceRepositoryImpl implements StoredObjectReferenc
     }
 
     @Override
-    public int deleteByOwner(String referenceOwnerType, String referenceOwnerId) {
+    public int deleteByOwner(StorageOwnerRef ownerRef) {
+        if (ownerRef == null) {
+            return 0;
+        }
         LambdaQueryWrapper<StoredObjectReferenceDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(StoredObjectReferenceDO::getReferenceOwnerType, referenceOwnerType);
-        wrapper.eq(StoredObjectReferenceDO::getReferenceOwnerId, referenceOwnerId);
+        wrapper.eq(StoredObjectReferenceDO::getReferenceOwnerType, ownerRef.ownerTypeValue());
+        wrapper.eq(StoredObjectReferenceDO::getReferenceOwnerId, ownerRef.ownerId());
         return mapper.delete(wrapper);
     }
 }

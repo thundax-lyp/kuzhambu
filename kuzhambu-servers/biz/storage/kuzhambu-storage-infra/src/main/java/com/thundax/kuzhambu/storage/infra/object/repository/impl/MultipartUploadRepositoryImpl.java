@@ -3,11 +3,13 @@ package com.thundax.kuzhambu.storage.infra.object.repository.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
+import com.thundax.kuzhambu.storage.domain.object.codec.MultipartUploadIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.MultipartUploadPartIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.MultipartUploadSessionIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.MultipartUploadStatus;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.MultipartUploadId;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.MultipartUploadPartId;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.MultipartUploadSessionId;
 import com.thundax.kuzhambu.storage.domain.object.repository.MultipartUploadRepository;
@@ -42,9 +44,9 @@ public class MultipartUploadRepositoryImpl implements MultipartUploadRepository 
     }
 
     @Override
-    public MultipartUploadSession getMultipartSessionByUploadId(String uploadId) {
+    public MultipartUploadSession getMultipartSessionByUploadId(MultipartUploadId uploadId) {
         LambdaQueryWrapper<MultipartUploadSessionDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(MultipartUploadSessionDO::getUploadId, uploadId);
+        wrapper.eq(MultipartUploadSessionDO::getUploadId, MultipartUploadIdCodec.toValue(uploadId));
         return StoragePersistenceAssembler.toMultipartSessionDomain(sessionMapper.selectOne(wrapper));
     }
 
@@ -73,11 +75,11 @@ public class MultipartUploadRepositoryImpl implements MultipartUploadRepository 
 
     @Override
     public int updateMultipartSessionStatus(
-            String uploadId, MultipartUploadStatus currentStatus, MultipartUploadStatus nextStatus) {
+            MultipartUploadId uploadId, MultipartUploadStatus currentStatus, MultipartUploadStatus nextStatus) {
         return sessionMapper.update(
                 null,
                 new LambdaUpdateWrapper<MultipartUploadSessionDO>()
-                        .eq(MultipartUploadSessionDO::getUploadId, uploadId)
+                        .eq(MultipartUploadSessionDO::getUploadId, MultipartUploadIdCodec.toValue(uploadId))
                         .eq(MultipartUploadSessionDO::getUploadStatus, currentStatus.value())
                         .set(MultipartUploadSessionDO::getUploadStatus, nextStatus.value()));
     }
@@ -91,24 +93,24 @@ public class MultipartUploadRepositoryImpl implements MultipartUploadRepository 
     }
 
     @Override
-    public MultipartUploadPart getMultipartPart(String uploadId, Integer partNumber) {
+    public MultipartUploadPart getMultipartPart(MultipartUploadId uploadId, Integer partNumber) {
         LambdaQueryWrapper<MultipartUploadPartDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(MultipartUploadPartDO::getUploadId, uploadId);
+        wrapper.eq(MultipartUploadPartDO::getUploadId, MultipartUploadIdCodec.toValue(uploadId));
         wrapper.eq(MultipartUploadPartDO::getPartNumber, partNumber);
         return StoragePersistenceAssembler.toMultipartPartDomain(partMapper.selectOne(wrapper));
     }
 
     @Override
-    public int deleteMultipartParts(String uploadId) {
+    public int deleteMultipartParts(MultipartUploadId uploadId) {
         LambdaQueryWrapper<MultipartUploadPartDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(MultipartUploadPartDO::getUploadId, uploadId);
+        wrapper.eq(MultipartUploadPartDO::getUploadId, MultipartUploadIdCodec.toValue(uploadId));
         return partMapper.delete(wrapper);
     }
 
     @Override
-    public List<MultipartUploadPart> listMultipartParts(String uploadId) {
+    public List<MultipartUploadPart> listMultipartParts(MultipartUploadId uploadId) {
         LambdaQueryWrapper<MultipartUploadPartDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(MultipartUploadPartDO::getUploadId, uploadId);
+        wrapper.eq(MultipartUploadPartDO::getUploadId, MultipartUploadIdCodec.toValue(uploadId));
         wrapper.orderByAsc(MultipartUploadPartDO::getPartNumber);
         List<MultipartUploadPartDO> dataObjects = partMapper.selectList(wrapper);
         List<MultipartUploadPart> parts = new ArrayList<>();
@@ -119,9 +121,9 @@ public class MultipartUploadRepositoryImpl implements MultipartUploadRepository 
     }
 
     @Override
-    public int countMultipartParts(String uploadId) {
+    public int countMultipartParts(MultipartUploadId uploadId) {
         LambdaQueryWrapper<MultipartUploadPartDO> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(MultipartUploadPartDO::getUploadId, uploadId);
+        wrapper.eq(MultipartUploadPartDO::getUploadId, MultipartUploadIdCodec.toValue(uploadId));
         return partMapper.selectCount(wrapper).intValue();
     }
 }

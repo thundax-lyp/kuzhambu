@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.storage.domain.object.model.entity;
 
+import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
+import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StorageOwnerRef;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,7 +15,37 @@ import lombok.Setter;
 public class StoredObjectReference {
     private StoredObjectId objectId;
 
-    private String referenceOwnerId;
-    private String referenceOwnerType;
+    private StorageOwnerRef referenceOwnerRef;
     private String ownerParams;
+
+    public StoredObjectReference(
+            StoredObjectId objectId, String referenceOwnerId, String referenceOwnerType, String ownerParams) {
+        this.objectId = objectId;
+        this.referenceOwnerRef = StorageOwnerRef.ofNullable(ownerTypeFrom(referenceOwnerType), referenceOwnerId);
+        this.ownerParams = ownerParams;
+    }
+
+    public String getReferenceOwnerId() {
+        return referenceOwnerRef == null ? null : referenceOwnerRef.ownerId();
+    }
+
+    public void setReferenceOwnerId(String referenceOwnerId) {
+        this.referenceOwnerRef = referenceOwnerRef == null
+                ? StorageOwnerRef.ofNullable(null, referenceOwnerId)
+                : referenceOwnerRef.withOwnerId(referenceOwnerId);
+    }
+
+    public String getReferenceOwnerType() {
+        return referenceOwnerRef == null ? null : referenceOwnerRef.ownerTypeValue();
+    }
+
+    public void setReferenceOwnerType(String referenceOwnerType) {
+        this.referenceOwnerRef = referenceOwnerRef == null
+                ? StorageOwnerRef.ofNullable(ownerTypeFrom(referenceOwnerType), null)
+                : referenceOwnerRef.withOwnerType(ownerTypeFrom(referenceOwnerType));
+    }
+
+    private static StorageOwnerType ownerTypeFrom(String value) {
+        return value == null || value.trim().isEmpty() ? null : StorageOwnerType.from(value);
+    }
 }
