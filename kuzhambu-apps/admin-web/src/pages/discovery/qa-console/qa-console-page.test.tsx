@@ -9,7 +9,6 @@ const mocks = vi.hoisted(() => ({
     deleteQaSession: vi.fn(),
     getKnowledgeHealth: vi.fn(),
     getQaSession: vi.fn(),
-    getQaTrace: vi.fn(),
     pageQaSessions: vi.fn(),
     pageKnowledgeSyncItems: vi.fn(),
     rebuildKnowledge: vi.fn(),
@@ -22,7 +21,6 @@ vi.mock("./qa-console-service", () => ({
     getKnowledgeHealth: mocks.getKnowledgeHealth,
     getQaSession: mocks.getQaSession,
     getQaSessionDetail: mocks.getQaSession,
-    getQaTrace: mocks.getQaTrace,
     pageQaSessions: mocks.pageQaSessions,
     pageKnowledgeSyncItems: mocks.pageKnowledgeSyncItems,
     rebuildKnowledge: mocks.rebuildKnowledge,
@@ -107,21 +105,6 @@ describe("QaConsolePage", () => {
                     openedAt: 1700000000000
                 }
             ]
-        });
-        mocks.getQaTrace.mockResolvedValue({
-            aiCallId: 9101,
-            aiErrorMessage: null,
-            aiErrorType: null,
-            aiStatus: "SUCCEEDED",
-            traceId: "9001",
-            provider: "FASTGPT",
-            externalKnowledgeBaseId: "kb-1",
-            externalKnowledgeItemIds: "item-1,item-2",
-            externalChatId: "chat-1",
-            providerRequestId: "req-1",
-            latencyMs: 123,
-            raw: '{"answer":"礼器答案"}',
-            retrievedAt: "2026-01-01 10:00:00"
         });
         mocks.pageKnowledgeSyncItems.mockResolvedValue({
             pageNo: 1,

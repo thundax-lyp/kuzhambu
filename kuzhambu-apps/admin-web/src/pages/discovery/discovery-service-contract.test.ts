@@ -191,22 +191,9 @@ describe("discovery admin service contracts", () => {
             }
         });
 
-        await qaService.listQaSources({ messageId: "4001" });
-        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/source/list", {
-            body: {
-                messageId: "4001"
-            }
-        });
-
-        await qaService.getQaTrace({ traceId: "9001" });
-        expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/trace/get", {
-            body: {
-                traceId: "9001"
-            }
-        });
-
         const calledUrls = postJson.mock.calls.map(([url]) => String(url));
         expect(calledUrls.join("\n")).not.toMatch(/fastgpt|provider|dataset|collection/iu);
+        expect(calledUrls.join("\n")).not.toMatch(/source\/list|trace\/get/iu);
     });
 
     it("keeps qa console service on Discovery APIs without provider direct urls", () => {

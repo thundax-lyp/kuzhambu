@@ -23,13 +23,10 @@ import com.thundax.kuzhambu.discovery.application.qa.result.QaMessageResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionDetailResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionExportResult;
 import com.thundax.kuzhambu.discovery.application.qa.result.QaSessionResult;
-import com.thundax.kuzhambu.discovery.application.qa.result.QaSourceResult;
-import com.thundax.kuzhambu.discovery.application.qa.result.QaTraceResult;
 import com.thundax.kuzhambu.discovery.application.qa.service.KnowledgeSyncApplicationService;
 import com.thundax.kuzhambu.discovery.application.qa.service.QaApplicationService;
 import com.thundax.kuzhambu.discovery.interfaces.admin.qa.controller.request.DiscoveryQaAdminRequests;
 import java.lang.reflect.Method;
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -65,16 +62,6 @@ class DiscoveryQaAdminControllerTest {
                 "exportSession",
                 "session/export",
                 DiscoveryQaAdminRequests.QaSessionExportRequest.class);
-        assertPostMapping(
-                DiscoveryQaAdminController.class,
-                "listSources",
-                "source/list",
-                DiscoveryQaAdminRequests.QaSourceListRequest.class);
-        assertPostMapping(
-                DiscoveryQaAdminController.class,
-                "getTrace",
-                "trace/get",
-                DiscoveryQaAdminRequests.QaTraceGetRequest.class);
         assertPostMapping(DiscoveryQaAdminController.class, "getKnowledgeHealth", "knowledge/health");
         assertPostMapping(DiscoveryQaAdminController.class, "rebuildKnowledge", "knowledge/rebuild");
         assertPostMapping(
@@ -127,22 +114,6 @@ class DiscoveryQaAdminControllerTest {
         assertEquals("CSV", sessionExportRequest.getFormat());
         assertJsonFields(sessionExportRequest, "sessionId", "requesterUserId", "format");
 
-        DiscoveryQaAdminRequests.QaSourceListRequest sourceListRequest = OBJECT_MAPPER.readValue(
-                """
-                        {"messageId":"7002"}
-                        """,
-                DiscoveryQaAdminRequests.QaSourceListRequest.class);
-        assertEquals("7002", sourceListRequest.getMessageId());
-        assertJsonFields(sourceListRequest, "messageId");
-
-        DiscoveryQaAdminRequests.QaTraceGetRequest traceGetRequest = OBJECT_MAPPER.readValue(
-                """
-                        {"traceId":"8001"}
-                        """,
-                DiscoveryQaAdminRequests.QaTraceGetRequest.class);
-        assertEquals("8001", traceGetRequest.getTraceId());
-        assertJsonFields(traceGetRequest, "traceId");
-
         DiscoveryQaAdminRequests.KnowledgeSyncRequest syncRequest = OBJECT_MAPPER.readValue(
                 """
                         {"contentType":"SANCAI_ENTRY","contentId":10001,"currentVersionNo":3}
@@ -185,8 +156,6 @@ class DiscoveryQaAdminControllerTest {
         when(qaService.pageSessions(any(QaSessionPageQuery.class)))
                 .thenReturn(PageResult.of(1, 10, 1, List.of(sampleSession())));
         when(qaService.exportSession(any(ExportQaSessionCommand.class))).thenReturn(sampleExportResult());
-        when(qaService.listSourcesByMessageId(7002L)).thenReturn(List.of(sampleSource()));
-        when(qaService.getTraceByTraceId(8001L)).thenReturn(sampleTrace());
         when(syncService.health())
                 .thenReturn(new KnowledgeHealthResult(true, "fastgpt", null, Map.of("provider", "fastgpt")));
         when(syncService.rebuild()).thenReturn(9001L);
@@ -233,22 +202,6 @@ class DiscoveryQaAdminControllerTest {
         assertEquals("discovery-qa-session-5001-7001.csv", exportResponse.getFilename());
         assertEquals("text/csv; charset=UTF-8", exportResponse.getContentType());
 
-        DiscoveryQaAdminRequests.QaSourceListRequest sourceRequest = new DiscoveryQaAdminRequests.QaSourceListRequest();
-        sourceRequest.setMessageId("7002");
-        var sources = controller.listSources(sourceRequest);
-        assertEquals(1, sources.size());
-        assertEquals("9001", sources.get(0).getSourceId());
-
-        DiscoveryQaAdminRequests.QaTraceGetRequest traceRequest = new DiscoveryQaAdminRequests.QaTraceGetRequest();
-        traceRequest.setTraceId("8001");
-        var traceResponse = controller.getTrace(traceRequest);
-        assertNotNull(traceResponse);
-        assertEquals("8001", traceResponse.getTraceId());
-        assertEquals("9001", traceResponse.getAiCallId());
-        assertEquals("SUCCEEDED", traceResponse.getAiStatus());
-        assertEquals("WORKER_PROTOCOL_FAILURE", traceResponse.getAiErrorType());
-        assertEquals("worker returned invalid response", traceResponse.getAiErrorMessage());
-
         var healthResponse = controller.getKnowledgeHealth();
         assertEquals("AVAILABLE", healthResponse.getStatus());
         assertEquals("fastgpt", healthResponse.getProvider());
@@ -294,9 +247,6 @@ class DiscoveryQaAdminControllerTest {
         assertEquals(1001L, exportCommand.getValue().getRequesterUserId());
         assertEquals(Boolean.TRUE, exportCommand.getValue().getAdminOperation());
         assertEquals("CSV", exportCommand.getValue().getFormat());
-        verify(qaService).listSourcesByMessageId(7002L);
-        verify(qaService).getTraceByTraceId(8001L);
-
         verify(syncService).health();
         verify(syncService).rebuild();
 
@@ -349,11 +299,6 @@ class DiscoveryQaAdminControllerTest {
                 null);
     }
 
-    private QaSourceResult sampleSource() {
-        return new QaSourceResult(
-                9001L, "SANCAI_ENTRY", 1001L, "SANCAI", "黄帝", "卷一", "上古帝王", 1, BigDecimal.ONE, "CITED");
-    }
-
     private QaSessionExportResult sampleExportResult() {
         return new QaSessionExportResult(
                 7001L,
@@ -366,27 +311,6 @@ class DiscoveryQaAdminControllerTest {
                 1_718_000_001_000L,
                 "discovery-qa-session-5001-7001.csv",
                 "text/csv; charset=UTF-8");
-    }
-
-    private QaTraceResult sampleTrace() {
-        QaTraceResult trace = new QaTraceResult();
-        trace.setTraceId(8001L);
-        trace.setMessageId(7002L);
-        trace.setRawQuestion("黄帝是谁");
-        trace.setProvider("kuzhambu-qa");
-        trace.setExternalKnowledgeBaseId("kb-1");
-        trace.setExternalKnowledgeItemIds("[\"item-1\",\"item-2\"]");
-        trace.setExternalChatId("chat-1");
-        trace.setProviderRequestId("1001");
-        trace.setLatencyMs(120L);
-        trace.setFailureReason("none");
-        trace.setRaw("{\"foo\":\"bar\"}");
-        trace.setAiCallId(9001L);
-        trace.setAiStatus("SUCCEEDED");
-        trace.setAiErrorType("WORKER_PROTOCOL_FAILURE");
-        trace.setAiErrorMessage("worker returned invalid response");
-        trace.setRetrievedAt(new Date(1_718_000_070_000L));
-        return trace;
     }
 
     private KnowledgeSyncItemResult sampleSyncItem() {

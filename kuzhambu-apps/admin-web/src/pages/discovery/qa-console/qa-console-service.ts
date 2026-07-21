@@ -3,11 +3,9 @@ import type {
     DiscoveryQaSessionExportRecord,
     DiscoveryQaSessionDetailRecord,
     DiscoveryQaSessionPageRecord,
-    DiscoveryQaSourceRecord,
     KnowledgeHealthRecord,
     KnowledgeSyncItemPageRecord,
-    KnowledgeSyncItemRecord,
-    ProviderTraceRecord
+    KnowledgeSyncItemRecord
 } from "./qa-console-types";
 
 export interface DiscoveryQaSessionGetCommand {
@@ -31,14 +29,6 @@ export interface DiscoveryQaSessionExportCommand {
     format?: string | null;
     requesterUserId?: number | null;
     sessionId: string;
-}
-
-export interface DiscoveryQaSourceListCommand {
-    messageId: string;
-}
-
-export interface DiscoveryQaTraceGetCommand {
-    traceId: string;
 }
 
 export interface KnowledgeRebuildCommand {
@@ -116,24 +106,6 @@ export const deleteQaSession = (command: DiscoveryQaSessionDeleteCommand) => {
 export const createQaSessionExport = (command: DiscoveryQaSessionExportCommand) => {
     return postJson<DiscoveryQaSessionExportRecord, DiscoveryQaSessionExportCommand>(
         "/discovery/qa-admin/session/export",
-        {
-            body: command
-        }
-    );
-};
-
-export const listQaSources = (command: DiscoveryQaSourceListCommand) => {
-    return postJson<DiscoveryQaSourceRecord[], DiscoveryQaSourceListCommand>(
-        "/discovery/qa-admin/source/list",
-        {
-            body: command
-        }
-    );
-};
-
-export const getQaTrace = (command: DiscoveryQaTraceGetCommand) => {
-    return postJson<ProviderTraceRecord, DiscoveryQaTraceGetCommand>(
-        "/discovery/qa-admin/trace/get",
         {
             body: command
         }

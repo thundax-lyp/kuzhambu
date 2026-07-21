@@ -24,7 +24,6 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.List;
 import java.util.Objects;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -176,40 +175,6 @@ public class DiscoveryQaAdminController {
             @Valid @RequestBody DiscoveryQaAdminRequests.QaSessionExportRequest request) {
         return DiscoveryQaAdminInterfaceAssembler.toSessionExportResponse(
                 qaApplicationService.exportSession(toExportSessionCommand(request)));
-    }
-
-    @Operation(summary = "获取来源列表", description = "Discovery QA 来源列表")
-    @HasPermission("discovery:qa:view")
-    @IgnoreSysLogger
-    @PostMapping("source/list")
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-                name = AccessTokenNames.HEADER_TOKEN,
-                value = "令牌",
-                paramType = "header",
-                dataTypeClass = String.class),
-    })
-    public List<DiscoveryQaAdminResponses.QaSourceResponse> listSources(
-            @Valid @RequestBody DiscoveryQaAdminRequests.QaSourceListRequest request) {
-        return DiscoveryQaAdminInterfaceAssembler.toSourceResponses(qaApplicationService.listSourcesByMessageId(
-                DiscoveryInterfaceIdCodec.toLongValue(request.getMessageId())));
-    }
-
-    @Operation(summary = "获取检索轨迹", description = "Discovery QA 检索轨迹")
-    @HasPermission("discovery:qa:view")
-    @IgnoreSysLogger
-    @PostMapping("trace/get")
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-                name = AccessTokenNames.HEADER_TOKEN,
-                value = "令牌",
-                paramType = "header",
-                dataTypeClass = String.class),
-    })
-    public DiscoveryQaAdminResponses.QaTraceResponse getTrace(
-            @Valid @RequestBody DiscoveryQaAdminRequests.QaTraceGetRequest request) {
-        return DiscoveryQaAdminInterfaceAssembler.toTraceResponse(
-                qaApplicationService.getTraceByTraceId(DiscoveryInterfaceIdCodec.toLongValue(request.getTraceId())));
     }
 
     private static SyncKnowledgeContentCommand toSyncContentCommand(

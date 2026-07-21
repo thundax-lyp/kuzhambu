@@ -3,7 +3,7 @@
 ## Status
 
 - 当前状态：已完成，存在外部 provider 验收风险。
-- 覆盖范围：跨库搜索、查询理解、同义词增强、QA 会话、王圻单文档问答、来源引用、会话删除、CSV 导出、Admin 调试入口。
+- 覆盖范围：跨库搜索、查询理解、同义词增强、QA 会话、王圻单文档问答、来源引用、会话删除、CSV 导出、Admin 运维入口和 FastGPT 诊断跳转。
 - 真相源：`docs/10-requirements/DISCOVERY-REQUIREMENTS.md`、本文件。
 
 ## Completion Summary
@@ -13,7 +13,7 @@
 - Portal 搜索已支持分组展示、筛选、关键词高亮、URL 状态恢复、结果深链、点击回写和无结果空态。
 - Admin 搜索运维已支持检索统计事件、检索统计 summary、热门搜索词、失败次数、零结果次数、点击数和平均搜索耗时。
 - 查询理解已接入 Knowledge 同义词、标签和实体提示，并通过 AI 执行 query understanding / rewrite。
-- QA 已完成 Portal `chat/completions`、会话持久化、来源引用、知识同步、provider trace 和 Admin 运维页。
+- QA 已完成 Portal `chat/completions`、会话持久化、来源引用、知识同步、provider trace 落库和 Admin 运维页；来源与 provider trace 诊断查看转到 FastGPT 产品。
 - 王圻单文档 QA 已完成上下文 URL、首问/追问上下文透传、后端上下文校验和 AI trace 展示。
 - 会话删除和 CSV 导出已完成，导出产物写入 Storage。
 
@@ -44,5 +44,5 @@
 | QA | 多库问答和多轮会话 | 已完成 | Portal chat/completions、消息、来源和 trace 已落库 |
 | QA | 王圻单文档问答 | 已完成 | URL 上下文、会话校验、首问和追问已闭环 |
 | QA | 删除和导出 | 已完成 | Portal/Admin 删除、CSV 导出和 Storage 上传已闭环 |
-| Admin | 调试和同步状态 | 已完成 | health、rebuild、sync page、source、provider trace 已提供 |
+| Admin | 运维和同步状态 | 已完成 | health、rebuild、sync page、session page/get/delete/export 和 FastGPT 诊断跳转已提供 |
 | 验收 | 外部 provider 冒烟 | 部分通过 | 代码链路可用；FastGPT dev provider 当前返回 400 |

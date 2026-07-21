@@ -23,6 +23,7 @@ Classics content change -> Discovery Server -> kuzhambu-common-knowledge -> Know
 - Knowledge Base provider 负责知识承载、向量化、检索和 chat。
 - 正式问答链路不经过 `biz/ai` 或 `kuzhambu-workers`。
 - 业务层不可见 `appId`、dataset、collection、file 等 provider 对象；这些对象只存在于 adapter 配置和 trace 中。
+- Admin 问答诊断查看归 FastGPT 产品；admin-web 不提供本地来源列表或 provider trace 详情界面，只提供 FastGPT 控制台跳转。
 
 ## Knowledge Scope
 
@@ -274,9 +275,12 @@ Admin API：
 | `POST /api/discovery/qa-admin/knowledge/rebuild` | 全量重建 QA 知识库 |
 | `POST /api/discovery/qa-admin/knowledge/sync` | 手动同步单个内容 |
 | `POST /api/discovery/qa-admin/knowledge/sync/page` | 查询同步状态 |
+| `POST /api/discovery/qa-admin/session/page` | 查询会话列表 |
 | `POST /api/discovery/qa-admin/session/get` | 查询会话详情 |
-| `POST /api/discovery/qa-admin/source/list` | 查询回答来源 |
-| `POST /api/discovery/qa-admin/trace/get` | 查询问答 trace |
+| `POST /api/discovery/qa-admin/session/delete` | 删除会话 |
+| `POST /api/discovery/qa-admin/session/export` | 导出会话 |
+
+Admin 不提供本地来源列表或 provider trace 查询 API；来源、分段召回、provider 请求和 trace 诊断在 FastGPT 产品中查看。
 
 ## Local Persistence
 

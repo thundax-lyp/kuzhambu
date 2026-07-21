@@ -155,30 +155,4 @@ public final class DiscoveryQaAdminRequests {
         @JsonProperty(value = "format")
         private String format;
     }
-
-    @Getter
-    @Setter
-    @Schema(name = "DiscoveryQaSourceListRequest", description = "Discovery QA 来源列表请求")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class QaSourceListRequest {
-
-        @Schema(name = "messageId", description = "消息号")
-        @JsonProperty(value = "messageId")
-        @NotBlank(message = "\"消息号\"不能为空")
-        private String messageId;
-    }
-
-    @Getter
-    @Setter
-    @Schema(name = "DiscoveryQaTraceGetRequest", description = "Discovery QA 检索轨迹请求")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class QaTraceGetRequest {
-
-        @Schema(name = "traceId", description = "轨迹号")
-        @JsonProperty(value = "traceId")
-        @NotBlank(message = "\"轨迹号\"不能为空")
-        private String traceId;
-    }
 }

@@ -163,7 +163,7 @@ Application 层负责权限过滤、查询理解、同义词扩展、实体增�
 Admin 入口：
 
 - 搜索质量分析。
-- 问答知识库健康、重建、同步状态、来源和 provider trace 运维。
+- 问答知识库健康、重建、同步状态、会话管理和 FastGPT 诊断跳转。
 
 Portal/Admin 通用入口：
 
@@ -215,11 +215,10 @@ Admin：
 - `POST /api/discovery/qa-admin/knowledge/rebuild`
 - `POST /api/discovery/qa-admin/knowledge/sync`
 - `POST /api/discovery/qa-admin/knowledge/sync/page`
+- `POST /api/discovery/qa-admin/session/page`
 - `POST /api/discovery/qa-admin/session/get`
 - `POST /api/discovery/qa-admin/session/delete`
 - `POST /api/discovery/qa-admin/session/export`
-- `POST /api/discovery/qa-admin/source/list`
-- `POST /api/discovery/qa-admin/trace/get`
 
 当前协议要求：
 
@@ -229,7 +228,8 @@ Admin：
 - Portal QA 会话删除是软删除，只允许删除 owner 匹配的未删除会话；删除后 Portal 列表、详情、追问和导出均不可再访问该会话。
 - Portal QA 会话导出固定生成 CSV，写入 `discovery_qa_session_export`，上传到 Storage，返回 `exportId`、`storageObjectId`、`filename`、`contentType` 和导出状态。
 - 来源列表从回答顶层 `sources` 返回；返回前必须按当前 Kuzhambu 可见性重新校验，不可见来源标记为 `UNAVAILABLE`。
-- Admin QA 暴露知识库健康、重建、同步状态、会话详情、会话删除、会话 CSV 导出、来源列表和 provider trace，不暴露 provider 路由配置。
+- Admin QA 暴露知识库健康、重建、同步状态、会话详情、会话删除和会话 CSV 导出，不暴露本地来源列表、provider trace 或 provider 路由配置。
+- 问答来源、分段召回、provider 请求和 trace 诊断归 FastGPT 产品查看；admin-web 只提供 FastGPT 控制台跳转，不复刻 provider 诊断界面。
 - Admin QA 可以读取和导出已删除会话，导出 CSV 保留会话删除状态用于审计。
 
 ## Infrastructure Layer
@@ -299,7 +299,7 @@ Search 索引同步消息由 Classics 写路径发出，但 Elasticsearch 文档
 ## Observability
 
 - 记录查询词、识别意图、结果数量、点击、问答来源、同步状态、provider trace 和失败原因。
-- 管理员可查看问答知识库健康、同步记录、来源和 provider trace。
+- 管理员可查看问答知识库健康、同步记录和会话运维信息；问答来源和 provider trace 通过 FastGPT 产品排查。
 
 当前阶段至少记录：
 
@@ -318,7 +318,7 @@ Search 索引同步消息由 Classics 写路径发出，但 Elasticsearch 文档
 - 搜索和问答不依赖知识图谱作为必需前置。
 - 权限过滤发生在结果展示和问答上下文生成前。
 - Portal QA 正式问答入口固定为 `POST /api/portal/discovery/qa/chat/completions`。
-- Admin QA 可查看知识库健康、同步状态、来源列表和 provider trace。
+- Admin QA 可查看知识库健康、同步状态、会话详情、会话删除和导出，并跳转 FastGPT 排查来源和 provider trace。
 - Frontend 不直连 provider，Workers 不承载正式 Discovery QA 问答运行时或知识同步任务。
 
 ### Search 当前阶段验收
