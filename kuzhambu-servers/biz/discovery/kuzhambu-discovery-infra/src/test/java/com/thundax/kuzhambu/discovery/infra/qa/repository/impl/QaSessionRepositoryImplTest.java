@@ -10,6 +10,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.discovery.domain.qa.model.entity.QaSession;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.dataobject.QaSessionDO;
 import com.thundax.kuzhambu.discovery.infra.qa.persistence.mapper.QaSessionMapper;
@@ -75,6 +77,51 @@ class QaSessionRepositoryImplTest {
         ArgumentCaptor<QueryWrapper<QaSessionDO>> wrapperCaptor = ArgumentCaptor.forClass(QueryWrapper.class);
         verify(mapper).selectList(wrapperCaptor.capture());
         assertTrue(wrapperCaptor.getValue().getSqlSegment().contains("removed_at IS NULL"));
+    }
+
+    @Test
+    void pageShouldPushFiltersSortingAndLimitToMapper() {
+        QaSessionMapper mapper = mock(QaSessionMapper.class);
+        QaSessionRepositoryImpl repository = new QaSessionRepositoryImpl(mapper);
+        QaSessionDO dataObject = new QaSessionDO(
+                1L,
+                4001L,
+                "USER",
+                "1001",
+                "kuzhambu-qa",
+                "黄帝问答",
+                "GLOBAL",
+                "SEARCH",
+                null,
+                null,
+                "OPEN",
+                new Date(1_718_000_000_000L),
+                new Date(1_718_000_100_000L),
+                null);
+        Page<QaSessionDO> mapperPage = new Page<>(2, 20);
+        mapperPage.setTotal(31);
+        mapperPage.setRecords(List.of(dataObject));
+        when(mapper.selectPage(any(Page.class), any())).thenReturn(mapperPage);
+        Date openedAtStart = new Date(1_718_000_000_000L);
+        Date openedAtEnd = new Date(1_718_086_400_000L);
+
+        PageResult<QaSession> result = repository.page("黄帝", openedAtStart, openedAtEnd, 2, 20);
+
+        assertEquals(2, result.getPageNo());
+        assertEquals(20, result.getPageSize());
+        assertEquals(31, result.getTotalCount());
+        assertEquals(4001L, result.getRecords().get(0).getSessionId());
+        ArgumentCaptor<Page<QaSessionDO>> pageCaptor = ArgumentCaptor.forClass(Page.class);
+        ArgumentCaptor<QueryWrapper<QaSessionDO>> wrapperCaptor = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(mapper).selectPage(pageCaptor.capture(), wrapperCaptor.capture());
+        assertEquals(2, pageCaptor.getValue().getCurrent());
+        assertEquals(20, pageCaptor.getValue().getSize());
+        String sqlSegment = wrapperCaptor.getValue().getSqlSegment();
+        assertTrue(sqlSegment.contains("title LIKE"));
+        assertTrue(sqlSegment.contains("opened_at >="));
+        assertTrue(sqlSegment.contains("opened_at <="));
+        assertTrue(sqlSegment.contains("removed_at IS NULL"));
+        assertTrue(sqlSegment.contains("ORDER BY opened_at DESC,session_id DESC"));
     }
 
     @Test
