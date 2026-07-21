@@ -222,7 +222,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
                 pageNo,
                 pageSize,
                 allItems.size(),
-                pageItems.stream().map(this::toResult).toList());
+                pageItems.stream().map(this::toResultWithTitle).toList());
     }
 
     private KnowledgeSyncItemResult syncContent(
@@ -295,7 +295,7 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
             } else {
                 qaKnowledgeSyncItemRepository.update(syncItem);
             }
-            return toResult(syncItem);
+            return toResult(syncItem, title);
         } catch (Exception ex) {
             QaKnowledgeSyncItem failedItem = existingItem == null ? new QaKnowledgeSyncItem() : existingItem;
             failedItem.setSourceId(sourceId);
@@ -583,10 +583,37 @@ public class KnowledgeSyncApplicationServiceImpl implements KnowledgeSyncApplica
     }
 
     private KnowledgeSyncItemResult toResult(QaKnowledgeSyncItem item) {
+        return toResult(item, null);
+    }
+
+    private KnowledgeSyncItemResult toResultWithTitle(QaKnowledgeSyncItem item) {
+        return toResult(item, resolveTitle(item));
+    }
+
+    private String resolveTitle(QaKnowledgeSyncItem item) {
+        if (item == null || StringUtils.isBlank(item.getContentType()) || item.getContentId() == null) {
+            return null;
+        }
+        try {
+            ClassicsQaKnowledgeFacadeResponse response =
+                    classicsFacade.getQaKnowledge(ClassicsQaKnowledgeFacadeRequest.builder()
+                            .contentType(item.getContentType())
+                            .contentId(String.valueOf(item.getContentId()))
+                            .build());
+            return response == null || response.getKnowledge() == null
+                    ? null
+                    : response.getKnowledge().getTitle();
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    private KnowledgeSyncItemResult toResult(QaKnowledgeSyncItem item, String title) {
         return new KnowledgeSyncItemResult(
                 item == null ? null : item.getSourceId(),
                 item == null ? null : item.getContentType(),
                 item == null ? null : item.getContentId(),
+                title,
                 item == null ? null : item.getKnowledgeBaseName(),
                 item == null ? null : item.getCurrentVersionNo(),
                 item == null ? null : item.getKnowledgeRevision(),

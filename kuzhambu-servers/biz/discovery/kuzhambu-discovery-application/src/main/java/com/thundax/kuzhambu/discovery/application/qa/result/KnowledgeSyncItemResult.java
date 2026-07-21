@@ -13,6 +13,7 @@ public class KnowledgeSyncItemResult {
     private String sourceId;
     private String contentType;
     private Long contentId;
+    private String title;
     private String knowledgeBaseName;
     private Integer currentVersionNo;
     private String knowledgeRevision;

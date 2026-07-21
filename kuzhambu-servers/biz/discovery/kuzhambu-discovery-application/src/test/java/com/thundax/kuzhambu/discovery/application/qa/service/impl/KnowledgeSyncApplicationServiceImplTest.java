@@ -72,6 +72,7 @@ class KnowledgeSyncApplicationServiceImplTest {
         assertEquals("SUCCEEDED", result.getSyncStatus());
         assertEquals("fastgpt", result.getProvider());
         assertEquals("item-1", result.getExternalKnowledgeItemId());
+        assertEquals("黄帝", result.getTitle());
         assertNotNull(result.getSyncedAt());
         verify(itemRepository).save(any(QaKnowledgeSyncItem.class));
     }
