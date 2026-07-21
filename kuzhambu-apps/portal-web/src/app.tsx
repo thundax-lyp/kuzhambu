@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { PortalLayout } from "@/components/portal-layout";
 import { SancaiPage } from "@/pages/classics/sancai-page";
 import { DiscoveryQaPage } from "@/pages/discovery/qa-page";
 import { DiscoverySearchItemPage } from "@/pages/discovery/search-item-page";
@@ -12,6 +13,7 @@ import { ShareForm } from "@/pages/share/share-form";
 import { SharePage } from "@/pages/share/share-page";
 
 import "./styles.css";
+import "@/pages/knowledge/knowledge-page.css";
 
 const normalizeRouterBasename = (baseUrl: string) => {
     const normalizedBaseUrl = baseUrl.replace(/\/+$/, "");
@@ -22,17 +24,19 @@ export const App = () => {
     return (
         <BrowserRouter basename={normalizeRouterBasename(import.meta.env.BASE_URL)}>
             <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/knowledge" element={<KnowledgeHomePage />} />
-                <Route path="/knowledge/atlas" element={<KnowledgeAtlasPage />} />
-                <Route path="/knowledge/lineage" element={<KnowledgeLineagePage />} />
-                <Route path="/knowledge/quality" element={<KnowledgeQualityPage />} />
-                <Route path="/classics/sancai" element={<SancaiPage />} />
-                <Route path="/discovery/search" element={<DiscoverySearchPage />} />
-                <Route path="/discovery/search-item" element={<DiscoverySearchItemPage />} />
-                <Route path="/discovery/qa" element={<DiscoveryQaPage />} />
-                <Route path="/shares" element={<SharePage />} />
-                <Route path="/share/:shareToken" element={<ShareForm />} />
+                <Route element={<PortalLayout />}>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/knowledge" element={<KnowledgeHomePage />} />
+                    <Route path="/knowledge/atlas" element={<KnowledgeAtlasPage />} />
+                    <Route path="/knowledge/lineage" element={<KnowledgeLineagePage />} />
+                    <Route path="/knowledge/quality" element={<KnowledgeQualityPage />} />
+                    <Route path="/classics/sancai" element={<SancaiPage />} />
+                    <Route path="/discovery/search" element={<DiscoverySearchPage />} />
+                    <Route path="/discovery/search-item" element={<DiscoverySearchItemPage />} />
+                    <Route path="/discovery/qa" element={<DiscoveryQaPage />} />
+                    <Route path="/shares" element={<SharePage />} />
+                    <Route path="/share/:shareToken" element={<ShareForm />} />
+                </Route>
             </Routes>
         </BrowserRouter>
     );
