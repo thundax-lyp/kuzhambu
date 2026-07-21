@@ -14,7 +14,9 @@ import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatChoice;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatMessage;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatRequest;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatResult;
+import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatSource;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatStreamHandler;
+import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatUsage;
 import com.thundax.kuzhambu.common.knowledge.model.health.KnowledgeHealthResult;
 import com.thundax.kuzhambu.common.knowledge.model.item.KnowledgeItemDeleteRequest;
 import com.thundax.kuzhambu.common.knowledge.model.item.KnowledgeItemListRequest;
@@ -229,18 +231,7 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
         Assert.notNull(request, "Knowledge chat request must not be null");
         Map<String, Object> payload = chatPayload(request, request.stream());
         JsonNode body = post("/api/v1/chat/completions", payload, chatHeaders());
-        String content = extractChatContent(body);
-        String id = textValue(body, "id", textOption(request.metadata(), "chatId"));
-        String model = textValue(body, "model", request.model());
-        return new KnowledgeChatResult(
-                id,
-                textValue(body, "object", "chat.completion"),
-                longValue(body, "created", null),
-                model,
-                List.of(new KnowledgeChatChoice(0, new KnowledgeChatMessage("assistant", content), "stop")),
-                null,
-                Collections.emptyList(),
-                rawMap(body));
+        return chatResult(body, textOption(request.metadata(), "chatId"), request.model(), null, false);
     }
 
     @Override
@@ -248,7 +239,7 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
         Assert.notNull(request, "Knowledge chat request must not be null");
         Assert.notNull(streamHandler, "Knowledge chat stream handler must not be null");
         Map<String, Object> payload = chatPayload(request, true);
-        String content = restOperations.execute(
+        ChatStreamResult streamResult = restOperations.execute(
                 "/api/v1/chat/completions",
                 HttpMethod.POST,
                 clientRequest -> {
@@ -258,19 +249,12 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
                     clientRequest.getBody().write(body);
                 },
                 response -> readChatStream(response, streamHandler));
-        String id = textOption(request.metadata(), "chatId");
-        Map<String, Object> raw = new LinkedHashMap<>();
-        raw.put("provider", PROVIDER);
-        raw.put("stream", true);
-        return new KnowledgeChatResult(
-                id,
-                "chat.completion",
-                null,
+        return chatResult(
+                streamResult.finalPayload(),
+                textOption(request.metadata(), "chatId"),
                 request.model(),
-                List.of(new KnowledgeChatChoice(0, new KnowledgeChatMessage("assistant", content), "stop")),
-                null,
-                Collections.emptyList(),
-                raw);
+                streamResult.content(),
+                true);
     }
 
     private Map<String, Object> chatPayload(KnowledgeChatRequest request, boolean stream) {
@@ -285,17 +269,17 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
         return payload;
     }
 
-    private String readChatStream(ClientHttpResponse response, KnowledgeChatStreamHandler streamHandler)
+    private ChatStreamResult readChatStream(ClientHttpResponse response, KnowledgeChatStreamHandler streamHandler)
             throws IOException {
-        StringBuilder content = new StringBuilder();
+        ChatStreamAccumulator accumulator = new ChatStreamAccumulator();
         StringBuilder eventBlock = new StringBuilder();
         try (BufferedReader reader =
                 new BufferedReader(new InputStreamReader(response.getBody(), StandardCharsets.UTF_8))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.isBlank()) {
-                    if (appendChatStreamBlock(eventBlock.toString(), content, streamHandler)) {
-                        return content.toString();
+                    if (appendChatStreamBlock(eventBlock.toString(), accumulator, streamHandler)) {
+                        return accumulator.toResult();
                     }
                     eventBlock.setLength(0);
                     continue;
@@ -303,16 +287,21 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
                 eventBlock.append(line).append('\n');
             }
         }
-        appendChatStreamBlock(eventBlock.toString(), content, streamHandler);
-        return content.toString();
+        appendChatStreamBlock(eventBlock.toString(), accumulator, streamHandler);
+        return accumulator.toResult();
     }
 
     private boolean appendChatStreamBlock(
-            String eventBlock, StringBuilder content, KnowledgeChatStreamHandler streamHandler) {
+            String eventBlock, ChatStreamAccumulator accumulator, KnowledgeChatStreamHandler streamHandler) {
         if (!StringUtils.hasText(eventBlock)) {
             return false;
         }
+        String eventName = null;
         for (String line : eventBlock.split("\\R")) {
+            if (line.startsWith("event:")) {
+                eventName = line.substring("event:".length()).trim();
+                continue;
+            }
             if (!line.startsWith("data:")) {
                 continue;
             }
@@ -321,51 +310,162 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
                 continue;
             }
             if ("[DONE]".equals(data)) {
+                accumulator.markDone();
                 return true;
             }
-            String delta = extractChatStreamDelta(data);
+            JsonNode body = readChatStreamPayload(data);
+            accumulator.remember(body);
+            boolean finalEvent = isFinalChatStreamEvent(eventName);
+            String delta = finalEvent && accumulator.hasContent() ? null : extractChatStreamDelta(body);
             if (StringUtils.hasText(delta)) {
-                content.append(delta);
+                accumulator.append(delta);
                 streamHandler.onDelta(delta);
             }
-            if (isChatStreamFinished(data)) {
+            if (isChatStreamFinished(body)) {
+                accumulator.markFinal(body);
+            }
+            if (finalEvent) {
+                accumulator.markFinal(body);
                 return true;
             }
         }
         return false;
     }
 
-    private boolean isChatStreamFinished(String data) {
+    private boolean isFinalChatStreamEvent(String eventName) {
+        return "final".equalsIgnoreCase(eventName)
+                || "completed".equalsIgnoreCase(eventName)
+                || "completion".equalsIgnoreCase(eventName);
+    }
+
+    private boolean isChatStreamFinished(JsonNode body) {
+        JsonNode choices = body.path("choices");
+        if (!choices.isArray() || choices.isEmpty()) {
+            return false;
+        }
+        JsonNode choice = choices.get(0);
+        return StringUtils.hasText(textValue(choice, "finish_reason", textValue(choice, "finishReason", null)));
+    }
+
+    private JsonNode readChatStreamPayload(String data) {
         try {
-            JsonNode body = objectMapper.readTree(data);
-            JsonNode choices = body.path("choices");
-            if (!choices.isArray() || choices.isEmpty()) {
-                return false;
-            }
-            JsonNode choice = choices.get(0);
-            return StringUtils.hasText(textValue(choice, "finish_reason", textValue(choice, "finishReason", null)));
+            return objectMapper.readTree(data);
         } catch (JsonProcessingException ex) {
             throw new IllegalStateException("Failed to parse FastGPT stream payload", ex);
         }
     }
 
-    private String extractChatStreamDelta(String data) {
-        try {
-            JsonNode body = objectMapper.readTree(data);
-            JsonNode choices = body.path("choices");
-            if (choices.isArray() && choices.size() > 0) {
-                JsonNode choice = choices.get(0);
-                String delta = textValue(choice.path("delta"), "content", null);
-                if (StringUtils.hasText(delta)) {
-                    return delta;
-                }
-                return textValue(choice.path("message"), "content", null);
+    private String extractChatStreamDelta(JsonNode body) {
+        JsonNode choices = body.path("choices");
+        if (choices.isArray() && choices.size() > 0) {
+            JsonNode choice = choices.get(0);
+            String delta = textValue(choice.path("delta"), "content", null);
+            if (StringUtils.hasText(delta)) {
+                return delta;
             }
-            JsonNode dataNode = dataNode(body);
-            return textValue(dataNode, "content", textValue(dataNode, "answer", null));
-        } catch (JsonProcessingException ex) {
-            throw new IllegalStateException("Failed to parse FastGPT stream payload", ex);
+            return textValue(choice.path("message"), "content", null);
         }
+        JsonNode dataNode = dataNode(body);
+        return textValue(dataNode, "content", textValue(dataNode, "answer", null));
+    }
+
+    private KnowledgeChatResult chatResult(
+            JsonNode body, String fallbackId, String fallbackModel, String contentOverride, boolean stream) {
+        JsonNode resultBody = body == null ? objectMapper.createObjectNode() : body;
+        JsonNode resultData = dataNode(resultBody);
+        String content = contentOverride == null ? extractChatContent(resultBody) : contentOverride;
+        String id = textValue(resultBody, "id", textValue(resultData, "id", fallbackId));
+        String model = textValue(resultBody, "model", textValue(resultData, "model", fallbackModel));
+        Map<String, Object> raw = new LinkedHashMap<>(rawMap(resultBody));
+        raw.putIfAbsent("provider", PROVIDER);
+        raw.putIfAbsent("stream", stream);
+        return new KnowledgeChatResult(
+                id,
+                textValue(resultBody, "object", textValue(resultData, "object", "chat.completion")),
+                longValue(resultBody, "created", longValue(resultData, "created", null)),
+                model,
+                List.of(new KnowledgeChatChoice(
+                        0, new KnowledgeChatMessage("assistant", content), finishReason(resultBody))),
+                chatUsage(resultBody),
+                chatSources(resultBody),
+                raw);
+    }
+
+    private String finishReason(JsonNode body) {
+        JsonNode choices = body.path("choices");
+        if (choices.isArray() && !choices.isEmpty()) {
+            JsonNode choice = choices.get(0);
+            return textValue(choice, "finish_reason", textValue(choice, "finishReason", "stop"));
+        }
+        return "stop";
+    }
+
+    private KnowledgeChatUsage chatUsage(JsonNode body) {
+        JsonNode usage = firstPresent(
+                body.path("usage"),
+                dataNode(body).path("usage"),
+                responseDataNode(body).path("usage"));
+        if (usage.isMissingNode() || usage.isNull()) {
+            return null;
+        }
+        Integer promptTokens = intValue(usage, "promptTokens", intValue(usage, "prompt_tokens", null));
+        Integer completionTokens = intValue(usage, "completionTokens", intValue(usage, "completion_tokens", null));
+        Integer totalTokens = intValue(usage, "totalTokens", intValue(usage, "total_tokens", null));
+        if (promptTokens == null && completionTokens == null && totalTokens == null) {
+            return null;
+        }
+        return new KnowledgeChatUsage(promptTokens, completionTokens, totalTokens);
+    }
+
+    private List<KnowledgeChatSource> chatSources(JsonNode body) {
+        JsonNode sources = firstPresent(
+                body.path("sources"),
+                dataNode(body).path("sources"),
+                responseDataNode(body).path("sources"),
+                body.path("quoteList"),
+                dataNode(body).path("quoteList"),
+                responseDataNode(body).path("quoteList"));
+        if (!sources.isArray() || sources.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<KnowledgeChatSource> results = new ArrayList<>();
+        for (JsonNode source : sources) {
+            JsonNode metadata = source.path("metadata");
+            results.add(new KnowledgeChatSource(
+                    textValue(
+                            source, "sourceId", textValue(source, "source_id", textValue(metadata, "sourceId", null))),
+                    textValue(
+                            source,
+                            "knowledgeBase",
+                            textValue(source, "datasetName", textValue(source, "datasetId", null))),
+                    textValue(
+                            source,
+                            "contentType",
+                            textValue(source, "sourceType", textValue(metadata, "contentType", null))),
+                    textValue(source, "contentId", textValue(metadata, "contentId", null)),
+                    textValue(source, "title", textValue(source, "name", textValue(source, "sourceName", null))),
+                    textValue(source, "snippet", textValue(source, "content", textValue(source, "text", null))),
+                    doubleValue(source, "score", doubleValue(source, "similarity", null)),
+                    rawMap(source)));
+        }
+        return results;
+    }
+
+    private JsonNode responseDataNode(JsonNode body) {
+        JsonNode responseData = body.path("responseData");
+        if (!responseData.isMissingNode() && !responseData.isNull()) {
+            return responseData;
+        }
+        return dataNode(body).path("responseData");
+    }
+
+    private JsonNode firstPresent(JsonNode... nodes) {
+        for (JsonNode node : nodes) {
+            if (node != null && !node.isMissingNode() && !node.isNull()) {
+                return node;
+            }
+        }
+        return objectMapper.getNodeFactory().missingNode();
     }
 
     private JsonNode post(String path, Map<String, Object> payload) {
@@ -607,10 +707,61 @@ public class FastGptKnowledgeBaseClient implements KnowledgeBaseClient {
         return value.asLong();
     }
 
+    private Integer intValue(JsonNode node, String fieldName, Integer fallback) {
+        JsonNode value = node.path(fieldName);
+        if (value.isMissingNode() || value.isNull()) {
+            return fallback;
+        }
+        return value.asInt();
+    }
+
+    private Double doubleValue(JsonNode node, String fieldName, Double fallback) {
+        JsonNode value = node.path(fieldName);
+        if (value.isMissingNode() || value.isNull()) {
+            return fallback;
+        }
+        return value.asDouble();
+    }
+
     private String textOption(Map<String, Object> options, String key) {
         if (options == null || !options.containsKey(key) || options.get(key) == null) {
             return null;
         }
         return options.get(key).toString();
     }
+
+    private static final class ChatStreamAccumulator {
+
+        private final StringBuilder content = new StringBuilder();
+        private JsonNode lastPayload;
+        private JsonNode finalPayload;
+
+        private void append(String delta) {
+            content.append(delta);
+        }
+
+        private void remember(JsonNode body) {
+            lastPayload = body;
+        }
+
+        private void markFinal(JsonNode body) {
+            finalPayload = body;
+        }
+
+        private void markDone() {
+            if (finalPayload == null) {
+                finalPayload = lastPayload;
+            }
+        }
+
+        private boolean hasContent() {
+            return !content.isEmpty();
+        }
+
+        private ChatStreamResult toResult() {
+            return new ChatStreamResult(content.toString(), finalPayload == null ? lastPayload : finalPayload);
+        }
+    }
+
+    private record ChatStreamResult(String content, JsonNode finalPayload) {}
 }

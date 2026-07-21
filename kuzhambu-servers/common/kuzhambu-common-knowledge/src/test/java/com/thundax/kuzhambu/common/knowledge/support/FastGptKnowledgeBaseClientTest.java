@@ -14,6 +14,7 @@ import com.thundax.kuzhambu.common.knowledge.model.base.KnowledgeBaseEnsureReque
 import com.thundax.kuzhambu.common.knowledge.model.base.KnowledgeBaseListRequest;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatMessage;
 import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatRequest;
+import com.thundax.kuzhambu.common.knowledge.model.chat.KnowledgeChatResult;
 import com.thundax.kuzhambu.common.knowledge.model.sync.KnowledgeSyncRequest;
 import java.time.Duration;
 import java.util.List;
@@ -137,6 +138,66 @@ public class FastGptKnowledgeBaseClientTest {
                         .message()
                         .content());
         assertEquals(List.of("礼学", "是礼制之学"), deltas);
+        server.verify();
+    }
+
+    @Test
+    public void shouldKeepFastGptStreamFinalPayloadUsageAndSources() {
+        RestTemplate restTemplate =
+                new RestTemplateBuilder().rootUri("http://fastgpt.local").build();
+        MockRestServiceServer server =
+                MockRestServiceServer.bindTo(restTemplate).build();
+        server.expect(requestTo("http://fastgpt.local/api/v1/chat/completions"))
+                .andExpect(header(HttpHeaders.AUTHORIZATION, "Bearer fastgpt-test-app-1"))
+                .andExpect(header(HttpHeaders.ACCEPT, MediaType.TEXT_EVENT_STREAM_VALUE))
+                .andRespond(withSuccess(
+                        """
+                        data: {"choices":[{"delta":{"content":"礼学"},"index":0,"finish_reason":null}]}
+
+                        data: {"choices":[{"delta":{"content":"是礼制之学"},"index":0,"finish_reason":null}]}
+
+                        data: {"choices":[{"delta":{},"index":0,"finish_reason":"stop"}]}
+
+                        event: final
+                        data: {"id":"chatcmpl-1","object":"chat.completion","created":1783156800,"model":"fast-model","choices":[{"index":0,"message":{"content":"礼学是礼制之学"},"finish_reason":"stop"}],"usage":{"prompt_tokens":10,"completion_tokens":20,"total_tokens":30},"responseData":{"quoteList":[{"sourceId":"WANGQI_DOCUMENT:2001","knowledgeBase":"WANGQI_DOCUMENT","contentType":"WANGQI_DOCUMENT","contentId":"2001","title":"王圻文档","snippet":"礼制摘录","score":0.82,"sourcePath":"/doc/2001"}]}}
+
+                        data: [DONE]
+
+                        """,
+                        MediaType.TEXT_EVENT_STREAM));
+
+        FastGptKnowledgeBaseClient client = new FastGptKnowledgeBaseClient(
+                restTemplate, new ObjectMapper(), fastGptProperties("http://fastgpt.local", "fastgpt-test"));
+        List<String> deltas = new java.util.ArrayList<>();
+
+        KnowledgeChatResult result = client.chatStream(
+                new KnowledgeChatRequest(
+                        "kuzhambu-qa",
+                        List.of(new KnowledgeChatMessage("user", "question")),
+                        true,
+                        Map.of("chatId", "chat-1"),
+                        null),
+                deltas::add);
+
+        assertEquals("chatcmpl-1", result.id());
+        assertEquals(1783156800L, result.created());
+        assertEquals("fast-model", result.model());
+        assertEquals("礼学是礼制之学", result.choices().get(0).message().content());
+        assertEquals(List.of("礼学", "是礼制之学"), deltas);
+        assertEquals(10, result.usage().promptTokens());
+        assertEquals(20, result.usage().completionTokens());
+        assertEquals(30, result.usage().totalTokens());
+        assertEquals("WANGQI_DOCUMENT:2001", result.sources().get(0).sourceId());
+        assertEquals("WANGQI_DOCUMENT", result.sources().get(0).knowledgeBase());
+        assertEquals("WANGQI_DOCUMENT", result.sources().get(0).contentType());
+        assertEquals("2001", result.sources().get(0).contentId());
+        assertEquals("王圻文档", result.sources().get(0).title());
+        assertEquals("礼制摘录", result.sources().get(0).snippet());
+        assertEquals(0.82, result.sources().get(0).score());
+        assertEquals("/doc/2001", result.sources().get(0).raw().get("sourcePath"));
+        assertEquals("fastgpt", result.raw().get("provider"));
+        assertEquals(true, result.raw().get("stream"));
+        assertEquals("chatcmpl-1", result.raw().get("id"));
         server.verify();
     }
 
