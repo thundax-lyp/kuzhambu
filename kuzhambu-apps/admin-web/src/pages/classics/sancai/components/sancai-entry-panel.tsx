@@ -4,7 +4,6 @@ import { App, Badge, Card, Empty, Image, Typography, Upload } from "antd";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import { hasPermission } from "@/auth/permission-storage";
@@ -12,7 +11,6 @@ import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import * as shareService from "@/pages/classics/common/classics-share-service";
 import * as currentUserService from "@/service/current-user-service";
-import { ClassicsExportJobSection } from "@/pages/classics/common/components/classics-export-job-section";
 import type { ClassicsExportJobRecord } from "@/pages/classics/common/classics-export-types";
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import { AiRefinementStreamPanel } from "@/pages/classics/common/components/ai-refinement-stream-panel";
@@ -22,6 +20,7 @@ import { AiCandidateBatchDrawer } from "@/pages/classics/common/components/ai-ca
 import { hasClassicsContentPermission } from "@/pages/classics/common/classics-content-types";
 import { SancaiEntryList } from "./sancai-entry-list";
 import { SancaiEntryEditDrawer } from "./sancai-entry-edit-drawer";
+import { SancaiEntryExportActions } from "./sancai-entry-export-actions";
 import type { SancaiEntryFormValues } from "./sancai-form-values";
 import { SancaiVersionHistoryPanel } from "./sancai-version-history-panel";
 import { useSancaiEntryPanelState } from "../hooks/use-sancai-entry-panel-state";
@@ -871,52 +870,23 @@ export const SancaiEntryPanel = ({
                 onSort={sortEntry}
                 onView={selectEntry}
             />
-            <KuzhambuDrawer
-                testId="classics-sancai-sancai-entry-panel-drawer"
-                destroyOnClose={false}
-                open={isExportJobsDrawerOpen}
-                size="large"
-                title="导出任务"
-                footer={
-                    <KuzhambuButton
-                        testId="classics-sancai-sancai-entry-close-button"
-                        type="primary"
-                        onClick={() => setExportJobsOpen(false)}
-                    >
-                        关闭
-                    </KuzhambuButton>
+            <SancaiEntryExportActions
+                canManageGeneratedArtifacts={canManageGeneratedArtifacts}
+                exportJobs={exportJobs}
+                isError={exportsQuery.isError}
+                loading={
+                    exportsQuery.isLoading ||
+                    exportEntryMutation.isPending ||
+                    deleteExportMutation.isPending
                 }
+                open={isExportJobsDrawerOpen}
+                onBatchDelete={deleteExportJobs}
                 onClose={() => setExportJobsOpen(false)}
-            >
-                {exportsQuery.isError ? (
-                    <KuzhambuAlert
-                        className="sancai-alert"
-                        type="warning"
-                        showIcon
-                        title="导出任务列表加载失败"
-                        description="请确认后台导出任务接口可用后刷新页面。"
-                    />
-                ) : null}
-                <ClassicsExportJobSection
-                    items={exportJobs}
-                    loading={
-                        exportsQuery.isLoading ||
-                        exportEntryMutation.isPending ||
-                        deleteExportMutation.isPending
-                    }
-                    sectionTitle="任务列表"
-                    onDownload={(job) => {
-                        if (job.downloadUrl) {
-                            window.open(job.downloadUrl, "_blank", "noopener,noreferrer");
-                        }
-                    }}
-                    onDelete={canManageGeneratedArtifacts ? deleteExportJob : undefined}
-                    onBatchDelete={canManageGeneratedArtifacts ? deleteExportJobs : undefined}
-                    onRefresh={() => {
-                        void invalidateExportJobs();
-                    }}
-                />
-            </KuzhambuDrawer>
+                onDelete={deleteExportJob}
+                onRefresh={() => {
+                    void invalidateExportJobs();
+                }}
+            />
             <AiCandidateBatchDrawer
                 contentIds={batchCandidateContentIds}
                 capabilities={[
