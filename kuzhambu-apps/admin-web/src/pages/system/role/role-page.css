@@ -116,13 +116,13 @@ html[data-theme="dark"] .role-page {
     cursor: grab;
 }
 
-.role-editor-form {
+.role-edit-drawer-form {
     display: grid;
     gap: 4px;
     padding-top: 6px;
 }
 
-.role-editor-switches {
+.role-edit-drawer-switches {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 14px;
@@ -153,14 +153,14 @@ html[data-theme="dark"] .role-page {
     min-width: 0;
 }
 
-.role-edit-footer {
+.role-edit-drawer-footer {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
 }
 
 @media (max-width: 760px) {
-    .role-editor-switches {
+    .role-edit-drawer-switches {
         grid-template-columns: 1fr;
         align-items: stretch;
     }

@@ -12,7 +12,7 @@ import { KuzhambuButton } from "@/components/kuzhambu-button";
 const { Text } = Typography;
 const { TextArea } = Input;
 
-interface RoleEditProps {
+interface RoleEditDrawerProps {
     open?: boolean;
     role?: RoleRecord | null;
     treeData: DataNode[];
@@ -66,7 +66,7 @@ const readOptionLabel = (
     return options?.find((option) => option.value === value)?.label || fallbackLabel;
 };
 
-export const RoleEdit = ({
+export const RoleEditDrawer = ({
     open,
     role,
     treeData,
@@ -76,7 +76,7 @@ export const RoleEdit = ({
     saving,
     onClose,
     onSave
-}: RoleEditProps) => {
+}: RoleEditDrawerProps) => {
     const [form] = Form.useForm<RoleFormValues>();
     const [checkedMenuKeys, setCheckedMenuKeys] = useState<Key[]>(
         (role?.menus || []).map((menu) => menu.id)
@@ -101,14 +101,14 @@ export const RoleEdit = ({
 
     return (
         <KuzhambuDrawer
-            testId="system-role-role-editor-drawer"
+            testId="system-role-role-edit-drawer"
             className="role-edit-drawer"
             title={role ? "编辑角色" : "新增角色"}
             open={Boolean(open)}
             size="middle"
             onClose={onClose}
             footer={
-                <div className="role-edit-footer">
+                <div className="role-edit-drawer-footer">
                     <KuzhambuButton testId="system-role-role-cancel-button" onClick={onClose}>
                         取消
                     </KuzhambuButton>
@@ -123,7 +123,7 @@ export const RoleEdit = ({
                 </div>
             }
         >
-            <Form<RoleFormValues> form={form} layout="vertical" className="role-editor-form">
+            <Form<RoleFormValues> form={form} layout="vertical" className="role-edit-drawer-form">
                 <Form.Item name="id" hidden>
                     <Input />
                 </Form.Item>
@@ -134,7 +134,7 @@ export const RoleEdit = ({
                 >
                     <Input placeholder="例如：运营管理员" />
                 </Form.Item>
-                <div className="role-editor-switches">
+                <div className="role-edit-drawer-switches">
                     <Form.Item name="admin" label="管理权限" valuePropName="checked">
                         <KuzhambuSwitch
                             checkedChildren={readOptionLabel(

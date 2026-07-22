@@ -12,7 +12,7 @@ import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import type { OptionsRecord } from "@/types/options";
-import { RoleEdit } from "./components/role-edit";
+import { RoleEditDrawer } from "./components/role-edit-drawer";
 import * as service from "./role-service";
 import type { RoleOptionKeys, RoleSaveCommand } from "./role-service";
 import type { RoleMenuNode, RoleMenuTreeNode, RoleRecord } from "./role-types";
@@ -489,7 +489,7 @@ export const RolePage = () => {
                 sortable={canEditRole}
             />
 
-            <RoleEdit
+            <RoleEditDrawer
                 key={editorOpen ? editingRole?.id || "create" : "closed"}
                 open={editorOpen}
                 role={editingRole}
