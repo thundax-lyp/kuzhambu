@@ -1,6 +1,6 @@
 import { FileSearchOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Descriptions, Select, Tag, Typography } from "antd";
+import { App, Descriptions, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
@@ -10,12 +10,14 @@ import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
+import { DEFAULT_FILTERS, type ShareFilters } from "./components/sharing-filter-config";
+import { SharingFilterPanel } from "./components/sharing-filter-panel";
+import { createSharingTableColumns } from "./components/sharing-table";
 import * as shareService from "@/pages/classics/common/classics-share-service";
 import type { ClassicsShareQuery } from "@/pages/classics/common/classics-share-service";
 import type {
     ClassicsShareAccessClientSnapshot,
     ClassicsShareAccessRecord,
-    ClassicsShareContentType,
     ClassicsShareLinkStatus,
     ClassicsShareRecord,
     ClassicsShareTargetRecord,
@@ -27,43 +29,7 @@ import "./sharing-page.css";
 
 const { Text } = Typography;
 
-type ShareContentTypeFilter = "ALL" | ClassicsShareContentType;
-type ShareStatusFilter = "ALL" | ClassicsShareLinkStatus;
-type ShareVisibilityFilter = "ALL" | ClassicsShareVisibility;
-
 type ShareStatusTone = "danger" | "neutral" | "success" | "warning";
-
-interface ShareFilters {
-    contentType: ShareContentTypeFilter;
-    status: ShareStatusFilter;
-    visibility: ShareVisibilityFilter;
-}
-
-const DEFAULT_FILTERS: ShareFilters = {
-    contentType: "ALL",
-    status: "ALL",
-    visibility: "ALL"
-};
-
-const SHARE_CONTENT_TYPE_OPTIONS = [
-    { label: "全部", value: "ALL" },
-    { label: "王圻文档", value: "WANGQI_DOCUMENT" },
-    { label: "三才条目", value: "SANCAI_ENTRY" },
-    { label: "明人志异", value: "MING_CUSTOMS" }
-];
-
-const SHARE_STATUS_OPTIONS: Array<{ label: string; value: ShareStatusFilter }> = [
-    { label: "全部", value: "ALL" },
-    { label: "生效", value: "ACTIVE" },
-    { label: "已过期", value: "EXPIRED" },
-    { label: "已撤销", value: "REVOKED" }
-];
-
-const SHARE_VISIBILITY_OPTIONS = [
-    { label: "全部", value: "ALL" },
-    { label: "公开", value: "PUBLIC" },
-    { label: "私有", value: "PRIVATE" }
-];
 
 const shareStatusTone: Record<string, ShareStatusTone> = {
     ACTIVE: "success",
@@ -112,11 +78,6 @@ const shareTypeLabel = (contentType?: string | null) => {
     return "未知类型";
 };
 
-const shareRecordLabel = (share: ClassicsShareRecord) => {
-    const contentType = share.targets?.[0]?.contentType;
-    return `${share.title || `分享 ${share.id}`}-${shareTypeLabel(contentType)}`;
-};
-
 const readStatusTagType = (status?: ClassicsShareLinkStatus | string | null) => {
     return shareStatusTone[status || ""] || "neutral";
 };
@@ -157,10 +118,6 @@ const readVisibilityLabel = (visibility?: ClassicsShareVisibility | string | nul
             PUBLIC: "公开"
         }[visibility || ""] || "未知"
     );
-};
-
-const readShareTypeByTargets = (targets?: ClassicsShareTargetRecord[] | null) => {
-    return shareTypeLabel(targets?.[0]?.contentType);
 };
 
 const parseAccessClientSnapshot = (
@@ -299,104 +256,12 @@ export const SharingPage = () => {
         });
     };
 
-    const readShareStatusActions = (share: ClassicsShareRecord) => {
-        if (share.status === "ACTIVE") {
-            return [
-                {
-                    key: "revoke",
-                    text: "撤销",
-                    ariaLabel: `撤销 ${shareRecordLabel(share)}`,
-                    type: "danger" as const,
-                    onClick: () => confirmUpdateStatus(share, "REVOKED")
-                }
-            ];
-        }
-        if (canRestoreShare(share)) {
-            return [
-                {
-                    key: "restore",
-                    text: "恢复",
-                    ariaLabel: `恢复 ${shareRecordLabel(share)}`,
-                    onClick: () => confirmUpdateStatus(share, "ACTIVE")
-                }
-            ];
-        }
-        return [];
-    };
-
     const targetRecords = useMemo(() => detailRecord?.targets || [], [detailRecord?.targets]);
 
-    const shareColumns: KuzhambuTableProps<ClassicsShareRecord>["columns"] = [
-        {
-            title: "标题",
-            dataIndex: "title",
-            key: "title",
-            width: 220,
-            render: (title?: string | null) => title || "-"
-        },
-        {
-            title: "分享类型",
-            dataIndex: "targets",
-            key: "contentType",
-            width: 150,
-            render: (_targets, share) => readShareTypeByTargets(share?.targets)
-        },
-        {
-            title: "状态",
-            dataIndex: "status",
-            key: "status",
-            width: 120,
-            render: (status?: ClassicsShareLinkStatus | string | null) => (
-                <KuzhambuTag type={readStatusTagType(status)}>{status || "UNKNOWN"}</KuzhambuTag>
-            )
-        },
-        {
-            title: "可见性",
-            dataIndex: "visibility",
-            key: "visibility",
-            width: 120,
-            render: (visibility?: ClassicsShareVisibility | string | null) =>
-                readVisibilityLabel(visibility)
-        },
-        {
-            title: "访问次数",
-            dataIndex: "accessCount",
-            key: "accessCount",
-            width: 120,
-            render: (value?: number | null) => (typeof value === "number" ? value : "-")
-        },
-        {
-            title: "发布时间",
-            dataIndex: "issuedAt",
-            key: "issuedAt",
-            width: 190,
-            render: formatDateTime
-        },
-        {
-            title: "过期时间",
-            dataIndex: "expiresAt",
-            key: "expiresAt",
-            width: 190,
-            render: formatDateTime
-        },
-        {
-            key: "actions",
-            options: (share) => {
-                const statusActions = readShareStatusActions(share);
-                return [
-                    {
-                        key: "detail",
-                        text: "查看",
-                        ariaLabel: `查看 ${shareRecordLabel(share)}`,
-                        onClick: openShareDetail
-                    },
-                    ...(statusActions.length
-                        ? [{ type: "divider" as const }, ...statusActions]
-                        : [])
-                ];
-            }
-        }
-    ];
+    const shareColumns = createSharingTableColumns({
+        onStatusChange: confirmUpdateStatus,
+        onView: openShareDetail
+    });
 
     const targetColumns: KuzhambuTableProps<ClassicsShareTargetRecord>["columns"] = [
         {
@@ -475,59 +340,10 @@ export const SharingPage = () => {
                 searchPlaceholder="搜索分享标题"
                 searchValue={searchText}
                 filterActive={hasActiveFilters}
-                filterFields={[
-                    {
-                        name: "contentType",
-                        label: "内容类型",
-                        render: () => (
-                            <Select
-                                aria-label="分享内容类型"
-                                value={filters.contentType}
-                                options={SHARE_CONTENT_TYPE_OPTIONS}
-                                onChange={(contentType) =>
-                                    setFilters((current) => ({
-                                        ...current,
-                                        contentType
-                                    }))
-                                }
-                            />
-                        )
-                    },
-                    {
-                        name: "status",
-                        label: "分享状态",
-                        render: () => (
-                            <Select
-                                aria-label="分享状态"
-                                value={filters.status}
-                                options={SHARE_STATUS_OPTIONS}
-                                onChange={(status) =>
-                                    setFilters((current) => ({
-                                        ...current,
-                                        status: status || "ALL"
-                                    }))
-                                }
-                            />
-                        )
-                    },
-                    {
-                        name: "visibility",
-                        label: "可见性",
-                        render: () => (
-                            <Select
-                                aria-label="分享可见性"
-                                value={filters.visibility}
-                                options={SHARE_VISIBILITY_OPTIONS}
-                                onChange={(visibility) =>
-                                    setFilters((current) => ({
-                                        ...current,
-                                        visibility: visibility || "ALL"
-                                    }))
-                                }
-                            />
-                        )
-                    }
-                ]}
+                filterFields={SharingFilterPanel({
+                    filters,
+                    onChange: setFilters
+                })}
                 onFilterApply={() => {
                     setQuery((currentQuery) => ({
                         ...currentQuery,
