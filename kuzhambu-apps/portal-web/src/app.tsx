@@ -13,6 +13,8 @@ import { ShareDetailPage } from "@/pages/share-detail/share-detail-page";
 import { ShareListPage } from "@/pages/share-list/share-list-page";
 
 import "./styles.css";
+import "@/pages/discovery/qa/qa-page.css";
+import "@/pages/discovery/search/search-page.css";
 import "@/pages/knowledge/knowledge-shell.css";
 
 const normalizeRouterBasename = (baseUrl: string) => {
