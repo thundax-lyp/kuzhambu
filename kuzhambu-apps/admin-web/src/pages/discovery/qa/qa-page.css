@@ -143,6 +143,20 @@
     font-size: 13px;
 }
 
+.discovery-qa-page__session-detail-trigger {
+    background: transparent;
+    border: 0;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font: inherit;
+    padding: 0;
+    text-align: right;
+}
+
+.discovery-qa-page__session-detail-trigger:hover {
+    color: var(--accent-blue);
+}
+
 .discovery-qa-page__notice {
     margin: 0 auto 12px;
     max-width: 920px;
