@@ -177,4 +177,3 @@ git diff --stat main...HEAD
 ```
 
 如果创建了 PR，必须给出 PR URL。若执行了 stage、commit、push 或 PR 创建，应按 Codex app 要求在最终答复中附带对应 git directive。
-
