@@ -29,6 +29,10 @@ export interface KuzhambuSegmentedDrawerProps<TSection extends string = string> 
     showSegmented?: boolean;
 }
 
+// AI NOTE: This is the shared "Drawer + Segmented section switcher" shell.
+// Put only section navigation, header extra, and the active section container here.
+// Keep section-specific queries, forms, mutations, and business fallbacks in page components.
+// Drawer loading belongs to the underlying KuzhambuDrawer and should be passed through unchanged.
 export const KuzhambuSegmentedDrawer = <TSection extends string = string>({
     activeSection,
     children,

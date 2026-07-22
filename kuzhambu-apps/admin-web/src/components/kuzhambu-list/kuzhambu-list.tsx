@@ -44,6 +44,8 @@ const inferItemKey = <ItemType,>(item: ItemType, index: number): Key => {
     return index;
 };
 
+// AI NOTE: This is the shared list renderer for small collections and candidate panels.
+// It owns empty/loading/list semantics only; pages still own item selection, mutations, and payload validation.
 export const KuzhambuList = <ItemType,>({
     ariaLabel,
     as = "ul",
@@ -82,6 +84,8 @@ export const KuzhambuList = <ItemType,>({
     return <Spin spinning={loading}>{content}</Spin>;
 };
 
+// AI NOTE: This is a structural child for KuzhambuList.
+// Keep item-specific action behavior in the parent renderItem callback.
 export const KuzhambuListItem = ({
     actions,
     children,
@@ -103,6 +107,8 @@ export const KuzhambuListItem = ({
     );
 };
 
+// AI NOTE: This is display-only metadata for KuzhambuListItem.
+// It should not fetch data or derive domain labels.
 export const KuzhambuListMeta = ({ description, title }: KuzhambuListMetaProps) => {
     return (
         <div className="kuzhambu-list-meta">

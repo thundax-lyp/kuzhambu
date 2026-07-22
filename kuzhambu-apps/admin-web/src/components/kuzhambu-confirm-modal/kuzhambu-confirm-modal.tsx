@@ -14,6 +14,9 @@ export interface KuzhambuConfirmModalProps extends Omit<ModalProps, "children"> 
     tone?: KuzhambuConfirmModalTone;
 }
 
+// AI NOTE: This is the visual body for explicit confirmation dialogs.
+// Pages should usually call useKuzhambuConfirm instead of composing this directly.
+// Keep destructive-action semantics in the caller; this component only renders the confirmation shell.
 export const KuzhambuConfirmModal = ({
     className,
     description,

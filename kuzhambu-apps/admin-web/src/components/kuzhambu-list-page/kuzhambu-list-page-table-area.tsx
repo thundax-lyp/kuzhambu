@@ -8,6 +8,8 @@ interface KuzhambuListPageTableAreaProps {
     placement?: "left" | "right";
 }
 
+// AI NOTE: This is an internal layout helper for KuzhambuListPage table + aside composition.
+// Pages should usually configure tableAside on KuzhambuListPage instead of importing this directly.
 export const KuzhambuListPageTableArea = ({
     aside,
     asideClassName,
