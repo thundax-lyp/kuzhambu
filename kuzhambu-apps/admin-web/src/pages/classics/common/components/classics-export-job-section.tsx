@@ -92,7 +92,7 @@ const matchesKeyword = (job: ClassicsExportJobRecord, keyword: string) => {
         .some((value) => String(value).toLowerCase().includes(normalized));
 };
 
-export interface ClassicsExportJobSectionProps {
+interface ClassicsExportJobSectionProps {
     loading?: boolean;
     onDownload: (job: ClassicsExportJobRecord) => void;
     onDelete?: (job: ClassicsExportJobRecord) => void;

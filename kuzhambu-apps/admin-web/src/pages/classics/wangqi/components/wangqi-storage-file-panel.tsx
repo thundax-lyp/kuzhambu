@@ -40,7 +40,7 @@ const resolveContentUrl = (
     );
 };
 
-export interface WangqiStorageFilePanelProps {
+interface WangqiStorageFilePanelProps {
     document?: WangqiDocumentRecord | null;
     loading?: boolean;
     sourceFile?: WangqiSourceFileRecord | null;

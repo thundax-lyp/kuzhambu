@@ -105,7 +105,7 @@ const readQaPairs = (snapshot: WangqiVersionSnapshot | null) => {
         .filter((qaPair): qaPair is { question: string; answer: string } => qaPair !== null);
 };
 
-export interface WangqiVersionHistoryPanelProps {
+interface WangqiVersionHistoryPanelProps {
     currentDocument?: WangqiDocumentRecord | null;
     detailLoading?: boolean;
     listLoading?: boolean;

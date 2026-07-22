@@ -52,7 +52,7 @@ const readSummaryLines = (summary?: string | null) => {
         .slice(0, 3);
 };
 
-export interface WangqiDocumentTableProps {
+interface WangqiDocumentTableProps {
     canExport?: boolean;
     canShare?: boolean;
     dataSource: WangqiDocumentRecord[];
