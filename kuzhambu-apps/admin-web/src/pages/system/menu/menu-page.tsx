@@ -9,7 +9,7 @@ import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/us
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
-import { MenuEdit } from "./components/menu-edit";
+import { MenuEditDrawer } from "./components/menu-edit-drawer";
 import * as service from "./menu-service";
 import type { MenuMoveCommand, MenuSaveCommand } from "./menu-service";
 import type { MenuNode, MenuTableNode } from "./menu-types";
@@ -402,7 +402,7 @@ export const MenuPage = () => {
                 sortable={canEditMenu}
             />
 
-            <MenuEdit
+            <MenuEditDrawer
                 open={editorOpen}
                 menu={editingMenu}
                 parentOptions={parentOptions}

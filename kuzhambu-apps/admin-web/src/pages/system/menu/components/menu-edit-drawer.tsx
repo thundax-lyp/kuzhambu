@@ -7,7 +7,7 @@ import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { TextArea } = Input;
 
-interface MenuEditProps {
+interface MenuEditDrawerProps {
     open?: boolean;
     menu?: MenuNode | null;
     parentOptions: Array<{ label: string; value: string }>;
@@ -61,7 +61,14 @@ const toFormValues = (menu: MenuNode): MenuFormValues => {
     };
 };
 
-export const MenuEdit = ({ open, menu, parentOptions, saving, onClose, onSave }: MenuEditProps) => {
+export const MenuEditDrawer = ({
+    open,
+    menu,
+    parentOptions,
+    saving,
+    onClose,
+    onSave
+}: MenuEditDrawerProps) => {
     const [form] = Form.useForm<MenuFormValues>();
 
     useEffect(() => {
@@ -83,14 +90,14 @@ export const MenuEdit = ({ open, menu, parentOptions, saving, onClose, onSave }:
 
     return (
         <KuzhambuDrawer
-            testId="system-menu-menu-editor-drawer"
+            testId="system-menu-menu-edit-drawer"
             className="menu-edit-drawer"
             title={menu ? "编辑菜单" : "新增菜单"}
             open={Boolean(open)}
             size="small"
             onClose={onClose}
             footer={
-                <div className="menu-edit-footer">
+                <div className="menu-edit-drawer-footer">
                     <KuzhambuButton testId="system-menu-menu-cancel-button" onClick={onClose}>
                         取消
                     </KuzhambuButton>
@@ -105,7 +112,7 @@ export const MenuEdit = ({ open, menu, parentOptions, saving, onClose, onSave }:
                 </div>
             }
         >
-            <Form<MenuFormValues> form={form} layout="vertical" className="menu-editor-form">
+            <Form<MenuFormValues> form={form} layout="vertical" className="menu-edit-drawer-form">
                 <Form.Item name="id" hidden>
                     <Input />
                 </Form.Item>
