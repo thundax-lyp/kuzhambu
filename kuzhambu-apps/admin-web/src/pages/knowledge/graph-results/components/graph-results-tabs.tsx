@@ -27,7 +27,7 @@ interface GraphResultsTabsProps {
     activeVersion: GraphVersionRecord | null;
     activeVersionId: number | null;
     canViewGraph: boolean;
-    detailOpen: boolean;
+    versionDetailDrawerOpen: boolean;
     entities: GraphEntityRecord[];
     entityDetail: GraphEntityRecord | null;
     entityDetailOpen: boolean;
@@ -71,7 +71,7 @@ export const GraphResultsTabs = ({
     activeVersion,
     activeVersionId,
     canViewGraph,
-    detailOpen,
+    versionDetailDrawerOpen,
     entities,
     entityDetail,
     entityDetailOpen,
@@ -153,10 +153,10 @@ export const GraphResultsTabs = ({
                                         image={Empty.PRESENTED_IMAGE_SIMPLE}
                                     />
                                 )}
-                                {detailOpen ? (
+                                {versionDetailDrawerOpen ? (
                                     <GraphVersionDetail
                                         loading={versionDetailLoading}
-                                        open={detailOpen}
+                                        open={versionDetailDrawerOpen}
                                         version={versionDetail}
                                         onOpenResults={onOpenVersionResults}
                                         onClose={onCloseVersionDetail}

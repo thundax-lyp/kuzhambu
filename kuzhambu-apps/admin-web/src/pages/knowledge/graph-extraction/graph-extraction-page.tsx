@@ -74,7 +74,7 @@ export const GraphExtractionPage = () => {
         pageSize: DEFAULT_PAGE_SIZE
     });
     const [detailTaskId, setDetailTaskId] = useState<number | null>(null);
-    const [detailOpen, setDetailOpen] = useState(false);
+    const [taskDetailDrawerOpen, setTaskDetailDrawerOpen] = useState(false);
 
     const taskPageQuery = useQuery({
         queryKey: ["knowledge", "graph-extraction", "tasks", taskQuery],
@@ -85,7 +85,7 @@ export const GraphExtractionPage = () => {
     const detailQuery = useQuery({
         queryKey: ["knowledge", "graph-extraction", "task-detail", detailTaskId],
         queryFn: () => service.getTaskDetail({ taskId: detailTaskId || 0 }),
-        enabled: detailOpen && detailTaskId !== null,
+        enabled: taskDetailDrawerOpen && detailTaskId !== null,
         retry: false
     });
     const createTaskMutation = useMutation({
@@ -166,7 +166,7 @@ export const GraphExtractionPage = () => {
             return;
         }
         setDetailTaskId(taskId);
-        setDetailOpen(true);
+        setTaskDetailDrawerOpen(true);
     };
 
     const applyTask = (task: GraphExtractionTaskRecord) => {
@@ -308,14 +308,14 @@ export const GraphExtractionPage = () => {
                         applying={applyTaskMutation.isPending}
                         canApply={canApplyGraph}
                         loading={detailQuery.isLoading}
-                        open={detailOpen}
+                        open={taskDetailDrawerOpen}
                         task={detailQuery.data || null}
                         onApply={() => {
                             if (detailTaskId !== null) {
                                 applyTaskMutation.mutate(detailTaskId);
                             }
                         }}
-                        onClose={() => setDetailOpen(false)}
+                        onClose={() => setTaskDetailDrawerOpen(false)}
                     />
                 </section>
             </KuzhambuSpace>

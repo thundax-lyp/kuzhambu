@@ -26,7 +26,7 @@ export const GraphResultsPage = () => {
         versionQuery
     } = useGraphResultsQueryState();
     const [detailVersionId, setDetailVersionId] = useState<number | null>(null);
-    const [detailOpen, setDetailOpen] = useState(false);
+    const [versionDetailDrawerOpen, setVersionDetailDrawerOpen] = useState(false);
     const [entityDetailId, setEntityDetailId] = useState<number | null>(null);
     const [entityDetailOpen, setEntityDetailOpen] = useState(false);
     const [relationDetailId, setRelationDetailId] = useState<number | null>(null);
@@ -48,7 +48,7 @@ export const GraphResultsPage = () => {
     const versionDetailQuery = useQuery({
         queryKey: ["knowledge", "graph-results", "version-detail", detailVersionId],
         queryFn: () => service.getVersionDetail({ versionId: detailVersionId || 0 }),
-        enabled: detailOpen && detailVersionId !== null,
+        enabled: versionDetailDrawerOpen && detailVersionId !== null,
         retry: false
     });
     const entityPageQuery = useQuery({
@@ -118,12 +118,12 @@ export const GraphResultsPage = () => {
 
     const openVersionDetail = (version: GraphVersionRecord) => {
         setDetailVersionId(version.versionId);
-        setDetailOpen(true);
+        setVersionDetailDrawerOpen(true);
     };
 
     const openVersionResults = (version: GraphVersionRecord) => {
         selectVersionResults(version);
-        setDetailOpen(false);
+        setVersionDetailDrawerOpen(false);
     };
 
     return (
@@ -151,7 +151,7 @@ export const GraphResultsPage = () => {
                     activeVersion={activeVersion}
                     activeVersionId={activeVersionId}
                     canViewGraph={canViewGraph}
-                    detailOpen={detailOpen}
+                    versionDetailDrawerOpen={versionDetailDrawerOpen}
                     entities={entities}
                     entityDetail={entityDetailQuery.data || null}
                     entityDetailLoading={entityDetailQuery.isLoading}
@@ -181,7 +181,7 @@ export const GraphResultsPage = () => {
                     onCloseLineageNodeDetail={() => setLineageNodeDetailOpen(false)}
                     onCloseLineageRelationDetail={() => setLineageRelationDetailOpen(false)}
                     onCloseRelationDetail={() => setRelationDetailOpen(false)}
-                    onCloseVersionDetail={() => setDetailOpen(false)}
+                    onCloseVersionDetail={() => setVersionDetailDrawerOpen(false)}
                     onOpenEntityDetail={(entity) => {
                         setEntityDetailId(entity.entityId);
                         setEntityDetailOpen(true);
