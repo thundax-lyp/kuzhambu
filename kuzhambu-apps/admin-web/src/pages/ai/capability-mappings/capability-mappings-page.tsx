@@ -64,7 +64,7 @@ export const CapabilityMappingsPage = () => {
     const canEditConfig = hasPermission("ai:config:edit");
     const [query, setQuery] = useState<AiCapabilityQuery>({});
     const [editingMapping, setEditingMapping] = useState<AiCapabilityMappingRecord | null>(null);
-    const [drawerOpen, setDrawerOpen] = useState(false);
+    const [capabilityMappingEditDrawerOpen, setCapabilityMappingEditDrawerOpen] = useState(false);
     const selectedCapabilityCode = Form.useWatch("capability", form);
     const selectedModelId = Form.useWatch("modelId", form);
 
@@ -140,7 +140,7 @@ export const CapabilityMappingsPage = () => {
         mutationFn: service.changeCapabilityMapping,
         onSuccess: async () => {
             await invalidateMappings();
-            setDrawerOpen(false);
+            setCapabilityMappingEditDrawerOpen(false);
             setEditingMapping(null);
             message.success("能力映射已保存");
         },
@@ -156,7 +156,7 @@ export const CapabilityMappingsPage = () => {
         }
     }, [message, mappingsQuery.error, mappingsQuery.isError]);
 
-    const openCreate = () => {
+    const openCreateCapabilityMappingDrawer = () => {
         setEditingMapping(null);
         form.setFieldsValue({
             mappingId: null,
@@ -165,10 +165,10 @@ export const CapabilityMappingsPage = () => {
             modelId: modelOptions[0]?.value,
             enabled: true
         });
-        setDrawerOpen(true);
+        setCapabilityMappingEditDrawerOpen(true);
     };
 
-    const openEdit = (record: AiCapabilityMappingRecord) => {
+    const openEditCapabilityMappingDrawer = (record: AiCapabilityMappingRecord) => {
         setEditingMapping(record);
         form.setFieldsValue({
             mappingId: record.mappingId,
@@ -177,7 +177,7 @@ export const CapabilityMappingsPage = () => {
             modelId: record.modelId,
             enabled: record.enabled
         });
-        setDrawerOpen(true);
+        setCapabilityMappingEditDrawerOpen(true);
     };
 
     const submitForm = async () => {
@@ -225,7 +225,7 @@ export const CapabilityMappingsPage = () => {
                         type="primary"
                         icon={<PlusOutlined />}
                         disabled={!canEditConfig}
-                        onClick={openCreate}
+                        onClick={openCreateCapabilityMappingDrawer}
                     >
                         新增映射
                     </KuzhambuButton>
@@ -299,7 +299,7 @@ export const CapabilityMappingsPage = () => {
                     modelsQuery.isFetching
                 }
                 onChangeEnabled={(record, enabled) => void changeEnabled(record, enabled)}
-                onOpenEdit={openEdit}
+                onOpenEdit={openEditCapabilityMappingDrawer}
             />
 
             <CapabilityMappingDrawer
@@ -308,9 +308,9 @@ export const CapabilityMappingsPage = () => {
                 editingMapping={editingMapping}
                 form={form}
                 modelOptions={modelOptions}
-                onClose={() => setDrawerOpen(false)}
+                onClose={() => setCapabilityMappingEditDrawerOpen(false)}
                 onSubmit={() => void submitForm()}
-                open={drawerOpen}
+                open={capabilityMappingEditDrawerOpen}
                 saving={changeMutation.isPending}
                 scopeOptions={SCOPE_OPTIONS}
                 tagMatch={tagMatch}

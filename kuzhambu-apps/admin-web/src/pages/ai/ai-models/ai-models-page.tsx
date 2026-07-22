@@ -43,7 +43,7 @@ export const AiModelsPage = () => {
     const [filters, setFilters] = useState<ModelFilters>(DEFAULT_MODEL_FILTERS);
     const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
     const [editingModel, setEditingModel] = useState<AiModelRecord | null>(null);
-    const [drawerOpen, setDrawerOpen] = useState(false);
+    const [aiModelEditDrawerOpen, setAiModelEditDrawerOpen] = useState(false);
     const hasSelectedModels = selectedRowKeys.length > 0;
     const hasActiveFilters =
         Boolean(filters.apiSource) || filters.enabled !== DEFAULT_MODEL_FILTERS.enabled;
@@ -77,7 +77,7 @@ export const AiModelsPage = () => {
         mutationFn: service.createAiModel,
         onSuccess: async () => {
             await invalidateModels();
-            setDrawerOpen(false);
+            setAiModelEditDrawerOpen(false);
             setEditingModel(null);
             messageApi.success("模型已新增");
         },
@@ -90,7 +90,7 @@ export const AiModelsPage = () => {
         mutationFn: service.changeAiModel,
         onSuccess: async () => {
             await invalidateModels();
-            setDrawerOpen(false);
+            setAiModelEditDrawerOpen(false);
             setEditingModel(null);
             messageApi.success("模型已保存");
         },
@@ -118,21 +118,21 @@ export const AiModelsPage = () => {
         }
     }, [messageApi, modelsQuery.error, modelsQuery.isError]);
 
-    const openCreate = () => {
+    const openCreateAiModelDrawer = () => {
         setEditingModel(null);
-        setDrawerOpen(true);
+        setAiModelEditDrawerOpen(true);
     };
 
-    const openEdit = (record: AiModelRecord) => {
+    const openEditAiModelDrawer = (record: AiModelRecord) => {
         setEditingModel(record);
-        setDrawerOpen(true);
+        setAiModelEditDrawerOpen(true);
     };
 
-    const closeEditor = () => {
+    const closeAiModelEditDrawer = () => {
         if (createMutation.isPending || changeMutation.isPending) {
             return;
         }
-        setDrawerOpen(false);
+        setAiModelEditDrawerOpen(false);
         setEditingModel(null);
     };
 
@@ -220,7 +220,7 @@ export const AiModelsPage = () => {
                 filters={filters}
                 hasSelectedModels={hasSelectedModels}
                 loading={modelsQuery.isFetching}
-                onAdd={openCreate}
+                onAdd={openCreateAiModelDrawer}
                 onBatchDelete={batchDeleteModels}
                 onBatchUpdateEnabled={(enabled) => void batchUpdateEnabled(enabled)}
                 onFilterApply={applyFilters}
@@ -243,7 +243,7 @@ export const AiModelsPage = () => {
                         }}
                         onChangeEnabled={(record, enabled) => void changeEnabled(record, enabled)}
                         onDelete={confirmDeleteModel}
-                        onOpenEdit={openEdit}
+                        onOpenEdit={openEditAiModelDrawer}
                         onSelectedRowKeysChange={setSelectedRowKeys}
                         selectedRowKeys={selectedRowKeys}
                     />
@@ -251,11 +251,11 @@ export const AiModelsPage = () => {
             />
 
             <AiModelEditDrawer
-                open={drawerOpen}
+                open={aiModelEditDrawerOpen}
                 model={editingModel}
                 canEdit={canEditConfig}
                 saving={createMutation.isPending || changeMutation.isPending}
-                onClose={closeEditor}
+                onClose={closeAiModelEditDrawer}
                 onSave={saveModel}
             />
         </div>

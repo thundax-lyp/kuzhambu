@@ -148,7 +148,7 @@ export const PromptsPage = () => {
     const [filters, setFilters] = useState<PromptFilters>(DEFAULT_PROMPT_FILTERS);
     const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
     const [editingTemplate, setEditingTemplate] = useState<AiPromptTemplateRecord | null>(null);
-    const [drawerOpen, setDrawerOpen] = useState(false);
+    const [promptEditDrawerOpen, setPromptEditDrawerOpen] = useState(false);
     const hasSelectedPrompts = selectedRowKeys.length > 0;
     const hasActiveFilters =
         Boolean(filters.capability) || filters.enabled !== DEFAULT_PROMPT_FILTERS.enabled;
@@ -303,23 +303,23 @@ export const PromptsPage = () => {
         setQuery({});
     };
 
-    const openEdit = (template: AiPromptTemplateRecord) => {
+    const openEditPromptDrawer = (template: AiPromptTemplateRecord) => {
         setEditingTemplate(template);
-        setDrawerOpen(true);
+        setPromptEditDrawerOpen(true);
     };
 
-    const openCreate = () => {
+    const openCreatePromptDrawer = () => {
         setEditingTemplate(null);
-        setDrawerOpen(true);
+        setPromptEditDrawerOpen(true);
     };
 
-    const closeEditor = () => {
-        setDrawerOpen(false);
+    const closePromptEditDrawer = () => {
+        setPromptEditDrawerOpen(false);
         setEditingTemplate(null);
     };
 
     const handleSaved = () => {
-        setDrawerOpen(false);
+        setPromptEditDrawerOpen(false);
         setEditingTemplate(null);
         void invalidatePrompts();
     };
@@ -459,7 +459,7 @@ export const PromptsPage = () => {
                         capabilityByCode.get(template.capability || "")?.name
                     )}`,
                     disabled: !canEditPrompt,
-                    onClick: () => openEdit(template)
+                    onClick: () => openEditPromptDrawer(template)
                 },
                 {
                     key: "delete",
@@ -580,7 +580,7 @@ export const PromptsPage = () => {
                             type="primary"
                             icon={<PlusOutlined />}
                             disabled={!canEditPrompt}
-                            onClick={openCreate}
+                            onClick={openCreatePromptDrawer}
                         >
                             新建
                         </KuzhambuButton>
@@ -608,12 +608,12 @@ export const PromptsPage = () => {
             />
 
             <PromptEditDrawer
-                key={drawerOpen ? editingTemplate?.id || "create" : "closed"}
+                key={promptEditDrawerOpen ? editingTemplate?.id || "create" : "closed"}
                 canEdit={canEditPrompt}
                 capabilityOptions={capabilityOptions}
-                open={drawerOpen}
+                open={promptEditDrawerOpen}
                 template={editingTemplate}
-                onClose={closeEditor}
+                onClose={closePromptEditDrawer}
                 onSaved={handleSaved}
             />
         </>
