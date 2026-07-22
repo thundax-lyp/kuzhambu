@@ -144,7 +144,9 @@ export const MingCustomsPage = () => {
     const [selectedTagFilter, setSelectedTagFilter] = useState<MingCustomsSelectedTagFilter | null>(
         null
     );
-    const [mingCustomsEditDrawerMode, setEditorMode] = useState<"create" | "edit">("create");
+    const [mingCustomsEditDrawerMode, setMingCustomsEditDrawerMode] = useState<"create" | "edit">(
+        "create"
+    );
     const [mingCustomsEditDrawerOpen, setMingCustomsEditDrawerOpen] = useState(false);
     const [editingEntry, setEditingEntry] = useState<MingCustomsRecord | null>(null);
     const [selectedEntryIds, setSelectedEntryIds] = useState<number[]>([]);
@@ -505,14 +507,14 @@ export const MingCustomsPage = () => {
     };
 
     const openCreateMingCustomsDrawer = () => {
-        setEditorMode("create");
+        setMingCustomsEditDrawerMode("create");
         setEditingEntry(null);
         setMingCustomsEditDrawerOpen(true);
         setSelectedVersionId(null);
     };
 
     const openEditMingCustomsDrawer = (entry: MingCustomsRecord) => {
-        setEditorMode("edit");
+        setMingCustomsEditDrawerMode("edit");
         setEditingEntry(entry);
         setMingCustomsEditDrawerOpen(true);
         setSelectedVersionId(null);

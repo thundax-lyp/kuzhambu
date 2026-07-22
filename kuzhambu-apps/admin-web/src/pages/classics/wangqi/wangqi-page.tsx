@@ -191,7 +191,9 @@ export const WangqiPage = () => {
     });
     const [searchText, setSearchText] = useState("");
     const [filters, setFilters] = useState<WangqiFilters>(DEFAULT_WANGQI_FILTERS);
-    const [wangqiDocumentEditDrawerMode, setEditorMode] = useState<"create" | "edit">("create");
+    const [wangqiDocumentEditDrawerMode, setWangqiDocumentEditDrawerMode] = useState<
+        "create" | "edit"
+    >("create");
     const [wangqiDocumentEditDrawerOpen, setWangqiDocumentEditDrawerOpen] = useState(false);
     const [editingDocument, setEditingDocument] = useState<WangqiDocumentRecord | null>(null);
     const [selectedVersionId, setSelectedVersionId] = useState<number | null>(null);
@@ -222,7 +224,7 @@ export const WangqiPage = () => {
         filters.sortDirection !== DEFAULT_WANGQI_FILTERS.sortDirection
     );
 
-    const pageQuery = useQuery({
+    const wangqiDocumentPageQuery = useQuery({
         queryKey: ["wangqi", "page", query],
         queryFn: () => wangqiService.page(query),
         retry: false
@@ -306,7 +308,7 @@ export const WangqiPage = () => {
         }
     });
 
-    const pageResult = pageQuery.data;
+    const pageResult = wangqiDocumentPageQuery.data;
     const records = useMemo(() => pageResult?.records || [], [pageResult?.records]);
     const versions = useMemo(() => {
         return Array.isArray(versionsQuery.data) ? versionsQuery.data : [];
@@ -610,7 +612,7 @@ export const WangqiPage = () => {
     };
 
     const openCreateWangqiDocumentDrawer = () => {
-        setEditorMode("create");
+        setWangqiDocumentEditDrawerMode("create");
         setEditingDocument(null);
         setSelectedVersionId(null);
         setSummaryTrackingTask(null);
@@ -620,7 +622,7 @@ export const WangqiPage = () => {
     };
 
     const openEditWangqiDocumentDrawer = (document: WangqiDocumentRecord) => {
-        setEditorMode("edit");
+        setWangqiDocumentEditDrawerMode("edit");
         setEditingDocument(document);
         setSelectedVersionId(null);
         setSummaryTrackingTask(null);
@@ -854,12 +856,12 @@ export const WangqiPage = () => {
                         <KuzhambuButton
                             testId="classics-wangqi-wangqi-refresh-button"
                             icon={<ReloadOutlined />}
-                            onClick={() => void pageQuery.refetch()}
+                            onClick={() => void wangqiDocumentPageQuery.refetch()}
                         >
                             刷新
                         </KuzhambuButton>
                         <WangqiTimeline
-                            loading={pageQuery.isLoading}
+                            loading={wangqiDocumentPageQuery.isLoading}
                             dataSource={records}
                             onOpenDocument={openEditWangqiDocumentDrawer}
                         />
@@ -951,7 +953,7 @@ export const WangqiPage = () => {
                     <WangqiDocumentTable
                         canExport={canExportDocuments}
                         canShare={canShareDocuments}
-                        loading={pageQuery.isLoading}
+                        loading={wangqiDocumentPageQuery.isLoading}
                         dataSource={records}
                         onDelete={deleteDocument}
                         onExport={exportDocument}

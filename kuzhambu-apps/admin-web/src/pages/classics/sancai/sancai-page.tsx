@@ -105,7 +105,7 @@ export const SancaiPage = () => {
         version: number;
     }>({ target: "category", version: 0 });
     const [refreshVersion, setRefreshVersion] = useState(0);
-    const [keyword, setKeyword] = useState("");
+    const [searchText, setSearchText] = useState("");
     const [appliedKeyword, setAppliedKeyword] = useState<string | null>(null);
     const [exportJobsDrawerOpen, setExportJobsDrawerOpen] = useState(false);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -185,12 +185,12 @@ export const SancaiPage = () => {
     };
 
     const applyFilters = () => {
-        setAppliedKeyword(normalizeKeyword(keyword) ?? null);
+        setAppliedKeyword(normalizeKeyword(searchText) ?? null);
         setAppliedLifecycleStatus(lifecycleStatus === "ALL" ? null : lifecycleStatus);
     };
 
     const resetFilters = () => {
-        setKeyword("");
+        setSearchText("");
         setLifecycleStatus("ALL");
         setAppliedKeyword(null);
         setAppliedLifecycleStatus(null);
@@ -269,10 +269,10 @@ export const SancaiPage = () => {
                             className="sancai-page-search"
                             placeholder="搜索标题、原文或摘要"
                             prefix={<SearchOutlined />}
-                            value={keyword}
+                            value={searchText}
                             onChange={(event) => {
                                 const { value } = event.target;
-                                setKeyword(value);
+                                setSearchText(value);
                                 setAppliedKeyword(normalizeKeyword(value) ?? null);
                             }}
                         />
