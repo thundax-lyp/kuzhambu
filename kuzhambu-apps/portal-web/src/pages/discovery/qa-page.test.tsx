@@ -72,6 +72,23 @@ const setTextareaValue = (container: HTMLElement, name: string, value: string) =
     });
 };
 
+const pressTextareaKey = async (
+    container: HTMLElement,
+    name: string,
+    key: string,
+    shiftKey = false
+) => {
+    const textarea = container.querySelector(
+        `textarea[name="${name}"]`
+    ) as HTMLTextAreaElement | null;
+    expect(textarea).not.toBeNull();
+
+    await act(async () => {
+        textarea?.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key, shiftKey }));
+        await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+};
+
 const findButtonByText = (container: HTMLElement, text: string) => {
     const button = Array.from(container.querySelectorAll("button")).find(
         (element) => element.textContent === text
@@ -97,13 +114,11 @@ describe("DiscoveryQaPage", () => {
         mocks.pageQaSessions.mockReset();
         mocks.postEventStream.mockReset();
         mocks.postJson.mockReset();
+        localStorage.clear();
         document.body.innerHTML = "";
     });
 
     it("auto opens session on first question and then sends chat/completions", async () => {
-        mocks.pageQaSessions.mockResolvedValue({
-            items: []
-        });
         mocks.openQaSession.mockResolvedValueOnce({
             contextContentId: null,
             contextContentType: null,
@@ -148,6 +163,11 @@ describe("DiscoveryQaPage", () => {
 
         const { container, root } = renderPage();
 
+        expect(container.querySelector('textarea[name="question"]')).not.toBeNull();
+        expect(container.textContent).not.toContain("会话列表");
+        expect(container.textContent).not.toContain("删除会话");
+        expect(container.textContent).not.toContain("导出 CSV");
+
         setTextareaValue(container, "question", "礼器是什么？");
 
         const submitButton = container.querySelector(
@@ -182,6 +202,7 @@ describe("DiscoveryQaPage", () => {
         });
         expect(container.textContent).toContain("礼器常见于典章与礼仪条目。");
         expect(container.textContent).toContain("礼器条目");
+        expect(container.querySelectorAll(".portal-qa-avatar")).toHaveLength(2);
         expect(container.querySelector('a[href="/shares/1001"]')).not.toBeNull();
 
         act(() => {
@@ -189,39 +210,176 @@ describe("DiscoveryQaPage", () => {
         });
     });
 
-    it("restores Wangqi single document context from url", async () => {
-        mocks.pageQaSessions.mockResolvedValue({
-            items: []
+    it("sends question with Enter and keeps Shift Enter for multiline input", async () => {
+        mocks.openQaSession.mockResolvedValueOnce({
+            contextContentId: null,
+            contextContentType: null,
+            contextMode: "GENERAL",
+            lastMessageAt: null,
+            openedAt: 1699999999000,
+            scope: "PORTAL",
+            sessionId: "2101",
+            status: "OPEN",
+            title: "知识中心问答"
+        });
+        mocks.createQaChatCompletionStream.mockResolvedValueOnce({
+            answerStatus: "SUCCEEDED",
+            choices: [
+                {
+                    finishReason: "stop",
+                    index: 0,
+                    message: {
+                        content: "Enter 已发送。",
+                        role: "assistant"
+                    }
+                }
+            ],
+            sessionId: "2101"
         });
 
+        const { container, root } = renderPage();
+
+        setTextareaValue(container, "question", "第一行");
+        await pressTextareaKey(container, "question", "Enter", true);
+        expect(mocks.openQaSession).not.toHaveBeenCalled();
+        expect(mocks.createQaChatCompletionStream).not.toHaveBeenCalled();
+
+        await pressTextareaKey(container, "question", "Enter");
+
+        expect(mocks.openQaSession).toHaveBeenCalledTimes(1);
+        expect(mocks.createQaChatCompletionStream.mock.calls[0]?.[0]).toMatchObject({
+            request: {
+                messages: [{ content: "第一行", role: "user" }],
+                sessionId: "2101"
+            }
+        });
+        expect(container.textContent).toContain("Enter 已发送。");
+
+        act(() => {
+            root.unmount();
+        });
+    });
+
+    it("reuses local session for thirty minutes without showing session management", async () => {
+        localStorage.setItem(
+            "kuzhambu.portal.discovery.qa.session",
+            JSON.stringify({
+                contextKey: "PORTAL|1001|GENERAL||",
+                expiresAt: Date.now() + 30 * 60 * 1000,
+                session: {
+                    contextContentId: null,
+                    contextContentType: null,
+                    contextMode: "GENERAL",
+                    scope: "PORTAL",
+                    sessionId: "stored-2001",
+                    status: "OPEN",
+                    title: "知识中心问答"
+                }
+            })
+        );
+        mocks.createQaChatCompletionStream.mockResolvedValueOnce({
+            answerStatus: "SUCCEEDED",
+            choices: [
+                {
+                    finishReason: "stop",
+                    index: 0,
+                    message: {
+                        content: "继续回答。",
+                        role: "assistant"
+                    }
+                }
+            ],
+            sessionId: "stored-2001"
+        });
+
+        const { container, root } = renderPage();
+
+        setTextareaValue(container, "question", "继续问");
+        await pressTextareaKey(container, "question", "Enter");
+
+        expect(mocks.openQaSession).not.toHaveBeenCalled();
+        expect(mocks.createQaChatCompletionStream.mock.calls[0]?.[0]).toMatchObject({
+            request: {
+                messages: [{ content: "继续问", role: "user" }],
+                sessionId: "stored-2001"
+            }
+        });
+        expect(container.textContent).not.toContain("会话列表");
+        expect(container.textContent).toContain("继续回答。");
+
+        act(() => {
+            root.unmount();
+        });
+    });
+
+    it("opens a new session when the local session is expired", async () => {
+        localStorage.setItem(
+            "kuzhambu.portal.discovery.qa.session",
+            JSON.stringify({
+                contextKey: "PORTAL|1001|GENERAL||",
+                expiresAt: Date.now() - 1,
+                session: {
+                    contextMode: "GENERAL",
+                    scope: "PORTAL",
+                    sessionId: "expired-2001",
+                    status: "OPEN",
+                    title: "知识中心问答"
+                }
+            })
+        );
+        mocks.openQaSession.mockResolvedValueOnce({
+            contextContentId: null,
+            contextContentType: null,
+            contextMode: "GENERAL",
+            scope: "PORTAL",
+            sessionId: "new-2001",
+            status: "OPEN",
+            title: "知识中心问答"
+        });
+        mocks.createQaChatCompletionStream.mockResolvedValueOnce({
+            answerStatus: "SUCCEEDED",
+            choices: [
+                {
+                    finishReason: "stop",
+                    index: 0,
+                    message: {
+                        content: "新会话回答。",
+                        role: "assistant"
+                    }
+                }
+            ],
+            sessionId: "new-2001"
+        });
+
+        const { container, root } = renderPage();
+
+        setTextareaValue(container, "question", "重新开始");
+        await pressTextareaKey(container, "question", "Enter");
+
+        expect(mocks.openQaSession).toHaveBeenCalledTimes(1);
+        expect(mocks.createQaChatCompletionStream.mock.calls[0]?.[0]).toMatchObject({
+            request: {
+                messages: [{ content: "重新开始", role: "user" }],
+                sessionId: "new-2001"
+            }
+        });
+        expect(container.textContent).toContain("新会话回答。");
+
+        act(() => {
+            root.unmount();
+        });
+    });
+
+    it("restores Wangqi single document context from url", async () => {
         const { container, root } = renderPage(
             "/discovery/qa?contextContentType=WANGQI_DOCUMENT&contextContentId=3001&contextMode=SINGLE_DOCUMENT&title=%E7%8E%8B%E5%9C%BB%E5%AE%98%E5%88%B6"
         );
         await flushAsyncWork();
 
-        expect(container.textContent).toContain("当前围绕王圻文档追问");
+        expect(container.textContent).toContain("当前文档");
         expect(container.textContent).toContain("WANGQI_DOCUMENT #3001");
-
-        const titleInput = container.querySelector(
-            'input[name="sessionTitle"]'
-        ) as HTMLInputElement | null;
-        const contextModeInput = container.querySelector(
-            'input[name="contextMode"]'
-        ) as HTMLInputElement | null;
-        const contextTypeInput = container.querySelector(
-            'input[name="contextContentType"]'
-        ) as HTMLInputElement | null;
-        const contextIdInput = container.querySelector(
-            'input[name="contextContentId"]'
-        ) as HTMLInputElement | null;
-
-        expect(titleInput?.value).toBe("王圻官制");
-        expect(contextModeInput?.value).toBe("SINGLE_DOCUMENT");
-        expect(contextTypeInput?.value).toBe("WANGQI_DOCUMENT");
-        expect(contextIdInput?.value).toBe("3001");
-        expect(contextModeInput?.disabled).toBe(true);
-        expect(contextTypeInput?.disabled).toBe(true);
-        expect(contextIdInput?.disabled).toBe(true);
+        expect(container.querySelectorAll("input")).toHaveLength(0);
+        expect(container.textContent).not.toContain("会话元数据");
 
         act(() => {
             root.unmount();
@@ -229,9 +387,6 @@ describe("DiscoveryQaPage", () => {
     });
 
     it("sends Wangqi single document context in open session and chat metadata", async () => {
-        mocks.pageQaSessions.mockResolvedValue({
-            items: []
-        });
         mocks.openQaSession.mockResolvedValueOnce({
             contextContentId: 3001,
             contextContentType: "WANGQI_DOCUMENT",
@@ -293,239 +448,7 @@ describe("DiscoveryQaPage", () => {
         });
     });
 
-    it("confirms delete and clears selected session after deletion", async () => {
-        mocks.pageQaSessions.mockResolvedValue({
-            items: [
-                {
-                    lastMessageAt: 1700000000000,
-                    scope: "PORTAL",
-                    sessionId: "5001",
-                    status: "OPEN",
-                    title: "待删除会话"
-                }
-            ]
-        });
-        mocks.getQaSession.mockResolvedValue({
-            sessionId: "5001",
-            status: "OPEN",
-            title: "待删除会话"
-        });
-        mocks.deleteQaSession.mockResolvedValue(undefined);
-        const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
-
-        const { container, root } = renderPage();
-        await flushAsyncWork();
-        await flushAsyncWork();
-
-        const sessionButton = findButtonByText(container, "待删除会话");
-        await act(async () => {
-            sessionButton.click();
-            await new Promise((resolve) => setTimeout(resolve, 0));
-        });
-
-        const deleteButton = findButtonByText(container, "删除会话");
-        await act(async () => {
-            deleteButton.click();
-            await new Promise((resolve) => setTimeout(resolve, 0));
-        });
-
-        expect(confirmSpy).toHaveBeenCalledWith("确认删除会话 5001？");
-        expect(mocks.deleteQaSession.mock.calls[0]?.[0]).toEqual({
-            ownerUserId: 1001,
-            sessionId: "5001"
-        });
-        expect(container.textContent).toContain("会话 5001 已删除");
-        expect(container.textContent).toContain("已选会话 未选择");
-
-        confirmSpy.mockRestore();
-        act(() => {
-            root.unmount();
-        });
-    });
-
-    it("shows export success and failure feedback", async () => {
-        mocks.pageQaSessions.mockResolvedValue({
-            items: [
-                {
-                    scope: "PORTAL",
-                    sessionId: "5002",
-                    status: "OPEN",
-                    title: "可导出会话"
-                }
-            ]
-        });
-        mocks.getQaSession.mockResolvedValue({
-            sessionId: "5002",
-            status: "OPEN",
-            title: "可导出会话"
-        });
-        mocks.exportQaSession
-            .mockResolvedValueOnce({
-                exportId: 7001,
-                exportStatus: "SUCCEEDED",
-                filename: "discovery-qa-session-5002-7001.csv",
-                sessionId: "5002",
-                storageObjectId: 8001
-            })
-            .mockResolvedValueOnce({
-                exportId: 7002,
-                exportStatus: "FAILED",
-                failureReason: "storage unavailable",
-                sessionId: "5002"
-            });
-
-        const { container, root } = renderPage();
-        await flushAsyncWork();
-        await flushAsyncWork();
-
-        const sessionButton = findButtonByText(container, "可导出会话");
-        await act(async () => {
-            sessionButton.click();
-            await new Promise((resolve) => setTimeout(resolve, 0));
-        });
-
-        const exportButton = findButtonByText(container, "导出 CSV");
-        await act(async () => {
-            exportButton.click();
-            await new Promise((resolve) => setTimeout(resolve, 0));
-        });
-
-        expect(mocks.exportQaSession.mock.calls[0]?.[0]).toEqual({
-            format: "CSV",
-            ownerUserId: 1001,
-            sessionId: "5002"
-        });
-        expect(container.textContent).toContain("导出成功：discovery-qa-session-5002-7001.csv");
-        expect(container.textContent).toContain("对象号 8001");
-
-        await act(async () => {
-            exportButton.click();
-            await new Promise((resolve) => setTimeout(resolve, 0));
-        });
-
-        expect(container.textContent).toContain("storage unavailable");
-
-        act(() => {
-            root.unmount();
-        });
-    });
-
-    it("reuses selected session for follow-up questions", async () => {
-        mocks.pageQaSessions.mockResolvedValue({
-            items: [
-                {
-                    contextContentId: 2002,
-                    contextContentType: "SANCAI_ENTRY",
-                    contextMode: "GENERAL",
-                    lastMessageAt: 1700000000000,
-                    openedAt: 1699999998000,
-                    scope: "PORTAL",
-                    sessionId: "5001",
-                    status: "OPEN",
-                    title: "古籍问答"
-                }
-            ]
-        });
-        mocks.getQaSession.mockResolvedValue({
-            contextContentId: 2002,
-            contextContentType: "SANCAI_ENTRY",
-            contextMode: "GENERAL",
-            sessionId: "5001",
-            status: "OPEN",
-            title: "古籍问答"
-        });
-        mocks.createQaChatCompletionStream
-            .mockResolvedValueOnce({
-                answerStatus: "SUCCEEDED",
-                choices: [
-                    {
-                        index: 0,
-                        message: { content: "首问答案", role: "assistant" },
-                        finishReason: "stop"
-                    }
-                ],
-                sessionId: "5001"
-            })
-            .mockResolvedValueOnce({
-                answerStatus: "SUCCEEDED",
-                choices: [
-                    {
-                        index: 0,
-                        message: { content: "复问答案", role: "assistant" },
-                        finishReason: "stop"
-                    }
-                ],
-                sessionId: "5001"
-            });
-
-        const { container, root } = renderPage();
-        await flushAsyncWork();
-        await flushAsyncWork();
-
-        const firstSessionButton = findButtonByText(container, "古籍问答");
-        await act(async () => {
-            firstSessionButton.click();
-            await new Promise((resolve) => setTimeout(resolve, 0));
-        });
-
-        setTextareaValue(container, "question", "礼器第一问");
-        const submitButton = container.querySelector(
-            'button[type="submit"]'
-        ) as HTMLButtonElement | null;
-        expect(submitButton).not.toBeNull();
-
-        await act(async () => {
-            submitButton?.click();
-            await new Promise((resolve) => setTimeout(resolve, 0));
-        });
-
-        expect(mocks.openQaSession).not.toHaveBeenCalled();
-        expect(mocks.createQaChatCompletionStream).toHaveBeenCalledTimes(1);
-        expect(mocks.createQaChatCompletionStream.mock.calls[0]?.[0]).toMatchObject({
-            request: {
-                sessionId: "5001",
-                metadata: {
-                    contextContentId: 2002,
-                    contextContentType: "SANCAI_ENTRY",
-                    contextMode: "GENERAL",
-                    sessionId: "5001"
-                }
-            }
-        });
-
-        setTextareaValue(container, "question", "礼器复问");
-        await act(async () => {
-            submitButton?.click();
-            await new Promise((resolve) => setTimeout(resolve, 0));
-        });
-
-        expect(mocks.createQaChatCompletionStream).toHaveBeenCalledTimes(2);
-        expect(mocks.createQaChatCompletionStream.mock.calls[1]![0]).toMatchObject({
-            request: {
-                sessionId: "5001",
-                metadata: {
-                    contextContentId: 2002,
-                    contextContentType: "SANCAI_ENTRY",
-                    contextMode: "GENERAL",
-                    sessionId: "5001"
-                }
-            }
-        });
-
-        act(() => {
-            root.unmount();
-        });
-    });
-
     it("renders unavailable source without link and supports retryable answer failure", async () => {
-        mocks.pageQaSessions.mockResolvedValue({
-            items: []
-        });
-        mocks.getQaSession.mockResolvedValue({
-            sessionId: "2002",
-            status: "OPEN",
-            title: "知识中心问答"
-        });
         mocks.openQaSession.mockResolvedValue({
             contextContentId: null,
             contextContentType: null,
@@ -584,56 +507,6 @@ describe("DiscoveryQaPage", () => {
         const sourceText = container.textContent ?? "";
         expect(sourceText).toContain("礼器条目");
         expect(container.querySelector(".portal-qa-source-list a")).toBeNull();
-
-        act(() => {
-            root.unmount();
-        });
-    });
-
-    it("refreshes selected session detail", async () => {
-        mocks.pageQaSessions.mockResolvedValue({
-            items: [
-                {
-                    scope: "PORTAL",
-                    sessionId: "6001",
-                    status: "OPEN",
-                    title: "可刷新会话"
-                }
-            ]
-        });
-        mocks.getQaSession
-            .mockResolvedValueOnce({
-                lastMessageAt: 1700000000000,
-                sessionId: "6001",
-                status: "OPEN",
-                title: "可刷新会话"
-            })
-            .mockResolvedValueOnce({
-                lastMessageAt: 1700000100000,
-                sessionId: "6001",
-                status: "OPEN",
-                title: "可刷新会话"
-            });
-
-        const { container, root } = renderPage();
-        await flushAsyncWork();
-        await flushAsyncWork();
-
-        const sessionButton = findButtonByText(container, "可刷新会话");
-        await act(async () => {
-            sessionButton.click();
-            await new Promise((resolve) => setTimeout(resolve, 0));
-        });
-        await flushAsyncWork();
-
-        const refreshButton = findButtonByText(container, "刷新详情");
-        await act(async () => {
-            refreshButton.click();
-            await new Promise((resolve) => setTimeout(resolve, 0));
-        });
-
-        expect(mocks.getQaSession).toHaveBeenCalledTimes(2);
-        expect(container.textContent).toContain("会话 6001 详情已刷新");
 
         act(() => {
             root.unmount();

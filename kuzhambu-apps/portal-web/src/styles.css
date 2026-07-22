@@ -1066,6 +1066,116 @@ a {
     font-size: 12px;
 }
 
+.portal-qa-only {
+    width: min(100% - 48px, 1120px);
+    max-width: none;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.portal-qa-chat-shell {
+    display: grid;
+    gap: 16px;
+}
+
+.portal-qa-context {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.portal-qa-context {
+    margin: 0;
+}
+
+.portal-qa-chat-card {
+    display: grid;
+    min-height: min(680px, calc(100vh - 260px));
+    grid-template-rows: minmax(220px, 1fr) auto;
+    gap: 18px;
+    padding: 20px;
+    border: 1px solid var(--line-subtle);
+    border-radius: 8px;
+    background: var(--surface-panel);
+    box-shadow: 0 12px 32px rgba(70, 58, 38, 0.08);
+}
+
+.portal-qa-timeline {
+    display: grid;
+    align-content: end;
+    gap: 14px;
+    overflow-y: auto;
+}
+
+.portal-qa-message {
+    display: flex;
+    max-width: min(820px, 100%);
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.portal-qa-message-user {
+    justify-self: end;
+    flex-direction: row-reverse;
+}
+
+.portal-qa-avatar {
+    display: inline-flex;
+    width: 52px;
+    height: 52px;
+    flex: 0 0 52px;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 2px;
+    border: 1px solid #d7c0a0;
+    border-radius: 999px;
+    background: #f7efe3;
+}
+
+.portal-qa-message-assistant .portal-qa-avatar {
+    border-color: #c8aa7d;
+}
+
+.portal-qa-message-user .portal-qa-avatar {
+    border-color: #9fb7c8;
+}
+
+.portal-qa-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    filter: saturate(0.92) contrast(1.04);
+    object-fit: cover;
+    object-position: center;
+}
+
+.portal-qa-message-user .portal-qa-avatar img {
+    transform: scaleX(-1);
+}
+
+.portal-qa-bubble {
+    display: grid;
+    min-width: 0;
+    max-width: min(760px, calc(100vw - 210px));
+    gap: 8px;
+    padding: 14px 16px;
+    border: 1px solid var(--line-subtle);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--surface-soft) 62%, white);
+}
+
+.portal-qa-message-user .portal-qa-bubble {
+    background: color-mix(in srgb, var(--accent-jade) 12%, white);
+}
+
+.portal-qa-message p {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 15px;
+    line-height: 1.75;
+    white-space: pre-wrap;
+}
+
 .portal-qa-hero {
     display: grid;
     grid-template-columns: minmax(0, 1.4fr) minmax(260px, 0.8fr);
@@ -1169,8 +1279,9 @@ a {
 }
 
 .portal-qa-form {
+    position: relative;
     display: grid;
-    gap: 16px;
+    gap: 0;
 }
 
 .portal-qa-form-grid {
@@ -1181,7 +1292,13 @@ a {
 
 .portal-qa-question {
     display: grid;
-    gap: 6px;
+    gap: 0;
+}
+
+.portal-qa-question textarea {
+    min-height: 96px;
+    padding-right: 112px;
+    padding-bottom: 18px;
 }
 
 .portal-qa-actions {
@@ -1189,9 +1306,18 @@ a {
     justify-content: flex-end;
 }
 
-.portal-qa-actions [data-slot="button"] {
+.portal-qa-form .portal-qa-actions {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    pointer-events: none;
+}
+
+.portal-qa-form .portal-qa-actions [data-slot="button"] {
     min-height: 40px;
     padding: 0 14px;
+    pointer-events: auto;
+    box-shadow: 0 8px 18px rgba(49, 95, 85, 0.18);
 }
 
 .portal-qa-session-meta,
@@ -1741,6 +1867,19 @@ a {
 
     .portal-qa-actions [data-slot="button"] {
         width: 100%;
+    }
+
+    .portal-qa-form .portal-qa-actions {
+        right: 10px;
+        bottom: 10px;
+    }
+
+    .portal-qa-form .portal-qa-actions [data-slot="button"] {
+        width: auto;
+    }
+
+    .portal-qa-question textarea {
+        padding-right: 104px;
     }
 }
 
