@@ -126,6 +126,7 @@ public abstract class FakeSancaiRepositorySupport implements SancaiRepository {
 
     @Override
     public PageResult<SancaiEntry> pageEntries(
+            SancaiCategoryId categoryId,
             SancaiVolumeId volumeId,
             String keyword,
             String lifecycleStatus,

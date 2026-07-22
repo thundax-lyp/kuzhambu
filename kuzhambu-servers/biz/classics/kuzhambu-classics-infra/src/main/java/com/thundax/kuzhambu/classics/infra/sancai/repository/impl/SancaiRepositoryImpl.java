@@ -233,6 +233,7 @@ public class SancaiRepositoryImpl implements SancaiRepository {
 
     @Override
     public PageResult<SancaiEntry> pageEntries(
+            SancaiCategoryId categoryId,
             SancaiVolumeId volumeId,
             String keyword,
             String lifecycleStatus,
@@ -244,8 +245,19 @@ public class SancaiRepositoryImpl implements SancaiRepository {
             SortDirection sortDirection,
             int pageNo,
             int pageSize) {
+        List<Long> categoryVolumeIds = listVolumeIdsByCategory(categoryId);
+        if (categoryId != null && categoryVolumeIds.isEmpty()) {
+            return PageResult.of(pageNo, pageSize, 0, List.of());
+        }
+        if (categoryId != null
+                && volumeId != null
+                && !categoryVolumeIds.contains(SancaiVolumeIdCodec.toValue(volumeId))) {
+            return PageResult.of(pageNo, pageSize, 0, List.of());
+        }
+
         LambdaQueryWrapper<SancaiEntryDO> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(volumeId != null, SancaiEntryDO::getVolumeId, SancaiVolumeIdCodec.toValue(volumeId))
+                .in(volumeId == null && categoryId != null, SancaiEntryDO::getVolumeId, categoryVolumeIds)
                 .eq(StringUtils.isNotBlank(lifecycleStatus), SancaiEntryDO::getLifecycleStatus, lifecycleStatus)
                 .eq(StringUtils.isNotBlank(visibility), SancaiEntryDO::getVisibility, visibility)
                 .eq(StringUtils.isNotBlank(translationStatus), SancaiEntryDO::getTranslationStatus, translationStatus)

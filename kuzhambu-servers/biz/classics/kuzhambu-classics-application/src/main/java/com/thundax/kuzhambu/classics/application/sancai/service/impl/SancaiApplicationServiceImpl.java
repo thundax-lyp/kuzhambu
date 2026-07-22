@@ -237,6 +237,7 @@ public class SancaiApplicationServiceImpl implements SancaiApplicationService {
             return PageResult.of(page.getPageNo(), page.getPageSize(), 0, List.of());
         }
         return repository.pageEntries(
+                query == null ? null : SancaiCategoryIdCodec.toDomain(query.getCategoryId()),
                 query == null ? null : SancaiVolumeIdCodec.toDomain(query.getVolumeId()),
                 query == null ? null : query.getKeyword(),
                 query == null || query.getLifecycleStatus() == null

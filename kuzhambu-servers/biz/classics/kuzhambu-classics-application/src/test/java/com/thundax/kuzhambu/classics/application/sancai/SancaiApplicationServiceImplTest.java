@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -31,6 +32,7 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryRefine
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTranslationStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisualAssetStatus;
+import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiCategoryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVolumeId;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
@@ -246,7 +248,34 @@ class SancaiApplicationServiceImplTest {
         assertEquals(0, result.getTotalCount());
         assertEquals(0, result.getRecords().size());
         verify(repository, never())
-                .pageEntries(any(), any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), anyInt());
+                .pageEntries(any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), anyInt(), anyInt());
+    }
+
+    @Test
+    void pageEntriesShouldForwardCategoryFilterToRepository() {
+        SancaiRepository repository = mock(SancaiRepository.class);
+        SancaiApplicationServiceImpl service = new SancaiApplicationServiceImpl(repository, null, null, null);
+        SancaiEntryPageQuery query = new SancaiEntryPageQuery();
+        query.setCategoryId(2L);
+        query.setVolumeId(101L);
+        query.setKeyword("天文");
+
+        service.pageEntries(query, new PageQuery(1, 20));
+
+        verify(repository)
+                .pageEntries(
+                        eq(SancaiCategoryId.of(2L)),
+                        eq(SancaiVolumeId.of(101L)),
+                        eq("天文"),
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                        eq(1),
+                        eq(20));
     }
 
     @Test

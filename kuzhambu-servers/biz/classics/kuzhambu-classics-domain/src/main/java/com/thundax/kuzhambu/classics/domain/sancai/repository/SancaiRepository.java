@@ -58,6 +58,7 @@ public interface SancaiRepository {
     SancaiEntry getEntryById(SancaiEntryId id);
 
     PageResult<SancaiEntry> pageEntries(
+            SancaiCategoryId categoryId,
             SancaiVolumeId volumeId,
             String keyword,
             String lifecycleStatus,
