@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { PortalLayout } from "@/components/portal-layout";
-import { SancaiPage } from "@/pages/classics/sancai-page";
+import { SancaiPage } from "@/pages/classics/sancai/sancai-page";
 import { DiscoveryQaPage } from "@/pages/discovery/qa/qa-page";
 import { DiscoverySearchPage } from "@/pages/discovery/search/search-page";
 import { DiscoverySearchItemPage } from "@/pages/discovery/search-item/search-item-page";
