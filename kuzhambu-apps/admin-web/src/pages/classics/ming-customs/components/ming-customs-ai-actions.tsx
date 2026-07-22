@@ -10,7 +10,7 @@ import type {
 } from "@/pages/classics/common/ai-refinement-task-types";
 import type { MingCustomsRecord } from "../ming-customs-types";
 
-export interface MingCustomsAiActionsProps {
+interface MingCustomsAiActionsProps {
     creatingRefinementCapability: AiRefinementTaskCapability | null;
     entry: MingCustomsRecord;
     onCandidateApplied: () => Promise<void>;

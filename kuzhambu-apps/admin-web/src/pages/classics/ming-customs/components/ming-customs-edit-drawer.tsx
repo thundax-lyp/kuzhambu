@@ -17,7 +17,7 @@ import { KuzhambuButton } from "@/components/kuzhambu-button";
 const { Text } = Typography;
 const { TextArea } = Input;
 
-export interface MingCustomsEditDrawerProps {
+interface MingCustomsEditDrawerProps {
     categoryOptions: DictItem[];
     afterForm?: ReactNode;
     entry?: MingCustomsRecord | null;

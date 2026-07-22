@@ -4,7 +4,7 @@ import type { ClassicsExportJobRecord } from "@/pages/classics/common/classics-e
 import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 
-export interface MingCustomsExportActionsProps {
+interface MingCustomsExportActionsProps {
     batchShareResult: ClassicsBatchOperationRecord | null;
     batchVisibilityResult: ClassicsBatchOperationRecord | null;
     canChangeEntryVisibility: boolean;

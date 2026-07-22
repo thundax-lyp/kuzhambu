@@ -25,7 +25,7 @@ const visibilityTagType = (visibility?: string | null) => {
     return visibility === "PUBLIC" ? "success" : "neutral";
 };
 
-export interface MingCustomsTableProps {
+interface MingCustomsTableProps {
     canExport?: boolean;
     canShare?: boolean;
     categoryLabels: Record<string, string>;
