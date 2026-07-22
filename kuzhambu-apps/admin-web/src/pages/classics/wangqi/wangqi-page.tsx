@@ -867,6 +867,7 @@ export const WangqiPage = () => {
                 }
             >
                 <KuzhambuFilterPanel
+                    actionsAlign="right"
                     open={isFilterOpen}
                     resetDisabled={!hasActiveFilters}
                     fields={[
@@ -1072,8 +1073,11 @@ export const WangqiPage = () => {
                 tagContent={
                     editorMode === "edit" && activeDocument ? (
                         <div className="wangqi-page-drawer-panels">
-                            <Card size="small" title="AI 标签">
-                                <KuzhambuSpace wrap>
+                            <ClassicsContentTagPanel
+                                contentId={activeDocument.id}
+                                contentType="WANGQI_DOCUMENT"
+                                showHeader={false}
+                                toolbarExtra={
                                     <WangqiTagAiModal
                                         creatingTagTask={creatingRefinementCapability === "tags"}
                                         document={activeDocument}
@@ -1086,22 +1090,9 @@ export const WangqiPage = () => {
                                             })
                                         }
                                     />
-                                </KuzhambuSpace>
-                                <div className="wangqi-refinement-task-list">
-                                    {tagRefinementTasks.length ? (
-                                        tagRefinementTasks.slice(0, 3).map((task) => (
-                                            <div key={task.taskId}>
-                                                标签：{task.status}
-                                                {task.resultPreview
-                                                    ? ` · ${task.resultPreview}`
-                                                    : ""}
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <div>暂无标签任务</div>
-                                    )}
-                                </div>
-                            </Card>
+                                }
+                                onChanged={invalidateWangqi}
+                            />
                             <AiCandidatePanel
                                 capabilities={["tags"]}
                                 contentId={activeDocument.id}
@@ -1112,11 +1103,6 @@ export const WangqiPage = () => {
                                 onRejected={async () => {
                                     await invalidateWangqiCandidates();
                                 }}
-                            />
-                            <ClassicsContentTagPanel
-                                contentId={activeDocument.id}
-                                contentType="WANGQI_DOCUMENT"
-                                onChanged={invalidateWangqi}
                             />
                         </div>
                     ) : null
