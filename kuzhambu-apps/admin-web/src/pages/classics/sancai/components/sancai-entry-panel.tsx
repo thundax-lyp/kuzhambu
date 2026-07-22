@@ -22,7 +22,7 @@ import { SancaiEntryList } from "./sancai-entry-list";
 import { SancaiEntryEditDrawer } from "./sancai-entry-edit-drawer";
 import { SancaiEntryExportActions } from "./sancai-entry-export-actions";
 import type { SancaiEntryFormValues } from "./sancai-form-values";
-import { SancaiVersionHistoryPanel } from "./sancai-version-history-panel";
+import { SancaiEntryVersionSection } from "./sancai-entry-version-section";
 import { useSancaiEntryPanelState } from "../hooks/use-sancai-entry-panel-state";
 import * as entryService from "../sancai-entry-service";
 import type {
@@ -1225,18 +1225,17 @@ export const SancaiEntryPanel = ({
                     ) : null
                 }
                 versionContent={
-                    !isCreating && selectedEntry ? (
-                        <SancaiVersionHistoryPanel
-                            currentEntry={selectedEntry}
-                            detailLoading={versionDetailQuery.isLoading}
-                            listLoading={versionsQuery.isLoading}
-                            resetting={resetVersionMutation.isPending}
-                            selectedVersion={selectedVersion}
-                            versions={versions}
-                            onSelectVersion={(version) => setSelectedVersionId(version.id)}
-                            onResetVersion={resetVersion}
-                        />
-                    ) : null
+                    <SancaiEntryVersionSection
+                        currentEntry={selectedEntry}
+                        detailLoading={versionDetailQuery.isLoading}
+                        isCreating={isCreating}
+                        listLoading={versionsQuery.isLoading}
+                        resetting={resetVersionMutation.isPending}
+                        selectedVersion={selectedVersion}
+                        versions={versions}
+                        onSelectVersion={(version) => setSelectedVersionId(version.id)}
+                        onResetVersion={resetVersion}
+                    />
                 }
             />
         </>
