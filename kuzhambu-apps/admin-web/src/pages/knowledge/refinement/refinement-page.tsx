@@ -1,15 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Card, Col, Empty, Row, Table, Tag, Typography } from "antd";
-import { useMemo, useState } from "react";
+import { App, Card, Col, Empty, Row, Typography } from "antd";
+import { useMemo } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
-import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
-import type { ColumnsType } from "antd/es/table";
+import { RefinementApplyResultPanel } from "./components/refinement-apply-result-panel";
 import { RefinementEntityDeleteModal } from "./components/refinement-entity-delete-modal";
 import { RefinementEntityEditModal } from "./components/refinement-entity-edit-modal";
 import { RefinementEntityTable } from "./components/refinement-entity-table";
 import { RefinementFilterForm } from "./components/refinement-filter-form";
+import { RefinementLineageNodeTable } from "./components/refinement-lineage-node-table";
+import { RefinementLineageRelationTable } from "./components/refinement-lineage-relation-table";
 import { RefinementProgressSummaryPanel } from "./components/refinement-progress-summary";
 import { RefinementQualityAnnotationDrawer } from "./components/refinement-quality-annotation-drawer";
 import { RefinementQualityAnnotationTable } from "./components/refinement-quality-annotation-table";
@@ -21,61 +22,46 @@ import * as service from "./refinement-service";
 import type {
     QualityAnnotationRecord,
     QualityAnnotationTarget,
-    RefinementApplyRecord,
-    RefinementDetailRecord,
     RefinementEntityRecord,
-    RefinementLineageNodeRecord,
-    RefinementLineageRelationRecord,
-    RefinementRelationRecord,
-    RefinementTaskPageQuery
+    RefinementRelationRecord
 } from "./refinement-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+import {
+    readRefinementDetailTaskId,
+    useRefinementWorkbench
+} from "./hooks/use-refinement-workbench";
 import "./refinement-page.css";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Text, Title } = Typography;
-
-const readDetailTaskId = (detail: RefinementDetailRecord | null) => detail?.refinementTaskId ?? 0;
-const readStatusColor = (status?: string | null) =>
-    status === "MANUAL_CONFIRMED" ? "green" : "blue";
-const buildGraphResultsHref = (applyResult: RefinementApplyRecord) =>
-    `/knowledge/graph-results?graphVersionId=${encodeURIComponent(String(applyResult.graphVersionId || ""))}`;
-const buildGraphRegenerateHref = (applyResult: RefinementApplyRecord) => {
-    const params = new URLSearchParams({
-        regenerate: "1",
-        taskType: applyResult.taskType || "",
-        sourceTaskId: String(applyResult.sourceTaskId || ""),
-        triggerSource: applyResult.triggerSource || "REFINEMENT_APPLIED",
-        replaceUnconfirmedOnly: String(applyResult.replaceUnconfirmedOnly ?? true)
-    });
-    if (applyResult.selectionScopeJson) {
-        params.set("selectionScopeJson", applyResult.selectionScopeJson);
-    }
-    return `/knowledge/graph-extraction?${params.toString()}`;
-};
-const buildQualityReportHref = (applyResult: RefinementApplyRecord) =>
-    `/knowledge/quality-report?graphVersionId=${encodeURIComponent(
-        String(applyResult.graphVersionId || "")
-    )}&regenerate=1`;
 
 export const RefinementPage = () => {
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
     const canView = hasPermission("knowledge:refinement:view");
     const canEdit = hasPermission("knowledge:refinement:edit");
-    const [taskQuery, setTaskQuery] = useState<RefinementTaskPageQuery>({
-        pageNo: DEFAULT_PAGE_NO,
-        pageSize: DEFAULT_PAGE_SIZE
-    });
-    const [detail, setDetail] = useState<RefinementDetailRecord | null>(null);
-    const [entityEditorOpen, setEntityEditorOpen] = useState(false);
-    const [editingEntity, setEditingEntity] = useState<RefinementEntityRecord | null>(null);
-    const [deletingEntity, setDeletingEntity] = useState<RefinementEntityRecord | null>(null);
-    const [relationEditorOpen, setRelationEditorOpen] = useState(false);
-    const [editingRelation, setEditingRelation] = useState<RefinementRelationRecord | null>(null);
-    const [deletingRelation, setDeletingRelation] = useState<RefinementRelationRecord | null>(null);
-    const [annotationTarget, setAnnotationTarget] = useState<QualityAnnotationTarget | null>(null);
-    const [applyFollowUp, setApplyFollowUp] = useState<RefinementApplyRecord | null>(null);
+    const {
+        annotationTarget,
+        applyFollowUp,
+        deletingEntity,
+        deletingRelation,
+        detail,
+        detailEyebrow,
+        detailReady,
+        editingEntity,
+        editingRelation,
+        entityEditorOpen,
+        relationEditorOpen,
+        setAnnotationTarget,
+        setApplyFollowUp,
+        setDeletingEntity,
+        setDeletingRelation,
+        setDetail,
+        setEditingEntity,
+        setEditingRelation,
+        setEntityEditorOpen,
+        setRelationEditorOpen,
+        setTaskQuery,
+        taskQuery
+    } = useRefinementWorkbench();
 
     const taskPageQuery = useQuery({
         queryKey: ["knowledge", "refinement", "tasks", taskQuery],
@@ -85,17 +71,23 @@ export const RefinementPage = () => {
     });
 
     const qualitySummaryQuery = useQuery({
-        queryKey: ["knowledge", "refinement", "quality-summary", readDetailTaskId(detail)],
-        queryFn: () => service.getQualitySummary({ refinementTaskId: readDetailTaskId(detail) }),
+        queryKey: [
+            "knowledge",
+            "refinement",
+            "quality-summary",
+            readRefinementDetailTaskId(detail)
+        ],
+        queryFn: () =>
+            service.getQualitySummary({ refinementTaskId: readRefinementDetailTaskId(detail) }),
         enabled: detail !== null,
         retry: false
     });
 
     const qualityAnnotationQuery = useQuery({
-        queryKey: ["knowledge", "refinement", "annotations", readDetailTaskId(detail)],
+        queryKey: ["knowledge", "refinement", "annotations", readRefinementDetailTaskId(detail)],
         queryFn: () =>
             service.pageAnnotations({
-                refinementTaskId: readDetailTaskId(detail),
+                refinementTaskId: readRefinementDetailTaskId(detail),
                 pageNo: 1,
                 pageSize: 200
             }),
@@ -159,7 +151,7 @@ export const RefinementPage = () => {
 
     const entityMutation = useMutation({
         mutationFn: async (request: RefinementEntityRecord) => {
-            const refinementTaskId = readDetailTaskId(detail);
+            const refinementTaskId = readRefinementDetailTaskId(detail);
             const operatorId = 1;
             if (request.entityKey && request.confirmationStatus === "MANUAL_CONFIRMED") {
                 return service.confirmEntity({
@@ -182,7 +174,7 @@ export const RefinementPage = () => {
             return request.entityKey ? service.updateEntity(command) : service.addEntity(command);
         },
         onSuccess: async () => {
-            await refreshDetail(readDetailTaskId(detail));
+            await refreshDetail(readRefinementDetailTaskId(detail));
             setEntityEditorOpen(false);
             setEditingEntity(null);
             messageApi.success("实体草稿已保存");
@@ -195,12 +187,12 @@ export const RefinementPage = () => {
     const entityDeleteMutation = useMutation({
         mutationFn: async (record: RefinementEntityRecord) =>
             service.deleteEntity({
-                refinementTaskId: readDetailTaskId(detail),
+                refinementTaskId: readRefinementDetailTaskId(detail),
                 entityKey: record.entityKey || "",
                 operatorId: 1
             }),
         onSuccess: async () => {
-            await refreshDetail(readDetailTaskId(detail));
+            await refreshDetail(readRefinementDetailTaskId(detail));
             setDeletingEntity(null);
             messageApi.success("实体草稿已删除");
         },
@@ -211,7 +203,7 @@ export const RefinementPage = () => {
 
     const relationMutation = useMutation({
         mutationFn: async (request: RefinementRelationRecord) => {
-            const refinementTaskId = readDetailTaskId(detail);
+            const refinementTaskId = readRefinementDetailTaskId(detail);
             const operatorId = 1;
             if (request.relationKey && request.confirmationStatus === "MANUAL_CONFIRMED") {
                 return service.confirmRelation({
@@ -239,7 +231,7 @@ export const RefinementPage = () => {
                 : service.addRelation(command);
         },
         onSuccess: async () => {
-            await refreshDetail(readDetailTaskId(detail));
+            await refreshDetail(readRefinementDetailTaskId(detail));
             setRelationEditorOpen(false);
             setEditingRelation(null);
             messageApi.success("关系草稿已保存");
@@ -252,12 +244,12 @@ export const RefinementPage = () => {
     const relationDeleteMutation = useMutation({
         mutationFn: async (record: RefinementRelationRecord) =>
             service.deleteRelation({
-                refinementTaskId: readDetailTaskId(detail),
+                refinementTaskId: readRefinementDetailTaskId(detail),
                 relationKey: record.relationKey || "",
                 operatorId: 1
             }),
         onSuccess: async () => {
-            await refreshDetail(readDetailTaskId(detail));
+            await refreshDetail(readRefinementDetailTaskId(detail));
             setDeletingRelation(null);
             messageApi.success("关系草稿已删除");
         },
@@ -289,7 +281,7 @@ export const RefinementPage = () => {
             });
         },
         onSuccess: async () => {
-            await refreshDetail(readDetailTaskId(detail));
+            await refreshDetail(readRefinementDetailTaskId(detail));
             setAnnotationTarget(null);
             messageApi.success("质量标注已保存");
         },
@@ -305,7 +297,7 @@ export const RefinementPage = () => {
                 operatorId: 1
             }),
         onSuccess: async () => {
-            await refreshDetail(readDetailTaskId(detail));
+            await refreshDetail(readRefinementDetailTaskId(detail));
             setAnnotationTarget(null);
             messageApi.success("质量标注已删除");
         },
@@ -333,13 +325,6 @@ export const RefinementPage = () => {
         );
     }, [annotationTarget, qualityAnnotations]);
     const taskItems = taskPageQuery.data?.records || [];
-    const detailReady = detail !== null;
-    const detailEyebrow = useMemo(() => {
-        if (!detail) {
-            return "先从左侧任务列表打开一条精修任务";
-        }
-        return `${detail.taskType || "GRAPH"} / ${detail.sourceCategoryName || detail.sourceCategoryCode || "-"}`;
-    }, [detail]);
     const openAnnotation = (target: Omit<QualityAnnotationTarget, "graphVersionId">) => {
         if (!target.objectKey) {
             messageApi.warning("当前对象缺少稳定键，无法标注");
@@ -363,73 +348,6 @@ export const RefinementPage = () => {
             graphVersionId: annotation.graphVersionId ?? detail?.graphVersionId
         });
     };
-    const lineageNodeColumns: ColumnsType<RefinementLineageNodeRecord> = [
-        { title: "名称", dataIndex: "name", key: "name" },
-        { title: "类型", dataIndex: "nodeType", key: "nodeType" },
-        { title: "代际", dataIndex: "generation", key: "generation" },
-        {
-            title: "确认状态",
-            dataIndex: "confirmationStatus",
-            key: "confirmationStatus",
-            render: (status?: string | null) => (
-                <Tag color={readStatusColor(status)}>{status || "-"}</Tag>
-            )
-        },
-        { title: "操作类型", dataIndex: "operationType", key: "operationType" },
-        {
-            key: "actions",
-            render: (_, node) => (
-                <KuzhambuButton
-                    testId="knowledge-refinement-refinement-annotate-button"
-                    disabled={!canEdit}
-                    onClick={() =>
-                        openAnnotation({
-                            objectType: "LINEAGE_NODE",
-                            objectKey: node.nodeKey || "",
-                            sourceContentType: detail?.sourceContentType,
-                            sourceContentId: detail?.sourceContentId
-                        })
-                    }
-                >
-                    标注
-                </KuzhambuButton>
-            )
-        }
-    ];
-    const lineageRelationColumns: ColumnsType<RefinementLineageRelationRecord> = [
-        { title: "源名称", dataIndex: "sourceName", key: "sourceName" },
-        { title: "目标名称", dataIndex: "targetName", key: "targetName" },
-        { title: "关系类型", dataIndex: "relationType", key: "relationType" },
-        {
-            title: "确认状态",
-            dataIndex: "confirmationStatus",
-            key: "confirmationStatus",
-            render: (status?: string | null) => (
-                <Tag color={readStatusColor(status)}>{status || "-"}</Tag>
-            )
-        },
-        { title: "操作类型", dataIndex: "operationType", key: "operationType" },
-        {
-            key: "actions",
-            render: (_, relation) => (
-                <KuzhambuButton
-                    testId="knowledge-refinement-refinement-annotate-button-2"
-                    disabled={!canEdit}
-                    onClick={() =>
-                        openAnnotation({
-                            objectType: "LINEAGE_RELATION",
-                            objectKey: relation.relationKey || "",
-                            sourceContentType: detail?.sourceContentType,
-                            sourceContentId: detail?.sourceContentId
-                        })
-                    }
-                >
-                    标注
-                </KuzhambuButton>
-            )
-        }
-    ];
-
     return (
         <KuzhambuPage
             className="knowledge-refinement-page refinement-page"
@@ -475,36 +393,7 @@ export const RefinementPage = () => {
                     {detailReady ? (
                         <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
                             {applyFollowUp ? (
-                                <KuzhambuAlert
-                                    action={
-                                        <KuzhambuSpace size={8}>
-                                            <KuzhambuButton
-                                                testId="knowledge-refinement-refinement-action-button"
-                                                href={buildGraphResultsHref(applyFollowUp)}
-                                                size="small"
-                                            >
-                                                查看图谱结果
-                                            </KuzhambuButton>
-                                            <KuzhambuButton
-                                                testId="knowledge-refinement-refinement-action-button-2"
-                                                href={buildGraphRegenerateHref(applyFollowUp)}
-                                                size="small"
-                                            >
-                                                重生成图谱
-                                            </KuzhambuButton>
-                                            <KuzhambuButton
-                                                testId="knowledge-refinement-refinement-action-button-3"
-                                                href={buildQualityReportHref(applyFollowUp)}
-                                                size="small"
-                                            >
-                                                重新生成质量报告
-                                            </KuzhambuButton>
-                                        </KuzhambuSpace>
-                                    }
-                                    title="精修已应用，图谱与质量报告需要继续联动处理"
-                                    showIcon
-                                    type="success"
-                                />
+                                <RefinementApplyResultPanel applyResult={applyFollowUp} />
                             ) : null}
                             <RefinementProgressSummaryPanel summary={progressSummary} />
                             <Row gutter={[16, 16]}>
@@ -516,7 +405,8 @@ export const RefinementPage = () => {
                                             <a
                                                 onClick={() =>
                                                     applyTaskMutation.mutate({
-                                                        refinementTaskId: readDetailTaskId(detail),
+                                                        refinementTaskId:
+                                                            readRefinementDetailTaskId(detail),
                                                         appliedBy: 1
                                                     })
                                                 }
@@ -626,17 +516,12 @@ export const RefinementPage = () => {
                                         className="knowledge-refinement-card"
                                         title="世系节点草稿"
                                     >
-                                        <Table<RefinementLineageNodeRecord>
-                                            aria-label="知识图谱精修世系节点表格"
-                                            columns={lineageNodeColumns}
-                                            dataSource={detail?.lineageNodes || []}
-                                            pagination={false}
-                                            rowKey={(node) =>
-                                                node.draftId ||
-                                                node.nodeKey ||
-                                                node.name ||
-                                                "lineage-node"
-                                            }
+                                        <RefinementLineageNodeTable
+                                            canEdit={canEdit}
+                                            nodes={detail?.lineageNodes || []}
+                                            sourceContentId={detail?.sourceContentId}
+                                            sourceContentType={detail?.sourceContentType}
+                                            onAnnotate={openAnnotation}
                                         />
                                     </Card>
                                 </Col>
@@ -645,17 +530,12 @@ export const RefinementPage = () => {
                                         className="knowledge-refinement-card"
                                         title="世系关系草稿"
                                     >
-                                        <Table<RefinementLineageRelationRecord>
-                                            aria-label="知识图谱精修世系关系表格"
-                                            columns={lineageRelationColumns}
-                                            dataSource={detail?.lineageRelations || []}
-                                            pagination={false}
-                                            rowKey={(relation) =>
-                                                relation.draftId ||
-                                                relation.relationKey ||
-                                                relation.relationType ||
-                                                "lineage-relation"
-                                            }
+                                        <RefinementLineageRelationTable
+                                            canEdit={canEdit}
+                                            relations={detail?.lineageRelations || []}
+                                            sourceContentId={detail?.sourceContentId}
+                                            sourceContentType={detail?.sourceContentType}
+                                            onAnnotate={openAnnotation}
                                         />
                                     </Card>
                                 </Col>
