@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as auditLogService from "@/pages/audit/audit-log/audit-log-service";
-import * as systemLogService from "./system-log/system-log-service";
+import * as systemLogService from "@/pages/system/system-log/system-log-service";
 
 interface CapturedCall {
     path: string;

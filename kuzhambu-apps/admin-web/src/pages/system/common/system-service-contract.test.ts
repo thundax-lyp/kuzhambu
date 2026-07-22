@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import * as departmentService from "./department/department-service";
-import * as dictionaryService from "./dictionary/dictionary-service";
-import * as menuService from "./menu/menu-service";
-import * as roleService from "./role/role-service";
-import * as userService from "./user/user-service";
+import * as departmentService from "@/pages/system/department/department-service";
+import * as dictionaryService from "@/pages/system/dictionary/dictionary-service";
+import * as menuService from "@/pages/system/menu/menu-service";
+import * as roleService from "@/pages/system/role/role-service";
+import * as userService from "@/pages/system/user/user-service";
 
 interface CapturedCall {
     path: string;

@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import * as qaConsumerService from "./qa/qa-service";
-import * as qaService from "./qa-console/qa-console-service";
-import * as searchConsumerService from "./search/search-service";
-import * as searchService from "./search-statistics/search-statistics-service";
+import * as qaConsumerService from "@/pages/discovery/qa/qa-service";
+import * as qaService from "@/pages/discovery/qa-console/qa-console-service";
+import * as searchConsumerService from "@/pages/discovery/search/search-service";
+import * as searchService from "@/pages/discovery/search-statistics/search-statistics-service";
 
 const postEventStream = vi.hoisted(() => vi.fn());
 const postJson = vi.hoisted(() => vi.fn());
