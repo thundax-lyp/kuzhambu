@@ -1,13 +1,9 @@
 import { useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { SendHorizontal } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import ancientReaderAvatar from "@/assets/discovery/ancient-reader-avatar-face.jpg";
-import ancientScholarAvatar from "@/assets/discovery/ancient-scholar-avatar-face.jpg";
+import { QaComposer } from "./components/qa-composer";
+import { QaTimeline } from "./components/qa-timeline";
 import * as qaService from "./qa-service";
 import type { DiscoveryQaOpenSessionResponse } from "./qa-types";
 import {
@@ -19,11 +15,9 @@ import {
     extractCompletionMessage,
     formatContextLabel,
     isUnavailableSessionError,
-    isUnavailableSource,
     parseNumber,
     parseString,
     readStoredSession,
-    toChatCompletionSourceKey,
     toInitialFormState,
     toOpenSessionRequest,
     toSessionId,
@@ -351,133 +345,14 @@ export const DiscoveryQaPage = () => {
                 ) : null}
 
                 <Card className="portal-qa-chat-card">
-                    {messages.length ? (
-                        <div className="portal-qa-timeline">
-                            {messages.map((message) => (
-                                <article
-                                    className={`portal-qa-message portal-qa-message-${message.role}`}
-                                    key={message.id}
-                                >
-                                    <span
-                                        aria-label={message.role === "user" ? "用户" : "古籍助手"}
-                                        className="portal-qa-avatar"
-                                        role="img"
-                                    >
-                                        <img
-                                            alt=""
-                                            aria-hidden="true"
-                                            src={
-                                                message.role === "user"
-                                                    ? ancientReaderAvatar
-                                                    : ancientScholarAvatar
-                                            }
-                                        />
-                                    </span>
-                                    <div className="portal-qa-bubble">
-                                        {message.role === "assistant" ? (
-                                            <div>
-                                                <p>{message.content}</p>
-                                                {message.status === "loading" ? (
-                                                    <p>正在生成回答…</p>
-                                                ) : null}
-                                                {message.status === "failed" ? (
-                                                    <p>
-                                                        {message.failureReason ??
-                                                            "回答失败，请稍后重试。"}
-                                                    </p>
-                                                ) : null}
-                                                {message.sources?.length ? (
-                                                    <div className="portal-qa-source-list">
-                                                        {message.sources.map(
-                                                            (source, sourceIndex) => {
-                                                                const key =
-                                                                    toChatCompletionSourceKey(
-                                                                        source,
-                                                                        sourceIndex
-                                                                    );
-                                                                const hasSourcePath =
-                                                                    source.sourcePath !== null &&
-                                                                    source.sourcePath !== undefined;
-                                                                const sourcePath =
-                                                                    source.sourcePath ?? "";
-                                                                const unavailable =
-                                                                    isUnavailableSource(source) ||
-                                                                    !hasSourcePath;
-                                                                return (
-                                                                    <div key={key}>
-                                                                        <p>
-                                                                            {unavailable ? (
-                                                                                <span>
-                                                                                    {source.titleSnapshot ??
-                                                                                        source.sourceId}
-                                                                                </span>
-                                                                            ) : (
-                                                                                <a
-                                                                                    href={
-                                                                                        sourcePath
-                                                                                    }
-                                                                                >
-                                                                                    {source.titleSnapshot ??
-                                                                                        source.sourceId}
-                                                                                </a>
-                                                                            )}
-                                                                        </p>
-                                                                        <p>
-                                                                            来源状态：
-                                                                            {source.sourceStatus ??
-                                                                                "-"}
-                                                                        </p>
-                                                                        <p>
-                                                                            相关度：
-                                                                            {source.score ?? "-"}
-                                                                        </p>
-                                                                    </div>
-                                                                );
-                                                            }
-                                                        )}
-                                                    </div>
-                                                ) : null}
-                                                {message.status === "failed" ? (
-                                                    <Button
-                                                        size="sm"
-                                                        type="button"
-                                                        variant="outline"
-                                                        onClick={() => handleRetry(message.id)}
-                                                    >
-                                                        重试
-                                                    </Button>
-                                                ) : null}
-                                            </div>
-                                        ) : (
-                                            <p>{message.content}</p>
-                                        )}
-                                    </div>
-                                </article>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="portal-empty">输入问题后，回答会显示在这里。</div>
-                    )}
-
-                    <form className="portal-qa-form" onSubmit={handleSubmit}>
-                        <Label className="portal-filter-field portal-qa-question">
-                            <Textarea
-                                aria-label="问题"
-                                name="question"
-                                placeholder="请输入问题"
-                                rows={4}
-                                value={form.question}
-                                onKeyDown={handleQuestionKeyDown}
-                                onChange={(event) => updateQuestion(event.target.value)}
-                            />
-                        </Label>
-                        <div className="portal-qa-actions">
-                            <Button disabled={isSubmitting} type="submit">
-                                <SendHorizontal aria-hidden="true" size={16} />
-                                {isSubmitting ? "回答中..." : "发送"}
-                            </Button>
-                        </div>
-                    </form>
+                    <QaTimeline messages={messages} onRetry={handleRetry} />
+                    <QaComposer
+                        disabled={isSubmitting}
+                        question={form.question}
+                        onQuestionChange={updateQuestion}
+                        onQuestionKeyDown={handleQuestionKeyDown}
+                        onSubmit={handleSubmit}
+                    />
                 </Card>
             </section>
         </main>
