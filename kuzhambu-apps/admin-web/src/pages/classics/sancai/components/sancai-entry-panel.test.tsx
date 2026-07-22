@@ -1478,6 +1478,39 @@ describe("SancaiEntryPanel sharing", () => {
         );
     }, 30000);
 
+    it("creates summary refinement task from the current unsaved entry draft", async () => {
+        const user = userEvent.setup();
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
+        const originalTextInput = await screen.findByLabelText("三才图会原文");
+        await user.clear(originalTextInput);
+        await user.type(originalTextInput, "编辑后的天地原文");
+        await user.click(
+            await screen.findByTestId("classics-sancai-sancai-entry-ai-summary-button")
+        );
+        await user.click(
+            await screen.findByTestId("classics-sancai-sancai-entry-create-ai-text-task-button")
+        );
+
+        await waitFor(() => {
+            expect(aiRefinementTaskService.createTask).toHaveBeenCalled();
+        });
+        const command = vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0];
+        expect(JSON.parse(command?.inputPayloadJson || "{}")).toMatchObject({
+            capability: "summary",
+            originalText: "编辑后的天地原文",
+            translationText: "译文"
+        });
+        const promptMessages = JSON.parse(command?.promptMessagesJson || "[]");
+        expect(JSON.parse(promptMessages[1]?.content || "{}")).toMatchObject({
+            originalText: "编辑后的天地原文",
+            translationText: "译文"
+        });
+    }, 30000);
+
     it("applies loaded summary candidate when adopting AI summary draft", async () => {
         const user = userEvent.setup();
         vi.mocked(aiCandidateService.list).mockReset();

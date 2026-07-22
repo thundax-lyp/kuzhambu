@@ -272,8 +272,8 @@ interface SancaiEntryModelProps {
         capability: SancaiVisualAssetRefinementCapability,
         asset: SancaiVisualAssetRecord
     ) => void;
-    onCreateTranslationTask?: () => void;
-    onCreateSummaryTask?: () => void;
+    onCreateTranslationTask?: (draft: SancaiEntryFormValues) => void;
+    onCreateSummaryTask?: (draft: SancaiEntryFormValues) => void;
     creatingVisualAssetCapability?: SancaiVisualAssetRefinementCapability | null;
     isCreatingTranslationTask?: boolean;
     isCreatingSummaryTask?: boolean;
@@ -676,7 +676,7 @@ export const SancaiEntryModel = ({
             messageApi.warning("请先填写原文");
             return false;
         }
-        createTask();
+        createTask(form);
         return true;
     };
     const openAiTextModal = (field: SancaiAiTextField) => {

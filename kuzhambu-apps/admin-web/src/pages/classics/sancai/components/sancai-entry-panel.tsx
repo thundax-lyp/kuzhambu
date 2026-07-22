@@ -955,8 +955,8 @@ export const SancaiEntryPanel = ({
                 onCreateVisualAssetTask={(capability, asset) => {
                     createRefinementTask(capability, asset);
                 }}
-                onCreateTranslationTask={() => createRefinementTask("translate")}
-                onCreateSummaryTask={() => createRefinementTask("summary")}
+                onCreateTranslationTask={(draft) => createRefinementTask("translate", null, draft)}
+                onCreateSummaryTask={(draft) => createRefinementTask("summary", null, draft)}
                 isCreatingTranslationTask={creatingRefinementCapability === "translate"}
                 isCreatingSummaryTask={creatingRefinementCapability === "summary"}
                 translationTasks={refinementTasks.filter((task) => task.capability === "translate")}
