@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as http from "@/api/http";
-import * as service from "./knowledge-lineage-service";
-import type { KnowledgeLineageCanvasQuery } from "./knowledge-lineage-service";
-import type { KnowledgeLineageCanvasRecord } from "./knowledge-lineage-types";
+import * as service from "./lineage-service";
+import type { KnowledgeLineageCanvasQuery } from "./lineage-service";
+import type { KnowledgeLineageCanvasRecord } from "./lineage-types";
 
 const canvas: KnowledgeLineageCanvasRecord = {
     version: {

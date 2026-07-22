@@ -1,5 +1,5 @@
 import { postJson } from "@/api/http";
-import type { KnowledgeLineageCanvasRecord } from "./knowledge-lineage-types";
+import type { KnowledgeLineageCanvasRecord } from "./lineage-types";
 
 export interface KnowledgeLineageCanvasQuery {
     versionId?: number | null;
