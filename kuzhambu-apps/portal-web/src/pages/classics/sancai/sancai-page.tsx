@@ -1,18 +1,19 @@
-import { useMemo, useState, type FormEvent } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { BookOpen, ChevronRight, Search } from "lucide-react";
+import { BookOpen, ChevronRight } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import * as sancaiService from "./sancai-service";
-import type { SancaiCategoryRecord, SancaiEntryRecord, SancaiVolumeRecord } from "./sancai-types";
+import type { SancaiCategoryRecord, SancaiEntryRecord } from "./sancai-types";
 
 import "./sancai-page.css";
 
-const PAGE_SIZE = 12;
+const BOOK_ENTRY_LIMIT = 500;
+const STABLE_BOOK_QUERY_OPTIONS = {
+    staleTime: Number.POSITIVE_INFINITY
+};
 const EMPTY_CATEGORIES: SancaiCategoryRecord[] = [];
-const EMPTY_VOLUMES: SancaiVolumeRecord[] = [];
 const EMPTY_ENTRIES: SancaiEntryRecord[] = [];
 
 const readTitle = (value: { id: number; title?: string | null }, fallback: string) => {
@@ -24,67 +25,72 @@ const readEntryIdParam = (searchParams: URLSearchParams) => {
     return Number.isFinite(value) && value > 0 ? value : null;
 };
 
+const readEntryImages = (entry?: SancaiEntryRecord | null) => {
+    if (!entry) {
+        return [];
+    }
+
+    const entryImages =
+        entry.images
+            ?.filter((image) => image.previewUrl)
+            .map((image) => ({
+                alt: image.title || "三才图会条目图片",
+                caption: image.title || "三才图会图版",
+                currentUsed: Boolean(image.currentUsed),
+                key: String(image.id ?? image.previewUrl),
+                url: image.previewUrl || ""
+            })) || [];
+    const visualAssetUrl =
+        entry.currentVisualAsset?.generatedPreviewUrl || entry.currentVisualAsset?.sourcePreviewUrl;
+
+    if (!visualAssetUrl || entryImages.some((image) => image.url === visualAssetUrl)) {
+        return entryImages;
+    }
+
+    return [
+        ...entryImages,
+        {
+            alt: `${readTitle(entry, "条目")}图像`,
+            caption: "融合图像",
+            currentUsed: entryImages.length === 0,
+            key: `visual-${entry.currentVisualAsset?.visualAssetId ?? visualAssetUrl}`,
+            url: visualAssetUrl
+        }
+    ];
+};
+
 export const SancaiPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
-    const [selectedVolumeId, setSelectedVolumeId] = useState<number | null>(null);
-    const [keyword, setKeyword] = useState("");
-    const [appliedKeyword, setAppliedKeyword] = useState<string | null>(null);
-    const [pageNo, setPageNo] = useState(1);
     const selectedEntryId = readEntryIdParam(searchParams);
 
     const categoriesQuery = useQuery({
         queryKey: ["portal", "classics", "sancai", "categories"],
-        queryFn: sancaiService.listCategories
-    });
-    const volumesQuery = useQuery({
-        queryKey: ["portal", "classics", "sancai", "volumes", selectedCategoryId],
-        queryFn: () => sancaiService.listVolumes(selectedCategoryId)
+        queryFn: sancaiService.listCategories,
+        ...STABLE_BOOK_QUERY_OPTIONS
     });
     const entriesQuery = useQuery({
-        queryKey: [
-            "portal",
-            "classics",
-            "sancai",
-            "entries",
-            selectedCategoryId,
-            selectedVolumeId,
-            appliedKeyword,
-            pageNo
-        ],
+        queryKey: ["portal", "classics", "sancai", "entries", selectedCategoryId],
         queryFn: () =>
             sancaiService.pageEntries({
                 categoryId: selectedCategoryId,
-                volumeId: selectedVolumeId,
-                keyword: appliedKeyword,
-                pageNo,
-                pageSize: PAGE_SIZE
-            })
+                pageNo: 1,
+                pageSize: BOOK_ENTRY_LIMIT
+            }),
+        ...STABLE_BOOK_QUERY_OPTIONS
     });
-    const detailQuery = useQuery({
-        queryKey: ["portal", "classics", "sancai", "entry", selectedEntryId],
-        queryFn: () => sancaiService.getEntry(selectedEntryId ?? 0),
-        enabled: selectedEntryId !== null
-    });
-
     const categories = categoriesQuery.data || EMPTY_CATEGORIES;
-    const volumes = volumesQuery.data || EMPTY_VOLUMES;
     const entries = entriesQuery.data?.records || EMPTY_ENTRIES;
+    const activeEntryId = selectedEntryId || entries[0]?.id || null;
+    const detailQuery = useQuery({
+        queryKey: ["portal", "classics", "sancai", "entry", activeEntryId],
+        queryFn: () => sancaiService.getEntry(activeEntryId ?? 0),
+        enabled: activeEntryId !== null,
+        ...STABLE_BOOK_QUERY_OPTIONS
+    });
     const selectedEntry =
-        detailQuery.data || entries.find((entry) => entry.id === selectedEntryId) || entries[0];
-    const totalPage = entriesQuery.data?.totalPage || 1;
-
-    const selectedScopeTitle = useMemo(() => {
-        const category = categories.find((item) => item.id === selectedCategoryId);
-        const volume = volumes.find((item) => item.id === selectedVolumeId);
-        if (volume) {
-            return readTitle(volume, "卷");
-        }
-        if (category) {
-            return readTitle(category, "门类");
-        }
-        return "全部条目";
-    }, [categories, selectedCategoryId, selectedVolumeId, volumes]);
+        detailQuery.data || entries.find((entry) => entry.id === activeEntryId) || entries[0];
+    const selectedEntryImages = readEntryImages(selectedEntry);
 
     const clearSelectedEntryParam = () => {
         const next = new URLSearchParams(searchParams);
@@ -92,27 +98,8 @@ export const SancaiPage = () => {
         setSearchParams(next);
     };
 
-    const applySearch = (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        setAppliedKeyword(keyword.trim() || null);
-        setPageNo(1);
-        clearSelectedEntryParam();
-    };
-
     const selectCategory = (categoryId: number | null) => {
         setSelectedCategoryId(categoryId);
-        setSelectedVolumeId(null);
-        setPageNo(1);
-        clearSelectedEntryParam();
-    };
-
-    const selectVolume = (volumeId: number | null) => {
-        setSelectedVolumeId(volumeId);
-        setPageNo(1);
-        clearSelectedEntryParam();
-    };
-    const changePage = (nextPageNo: number) => {
-        setPageNo(nextPageNo);
         clearSelectedEntryParam();
     };
 
@@ -127,25 +114,36 @@ export const SancaiPage = () => {
             <section className="sancai-browser" aria-label="三才图会在线展示">
                 <aside className="sancai-browser-nav" aria-label="三才图会目录">
                     <div className="sancai-browser-title">
-                        <BookOpen size={20} />
+                        <BookOpen aria-hidden="true" size={20} />
                         <div>
-                            <p>古籍</p>
+                            <p>古籍阅览</p>
                             <h1>三才图会</h1>
+                            <span>明刊本图文条目</span>
                         </div>
                     </div>
-                    <Button
-                        className="sancai-nav-button"
-                        variant={selectedCategoryId === null ? "default" : "ghost"}
-                        onClick={() => selectCategory(null)}
-                    >
-                        全部条目
-                    </Button>
                     <div className="sancai-nav-list">
+                        <Button
+                            className={
+                                selectedCategoryId === null
+                                    ? "sancai-nav-button is-active"
+                                    : "sancai-nav-button"
+                            }
+                            variant="ghost"
+                            onClick={() => selectCategory(null)}
+                        >
+                            <span className="sancai-category-summary">
+                                <span>总目</span>
+                            </span>
+                        </Button>
                         {categories.map((category) => (
                             <Button
                                 key={category.id}
-                                className="sancai-nav-button"
-                                variant={selectedCategoryId === category.id ? "default" : "ghost"}
+                                className={
+                                    selectedCategoryId === category.id
+                                        ? "sancai-nav-button is-active"
+                                        : "sancai-nav-button"
+                                }
+                                variant="ghost"
                                 onClick={() => selectCategory(category.id)}
                             >
                                 {category.thumbnailUrl ? (
@@ -157,10 +155,6 @@ export const SancaiPage = () => {
                                 ) : null}
                                 <span className="sancai-category-summary">
                                     <span>{readTitle(category, "门类")}</span>
-                                    <span>
-                                        {category.publicEntryCount ?? 0} 条 / 配图{" "}
-                                        {category.illustratedEntryCount ?? 0}
-                                    </span>
                                 </span>
                             </Button>
                         ))}
@@ -168,45 +162,6 @@ export const SancaiPage = () => {
                 </aside>
 
                 <section className="sancai-browser-content">
-                    <div className="sancai-browser-toolbar">
-                        <div>
-                            <p>当前范围</p>
-                            <h2>{selectedScopeTitle}</h2>
-                        </div>
-                        <form className="sancai-search-form" onSubmit={applySearch}>
-                            <Input
-                                aria-label="搜索三才图会条目"
-                                placeholder="搜索条目"
-                                value={keyword}
-                                onChange={(event) => setKeyword(event.target.value)}
-                            />
-                            <Button type="submit">
-                                <Search size={16} />
-                                搜索
-                            </Button>
-                        </form>
-                    </div>
-
-                    <div className="sancai-volume-strip" aria-label="三才图会卷目">
-                        <Button
-                            className="sancai-volume-button"
-                            variant={selectedVolumeId === null ? "default" : "outline"}
-                            onClick={() => selectVolume(null)}
-                        >
-                            全部卷目
-                        </Button>
-                        {volumes.map((volume) => (
-                            <Button
-                                key={volume.id}
-                                className="sancai-volume-button"
-                                variant={selectedVolumeId === volume.id ? "default" : "outline"}
-                                onClick={() => selectVolume(volume.id)}
-                            >
-                                {readTitle(volume, "卷")}
-                            </Button>
-                        ))}
-                    </div>
-
                     <div className="sancai-content-grid">
                         <div className="sancai-entry-list" aria-label="三才图会条目列表">
                             {entriesQuery.isLoading ? (
@@ -230,50 +185,30 @@ export const SancaiPage = () => {
                                     <ChevronRight size={16} />
                                 </button>
                             ))}
-                            <div className="sancai-pagination">
-                                <Button
-                                    disabled={pageNo <= 1}
-                                    variant="outline"
-                                    onClick={() => changePage(Math.max(1, pageNo - 1))}
-                                >
-                                    上一页
-                                </Button>
-                                <span>
-                                    {pageNo} / {totalPage}
-                                </span>
-                                <Button
-                                    disabled={pageNo >= totalPage}
-                                    variant="outline"
-                                    onClick={() => changePage(pageNo + 1)}
-                                >
-                                    下一页
-                                </Button>
-                            </div>
                         </div>
 
                         <Card className="sancai-entry-detail" aria-label="三才图会条目详情">
                             {selectedEntry ? (
                                 <>
                                     <h2>{readTitle(selectedEntry, "条目")}</h2>
-                                    {selectedEntry.images?.length ? (
+                                    {selectedEntryImages.length ? (
                                         <div
-                                            className="sancai-image-strip"
-                                            aria-label="三才图会条目图片"
+                                            className="sancai-figure-list"
+                                            aria-label="三才图会正文图版"
                                         >
-                                            {selectedEntry.images.map((image) =>
-                                                image.previewUrl ? (
-                                                    <img
-                                                        key={image.id ?? image.previewUrl}
-                                                        alt={image.title || "三才图会条目图片"}
-                                                        className={
-                                                            image.currentUsed
-                                                                ? "sancai-entry-image is-cover"
-                                                                : "sancai-entry-image"
-                                                        }
-                                                        src={image.previewUrl}
-                                                    />
-                                                ) : null
-                                            )}
+                                            {selectedEntryImages.map((image) => (
+                                                <figure
+                                                    key={image.key}
+                                                    className={
+                                                        image.currentUsed
+                                                            ? "sancai-entry-figure is-cover"
+                                                            : "sancai-entry-figure"
+                                                    }
+                                                >
+                                                    <img alt={image.alt} src={image.url} />
+                                                    <figcaption>{image.caption}</figcaption>
+                                                </figure>
+                                            ))}
                                         </div>
                                     ) : null}
                                     {selectedEntry.tags?.length ? (
