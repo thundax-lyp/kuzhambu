@@ -48,8 +48,8 @@ export const RefinementPage = () => {
         detailReady,
         editingEntity,
         editingRelation,
-        entityEditorOpen,
-        relationEditorOpen,
+        entityEditModalOpen,
+        relationEditModalOpen,
         setAnnotationTarget,
         setApplyFollowUp,
         setDeletingEntity,
@@ -57,8 +57,8 @@ export const RefinementPage = () => {
         setDetail,
         setEditingEntity,
         setEditingRelation,
-        setEntityEditorOpen,
-        setRelationEditorOpen,
+        setEntityEditModalOpen,
+        setRelationEditModalOpen,
         setTaskQuery,
         taskQuery
     } = useRefinementWorkbench();
@@ -175,7 +175,7 @@ export const RefinementPage = () => {
         },
         onSuccess: async () => {
             await refreshDetail(readRefinementDetailTaskId(detail));
-            setEntityEditorOpen(false);
+            setEntityEditModalOpen(false);
             setEditingEntity(null);
             messageApi.success("实体草稿已保存");
         },
@@ -232,7 +232,7 @@ export const RefinementPage = () => {
         },
         onSuccess: async () => {
             await refreshDetail(readRefinementDetailTaskId(detail));
-            setRelationEditorOpen(false);
+            setRelationEditModalOpen(false);
             setEditingRelation(null);
             messageApi.success("关系草稿已保存");
         },
@@ -420,7 +420,7 @@ export const RefinementPage = () => {
                                             entities={detail?.entities || []}
                                             onAdd={() => {
                                                 setEditingEntity(null);
-                                                setEntityEditorOpen(true);
+                                                setEntityEditModalOpen(true);
                                             }}
                                             onAnnotate={(entity) =>
                                                 openAnnotation({
@@ -439,7 +439,7 @@ export const RefinementPage = () => {
                                             onDelete={setDeletingEntity}
                                             onEdit={(entity) => {
                                                 setEditingEntity(entity);
-                                                setEntityEditorOpen(true);
+                                                setEntityEditModalOpen(true);
                                             }}
                                         />
                                     </Card>
@@ -486,7 +486,7 @@ export const RefinementPage = () => {
                                     canEdit={canEdit}
                                     onAdd={() => {
                                         setEditingRelation(null);
-                                        setRelationEditorOpen(true);
+                                        setRelationEditModalOpen(true);
                                     }}
                                     onAnnotate={(relation) =>
                                         openAnnotation({
@@ -505,7 +505,7 @@ export const RefinementPage = () => {
                                     onDelete={setDeletingRelation}
                                     onEdit={(relation) => {
                                         setEditingRelation(relation);
-                                        setRelationEditorOpen(true);
+                                        setRelationEditModalOpen(true);
                                     }}
                                     relations={detail?.relations || []}
                                 />
@@ -561,10 +561,10 @@ export const RefinementPage = () => {
 
             <RefinementEntityEditModal
                 entity={editingEntity}
-                open={entityEditorOpen}
+                open={entityEditModalOpen}
                 saving={entityMutation.isPending}
                 onCancel={() => {
-                    setEntityEditorOpen(false);
+                    setEntityEditModalOpen(false);
                     setEditingEntity(null);
                 }}
                 onSubmit={(values) => entityMutation.mutate(values)}
@@ -581,11 +581,11 @@ export const RefinementPage = () => {
                 }}
             />
             <RefinementRelationEditModal
-                open={relationEditorOpen}
+                open={relationEditModalOpen}
                 relation={editingRelation}
                 saving={relationMutation.isPending}
                 onCancel={() => {
-                    setRelationEditorOpen(false);
+                    setRelationEditModalOpen(false);
                     setEditingRelation(null);
                 }}
                 onSubmit={(values) => relationMutation.mutate(values)}

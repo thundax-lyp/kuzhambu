@@ -18,10 +18,10 @@ export const useRefinementWorkbench = () => {
         pageSize: DEFAULT_PAGE_SIZE
     });
     const [detail, setDetail] = useState<RefinementDetailRecord | null>(null);
-    const [entityEditorOpen, setEntityEditorOpen] = useState(false);
+    const [entityEditModalOpen, setEntityEditModalOpen] = useState(false);
     const [editingEntity, setEditingEntity] = useState<RefinementEntityRecord | null>(null);
     const [deletingEntity, setDeletingEntity] = useState<RefinementEntityRecord | null>(null);
-    const [relationEditorOpen, setRelationEditorOpen] = useState(false);
+    const [relationEditModalOpen, setRelationEditModalOpen] = useState(false);
     const [editingRelation, setEditingRelation] = useState<RefinementRelationRecord | null>(null);
     const [deletingRelation, setDeletingRelation] = useState<RefinementRelationRecord | null>(null);
     const [annotationTarget, setAnnotationTarget] = useState<QualityAnnotationTarget | null>(null);
@@ -44,8 +44,8 @@ export const useRefinementWorkbench = () => {
         detailReady: detail !== null,
         editingEntity,
         editingRelation,
-        entityEditorOpen,
-        relationEditorOpen,
+        entityEditModalOpen,
+        relationEditModalOpen,
         setAnnotationTarget,
         setApplyFollowUp,
         setDeletingEntity,
@@ -53,8 +53,8 @@ export const useRefinementWorkbench = () => {
         setDetail,
         setEditingEntity,
         setEditingRelation,
-        setEntityEditorOpen,
-        setRelationEditorOpen,
+        setEntityEditModalOpen,
+        setRelationEditModalOpen,
         setTaskQuery,
         taskQuery
     };
