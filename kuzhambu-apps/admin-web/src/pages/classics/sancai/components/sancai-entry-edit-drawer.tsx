@@ -1,10 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Empty, Form, Segmented } from "antd";
+import { App, Empty, Form } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { KuzhambuSegmentedDrawer } from "@/components/kuzhambu-segmented-drawer";
 import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
@@ -702,41 +701,77 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
         labelCol: { flex: "88px" },
         layout: "horizontal" as const
     };
-    const sectionOptions = [
-        { label: "基础信息", value: "basic" },
-        { label: "视觉处理", value: "visual" },
-        { label: "标签", value: "tags" },
-        { label: "问答", value: "qa" },
-        { label: "版本", value: "versions" }
-    ];
+    const sections = [
+        {
+            label: "基础信息",
+            value: "basic",
+            content: <Form {...formProps}>{basicContent}</Form>
+        },
+        {
+            label: "视觉处理",
+            value: "visual",
+            content: (
+                <>
+                    <Form {...formProps}>{visualAssetContent}</Form>
+                    {visualRefinementContent}
+                </>
+            ),
+            visible: mode === "edit"
+        },
+        {
+            label: "标签",
+            value: "tags",
+            content: tagContent || (
+                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无标签" />
+            ),
+            visible: mode === "edit"
+        },
+        {
+            label: "问答",
+            value: "qa",
+            content: qaContent || (
+                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无问答" />
+            ),
+            visible: mode === "edit"
+        },
+        {
+            label: "版本",
+            value: "versions",
+            content: versionContent || (
+                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无版本" />
+            ),
+            visible: mode === "edit"
+        }
+    ] satisfies Array<{
+        content: ReactNode;
+        label: string;
+        value: SancaiEntryEditDrawerSection;
+        visible?: boolean;
+    }>;
 
     return (
-        <KuzhambuDrawer
+        <KuzhambuSegmentedDrawer
+            activeSection={activeSection}
+            extraClassName="sancai-entry-edit-drawer-header-actions"
+            headerExtra={
+                mode === "edit" ? (
+                    <KuzhambuButton
+                        testId="classics-sancai-sancai-entry-preview-sancai-entry-button"
+                        onClick={openPreviewWindow}
+                    >
+                        预览
+                    </KuzhambuButton>
+                ) : undefined
+            }
+            sectionClassName="sancai-entry-edit-drawer-section"
+            sections={sections}
+            segmentedClassName="sancai-entry-edit-drawer-header-sections"
+            showSegmented={mode === "edit"}
             testId="classics-sancai-sancai-entry-editor-drawer"
             title={mode === "create" ? "新增条目" : "编辑条目"}
             open={open}
             size="large"
             destroyOnHidden
-            extra={
-                mode === "edit" ? (
-                    <KuzhambuSpace className="sancai-entry-edit-drawer-header-actions" wrap>
-                        <Segmented
-                            className="sancai-entry-edit-drawer-header-sections"
-                            options={sectionOptions}
-                            value={activeSection}
-                            onChange={(value) =>
-                                setActiveSection(value as SancaiEntryEditDrawerSection)
-                            }
-                        />
-                        <KuzhambuButton
-                            testId="classics-sancai-sancai-entry-preview-sancai-entry-button"
-                            onClick={openPreviewWindow}
-                        >
-                            预览
-                        </KuzhambuButton>
-                    </KuzhambuSpace>
-                ) : undefined
-            }
             footer={
                 <div className="sancai-drawer-footer">
                     <KuzhambuButton
@@ -756,6 +791,7 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
                 </div>
             }
             onClose={onCancel}
+            onSectionChange={setActiveSection}
         >
             <SancaiEntryAiTextModal
                 activeAiTextField={activeAiTextField}
@@ -773,34 +809,6 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
                 onRequestTask={requestAiTextTask}
                 onTextDraftChange={setAiTextDraft}
             />
-            {mode === "create" ? (
-                <Form {...formProps}>{basicContent}</Form>
-            ) : (
-                <div className="sancai-entry-edit-drawer-section">
-                    {activeSection === "basic" ? <Form {...formProps}>{basicContent}</Form> : null}
-                    {activeSection === "visual" ? (
-                        <>
-                            <Form {...formProps}>{visualAssetContent}</Form>
-                            {visualRefinementContent}
-                        </>
-                    ) : null}
-                    {activeSection === "tags"
-                        ? tagContent || (
-                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无标签" />
-                          )
-                        : null}
-                    {activeSection === "qa"
-                        ? qaContent || (
-                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无问答" />
-                          )
-                        : null}
-                    {activeSection === "versions"
-                        ? versionContent || (
-                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无版本" />
-                          )
-                        : null}
-                </div>
-            )}
-        </KuzhambuDrawer>
+        </KuzhambuSegmentedDrawer>
     );
 };

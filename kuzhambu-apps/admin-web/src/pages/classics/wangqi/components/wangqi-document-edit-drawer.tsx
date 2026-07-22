@@ -1,12 +1,12 @@
 import { FileTextOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { App, Form, Input, Segmented } from "antd";
+import { App, Form, Input } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuAlert } from "@/components/kuzhambu-alert";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuModal } from "@/components/kuzhambu-modal";
+import { KuzhambuSegmentedDrawer } from "@/components/kuzhambu-segmented-drawer";
 import { WangqiDocumentBasicSection } from "./wangqi-document-basic-section";
 import { WangqiDocumentQaSection } from "./wangqi-document-qa-section";
 import { WangqiDocumentSourceSection } from "./wangqi-document-source-section";
@@ -333,43 +333,70 @@ export const WangqiDocumentEditDrawer = ({
         messageApi.success("摘要已写入基础信息");
     };
 
-    const sectionOptions = [
-        { label: "基础信息", value: "basic" },
-        ...(mode === "edit"
-            ? [
-                  { label: "标签", value: "tags" },
-                  { label: "问答", value: "qa" },
-                  { label: "文件", value: "source" },
-                  { label: "版本", value: "versions" }
-              ]
-            : [])
-    ];
-
-    const sectionContent: Record<WangqiDocumentEditDrawerSection, ReactNode> = {
-        basic: <WangqiDocumentBasicSection mode={mode} onOpenSummaryModal={openSummaryModal} />,
-        tags: <WangqiDocumentTagsSection content={tagContent} />,
-        qa: <WangqiDocumentQaSection content={qaContent} />,
-        source: <WangqiDocumentSourceSection content={sourceFileContent} />,
-        versions: <WangqiDocumentVersionsSection content={versionContent} />
-    };
+    const sections = [
+        {
+            label: "基础信息",
+            value: "basic",
+            content: (
+                <WangqiDocumentBasicSection mode={mode} onOpenSummaryModal={openSummaryModal} />
+            )
+        },
+        {
+            label: "标签",
+            value: "tags",
+            content: <WangqiDocumentTagsSection content={tagContent} />,
+            visible: mode === "edit"
+        },
+        {
+            label: "问答",
+            value: "qa",
+            content: <WangqiDocumentQaSection content={qaContent} />,
+            visible: mode === "edit"
+        },
+        {
+            label: "文件",
+            value: "source",
+            content: <WangqiDocumentSourceSection content={sourceFileContent} />,
+            visible: mode === "edit"
+        },
+        {
+            label: "版本",
+            value: "versions",
+            content: <WangqiDocumentVersionsSection content={versionContent} />,
+            visible: mode === "edit"
+        }
+    ] satisfies Array<{
+        content: ReactNode;
+        label: string;
+        value: WangqiDocumentEditDrawerSection;
+        visible?: boolean;
+    }>;
 
     return (
-        <KuzhambuDrawer
+        <KuzhambuSegmentedDrawer
+            activeSection={activeSection}
+            sectionClassName="wangqi-document-edit-drawer-section"
+            sections={sections}
+            segmentedClassName="wangqi-document-edit-drawer-sections"
             testId="classics-wangqi-document-editor-drawer"
             title={mode === "create" ? "新增王圻文档" : "编辑王圻文档"}
             open={open}
             size="large"
             loading={loading}
             destroyOnHidden
-            extra={
-                <Segmented
-                    className="wangqi-document-edit-drawer-sections"
-                    options={sectionOptions}
-                    value={activeSection}
-                    onChange={(value) => setActiveSection(value as WangqiDocumentEditDrawerSection)}
-                />
-            }
             onClose={closeModel}
+            onSectionChange={setActiveSection}
+            renderSectionContent={(content) => (
+                <Form<WangqiDocumentFormValues>
+                    form={form}
+                    colon={false}
+                    labelCol={{ flex: "88px" }}
+                    layout="horizontal"
+                    className="wangqi-document-edit-drawer-form"
+                >
+                    {content}
+                </Form>
+            )}
             footer={
                 <div className="wangqi-document-edit-drawer-footer">
                     <KuzhambuButton
@@ -496,17 +523,6 @@ export const WangqiDocumentEditDrawer = ({
                     </Form.Item>
                 </Form>
             </KuzhambuModal>
-            <Form<WangqiDocumentFormValues>
-                form={form}
-                colon={false}
-                labelCol={{ flex: "88px" }}
-                layout="horizontal"
-                className="wangqi-document-edit-drawer-form"
-            >
-                <div className="wangqi-document-edit-drawer-section">
-                    {sectionContent[activeSection]}
-                </div>
-            </Form>
-        </KuzhambuDrawer>
+        </KuzhambuSegmentedDrawer>
     );
 };
