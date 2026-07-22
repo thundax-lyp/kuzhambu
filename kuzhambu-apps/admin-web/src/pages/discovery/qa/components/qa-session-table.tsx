@@ -14,7 +14,7 @@ const sessionTitle = (session?: DiscoveryQaSessionRecord) => {
     return session?.sessionId ? `会话 ${session.sessionId}` : "未命名会话";
 };
 
-export interface QaSessionTableProps {
+interface QaSessionTableProps {
     deleting: boolean;
     exportDisabled: boolean;
     exporting: boolean;

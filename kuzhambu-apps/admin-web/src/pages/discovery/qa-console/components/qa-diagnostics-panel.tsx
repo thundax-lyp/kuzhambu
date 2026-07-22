@@ -4,7 +4,7 @@ import { KuzhambuSpace } from "@/components/kuzhambu-space";
 
 const { Text } = Typography;
 
-export interface QaDiagnosticsPanelProps {
+interface QaDiagnosticsPanelProps {
     fastGptConsoleUrl: string | null;
 }
 

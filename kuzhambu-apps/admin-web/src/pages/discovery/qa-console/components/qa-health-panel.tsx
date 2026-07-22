@@ -17,7 +17,7 @@ const formatTime = (value?: number | string | null) => {
     }).format(new Date(timestamp));
 };
 
-export interface QaHealthPanelProps {
+interface QaHealthPanelProps {
     data?: KnowledgeHealthRecord;
     loading: boolean;
     onRefresh: () => void;

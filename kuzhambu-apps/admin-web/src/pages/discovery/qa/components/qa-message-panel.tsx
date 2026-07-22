@@ -72,7 +72,7 @@ const toBubbleStatusIcon = (status: QaTimelineMessage["status"]): ReactNode => {
     return <CheckCircleOutlined />;
 };
 
-export interface QaMessagePanelProps {
+interface QaMessagePanelProps {
     inputValue: string;
     loading: boolean;
     messages: QaTimelineMessage[];

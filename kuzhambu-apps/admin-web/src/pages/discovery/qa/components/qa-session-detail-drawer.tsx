@@ -21,7 +21,7 @@ const sessionTitle = (session?: DiscoveryQaSessionRecord) => {
     return session?.sessionId ? `会话 ${session.sessionId}` : "未命名会话";
 };
 
-export interface QaSessionDetailDrawerProps {
+interface QaSessionDetailDrawerProps {
     onClose: () => void;
     open: boolean;
     session?: DiscoveryQaSessionRecord;
