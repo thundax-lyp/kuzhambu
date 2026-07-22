@@ -17,7 +17,7 @@ import { KuzhambuButton } from "@/components/kuzhambu-button";
 const { Text } = Typography;
 const { TextArea } = Input;
 
-export interface MingCustomsModelProps {
+export interface MingCustomsEditDrawerProps {
     categoryOptions: DictItem[];
     afterForm?: ReactNode;
     entry?: MingCustomsRecord | null;
@@ -29,7 +29,7 @@ export interface MingCustomsModelProps {
     onSave: (command: MingCustomsCommand) => void;
 }
 
-export const MingCustomsModel = ({
+export const MingCustomsEditDrawer = ({
     categoryOptions,
     afterForm,
     entry,
@@ -39,7 +39,7 @@ export const MingCustomsModel = ({
     saving = false,
     onClose,
     onSave
-}: MingCustomsModelProps) => {
+}: MingCustomsEditDrawerProps) => {
     const [form] = Form.useForm<MingCustomsFormValues>();
     const content = Form.useWatch("content", form);
     const contentFormat = Form.useWatch("contentFormat", form);
@@ -66,7 +66,7 @@ export const MingCustomsModel = ({
             destroyOnHidden
             onClose={onClose}
             footer={
-                <div className="ming-customs-model-footer">
+                <div className="ming-customs-edit-drawer-footer">
                     <KuzhambuButton
                         testId="classics-ming-customs-ming-customs-cancel-button"
                         onClick={onClose}
@@ -87,9 +87,9 @@ export const MingCustomsModel = ({
             <Form<MingCustomsFormValues>
                 form={form}
                 layout="vertical"
-                className="ming-customs-model-form"
+                className="ming-customs-edit-drawer-form"
             >
-                <div className="ming-customs-model-grid">
+                <div className="ming-customs-edit-drawer-grid">
                     <Form.Item
                         name="title"
                         label="标题"
@@ -126,7 +126,7 @@ export const MingCustomsModel = ({
                         showCount
                     />
                 </Form.Item>
-                <div className="ming-customs-model-grid">
+                <div className="ming-customs-edit-drawer-grid">
                     <Form.Item name="contentFormat" label="正文格式">
                         <Select
                             aria-label="明代习俗正文格式"
@@ -151,10 +151,10 @@ export const MingCustomsModel = ({
                         autoSize={resolveTextAreaAutoSize({ minRows: 8, maxRows: 14 })}
                     />
                 </Form.Item>
-                <section className="ming-customs-model-preview" aria-label="明代习俗正文预览">
+                <section className="ming-customs-edit-drawer-preview" aria-label="明代习俗正文预览">
                     <Text strong>正文预览</Text>
                     <KuzhambuRichContentViewer
-                        className="ming-customs-model-preview-content"
+                        className="ming-customs-edit-drawer-preview-content"
                         content={content}
                         format={contentFormat}
                     />

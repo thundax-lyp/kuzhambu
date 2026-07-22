@@ -27,7 +27,7 @@ import type {
 } from "@/pages/classics/common/classics-export-types";
 import { MingCustomsTagCloud } from "./components/ming-customs-keyword-cloud";
 import { MingCustomsList } from "./components/ming-customs-list";
-import { MingCustomsModel } from "./components/ming-customs-model";
+import { MingCustomsEditDrawer } from "./components/ming-customs-edit-drawer";
 import { MingCustomsVersionHistoryPanel } from "./components/ming-customs-version-history-panel";
 import * as service from "./ming-customs-service";
 import type { MingCustomsCommand, MingCustomsQuery } from "./ming-customs-service";
@@ -961,7 +961,7 @@ export const MingCustomsPage = () => {
                     </>
                 }
             />
-            <MingCustomsModel
+            <MingCustomsEditDrawer
                 categoryOptions={categoryOptions}
                 entry={editorEntry}
                 loading={detailQuery.isLoading}
