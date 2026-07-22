@@ -6,7 +6,7 @@ import { toVolumeFormValues, type SancaiVolumeFormValues } from "./sancai-form-v
 import type { SancaiCategoryRecord, SancaiVolumeRecord } from "../sancai-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 
-interface SancaiVolumeModelProps {
+interface SancaiVolumeEditModalProps {
     categories: SancaiCategoryRecord[];
     fallbackCategoryId: number | null;
     isSubmitting: boolean;
@@ -20,7 +20,7 @@ const readTitle = (value: { id: number; title?: string | null }, fallback: strin
     return value.title?.trim() || `${fallback} ${value.id}`;
 };
 
-export const SancaiVolumeModel = ({
+export const SancaiVolumeEditModal = ({
     categories,
     fallbackCategoryId,
     isSubmitting,
@@ -28,7 +28,7 @@ export const SancaiVolumeModel = ({
     onSubmit,
     volume,
     volumeTypeOptions
-}: SancaiVolumeModelProps) => {
+}: SancaiVolumeEditModalProps) => {
     const [form, setForm] = useState<SancaiVolumeFormValues>(() =>
         toVolumeFormValues(volume ?? undefined, fallbackCategoryId)
     );
@@ -91,7 +91,7 @@ const SancaiVolumeForm = ({
     return (
         <Form
             aria-label={volume ? "编辑卷目" : "新增卷目"}
-            className="sancai-category-editor sancai-editor-form"
+            className="sancai-category-edit-modal sancai-editor-form"
             component="div"
             labelCol={{ flex: "72px" }}
             layout="horizontal"

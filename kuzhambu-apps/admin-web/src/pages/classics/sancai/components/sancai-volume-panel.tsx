@@ -6,7 +6,7 @@ import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import type { DictItem } from "@/types/dict";
 import type { SancaiVolumeFormValues } from "./sancai-form-values";
 import { SancaiVolumeList } from "./sancai-volume-list";
-import { SancaiVolumeModel } from "./sancai-volume-model";
+import { SancaiVolumeEditModal } from "./sancai-volume-edit-modal";
 import * as volumeService from "../services/sancai-volume-service";
 import type { SancaiCategoryRecord, SancaiVolumeRecord } from "../sancai-types";
 
@@ -177,7 +177,7 @@ export const SancaiVolumePanel = ({
                 />
             </div>
             {isModelOpen ? (
-                <SancaiVolumeModel
+                <SancaiVolumeEditModal
                     categories={categories}
                     fallbackCategoryId={selectedCategory?.id ?? null}
                     isSubmitting={addMutation.isPending || updateMutation.isPending}

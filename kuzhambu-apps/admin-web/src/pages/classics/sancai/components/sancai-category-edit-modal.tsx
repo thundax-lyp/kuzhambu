@@ -6,7 +6,7 @@ import { toCategoryFormValues, type SancaiCategoryFormValues } from "./sancai-fo
 import type { SancaiCategoryRecord } from "../sancai-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 
-interface SancaiCategoryModelProps {
+interface SancaiCategoryEditDrawerModalProps {
     category: SancaiCategoryRecord | null;
     categoryTypeOptions: DictItem[];
     isSubmitting: boolean;
@@ -14,20 +14,20 @@ interface SancaiCategoryModelProps {
     onSubmit: (values: SancaiCategoryFormValues) => void;
 }
 
-export const SancaiCategoryModel = ({
+export const SancaiCategoryEditDrawerModal = ({
     category,
     categoryTypeOptions,
     isSubmitting,
     onCancel,
     onSubmit
-}: SancaiCategoryModelProps) => {
+}: SancaiCategoryEditDrawerModalProps) => {
     const [form, setForm] = useState<SancaiCategoryFormValues>(() =>
         toCategoryFormValues(category ?? undefined)
     );
 
     return (
         <KuzhambuModal
-            testId="classics-sancai-sancai-category-editor-modal"
+            testId="classics-sancai-sancai-category-edit-modal"
             title={category ? "编辑门类" : "新增门类"}
             open
             footer={
@@ -53,7 +53,7 @@ export const SancaiCategoryModel = ({
         >
             <Form
                 aria-label={category ? "编辑门类" : "新增门类"}
-                className="sancai-category-editor sancai-editor-form"
+                className="sancai-category-edit-modal sancai-editor-form"
                 component="div"
                 labelCol={{ flex: "72px" }}
                 layout="horizontal"
