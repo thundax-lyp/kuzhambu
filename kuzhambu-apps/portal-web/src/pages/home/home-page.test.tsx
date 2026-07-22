@@ -61,7 +61,7 @@ describe("HomePage", () => {
                     href: "/discovery/search",
                     text: "长安与洛阳：两京建置与城市格局比较86 条相关"
                 }),
-                expect.objectContaining({ href: "/knowledge", text: "关于三才翰典" })
+                expect.objectContaining({ href: "/knowledge", text: "关于KUZHAMBU" })
             ])
         );
 

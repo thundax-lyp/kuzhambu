@@ -1767,7 +1767,7 @@ a {
 
 .portal-effect-header {
     display: grid;
-    grid-template-columns: 320px minmax(520px, 1fr) minmax(320px, 364px);
+    grid-template-columns: 300px minmax(480px, 1fr) minmax(360px, 424px);
     align-items: center;
     height: 90px;
     padding: 0 clamp(32px, 3.6vw, 48px);
@@ -1837,12 +1837,22 @@ a {
     color: #a83f35;
 }
 
+.portal-effect-header-actions {
+    display: flex;
+    align-items: center;
+    justify-self: end;
+    gap: 10px;
+    width: min(424px, 100%);
+    min-width: 0;
+}
+
 .portal-effect-search {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) 68px;
     align-items: center;
-    justify-self: end;
+    flex: 1 1 auto;
     width: min(364px, 100%);
+    min-width: 0;
     min-height: 38px;
     overflow: hidden;
     border: 1px solid rgba(50, 61, 50, 0.48);
@@ -1873,6 +1883,14 @@ a {
     color: #fffaf1;
     font-size: 15px;
     font-weight: 600;
+}
+
+.portal-effect-theme-toggle {
+    width: 38px;
+    height: 38px;
+    border-color: rgba(50, 61, 50, 0.48);
+    border-radius: 5px;
+    color: #315f55;
 }
 
 .portal-effect-hero {
@@ -2176,6 +2194,11 @@ a {
     font-size: 14px;
 }
 
+.portal-effect-footer-intro > .portal-effect-brand-logo {
+    grid-row: span 2;
+    align-self: center;
+}
+
 .portal-effect-footer-intro p {
     margin: 0;
     color: #5e594f;
@@ -2184,8 +2207,11 @@ a {
 }
 
 .portal-effect-footer-intro a {
+    width: fit-content;
     color: #2c3932;
     font-size: 13px;
+    white-space: nowrap;
+    word-break: keep-all;
 }
 
 .portal-effect-footer-nav {
@@ -2209,6 +2235,11 @@ a {
     font-weight: 700;
 }
 
+.portal-effect-footer-nav-links {
+    display: grid;
+    gap: 6px;
+}
+
 .portal-effect-footer-nav a {
     color: #5e594f;
     font-size: 13px;
@@ -2227,8 +2258,12 @@ a {
         overflow-x: auto;
     }
 
-    .portal-effect-search {
+    .portal-effect-header-actions {
         justify-self: stretch;
+        width: 100%;
+    }
+
+    .portal-effect-search {
         width: 100%;
     }
 
@@ -2262,6 +2297,26 @@ a {
     .portal-effect-nav {
         gap: 24px;
         font-size: 16px;
+    }
+
+    .portal-effect-header-actions {
+        gap: 8px;
+    }
+
+    .portal-effect-search {
+        grid-template-columns: auto minmax(0, 1fr) 54px;
+    }
+
+    .portal-effect-search span {
+        padding: 0 8px;
+    }
+
+    .portal-effect-search strong {
+        font-size: 14px;
+    }
+
+    .portal-effect-theme-toggle {
+        width: 38px;
     }
 
     .portal-effect-hero-copy {
@@ -2322,12 +2377,51 @@ a {
     }
 
     .portal-effect-footer {
-        gap: 28px;
-        padding: 30px 22px 40px;
+        gap: 18px;
+        padding: 24px 22px 28px;
+    }
+
+    .portal-effect-footer-intro {
+        grid-template-columns: 40px minmax(0, 1fr);
+        gap: 14px;
+        align-items: center;
+    }
+
+    .portal-effect-footer-intro .portal-effect-brand-logo {
+        width: 36px;
+        height: 36px;
+    }
+
+    .portal-effect-footer-intro p {
+        font-size: 13px;
+        line-height: 1.55;
     }
 
     .portal-effect-footer-nav {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .portal-effect-footer-nav section {
+        grid-template-columns: 86px minmax(0, 1fr);
+        gap: 4px 12px;
+        align-items: start;
+    }
+
+    .portal-effect-footer-nav h2 {
+        margin: 0;
+        font-size: 14px;
+    }
+
+    .portal-effect-footer-nav-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2px 12px;
+    }
+
+    .portal-effect-footer-nav a {
+        font-size: 12px;
+        line-height: 1.55;
     }
 }
 
@@ -2375,6 +2469,22 @@ a {
 }
 
 .dark {
+    --surface-page: #171b18;
+    --surface-panel: rgba(31, 36, 31, 0.94);
+    --surface-soft: rgba(42, 45, 38, 0.9);
+    --surface-hover: rgba(52, 55, 48, 0.92);
+    --surface-muted: #242820;
+    --text-primary: #f2eadb;
+    --text-secondary: #c6bba8;
+    --text-muted: #968d7f;
+    --line-subtle: rgba(226, 210, 177, 0.16);
+    --line-strong: rgba(226, 210, 177, 0.28);
+    --accent-blue: #89b7c9;
+    --accent-blue-soft: rgba(137, 183, 201, 0.14);
+    --accent-cinnabar: #d77b70;
+    --accent-jade: #9ac9bd;
+    --paper-fiber: rgba(226, 210, 177, 0.06);
+    --shadow-soft: 0 18px 44px rgba(0, 0, 0, 0.26);
     --background: oklch(0.145 0 0);
     --foreground: oklch(0.985 0 0);
     --card: oklch(0.205 0 0);
@@ -2406,6 +2516,170 @@ a {
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.556 0 0);
+}
+
+.dark .portal-effect-header {
+    border-bottom-color: rgba(226, 210, 177, 0.18);
+    background: rgba(24, 29, 25, 0.94);
+}
+
+.dark .portal-effect-brand,
+.dark .portal-effect-nav,
+.dark .portal-effect-hero-copy h1,
+.dark .portal-effect-values h2,
+.dark .portal-effect-panel-heading h2,
+.dark .portal-effect-entry strong,
+.dark .portal-effect-topic strong,
+.dark .portal-effect-footer-nav h2 {
+    color: #f2eadb;
+}
+
+.dark .portal-effect-hero {
+    border-bottom-color: rgba(226, 210, 177, 0.16);
+    background: #171b18;
+}
+
+.dark .portal-effect-hero::after {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background:
+        linear-gradient(
+            90deg,
+            rgba(15, 19, 16, 0.86) 0%,
+            rgba(15, 19, 16, 0.58) 42%,
+            transparent 72%
+        ),
+        rgba(15, 19, 16, 0.18);
+    content: "";
+    pointer-events: none;
+}
+
+.dark .portal-effect-book {
+    filter: brightness(0.45) contrast(1.08) saturate(0.82);
+}
+
+.dark .portal-effect-hero-copy > p,
+.dark .portal-effect-values p,
+.dark .portal-effect-entry small,
+.dark .portal-effect-entry em,
+.dark .portal-effect-entry time,
+.dark .portal-effect-topic small,
+.dark .portal-effect-hot-list small,
+.dark .portal-effect-panel-heading a {
+    color: #c6bba8;
+}
+
+.dark .portal-effect-values svg {
+    color: #b7a98e;
+}
+
+.dark .portal-effect-primary {
+    border-color: #9ac9bd;
+    background: #9ac9bd;
+    color: #17201b;
+}
+
+.dark .portal-effect-secondary {
+    border-color: rgba(226, 210, 177, 0.42);
+    background: rgba(31, 36, 31, 0.74);
+    color: #f2eadb;
+}
+
+.dark .portal-effect-search {
+    border-color: rgba(226, 210, 177, 0.28);
+    background: rgba(28, 33, 29, 0.82);
+    color: #c6bba8;
+}
+
+.dark .portal-effect-search strong {
+    background: #9ac9bd;
+    color: #17201b;
+}
+
+.dark .portal-effect-theme-toggle {
+    border-color: rgba(226, 210, 177, 0.28);
+    color: #f2eadb;
+}
+
+.dark .portal-effect-nav a:hover,
+.dark .portal-effect-footer a:hover,
+.dark .portal-effect-panel-heading a:hover {
+    color: #d77b70;
+}
+
+.dark .portal-effect-content {
+    border-bottom-color: rgba(226, 210, 177, 0.16);
+    background: rgba(24, 29, 25, 0.92);
+}
+
+.dark .portal-effect-panel {
+    border-right-color: rgba(226, 210, 177, 0.16);
+}
+
+.dark .portal-effect-panel-heading,
+.dark .portal-effect-entry,
+.dark .portal-effect-topic,
+.dark .portal-effect-hot-list a {
+    border-bottom-color: rgba(226, 210, 177, 0.14);
+}
+
+.dark .portal-effect-entry img,
+.dark .portal-effect-topic img {
+    filter: brightness(0.72) contrast(1.08) saturate(0.82);
+}
+
+.dark .portal-effect-hot-list a {
+    color: #e6ddce;
+}
+
+.dark .portal-effect-hot-list svg {
+    color: #9ac9bd;
+}
+
+.dark .portal-effect-footer {
+    border-top: 1px solid rgba(226, 210, 177, 0.14);
+    background: rgba(18, 22, 19, 0.96);
+}
+
+.dark .portal-effect-footer-mountain {
+    opacity: 0.16;
+    filter: brightness(0.58) contrast(1.12) saturate(0.72);
+    mix-blend-mode: luminosity;
+}
+
+.dark .portal-effect-footer-seal {
+    border-color: #d77b70;
+    color: #d77b70;
+}
+
+.dark .portal-effect-footer-intro p,
+.dark .portal-effect-footer-nav a {
+    color: #c6bba8;
+}
+
+.dark .portal-effect-footer-intro a {
+    color: #e6ddce;
+}
+
+.dark .portal-effect-footer,
+.dark .portal-effect-hero,
+.dark .portal-effect-panel,
+.dark .portal-effect-content {
+    border-color: rgba(226, 210, 177, 0.16);
+}
+
+@media (max-width: 1180px) {
+    .dark .portal-effect-hero::after {
+        background:
+            linear-gradient(
+                180deg,
+                rgba(15, 19, 16, 0.84) 0%,
+                rgba(15, 19, 16, 0.42) 42%,
+                transparent 74%
+            ),
+            rgba(15, 19, 16, 0.22);
+    }
 }
 
 @layer base {
