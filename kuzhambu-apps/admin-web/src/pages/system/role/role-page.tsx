@@ -119,13 +119,13 @@ export const RolePage = () => {
     const hasSelectedRoles = selectedRowKeys.length > 0;
     const hasActiveFilters = filters.enable !== "ALL";
 
-    const roleQuery = useQuery({
+    const rolePageQuery = useQuery({
         queryKey: ["role", "list", query],
         queryFn: () => service.list(query),
         enabled: canViewRole,
         retry: false
     });
-    const roleMenuQuery = useQuery({
+    const roleMenuTreeQuery = useQuery({
         queryKey: ["role", "menu", "tree"],
         queryFn: service.listMenus,
         enabled: canViewRole,
@@ -137,7 +137,7 @@ export const RolePage = () => {
         enabled: canViewRole,
         retry: false
     });
-    const roles = useMemo(() => roleQuery.data || [], [roleQuery.data]);
+    const roles = useMemo(() => rolePageQuery.data || [], [rolePageQuery.data]);
     const roleOptions = roleOptionsQuery.data ?? EMPTY_ROLE_OPTIONS;
     const statusLabelByValue = useMemo(() => {
         return new Map(roleOptions.statusOptions.map((option) => [option.value, option.label]));
@@ -146,22 +146,25 @@ export const RolePage = () => {
         return new Map(roleOptions.privilegeOptions.map((option) => [option.value, option.label]));
     }, [roleOptions.privilegeOptions]);
     const filteredRoles = useMemo(() => {
-        const keyword = searchText.trim().toLowerCase();
-        if (!keyword) {
+        const normalizedSearchText = searchText.trim().toLowerCase();
+        if (!normalizedSearchText) {
             return roles;
         }
         return roles.filter((role) => {
             return (
-                role.name?.toLowerCase().includes(keyword) ||
-                role.remarks?.toLowerCase().includes(keyword)
+                role.name?.toLowerCase().includes(normalizedSearchText) ||
+                role.remarks?.toLowerCase().includes(normalizedSearchText)
             );
         });
     }, [roles, searchText]);
-    const menuTree = useMemo(() => buildMenuTree(roleMenuQuery.data || []), [roleMenuQuery.data]);
+    const menuTree = useMemo(
+        () => buildMenuTree(roleMenuTreeQuery.data || []),
+        [roleMenuTreeQuery.data]
+    );
     const treeData = useMemo(() => toTreeData(menuTree), [menuTree]);
     const expandedMenuIds = useMemo(() => collectMenuIds(menuTree), [menuTree]);
 
-    const saveMutation = useMutation({
+    const saveRoleMutation = useMutation({
         mutationFn: (values: RoleSaveCommand) =>
             values.id ? service.changeInfo(values) : service.create(values),
         onSuccess: async () => {
@@ -234,7 +237,7 @@ export const RolePage = () => {
     };
 
     const closeRoleEditDrawer = () => {
-        if (saveMutation.isPending) {
+        if (saveRoleMutation.isPending) {
             return;
         }
         setRoleEditDrawerOpen(false);
@@ -242,7 +245,7 @@ export const RolePage = () => {
     };
 
     const saveRole = (request: RoleSaveCommand) => {
-        saveMutation.mutate(request);
+        saveRoleMutation.mutate(request);
     };
 
     const updateSingleStatus = (role: RoleRecord, enable: boolean) => {
@@ -429,7 +432,7 @@ export const RolePage = () => {
                     <KuzhambuButton
                         testId="system-role-role-refresh-button"
                         icon={<ReloadOutlined />}
-                        onClick={() => roleQuery.refetch()}
+                        onClick={() => rolePageQuery.refetch()}
                     >
                         刷新
                     </KuzhambuButton>
@@ -470,7 +473,7 @@ export const RolePage = () => {
                 className="role-table"
                 columns={columns}
                 dataSource={filteredRoles}
-                loading={roleQuery.isFetching || sortMutation.isPending}
+                loading={rolePageQuery.isFetching || sortMutation.isPending}
                 pagination={false}
                 scroll={{ x: 1006 }}
                 rowSelection={{
@@ -481,7 +484,7 @@ export const RolePage = () => {
                     })
                 }}
                 locale={{
-                    emptyText: roleQuery.isError
+                    emptyText: rolePageQuery.isError
                         ? "角色列表加载失败，请确认权限和接口状态。"
                         : "暂无角色"
                 }}
@@ -497,7 +500,7 @@ export const RolePage = () => {
                 expandedMenuIds={expandedMenuIds}
                 statusOptions={roleOptions.statusOptions}
                 privilegeOptions={roleOptions.privilegeOptions}
-                saving={saveMutation.isPending}
+                saving={saveRoleMutation.isPending}
                 onClose={closeRoleEditDrawer}
                 onSave={saveRole}
             />

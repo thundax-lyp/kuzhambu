@@ -76,7 +76,7 @@ export const UserPage = () => {
     const canEditUser = hasPermission("sys:user:edit");
     const isCreatingUser = userEditDrawerOpen && !editingUser?.id;
 
-    const userQuery = useQuery({
+    const userPageQuery = useQuery({
         queryKey: ["user", "page", query],
         queryFn: () => service.page(query),
         retry: false
@@ -91,7 +91,7 @@ export const UserPage = () => {
         queryFn: getCurrentUserInfo,
         retry: false
     });
-    const pageData = userQuery.data;
+    const pageData = userPageQuery.data;
     const users = useMemo(() => pageData?.records ?? EMPTY_USERS, [pageData?.records]);
     const totalCount = pageData?.count ?? pageData?.totalCount ?? 0;
     const userOptions = userOptionsQuery.data ?? EMPTY_USER_OPTIONS;
@@ -139,7 +139,7 @@ export const UserPage = () => {
         mutationFn: ({ id, avatar }: { id: string; avatar: File }) =>
             service.uploadAvatar(id, avatar),
         onSuccess: async (_, variables) => {
-            const refreshedUsers = await userQuery.refetch();
+            const refreshedUsers = await userPageQuery.refetch();
             const refreshedUser = refreshedUsers.data?.records?.find(
                 (user) => user.id === variables.id
             );
@@ -368,12 +368,12 @@ export const UserPage = () => {
                         searchText={searchText}
                         filterOpen={isFilterOpen}
                         filterActive={hasActiveFilters}
-                        isRefreshing={userQuery.isFetching || departmentTreeFetching}
+                        isRefreshing={userPageQuery.isFetching || departmentTreeFetching}
                         canCreateUser={canEditUser}
                         onSearch={searchUsers}
                         onToggleFilter={() => setIsFilterOpen((open) => !open)}
                         onRefresh={() => {
-                            userQuery.refetch();
+                            userPageQuery.refetch();
                             setDepartmentRefreshSignal((currentSignal) => currentSignal + 1);
                         }}
                         onCreate={openCreateUser}
@@ -415,7 +415,7 @@ export const UserPage = () => {
                     <Splitter.Panel className="user-work-panel">
                         <UserTable
                             users={users}
-                            loading={userQuery.isFetching}
+                            loading={userPageQuery.isFetching}
                             currentPage={query.pageNo || DEFAULT_PAGE_NO}
                             pageSize={query.pageSize || DEFAULT_PAGE_SIZE}
                             totalCount={totalCount}

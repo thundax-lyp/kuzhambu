@@ -58,18 +58,18 @@ export const DictionaryPage = () => {
     const hasSelectedDictionaries = selectedRowKeys.length > 0;
     const hasActiveFilters = Boolean(filters.type.trim()) || Boolean(filters.remarks.trim());
 
-    const dictionaryQuery = useQuery({
+    const dictionaryPageQuery = useQuery({
         queryKey: ["dictionary", "page", query],
         queryFn: () => dictionaryService.page(query),
         retry: false
     });
-    const dictionaryPage = dictionaryQuery.data;
+    const dictionaryPage = dictionaryPageQuery.data;
     const dictionaries = useMemo(() => dictionaryPage?.records || [], [dictionaryPage?.records]);
     const totalCount = dictionaryPage?.count ?? dictionaryPage?.totalCount ?? 0;
     const currentPageNo = dictionaryPage?.pageNo || query.pageNo || DEFAULT_PAGE_NO;
     const currentPageSize = dictionaryPage?.pageSize || query.pageSize || DEFAULT_PAGE_SIZE;
 
-    const saveMutation = useMutation({
+    const saveDictionaryMutation = useMutation({
         mutationFn: (values: DictSaveCommand) =>
             values.id
                 ? dictionaryService.changeDictionaryInfo(values)
@@ -142,7 +142,7 @@ export const DictionaryPage = () => {
     };
 
     const closeDictionaryEditDrawer = () => {
-        if (saveMutation.isPending) {
+        if (saveDictionaryMutation.isPending) {
             return;
         }
         setDictionaryEditDrawerOpen(false);
@@ -150,7 +150,7 @@ export const DictionaryPage = () => {
     };
 
     const saveDictionary = (request: DictSaveCommand) => {
-        saveMutation.mutate(request);
+        saveDictionaryMutation.mutate(request);
     };
 
     const confirmDelete = (ids: string[]) => {
@@ -274,7 +274,7 @@ export const DictionaryPage = () => {
                     <KuzhambuButton
                         testId="system-dictionary-dictionary-refresh-button"
                         icon={<ReloadOutlined />}
-                        onClick={() => dictionaryQuery.refetch()}
+                        onClick={() => dictionaryPageQuery.refetch()}
                     >
                         刷新
                     </KuzhambuButton>
@@ -299,7 +299,7 @@ export const DictionaryPage = () => {
                 className="dictionary-table"
                 columns={columns}
                 dataSource={dictionaries}
-                loading={dictionaryQuery.isFetching}
+                loading={dictionaryPageQuery.isFetching}
                 rowSelection={{
                     selectedRowKeys,
                     onChange: setSelectedRowKeys,
@@ -321,7 +321,7 @@ export const DictionaryPage = () => {
                     }
                 }}
                 locale={{
-                    emptyText: dictionaryQuery.isError
+                    emptyText: dictionaryPageQuery.isError
                         ? "字典列表加载失败，请确认权限和接口状态。"
                         : "暂无字典项"
                 }}
@@ -330,7 +330,7 @@ export const DictionaryPage = () => {
             <DictionaryEditDrawer
                 open={dictionaryEditDrawerOpen}
                 dictionary={editingDictionary}
-                saving={saveMutation.isPending}
+                saving={saveDictionaryMutation.isPending}
                 onClose={closeDictionaryEditDrawer}
                 onSave={saveDictionary}
             />
