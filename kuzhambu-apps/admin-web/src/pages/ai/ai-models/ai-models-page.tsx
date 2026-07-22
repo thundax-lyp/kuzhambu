@@ -48,7 +48,7 @@ export const AiModelsPage = () => {
     const hasActiveFilters =
         Boolean(filters.apiSource) || filters.enabled !== DEFAULT_MODEL_FILTERS.enabled;
 
-    const modelsQuery = useQuery({
+    const aiModelListQuery = useQuery({
         queryKey: ["ai", "ai-models", query],
         queryFn: () => service.listAiModels(query),
         enabled: canViewConfig,
@@ -56,18 +56,18 @@ export const AiModelsPage = () => {
     });
 
     const filteredModels = useMemo(() => {
-        const keyword = searchText.trim().toLowerCase();
-        if (!keyword) {
-            return modelsQuery.data || [];
+        const normalizedSearchText = searchText.trim().toLowerCase();
+        if (!normalizedSearchText) {
+            return aiModelListQuery.data || [];
         }
-        return (modelsQuery.data || []).filter((record) => {
+        return (aiModelListQuery.data || []).filter((record) => {
             return (
-                record.modelName.toLowerCase().includes(keyword) ||
-                (record.displayName || "").toLowerCase().includes(keyword) ||
-                (record.description || "").toLowerCase().includes(keyword)
+                record.modelName.toLowerCase().includes(normalizedSearchText) ||
+                (record.displayName || "").toLowerCase().includes(normalizedSearchText) ||
+                (record.description || "").toLowerCase().includes(normalizedSearchText)
             );
         });
-    }, [modelsQuery.data, searchText]);
+    }, [aiModelListQuery.data, searchText]);
 
     const invalidateModels = async () => {
         await queryClient.invalidateQueries({ queryKey: ["ai", "ai-models"] });
@@ -86,7 +86,7 @@ export const AiModelsPage = () => {
         }
     });
 
-    const changeMutation = useMutation({
+    const updateModelMutation = useMutation({
         mutationFn: service.changeAiModel,
         onSuccess: async () => {
             await invalidateModels();
@@ -112,11 +112,11 @@ export const AiModelsPage = () => {
     });
 
     useEffect(() => {
-        if (modelsQuery.isError) {
-            const error = modelsQuery.error;
+        if (aiModelListQuery.isError) {
+            const error = aiModelListQuery.error;
             messageApi.error(error instanceof Error ? error.message : "模型列表加载失败");
         }
-    }, [messageApi, modelsQuery.error, modelsQuery.isError]);
+    }, [messageApi, aiModelListQuery.error, aiModelListQuery.isError]);
 
     const openCreateAiModelDrawer = () => {
         setEditingModel(null);
@@ -129,7 +129,7 @@ export const AiModelsPage = () => {
     };
 
     const closeAiModelEditDrawer = () => {
-        if (createMutation.isPending || changeMutation.isPending) {
+        if (createMutation.isPending || updateModelMutation.isPending) {
             return;
         }
         setAiModelEditDrawerOpen(false);
@@ -138,7 +138,7 @@ export const AiModelsPage = () => {
 
     const saveModel = (command: AiModelChangeCommand) => {
         if (command.id) {
-            changeMutation.mutate(command);
+            updateModelMutation.mutate(command);
             return;
         }
         createMutation.mutate(command);
@@ -148,7 +148,7 @@ export const AiModelsPage = () => {
         if (!canEditConfig) {
             return;
         }
-        await changeMutation.mutateAsync({
+        await updateModelMutation.mutateAsync({
             id: record.id,
             apiSource: record.apiSource,
             baseUrl: record.baseUrl || "",
@@ -203,7 +203,7 @@ export const AiModelsPage = () => {
         if (!canEditConfig || !hasSelectedModels) {
             return;
         }
-        const selectedModels = (modelsQuery.data || []).filter((model) =>
+        const selectedModels = (aiModelListQuery.data || []).filter((model) =>
             selectedRowKeys.includes(model.id)
         );
         await Promise.all(selectedModels.map((model) => changeEnabled(model, enabled)));
@@ -214,30 +214,30 @@ export const AiModelsPage = () => {
         <div className="ai-models-page-root">
             <AiModelFilterPanel
                 batchDeleting={deleteMutation.isPending}
-                batchUpdating={changeMutation.isPending}
+                batchUpdating={updateModelMutation.isPending}
                 canEditConfig={canEditConfig}
                 filterActive={hasActiveFilters}
                 filters={filters}
                 hasSelectedModels={hasSelectedModels}
-                loading={modelsQuery.isFetching}
+                loading={aiModelListQuery.isFetching}
                 onAdd={openCreateAiModelDrawer}
                 onBatchDelete={batchDeleteModels}
                 onBatchUpdateEnabled={(enabled) => void batchUpdateEnabled(enabled)}
                 onFilterApply={applyFilters}
                 onFilterReset={resetFilters}
                 onFiltersChange={setFilters}
-                onRefresh={() => void modelsQuery.refetch()}
+                onRefresh={() => void aiModelListQuery.refetch()}
                 onSearchChange={setSearchText}
                 searchText={searchText}
                 selectedCount={selectedRowKeys.length}
                 table={
                     <AiModelTable
                         canEditConfig={canEditConfig}
-                        changing={changeMutation.isPending}
+                        changing={updateModelMutation.isPending}
                         dataSource={filteredModels}
-                        loading={modelsQuery.isFetching}
+                        loading={aiModelListQuery.isFetching}
                         locale={{
-                            emptyText: modelsQuery.isError
+                            emptyText: aiModelListQuery.isError
                                 ? "模型列表加载失败，请确认权限和接口状态。"
                                 : "暂无模型"
                         }}
@@ -254,7 +254,7 @@ export const AiModelsPage = () => {
                 open={aiModelEditDrawerOpen}
                 model={editingModel}
                 canEdit={canEditConfig}
-                saving={createMutation.isPending || changeMutation.isPending}
+                saving={createMutation.isPending || updateModelMutation.isPending}
                 onClose={closeAiModelEditDrawer}
                 onSave={saveModel}
             />

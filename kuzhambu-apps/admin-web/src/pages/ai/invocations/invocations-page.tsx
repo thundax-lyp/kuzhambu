@@ -85,21 +85,21 @@ export const InvocationsPage = () => {
         pageSize: DEFAULT_PAGE_SIZE
     });
 
-    const capabilitiesQuery = useQuery({
+    const invocationCapabilitiesQuery = useQuery({
         queryKey: ["ai", "invocations", "capabilities"],
         queryFn: service.listInvocationCapabilities,
         enabled: canViewInvocation,
         retry: false
     });
 
-    const summaryResult = useQuery({
+    const invocationSummaryQuery = useQuery({
         queryKey: ["ai", "invocations", "summary", summaryQuery],
         queryFn: () => service.getInvocationSummary(summaryQuery),
         enabled: canViewInvocation,
         retry: false
     });
 
-    const callsResult = useQuery({
+    const invocationCallPageQuery = useQuery({
         queryKey: ["ai", "invocations", "calls", callsQuery],
         queryFn: () => service.pageInvocationCalls(callsQuery),
         enabled: canViewInvocation,
@@ -107,14 +107,14 @@ export const InvocationsPage = () => {
     });
 
     const capabilityOptions = useMemo(() => {
-        return (capabilitiesQuery.data || []).map((record) => ({
+        return (invocationCapabilitiesQuery.data || []).map((record) => ({
             label: record.name || CAPABILITY_LABELS[record.capability] || record.capability,
             value: record.capability
         }));
-    }, [capabilitiesQuery.data]);
+    }, [invocationCapabilitiesQuery.data]);
 
     const capabilityLabelMap = useMemo(() => {
-        return (capabilitiesQuery.data || []).reduce<Record<string, string>>(
+        return (invocationCapabilitiesQuery.data || []).reduce<Record<string, string>>(
             (labels, record) => ({
                 ...labels,
                 [record.capability]:
@@ -122,7 +122,7 @@ export const InvocationsPage = () => {
             }),
             { ...CAPABILITY_LABELS }
         );
-    }, [capabilitiesQuery.data]);
+    }, [invocationCapabilitiesQuery.data]);
 
     const formatCapability = (capability?: string | null) => {
         if (!capability) {
@@ -132,18 +132,18 @@ export const InvocationsPage = () => {
     };
 
     useEffect(() => {
-        if (summaryResult.isError) {
-            const error = summaryResult.error;
+        if (invocationSummaryQuery.isError) {
+            const error = invocationSummaryQuery.error;
             message.error(error instanceof Error ? error.message : "调用统计加载失败");
         }
-    }, [message, summaryResult.error, summaryResult.isError]);
+    }, [message, invocationSummaryQuery.error, invocationSummaryQuery.isError]);
 
     useEffect(() => {
-        if (callsResult.isError) {
-            const error = callsResult.error;
+        if (invocationCallPageQuery.isError) {
+            const error = invocationCallPageQuery.error;
             message.error(error instanceof Error ? error.message : "调用记录加载失败");
         }
-    }, [callsResult.error, callsResult.isError, message]);
+    }, [invocationCallPageQuery.error, invocationCallPageQuery.isError, message]);
 
     const refreshSummary = async () => {
         const values = await summaryForm.validateFields();
@@ -169,8 +169,8 @@ export const InvocationsPage = () => {
         void searchCalls(nextPageNo, nextPageSize);
     };
 
-    const summary = summaryResult.data;
-    const callPage = callsResult.data;
+    const summary = invocationSummaryQuery.data;
+    const callPage = invocationCallPageQuery.data;
 
     const topCapabilities = summary?.topCapabilities || [];
     const topCapabilityMaxCount = Math.max(
@@ -193,10 +193,13 @@ export const InvocationsPage = () => {
                         <KuzhambuButton
                             testId="ai-invocations-invocations-refresh-button"
                             icon={<ReloadOutlined />}
-                            loading={summaryResult.isFetching || callsResult.isFetching}
+                            loading={
+                                invocationSummaryQuery.isFetching ||
+                                invocationCallPageQuery.isFetching
+                            }
                             onClick={() => {
-                                void summaryResult.refetch();
-                                void callsResult.refetch();
+                                void invocationSummaryQuery.refetch();
+                                void invocationCallPageQuery.refetch();
                             }}
                         />
                     </Tooltip>
@@ -311,7 +314,7 @@ export const InvocationsPage = () => {
                                         currentPageNo={callsQuery.pageNo || DEFAULT_PAGE_NO}
                                         currentPageSize={callsQuery.pageSize || DEFAULT_PAGE_SIZE}
                                         formatCapability={formatCapability}
-                                        loading={callsResult.isFetching}
+                                        loading={invocationCallPageQuery.isFetching}
                                         onChange={handleTableChange}
                                         onOpenDetail={setDetailCall}
                                     />

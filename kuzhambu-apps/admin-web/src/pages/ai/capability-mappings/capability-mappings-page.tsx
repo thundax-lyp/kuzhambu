@@ -68,21 +68,21 @@ export const CapabilityMappingsPage = () => {
     const selectedCapabilityCode = Form.useWatch("capability", form);
     const selectedModelId = Form.useWatch("modelId", form);
 
-    const capabilitiesQuery = useQuery({
+    const mappingCapabilitiesQuery = useQuery({
         queryKey: ["ai", "capability-mappings", "capabilities"],
         queryFn: () => service.listCapabilities({ enabled: true }),
         enabled: canViewConfig,
         retry: false
     });
 
-    const mappingsQuery = useQuery({
+    const capabilityMappingPageQuery = useQuery({
         queryKey: ["ai", "capability-mappings", query],
         queryFn: () => service.listCapabilityMappings(query),
         enabled: canViewConfig,
         retry: false
     });
 
-    const modelsQuery = useQuery({
+    const mappingModelsQuery = useQuery({
         queryKey: ["ai", "capability-mappings", "enabled-models"],
         queryFn: () => service.listEnabledModels({ enabled: true }),
         enabled: canViewConfig,
@@ -90,29 +90,31 @@ export const CapabilityMappingsPage = () => {
     });
 
     const capabilityByCode = useMemo(() => {
-        return new Map((capabilitiesQuery.data || []).map((record) => [record.capability, record]));
-    }, [capabilitiesQuery.data]);
+        return new Map(
+            (mappingCapabilitiesQuery.data || []).map((record) => [record.capability, record])
+        );
+    }, [mappingCapabilitiesQuery.data]);
 
     const modelById = useMemo(() => {
-        return new Map((modelsQuery.data || []).map((record) => [record.modelId, record]));
-    }, [modelsQuery.data]);
+        return new Map((mappingModelsQuery.data || []).map((record) => [record.modelId, record]));
+    }, [mappingModelsQuery.data]);
 
     const capabilityOptions = useMemo(() => {
-        return (capabilitiesQuery.data || []).map((record) => ({
+        return (mappingCapabilitiesQuery.data || []).map((record) => ({
             label: `${record.name} / ${record.capability}`,
             value: record.capability
         }));
-    }, [capabilitiesQuery.data]);
+    }, [mappingCapabilitiesQuery.data]);
 
     const modelOptions = useMemo(() => {
-        return (modelsQuery.data || []).map((record) => ({
+        return (mappingModelsQuery.data || []).map((record) => ({
             label: formatModelLabel(record),
             value: record.modelId
         }));
-    }, [modelsQuery.data]);
+    }, [mappingModelsQuery.data]);
 
     const tableData = useMemo<MappingTableRow[]>(() => {
-        return (mappingsQuery.data || []).map((mapping) => {
+        return (capabilityMappingPageQuery.data || []).map((mapping) => {
             const capability = capabilityByCode.get(mapping.capability);
             const model = modelById.get(mapping.modelId);
             return {
@@ -124,7 +126,7 @@ export const CapabilityMappingsPage = () => {
                 modelTags: model?.capabilityTags || []
             };
         });
-    }, [capabilityByCode, mappingsQuery.data, modelById]);
+    }, [capabilityByCode, capabilityMappingPageQuery.data, modelById]);
 
     const selectedCapability = selectedCapabilityCode
         ? capabilityByCode.get(selectedCapabilityCode)
@@ -136,7 +138,7 @@ export const CapabilityMappingsPage = () => {
         await queryClient.invalidateQueries({ queryKey: ["ai", "capability-mappings"] });
     };
 
-    const changeMutation = useMutation({
+    const updateMappingMutation = useMutation({
         mutationFn: service.changeCapabilityMapping,
         onSuccess: async () => {
             await invalidateMappings();
@@ -150,11 +152,11 @@ export const CapabilityMappingsPage = () => {
     });
 
     useEffect(() => {
-        if (mappingsQuery.isError) {
-            const error = mappingsQuery.error;
+        if (capabilityMappingPageQuery.isError) {
+            const error = capabilityMappingPageQuery.error;
             message.error(error instanceof Error ? error.message : "能力映射列表加载失败");
         }
-    }, [message, mappingsQuery.error, mappingsQuery.isError]);
+    }, [message, capabilityMappingPageQuery.error, capabilityMappingPageQuery.isError]);
 
     const openCreateCapabilityMappingDrawer = () => {
         setEditingMapping(null);
@@ -182,7 +184,7 @@ export const CapabilityMappingsPage = () => {
 
     const submitForm = async () => {
         const values = await form.validateFields();
-        await changeMutation.mutateAsync({
+        await updateMappingMutation.mutateAsync({
             mappingId: editingMapping?.mappingId || values.mappingId || null,
             scope: values.scope,
             capability: values.capability,
@@ -192,7 +194,7 @@ export const CapabilityMappingsPage = () => {
     };
 
     const changeEnabled = async (record: AiCapabilityMappingRecord, enabled: boolean) => {
-        await changeMutation.mutateAsync({
+        await updateMappingMutation.mutateAsync({
             mappingId: record.mappingId || null,
             scope: record.scope,
             capability: record.capability,
@@ -213,9 +215,9 @@ export const CapabilityMappingsPage = () => {
                             testId="ai-capability-mappings-capability-mappings-refresh-button"
                             icon={<ReloadOutlined />}
                             loading={
-                                mappingsQuery.isFetching ||
-                                capabilitiesQuery.isFetching ||
-                                modelsQuery.isFetching
+                                capabilityMappingPageQuery.isFetching ||
+                                mappingCapabilitiesQuery.isFetching ||
+                                mappingModelsQuery.isFetching
                             }
                             onClick={() => void invalidateMappings()}
                         />
@@ -294,9 +296,9 @@ export const CapabilityMappingsPage = () => {
                 canEditConfig={canEditConfig}
                 dataSource={tableData}
                 loading={
-                    mappingsQuery.isFetching ||
-                    capabilitiesQuery.isFetching ||
-                    modelsQuery.isFetching
+                    capabilityMappingPageQuery.isFetching ||
+                    mappingCapabilitiesQuery.isFetching ||
+                    mappingModelsQuery.isFetching
                 }
                 onChangeEnabled={(record, enabled) => void changeEnabled(record, enabled)}
                 onOpenEdit={openEditCapabilityMappingDrawer}
@@ -311,7 +313,7 @@ export const CapabilityMappingsPage = () => {
                 onClose={() => setCapabilityMappingEditDrawerOpen(false)}
                 onSubmit={() => void submitForm()}
                 open={capabilityMappingEditDrawerOpen}
-                saving={changeMutation.isPending}
+                saving={updateMappingMutation.isPending}
                 scopeOptions={SCOPE_OPTIONS}
                 tagMatch={tagMatch}
             />
