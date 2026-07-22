@@ -501,6 +501,7 @@ export const SancaiEntryModel = ({
             ) ?? null
         );
     }, [activeAiTextField, aiTextCandidatesQuery.data, loadedAiTextCandidateId]);
+    const isAiTextApplyDisabled = !aiTextDraft.trim() || aiTextCandidatesQuery.isFetching;
 
     useEffect(() => {
         if (!activeAiTextField || !latestAiTextCandidate) {
@@ -1424,7 +1425,7 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
                             testId="classics-sancai-sancai-entry-apply-ai-text-button"
                             type="primary"
                             loading={applyAiTextCandidateMutation.isPending}
-                            disabled={!aiTextDraft.trim()}
+                            disabled={isAiTextApplyDisabled}
                             onClick={applyAiTextDraft}
                         >
                             采用

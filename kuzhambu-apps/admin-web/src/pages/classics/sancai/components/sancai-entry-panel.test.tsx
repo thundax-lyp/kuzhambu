@@ -1595,6 +1595,33 @@ describe("SancaiEntryPanel sharing", () => {
         expect(await screen.findByLabelText("三才图会摘要")).toHaveValue("天地摘要");
     }, 30000);
 
+    it("disables AI text adoption while summary candidates are loading", async () => {
+        const user = userEvent.setup();
+        let resolveCandidates: (
+            records: Awaited<ReturnType<typeof aiCandidateService.list>>
+        ) => void = () => undefined;
+        vi.mocked(aiCandidateService.list).mockReset();
+        vi.mocked(aiCandidateService.list).mockImplementation(
+            () =>
+                new Promise((resolve) => {
+                    resolveCandidates = resolve;
+                })
+        );
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
+        await user.click(
+            await screen.findByTestId("classics-sancai-sancai-entry-ai-summary-button")
+        );
+
+        expect(
+            await screen.findByTestId("classics-sancai-sancai-entry-apply-ai-text-button")
+        ).toBeDisabled();
+        resolveCandidates([]);
+    }, 30000);
+
     it("labels running summary refinement task as summary work", async () => {
         const user = userEvent.setup();
         vi.mocked(aiRefinementTaskService.pageTasks).mockResolvedValueOnce({
