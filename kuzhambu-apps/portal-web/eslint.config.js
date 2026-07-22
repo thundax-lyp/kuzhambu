@@ -93,8 +93,8 @@ const localRules = {
         "page-no-external-service": {
             create(context) {
                 const readPageDomainRoot = (normalizedFilePath) => {
-                    const match = normalizedFilePath.match(/\/src\/pages\/[^/]+\//);
-                    return match?.[0];
+                    const match = normalizedFilePath.match(/\/src\/pages\/(.+)\/[^/]+$/);
+                    return match ? `/src/pages/${match[1]}/` : undefined;
                 };
 
                 const resolveImportPath = (filePath, importPath) => {
@@ -172,7 +172,7 @@ const localRules = {
 
                 const isPageServiceImport = (importPath) => {
                     const resolvedImportPath = resolveImportPath(importPath);
-                    return /\/src\/pages\/[^/]+\/[^/]+-service$/.test(resolvedImportPath);
+                    return /\/src\/pages\/.+\/[^/]+-service$/.test(resolvedImportPath);
                 };
 
                 return {
@@ -256,9 +256,9 @@ export default tseslint.config(
             "boundaries/elements": [
                 { type: "api", pattern: "src/api/*", mode: "full" },
                 { type: "shared-component", pattern: "src/components/*", mode: "full" },
-                { type: "page", pattern: "src/pages/*/*-page.tsx", mode: "full" },
-                { type: "page-service", pattern: "src/pages/*/*-service.ts", mode: "full" },
-                { type: "page-types", pattern: "src/pages/*/*-types.ts", mode: "full" },
+                { type: "page", pattern: "src/pages/**/*-page.tsx", mode: "full" },
+                { type: "page-service", pattern: "src/pages/**/*-service.ts", mode: "full" },
+                { type: "page-types", pattern: "src/pages/**/*-types.ts", mode: "full" },
                 { type: "lib", pattern: "src/lib/*", mode: "full" }
             ]
         },
