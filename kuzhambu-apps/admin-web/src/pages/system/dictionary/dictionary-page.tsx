@@ -10,7 +10,7 @@ import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
-import { DictionaryEdit } from "./components/dictionary-edit";
+import { DictionaryEditDrawer } from "./components/dictionary-edit-drawer";
 import * as dictionaryService from "./dictionary-service";
 import type { DictPageQuery, DictSaveCommand } from "./dictionary-service";
 import type { DictRecord } from "./dictionary-types";
@@ -327,7 +327,7 @@ export const DictionaryPage = () => {
                 }}
             />
 
-            <DictionaryEdit
+            <DictionaryEditDrawer
                 open={editorOpen}
                 dictionary={editingDictionary}
                 saving={saveMutation.isPending}

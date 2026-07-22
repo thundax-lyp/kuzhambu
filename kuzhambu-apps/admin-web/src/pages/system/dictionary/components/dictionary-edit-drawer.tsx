@@ -7,7 +7,7 @@ import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { TextArea } = Input;
 
-interface DictionaryEditProps {
+interface DictionaryEditDrawerProps {
     open?: boolean;
     dictionary?: DictRecord | null;
     saving?: boolean;
@@ -48,13 +48,13 @@ const toFormValues = (dictionary: DictRecord): DictFormValues => {
     };
 };
 
-export const DictionaryEdit = ({
+export const DictionaryEditDrawer = ({
     open,
     dictionary,
     saving,
     onClose,
     onSave
-}: DictionaryEditProps) => {
+}: DictionaryEditDrawerProps) => {
     const [form] = Form.useForm<DictFormValues>();
 
     useEffect(() => {
@@ -75,14 +75,14 @@ export const DictionaryEdit = ({
 
     return (
         <KuzhambuDrawer
-            testId="system-dictionary-dictionary-editor-drawer"
+            testId="system-dictionary-dictionary-edit-drawer"
             className="dictionary-edit-drawer"
             title={dictionary ? "编辑字典项" : "新增字典项"}
             open={Boolean(open)}
             size="small"
             onClose={onClose}
             footer={
-                <div className="dictionary-edit-footer">
+                <div className="dictionary-edit-drawer-footer">
                     <KuzhambuButton
                         testId="system-dictionary-dictionary-cancel-button"
                         onClick={onClose}
@@ -100,7 +100,11 @@ export const DictionaryEdit = ({
                 </div>
             }
         >
-            <Form<DictFormValues> form={form} layout="vertical" className="dictionary-editor-form">
+            <Form<DictFormValues>
+                form={form}
+                layout="vertical"
+                className="dictionary-edit-drawer-form"
+            >
                 <Form.Item name="id" hidden>
                     <Input />
                 </Form.Item>
