@@ -1879,7 +1879,16 @@ a {
     position: relative;
     min-height: 462px;
     border-bottom: 1px solid rgba(79, 70, 52, 0.18);
-    background: #efe6d6;
+    background:
+        linear-gradient(
+            90deg,
+            rgba(239, 230, 214, 0.98) 0%,
+            rgba(239, 230, 214, 0.9) 38%,
+            rgba(239, 230, 214, 0.42) 62%,
+            rgba(239, 230, 214, 0.08) 100%
+        ),
+        url("./assets/home/hero.png") center / cover no-repeat,
+        #efe6d6;
 }
 
 .portal-effect-hero::before {
@@ -1980,16 +1989,6 @@ a {
     color: #625d52;
     font-size: 13px;
     line-height: 1.5;
-}
-
-.portal-effect-book {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    width: 100%;
-    height: 462px;
-    object-fit: cover;
-    object-position: center;
 }
 
 .portal-effect-content {
@@ -2230,17 +2229,6 @@ a {
     .portal-effect-search {
         justify-self: stretch;
         width: 100%;
-    }
-
-    .portal-effect-hero {
-        display: grid;
-    }
-
-    .portal-effect-book {
-        position: relative;
-        order: 2;
-        width: 100%;
-        height: auto;
     }
 
     .portal-effect-hero-copy {
