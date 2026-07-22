@@ -98,7 +98,7 @@ html[data-theme="dark"] .menu-page {
     cursor: grab;
 }
 
-.menu-editor-form {
+.menu-edit-drawer-form {
     padding-top: 6px;
 }
 
@@ -106,7 +106,7 @@ html[data-theme="dark"] .menu-page {
     width: 100%;
 }
 
-.menu-edit-footer {
+.menu-edit-drawer-footer {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;

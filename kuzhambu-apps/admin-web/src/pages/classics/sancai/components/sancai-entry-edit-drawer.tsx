@@ -1,0 +1,806 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { App, Empty, Form, Segmented } from "antd";
+import { useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
+import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
+import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
+import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { readSancaiAiTextFieldConfig } from "./sancai-entry-ai-text-config";
+import type { SancaiAiTextField } from "./sancai-entry-ai-text-config";
+import { SancaiEntryAiTextModal } from "./sancai-entry-ai-text-modal";
+import { SancaiEntryBasicSection } from "./sancai-entry-basic-section";
+import { SancaiEntryVisualSection } from "./sancai-entry-visual-section";
+import { toEntryFormValues, type SancaiEntryFormValues } from "./sancai-form-values";
+import type { SancaiVisualAssetRefinementCapability } from "../sancai-entry-service";
+import * as entryService from "../sancai-entry-service";
+import type {
+    SancaiEntryImageContentMode,
+    SancaiEntryImageRecord,
+    SancaiEntryRecord,
+    SancaiVisualAssetRecord
+} from "../sancai-types";
+
+type SancaiEntryEditDrawerSection = "basic" | "visual" | "tags" | "qa" | "versions";
+const AI_TEXT_CANDIDATE_POLL_INTERVAL_MS = 3000;
+const RUNNING_REFINEMENT_STATUSES = new Set(["PENDING", "RUNNING"]);
+
+const selectCurrentImage = (images: SancaiEntryImageRecord[]) => {
+    return [...images]
+        .filter((image) => image.currentUsed !== false)
+        .sort((left, right) => (left.priority ?? 0) - (right.priority ?? 0))[0];
+};
+
+const resolveImageUrl = (
+    entryId: number | undefined,
+    image: SancaiEntryImageRecord | undefined,
+    mode: SancaiEntryImageContentMode
+) => {
+    if (!entryId || !image?.id) {
+        return undefined;
+    }
+    return toAuthenticatedResourceUrl(
+        entryService.getImageContentUrl({
+            entryId,
+            imageId: image.id,
+            mode
+        })
+    );
+};
+
+const selectCurrentVisualAsset = (assets: SancaiVisualAssetRecord[]) => {
+    return [...assets]
+        .filter((asset) => asset.currentUsed !== false)
+        .sort((left, right) => (right.versionNo ?? 0) - (left.versionNo ?? 0))[0];
+};
+
+const readVisualAssetTitle = (asset: SancaiVisualAssetRecord | undefined) => {
+    if (!asset) {
+        return "未选择视觉处理";
+    }
+    return `处理记录 ${asset.versionNo ?? asset.visualAssetId ?? asset.id ?? "-"}`;
+};
+
+const isSameStorageObjectId = (
+    left: number | string | null | undefined,
+    right: number | string | null | undefined
+) => {
+    return left != null && right != null && String(left) === String(right);
+};
+
+const resolveStorageUrl = (url?: string | null) => {
+    return url ? toAuthenticatedResourceUrl(url) : undefined;
+};
+
+const escapeHtml = (value?: string | number | null) => {
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+};
+
+interface SancaiEntryEditDrawerProps {
+    imageContent?: ReactNode;
+    qaContent?: ReactNode;
+    tagContent?: ReactNode;
+    versionContent?: ReactNode;
+    visualRefinementContent?: ReactNode;
+    categoryOptions?: Array<{ label: string; value: number }>;
+    entry: SancaiEntryRecord | undefined;
+    initialCategoryId?: number | null;
+    initialVolumeId?: number | null;
+    isSubmitting: boolean;
+    isUpdatingVisualAsset?: boolean;
+    mode?: "create" | "edit";
+    open: boolean;
+    onCancel: () => void;
+    onSubmit: (values: SancaiEntryFormValues) => void;
+    onUseVisualAsset?: (asset: SancaiVisualAssetRecord) => void;
+    onUpdateVisualAsset?: (asset: SancaiVisualAssetRecord) => void;
+    onCreateVisualAssetTask?: (
+        capability: SancaiVisualAssetRefinementCapability,
+        asset: SancaiVisualAssetRecord
+    ) => void;
+    onCreateTranslationTask?: (draft: SancaiEntryFormValues) => void;
+    onCreateSummaryTask?: (draft: SancaiEntryFormValues) => void;
+    creatingVisualAssetCapability?: SancaiVisualAssetRefinementCapability | null;
+    isCreatingTranslationTask?: boolean;
+    isCreatingSummaryTask?: boolean;
+    translationTasks?: AiRefinementTaskRecord[];
+    summaryTasks?: AiRefinementTaskRecord[];
+    onSelectedVisualAssetChange?: (asset: SancaiVisualAssetRecord | null) => void;
+    volumes?: Array<{ categoryId?: number | null; id: number; title?: string | null }>;
+}
+
+export const SancaiEntryEditDrawer = ({
+    imageContent,
+    qaContent,
+    tagContent,
+    versionContent,
+    visualRefinementContent,
+    categoryOptions = [],
+    entry,
+    initialCategoryId = null,
+    initialVolumeId = null,
+    isSubmitting,
+    isUpdatingVisualAsset = false,
+    mode = "edit",
+    open,
+    onCancel,
+    onSubmit,
+    onUseVisualAsset,
+    onUpdateVisualAsset,
+    onCreateVisualAssetTask,
+    onCreateTranslationTask,
+    onCreateSummaryTask,
+    creatingVisualAssetCapability = null,
+    isCreatingTranslationTask = false,
+    isCreatingSummaryTask = false,
+    translationTasks = [],
+    summaryTasks = [],
+    onSelectedVisualAssetChange,
+    volumes = []
+}: SancaiEntryEditDrawerProps) => {
+    const { message: messageApi } = App.useApp();
+    const queryClient = useQueryClient();
+    const [form, setForm] = useState<SancaiEntryFormValues>(() =>
+        toEntryFormValues(entry, volumes, initialCategoryId, initialVolumeId)
+    );
+    const [activeSection, setActiveSection] = useState<SancaiEntryEditDrawerSection>("basic");
+    const [activeAiTextField, setActiveAiTextField] = useState<SancaiAiTextField | null>(null);
+    const [aiTextDraft, setAiTextDraft] = useState("");
+    const [loadedAiTextCandidateId, setLoadedAiTextCandidateId] = useState<number | null>(null);
+    const entryId = mode === "edit" ? entry?.id : undefined;
+    const aiTextTasks = activeAiTextField === "summary" ? summaryTasks : translationTasks;
+    const aiTextConfig = activeAiTextField
+        ? readSancaiAiTextFieldConfig(activeAiTextField)
+        : readSancaiAiTextFieldConfig("translate");
+    const isCreatingAiTextTask =
+        activeAiTextField === "summary" ? isCreatingSummaryTask : isCreatingTranslationTask;
+    const latestAiTextTask = useMemo(
+        () =>
+            [...aiTextTasks]
+                .filter((task) => task.capability === activeAiTextField)
+                .sort((left, right) => {
+                    if (
+                        left.requestedAt &&
+                        right.requestedAt &&
+                        left.requestedAt !== right.requestedAt
+                    ) {
+                        return right.requestedAt.localeCompare(left.requestedAt);
+                    }
+                    return right.taskId - left.taskId;
+                })[0] ?? null,
+        [activeAiTextField, aiTextTasks]
+    );
+    const hasRunningAiTextTask =
+        Boolean(latestAiTextTask?.status) &&
+        RUNNING_REFINEMENT_STATUSES.has(latestAiTextTask?.status ?? "");
+    const aiTextCandidatesQuery = useQuery({
+        queryKey: ["ai", "candidates", "SANCAI_ENTRY", entryId, activeAiTextField, "modal"],
+        queryFn: () =>
+            aiCandidateService.list({
+                contentId: entryId,
+                contentType: "SANCAI_ENTRY",
+                capability: activeAiTextField,
+                status: "PENDING"
+            }),
+        enabled: Boolean(activeAiTextField) && Boolean(entryId),
+        retry: false,
+        refetchInterval: () => {
+            return isCreatingAiTextTask || hasRunningAiTextTask
+                ? AI_TEXT_CANDIDATE_POLL_INTERVAL_MS
+                : false;
+        }
+    });
+    const imagesQuery = useQuery({
+        queryKey: ["classics", "sancai", "entries", "images", entryId],
+        queryFn: () => entryService.listImages(entryId ?? 0),
+        enabled: open && Boolean(entryId),
+        retry: false
+    });
+    const entryImages = useMemo(
+        () =>
+            [...(imagesQuery.data || [])].sort((left, right) => {
+                if ((left.priority ?? 0) !== (right.priority ?? 0)) {
+                    return (left.priority ?? 0) - (right.priority ?? 0);
+                }
+                return left.id - right.id;
+            }),
+        [imagesQuery.data]
+    );
+    const currentImage = selectCurrentImage(entryImages);
+    const previewUrl = resolveImageUrl(entryId, currentImage, "preview");
+    const downloadUrl = resolveImageUrl(entryId, currentImage, "download");
+    const visualAssetsQuery = useQuery({
+        queryKey: ["classics", "sancai", "entries", "visual-assets", entryId],
+        queryFn: () => entryService.listVisualAssets(entryId ?? 0),
+        enabled: open && Boolean(entryId),
+        retry: false
+    });
+    const visualAssets = useMemo(() => visualAssetsQuery.data || [], [visualAssetsQuery.data]);
+    const orderedVisualAssets = useMemo(
+        () =>
+            [...visualAssets].sort((left, right) => {
+                if ((left.versionNo ?? 0) !== (right.versionNo ?? 0)) {
+                    return (right.versionNo ?? 0) - (left.versionNo ?? 0);
+                }
+                return (
+                    (right.visualAssetId ?? right.id ?? 0) - (left.visualAssetId ?? left.id ?? 0)
+                );
+            }),
+        [visualAssets]
+    );
+    const volumeOptions = useMemo(
+        () =>
+            volumes
+                .filter((volume) => volume.categoryId === form.categoryId)
+                .map((volume) => ({
+                    label: volume.title?.trim() || `卷 ${volume.id}`,
+                    value: volume.id
+                })),
+        [form.categoryId, volumes]
+    );
+    const currentVisualAsset = useMemo(
+        () => selectCurrentVisualAsset(visualAssets),
+        [visualAssets]
+    );
+    const [selectedVisualAssetId, setSelectedVisualAssetId] = useState<number | null>(null);
+    const [visualAssetForm, setVisualAssetForm] = useState<SancaiVisualAssetRecord | null>(null);
+    const activeVisualAssetId =
+        selectedVisualAssetId ??
+        currentVisualAsset?.visualAssetId ??
+        currentVisualAsset?.id ??
+        null;
+    const selectedVisualAsset =
+        visualAssets.find(
+            (asset) => (asset.visualAssetId ?? asset.id ?? null) === activeVisualAssetId
+        ) ||
+        currentVisualAsset ||
+        null;
+    const applyAiTextCandidateMutation = useMutation({
+        mutationFn: aiCandidateService.apply,
+        onSuccess: async (_, command) => {
+            await Promise.all([
+                queryClient.invalidateQueries({
+                    queryKey: [
+                        "ai",
+                        "candidates",
+                        "SANCAI_ENTRY",
+                        entryId,
+                        command.capability,
+                        "modal"
+                    ]
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: ["classics", "sancai", "entries"]
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: ["classics", "sancai", "entries", "versions", entryId]
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: ["classics", "sancai", "refinement", "tasks", entryId]
+                })
+            ]);
+            setForm((currentForm) => ({
+                ...currentForm,
+                [command.capability === "summary" ? "summary" : "translationText"]:
+                    command.resultPayload
+            }));
+            setActiveAiTextField(null);
+            messageApi.success(
+                readSancaiAiTextFieldConfig(command.capability as SancaiAiTextField)
+                    ?.applyMessage || "AI 候选已应用"
+            );
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "AI 候选应用失败");
+        }
+    });
+    const latestAiTextCandidate = useMemo(() => {
+        const candidates = aiTextCandidatesQuery.data || [];
+        return [...candidates]
+            .filter(
+                (candidate) =>
+                    candidate.capability === activeAiTextField &&
+                    candidate.status === "PENDING" &&
+                    typeof candidate.resultPayload === "string" &&
+                    candidate.resultPayload.trim().length > 0
+            )
+            .sort((left, right) => {
+                if (
+                    left.requestedAt &&
+                    right.requestedAt &&
+                    left.requestedAt !== right.requestedAt
+                ) {
+                    return right.requestedAt.localeCompare(left.requestedAt);
+                }
+                return right.candidateId - left.candidateId;
+            })[0];
+    }, [activeAiTextField, aiTextCandidatesQuery.data]);
+    const loadedAiTextCandidate = useMemo(() => {
+        if (!loadedAiTextCandidateId) {
+            return null;
+        }
+        return (
+            (aiTextCandidatesQuery.data || []).find(
+                (candidate) =>
+                    candidate.candidateId === loadedAiTextCandidateId &&
+                    candidate.capability === activeAiTextField
+            ) ?? null
+        );
+    }, [activeAiTextField, aiTextCandidatesQuery.data, loadedAiTextCandidateId]);
+    const isAiTextApplyDisabled = !aiTextDraft.trim() || aiTextCandidatesQuery.isFetching;
+
+    useEffect(() => {
+        if (!activeAiTextField || !latestAiTextCandidate) {
+            return;
+        }
+        if (latestAiTextCandidate.candidateId === loadedAiTextCandidateId) {
+            return;
+        }
+        const timer = window.setTimeout(() => {
+            setLoadedAiTextCandidateId(latestAiTextCandidate.candidateId);
+            setAiTextDraft(latestAiTextCandidate.resultPayload?.trim() || "");
+        }, 0);
+        return () => window.clearTimeout(timer);
+    }, [activeAiTextField, latestAiTextCandidate, loadedAiTextCandidateId]);
+
+    useEffect(() => {
+        if (!activeAiTextField || !latestAiTextTask?.taskId) {
+            return;
+        }
+        if (latestAiTextTask.status !== "SUCCEEDED" && latestAiTextTask.status !== "PARTIAL") {
+            return;
+        }
+        void aiTextCandidatesQuery.refetch();
+    }, [
+        activeAiTextField,
+        latestAiTextTask?.status,
+        latestAiTextTask?.taskId,
+        aiTextCandidatesQuery
+    ]);
+
+    useEffect(() => {
+        if (onSelectedVisualAssetChange) {
+            onSelectedVisualAssetChange(selectedVisualAsset);
+        }
+    }, [onSelectedVisualAssetChange, selectedVisualAsset]);
+    const defaultSourceImage = entryImages.find((image) => image.storageObjectId);
+    const visualAssetFormValue = useMemo(() => {
+        if (!selectedVisualAsset) {
+            return null;
+        }
+        const selectedId = selectedVisualAsset.visualAssetId ?? selectedVisualAsset.id ?? null;
+        const formId = visualAssetForm?.visualAssetId ?? visualAssetForm?.id ?? null;
+        const baseForm = formId === selectedId ? visualAssetForm : { ...selectedVisualAsset };
+        if (!baseForm) {
+            return null;
+        }
+        if (baseForm.sourceImageStorageObjectId || !defaultSourceImage?.storageObjectId) {
+            return baseForm;
+        }
+        return {
+            ...baseForm,
+            sourceImageStorageObjectId: defaultSourceImage.storageObjectId,
+            sourcePreviewUrl: resolveImageUrl(entryId, defaultSourceImage, "preview"),
+            sourceDownloadUrl: resolveImageUrl(entryId, defaultSourceImage, "download")
+        };
+    }, [defaultSourceImage, entryId, selectedVisualAsset, visualAssetForm]);
+    const selectedVisualAssetResourceId =
+        selectedVisualAsset?.visualAssetId ?? selectedVisualAsset?.id;
+    const selectedSourceStorageObjectId =
+        visualAssetFormValue?.sourceImageStorageObjectId ??
+        defaultSourceImage?.storageObjectId ??
+        null;
+    const visualAssetsForSelectedSource = useMemo(
+        () =>
+            selectedSourceStorageObjectId == null
+                ? []
+                : orderedVisualAssets.filter(
+                      (asset) => asset.sourceImageStorageObjectId === selectedSourceStorageObjectId
+                  ),
+        [orderedVisualAssets, selectedSourceStorageObjectId]
+    );
+    const selectedSourceImage = entryImages.find(
+        (image) =>
+            image.storageObjectId != null &&
+            isSameStorageObjectId(image.storageObjectId, selectedSourceStorageObjectId)
+    );
+    const selectedSourcePreviewUrl = selectedSourceImage
+        ? resolveImageUrl(entryId, selectedSourceImage, "preview")
+        : undefined;
+    const hasSourceVisualImage = Boolean(
+        selectedSourceImage ||
+        visualAssetFormValue?.sourceImageStorageObjectId ||
+        selectedVisualAsset?.sourceImageStorageObjectId
+    );
+    const hasGeneratedVisualImage = Boolean(
+        visualAssetFormValue?.generatedImageStorageObjectId ||
+        selectedVisualAsset?.generatedImageStorageObjectId
+    );
+    const sourcePreviewUrl =
+        selectedSourcePreviewUrl ??
+        resolveStorageUrl(
+            hasSourceVisualImage
+                ? (visualAssetFormValue?.sourcePreviewUrl ??
+                      selectedVisualAsset?.sourcePreviewUrl ??
+                      (entryId && selectedVisualAssetResourceId
+                          ? entryService.getVisualAssetContentUrl({
+                                entryId,
+                                visualAssetId: selectedVisualAssetResourceId,
+                                variant: "source"
+                            })
+                          : undefined))
+                : undefined
+        );
+    const generatedPreviewUrl = resolveStorageUrl(
+        hasGeneratedVisualImage
+            ? (visualAssetFormValue?.generatedPreviewUrl ??
+                  selectedVisualAsset?.generatedPreviewUrl ??
+                  (entryId && selectedVisualAssetResourceId
+                      ? entryService.getVisualAssetContentUrl({
+                            entryId,
+                            visualAssetId: selectedVisualAssetResourceId,
+                            variant: "generated"
+                        })
+                      : undefined))
+            : undefined
+    );
+    const saveVisualAsset = () => {
+        if (!visualAssetFormValue || !onUpdateVisualAsset) {
+            return;
+        }
+        onUpdateVisualAsset(visualAssetFormValue);
+    };
+    const selectVisualAsset = (asset: SancaiVisualAssetRecord) => {
+        const assetId = asset.visualAssetId ?? asset.id ?? null;
+        setSelectedVisualAssetId(assetId);
+        setVisualAssetForm({ ...asset });
+    };
+    const updateVisualAssetForm = (patch: Partial<SancaiVisualAssetRecord>) => {
+        setVisualAssetForm((currentForm) => {
+            const baseForm = currentForm ?? visualAssetFormValue;
+            return baseForm
+                ? {
+                      ...baseForm,
+                      ...patch
+                  }
+                : currentForm;
+        });
+    };
+    const selectVisualSourceImage = (image: SancaiEntryImageRecord) => {
+        if (!image.storageObjectId) {
+            return;
+        }
+        updateVisualAssetForm({
+            sourceImageStorageObjectId: image.storageObjectId,
+            sourcePreviewUrl: resolveImageUrl(entryId, image, "preview"),
+            sourceDownloadUrl: resolveImageUrl(entryId, image, "download")
+        });
+    };
+    const selectVisualSourceImageBySelectValue = (selectValue: string) => {
+        const storageObjectId = selectValue.startsWith("storage:")
+            ? selectValue.slice("storage:".length)
+            : selectValue;
+        const image = entryImages.find((entryImage) =>
+            isSameStorageObjectId(entryImage.storageObjectId, storageObjectId)
+        );
+        if (image) {
+            selectVisualSourceImage(image);
+        }
+    };
+    const createVisualAssetTask = (capability: SancaiVisualAssetRefinementCapability) => {
+        if (!visualAssetFormValue || !onCreateVisualAssetTask) {
+            return;
+        }
+        onCreateVisualAssetTask(capability, visualAssetFormValue);
+    };
+    const requestAiTextTask = () => {
+        if (!activeAiTextField || !entryId) {
+            return false;
+        }
+        const createTask =
+            activeAiTextField === "summary" ? onCreateSummaryTask : onCreateTranslationTask;
+        if (!createTask) {
+            messageApi.warning(`请先保存条目后再使用 ${aiTextConfig.fieldLabel}`);
+            return false;
+        }
+        if (!form.originalText?.trim()) {
+            messageApi.warning("请先填写原文");
+            return false;
+        }
+        createTask(form);
+        return true;
+    };
+    const openAiTextModal = (field: SancaiAiTextField) => {
+        setAiTextDraft(field === "summary" ? form.summary || "" : form.translationText || "");
+        setLoadedAiTextCandidateId(null);
+        setActiveAiTextField(field);
+    };
+    const closeAiTextModal = () => {
+        setActiveAiTextField(null);
+    };
+    const applyAiTextDraft = () => {
+        if (!activeAiTextField || !entryId) {
+            return;
+        }
+        const appliedField = activeAiTextField;
+        const appliedConfig = readSancaiAiTextFieldConfig(appliedField);
+        const candidate = loadedAiTextCandidate;
+        const resultPayload = aiTextDraft;
+        if (candidate) {
+            applyAiTextCandidateMutation.mutate({
+                candidateId: candidate.candidateId,
+                contentId: entryId,
+                contentType: "SANCAI_ENTRY",
+                capability: appliedField,
+                objectId: candidate.objectId,
+                resultFormat: candidate.resultFormat?.trim() || "TEXT",
+                resultPayload,
+                changeSummary: appliedConfig.candidateChangeSummary
+            });
+            return;
+        }
+        setForm((currentForm) => ({
+            ...currentForm,
+            [appliedField === "summary" ? "summary" : "translationText"]: resultPayload
+        }));
+        setActiveAiTextField(null);
+        messageApi.success(appliedConfig.applyMessage);
+    };
+    const changeCategory = (categoryId: number | null) => {
+        setForm((currentForm) => {
+            const currentVolume = volumes.find((volume) => volume.id === currentForm.volumeId);
+            const volumeStillMatches = currentVolume?.categoryId === categoryId;
+            return {
+                ...currentForm,
+                categoryId,
+                volumeId: volumeStillMatches ? currentForm.volumeId : null
+            };
+        });
+    };
+    const submitForm = () => {
+        if (!form.volumeId) {
+            messageApi.warning("请选择卷");
+            return;
+        }
+        onSubmit(form);
+    };
+    const uploadImageMutation = useMutation({
+        mutationFn: (file: File) => {
+            if (!entryId) {
+                throw new Error("请先保存条目后再上传图片");
+            }
+            return entryService.uploadImage({
+                currentUsed: true,
+                entryId,
+                file,
+                imageType: "ORIGINAL",
+                replaceImageId: currentImage?.id,
+                title: file.name
+            });
+        },
+        onSuccess: async () => {
+            await Promise.all([
+                queryClient.invalidateQueries({
+                    queryKey: ["classics", "sancai", "entries", "images", entryId]
+                }),
+                queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "entries"] })
+            ]);
+            messageApi.success("三才图会图片已上传");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "图片上传失败");
+        }
+    });
+
+    if (!entry && mode !== "create") {
+        return null;
+    }
+
+    const basicContent = (
+        <SancaiEntryBasicSection
+            categoryOptions={categoryOptions}
+            currentImage={currentImage}
+            downloadUrl={downloadUrl}
+            entryId={entryId}
+            form={form}
+            imageContent={imageContent}
+            isUploadingImage={uploadImageMutation.isPending}
+            mode={mode}
+            previewUrl={previewUrl}
+            setForm={setForm}
+            volumeOptions={volumeOptions}
+            onChangeCategory={changeCategory}
+            onOpenAiTextModal={openAiTextModal}
+            onUploadImage={(file) => uploadImageMutation.mutate(file)}
+        />
+    );
+
+    const visualAssetContent = entryId ? (
+        <SancaiEntryVisualSection
+            creatingVisualAssetCapability={creatingVisualAssetCapability}
+            currentVisualAsset={currentVisualAsset}
+            defaultSourceImage={defaultSourceImage}
+            entryImages={entryImages}
+            generatedPreviewUrl={generatedPreviewUrl}
+            isUpdatingVisualAsset={isUpdatingVisualAsset}
+            selectedSourceImage={selectedSourceImage}
+            selectedSourceStorageObjectId={selectedSourceStorageObjectId}
+            selectedVisualAsset={selectedVisualAsset}
+            sourcePreviewUrl={sourcePreviewUrl}
+            visualAssetFormValue={visualAssetFormValue}
+            visualAssetsForSelectedSource={visualAssetsForSelectedSource}
+            onCreateVisualAssetTask={onCreateVisualAssetTask ? createVisualAssetTask : undefined}
+            onSaveVisualAsset={saveVisualAsset}
+            onSelectVisualAsset={selectVisualAsset}
+            onSelectVisualSourceImageBySelectValue={selectVisualSourceImageBySelectValue}
+            onUpdateVisualAssetForm={updateVisualAssetForm}
+            onUseVisualAsset={onUseVisualAsset}
+        />
+    ) : null;
+
+    const openPreviewWindow = () => {
+        const imageUrl =
+            previewUrl && typeof window !== "undefined"
+                ? new URL(previewUrl, window.location.origin).toString()
+                : "";
+        const visualUrl =
+            generatedPreviewUrl && typeof window !== "undefined"
+                ? new URL(generatedPreviewUrl, window.location.origin).toString()
+                : "";
+        const html = `<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>${escapeHtml(form.title || "三才图会条目预览")}</title>
+<style>
+body{margin:0;background:#f7f1e6;color:#2f2418;font:16px/1.75 "Songti SC","STSong","Noto Serif CJK SC",serif;}
+main{max-width:960px;margin:0 auto;padding:48px 28px 64px;}
+h1{margin:0 0 10px;font-size:30px;line-height:1.3;font-weight:800;}
+h2{margin:32px 0 10px;font-size:18px;border-bottom:1px solid rgba(124,93,59,.28);padding-bottom:8px;}
+.meta{display:flex;gap:12px;flex-wrap:wrap;color:#7c5d3b;font-size:14px;}
+.paper{margin-top:24px;padding:28px;background:#fffaf0;border:1px solid rgba(124,93,59,.26);box-shadow:0 18px 48px rgba(72,48,24,.08);}
+p{white-space:pre-wrap;margin:0;}
+img{display:block;max-width:100%;height:auto;border:1px solid rgba(124,93,59,.24);background:#fffaf0;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;}
+</style>
+</head>
+<body>
+<main>
+<h1>${escapeHtml(form.title || "未命名条目")}</h1>
+<div class="meta">
+<span>可见性：${escapeHtml(form.visibility)}</span>
+<span>当前视觉处理记录：${escapeHtml(readVisualAssetTitle(currentVisualAsset))}</span>
+</div>
+<section class="paper">
+<h2>原文</h2><p>${escapeHtml(form.originalText || "-")}</p>
+<h2>译文</h2><p>${escapeHtml(form.translationText || "-")}</p>
+<h2>摘要</h2><p>${escapeHtml(form.summary || "-")}</p>
+${imageUrl || visualUrl ? `<h2>图像</h2><div class="grid">${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="条目图片" />` : ""}${visualUrl ? `<img src="${escapeHtml(visualUrl)}" alt="视觉处理生成图" />` : ""}</div>` : ""}
+${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtml(visualAssetFormValue.visualDescription)}</p>` : ""}
+</section>
+</main>
+</body>
+</html>`;
+        const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        window.open(url, "_blank", "noopener,noreferrer");
+        window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    };
+
+    const formProps = {
+        className: "sancai-detail-card sancai-entry-edit-drawer-form",
+        colon: false,
+        component: "div" as const,
+        labelCol: { flex: "88px" },
+        layout: "horizontal" as const
+    };
+    const sectionOptions = [
+        { label: "基础信息", value: "basic" },
+        { label: "视觉处理", value: "visual" },
+        { label: "标签", value: "tags" },
+        { label: "问答", value: "qa" },
+        { label: "版本", value: "versions" }
+    ];
+
+    return (
+        <KuzhambuDrawer
+            testId="classics-sancai-sancai-entry-editor-drawer"
+            title={mode === "create" ? "新增条目" : "编辑条目"}
+            open={open}
+            size="large"
+            destroyOnHidden
+            extra={
+                mode === "edit" ? (
+                    <KuzhambuSpace className="sancai-entry-edit-drawer-header-actions" wrap>
+                        <Segmented
+                            className="sancai-entry-edit-drawer-header-sections"
+                            options={sectionOptions}
+                            value={activeSection}
+                            onChange={(value) =>
+                                setActiveSection(value as SancaiEntryEditDrawerSection)
+                            }
+                        />
+                        <KuzhambuButton
+                            testId="classics-sancai-sancai-entry-preview-sancai-entry-button"
+                            onClick={openPreviewWindow}
+                        >
+                            预览
+                        </KuzhambuButton>
+                    </KuzhambuSpace>
+                ) : undefined
+            }
+            footer={
+                <div className="sancai-drawer-footer">
+                    <KuzhambuButton
+                        testId="classics-sancai-sancai-entry-cancel-button"
+                        onClick={onCancel}
+                    >
+                        取消
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        testId="classics-sancai-sancai-entry-create-button"
+                        type="primary"
+                        loading={isSubmitting}
+                        onClick={submitForm}
+                    >
+                        保存
+                    </KuzhambuButton>
+                </div>
+            }
+            onClose={onCancel}
+        >
+            <SancaiEntryAiTextModal
+                activeAiTextField={activeAiTextField}
+                aiTextDraft={aiTextDraft}
+                form={form}
+                hasRunningAiTextTask={hasRunningAiTextTask}
+                isAiTextApplyDisabled={isAiTextApplyDisabled}
+                isAiTextCandidateFetching={aiTextCandidatesQuery.isFetching}
+                isAiTextCandidateLoadError={aiTextCandidatesQuery.isError}
+                isApplyingAiText={applyAiTextCandidateMutation.isPending}
+                isCreatingAiTextTask={isCreatingAiTextTask}
+                latestAiTextTask={latestAiTextTask}
+                onApply={applyAiTextDraft}
+                onCancel={closeAiTextModal}
+                onRequestTask={requestAiTextTask}
+                onTextDraftChange={setAiTextDraft}
+            />
+            {mode === "create" ? (
+                <Form {...formProps}>{basicContent}</Form>
+            ) : (
+                <div className="sancai-entry-edit-drawer-section">
+                    {activeSection === "basic" ? <Form {...formProps}>{basicContent}</Form> : null}
+                    {activeSection === "visual" ? (
+                        <>
+                            <Form {...formProps}>{visualAssetContent}</Form>
+                            {visualRefinementContent}
+                        </>
+                    ) : null}
+                    {activeSection === "tags"
+                        ? tagContent || (
+                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无标签" />
+                          )
+                        : null}
+                    {activeSection === "qa"
+                        ? qaContent || (
+                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无问答" />
+                          )
+                        : null}
+                    {activeSection === "versions"
+                        ? versionContent || (
+                              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无版本" />
+                          )
+                        : null}
+                </div>
+            )}
+        </KuzhambuDrawer>
+    );
+};

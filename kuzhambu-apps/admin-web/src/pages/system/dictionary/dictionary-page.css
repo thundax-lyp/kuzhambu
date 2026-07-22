@@ -135,11 +135,11 @@ html[data-theme="dark"] .dictionary-page {
     border-radius: 6px;
 }
 
-.dictionary-editor-form {
+.dictionary-edit-drawer-form {
     padding-top: 6px;
 }
 
-.dictionary-edit-footer {
+.dictionary-edit-drawer-footer {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;

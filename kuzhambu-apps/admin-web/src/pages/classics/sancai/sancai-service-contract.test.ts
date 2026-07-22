@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import * as categoryService from "./services/sancai-category-service";
-import * as entryService from "./services/sancai-entry-service";
-import * as volumeService from "./services/sancai-volume-service";
+import * as categoryService from "./sancai-category-service";
+import * as entryService from "./sancai-entry-service";
+import * as volumeService from "./sancai-volume-service";
 import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
 
 interface CapturedCall {

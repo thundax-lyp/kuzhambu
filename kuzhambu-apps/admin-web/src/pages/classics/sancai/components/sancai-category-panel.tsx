@@ -5,9 +5,9 @@ import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/us
 import { KuzhambuTable } from "@/components/kuzhambu-table";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import type { DictItem } from "@/types/dict";
-import { SancaiCategoryModel } from "./sancai-category-model";
+import { SancaiCategoryEditDrawerModal } from "./sancai-category-edit-modal";
 import type { SancaiCategoryFormValues } from "./sancai-form-values";
-import * as categoryService from "../services/sancai-category-service";
+import * as categoryService from "../sancai-category-service";
 import type { SancaiCategoryRecord } from "../sancai-types";
 
 interface SancaiCategoryPanelProps {
@@ -237,7 +237,7 @@ export const SancaiCategoryPanel = ({
                 />
             </div>
             {isModelOpen ? (
-                <SancaiCategoryModel
+                <SancaiCategoryEditDrawerModal
                     category={editingCategory}
                     categoryTypeOptions={categoryTypeItems}
                     isSubmitting={addMutation.isPending || updateMutation.isPending}

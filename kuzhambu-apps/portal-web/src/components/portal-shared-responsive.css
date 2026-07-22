@@ -1,0 +1,193 @@
+@media (max-width: 1080px) {
+    .portal-hero,
+    .portal-home-grid,
+    .portal-signal-band {
+        grid-template-columns: 1fr;
+    }
+
+    .portal-hero-copy h1 {
+        max-width: 12em;
+    }
+
+    .portal-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .portal-filter,
+    .portal-list-item,
+    .portal-share-meta dl,
+    .portal-share-target dl,
+    .portal-share-resource-meta {
+        grid-template-columns: 1fr;
+    }
+
+    .portal-share-resource {
+        display: grid;
+    }
+
+    .portal-discovery-hero,
+    .portal-discovery-form-grid,
+    .portal-qa-hero,
+    .portal-qa-grid,
+    .portal-qa-results,
+    .portal-qa-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .portal-discovery-pagination {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .portal-discovery-panel-header,
+    .portal-qa-panel-header,
+    .portal-qa-source-title {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 820px) {
+    .portal-shell {
+        padding: 18px 14px 32px;
+    }
+
+    .portal-site-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .portal-site-nav {
+        justify-content: flex-start;
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+
+    .portal-site-nav a {
+        flex: 0 0 auto;
+    }
+
+    .portal-search-action {
+        width: 100%;
+    }
+
+    .portal-hero {
+        gap: 24px;
+        margin-top: 28px;
+        padding-bottom: 28px;
+    }
+
+    .portal-hero-copy h1 {
+        font-size: clamp(36px, 12vw, 48px);
+    }
+
+    .portal-hero-actions [data-slot="button"] {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .portal-hero-figure figcaption,
+    .portal-home-footer {
+        flex-direction: column;
+    }
+
+    .portal-value-row {
+        grid-template-columns: 1fr;
+    }
+
+    .portal-value-item {
+        border-right: 0;
+        border-bottom: 1px solid var(--line-subtle);
+    }
+
+    .portal-value-item:last-child {
+        border-bottom: 0;
+    }
+
+    .portal-entry-card {
+        grid-template-columns: 78px minmax(0, 1fr);
+    }
+
+    .portal-entry-card img {
+        width: 78px;
+    }
+
+    .portal-entry-card svg {
+        display: none;
+    }
+
+    .portal-home-footer nav {
+        justify-content: flex-start;
+    }
+
+    .portal-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .portal-header-actions {
+        width: 100%;
+    }
+
+    .portal-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .portal-discovery-samples,
+    .portal-discovery-actions {
+        width: 100%;
+    }
+
+    .portal-discovery-samples [data-slot="button"],
+    .portal-discovery-actions [data-slot="button"] {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .portal-header-actions [data-slot="button"] {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .portal-home-search-link {
+        grid-template-columns: auto minmax(0, 1fr);
+        border-radius: 22px;
+    }
+
+    .portal-discovery-search-box {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        border-radius: 22px;
+    }
+
+    .portal-home-search-link strong {
+        grid-column: 1 / -1;
+        width: 100%;
+    }
+
+    .portal-discovery-search-box [data-slot="button"][type="submit"] {
+        grid-column: 1 / -1;
+        width: 100%;
+    }
+
+    .portal-qa-actions {
+        justify-content: flex-start;
+    }
+
+    .portal-qa-actions [data-slot="button"] {
+        width: 100%;
+    }
+
+    .portal-qa-form .portal-qa-actions {
+        right: 10px;
+        bottom: 10px;
+    }
+
+    .portal-qa-form .portal-qa-actions [data-slot="button"] {
+        width: auto;
+    }
+
+    .portal-qa-question textarea {
+        padding-right: 104px;
+    }
+}

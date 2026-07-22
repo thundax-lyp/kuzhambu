@@ -25,6 +25,18 @@ Classics content change -> Discovery Server -> kuzhambu-common-knowledge -> Know
 - 业务层不可见 `appId`、dataset、collection、file 等 provider 对象；这些对象只存在于 adapter 配置和 trace 中。
 - Admin 问答诊断查看归 FastGPT 产品；admin-web 不提供本地来源列表或 provider trace 详情界面，只提供 FastGPT 控制台跳转。
 
+## Runtime Boundary With AI Usecases
+
+正式 Portal/Admin QA 固定使用 FastGPT Knowledge Base 链路：
+
+```text
+portal-web/admin-web -> Discovery Server -> kuzhambu-common-knowledge -> FastGPT
+```
+
+`biz/ai` 的 Discovery `answer_generation` usecase 只服务非正式知识库问答链路，例如查询理解实验、离线评估、后备能力或经设计文档明确切换的独立 AI 编排。该 usecase 不创建、不恢复、不删除 Discovery QA 会话，不负责 provider trace 诊断，也不得替代 `KnowledgeBaseClient.chat()` 成为正式 QA 默认运行时入口。
+
+当未来需要把正式 QA 从 FastGPT Knowledge Base 链路切换到 AI 域 `answer_generation` 时，必须先更新本专项设计、Discovery requirements、AI requirements 和 workers usecase interface，并同步迁移会话、来源、trace、权限过滤和运维诊断口径。
+
 ## Knowledge Scope
 
 进入问答的主知识：

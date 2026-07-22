@@ -13,7 +13,7 @@ import {
     hasClassicsContentPermission,
     type ClassicsBatchOperationRecord
 } from "@/pages/classics/common/classics-content-types";
-import * as entryService from "../services/sancai-entry-service";
+import * as entryService from "../sancai-entry-service";
 import type {
     SancaiEntryLifecycleStatus,
     SancaiEntryRecord,

@@ -1,27 +1,24 @@
 import {
     DatabaseOutlined,
-    EyeOutlined,
     HistoryOutlined,
     PlayCircleOutlined,
     ReloadOutlined,
-    SafetyCertificateOutlined,
-    SyncOutlined
+    SafetyCertificateOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Card, Descriptions, Select, Statistic, Table, Typography } from "antd";
-import type { ColumnsType } from "antd/es/table";
+import { App, Card, Descriptions, Select, Statistic, Typography } from "antd";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
+import { BackupLedgerTable } from "./backup-ledger-table";
 import * as service from "./backup-restore-service";
 import type { BackupLedgerQuery, RestoreLedgerQuery } from "./backup-restore-service";
+import { RestoreDrillTable } from "./restore-drill-table";
 import type {
-    OperationsBackupRecord,
     OperationsBackupType,
     OperationsRestoreMode,
     OperationsRestoreRecord
@@ -277,242 +274,6 @@ export const BackupRestorePage = () => {
     const latestBackup =
         backupRecords.find((record) => record.backupStatus === "SUCCEEDED") || null;
 
-    const backupColumns: ColumnsType<OperationsBackupRecord> = [
-        {
-            title: "备份 ID",
-            dataIndex: "backupId",
-            key: "backupId",
-            width: 110
-        },
-        {
-            title: "文件",
-            dataIndex: "fileName",
-            key: "fileName",
-            width: 260,
-            render: (value?: string | null) => value || "-"
-        },
-        {
-            title: "类型",
-            dataIndex: "backupType",
-            key: "backupType",
-            width: 120,
-            render: (value?: OperationsBackupType | null) => backupTypeLabel(value)
-        },
-        {
-            title: "发起人",
-            dataIndex: "requesterUserId",
-            key: "requesterUserId",
-            width: 120,
-            render: (value?: number | null) => requesterLabel(value)
-        },
-        {
-            title: "状态",
-            dataIndex: "backupStatus",
-            key: "backupStatus",
-            width: 120,
-            render: (value?: string | null, record?: OperationsBackupRecord) => (
-                <KuzhambuSpace orientation="vertical" size={4}>
-                    <KuzhambuTag type={backupStatusTone(value)}>{value || "UNKNOWN"}</KuzhambuTag>
-                    {value === "FAILED" ? (
-                        <>
-                            <Text type="danger">{failureReasonText(record?.failureReason)}</Text>
-                            <KuzhambuButton
-                                testId="operations-backup-restore-backup-restore-view-alerts-button"
-                                href={buildAlertPath("BACKUP", record?.backupId)}
-                                size="small"
-                            >
-                                查看告警
-                            </KuzhambuButton>
-                        </>
-                    ) : null}
-                </KuzhambuSpace>
-            )
-        },
-        {
-            title: "大小",
-            dataIndex: "fileSizeBytes",
-            key: "fileSizeBytes",
-            width: 120,
-            render: (value?: number | null) => formatFileSize(value)
-        },
-        {
-            title: "发起时间",
-            dataIndex: "startedAt",
-            key: "startedAt",
-            width: 180,
-            render: (value?: string | null) => formatDateTime(value)
-        },
-        {
-            title: "完成时间",
-            dataIndex: "completedAt",
-            key: "completedAt",
-            width: 180,
-            render: (value?: string | null) => formatDateTime(value)
-        },
-        {
-            key: "actions",
-            render: (_, record) => (
-                <KuzhambuSpace wrap>
-                    <KuzhambuButton
-                        testId="operations-backup-restore-backup-restore-view-button"
-                        icon={<EyeOutlined />}
-                        onClick={() => setBackupDetailId(record.backupId)}
-                        size="small"
-                    >
-                        查看
-                    </KuzhambuButton>
-                    {canExecuteRestore && record.backupStatus === "SUCCEEDED" ? (
-                        <KuzhambuButton
-                            testId="operations-backup-restore-backup-restore-drill-button"
-                            icon={<PlayCircleOutlined />}
-                            onClick={() =>
-                                confirm.danger({
-                                    title: "执行恢复演练",
-                                    message: `确认从备份 #${record.backupId} 执行恢复演练吗？`,
-                                    description:
-                                        "演练会创建 PRE_RESTORE 快照并验证备份可恢复性，不覆盖生产业务数据。",
-                                    okText: "执行演练",
-                                    onConfirm: () =>
-                                        restoreMutation.mutateAsync({
-                                            backupId: record.backupId,
-                                            restoreMode: "DRILL"
-                                        })
-                                })
-                            }
-                            size="small"
-                        >
-                            演练
-                        </KuzhambuButton>
-                    ) : null}
-                    {canExecuteRestore && record.backupStatus === "SUCCEEDED" ? (
-                        <KuzhambuButton
-                            testId="operations-backup-restore-backup-restore-restore-button"
-                            danger
-                            icon={<SyncOutlined />}
-                            onClick={() =>
-                                confirm.danger({
-                                    title: "执行真实恢复",
-                                    message: `确认从备份 #${record.backupId} 执行恢复吗？`,
-                                    description:
-                                        "真实恢复会创建 PRE_RESTORE 快照，开启写入阻断，并覆盖业务恢复集中的当前数据。",
-                                    okText: "执行真实恢复",
-                                    onConfirm: () =>
-                                        restoreMutation.mutateAsync({
-                                            backupId: record.backupId,
-                                            restoreMode: "REAL"
-                                        })
-                                })
-                            }
-                            size="small"
-                        >
-                            恢复
-                        </KuzhambuButton>
-                    ) : null}
-                </KuzhambuSpace>
-            )
-        }
-    ];
-
-    const restoreColumns: ColumnsType<OperationsRestoreRecord> = [
-        {
-            title: "恢复 ID",
-            dataIndex: "restoreId",
-            key: "restoreId",
-            width: 110
-        },
-        {
-            title: "来源备份",
-            dataIndex: "backupId",
-            key: "backupId",
-            width: 120
-        },
-        {
-            title: "PRE_RESTORE",
-            dataIndex: "preRestoreBackupId",
-            key: "preRestoreBackupId",
-            width: 140,
-            render: (value?: number | null) => value || "-"
-        },
-        {
-            title: "模式",
-            dataIndex: "restoreMode",
-            key: "restoreMode",
-            width: 120,
-            render: (value?: OperationsRestoreMode | null) => restoreModeLabel(value)
-        },
-        {
-            title: "状态",
-            dataIndex: "restoreStatus",
-            key: "restoreStatus",
-            width: 120,
-            render: (value?: string | null, record?: OperationsRestoreRecord) => (
-                <KuzhambuSpace orientation="vertical" size={4}>
-                    <KuzhambuTag type={restoreStatusTone(value)}>{value || "UNKNOWN"}</KuzhambuTag>
-                    {value === "FAILED" ? (
-                        <>
-                            <Text type="danger">{failureReasonText(record?.failureReason)}</Text>
-                            <KuzhambuButton
-                                testId="operations-backup-restore-backup-restore-view-alerts-button-2"
-                                href={buildAlertPath("RESTORE", record?.restoreId)}
-                                size="small"
-                            >
-                                查看告警
-                            </KuzhambuButton>
-                        </>
-                    ) : null}
-                </KuzhambuSpace>
-            )
-        },
-        {
-            title: "写阻断",
-            dataIndex: "writeBlockEnabled",
-            key: "writeBlockEnabled",
-            width: 120,
-            render: (_, record) => writeBlockLabel(record)
-        },
-        {
-            title: "阻断开启",
-            dataIndex: "writeBlockStartedAt",
-            key: "writeBlockStartedAt",
-            width: 180,
-            render: (value?: string | null) => formatDateTime(value)
-        },
-        {
-            title: "阻断释放",
-            dataIndex: "writeBlockReleasedAt",
-            key: "writeBlockReleasedAt",
-            width: 180,
-            render: (value?: string | null) => formatDateTime(value)
-        },
-        {
-            title: "开始时间",
-            dataIndex: "startedAt",
-            key: "startedAt",
-            width: 180,
-            render: (value?: string | null) => formatDateTime(value)
-        },
-        {
-            title: "完成时间",
-            dataIndex: "completedAt",
-            key: "completedAt",
-            width: 180,
-            render: (value?: string | null) => formatDateTime(value)
-        },
-        {
-            key: "actions",
-            render: (_, record) => (
-                <KuzhambuButton
-                    testId="operations-backup-restore-backup-restore-view-button-2"
-                    icon={<EyeOutlined />}
-                    onClick={() => setRestoreDetailId(record.restoreId)}
-                    size="small"
-                >
-                    查看
-                </KuzhambuButton>
-            )
-        }
-    ];
-
     return (
         <main className="kuzhambu-page backup-restore-page">
             <section>
@@ -661,20 +422,43 @@ export const BackupRestorePage = () => {
                                 </Text>
                             </div>
                         </div>
-                        <Table
-                            aria-label="备份台账表格"
-                            columns={backupColumns}
-                            dataSource={backupRecords}
+                        <BackupLedgerTable
+                            canExecuteRestore={canExecuteRestore}
+                            currentPage={backupQuery.data?.pageNo || backupPageNo}
+                            items={backupRecords}
                             loading={backupQuery.isLoading}
-                            pagination={{
-                                current: backupQuery.data?.pageNo || backupPageNo,
-                                pageSize: backupQuery.data?.pageSize || DEFAULT_PAGE_SIZE,
-                                total: backupQuery.data?.count ?? backupQuery.data?.totalCount ?? 0,
-                                onChange: (pageNo) => setBackupPageNo(pageNo)
-                            }}
-                            rowKey={(record) => record.backupId}
-                            scroll={{ x: 1440 }}
-                            size="small"
+                            pageSize={backupQuery.data?.pageSize || DEFAULT_PAGE_SIZE}
+                            total={backupQuery.data?.count ?? backupQuery.data?.totalCount ?? 0}
+                            onPageChange={setBackupPageNo}
+                            onRestoreDrill={(record) =>
+                                confirm.danger({
+                                    title: "执行恢复演练",
+                                    message: `确认从备份 #${record.backupId} 执行恢复演练吗？`,
+                                    description:
+                                        "演练会创建 PRE_RESTORE 快照并验证备份可恢复性，不覆盖生产业务数据。",
+                                    okText: "执行演练",
+                                    onConfirm: () =>
+                                        restoreMutation.mutateAsync({
+                                            backupId: record.backupId,
+                                            restoreMode: "DRILL"
+                                        })
+                                })
+                            }
+                            onRestoreReal={(record) =>
+                                confirm.danger({
+                                    title: "执行真实恢复",
+                                    message: `确认从备份 #${record.backupId} 执行恢复吗？`,
+                                    description:
+                                        "真实恢复会创建 PRE_RESTORE 快照，开启写入阻断，并覆盖业务恢复集中的当前数据。",
+                                    okText: "执行真实恢复",
+                                    onConfirm: () =>
+                                        restoreMutation.mutateAsync({
+                                            backupId: record.backupId,
+                                            restoreMode: "REAL"
+                                        })
+                                })
+                            }
+                            onView={(record) => setBackupDetailId(record.backupId)}
                         />
                     </Card>
 
@@ -687,21 +471,14 @@ export const BackupRestorePage = () => {
                                 </Text>
                             </div>
                         </div>
-                        <Table
-                            aria-label="恢复台账表格"
-                            columns={restoreColumns}
-                            dataSource={restoreRecords}
+                        <RestoreDrillTable
+                            currentPage={restoreQuery.data?.pageNo || restorePageNo}
+                            items={restoreRecords}
                             loading={restoreQuery.isLoading}
-                            pagination={{
-                                current: restoreQuery.data?.pageNo || restorePageNo,
-                                pageSize: restoreQuery.data?.pageSize || DEFAULT_PAGE_SIZE,
-                                total:
-                                    restoreQuery.data?.count ?? restoreQuery.data?.totalCount ?? 0,
-                                onChange: (pageNo) => setRestorePageNo(pageNo)
-                            }}
-                            rowKey={(record) => record.restoreId}
-                            scroll={{ x: 1560 }}
-                            size="small"
+                            pageSize={restoreQuery.data?.pageSize || DEFAULT_PAGE_SIZE}
+                            total={restoreQuery.data?.count ?? restoreQuery.data?.totalCount ?? 0}
+                            onPageChange={setRestorePageNo}
+                            onView={(record) => setRestoreDetailId(record.restoreId)}
                         />
                     </Card>
                 </div>

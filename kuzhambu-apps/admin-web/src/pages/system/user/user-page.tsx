@@ -12,7 +12,7 @@ import type { OptionsRecord } from "@/types/options";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { UserBatchActions } from "./components/user-batch-actions";
 import { ALL_DEPARTMENT_ID, UserDepartmentTree } from "./components/user-department-tree";
-import { UserEdit } from "./components/user-edit";
+import { UserEditDrawer } from "./components/user-edit-drawer";
 import { UserFilterPanel } from "./components/user-filter-panel";
 import type { UserFilters, UserFilterStatus } from "./components/user-filter-panel";
 import { UserPageActions } from "./components/user-page-actions";
@@ -68,15 +68,15 @@ export const UserPage = () => {
     const [departments, setDepartments] = useState<UserDepartmentNode[]>(EMPTY_DEPARTMENTS);
     const [departmentTreeFetching, setDepartmentTreeFetching] = useState(false);
     const [departmentRefreshSignal, setDepartmentRefreshSignal] = useState(0);
-    const [activeUser, setActiveUser] = useState<UserRecord | null>(null);
-    const [userEditorOpen, setUserEditorOpen] = useState(false);
+    const [editingUser, setEditingUser] = useState<UserRecord | null>(null);
+    const [userEditDrawerOpen, setUserEditDrawerOpen] = useState(false);
     const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
     const hasSelectedUsers = selectedRowKeys.length > 0;
     const hasActiveFilters = Boolean(filters.loginName.trim()) || filters.enable !== "ALL";
     const canEditUser = hasPermission("sys:user:edit");
-    const isCreatingUser = userEditorOpen && !activeUser?.id;
+    const isCreatingUser = userEditDrawerOpen && !editingUser?.id;
 
-    const userQuery = useQuery({
+    const userPageQuery = useQuery({
         queryKey: ["user", "page", query],
         queryFn: () => service.page(query),
         retry: false
@@ -91,7 +91,7 @@ export const UserPage = () => {
         queryFn: getCurrentUserInfo,
         retry: false
     });
-    const pageData = userQuery.data;
+    const pageData = userPageQuery.data;
     const users = useMemo(() => pageData?.records ?? EMPTY_USERS, [pageData?.records]);
     const totalCount = pageData?.count ?? pageData?.totalCount ?? 0;
     const userOptions = userOptionsQuery.data ?? EMPTY_USER_OPTIONS;
@@ -139,12 +139,12 @@ export const UserPage = () => {
         mutationFn: ({ id, avatar }: { id: string; avatar: File }) =>
             service.uploadAvatar(id, avatar),
         onSuccess: async (_, variables) => {
-            const refreshedUsers = await userQuery.refetch();
+            const refreshedUsers = await userPageQuery.refetch();
             const refreshedUser = refreshedUsers.data?.records?.find(
                 (user) => user.id === variables.id
             );
             if (refreshedUser) {
-                setActiveUser(refreshedUser);
+                setEditingUser(refreshedUser);
             }
             messageApi.success("头像已更新");
         },
@@ -155,10 +155,10 @@ export const UserPage = () => {
     const updateMutation = useMutation({
         mutationFn: service.changeInfo,
         onSuccess: async (savedUser) => {
-            setActiveUser(savedUser);
+            setEditingUser(savedUser);
             await invalidatePage();
-            setUserEditorOpen(false);
-            setActiveUser(null);
+            setUserEditDrawerOpen(false);
+            setEditingUser(null);
             messageApi.success("用户已更新");
         },
         onError: (error) => {
@@ -174,7 +174,7 @@ export const UserPage = () => {
             );
         },
         onSuccess: async () => {
-            setUserEditorOpen(false);
+            setUserEditDrawerOpen(false);
             await invalidatePage();
             messageApi.success("用户已新增");
         },
@@ -269,7 +269,7 @@ export const UserPage = () => {
         const selectedDepartment = departments.find(
             (department) => department.id === selectedDepartmentId
         );
-        setActiveUser(
+        setEditingUser(
             selectedDepartment
                 ? {
                       id: "",
@@ -283,7 +283,7 @@ export const UserPage = () => {
                       roles: []
                   }
         );
-        setUserEditorOpen(true);
+        setUserEditDrawerOpen(true);
     };
 
     const toSaveCommand = (user: UserRecord, form: UserFormValues): SaveCommand => ({
@@ -339,7 +339,7 @@ export const UserPage = () => {
     };
 
     const saveEditingUser = (form: UserFormValues) => {
-        if (!activeUser) {
+        if (!editingUser) {
             return;
         }
         if (!normalizeSearch(form.loginName)) {
@@ -354,7 +354,7 @@ export const UserPage = () => {
             messageApi.error("请选择部门");
             return;
         }
-        updateMutation.mutate(toSaveCommand(activeUser, form));
+        updateMutation.mutate(toSaveCommand(editingUser, form));
     };
 
     return (
@@ -368,12 +368,12 @@ export const UserPage = () => {
                         searchText={searchText}
                         filterOpen={isFilterOpen}
                         filterActive={hasActiveFilters}
-                        isRefreshing={userQuery.isFetching || departmentTreeFetching}
+                        isRefreshing={userPageQuery.isFetching || departmentTreeFetching}
                         canCreateUser={canEditUser}
                         onSearch={searchUsers}
                         onToggleFilter={() => setIsFilterOpen((open) => !open)}
                         onRefresh={() => {
-                            userQuery.refetch();
+                            userPageQuery.refetch();
                             setDepartmentRefreshSignal((currentSignal) => currentSignal + 1);
                         }}
                         onCreate={openCreateUser}
@@ -415,7 +415,7 @@ export const UserPage = () => {
                     <Splitter.Panel className="user-work-panel">
                         <UserTable
                             users={users}
-                            loading={userQuery.isFetching}
+                            loading={userPageQuery.isFetching}
                             currentPage={query.pageNo || DEFAULT_PAGE_NO}
                             pageSize={query.pageSize || DEFAULT_PAGE_SIZE}
                             totalCount={totalCount}
@@ -429,8 +429,8 @@ export const UserPage = () => {
                             onPageChange={(pageNo, pageSize) => updateQuery({ pageNo, pageSize })}
                             onStatusChange={updateSingleStatus}
                             onEdit={(user) => {
-                                setActiveUser(user);
-                                setUserEditorOpen(true);
+                                setEditingUser(user);
+                                setUserEditDrawerOpen(true);
                             }}
                             onDelete={confirmDeleteUser}
                         />
@@ -438,25 +438,25 @@ export const UserPage = () => {
                 </Splitter>
             </KuzhambuPage>
 
-            <UserEdit
-                key={`${userEditorOpen ? "open" : "closed"}-${activeUser?.id || "create"}-${currentUserQuery.data?.ranks ?? "rank"}`}
-                open={userEditorOpen}
+            <UserEditDrawer
+                key={`${userEditDrawerOpen ? "open" : "closed"}-${editingUser?.id || "create"}-${currentUserQuery.data?.ranks ?? "rank"}`}
+                open={userEditDrawerOpen}
                 title={isCreatingUser ? "新增用户" : "编辑用户"}
                 saveText="保存"
-                user={activeUser}
+                user={editingUser}
                 currentUser={currentUserQuery.data}
                 departments={departments}
                 rankOptions={userOptions.rankOptions}
                 saving={isCreatingUser ? createMutation.isPending : updateMutation.isPending}
                 onClose={() => {
-                    setUserEditorOpen(false);
-                    setActiveUser(null);
+                    setUserEditDrawerOpen(false);
+                    setEditingUser(null);
                 }}
                 onCreate={saveCreatingUser}
                 onSave={saveEditingUser}
                 onAvatarUpload={(avatar) => {
-                    if (activeUser?.id) {
-                        return avatarUploadMutation.mutateAsync({ id: activeUser.id, avatar });
+                    if (editingUser?.id) {
+                        return avatarUploadMutation.mutateAsync({ id: editingUser.id, avatar });
                     }
                     return undefined;
                 }}

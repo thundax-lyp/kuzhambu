@@ -145,7 +145,7 @@ export const AuditLogPage = () => {
         enabled: canViewAuditLog,
         retry: false
     });
-    const detailQuery = useQuery({
+    const auditLogDetailQuery = useQuery({
         queryKey: ["audit-log", "detail", detailLogId],
         queryFn: () => service.getAuditLogDetail(detailLogId || ""),
         enabled: canViewAuditLog && Boolean(detailLogId),
@@ -289,7 +289,7 @@ export const AuditLogPage = () => {
         }
     ];
 
-    const detailLog = detailQuery.data;
+    const detailLog = auditLogDetailQuery.data;
 
     return (
         <>
@@ -346,8 +346,8 @@ export const AuditLogPage = () => {
             <AuditLogDetail
                 accessToken={accessToken}
                 auditLog={detailLog}
-                error={detailQuery.isError}
-                loading={detailQuery.isFetching}
+                error={auditLogDetailQuery.isError}
+                loading={auditLogDetailQuery.isFetching}
                 open={Boolean(detailLogId)}
                 onClose={() => setDetailLogId(null)}
             />

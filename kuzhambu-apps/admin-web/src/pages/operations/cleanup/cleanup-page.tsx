@@ -106,7 +106,7 @@ export const CleanupPage = () => {
         cleanupStatus: undefined
     });
     const [pageNo, setPageNo] = useState(DEFAULT_PAGE_NO);
-    const [selectedCleanupId, setSelectedCleanupId] = useState<number | null>(null);
+    const [detailCleanupId, setDetailCleanupId] = useState<number | null>(null);
     const [showFailureItems, setShowFailureItems] = useState(false);
 
     const cleanupPageQuery = useQuery({
@@ -122,9 +122,9 @@ export const CleanupPage = () => {
     });
 
     const cleanupDetailQuery = useQuery({
-        queryKey: ["operations", "cleanup", "detail", selectedCleanupId],
-        queryFn: () => service.getCleanupDetail({ cleanupId: selectedCleanupId as number }),
-        enabled: selectedCleanupId !== null,
+        queryKey: ["operations", "cleanup", "detail", detailCleanupId],
+        queryFn: () => service.getCleanupDetail({ cleanupId: detailCleanupId as number }),
+        enabled: detailCleanupId !== null,
         retry: false
     });
 
@@ -152,20 +152,20 @@ export const CleanupPage = () => {
     const totalCount = cleanupPage?.count || cleanupPage?.totalCount || 0;
     const totalPage = cleanupPage?.totalPage || 1;
     const latestRecord = cleanupRecords[0] ?? null;
-    const detailRecord = cleanupDetailQuery.data;
-    const detailItems = detailRecord?.items || [];
+    const detailCleanupRecord = cleanupDetailQuery.data;
+    const detailItems = detailCleanupRecord?.items || [];
     const visibleDetailItems = showFailureItems
         ? detailItems.filter((item) => item.itemStatus === "FAILED")
         : detailItems;
-    const canOpenDrawer = selectedCleanupId !== null;
+    const cleanupDetailDrawerOpen = detailCleanupId !== null;
 
-    const openCleanupDetail = (cleanupId: number, shouldShowFailureItems: boolean) => {
-        setSelectedCleanupId(cleanupId);
+    const openCleanupDetailDrawer = (cleanupId: number, shouldShowFailureItems: boolean) => {
+        setDetailCleanupId(cleanupId);
         setShowFailureItems(shouldShowFailureItems);
     };
 
-    const closeDrawer = () => {
-        setSelectedCleanupId(null);
+    const closeCleanupDetailDrawer = () => {
+        setDetailCleanupId(null);
         setShowFailureItems(false);
     };
 
@@ -345,7 +345,7 @@ export const CleanupPage = () => {
                                                         testId="operations-cleanup-cleanup-detail-button"
                                                         icon={<LoadingOutlined />}
                                                         onClick={() =>
-                                                            openCleanupDetail(
+                                                            openCleanupDetailDrawer(
                                                                 record.cleanupId,
                                                                 false
                                                             )
@@ -360,7 +360,7 @@ export const CleanupPage = () => {
                                                             danger
                                                             icon={<DeleteOutlined />}
                                                             onClick={() =>
-                                                                openCleanupDetail(
+                                                                openCleanupDetailDrawer(
                                                                     record.cleanupId,
                                                                     true
                                                                 )
@@ -410,12 +410,12 @@ export const CleanupPage = () => {
             <KuzhambuDrawer
                 testId="operations-cleanup-cleanup-drawer"
                 loading={cleanupDetailQuery.isLoading}
-                onClose={closeDrawer}
-                open={canOpenDrawer}
+                onClose={closeCleanupDetailDrawer}
+                open={cleanupDetailDrawerOpen}
                 size="middle"
                 title={showFailureItems ? "清理失败项" : "清理任务详情"}
             >
-                {detailRecord ? (
+                {detailCleanupRecord ? (
                     <div className="operations-cleanup-detail">
                         <Descriptions
                             bordered
@@ -424,67 +424,69 @@ export const CleanupPage = () => {
                                 {
                                     key: "cleanupId",
                                     label: "清理 ID",
-                                    children: detailRecord.cleanupId
+                                    children: detailCleanupRecord.cleanupId
                                 },
                                 {
                                     key: "cleanupType",
                                     label: "清理类型",
-                                    children: detailRecord.cleanupType || "-"
+                                    children: detailCleanupRecord.cleanupType || "-"
                                 },
                                 {
                                     key: "cleanupStatus",
                                     label: "任务状态",
                                     children: (
-                                        <KuzhambuTag type={statusTone(detailRecord.cleanupStatus)}>
-                                            {detailRecord.cleanupStatus || "UNKNOWN"}
+                                        <KuzhambuTag
+                                            type={statusTone(detailCleanupRecord.cleanupStatus)}
+                                        >
+                                            {detailCleanupRecord.cleanupStatus || "UNKNOWN"}
                                         </KuzhambuTag>
                                     )
                                 },
                                 {
                                     key: "triggerSource",
                                     label: "触发来源",
-                                    children: triggerSourceText(detailRecord.requesterUserId)
+                                    children: triggerSourceText(detailCleanupRecord.requesterUserId)
                                 },
                                 {
                                     key: "totalCount",
                                     label: "处理总量",
-                                    children: detailRecord.totalCount ?? "-"
+                                    children: detailCleanupRecord.totalCount ?? "-"
                                 },
                                 {
                                     key: "successCount",
                                     label: "成功数量",
-                                    children: detailRecord.successCount ?? "-"
+                                    children: detailCleanupRecord.successCount ?? "-"
                                 },
                                 {
                                     key: "failedCount",
                                     label: "失败数量",
-                                    children: detailRecord.failedCount ?? "-"
+                                    children: detailCleanupRecord.failedCount ?? "-"
                                 },
                                 {
                                     key: "startedAt",
                                     label: "开始时间",
-                                    children: formatDateTime(detailRecord.startedAt)
+                                    children: formatDateTime(detailCleanupRecord.startedAt)
                                 },
                                 {
                                     key: "completedAt",
                                     label: "完成时间",
-                                    children: formatDateTime(detailRecord.completedAt)
+                                    children: formatDateTime(detailCleanupRecord.completedAt)
                                 }
                             ]}
                         />
 
-                        {detailRecord.cleanupStatus === "FAILED" ? (
+                        {detailCleanupRecord.cleanupStatus === "FAILED" ? (
                             <KuzhambuAlert
                                 action={
                                     <KuzhambuButton
                                         testId="operations-cleanup-cleanup-view-alerts-button-2"
-                                        href={buildAlertPath(detailRecord.cleanupId)}
+                                        href={buildAlertPath(detailCleanupRecord.cleanupId)}
                                         size="small"
                                     >
                                         查看告警
                                     </KuzhambuButton>
                                 }
-                                description={`${failureReasonText(detailRecord.failureReason)}。请检查清理目标和失败项明细，必要时重新发起业务动作。`}
+                                description={`${failureReasonText(detailCleanupRecord.failureReason)}。请检查清理目标和失败项明细，必要时重新发起业务动作。`}
                                 title="清理任务执行失败"
                                 showIcon
                                 type="warning"
@@ -495,7 +497,7 @@ export const CleanupPage = () => {
                             <div className="operations-cleanup-failure">
                                 <Title level={5}>失败项</Title>
                                 <Text type="secondary">
-                                    当前任务共 {detailRecord.failedCount || 0} 条失败项。
+                                    当前任务共 {detailCleanupRecord.failedCount || 0} 条失败项。
                                 </Text>
                             </div>
                         ) : null}
@@ -563,10 +565,10 @@ export const CleanupPage = () => {
                             </table>
                         </div>
 
-                        {detailRecord.failureReason ? (
+                        {detailCleanupRecord.failureReason ? (
                             <div className="operations-cleanup-failure">
                                 <Title level={5}>任务失败原因</Title>
-                                <pre>{detailRecord.failureReason}</pre>
+                                <pre>{detailCleanupRecord.failureReason}</pre>
                             </div>
                         ) : null}
                     </div>

@@ -13,7 +13,7 @@ import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
-import { DepartmentEdit } from "./components/department-edit";
+import { DepartmentEditDrawer } from "./components/department-edit-drawer";
 import * as service from "./department-service";
 import type { DepartmentMoveCommand, DepartmentSaveCommand } from "./department-service";
 import type { DepartmentNode, DepartmentTableNode } from "./department-types";
@@ -83,15 +83,15 @@ export const DepartmentPage = () => {
     const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
     const [editingDepartment, setEditingDepartment] = useState<DepartmentTableNode | null>(null);
-    const [editorOpen, setEditorOpen] = useState(false);
+    const [departmentEditDrawerOpen, setDepartmentEditDrawerOpen] = useState(false);
     const [expandedRowKeys, setExpandedRowKeys] = useState<Key[] | null>(null);
     const canEditDepartment = hasPermission("sys:department:edit");
-    const departmentQuery = useQuery({
+    const departmentTreeQuery = useQuery({
         queryKey: ["department", "list"],
         queryFn: () => service.listDepartments(),
         retry: false
     });
-    const departments = useMemo(() => departmentQuery.data || [], [departmentQuery.data]);
+    const departments = useMemo(() => departmentTreeQuery.data || [], [departmentTreeQuery.data]);
     const departmentTree = useMemo(() => buildDepartmentTree(departments), [departments]);
     const flatDepartments = useMemo(() => flattenDepartments(departmentTree), [departmentTree]);
     const expandedDepartmentIds = useMemo(
@@ -117,11 +117,11 @@ export const DepartmentPage = () => {
         [flatDepartments, unavailableParentIds]
     );
 
-    const saveMutation = useMutation({
+    const saveDepartmentMutation = useMutation({
         mutationFn: (values: DepartmentSaveCommand) =>
             values.id ? service.changeDepartmentInfo(values) : service.addDepartment(values),
         onSuccess: async () => {
-            setEditorOpen(false);
+            setDepartmentEditDrawerOpen(false);
             setEditingDepartment(null);
             await queryClient.invalidateQueries({ queryKey: ["department", "list"] });
             messageApi.success("部门已保存");
@@ -153,26 +153,26 @@ export const DepartmentPage = () => {
         }
     });
 
-    const openCreateEditor = () => {
+    const openCreateDepartmentDrawer = () => {
         setEditingDepartment(null);
-        setEditorOpen(true);
+        setDepartmentEditDrawerOpen(true);
     };
 
-    const openEditEditor = (department: DepartmentTableNode) => {
+    const openEditDepartmentDrawer = (department: DepartmentTableNode) => {
         setEditingDepartment(department);
-        setEditorOpen(true);
+        setDepartmentEditDrawerOpen(true);
     };
 
-    const closeEditor = () => {
-        if (saveMutation.isPending) {
+    const closeDepartmentEditDrawer = () => {
+        if (saveDepartmentMutation.isPending) {
             return;
         }
-        setEditorOpen(false);
+        setDepartmentEditDrawerOpen(false);
         setEditingDepartment(null);
     };
 
     const saveDepartment = (request: DepartmentSaveCommand) => {
-        saveMutation.mutate(request);
+        saveDepartmentMutation.mutate(request);
     };
 
     const openDeleteConfirm = (department: DepartmentTableNode) => {
@@ -303,7 +303,7 @@ export const DepartmentPage = () => {
                     text: "编辑",
                     ariaLabel: `编辑 ${department.name}`,
                     disabled: !canEditDepartment,
-                    onClick: () => openEditEditor(department)
+                    onClick: () => openEditDepartmentDrawer(department)
                 },
                 { type: "divider" },
                 {
@@ -330,7 +330,7 @@ export const DepartmentPage = () => {
                         <KuzhambuButton
                             testId="system-department-department-refresh-button"
                             icon={<ReloadOutlined />}
-                            onClick={() => departmentQuery.refetch()}
+                            onClick={() => departmentTreeQuery.refetch()}
                         >
                             刷新
                         </KuzhambuButton>
@@ -339,7 +339,7 @@ export const DepartmentPage = () => {
                                 testId="system-department-department-action-button"
                                 type="primary"
                                 icon={<PlusOutlined />}
-                                onClick={openCreateEditor}
+                                onClick={openCreateDepartmentDrawer}
                             >
                                 新增部门
                             </KuzhambuButton>
@@ -350,7 +350,7 @@ export const DepartmentPage = () => {
                 className="department-table"
                 columns={columns}
                 dataSource={departmentTree}
-                loading={departmentQuery.isFetching || moveMutation.isPending}
+                loading={departmentTreeQuery.isFetching || moveMutation.isPending}
                 pagination={false}
                 scroll={{ x: 1108 }}
                 expandable={{
@@ -361,7 +361,7 @@ export const DepartmentPage = () => {
                     onExpandedRowsChange: (keys) => setExpandedRowKeys([...keys])
                 }}
                 locale={{
-                    emptyText: departmentQuery.isError ? (
+                    emptyText: departmentTreeQuery.isError ? (
                         "部门列表加载失败，请确认权限和接口状态。"
                     ) : (
                         <KuzhambuSpace orientation="vertical" size={8}>
@@ -374,12 +374,12 @@ export const DepartmentPage = () => {
                 sortable={canEditDepartment}
             />
 
-            <DepartmentEdit
-                open={editorOpen}
+            <DepartmentEditDrawer
+                open={departmentEditDrawerOpen}
                 department={editingDepartment}
                 parentOptions={parentOptions}
-                saving={saveMutation.isPending}
-                onClose={closeEditor}
+                saving={saveDepartmentMutation.isPending}
+                onClose={closeDepartmentEditDrawer}
                 onSave={saveDepartment}
             />
         </>

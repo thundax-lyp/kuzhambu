@@ -22,7 +22,7 @@ AI 负责配置、调用、候选结果、确认、失败反馈和统计；不�
 - AI 流式输出接收、转发和最终结果确认。
 - 三才图会古文翻译、图片理解和条目拆分。
 - 三才图会、王圻文档和明代习俗的摘要、标签和问答对生成。
-- Discovery 查询理解和问答回答生成。
+- Discovery 查询理解、查询改写和非正式知识库问答链路的专项回答生成。
 - Knowledge 实体关系抽取、图谱抽取和世系图抽取。
 - AI 结果候选确认、失败反馈、重试和批量取消。
 
@@ -75,7 +75,7 @@ AI 负责配置、调用、候选结果、确认、失败反馈和统计；不�
 - 图片理解必须支持使用已有结果和强制重新分析两种路径。
 - 图片理解必须支持批量分析，单张失败不影响其他图片。
 - 必须支持三才图会长条目拆分，拆分结果必须提供预览并支持手动调整标题、正文和归属。
-- 必须支持 Discovery 查询理解、查询改写和回答生成所需 AI 能力。
+- 必须支持 Discovery 查询理解、查询改写和非正式知识库问答链路专项回答生成所需 AI 能力。
 - 必须支持 Knowledge 实体关系候选抽取、图谱候选抽取和世系图候选抽取所需 AI 能力。
 - 批量翻译、批量标签提取和批量图片理解必须支持取消未完成操作。
 - 批量任务必须由 AI 域保存任务状态并拆分为多个 worker 单元调用。
@@ -114,7 +114,9 @@ AI 负责配置、调用、候选结果、确认、失败反馈和统计；不�
 - AI 排序权重使用后端内部全局唯一 `priority`；前端协议不得读写 `priority`，排序时只提交对象 ID 顺序，由后端交换或重算内部排序权重。
 - AI 生成结果应用后应触发可追溯版本记录。
 - 图片理解人工编辑后的结果不应自动覆盖底层图片分析缓存。
-- Discovery 问答会话、消息和来源归 Discovery；AI 域只提供回答生成能力和调用记录。
+- 正式 Portal/Admin Discovery QA 运行时不经过 AI 域或 workers，固定由 Discovery 通过 `kuzhambu-common-knowledge` 调用 Knowledge Base provider。
+- AI 域的 Discovery `answer_generation` 只用于非正式知识库问答链路的专项 AI 编排、实验能力、后备能力或明确切换后的独立 usecase，不得作为正式 FastGPT 知识库问答的默认运行时入口。
+- Discovery 问答会话、消息和来源归 Discovery；AI 域只提供专项回答生成能力和调用记录。
 - Knowledge 标签、实体、关系、图谱版本和质量指标归 Knowledge；AI 域只提供抽取候选和调用记录。
 
 ## Acceptance Criteria
@@ -140,13 +142,13 @@ AI 负责配置、调用、候选结果、确认、失败反馈和统计；不�
 - 图片理解结果能以 Markdown 形式预览和编辑。
 - 用户能对同一图片触发强制重新分析。
 - 用户能预览、调整并批量保存条目拆分结果。
-- Discovery 能通过 AI 域完成流式回答生成，问答会话仍由 Discovery 保存。
+- Discovery 在非正式知识库问答链路中能通过 AI 域完成流式回答生成，问答会话仍由 Discovery 保存；正式 Portal/Admin QA 默认不使用该链路。
 - Knowledge 能通过 AI 域完成实体关系候选抽取，正式图谱结果仍由 Knowledge 保存。
 
 ## Related Documents
 
 - [CLASSICS-REQUIREMENTS.md](./CLASSICS-REQUIREMENTS.md)：承接 AI 生成结果的正式内容展示、维护和版本记录。
 - [KNOWLEDGE-REQUIREMENTS.md](./KNOWLEDGE-REQUIREMENTS.md)：消费 AI 能力完成实体关系提取。
-- [DISCOVERY-REQUIREMENTS.md](./DISCOVERY-REQUIREMENTS.md)：消费 AI 能力完成问答回答生成。
+- [DISCOVERY-REQUIREMENTS.md](./DISCOVERY-REQUIREMENTS.md)：消费 AI 能力完成查询理解、查询改写和非正式知识库问答链路专项回答生成。
 - [OPERATIONS-REQUIREMENTS.md](./OPERATIONS-REQUIREMENTS.md)：查看 AI 调用统计、健康状态和异常摘要。
 - [WORKERS-REQUIREMENTS.md](./WORKERS-REQUIREMENTS.md)：定义 Python workers 的无状态执行、LangGraph、stream 和跨域接口边界。

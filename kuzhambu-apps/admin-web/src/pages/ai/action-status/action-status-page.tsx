@@ -55,14 +55,14 @@ export const ActionStatusPage = () => {
     const [query, setQuery] = useState<AiActionStatusQuery>({});
     const [refreshingKey, setRefreshingKey] = useState<string | null>(null);
 
-    const capabilitiesQuery = useQuery({
+    const actionCapabilitiesQuery = useQuery({
         queryKey: ["ai", "action-status", "capabilities"],
         queryFn: service.listActionCapabilities,
         enabled: canViewConfig,
         retry: false
     });
 
-    const statusesQuery = useQuery({
+    const actionStatusPageQuery = useQuery({
         queryKey: ["ai", "action-status", query],
         queryFn: () => service.listActionStatuses(query),
         enabled: canViewConfig,
@@ -70,11 +70,11 @@ export const ActionStatusPage = () => {
     });
 
     const capabilityOptions = useMemo(() => {
-        return (capabilitiesQuery.data || []).map((record) => ({
+        return (actionCapabilitiesQuery.data || []).map((record) => ({
             label: `${record.name} / ${record.capability}`,
             value: record.capability
         }));
-    }, [capabilitiesQuery.data]);
+    }, [actionCapabilitiesQuery.data]);
 
     const refreshMutation = useMutation({
         mutationFn: service.refreshActionStatus,
@@ -90,11 +90,11 @@ export const ActionStatusPage = () => {
     });
 
     useEffect(() => {
-        if (statusesQuery.isError) {
-            const error = statusesQuery.error;
+        if (actionStatusPageQuery.isError) {
+            const error = actionStatusPageQuery.error;
             message.error(error instanceof Error ? error.message : "动作状态加载失败");
         }
-    }, [message, statusesQuery.error, statusesQuery.isError]);
+    }, [message, actionStatusPageQuery.error, actionStatusPageQuery.isError]);
 
     const applyFilter = async () => {
         const values = await form.validateFields();
@@ -119,7 +119,7 @@ export const ActionStatusPage = () => {
     };
 
     const refreshAll = async () => {
-        const records = statusesQuery.data || [];
+        const records = actionStatusPageQuery.data || [];
         for (const record of records) {
             if (record.scope && record.capability) {
                 await refreshMutation.mutateAsync({
@@ -194,8 +194,10 @@ export const ActionStatusPage = () => {
                     <KuzhambuButton
                         testId="ai-action-status-action-status-refresh-button"
                         icon={<ReloadOutlined />}
-                        loading={statusesQuery.isFetching || capabilitiesQuery.isFetching}
-                        onClick={() => void statusesQuery.refetch()}
+                        loading={
+                            actionStatusPageQuery.isFetching || actionCapabilitiesQuery.isFetching
+                        }
+                        onClick={() => void actionStatusPageQuery.refetch()}
                     />
                 </Tooltip>
             }
@@ -247,7 +249,10 @@ export const ActionStatusPage = () => {
                             <KuzhambuButton
                                 testId="ai-action-status-action-status-refresh-all-button"
                                 icon={<SyncOutlined />}
-                                disabled={!canEditConfig || (statusesQuery.data || []).length === 0}
+                                disabled={
+                                    !canEditConfig ||
+                                    (actionStatusPageQuery.data || []).length === 0
+                                }
                                 loading={refreshMutation.isPending}
                                 onClick={() => void refreshAll()}
                             >
@@ -263,8 +268,8 @@ export const ActionStatusPage = () => {
                 rowKey={statusKey}
                 className="action-status-table"
                 columns={columns}
-                dataSource={statusesQuery.data || []}
-                loading={statusesQuery.isFetching}
+                dataSource={actionStatusPageQuery.data || []}
+                loading={actionStatusPageQuery.isFetching}
                 pagination={{ pageSize: 10, showSizeChanger: true }}
             />
         </KuzhambuPage>

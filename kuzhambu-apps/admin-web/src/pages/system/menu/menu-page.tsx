@@ -9,7 +9,7 @@ import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/us
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
-import { MenuEdit } from "./components/menu-edit";
+import { MenuEditDrawer } from "./components/menu-edit-drawer";
 import * as service from "./menu-service";
 import type { MenuMoveCommand, MenuSaveCommand } from "./menu-service";
 import type { MenuNode, MenuTableNode } from "./menu-types";
@@ -85,15 +85,15 @@ export const MenuPage = () => {
     const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
     const [editingMenu, setEditingMenu] = useState<MenuTableNode | null>(null);
-    const [editorOpen, setEditorOpen] = useState(false);
+    const [menuEditDrawerOpen, setMenuEditDrawerOpen] = useState(false);
     const [expandedRowKeys, setExpandedRowKeys] = useState<Key[] | null>(null);
     const canEditMenu = hasPermission("super");
-    const menuQuery = useQuery({
+    const menuTreeQuery = useQuery({
         queryKey: ["menu", "list"],
         queryFn: () => service.listMenus(),
         retry: false
     });
-    const menus = useMemo(() => menuQuery.data || [], [menuQuery.data]);
+    const menus = useMemo(() => menuTreeQuery.data || [], [menuTreeQuery.data]);
     const menuTree = useMemo(() => buildMenuTree(menus), [menus]);
     const flatMenus = useMemo(() => flattenMenus(menuTree), [menuTree]);
     const expandedMenuIds = useMemo(() => collectMenuIds(menuTree), [menuTree]);
@@ -116,11 +116,11 @@ export const MenuPage = () => {
         [flatMenus, unavailableParentIds]
     );
 
-    const saveMutation = useMutation({
+    const saveMenuMutation = useMutation({
         mutationFn: (values: MenuSaveCommand) =>
             values.id ? service.changeMenuInfo(values) : service.addMenu(values),
         onSuccess: async () => {
-            setEditorOpen(false);
+            setMenuEditDrawerOpen(false);
             setEditingMenu(null);
             await queryClient.invalidateQueries({ queryKey: ["menu", "list"] });
             messageApi.success("菜单已保存");
@@ -164,26 +164,26 @@ export const MenuPage = () => {
         }
     });
 
-    const openCreateEditor = () => {
+    const openCreateMenuDrawer = () => {
         setEditingMenu(null);
-        setEditorOpen(true);
+        setMenuEditDrawerOpen(true);
     };
 
-    const openEditEditor = (menu: MenuTableNode) => {
+    const openEditMenuDrawer = (menu: MenuTableNode) => {
         setEditingMenu(menu);
-        setEditorOpen(true);
+        setMenuEditDrawerOpen(true);
     };
 
-    const closeEditor = () => {
-        if (saveMutation.isPending) {
+    const closeMenuEditDrawer = () => {
+        if (saveMenuMutation.isPending) {
             return;
         }
-        setEditorOpen(false);
+        setMenuEditDrawerOpen(false);
         setEditingMenu(null);
     };
 
     const saveMenu = (request: MenuSaveCommand) => {
-        saveMutation.mutate(request);
+        saveMenuMutation.mutate(request);
     };
 
     const openDeleteConfirm = (menu: MenuTableNode) => {
@@ -331,7 +331,7 @@ export const MenuPage = () => {
                     text: "编辑",
                     ariaLabel: `编辑 ${menu.name}`,
                     disabled: !canEditMenu,
-                    onClick: () => openEditEditor(menu)
+                    onClick: () => openEditMenuDrawer(menu)
                 },
                 { type: "divider" },
                 {
@@ -358,7 +358,7 @@ export const MenuPage = () => {
                         <KuzhambuButton
                             testId="system-menu-menu-refresh-button"
                             icon={<ReloadOutlined />}
-                            onClick={() => menuQuery.refetch()}
+                            onClick={() => menuTreeQuery.refetch()}
                         >
                             刷新
                         </KuzhambuButton>
@@ -367,7 +367,7 @@ export const MenuPage = () => {
                                 testId="system-menu-menu-action-button"
                                 type="primary"
                                 icon={<PlusOutlined />}
-                                onClick={openCreateEditor}
+                                onClick={openCreateMenuDrawer}
                             >
                                 新增菜单
                             </KuzhambuButton>
@@ -378,7 +378,7 @@ export const MenuPage = () => {
                 className="menu-table"
                 columns={columns}
                 dataSource={menuTree}
-                loading={menuQuery.isFetching || moveMutation.isPending}
+                loading={menuTreeQuery.isFetching || moveMutation.isPending}
                 pagination={false}
                 scroll={{ x: TABLE_SCROLL_X }}
                 expandable={{
@@ -389,7 +389,7 @@ export const MenuPage = () => {
                     onExpandedRowsChange: (keys) => setExpandedRowKeys([...keys])
                 }}
                 locale={{
-                    emptyText: menuQuery.isError ? (
+                    emptyText: menuTreeQuery.isError ? (
                         "菜单列表加载失败，请确认权限和接口状态。"
                     ) : (
                         <KuzhambuSpace orientation="vertical" size={8}>
@@ -402,12 +402,12 @@ export const MenuPage = () => {
                 sortable={canEditMenu}
             />
 
-            <MenuEdit
-                open={editorOpen}
+            <MenuEditDrawer
+                open={menuEditDrawerOpen}
                 menu={editingMenu}
                 parentOptions={parentOptions}
-                saving={saveMutation.isPending}
-                onClose={closeEditor}
+                saving={saveMenuMutation.isPending}
+                onClose={closeMenuEditDrawer}
                 onSave={saveMenu}
             />
         </>

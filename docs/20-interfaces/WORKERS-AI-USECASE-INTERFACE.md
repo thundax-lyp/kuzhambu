@@ -11,7 +11,7 @@ Workers 内部可以继续复用 LangGraph graph registry、model adapter、prom
 覆盖：
 
 - Classics 内容生产、视觉资产和条目拆分所需 AI usecase。
-- Discovery 查询理解、查询改写和回答生成所需 AI usecase。
+- Discovery 查询理解、查询改写和非正式知识库问答链路专项回答生成所需 AI usecase。
 - Knowledge 实体关系、图谱和世系图抽取所需 AI usecase。
 - AI 域自身的提示词优化建议和版本摘要 usecase。
 - 同步和 SSE 流式执行的路径命名、请求响应边界和权限控制。
@@ -155,6 +155,8 @@ Usecase 接口复用 AI 执行请求模型，但 `operation`、`scope`、`capabi
 | 明代习俗问答对生成 | `POST /internal/ai/classics/ming-customs/qa` | `qa` | 否 | `STRUCTURED` | 习俗正文、摘要、标签 |
 
 ### Discovery
+
+Discovery usecase 只表达 AI 域可调用 workers 的专项能力，不表达正式 Portal/Admin QA 默认运行时入口。正式 Discovery QA 当前固定由 Discovery 通过 `kuzhambu-common-knowledge` 调用 Knowledge Base provider；`answer_generation` 只可用于非正式知识库问答链路、实验、评估、后备能力或经设计文档明确切换的独立 AI 编排。
 
 | Usecase | Path | Capability | Stream | Output | Content snapshot |
 | --- | --- | --- | --- | --- | --- |

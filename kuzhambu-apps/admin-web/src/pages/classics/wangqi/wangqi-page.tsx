@@ -6,16 +6,14 @@ import {
     SearchOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Card, Input, Select, Tooltip, Typography } from "antd";
+import { App, Input, Select } from "antd";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuFilterPanel } from "@/components/kuzhambu-filter-panel";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
-import { KuzhambuSpace, KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { AiCandidateBatchDrawer } from "@/pages/classics/common/components/ai-candidate-batch-drawer";
-import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import type {
     AiRefinementTaskCapability,
@@ -24,9 +22,6 @@ import type {
 import * as contentService from "@/pages/classics/common/classics-content-service";
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
-import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
-import { ClassicsContentTagPanel } from "@/pages/classics/common/components/classics-content-tag-panel";
-import { ClassicsExportJobSection } from "@/pages/classics/common/components/classics-export-job-section";
 import * as shareService from "@/pages/classics/common/classics-share-service";
 import * as currentUserService from "@/service/current-user-service";
 import {
@@ -37,11 +32,13 @@ import type {
     ClassicsExportJobRecord,
     ClassicsExportScopePayload
 } from "@/pages/classics/common/classics-export-types";
-import { WangqiDocumentList } from "./components/wangqi-document-list";
-import { WangqiDocumentModel } from "./components/wangqi-document-model";
-import { WangqiQaAiModal, type WangqiQaTaskPair } from "./components/wangqi-qa-ai-modal";
+import { WangqiDocumentTable } from "./components/wangqi-document-table";
+import { WangqiDocumentToolbar } from "./components/wangqi-document-toolbar";
+import { WangqiExportActions } from "./components/wangqi-export-actions";
+import { WangqiDocumentEditDrawer } from "./components/wangqi-document-edit-drawer";
+import type { WangqiQaTaskPair } from "./components/wangqi-qa-ai-modal";
+import { WangqiRefinementActions } from "./components/wangqi-refinement-actions";
 import { WangqiStorageFilePanel } from "./components/wangqi-storage-file-panel";
-import { WangqiTagAiModal } from "./components/wangqi-tag-ai-modal";
 import { WangqiTimeline } from "./components/wangqi-timeline";
 import { WangqiVersionHistoryPanel } from "./components/wangqi-version-history-panel";
 import * as wangqiService from "./wangqi-service";
@@ -49,10 +46,6 @@ import type { WangqiDocumentCommand, WangqiDocumentQuery } from "./wangqi-servic
 import type { WangqiContentVersionRecord, WangqiDocumentRecord } from "./wangqi-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./wangqi-page.css";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
-
-const { Text } = Typography;
-
 type WangqiVisibilityFilter = "ALL" | "PUBLIC" | "PRIVATE";
 type WangqiSortDirectionFilter = "ASC" | "DESC";
 
@@ -198,8 +191,10 @@ export const WangqiPage = () => {
     });
     const [searchText, setSearchText] = useState("");
     const [filters, setFilters] = useState<WangqiFilters>(DEFAULT_WANGQI_FILTERS);
-    const [editorMode, setEditorMode] = useState<"create" | "edit">("create");
-    const [editorOpen, setEditorOpen] = useState(false);
+    const [wangqiDocumentEditDrawerMode, setWangqiDocumentEditDrawerMode] = useState<
+        "create" | "edit"
+    >("create");
+    const [wangqiDocumentEditDrawerOpen, setWangqiDocumentEditDrawerOpen] = useState(false);
     const [editingDocument, setEditingDocument] = useState<WangqiDocumentRecord | null>(null);
     const [selectedVersionId, setSelectedVersionId] = useState<number | null>(null);
     const [selectedDocumentIds, setSelectedDocumentIds] = useState<number[]>([]);
@@ -229,18 +224,21 @@ export const WangqiPage = () => {
         filters.sortDirection !== DEFAULT_WANGQI_FILTERS.sortDirection
     );
 
-    const pageQuery = useQuery({
+    const wangqiDocumentPageQuery = useQuery({
         queryKey: ["wangqi", "page", query],
         queryFn: () => wangqiService.page(query),
         retry: false
     });
-    const detailQuery = useQuery({
+    const wangqiDocumentDetailQuery = useQuery({
         queryKey: ["wangqi", "detail", editingDocument?.id],
         queryFn: () => wangqiService.get(editingDocument?.id ?? 0),
-        enabled: editorOpen && editorMode === "edit" && Boolean(editingDocument?.id),
+        enabled:
+            wangqiDocumentEditDrawerOpen &&
+            wangqiDocumentEditDrawerMode === "edit" &&
+            Boolean(editingDocument?.id),
         retry: false
     });
-    const activeDocument = detailQuery.data || editingDocument;
+    const editingDocumentData = wangqiDocumentDetailQuery.data || editingDocument;
     const currentUserQuery = useQuery({
         queryKey: ["sys", "current-user", "info"],
         queryFn: currentUserService.getCurrentUserInfo,
@@ -259,33 +257,48 @@ export const WangqiPage = () => {
     });
     const currentUserId = Number(currentUserQuery.data?.id ?? 0);
     const sourceFileQuery = useQuery({
-        queryKey: ["wangqi", "source-file", activeDocument?.id, activeDocument?.storageObjectId],
-        queryFn: () => wangqiService.getSourceFile(activeDocument?.id ?? 0),
-        enabled: editorOpen && Boolean(activeDocument?.id && activeDocument?.storageObjectId),
+        queryKey: [
+            "wangqi",
+            "source-file",
+            editingDocumentData?.id,
+            editingDocumentData?.storageObjectId
+        ],
+        queryFn: () => wangqiService.getSourceFile(editingDocumentData?.id ?? 0),
+        enabled:
+            wangqiDocumentEditDrawerOpen &&
+            Boolean(editingDocumentData?.id && editingDocumentData?.storageObjectId),
         retry: false
     });
     const versionsQuery = useQuery({
-        queryKey: ["wangqi", "versions", activeDocument?.id],
-        queryFn: () => wangqiService.listVersions(activeDocument?.id ?? 0),
-        enabled: editorOpen && editorMode === "edit" && Boolean(activeDocument?.id),
+        queryKey: ["wangqi", "versions", editingDocumentData?.id],
+        queryFn: () => wangqiService.listVersions(editingDocumentData?.id ?? 0),
+        enabled:
+            wangqiDocumentEditDrawerOpen &&
+            wangqiDocumentEditDrawerMode === "edit" &&
+            Boolean(editingDocumentData?.id),
         retry: false
     });
     const versionDetailQuery = useQuery({
-        queryKey: ["wangqi", "version", activeDocument?.id, selectedVersionId],
-        queryFn: () => wangqiService.getVersion(activeDocument?.id ?? 0, selectedVersionId ?? 0),
-        enabled: editorOpen && Boolean(activeDocument?.id && selectedVersionId),
+        queryKey: ["wangqi", "version", editingDocumentData?.id, selectedVersionId],
+        queryFn: () =>
+            wangqiService.getVersion(editingDocumentData?.id ?? 0, selectedVersionId ?? 0),
+        enabled:
+            wangqiDocumentEditDrawerOpen && Boolean(editingDocumentData?.id && selectedVersionId),
         retry: false
     });
     const refinementTasksQuery = useQuery({
-        queryKey: ["classics", "wangqi", "refinement", "tasks", activeDocument?.id],
+        queryKey: ["classics", "wangqi", "refinement", "tasks", editingDocumentData?.id],
         queryFn: () =>
             aiRefinementTaskService.pageTasks({
                 pageNo: 1,
                 pageSize: 10,
                 contentType: "WANGQI_DOCUMENT",
-                contentId: activeDocument?.id
+                contentId: editingDocumentData?.id
             }),
-        enabled: editorOpen && editorMode === "edit" && Boolean(activeDocument?.id),
+        enabled:
+            wangqiDocumentEditDrawerOpen &&
+            wangqiDocumentEditDrawerMode === "edit" &&
+            Boolean(editingDocumentData?.id),
         retry: false,
         refetchInterval: (query) => {
             const tasks = query.state.data?.items || [];
@@ -295,7 +308,7 @@ export const WangqiPage = () => {
         }
     });
 
-    const pageResult = pageQuery.data;
+    const pageResult = wangqiDocumentPageQuery.data;
     const records = useMemo(() => pageResult?.records || [], [pageResult?.records]);
     const versions = useMemo(() => {
         return Array.isArray(versionsQuery.data) ? versionsQuery.data : [];
@@ -345,7 +358,7 @@ export const WangqiPage = () => {
     );
     const canOpenDiscoveryQa = hasPermission("discovery:qa:view");
     let singleDocumentQaDisabledReason: string | undefined;
-    if (activeDocument && !activeDocument.id) {
+    if (editingDocumentData && !editingDocumentData.id) {
         singleDocumentQaDisabledReason = "请先保存王圻文档";
     } else if (!canOpenDiscoveryQa) {
         singleDocumentQaDisabledReason = "缺少 Discovery 问答权限";
@@ -383,20 +396,20 @@ export const WangqiPage = () => {
                 queryKey: ["classics", "content", "qa-pairs", "WANGQI_DOCUMENT"]
             }),
             queryClient.invalidateQueries({
-                queryKey: ["ai", "candidates", "WANGQI_DOCUMENT", activeDocument?.id]
+                queryKey: ["ai", "candidates", "WANGQI_DOCUMENT", editingDocumentData?.id]
             })
         ]);
-    }, [activeDocument?.id, queryClient]);
+    }, [editingDocumentData?.id, queryClient]);
 
     const invalidateWangqiCandidates = async () => {
         await queryClient.invalidateQueries({
-            queryKey: ["ai", "candidates", "WANGQI_DOCUMENT", activeDocument?.id]
+            queryKey: ["ai", "candidates", "WANGQI_DOCUMENT", editingDocumentData?.id]
         });
     };
 
     const invalidateRefinementTasks = async () => {
         await queryClient.invalidateQueries({
-            queryKey: ["classics", "wangqi", "refinement", "tasks", activeDocument?.id]
+            queryKey: ["classics", "wangqi", "refinement", "tasks", editingDocumentData?.id]
         });
     };
     const invalidateExportJobs = async () => {
@@ -416,13 +429,17 @@ export const WangqiPage = () => {
 
     const saveMutation = useMutation({
         mutationFn: (command: WangqiDocumentCommand) =>
-            editorMode === "create" ? wangqiService.add(command) : wangqiService.update(command),
+            wangqiDocumentEditDrawerMode === "create"
+                ? wangqiService.add(command)
+                : wangqiService.update(command),
         onSuccess: async () => {
-            setEditorOpen(false);
+            setWangqiDocumentEditDrawerOpen(false);
             setEditingDocument(null);
             setSelectedVersionId(null);
             await invalidateWangqi();
-            messageApi.success(editorMode === "create" ? "王圻文档已新增" : "王圻文档已保存");
+            messageApi.success(
+                wangqiDocumentEditDrawerMode === "create" ? "王圻文档已新增" : "王圻文档已保存"
+            );
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "保存失败");
@@ -594,31 +611,31 @@ export const WangqiPage = () => {
         });
     };
 
-    const openCreateEditor = () => {
-        setEditorMode("create");
+    const openCreateWangqiDocumentDrawer = () => {
+        setWangqiDocumentEditDrawerMode("create");
         setEditingDocument(null);
         setSelectedVersionId(null);
         setSummaryTrackingTask(null);
         setTagTrackingTask(null);
         setQaTrackingTask(null);
-        setEditorOpen(true);
+        setWangqiDocumentEditDrawerOpen(true);
     };
 
-    const openEditEditor = (document: WangqiDocumentRecord) => {
-        setEditorMode("edit");
+    const openEditWangqiDocumentDrawer = (document: WangqiDocumentRecord) => {
+        setWangqiDocumentEditDrawerMode("edit");
         setEditingDocument(document);
         setSelectedVersionId(null);
         setSummaryTrackingTask(null);
         setTagTrackingTask(null);
         setQaTrackingTask(null);
-        setEditorOpen(true);
+        setWangqiDocumentEditDrawerOpen(true);
     };
 
-    const closeEditor = () => {
+    const closeWangqiDocumentEditDrawer = () => {
         if (saveMutation.isPending) {
             return;
         }
-        setEditorOpen(false);
+        setWangqiDocumentEditDrawerOpen(false);
         setEditingDocument(null);
         setSelectedVersionId(null);
         setSummaryTrackingTask(null);
@@ -671,15 +688,15 @@ export const WangqiPage = () => {
     };
 
     const uploadSourceFile = (file: File) => {
-        if (!activeDocument?.id) {
+        if (!editingDocumentData?.id) {
             messageApi.warning("请先保存王圻文档后再上传原始文件");
             return;
         }
-        uploadSourceFileMutation.mutate({ documentId: activeDocument.id, file });
+        uploadSourceFileMutation.mutate({ documentId: editingDocumentData.id, file });
     };
 
     const resetVersion = (version: WangqiContentVersionRecord) => {
-        if (!activeDocument?.id) {
+        if (!editingDocumentData?.id) {
             return;
         }
         confirm.danger({
@@ -689,7 +706,7 @@ export const WangqiPage = () => {
             okText: "恢复",
             onConfirm: () =>
                 resetVersionMutation.mutateAsync({
-                    documentId: activeDocument.id,
+                    documentId: editingDocumentData.id,
                     versionId: version.id
                 })
         });
@@ -839,14 +856,14 @@ export const WangqiPage = () => {
                         <KuzhambuButton
                             testId="classics-wangqi-wangqi-refresh-button"
                             icon={<ReloadOutlined />}
-                            onClick={() => void pageQuery.refetch()}
+                            onClick={() => void wangqiDocumentPageQuery.refetch()}
                         >
                             刷新
                         </KuzhambuButton>
                         <WangqiTimeline
-                            loading={pageQuery.isLoading}
+                            loading={wangqiDocumentPageQuery.isLoading}
                             dataSource={records}
-                            onOpenDocument={openEditEditor}
+                            onOpenDocument={openEditWangqiDocumentDrawer}
                         />
                         <KuzhambuButton
                             testId="classics-wangqi-wangqi-export-jobs-button"
@@ -859,7 +876,7 @@ export const WangqiPage = () => {
                             testId="classics-wangqi-wangqi-document-create-button"
                             type="primary"
                             icon={<PlusOutlined />}
-                            onClick={openCreateEditor}
+                            onClick={openCreateWangqiDocumentDrawer}
                         >
                             新增文档
                         </KuzhambuButton>
@@ -867,6 +884,7 @@ export const WangqiPage = () => {
                 }
             >
                 <KuzhambuFilterPanel
+                    actionsAlign="right"
                     open={isFilterOpen}
                     resetDisabled={!hasActiveFilters}
                     fields={[
@@ -919,88 +937,27 @@ export const WangqiPage = () => {
                     onReset={resetFilters}
                 />
                 <div className="wangqi-document-panel">
-                    <div className="wangqi-document-toolbar">
-                        <Text type="secondary">
-                            已选 {selectedDocuments.length} / 当前页 {records.length}
-                        </Text>
-                        <KuzhambuSpace className="wangqi-document-toolbar-actions" wrap>
-                            <KuzhambuButton
-                                testId="classics-wangqi-wangqi-batch-share-button"
-                                disabled={!selectedDocuments.length || !canShareDocuments}
-                                loading={batchShareMutation.isPending}
-                                onClick={shareSelectedDocuments}
-                            >
-                                分享文档
-                            </KuzhambuButton>
-                            <KuzhambuButton
-                                testId="classics-wangqi-wangqi-action-button"
-                                disabled={!selectedDocuments.length || !canChangeDocumentVisibility}
-                                onClick={openBatchCandidateDrawer}
-                            >
-                                候选治理
-                            </KuzhambuButton>
-                            <KuzhambuButton
-                                testId="classics-wangqi-wangqi-batch-public-button"
-                                disabled={!selectedDocuments.length || !canChangeDocumentVisibility}
-                                loading={batchVisibilityMutation.isPending}
-                                onClick={() => changeSelectedVisibility("PUBLIC")}
-                            >
-                                设为公开
-                            </KuzhambuButton>
-                            <KuzhambuButton
-                                testId="classics-wangqi-wangqi-batch-private-button"
-                                disabled={!selectedDocuments.length || !canChangeDocumentVisibility}
-                                loading={batchVisibilityMutation.isPending}
-                                onClick={() => changeSelectedVisibility("PRIVATE")}
-                            >
-                                设为私有
-                            </KuzhambuButton>
-                        </KuzhambuSpace>
-                    </div>
-                    {batchShareResult ? (
-                        <KuzhambuAlert
-                            showIcon
-                            type={batchShareResult.failureCount > 0 ? "warning" : "success"}
-                            className="wangqi-result-alert"
-                            title={`分享结果：成功 ${batchShareResult.successCount}，失败 ${batchShareResult.failureCount}`}
-                            description={
-                                batchShareResult.failures.length
-                                    ? batchShareResult.failures
-                                          .map(
-                                              (item) =>
-                                                  `${item.contentType}#${item.contentId}: ${item.failureReason || item.failureCode || "未知失败"}`
-                                          )
-                                          .join("；")
-                                    : "全部选中王圻文档已创建分享记录。"
-                            }
-                        />
-                    ) : null}
-                    {batchVisibilityResult ? (
-                        <KuzhambuAlert
-                            showIcon
-                            type={batchVisibilityResult.failureCount > 0 ? "warning" : "success"}
-                            className="wangqi-result-alert"
-                            title={`可见性结果：成功 ${batchVisibilityResult.successCount}，失败 ${batchVisibilityResult.failureCount}`}
-                            description={
-                                batchVisibilityResult.failures.length
-                                    ? batchVisibilityResult.failures
-                                          .map(
-                                              (item) =>
-                                                  `${item.contentType}#${item.contentId}: ${item.failureReason || item.failureCode || "未知失败"}`
-                                          )
-                                          .join("；")
-                                    : "全部选中王圻文档已更新可见性。"
-                            }
-                        />
-                    ) : null}
-                    <WangqiDocumentList
+                    <WangqiDocumentToolbar
+                        batchShareResult={batchShareResult}
+                        batchVisibilityResult={batchVisibilityResult}
+                        canChangeDocumentVisibility={canChangeDocumentVisibility}
+                        canShareDocuments={canShareDocuments}
+                        isBatchSharing={batchShareMutation.isPending}
+                        isBatchVisibilityChanging={batchVisibilityMutation.isPending}
+                        recordCount={records.length}
+                        selectedCount={selectedDocuments.length}
+                        onChangeSelectedVisibility={changeSelectedVisibility}
+                        onOpenBatchCandidateDrawer={openBatchCandidateDrawer}
+                        onShareSelectedDocuments={shareSelectedDocuments}
+                    />
+                    <WangqiDocumentTable
                         canExport={canExportDocuments}
                         canShare={canShareDocuments}
-                        loading={pageQuery.isLoading}
+                        loading={wangqiDocumentPageQuery.isLoading}
                         dataSource={records}
                         onDelete={deleteDocument}
                         onExport={exportDocument}
-                        onOpenEdit={openEditEditor}
+                        onOpenEdit={openEditWangqiDocumentDrawer}
                         onShare={shareDocument}
                         onSelectedDocumentIdsChange={setSelectedDocumentIds}
                         onSortDirectionChange={sortWangqiDocuments}
@@ -1015,34 +972,22 @@ export const WangqiPage = () => {
                     />
                 </div>
             </KuzhambuPage>
-            <KuzhambuDrawer
-                testId="classics-wangqi-wangqi-drawer"
-                aria-label="王圻导出任务"
-                destroyOnHidden
+            <WangqiExportActions
+                canExportDocuments={canExportDocuments}
+                exportJobs={exportJobs}
+                loading={
+                    exportJobsQuery.isLoading ||
+                    exportMutation.isPending ||
+                    deleteExportMutation.isPending
+                }
                 open={exportJobsDrawerOpen}
-                size="large"
-                title="导出任务"
+                onBatchDelete={deleteExportJobs}
                 onClose={() => setExportJobsDrawerOpen(false)}
-            >
-                <ClassicsExportJobSection
-                    items={exportJobs}
-                    loading={
-                        exportJobsQuery.isLoading ||
-                        exportMutation.isPending ||
-                        deleteExportMutation.isPending
-                    }
-                    onDownload={(job) => {
-                        if (job.downloadUrl) {
-                            window.open(job.downloadUrl, "_blank", "noopener,noreferrer");
-                        }
-                    }}
-                    onDelete={canExportDocuments ? deleteExportJob : undefined}
-                    onBatchDelete={canExportDocuments ? deleteExportJobs : undefined}
-                    onRefresh={() => {
-                        void invalidateExportJobs();
-                    }}
-                />
-            </KuzhambuDrawer>
+                onDelete={deleteExportJob}
+                onRefresh={() => {
+                    void invalidateExportJobs();
+                }}
+            />
             <AiCandidateBatchDrawer
                 open={batchCandidateDrawerOpen}
                 contentType="WANGQI_DOCUMENT"
@@ -1053,145 +998,82 @@ export const WangqiPage = () => {
                 onClose={() => setBatchCandidateDrawerOpen(false)}
                 onChanged={invalidateWangqi}
             />
-            <WangqiDocumentModel
-                document={activeDocument}
-                loading={detailQuery.isLoading}
-                mode={editorMode}
-                open={editorOpen}
+            <WangqiDocumentEditDrawer
+                document={editingDocumentData}
+                loading={wangqiDocumentDetailQuery.isLoading}
+                mode={wangqiDocumentEditDrawerMode}
+                open={wangqiDocumentEditDrawerOpen}
                 saving={saveMutation.isPending}
                 creatingSummaryTask={creatingRefinementCapability === "summary"}
                 summaryTasks={summaryRefinementTasks}
                 summaryTrackingTask={summaryTrackingTask}
                 onCreateSummaryTask={
-                    editorMode === "edit" && activeDocument
-                        ? () => createRefinementTask(activeDocument, "summary")
+                    wangqiDocumentEditDrawerMode === "edit" && editingDocumentData
+                        ? () => createRefinementTask(editingDocumentData, "summary")
                         : undefined
                 }
-                onClose={closeEditor}
+                onClose={closeWangqiDocumentEditDrawer}
                 onSave={(command) => saveMutation.mutate(command)}
                 tagContent={
-                    editorMode === "edit" && activeDocument ? (
-                        <div className="wangqi-page-drawer-panels">
-                            <Card size="small" title="AI 标签">
-                                <KuzhambuSpace wrap>
-                                    <WangqiTagAiModal
-                                        creatingTagTask={creatingRefinementCapability === "tags"}
-                                        document={activeDocument}
-                                        tagTasks={tagRefinementTasks}
-                                        tagTrackingTask={tagTrackingTask}
-                                        onChanged={invalidateWangqi}
-                                        onCreateTagTask={(existingTags) =>
-                                            createRefinementTask(activeDocument, "tags", {
-                                                existingTags
-                                            })
-                                        }
-                                    />
-                                </KuzhambuSpace>
-                                <div className="wangqi-refinement-task-list">
-                                    {tagRefinementTasks.length ? (
-                                        tagRefinementTasks.slice(0, 3).map((task) => (
-                                            <div key={task.taskId}>
-                                                标签：{task.status}
-                                                {task.resultPreview
-                                                    ? ` · ${task.resultPreview}`
-                                                    : ""}
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <div>暂无标签任务</div>
-                                    )}
-                                </div>
-                            </Card>
-                            <AiCandidatePanel
-                                capabilities={["tags"]}
-                                contentId={activeDocument.id}
-                                contentType="WANGQI_DOCUMENT"
-                                onApplied={async () => {
-                                    await invalidateWangqi();
-                                }}
-                                onRejected={async () => {
-                                    await invalidateWangqiCandidates();
-                                }}
-                            />
-                            <ClassicsContentTagPanel
-                                contentId={activeDocument.id}
-                                contentType="WANGQI_DOCUMENT"
-                                onChanged={invalidateWangqi}
-                            />
-                        </div>
+                    wangqiDocumentEditDrawerMode === "edit" && editingDocumentData ? (
+                        <WangqiRefinementActions
+                            canOpenDiscoveryQa={canOpenDiscoveryQa}
+                            creatingRefinementCapability={creatingRefinementCapability}
+                            document={editingDocumentData}
+                            qaTasks={qaRefinementTasks}
+                            qaTrackingTask={qaTrackingTask}
+                            section="tags"
+                            singleDocumentQaDisabledReason={singleDocumentQaDisabledReason}
+                            tagTasks={tagRefinementTasks}
+                            tagTrackingTask={tagTrackingTask}
+                            onChanged={invalidateWangqi}
+                            onCreateQaTask={(existingQaPairs) =>
+                                createRefinementTask(editingDocumentData, "qa", {
+                                    existingQaPairs
+                                })
+                            }
+                            onCreateTagTask={(existingTags) =>
+                                createRefinementTask(editingDocumentData, "tags", {
+                                    existingTags
+                                })
+                            }
+                            onOpenSingleDocumentQa={openSingleDocumentQa}
+                            onRejectedCandidate={invalidateWangqiCandidates}
+                        />
                     ) : null
                 }
                 qaContent={
-                    editorMode === "edit" && activeDocument ? (
-                        <div className="wangqi-page-drawer-panels">
-                            <Card
-                                size="small"
-                                title="问答生成"
-                                extra={
-                                    <KuzhambuSpaceCompact>
-                                        <Tooltip title={singleDocumentQaDisabledReason}>
-                                            <KuzhambuButton
-                                                testId="classics-wangqi-wangqi-action-button-2"
-                                                disabled={!activeDocument.id || !canOpenDiscoveryQa}
-                                                onClick={() => openSingleDocumentQa(activeDocument)}
-                                            >
-                                                单文档问答
-                                            </KuzhambuButton>
-                                        </Tooltip>
-                                        <WangqiQaAiModal
-                                            creatingQaTask={creatingRefinementCapability === "qa"}
-                                            document={activeDocument}
-                                            qaTasks={qaRefinementTasks}
-                                            qaTrackingTask={qaTrackingTask}
-                                            onChanged={invalidateWangqi}
-                                            onCreateQaTask={(existingQaPairs) =>
-                                                createRefinementTask(activeDocument, "qa", {
-                                                    existingQaPairs
-                                                })
-                                            }
-                                        />
-                                    </KuzhambuSpaceCompact>
-                                }
-                            >
-                                <div className="wangqi-refinement-task-list">
-                                    {qaRefinementTasks.length ? (
-                                        qaRefinementTasks.slice(0, 3).map((task) => (
-                                            <div key={task.taskId}>
-                                                问答：{task.status}
-                                                {task.resultPreview
-                                                    ? ` · ${task.resultPreview}`
-                                                    : ""}
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <div>暂无问答任务</div>
-                                    )}
-                                </div>
-                            </Card>
-                            <AiCandidatePanel
-                                capabilities={["qa"]}
-                                contentId={activeDocument.id}
-                                contentType="WANGQI_DOCUMENT"
-                                onApplied={async () => {
-                                    await invalidateWangqi();
-                                }}
-                                onRejected={async () => {
-                                    await invalidateWangqiCandidates();
-                                }}
-                            />
-                            <ClassicsContentQaPanel
-                                panelTitle="王圻问答对"
-                                contentId={activeDocument.id}
-                                contentType="WANGQI_DOCUMENT"
-                                onChanged={invalidateWangqi}
-                            />
-                        </div>
+                    wangqiDocumentEditDrawerMode === "edit" && editingDocumentData ? (
+                        <WangqiRefinementActions
+                            canOpenDiscoveryQa={canOpenDiscoveryQa}
+                            creatingRefinementCapability={creatingRefinementCapability}
+                            document={editingDocumentData}
+                            qaTasks={qaRefinementTasks}
+                            qaTrackingTask={qaTrackingTask}
+                            section="qa"
+                            singleDocumentQaDisabledReason={singleDocumentQaDisabledReason}
+                            tagTasks={tagRefinementTasks}
+                            tagTrackingTask={tagTrackingTask}
+                            onChanged={invalidateWangqi}
+                            onCreateQaTask={(existingQaPairs) =>
+                                createRefinementTask(editingDocumentData, "qa", {
+                                    existingQaPairs
+                                })
+                            }
+                            onCreateTagTask={(existingTags) =>
+                                createRefinementTask(editingDocumentData, "tags", {
+                                    existingTags
+                                })
+                            }
+                            onOpenSingleDocumentQa={openSingleDocumentQa}
+                            onRejectedCandidate={invalidateWangqiCandidates}
+                        />
                     ) : null
                 }
                 sourceFileContent={
-                    editorMode === "edit" && activeDocument ? (
+                    wangqiDocumentEditDrawerMode === "edit" && editingDocumentData ? (
                         <WangqiStorageFilePanel
-                            document={activeDocument}
+                            document={editingDocumentData}
                             loading={sourceFileQuery.isLoading || sourceFileQuery.isFetching}
                             sourceFile={sourceFileQuery.data}
                             uploading={uploadSourceFileMutation.isPending}
@@ -1201,9 +1083,9 @@ export const WangqiPage = () => {
                     ) : null
                 }
                 versionContent={
-                    editorMode === "edit" && activeDocument ? (
+                    wangqiDocumentEditDrawerMode === "edit" && editingDocumentData ? (
                         <WangqiVersionHistoryPanel
-                            currentDocument={activeDocument}
+                            currentDocument={editingDocumentData}
                             detailLoading={versionDetailQuery.isLoading}
                             listLoading={versionsQuery.isLoading}
                             resetting={resetVersionMutation.isPending}

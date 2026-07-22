@@ -39,7 +39,7 @@ export const getJson = async <T>(
     });
 
     if (!response.ok) {
-        throw new Error("Portal API request failed");
+        throw new Error(`Portal API request failed: ${response.status}`);
     }
 
     const payload = (await response.json()) as ApiResponse<T>;
@@ -60,7 +60,7 @@ export const getJsonWithAccessToken = async <T>(
     });
 
     if (!response.ok) {
-        throw new Error("Portal API request failed");
+        throw new Error(`Portal API request failed: ${response.status}`);
     }
 
     const payload = (await response.json()) as ApiResponse<T>;
@@ -78,7 +78,7 @@ export const postJson = async <T, P extends object = object>(path: string, body:
     });
 
     if (!response.ok) {
-        throw new Error("Portal API request failed");
+        throw new Error(`Portal API request failed: ${response.status}`);
     }
 
     const payload = (await response.json()) as ApiResponse<T>;
@@ -144,7 +144,7 @@ export const postJsonWithAccessToken = async <T, P extends object = object>(
     });
 
     if (!response.ok) {
-        throw new Error("Portal API request failed");
+        throw new Error(`Portal API request failed: ${response.status}`);
     }
 
     const payload = (await response.json()) as ApiResponse<T>;

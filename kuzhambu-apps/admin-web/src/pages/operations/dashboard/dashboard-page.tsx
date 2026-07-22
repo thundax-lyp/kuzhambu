@@ -11,7 +11,7 @@ import {
     WarningOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Card, Empty, Segmented, Spin, Statistic, Typography } from "antd";
+import { App, Card, Empty, Segmented, Spin, Typography } from "antd";
 import { type ReactNode, useState } from "react";
 import { Link } from "react-router-dom";
 import { hasPermission } from "@/auth/permission-storage";
@@ -19,6 +19,8 @@ import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
+import { DashboardAlertDrawer } from "./dashboard-alert-drawer";
+import { DashboardMetricCard } from "./dashboard-metric-card";
 import * as service from "./dashboard-service";
 import type { OperationsDashboardOverviewQuery } from "./dashboard-service";
 import type {
@@ -134,48 +136,6 @@ const statusTone = (status?: string | null) => {
         return "danger";
     }
     return "neutral";
-};
-
-const alertLevelTone = (level?: string | null) => {
-    if (level === "CRITICAL") {
-        return "danger";
-    }
-    if (level === "WARNING") {
-        return "warning";
-    }
-    return "neutral";
-};
-
-const formatAlertStatus = (status?: string | null) => {
-    if (status === "ACTIVE") {
-        return "未确认";
-    }
-    if (status === "ACKED") {
-        return "已确认";
-    }
-    if (status === "RECOVERED") {
-        return "已恢复";
-    }
-    return status || "-";
-};
-
-const resolveAlertActionPath = (alert: OperationsHealthAlertRecord) => {
-    const sourceType = (alert.sourceRefType || "").toUpperCase();
-    const target = (alert.recoveryTarget || "").toLowerCase();
-    if (sourceType.includes("TASK") || target.includes("task")) {
-        return "/operations/tasks";
-    }
-    if (
-        sourceType.includes("BACKUP") ||
-        sourceType.includes("RESTORE") ||
-        target.includes("backup")
-    ) {
-        return "/operations/backup-restore";
-    }
-    if (sourceType.includes("CLEANUP") || target.includes("cleanup")) {
-        return "/operations/cleanup";
-    }
-    return "/operations/dashboard";
 };
 
 const filterAlertsByComponent = (
@@ -301,9 +261,7 @@ export const OperationsDashboardPage = () => {
     );
     const [periodType, setPeriodType] = useState<OperationsDashboardPeriodType>("WEEK");
     const [alertDrawerOpen, setAlertDrawerOpen] = useState(false);
-    const [selectedHealth, setSelectedHealth] = useState<OperationsHealthSummaryRecord | null>(
-        null
-    );
+    const [detailHealth, setDetailHealth] = useState<OperationsHealthSummaryRecord | null>(null);
 
     const dashboardQuery = useQuery({
         queryKey: ["operations", "dashboard", "overview", periodType],
@@ -398,8 +356,8 @@ export const OperationsDashboardPage = () => {
     const visibleHealthAlerts = canViewHealthPage ? openHealthAlerts : [];
 
     const selectedHealthAlertInfo =
-        selectedHealth != null
-            ? filterAlertsByComponent(visibleHealthAlerts, selectedHealth?.component)
+        detailHealth != null
+            ? filterAlertsByComponent(visibleHealthAlerts, detailHealth?.component)
             : [];
 
     const isLoading =
@@ -575,55 +533,37 @@ export const OperationsDashboardPage = () => {
                         <>
                             <section className="operations-dashboard-metrics" aria-label="核心指标">
                                 {shouldRenderContentMetricCard ? (
-                                    <Card className="operations-dashboard-metric-card">
-                                        <Statistic
-                                            title="内容总量"
-                                            value={formatNumber(overview?.contentCount)}
-                                            prefix={<DatabaseOutlined />}
-                                        />
-                                        <Text type="secondary">{contentMetricSecondary}</Text>
-                                    </Card>
+                                    <DashboardMetricCard
+                                        title="内容总量"
+                                        value={formatNumber(overview?.contentCount)}
+                                        prefix={<DatabaseOutlined />}
+                                        secondaryText={contentMetricSecondary}
+                                    />
                                 ) : null}
                                 {shouldRenderSearchQaMetricCard ? (
-                                    <Card className="operations-dashboard-metric-card">
-                                        <Statistic
-                                            title={searchQaTitle}
-                                            value={searchQaStatisticValue}
-                                            prefix={<SearchOutlined />}
-                                        />
-                                        {searchQaSecondaryText ? (
-                                            <Text type="secondary">{searchQaSecondaryText}</Text>
-                                        ) : null}
-                                    </Card>
+                                    <DashboardMetricCard
+                                        title={searchQaTitle}
+                                        value={searchQaStatisticValue}
+                                        prefix={<SearchOutlined />}
+                                        secondaryText={searchQaSecondaryText}
+                                    />
                                 ) : null}
                                 {shouldRenderAiMetricCard ? (
-                                    <Card className="operations-dashboard-metric-card">
-                                        <Statistic
-                                            title="AI 调用成功率"
-                                            value={formatNumber(
-                                                overview?.aiSucceededInvocationCount
-                                            )}
-                                            suffix={`/ ${formatNumber(overview?.aiInvocationCount)}`}
-                                            prefix={<CheckCircleOutlined />}
-                                        />
-                                        <Text type="secondary">
-                                            失败 {formatNumber(overview?.aiFailedInvocationCount)}
-                                            ，平均延迟 {formatLatency(overview?.aiAvgLatencyMs)}
-                                            ，成本 {formatNumber(overview?.aiTotalCostAmount)}
-                                        </Text>
-                                    </Card>
+                                    <DashboardMetricCard
+                                        title="AI 调用成功率"
+                                        value={formatNumber(overview?.aiSucceededInvocationCount)}
+                                        suffix={`/ ${formatNumber(overview?.aiInvocationCount)}`}
+                                        prefix={<CheckCircleOutlined />}
+                                        secondaryText={`失败 ${formatNumber(overview?.aiFailedInvocationCount)}，平均延迟 ${formatLatency(overview?.aiAvgLatencyMs)}，成本 ${formatNumber(overview?.aiTotalCostAmount)}`}
+                                    />
                                 ) : null}
                                 {shouldRenderHealthTaskMetricCard ? (
-                                    <Card className="operations-dashboard-metric-card">
-                                        <Statistic
-                                            title={healthTaskTitle}
-                                            value={healthTaskStatisticValue}
-                                            prefix={<WarningOutlined />}
-                                        />
-                                        {healthTaskSecondaryText ? (
-                                            <Text type="secondary">{healthTaskSecondaryText}</Text>
-                                        ) : null}
-                                    </Card>
+                                    <DashboardMetricCard
+                                        title={healthTaskTitle}
+                                        value={healthTaskStatisticValue}
+                                        prefix={<WarningOutlined />}
+                                        secondaryText={healthTaskSecondaryText}
+                                    />
                                 ) : null}
                             </section>
 
@@ -682,7 +622,7 @@ export const OperationsDashboardPage = () => {
                                                                 className="operations-dashboard-health-item"
                                                                 key={summary.checkId}
                                                                 onClick={() =>
-                                                                    setSelectedHealth(summary)
+                                                                    setDetailHealth(summary)
                                                                 }
                                                                 type="button"
                                                             >
@@ -839,132 +779,48 @@ export const OperationsDashboardPage = () => {
                         </div>
                     </section>
 
-                    <KuzhambuDrawer
-                        testId="operations-dashboard-dashboard-1-drawer"
+                    <DashboardAlertDrawer
+                        alerts={visibleHealthAlerts}
+                        canManageHealthAlert={canManageHealthAlert}
+                        isConfirmingAlert={confirmAlertMutation.isPending}
+                        isRecoveringAlert={recoverAlertMutation.isPending}
                         open={alertDrawerOpen}
                         onClose={() => setAlertDrawerOpen(false)}
-                        size="small"
-                        title="健康告警"
-                    >
-                        <div className="operations-dashboard-alert-list">
-                            {visibleHealthAlerts.length ? (
-                                visibleHealthAlerts.map((alert) => (
-                                    <Card
-                                        className="operations-dashboard-alert-card"
-                                        key={alert.alertId}
-                                        size="small"
-                                    >
-                                        <div className="operations-dashboard-alert-card-header">
-                                            <div>
-                                                <Text strong>{alert.component || "未知组件"}</Text>
-                                                <Text type="secondary">
-                                                    {alert.message || "未返回告警消息"}
-                                                </Text>
-                                            </div>
-                                            <KuzhambuTag type={alertLevelTone(alert.alertLevel)}>
-                                                {alert.alertLevel || "UNKNOWN"}
-                                            </KuzhambuTag>
-                                        </div>
-                                        <div className="operations-dashboard-alert-meta">
-                                            <Text type="secondary">
-                                                状态：{formatAlertStatus(alert.alertStatus)}
-                                            </Text>
-                                            <Text type="secondary">
-                                                最近触发：{formatDateTime(alert.lastTriggeredAt)}
-                                            </Text>
-                                            <Text type="secondary">
-                                                来源：{alert.sourceRefType || "-"} #
-                                                {alert.sourceRefId || "-"}
-                                            </Text>
-                                        </div>
-                                        <KuzhambuAlert
-                                            description={alert.suggestion || "暂无处置建议"}
-                                            title={
-                                                alert.failureReason ||
-                                                alert.recoveryAction ||
-                                                "处置建议"
-                                            }
-                                            showIcon
-                                            type={
-                                                alert.alertLevel === "CRITICAL"
-                                                    ? "error"
-                                                    : "warning"
-                                            }
-                                        />
-                                        <div className="operations-dashboard-alert-actions">
-                                            <KuzhambuButton
-                                                testId="operations-dashboard-dashboard-resolve-button"
-                                                size="small"
-                                            >
-                                                <Link to={resolveAlertActionPath(alert)}>
-                                                    去处理
-                                                </Link>
-                                            </KuzhambuButton>
-                                            {canManageHealthAlert &&
-                                            alert.alertStatus === "ACTIVE" ? (
-                                                <KuzhambuButton
-                                                    testId="operations-dashboard-dashboard-action-button"
-                                                    loading={confirmAlertMutation.isPending}
-                                                    onClick={() =>
-                                                        confirmAlertMutation.mutate({
-                                                            alertId: alert.alertId
-                                                        })
-                                                    }
-                                                    size="small"
-                                                >
-                                                    确认
-                                                </KuzhambuButton>
-                                            ) : null}
-                                            {canManageHealthAlert ? (
-                                                <KuzhambuButton
-                                                    testId="operations-dashboard-dashboard-action-button-2"
-                                                    loading={recoverAlertMutation.isPending}
-                                                    onClick={() =>
-                                                        recoverAlertMutation.mutate({
-                                                            alertId: alert.alertId
-                                                        })
-                                                    }
-                                                    size="small"
-                                                    type="primary"
-                                                >
-                                                    标记恢复
-                                                </KuzhambuButton>
-                                            ) : null}
-                                        </div>
-                                    </Card>
-                                ))
-                            ) : (
-                                <Empty
-                                    description="暂无未恢复告警"
-                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                />
-                            )}
-                        </div>
-                    </KuzhambuDrawer>
+                        onConfirmAlert={(alert) =>
+                            confirmAlertMutation.mutate({
+                                alertId: alert.alertId
+                            })
+                        }
+                        onRecoverAlert={(alert) =>
+                            recoverAlertMutation.mutate({
+                                alertId: alert.alertId
+                            })
+                        }
+                    />
 
                     <KuzhambuDrawer
                         testId="operations-dashboard-dashboard-2-drawer"
-                        open={selectedHealth !== null}
-                        onClose={() => setSelectedHealth(null)}
+                        open={detailHealth !== null}
+                        onClose={() => setDetailHealth(null)}
                         size="middle"
                         title={
-                            selectedHealth
-                                ? `${selectedHealth.component || "未知组件"} 健康明细`
+                            detailHealth
+                                ? `${detailHealth.component || "未知组件"} 健康明细`
                                 : "健康明细"
                         }
                     >
                         <div className="operations-dashboard-health-detail">
                             <KuzhambuSpace size={8} wrap>
                                 <Text>状态</Text>
-                                <KuzhambuTag type={statusTone(selectedHealth?.healthStatus)}>
-                                    {selectedHealth?.healthStatus || "-"}
+                                <KuzhambuTag type={statusTone(detailHealth?.healthStatus)}>
+                                    {detailHealth?.healthStatus || "-"}
                                 </KuzhambuTag>
                             </KuzhambuSpace>
-                            <Text>采集来源：{selectedHealth?.probeSource || "-"}</Text>
-                            <Text>采集目标：{selectedHealth?.probeTarget || "-"}</Text>
-                            <Text>延迟：{formatLatency(selectedHealth?.latencyMs)}</Text>
-                            <Text>检查时间：{formatDateTime(selectedHealth?.checkedAt)}</Text>
-                            <Text>消息：{selectedHealth?.message || "-"}</Text>
+                            <Text>采集来源：{detailHealth?.probeSource || "-"}</Text>
+                            <Text>采集目标：{detailHealth?.probeTarget || "-"}</Text>
+                            <Text>延迟：{formatLatency(detailHealth?.latencyMs)}</Text>
+                            <Text>检查时间：{formatDateTime(detailHealth?.checkedAt)}</Text>
+                            <Text>消息：{detailHealth?.message || "-"}</Text>
                             <div className="operations-dashboard-health-related-alerts">
                                 <div className="operations-dashboard-health-related-alerts-header">
                                     <Text strong>关联告警</Text>

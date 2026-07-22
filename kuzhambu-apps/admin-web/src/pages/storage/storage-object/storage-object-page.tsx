@@ -188,12 +188,12 @@ export const StorageObjectPage = () => {
         filters.referenceStatus !== "ALL"
     );
 
-    const storageQuery = useQuery({
+    const storageObjectPageQuery = useQuery({
         queryKey: ["storage-object", "page", query],
         queryFn: () => service.pageStorageObjects(query),
         retry: false
     });
-    const storagePage = storageQuery.data;
+    const storagePage = storageObjectPageQuery.data;
     const storages = useMemo(() => storagePage?.records || [], [storagePage?.records]);
     const totalCount = storagePage?.count ?? storagePage?.totalCount ?? 0;
     const currentPageNo = storagePage?.pageNo || query.pageNo || DEFAULT_PAGE_NO;
@@ -634,8 +634,8 @@ export const StorageObjectPage = () => {
                         <KuzhambuButton
                             testId="storage-storage-object-storage-object-refresh-button"
                             icon={<ReloadOutlined />}
-                            loading={storageQuery.isFetching}
-                            onClick={() => storageQuery.refetch()}
+                            loading={storageObjectPageQuery.isFetching}
+                            onClick={() => storageObjectPageQuery.refetch()}
                         >
                             刷新
                         </KuzhambuButton>
@@ -662,7 +662,9 @@ export const StorageObjectPage = () => {
                 columns={columns}
                 dataSource={storages}
                 loading={
-                    storageQuery.isFetching || sortMutation.isPending || uploadMutation.isPending
+                    storageObjectPageQuery.isFetching ||
+                    sortMutation.isPending ||
+                    uploadMutation.isPending
                 }
                 onSort={moveStorage}
                 pagination={{

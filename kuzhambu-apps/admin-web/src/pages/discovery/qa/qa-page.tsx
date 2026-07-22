@@ -1,34 +1,15 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Bubble, Sender, type BubbleItemType } from "@ant-design/x";
-import {
-    CheckCircleOutlined,
-    CloseOutlined,
-    ExclamationCircleOutlined,
-    LoadingOutlined
-} from "@ant-design/icons";
-import { Empty, Input, Tag, Tooltip, Typography } from "antd";
-import {
-    forwardRef,
-    useMemo,
-    useState,
-    type ComponentProps,
-    type ElementRef,
-    type ReactNode
-} from "react";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import ancientReaderAvatar from "@/assets/ancient-reader-avatar-face.jpg";
-import ancientScholarAvatar from "@/assets/ancient-scholar-avatar-face.jpg";
+import { useMemo, useState } from "react";
+import { QaMessagePanel, type QaTimelineMessage } from "./components/qa-message-panel";
+import { QaSessionDetailDrawer } from "./components/qa-session-detail-drawer";
+import { QaSessionTable } from "./components/qa-session-table";
 import * as service from "./qa-service";
 import type {
     DiscoveryQaChatCompletionRecord,
     DiscoveryQaSessionRecord,
-    DiscoveryQaSessionMessageRecord,
-    DiscoveryQaSourceRecord
+    DiscoveryQaSessionMessageRecord
 } from "./qa-types";
 import "./qa-page.css";
-
-const { Text, Title } = Typography;
 
 const DEFAULT_OWNER_USER_ID = "1001";
 const DEFAULT_PAGE_SIZE = 20;
@@ -36,23 +17,8 @@ const FIXED_MODEL = "kuzhambu-qa";
 const FULL_LIBRARY_CONTEXT_MODE = "GENERAL";
 const FULL_LIBRARY_SESSION_TITLE = "新对话";
 const SESSION_TITLE_MAX_LENGTH = 24;
-const QaSenderInput = forwardRef<
-    ElementRef<typeof Input.TextArea>,
-    ComponentProps<typeof Input.TextArea>
->((props, ref) => <Input.TextArea {...props} ref={ref} aria-label="问题" />);
-QaSenderInput.displayName = "QaSenderInput";
-const QA_SENDER_COMPONENTS = { input: QaSenderInput };
-
 interface QaFormState {
     question: string;
-}
-
-interface QaTimelineMessage {
-    content: string;
-    id: string;
-    role: "assistant" | "user";
-    sources?: DiscoveryQaSourceRecord[];
-    status: "failed" | "loading" | "succeeded";
 }
 
 type QaTimeline = Record<string, QaTimelineMessage[]>;
@@ -73,23 +39,6 @@ const parseNumber = (value: string) => {
 
 const toSessionId = (value?: string | null) => {
     return typeof value === "string" && value.trim().length ? value : null;
-};
-
-const formatTime = (value?: number | null) => {
-    if (!value) {
-        return "-";
-    }
-
-    return new Intl.DateTimeFormat("zh-CN", {
-        dateStyle: "medium"
-    }).format(new Date(value));
-};
-
-const sessionTitle = (session?: DiscoveryQaSessionRecord) => {
-    if (session?.title) {
-        return session.title;
-    }
-    return session?.sessionId ? `会话 ${session.sessionId}` : "未命名会话";
 };
 
 const createMessageId = () => {
@@ -125,37 +74,6 @@ const toOpenSessionRequest = (ownerUserId: number | null, title = FULL_LIBRARY_S
     };
 };
 
-const toSourceKey = (source: DiscoveryQaSourceRecord, index: number) => {
-    return source.sourceId ?? `${source.contentType ?? "SOURCE"}-${source.contentId ?? index}`;
-};
-
-const toBubbleStatus = (status: QaTimelineMessage["status"]) => {
-    if (status === "failed") {
-        return "error";
-    }
-    return undefined;
-};
-
-const toBubbleStatusLabel = (status: QaTimelineMessage["status"]) => {
-    if (status === "failed") {
-        return "回答失败";
-    }
-    if (status === "loading") {
-        return "正在生成";
-    }
-    return "已完成";
-};
-
-const toBubbleStatusIcon = (status: QaTimelineMessage["status"]): ReactNode => {
-    if (status === "failed") {
-        return <ExclamationCircleOutlined />;
-    }
-    if (status === "loading") {
-        return <LoadingOutlined spin />;
-    }
-    return <CheckCircleOutlined />;
-};
-
 const toTimelineRole = (role?: string | null): QaTimelineMessage["role"] => {
     return role?.toUpperCase() === "USER" ? "user" : "assistant";
 };
@@ -186,6 +104,7 @@ const toTimelineMessages = (session?: DiscoveryQaSessionRecord | null): QaTimeli
 export const QaPage = () => {
     const [form, setForm] = useState<QaFormState>(INITIAL_FORM_STATE);
     const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+    const [sessionDetailDrawerOpen, setSessionDetailDrawerOpen] = useState(false);
     const [timelineBySession, setTimelineBySession] = useState<QaTimeline>({});
     const [operationMessage, setOperationMessage] = useState<string | null>(null);
     const ownerUserId = parseNumber(DEFAULT_OWNER_USER_ID);
@@ -249,70 +168,6 @@ export const QaPage = () => {
             : toTimelineMessages(selectedSessionQuery.data);
     }, [selectedSessionId, selectedSessionQuery.data, timelineBySession]);
     const selectedSession = selectedSessionQuery.data;
-    const latestAssistantMessage = [...messages]
-        .reverse()
-        .find((message) => message.role === "assistant" && message.sources?.length);
-    const bubbleItems = useMemo<BubbleItemType[]>(() => {
-        return messages.map((message) => {
-            const content =
-                message.content ||
-                (message.status === "loading" ? "正在检索知识库..." : "未返回回答内容");
-
-            return {
-                avatar: (
-                    <span
-                        aria-label={message.role === "user" ? "用户" : "古籍助手"}
-                        className={`discovery-qa-page__avatar discovery-qa-page__avatar--${message.role}`}
-                        role="img"
-                    >
-                        <img
-                            alt=""
-                            aria-hidden="true"
-                            src={
-                                message.role === "user" ? ancientReaderAvatar : ancientScholarAvatar
-                            }
-                        />
-                    </span>
-                ),
-                content:
-                    message.role === "assistant" ? (
-                        <span className="discovery-qa-page__assistant-content">
-                            {content}
-                            {message.status === "loading" && message.content ? (
-                                <span
-                                    aria-hidden="true"
-                                    className="discovery-qa-page__stream-caret"
-                                />
-                            ) : null}
-                        </span>
-                    ) : (
-                        content
-                    ),
-                footer: (
-                    <KuzhambuSpace size={8}>
-                        <Tooltip title={toBubbleStatusLabel(message.status)}>
-                            <span
-                                aria-label={toBubbleStatusLabel(message.status)}
-                                className={`discovery-qa-page__message-status discovery-qa-page__message-status--${message.status}`}
-                                role="img"
-                            >
-                                {toBubbleStatusIcon(message.status)}
-                            </span>
-                        </Tooltip>
-                        {message.sources?.length ? (
-                            <Text type="secondary">{message.sources.length} 个来源</Text>
-                        ) : null}
-                    </KuzhambuSpace>
-                ),
-                key: message.id,
-                loading: false,
-                role: message.role === "user" ? "user" : "ai",
-                status: toBubbleStatus(message.status),
-                variant: message.role === "user" ? "filled" : "outlined"
-            };
-        });
-    }, [messages]);
-
     const updateField = (key: keyof QaFormState, value: string) => {
         setForm((current) => ({
             ...current,
@@ -472,157 +327,34 @@ export const QaPage = () => {
 
     return (
         <main className="kuzhambu-page qa-page discovery-qa-page">
-            <aside className="discovery-qa-page__sidebar">
-                <KuzhambuButton
-                    block
-                    testId="discovery-qa-create-session-button"
-                    loading={openSessionMutation.isPending}
-                    type="primary"
-                    onClick={createNewSession}
-                >
-                    新建对话
-                </KuzhambuButton>
-                <div className="discovery-qa-page__session-list" aria-label="问答会话">
-                    {sessions.length ? (
-                        sessions.map((session) => {
-                            const sessionId = toSessionId(session.sessionId);
-                            if (sessionId === null) {
-                                return null;
-                            }
-
-                            return (
-                                <div key={sessionId} className="discovery-qa-page__session-item">
-                                    <KuzhambuButton
-                                        block
-                                        className="discovery-qa-page__select-session"
-                                        testId="discovery-qa-select-session-button"
-                                        type={
-                                            sessionId === selectedSessionId ? "primary" : "default"
-                                        }
-                                        onClick={() => setSelectedSessionId(sessionId)}
-                                    >
-                                        {sessionTitle(session)}
-                                    </KuzhambuButton>
-                                    <KuzhambuButton
-                                        aria-label={`删除对话 ${sessionTitle(session)}`}
-                                        className="discovery-qa-page__delete-session"
-                                        disabled={deleteSessionMutation.isPending}
-                                        testId="discovery-qa-delete-session-button"
-                                        onClick={(event) => {
-                                            event.stopPropagation();
-                                            void deleteSession(sessionId);
-                                        }}
-                                    >
-                                        <CloseOutlined />
-                                    </KuzhambuButton>
-                                </div>
-                            );
-                        })
-                    ) : (
-                        <Empty
-                            image={Empty.PRESENTED_IMAGE_SIMPLE}
-                            description={sessionsQuery.isPending ? "正在加载对话" : "还没有对话"}
-                        />
-                    )}
-                </div>
-                <KuzhambuButton
-                    testId="discovery-qa-export-session-button"
-                    disabled={selectedSessionId === null}
-                    loading={exportSessionMutation.isPending}
-                    onClick={exportCurrentSession}
-                >
-                    导出对话
-                </KuzhambuButton>
-            </aside>
-
-            <section className="discovery-qa-page__chat">
-                <header className="discovery-qa-page__chat-header">
-                    <div>
-                        <Title level={2}>知识助手</Title>
-                        <Text type="secondary">提问后，我会在知识库中查询并附上来源。</Text>
-                    </div>
-                    {selectedSession ? (
-                        <Text type="secondary">
-                            {sessionTitle(selectedSession)} · {formatTime(selectedSession.openedAt)}
-                        </Text>
-                    ) : null}
-                </header>
-
-                {operationMessage ? (
-                    <Text className="discovery-qa-page__notice" type="secondary">
-                        {operationMessage}
-                    </Text>
-                ) : null}
-
-                <div className="discovery-qa-page__messages" aria-label="问答消息">
-                    {bubbleItems.length ? (
-                        <Bubble.List
-                            autoScroll
-                            items={bubbleItems}
-                            role={{
-                                ai: {
-                                    placement: "start",
-                                    shape: "corner"
-                                },
-                                user: {
-                                    placement: "end",
-                                    shape: "corner"
-                                }
-                            }}
-                        />
-                    ) : (
-                        <div className="discovery-qa-page__empty">
-                            <Title level={3}>我能帮你解答什么？</Title>
-                            <Text type="secondary">问一个问题，开始新的对话。</Text>
-                        </div>
-                    )}
-                </div>
-
-                <div className="discovery-qa-page__sources" aria-label="回答来源">
-                    {latestAssistantMessage?.sources?.length
-                        ? latestAssistantMessage.sources.map((source, index) => (
-                              <article
-                                  key={toSourceKey(source, index)}
-                                  className="discovery-qa-page__source"
-                              >
-                                  <div className="discovery-qa-page__source-header">
-                                      <Text strong>{source.titleSnapshot ?? source.sourceId}</Text>
-                                      <Tag>{source.knowledgeBase ?? source.contentType ?? "-"}</Tag>
-                                  </div>
-                                  <Text type="secondary">
-                                      {source.snippet ??
-                                          source.locationLabel ??
-                                          source.sourcePath ??
-                                          "-"}
-                                  </Text>
-                              </article>
-                          ))
-                        : null}
-                </div>
-
-                <Sender
-                    autoSize={false}
-                    className="discovery-qa-page__composer"
-                    components={QA_SENDER_COMPONENTS}
-                    loading={openSessionMutation.isPending || chatCompletionMutation.isPending}
-                    placeholder="发送消息"
-                    submitType="enter"
-                    value={form.question}
-                    onChange={(value) => updateField("question", value)}
-                    onSubmit={(message) => void submitQuestion(message)}
-                    suffix={(_, { components }) => (
-                        <components.SendButton
-                            aria-label="发送问题"
-                            data-testid="discovery-qa-send-question-button"
-                            onClickCapture={(event) => {
-                                event.preventDefault();
-                                event.stopPropagation();
-                                void submitQuestion();
-                            }}
-                        />
-                    )}
-                />
-            </section>
+            <QaSessionTable
+                deleting={deleteSessionMutation.isPending}
+                exportDisabled={selectedSessionId === null}
+                exporting={exportSessionMutation.isPending}
+                loading={sessionsQuery.isPending}
+                onCreate={createNewSession}
+                onDelete={(sessionId) => void deleteSession(sessionId)}
+                onExport={exportCurrentSession}
+                onSelect={setSelectedSessionId}
+                opening={openSessionMutation.isPending}
+                selectedSessionId={selectedSessionId}
+                sessions={sessions}
+            />
+            <QaMessagePanel
+                inputValue={form.question}
+                loading={openSessionMutation.isPending || chatCompletionMutation.isPending}
+                messages={messages}
+                onDetailOpen={() => setSessionDetailDrawerOpen(true)}
+                onInputChange={(value) => updateField("question", value)}
+                onSubmit={(message) => void submitQuestion(message)}
+                operationMessage={operationMessage}
+                selectedSession={selectedSession}
+            />
+            <QaSessionDetailDrawer
+                onClose={() => setSessionDetailDrawerOpen(false)}
+                open={sessionDetailDrawerOpen}
+                session={selectedSession}
+            />
         </main>
     );
 };

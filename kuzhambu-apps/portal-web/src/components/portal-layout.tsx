@@ -1,7 +1,40 @@
-import { Search } from "lucide-react";
-import { Link, Outlet } from "react-router-dom";
+import { Moon, Search, Sun } from "lucide-react";
+import { useEffect, useState, type CSSProperties } from "react";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import kuzhambuLogoImage from "@/assets/home/kuzhambu-logo.svg";
 import footerMountainImage from "@/assets/home/portal-home-effect-footer-mountain.png";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import "./portal-effect-theme.css";
+import "./portal-layout.css";
+
+type PortalTheme = "light" | "dark";
+
+const THEME_STORAGE_KEY = "kuzhambu.portal.theme";
+const isTestIdExposed =
+    import.meta.env.MODE !== "production" || import.meta.env.VITE_EXPOSE_TEST_ID === "true";
+
+const footerBackgroundStyle = {
+    "--portal-footer-bg-image": `url(${footerMountainImage})`
+} as CSSProperties;
+
+const getInitialTheme = (): PortalTheme => {
+    if (typeof window === "undefined") {
+        return "light";
+    }
+
+    const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
+
+    if (storedTheme === "dark" || storedTheme === "light") {
+        return storedTheme;
+    }
+
+    if (typeof window.matchMedia === "function") {
+        return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+
+    return "light";
+};
 
 const navigationItems = [
     { label: "三才图会", href: "/classics/sancai" },
@@ -35,56 +68,101 @@ const footerGroups = [
 ];
 
 export const PortalLayout = () => {
+    const location = useLocation();
+    const [theme, setTheme] = useState<PortalTheme>(getInitialTheme);
+    const isThemeSupportedRoute = location.pathname === "/";
+    const isDarkTheme = theme === "dark";
+    const themeToggleLabel = isDarkTheme ? "切换浅色主题" : "切换深色主题";
+
+    useEffect(() => {
+        document.documentElement.classList.toggle("dark", isThemeSupportedRoute && isDarkTheme);
+    }, [isDarkTheme, isThemeSupportedRoute]);
+
+    useEffect(() => {
+        if (!isThemeSupportedRoute) {
+            return;
+        }
+
+        window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+    }, [isThemeSupportedRoute, theme]);
+
+    const handleThemeToggle = () => {
+        setTheme((currentTheme) => (currentTheme === "dark" ? "light" : "dark"));
+    };
+
     return (
         <div className="portal-shell portal-effect-layout">
-            <header className="portal-effect-header">
-                <Link className="portal-effect-brand" to="/" aria-label="Kuzhambu 首页">
-                    <span>Kuzhambu</span>
-                    <img className="portal-effect-brand-logo" src={kuzhambuLogoImage} alt="" />
-                </Link>
-                <nav className="portal-effect-nav" aria-label="门户导航">
-                    {navigationItems.map((item) => (
-                        <Link key={item.href} to={item.href}>
-                            {item.label}
+            <TooltipProvider>
+                <header className="portal-effect-header">
+                    <Link className="portal-effect-brand" to="/" aria-label="Kuzhambu 首页">
+                        <span>Kuzhambu</span>
+                        <img className="portal-effect-brand-logo" src={kuzhambuLogoImage} alt="" />
+                    </Link>
+                    <nav className="portal-effect-nav" aria-label="门户导航">
+                        {navigationItems.map((item) => (
+                            <Link key={item.href} to={item.href}>
+                                {item.label}
+                            </Link>
+                        ))}
+                    </nav>
+                    <div className="portal-effect-header-actions">
+                        <Link
+                            className="portal-effect-search"
+                            to="/discovery/search"
+                            aria-label="进入古籍检索"
+                        >
+                            <Search aria-hidden="true" size={17} />
+                            <span>搜索条目、图像、人物、地名、典籍...</span>
+                            <strong>搜索</strong>
                         </Link>
-                    ))}
-                </nav>
-                <Link
-                    className="portal-effect-search"
-                    to="/discovery/search"
-                    aria-label="进入古籍检索"
-                >
-                    <Search aria-hidden="true" size={17} />
-                    <span>搜索条目、图像、人物、地名、典籍...</span>
-                    <strong>搜索</strong>
-                </Link>
-            </header>
+                        {isThemeSupportedRoute ? (
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon-lg"
+                                        className="portal-effect-theme-toggle"
+                                        aria-label={themeToggleLabel}
+                                        aria-pressed={isDarkTheme}
+                                        onClick={handleThemeToggle}
+                                        {...(isTestIdExposed
+                                            ? { "data-testid": "portal-header-theme-toggle" }
+                                            : {})}
+                                    >
+                                        {isDarkTheme ? (
+                                            <Sun aria-hidden="true" data-icon="inline-start" />
+                                        ) : (
+                                            <Moon aria-hidden="true" data-icon="inline-start" />
+                                        )}
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>{themeToggleLabel}</TooltipContent>
+                            </Tooltip>
+                        ) : null}
+                    </div>
+                </header>
+            </TooltipProvider>
 
             <Outlet />
 
-            <footer className="portal-effect-footer">
-                <img
-                    className="portal-effect-footer-mountain"
-                    alt=""
-                    src={footerMountainImage}
-                    aria-hidden="true"
-                />
+            <footer className="portal-effect-footer" style={footerBackgroundStyle}>
                 <div className="portal-effect-footer-intro">
-                    <span className="portal-effect-footer-seal" aria-hidden="true">
-                        三才
-                    </span>
+                    <img className="portal-effect-brand-logo" src={kuzhambuLogoImage} alt="" />
                     <p>汇聚古籍与图像资源，连接知识与研究线索。</p>
-                    <Link to="/knowledge">关于三才翰典</Link>
+                    <Link to="/knowledge">关于KUZHAMBU</Link>
                 </div>
                 <nav className="portal-effect-footer-nav" aria-label="底部资源导航">
                     {footerGroups.map((group) => (
                         <section key={group.title}>
                             <h2>{group.title}</h2>
-                            {group.links.map((link) => (
-                                <Link key={link} to="/discovery/search">
-                                    {link}
-                                </Link>
-                            ))}
+                            <div className="portal-effect-footer-nav-links">
+                                {group.links.map((link) => (
+                                    <Link key={link} to="/discovery/search">
+                                        {link}
+                                    </Link>
+                                ))}
+                            </div>
                         </section>
                     ))}
                 </nav>

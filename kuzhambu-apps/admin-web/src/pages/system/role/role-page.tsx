@@ -12,7 +12,7 @@ import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import type { OptionsRecord } from "@/types/options";
-import { RoleEdit } from "./components/role-edit";
+import { RoleEditDrawer } from "./components/role-edit-drawer";
 import * as service from "./role-service";
 import type { RoleOptionKeys, RoleSaveCommand } from "./role-service";
 import type { RoleMenuNode, RoleMenuTreeNode, RoleRecord } from "./role-types";
@@ -115,17 +115,17 @@ export const RolePage = () => {
     const [filters, setFilters] = useState<RoleFilters>(DEFAULT_ROLE_FILTERS);
     const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
     const [editingRole, setEditingRole] = useState<RoleRecord | null>(null);
-    const [editorOpen, setEditorOpen] = useState(false);
+    const [roleEditDrawerOpen, setRoleEditDrawerOpen] = useState(false);
     const hasSelectedRoles = selectedRowKeys.length > 0;
     const hasActiveFilters = filters.enable !== "ALL";
 
-    const roleQuery = useQuery({
+    const rolePageQuery = useQuery({
         queryKey: ["role", "list", query],
         queryFn: () => service.list(query),
         enabled: canViewRole,
         retry: false
     });
-    const roleMenuQuery = useQuery({
+    const roleMenuTreeQuery = useQuery({
         queryKey: ["role", "menu", "tree"],
         queryFn: service.listMenus,
         enabled: canViewRole,
@@ -137,7 +137,7 @@ export const RolePage = () => {
         enabled: canViewRole,
         retry: false
     });
-    const roles = useMemo(() => roleQuery.data || [], [roleQuery.data]);
+    const roles = useMemo(() => rolePageQuery.data || [], [rolePageQuery.data]);
     const roleOptions = roleOptionsQuery.data ?? EMPTY_ROLE_OPTIONS;
     const statusLabelByValue = useMemo(() => {
         return new Map(roleOptions.statusOptions.map((option) => [option.value, option.label]));
@@ -146,26 +146,29 @@ export const RolePage = () => {
         return new Map(roleOptions.privilegeOptions.map((option) => [option.value, option.label]));
     }, [roleOptions.privilegeOptions]);
     const filteredRoles = useMemo(() => {
-        const keyword = searchText.trim().toLowerCase();
-        if (!keyword) {
+        const normalizedSearchText = searchText.trim().toLowerCase();
+        if (!normalizedSearchText) {
             return roles;
         }
         return roles.filter((role) => {
             return (
-                role.name?.toLowerCase().includes(keyword) ||
-                role.remarks?.toLowerCase().includes(keyword)
+                role.name?.toLowerCase().includes(normalizedSearchText) ||
+                role.remarks?.toLowerCase().includes(normalizedSearchText)
             );
         });
     }, [roles, searchText]);
-    const menuTree = useMemo(() => buildMenuTree(roleMenuQuery.data || []), [roleMenuQuery.data]);
+    const menuTree = useMemo(
+        () => buildMenuTree(roleMenuTreeQuery.data || []),
+        [roleMenuTreeQuery.data]
+    );
     const treeData = useMemo(() => toTreeData(menuTree), [menuTree]);
     const expandedMenuIds = useMemo(() => collectMenuIds(menuTree), [menuTree]);
 
-    const saveMutation = useMutation({
+    const saveRoleMutation = useMutation({
         mutationFn: (values: RoleSaveCommand) =>
             values.id ? service.changeInfo(values) : service.create(values),
         onSuccess: async () => {
-            setEditorOpen(false);
+            setRoleEditDrawerOpen(false);
             setEditingRole(null);
             await queryClient.invalidateQueries({ queryKey: ["role", "list"] });
             messageApi.success("角色已保存");
@@ -223,26 +226,26 @@ export const RolePage = () => {
         setQuery({});
     };
 
-    const openCreateEditor = () => {
+    const openCreateRoleDrawer = () => {
         setEditingRole(null);
-        setEditorOpen(true);
+        setRoleEditDrawerOpen(true);
     };
 
-    const openEditEditor = (role: RoleRecord) => {
+    const openEditRoleDrawer = (role: RoleRecord) => {
         setEditingRole(role);
-        setEditorOpen(true);
+        setRoleEditDrawerOpen(true);
     };
 
-    const closeEditor = () => {
-        if (saveMutation.isPending) {
+    const closeRoleEditDrawer = () => {
+        if (saveRoleMutation.isPending) {
             return;
         }
-        setEditorOpen(false);
+        setRoleEditDrawerOpen(false);
         setEditingRole(null);
     };
 
     const saveRole = (request: RoleSaveCommand) => {
-        saveMutation.mutate(request);
+        saveRoleMutation.mutate(request);
     };
 
     const updateSingleStatus = (role: RoleRecord, enable: boolean) => {
@@ -368,7 +371,7 @@ export const RolePage = () => {
                     text: "编辑",
                     ariaLabel: `编辑 ${role.name}`,
                     disabled: !canEditRole,
-                    onClick: () => openEditEditor(role)
+                    onClick: () => openEditRoleDrawer(role)
                 },
                 { type: "divider" },
                 {
@@ -396,7 +399,7 @@ export const RolePage = () => {
                 searchShortcut="⌘K"
                 searchValue={searchText}
                 onSearchChange={setSearchText}
-                onAdd={openCreateEditor}
+                onAdd={openCreateRoleDrawer}
                 filterActive={hasActiveFilters}
                 filterFields={[
                     {
@@ -429,7 +432,7 @@ export const RolePage = () => {
                     <KuzhambuButton
                         testId="system-role-role-refresh-button"
                         icon={<ReloadOutlined />}
-                        onClick={() => roleQuery.refetch()}
+                        onClick={() => rolePageQuery.refetch()}
                     >
                         刷新
                     </KuzhambuButton>
@@ -470,7 +473,7 @@ export const RolePage = () => {
                 className="role-table"
                 columns={columns}
                 dataSource={filteredRoles}
-                loading={roleQuery.isFetching || sortMutation.isPending}
+                loading={rolePageQuery.isFetching || sortMutation.isPending}
                 pagination={false}
                 scroll={{ x: 1006 }}
                 rowSelection={{
@@ -481,7 +484,7 @@ export const RolePage = () => {
                     })
                 }}
                 locale={{
-                    emptyText: roleQuery.isError
+                    emptyText: rolePageQuery.isError
                         ? "角色列表加载失败，请确认权限和接口状态。"
                         : "暂无角色"
                 }}
@@ -489,16 +492,16 @@ export const RolePage = () => {
                 sortable={canEditRole}
             />
 
-            <RoleEdit
-                key={editorOpen ? editingRole?.id || "create" : "closed"}
-                open={editorOpen}
+            <RoleEditDrawer
+                key={roleEditDrawerOpen ? editingRole?.id || "create" : "closed"}
+                open={roleEditDrawerOpen}
                 role={editingRole}
                 treeData={treeData}
                 expandedMenuIds={expandedMenuIds}
                 statusOptions={roleOptions.statusOptions}
                 privilegeOptions={roleOptions.privilegeOptions}
-                saving={saveMutation.isPending}
-                onClose={closeEditor}
+                saving={saveRoleMutation.isPending}
+                onClose={closeRoleEditDrawer}
                 onSave={saveRole}
             />
         </>

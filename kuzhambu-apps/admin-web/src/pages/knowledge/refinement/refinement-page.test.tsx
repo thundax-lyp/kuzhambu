@@ -6,9 +6,9 @@ import { queryClient } from "@/query/query-client";
 import { RefinementPage } from "./refinement-page";
 
 const componentMocks = vi.hoisted(() => ({
-    mockRefinementEntityEditor: () => null,
+    mockRefinementEntityEditModal: () => null,
     mockRefinementEntityDeleteModal: () => null,
-    mockRefinementRelationEditor: () => null,
+    mockRefinementRelationEditModal: () => null,
     mockRefinementRelationDeleteModal: () => null,
     mockRefinementFilterForm: () => <div>筛选器</div>,
     mockRefinementProgressSummaryPanel: () => <div>进度摘要</div>,
@@ -35,14 +35,14 @@ const componentMocks = vi.hoisted(() => ({
     mockRefinementRelationTable: () => null
 }));
 
-vi.mock("./components/refinement-entity-editor", () => ({
-    RefinementEntityEditor: componentMocks.mockRefinementEntityEditor
+vi.mock("./components/refinement-entity-edit-modal", () => ({
+    RefinementEntityEditModal: componentMocks.mockRefinementEntityEditModal
 }));
 vi.mock("./components/refinement-entity-delete-modal", () => ({
     RefinementEntityDeleteModal: componentMocks.mockRefinementEntityDeleteModal
 }));
-vi.mock("./components/refinement-relation-editor", () => ({
-    RefinementRelationEditor: componentMocks.mockRefinementRelationEditor
+vi.mock("./components/refinement-relation-edit-modal", () => ({
+    RefinementRelationEditModal: componentMocks.mockRefinementRelationEditModal
 }));
 vi.mock("./components/refinement-relation-delete-modal", () => ({
     RefinementRelationDeleteModal: componentMocks.mockRefinementRelationDeleteModal

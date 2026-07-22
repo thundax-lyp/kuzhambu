@@ -148,26 +148,26 @@ export const PromptsPage = () => {
     const [filters, setFilters] = useState<PromptFilters>(DEFAULT_PROMPT_FILTERS);
     const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
     const [editingTemplate, setEditingTemplate] = useState<AiPromptTemplateRecord | null>(null);
-    const [drawerOpen, setDrawerOpen] = useState(false);
+    const [promptEditDrawerOpen, setPromptEditDrawerOpen] = useState(false);
     const hasSelectedPrompts = selectedRowKeys.length > 0;
     const hasActiveFilters =
         Boolean(filters.capability) || filters.enabled !== DEFAULT_PROMPT_FILTERS.enabled;
 
-    const capabilitiesQuery = useQuery({
+    const promptCapabilitiesQuery = useQuery({
         queryKey: ["ai", "prompts", "capabilities"],
         queryFn: service.listPromptCapabilities,
         enabled: canViewPrompt,
         retry: false
     });
 
-    const templatesQuery = useQuery({
+    const promptTemplatePageQuery = useQuery({
         queryKey: ["ai", "prompts", "templates", query],
         queryFn: () => service.listPromptTemplates(query),
         enabled: canViewPrompt,
         retry: false
     });
 
-    const statusMutation = useMutation({
+    const updatePromptStatusMutation = useMutation({
         mutationFn: async ({
             enabled,
             template
@@ -238,33 +238,35 @@ export const PromptsPage = () => {
     });
 
     const capabilityByCode = useMemo(() => {
-        return new Map((capabilitiesQuery.data || []).map((record) => [record.capability, record]));
-    }, [capabilitiesQuery.data]);
+        return new Map(
+            (promptCapabilitiesQuery.data || []).map((record) => [record.capability, record])
+        );
+    }, [promptCapabilitiesQuery.data]);
 
     const capabilityOptions = useMemo(() => {
-        return (capabilitiesQuery.data || []).map((record) => ({
+        return (promptCapabilitiesQuery.data || []).map((record) => ({
             label: readCapabilityLabel(record.capability, record.name),
             value: record.capability
         }));
-    }, [capabilitiesQuery.data]);
+    }, [promptCapabilitiesQuery.data]);
 
     const filteredTemplates = useMemo(() => {
-        const keyword = searchText.trim().toLowerCase();
-        if (!keyword) {
-            return templatesQuery.data || [];
+        const normalizedSearchText = searchText.trim().toLowerCase();
+        if (!normalizedSearchText) {
+            return promptTemplatePageQuery.data || [];
         }
-        return (templatesQuery.data || []).filter((template) => {
+        return (promptTemplatePageQuery.data || []).filter((template) => {
             const capability = capabilityByCode.get(template.capability || "");
             return (
-                (template.name || "").toLowerCase().includes(keyword) ||
-                (template.description || "").toLowerCase().includes(keyword) ||
-                (template.capability || "").toLowerCase().includes(keyword) ||
+                (template.name || "").toLowerCase().includes(normalizedSearchText) ||
+                (template.description || "").toLowerCase().includes(normalizedSearchText) ||
+                (template.capability || "").toLowerCase().includes(normalizedSearchText) ||
                 readCapabilityLabel(template.capability, capability?.name)
                     .toLowerCase()
-                    .includes(keyword)
+                    .includes(normalizedSearchText)
             );
         });
-    }, [capabilityByCode, searchText, templatesQuery.data]);
+    }, [capabilityByCode, searchText, promptTemplatePageQuery.data]);
 
     const selectedTemplates = useMemo(() => {
         const selectedKeys = new Set(selectedRowKeys.map(String));
@@ -274,11 +276,11 @@ export const PromptsPage = () => {
     }, [filteredTemplates, selectedRowKeys]);
 
     useEffect(() => {
-        if (templatesQuery.isError) {
-            const error = templatesQuery.error;
+        if (promptTemplatePageQuery.isError) {
+            const error = promptTemplatePageQuery.error;
             messageApi.error(error instanceof Error ? error.message : "提示词模板加载失败");
         }
-    }, [messageApi, templatesQuery.error, templatesQuery.isError]);
+    }, [messageApi, promptTemplatePageQuery.error, promptTemplatePageQuery.isError]);
 
     const invalidatePrompts = async () => {
         await queryClient.invalidateQueries({ queryKey: ["ai", "prompts"] });
@@ -303,23 +305,23 @@ export const PromptsPage = () => {
         setQuery({});
     };
 
-    const openEdit = (template: AiPromptTemplateRecord) => {
+    const openEditPromptDrawer = (template: AiPromptTemplateRecord) => {
         setEditingTemplate(template);
-        setDrawerOpen(true);
+        setPromptEditDrawerOpen(true);
     };
 
-    const openCreate = () => {
+    const openCreatePromptDrawer = () => {
         setEditingTemplate(null);
-        setDrawerOpen(true);
+        setPromptEditDrawerOpen(true);
     };
 
-    const closeEditor = () => {
-        setDrawerOpen(false);
+    const closePromptEditDrawer = () => {
+        setPromptEditDrawerOpen(false);
         setEditingTemplate(null);
     };
 
     const handleSaved = () => {
-        setDrawerOpen(false);
+        setPromptEditDrawerOpen(false);
         setEditingTemplate(null);
         void invalidatePrompts();
     };
@@ -328,7 +330,7 @@ export const PromptsPage = () => {
         if (!canEditPrompt) {
             return;
         }
-        statusMutation.mutate({ enabled, template });
+        updatePromptStatusMutation.mutate({ enabled, template });
     };
 
     const deleteTemplate = (template: AiPromptTemplateRecord) => {
@@ -353,7 +355,9 @@ export const PromptsPage = () => {
             return;
         }
         await Promise.all(
-            selectedTemplates.map((template) => statusMutation.mutateAsync({ enabled, template }))
+            selectedTemplates.map((template) =>
+                updatePromptStatusMutation.mutateAsync({ enabled, template })
+            )
         );
         setSelectedRowKeys([]);
     };
@@ -427,7 +431,7 @@ export const PromptsPage = () => {
                         template,
                         capabilityByCode.get(template.capability || "")?.name
                     )} 状态，当前${enabled === false ? "禁用" : "启用"}`}
-                    disabled={!canEditPrompt || statusMutation.isPending}
+                    disabled={!canEditPrompt || updatePromptStatusMutation.isPending}
                     onChange={(checked) => changeEnabled(template, checked)}
                 />
             )
@@ -459,7 +463,7 @@ export const PromptsPage = () => {
                         capabilityByCode.get(template.capability || "")?.name
                     )}`,
                     disabled: !canEditPrompt,
-                    onClick: () => openEdit(template)
+                    onClick: () => openEditPromptDrawer(template)
                 },
                 {
                     key: "delete",
@@ -499,7 +503,7 @@ export const PromptsPage = () => {
                                 placeholder="全部"
                                 value={filters.capability || undefined}
                                 options={capabilityOptions}
-                                loading={capabilitiesQuery.isFetching}
+                                loading={promptCapabilitiesQuery.isFetching}
                                 onChange={(capability) =>
                                     setFilters((currentFilters) => ({
                                         ...currentFilters,
@@ -539,7 +543,7 @@ export const PromptsPage = () => {
                             testId="ai-prompts-prompts-enable-button"
                             icon={<CheckCircleOutlined />}
                             disabled={!canEditPrompt || !hasSelectedPrompts}
-                            loading={statusMutation.isPending}
+                            loading={updatePromptStatusMutation.isPending}
                             onClick={() => void batchChangeEnabled(true)}
                         >
                             启用
@@ -548,7 +552,7 @@ export const PromptsPage = () => {
                             testId="ai-prompts-prompts-disable-button"
                             icon={<StopOutlined />}
                             disabled={!canEditPrompt || !hasSelectedPrompts}
-                            loading={statusMutation.isPending}
+                            loading={updatePromptStatusMutation.isPending}
                             onClick={() => void batchChangeEnabled(false)}
                         >
                             禁用
@@ -570,7 +574,7 @@ export const PromptsPage = () => {
                         <KuzhambuButton
                             testId="ai-prompts-prompts-refresh-button"
                             icon={<ReloadOutlined />}
-                            loading={templatesQuery.isFetching}
+                            loading={promptTemplatePageQuery.isFetching}
                             onClick={() => void invalidatePrompts()}
                         >
                             刷新
@@ -580,7 +584,7 @@ export const PromptsPage = () => {
                             type="primary"
                             icon={<PlusOutlined />}
                             disabled={!canEditPrompt}
-                            onClick={openCreate}
+                            onClick={openCreatePromptDrawer}
                         >
                             新建
                         </KuzhambuButton>
@@ -590,7 +594,7 @@ export const PromptsPage = () => {
                 className="prompts-table"
                 columns={columns}
                 dataSource={filteredTemplates}
-                loading={templatesQuery.isFetching}
+                loading={promptTemplatePageQuery.isFetching}
                 pagination={false}
                 scroll={{ x: 968 }}
                 rowSelection={{
@@ -601,19 +605,19 @@ export const PromptsPage = () => {
                     })
                 }}
                 locale={{
-                    emptyText: templatesQuery.isError
+                    emptyText: promptTemplatePageQuery.isError
                         ? "提示词模板加载失败，请确认权限和接口状态。"
                         : "暂无提示词模板"
                 }}
             />
 
             <PromptEditDrawer
-                key={drawerOpen ? editingTemplate?.id || "create" : "closed"}
+                key={promptEditDrawerOpen ? editingTemplate?.id || "create" : "closed"}
                 canEdit={canEditPrompt}
                 capabilityOptions={capabilityOptions}
-                open={drawerOpen}
+                open={promptEditDrawerOpen}
                 template={editingTemplate}
-                onClose={closeEditor}
+                onClose={closePromptEditDrawer}
                 onSaved={handleSaved}
             />
         </>

@@ -7,7 +7,7 @@ import * as service from "../ming-customs-service";
 import type { MingCustomsTagCloudItem } from "../ming-customs-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 
-export interface MingCustomsTagCloudProps {
+interface MingCustomsTagCloudProps {
     category?: string | null;
     keyword?: string | null;
     onSelect: (item: MingCustomsTagCloudItem) => void;

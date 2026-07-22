@@ -44,8 +44,8 @@
 
 ### Placement
 
-- 页面放在 `src/pages/<domain>/<domain>-page.tsx`。
-- 页面表单、详情或同域入口放在同页面域，例如 `src/pages/share/share-form.tsx`。
+- 页面放在 `src/pages/<domain>/<domain>-page.tsx`；复杂业务区可使用 `src/pages/<section>/<feature>/<feature>-page.tsx`，以叶子目录作为页面域。
+- 页面表单、详情或同域入口放在同页面域，例如 `src/pages/share-detail/share-detail-page.tsx`。
 - 页面 service 放在同页面域 `<domain>-service.ts`。
 - 页面类型放在同页面域 `<domain>-types.ts`。
 - 跨页面 HTTP 基础设施放在 `src/api/`。

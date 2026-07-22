@@ -95,14 +95,14 @@ export const SystemLogPage = () => {
         filters.userName.trim()
     );
 
-    const logQuery = useQuery({
+    const systemLogPageQuery = useQuery({
         queryKey: ["system-log", "page", query],
         queryFn: () => service.pageEvents(query),
         enabled: canViewSystemLog,
         retry: false
     });
 
-    const logPage = logQuery.data;
+    const logPage = systemLogPageQuery.data;
     const logs = useMemo(() => logPage?.records || [], [logPage?.records]);
     const totalCount = logPage?.count ?? logPage?.totalCount ?? 0;
     const currentPageNo = logPage?.pageNo || query.pageNo || DEFAULT_PAGE_NO;
@@ -345,7 +345,7 @@ export const SystemLogPage = () => {
                 <KuzhambuButton
                     testId="system-system-log-system-log-refresh-button"
                     icon={<ReloadOutlined />}
-                    onClick={() => logQuery.refetch()}
+                    onClick={() => systemLogPageQuery.refetch()}
                 >
                     刷新
                 </KuzhambuButton>
@@ -354,7 +354,7 @@ export const SystemLogPage = () => {
             className="system-log-table"
             columns={columns}
             dataSource={logs}
-            loading={logQuery.isFetching}
+            loading={systemLogPageQuery.isFetching}
             scroll={{ x: 1220 }}
             expandable={{
                 expandedRowRender: (log) => (
@@ -396,7 +396,7 @@ export const SystemLogPage = () => {
                 }
             }}
             locale={{
-                emptyText: logQuery.isError
+                emptyText: systemLogPageQuery.isError
                     ? "系统日志加载失败，请确认权限和接口状态。"
                     : "暂无系统日志"
             }}

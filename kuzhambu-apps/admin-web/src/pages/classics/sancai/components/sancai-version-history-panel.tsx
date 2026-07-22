@@ -67,7 +67,7 @@ const formatValue = (value: unknown) => {
     return String(value);
 };
 
-export interface SancaiVersionHistoryPanelProps {
+interface SancaiVersionHistoryPanelProps {
     currentEntry?: SancaiEntryRecord | null;
     detailLoading?: boolean;
     listLoading?: boolean;
