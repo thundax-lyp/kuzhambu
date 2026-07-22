@@ -4,7 +4,7 @@ import type {
     KnowledgeAtlasCanvasEdge,
     KnowledgeAtlasCanvasNode,
     KnowledgeAtlasCanvasView
-} from "./knowledge-atlas-types";
+} from "./atlas-types";
 
 export interface KnowledgeGraphNodeData extends Record<string, unknown> {
     label: string;

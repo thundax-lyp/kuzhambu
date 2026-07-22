@@ -11,11 +11,11 @@ import {
 } from "@xyflow/react";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import type { KnowledgeAtlasCanvasView } from "./knowledge-atlas-types";
-import { layoutKnowledgeGraph, type KnowledgeGraphNodeData } from "./knowledge-graph-layout";
+import type { KnowledgeAtlasCanvasView } from "./atlas-types";
+import { layoutKnowledgeGraph, type KnowledgeGraphNodeData } from "./atlas-graph-layout";
 
 import "@xyflow/react/dist/style.css";
-import "./knowledge-graph-canvas.css";
+import "./atlas-graph-canvas.css";
 
 interface KnowledgeGraphCanvasProps {
     canvasView: KnowledgeAtlasCanvasView | null;
