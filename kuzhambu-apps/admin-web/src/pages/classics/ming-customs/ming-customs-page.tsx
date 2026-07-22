@@ -144,8 +144,8 @@ export const MingCustomsPage = () => {
     const [selectedTagFilter, setSelectedTagFilter] = useState<MingCustomsSelectedTagFilter | null>(
         null
     );
-    const [editorMode, setEditorMode] = useState<"create" | "edit">("create");
-    const [editorOpen, setEditorOpen] = useState(false);
+    const [mingCustomsEditDrawerMode, setEditorMode] = useState<"create" | "edit">("create");
+    const [mingCustomsEditDrawerOpen, setMingCustomsEditDrawerOpen] = useState(false);
     const [editingEntry, setEditingEntry] = useState<MingCustomsRecord | null>(null);
     const [selectedEntryIds, setSelectedEntryIds] = useState<number[]>([]);
     const [batchCandidateEntryIds, setBatchCandidateEntryIds] = useState<number[]>([]);
@@ -182,20 +182,26 @@ export const MingCustomsPage = () => {
     const detailQuery = useQuery({
         queryKey: ["ming-customs", "detail", editingEntry?.id],
         queryFn: () => service.get(editingEntry?.id ?? 0),
-        enabled: editorOpen && editorMode === "edit" && Boolean(editingEntry?.id),
+        enabled:
+            mingCustomsEditDrawerOpen &&
+            mingCustomsEditDrawerMode === "edit" &&
+            Boolean(editingEntry?.id),
         retry: false
     });
     const versionsQuery = useQuery({
         queryKey: ["ming-customs", "versions", editingEntry?.id],
         queryFn: () => service.listVersions(editingEntry?.id ?? 0),
-        enabled: editorOpen && editorMode === "edit" && Boolean(editingEntry?.id),
+        enabled:
+            mingCustomsEditDrawerOpen &&
+            mingCustomsEditDrawerMode === "edit" &&
+            Boolean(editingEntry?.id),
         retry: false
     });
     const selectedVersionQuery = useQuery({
         queryKey: ["ming-customs", "versions", "detail", editingEntry?.id, selectedVersionId],
         queryFn: () => service.getVersion(editingEntry?.id ?? 0, selectedVersionId ?? 0),
         enabled:
-            editorOpen &&
+            mingCustomsEditDrawerOpen &&
             Boolean(editingEntry?.id) &&
             typeof selectedVersionId === "number" &&
             Number.isInteger(selectedVersionId),
@@ -227,7 +233,10 @@ export const MingCustomsPage = () => {
                 contentType: "MING_CUSTOMS",
                 contentId: editingEntry?.id
             }),
-        enabled: editorOpen && editorMode === "edit" && Boolean(editingEntry?.id),
+        enabled:
+            mingCustomsEditDrawerOpen &&
+            mingCustomsEditDrawerMode === "edit" &&
+            Boolean(editingEntry?.id),
         retry: false,
         refetchInterval: (query) => {
             const tasks = query.state.data?.items || [];
@@ -248,7 +257,7 @@ export const MingCustomsPage = () => {
     const totalCount = pageResult?.count ?? pageResult?.totalCount ?? 0;
     const currentPageNo = pageResult?.pageNo || query.pageNo || DEFAULT_PAGE_NO;
     const currentPageSize = pageResult?.pageSize || query.pageSize || DEFAULT_PAGE_SIZE;
-    const editorEntry = detailQuery.data || editingEntry;
+    const editingEntryDetail = detailQuery.data || editingEntry;
     const exportJobs = exportJobsQuery.data?.records || [];
     const selectedEntries = useMemo(
         () => records.filter((record) => selectedEntryIds.includes(record.id)),
@@ -282,14 +291,14 @@ export const MingCustomsPage = () => {
             }),
             queryClient.invalidateQueries({ queryKey: ["ming-customs", "versions"] }),
             queryClient.invalidateQueries({
-                queryKey: ["ai", "candidates", "MING_CUSTOMS", editorEntry?.id]
+                queryKey: ["ai", "candidates", "MING_CUSTOMS", editingEntryDetail?.id]
             })
         ]);
-    }, [editorEntry?.id, queryClient]);
+    }, [editingEntryDetail?.id, queryClient]);
 
     const invalidateMingCandidates = async () => {
         await queryClient.invalidateQueries({
-            queryKey: ["ai", "candidates", "MING_CUSTOMS", editorEntry?.id]
+            queryKey: ["ai", "candidates", "MING_CUSTOMS", editingEntryDetail?.id]
         });
     };
     const invalidateExportJobs = async () => {
@@ -299,18 +308,20 @@ export const MingCustomsPage = () => {
     };
     const invalidateRefinementTasks = async () => {
         await queryClient.invalidateQueries({
-            queryKey: ["classics", "ming-customs", "refinement", "tasks", editorEntry?.id]
+            queryKey: ["classics", "ming-customs", "refinement", "tasks", editingEntryDetail?.id]
         });
     };
 
     const saveMutation = useMutation({
         mutationFn: (command: MingCustomsCommand) =>
-            editorMode === "create" ? service.add(command) : service.update(command),
+            mingCustomsEditDrawerMode === "create" ? service.add(command) : service.update(command),
         onSuccess: async () => {
-            setEditorOpen(false);
+            setMingCustomsEditDrawerOpen(false);
             setEditingEntry(null);
             await invalidateMingCustoms();
-            messageApi.success(editorMode === "create" ? "明代习俗已新增" : "明代习俗已保存");
+            messageApi.success(
+                mingCustomsEditDrawerMode === "create" ? "明代习俗已新增" : "明代习俗已保存"
+            );
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "保存失败");
@@ -493,25 +504,25 @@ export const MingCustomsPage = () => {
         }));
     };
 
-    const openCreateEditor = () => {
+    const openCreateMingCustomsDrawer = () => {
         setEditorMode("create");
         setEditingEntry(null);
-        setEditorOpen(true);
+        setMingCustomsEditDrawerOpen(true);
         setSelectedVersionId(null);
     };
 
-    const openEditEditor = (entry: MingCustomsRecord) => {
+    const openEditMingCustomsDrawer = (entry: MingCustomsRecord) => {
         setEditorMode("edit");
         setEditingEntry(entry);
-        setEditorOpen(true);
+        setMingCustomsEditDrawerOpen(true);
         setSelectedVersionId(null);
     };
 
-    const closeEditor = () => {
+    const closeMingCustomsEditDrawer = () => {
         if (saveMutation.isPending) {
             return;
         }
-        setEditorOpen(false);
+        setMingCustomsEditDrawerOpen(false);
         setEditingEntry(null);
         setSelectedVersionId(null);
         handledSucceededTaskIdsRef.current.clear();
@@ -522,7 +533,7 @@ export const MingCustomsPage = () => {
     };
 
     const confirmResetVersion = (version: MingCustomsContentVersionRecord) => {
-        if (!editorEntry?.id) {
+        if (!editingEntryDetail?.id) {
             return;
         }
 
@@ -531,7 +542,7 @@ export const MingCustomsPage = () => {
             message: "恢复后会生成新的正式版本，当前内容将被历史版本覆盖。",
             onConfirm: () =>
                 resetVersionMutation.mutate({
-                    entryId: editorEntry.id,
+                    entryId: editingEntryDetail.id,
                     versionId: version.id
                 })
         });
@@ -698,7 +709,7 @@ export const MingCustomsPage = () => {
                 filters={filters}
                 onFilterApply={applyFilters}
                 onFilterReset={resetFilters}
-                onAdd={openCreateEditor}
+                onAdd={openCreateMingCustomsDrawer}
                 onClearTagFilter={clearTagFilter}
                 onFiltersChange={setFilters}
                 onSearchChange={searchMingCustoms}
@@ -741,7 +752,7 @@ export const MingCustomsPage = () => {
                             dataSource={records}
                             onDelete={deleteEntry}
                             onExport={exportEntry}
-                            onOpenEdit={openEditEditor}
+                            onOpenEdit={openEditMingCustomsDrawer}
                             onSelectedEntryIdsChange={setSelectedEntryIds}
                             onShare={shareEntry}
                             pagination={{
@@ -772,19 +783,19 @@ export const MingCustomsPage = () => {
             />
             <MingCustomsEditDrawer
                 categoryOptions={categoryOptions}
-                entry={editorEntry}
+                entry={editingEntryDetail}
                 loading={detailQuery.isLoading}
-                mode={editorMode}
-                open={editorOpen}
+                mode={mingCustomsEditDrawerMode}
+                open={mingCustomsEditDrawerOpen}
                 saving={saveMutation.isPending}
-                onClose={closeEditor}
+                onClose={closeMingCustomsEditDrawer}
                 onSave={(command) => saveMutation.mutate(command)}
                 afterForm={
-                    editorMode === "edit" && editorEntry ? (
+                    mingCustomsEditDrawerMode === "edit" && editingEntryDetail ? (
                         <>
                             <MingCustomsAiActions
                                 creatingRefinementCapability={creatingRefinementCapability}
-                                entry={editorEntry}
+                                entry={editingEntryDetail}
                                 onCandidateApplied={invalidateMingCustoms}
                                 onCandidateRejected={invalidateMingCandidates}
                                 onContentChanged={invalidateMingCustoms}
@@ -792,7 +803,7 @@ export const MingCustomsPage = () => {
                                 refinementTasks={refinementTasks}
                             />
                             <MingCustomsVersionPanel
-                                currentEntry={editorEntry}
+                                currentEntry={editingEntryDetail}
                                 detailLoading={selectedVersionQuery.isLoading}
                                 listLoading={versionsQuery.isLoading}
                                 resetting={resetVersionMutation.isPending}

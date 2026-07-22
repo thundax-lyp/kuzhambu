@@ -191,8 +191,8 @@ export const WangqiPage = () => {
     });
     const [searchText, setSearchText] = useState("");
     const [filters, setFilters] = useState<WangqiFilters>(DEFAULT_WANGQI_FILTERS);
-    const [editorMode, setEditorMode] = useState<"create" | "edit">("create");
-    const [editorOpen, setEditorOpen] = useState(false);
+    const [wangqiDocumentEditDrawerMode, setEditorMode] = useState<"create" | "edit">("create");
+    const [wangqiDocumentEditDrawerOpen, setWangqiDocumentEditDrawerOpen] = useState(false);
     const [editingDocument, setEditingDocument] = useState<WangqiDocumentRecord | null>(null);
     const [selectedVersionId, setSelectedVersionId] = useState<number | null>(null);
     const [selectedDocumentIds, setSelectedDocumentIds] = useState<number[]>([]);
@@ -230,10 +230,13 @@ export const WangqiPage = () => {
     const detailQuery = useQuery({
         queryKey: ["wangqi", "detail", editingDocument?.id],
         queryFn: () => wangqiService.get(editingDocument?.id ?? 0),
-        enabled: editorOpen && editorMode === "edit" && Boolean(editingDocument?.id),
+        enabled:
+            wangqiDocumentEditDrawerOpen &&
+            wangqiDocumentEditDrawerMode === "edit" &&
+            Boolean(editingDocument?.id),
         retry: false
     });
-    const activeDocument = detailQuery.data || editingDocument;
+    const editingDocumentData = detailQuery.data || editingDocument;
     const currentUserQuery = useQuery({
         queryKey: ["sys", "current-user", "info"],
         queryFn: currentUserService.getCurrentUserInfo,
@@ -252,33 +255,48 @@ export const WangqiPage = () => {
     });
     const currentUserId = Number(currentUserQuery.data?.id ?? 0);
     const sourceFileQuery = useQuery({
-        queryKey: ["wangqi", "source-file", activeDocument?.id, activeDocument?.storageObjectId],
-        queryFn: () => wangqiService.getSourceFile(activeDocument?.id ?? 0),
-        enabled: editorOpen && Boolean(activeDocument?.id && activeDocument?.storageObjectId),
+        queryKey: [
+            "wangqi",
+            "source-file",
+            editingDocumentData?.id,
+            editingDocumentData?.storageObjectId
+        ],
+        queryFn: () => wangqiService.getSourceFile(editingDocumentData?.id ?? 0),
+        enabled:
+            wangqiDocumentEditDrawerOpen &&
+            Boolean(editingDocumentData?.id && editingDocumentData?.storageObjectId),
         retry: false
     });
     const versionsQuery = useQuery({
-        queryKey: ["wangqi", "versions", activeDocument?.id],
-        queryFn: () => wangqiService.listVersions(activeDocument?.id ?? 0),
-        enabled: editorOpen && editorMode === "edit" && Boolean(activeDocument?.id),
+        queryKey: ["wangqi", "versions", editingDocumentData?.id],
+        queryFn: () => wangqiService.listVersions(editingDocumentData?.id ?? 0),
+        enabled:
+            wangqiDocumentEditDrawerOpen &&
+            wangqiDocumentEditDrawerMode === "edit" &&
+            Boolean(editingDocumentData?.id),
         retry: false
     });
     const versionDetailQuery = useQuery({
-        queryKey: ["wangqi", "version", activeDocument?.id, selectedVersionId],
-        queryFn: () => wangqiService.getVersion(activeDocument?.id ?? 0, selectedVersionId ?? 0),
-        enabled: editorOpen && Boolean(activeDocument?.id && selectedVersionId),
+        queryKey: ["wangqi", "version", editingDocumentData?.id, selectedVersionId],
+        queryFn: () =>
+            wangqiService.getVersion(editingDocumentData?.id ?? 0, selectedVersionId ?? 0),
+        enabled:
+            wangqiDocumentEditDrawerOpen && Boolean(editingDocumentData?.id && selectedVersionId),
         retry: false
     });
     const refinementTasksQuery = useQuery({
-        queryKey: ["classics", "wangqi", "refinement", "tasks", activeDocument?.id],
+        queryKey: ["classics", "wangqi", "refinement", "tasks", editingDocumentData?.id],
         queryFn: () =>
             aiRefinementTaskService.pageTasks({
                 pageNo: 1,
                 pageSize: 10,
                 contentType: "WANGQI_DOCUMENT",
-                contentId: activeDocument?.id
+                contentId: editingDocumentData?.id
             }),
-        enabled: editorOpen && editorMode === "edit" && Boolean(activeDocument?.id),
+        enabled:
+            wangqiDocumentEditDrawerOpen &&
+            wangqiDocumentEditDrawerMode === "edit" &&
+            Boolean(editingDocumentData?.id),
         retry: false,
         refetchInterval: (query) => {
             const tasks = query.state.data?.items || [];
@@ -338,7 +356,7 @@ export const WangqiPage = () => {
     );
     const canOpenDiscoveryQa = hasPermission("discovery:qa:view");
     let singleDocumentQaDisabledReason: string | undefined;
-    if (activeDocument && !activeDocument.id) {
+    if (editingDocumentData && !editingDocumentData.id) {
         singleDocumentQaDisabledReason = "请先保存王圻文档";
     } else if (!canOpenDiscoveryQa) {
         singleDocumentQaDisabledReason = "缺少 Discovery 问答权限";
@@ -376,20 +394,20 @@ export const WangqiPage = () => {
                 queryKey: ["classics", "content", "qa-pairs", "WANGQI_DOCUMENT"]
             }),
             queryClient.invalidateQueries({
-                queryKey: ["ai", "candidates", "WANGQI_DOCUMENT", activeDocument?.id]
+                queryKey: ["ai", "candidates", "WANGQI_DOCUMENT", editingDocumentData?.id]
             })
         ]);
-    }, [activeDocument?.id, queryClient]);
+    }, [editingDocumentData?.id, queryClient]);
 
     const invalidateWangqiCandidates = async () => {
         await queryClient.invalidateQueries({
-            queryKey: ["ai", "candidates", "WANGQI_DOCUMENT", activeDocument?.id]
+            queryKey: ["ai", "candidates", "WANGQI_DOCUMENT", editingDocumentData?.id]
         });
     };
 
     const invalidateRefinementTasks = async () => {
         await queryClient.invalidateQueries({
-            queryKey: ["classics", "wangqi", "refinement", "tasks", activeDocument?.id]
+            queryKey: ["classics", "wangqi", "refinement", "tasks", editingDocumentData?.id]
         });
     };
     const invalidateExportJobs = async () => {
@@ -409,13 +427,17 @@ export const WangqiPage = () => {
 
     const saveMutation = useMutation({
         mutationFn: (command: WangqiDocumentCommand) =>
-            editorMode === "create" ? wangqiService.add(command) : wangqiService.update(command),
+            wangqiDocumentEditDrawerMode === "create"
+                ? wangqiService.add(command)
+                : wangqiService.update(command),
         onSuccess: async () => {
-            setEditorOpen(false);
+            setWangqiDocumentEditDrawerOpen(false);
             setEditingDocument(null);
             setSelectedVersionId(null);
             await invalidateWangqi();
-            messageApi.success(editorMode === "create" ? "王圻文档已新增" : "王圻文档已保存");
+            messageApi.success(
+                wangqiDocumentEditDrawerMode === "create" ? "王圻文档已新增" : "王圻文档已保存"
+            );
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "保存失败");
@@ -587,31 +609,31 @@ export const WangqiPage = () => {
         });
     };
 
-    const openCreateEditor = () => {
+    const openCreateWangqiDocumentDrawer = () => {
         setEditorMode("create");
         setEditingDocument(null);
         setSelectedVersionId(null);
         setSummaryTrackingTask(null);
         setTagTrackingTask(null);
         setQaTrackingTask(null);
-        setEditorOpen(true);
+        setWangqiDocumentEditDrawerOpen(true);
     };
 
-    const openEditEditor = (document: WangqiDocumentRecord) => {
+    const openEditWangqiDocumentDrawer = (document: WangqiDocumentRecord) => {
         setEditorMode("edit");
         setEditingDocument(document);
         setSelectedVersionId(null);
         setSummaryTrackingTask(null);
         setTagTrackingTask(null);
         setQaTrackingTask(null);
-        setEditorOpen(true);
+        setWangqiDocumentEditDrawerOpen(true);
     };
 
-    const closeEditor = () => {
+    const closeWangqiDocumentEditDrawer = () => {
         if (saveMutation.isPending) {
             return;
         }
-        setEditorOpen(false);
+        setWangqiDocumentEditDrawerOpen(false);
         setEditingDocument(null);
         setSelectedVersionId(null);
         setSummaryTrackingTask(null);
@@ -664,15 +686,15 @@ export const WangqiPage = () => {
     };
 
     const uploadSourceFile = (file: File) => {
-        if (!activeDocument?.id) {
+        if (!editingDocumentData?.id) {
             messageApi.warning("请先保存王圻文档后再上传原始文件");
             return;
         }
-        uploadSourceFileMutation.mutate({ documentId: activeDocument.id, file });
+        uploadSourceFileMutation.mutate({ documentId: editingDocumentData.id, file });
     };
 
     const resetVersion = (version: WangqiContentVersionRecord) => {
-        if (!activeDocument?.id) {
+        if (!editingDocumentData?.id) {
             return;
         }
         confirm.danger({
@@ -682,7 +704,7 @@ export const WangqiPage = () => {
             okText: "恢复",
             onConfirm: () =>
                 resetVersionMutation.mutateAsync({
-                    documentId: activeDocument.id,
+                    documentId: editingDocumentData.id,
                     versionId: version.id
                 })
         });
@@ -839,7 +861,7 @@ export const WangqiPage = () => {
                         <WangqiTimeline
                             loading={pageQuery.isLoading}
                             dataSource={records}
-                            onOpenDocument={openEditEditor}
+                            onOpenDocument={openEditWangqiDocumentDrawer}
                         />
                         <KuzhambuButton
                             testId="classics-wangqi-wangqi-export-jobs-button"
@@ -852,7 +874,7 @@ export const WangqiPage = () => {
                             testId="classics-wangqi-wangqi-document-create-button"
                             type="primary"
                             icon={<PlusOutlined />}
-                            onClick={openCreateEditor}
+                            onClick={openCreateWangqiDocumentDrawer}
                         >
                             新增文档
                         </KuzhambuButton>
@@ -933,7 +955,7 @@ export const WangqiPage = () => {
                         dataSource={records}
                         onDelete={deleteDocument}
                         onExport={exportDocument}
-                        onOpenEdit={openEditEditor}
+                        onOpenEdit={openEditWangqiDocumentDrawer}
                         onShare={shareDocument}
                         onSelectedDocumentIdsChange={setSelectedDocumentIds}
                         onSortDirectionChange={sortWangqiDocuments}
@@ -975,27 +997,27 @@ export const WangqiPage = () => {
                 onChanged={invalidateWangqi}
             />
             <WangqiDocumentEditDrawer
-                document={activeDocument}
+                document={editingDocumentData}
                 loading={detailQuery.isLoading}
-                mode={editorMode}
-                open={editorOpen}
+                mode={wangqiDocumentEditDrawerMode}
+                open={wangqiDocumentEditDrawerOpen}
                 saving={saveMutation.isPending}
                 creatingSummaryTask={creatingRefinementCapability === "summary"}
                 summaryTasks={summaryRefinementTasks}
                 summaryTrackingTask={summaryTrackingTask}
                 onCreateSummaryTask={
-                    editorMode === "edit" && activeDocument
-                        ? () => createRefinementTask(activeDocument, "summary")
+                    wangqiDocumentEditDrawerMode === "edit" && editingDocumentData
+                        ? () => createRefinementTask(editingDocumentData, "summary")
                         : undefined
                 }
-                onClose={closeEditor}
+                onClose={closeWangqiDocumentEditDrawer}
                 onSave={(command) => saveMutation.mutate(command)}
                 tagContent={
-                    editorMode === "edit" && activeDocument ? (
+                    wangqiDocumentEditDrawerMode === "edit" && editingDocumentData ? (
                         <WangqiRefinementActions
                             canOpenDiscoveryQa={canOpenDiscoveryQa}
                             creatingRefinementCapability={creatingRefinementCapability}
-                            document={activeDocument}
+                            document={editingDocumentData}
                             qaTasks={qaRefinementTasks}
                             qaTrackingTask={qaTrackingTask}
                             section="tags"
@@ -1004,12 +1026,12 @@ export const WangqiPage = () => {
                             tagTrackingTask={tagTrackingTask}
                             onChanged={invalidateWangqi}
                             onCreateQaTask={(existingQaPairs) =>
-                                createRefinementTask(activeDocument, "qa", {
+                                createRefinementTask(editingDocumentData, "qa", {
                                     existingQaPairs
                                 })
                             }
                             onCreateTagTask={(existingTags) =>
-                                createRefinementTask(activeDocument, "tags", {
+                                createRefinementTask(editingDocumentData, "tags", {
                                     existingTags
                                 })
                             }
@@ -1019,11 +1041,11 @@ export const WangqiPage = () => {
                     ) : null
                 }
                 qaContent={
-                    editorMode === "edit" && activeDocument ? (
+                    wangqiDocumentEditDrawerMode === "edit" && editingDocumentData ? (
                         <WangqiRefinementActions
                             canOpenDiscoveryQa={canOpenDiscoveryQa}
                             creatingRefinementCapability={creatingRefinementCapability}
-                            document={activeDocument}
+                            document={editingDocumentData}
                             qaTasks={qaRefinementTasks}
                             qaTrackingTask={qaTrackingTask}
                             section="qa"
@@ -1032,12 +1054,12 @@ export const WangqiPage = () => {
                             tagTrackingTask={tagTrackingTask}
                             onChanged={invalidateWangqi}
                             onCreateQaTask={(existingQaPairs) =>
-                                createRefinementTask(activeDocument, "qa", {
+                                createRefinementTask(editingDocumentData, "qa", {
                                     existingQaPairs
                                 })
                             }
                             onCreateTagTask={(existingTags) =>
-                                createRefinementTask(activeDocument, "tags", {
+                                createRefinementTask(editingDocumentData, "tags", {
                                     existingTags
                                 })
                             }
@@ -1047,9 +1069,9 @@ export const WangqiPage = () => {
                     ) : null
                 }
                 sourceFileContent={
-                    editorMode === "edit" && activeDocument ? (
+                    wangqiDocumentEditDrawerMode === "edit" && editingDocumentData ? (
                         <WangqiStorageFilePanel
-                            document={activeDocument}
+                            document={editingDocumentData}
                             loading={sourceFileQuery.isLoading || sourceFileQuery.isFetching}
                             sourceFile={sourceFileQuery.data}
                             uploading={uploadSourceFileMutation.isPending}
@@ -1059,9 +1081,9 @@ export const WangqiPage = () => {
                     ) : null
                 }
                 versionContent={
-                    editorMode === "edit" && activeDocument ? (
+                    wangqiDocumentEditDrawerMode === "edit" && editingDocumentData ? (
                         <WangqiVersionHistoryPanel
-                            currentDocument={activeDocument}
+                            currentDocument={editingDocumentData}
                             detailLoading={versionDetailQuery.isLoading}
                             listLoading={versionsQuery.isLoading}
                             resetting={resetVersionMutation.isPending}
