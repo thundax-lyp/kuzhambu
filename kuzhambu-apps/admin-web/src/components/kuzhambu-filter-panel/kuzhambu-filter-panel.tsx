@@ -9,6 +9,7 @@ export interface KuzhambuFilterPanelField {
 }
 
 export interface KuzhambuFilterPanelProps {
+    actionsAlign?: "default" | "right";
     children?: ReactNode;
     className?: string;
     fields?: KuzhambuFilterPanelField[];
@@ -24,6 +25,7 @@ const resolveActionOffset = (fieldCount: number, columns: number, span: number) 
 };
 
 export const KuzhambuFilterPanel = ({
+    actionsAlign = "default",
     children,
     className,
     fields,
@@ -72,6 +74,7 @@ export const KuzhambuFilterPanel = ({
             className={[
                 "kuzhambu-filter-panel",
                 open ? "kuzhambu-filter-panel-open" : "",
+                actionsAlign === "right" ? "kuzhambu-filter-panel-actions-right" : "",
                 className
             ]
                 .filter(Boolean)

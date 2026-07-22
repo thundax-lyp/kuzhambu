@@ -76,6 +76,15 @@
     width: 100%;
 }
 
+.kuzhambu-filter-panel-actions-right .kuzhambu-filter-panel-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.kuzhambu-filter-panel-actions-right .kuzhambu-filter-panel-actions .ant-btn {
+    width: auto;
+}
+
 .kuzhambu-filter-panel-actions .ant-btn-primary {
     color: var(--accent-blue) !important;
     background: var(--accent-blue-soft) !important;
