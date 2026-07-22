@@ -97,9 +97,9 @@ export const TaxonomyPage = () => {
     const [editingTag, setEditingTag] = useState<TagRecord | null>(null);
     const [editingSynonym, setEditingSynonym] = useState<SynonymRecord | null>(null);
     const [selectedTag, setSelectedTag] = useState<TagRecord | null>(null);
-    const [categoryEditorOpen, setCategoryEditDrawerorOpen] = useState(false);
+    const [categoryEditorOpen, setCategoryEditDrawerOpen] = useState(false);
     const [tagEditorOpen, setTagEditorOpen] = useState(false);
-    const [synonymEditorOpen, setSynonymEditDrawerorOpen] = useState(false);
+    const [synonymEditorOpen, setSynonymEditDrawerOpen] = useState(false);
     const [tagDetailOpen, setTagDetailOpen] = useState(false);
     const [tagDetailReviewMode, setTagDetailReviewMode] = useState(false);
     const [removingAliasId, setRemovingAliasId] = useState<string | null>(null);
@@ -160,7 +160,7 @@ export const TaxonomyPage = () => {
                 ? service.updateCategory(request as TagCategoryUpdateCommand)
                 : service.createCategory(request as TagCategoryCreateCommand),
         onSuccess: async () => {
-            setCategoryEditDrawerorOpen(false);
+            setCategoryEditDrawerOpen(false);
             setEditingCategory(null);
             await queryClient.invalidateQueries({
                 queryKey: ["knowledge", "taxonomy", "categories"]
@@ -383,7 +383,7 @@ export const TaxonomyPage = () => {
                 ? service.updateSynonym(request as SynonymUpdateCommand)
                 : service.createSynonym(request as SynonymCreateCommand),
         onSuccess: async () => {
-            setSynonymEditDrawerorOpen(false);
+            setSynonymEditDrawerOpen(false);
             setEditingSynonym(null);
             await queryClient.invalidateQueries({
                 queryKey: ["knowledge", "taxonomy", "synonyms"]
@@ -462,19 +462,19 @@ export const TaxonomyPage = () => {
 
     const openCreateCategory = () => {
         setEditingCategory(null);
-        setCategoryEditDrawerorOpen(true);
+        setCategoryEditDrawerOpen(true);
     };
 
     const openEditCategory = (category: TagCategoryRecord) => {
         setEditingCategory(category);
-        setCategoryEditDrawerorOpen(true);
+        setCategoryEditDrawerOpen(true);
     };
 
-    const closeCategoryEditDraweror = () => {
+    const closeCategoryEditDrawer = () => {
         if (saveCategoryMutation.isPending) {
             return;
         }
-        setCategoryEditDrawerorOpen(false);
+        setCategoryEditDrawerOpen(false);
         setEditingCategory(null);
     };
 
@@ -501,12 +501,12 @@ export const TaxonomyPage = () => {
 
     const openCreateSynonym = () => {
         setEditingSynonym(null);
-        setSynonymEditDrawerorOpen(true);
+        setSynonymEditDrawerOpen(true);
     };
 
     const openEditSynonym = (record: SynonymRecord) => {
         setEditingSynonym(record);
-        setSynonymEditDrawerorOpen(true);
+        setSynonymEditDrawerOpen(true);
     };
 
     const closeTagEditor = () => {
@@ -517,11 +517,11 @@ export const TaxonomyPage = () => {
         setEditingTag(null);
     };
 
-    const closeSynonymEditDraweror = () => {
+    const closeSynonymEditDrawer = () => {
         if (saveSynonymMutation.isPending) {
             return;
         }
-        setSynonymEditDrawerorOpen(false);
+        setSynonymEditDrawerOpen(false);
         setEditingSynonym(null);
     };
 
@@ -763,7 +763,7 @@ export const TaxonomyPage = () => {
                 open={categoryEditorOpen}
                 category={editingCategory}
                 saving={saveCategoryMutation.isPending}
-                onClose={closeCategoryEditDraweror}
+                onClose={closeCategoryEditDrawer}
                 onCreate={(request) => saveCategoryMutation.mutate(request)}
                 onSave={(request) => saveCategoryMutation.mutate(request)}
             />
@@ -782,7 +782,7 @@ export const TaxonomyPage = () => {
                 open={synonymEditorOpen}
                 saving={saveSynonymMutation.isPending}
                 synonym={editingSynonym}
-                onClose={closeSynonymEditDraweror}
+                onClose={closeSynonymEditDrawer}
                 onCreate={(request) => saveSynonymMutation.mutate(request)}
                 onSave={(request) => saveSynonymMutation.mutate(request)}
             />
