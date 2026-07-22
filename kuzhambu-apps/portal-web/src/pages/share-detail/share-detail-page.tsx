@@ -6,13 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import * as shareService from "./share-service";
+import * as shareDetailService from "./share-detail-service";
 import type {
     ClassicsSharePortalImage,
     ClassicsSharePortalTarget,
     ClassicsShareResource,
     ClassicsShareTargetStatus
-} from "./share-types";
+} from "./share-detail-types";
 
 const CONTENT_TYPE_LABELS = new Map([
     ["SANCAI_ENTRY", "三才图会"],
@@ -94,7 +94,7 @@ const resolveResourceUrl = (
     if (!resource?.storageObjectId) {
         return undefined;
     }
-    return shareService.getShareResourceContentUrl({
+    return shareDetailService.getShareResourceContentUrl({
         mode,
         privateAccess,
         shareToken: token,
@@ -388,12 +388,12 @@ const renderShareTargetCard = (
     );
 };
 
-export const ShareForm = () => {
+export const ShareDetailPage = () => {
     const { shareToken } = useParams();
     const token = shareToken ?? "";
     const shareQuery = useQuery({
         enabled: token.length > 0,
-        queryFn: () => shareService.getAccessibleShare(token),
+        queryFn: () => shareDetailService.getAccessibleShare(token),
         queryKey: ["classics", "shares", token],
         retry: false
     });

@@ -2,14 +2,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { SharePage } from "./share-page";
-import * as shareService from "./share-service";
+import { ShareListPage } from "./share-list-page";
+import * as shareListService from "./share-list-service";
 
-vi.mock("./share-service", () => ({
+vi.mock("./share-list-service", () => ({
     listShares: vi.fn()
 }));
 
-const renderSharePage = () => {
+const renderShareListPage = () => {
     const queryClient = new QueryClient({
         defaultOptions: {
             queries: {
@@ -21,7 +21,7 @@ const renderSharePage = () => {
     render(
         <QueryClientProvider client={queryClient}>
             <MemoryRouter>
-                <SharePage />
+                <ShareListPage />
             </MemoryRouter>
         </QueryClientProvider>
     );
@@ -29,14 +29,14 @@ const renderSharePage = () => {
     return queryClient;
 };
 
-describe("SharePage", () => {
+describe("ShareListPage", () => {
     afterEach(() => {
         cleanup();
         vi.restoreAllMocks();
     });
 
     it("filters deleted share targets from the public list", async () => {
-        vi.mocked(shareService.listShares).mockResolvedValue({
+        vi.mocked(shareListService.listShares).mockResolvedValue({
             pageNo: 1,
             pageSize: 20,
             records: [
@@ -69,7 +69,7 @@ describe("SharePage", () => {
             totalPage: 1
         });
 
-        renderSharePage();
+        renderShareListPage();
 
         expect(await screen.findByText("可见标题")).toBeTruthy();
         expect(await screen.findByText("共 1 条公开分享")).toBeTruthy();

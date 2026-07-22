@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as http from "@/api/http";
-import * as shareService from "./share-service";
+import * as shareDetailService from "./share-detail-service";
 
 describe("classics share service", () => {
     afterEach(() => {
@@ -8,27 +8,12 @@ describe("classics share service", () => {
         vi.restoreAllMocks();
     });
 
-    it("listShares forwards query parameters to postJson", async () => {
-        const postJsonSpy = vi.spyOn(http, "postJson").mockResolvedValue({
-            pageNo: 1,
-            pageSize: 20,
-            records: [],
-            totalCount: 0,
-            totalPage: 0
-        });
-
-        const query = { title: "test", pageNo: 1 };
-        await shareService.listShares(query);
-
-        expect(postJsonSpy).toHaveBeenCalledWith("/portal/classics/shares/list", query);
-    });
-
     it("getShare calls postJson with share token body", async () => {
         const postJsonSpy = vi
             .spyOn(http, "postJson")
             .mockResolvedValue({ title: "分享详情", targets: null });
 
-        await shareService.getShare("abc-123");
+        await shareDetailService.getShare("abc-123");
 
         expect(postJsonSpy).toHaveBeenCalledWith("/portal/classics/shares/get", {
             shareToken: "abc-123"
@@ -40,7 +25,7 @@ describe("classics share service", () => {
             .spyOn(http, "postJsonWithAccessToken")
             .mockResolvedValue({ title: "私有分享", visibility: "PRIVATE" });
 
-        const response = await shareService.getPrivateShare("private-token", "access-token");
+        const response = await shareDetailService.getPrivateShare("private-token", "access-token");
 
         expect(response.visibility).toBe("PRIVATE");
         expect(postJsonWithAccessTokenSpy).toHaveBeenCalledWith(
@@ -57,7 +42,7 @@ describe("classics share service", () => {
             .spyOn(http, "postJsonWithAccessToken")
             .mockResolvedValue({ title: "私有分享", visibility: "PRIVATE" });
 
-        const response = await shareService.getAccessibleShare("private-token");
+        const response = await shareDetailService.getAccessibleShare("private-token");
 
         expect(response.title).toBe("私有分享");
         expect(postJsonSpy).toHaveBeenCalledWith("/portal/classics/shares/get", {
@@ -77,7 +62,7 @@ describe("classics share service", () => {
         });
         const postJsonWithAccessTokenSpy = vi.spyOn(http, "postJsonWithAccessToken");
 
-        const response = await shareService.getAccessibleShare("private-token");
+        const response = await shareDetailService.getAccessibleShare("private-token");
 
         expect(response.loginRequired).toBe(true);
         expect(postJsonWithAccessTokenSpy).not.toHaveBeenCalled();
@@ -114,7 +99,7 @@ describe("classics share service", () => {
             visibility: "PUBLIC"
         });
 
-        const response = await shareService.getShare("active-token");
+        const response = await shareDetailService.getShare("active-token");
 
         expect(response.targets).toHaveLength(2);
         expect(response).toEqual({
@@ -192,7 +177,7 @@ describe("classics share service", () => {
             visibility: "PUBLIC"
         });
 
-        const response = await shareService.getShare("token");
+        const response = await shareDetailService.getShare("token");
         const images = response.targets?.[0]?.images ?? [];
 
         expect(images).toHaveLength(2);
@@ -213,9 +198,9 @@ describe("classics share service", () => {
             const error = new Error(`share ${status.toLowerCase()}`);
             vi.spyOn(http, "postJson").mockRejectedValue(error);
 
-            await expect(shareService.getShare(`${status.toLowerCase()}-token`)).rejects.toThrow(
-                error.message
-            );
+            await expect(
+                shareDetailService.getShare(`${status.toLowerCase()}-token`)
+            ).rejects.toThrow(error.message);
         }
     );
 
@@ -223,7 +208,7 @@ describe("classics share service", () => {
         const buildApiUrlSpy = vi.spyOn(http, "buildApiUrl");
         buildApiUrlSpy.mockReturnValue("http://example.com");
 
-        shareService.getShareResourceContentUrl({
+        shareDetailService.getShareResourceContentUrl({
             mode: "preview",
             shareToken: "abc-123",
             storageObjectId: 9001
@@ -234,7 +219,7 @@ describe("classics share service", () => {
             { download: undefined }
         );
 
-        shareService.getShareResourceContentUrl({
+        shareDetailService.getShareResourceContentUrl({
             mode: "download",
             shareToken: "abc-123",
             storageObjectId: 9001
@@ -245,7 +230,7 @@ describe("classics share service", () => {
             { download: "true" }
         );
         expect(
-            shareService.getShareResourceContentUrl({
+            shareDetailService.getShareResourceContentUrl({
                 mode: "download",
                 shareToken: "abc-123",
                 storageObjectId: 9001
@@ -258,7 +243,7 @@ describe("classics share service", () => {
         const buildApiUrlSpy = vi.spyOn(http, "buildApiUrl");
         buildApiUrlSpy.mockReturnValue("http://example.com/private");
 
-        const url = shareService.getShareResourceContentUrl({
+        const url = shareDetailService.getShareResourceContentUrl({
             mode: "preview",
             privateAccess: true,
             shareToken: "abc-123",
@@ -276,7 +261,7 @@ describe("classics share service", () => {
         const buildApiUrlSpy = vi.spyOn(http, "buildApiUrl");
         buildApiUrlSpy.mockReturnValue("http://example.com/private-login");
 
-        shareService.getShareResourceContentUrl({
+        shareDetailService.getShareResourceContentUrl({
             mode: "download",
             privateAccess: true,
             shareToken: "private-token",

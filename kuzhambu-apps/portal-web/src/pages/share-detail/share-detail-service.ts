@@ -1,10 +1,8 @@
 import { buildApiUrl, postJson, postJsonWithAccessToken } from "@/api/http";
 import type {
-    ClassicsSharePortalListResponse,
     ClassicsSharePortalResponse,
-    ClassicsShareResourceContentUrlCommand,
-    ClassicsShareSearchQuery
-} from "./share-types";
+    ClassicsShareResourceContentUrlCommand
+} from "./share-detail-types";
 
 const ACCESS_TOKEN_KEYS = ["kuzhambu.portal.accessToken", "kuzhambu.admin.accessToken"];
 
@@ -19,10 +17,6 @@ export const getAccessToken = () => {
         }
     }
     return null;
-};
-
-export const listShares = (query: ClassicsShareSearchQuery = {}) => {
-    return postJson<ClassicsSharePortalListResponse>("/portal/classics/shares/list", { ...query });
 };
 
 export const getShare = (shareToken: string) => {

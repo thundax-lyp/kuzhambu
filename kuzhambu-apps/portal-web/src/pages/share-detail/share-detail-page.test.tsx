@@ -3,16 +3,16 @@ import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ShareForm } from "./share-form";
-import * as shareService from "./share-service";
+import { ShareDetailPage } from "./share-detail-page";
+import * as shareDetailService from "./share-detail-service";
 
-vi.mock("./share-service", () => ({
+vi.mock("./share-detail-service", () => ({
     getAccessibleShare: vi.fn(),
     getShare: vi.fn(),
     getShareResourceContentUrl: vi.fn(() => "http://localhost/resource")
 }));
 
-const renderShareForm = (shareToken: string) => {
+const renderShareDetailPage = (shareToken: string) => {
     const queryClient = new QueryClient({
         defaultOptions: {
             queries: {
@@ -25,7 +25,7 @@ const renderShareForm = (shareToken: string) => {
         <QueryClientProvider client={queryClient}>
             <MemoryRouter initialEntries={[`/share/${shareToken}`]}>
                 <Routes>
-                    <Route path="/share/:shareToken" element={<ShareForm />} />
+                    <Route path="/share/:shareToken" element={<ShareDetailPage />} />
                 </Routes>
             </MemoryRouter>
         </QueryClientProvider>
@@ -34,7 +34,7 @@ const renderShareForm = (shareToken: string) => {
     return queryClient;
 };
 
-describe("ShareForm", () => {
+describe("ShareDetailPage", () => {
     afterEach(() => {
         cleanup();
         window.localStorage.clear();
@@ -43,7 +43,7 @@ describe("ShareForm", () => {
     });
 
     it("renders an active batch-created share with the existing response fields", async () => {
-        vi.mocked(shareService.getAccessibleShare).mockResolvedValue({
+        vi.mocked(shareDetailService.getAccessibleShare).mockResolvedValue({
             issuedAt: "2026-01-01T00:00:00.000+08:00",
             status: "ACTIVE",
             targets: [
@@ -65,7 +65,7 @@ describe("ShareForm", () => {
             visibility: "PUBLIC"
         });
 
-        renderShareForm("active-token");
+        renderShareDetailPage("active-token");
 
         expect(await screen.findByRole("heading", { name: "王圻分享 - 王圻文档" })).toBeTruthy();
         expect(await screen.findByRole("heading", { name: "王圻文档" })).toBeTruthy();
@@ -74,10 +74,10 @@ describe("ShareForm", () => {
     });
 
     it("renders one share link as multiple readonly content cards with deleted placeholder", async () => {
-        vi.mocked(shareService.getShareResourceContentUrl).mockReturnValue(
+        vi.mocked(shareDetailService.getShareResourceContentUrl).mockReturnValue(
             "http://localhost/wangqi-resource"
         );
-        vi.mocked(shareService.getAccessibleShare).mockResolvedValue({
+        vi.mocked(shareDetailService.getAccessibleShare).mockResolvedValue({
             issuedAt: "2026-01-01T00:00:00.000+08:00",
             status: "ACTIVE",
             targets: [
@@ -126,7 +126,7 @@ describe("ShareForm", () => {
             visibility: "PUBLIC"
         });
 
-        renderShareForm("multi-token");
+        renderShareDetailPage("multi-token");
 
         const targets = await screen.findByLabelText("分享快照");
         expect(within(targets).getByLabelText("王圻文档内容卡片")).toBeTruthy();
@@ -136,13 +136,13 @@ describe("ShareForm", () => {
         expect(within(targets).getByText("三才摘要")).toBeTruthy();
         expect(within(targets).getByText("内容已删除，分享仅保留标题快照。")).toBeTruthy();
         expect(within(targets).queryByText("不应展示")).toBeNull();
-        expect(shareService.getShareResourceContentUrl).toHaveBeenCalledWith({
+        expect(shareDetailService.getShareResourceContentUrl).toHaveBeenCalledWith({
             mode: "preview",
             privateAccess: false,
             shareToken: "multi-token",
             storageObjectId: 7001
         });
-        expect(shareService.getShareResourceContentUrl).toHaveBeenCalledWith({
+        expect(shareDetailService.getShareResourceContentUrl).toHaveBeenCalledWith({
             mode: "download",
             privateAccess: false,
             shareToken: "multi-token",
@@ -152,7 +152,7 @@ describe("ShareForm", () => {
 
     it("renders sancai share images from share resources with thumbnail switching", async () => {
         const user = userEvent.setup();
-        vi.mocked(shareService.getAccessibleShare).mockResolvedValue({
+        vi.mocked(shareDetailService.getAccessibleShare).mockResolvedValue({
             status: "ACTIVE",
             targets: [
                 {
@@ -205,7 +205,7 @@ describe("ShareForm", () => {
             visibility: "PUBLIC"
         });
 
-        renderShareForm("sancai-token");
+        renderShareDetailPage("sancai-token");
 
         const imageSection = await screen.findByLabelText("三才图会图片");
         expect(within(imageSection).getByRole("img", { name: "原图" }).getAttribute("src")).toBe(
@@ -236,17 +236,17 @@ describe("ShareForm", () => {
         expect(
             within(imageSection).getByRole("link", { name: "下载原图" }).getAttribute("href")
         ).toBe("/portal/resource/8002?download=true");
-        expect(shareService.getShareResourceContentUrl).not.toHaveBeenCalled();
+        expect(shareDetailService.getShareResourceContentUrl).not.toHaveBeenCalled();
     });
 
     it.each(["EXPIRED", "REVOKED"])(
         "keeps %s shares on the existing error state",
         async (status) => {
-            vi.mocked(shareService.getAccessibleShare).mockRejectedValue(
+            vi.mocked(shareDetailService.getAccessibleShare).mockRejectedValue(
                 new Error(`share ${status.toLowerCase()}`)
             );
 
-            renderShareForm(`${status.toLowerCase()}-token`);
+            renderShareDetailPage(`${status.toLowerCase()}-token`);
 
             const errorState = await screen.findByLabelText("分享错误状态");
             expect(errorState.textContent).toContain("分享内容不存在或已过期");
@@ -254,13 +254,13 @@ describe("ShareForm", () => {
     );
 
     it("shows login guidance for private share without local login", async () => {
-        vi.mocked(shareService.getAccessibleShare).mockResolvedValue({
+        vi.mocked(shareDetailService.getAccessibleShare).mockResolvedValue({
             loginRequired: true,
             targets: [],
             visibility: "PRIVATE"
         });
 
-        renderShareForm("private-token");
+        renderShareDetailPage("private-token");
 
         const loginGuide = await screen.findByLabelText("私有分享登录引导");
         expect(loginGuide.textContent).toContain("私有分享需要登录后访问");
@@ -268,10 +268,10 @@ describe("ShareForm", () => {
     });
 
     it("uses private resource urls for authenticated private shares", async () => {
-        vi.mocked(shareService.getShareResourceContentUrl).mockReturnValue(
+        vi.mocked(shareDetailService.getShareResourceContentUrl).mockReturnValue(
             "http://localhost/private-resource"
         );
-        vi.mocked(shareService.getAccessibleShare).mockResolvedValue({
+        vi.mocked(shareDetailService.getAccessibleShare).mockResolvedValue({
             status: "ACTIVE",
             targets: [
                 {
@@ -299,13 +299,13 @@ describe("ShareForm", () => {
             visibility: "PRIVATE"
         });
 
-        renderShareForm("private-token");
+        renderShareDetailPage("private-token");
 
         const imageSection = await screen.findByLabelText("三才图会图片");
         expect(within(imageSection).getByRole("img", { name: "私有图" }).getAttribute("src")).toBe(
             "http://localhost/private-resource"
         );
-        expect(shareService.getShareResourceContentUrl).toHaveBeenCalledWith({
+        expect(shareDetailService.getShareResourceContentUrl).toHaveBeenCalledWith({
             mode: "preview",
             privateAccess: true,
             shareToken: "private-token",
@@ -314,8 +314,8 @@ describe("ShareForm", () => {
     });
 
     it("renders deleted target as a placeholder without body or resource controls", async () => {
-        vi.mocked(shareService.getShareResourceContentUrl).mockClear();
-        vi.mocked(shareService.getAccessibleShare).mockResolvedValue({
+        vi.mocked(shareDetailService.getShareResourceContentUrl).mockClear();
+        vi.mocked(shareDetailService.getAccessibleShare).mockResolvedValue({
             status: "ACTIVE",
             targets: [
                 {
@@ -342,7 +342,7 @@ describe("ShareForm", () => {
             visibility: "PUBLIC"
         });
 
-        renderShareForm("deleted-target-token");
+        renderShareDetailPage("deleted-target-token");
 
         expect(await screen.findByText("已删除王圻文档")).toBeTruthy();
         expect(await screen.findAllByText("内容已删除")).toHaveLength(2);
@@ -352,6 +352,6 @@ describe("ShareForm", () => {
         expect(screen.queryByLabelText("王圻原始文件")).toBeNull();
         expect(screen.queryByRole("link", { name: "预览" })).toBeNull();
         expect(screen.queryByRole("link", { name: "下载" })).toBeNull();
-        expect(shareService.getShareResourceContentUrl).not.toHaveBeenCalled();
+        expect(shareDetailService.getShareResourceContentUrl).not.toHaveBeenCalled();
     });
 });

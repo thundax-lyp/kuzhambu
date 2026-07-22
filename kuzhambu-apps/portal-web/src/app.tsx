@@ -9,8 +9,8 @@ import { KnowledgeAtlasPage } from "@/pages/knowledge/knowledge-atlas-page";
 import { KnowledgeHomePage } from "@/pages/knowledge/knowledge-home-page";
 import { KnowledgeLineagePage } from "@/pages/knowledge/knowledge-lineage-page";
 import { KnowledgeQualityPage } from "@/pages/knowledge/knowledge-quality-page";
-import { ShareForm } from "@/pages/share/share-form";
-import { SharePage } from "@/pages/share/share-page";
+import { ShareDetailPage } from "@/pages/share-detail/share-detail-page";
+import { ShareListPage } from "@/pages/share-list/share-list-page";
 
 import "./styles.css";
 import "@/pages/knowledge/knowledge-page.css";
@@ -34,8 +34,8 @@ export const App = () => {
                     <Route path="/discovery/search" element={<DiscoverySearchPage />} />
                     <Route path="/discovery/search-item" element={<DiscoverySearchItemPage />} />
                     <Route path="/discovery/qa" element={<DiscoveryQaPage />} />
-                    <Route path="/shares" element={<SharePage />} />
-                    <Route path="/share/:shareToken" element={<ShareForm />} />
+                    <Route path="/shares" element={<ShareListPage />} />
+                    <Route path="/share/:shareToken" element={<ShareDetailPage />} />
                 </Route>
             </Routes>
         </BrowserRouter>

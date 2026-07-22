@@ -12,8 +12,8 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select";
-import * as shareService from "./share-service";
-import type { ClassicsSharePortalListItem, ClassicsShareSearchQuery } from "./share-types";
+import * as shareListService from "./share-list-service";
+import type { ClassicsSharePortalListItem, ClassicsShareSearchQuery } from "./share-list-types";
 
 const ALL_CONTENT_TYPES = "ALL";
 
@@ -58,7 +58,7 @@ const isAvailableShareListItem = (record: ClassicsSharePortalListItem) => {
     return record.targetStatus !== "CONTENT_DELETED";
 };
 
-export const SharePage = () => {
+export const ShareListPage = () => {
     const [title, setTitle] = useState("");
     const [contentType, setContentType] = useState("");
     const [issuedAfter, setIssuedAfter] = useState("");
@@ -68,7 +68,7 @@ export const SharePage = () => {
         pageSize: 20
     });
     const shareListQuery = useQuery({
-        queryFn: () => shareService.listShares(query),
+        queryFn: () => shareListService.listShares(query),
         queryKey: ["classics", "shares", "list", query],
         retry: false
     });
