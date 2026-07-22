@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { KnowledgeLineagePage } from "./knowledge-lineage-page";
+import { KnowledgeLineagePage } from "./lineage-page";
 
 const { getKnowledgeLineage } = vi.hoisted(() => ({
     getKnowledgeLineage: vi.fn()
@@ -49,7 +49,7 @@ vi.mock("@xyflow/react", () => ({
 }));
 /* eslint-enable @typescript-eslint/naming-convention */
 
-vi.mock("./knowledge-lineage-service", () => ({
+vi.mock("./lineage-service", () => ({
     getKnowledgeLineage
 }));
 

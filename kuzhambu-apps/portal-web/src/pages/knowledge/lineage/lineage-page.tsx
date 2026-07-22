@@ -16,15 +16,12 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import * as KnowledgeLineageService from "./knowledge-lineage-service";
-import type { KnowledgeLineageCanvasQuery } from "./knowledge-lineage-service";
-import type {
-    KnowledgeLineageCanvasRecord,
-    KnowledgeLineageNodeRecord
-} from "./knowledge-lineage-types";
+import * as KnowledgeLineageService from "./lineage-service";
+import type { KnowledgeLineageCanvasQuery } from "./lineage-service";
+import type { KnowledgeLineageCanvasRecord, KnowledgeLineageNodeRecord } from "./lineage-types";
 
 import "@xyflow/react/dist/style.css";
-import "./knowledge-lineage-page.css";
+import "./lineage-page.css";
 
 interface FlowData extends Record<string, unknown> {
     label: string;
