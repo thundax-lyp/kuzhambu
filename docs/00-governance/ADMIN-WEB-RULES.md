@@ -160,17 +160,42 @@
 
 ### Naming
 
-- 前端自有按钮、菜单项和确认弹窗文案应表达具体动作，例如 `重置密码`、`移除头像`、`刷新密钥`；避免只写 `操作`、`变更状态`、`处理`。
-- 搜索框 placeholder 应表达可搜索对象，避免只写 `搜索` 或 `请输入`。
-- 页面状态变量命名贴近 UI 含义。单列表页面分页请求状态固定使用 `query` / `setQuery`；筛选面板临时状态固定使用 `filters` / `setFilters`；搜索框文本固定使用 `searchText` / `setSearchText`。同页多列表时必须加领域前缀，例如 `tagQuery`、`synonymQuery`。
-- `useQuery` 返回值固定使用 `<subject>Query`，其中 `<subject>` 表达数据对象，例如 `userPageQuery`、`roleOptionsQuery`、`detailQuery`。同页多列表不得都命名为 `pageQuery`。
-- `useMutation` 返回值固定使用 `<action>Mutation`，例如 `createMutation`、`updateMutation`、`deleteMutation`、`statusMutation`、`sortMutation`。同页多个领域对象时必须加领域前缀，例如 `createTagMutation`、`updateCategoryMutation`。
-- 正在编辑的领域对象固定命名为 `editing<Xxx>`；详情对象或详情标识固定命名为 `detail<Xxx>` / `detail<Xxx>Id`；表格选择固定命名为 `selectedRowKeys`，同页多表时加领域前缀，例如 `selectedTagRowKeys`。
-- 弹窗、抽屉 open 状态必须包含业务对象和容器类型，例如 `userEditDrawerOpen`、`tagDetailDrawerOpen`、`deleteConfirmModalOpen`。大页面避免使用 `editorOpen`、`drawerOpen`、`detailOpen` 这类泛名。
-- 打开和关闭弹窗、抽屉的方法必须表达动作、对象和容器类型，例如 `openCreateUserDrawer`、`openEditUserDrawer`、`closeUserEditDrawer`。仅适配无业务语义的组件事件签名时使用 `handleXxx`。
-- 权限变量固定使用 `can<Verb><Object>`，例如 `canViewUser`、`canEditUser`、`canChangeUserStatus`。其他布尔派生变量使用 `is`、`has`、`can` 前缀。
-- 表格列变量单表页面可以命名为 `columns`；同页多表必须使用领域前缀，例如 `userColumns`、`roleColumns`、`tagColumns`。
-- 页面 UI 状态类型使用 `XxxFilters`、`XxxFormValues`、`XxxViewState`；不要和 service 层 `XxxQuery` / `XxxCommand` 或领域数据 `XxxRecord` / `XxxNode` 混用。
+- 前端自有按钮、菜单项和确认弹窗文案应表达具体动作，例如 `重置密码`、`移除头像`、`刷新密钥`。
+- 搜索框 placeholder 应表达可搜索对象和输入目标。
+- 页面查询状态：
+  - 单列表页面分页请求状态固定命名为 `query` / `setQuery`，类型为 `XxxQuery`。
+  - 筛选面板临时 UI 状态固定命名为 `filters` / `setFilters`，类型为 `XxxFilters`。
+  - 搜索框文本固定命名为 `searchText` / `setSearchText`；活跃筛选派生值固定命名为 `hasActiveFilters`。
+  - 同页多个独立列表必须加领域前缀，例如 `tagQuery`、`synonymQuery`。
+- TanStack Query 命名：
+  - `useQuery` 返回值固定使用 `<subject>Query`，其中 `<subject>` 表达数据对象，例如 `userPageQuery`、`roleOptionsQuery`、`detailQuery`、`currentUserQuery`。
+  - 同页多列表必须写清领域对象，例如 `categoryPageQuery`、`tagPageQuery`、`synonymPageQuery`。
+  - 从分页 query 解出的数据固定优先使用 `pageResult`、`records`、`totalCount`、`currentPageNo`、`currentPageSize`；同页多列表时使用领域名，例如 `tagPage`、`tags`。
+- Mutation 命名：
+  - `useMutation` 返回值固定使用 `<action>Mutation`，例如 `createMutation`、`updateMutation`、`deleteMutation`、`statusMutation`、`sortMutation`。
+  - 同页多个领域对象时必须加领域前缀，例如 `createTagMutation`、`updateCategoryMutation`、`deleteSynonymMutation`。
+- 编辑、详情和选择对象命名：
+  - 正在编辑的领域对象固定命名为 `editing<Xxx>`，例如 `editingUser`、`editingRole`。
+  - 当前激活上下文使用 `active<Xxx>`；当前登录用户使用 `currentUser`；用户主动选择但未进入编辑态的对象使用 `selected<Xxx>`。
+  - 详情对象或详情标识固定命名为 `detail<Xxx>` / `detail<Xxx>Id`。
+  - 表格选择单表页面固定使用 `selectedRowKeys` / `setSelectedRowKeys`；同页多表时加领域前缀，例如 `selectedTagRowKeys`。
+  - 派生选择状态使用 `hasSelectedRows`、`hasSelectedUsers`、`selectedUsers`、`selectedTagIds` 等语义名。
+  - Tab 或分段控件当前项使用 `activeTab` / `activeSection`。
+- 弹窗和抽屉命名：
+  - open 状态必须包含业务对象和容器类型，例如 `userEditDrawerOpen`、`tagDetailDrawerOpen`、`deleteConfirmModalOpen`。
+  - 大页面必须优先使用业务对象和容器类型组成的完整 open 状态名。
+  - 打开和关闭方法必须表达动作、对象和容器类型，例如 `openCreateUserDrawer`、`openEditUserDrawer`、`closeUserEditDrawer`。
+  - 编辑容器方法使用 `EditDrawer` 或 `EditModal` 作为稳定后缀。
+- 权限和布尔变量：
+  - 权限变量固定使用 `can<Verb><Object>`，例如 `canViewUser`、`canEditUser`、`canDeleteUser`、`canChangeUserStatus`。
+  - 布尔派生状态固定使用 `is`、`has`、`can` 前缀，例如 `isCreatingUser`、`hasActiveFilters`、`hasSelectedUsers`。
+- 页面事件函数：
+  - 页面内函数按业务动作命名，例如 `applyFilters`、`resetFilters`、`updateQuery`、`searchUsers`、`createUser`、`updateUser`、`deleteUser`、`confirmDeleteUser`、`changeUserStatus`。
+  - `handleXxx` 适合直接适配组件事件签名的场景，例如 `handleTableChange`、`handleFormSubmit`。
+- 表格列变量：
+  - 单表页面可以命名为 `columns`。
+  - 同页多表必须使用领域前缀，例如 `userColumns`、`roleColumns`、`tagColumns`。
+- 页面 UI 状态类型使用 `XxxFilters`、`XxxFormValues`、`XxxViewState`；service 层输入类型使用 `XxxQuery` / `XxxCommand`；领域数据类型使用 `XxxRecord` / `XxxNode`。
 
 ### Placement
 
