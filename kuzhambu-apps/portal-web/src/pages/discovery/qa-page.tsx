@@ -45,6 +45,11 @@ interface StoredQaSession {
     session: DiscoveryQaOpenSessionResponse;
 }
 
+interface SelectedQaSessionState {
+    session: DiscoveryQaOpenSessionResponse | null;
+    source: "opened" | "stored" | null;
+}
+
 const FIXED_MODEL = "kuzhambu-qa";
 const SESSION_STORAGE_KEY = "kuzhambu.portal.discovery.qa.session";
 const SESSION_TTL_MS = 30 * 60 * 1000;
@@ -210,9 +215,13 @@ export const DiscoveryQaPage = () => {
     const [searchParams] = useSearchParams();
     const initialForm = toInitialFormState(searchParams);
     const [form, setForm] = useState<QaFormState>(() => initialForm);
-    const [selectedSession, setSelectedSession] = useState<DiscoveryQaOpenSessionResponse | null>(
-        () => readStoredSession(initialForm)
-    );
+    const [selectedSessionState, setSelectedSessionState] = useState<SelectedQaSessionState>(() => {
+        const session = readStoredSession(initialForm);
+        return {
+            session,
+            source: session ? "stored" : null
+        };
+    });
     const [messages, setMessages] = useState<QaTimelineMessage[]>([]);
     const isSubmittingRef = useRef(false);
     const [isSubmittingLocked, setIsSubmittingLocked] = useState(false);
@@ -224,6 +233,7 @@ export const DiscoveryQaPage = () => {
     const isSubmitting =
         isSubmittingLocked || openSessionMutation.isPending || chatCompletionMutation.isPending;
 
+    const selectedSession = selectedSessionState.session;
     const selectedSessionId = toSessionId(selectedSession?.sessionId);
     const hasWangqiSingleDocumentContext =
         form.contextMode === SINGLE_DOCUMENT_MODE &&
@@ -268,7 +278,8 @@ export const DiscoveryQaPage = () => {
             }
             return {
                 session: selectedSession,
-                sessionId: selectedSessionId
+                sessionId: selectedSessionId,
+                sessionSource: selectedSessionState.source
             };
         }
 
@@ -278,11 +289,15 @@ export const DiscoveryQaPage = () => {
             throw new Error("会话未返回会话号");
         }
 
-        setSelectedSession(openResponse);
+        setSelectedSessionState({
+            session: openResponse,
+            source: "opened"
+        });
         writeStoredSession(form, openResponse);
         return {
             session: openResponse,
-            sessionId: openedSessionId
+            sessionId: openedSessionId,
+            sessionSource: "opened" as const
         };
     };
 
@@ -290,7 +305,8 @@ export const DiscoveryQaPage = () => {
         questionText: string,
         sessionId: string,
         session: DiscoveryQaOpenSessionResponse | null,
-        existingMessageId?: string
+        existingMessageId?: string,
+        sessionSource?: SelectedQaSessionState["source"]
     ) => {
         const assistantMessageId = existingMessageId ?? createTimelineMessageId();
         if (!existingMessageId) {
@@ -359,13 +375,17 @@ export const DiscoveryQaPage = () => {
                 }
             });
         } catch (error) {
-            const isUnavailableSession = isUnavailableSessionError(error);
-            if (isUnavailableSession) {
+            const shouldResetSession =
+                sessionSource === "stored" || isUnavailableSessionError(error);
+            if (shouldResetSession) {
                 clearStoredSession();
-                setSelectedSession(null);
+                setSelectedSessionState({
+                    session: null,
+                    source: null
+                });
             }
             updateMessage(assistantMessageId, {
-                content: isUnavailableSession
+                content: shouldResetSession
                     ? "当前会话已失效，请重新发送问题。"
                     : "发送失败，请重试。",
                 failureReason: error instanceof Error ? error.message : "发送失败",
@@ -391,6 +411,12 @@ export const DiscoveryQaPage = () => {
         });
         if (session) {
             writeStoredSession(form, session);
+            if (sessionSource === "stored") {
+                setSelectedSessionState({
+                    session,
+                    source: "opened"
+                });
+            }
         }
         setForm((current) => ({
             ...current,
@@ -406,7 +432,13 @@ export const DiscoveryQaPage = () => {
 
         try {
             const currentSession = await ensureSession();
-            await sendQuestion(questionText, currentSession.sessionId, currentSession.session);
+            await sendQuestion(
+                questionText,
+                currentSession.sessionId,
+                currentSession.session,
+                undefined,
+                currentSession.sessionSource
+            );
         } catch {
             return;
         } finally {
@@ -438,13 +470,18 @@ export const DiscoveryQaPage = () => {
 
         try {
             const currentSession = selectedSessionId
-                ? { session: selectedSession, sessionId: selectedSessionId }
+                ? {
+                      session: selectedSession,
+                      sessionId: selectedSessionId,
+                      sessionSource: selectedSessionState.source
+                  }
                 : await ensureSession();
             await sendQuestion(
                 targetMessage.retryQuestion,
                 currentSession.sessionId,
                 currentSession.session,
-                messageId
+                messageId,
+                currentSession.sessionSource
             );
         } catch {
             return;

@@ -380,7 +380,7 @@ describe("DiscoveryQaPage", () => {
         });
     });
 
-    it("clears unavailable cached session and retries with a new session", async () => {
+    it("clears cached session on generic stream failure and retries with a new session", async () => {
         localStorage.setItem(
             "kuzhambu.portal.discovery.qa.session",
             JSON.stringify({
@@ -398,7 +398,7 @@ describe("DiscoveryQaPage", () => {
             })
         );
         mocks.createQaChatCompletionStream
-            .mockRejectedValueOnce(new Error("Portal stream request failed: 404"))
+            .mockRejectedValueOnce(new Error("问答生成失败，请稍后重试。"))
             .mockResolvedValueOnce({
                 answerStatus: "SUCCEEDED",
                 choices: [
