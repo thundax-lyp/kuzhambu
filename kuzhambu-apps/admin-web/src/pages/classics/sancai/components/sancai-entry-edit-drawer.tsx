@@ -47,7 +47,7 @@ import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Text } = Typography;
 const imageAccept = ".jpg,.jpeg,.png,.gif,.webp";
-type SancaiEntryModelSection = "basic" | "visual" | "tags" | "qa" | "versions";
+type SancaiEntryEditDrawerSection = "basic" | "visual" | "tags" | "qa" | "versions";
 type SancaiAiTextField = "translate" | "summary";
 const AI_TEXT_CANDIDATE_POLL_INTERVAL_MS = 3000;
 const RUNNING_REFINEMENT_STATUSES = new Set(["PENDING", "RUNNING"]);
@@ -250,7 +250,7 @@ const escapeHtml = (value?: string | number | null) => {
         .replace(/'/g, "&#39;");
 };
 
-interface SancaiEntryModelProps {
+interface SancaiEntryEditDrawerProps {
     imageContent?: ReactNode;
     qaContent?: ReactNode;
     tagContent?: ReactNode;
@@ -283,7 +283,7 @@ interface SancaiEntryModelProps {
     volumes?: Array<{ categoryId?: number | null; id: number; title?: string | null }>;
 }
 
-export const SancaiEntryModel = ({
+export const SancaiEntryEditDrawer = ({
     imageContent,
     qaContent,
     tagContent,
@@ -311,13 +311,13 @@ export const SancaiEntryModel = ({
     summaryTasks = [],
     onSelectedVisualAssetChange,
     volumes = []
-}: SancaiEntryModelProps) => {
+}: SancaiEntryEditDrawerProps) => {
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
     const [form, setForm] = useState<SancaiEntryFormValues>(() =>
         toEntryFormValues(entry, volumes, initialCategoryId, initialVolumeId)
     );
-    const [activeSection, setActiveSection] = useState<SancaiEntryModelSection>("basic");
+    const [activeSection, setActiveSection] = useState<SancaiEntryEditDrawerSection>("basic");
     const [activeAiTextField, setActiveAiTextField] = useState<SancaiAiTextField | null>(null);
     const [aiTextDraft, setAiTextDraft] = useState("");
     const [loadedAiTextCandidateId, setLoadedAiTextCandidateId] = useState<number | null>(null);
@@ -773,7 +773,7 @@ export const SancaiEntryModel = ({
 
     const basicContent = (
         <>
-            <div className="sancai-entry-model-catalog-row">
+            <div className="sancai-entry-edit-drawer-catalog-row">
                 <Form.Item label="门类">
                     <Select
                         aria-label="三才图会条目门类"
@@ -811,7 +811,7 @@ export const SancaiEntryModel = ({
                     }
                 />
             </Form.Item>
-            <Form.Item label="原文" className="sancai-entry-model-form-item-top">
+            <Form.Item label="原文" className="sancai-entry-edit-drawer-form-item-top">
                 <Input.TextArea
                     aria-label="三才图会原文"
                     value={form.originalText}
@@ -824,7 +824,7 @@ export const SancaiEntryModel = ({
                     }
                 />
             </Form.Item>
-            <Form.Item label="译文" className="sancai-entry-model-form-item-top">
+            <Form.Item label="译文" className="sancai-entry-edit-drawer-form-item-top">
                 <div className="sancai-entry-ai-text-field">
                     <Input.TextArea
                         aria-label="三才图会译文"
@@ -851,7 +851,7 @@ export const SancaiEntryModel = ({
                     ) : null}
                 </div>
             </Form.Item>
-            <Form.Item label="摘要" className="sancai-entry-model-form-item-top">
+            <Form.Item label="摘要" className="sancai-entry-edit-drawer-form-item-top">
                 <div className="sancai-entry-ai-text-field">
                     <Input.TextArea
                         aria-label="三才图会摘要"
@@ -1202,7 +1202,7 @@ export const SancaiEntryModel = ({
                             </KuzhambuButton>
                         </KuzhambuSpace>
                     </div>
-                    <div className="sancai-entry-model-catalog-row">
+                    <div className="sancai-entry-edit-drawer-catalog-row">
                         <Form.Item label="文本权重">
                             <Input
                                 aria-label="三才图会视觉处理文本权重"
@@ -1230,7 +1230,7 @@ export const SancaiEntryModel = ({
                             />
                         </Form.Item>
                     </div>
-                    <Form.Item label="图片理解" className="sancai-entry-model-form-item-top">
+                    <Form.Item label="图片理解" className="sancai-entry-edit-drawer-form-item-top">
                         <Input.TextArea
                             aria-label="三才图会视觉处理图片理解"
                             value={visualAssetFormValue?.imageAnalysisMarkdown ?? ""}
@@ -1245,7 +1245,7 @@ export const SancaiEntryModel = ({
                             }
                         />
                     </Form.Item>
-                    <Form.Item label="融合描述" className="sancai-entry-model-form-item-top">
+                    <Form.Item label="融合描述" className="sancai-entry-edit-drawer-form-item-top">
                         <Input.TextArea
                             aria-label="三才图会视觉处理融合描述"
                             value={visualAssetFormValue?.fusionDescription ?? ""}
@@ -1260,7 +1260,7 @@ export const SancaiEntryModel = ({
                             }
                         />
                     </Form.Item>
-                    <Form.Item label="视觉描述" className="sancai-entry-model-form-item-top">
+                    <Form.Item label="视觉描述" className="sancai-entry-edit-drawer-form-item-top">
                         <Input.TextArea
                             aria-label="三才图会视觉处理视觉描述"
                             value={visualAssetFormValue?.visualDescription ?? ""}
@@ -1275,7 +1275,7 @@ export const SancaiEntryModel = ({
                             }
                         />
                     </Form.Item>
-                    <Form.Item label="生成参数" className="sancai-entry-model-form-item-top">
+                    <Form.Item label="生成参数" className="sancai-entry-edit-drawer-form-item-top">
                         <Input.TextArea
                             aria-label="三才图会视觉处理生成参数"
                             value={visualAssetFormValue?.generationParamsJson ?? ""}
@@ -1348,7 +1348,7 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
     };
 
     const formProps = {
-        className: "sancai-detail-card sancai-entry-model-form",
+        className: "sancai-detail-card sancai-entry-edit-drawer-form",
         colon: false,
         component: "div" as const,
         labelCol: { flex: "88px" },
@@ -1371,12 +1371,14 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
             destroyOnHidden
             extra={
                 mode === "edit" ? (
-                    <KuzhambuSpace className="sancai-entry-model-header-actions" wrap>
+                    <KuzhambuSpace className="sancai-entry-edit-drawer-header-actions" wrap>
                         <Segmented
-                            className="sancai-entry-model-header-sections"
+                            className="sancai-entry-edit-drawer-header-sections"
                             options={sectionOptions}
                             value={activeSection}
-                            onChange={(value) => setActiveSection(value as SancaiEntryModelSection)}
+                            onChange={(value) =>
+                                setActiveSection(value as SancaiEntryEditDrawerSection)
+                            }
                         />
                         <KuzhambuButton
                             testId="classics-sancai-sancai-entry-preview-sancai-entry-button"
@@ -1478,7 +1480,7 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
                     />
                 ) : null}
                 <Form
-                    className="sancai-detail-card sancai-entry-model-form sancai-ai-text-modal-original"
+                    className="sancai-detail-card sancai-entry-edit-drawer-form sancai-ai-text-modal-original"
                     colon={false}
                     component="div"
                     layout="vertical"
@@ -1494,7 +1496,7 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
                 </Form>
                 <div className="sancai-ai-text-modal-compare-grid">
                     <Form
-                        className="sancai-detail-card sancai-entry-model-form"
+                        className="sancai-detail-card sancai-entry-edit-drawer-form"
                         colon={false}
                         component="div"
                         layout="vertical"
@@ -1513,7 +1515,7 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
                         </Form.Item>
                     </Form>
                     <Form
-                        className="sancai-detail-card sancai-entry-model-form"
+                        className="sancai-detail-card sancai-entry-edit-drawer-form"
                         colon={false}
                         component="div"
                         layout="vertical"
@@ -1545,7 +1547,7 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
             {mode === "create" ? (
                 <Form {...formProps}>{basicContent}</Form>
             ) : (
-                <div className="sancai-entry-model-section">
+                <div className="sancai-entry-edit-drawer-section">
                     {activeSection === "basic" ? <Form {...formProps}>{basicContent}</Form> : null}
                     {activeSection === "visual" ? (
                         <>

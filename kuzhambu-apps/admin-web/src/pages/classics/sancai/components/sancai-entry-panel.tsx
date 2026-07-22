@@ -21,7 +21,7 @@ import { ClassicsContentTagPanel } from "@/pages/classics/common/components/clas
 import { AiCandidateBatchDrawer } from "@/pages/classics/common/components/ai-candidate-batch-drawer";
 import { hasClassicsContentPermission } from "@/pages/classics/common/classics-content-types";
 import { SancaiEntryList } from "./sancai-entry-list";
-import { SancaiEntryModel } from "./sancai-entry-model";
+import { SancaiEntryEditDrawer } from "./sancai-entry-edit-drawer";
 import type { SancaiEntryFormValues } from "./sancai-form-values";
 import { SancaiVersionHistoryPanel } from "./sancai-version-history-panel";
 import { useSancaiEntryPanelState } from "../hooks/use-sancai-entry-panel-state";
@@ -936,7 +936,7 @@ export const SancaiEntryPanel = ({
                 onChanged={invalidateBatchCandidateData}
                 onClose={() => setBatchCandidateDrawerOpen(false)}
             />
-            <SancaiEntryModel
+            <SancaiEntryEditDrawer
                 key={modelKey}
                 categoryOptions={categoryOptions}
                 entry={selectedEntry}
