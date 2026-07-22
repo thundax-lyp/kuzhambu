@@ -1,5 +1,5 @@
 import { postJson } from "@/api/http";
-import type { SancaiCategoryRecord, SancaiCategoryTypeRecord } from "../sancai-types";
+import type { SancaiCategoryRecord, SancaiCategoryTypeRecord } from "./sancai-types";
 
 export interface SancaiCategoryCommand {
     categoryType?: string | null;

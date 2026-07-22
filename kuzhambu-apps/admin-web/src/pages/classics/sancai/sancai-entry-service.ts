@@ -7,7 +7,7 @@ import type {
     SancaiEntryRecord,
     SancaiRefinementBatchRecord,
     SancaiVisualAssetRecord
-} from "../sancai-types";
+} from "./sancai-types";
 
 const ENTRIES_PATH = "/classics/sancai/entries";
 const ASSET_IMAGES_PATH = "/classics/sancai/assets/images";

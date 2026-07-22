@@ -1,5 +1,5 @@
 import { postJson } from "@/api/http";
-import type { SancaiVolumeRecord, SancaiVolumeTypeRecord } from "../sancai-types";
+import type { SancaiVolumeRecord, SancaiVolumeTypeRecord } from "./sancai-types";
 
 export interface SancaiVolumeQuery {
     categoryId?: number | null;
