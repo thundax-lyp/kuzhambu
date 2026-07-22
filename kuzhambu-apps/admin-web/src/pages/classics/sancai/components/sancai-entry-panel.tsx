@@ -25,7 +25,7 @@ import { SancaiEntryEditDrawer } from "./sancai-entry-edit-drawer";
 import type { SancaiEntryFormValues } from "./sancai-form-values";
 import { SancaiVersionHistoryPanel } from "./sancai-version-history-panel";
 import { useSancaiEntryPanelState } from "../hooks/use-sancai-entry-panel-state";
-import * as entryService from "../services/sancai-entry-service";
+import * as entryService from "../sancai-entry-service";
 import type {
     SancaiCategoryRecord,
     SancaiContentVersionRecord,

@@ -34,8 +34,8 @@ import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
 import { toEntryFormValues, type SancaiEntryFormValues } from "./sancai-form-values";
-import type { SancaiVisualAssetRefinementCapability } from "../services/sancai-entry-service";
-import * as entryService from "../services/sancai-entry-service";
+import type { SancaiVisualAssetRefinementCapability } from "../sancai-entry-service";
+import * as entryService from "../sancai-entry-service";
 import type {
     SancaiEntryImageContentMode,
     SancaiEntryImageRecord,
