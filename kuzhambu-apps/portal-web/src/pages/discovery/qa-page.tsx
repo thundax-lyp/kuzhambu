@@ -273,16 +273,48 @@ export const DiscoveryQaPage = () => {
 
     const ensureSession = async () => {
         if (selectedSessionId) {
-            if (selectedSession) {
-                writeStoredSession(form, selectedSession);
+            let reusableSession = selectedSession;
+            let reusableSessionSource = selectedSessionState.source;
+            if (selectedSessionState.source === "stored") {
+                try {
+                    reusableSession =
+                        (await qaService.getQaSession({
+                            ownerUserId: parseNumber(form.ownerUserId),
+                            sessionId: selectedSessionId
+                        })) ?? selectedSession;
+                    reusableSessionSource = "opened";
+                    setSelectedSessionState({
+                        session: reusableSession,
+                        source: "opened"
+                    });
+                } catch (error) {
+                    if (isUnavailableSessionError(error)) {
+                        clearStoredSession();
+                        setSelectedSessionState({
+                            session: null,
+                            source: null
+                        });
+                        return openSession();
+                    }
+
+                    reusableSessionSource = "opened";
+                }
             }
+            if (reusableSession) {
+                writeStoredSession(form, reusableSession);
+            }
+            const reusableSessionId = toSessionId(reusableSession?.sessionId) ?? selectedSessionId;
             return {
-                session: selectedSession,
-                sessionId: selectedSessionId,
-                sessionSource: selectedSessionState.source
+                session: reusableSession,
+                sessionId: reusableSessionId,
+                sessionSource: reusableSessionSource
             };
         }
 
+        return openSession();
+    };
+
+    const openSession = async () => {
         const openResponse = await openSessionMutation.mutateAsync(toOpenSessionRequest(form));
         const openedSessionId = toSessionId(openResponse.sessionId);
         if (openedSessionId === null) {
@@ -375,8 +407,7 @@ export const DiscoveryQaPage = () => {
                 }
             });
         } catch (error) {
-            const shouldResetSession =
-                sessionSource === "stored" || isUnavailableSessionError(error);
+            const shouldResetSession = isUnavailableSessionError(error);
             if (shouldResetSession) {
                 clearStoredSession();
                 setSelectedSessionState({
