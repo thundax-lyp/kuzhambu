@@ -162,7 +162,15 @@
 
 - 前端自有按钮、菜单项和确认弹窗文案应表达具体动作，例如 `重置密码`、`移除头像`、`刷新密钥`；避免只写 `操作`、`变更状态`、`处理`。
 - 搜索框 placeholder 应表达可搜索对象，避免只写 `搜索` 或 `请输入`。
-- 页面状态变量命名贴近 UI 含义，例如 `query`、`selectedRowKeys`、`editingDictionary`。
+- 页面状态变量命名贴近 UI 含义。单列表页面分页请求状态固定使用 `query` / `setQuery`；筛选面板临时状态固定使用 `filters` / `setFilters`；搜索框文本固定使用 `searchText` / `setSearchText`。同页多列表时必须加领域前缀，例如 `tagQuery`、`synonymQuery`。
+- `useQuery` 返回值固定使用 `<subject>Query`，其中 `<subject>` 表达数据对象，例如 `userPageQuery`、`roleOptionsQuery`、`detailQuery`。同页多列表不得都命名为 `pageQuery`。
+- `useMutation` 返回值固定使用 `<action>Mutation`，例如 `createMutation`、`updateMutation`、`deleteMutation`、`statusMutation`、`sortMutation`。同页多个领域对象时必须加领域前缀，例如 `createTagMutation`、`updateCategoryMutation`。
+- 正在编辑的领域对象固定命名为 `editing<Xxx>`；详情对象或详情标识固定命名为 `detail<Xxx>` / `detail<Xxx>Id`；表格选择固定命名为 `selectedRowKeys`，同页多表时加领域前缀，例如 `selectedTagRowKeys`。
+- 弹窗、抽屉 open 状态必须包含业务对象和容器类型，例如 `userEditDrawerOpen`、`tagDetailDrawerOpen`、`deleteConfirmModalOpen`。大页面避免使用 `editorOpen`、`drawerOpen`、`detailOpen` 这类泛名。
+- 打开和关闭弹窗、抽屉的方法必须表达动作、对象和容器类型，例如 `openCreateUserDrawer`、`openEditUserDrawer`、`closeUserEditDrawer`。仅适配无业务语义的组件事件签名时使用 `handleXxx`。
+- 权限变量固定使用 `can<Verb><Object>`，例如 `canViewUser`、`canEditUser`、`canChangeUserStatus`。其他布尔派生变量使用 `is`、`has`、`can` 前缀。
+- 表格列变量单表页面可以命名为 `columns`；同页多表必须使用领域前缀，例如 `userColumns`、`roleColumns`、`tagColumns`。
+- 页面 UI 状态类型使用 `XxxFilters`、`XxxFormValues`、`XxxViewState`；不要和 service 层 `XxxQuery` / `XxxCommand` 或领域数据 `XxxRecord` / `XxxNode` 混用。
 
 ### Placement
 
