@@ -78,6 +78,7 @@ export interface SancaiVisualAssetRecord {
 }
 
 export interface SancaiEntryPage {
+    count?: number | null;
     pageNo?: number | null;
     pageSize?: number | null;
     totalCount?: number | null;

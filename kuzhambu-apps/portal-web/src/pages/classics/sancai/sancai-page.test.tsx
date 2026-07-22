@@ -82,8 +82,9 @@ const installFetchMock = () => {
         if (url.includes("/portal/classics/sancai/entries/page")) {
             if (body.categoryId === 1) {
                 return apiResponse({
+                    count: 1,
                     pageNo: 1,
-                    pageSize: 500,
+                    pageSize: 100,
                     totalCount: 1,
                     totalPage: 1,
                     records: [
@@ -100,11 +101,33 @@ const installFetchMock = () => {
                     ]
                 });
             }
+            if (body.pageNo === 2) {
+                return apiResponse({
+                    count: 2,
+                    pageNo: 2,
+                    pageSize: 100,
+                    totalCount: 2,
+                    totalPage: 2,
+                    records: [
+                        {
+                            id: 1003,
+                            volumeId: 11,
+                            title: "人",
+                            originalText: "人者，万物之灵。",
+                            translationText: "人是万物之灵。",
+                            summary: "人物条目",
+                            lifecycleStatus: "PUBLISHED",
+                            visibility: "PUBLIC"
+                        }
+                    ]
+                });
+            }
             return apiResponse({
+                count: 2,
                 pageNo: 1,
-                pageSize: 500,
-                totalCount: 1,
-                totalPage: 1,
+                pageSize: 100,
+                totalCount: 2,
+                totalPage: 2,
                 records: [
                     {
                         id: 1001,
@@ -212,6 +235,32 @@ describe("SancaiPage", () => {
                     JSON.parse(String(init?.body)).categoryId === 1
             );
         expect(categoryEntryPageCall).toBeTruthy();
+    });
+
+    it("loads additional entry pages from the catalog list", async () => {
+        const user = userEvent.setup();
+        renderPage();
+
+        const list = await screen.findByLabelText("三才图会条目列表");
+        const moreButton = await within(list).findByRole("button", {
+            name: /加载更多条目（1 \/ 2）/
+        });
+
+        await user.click(moreButton);
+
+        expect(await within(list).findByRole("button", { name: /人/ })).toBeTruthy();
+        await waitFor(() => {
+            expect(within(list).queryByRole("button", { name: /加载更多条目/ })).toBeNull();
+        });
+
+        const nextPageCall = vi
+            .mocked(globalThis.fetch)
+            .mock.calls.find(
+                ([input, init]) =>
+                    String(input).includes("/entries/page") &&
+                    JSON.parse(String(init?.body)).pageNo === 2
+            );
+        expect(nextPageCall).toBeTruthy();
     });
 
     it("loads entry detail from id query parameter", async () => {

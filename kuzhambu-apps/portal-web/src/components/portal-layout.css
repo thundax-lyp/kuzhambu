@@ -13,6 +13,34 @@
     padding: 0;
 }
 
+.portal-shell.portal-effect-layout--reader {
+    display: flex;
+    height: 100vh;
+    min-height: 100vh;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.portal-effect-layout--reader > .sancai-portal-page {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.portal-effect-layout--reader > .portal-effect-footer {
+    display: none;
+}
+
+@media (max-width: 900px) {
+    .portal-shell.portal-effect-layout--reader {
+        height: auto;
+        overflow: visible;
+    }
+
+    .portal-effect-layout--reader > .sancai-portal-page {
+        flex: 0 0 auto;
+    }
+}
+
 .portal-effect-layout > .portal-shell,
 .portal-effect-layout > .knowledge-shell,
 .portal-effect-layout > .knowledge-atlas-shell,

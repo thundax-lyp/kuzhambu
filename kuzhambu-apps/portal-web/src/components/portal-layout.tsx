@@ -45,6 +45,7 @@ const navigationItems = [
 ];
 
 const themeSupportedRoutes = new Set(["/", "/classics/sancai"]);
+const readerRoutes = new Set(["/classics/sancai"]);
 
 const footerGroups = [
     {
@@ -73,6 +74,7 @@ export const PortalLayout = () => {
     const location = useLocation();
     const [theme, setTheme] = useState<PortalTheme>(getInitialTheme);
     const isThemeSupportedRoute = themeSupportedRoutes.has(location.pathname);
+    const isReaderRoute = readerRoutes.has(location.pathname);
     const isDarkTheme = theme === "dark";
     const themeToggleLabel = isDarkTheme ? "切换浅色主题" : "切换深色主题";
 
@@ -93,7 +95,13 @@ export const PortalLayout = () => {
     };
 
     return (
-        <div className="portal-shell portal-effect-layout">
+        <div
+            className={
+                isReaderRoute
+                    ? "portal-shell portal-effect-layout portal-effect-layout--reader"
+                    : "portal-shell portal-effect-layout"
+            }
+        >
             <TooltipProvider>
                 <header className="portal-effect-header">
                     <Link className="portal-effect-brand" to="/" aria-label="Kuzhambu 首页">

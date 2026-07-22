@@ -1,7 +1,8 @@
 .sancai-portal-page {
-    --sancai-shell-header-height: 90px;
-    --sancai-reader-page-gap: 48px;
-    min-height: calc(100vh - var(--sancai-shell-header-height));
+    display: flex;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
     background:
         linear-gradient(
             180deg,
@@ -26,7 +27,9 @@
     --sancai-scrollbar-thumb-hover: color-mix(in srgb, var(--line-strong) 86%, transparent);
     width: 100%;
     min-width: 0;
-    height: calc(100vh - var(--sancai-shell-header-height) - var(--sancai-reader-page-gap));
+    flex: 1 1 auto;
+    height: 100%;
+    max-height: 100%;
     min-height: 0;
     border: 1px solid var(--line-subtle);
     border-radius: 8px;
@@ -184,6 +187,8 @@
 }
 
 .sancai-entry-list {
+    width: 100%;
+    max-width: 100%;
     min-width: 0;
     min-height: 0;
     overflow-y: auto;
@@ -196,6 +201,8 @@
 .sancai-entry-item {
     display: flex;
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
     min-height: 40px;
     align-items: center;
     justify-content: space-between;
@@ -206,6 +213,7 @@
     padding: 8px 6px;
     font-size: 15px;
     text-align: left;
+    white-space: normal;
 }
 
 .sancai-entry-item span {
@@ -220,12 +228,30 @@
     color: #fffaf1;
 }
 
+.sancai-entry-more-button {
+    width: 100%;
+    max-width: 100%;
+    min-height: 42px;
+    margin-top: 10px;
+    border-color: color-mix(in srgb, var(--accent-cinnabar) 24%, var(--line-subtle));
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--surface-panel) 90%, var(--surface-soft));
+    color: var(--text-primary);
+    white-space: normal;
+}
+
+.sancai-entry-more-button:hover {
+    background: color-mix(in srgb, var(--surface-soft) 86%, var(--surface-panel));
+}
+
 .dark .sancai-entry-item.is-active {
     background: color-mix(in srgb, var(--accent-jade) 58%, var(--surface-panel));
     color: var(--text-primary);
 }
 
 .sancai-entry-detail {
+    width: 100%;
+    max-width: 100%;
     min-width: 0;
     min-height: 0;
     overflow-y: auto;
@@ -321,6 +347,8 @@
 
 @media (max-width: 900px) {
     .sancai-portal-page {
+        height: auto;
+        overflow: visible;
         padding: 12px;
     }
 
@@ -331,11 +359,19 @@
 
     .sancai-browser {
         height: auto;
+        max-width: 100%;
         min-height: 0;
         overflow: visible;
     }
 
+    .sancai-browser > * {
+        max-width: 100%;
+        min-width: 0;
+    }
+
     .sancai-browser-content {
+        width: 100%;
+        max-width: 100%;
         overflow: hidden;
         padding: 12px;
     }
@@ -364,7 +400,10 @@
     }
 
     .sancai-content-grid {
+        width: 100%;
+        max-width: 100%;
         height: auto;
+        overflow: hidden;
     }
 
     .sancai-entry-list {

@@ -96,6 +96,7 @@ describe("PortalLayout", () => {
         expect(
             container.querySelector<HTMLButtonElement>("[data-testid='portal-header-theme-toggle']")
         ).not.toBeNull();
+        expect(container.querySelector(".portal-effect-layout--reader")).not.toBeNull();
         expect(container.textContent).toContain("Sancai content");
 
         act(() => {

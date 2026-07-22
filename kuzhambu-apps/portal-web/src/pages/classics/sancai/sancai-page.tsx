@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { BookOpen, ChevronRight } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -9,12 +9,16 @@ import type { SancaiCategoryRecord, SancaiEntryRecord } from "./sancai-types";
 
 import "./sancai-page.css";
 
-const BOOK_ENTRY_LIMIT = 500;
+const BOOK_ENTRY_PAGE_SIZE = 100;
 const STABLE_BOOK_QUERY_OPTIONS = {
     staleTime: Number.POSITIVE_INFINITY
 };
 const EMPTY_CATEGORIES: SancaiCategoryRecord[] = [];
 const EMPTY_ENTRIES: SancaiEntryRecord[] = [];
+
+const readPageTotalCount = (page: { count?: number | null; totalCount?: number | null }) => {
+    return page.count ?? page.totalCount ?? null;
+};
 
 const readTitle = (value: { id: number; title?: string | null }, fallback: string) => {
     return value.title?.trim() || `${fallback} ${value.id}`;
@@ -69,18 +73,39 @@ export const SancaiPage = () => {
         queryFn: sancaiService.listCategories,
         ...STABLE_BOOK_QUERY_OPTIONS
     });
-    const entriesQuery = useQuery({
+    const entriesQuery = useInfiniteQuery({
         queryKey: ["portal", "classics", "sancai", "entries", selectedCategoryId],
-        queryFn: () =>
+        queryFn: ({ pageParam }) =>
             sancaiService.pageEntries({
                 categoryId: selectedCategoryId,
-                pageNo: 1,
-                pageSize: BOOK_ENTRY_LIMIT
+                pageNo: pageParam,
+                pageSize: BOOK_ENTRY_PAGE_SIZE
             }),
+        initialPageParam: 1,
+        getNextPageParam: (lastPage, allPages) => {
+            const currentPageNo = lastPage.pageNo || allPages.length;
+            if (lastPage.totalPage && currentPageNo < lastPage.totalPage) {
+                return currentPageNo + 1;
+            }
+
+            const loadedCount = allPages.reduce(
+                (count, page) => count + (page.records?.length || 0),
+                0
+            );
+            const totalCount = readPageTotalCount(lastPage) ?? loadedCount;
+            if (loadedCount >= totalCount) {
+                return undefined;
+            }
+            return currentPageNo + 1;
+        },
         ...STABLE_BOOK_QUERY_OPTIONS
     });
     const categories = categoriesQuery.data || EMPTY_CATEGORIES;
-    const entries = entriesQuery.data?.records || EMPTY_ENTRIES;
+    const entries = entriesQuery.data?.pages.flatMap((page) => page.records || []) || EMPTY_ENTRIES;
+    const loadedEntryCount = entries.length;
+    const totalEntryCount = entriesQuery.data?.pages[0]
+        ? (readPageTotalCount(entriesQuery.data.pages[0]) ?? loadedEntryCount)
+        : loadedEntryCount;
     const activeEntryId = selectedEntryId || entries[0]?.id || null;
     const detailQuery = useQuery({
         queryKey: ["portal", "classics", "sancai", "entry", activeEntryId],
@@ -185,6 +210,18 @@ export const SancaiPage = () => {
                                     <ChevronRight size={16} />
                                 </button>
                             ))}
+                            {entriesQuery.hasNextPage ? (
+                                <Button
+                                    className="sancai-entry-more-button"
+                                    disabled={entriesQuery.isFetchingNextPage}
+                                    variant="outline"
+                                    onClick={() => entriesQuery.fetchNextPage()}
+                                >
+                                    {entriesQuery.isFetchingNextPage
+                                        ? "正在加载..."
+                                        : `加载更多条目（${loadedEntryCount} / ${totalEntryCount}）`}
+                                </Button>
+                            ) : null}
                         </div>
 
                         <Card className="sancai-entry-detail" aria-label="三才图会条目详情">
