@@ -115,7 +115,7 @@ export const RolePage = () => {
     const [filters, setFilters] = useState<RoleFilters>(DEFAULT_ROLE_FILTERS);
     const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
     const [editingRole, setEditingRole] = useState<RoleRecord | null>(null);
-    const [editorOpen, setEditorOpen] = useState(false);
+    const [roleEditDrawerOpen, setRoleEditDrawerOpen] = useState(false);
     const hasSelectedRoles = selectedRowKeys.length > 0;
     const hasActiveFilters = filters.enable !== "ALL";
 
@@ -165,7 +165,7 @@ export const RolePage = () => {
         mutationFn: (values: RoleSaveCommand) =>
             values.id ? service.changeInfo(values) : service.create(values),
         onSuccess: async () => {
-            setEditorOpen(false);
+            setRoleEditDrawerOpen(false);
             setEditingRole(null);
             await queryClient.invalidateQueries({ queryKey: ["role", "list"] });
             messageApi.success("角色已保存");
@@ -223,21 +223,21 @@ export const RolePage = () => {
         setQuery({});
     };
 
-    const openCreateEditor = () => {
+    const openCreateRoleDrawer = () => {
         setEditingRole(null);
-        setEditorOpen(true);
+        setRoleEditDrawerOpen(true);
     };
 
-    const openEditEditor = (role: RoleRecord) => {
+    const openEditRoleDrawer = (role: RoleRecord) => {
         setEditingRole(role);
-        setEditorOpen(true);
+        setRoleEditDrawerOpen(true);
     };
 
-    const closeEditor = () => {
+    const closeRoleEditDrawer = () => {
         if (saveMutation.isPending) {
             return;
         }
-        setEditorOpen(false);
+        setRoleEditDrawerOpen(false);
         setEditingRole(null);
     };
 
@@ -368,7 +368,7 @@ export const RolePage = () => {
                     text: "编辑",
                     ariaLabel: `编辑 ${role.name}`,
                     disabled: !canEditRole,
-                    onClick: () => openEditEditor(role)
+                    onClick: () => openEditRoleDrawer(role)
                 },
                 { type: "divider" },
                 {
@@ -396,7 +396,7 @@ export const RolePage = () => {
                 searchShortcut="⌘K"
                 searchValue={searchText}
                 onSearchChange={setSearchText}
-                onAdd={openCreateEditor}
+                onAdd={openCreateRoleDrawer}
                 filterActive={hasActiveFilters}
                 filterFields={[
                     {
@@ -490,15 +490,15 @@ export const RolePage = () => {
             />
 
             <RoleEditDrawer
-                key={editorOpen ? editingRole?.id || "create" : "closed"}
-                open={editorOpen}
+                key={roleEditDrawerOpen ? editingRole?.id || "create" : "closed"}
+                open={roleEditDrawerOpen}
                 role={editingRole}
                 treeData={treeData}
                 expandedMenuIds={expandedMenuIds}
                 statusOptions={roleOptions.statusOptions}
                 privilegeOptions={roleOptions.privilegeOptions}
                 saving={saveMutation.isPending}
-                onClose={closeEditor}
+                onClose={closeRoleEditDrawer}
                 onSave={saveRole}
             />
         </>

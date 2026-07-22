@@ -54,7 +54,7 @@ export const DictionaryPage = () => {
     const [filters, setFilters] = useState<DictionaryFilters>(DEFAULT_DICTIONARY_FILTERS);
     const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
     const [editingDictionary, setEditingDictionary] = useState<DictRecord | null>(null);
-    const [editorOpen, setEditorOpen] = useState(false);
+    const [dictionaryEditDrawerOpen, setDictionaryEditDrawerOpen] = useState(false);
     const hasSelectedDictionaries = selectedRowKeys.length > 0;
     const hasActiveFilters = Boolean(filters.type.trim()) || Boolean(filters.remarks.trim());
 
@@ -75,7 +75,7 @@ export const DictionaryPage = () => {
                 ? dictionaryService.changeDictionaryInfo(values)
                 : dictionaryService.addDictionary(values),
         onSuccess: async () => {
-            setEditorOpen(false);
+            setDictionaryEditDrawerOpen(false);
             setEditingDictionary(null);
             await queryClient.invalidateQueries({ queryKey: ["dictionary", "page"] });
             messageApi.success("字典项已保存");
@@ -131,21 +131,21 @@ export const DictionaryPage = () => {
         });
     };
 
-    const openCreateEditor = () => {
+    const openCreateDictionaryDrawer = () => {
         setEditingDictionary(null);
-        setEditorOpen(true);
+        setDictionaryEditDrawerOpen(true);
     };
 
-    const openEditEditor = (dictionary: DictRecord) => {
+    const openEditDictionaryDrawer = (dictionary: DictRecord) => {
         setEditingDictionary(dictionary);
-        setEditorOpen(true);
+        setDictionaryEditDrawerOpen(true);
     };
 
-    const closeEditor = () => {
+    const closeDictionaryEditDrawer = () => {
         if (saveMutation.isPending) {
             return;
         }
-        setEditorOpen(false);
+        setDictionaryEditDrawerOpen(false);
         setEditingDictionary(null);
     };
 
@@ -201,7 +201,7 @@ export const DictionaryPage = () => {
                     text: "编辑",
                     ariaLabel: `编辑 ${dictionary.label}`,
                     disabled: !canEditDictionary,
-                    onClick: () => openEditEditor(dictionary)
+                    onClick: () => openEditDictionaryDrawer(dictionary)
                 },
                 { type: "divider" },
                 {
@@ -229,7 +229,7 @@ export const DictionaryPage = () => {
                 searchShortcut="⌘K"
                 searchValue={searchText}
                 onSearchChange={searchDictionaries}
-                onAdd={openCreateEditor}
+                onAdd={openCreateDictionaryDrawer}
                 filterActive={hasActiveFilters}
                 filterFields={[
                     {
@@ -328,10 +328,10 @@ export const DictionaryPage = () => {
             />
 
             <DictionaryEditDrawer
-                open={editorOpen}
+                open={dictionaryEditDrawerOpen}
                 dictionary={editingDictionary}
                 saving={saveMutation.isPending}
-                onClose={closeEditor}
+                onClose={closeDictionaryEditDrawer}
                 onSave={saveDictionary}
             />
         </>

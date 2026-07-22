@@ -83,7 +83,7 @@ export const DepartmentPage = () => {
     const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
     const [editingDepartment, setEditingDepartment] = useState<DepartmentTableNode | null>(null);
-    const [editorOpen, setEditorOpen] = useState(false);
+    const [departmentEditDrawerOpen, setDepartmentEditDrawerOpen] = useState(false);
     const [expandedRowKeys, setExpandedRowKeys] = useState<Key[] | null>(null);
     const canEditDepartment = hasPermission("sys:department:edit");
     const departmentQuery = useQuery({
@@ -121,7 +121,7 @@ export const DepartmentPage = () => {
         mutationFn: (values: DepartmentSaveCommand) =>
             values.id ? service.changeDepartmentInfo(values) : service.addDepartment(values),
         onSuccess: async () => {
-            setEditorOpen(false);
+            setDepartmentEditDrawerOpen(false);
             setEditingDepartment(null);
             await queryClient.invalidateQueries({ queryKey: ["department", "list"] });
             messageApi.success("部门已保存");
@@ -153,21 +153,21 @@ export const DepartmentPage = () => {
         }
     });
 
-    const openCreateEditor = () => {
+    const openCreateDepartmentDrawer = () => {
         setEditingDepartment(null);
-        setEditorOpen(true);
+        setDepartmentEditDrawerOpen(true);
     };
 
-    const openEditEditor = (department: DepartmentTableNode) => {
+    const openEditDepartmentDrawer = (department: DepartmentTableNode) => {
         setEditingDepartment(department);
-        setEditorOpen(true);
+        setDepartmentEditDrawerOpen(true);
     };
 
-    const closeEditor = () => {
+    const closeDepartmentEditDrawer = () => {
         if (saveMutation.isPending) {
             return;
         }
-        setEditorOpen(false);
+        setDepartmentEditDrawerOpen(false);
         setEditingDepartment(null);
     };
 
@@ -303,7 +303,7 @@ export const DepartmentPage = () => {
                     text: "编辑",
                     ariaLabel: `编辑 ${department.name}`,
                     disabled: !canEditDepartment,
-                    onClick: () => openEditEditor(department)
+                    onClick: () => openEditDepartmentDrawer(department)
                 },
                 { type: "divider" },
                 {
@@ -339,7 +339,7 @@ export const DepartmentPage = () => {
                                 testId="system-department-department-action-button"
                                 type="primary"
                                 icon={<PlusOutlined />}
-                                onClick={openCreateEditor}
+                                onClick={openCreateDepartmentDrawer}
                             >
                                 新增部门
                             </KuzhambuButton>
@@ -375,11 +375,11 @@ export const DepartmentPage = () => {
             />
 
             <DepartmentEditDrawer
-                open={editorOpen}
+                open={departmentEditDrawerOpen}
                 department={editingDepartment}
                 parentOptions={parentOptions}
                 saving={saveMutation.isPending}
-                onClose={closeEditor}
+                onClose={closeDepartmentEditDrawer}
                 onSave={saveDepartment}
             />
         </>

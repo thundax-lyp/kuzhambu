@@ -68,13 +68,13 @@ export const UserPage = () => {
     const [departments, setDepartments] = useState<UserDepartmentNode[]>(EMPTY_DEPARTMENTS);
     const [departmentTreeFetching, setDepartmentTreeFetching] = useState(false);
     const [departmentRefreshSignal, setDepartmentRefreshSignal] = useState(0);
-    const [activeUser, setActiveUser] = useState<UserRecord | null>(null);
+    const [editingUser, setEditingUser] = useState<UserRecord | null>(null);
     const [userEditDrawerOpen, setUserEditDrawerOpen] = useState(false);
     const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
     const hasSelectedUsers = selectedRowKeys.length > 0;
     const hasActiveFilters = Boolean(filters.loginName.trim()) || filters.enable !== "ALL";
     const canEditUser = hasPermission("sys:user:edit");
-    const isCreatingUser = userEditDrawerOpen && !activeUser?.id;
+    const isCreatingUser = userEditDrawerOpen && !editingUser?.id;
 
     const userQuery = useQuery({
         queryKey: ["user", "page", query],
@@ -144,7 +144,7 @@ export const UserPage = () => {
                 (user) => user.id === variables.id
             );
             if (refreshedUser) {
-                setActiveUser(refreshedUser);
+                setEditingUser(refreshedUser);
             }
             messageApi.success("头像已更新");
         },
@@ -155,10 +155,10 @@ export const UserPage = () => {
     const updateMutation = useMutation({
         mutationFn: service.changeInfo,
         onSuccess: async (savedUser) => {
-            setActiveUser(savedUser);
+            setEditingUser(savedUser);
             await invalidatePage();
             setUserEditDrawerOpen(false);
-            setActiveUser(null);
+            setEditingUser(null);
             messageApi.success("用户已更新");
         },
         onError: (error) => {
@@ -269,7 +269,7 @@ export const UserPage = () => {
         const selectedDepartment = departments.find(
             (department) => department.id === selectedDepartmentId
         );
-        setActiveUser(
+        setEditingUser(
             selectedDepartment
                 ? {
                       id: "",
@@ -339,7 +339,7 @@ export const UserPage = () => {
     };
 
     const saveEditingUser = (form: UserFormValues) => {
-        if (!activeUser) {
+        if (!editingUser) {
             return;
         }
         if (!normalizeSearch(form.loginName)) {
@@ -354,7 +354,7 @@ export const UserPage = () => {
             messageApi.error("请选择部门");
             return;
         }
-        updateMutation.mutate(toSaveCommand(activeUser, form));
+        updateMutation.mutate(toSaveCommand(editingUser, form));
     };
 
     return (
@@ -429,7 +429,7 @@ export const UserPage = () => {
                             onPageChange={(pageNo, pageSize) => updateQuery({ pageNo, pageSize })}
                             onStatusChange={updateSingleStatus}
                             onEdit={(user) => {
-                                setActiveUser(user);
+                                setEditingUser(user);
                                 setUserEditDrawerOpen(true);
                             }}
                             onDelete={confirmDeleteUser}
@@ -439,24 +439,24 @@ export const UserPage = () => {
             </KuzhambuPage>
 
             <UserEditDrawer
-                key={`${userEditDrawerOpen ? "open" : "closed"}-${activeUser?.id || "create"}-${currentUserQuery.data?.ranks ?? "rank"}`}
+                key={`${userEditDrawerOpen ? "open" : "closed"}-${editingUser?.id || "create"}-${currentUserQuery.data?.ranks ?? "rank"}`}
                 open={userEditDrawerOpen}
                 title={isCreatingUser ? "新增用户" : "编辑用户"}
                 saveText="保存"
-                user={activeUser}
+                user={editingUser}
                 currentUser={currentUserQuery.data}
                 departments={departments}
                 rankOptions={userOptions.rankOptions}
                 saving={isCreatingUser ? createMutation.isPending : updateMutation.isPending}
                 onClose={() => {
                     setUserEditDrawerOpen(false);
-                    setActiveUser(null);
+                    setEditingUser(null);
                 }}
                 onCreate={saveCreatingUser}
                 onSave={saveEditingUser}
                 onAvatarUpload={(avatar) => {
-                    if (activeUser?.id) {
-                        return avatarUploadMutation.mutateAsync({ id: activeUser.id, avatar });
+                    if (editingUser?.id) {
+                        return avatarUploadMutation.mutateAsync({ id: editingUser.id, avatar });
                     }
                     return undefined;
                 }}

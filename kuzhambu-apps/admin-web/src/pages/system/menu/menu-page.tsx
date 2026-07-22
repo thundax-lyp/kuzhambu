@@ -85,7 +85,7 @@ export const MenuPage = () => {
     const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
     const [editingMenu, setEditingMenu] = useState<MenuTableNode | null>(null);
-    const [editorOpen, setEditorOpen] = useState(false);
+    const [menuEditDrawerOpen, setMenuEditDrawerOpen] = useState(false);
     const [expandedRowKeys, setExpandedRowKeys] = useState<Key[] | null>(null);
     const canEditMenu = hasPermission("super");
     const menuQuery = useQuery({
@@ -120,7 +120,7 @@ export const MenuPage = () => {
         mutationFn: (values: MenuSaveCommand) =>
             values.id ? service.changeMenuInfo(values) : service.addMenu(values),
         onSuccess: async () => {
-            setEditorOpen(false);
+            setMenuEditDrawerOpen(false);
             setEditingMenu(null);
             await queryClient.invalidateQueries({ queryKey: ["menu", "list"] });
             messageApi.success("菜单已保存");
@@ -164,21 +164,21 @@ export const MenuPage = () => {
         }
     });
 
-    const openCreateEditor = () => {
+    const openCreateMenuDrawer = () => {
         setEditingMenu(null);
-        setEditorOpen(true);
+        setMenuEditDrawerOpen(true);
     };
 
-    const openEditEditor = (menu: MenuTableNode) => {
+    const openEditMenuDrawer = (menu: MenuTableNode) => {
         setEditingMenu(menu);
-        setEditorOpen(true);
+        setMenuEditDrawerOpen(true);
     };
 
-    const closeEditor = () => {
+    const closeMenuEditDrawer = () => {
         if (saveMutation.isPending) {
             return;
         }
-        setEditorOpen(false);
+        setMenuEditDrawerOpen(false);
         setEditingMenu(null);
     };
 
@@ -331,7 +331,7 @@ export const MenuPage = () => {
                     text: "编辑",
                     ariaLabel: `编辑 ${menu.name}`,
                     disabled: !canEditMenu,
-                    onClick: () => openEditEditor(menu)
+                    onClick: () => openEditMenuDrawer(menu)
                 },
                 { type: "divider" },
                 {
@@ -367,7 +367,7 @@ export const MenuPage = () => {
                                 testId="system-menu-menu-action-button"
                                 type="primary"
                                 icon={<PlusOutlined />}
-                                onClick={openCreateEditor}
+                                onClick={openCreateMenuDrawer}
                             >
                                 新增菜单
                             </KuzhambuButton>
@@ -403,11 +403,11 @@ export const MenuPage = () => {
             />
 
             <MenuEditDrawer
-                open={editorOpen}
+                open={menuEditDrawerOpen}
                 menu={editingMenu}
                 parentOptions={parentOptions}
                 saving={saveMutation.isPending}
-                onClose={closeEditor}
+                onClose={closeMenuEditDrawer}
                 onSave={saveMenu}
             />
         </>
