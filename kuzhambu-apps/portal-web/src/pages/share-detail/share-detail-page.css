@@ -1,0 +1,290 @@
+.portal-share-meta {
+    margin-top: 28px;
+    padding: 20px;
+    border: 1px solid var(--line-subtle);
+    border-radius: 8px;
+    background: var(--surface-panel);
+    box-shadow: 0 12px 32px rgba(70, 58, 38, 0.08);
+}
+
+.portal-share-meta dl,
+.portal-share-target dl {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin: 0;
+}
+
+.portal-share-meta dt,
+.portal-share-target dt {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.portal-share-meta dd,
+.portal-share-target dd {
+    margin: 4px 0 0;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.portal-share-targets {
+    display: grid;
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.portal-share-target {
+    display: grid;
+    gap: 16px;
+    padding: 20px;
+    border: 1px solid var(--line-subtle);
+    border-radius: 8px;
+    background: var(--surface-panel);
+    box-shadow: 0 12px 32px rgba(70, 58, 38, 0.08);
+}
+
+.portal-share-target-deleted {
+    border-style: dashed;
+    background: color-mix(in srgb, var(--surface-soft) 72%, white);
+    box-shadow: none;
+}
+
+.portal-share-target header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.portal-share-target header p {
+    margin: 0 0 8px;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.portal-share-target header h2 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 20px;
+    line-height: 1.35;
+}
+
+.portal-share-version {
+    flex: 0 0 auto;
+    padding: 4px 10px;
+    border: 1px solid color-mix(in srgb, var(--accent-jade) 52%, var(--line-subtle));
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent-jade) 12%, var(--surface-panel));
+    color: var(--accent-jade);
+    font-size: 13px;
+}
+
+.portal-share-deleted-placeholder {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+.portal-share-copy,
+.portal-share-copy-list p {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 15px;
+    line-height: 1.75;
+    white-space: pre-wrap;
+}
+
+.portal-share-copy-list {
+    display: grid;
+    gap: 14px;
+}
+
+.portal-share-copy-list h3,
+.portal-share-images h3,
+.portal-share-resource h3 {
+    margin: 0 0 8px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.portal-share-resource {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px;
+    border: 1px solid var(--line-subtle);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--surface-panel) 82%, white);
+}
+
+.portal-share-resource-actions {
+    display: flex;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.portal-share-resource-actions svg {
+    width: 15px;
+    height: 15px;
+}
+
+.portal-share-resource-meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin: 0;
+}
+
+.portal-share-images {
+    display: grid;
+    gap: 12px;
+}
+
+.portal-share-image-featured {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+}
+
+.portal-share-image-featured img,
+.portal-share-image-placeholder {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border: 1px solid var(--line-subtle);
+    border-radius: 12px;
+    background: var(--surface-muted);
+}
+
+.portal-share-image-placeholder {
+    display: grid;
+    place-items: center;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.portal-share-image-featured figcaption {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.portal-share-image-featured figcaption div {
+    display: grid;
+    gap: 4px;
+}
+
+.portal-share-image-featured strong {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+.portal-share-image-featured span {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.portal-share-image-featured svg {
+    width: 15px;
+    height: 15px;
+}
+
+.portal-share-image-thumbnails {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+.portal-share-image-thumb {
+    display: grid;
+    gap: 6px;
+    padding: 8px;
+    text-align: left;
+    border: 1px solid var(--line-subtle);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--surface-panel) 88%, white);
+    cursor: pointer;
+}
+
+.portal-share-image-thumb[aria-current="true"] {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-blue) 16%, transparent);
+}
+
+.portal-share-image-thumb img,
+.portal-share-image-thumb > span:first-child {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 7px;
+    background: var(--surface-muted);
+}
+
+.portal-share-image-thumb > span:first-child {
+    display: grid;
+    place-items: center;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.portal-share-image-thumb strong {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.portal-share-image-thumb span:last-child {
+    width: fit-content;
+    padding: 2px 6px;
+    color: var(--accent-blue);
+    font-size: 12px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent-blue) 12%, transparent);
+}
+
+.portal-share-image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+}
+
+.portal-share-image-grid figure {
+    margin: 0;
+}
+
+.portal-share-image-grid img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border: 1px solid var(--line-subtle);
+    border-radius: 8px;
+    background: var(--surface-muted);
+}
+
+.portal-share-image-grid figcaption {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 8px;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.portal-share-image-grid strong {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--text-primary);
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

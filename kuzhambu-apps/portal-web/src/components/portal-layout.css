@@ -1,0 +1,238 @@
+.portal-home-effect,
+.portal-effect-layout {
+    min-height: 100vh;
+    padding: 0;
+    overflow: hidden;
+    background:
+        repeating-linear-gradient(90deg, rgba(105, 92, 67, 0.035) 0 1px, transparent 1px 48px),
+        linear-gradient(180deg, #f5f0e6, #eee6d6);
+    color: #1d241f;
+}
+
+.portal-effect-layout > .portal-shell,
+.portal-effect-layout > .knowledge-shell,
+.portal-effect-layout > .knowledge-atlas-shell,
+.portal-effect-layout > .knowledge-lineage-shell,
+.portal-effect-layout > .knowledge-quality-shell,
+.portal-effect-layout > .sancai-portal-page,
+.portal-effect-layout > .discovery-search-item-page {
+    min-height: auto;
+}
+
+.portal-effect-header {
+    display: grid;
+    grid-template-columns: 300px minmax(480px, 1fr) minmax(360px, 424px);
+    align-items: center;
+    height: 90px;
+    padding: 0 clamp(32px, 3.6vw, 48px);
+    border-bottom: 1px solid rgba(79, 70, 52, 0.22);
+    background: rgba(248, 244, 235, 0.9);
+}
+
+.portal-effect-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 13px;
+    width: fit-content;
+    color: #121814;
+    font-family:
+        "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei",
+        sans-serif;
+    font-size: 31px;
+    font-weight: 650;
+    letter-spacing: 0.01em;
+    line-height: 1;
+}
+
+.portal-effect-brand-logo {
+    display: block;
+    width: 36px;
+    height: 36px;
+    border: 1px solid rgba(176, 61, 52, 0.48);
+    border-radius: 4px;
+    box-shadow: 0 7px 18px rgba(73, 35, 22, 0.16);
+    object-fit: cover;
+}
+
+.portal-effect-footer-seal {
+    display: grid;
+    place-items: center;
+    border: 2px solid #b03d34;
+    color: #b03d34;
+    font-family: "STSong", "Songti SC", "SimSun", serif;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.portal-effect-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(34px, 4.4vw, 66px);
+    color: #111814;
+    font-family: "STSong", "Songti SC", "SimSun", serif;
+    font-size: 18px;
+    font-weight: 650;
+}
+
+.portal-effect-nav a {
+    white-space: nowrap;
+}
+
+.portal-effect-nav a,
+.portal-effect-footer a,
+.portal-effect-panel-heading a {
+    transition: color 160ms ease;
+}
+
+.portal-effect-nav a:hover,
+.portal-effect-footer a:hover,
+.portal-effect-panel-heading a:hover {
+    color: #a83f35;
+}
+
+.portal-effect-header-actions {
+    display: flex;
+    align-items: center;
+    justify-self: end;
+    gap: 10px;
+    width: min(424px, 100%);
+    min-width: 0;
+}
+
+.portal-effect-search {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) 68px;
+    align-items: center;
+    flex: 1 1 auto;
+    width: min(364px, 100%);
+    min-width: 0;
+    min-height: 38px;
+    overflow: hidden;
+    border: 1px solid rgba(50, 61, 50, 0.48);
+    border-radius: 5px;
+    background: rgba(255, 253, 248, 0.86);
+    color: #6e665a;
+}
+
+.portal-effect-search svg {
+    margin-left: 13px;
+}
+
+.portal-effect-search span {
+    min-width: 0;
+    overflow: hidden;
+    padding: 0 12px;
+    font-size: 14px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.portal-effect-search strong {
+    display: grid;
+    height: 100%;
+    min-height: 38px;
+    place-items: center;
+    background: #315f55;
+    color: #fffaf1;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.portal-effect-theme-toggle {
+    width: 38px;
+    height: 38px;
+    border-color: rgba(50, 61, 50, 0.48);
+    border-radius: 5px;
+    color: #315f55;
+}
+
+.portal-effect-footer {
+    position: relative;
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 56px;
+    min-height: 150px;
+    overflow: hidden;
+    padding: 36px 46px 28px 56px;
+    background: rgba(244, 238, 226, 0.9);
+}
+
+.portal-effect-footer::before {
+    position: absolute;
+    inset: 0;
+    background-image: var(--portal-footer-bg-image);
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    background-size: max(100vw, 1440px) auto;
+    content: "";
+    opacity: 0.2;
+    pointer-events: none;
+}
+
+.portal-effect-footer-intro {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    gap: 20px;
+    align-content: start;
+}
+
+.portal-effect-footer-seal {
+    grid-row: span 2;
+    width: 44px;
+    height: 54px;
+    font-size: 14px;
+}
+
+.portal-effect-footer-intro > .portal-effect-brand-logo {
+    grid-row: span 2;
+    align-self: center;
+}
+
+.portal-effect-footer-intro p {
+    margin: 0;
+    color: #5e594f;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.portal-effect-footer-intro a {
+    width: fit-content;
+    color: #2c3932;
+    font-size: 13px;
+    white-space: nowrap;
+    word-break: keep-all;
+}
+
+.portal-effect-footer-nav {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 28px;
+}
+
+.portal-effect-footer-nav section {
+    display: grid;
+    align-content: start;
+    gap: 6px;
+}
+
+.portal-effect-footer-nav h2 {
+    margin: 0 0 4px;
+    color: #2b2a25;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.portal-effect-footer-nav-links {
+    display: grid;
+    gap: 6px;
+}
+
+.portal-effect-footer-nav a {
+    color: #5e594f;
+    font-size: 13px;
+}
