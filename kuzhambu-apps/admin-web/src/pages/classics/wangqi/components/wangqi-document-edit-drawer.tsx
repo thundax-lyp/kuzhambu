@@ -32,10 +32,10 @@ const { Text } = Typography;
 const { TextArea } = Input;
 const SUMMARY_CANDIDATE_POLL_INTERVAL_MS = 3000;
 
-type WangqiDocumentModelSection = "basic" | "tags" | "qa" | "source" | "versions";
+type WangqiDocumentEditDrawerSection = "basic" | "tags" | "qa" | "source" | "versions";
 type SummaryTaskAlertType = "success" | "info" | "warning" | "error";
 
-export interface WangqiDocumentModelProps {
+export interface WangqiDocumentEditDrawerProps {
     document?: WangqiDocumentRecord | null;
     loading?: boolean;
     mode: "create" | "edit";
@@ -209,7 +209,7 @@ const WangqiRichTextEditor = ({ value, onChange }: WangqiRichTextEditorProps) =>
     );
 };
 
-export const WangqiDocumentModel = ({
+export const WangqiDocumentEditDrawer = ({
     document,
     loading = false,
     mode,
@@ -225,10 +225,10 @@ export const WangqiDocumentModel = ({
     onCreateSummaryTask,
     onClose,
     onSave
-}: WangqiDocumentModelProps) => {
+}: WangqiDocumentEditDrawerProps) => {
     const { message: messageApi } = App.useApp();
     const [form] = Form.useForm<WangqiDocumentFormValues>();
-    const [activeSection, setActiveSection] = useState<WangqiDocumentModelSection>("basic");
+    const [activeSection, setActiveSection] = useState<WangqiDocumentEditDrawerSection>("basic");
     const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
     const [summaryDraft, setSummaryDraft] = useState("");
     const [loadedSummaryCandidateId, setLoadedSummaryCandidateId] = useState<number | null>(null);
@@ -453,8 +453,8 @@ export const WangqiDocumentModel = ({
     ];
 
     const basicContent = (
-        <div className="wangqi-document-model-basic">
-            <div className="wangqi-document-model-basic-head">
+        <div className="wangqi-document-edit-drawer-basic">
+            <div className="wangqi-document-edit-drawer-basic-head">
                 <Form.Item
                     name="title"
                     label="标题"
@@ -462,7 +462,7 @@ export const WangqiDocumentModel = ({
                 >
                     <Input aria-label="王圻文档标题" maxLength={120} showCount />
                 </Form.Item>
-                <div className="wangqi-document-model-grid">
+                <div className="wangqi-document-edit-drawer-grid">
                     <Form.Item name="contentFormat" label="格式">
                         <Select
                             aria-label="王圻文档正文格式"
@@ -477,7 +477,7 @@ export const WangqiDocumentModel = ({
                             aria-label="王圻文档时间"
                             picker="month"
                             format="YYYY-MM"
-                            className="wangqi-document-model-date-picker"
+                            className="wangqi-document-edit-drawer-date-picker"
                         />
                     </Form.Item>
                     <Form.Item name="isPublic" label="可见性" valuePropName="checked">
@@ -489,8 +489,8 @@ export const WangqiDocumentModel = ({
                     </Form.Item>
                 </div>
             </div>
-            <div className="wangqi-document-model-text-fields">
-                <Form.Item label="摘要" className="wangqi-document-model-form-item-top">
+            <div className="wangqi-document-edit-drawer-text-fields">
+                <Form.Item label="摘要" className="wangqi-document-edit-drawer-form-item-top">
                     <div className="wangqi-document-summary-field">
                         {mode === "edit" ? (
                             <div className="wangqi-document-summary-field-action">
@@ -518,7 +518,7 @@ export const WangqiDocumentModel = ({
                 <Form.Item
                     name="content"
                     label="正文"
-                    className="wangqi-document-model-form-item-top"
+                    className="wangqi-document-edit-drawer-form-item-top"
                 >
                     <WangqiRichTextEditor />
                 </Form.Item>
@@ -526,7 +526,7 @@ export const WangqiDocumentModel = ({
         </div>
     );
 
-    const sectionContent: Record<WangqiDocumentModelSection, ReactNode> = {
+    const sectionContent: Record<WangqiDocumentEditDrawerSection, ReactNode> = {
         basic: basicContent,
         tags: tagContent || <Text type="secondary">暂无标签</Text>,
         qa: qaContent || <Text type="secondary">暂无问答</Text>,
@@ -544,15 +544,15 @@ export const WangqiDocumentModel = ({
             destroyOnHidden
             extra={
                 <Segmented
-                    className="wangqi-document-model-sections"
+                    className="wangqi-document-edit-drawer-sections"
                     options={sectionOptions}
                     value={activeSection}
-                    onChange={(value) => setActiveSection(value as WangqiDocumentModelSection)}
+                    onChange={(value) => setActiveSection(value as WangqiDocumentEditDrawerSection)}
                 />
             }
             onClose={closeModel}
             footer={
-                <div className="wangqi-document-model-footer">
+                <div className="wangqi-document-edit-drawer-footer">
                     <KuzhambuButton
                         testId="classics-wangqi-document-cancel-button"
                         onClick={closeModel}
@@ -682,9 +682,11 @@ export const WangqiDocumentModel = ({
                 colon={false}
                 labelCol={{ flex: "88px" }}
                 layout="horizontal"
-                className="wangqi-document-model-form"
+                className="wangqi-document-edit-drawer-form"
             >
-                <div className="wangqi-document-model-section">{sectionContent[activeSection]}</div>
+                <div className="wangqi-document-edit-drawer-section">
+                    {sectionContent[activeSection]}
+                </div>
             </Form>
         </KuzhambuDrawer>
     );

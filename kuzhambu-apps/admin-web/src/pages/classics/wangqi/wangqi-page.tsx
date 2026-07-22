@@ -38,7 +38,7 @@ import type {
     ClassicsExportScopePayload
 } from "@/pages/classics/common/classics-export-types";
 import { WangqiDocumentList } from "./components/wangqi-document-list";
-import { WangqiDocumentModel } from "./components/wangqi-document-model";
+import { WangqiDocumentEditDrawer } from "./components/wangqi-document-edit-drawer";
 import { WangqiQaAiModal, type WangqiQaTaskPair } from "./components/wangqi-qa-ai-modal";
 import { WangqiStorageFilePanel } from "./components/wangqi-storage-file-panel";
 import { WangqiTagAiModal } from "./components/wangqi-tag-ai-modal";
@@ -1054,7 +1054,7 @@ export const WangqiPage = () => {
                 onClose={() => setBatchCandidateDrawerOpen(false)}
                 onChanged={invalidateWangqi}
             />
-            <WangqiDocumentModel
+            <WangqiDocumentEditDrawer
                 document={activeDocument}
                 loading={detailQuery.isLoading}
                 mode={editorMode}
