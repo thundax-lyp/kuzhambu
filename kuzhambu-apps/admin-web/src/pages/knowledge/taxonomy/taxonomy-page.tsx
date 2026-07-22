@@ -1,10 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Tabs } from "antd";
-import type { Key } from "react";
-import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { CategoryEditDrawer } from "./components/category-edit-drawer";
 import { CategoryTable } from "./components/category-table";
 import { SynonymEditDrawer } from "./components/synonym-edit-drawer";
@@ -37,19 +34,13 @@ import type {
     SynonymUpdateCommand
 } from "./taxonomy-service";
 import type {
-    SynonymPageQuery,
     SynonymRecord,
-    TagCategoryPageQuery,
     TagCategoryRecord,
-    TagExtractionResultRecord,
     TagGovernanceMetricsRecord,
-    TagBatchMergePreviewRecord,
-    TagMergePreviewRecord,
-    TagPageQuery,
-    TagRecord,
-    TagReviewPageQuery
+    TagRecord
 } from "./taxonomy-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { useTaxonomyEditors } from "./hooks/use-taxonomy-editors";
 import "./taxonomy-page.css";
 
 const TAXONOMY_TAB_ITEMS = [
@@ -76,46 +67,56 @@ export const TaxonomyPage = () => {
     const queryClient = useQueryClient();
     const canViewTaxonomy = hasPermission("knowledge:taxonomy:view");
     const canEditTaxonomy = hasPermission("knowledge:taxonomy:edit");
-    const [activeTabKey, setActiveTabKey] = useState("categories");
-    const [categoryQuery, setCategoryQuery] = useState<TagCategoryPageQuery>({
-        pageNo: DEFAULT_PAGE_NO,
-        pageSize: DEFAULT_PAGE_SIZE
-    });
-    const [tagQuery, setTagQuery] = useState<TagPageQuery>({
-        pageNo: DEFAULT_PAGE_NO,
-        pageSize: DEFAULT_PAGE_SIZE
-    });
-    const [reviewQuery, setReviewQuery] = useState<TagReviewPageQuery>({
-        pageNo: DEFAULT_PAGE_NO,
-        pageSize: DEFAULT_PAGE_SIZE
-    });
-    const [synonymQuery, setSynonymQuery] = useState<SynonymPageQuery>({
-        pageNo: DEFAULT_PAGE_NO,
-        pageSize: DEFAULT_PAGE_SIZE
-    });
-    const [editingCategory, setEditingCategory] = useState<TagCategoryRecord | null>(null);
-    const [editingTag, setEditingTag] = useState<TagRecord | null>(null);
-    const [editingSynonym, setEditingSynonym] = useState<SynonymRecord | null>(null);
-    const [selectedTag, setSelectedTag] = useState<TagRecord | null>(null);
-    const [categoryEditorOpen, setCategoryEditDrawerOpen] = useState(false);
-    const [tagEditorOpen, setTagEditorOpen] = useState(false);
-    const [synonymEditorOpen, setSynonymEditDrawerOpen] = useState(false);
-    const [tagDetailOpen, setTagDetailOpen] = useState(false);
-    const [tagDetailReviewMode, setTagDetailReviewMode] = useState(false);
-    const [removingAliasId, setRemovingAliasId] = useState<string | null>(null);
-    const [tagMergePreview, setTagMergePreview] = useState<TagMergePreviewRecord | null>(null);
-    const [tagBatchMergeOpen, setTagBatchMergeOpen] = useState(false);
-    const [selectedTagRowKeys, setSelectedTagRowKeys] = useState<Key[]>([]);
-    const [tagBatchMergePreview, setTagBatchMergePreview] =
-        useState<TagBatchMergePreviewRecord | null>(null);
-    const [tagBatchReviewOpen, setTagBatchReviewOpen] = useState(false);
-    const [tagBatchReviewDecision, setTagBatchReviewDecision] = useState<"APPROVE" | "REJECT">(
-        "APPROVE"
-    );
-    const [selectedReviewRowKeys, setSelectedReviewRowKeys] = useState<Key[]>([]);
-    const [tagExtractionOpen, setTagExtractionOpen] = useState(false);
-    const [tagExtractionResult, setTagExtractionResult] =
-        useState<TagExtractionResultRecord | null>(null);
+    const {
+        activeTabKey,
+        categoryEditorOpen,
+        categoryQuery,
+        editingCategory,
+        editingSynonym,
+        editingTag,
+        removingAliasId,
+        reviewQuery,
+        selectedReviewRowKeys,
+        selectedTag,
+        selectedTagRowKeys,
+        setActiveTabKey,
+        setCategoryEditDrawerOpen,
+        setCategoryQuery,
+        setEditingCategory,
+        setEditingSynonym,
+        setEditingTag,
+        setRemovingAliasId,
+        setReviewQuery,
+        setSelectedReviewRowKeys,
+        setSelectedTag,
+        setSelectedTagRowKeys,
+        setSynonymEditDrawerOpen,
+        setSynonymQuery,
+        setTagBatchMergeOpen,
+        setTagBatchMergePreview,
+        setTagBatchReviewDecision,
+        setTagBatchReviewOpen,
+        setTagDetailOpen,
+        setTagDetailReviewMode,
+        setTagEditorOpen,
+        setTagExtractionOpen,
+        setTagExtractionResult,
+        setTagMergePreview,
+        setTagQuery,
+        synonymEditorOpen,
+        synonymQuery,
+        tagBatchMergeOpen,
+        tagBatchMergePreview,
+        tagBatchReviewDecision,
+        tagBatchReviewOpen,
+        tagDetailOpen,
+        tagDetailReviewMode,
+        tagEditorOpen,
+        tagExtractionOpen,
+        tagExtractionResult,
+        tagMergePreview,
+        tagQuery
+    } = useTaxonomyEditors();
 
     const categoryPageQuery = useQuery({
         queryKey: ["knowledge", "taxonomy", "categories", categoryQuery],
