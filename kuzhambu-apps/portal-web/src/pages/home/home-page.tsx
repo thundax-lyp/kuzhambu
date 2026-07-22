@@ -1,6 +1,5 @@
 import { Bookmark, ChevronRight, Columns3, Database, GitFork } from "lucide-react";
 import { Link } from "react-router-dom";
-import heroBackgroundImage from "@/assets/home/hero.png";
 import entryFenghuangImage from "@/assets/home/portal-home-entry-fenghuang.png";
 import entryHuntianyiImage from "@/assets/home/portal-home-entry-huntianyi.png";
 import entryTaishanImage from "@/assets/home/portal-home-entry-taishan.png";
@@ -129,12 +128,6 @@ export const HomePage = () => {
                         })}
                     </div>
                 </div>
-                <img
-                    className="portal-effect-book"
-                    alt=""
-                    src={heroBackgroundImage}
-                    aria-hidden="true"
-                />
             </section>
 
             <section className="portal-effect-content" aria-label="门户内容">
