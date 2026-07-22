@@ -3,10 +3,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Empty, Input, Typography } from "antd";
 import { useCallback, useMemo, useState } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuModal } from "@/components/kuzhambu-modal";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { KuzhambuSyncTaskModal } from "@/components/kuzhambu-sync-task-modal";
+import type { KuzhambuSyncTaskAdapter } from "@/components/kuzhambu-sync-task-modal";
 import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
 import type { AiCandidateRecord } from "@/pages/classics/common/ai-candidate-types";
 import { AiCandidatePayloadEditor } from "@/pages/classics/common/components/ai-candidate-payload-editor";
@@ -19,8 +19,6 @@ import type { WangqiDocumentRecord } from "../wangqi-types";
 const { Text } = Typography;
 
 const QA_CANDIDATE_POLL_INTERVAL_MS = 3000;
-
-type QaTaskAlertType = "success" | "info" | "warning" | "error";
 
 interface WangqiQaAiModalProps {
     creatingQaTask?: boolean;
@@ -45,15 +43,6 @@ const QA_TASK_STATUS_LABELS: Record<string, string> = {
     CANCELLED: "已取消"
 };
 
-const QA_TASK_ALERT_TYPES: Record<string, QaTaskAlertType> = {
-    PENDING: "info",
-    RUNNING: "info",
-    SUCCEEDED: "success",
-    PARTIAL: "warning",
-    FAILED: "error",
-    CANCELLED: "warning"
-};
-
 const sortTasksByNewest = (left: AiRefinementTaskRecord, right: AiRefinementTaskRecord) => {
     if (left.requestedAt && right.requestedAt && left.requestedAt !== right.requestedAt) {
         return right.requestedAt.localeCompare(left.requestedAt);
@@ -61,11 +50,11 @@ const sortTasksByNewest = (left: AiRefinementTaskRecord, right: AiRefinementTask
     return right.taskId - left.taskId;
 };
 
-const isQaTaskActive = (task?: AiRefinementTaskRecord) => {
+const isQaTaskActive = (task?: AiRefinementTaskRecord | null) => {
     return task?.status === "PENDING" || task?.status === "RUNNING";
 };
 
-const isQaTaskCompleted = (task?: AiRefinementTaskRecord) => {
+const isQaTaskCompleted = (task?: AiRefinementTaskRecord | null) => {
     return task?.status === "SUCCEEDED" || task?.status === "PARTIAL";
 };
 
@@ -115,6 +104,31 @@ const defaultResultFormatForQa = (candidate?: AiCandidateRecord) => {
     return candidate?.resultFormat?.trim() || "STRUCTURED";
 };
 
+const qaTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = {
+    getId: (task) => task.taskId,
+    getMessage: getQaTaskDescription,
+    getPhase: (task) => {
+        if (isQaTaskActive(task)) {
+            return "tracking";
+        }
+        if (isQaTaskCompleted(task)) {
+            return task.candidateId ? "result_ready" : "waiting_result";
+        }
+        if (task.status === "CANCELLED") {
+            return "cancelled";
+        }
+        if (task.status === "FAILED") {
+            return "failed";
+        }
+        return "tracking";
+    },
+    getResultKey: (task) => task.candidateId,
+    getStatusLabel: (task) => {
+        const statusLabel = QA_TASK_STATUS_LABELS[task.status] || task.status;
+        return `问答任务${statusLabel}`;
+    }
+};
+
 const readVisibleQaPairs = (qaPairs: ClassicsContentQaPairRecord[] | unknown) => {
     return (Array.isArray(qaPairs) ? qaPairs : [])
         .map((pair) => ({
@@ -162,82 +176,7 @@ export const WangqiQaAiModal = ({
         return qaTasks.find((task) => task.taskId === qaTrackingTaskId);
     }, [qaTasks, qaTrackingTaskId]);
 
-    const trackedQaTaskQuery = useQuery({
-        queryKey: ["classics", "wangqi", "refinement", "task", qaTrackingTaskId],
-        queryFn: () => aiRefinementTaskService.getTask({ taskId: qaTrackingTaskId ?? 0 }),
-        enabled: isOpen && Boolean(qaTrackingTaskId),
-        retry: false,
-        refetchInterval: (query) => {
-            const task = query.state.data;
-            if (!qaTrackingTaskId) {
-                return false;
-            }
-            if (!task || isQaTaskActive(task)) {
-                return QA_CANDIDATE_POLL_INTERVAL_MS;
-            }
-            if (isQaTaskCompleted(task) && !task.candidateId) {
-                return QA_CANDIDATE_POLL_INTERVAL_MS;
-            }
-            return false;
-        }
-    });
-    const latestQaTask =
-        trackedQaTaskQuery.data || trackedQaTaskFromList || qaTrackingTask || latestQaTaskFromList;
-    const trackedQaCandidateId =
-        qaTrackingTaskId && latestQaTask?.taskId === qaTrackingTaskId
-            ? latestQaTask.candidateId
-            : null;
-    const shouldPollQaCandidates =
-        creatingQaTask ||
-        isQaTaskActive(latestQaTask) ||
-        Boolean(qaTrackingTaskId && isQaTaskCompleted(latestQaTask) && trackedQaCandidateId);
-
-    const qaCandidatesQuery = useQuery({
-        queryKey: ["ai", "candidates", "WANGQI_DOCUMENT", document.id, "qa", "modal"],
-        queryFn: () =>
-            aiCandidateService.list({
-                contentId: document.id,
-                contentType: "WANGQI_DOCUMENT",
-                capability: "qa",
-                status: "PENDING"
-            }),
-        enabled: isOpen && Boolean(document.id),
-        retry: false,
-        refetchInterval: () => (shouldPollQaCandidates ? QA_CANDIDATE_POLL_INTERVAL_MS : false)
-    });
-
-    const latestQaCandidate = useMemo(() => {
-        if (creatingQaTask || (qaTrackingTaskId && !trackedQaCandidateId)) {
-            return undefined;
-        }
-        return selectLatestQaCandidate(qaCandidatesQuery.data, trackedQaCandidateId);
-    }, [creatingQaTask, qaCandidatesQuery.data, qaTrackingTaskId, trackedQaCandidateId]);
-
-    const qaTaskAlert = useMemo(() => {
-        if (creatingQaTask) {
-            return {
-                description: "任务创建成功后会自动进入状态跟踪。",
-                title: "正在创建问答任务",
-                type: "info" as const
-            };
-        }
-        if (latestQaTask) {
-            const statusLabel = QA_TASK_STATUS_LABELS[latestQaTask.status] || latestQaTask.status;
-            return {
-                description: getQaTaskDescription(latestQaTask),
-                title: `问答任务${statusLabel}`,
-                type: QA_TASK_ALERT_TYPES[latestQaTask.status] || ("info" as const)
-            };
-        }
-        if (qaCandidatesQuery.isFetching) {
-            return {
-                description: "任务完成后会自动刷新候选问答。",
-                title: "正在加载候选问答",
-                type: "info" as const
-            };
-        }
-        return null;
-    }, [creatingQaTask, latestQaTask, qaCandidatesQuery.isFetching]);
+    const latestQaTask = trackedQaTaskFromList || qaTrackingTask || latestQaTaskFromList;
 
     const applyMutation = useMutation({
         mutationFn: aiCandidateService.apply,
@@ -273,6 +212,20 @@ export const WangqiQaAiModal = ({
         onCreateQaTask(currentQaPairs);
     };
 
+    const loadQaCandidate = async (task: AiRefinementTaskRecord | null) => {
+        const trackedCandidateId = task?.candidateId ?? null;
+        if (qaTrackingTaskId && !trackedCandidateId) {
+            return null;
+        }
+        const candidates = await aiCandidateService.list({
+            contentId: document.id,
+            contentType: "WANGQI_DOCUMENT",
+            capability: "qa",
+            status: "PENDING"
+        });
+        return selectLatestQaCandidate(candidates, trackedCandidateId) ?? null;
+    };
+
     const updateCandidatePayload = useCallback((candidateId: number, payload: string) => {
         setCandidatePayloads((currentPayloads) => {
             if (currentPayloads[candidateId] === payload) {
@@ -297,26 +250,24 @@ export const WangqiQaAiModal = ({
         });
     }, []);
 
-    const applyCandidate = () => {
-        if (!latestQaCandidate) {
+    const applyCandidate = (candidate: AiCandidateRecord | null) => {
+        if (!candidate) {
             messageApi.warning("暂无可采用的候选问答");
             return;
         }
         const payload =
-            candidatePayloads[latestQaCandidate.candidateId] ||
-            latestQaCandidate.resultPayload?.trim() ||
-            "";
-        if (!payload || !candidateSubmitEnabled[latestQaCandidate.candidateId]) {
+            candidatePayloads[candidate.candidateId] || candidate.resultPayload?.trim() || "";
+        if (!payload || !candidateSubmitEnabled[candidate.candidateId]) {
             messageApi.warning("请先确认候选问答内容");
             return;
         }
         applyMutation.mutate({
-            candidateId: latestQaCandidate.candidateId,
+            candidateId: candidate.candidateId,
             contentId: document.id,
             contentType: "WANGQI_DOCUMENT",
             capability: "qa",
-            objectId: latestQaCandidate.objectId,
-            resultFormat: defaultResultFormatForQa(latestQaCandidate),
+            objectId: candidate.objectId,
+            resultFormat: defaultResultFormatForQa(candidate),
             resultPayload: payload,
             changeSummary: "AI 应用：qa"
         });
@@ -332,164 +283,130 @@ export const WangqiQaAiModal = ({
             >
                 生成问答
             </KuzhambuButton>
-            <KuzhambuModal
+            <KuzhambuSyncTaskModal<AiRefinementTaskRecord, AiCandidateRecord>
                 testId="classics-wangqi-document-qa-ai-modal"
                 className="wangqi-qa-modal"
-                title={
-                    <div className="wangqi-summary-modal-title">
-                        <span>问答生成</span>
-                        <KuzhambuButton
-                            testId="classics-wangqi-document-qa-ai-generate-button"
-                            type="primary"
-                            ariaLabel="生成问答"
-                            icon={<FileTextOutlined />}
-                            loading={creatingQaTask}
-                            onClick={createQaTask}
-                        >
-                            生成问答
-                        </KuzhambuButton>
-                    </div>
-                }
-                destroyOnHidden
-                footer={
-                    <div className="wangqi-summary-modal-footer">
-                        <KuzhambuButton
-                            testId="classics-wangqi-document-qa-ai-cancel-button"
-                            onClick={() => setIsOpen(false)}
-                        >
-                            取消
-                        </KuzhambuButton>
-                        <KuzhambuButton
-                            testId="classics-wangqi-document-qa-ai-apply-button"
-                            type="primary"
-                            disabled={
-                                !latestQaCandidate ||
-                                !candidateSubmitEnabled[latestQaCandidate.candidateId]
-                            }
-                            loading={applyMutation.isPending}
-                            onClick={applyCandidate}
-                        >
-                            采用
-                        </KuzhambuButton>
-                    </div>
-                }
+                title="问答生成"
                 open={isOpen}
                 width={880}
+                applying={applyMutation.isPending}
+                applyDisabled={({ result }) =>
+                    !result || !candidateSubmitEnabled[result.candidateId]
+                }
+                applyTestId="classics-wangqi-document-qa-ai-apply-button"
+                createAriaLabel="生成问答"
+                createIcon={<FileTextOutlined />}
+                createTestId="classics-wangqi-document-qa-ai-generate-button"
+                createText="生成问答"
+                creating={creatingQaTask}
+                fetchResult={loadQaCandidate}
+                fetchTask={(taskId) => aiRefinementTaskService.getTask({ taskId: Number(taskId) })}
+                pollIntervalMs={QA_CANDIDATE_POLL_INTERVAL_MS}
+                resultQueryKey={["WANGQI_DOCUMENT", document.id, "qa"]}
+                task={latestQaTask}
+                taskAdapter={qaTaskAdapter}
+                trackTask={Boolean(qaTrackingTaskId)}
+                onApply={applyCandidate}
                 onCancel={() => setIsOpen(false)}
-            >
-                {qaTaskAlert ? (
-                    <KuzhambuAlert
-                        showIcon
-                        type={qaTaskAlert.type}
-                        title={qaTaskAlert.title}
-                        description={qaTaskAlert.description}
-                    />
-                ) : null}
-                {qaCandidatesQuery.isError && !shouldPollQaCandidates ? (
-                    <KuzhambuAlert
-                        showIcon
-                        type="warning"
-                        title="候选问答加载失败"
-                        description="请稍后重试加载候选问答。"
-                    />
-                ) : null}
-                {qaCandidatesQuery.isError && shouldPollQaCandidates ? (
-                    <KuzhambuAlert
-                        showIcon
-                        type="info"
-                        title="候选问答暂未返回"
-                        description="生成任务仍在跟踪中，系统会继续刷新候选问答。"
-                    />
-                ) : null}
-                <div className="wangqi-summary-modal-compare-grid">
-                    <section className="wangqi-summary-modal-card" aria-label="当前问答">
-                        <Text strong>当前问答</Text>
-                        {currentQaPairs.length ? (
-                            <KuzhambuSpace orientation="vertical" size="small">
-                                {currentQaPairs.map((pair, index) => (
-                                    <Text key={`${pair.question}-${index}`}>
-                                        Q: {pair.question || "-"}；A: {pair.answer || "-"}
-                                    </Text>
-                                ))}
-                            </KuzhambuSpace>
-                        ) : (
-                            <Empty
-                                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                description="暂无当前问答"
-                            />
-                        )}
-                    </section>
-                    <section className="wangqi-summary-modal-card" aria-label="候选问答">
-                        <Text strong>候选问答</Text>
-                        {latestQaCandidate ? (
-                            <AiCandidatePayloadEditor
-                                key={`${latestQaCandidate.candidateId}-${
-                                    latestQaCandidate.resultPayload ?? ""
-                                }`}
-                                candidateId={latestQaCandidate.candidateId}
-                                capability="qa"
-                                initialPayload={latestQaCandidate.resultPayload}
-                                onPayloadChange={updateCandidatePayload}
-                                onSubmitEnabledChange={updateCandidateSubmitEnabled}
-                            />
-                        ) : (
-                            <Empty
-                                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                description={
-                                    creatingQaTask || qaCandidatesQuery.isFetching
-                                        ? "问答生成中"
-                                        : "暂无候选问答，可先点击生成问答"
-                                }
-                            />
-                        )}
-                    </section>
-                </div>
-                <section className="wangqi-summary-modal-card" aria-label="问答生成依据">
-                    <Text strong>生成依据</Text>
-                    <div className="wangqi-tags-modal-source-grid">
-                        <label>
-                            <Text type="secondary">标题</Text>
-                            <Input
-                                aria-label="问答依据标题"
-                                readOnly
-                                value={document.title || "未命名文档"}
-                            />
-                        </label>
-                        <label>
-                            <Text type="secondary">摘要</Text>
-                            <Input.TextArea
-                                aria-label="问答依据摘要"
-                                readOnly
-                                autoSize={resolveTextAreaAutoSize({ minRows: 2, maxRows: 4 })}
-                                value={document.summary || "暂无摘要"}
-                            />
-                        </label>
-                        <label>
-                            <Text type="secondary">正文</Text>
-                            <Input.TextArea
-                                aria-label="问答依据正文"
-                                readOnly
-                                autoSize={resolveTextAreaAutoSize({ minRows: 4, maxRows: 8 })}
-                                value={document.content || "暂无正文"}
-                            />
-                        </label>
-                        <div aria-label="问答依据已有问答">
-                            <Text type="secondary">已有问答</Text>
-                            {currentQaPairs.length ? (
-                                <KuzhambuSpace orientation="vertical" size="small">
-                                    {currentQaPairs.map((pair, index) => (
-                                        <Text key={`${pair.question}-${index}`}>
-                                            Q: {pair.question || "-"}；A: {pair.answer || "-"}
-                                        </Text>
-                                    ))}
-                                </KuzhambuSpace>
-                            ) : (
-                                <Text type="secondary">暂无已有问答</Text>
-                            )}
+                onCreate={createQaTask}
+                renderBody={({ creating, result, resultLoading }) => (
+                    <>
+                        <div className="wangqi-summary-modal-compare-grid">
+                            <section className="wangqi-summary-modal-card" aria-label="当前问答">
+                                <Text strong>当前问答</Text>
+                                {currentQaPairs.length ? (
+                                    <KuzhambuSpace orientation="vertical" size="small">
+                                        {currentQaPairs.map((pair, index) => (
+                                            <Text key={`${pair.question}-${index}`}>
+                                                Q: {pair.question || "-"}；A: {pair.answer || "-"}
+                                            </Text>
+                                        ))}
+                                    </KuzhambuSpace>
+                                ) : (
+                                    <Empty
+                                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                        description="暂无当前问答"
+                                    />
+                                )}
+                            </section>
+                            <section className="wangqi-summary-modal-card" aria-label="候选问答">
+                                <Text strong>候选问答</Text>
+                                {result ? (
+                                    <AiCandidatePayloadEditor
+                                        key={`${result.candidateId}-${result.resultPayload ?? ""}`}
+                                        candidateId={result.candidateId}
+                                        capability="qa"
+                                        initialPayload={result.resultPayload}
+                                        onPayloadChange={updateCandidatePayload}
+                                        onSubmitEnabledChange={updateCandidateSubmitEnabled}
+                                    />
+                                ) : (
+                                    <Empty
+                                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                        description={
+                                            creating || resultLoading
+                                                ? "问答生成中"
+                                                : "暂无候选问答，可先点击生成问答"
+                                        }
+                                    />
+                                )}
+                            </section>
                         </div>
-                    </div>
-                </section>
-            </KuzhambuModal>
+                        <section className="wangqi-summary-modal-card" aria-label="问答生成依据">
+                            <Text strong>生成依据</Text>
+                            <div className="wangqi-tags-modal-source-grid">
+                                <label>
+                                    <Text type="secondary">标题</Text>
+                                    <Input
+                                        aria-label="问答依据标题"
+                                        readOnly
+                                        value={document.title || "未命名文档"}
+                                    />
+                                </label>
+                                <label>
+                                    <Text type="secondary">摘要</Text>
+                                    <Input.TextArea
+                                        aria-label="问答依据摘要"
+                                        readOnly
+                                        autoSize={resolveTextAreaAutoSize({
+                                            minRows: 2,
+                                            maxRows: 4
+                                        })}
+                                        value={document.summary || "暂无摘要"}
+                                    />
+                                </label>
+                                <label>
+                                    <Text type="secondary">正文</Text>
+                                    <Input.TextArea
+                                        aria-label="问答依据正文"
+                                        readOnly
+                                        autoSize={resolveTextAreaAutoSize({
+                                            minRows: 4,
+                                            maxRows: 8
+                                        })}
+                                        value={document.content || "暂无正文"}
+                                    />
+                                </label>
+                                <div aria-label="问答依据已有问答">
+                                    <Text type="secondary">已有问答</Text>
+                                    {currentQaPairs.length ? (
+                                        <KuzhambuSpace orientation="vertical" size="small">
+                                            {currentQaPairs.map((pair, index) => (
+                                                <Text key={`${pair.question}-${index}`}>
+                                                    Q: {pair.question || "-"}；A:{" "}
+                                                    {pair.answer || "-"}
+                                                </Text>
+                                            ))}
+                                        </KuzhambuSpace>
+                                    ) : (
+                                        <Text type="secondary">暂无已有问答</Text>
+                                    )}
+                                </div>
+                            </div>
+                        </section>
+                    </>
+                )}
+            />
         </>
     );
 };
