@@ -59,7 +59,7 @@ const formatSyncItemKey = (record: KnowledgeSyncItemRecord) => {
     return record.sourceId ?? `${record.contentType ?? "UNKNOWN"}-${record.contentId ?? "0"}`;
 };
 
-export interface QaSyncTableProps {
+interface QaSyncTableProps {
     contentType?: string;
     loading: boolean;
     onContentTypeChange: (value?: string) => void;

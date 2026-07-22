@@ -35,7 +35,7 @@ const formatDate = (value?: number | string | null) => {
     return `${year}-${month}-${day}`;
 };
 
-export interface QaSessionTableProps {
+interface QaSessionTableProps {
     deleteLoading: boolean;
     exportLoading: boolean;
     loading: boolean;

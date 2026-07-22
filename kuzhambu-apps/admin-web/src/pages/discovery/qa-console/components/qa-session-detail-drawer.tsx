@@ -26,7 +26,7 @@ const formatTime = (value?: number | string | null) => {
     }).format(new Date(timestamp));
 };
 
-export interface QaSessionDetailDrawerProps {
+interface QaSessionDetailDrawerProps {
     onClose: () => void;
     open: boolean;
     sessionDetail: DiscoveryQaSessionDetailRecord | null;
