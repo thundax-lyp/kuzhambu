@@ -5,15 +5,15 @@ import { DiscoveryQaPage } from "@/pages/discovery/qa/qa-page";
 import { DiscoverySearchPage } from "@/pages/discovery/search/search-page";
 import { DiscoverySearchItemPage } from "@/pages/discovery/search-item/search-item-page";
 import { HomePage } from "@/pages/home/home-page";
-import { KnowledgeAtlasPage } from "@/pages/knowledge/knowledge-atlas-page";
-import { KnowledgeHomePage } from "@/pages/knowledge/knowledge-home-page";
-import { KnowledgeLineagePage } from "@/pages/knowledge/knowledge-lineage-page";
-import { KnowledgeQualityPage } from "@/pages/knowledge/knowledge-quality-page";
+import { KnowledgeAtlasPage } from "@/pages/knowledge/atlas/atlas-page";
+import { KnowledgeHomePage } from "@/pages/knowledge/home/home-page";
+import { KnowledgeLineagePage } from "@/pages/knowledge/lineage/lineage-page";
+import { KnowledgeQualityPage } from "@/pages/knowledge/quality/quality-page";
 import { ShareDetailPage } from "@/pages/share-detail/share-detail-page";
 import { ShareListPage } from "@/pages/share-list/share-list-page";
 
 import "./styles.css";
-import "@/pages/knowledge/knowledge-page.css";
+import "@/pages/knowledge/knowledge-shell.css";
 
 const normalizeRouterBasename = (baseUrl: string) => {
     const normalizedBaseUrl = baseUrl.replace(/\/+$/, "");
