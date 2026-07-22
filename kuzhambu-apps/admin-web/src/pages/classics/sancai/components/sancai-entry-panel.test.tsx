@@ -1478,6 +1478,80 @@ describe("SancaiEntryPanel sharing", () => {
         );
     }, 30000);
 
+    it("applies loaded summary candidate when adopting AI summary draft", async () => {
+        const user = userEvent.setup();
+        vi.mocked(aiCandidateService.list).mockReset();
+        vi.mocked(aiCandidateService.list).mockResolvedValue([
+            {
+                candidateId: 8101,
+                capability: "summary",
+                contentType: "SANCAI_ENTRY",
+                contentId: 3001,
+                objectId: null,
+                resultFormat: "TEXT",
+                resultPayload: "候选摘要",
+                status: "PENDING",
+                requestedAt: "2026-06-22T01:00:00.000+08:00"
+            }
+        ]);
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
+        await user.click(
+            await screen.findByTestId("classics-sancai-sancai-entry-ai-summary-button")
+        );
+        expect(await screen.findByDisplayValue("候选摘要")).toBeInTheDocument();
+        await user.click(
+            await screen.findByTestId("classics-sancai-sancai-entry-apply-ai-text-button")
+        );
+
+        await waitFor(() => {
+            expect(aiCandidateService.apply).toHaveBeenCalledTimes(1);
+        });
+        expect(vi.mocked(aiCandidateService.apply).mock.calls[0]?.[0]).toMatchObject({
+            candidateId: 8101,
+            contentType: "SANCAI_ENTRY",
+            contentId: 3001,
+            capability: "summary",
+            objectId: null,
+            resultFormat: "TEXT",
+            resultPayload: "候选摘要",
+            changeSummary: "AI 应用：摘要"
+        });
+    }, 30000);
+
+    it("labels running summary refinement task as summary work", async () => {
+        const user = userEvent.setup();
+        vi.mocked(aiRefinementTaskService.pageTasks).mockResolvedValueOnce({
+            items: [
+                {
+                    taskId: 8201,
+                    status: "RUNNING",
+                    capability: "summary",
+                    contentType: "SANCAI_ENTRY",
+                    contentId: 3001,
+                    requestedAt: "2026-06-22T01:00:00.000+08:00"
+                }
+            ],
+            total: 1,
+            pageNo: 1,
+            pageSize: 20
+        });
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
+        await user.click(
+            await screen.findByTestId("classics-sancai-sancai-entry-ai-summary-button")
+        );
+
+        expect(await screen.findByText("摘要任务：摘要中")).toBeInTheDocument();
+        expect(screen.queryByText("摘要任务：翻译中")).not.toBeInTheDocument();
+    }, 30000);
+
     it("shows expired export task as disabled download", async () => {
         vi.mocked(exportService.page).mockResolvedValueOnce({
             pageNo: 1,

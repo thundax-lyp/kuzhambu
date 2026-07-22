@@ -58,6 +58,7 @@ const AI_TEXT_FIELD_CONFIG: Record<
         actionLabel: string;
         aiLabel: string;
         applyMessage: string;
+        candidateChangeSummary: string;
         currentLabel: string;
         emptyText: string;
         fieldLabel: string;
@@ -71,6 +72,7 @@ const AI_TEXT_FIELD_CONFIG: Record<
         actionLabel: "翻译",
         aiLabel: "AI译文",
         applyMessage: "译文已写入基础信息",
+        candidateChangeSummary: "AI 应用：译文",
         currentLabel: "当前译文",
         emptyText: "暂无候选译文，可先保留当前译文或稍后重试",
         fieldLabel: "AI翻译",
@@ -83,6 +85,7 @@ const AI_TEXT_FIELD_CONFIG: Record<
         actionLabel: "摘要",
         aiLabel: "AI摘要",
         applyMessage: "摘要已写入基础信息",
+        candidateChangeSummary: "AI 应用：摘要",
         currentLabel: "当前摘要",
         emptyText: "暂无候选摘要，可先保留当前摘要或稍后重试",
         fieldLabel: "AI摘要",
@@ -199,12 +202,18 @@ const readVisualSourceImageSelectValue = (image: SancaiEntryImageRecord | undefi
     return image?.storageObjectId != null ? `storage:${image.storageObjectId}` : undefined;
 };
 
-const readRefinementTaskStatusLabel = (status?: string | null) => {
+const readRefinementTaskStatusLabel = (status?: string | null, capability?: string | null) => {
     switch (status) {
         case "PENDING":
             return "等待中";
         case "RUNNING":
-            return "翻译中";
+            if (capability === "translate") {
+                return "翻译中";
+            }
+            if (capability === "summary") {
+                return "摘要中";
+            }
+            return "处理中";
         case "SUCCEEDED":
             return "已完成";
         case "PARTIAL":
@@ -420,6 +429,40 @@ export const SancaiEntryModel = ({
         ) ||
         currentVisualAsset ||
         null;
+    const applyAiTextCandidateMutation = useMutation({
+        mutationFn: aiCandidateService.apply,
+        onSuccess: async (_, command) => {
+            await Promise.all([
+                queryClient.invalidateQueries({
+                    queryKey: [
+                        "ai",
+                        "candidates",
+                        "SANCAI_ENTRY",
+                        entryId,
+                        command.capability,
+                        "modal"
+                    ]
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: ["classics", "sancai", "entries"]
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: ["classics", "sancai", "entries", "versions", entryId]
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: ["classics", "sancai", "refinement", "tasks", entryId]
+                })
+            ]);
+            setActiveAiTextField(null);
+            messageApi.success(
+                AI_TEXT_FIELD_CONFIG[command.capability as SancaiAiTextField]?.applyMessage ||
+                    "AI 候选已应用"
+            );
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "AI 候选应用失败");
+        }
+    });
     const latestAiTextCandidate = useMemo(() => {
         const candidates = aiTextCandidatesQuery.data || [];
         return [...candidates]
@@ -441,6 +484,18 @@ export const SancaiEntryModel = ({
                 return right.candidateId - left.candidateId;
             })[0];
     }, [activeAiTextField, aiTextCandidatesQuery.data]);
+    const loadedAiTextCandidate = useMemo(() => {
+        if (!loadedAiTextCandidateId) {
+            return null;
+        }
+        return (
+            (aiTextCandidatesQuery.data || []).find(
+                (candidate) =>
+                    candidate.candidateId === loadedAiTextCandidateId &&
+                    candidate.capability === activeAiTextField
+            ) ?? null
+        );
+    }, [activeAiTextField, aiTextCandidatesQuery.data, loadedAiTextCandidateId]);
 
     useEffect(() => {
         if (!activeAiTextField || !latestAiTextCandidate) {
@@ -633,15 +688,32 @@ export const SancaiEntryModel = ({
         setActiveAiTextField(null);
     };
     const applyAiTextDraft = () => {
-        if (!activeAiTextField) {
+        if (!activeAiTextField || !entryId) {
             return;
         }
+        const appliedField = activeAiTextField;
+        const appliedConfig = AI_TEXT_FIELD_CONFIG[appliedField];
+        const candidate = loadedAiTextCandidate;
+        const resultPayload = aiTextDraft;
         setForm((currentForm) => ({
             ...currentForm,
-            [activeAiTextField === "summary" ? "summary" : "translationText"]: aiTextDraft
+            [appliedField === "summary" ? "summary" : "translationText"]: resultPayload
         }));
+        if (candidate) {
+            applyAiTextCandidateMutation.mutate({
+                candidateId: candidate.candidateId,
+                contentId: entryId,
+                contentType: "SANCAI_ENTRY",
+                capability: appliedField,
+                objectId: candidate.objectId,
+                resultFormat: candidate.resultFormat?.trim() || "TEXT",
+                resultPayload,
+                changeSummary: appliedConfig.candidateChangeSummary
+            });
+            return;
+        }
         setActiveAiTextField(null);
-        messageApi.success(aiTextConfig.applyMessage);
+        messageApi.success(appliedConfig.applyMessage);
     };
     const changeCategory = (categoryId: number | null) => {
         setForm((currentForm) => {
@@ -1346,6 +1418,7 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
                         <KuzhambuButton
                             testId="classics-sancai-sancai-entry-apply-ai-text-button"
                             type="primary"
+                            loading={applyAiTextCandidateMutation.isPending}
                             disabled={!aiTextDraft.trim()}
                             onClick={applyAiTextDraft}
                         >
@@ -1387,7 +1460,8 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
                             isCreatingAiTextTask
                                 ? `正在创建${aiTextConfig.taskLabel}任务`
                                 : `${aiTextConfig.taskLabel}任务：${readRefinementTaskStatusLabel(
-                                      latestAiTextTask?.status
+                                      latestAiTextTask?.status,
+                                      latestAiTextTask?.capability
                                   )}`
                         }
                         description={
