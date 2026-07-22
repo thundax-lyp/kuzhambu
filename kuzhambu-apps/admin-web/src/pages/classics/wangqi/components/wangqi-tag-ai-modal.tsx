@@ -2,11 +2,16 @@ import { FileTextOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Empty, Input, Tag, Typography } from "antd";
 import { useCallback, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuSyncTaskModal } from "@/components/kuzhambu-sync-task-modal";
-import type { KuzhambuSyncTaskAdapter } from "@/components/kuzhambu-sync-task-modal";
+import type {
+    KuzhambuSyncTaskAdapter,
+    KuzhambuSyncTaskModalState
+} from "@/components/kuzhambu-sync-task-modal";
 import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
 import type { AiCandidateRecord } from "@/pages/classics/common/ai-candidate-types";
 import { AiCandidatePayloadEditor } from "@/pages/classics/common/components/ai-candidate-payload-editor";
@@ -36,6 +41,15 @@ const TAG_TASK_STATUS_LABELS: Record<string, string> = {
     PARTIAL: "部分完成",
     FAILED: "失败",
     CANCELLED: "已取消"
+};
+
+const TAG_TASK_ALERT_TYPES: Record<string, "success" | "info" | "warning" | "error"> = {
+    PENDING: "info",
+    RUNNING: "info",
+    SUCCEEDED: "success",
+    PARTIAL: "warning",
+    FAILED: "error",
+    CANCELLED: "warning"
 };
 
 const sortTasksByNewest = (left: AiRefinementTaskRecord, right: AiRefinementTaskRecord) => {
@@ -122,6 +136,78 @@ const tagTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = {
         const statusLabel = TAG_TASK_STATUS_LABELS[task.status] || task.status;
         return `标签任务${statusLabel}`;
     }
+};
+
+const renderTagTaskStatus = ({
+    creating,
+    resultError,
+    resultLoading,
+    task,
+    tracking
+}: KuzhambuSyncTaskModalState<AiRefinementTaskRecord, AiCandidateRecord>) => {
+    let taskAlert: ReactNode = null;
+    if (creating) {
+        taskAlert = (
+            <KuzhambuAlert
+                showIcon
+                className="kuzhambu-sync-task-modal-status"
+                type="info"
+                title="正在创建标签任务"
+                description="任务创建成功后会自动进入状态跟踪。"
+            />
+        );
+    } else if (task) {
+        const statusLabel = TAG_TASK_STATUS_LABELS[task.status] || task.status;
+        taskAlert = (
+            <KuzhambuAlert
+                showIcon
+                className="kuzhambu-sync-task-modal-status"
+                type={TAG_TASK_ALERT_TYPES[task.status] || "info"}
+                title={`标签任务${statusLabel}`}
+                description={getTagTaskDescription(task)}
+            />
+        );
+    } else if (resultLoading) {
+        taskAlert = (
+            <KuzhambuAlert
+                showIcon
+                className="kuzhambu-sync-task-modal-status"
+                type="info"
+                title="正在加载候选标签"
+                description="任务完成后会自动刷新候选标签。"
+            />
+        );
+    }
+
+    let resultAlert: ReactNode = null;
+    if (resultError && tracking) {
+        resultAlert = (
+            <KuzhambuAlert
+                showIcon
+                className="kuzhambu-sync-task-modal-status"
+                type="info"
+                title="候选标签暂未返回"
+                description="AI 任务仍在跟踪中，系统会继续刷新候选标签。"
+            />
+        );
+    } else if (resultError) {
+        resultAlert = (
+            <KuzhambuAlert
+                showIcon
+                className="kuzhambu-sync-task-modal-status"
+                type="warning"
+                title="候选标签加载失败"
+                description="请稍后重试加载候选标签。"
+            />
+        );
+    }
+
+    return taskAlert || resultAlert ? (
+        <>
+            {taskAlert}
+            {resultAlert}
+        </>
+    ) : null;
 };
 
 const readTagName = (tag: ClassicsContentTagRecord) => {
@@ -311,6 +397,7 @@ export const WangqiTagAiModal = ({
                 onApply={applyCandidate}
                 onCancel={() => setIsOpen(false)}
                 onCreate={createTagTask}
+                renderStatus={renderTagTaskStatus}
                 renderBody={({ creating, result, resultLoading }) => (
                     <>
                         <div className="wangqi-summary-modal-compare-grid">

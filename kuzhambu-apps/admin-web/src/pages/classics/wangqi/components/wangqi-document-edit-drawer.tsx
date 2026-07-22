@@ -6,7 +6,10 @@ import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 import { KuzhambuSegmentedDrawer } from "@/components/kuzhambu-segmented-drawer";
 import { KuzhambuSyncTaskModal } from "@/components/kuzhambu-sync-task-modal";
-import type { KuzhambuSyncTaskAdapter } from "@/components/kuzhambu-sync-task-modal";
+import type {
+    KuzhambuSyncTaskAdapter,
+    KuzhambuSyncTaskModalState
+} from "@/components/kuzhambu-sync-task-modal";
 import { WangqiDocumentBasicSection } from "./wangqi-document-basic-section";
 import { WangqiDocumentQaSection } from "./wangqi-document-qa-section";
 import { WangqiDocumentSourceSection } from "./wangqi-document-source-section";
@@ -146,6 +149,78 @@ const selectLatestSummaryCandidate = (
             }
             return right.candidateId - left.candidateId;
         })[0];
+};
+
+const renderSummaryTaskStatus = ({
+    creating,
+    resultError,
+    resultLoading,
+    task,
+    tracking
+}: KuzhambuSyncTaskModalState<AiRefinementTaskRecord, AiCandidateRecord>) => {
+    let taskAlert: ReactNode = null;
+    if (creating) {
+        taskAlert = (
+            <KuzhambuAlert
+                showIcon
+                className="kuzhambu-sync-task-modal-status"
+                type="info"
+                title="正在创建摘要任务"
+                description="任务创建成功后会自动进入状态跟踪。"
+            />
+        );
+    } else if (task) {
+        const statusLabel = SUMMARY_TASK_STATUS_LABELS[task.status] || task.status;
+        taskAlert = (
+            <KuzhambuAlert
+                showIcon
+                className="kuzhambu-sync-task-modal-status"
+                type={SUMMARY_TASK_ALERT_TYPES[task.status] || "info"}
+                title={`摘要任务${statusLabel}`}
+                description={getSummaryTaskDescription(task)}
+            />
+        );
+    } else if (resultLoading) {
+        taskAlert = (
+            <KuzhambuAlert
+                showIcon
+                className="kuzhambu-sync-task-modal-status"
+                type="info"
+                title="正在加载候选摘要"
+                description="任务完成后会自动刷新候选摘要。"
+            />
+        );
+    }
+
+    let resultAlert: ReactNode = null;
+    if (resultError && tracking) {
+        resultAlert = (
+            <KuzhambuAlert
+                showIcon
+                className="kuzhambu-sync-task-modal-status"
+                type="info"
+                title="候选摘要暂未返回"
+                description="AI 任务仍在跟踪中，系统会继续刷新候选摘要。"
+            />
+        );
+    } else if (resultError) {
+        resultAlert = (
+            <KuzhambuAlert
+                showIcon
+                className="kuzhambu-sync-task-modal-status"
+                type="warning"
+                title="候选摘要加载失败"
+                description="请稍后重试加载候选摘要。"
+            />
+        );
+    }
+
+    return taskAlert || resultAlert ? (
+        <>
+            {taskAlert}
+            {resultAlert}
+        </>
+    ) : null;
 };
 
 export const WangqiDocumentEditDrawer = ({
@@ -358,43 +433,7 @@ export const WangqiDocumentEditDrawer = ({
                 onCancel={closeSummaryModal}
                 onCreate={requestSummaryTask}
                 onResultChange={updateSummaryDraftFromCandidate}
-                renderStatus={({ creating, resultLoading, task }) => {
-                    if (creating) {
-                        return (
-                            <KuzhambuAlert
-                                showIcon
-                                className="kuzhambu-sync-task-modal-status"
-                                type="info"
-                                title="正在创建摘要任务"
-                                description="任务创建成功后会自动进入状态跟踪。"
-                            />
-                        );
-                    }
-                    if (task) {
-                        const statusLabel = SUMMARY_TASK_STATUS_LABELS[task.status] || task.status;
-                        return (
-                            <KuzhambuAlert
-                                showIcon
-                                className="kuzhambu-sync-task-modal-status"
-                                type={SUMMARY_TASK_ALERT_TYPES[task.status] || "info"}
-                                title={`摘要任务${statusLabel}`}
-                                description={getSummaryTaskDescription(task)}
-                            />
-                        );
-                    }
-                    if (resultLoading) {
-                        return (
-                            <KuzhambuAlert
-                                showIcon
-                                className="kuzhambu-sync-task-modal-status"
-                                type="info"
-                                title="正在加载候选摘要"
-                                description="任务完成后会自动刷新候选摘要。"
-                            />
-                        );
-                    }
-                    return null;
-                }}
+                renderStatus={renderSummaryTaskStatus}
                 renderBody={({ creating, resultLoading }) => (
                     <>
                         <div className="wangqi-summary-modal-compare-grid">

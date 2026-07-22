@@ -1,5 +1,5 @@
-import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import type { ReactNode } from "react";
 import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
@@ -94,15 +94,6 @@ const readError = (error: unknown) => {
     return error instanceof Error ? error : null;
 };
 
-const createSyncTaskModalQueryClient = () =>
-    new QueryClient({
-        defaultOptions: {
-            queries: {
-                retry: false
-            }
-        }
-    });
-
 const resolvePhase = <TResult,>({
     creating,
     hasFetchResult,
@@ -134,7 +125,7 @@ const resolvePhase = <TResult,>({
 // "open modal -> create task -> poll task -> load result -> let page apply result".
 // Do not put business result parsing, candidate validation, persistence, or form-field mapping here.
 // Keep those semantics in page-domain components via taskAdapter, fetchResult, renderBody, and onApply.
-const KuzhambuSyncTaskModalInner = <TTask, TResult>({
+export const KuzhambuSyncTaskModal = <TTask, TResult>({
     applyDisabled = false,
     applyTestId,
     applying = false,
@@ -244,20 +235,21 @@ const KuzhambuSyncTaskModalInner = <TTask, TResult>({
     if (renderStatus) {
         statusContent = renderStatus(state);
     } else if (phase !== "idle" || state.resultError || state.taskError) {
-        const hasStatusError = Boolean(state.resultError || state.taskError);
+        let errorTitle: string | null = null;
+        if (state.taskError) {
+            errorTitle = "任务状态获取失败";
+        } else if (state.resultError) {
+            errorTitle = "任务结果获取失败";
+        }
         statusContent = (
             <KuzhambuAlert
                 showIcon
                 className="kuzhambu-sync-task-modal-status"
-                type={hasStatusError ? "error" : TASK_PHASE_STATUS_TYPE[phase]}
-                title={
-                    hasStatusError
-                        ? "任务状态获取失败"
-                        : state.statusLabel || TASK_PHASE_LABELS[phase]
-                }
+                type={errorTitle ? "error" : TASK_PHASE_STATUS_TYPE[phase]}
+                title={errorTitle || state.statusLabel || TASK_PHASE_LABELS[phase]}
                 description={
-                    state.resultError?.message ||
                     state.taskError?.message ||
+                    state.resultError?.message ||
                     state.message ||
                     undefined
                 }
@@ -312,17 +304,5 @@ const KuzhambuSyncTaskModalInner = <TTask, TResult>({
             {statusContent}
             {renderBody(state)}
         </KuzhambuModal>
-    );
-};
-
-export const KuzhambuSyncTaskModal = <TTask, TResult>(
-    props: KuzhambuSyncTaskModalProps<TTask, TResult>
-) => {
-    const [queryClient] = useState(createSyncTaskModalQueryClient);
-
-    return (
-        <QueryClientProvider client={queryClient}>
-            <KuzhambuSyncTaskModalInner {...props} />
-        </QueryClientProvider>
     );
 };

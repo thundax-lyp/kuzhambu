@@ -1,5 +1,7 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { KuzhambuSyncTaskModal } from "./kuzhambu-sync-task-modal";
 import type { KuzhambuSyncTaskAdapter } from "./kuzhambu-sync-task-modal";
@@ -15,12 +17,24 @@ const adapter: KuzhambuSyncTaskAdapter<DemoTask> = {
     getStatusLabel: (task) => task.status
 };
 
+const renderWithQueryClient = (ui: ReactNode) => {
+    const queryClient = new QueryClient({
+        defaultOptions: {
+            queries: {
+                retry: false
+            }
+        }
+    });
+
+    return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
+};
+
 describe("KuzhambuSyncTaskModal", () => {
     it("renders create status and triggers create", async () => {
         const user = userEvent.setup();
         const onCreate = vi.fn();
 
-        render(
+        renderWithQueryClient(
             <KuzhambuSyncTaskModal<DemoTask, string>
                 open
                 createText="启动"
@@ -45,7 +59,7 @@ describe("KuzhambuSyncTaskModal", () => {
         const user = userEvent.setup();
         const onApply = vi.fn();
 
-        render(
+        renderWithQueryClient(
             <KuzhambuSyncTaskModal<DemoTask, string>
                 open
                 applyText="采用"
@@ -67,5 +81,27 @@ describe("KuzhambuSyncTaskModal", () => {
         await user.click(screen.getByTestId("sync-task-modal-demo-apply-button"));
 
         expect(onApply).toHaveBeenCalledWith("候选结果");
+    });
+
+    it("labels result loading failures separately from task status failures", async () => {
+        renderWithQueryClient(
+            <KuzhambuSyncTaskModal<DemoTask, string>
+                open
+                createText="启动"
+                fetchResult={async () => {
+                    throw new Error("candidate request failed");
+                }}
+                task={{ id: 1, status: "SUCCEEDED" }}
+                taskAdapter={adapter}
+                testId="sync-task-modal-demo"
+                title="任务"
+                onCancel={vi.fn()}
+                onCreate={vi.fn()}
+                renderBody={() => "任务内容"}
+            />
+        );
+
+        expect(await screen.findByText("任务结果获取失败")).toBeInTheDocument();
+        expect(screen.getByText("candidate request failed")).toBeInTheDocument();
     });
 });
