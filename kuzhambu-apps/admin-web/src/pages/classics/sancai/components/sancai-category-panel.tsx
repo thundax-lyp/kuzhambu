@@ -7,7 +7,7 @@ import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components
 import type { DictItem } from "@/types/dict";
 import { SancaiCategoryEditDrawerModal } from "./sancai-category-edit-modal";
 import type { SancaiCategoryFormValues } from "./sancai-form-values";
-import * as categoryService from "../services/sancai-category-service";
+import * as categoryService from "../sancai-category-service";
 import type { SancaiCategoryRecord } from "../sancai-types";
 
 interface SancaiCategoryPanelProps {
