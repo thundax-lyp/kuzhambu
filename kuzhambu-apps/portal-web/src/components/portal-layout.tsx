@@ -5,6 +5,7 @@ import kuzhambuLogoImage from "@/assets/home/kuzhambu-logo.svg";
 import footerMountainImage from "@/assets/home/portal-home-effect-footer-mountain.png";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import "./portal-layout.css";
 
 type PortalTheme = "light" | "dark";
 
