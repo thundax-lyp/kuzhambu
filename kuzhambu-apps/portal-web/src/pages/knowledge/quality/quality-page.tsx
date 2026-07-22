@@ -2,9 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { Activity, AlertTriangle, ArrowRight, GalleryVerticalEnd, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import * as KnowledgeQualityService from "./knowledge-quality-service";
+import * as KnowledgeQualityService from "./quality-service";
 
-import "./knowledge-quality-page.css";
+import "./quality-page.css";
 
 export const KnowledgeQualityPage = () => {
     const { data = KnowledgeQualityService.KNOWLEDGE_QUALITY_FALLBACK } = useQuery({

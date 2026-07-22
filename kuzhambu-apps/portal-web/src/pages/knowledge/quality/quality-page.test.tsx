@@ -3,9 +3,9 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { KnowledgeQualityPage } from "./knowledge-quality-page";
+import { KnowledgeQualityPage } from "./quality-page";
 
-vi.mock("./knowledge-quality-service", () => ({
+vi.mock("./quality-service", () => ({
     KNOWLEDGE_QUALITY_FALLBACK: {
         focusIssues: [
             {
