@@ -1,21 +1,13 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import {
-    Card,
-    Checkbox,
-    DatePicker,
-    Descriptions,
-    Input,
-    Progress,
-    Segmented,
-    Table,
-    Typography
-} from "antd";
+import { Card, Checkbox, Descriptions, Progress, Segmented, Table, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import type { Key } from "react";
 import { useState } from "react";
-import type { Dayjs } from "dayjs";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
+import { SearchStatisticsFilterPanel } from "./components/search-statistics-filter-panel";
+import type { SearchStatisticsDateRangeValue } from "./components/search-statistics-filter-panel";
+import { SearchTrendPanel } from "./components/search-trend-panel";
 import * as service from "./search-statistics-service";
 import type {
     DiscoverySearchEventPageQuery,
@@ -31,10 +23,8 @@ import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./search-statistics-page.css";
 
 const { Text, Title } = Typography;
-const { RangePicker } = DatePicker;
 
 type SearchStatisticsPanel = "summary" | "records" | "rebuild";
-type DateRangeValue = [Dayjs | null, Dayjs | null] | null;
 
 const TOP_QUERY_LIMIT = 10;
 const DATE_TIME_FORMAT = "YYYY-MM-DD HH:mm:ss";
@@ -76,7 +66,7 @@ const normalizeSearch = (value: string) => {
     return normalizedValue || null;
 };
 
-const rangeToQuery = (range: DateRangeValue) => ({
+const rangeToQuery = (range: SearchStatisticsDateRangeValue) => ({
     dateFrom: range?.[0]?.format(DATE_TIME_FORMAT) || null,
     dateTo: range?.[1]?.format(DATE_TIME_FORMAT) || null
 });
@@ -87,11 +77,11 @@ const readRecordKey = (record: DiscoverySearchEventRecord): string =>
 export const SearchStatisticsPage = () => {
     const [queryText, setQueryText] = useState("礼器");
     const [searchStatuses, setSearchStatuses] = useState("SUCCESS");
-    const [summaryDateRange, setSummaryDateRange] = useState<DateRangeValue>(null);
+    const [summaryDateRange, setSummaryDateRange] = useState<SearchStatisticsDateRangeValue>(null);
     const [summaryQuery, setSummaryQuery] = useState<DiscoverySearchStatisticsSummaryQuery>(
         rangeToQuery(null)
     );
-    const [recordDateRange, setRecordDateRange] = useState<DateRangeValue>(null);
+    const [recordDateRange, setRecordDateRange] = useState<SearchStatisticsDateRangeValue>(null);
     const [eventQuery, setEventQuery] = useState<DiscoverySearchEventPageQuery>({
         pageNo: DEFAULT_PAGE_NO,
         pageSize: DEFAULT_PAGE_SIZE,
@@ -372,153 +362,39 @@ export const SearchStatisticsPage = () => {
                                 size={12}
                                 style={{ width: "100%" }}
                             >
-                                <Card size="small">
-                                    <KuzhambuSpace
-                                        className="search-statistics-summary-filter"
-                                        wrap
-                                    >
-                                        <label>
-                                            <Text type="secondary">起始时间</Text>
-                                            <RangePicker
-                                                aria-label="统计时间范围"
-                                                format={DATE_TIME_FORMAT}
-                                                showTime
-                                                value={summaryDateRange}
-                                                onChange={(value) => setSummaryDateRange(value)}
-                                            />
-                                        </label>
-                                        <KuzhambuButton
-                                            ariaLabel="统计"
-                                            testId="discovery-search-statistics-search-statistics-action-button"
-                                            loading={analysisQuery.isFetching}
-                                            onClick={refreshSummary}
-                                            type="primary"
-                                        >
-                                            统计
-                                        </KuzhambuButton>
-                                    </KuzhambuSpace>
-                                </Card>
-                                <div className="search-statistics-summary-metrics">
-                                    {summaryMetrics.map((metric) => (
-                                        <article
-                                            className="search-statistics-summary-metric"
-                                            key={metric.key}
-                                        >
-                                            <Text type="secondary">{metric.label}</Text>
-                                            <strong>{metric.value}</strong>
-                                        </article>
-                                    ))}
-                                </div>
-                                <div className="search-statistics-top-query-chart">
-                                    <Text strong>热门搜索词 Top 10</Text>
-                                    {topQueryBars.length ? (
-                                        <div
-                                            aria-label="热门搜索词前10名柱状图"
-                                            className="search-statistics-top-query-bars"
-                                            role="list"
-                                        >
-                                            {topQueryBars.map((topQuery, index) => (
-                                                <div
-                                                    className="search-statistics-top-query-bar-row"
-                                                    key={`${topQuery.queryText}-${topQuery.index}`}
-                                                    role="listitem"
-                                                >
-                                                    <span className="search-statistics-top-query-rank">
-                                                        {index + 1}
-                                                    </span>
-                                                    <span
-                                                        className="search-statistics-top-query-label"
-                                                        title={topQuery.queryText}
-                                                    >
-                                                        {topQuery.queryText}
-                                                    </span>
-                                                    <div
-                                                        aria-hidden="true"
-                                                        className="search-statistics-top-query-track"
-                                                    >
-                                                        <div
-                                                            className="search-statistics-top-query-bar"
-                                                            style={{
-                                                                width: `${topQuery.widthPercent}%`
-                                                            }}
-                                                        />
-                                                    </div>
-                                                    <Text
-                                                        className="search-statistics-top-query-count"
-                                                        type="secondary"
-                                                    >
-                                                        {topQuery.count} 次
-                                                    </Text>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <Text type="secondary">暂无热门搜索词。</Text>
-                                    )}
-                                </div>
+                                <SearchStatisticsFilterPanel
+                                    dateTimeFormat={DATE_TIME_FORMAT}
+                                    loading={analysisQuery.isFetching}
+                                    mode="summary"
+                                    summaryDateRange={summaryDateRange}
+                                    onRefreshSummary={refreshSummary}
+                                    onSummaryDateRangeChange={setSummaryDateRange}
+                                />
+                                <SearchTrendPanel
+                                    summaryMetrics={summaryMetrics}
+                                    topQueryBars={topQueryBars}
+                                />
                             </KuzhambuSpace>
                         </section>
                     ) : null}
 
                     {activePanel === "records" ? (
                         <>
-                            <Card className="search-statistics-record-filter-card" size="small">
-                                <KuzhambuSpace
-                                    className="search-statistics-record-filter-form"
-                                    wrap
-                                >
-                                    <label>
-                                        <Text type="secondary">搜索词</Text>
-                                        <Input
-                                            allowClear
-                                            aria-label="搜索词"
-                                            value={queryText}
-                                            onChange={(event) => setQueryText(event.target.value)}
-                                            style={{ width: 160 }}
-                                        />
-                                    </label>
-                                    <label>
-                                        <Text type="secondary">状态</Text>
-                                        <Input
-                                            allowClear
-                                            aria-label="状态"
-                                            value={searchStatuses}
-                                            onChange={(event) =>
-                                                setSearchStatuses(event.target.value)
-                                            }
-                                            style={{ width: 136 }}
-                                        />
-                                    </label>
-                                    <label>
-                                        <Text type="secondary">时间范围</Text>
-                                        <RangePicker
-                                            aria-label="检索记录时间范围"
-                                            format={DATE_TIME_FORMAT}
-                                            showTime
-                                            value={recordDateRange}
-                                            onChange={(value) => setRecordDateRange(value)}
-                                        />
-                                    </label>
-                                    <KuzhambuSpace className="search-statistics-record-filter-actions">
-                                        <KuzhambuButton
-                                            testId="discovery-search-statistics-search-statistics-query-events-button"
-                                            loading={pageMutation.isPending}
-                                            onClick={queryEvents}
-                                            type="primary"
-                                        >
-                                            查询记录
-                                        </KuzhambuButton>
-                                        <KuzhambuButton
-                                            ariaLabel="重置"
-                                            disabled={!hasActiveEventFilters && !pageResult}
-                                            testId="discovery-search-statistics-search-statistics-clear-result-button"
-                                            onClick={resetEventFilters}
-                                        >
-                                            重置
-                                        </KuzhambuButton>
-                                    </KuzhambuSpace>
-                                </KuzhambuSpace>
-                            </Card>
+                            <SearchStatisticsFilterPanel
+                                dateTimeFormat={DATE_TIME_FORMAT}
+                                hasActiveEventFilters={hasActiveEventFilters}
+                                loading={pageMutation.isPending}
+                                mode="records"
+                                pageLoaded={Boolean(pageResult)}
+                                queryText={queryText}
+                                recordDateRange={recordDateRange}
+                                searchStatuses={searchStatuses}
+                                onQueryEvents={queryEvents}
+                                onQueryTextChange={setQueryText}
+                                onRecordDateRangeChange={setRecordDateRange}
+                                onResetEventFilters={resetEventFilters}
+                                onSearchStatusesChange={setSearchStatuses}
+                            />
 
                             <Card className="search-statistics-record-table-card" size="small">
                                 <KuzhambuSpace
