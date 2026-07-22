@@ -1,6 +1,6 @@
 import { FileTextOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { App, Form, Input, Segmented, Typography } from "antd";
+import { App, Form, Input, Segmented } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
@@ -8,6 +8,10 @@ import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuModal } from "@/components/kuzhambu-modal";
 import { WangqiDocumentBasicSection } from "./wangqi-document-basic-section";
+import { WangqiDocumentQaSection } from "./wangqi-document-qa-section";
+import { WangqiDocumentSourceSection } from "./wangqi-document-source-section";
+import { WangqiDocumentTagsSection } from "./wangqi-document-tags-section";
+import { WangqiDocumentVersionsSection } from "./wangqi-document-versions-section";
 import {
     toWangqiDocumentCommand,
     toWangqiDocumentFormValues,
@@ -20,7 +24,6 @@ import type { WangqiDocumentCommand } from "../wangqi-service";
 import type { WangqiDocumentRecord } from "../wangqi-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 
-const { Text } = Typography;
 const { TextArea } = Input;
 const SUMMARY_CANDIDATE_POLL_INTERVAL_MS = 3000;
 
@@ -344,10 +347,10 @@ export const WangqiDocumentEditDrawer = ({
 
     const sectionContent: Record<WangqiDocumentEditDrawerSection, ReactNode> = {
         basic: <WangqiDocumentBasicSection mode={mode} onOpenSummaryModal={openSummaryModal} />,
-        tags: tagContent || <Text type="secondary">暂无标签</Text>,
-        qa: qaContent || <Text type="secondary">暂无问答</Text>,
-        source: sourceFileContent || <Text type="secondary">暂无原始文件</Text>,
-        versions: versionContent || <Text type="secondary">暂无版本</Text>
+        tags: <WangqiDocumentTagsSection content={tagContent} />,
+        qa: <WangqiDocumentQaSection content={qaContent} />,
+        source: <WangqiDocumentSourceSection content={sourceFileContent} />,
+        versions: <WangqiDocumentVersionsSection content={versionContent} />
     };
 
     return (
