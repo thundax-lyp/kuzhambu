@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { KuzhambuModal } from "@/components/kuzhambu-modal";
 import type { RefinementRelationRecord } from "../refinement-types";
 
-interface RefinementRelationEditorProps {
+interface RefinementRelationEditModalProps {
     open: boolean;
     saving?: boolean;
     relation?: RefinementRelationRecord | null;
@@ -11,13 +11,13 @@ interface RefinementRelationEditorProps {
     onSubmit: (values: RefinementRelationRecord) => void;
 }
 
-export const RefinementRelationEditor = ({
+export const RefinementRelationEditModal = ({
     open,
     saving = false,
     relation,
     onCancel,
     onSubmit
-}: RefinementRelationEditorProps) => {
+}: RefinementRelationEditModalProps) => {
     const [form] = Form.useForm<RefinementRelationRecord>();
 
     useEffect(() => {
@@ -30,7 +30,7 @@ export const RefinementRelationEditor = ({
 
     return (
         <KuzhambuModal
-            testId="knowledge-refinement-relation-editor-modal"
+            testId="knowledge-refinement-relation-edit-modal"
             title={relation?.draftId ? "编辑关系草稿" : "新增关系草稿"}
             open={open}
             confirmLoading={saving}

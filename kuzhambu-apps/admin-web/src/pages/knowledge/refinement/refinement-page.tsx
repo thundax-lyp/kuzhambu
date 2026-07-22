@@ -7,14 +7,14 @@ import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import type { ColumnsType } from "antd/es/table";
 import { RefinementEntityDeleteModal } from "./components/refinement-entity-delete-modal";
-import { RefinementEntityEditor } from "./components/refinement-entity-editor";
+import { RefinementEntityEditModal } from "./components/refinement-entity-edit-modal";
 import { RefinementEntityTable } from "./components/refinement-entity-table";
 import { RefinementFilterForm } from "./components/refinement-filter-form";
 import { RefinementProgressSummaryPanel } from "./components/refinement-progress-summary";
 import { RefinementQualityAnnotationDrawer } from "./components/refinement-quality-annotation-drawer";
 import { RefinementQualityAnnotationTable } from "./components/refinement-quality-annotation-table";
 import { RefinementRelationDeleteModal } from "./components/refinement-relation-delete-modal";
-import { RefinementRelationEditor } from "./components/refinement-relation-editor";
+import { RefinementRelationEditModal } from "./components/refinement-relation-edit-modal";
 import { RefinementRelationTable } from "./components/refinement-relation-table";
 import { RefinementWorkbenchTable } from "./components/refinement-workbench-table";
 import * as service from "./refinement-service";
@@ -679,7 +679,7 @@ export const RefinementPage = () => {
                 </section>
             </KuzhambuSpace>
 
-            <RefinementEntityEditor
+            <RefinementEntityEditModal
                 entity={editingEntity}
                 open={entityEditorOpen}
                 saving={entityMutation.isPending}
@@ -700,7 +700,7 @@ export const RefinementPage = () => {
                     }
                 }}
             />
-            <RefinementRelationEditor
+            <RefinementRelationEditModal
                 open={relationEditorOpen}
                 relation={editingRelation}
                 saving={relationMutation.isPending}

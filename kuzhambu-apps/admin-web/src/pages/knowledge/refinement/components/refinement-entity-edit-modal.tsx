@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { KuzhambuModal } from "@/components/kuzhambu-modal";
 import type { RefinementEntityRecord } from "../refinement-types";
 
-interface RefinementEntityEditorProps {
+interface RefinementEntityEditModalProps {
     open: boolean;
     saving?: boolean;
     entity?: RefinementEntityRecord | null;
@@ -11,13 +11,13 @@ interface RefinementEntityEditorProps {
     onSubmit: (values: RefinementEntityRecord) => void;
 }
 
-export const RefinementEntityEditor = ({
+export const RefinementEntityEditModal = ({
     open,
     saving = false,
     entity,
     onCancel,
     onSubmit
-}: RefinementEntityEditorProps) => {
+}: RefinementEntityEditModalProps) => {
     const [form] = Form.useForm<RefinementEntityRecord>();
 
     useEffect(() => {
@@ -30,7 +30,7 @@ export const RefinementEntityEditor = ({
 
     return (
         <KuzhambuModal
-            testId="knowledge-refinement-entity-editor-modal"
+            testId="knowledge-refinement-entity-edit-modal"
             title={entity?.draftId ? "编辑实体草稿" : "新增实体草稿"}
             open={open}
             confirmLoading={saving}
