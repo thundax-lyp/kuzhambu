@@ -7,7 +7,7 @@ import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { TextArea } = Input;
 
-interface TagEditProps {
+interface TagEditDrawerProps {
     categories: TagCategoryRecord[];
     open?: boolean;
     saving?: boolean;
@@ -17,7 +17,7 @@ interface TagEditProps {
     onSave?: (request: TagUpdateCommand) => void;
 }
 
-interface TagEditFormValues {
+interface TagEditDrawerFormValues {
     categoryId?: string | null;
     description?: string | null;
     id?: string | null;
@@ -36,28 +36,28 @@ const createTagId = () => {
     return `${Date.now()}`;
 };
 
-const toFormValues = (tag: TagRecord): TagEditFormValues => ({
+const toFormValues = (tag: TagRecord): TagEditDrawerFormValues => ({
     categoryId: tag.categoryId || undefined,
     description: tag.description || undefined,
     id: tag.id,
     name: tag.name
 });
 
-const toCreateRequest = (values: TagEditFormValues): TagCreateCommand => ({
+const toCreateRequest = (values: TagEditDrawerFormValues): TagCreateCommand => ({
     id: values.id || createTagId(),
     name: values.name.trim(),
     categoryId: normalizeText(values.categoryId),
     description: normalizeText(values.description)
 });
 
-const toUpdateRequest = (values: TagEditFormValues): TagUpdateCommand => ({
+const toUpdateRequest = (values: TagEditDrawerFormValues): TagUpdateCommand => ({
     id: values.id || "",
     name: values.name.trim(),
     categoryId: normalizeText(values.categoryId),
     description: normalizeText(values.description)
 });
 
-export const TagEdit = ({
+export const TagEditDrawer = ({
     categories,
     open,
     saving = false,
@@ -65,8 +65,8 @@ export const TagEdit = ({
     onClose,
     onCreate,
     onSave
-}: TagEditProps) => {
-    const [form] = Form.useForm<TagEditFormValues>();
+}: TagEditDrawerProps) => {
+    const [form] = Form.useForm<TagEditDrawerFormValues>();
     const visible = Boolean(open);
     const editing = Boolean(tag?.id);
     const title = editing ? "编辑统一标签" : "新增统一标签";
@@ -115,14 +115,14 @@ export const TagEdit = ({
 
     return (
         <KuzhambuDrawer
-            testId="knowledge-taxonomy-tag-editor-drawer"
-            className="knowledge-taxonomy-tag-editor"
+            testId="knowledge-taxonomy-tag-edit-drawer"
+            className="knowledge-taxonomy-tag-edit-drawer"
             title={title}
             open={visible}
             size="small"
             onClose={onClose}
             footer={
-                <div className="knowledge-taxonomy-tag-editor-footer">
+                <div className="knowledge-taxonomy-tag-edit-drawer-footer">
                     <KuzhambuButton
                         testId="knowledge-taxonomy-tag-cancel-button"
                         disabled={saving}
@@ -141,7 +141,11 @@ export const TagEdit = ({
                 </div>
             }
         >
-            <Form<TagEditFormValues> form={form} layout="vertical" className="taxonomy-tag-form">
+            <Form<TagEditDrawerFormValues>
+                form={form}
+                layout="vertical"
+                className="taxonomy-tag-form"
+            >
                 <Form.Item name="id" hidden>
                     <Input />
                 </Form.Item>

@@ -5,13 +5,13 @@ import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
-import { CategoryEdit } from "./components/category-edit";
+import { CategoryEditDrawer } from "./components/category-edit-drawer";
 import { CategoryTable } from "./components/category-table";
-import { SynonymEdit } from "./components/synonym-edit";
+import { SynonymEditDrawer } from "./components/synonym-edit-drawer";
 import { SynonymTable } from "./components/synonym-table";
 import { TagBatchReviewPanel } from "./components/tag-batch-review-panel";
 import { TagDetailDrawer } from "./components/tag-detail-drawer";
-import { TagEdit } from "./components/tag-edit";
+import { TagEditDrawer } from "./components/tag-edit-drawer";
 import { TagExtractionDrawer } from "./components/tag-extraction-drawer";
 import { TagBatchMergePanel } from "./components/tag-batch-merge-panel";
 import { TagGovernanceMetricsPanel } from "./components/tag-governance-metrics-panel";
@@ -97,9 +97,9 @@ export const TaxonomyPage = () => {
     const [editingTag, setEditingTag] = useState<TagRecord | null>(null);
     const [editingSynonym, setEditingSynonym] = useState<SynonymRecord | null>(null);
     const [selectedTag, setSelectedTag] = useState<TagRecord | null>(null);
-    const [categoryEditorOpen, setCategoryEditorOpen] = useState(false);
+    const [categoryEditorOpen, setCategoryEditDrawerorOpen] = useState(false);
     const [tagEditorOpen, setTagEditorOpen] = useState(false);
-    const [synonymEditorOpen, setSynonymEditorOpen] = useState(false);
+    const [synonymEditorOpen, setSynonymEditDrawerorOpen] = useState(false);
     const [tagDetailOpen, setTagDetailOpen] = useState(false);
     const [tagDetailReviewMode, setTagDetailReviewMode] = useState(false);
     const [removingAliasId, setRemovingAliasId] = useState<string | null>(null);
@@ -160,7 +160,7 @@ export const TaxonomyPage = () => {
                 ? service.updateCategory(request as TagCategoryUpdateCommand)
                 : service.createCategory(request as TagCategoryCreateCommand),
         onSuccess: async () => {
-            setCategoryEditorOpen(false);
+            setCategoryEditDrawerorOpen(false);
             setEditingCategory(null);
             await queryClient.invalidateQueries({
                 queryKey: ["knowledge", "taxonomy", "categories"]
@@ -383,7 +383,7 @@ export const TaxonomyPage = () => {
                 ? service.updateSynonym(request as SynonymUpdateCommand)
                 : service.createSynonym(request as SynonymCreateCommand),
         onSuccess: async () => {
-            setSynonymEditorOpen(false);
+            setSynonymEditDrawerorOpen(false);
             setEditingSynonym(null);
             await queryClient.invalidateQueries({
                 queryKey: ["knowledge", "taxonomy", "synonyms"]
@@ -462,19 +462,19 @@ export const TaxonomyPage = () => {
 
     const openCreateCategory = () => {
         setEditingCategory(null);
-        setCategoryEditorOpen(true);
+        setCategoryEditDrawerorOpen(true);
     };
 
     const openEditCategory = (category: TagCategoryRecord) => {
         setEditingCategory(category);
-        setCategoryEditorOpen(true);
+        setCategoryEditDrawerorOpen(true);
     };
 
-    const closeCategoryEditor = () => {
+    const closeCategoryEditDraweror = () => {
         if (saveCategoryMutation.isPending) {
             return;
         }
-        setCategoryEditorOpen(false);
+        setCategoryEditDrawerorOpen(false);
         setEditingCategory(null);
     };
 
@@ -501,12 +501,12 @@ export const TaxonomyPage = () => {
 
     const openCreateSynonym = () => {
         setEditingSynonym(null);
-        setSynonymEditorOpen(true);
+        setSynonymEditDrawerorOpen(true);
     };
 
     const openEditSynonym = (record: SynonymRecord) => {
         setEditingSynonym(record);
-        setSynonymEditorOpen(true);
+        setSynonymEditDrawerorOpen(true);
     };
 
     const closeTagEditor = () => {
@@ -517,11 +517,11 @@ export const TaxonomyPage = () => {
         setEditingTag(null);
     };
 
-    const closeSynonymEditor = () => {
+    const closeSynonymEditDraweror = () => {
         if (saveSynonymMutation.isPending) {
             return;
         }
-        setSynonymEditorOpen(false);
+        setSynonymEditDrawerorOpen(false);
         setEditingSynonym(null);
     };
 
@@ -759,16 +759,16 @@ export const TaxonomyPage = () => {
                 })}
             />
 
-            <CategoryEdit
+            <CategoryEditDrawer
                 open={categoryEditorOpen}
                 category={editingCategory}
                 saving={saveCategoryMutation.isPending}
-                onClose={closeCategoryEditor}
+                onClose={closeCategoryEditDraweror}
                 onCreate={(request) => saveCategoryMutation.mutate(request)}
                 onSave={(request) => saveCategoryMutation.mutate(request)}
             />
 
-            <TagEdit
+            <TagEditDrawer
                 categories={categories}
                 open={tagEditorOpen}
                 saving={saveTagMutation.isPending}
@@ -778,11 +778,11 @@ export const TaxonomyPage = () => {
                 onSave={(request) => saveTagMutation.mutate(request)}
             />
 
-            <SynonymEdit
+            <SynonymEditDrawer
                 open={synonymEditorOpen}
                 saving={saveSynonymMutation.isPending}
                 synonym={editingSynonym}
-                onClose={closeSynonymEditor}
+                onClose={closeSynonymEditDraweror}
                 onCreate={(request) => saveSynonymMutation.mutate(request)}
                 onSave={(request) => saveSynonymMutation.mutate(request)}
             />

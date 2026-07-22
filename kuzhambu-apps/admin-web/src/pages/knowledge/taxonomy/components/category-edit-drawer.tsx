@@ -7,7 +7,7 @@ import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { TextArea } = Input;
 
-interface CategoryEditProps {
+interface CategoryEditDrawerProps {
     open?: boolean;
     category?: TagCategoryRecord | null;
     saving?: boolean;
@@ -16,7 +16,7 @@ interface CategoryEditProps {
     onSave?: (request: TagCategoryUpdateCommand) => void;
 }
 
-interface CategoryEditFormValues {
+interface CategoryEditDrawerFormValues {
     id?: string | null;
     name: string;
     description?: string | null;
@@ -37,36 +37,36 @@ const createCategoryId = () => {
     return `${Date.now()}`;
 };
 
-const readFormValues = (category: TagCategoryRecord): CategoryEditFormValues => ({
+const readFormValues = (category: TagCategoryRecord): CategoryEditDrawerFormValues => ({
     id: category.id,
     name: category.name,
     description: category.description || undefined,
     priority: category.priority ?? DEFAULT_PRIORITY
 });
 
-const toCreateRequest = (values: CategoryEditFormValues): TagCategoryCreateCommand => ({
+const toCreateRequest = (values: CategoryEditDrawerFormValues): TagCategoryCreateCommand => ({
     id: values.id || createCategoryId(),
     name: values.name.trim(),
     description: normalizeSearch(values.description),
     priority: values.priority
 });
 
-const toUpdateRequest = (values: CategoryEditFormValues): TagCategoryUpdateCommand => ({
+const toUpdateRequest = (values: CategoryEditDrawerFormValues): TagCategoryUpdateCommand => ({
     id: values.id || "",
     name: values.name.trim(),
     description: normalizeSearch(values.description),
     priority: values.priority
 });
 
-export const CategoryEdit = ({
+export const CategoryEditDrawer = ({
     open,
     category,
     saving = false,
     onClose,
     onCreate,
     onSave
-}: CategoryEditProps) => {
-    const [form] = Form.useForm<CategoryEditFormValues>();
+}: CategoryEditDrawerProps) => {
+    const [form] = Form.useForm<CategoryEditDrawerFormValues>();
     const visible = Boolean(open);
     const editing = Boolean(category?.id);
     const title = editing ? "编辑标签分类" : "新增标签分类";
@@ -105,14 +105,14 @@ export const CategoryEdit = ({
 
     return (
         <KuzhambuDrawer
-            testId="knowledge-taxonomy-category-editor-drawer"
-            className="knowledge-taxonomy-category-editor"
+            testId="knowledge-taxonomy-category-edit-drawer"
+            className="knowledge-taxonomy-category-edit-drawer"
             title={title}
             open={visible}
             size="small"
             onClose={onClose}
             footer={
-                <div className="knowledge-taxonomy-category-editor-footer">
+                <div className="knowledge-taxonomy-category-edit-drawer-footer">
                     <KuzhambuButton
                         testId="knowledge-taxonomy-category-cancel-button"
                         disabled={saving}
@@ -131,7 +131,7 @@ export const CategoryEdit = ({
                 </div>
             }
         >
-            <Form<CategoryEditFormValues>
+            <Form<CategoryEditDrawerFormValues>
                 form={form}
                 layout="vertical"
                 className="taxonomy-category-form"
