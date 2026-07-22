@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type KeyboardEvent } from "react";
+import { useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { SendHorizontal } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
@@ -165,6 +165,14 @@ const readStoredSession = (form: QaFormState): DiscoveryQaOpenSessionResponse | 
     }
 };
 
+const clearStoredSession = () => {
+    try {
+        globalThis.localStorage?.removeItem(SESSION_STORAGE_KEY);
+    } catch {
+        return;
+    }
+};
+
 const writeStoredSession = (form: QaFormState, session: DiscoveryQaOpenSessionResponse) => {
     try {
         globalThis.localStorage?.setItem(
@@ -178,6 +186,13 @@ const writeStoredSession = (form: QaFormState, session: DiscoveryQaOpenSessionRe
     } catch {
         return;
     }
+};
+
+const isUnavailableSessionError = (error: unknown) => {
+    const message = error instanceof Error ? error.message : String(error);
+    return /404|not[\s_-]*found|removed|deleted|invalid[\s_-]*session|NOT_FOUND|会话.*(不存在|已删除|删除|失效|不可用)|不存在|已删除/iu.test(
+        message
+    );
 };
 
 const formatContextLabel = (
@@ -199,11 +214,15 @@ export const DiscoveryQaPage = () => {
         () => readStoredSession(initialForm)
     );
     const [messages, setMessages] = useState<QaTimelineMessage[]>([]);
+    const isSubmittingRef = useRef(false);
+    const [isSubmittingLocked, setIsSubmittingLocked] = useState(false);
 
     const openSessionMutation = useMutation({ mutationFn: qaService.openQaSession });
     const chatCompletionMutation = useMutation({
         mutationFn: qaService.createQaChatCompletionStream
     });
+    const isSubmitting =
+        isSubmittingLocked || openSessionMutation.isPending || chatCompletionMutation.isPending;
 
     const selectedSessionId = toSessionId(selectedSession?.sessionId);
     const hasWangqiSingleDocumentContext =
@@ -225,6 +244,21 @@ export const DiscoveryQaPage = () => {
                 message.id === messageId ? { ...message, ...patch } : message
             )
         );
+    };
+
+    const startSubmitting = () => {
+        if (isSubmittingRef.current) {
+            return false;
+        }
+
+        isSubmittingRef.current = true;
+        setIsSubmittingLocked(true);
+        return true;
+    };
+
+    const finishSubmitting = () => {
+        isSubmittingRef.current = false;
+        setIsSubmittingLocked(false);
     };
 
     const ensureSession = async () => {
@@ -325,8 +359,15 @@ export const DiscoveryQaPage = () => {
                 }
             });
         } catch (error) {
+            const isUnavailableSession = isUnavailableSessionError(error);
+            if (isUnavailableSession) {
+                clearStoredSession();
+                setSelectedSession(null);
+            }
             updateMessage(assistantMessageId, {
-                content: "发送失败，请重试。",
+                content: isUnavailableSession
+                    ? "当前会话已失效，请重新发送问题。"
+                    : "发送失败，请重试。",
                 failureReason: error instanceof Error ? error.message : "发送失败",
                 retryQuestion: questionText,
                 sources: [],
@@ -359,7 +400,7 @@ export const DiscoveryQaPage = () => {
 
     const submitQuestion = async () => {
         const questionText = parseString(form.question);
-        if (!questionText) {
+        if (!questionText || !startSubmitting()) {
             return;
         }
 
@@ -368,6 +409,8 @@ export const DiscoveryQaPage = () => {
             await sendQuestion(questionText, currentSession.sessionId, currentSession.session);
         } catch {
             return;
+        } finally {
+            finishSubmitting();
         }
     };
 
@@ -382,23 +425,32 @@ export const DiscoveryQaPage = () => {
         }
 
         event.preventDefault();
-        if (!chatCompletionMutation.isPending) {
+        if (!isSubmitting) {
             void submitQuestion();
         }
     };
 
     const handleRetry = async (messageId: string) => {
         const targetMessage = messages.find((message) => message.id === messageId);
-        if (!targetMessage?.retryQuestion || !selectedSessionId) {
+        if (!targetMessage?.retryQuestion || !startSubmitting()) {
             return;
         }
 
-        await sendQuestion(
-            targetMessage.retryQuestion,
-            selectedSessionId,
-            selectedSession,
-            messageId
-        );
+        try {
+            const currentSession = selectedSessionId
+                ? { session: selectedSession, sessionId: selectedSessionId }
+                : await ensureSession();
+            await sendQuestion(
+                targetMessage.retryQuestion,
+                currentSession.sessionId,
+                currentSession.session,
+                messageId
+            );
+        } catch {
+            return;
+        } finally {
+            finishSubmitting();
+        }
     };
 
     return (
@@ -530,9 +582,9 @@ export const DiscoveryQaPage = () => {
                             />
                         </Label>
                         <div className="portal-qa-actions">
-                            <Button disabled={chatCompletionMutation.isPending} type="submit">
+                            <Button disabled={isSubmitting} type="submit">
                                 <SendHorizontal aria-hidden="true" size={16} />
-                                {chatCompletionMutation.isPending ? "回答中..." : "发送"}
+                                {isSubmitting ? "回答中..." : "发送"}
                             </Button>
                         </div>
                     </form>

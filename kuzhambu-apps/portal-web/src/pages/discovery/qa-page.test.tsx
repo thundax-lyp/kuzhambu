@@ -104,6 +104,17 @@ const flushAsyncWork = async () => {
     });
 };
 
+const createDeferred = <T,>() => {
+    let resolve!: (value: T) => void;
+    let reject!: (reason?: unknown) => void;
+    const promise = new Promise<T>((promiseResolve, promiseReject) => {
+        resolve = promiseResolve;
+        reject = promiseReject;
+    });
+
+    return { promise, reject, resolve };
+};
+
 describe("DiscoveryQaPage", () => {
     afterEach(() => {
         mocks.createQaChatCompletionStream.mockReset();
@@ -260,6 +271,63 @@ describe("DiscoveryQaPage", () => {
         });
     });
 
+    it("prevents duplicate session creation while first open request is pending", async () => {
+        const openResponse = {
+            contextContentId: null,
+            contextContentType: null,
+            contextMode: "GENERAL",
+            lastMessageAt: null,
+            openedAt: 1699999999000,
+            scope: "PORTAL",
+            sessionId: "pending-2101",
+            status: "OPEN",
+            title: "知识中心问答"
+        };
+        const pendingOpen = createDeferred<typeof openResponse>();
+        mocks.openQaSession.mockReturnValueOnce(pendingOpen.promise);
+        mocks.createQaChatCompletionStream.mockResolvedValueOnce({
+            answerStatus: "SUCCEEDED",
+            choices: [
+                {
+                    finishReason: "stop",
+                    index: 0,
+                    message: {
+                        content: "只回答一次。",
+                        role: "assistant"
+                    }
+                }
+            ],
+            sessionId: "pending-2101"
+        });
+
+        const { container, root } = renderPage();
+
+        setTextareaValue(container, "question", "不要重复创建");
+        await pressTextareaKey(container, "question", "Enter");
+        await pressTextareaKey(container, "question", "Enter");
+
+        expect(mocks.openQaSession).toHaveBeenCalledTimes(1);
+        expect(mocks.createQaChatCompletionStream).not.toHaveBeenCalled();
+
+        await act(async () => {
+            pendingOpen.resolve(openResponse);
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        });
+
+        expect(mocks.createQaChatCompletionStream).toHaveBeenCalledTimes(1);
+        expect(mocks.createQaChatCompletionStream.mock.calls[0]?.[0]).toMatchObject({
+            request: {
+                messages: [{ content: "不要重复创建", role: "user" }],
+                sessionId: "pending-2101"
+            }
+        });
+        expect(container.textContent).toContain("只回答一次。");
+
+        act(() => {
+            root.unmount();
+        });
+    });
+
     it("reuses local session for thirty minutes without showing session management", async () => {
         localStorage.setItem(
             "kuzhambu.portal.discovery.qa.session",
@@ -306,6 +374,84 @@ describe("DiscoveryQaPage", () => {
         });
         expect(container.textContent).not.toContain("会话列表");
         expect(container.textContent).toContain("继续回答。");
+
+        act(() => {
+            root.unmount();
+        });
+    });
+
+    it("clears unavailable cached session and retries with a new session", async () => {
+        localStorage.setItem(
+            "kuzhambu.portal.discovery.qa.session",
+            JSON.stringify({
+                contextKey: "PORTAL|1001|GENERAL||",
+                expiresAt: Date.now() + 30 * 60 * 1000,
+                session: {
+                    contextContentId: null,
+                    contextContentType: null,
+                    contextMode: "GENERAL",
+                    scope: "PORTAL",
+                    sessionId: "removed-2001",
+                    status: "OPEN",
+                    title: "知识中心问答"
+                }
+            })
+        );
+        mocks.createQaChatCompletionStream
+            .mockRejectedValueOnce(new Error("Portal stream request failed: 404"))
+            .mockResolvedValueOnce({
+                answerStatus: "SUCCEEDED",
+                choices: [
+                    {
+                        finishReason: "stop",
+                        index: 0,
+                        message: {
+                            content: "新会话恢复回答。",
+                            role: "assistant"
+                        }
+                    }
+                ],
+                sessionId: "recovered-2001"
+            });
+        mocks.openQaSession.mockResolvedValueOnce({
+            contextContentId: null,
+            contextContentType: null,
+            contextMode: "GENERAL",
+            scope: "PORTAL",
+            sessionId: "recovered-2001",
+            status: "OPEN",
+            title: "知识中心问答"
+        });
+
+        const { container, root } = renderPage();
+
+        setTextareaValue(container, "question", "旧会话还能用吗？");
+        await pressTextareaKey(container, "question", "Enter");
+
+        expect(mocks.openQaSession).not.toHaveBeenCalled();
+        expect(mocks.createQaChatCompletionStream.mock.calls[0]?.[0]).toMatchObject({
+            request: {
+                messages: [{ content: "旧会话还能用吗？", role: "user" }],
+                sessionId: "removed-2001"
+            }
+        });
+        expect(localStorage.getItem("kuzhambu.portal.discovery.qa.session")).toBeNull();
+        expect(container.textContent).toContain("当前会话已失效，请重新发送问题。");
+
+        const retryButton = findButtonByText(container, "重试");
+        await act(async () => {
+            retryButton.click();
+            await new Promise((resolve) => setTimeout(resolve, 0));
+        });
+
+        expect(mocks.openQaSession).toHaveBeenCalledTimes(1);
+        expect(mocks.createQaChatCompletionStream.mock.calls[1]?.[0]).toMatchObject({
+            request: {
+                messages: [{ content: "旧会话还能用吗？", role: "user" }],
+                sessionId: "recovered-2001"
+            }
+        });
+        expect(container.textContent).toContain("新会话恢复回答。");
 
         act(() => {
             root.unmount();
