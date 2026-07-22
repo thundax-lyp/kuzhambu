@@ -581,7 +581,7 @@ const openSelectAndChoose = async (label: string, optionText: string) => {
 
 const switchEntryDrawerSection = async (
     user: ReturnType<typeof userEvent.setup>,
-    sectionName: "基础信息" | "内容处理" | "视觉处理" | "标签" | "问答" | "版本"
+    sectionName: "基础信息" | "视觉处理" | "标签" | "问答" | "版本"
 ) => {
     await user.click(
         await screen.findByText(sectionName, {
@@ -600,7 +600,7 @@ const openVisualAssetSection = async (user: ReturnType<typeof userEvent.setup>) 
 };
 
 const openRefinementSection = async (user: ReturnType<typeof userEvent.setup>) => {
-    await switchEntryDrawerSection(user, "内容处理");
+    await switchEntryDrawerSection(user, "视觉处理");
 };
 
 const openTagSection = async (user: ReturnType<typeof userEvent.setup>) => {
@@ -1408,7 +1408,9 @@ describe("SancaiEntryPanel sharing", () => {
         const entryTable = await screen.findByLabelText("三才图会条目表格");
         await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
         await user.click(await screen.findByTestId("classics-sancai-sancai-entry-ai-button"));
-        await user.click(await screen.findByTestId("classics-sancai-sancai-entry-action-button-8"));
+        await user.click(
+            await screen.findByTestId("classics-sancai-sancai-entry-create-ai-text-task-button")
+        );
 
         await waitFor(() => {
             expect(aiRefinementTaskService.createTask).toHaveBeenCalled();
@@ -1416,6 +1418,46 @@ describe("SancaiEntryPanel sharing", () => {
         expect(vi.mocked(currentUserService.getCurrentUserInfo)).toHaveBeenCalled();
         expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).toMatchObject({
             capability: "translate",
+            scope: "classics",
+            contentType: "SANCAI_ENTRY",
+            contentId: 3001,
+            requestedBy: 99,
+            locale: "zh-CN"
+        });
+        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
+            "serviceId"
+        );
+        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
+            "serviceRole"
+        );
+        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
+            "modelId"
+        );
+        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
+            "modelName"
+        );
+    }, 30000);
+
+    it("creates summary refinement task from the entry basic information drawer", async () => {
+        const user = userEvent.setup();
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
+        await user.click(
+            await screen.findByTestId("classics-sancai-sancai-entry-ai-summary-button")
+        );
+        await user.click(
+            await screen.findByTestId("classics-sancai-sancai-entry-create-ai-text-task-button")
+        );
+
+        await waitFor(() => {
+            expect(aiRefinementTaskService.createTask).toHaveBeenCalled();
+        });
+        expect(vi.mocked(currentUserService.getCurrentUserInfo)).toHaveBeenCalled();
+        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).toMatchObject({
+            capability: "summary",
             scope: "classics",
             contentType: "SANCAI_ENTRY",
             contentId: 3001,

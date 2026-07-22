@@ -365,29 +365,29 @@ html[data-theme="dark"] .sancai-form-field {
     justify-items: start;
 }
 
-.sancai-entry-translation-field {
+.sancai-entry-ai-text-field {
     display: grid;
     min-width: 0;
     gap: 10px;
     justify-items: start;
 }
 
-.sancai-entry-ai-translation-button.ant-btn {
+.sancai-entry-ai-text-button.ant-btn {
     color: var(--sancai-accent);
     background: var(--sancai-accent-soft);
     border-color: var(--sancai-accent-line);
     box-shadow: none;
 }
 
-.sancai-entry-ai-translation-button.ant-btn:hover,
-.sancai-entry-ai-translation-button.ant-btn:focus-visible {
+.sancai-entry-ai-text-button.ant-btn:hover,
+.sancai-entry-ai-text-button.ant-btn:focus-visible {
     color: var(--sancai-accent);
     background: color-mix(in srgb, var(--sancai-accent-soft) 76%, var(--sancai-panel) 24%);
     border-color: var(--sancai-accent);
 }
 
-.sancai-entry-ai-translation-button.ant-btn[disabled],
-.sancai-entry-ai-translation-button.ant-btn[disabled]:hover {
+.sancai-entry-ai-text-button.ant-btn[disabled],
+.sancai-entry-ai-text-button.ant-btn[disabled]:hover {
     color: var(--text-tertiary);
     background: var(--surface-muted);
     border-color: var(--border-subtle);
@@ -641,21 +641,21 @@ html[data-theme="dark"] .sancai-form-field {
     gap: 8px;
 }
 
-.sancai-translation-modal-toolbar {
+.sancai-ai-text-modal-toolbar {
     display: flex;
     justify-content: flex-end;
     margin-bottom: 12px;
 }
 
-.sancai-translation-task-alert {
+.sancai-ai-text-task-alert {
     margin-bottom: 12px;
 }
 
-.sancai-translation-modal-original {
+.sancai-ai-text-modal-original {
     margin-bottom: 12px;
 }
 
-.sancai-translation-modal-compare-grid {
+.sancai-ai-text-modal-compare-grid {
     display: grid;
     min-width: 0;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -694,7 +694,7 @@ html[data-theme="dark"] .sancai-form-field {
         grid-template-columns: minmax(0, 1fr);
     }
 
-    .sancai-translation-modal-compare-grid {
+    .sancai-ai-text-modal-compare-grid {
         grid-template-columns: minmax(0, 1fr);
     }
 

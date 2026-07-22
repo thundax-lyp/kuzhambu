@@ -47,9 +47,51 @@ import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Text } = Typography;
 const imageAccept = ".jpg,.jpeg,.png,.gif,.webp";
-type SancaiEntryModelSection = "basic" | "content" | "visual" | "tags" | "qa" | "versions";
-const TRANSLATION_CANDIDATE_POLL_INTERVAL_MS = 3000;
+type SancaiEntryModelSection = "basic" | "visual" | "tags" | "qa" | "versions";
+type SancaiAiTextField = "translate" | "summary";
+const AI_TEXT_CANDIDATE_POLL_INTERVAL_MS = 3000;
 const RUNNING_REFINEMENT_STATUSES = new Set(["PENDING", "RUNNING"]);
+
+const AI_TEXT_FIELD_CONFIG: Record<
+    SancaiAiTextField,
+    {
+        actionLabel: string;
+        aiLabel: string;
+        applyMessage: string;
+        currentLabel: string;
+        emptyText: string;
+        fieldLabel: string;
+        loadingText: string;
+        modalTitle: string;
+        sourceLabel: string;
+        taskLabel: string;
+    }
+> = {
+    translate: {
+        actionLabel: "翻译",
+        aiLabel: "AI译文",
+        applyMessage: "译文已写入基础信息",
+        currentLabel: "当前译文",
+        emptyText: "暂无候选译文，可先保留当前译文或稍后重试",
+        fieldLabel: "AI翻译",
+        loadingText: "AI 翻译生成中...",
+        modalTitle: "AI翻译",
+        sourceLabel: "原文",
+        taskLabel: "翻译"
+    },
+    summary: {
+        actionLabel: "摘要",
+        aiLabel: "AI摘要",
+        applyMessage: "摘要已写入基础信息",
+        currentLabel: "当前摘要",
+        emptyText: "暂无候选摘要，可先保留当前摘要或稍后重试",
+        fieldLabel: "AI摘要",
+        loadingText: "AI 摘要生成中...",
+        modalTitle: "AI摘要",
+        sourceLabel: "原文",
+        taskLabel: "摘要"
+    }
+};
 
 const formatSize = (size?: number | null) => {
     if (!size) {
@@ -202,9 +244,9 @@ const escapeHtml = (value?: string | number | null) => {
 interface SancaiEntryModelProps {
     imageContent?: ReactNode;
     qaContent?: ReactNode;
-    refinementContent?: ReactNode;
     tagContent?: ReactNode;
     versionContent?: ReactNode;
+    visualRefinementContent?: ReactNode;
     categoryOptions?: Array<{ label: string; value: number }>;
     entry: SancaiEntryRecord | undefined;
     initialCategoryId?: number | null;
@@ -222,9 +264,12 @@ interface SancaiEntryModelProps {
         asset: SancaiVisualAssetRecord
     ) => void;
     onCreateTranslationTask?: () => void;
+    onCreateSummaryTask?: () => void;
     creatingVisualAssetCapability?: SancaiVisualAssetRefinementCapability | null;
     isCreatingTranslationTask?: boolean;
+    isCreatingSummaryTask?: boolean;
     translationTasks?: AiRefinementTaskRecord[];
+    summaryTasks?: AiRefinementTaskRecord[];
     onSelectedVisualAssetChange?: (asset: SancaiVisualAssetRecord | null) => void;
     volumes?: Array<{ categoryId?: number | null; id: number; title?: string | null }>;
 }
@@ -232,9 +277,9 @@ interface SancaiEntryModelProps {
 export const SancaiEntryModel = ({
     imageContent,
     qaContent,
-    refinementContent,
     tagContent,
     versionContent,
+    visualRefinementContent,
     categoryOptions = [],
     entry,
     initialCategoryId = null,
@@ -249,9 +294,12 @@ export const SancaiEntryModel = ({
     onUpdateVisualAsset,
     onCreateVisualAssetTask,
     onCreateTranslationTask,
+    onCreateSummaryTask,
     creatingVisualAssetCapability = null,
     isCreatingTranslationTask = false,
+    isCreatingSummaryTask = false,
     translationTasks = [],
+    summaryTasks = [],
     onSelectedVisualAssetChange,
     volumes = []
 }: SancaiEntryModelProps) => {
@@ -261,16 +309,20 @@ export const SancaiEntryModel = ({
         toEntryFormValues(entry, volumes, initialCategoryId, initialVolumeId)
     );
     const [activeSection, setActiveSection] = useState<SancaiEntryModelSection>("basic");
-    const [isTranslationModalOpen, setIsTranslationModalOpen] = useState(false);
-    const [translationDraft, setTranslationDraft] = useState("");
-    const [loadedTranslationCandidateId, setLoadedTranslationCandidateId] = useState<number | null>(
-        null
-    );
+    const [activeAiTextField, setActiveAiTextField] = useState<SancaiAiTextField | null>(null);
+    const [aiTextDraft, setAiTextDraft] = useState("");
+    const [loadedAiTextCandidateId, setLoadedAiTextCandidateId] = useState<number | null>(null);
     const entryId = mode === "edit" ? entry?.id : undefined;
-    const latestTranslationTask = useMemo(
+    const aiTextTasks = activeAiTextField === "summary" ? summaryTasks : translationTasks;
+    const aiTextConfig = activeAiTextField
+        ? AI_TEXT_FIELD_CONFIG[activeAiTextField]
+        : AI_TEXT_FIELD_CONFIG.translate;
+    const isCreatingAiTextTask =
+        activeAiTextField === "summary" ? isCreatingSummaryTask : isCreatingTranslationTask;
+    const latestAiTextTask = useMemo(
         () =>
-            [...translationTasks]
-                .filter((task) => task.capability === "translate")
+            [...aiTextTasks]
+                .filter((task) => task.capability === activeAiTextField)
                 .sort((left, right) => {
                     if (
                         left.requestedAt &&
@@ -281,25 +333,25 @@ export const SancaiEntryModel = ({
                     }
                     return right.taskId - left.taskId;
                 })[0] ?? null,
-        [translationTasks]
+        [activeAiTextField, aiTextTasks]
     );
-    const hasRunningTranslationTask =
-        Boolean(latestTranslationTask?.status) &&
-        RUNNING_REFINEMENT_STATUSES.has(latestTranslationTask?.status ?? "");
-    const translationCandidatesQuery = useQuery({
-        queryKey: ["ai", "candidates", "SANCAI_ENTRY", entryId, "translate", "modal"],
+    const hasRunningAiTextTask =
+        Boolean(latestAiTextTask?.status) &&
+        RUNNING_REFINEMENT_STATUSES.has(latestAiTextTask?.status ?? "");
+    const aiTextCandidatesQuery = useQuery({
+        queryKey: ["ai", "candidates", "SANCAI_ENTRY", entryId, activeAiTextField, "modal"],
         queryFn: () =>
             aiCandidateService.list({
                 contentId: entryId,
                 contentType: "SANCAI_ENTRY",
-                capability: "translate",
+                capability: activeAiTextField,
                 status: "PENDING"
             }),
-        enabled: isTranslationModalOpen && Boolean(entryId),
+        enabled: Boolean(activeAiTextField) && Boolean(entryId),
         retry: false,
         refetchInterval: () => {
-            return isCreatingTranslationTask || hasRunningTranslationTask
-                ? TRANSLATION_CANDIDATE_POLL_INTERVAL_MS
+            return isCreatingAiTextTask || hasRunningAiTextTask
+                ? AI_TEXT_CANDIDATE_POLL_INTERVAL_MS
                 : false;
         }
     });
@@ -368,12 +420,12 @@ export const SancaiEntryModel = ({
         ) ||
         currentVisualAsset ||
         null;
-    const latestTranslationCandidate = useMemo(() => {
-        const candidates = translationCandidatesQuery.data || [];
+    const latestAiTextCandidate = useMemo(() => {
+        const candidates = aiTextCandidatesQuery.data || [];
         return [...candidates]
             .filter(
                 (candidate) =>
-                    candidate.capability === "translate" &&
+                    candidate.capability === activeAiTextField &&
                     candidate.status === "PENDING" &&
                     typeof candidate.resultPayload === "string" &&
                     candidate.resultPayload.trim().length > 0
@@ -388,38 +440,35 @@ export const SancaiEntryModel = ({
                 }
                 return right.candidateId - left.candidateId;
             })[0];
-    }, [translationCandidatesQuery.data]);
+    }, [activeAiTextField, aiTextCandidatesQuery.data]);
 
     useEffect(() => {
-        if (!isTranslationModalOpen || !latestTranslationCandidate) {
+        if (!activeAiTextField || !latestAiTextCandidate) {
             return;
         }
-        if (latestTranslationCandidate.candidateId === loadedTranslationCandidateId) {
+        if (latestAiTextCandidate.candidateId === loadedAiTextCandidateId) {
             return;
         }
         const timer = window.setTimeout(() => {
-            setLoadedTranslationCandidateId(latestTranslationCandidate.candidateId);
-            setTranslationDraft(latestTranslationCandidate.resultPayload?.trim() || "");
+            setLoadedAiTextCandidateId(latestAiTextCandidate.candidateId);
+            setAiTextDraft(latestAiTextCandidate.resultPayload?.trim() || "");
         }, 0);
         return () => window.clearTimeout(timer);
-    }, [isTranslationModalOpen, latestTranslationCandidate, loadedTranslationCandidateId]);
+    }, [activeAiTextField, latestAiTextCandidate, loadedAiTextCandidateId]);
 
     useEffect(() => {
-        if (!isTranslationModalOpen || !latestTranslationTask?.taskId) {
+        if (!activeAiTextField || !latestAiTextTask?.taskId) {
             return;
         }
-        if (
-            latestTranslationTask.status !== "SUCCEEDED" &&
-            latestTranslationTask.status !== "PARTIAL"
-        ) {
+        if (latestAiTextTask.status !== "SUCCEEDED" && latestAiTextTask.status !== "PARTIAL") {
             return;
         }
-        void translationCandidatesQuery.refetch();
+        void aiTextCandidatesQuery.refetch();
     }, [
-        isTranslationModalOpen,
-        latestTranslationTask?.status,
-        latestTranslationTask?.taskId,
-        translationCandidatesQuery
+        activeAiTextField,
+        latestAiTextTask?.status,
+        latestAiTextTask?.taskId,
+        aiTextCandidatesQuery
     ]);
 
     useEffect(() => {
@@ -558,33 +607,41 @@ export const SancaiEntryModel = ({
         }
         onCreateVisualAssetTask(capability, visualAssetFormValue);
     };
-    const requestTranslationTask = () => {
-        if (!entryId || !onCreateTranslationTask) {
-            messageApi.warning("请先保存条目后再使用 AI 翻译");
+    const requestAiTextTask = () => {
+        if (!activeAiTextField || !entryId) {
+            return false;
+        }
+        const createTask =
+            activeAiTextField === "summary" ? onCreateSummaryTask : onCreateTranslationTask;
+        if (!createTask) {
+            messageApi.warning(`请先保存条目后再使用 ${aiTextConfig.fieldLabel}`);
             return false;
         }
         if (!form.originalText?.trim()) {
             messageApi.warning("请先填写原文");
             return false;
         }
-        onCreateTranslationTask();
+        createTask();
         return true;
     };
-    const openTranslationModal = () => {
-        setTranslationDraft(form.translationText || "");
-        setLoadedTranslationCandidateId(null);
-        setIsTranslationModalOpen(true);
+    const openAiTextModal = (field: SancaiAiTextField) => {
+        setAiTextDraft(field === "summary" ? form.summary || "" : form.translationText || "");
+        setLoadedAiTextCandidateId(null);
+        setActiveAiTextField(field);
     };
-    const closeTranslationModal = () => {
-        setIsTranslationModalOpen(false);
+    const closeAiTextModal = () => {
+        setActiveAiTextField(null);
     };
-    const applyTranslationDraft = () => {
+    const applyAiTextDraft = () => {
+        if (!activeAiTextField) {
+            return;
+        }
         setForm((currentForm) => ({
             ...currentForm,
-            translationText: translationDraft
+            [activeAiTextField === "summary" ? "summary" : "translationText"]: aiTextDraft
         }));
-        setIsTranslationModalOpen(false);
-        messageApi.success("译文已写入基础信息");
+        setActiveAiTextField(null);
+        messageApi.success(aiTextConfig.applyMessage);
     };
     const changeCategory = (categoryId: number | null) => {
         setForm((currentForm) => {
@@ -690,7 +747,7 @@ export const SancaiEntryModel = ({
                 />
             </Form.Item>
             <Form.Item label="译文" className="sancai-entry-model-form-item-top">
-                <div className="sancai-entry-translation-field">
+                <div className="sancai-entry-ai-text-field">
                     <Input.TextArea
                         aria-label="三才图会译文"
                         value={form.translationText}
@@ -706,9 +763,9 @@ export const SancaiEntryModel = ({
                         <KuzhambuSpace wrap>
                             <KuzhambuButton
                                 testId="classics-sancai-sancai-entry-ai-button"
-                                className="sancai-entry-ai-translation-button"
+                                className="sancai-entry-ai-text-button"
                                 icon={<TranslationOutlined />}
-                                onClick={openTranslationModal}
+                                onClick={() => openAiTextModal("translate")}
                             >
                                 AI翻译
                             </KuzhambuButton>
@@ -717,17 +774,31 @@ export const SancaiEntryModel = ({
                 </div>
             </Form.Item>
             <Form.Item label="摘要" className="sancai-entry-model-form-item-top">
-                <Input.TextArea
-                    aria-label="三才图会摘要"
-                    value={form.summary}
-                    autoSize={resolveTextAreaAutoSize({ minRows: 3, maxRows: 6 })}
-                    onChange={(event) =>
-                        setForm((currentForm) => ({
-                            ...currentForm,
-                            summary: event.target.value
-                        }))
-                    }
-                />
+                <div className="sancai-entry-ai-text-field">
+                    <Input.TextArea
+                        aria-label="三才图会摘要"
+                        value={form.summary}
+                        autoSize={resolveTextAreaAutoSize({ minRows: 3, maxRows: 6 })}
+                        onChange={(event) =>
+                            setForm((currentForm) => ({
+                                ...currentForm,
+                                summary: event.target.value
+                            }))
+                        }
+                    />
+                    {mode === "edit" ? (
+                        <KuzhambuSpace wrap>
+                            <KuzhambuButton
+                                testId="classics-sancai-sancai-entry-ai-summary-button"
+                                className="sancai-entry-ai-text-button"
+                                icon={<FileTextOutlined />}
+                                onClick={() => openAiTextModal("summary")}
+                            >
+                                AI摘要
+                            </KuzhambuButton>
+                        </KuzhambuSpace>
+                    ) : null}
+                </div>
             </Form.Item>
             <Form.Item label="可见性">
                 <Switch
@@ -1207,7 +1278,6 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
     };
     const sectionOptions = [
         { label: "基础信息", value: "basic" },
-        { label: "内容处理", value: "content" },
         { label: "视觉处理", value: "visual" },
         { label: "标签", value: "tags" },
         { label: "问答", value: "qa" },
@@ -1260,93 +1330,103 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
             onClose={onCancel}
         >
             <KuzhambuModal
-                testId="classics-sancai-sancai-entry-ai-translation-modal"
-                title="AI翻译"
-                open={isTranslationModalOpen}
+                testId="classics-sancai-sancai-entry-ai-text-modal"
+                title={aiTextConfig.modalTitle}
+                open={Boolean(activeAiTextField)}
                 width={960}
                 destroyOnHidden
                 footer={
                     <div className="sancai-modal-footer">
                         <KuzhambuButton
-                            testId="classics-sancai-sancai-entry-cancel-ai-translation-button"
-                            onClick={closeTranslationModal}
+                            testId="classics-sancai-sancai-entry-cancel-ai-text-button"
+                            onClick={closeAiTextModal}
                         >
                             取消
                         </KuzhambuButton>
                         <KuzhambuButton
-                            testId="classics-sancai-sancai-entry-ai-button-2"
+                            testId="classics-sancai-sancai-entry-apply-ai-text-button"
                             type="primary"
-                            disabled={!translationDraft.trim()}
-                            onClick={applyTranslationDraft}
+                            disabled={!aiTextDraft.trim()}
+                            onClick={applyAiTextDraft}
                         >
                             采用
                         </KuzhambuButton>
                     </div>
                 }
-                onCancel={closeTranslationModal}
+                onCancel={closeAiTextModal}
             >
-                <div className="sancai-translation-modal-toolbar">
+                <div className="sancai-ai-text-modal-toolbar">
                     <KuzhambuSpace wrap>
                         <KuzhambuButton
-                            testId="classics-sancai-sancai-entry-action-button-8"
-                            icon={<TranslationOutlined />}
+                            testId="classics-sancai-sancai-entry-create-ai-text-task-button"
+                            icon={
+                                activeAiTextField === "summary" ? (
+                                    <FileTextOutlined />
+                                ) : (
+                                    <TranslationOutlined />
+                                )
+                            }
                             type="primary"
-                            loading={isCreatingTranslationTask}
-                            onClick={requestTranslationTask}
+                            loading={isCreatingAiTextTask}
+                            onClick={requestAiTextTask}
                         >
-                            翻译
+                            {aiTextConfig.actionLabel}
                         </KuzhambuButton>
                     </KuzhambuSpace>
                 </div>
-                {isCreatingTranslationTask || latestTranslationTask ? (
+                {isCreatingAiTextTask || latestAiTextTask ? (
                     <KuzhambuAlert
                         showIcon
-                        className="sancai-translation-task-alert"
+                        className="sancai-ai-text-task-alert"
                         type={
-                            isCreatingTranslationTask
+                            isCreatingAiTextTask
                                 ? "info"
-                                : readRefinementTaskAlertType(latestTranslationTask?.status)
+                                : readRefinementTaskAlertType(latestAiTextTask?.status)
                         }
                         title={
-                            isCreatingTranslationTask
-                                ? "正在创建翻译任务"
-                                : `翻译任务：${readRefinementTaskStatusLabel(
-                                      latestTranslationTask?.status
+                            isCreatingAiTextTask
+                                ? `正在创建${aiTextConfig.taskLabel}任务`
+                                : `${aiTextConfig.taskLabel}任务：${readRefinementTaskStatusLabel(
+                                      latestAiTextTask?.status
                                   )}`
                         }
                         description={
-                            hasRunningTranslationTask
-                                ? "任务完成后会自动刷新 AI 译文。"
-                                : latestTranslationTask?.errorMessage || undefined
+                            hasRunningAiTextTask
+                                ? `任务完成后会自动刷新 ${aiTextConfig.aiLabel}。`
+                                : latestAiTextTask?.errorMessage || undefined
                         }
                     />
                 ) : null}
                 <Form
-                    className="sancai-detail-card sancai-entry-model-form sancai-translation-modal-original"
+                    className="sancai-detail-card sancai-entry-model-form sancai-ai-text-modal-original"
                     colon={false}
                     component="div"
                     layout="vertical"
                 >
-                    <Form.Item label="原文">
+                    <Form.Item label={aiTextConfig.sourceLabel}>
                         <Input.TextArea
-                            aria-label="AI翻译原文"
+                            aria-label={`${aiTextConfig.modalTitle}${aiTextConfig.sourceLabel}`}
                             value={form.originalText}
                             readOnly
                             autoSize={resolveTextAreaAutoSize({ minRows: 5, maxRows: 8 })}
                         />
                     </Form.Item>
                 </Form>
-                <div className="sancai-translation-modal-compare-grid">
+                <div className="sancai-ai-text-modal-compare-grid">
                     <Form
                         className="sancai-detail-card sancai-entry-model-form"
                         colon={false}
                         component="div"
                         layout="vertical"
                     >
-                        <Form.Item label="当前译文">
+                        <Form.Item label={aiTextConfig.currentLabel}>
                             <Input.TextArea
-                                aria-label="AI翻译当前译文"
-                                value={form.translationText}
+                                aria-label={`${aiTextConfig.modalTitle}${aiTextConfig.currentLabel}`}
+                                value={
+                                    activeAiTextField === "summary"
+                                        ? form.summary
+                                        : form.translationText
+                                }
                                 readOnly
                                 autoSize={resolveTextAreaAutoSize({ minRows: 10, maxRows: 16 })}
                             />
@@ -1358,25 +1438,24 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
                         component="div"
                         layout="vertical"
                     >
-                        <Form.Item label="AI译文">
+                        <Form.Item label={aiTextConfig.aiLabel}>
                             <Input.TextArea
-                                aria-label="AI翻译AI译文"
-                                value={translationDraft}
+                                aria-label={`${aiTextConfig.modalTitle}${aiTextConfig.aiLabel}`}
+                                value={aiTextDraft}
                                 placeholder={
-                                    isCreatingTranslationTask ||
-                                    translationCandidatesQuery.isFetching
-                                        ? "AI 翻译生成中..."
-                                        : "暂无候选译文，可先保留当前译文或稍后重试"
+                                    isCreatingAiTextTask || aiTextCandidatesQuery.isFetching
+                                        ? aiTextConfig.loadingText
+                                        : aiTextConfig.emptyText
                                 }
                                 autoSize={resolveTextAreaAutoSize({ minRows: 10, maxRows: 16 })}
-                                onChange={(event) => setTranslationDraft(event.target.value)}
+                                onChange={(event) => setAiTextDraft(event.target.value)}
                             />
                         </Form.Item>
-                        {translationCandidatesQuery.isError ? (
+                        {aiTextCandidatesQuery.isError ? (
                             <KuzhambuAlert
                                 showIcon
                                 type="warning"
-                                title="候选译文加载失败"
+                                title={`候选${aiTextConfig.taskLabel}加载失败`}
                                 description="AI 任务可能仍在执行，请稍后重新打开。"
                             />
                         ) : null}
@@ -1388,16 +1467,11 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
             ) : (
                 <div className="sancai-entry-model-section">
                     {activeSection === "basic" ? <Form {...formProps}>{basicContent}</Form> : null}
-                    {activeSection === "content"
-                        ? refinementContent || (
-                              <Empty
-                                  image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                  description="暂无内容处理任务"
-                              />
-                          )
-                        : null}
                     {activeSection === "visual" ? (
-                        <Form {...formProps}>{visualAssetContent}</Form>
+                        <>
+                            <Form {...formProps}>{visualAssetContent}</Form>
+                            {visualRefinementContent}
+                        </>
                     ) : null}
                     {activeSection === "tags"
                         ? tagContent || (
