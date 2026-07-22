@@ -37,7 +37,7 @@ export const SharingPage = () => {
         pageNo: DEFAULT_PAGE_NO,
         pageSize: DEFAULT_PAGE_SIZE
     });
-    const [selectedShareId, setSelectedShareId] = useState<number | null>(null);
+    const [detailShareId, setDetailShareId] = useState<number | null>(null);
     const [accessRecordPageNo, setAccessRecordPageNo] = useState(DEFAULT_PAGE_NO);
     const [accessRecordTargetId, setAccessRecordTargetId] = useState<number | null>(null);
 
@@ -55,18 +55,18 @@ export const SharingPage = () => {
         queryFn: () => shareService.page(query),
         retry: false
     });
-    const detailQuery = useQuery({
-        queryKey: ["classics", "shares", "detail", selectedShareId],
-        queryFn: () => shareService.get(selectedShareId || 0),
-        enabled: selectedShareId !== null,
+    const shareDetailQuery = useQuery({
+        queryKey: ["classics", "shares", "detail", detailShareId],
+        queryFn: () => shareService.get(detailShareId || 0),
+        enabled: detailShareId !== null,
         retry: false
     });
-    const accessRecordQuery = useQuery({
+    const shareAccessRecordPageQuery = useQuery({
         queryKey: [
             "classics",
             "shares",
             "access-records",
-            selectedShareId,
+            detailShareId,
             accessRecordPageNo,
             accessRecordTargetId,
             query.pageSize
@@ -75,22 +75,23 @@ export const SharingPage = () => {
             shareService.pageAccessRecords({
                 pageNo: accessRecordPageNo,
                 pageSize: query.pageSize || DEFAULT_PAGE_SIZE,
-                shareLinkId: selectedShareId || 0,
+                shareLinkId: detailShareId || 0,
                 ...(accessRecordTargetId ? { shareTargetId: accessRecordTargetId } : {})
             }),
-        enabled: selectedShareId !== null,
+        enabled: detailShareId !== null,
         retry: false
     });
     const shareListResult = sharePageQuery.data;
-    const detailRecord = detailQuery.data;
+    const detailShareRecord = shareDetailQuery.data;
     const accessRecords = useMemo(
-        () => accessRecordQuery.data?.records || [],
-        [accessRecordQuery.data?.records]
+        () => shareAccessRecordPageQuery.data?.records || [],
+        [shareAccessRecordPageQuery.data?.records]
     );
     const shares = useMemo(() => shareListResult?.records || [], [shareListResult?.records]);
 
     const shareTotal = shareListResult?.count ?? shareListResult?.totalCount ?? 0;
-    const accessTotal = accessRecordQuery.data?.count ?? accessRecordQuery.data?.totalCount ?? 0;
+    const accessTotal =
+        shareAccessRecordPageQuery.data?.count ?? shareAccessRecordPageQuery.data?.totalCount ?? 0;
 
     const currentPageNo = shareListResult?.pageNo || query.pageNo || DEFAULT_PAGE_NO;
     const currentPageSize = shareListResult?.pageSize || query.pageSize || DEFAULT_PAGE_SIZE;
@@ -103,12 +104,12 @@ export const SharingPage = () => {
         ]);
     };
 
-    const openShareDetail = (share: ClassicsShareRecord) => {
-        setSelectedShareId(share.id);
+    const openShareDetailDrawer = (share: ClassicsShareRecord) => {
+        setDetailShareId(share.id);
     };
 
-    const closeShareDetail = () => {
-        setSelectedShareId(null);
+    const closeShareDetailDrawer = () => {
+        setDetailShareId(null);
         setAccessRecordPageNo(DEFAULT_PAGE_NO);
         setAccessRecordTargetId(null);
     };
@@ -139,11 +140,14 @@ export const SharingPage = () => {
         });
     };
 
-    const targetRecords = useMemo(() => detailRecord?.targets || [], [detailRecord?.targets]);
+    const targetRecords = useMemo(
+        () => detailShareRecord?.targets || [],
+        [detailShareRecord?.targets]
+    );
 
     const shareColumns = createSharingTableColumns({
         onStatusChange: confirmUpdateStatus,
-        onView: openShareDetail
+        onView: openShareDetailDrawer
     });
 
     return (
@@ -224,14 +228,14 @@ export const SharingPage = () => {
             />
 
             <SharingDetailDrawer
-                accessLoading={accessRecordQuery.isLoading}
+                accessLoading={shareAccessRecordPageQuery.isLoading}
                 accessPageNo={accessRecordPageNo}
                 accessPageSize={query.pageSize || DEFAULT_PAGE_SIZE}
                 accessRecords={accessRecords}
                 accessTotal={accessTotal}
-                detailLoading={detailQuery.isLoading}
-                open={Boolean(selectedShareId)}
-                share={detailRecord}
+                detailLoading={shareDetailQuery.isLoading}
+                open={Boolean(detailShareId)}
+                share={detailShareRecord}
                 targetRecords={targetRecords}
                 onAccessPageChange={(nextPageNo, nextPageSize) => {
                     setAccessRecordPageNo(nextPageNo);
@@ -242,12 +246,12 @@ export const SharingPage = () => {
                         }));
                     }
                 }}
-                onClose={closeShareDetail}
+                onClose={closeShareDetailDrawer}
                 onRefreshAccessRecords={() => {
-                    if (!detailRecord?.id) {
+                    if (!detailShareRecord?.id) {
                         return;
                     }
-                    void accessRecordQuery.refetch();
+                    void shareAccessRecordPageQuery.refetch();
                 }}
                 onStatusChange={confirmUpdateStatus}
             />

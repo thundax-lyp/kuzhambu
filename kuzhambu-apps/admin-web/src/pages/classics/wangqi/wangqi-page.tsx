@@ -229,7 +229,7 @@ export const WangqiPage = () => {
         queryFn: () => wangqiService.page(query),
         retry: false
     });
-    const detailQuery = useQuery({
+    const wangqiDocumentDetailQuery = useQuery({
         queryKey: ["wangqi", "detail", editingDocument?.id],
         queryFn: () => wangqiService.get(editingDocument?.id ?? 0),
         enabled:
@@ -238,7 +238,7 @@ export const WangqiPage = () => {
             Boolean(editingDocument?.id),
         retry: false
     });
-    const editingDocumentData = detailQuery.data || editingDocument;
+    const editingDocumentData = wangqiDocumentDetailQuery.data || editingDocument;
     const currentUserQuery = useQuery({
         queryKey: ["sys", "current-user", "info"],
         queryFn: currentUserService.getCurrentUserInfo,
@@ -1000,7 +1000,7 @@ export const WangqiPage = () => {
             />
             <WangqiDocumentEditDrawer
                 document={editingDocumentData}
-                loading={detailQuery.isLoading}
+                loading={wangqiDocumentDetailQuery.isLoading}
                 mode={wangqiDocumentEditDrawerMode}
                 open={wangqiDocumentEditDrawerOpen}
                 saving={saveMutation.isPending}

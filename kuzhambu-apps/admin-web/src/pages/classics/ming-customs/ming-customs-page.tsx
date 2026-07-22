@@ -181,7 +181,7 @@ export const MingCustomsPage = () => {
         queryFn: service.listCategoryOptions,
         retry: false
     });
-    const detailQuery = useQuery({
+    const mingCustomsDetailQuery = useQuery({
         queryKey: ["ming-customs", "detail", editingEntry?.id],
         queryFn: () => service.get(editingEntry?.id ?? 0),
         enabled:
@@ -199,7 +199,7 @@ export const MingCustomsPage = () => {
             Boolean(editingEntry?.id),
         retry: false
     });
-    const selectedVersionQuery = useQuery({
+    const mingCustomsVersionDetailQuery = useQuery({
         queryKey: ["ming-customs", "versions", "detail", editingEntry?.id, selectedVersionId],
         queryFn: () => service.getVersion(editingEntry?.id ?? 0, selectedVersionId ?? 0),
         enabled:
@@ -259,7 +259,7 @@ export const MingCustomsPage = () => {
     const totalCount = pageResult?.count ?? pageResult?.totalCount ?? 0;
     const currentPageNo = pageResult?.pageNo || query.pageNo || DEFAULT_PAGE_NO;
     const currentPageSize = pageResult?.pageSize || query.pageSize || DEFAULT_PAGE_SIZE;
-    const editingEntryDetail = detailQuery.data || editingEntry;
+    const editingEntryDetail = mingCustomsDetailQuery.data || editingEntry;
     const exportJobs = exportJobsQuery.data?.records || [];
     const selectedEntries = useMemo(
         () => records.filter((record) => selectedEntryIds.includes(record.id)),
@@ -277,7 +277,7 @@ export const MingCustomsPage = () => {
         [refinementTasksQuery.data?.items]
     );
     const versionHistory = useMemo(() => versionsQuery.data || [], [versionsQuery.data]);
-    const selectedVersion = selectedVersionQuery.data || null;
+    const selectedVersion = mingCustomsVersionDetailQuery.data || null;
 
     const invalidateMingCustoms = useCallback(async () => {
         await Promise.all([
@@ -786,7 +786,7 @@ export const MingCustomsPage = () => {
             <MingCustomsEditDrawer
                 categoryOptions={categoryOptions}
                 entry={editingEntryDetail}
-                loading={detailQuery.isLoading}
+                loading={mingCustomsDetailQuery.isLoading}
                 mode={mingCustomsEditDrawerMode}
                 open={mingCustomsEditDrawerOpen}
                 saving={saveMutation.isPending}
@@ -806,7 +806,7 @@ export const MingCustomsPage = () => {
                             />
                             <MingCustomsVersionPanel
                                 currentEntry={editingEntryDetail}
-                                detailLoading={selectedVersionQuery.isLoading}
+                                detailLoading={mingCustomsVersionDetailQuery.isLoading}
                                 listLoading={versionsQuery.isLoading}
                                 resetting={resetVersionMutation.isPending}
                                 selectedVersion={selectedVersion}
