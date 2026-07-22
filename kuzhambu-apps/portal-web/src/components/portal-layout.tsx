@@ -1,5 +1,5 @@
 import { Moon, Search, Sun } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { Link, Outlet } from "react-router-dom";
 import kuzhambuLogoImage from "@/assets/home/kuzhambu-logo.svg";
 import footerMountainImage from "@/assets/home/portal-home-effect-footer-mountain.png";
@@ -9,6 +9,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 type PortalTheme = "light" | "dark";
 
 const THEME_STORAGE_KEY = "kuzhambu.portal.theme";
+
+const footerBackgroundStyle = {
+    "--portal-footer-bg-image": `url(${footerMountainImage})`
+} as CSSProperties;
 
 const getInitialTheme = (): PortalTheme => {
     if (typeof window === "undefined") {
@@ -125,13 +129,7 @@ export const PortalLayout = () => {
 
             <Outlet />
 
-            <footer className="portal-effect-footer">
-                <img
-                    className="portal-effect-footer-mountain"
-                    alt=""
-                    src={footerMountainImage}
-                    aria-hidden="true"
-                />
+            <footer className="portal-effect-footer" style={footerBackgroundStyle}>
                 <div className="portal-effect-footer-intro">
                     <img className="portal-effect-brand-logo" src={kuzhambuLogoImage} alt="" />
                     <p>汇聚古籍与图像资源，连接知识与研究线索。</p>

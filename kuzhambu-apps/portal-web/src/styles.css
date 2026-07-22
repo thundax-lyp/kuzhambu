@@ -2165,16 +2165,20 @@ a {
     grid-template-columns: 260px minmax(0, 1fr);
     gap: 56px;
     min-height: 150px;
+    overflow: hidden;
     padding: 36px 46px 28px 56px;
     background: rgba(244, 238, 226, 0.9);
 }
 
-.portal-effect-footer-mountain {
+.portal-effect-footer::before {
     position: absolute;
-    right: 0;
-    bottom: 0;
-    width: 346px;
-    opacity: 0.48;
+    inset: 0;
+    background-image: var(--portal-footer-bg-image);
+    background-position: center bottom;
+    background-repeat: no-repeat;
+    background-size: max(100vw, 1440px) auto;
+    content: "";
+    opacity: 0.2;
     pointer-events: none;
 }
 
@@ -2642,10 +2646,9 @@ a {
     background: rgba(18, 22, 19, 0.96);
 }
 
-.dark .portal-effect-footer-mountain {
-    opacity: 0.16;
-    filter: brightness(0.58) contrast(1.12) saturate(0.72);
-    mix-blend-mode: luminosity;
+.dark .portal-effect-footer::before {
+    opacity: 0.14;
+    filter: grayscale(1) brightness(0.52) contrast(1.1);
 }
 
 .dark .portal-effect-footer-seal {
