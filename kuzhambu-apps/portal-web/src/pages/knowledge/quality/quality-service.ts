@@ -1,5 +1,5 @@
 import { postJson } from "@/api/http";
-import type { KnowledgeQualityResponse } from "./knowledge-quality-types";
+import type { KnowledgeQualityResponse } from "./quality-types";
 
 export const KNOWLEDGE_QUALITY_FALLBACK: KnowledgeQualityResponse = {
     focusIssues: [
