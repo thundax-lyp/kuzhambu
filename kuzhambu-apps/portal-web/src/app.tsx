@@ -16,6 +16,7 @@ import "./styles.css";
 import "@/pages/discovery/qa/qa-page.css";
 import "@/pages/discovery/search/search-page.css";
 import "@/pages/knowledge/knowledge-shell.css";
+import "@/pages/share-detail/share-detail-page.css";
 
 const normalizeRouterBasename = (baseUrl: string) => {
     const normalizedBaseUrl = baseUrl.replace(/\/+$/, "");
