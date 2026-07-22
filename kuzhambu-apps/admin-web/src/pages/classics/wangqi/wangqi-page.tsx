@@ -6,16 +6,14 @@ import {
     SearchOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Card, Input, Select, Tooltip } from "antd";
+import { App, Input, Select } from "antd";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuFilterPanel } from "@/components/kuzhambu-filter-panel";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
-import { KuzhambuSpace, KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
+import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { AiCandidateBatchDrawer } from "@/pages/classics/common/components/ai-candidate-batch-drawer";
-import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import type {
     AiRefinementTaskCapability,
@@ -24,9 +22,6 @@ import type {
 import * as contentService from "@/pages/classics/common/classics-content-service";
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
-import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
-import { ClassicsContentTagPanel } from "@/pages/classics/common/components/classics-content-tag-panel";
-import { ClassicsExportJobSection } from "@/pages/classics/common/components/classics-export-job-section";
 import * as shareService from "@/pages/classics/common/classics-share-service";
 import * as currentUserService from "@/service/current-user-service";
 import {
@@ -39,10 +34,11 @@ import type {
 } from "@/pages/classics/common/classics-export-types";
 import { WangqiDocumentTable } from "./components/wangqi-document-table";
 import { WangqiDocumentToolbar } from "./components/wangqi-document-toolbar";
+import { WangqiExportActions } from "./components/wangqi-export-actions";
 import { WangqiDocumentEditDrawer } from "./components/wangqi-document-edit-drawer";
-import { WangqiQaAiModal, type WangqiQaTaskPair } from "./components/wangqi-qa-ai-modal";
+import type { WangqiQaTaskPair } from "./components/wangqi-qa-ai-modal";
+import { WangqiRefinementActions } from "./components/wangqi-refinement-actions";
 import { WangqiStorageFilePanel } from "./components/wangqi-storage-file-panel";
-import { WangqiTagAiModal } from "./components/wangqi-tag-ai-modal";
 import { WangqiTimeline } from "./components/wangqi-timeline";
 import { WangqiVersionHistoryPanel } from "./components/wangqi-version-history-panel";
 import * as wangqiService from "./wangqi-service";
@@ -952,34 +948,22 @@ export const WangqiPage = () => {
                     />
                 </div>
             </KuzhambuPage>
-            <KuzhambuDrawer
-                testId="classics-wangqi-wangqi-drawer"
-                aria-label="王圻导出任务"
-                destroyOnHidden
+            <WangqiExportActions
+                canExportDocuments={canExportDocuments}
+                exportJobs={exportJobs}
+                loading={
+                    exportJobsQuery.isLoading ||
+                    exportMutation.isPending ||
+                    deleteExportMutation.isPending
+                }
                 open={exportJobsDrawerOpen}
-                size="large"
-                title="导出任务"
+                onBatchDelete={deleteExportJobs}
                 onClose={() => setExportJobsDrawerOpen(false)}
-            >
-                <ClassicsExportJobSection
-                    items={exportJobs}
-                    loading={
-                        exportJobsQuery.isLoading ||
-                        exportMutation.isPending ||
-                        deleteExportMutation.isPending
-                    }
-                    onDownload={(job) => {
-                        if (job.downloadUrl) {
-                            window.open(job.downloadUrl, "_blank", "noopener,noreferrer");
-                        }
-                    }}
-                    onDelete={canExportDocuments ? deleteExportJob : undefined}
-                    onBatchDelete={canExportDocuments ? deleteExportJobs : undefined}
-                    onRefresh={() => {
-                        void invalidateExportJobs();
-                    }}
-                />
-            </KuzhambuDrawer>
+                onDelete={deleteExportJob}
+                onRefresh={() => {
+                    void invalidateExportJobs();
+                }}
+            />
             <AiCandidateBatchDrawer
                 open={batchCandidateDrawerOpen}
                 contentType="WANGQI_DOCUMENT"
@@ -1008,106 +992,58 @@ export const WangqiPage = () => {
                 onSave={(command) => saveMutation.mutate(command)}
                 tagContent={
                     editorMode === "edit" && activeDocument ? (
-                        <div className="wangqi-page-drawer-panels">
-                            <ClassicsContentTagPanel
-                                contentId={activeDocument.id}
-                                contentType="WANGQI_DOCUMENT"
-                                showHeader={false}
-                                toolbarExtra={
-                                    <WangqiTagAiModal
-                                        creatingTagTask={creatingRefinementCapability === "tags"}
-                                        document={activeDocument}
-                                        tagTasks={tagRefinementTasks}
-                                        tagTrackingTask={tagTrackingTask}
-                                        onChanged={invalidateWangqi}
-                                        onCreateTagTask={(existingTags) =>
-                                            createRefinementTask(activeDocument, "tags", {
-                                                existingTags
-                                            })
-                                        }
-                                    />
-                                }
-                                onChanged={invalidateWangqi}
-                            />
-                            <AiCandidatePanel
-                                capabilities={["tags"]}
-                                contentId={activeDocument.id}
-                                contentType="WANGQI_DOCUMENT"
-                                onApplied={async () => {
-                                    await invalidateWangqi();
-                                }}
-                                onRejected={async () => {
-                                    await invalidateWangqiCandidates();
-                                }}
-                            />
-                        </div>
+                        <WangqiRefinementActions
+                            canOpenDiscoveryQa={canOpenDiscoveryQa}
+                            creatingRefinementCapability={creatingRefinementCapability}
+                            document={activeDocument}
+                            qaTasks={qaRefinementTasks}
+                            qaTrackingTask={qaTrackingTask}
+                            section="tags"
+                            singleDocumentQaDisabledReason={singleDocumentQaDisabledReason}
+                            tagTasks={tagRefinementTasks}
+                            tagTrackingTask={tagTrackingTask}
+                            onChanged={invalidateWangqi}
+                            onCreateQaTask={(existingQaPairs) =>
+                                createRefinementTask(activeDocument, "qa", {
+                                    existingQaPairs
+                                })
+                            }
+                            onCreateTagTask={(existingTags) =>
+                                createRefinementTask(activeDocument, "tags", {
+                                    existingTags
+                                })
+                            }
+                            onOpenSingleDocumentQa={openSingleDocumentQa}
+                            onRejectedCandidate={invalidateWangqiCandidates}
+                        />
                     ) : null
                 }
                 qaContent={
                     editorMode === "edit" && activeDocument ? (
-                        <div className="wangqi-page-drawer-panels">
-                            <Card
-                                size="small"
-                                title="问答生成"
-                                extra={
-                                    <KuzhambuSpaceCompact>
-                                        <Tooltip title={singleDocumentQaDisabledReason}>
-                                            <KuzhambuButton
-                                                testId="classics-wangqi-wangqi-action-button-2"
-                                                disabled={!activeDocument.id || !canOpenDiscoveryQa}
-                                                onClick={() => openSingleDocumentQa(activeDocument)}
-                                            >
-                                                单文档问答
-                                            </KuzhambuButton>
-                                        </Tooltip>
-                                        <WangqiQaAiModal
-                                            creatingQaTask={creatingRefinementCapability === "qa"}
-                                            document={activeDocument}
-                                            qaTasks={qaRefinementTasks}
-                                            qaTrackingTask={qaTrackingTask}
-                                            onChanged={invalidateWangqi}
-                                            onCreateQaTask={(existingQaPairs) =>
-                                                createRefinementTask(activeDocument, "qa", {
-                                                    existingQaPairs
-                                                })
-                                            }
-                                        />
-                                    </KuzhambuSpaceCompact>
-                                }
-                            >
-                                <div className="wangqi-refinement-task-list">
-                                    {qaRefinementTasks.length ? (
-                                        qaRefinementTasks.slice(0, 3).map((task) => (
-                                            <div key={task.taskId}>
-                                                问答：{task.status}
-                                                {task.resultPreview
-                                                    ? ` · ${task.resultPreview}`
-                                                    : ""}
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <div>暂无问答任务</div>
-                                    )}
-                                </div>
-                            </Card>
-                            <AiCandidatePanel
-                                capabilities={["qa"]}
-                                contentId={activeDocument.id}
-                                contentType="WANGQI_DOCUMENT"
-                                onApplied={async () => {
-                                    await invalidateWangqi();
-                                }}
-                                onRejected={async () => {
-                                    await invalidateWangqiCandidates();
-                                }}
-                            />
-                            <ClassicsContentQaPanel
-                                panelTitle="王圻问答对"
-                                contentId={activeDocument.id}
-                                contentType="WANGQI_DOCUMENT"
-                                onChanged={invalidateWangqi}
-                            />
-                        </div>
+                        <WangqiRefinementActions
+                            canOpenDiscoveryQa={canOpenDiscoveryQa}
+                            creatingRefinementCapability={creatingRefinementCapability}
+                            document={activeDocument}
+                            qaTasks={qaRefinementTasks}
+                            qaTrackingTask={qaTrackingTask}
+                            section="qa"
+                            singleDocumentQaDisabledReason={singleDocumentQaDisabledReason}
+                            tagTasks={tagRefinementTasks}
+                            tagTrackingTask={tagTrackingTask}
+                            onChanged={invalidateWangqi}
+                            onCreateQaTask={(existingQaPairs) =>
+                                createRefinementTask(activeDocument, "qa", {
+                                    existingQaPairs
+                                })
+                            }
+                            onCreateTagTask={(existingTags) =>
+                                createRefinementTask(activeDocument, "tags", {
+                                    existingTags
+                                })
+                            }
+                            onOpenSingleDocumentQa={openSingleDocumentQa}
+                            onRejectedCandidate={invalidateWangqiCandidates}
+                        />
                     ) : null
                 }
                 sourceFileContent={
