@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { KnowledgeAtlasPage } from "./knowledge-atlas-page";
+import { KnowledgeAtlasPage } from "./atlas-page";
 
 const { getKnowledgeAtlas } = vi.hoisted(() => ({
     getKnowledgeAtlas: vi.fn()
@@ -41,7 +41,7 @@ vi.mock("@xyflow/react", () => ({
 }));
 /* eslint-enable @typescript-eslint/naming-convention */
 
-vi.mock("./knowledge-atlas-service", () => ({
+vi.mock("./atlas-service", () => ({
     KNOWLEDGE_ATLAS_FALLBACK: {
         availableFilters: {
             entityTypes: ["PERSON", "CREATURE"],

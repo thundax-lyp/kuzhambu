@@ -3,10 +3,10 @@ import { ArrowRight, Binary, Filter, Orbit, ScrollText } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import * as KnowledgeAtlasService from "./knowledge-atlas-service";
-import { KnowledgeGraphCanvas } from "./knowledge-graph-canvas";
+import * as KnowledgeAtlasService from "./atlas-service";
+import { KnowledgeGraphCanvas } from "./atlas-graph-canvas";
 
-import "./knowledge-atlas-page.css";
+import "./atlas-page.css";
 
 const parseAtlasQuery = (searchParams: URLSearchParams) => {
     const level = searchParams.get("level");

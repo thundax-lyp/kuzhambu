@@ -4,7 +4,7 @@ import type {
     KnowledgeAtlasOverviewCategoryCard,
     KnowledgeAtlasQuery,
     KnowledgeAtlasResponse
-} from "./knowledge-atlas-types";
+} from "./atlas-types";
 
 const SANCAI_CATEGORY_SLOTS = [
     { code: "ASTRONOMY", name: "天文" },
