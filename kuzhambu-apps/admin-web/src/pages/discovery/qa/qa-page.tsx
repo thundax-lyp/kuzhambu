@@ -104,7 +104,7 @@ const toTimelineMessages = (session?: DiscoveryQaSessionRecord | null): QaTimeli
 export const QaPage = () => {
     const [form, setForm] = useState<QaFormState>(INITIAL_FORM_STATE);
     const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
-    const [sessionDetailOpen, setSessionDetailOpen] = useState(false);
+    const [sessionDetailDrawerOpen, setSessionDetailDrawerOpen] = useState(false);
     const [timelineBySession, setTimelineBySession] = useState<QaTimeline>({});
     const [operationMessage, setOperationMessage] = useState<string | null>(null);
     const ownerUserId = parseNumber(DEFAULT_OWNER_USER_ID);
@@ -344,15 +344,15 @@ export const QaPage = () => {
                 inputValue={form.question}
                 loading={openSessionMutation.isPending || chatCompletionMutation.isPending}
                 messages={messages}
-                onDetailOpen={() => setSessionDetailOpen(true)}
+                onDetailOpen={() => setSessionDetailDrawerOpen(true)}
                 onInputChange={(value) => updateField("question", value)}
                 onSubmit={(message) => void submitQuestion(message)}
                 operationMessage={operationMessage}
                 selectedSession={selectedSession}
             />
             <QaSessionDetailDrawer
-                onClose={() => setSessionDetailOpen(false)}
-                open={sessionDetailOpen}
+                onClose={() => setSessionDetailDrawerOpen(false)}
+                open={sessionDetailDrawerOpen}
                 session={selectedSession}
             />
         </main>

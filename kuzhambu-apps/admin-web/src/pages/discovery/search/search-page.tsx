@@ -211,7 +211,7 @@ export const SearchPage = () => {
     const searchMutation = useMutation({
         mutationFn: service.searchDiscovery
     });
-    const previewMutation = useMutation({
+    const searchResultPreviewMutation = useMutation({
         mutationFn: service.previewSearchResult
     });
     const { mutate: runSearch } = searchMutation;
@@ -302,20 +302,20 @@ export const SearchPage = () => {
         }
     };
 
-    const openPreview = (result: SearchResultEntry) => {
+    const openSearchResultPreview = (result: SearchResultEntry) => {
         recordClick(result.group, result.item);
         setPreviewResult(result);
         const previewQuery = createPreviewQuery(result.item);
         if (previewQuery) {
-            previewMutation.mutate(previewQuery);
+            searchResultPreviewMutation.mutate(previewQuery);
             return;
         }
-        previewMutation.reset();
+        searchResultPreviewMutation.reset();
     };
 
-    const closePreview = () => {
+    const closeSearchResultPreview = () => {
         setPreviewResult(null);
-        previewMutation.reset();
+        searchResultPreviewMutation.reset();
     };
 
     const shouldShowZeroResult =
@@ -334,15 +334,17 @@ export const SearchPage = () => {
             shouldShowZeroResult={shouldShowZeroResult}
             totalCount={totalCount}
             onChangePage={changePage}
-            onOpenPreview={openPreview}
+            onOpenPreview={openSearchResultPreview}
             renderHighlightText={renderHighlightText}
             renderQueryHighlight={renderQueryHighlight}
             toPlainHighlightText={toPlainHighlightText}
         />
     );
-    const previewData = previewMutation.data;
+    const previewData = searchResultPreviewMutation.data;
     const previewErrorMessage =
-        previewMutation.error instanceof Error ? previewMutation.error.message : null;
+        searchResultPreviewMutation.error instanceof Error
+            ? searchResultPreviewMutation.error.message
+            : null;
 
     return (
         <div className="search-page-root">
@@ -359,12 +361,12 @@ export const SearchPage = () => {
             />
             <SearchResultDetail
                 errorMessage={previewErrorMessage}
-                loading={previewMutation.isPending}
+                loading={searchResultPreviewMutation.isPending}
                 open={Boolean(previewResult)}
                 previewData={previewData}
                 previewResult={previewResult}
                 toKnowledgeBaseLabel={toKnowledgeBaseLabel}
-                onClose={closePreview}
+                onClose={closeSearchResultPreview}
             />
         </div>
     );

@@ -76,7 +76,7 @@ export const InvocationsPage = () => {
     const [summaryForm] = Form.useForm<InvocationSummaryFilterValues>();
     const [callsForm] = Form.useForm<InvocationCallsFilterValues>();
     const canViewInvocation = hasPermission("ai:invocation:view");
-    const [selectedCall, setSelectedCall] = useState<AiCallRecord | null>(null);
+    const [detailCall, setDetailCall] = useState<AiCallRecord | null>(null);
     const [summaryQuery, setSummaryQuery] = useState<AiInvocationSummaryQuery>(() =>
         buildSummaryQuery({ period: defaultPeriod, bucketType: "DAY" })
     );
@@ -313,7 +313,7 @@ export const InvocationsPage = () => {
                                         formatCapability={formatCapability}
                                         loading={callsResult.isFetching}
                                         onChange={handleTableChange}
-                                        onOpenDetail={setSelectedCall}
+                                        onOpenDetail={setDetailCall}
                                     />
                                 </Card>
                             )
@@ -322,9 +322,9 @@ export const InvocationsPage = () => {
                 />
             </KuzhambuPage>
             <InvocationDetailDrawer
-                call={selectedCall}
-                open={Boolean(selectedCall)}
-                onClose={() => setSelectedCall(null)}
+                call={detailCall}
+                open={Boolean(detailCall)}
+                onClose={() => setDetailCall(null)}
             />
         </>
     );
