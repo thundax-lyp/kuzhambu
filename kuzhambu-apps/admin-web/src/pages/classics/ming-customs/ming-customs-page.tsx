@@ -1,21 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Badge, Card, Select } from "antd";
+import { App } from "antd";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
-import { KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
 import { AiCandidateBatchDrawer } from "@/pages/classics/common/components/ai-candidate-batch-drawer";
-import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import type { AiRefinementTaskCapability } from "@/pages/classics/common/ai-refinement-task-types";
-import { ClassicsExportJobSection } from "@/pages/classics/common/components/classics-export-job-section";
 import * as contentService from "@/pages/classics/common/classics-content-service";
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import * as shareService from "@/pages/classics/common/classics-share-service";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
-import { ClassicsContentTagPanel } from "@/pages/classics/common/components/classics-content-tag-panel";
-import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
 import * as currentUserService from "@/service/current-user-service";
 import {
     hasClassicsContentPermission,
@@ -25,10 +19,17 @@ import type {
     ClassicsExportJobRecord,
     ClassicsExportScopePayload
 } from "@/pages/classics/common/classics-export-types";
-import { MingCustomsTagCloud } from "./components/ming-customs-keyword-cloud";
-import { MingCustomsList } from "./components/ming-customs-list";
+import { MingCustomsAiActions } from "./components/ming-customs-ai-actions";
 import { MingCustomsEditDrawer } from "./components/ming-customs-edit-drawer";
-import { MingCustomsVersionHistoryPanel } from "./components/ming-customs-version-history-panel";
+import { MingCustomsExportActions } from "./components/ming-customs-export-actions";
+import { MingCustomsTable } from "./components/ming-customs-table";
+import {
+    MingCustomsToolbar,
+    type MingCustomsFilters,
+    type MingCustomsSelectedTagFilter,
+    type MingCustomsVisibilityFilter
+} from "./components/ming-customs-toolbar";
+import { MingCustomsVersionPanel } from "./components/ming-customs-version-panel";
 import * as service from "./ming-customs-service";
 import type { MingCustomsCommand, MingCustomsQuery } from "./ming-customs-service";
 import type {
@@ -36,12 +37,7 @@ import type {
     MingCustomsRecord,
     MingCustomsTagCloudItem
 } from "./ming-customs-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./ming-customs-page.css";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
-
-type MingCustomsVisibilityFilter = "ALL" | "PUBLIC" | "PRIVATE";
-type MingCustomsSortDirectionFilter = "ASC" | "DESC";
 
 const EXPORT_PAGE_SIZE = 8;
 const TASK_POLL_INTERVAL_MS = 3000;
@@ -61,6 +57,12 @@ const MING_CUSTOMS_REFINEMENT_PROMPT: Record<AiRefinementTaskCapability, string>
     summary: "你是明代风俗整理助理。请基于输入条目提炼准确、紧凑、便于后台回填的中文摘要。",
     tags: "你是明代风俗标签治理助理。请基于输入条目提取稳定、短小、适合后台统一标签库复用的中文标签。",
     qa: "你是明代风俗问答治理助理。请基于输入条目生成可用于知识库检索的中文问答对。"
+};
+
+const DEFAULT_MING_CUSTOMS_FILTERS: MingCustomsFilters = {
+    category: "",
+    sortDirection: "DESC",
+    visibility: "ALL"
 };
 
 const buildPromptMessagesJson = (
@@ -117,24 +119,6 @@ const buildExportScopeJson = (entry: MingCustomsRecord) => {
     };
 
     return JSON.stringify(scopePayload);
-};
-
-interface MingCustomsFilters {
-    category: string;
-    sortDirection: MingCustomsSortDirectionFilter;
-    visibility: MingCustomsVisibilityFilter;
-}
-
-interface MingCustomsSelectedTagFilter {
-    count?: number | null;
-    tagId?: number | null;
-    tagNameSnapshot: string;
-}
-
-const DEFAULT_MING_CUSTOMS_FILTERS: MingCustomsFilters = {
-    category: "",
-    sortDirection: "DESC",
-    visibility: "ALL"
 };
 
 const normalizeSearch = (value?: string | null) => {
@@ -707,224 +691,49 @@ export const MingCustomsPage = () => {
     };
 
     return (
-        <>
-            <KuzhambuListPage<MingCustomsRecord>
-                pageClassName="ming-customs-page"
-                title="明代习俗"
-                description="明代习俗专题条目治理入口。"
-                subjectName="明代习俗"
-                enableSearch
-                enableFilter
-                enableAdd
-                addText="新增明代习俗"
+        <div className="ming-customs-page-root">
+            <MingCustomsToolbar
+                categoryOptions={categoryOptions}
                 filterActive={hasActiveFilters}
-                filterFields={[
-                    {
-                        name: "category",
-                        label: "分类",
-                        render: () => (
-                            <Select
-                                allowClear
-                                aria-label="明代习俗分类"
-                                placeholder="全部分类"
-                                value={filters.category || undefined}
-                                options={categoryOptions.map((option) => ({
-                                    value: option.value,
-                                    label: option.label
-                                }))}
-                                onChange={(value) =>
-                                    setFilters((currentFilters) => ({
-                                        ...currentFilters,
-                                        category: value || ""
-                                    }))
-                                }
-                            />
-                        )
-                    },
-                    {
-                        name: "visibility",
-                        label: "可见性",
-                        render: () => (
-                            <Select
-                                aria-label="明代习俗可见性"
-                                value={filters.visibility}
-                                options={[
-                                    { value: "ALL", label: "全部" },
-                                    { value: "PUBLIC", label: "公开" },
-                                    { value: "PRIVATE", label: "私有" }
-                                ]}
-                                onChange={(value) =>
-                                    setFilters((currentFilters) => ({
-                                        ...currentFilters,
-                                        visibility: value
-                                    }))
-                                }
-                            />
-                        )
-                    },
-                    {
-                        name: "sortDirection",
-                        label: "排序",
-                        render: () => (
-                            <Select
-                                aria-label="明代习俗排序方向"
-                                value={filters.sortDirection}
-                                options={[
-                                    { value: "DESC", label: "最新优先" },
-                                    { value: "ASC", label: "最早优先" }
-                                ]}
-                                onChange={(value) =>
-                                    setFilters((currentFilters) => ({
-                                        ...currentFilters,
-                                        sortDirection: value
-                                    }))
-                                }
-                            />
-                        )
-                    }
-                ]}
+                filters={filters}
                 onFilterApply={applyFilters}
                 onFilterReset={resetFilters}
                 onAdd={openCreateEditor}
-                pageActions={
-                    <MingCustomsTagCloud
-                        category={query.category}
-                        keyword={query.keyword}
-                        visibility={query.visibility}
-                        onSelect={selectTag}
-                    />
-                }
-                searchValue={searchText}
+                onClearTagFilter={clearTagFilter}
+                onFiltersChange={setFilters}
                 onSearchChange={searchMingCustoms}
+                onSelectTag={selectTag}
+                query={query}
+                searchValue={searchText}
+                selectedTagFilter={selectedTagFilter}
                 content={
                     <>
-                        {selectedTagFilter ? (
-                            <KuzhambuAlert
-                                showIcon
-                                type="info"
-                                style={{ marginBottom: 12 }}
-                                title={
-                                    <span>
-                                        当前标签筛选：{selectedTagFilter.tagNameSnapshot}
-                                        <Badge
-                                            count={selectedTagFilter.count ?? 0}
-                                            color="var(--ming-customs-accent-color)"
-                                            style={{ marginLeft: 8 }}
-                                        />
-                                    </span>
-                                }
-                                action={
-                                    <KuzhambuButton
-                                        testId="classics-ming-customs-ming-customs-action-button"
-                                        size="small"
-                                        onClick={clearTagFilter}
-                                    >
-                                        清除标签筛选
-                                    </KuzhambuButton>
-                                }
-                            />
-                        ) : null}
-                        {exportJobsQuery.isError ? (
-                            <KuzhambuAlert
-                                type="warning"
-                                showIcon
-                                title="导出任务列表加载失败"
-                                description="请确认后台导出任务接口可用后重试。"
-                            />
-                        ) : null}
-                        <ClassicsExportJobSection
-                            items={exportJobs}
+                        <MingCustomsExportActions
+                            batchShareResult={batchShareResult}
+                            batchVisibilityResult={batchVisibilityResult}
+                            canChangeEntryVisibility={canChangeEntryVisibility}
+                            canExportEntries={canExportEntries}
+                            canShareEntries={canShareEntries}
+                            exportJobs={exportJobs}
+                            hasExportJobsError={exportJobsQuery.isError}
                             loading={
                                 exportJobsQuery.isLoading ||
                                 exportMutation.isPending ||
                                 deleteExportMutation.isPending
                             }
-                            onDownload={(job) => {
-                                if (job.downloadUrl) {
-                                    window.open(job.downloadUrl, "_blank", "noopener,noreferrer");
-                                }
-                            }}
-                            onDelete={canExportEntries ? deleteExportJob : undefined}
-                            onBatchDelete={canExportEntries ? deleteExportJobs : undefined}
-                            onRefresh={() => {
+                            onBatchCandidate={openBatchCandidateDrawer}
+                            onBatchDeleteExportJobs={deleteExportJobs}
+                            onChangeSelectedVisibility={changeSelectedVisibility}
+                            onDeleteExportJob={deleteExportJob}
+                            onRefreshExportJobs={() => {
                                 void invalidateExportJobs();
                             }}
+                            onShareSelectedEntries={shareSelectedEntries}
+                            selectedEntriesCount={selectedEntries.length}
+                            sharing={batchShareMutation.isPending}
+                            visibilityChanging={batchVisibilityMutation.isPending}
                         />
-                        <div style={{ marginBottom: 12 }}>
-                            <KuzhambuButton
-                                testId="classics-ming-customs-ming-customs-batch-share-button"
-                                disabled={!selectedEntries.length || !canShareEntries}
-                                loading={batchShareMutation.isPending}
-                                onClick={shareSelectedEntries}
-                            >
-                                批量分享
-                            </KuzhambuButton>
-                            <KuzhambuButton
-                                testId="classics-ming-customs-ming-customs-action-button-2"
-                                disabled={!selectedEntries.length || !canChangeEntryVisibility}
-                                style={{ marginLeft: 8 }}
-                                onClick={openBatchCandidateDrawer}
-                            >
-                                批量候选治理
-                            </KuzhambuButton>
-                            <KuzhambuButton
-                                testId="classics-ming-customs-ming-customs-batch-public-button"
-                                disabled={!selectedEntries.length || !canChangeEntryVisibility}
-                                loading={batchVisibilityMutation.isPending}
-                                style={{ marginLeft: 8 }}
-                                onClick={() => changeSelectedVisibility("PUBLIC")}
-                            >
-                                批量公开
-                            </KuzhambuButton>
-                            <KuzhambuButton
-                                testId="classics-ming-customs-ming-customs-batch-private-button"
-                                disabled={!selectedEntries.length || !canChangeEntryVisibility}
-                                loading={batchVisibilityMutation.isPending}
-                                style={{ marginLeft: 8 }}
-                                onClick={() => changeSelectedVisibility("PRIVATE")}
-                            >
-                                批量私有
-                            </KuzhambuButton>
-                        </div>
-                        {batchShareResult ? (
-                            <KuzhambuAlert
-                                showIcon
-                                type={batchShareResult.failureCount > 0 ? "warning" : "success"}
-                                style={{ marginBottom: 12 }}
-                                title={`批量分享结果：成功 ${batchShareResult.successCount}，失败 ${batchShareResult.failureCount}`}
-                                description={
-                                    batchShareResult.failures.length
-                                        ? batchShareResult.failures
-                                              .map(
-                                                  (item) =>
-                                                      `${item.contentType}#${item.contentId}: ${item.failureReason || item.failureCode || "未知失败"}`
-                                              )
-                                              .join("；")
-                                        : "全部选中明代习俗已创建分享记录。"
-                                }
-                            />
-                        ) : null}
-                        {batchVisibilityResult ? (
-                            <KuzhambuAlert
-                                showIcon
-                                type={
-                                    batchVisibilityResult.failureCount > 0 ? "warning" : "success"
-                                }
-                                style={{ marginBottom: 12 }}
-                                title={`批量可见性结果：成功 ${batchVisibilityResult.successCount}，失败 ${batchVisibilityResult.failureCount}`}
-                                description={
-                                    batchVisibilityResult.failures.length
-                                        ? batchVisibilityResult.failures
-                                              .map(
-                                                  (item) =>
-                                                      `${item.contentType}#${item.contentId}: ${item.failureReason || item.failureCode || "未知失败"}`
-                                              )
-                                              .join("；")
-                                        : "全部选中明代习俗已更新可见性。"
-                                }
-                            />
-                        ) : null}
-                        <MingCustomsList
+                        <MingCustomsTable
                             canExport={canExportEntries}
                             canShare={canShareEntries}
                             categoryLabels={categoryLabels}
@@ -973,74 +782,16 @@ export const MingCustomsPage = () => {
                 afterForm={
                     editorMode === "edit" && editorEntry ? (
                         <>
-                            <Card
-                                size="small"
-                                title="AI 精修任务"
-                                extra={
-                                    <KuzhambuSpaceCompact>
-                                        <KuzhambuButton
-                                            testId="classics-ming-customs-ming-customs-action-button-3"
-                                            type="primary"
-                                            onClick={() =>
-                                                createRefinementTask(editorEntry, "summary")
-                                            }
-                                            loading={creatingRefinementCapability === "summary"}
-                                        >
-                                            创建摘要任务
-                                        </KuzhambuButton>
-                                        <KuzhambuButton
-                                            testId="classics-ming-customs-ming-customs-action-button-4"
-                                            onClick={() =>
-                                                createRefinementTask(editorEntry, "tags")
-                                            }
-                                            loading={creatingRefinementCapability === "tags"}
-                                        >
-                                            创建标签任务
-                                        </KuzhambuButton>
-                                        <KuzhambuButton
-                                            testId="classics-ming-customs-ming-customs-action-button-5"
-                                            onClick={() => createRefinementTask(editorEntry, "qa")}
-                                            loading={creatingRefinementCapability === "qa"}
-                                        >
-                                            创建问答任务
-                                        </KuzhambuButton>
-                                    </KuzhambuSpaceCompact>
-                                }
-                            >
-                                {refinementTasks.length ? (
-                                    refinementTasks.slice(0, 4).map((task) => (
-                                        <div key={task.taskId}>
-                                            {task.capability}：{task.status}
-                                            {task.resultPreview ? ` · ${task.resultPreview}` : ""}
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div>暂无精修任务</div>
-                                )}
-                            </Card>
-                            <AiCandidatePanel
-                                capabilities={["summary", "tags", "qa"]}
-                                contentId={editorEntry.id}
-                                contentType="MING_CUSTOMS"
-                                onApplied={async () => {
-                                    await invalidateMingCustoms();
-                                }}
-                                onRejected={async () => {
-                                    await invalidateMingCandidates();
-                                }}
+                            <MingCustomsAiActions
+                                creatingRefinementCapability={creatingRefinementCapability}
+                                entry={editorEntry}
+                                onCandidateApplied={invalidateMingCustoms}
+                                onCandidateRejected={invalidateMingCandidates}
+                                onContentChanged={invalidateMingCustoms}
+                                onCreateRefinementTask={createRefinementTask}
+                                refinementTasks={refinementTasks}
                             />
-                            <ClassicsContentTagPanel
-                                contentId={editorEntry.id}
-                                contentType="MING_CUSTOMS"
-                                onChanged={invalidateMingCustoms}
-                            />
-                            <ClassicsContentQaPanel
-                                panelTitle="明代习俗问答对"
-                                contentId={editorEntry.id}
-                                contentType="MING_CUSTOMS"
-                                onChanged={invalidateMingCustoms}
-                            />
-                            <MingCustomsVersionHistoryPanel
+                            <MingCustomsVersionPanel
                                 currentEntry={editorEntry}
                                 detailLoading={selectedVersionQuery.isLoading}
                                 listLoading={versionsQuery.isLoading}
@@ -1054,6 +805,6 @@ export const MingCustomsPage = () => {
                     ) : null
                 }
             />
-        </>
+        </div>
     );
 };
