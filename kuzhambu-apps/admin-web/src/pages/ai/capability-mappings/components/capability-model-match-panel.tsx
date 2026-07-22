@@ -9,7 +9,7 @@ export interface CapabilityModelTagMatch {
     requiredTags: string[];
 }
 
-export interface CapabilityModelMatchPanelProps {
+interface CapabilityModelMatchPanelProps {
     tagMatch: CapabilityModelTagMatch;
 }
 

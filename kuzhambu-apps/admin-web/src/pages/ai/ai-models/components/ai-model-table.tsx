@@ -40,7 +40,7 @@ const centerColumnTitle = (title: string) => (
     <span className="ai-models-center-column-title">{title}</span>
 );
 
-export interface AiModelTableProps {
+interface AiModelTableProps {
     canEditConfig: boolean;
     changing: boolean;
     dataSource: AiModelRecord[];

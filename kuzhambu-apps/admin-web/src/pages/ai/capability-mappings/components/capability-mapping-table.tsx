@@ -13,7 +13,7 @@ export interface MappingTableRow extends AiCapabilityMappingRecord {
     requiredTags: string[];
 }
 
-export interface CapabilityMappingTableProps {
+interface CapabilityMappingTableProps {
     canEditConfig: boolean;
     dataSource: MappingTableRow[];
     loading: boolean;

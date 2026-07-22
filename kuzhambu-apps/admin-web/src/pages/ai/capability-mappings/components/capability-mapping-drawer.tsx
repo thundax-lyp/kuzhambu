@@ -11,7 +11,7 @@ import type { AiCapabilityMappingRecord } from "../capability-mappings-types";
 
 export type MappingFormValues = AiCapabilityMappingChangeCommand;
 
-export interface CapabilityMappingDrawerProps {
+interface CapabilityMappingDrawerProps {
     canEditConfig: boolean;
     capabilityOptions: Array<{ label: string; value: string }>;
     editingMapping: AiCapabilityMappingRecord | null;

@@ -12,7 +12,7 @@ export interface ModelFilters {
     enabled: "ALL" | "ENABLED" | "DISABLED";
 }
 
-export interface AiModelFilterPanelProps {
+interface AiModelFilterPanelProps {
     batchDeleting: boolean;
     batchUpdating: boolean;
     canEditConfig: boolean;
