@@ -93,7 +93,7 @@ const readQaPairs = (snapshot: MingCustomsVersionSnapshot | null) => {
         .filter((qaPair): qaPair is { question: string; answer: string } => qaPair !== null);
 };
 
-export interface MingCustomsVersionHistoryPanelProps {
+interface MingCustomsVersionHistoryPanelProps {
     currentEntry?: MingCustomsRecord | null;
     detailLoading?: boolean;
     listLoading?: boolean;

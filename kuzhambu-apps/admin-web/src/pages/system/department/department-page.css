@@ -106,11 +106,11 @@ html[data-theme="dark"] .department-page {
     cursor: grab;
 }
 
-.department-editor-form {
+.department-edit-drawer-form {
     padding-top: 6px;
 }
 
-.department-edit-footer {
+.department-edit-drawer-footer {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;

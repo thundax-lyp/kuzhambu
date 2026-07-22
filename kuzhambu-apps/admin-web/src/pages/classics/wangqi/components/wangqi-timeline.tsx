@@ -33,7 +33,7 @@ const readTimelineItemTitle = (record: WangqiDocumentRecord) => {
     return record.events?.[0]?.title || record.title || "未命名文档";
 };
 
-export interface WangqiTimelineProps {
+interface WangqiTimelineProps {
     dataSource: WangqiDocumentRecord[];
     loading?: boolean;
     onOpenDocument: (record: WangqiDocumentRecord) => void;

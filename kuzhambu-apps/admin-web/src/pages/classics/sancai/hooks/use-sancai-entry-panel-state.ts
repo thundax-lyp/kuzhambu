@@ -7,7 +7,7 @@ import type {
     AiRefinementTaskRecord
 } from "@/pages/classics/common/ai-refinement-task-types";
 import type { QueryClient } from "@tanstack/react-query";
-import type { SancaiVisualAssetRefinementCapability } from "../services/sancai-entry-service";
+import type { SancaiVisualAssetRefinementCapability } from "../sancai-entry-service";
 import type { SancaiEntryRecord, SancaiVisualAssetRecord } from "../sancai-types";
 
 type RefinementCapability = "translate" | "summary" | SancaiVisualAssetRefinementCapability;

@@ -171,7 +171,7 @@ export const OperationsReportsPage = () => {
     const records = reportPage?.records || [];
     const totalCount = reportPage?.totalCount ?? reportPage?.count ?? 0;
     const totalPage = reportPage?.totalPage || 1;
-    const detailRecord = reportDetailQuery.data;
+    const detailReportRecord = reportDetailQuery.data;
 
     const updateFilter = (patch: Partial<OperationsReportPageQuery>) => {
         setFilter((currentFilter) => ({
@@ -188,7 +188,7 @@ export const OperationsReportsPage = () => {
         generateMutation.mutate(generateForm);
     };
 
-    const closeDetail = () => {
+    const closeReportDetailDrawer = () => {
         setDetailReportId(null);
     };
 
@@ -443,73 +443,73 @@ export const OperationsReportsPage = () => {
                 testId="operations-reports-reports-drawer"
                 title="报表详情"
                 open={detailReportId !== null}
-                onClose={closeDetail}
+                onClose={closeReportDetailDrawer}
                 size="middle"
                 destroyOnClose
             >
                 {reportDetailQuery.isLoading ? <Spin /> : null}
-                {detailRecord ? (
+                {detailReportRecord ? (
                     <KuzhambuSpace
                         orientation="vertical"
                         size={16}
                         className="operations-reports-detail"
                     >
-                        {detailRecord.reportStatus === "FAILED" ? (
+                        {detailReportRecord.reportStatus === "FAILED" ? (
                             <KuzhambuAlert
                                 type="error"
                                 showIcon
                                 title="报表生成失败"
-                                description={failureReasonText(detailRecord.failureReason)}
+                                description={failureReasonText(detailReportRecord.failureReason)}
                             />
                         ) : null}
                         <Descriptions column={1} bordered size="small">
                             <Descriptions.Item label="报表 ID">
-                                {detailRecord.reportId}
+                                {detailReportRecord.reportId}
                             </Descriptions.Item>
                             <Descriptions.Item label="报表类型">
-                                {reportTypeText(detailRecord.reportType)}
+                                {reportTypeText(detailReportRecord.reportType)}
                             </Descriptions.Item>
                             <Descriptions.Item label="导出格式">
-                                {detailRecord.format || "-"}
+                                {detailReportRecord.format || "-"}
                             </Descriptions.Item>
                             <Descriptions.Item label="状态">
                                 <KuzhambuTag
                                     type={statusTone(
-                                        detailRecord.reportStatus as OperationsReportStatus
+                                        detailReportRecord.reportStatus as OperationsReportStatus
                                     )}
                                 >
-                                    {detailRecord.reportStatus || "-"}
+                                    {detailReportRecord.reportStatus || "-"}
                                 </KuzhambuTag>
                             </Descriptions.Item>
                             <Descriptions.Item label="统计周期">
-                                {formatDateTime(detailRecord.periodStart)} 至{" "}
-                                {formatDateTime(detailRecord.periodEnd)}
+                                {formatDateTime(detailReportRecord.periodStart)} 至{" "}
+                                {formatDateTime(detailReportRecord.periodEnd)}
                             </Descriptions.Item>
                             <Descriptions.Item label="请求 ID">
-                                {detailRecord.requestId || "-"}
+                                {detailReportRecord.requestId || "-"}
                             </Descriptions.Item>
                             <Descriptions.Item label="Trace ID">
-                                {detailRecord.traceId || "-"}
+                                {detailReportRecord.traceId || "-"}
                             </Descriptions.Item>
                             <Descriptions.Item label="模板版本">
-                                {detailRecord.templateVersion || "-"}
+                                {detailReportRecord.templateVersion || "-"}
                             </Descriptions.Item>
                             <Descriptions.Item label="产物文件">
-                                {detailRecord.artifactFilename || "-"}
+                                {detailReportRecord.artifactFilename || "-"}
                             </Descriptions.Item>
                             <Descriptions.Item label="请求人">
-                                {detailRecord.requesterUserId ?? "-"}
+                                {detailReportRecord.requesterUserId ?? "-"}
                             </Descriptions.Item>
                             <Descriptions.Item label="完成时间">
-                                {formatDateTime(detailRecord.completedAt)}
+                                {formatDateTime(detailReportRecord.completedAt)}
                             </Descriptions.Item>
                         </Descriptions>
-                        {canDownloadReport(detailRecord) ? (
+                        {canDownloadReport(detailReportRecord) ? (
                             <KuzhambuButton
                                 testId="operations-reports-reports-action-button-3"
                                 type="primary"
                                 icon={<DownloadOutlined />}
-                                href={service.toReportDownloadUrl(detailRecord.reportId)}
+                                href={service.toReportDownloadUrl(detailReportRecord.reportId)}
                             >
                                 下载报表
                             </KuzhambuButton>

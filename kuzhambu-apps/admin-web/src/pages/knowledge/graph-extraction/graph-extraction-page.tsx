@@ -74,7 +74,7 @@ export const GraphExtractionPage = () => {
         pageSize: DEFAULT_PAGE_SIZE
     });
     const [detailTaskId, setDetailTaskId] = useState<number | null>(null);
-    const [detailOpen, setDetailOpen] = useState(false);
+    const [taskDetailDrawerOpen, setTaskDetailDrawerOpen] = useState(false);
 
     const taskPageQuery = useQuery({
         queryKey: ["knowledge", "graph-extraction", "tasks", taskQuery],
@@ -82,10 +82,10 @@ export const GraphExtractionPage = () => {
         enabled: canViewGraph || canEditGraph,
         retry: false
     });
-    const detailQuery = useQuery({
+    const taskDetailQuery = useQuery({
         queryKey: ["knowledge", "graph-extraction", "task-detail", detailTaskId],
         queryFn: () => service.getTaskDetail({ taskId: detailTaskId || 0 }),
-        enabled: detailOpen && detailTaskId !== null,
+        enabled: taskDetailDrawerOpen && detailTaskId !== null,
         retry: false
     });
     const createTaskMutation = useMutation({
@@ -160,13 +160,13 @@ export const GraphExtractionPage = () => {
 
     const tasks = taskPageQuery.data?.records || [];
 
-    const openTaskDetail = (task: GraphExtractionTaskRecord) => {
+    const openTaskDetailDrawer = (task: GraphExtractionTaskRecord) => {
         const taskId = Number(task.taskId);
         if (Number.isNaN(taskId)) {
             return;
         }
         setDetailTaskId(taskId);
-        setDetailOpen(true);
+        setTaskDetailDrawerOpen(true);
     };
 
     const applyTask = (task: GraphExtractionTaskRecord) => {
@@ -294,7 +294,7 @@ export const GraphExtractionPage = () => {
                                 tasks={tasks}
                                 onApply={applyTask}
                                 onCancelBatch={cancelBatchTask}
-                                onOpenDetail={openTaskDetail}
+                                onOpenDetail={openTaskDetailDrawer}
                                 onRegenerate={regenerateTask}
                             />
                         ) : (
@@ -307,15 +307,15 @@ export const GraphExtractionPage = () => {
                     <GraphExtractionTaskDetail
                         applying={applyTaskMutation.isPending}
                         canApply={canApplyGraph}
-                        loading={detailQuery.isLoading}
-                        open={detailOpen}
-                        task={detailQuery.data || null}
+                        loading={taskDetailQuery.isLoading}
+                        open={taskDetailDrawerOpen}
+                        task={taskDetailQuery.data || null}
                         onApply={() => {
                             if (detailTaskId !== null) {
                                 applyTaskMutation.mutate(detailTaskId);
                             }
                         }}
-                        onClose={() => setDetailOpen(false)}
+                        onClose={() => setTaskDetailDrawerOpen(false)}
                     />
                 </section>
             </KuzhambuSpace>

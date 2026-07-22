@@ -113,7 +113,7 @@ export const OperationsTasksPage = () => {
     const [filters, setFilters] = useState<OperationsTaskPageQuery>(EMPTY_TASK_QUERY);
     const [taskPageNo, setTaskPageNo] = useState(DEFAULT_PAGE_NO);
     const [taskPageSize, setTaskPageSize] = useState(DEFAULT_PAGE_SIZE);
-    const [detailSnapshotId, setDetailSnapshotId] = useState<number | null>(null);
+    const [detailTaskSnapshotId, setDetailTaskSnapshotId] = useState<number | null>(null);
 
     const taskQuery = useQuery({
         queryKey: ["operations", "task", "page", filters, taskPageNo, taskPageSize],
@@ -123,9 +123,9 @@ export const OperationsTasksPage = () => {
     });
 
     const taskDetailQuery = useQuery({
-        queryKey: ["operations", "task", "detail", detailSnapshotId],
-        queryFn: () => service.getTaskDetail({ snapshotId: detailSnapshotId as number }),
-        enabled: detailSnapshotId !== null,
+        queryKey: ["operations", "task", "detail", detailTaskSnapshotId],
+        queryFn: () => service.getTaskDetail({ snapshotId: detailTaskSnapshotId as number }),
+        enabled: detailTaskSnapshotId !== null,
         retry: false
     });
 
@@ -133,8 +133,8 @@ export const OperationsTasksPage = () => {
     const tasks: OperationsTaskRecord[] = taskPage?.records || [];
     const totalCount = taskPage?.totalCount ?? taskPage?.count ?? 0;
     const totalPage = taskPage?.totalPage || 1;
-    const detailRecord = taskDetailQuery.data;
-    const isTaskDetailOpen = detailSnapshotId !== null;
+    const detailTaskRecord = taskDetailQuery.data;
+    const taskDetailDrawerOpen = detailTaskSnapshotId !== null;
 
     const updateFilters = (patch: Partial<OperationsTaskPageQuery>) => {
         setFilters((currentFilters) => ({
@@ -158,12 +158,12 @@ export const OperationsTasksPage = () => {
         setTaskPageNo(taskPageNo - 1);
     };
 
-    const openTaskDetail = (snapshotId: number) => {
-        setDetailSnapshotId(snapshotId);
+    const openTaskDetailDrawer = (snapshotId: number) => {
+        setDetailTaskSnapshotId(snapshotId);
     };
 
-    const closeTaskDetail = () => {
-        setDetailSnapshotId(null);
+    const closeTaskDetailDrawer = () => {
+        setDetailTaskSnapshotId(null);
     };
 
     return (
@@ -277,7 +277,7 @@ export const OperationsTasksPage = () => {
                                                         size="small"
                                                         type="link"
                                                         onClick={() =>
-                                                            openTaskDetail(task.snapshotId)
+                                                            openTaskDetailDrawer(task.snapshotId)
                                                         }
                                                         disabled={!canViewTask}
                                                     >
@@ -362,10 +362,14 @@ export const OperationsTasksPage = () => {
 
                 <KuzhambuDrawer
                     testId="operations-tasks-tasks-drawer"
-                    open={isTaskDetailOpen}
+                    open={taskDetailDrawerOpen}
                     size="middle"
-                    title={detailRecord ? `长任务详情 #${detailRecord.snapshotId}` : "长任务详情"}
-                    onClose={closeTaskDetail}
+                    title={
+                        detailTaskRecord
+                            ? `长任务详情 #${detailTaskRecord.snapshotId}`
+                            : "长任务详情"
+                    }
+                    onClose={closeTaskDetailDrawer}
                 >
                     <div className="operations-tasks-detail">
                         <KuzhambuSpace size={4} orientation="vertical">
@@ -373,49 +377,49 @@ export const OperationsTasksPage = () => {
                         </KuzhambuSpace>
                         <Descriptions bordered size="small" column={1}>
                             <Descriptions.Item label="来源域">
-                                <Text>{detailRecord?.sourceDomain || "-"}</Text>
+                                <Text>{detailTaskRecord?.sourceDomain || "-"}</Text>
                             </Descriptions.Item>
                             <Descriptions.Item label="任务类型">
-                                <Text>{detailRecord?.taskType || "-"}</Text>
+                                <Text>{detailTaskRecord?.taskType || "-"}</Text>
                             </Descriptions.Item>
                             <Descriptions.Item label="状态">
-                                <KuzhambuTag type={toStatusTone(detailRecord?.taskStatus)}>
-                                    {detailRecord?.taskStatus || "-"}
+                                <KuzhambuTag type={toStatusTone(detailTaskRecord?.taskStatus)}>
+                                    {detailTaskRecord?.taskStatus || "-"}
                                 </KuzhambuTag>
                             </Descriptions.Item>
                             <Descriptions.Item label="任务键值">
-                                <Text>{detailRecord?.taskKey || "-"}</Text>
+                                <Text>{detailTaskRecord?.taskKey || "-"}</Text>
                             </Descriptions.Item>
                             <Descriptions.Item label="执行结果">
-                                <Text>{`${detailRecord?.successCount || 0}/${detailRecord?.failedCount || 0}`}</Text>
+                                <Text>{`${detailTaskRecord?.successCount || 0}/${detailTaskRecord?.failedCount || 0}`}</Text>
                             </Descriptions.Item>
                             <Descriptions.Item label="失败原因">
-                                <Text>{detailRecord?.failureReason || "-"}</Text>
+                                <Text>{detailTaskRecord?.failureReason || "-"}</Text>
                             </Descriptions.Item>
                             <Descriptions.Item label="发起用户">
-                                <Text>{detailRecord?.requestedByUserId || "-"}</Text>
+                                <Text>{detailTaskRecord?.requestedByUserId || "-"}</Text>
                             </Descriptions.Item>
                             <Descriptions.Item label="开始时间">
-                                <Text>{formatDateTime(detailRecord?.startedAt)}</Text>
+                                <Text>{formatDateTime(detailTaskRecord?.startedAt)}</Text>
                             </Descriptions.Item>
                             <Descriptions.Item label="完成时间">
-                                <Text>{formatDateTime(detailRecord?.completedAt)}</Text>
+                                <Text>{formatDateTime(detailTaskRecord?.completedAt)}</Text>
                             </Descriptions.Item>
                         </Descriptions>
                         {taskDetailQuery.isLoading ? <Spin size="large" /> : null}
-                        {isFailedTask(detailRecord) ? (
+                        {isFailedTask(detailTaskRecord) ? (
                             <KuzhambuAlert
                                 action={
                                     <KuzhambuButton
                                         testId="operations-tasks-tasks-view-alerts-button"
                                         size="small"
                                     >
-                                        <Link to={buildTaskAlertPath(detailRecord?.snapshotId)}>
+                                        <Link to={buildTaskAlertPath(detailTaskRecord?.snapshotId)}>
                                             查看告警
                                         </Link>
                                     </KuzhambuButton>
                                 }
-                                description={`${failureReasonText(detailRecord?.failureReason)}。请查看来源域任务状态，必要时重新发起业务动作。`}
+                                description={`${failureReasonText(detailTaskRecord?.failureReason)}。请查看来源域任务状态，必要时重新发起业务动作。`}
                                 title="长任务执行失败"
                                 showIcon
                                 type="warning"

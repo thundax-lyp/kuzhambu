@@ -1,23 +1,10 @@
 import { useMutation } from "@tanstack/react-query";
-import { SearchOutlined } from "@ant-design/icons";
-import {
-    DatePicker,
-    Descriptions,
-    Empty,
-    Input,
-    Pagination,
-    Select,
-    Spin,
-    Tag,
-    Typography
-} from "antd";
-import dayjs from "dayjs";
 import type { Dayjs } from "dayjs";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
+import { SearchQueryPanel, type SearchFormState } from "./components/search-query-panel";
+import { SearchResultDetail } from "./components/search-result-detail";
+import { SearchResultTable, type SearchResultEntry } from "./components/search-result-table";
 import * as service from "./search-service";
 import type { DiscoverySearchGroupRecord, DiscoverySearchItemRecord } from "./search-types";
 import type {
@@ -31,7 +18,6 @@ const DEFAULT_PAGE_NO = "1";
 const DEFAULT_PAGE_SIZE = "10";
 const PUBLIC_VISIBILITY_SCOPE = "PUBLIC";
 const PUBLISHED_CONTENT_STATUS = "PUBLISHED";
-const PREVIEW_PARAGRAPH_MAX_LENGTH = 360;
 
 const KNOWLEDGE_BASE_OPTIONS = [
     { label: "三才图会", value: "SANCAI_ENTRY" },
@@ -42,21 +28,6 @@ const KNOWLEDGE_BASE_OPTIONS = [
 const toKnowledgeBaseLabel = (value?: string | null) => {
     return KNOWLEDGE_BASE_OPTIONS.find((option) => option.value === value)?.label || value || "-";
 };
-
-interface SearchResultEntry {
-    group: DiscoverySearchGroupRecord;
-    item: DiscoverySearchItemRecord;
-    key: string;
-}
-
-interface SearchFormState {
-    dateFrom: string;
-    dateTo: string;
-    knowledgeBases: string[];
-    pageNo: string;
-    pageSize: string;
-    queryText: string;
-}
 
 const INITIAL_FORM_STATE: SearchFormState = {
     dateFrom: "",
@@ -189,50 +160,6 @@ const toPlainHighlightText = (value?: string | null) => {
     return (value ?? "").replace(/<mark>(.*?)<\/mark>/giu, "$1").trim();
 };
 
-const chunkPreviewParagraph = (paragraph: string) => {
-    if (paragraph.length <= PREVIEW_PARAGRAPH_MAX_LENGTH) {
-        return [paragraph];
-    }
-
-    const sentences =
-        paragraph.match(/[^。！？!?；;]+[。！？!?；;]?/gu)?.map((sentence) => sentence.trim()) ??
-        [];
-    const units = sentences.length > 1 ? sentences : Array.from(paragraph);
-    const paragraphs: string[] = [];
-    let currentParagraph = "";
-
-    units.forEach((unit) => {
-        if (
-            currentParagraph &&
-            currentParagraph.length + unit.length > PREVIEW_PARAGRAPH_MAX_LENGTH
-        ) {
-            paragraphs.push(currentParagraph);
-            currentParagraph = unit;
-            return;
-        }
-        currentParagraph += unit;
-    });
-
-    if (currentParagraph) {
-        paragraphs.push(currentParagraph);
-    }
-
-    return paragraphs;
-};
-
-const splitPreviewBody = (value?: string | null) => {
-    const bodyText = (value ?? "").trim();
-    if (!bodyText) {
-        return [];
-    }
-
-    return bodyText
-        .split(/\r?\n+/u)
-        .map((paragraph) => paragraph.trim())
-        .filter(Boolean)
-        .flatMap(chunkPreviewParagraph);
-};
-
 const createClickCommand = (
     searchEventId: string,
     group: DiscoverySearchGroupRecord,
@@ -284,7 +211,7 @@ export const SearchPage = () => {
     const searchMutation = useMutation({
         mutationFn: service.searchDiscovery
     });
-    const previewMutation = useMutation({
+    const searchResultPreviewMutation = useMutation({
         mutationFn: service.previewSearchResult
     });
     const { mutate: runSearch } = searchMutation;
@@ -375,20 +302,20 @@ export const SearchPage = () => {
         }
     };
 
-    const openPreview = (result: SearchResultEntry) => {
+    const openSearchResultPreview = (result: SearchResultEntry) => {
         recordClick(result.group, result.item);
         setPreviewResult(result);
         const previewQuery = createPreviewQuery(result.item);
         if (previewQuery) {
-            previewMutation.mutate(previewQuery);
+            searchResultPreviewMutation.mutate(previewQuery);
             return;
         }
-        previewMutation.reset();
+        searchResultPreviewMutation.reset();
     };
 
-    const closePreview = () => {
+    const closeSearchResultPreview = () => {
         setPreviewResult(null);
-        previewMutation.reset();
+        searchResultPreviewMutation.reset();
     };
 
     const shouldShowZeroResult =
@@ -396,235 +323,51 @@ export const SearchPage = () => {
     const currentPageNo = Number.parseInt(form.pageNo, 10) || 1;
     const currentPageSize = Number.parseInt(form.pageSize, 10) || 10;
     const totalCount = response?.totalCount ?? results.length;
-    const renderResultTitle = (result: SearchResultEntry) => {
-        const title = result.item.title || "未命名结果";
-        const titleContent = renderQueryHighlight(title, form.queryText);
-
-        return (
-            <button
-                aria-label={`打开搜索预览：${title}`}
-                className="search-page-result-title-button"
-                type="button"
-                onClick={() => openPreview(result)}
-            >
-                {titleContent}
-            </button>
-        );
-    };
-    const renderResultSummary = (result: SearchResultEntry) => {
-        const title = (result.item.title || "").trim();
-        const highlightText = toPlainHighlightText(result.item.highlightText);
-        const summary = (result.item.summary || "").trim();
-        const summaryText = highlightText || summary;
-        if (!summaryText || summaryText === title) {
-            return null;
-        }
-
-        return renderHighlightText(result.item.highlightText) || summary;
-    };
     const resultContent = (
-        <Spin spinning={searchMutation.isPending}>
-            <section className="search-page-results" aria-label="检索结果">
-                {searchMutation.isError ? <Empty description="检索失败，请稍后重试" /> : null}
-                {!searchMutation.isError && results.length === 0 ? (
-                    <Empty
-                        description={shouldShowZeroResult ? "没有找到匹配内容" : "暂无搜索结果"}
-                    />
-                ) : null}
-                {!searchMutation.isError && results.length > 0 ? (
-                    <>
-                        <div className="search-page-result-list">
-                            {results.map((result) => {
-                                const summary = renderResultSummary(result);
-                                return (
-                                    <article className="search-page-result-item" key={result.key}>
-                                        <h3 className="search-page-result-title">
-                                            {renderResultTitle(result)}
-                                        </h3>
-                                        {summary ? (
-                                            <p className="search-page-result-summary">{summary}</p>
-                                        ) : null}
-                                        <div className="search-page-result-meta">
-                                            <Tag color="blue">
-                                                {result.group.groupTitle ||
-                                                    result.group.groupKey ||
-                                                    "未分组"}
-                                            </Tag>
-                                        </div>
-                                    </article>
-                                );
-                            })}
-                        </div>
-                        <Pagination
-                            className="search-page-pagination"
-                            current={currentPageNo}
-                            pageSize={currentPageSize}
-                            showSizeChanger
-                            showTotal={(total) => `共 ${total} 条`}
-                            total={totalCount}
-                            onChange={changePage}
-                        />
-                    </>
-                ) : null}
-            </section>
-        </Spin>
+        <SearchResultTable
+            currentPageNo={currentPageNo}
+            currentPageSize={currentPageSize}
+            isError={searchMutation.isError}
+            isPending={searchMutation.isPending}
+            queryText={form.queryText}
+            results={results}
+            shouldShowZeroResult={shouldShowZeroResult}
+            totalCount={totalCount}
+            onChangePage={changePage}
+            onOpenPreview={openSearchResultPreview}
+            renderHighlightText={renderHighlightText}
+            renderQueryHighlight={renderQueryHighlight}
+            toPlainHighlightText={toPlainHighlightText}
+        />
     );
-    const previewData = previewMutation.data;
-    const previewTitle = previewData?.title || previewResult?.item.title || "搜索命中预览";
+    const previewData = searchResultPreviewMutation.data;
     const previewErrorMessage =
-        previewMutation.error instanceof Error ? previewMutation.error.message : null;
-    const previewBodyParagraphs = splitPreviewBody(previewData?.bodyText);
-    const previewMetaItems = [
-        {
-            key: "knowledgeBase",
-            label: "知识库",
-            children: toKnowledgeBaseLabel(previewData?.knowledgeBase)
-        },
-        {
-            key: "category",
-            label: "门类",
-            children: previewData?.categoryName || previewData?.categoryCode || "-"
-        }
-    ];
+        searchResultPreviewMutation.error instanceof Error
+            ? searchResultPreviewMutation.error.message
+            : null;
 
     return (
-        <>
-            <KuzhambuListPage<SearchResultEntry>
-                pageClassName="search-page"
-                title="检索"
-                description="公开已发布内容。"
-                subjectName="内容"
-                enableFilter
-                filterText="高级"
-                enableSearch
-                searchShortcut="⌘K"
-                searchValue={form.queryText}
-                searchPlaceholder="搜索公开已发布内容..."
-                onSearchChange={(queryText) => updateField("queryText", queryText)}
-                filterActive={hasActiveFilters}
-                filterFields={[
-                    {
-                        name: "queryText",
-                        label: "搜索词",
-                        render: () => (
-                            <Input
-                                placeholder="输入古籍、实体或正文关键词"
-                                value={form.queryText}
-                                onChange={(event) => updateField("queryText", event.target.value)}
-                            />
-                        )
-                    },
-                    {
-                        name: "knowledgeBases",
-                        label: "知识库",
-                        render: () => (
-                            <Select
-                                mode="multiple"
-                                allowClear
-                                options={KNOWLEDGE_BASE_OPTIONS}
-                                placeholder="全部知识库"
-                                value={form.knowledgeBases}
-                                onChange={(value) => updateField("knowledgeBases", value)}
-                            />
-                        )
-                    },
-                    {
-                        name: "dateRange",
-                        label: "时间范围",
-                        render: () => (
-                            <DatePicker.RangePicker
-                                value={[
-                                    form.dateFrom ? dayjs(form.dateFrom) : null,
-                                    form.dateTo ? dayjs(form.dateTo) : null
-                                ]}
-                                onChange={updateDateRange}
-                            />
-                        )
-                    }
-                ]}
-                onFilterApply={submitSearch}
-                onFilterReset={clearFilters}
-                pageActions={
-                    <KuzhambuButton
-                        ariaLabel="搜索"
-                        icon={<SearchOutlined />}
-                        loading={searchMutation.isPending}
-                        testId="discovery-search-submit-button"
-                        type="primary"
-                        onClick={submitSearch}
-                    >
-                        搜索
-                    </KuzhambuButton>
-                }
+        <div className="search-page-root">
+            <SearchQueryPanel
                 content={resultContent}
+                filterActive={hasActiveFilters}
+                form={form}
+                knowledgeBaseOptions={KNOWLEDGE_BASE_OPTIONS}
+                loading={searchMutation.isPending}
+                onClearFilters={clearFilters}
+                onSearch={submitSearch}
+                onUpdateDateRange={updateDateRange}
+                onUpdateField={updateField}
             />
-            <KuzhambuDrawer
-                destroyOnClose
+            <SearchResultDetail
+                errorMessage={previewErrorMessage}
+                loading={searchResultPreviewMutation.isPending}
                 open={Boolean(previewResult)}
-                size="large"
-                testId="discovery-search-preview-drawer"
-                title={previewTitle}
-                footer={
-                    <KuzhambuButton
-                        testId="discovery-search-preview-close-button"
-                        onClick={closePreview}
-                    >
-                        关闭预览
-                    </KuzhambuButton>
-                }
-                onClose={closePreview}
-            >
-                <Spin spinning={previewMutation.isPending}>
-                    {previewMutation.isError ? (
-                        <Empty
-                            description={
-                                previewErrorMessage
-                                    ? `预览失败：${previewErrorMessage}`
-                                    : "当前内容不可预览或已经不可见"
-                            }
-                        />
-                    ) : null}
-                    {previewData ? (
-                        <div className="search-page-preview">
-                            <Descriptions
-                                bordered
-                                column={1}
-                                items={previewMetaItems}
-                                size="small"
-                            />
-                            {previewData.summary ? (
-                                <section className="search-page-preview-section">
-                                    <Typography.Title level={5}>摘要</Typography.Title>
-                                    <Typography.Paragraph>
-                                        {previewData.summary}
-                                    </Typography.Paragraph>
-                                </section>
-                            ) : null}
-                            <section className="search-page-preview-section">
-                                <Typography.Title level={5}>正文</Typography.Title>
-                                {previewBodyParagraphs.length ? (
-                                    previewBodyParagraphs.map((paragraph, index) => (
-                                        <Typography.Paragraph key={`preview-body-${index}`}>
-                                            {paragraph}
-                                        </Typography.Paragraph>
-                                    ))
-                                ) : (
-                                    <Typography.Paragraph>暂无正文。</Typography.Paragraph>
-                                )}
-                            </section>
-                            {previewData.tagNames?.length ? (
-                                <div className="search-page-preview-tags">
-                                    {previewData.tagNames.map((tagName) => (
-                                        <Tag color="blue" key={tagName}>
-                                            {tagName}
-                                        </Tag>
-                                    ))}
-                                </div>
-                            ) : null}
-                        </div>
-                    ) : null}
-                </Spin>
-            </KuzhambuDrawer>
-        </>
+                previewData={previewData}
+                previewResult={previewResult}
+                toKnowledgeBaseLabel={toKnowledgeBaseLabel}
+                onClose={closeSearchResultPreview}
+            />
+        </div>
     );
 };

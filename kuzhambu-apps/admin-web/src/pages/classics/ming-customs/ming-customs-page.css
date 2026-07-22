@@ -53,25 +53,25 @@ html[data-theme="dark"] .ming-customs-keyword-cloud-item {
     border-color: rgba(205, 167, 112, 0.28);
 }
 
-.ming-customs-model-footer {
+.ming-customs-edit-drawer-footer {
     display: flex;
     justify-content: flex-end;
     gap: 8px;
 }
 
-.ming-customs-model-form {
+.ming-customs-edit-drawer-form {
     display: flex;
     flex-direction: column;
     gap: 2px;
 }
 
-.ming-customs-model-grid {
+.ming-customs-edit-drawer-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0 16px;
 }
 
-.ming-customs-model-preview {
+.ming-customs-edit-drawer-preview {
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -82,7 +82,7 @@ html[data-theme="dark"] .ming-customs-keyword-cloud-item {
     border-radius: 8px;
 }
 
-.ming-customs-model-preview-content {
+.ming-customs-edit-drawer-preview-content {
     min-height: 72px;
 }
 
@@ -127,7 +127,7 @@ html[data-theme="dark"] .ming-customs-keyword-cloud-item {
 }
 
 @media (max-width: 760px) {
-    .ming-customs-model-grid {
+    .ming-customs-edit-drawer-grid {
         grid-template-columns: minmax(0, 1fr);
     }
 
@@ -136,7 +136,7 @@ html[data-theme="dark"] .ming-customs-keyword-cloud-item {
     }
 }
 
-html[data-theme="dark"] .ming-customs-model-preview {
+html[data-theme="dark"] .ming-customs-edit-drawer-preview {
     background: rgba(205, 167, 112, 0.1);
     border-color: rgba(205, 167, 112, 0.24);
 }

@@ -105,7 +105,7 @@ describe("InvocationsPage", () => {
         expect(screen.getByText("entry")).toBeInTheDocument();
     });
 
-    it("expands call detail by clicking call row", async () => {
+    it("opens call detail drawer by clicking call row", async () => {
         renderPage();
         fireEvent.click(await screen.findByRole("tab", { name: "调用记录" }));
         await screen.findByText("entry");
@@ -113,6 +113,7 @@ describe("InvocationsPage", () => {
         expect(screen.queryByText("req-1")).not.toBeInTheDocument();
         fireEvent.click(screen.getByText("entry"));
 
+        expect(await screen.findByText("调用详情")).toBeInTheDocument();
         expect(await screen.findByText("req-1")).toBeInTheDocument();
         expect(screen.getByText("trace-1")).toBeInTheDocument();
     });

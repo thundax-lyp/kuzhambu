@@ -10,7 +10,7 @@ import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
-import { DictionaryEdit } from "./components/dictionary-edit";
+import { DictionaryEditDrawer } from "./components/dictionary-edit-drawer";
 import * as dictionaryService from "./dictionary-service";
 import type { DictPageQuery, DictSaveCommand } from "./dictionary-service";
 import type { DictRecord } from "./dictionary-types";
@@ -54,28 +54,28 @@ export const DictionaryPage = () => {
     const [filters, setFilters] = useState<DictionaryFilters>(DEFAULT_DICTIONARY_FILTERS);
     const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
     const [editingDictionary, setEditingDictionary] = useState<DictRecord | null>(null);
-    const [editorOpen, setEditorOpen] = useState(false);
+    const [dictionaryEditDrawerOpen, setDictionaryEditDrawerOpen] = useState(false);
     const hasSelectedDictionaries = selectedRowKeys.length > 0;
     const hasActiveFilters = Boolean(filters.type.trim()) || Boolean(filters.remarks.trim());
 
-    const dictionaryQuery = useQuery({
+    const dictionaryPageQuery = useQuery({
         queryKey: ["dictionary", "page", query],
         queryFn: () => dictionaryService.page(query),
         retry: false
     });
-    const dictionaryPage = dictionaryQuery.data;
+    const dictionaryPage = dictionaryPageQuery.data;
     const dictionaries = useMemo(() => dictionaryPage?.records || [], [dictionaryPage?.records]);
     const totalCount = dictionaryPage?.count ?? dictionaryPage?.totalCount ?? 0;
     const currentPageNo = dictionaryPage?.pageNo || query.pageNo || DEFAULT_PAGE_NO;
     const currentPageSize = dictionaryPage?.pageSize || query.pageSize || DEFAULT_PAGE_SIZE;
 
-    const saveMutation = useMutation({
+    const saveDictionaryMutation = useMutation({
         mutationFn: (values: DictSaveCommand) =>
             values.id
                 ? dictionaryService.changeDictionaryInfo(values)
                 : dictionaryService.addDictionary(values),
         onSuccess: async () => {
-            setEditorOpen(false);
+            setDictionaryEditDrawerOpen(false);
             setEditingDictionary(null);
             await queryClient.invalidateQueries({ queryKey: ["dictionary", "page"] });
             messageApi.success("字典项已保存");
@@ -131,26 +131,26 @@ export const DictionaryPage = () => {
         });
     };
 
-    const openCreateEditor = () => {
+    const openCreateDictionaryDrawer = () => {
         setEditingDictionary(null);
-        setEditorOpen(true);
+        setDictionaryEditDrawerOpen(true);
     };
 
-    const openEditEditor = (dictionary: DictRecord) => {
+    const openEditDictionaryDrawer = (dictionary: DictRecord) => {
         setEditingDictionary(dictionary);
-        setEditorOpen(true);
+        setDictionaryEditDrawerOpen(true);
     };
 
-    const closeEditor = () => {
-        if (saveMutation.isPending) {
+    const closeDictionaryEditDrawer = () => {
+        if (saveDictionaryMutation.isPending) {
             return;
         }
-        setEditorOpen(false);
+        setDictionaryEditDrawerOpen(false);
         setEditingDictionary(null);
     };
 
     const saveDictionary = (request: DictSaveCommand) => {
-        saveMutation.mutate(request);
+        saveDictionaryMutation.mutate(request);
     };
 
     const confirmDelete = (ids: string[]) => {
@@ -201,7 +201,7 @@ export const DictionaryPage = () => {
                     text: "编辑",
                     ariaLabel: `编辑 ${dictionary.label}`,
                     disabled: !canEditDictionary,
-                    onClick: () => openEditEditor(dictionary)
+                    onClick: () => openEditDictionaryDrawer(dictionary)
                 },
                 { type: "divider" },
                 {
@@ -229,7 +229,7 @@ export const DictionaryPage = () => {
                 searchShortcut="⌘K"
                 searchValue={searchText}
                 onSearchChange={searchDictionaries}
-                onAdd={openCreateEditor}
+                onAdd={openCreateDictionaryDrawer}
                 filterActive={hasActiveFilters}
                 filterFields={[
                     {
@@ -274,7 +274,7 @@ export const DictionaryPage = () => {
                     <KuzhambuButton
                         testId="system-dictionary-dictionary-refresh-button"
                         icon={<ReloadOutlined />}
-                        onClick={() => dictionaryQuery.refetch()}
+                        onClick={() => dictionaryPageQuery.refetch()}
                     >
                         刷新
                     </KuzhambuButton>
@@ -299,7 +299,7 @@ export const DictionaryPage = () => {
                 className="dictionary-table"
                 columns={columns}
                 dataSource={dictionaries}
-                loading={dictionaryQuery.isFetching}
+                loading={dictionaryPageQuery.isFetching}
                 rowSelection={{
                     selectedRowKeys,
                     onChange: setSelectedRowKeys,
@@ -321,17 +321,17 @@ export const DictionaryPage = () => {
                     }
                 }}
                 locale={{
-                    emptyText: dictionaryQuery.isError
+                    emptyText: dictionaryPageQuery.isError
                         ? "字典列表加载失败，请确认权限和接口状态。"
                         : "暂无字典项"
                 }}
             />
 
-            <DictionaryEdit
-                open={editorOpen}
+            <DictionaryEditDrawer
+                open={dictionaryEditDrawerOpen}
                 dictionary={editingDictionary}
-                saving={saveMutation.isPending}
-                onClose={closeEditor}
+                saving={saveDictionaryMutation.isPending}
+                onClose={closeDictionaryEditDrawer}
                 onSave={saveDictionary}
             />
         </>
