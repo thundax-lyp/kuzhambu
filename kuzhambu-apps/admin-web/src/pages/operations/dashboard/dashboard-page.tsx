@@ -261,9 +261,7 @@ export const OperationsDashboardPage = () => {
     );
     const [periodType, setPeriodType] = useState<OperationsDashboardPeriodType>("WEEK");
     const [alertDrawerOpen, setAlertDrawerOpen] = useState(false);
-    const [selectedHealth, setSelectedHealth] = useState<OperationsHealthSummaryRecord | null>(
-        null
-    );
+    const [detailHealth, setDetailHealth] = useState<OperationsHealthSummaryRecord | null>(null);
 
     const dashboardQuery = useQuery({
         queryKey: ["operations", "dashboard", "overview", periodType],
@@ -358,8 +356,8 @@ export const OperationsDashboardPage = () => {
     const visibleHealthAlerts = canViewHealthPage ? openHealthAlerts : [];
 
     const selectedHealthAlertInfo =
-        selectedHealth != null
-            ? filterAlertsByComponent(visibleHealthAlerts, selectedHealth?.component)
+        detailHealth != null
+            ? filterAlertsByComponent(visibleHealthAlerts, detailHealth?.component)
             : [];
 
     const isLoading =
@@ -624,7 +622,7 @@ export const OperationsDashboardPage = () => {
                                                                 className="operations-dashboard-health-item"
                                                                 key={summary.checkId}
                                                                 onClick={() =>
-                                                                    setSelectedHealth(summary)
+                                                                    setDetailHealth(summary)
                                                                 }
                                                                 type="button"
                                                             >
@@ -802,27 +800,27 @@ export const OperationsDashboardPage = () => {
 
                     <KuzhambuDrawer
                         testId="operations-dashboard-dashboard-2-drawer"
-                        open={selectedHealth !== null}
-                        onClose={() => setSelectedHealth(null)}
+                        open={detailHealth !== null}
+                        onClose={() => setDetailHealth(null)}
                         size="middle"
                         title={
-                            selectedHealth
-                                ? `${selectedHealth.component || "未知组件"} 健康明细`
+                            detailHealth
+                                ? `${detailHealth.component || "未知组件"} 健康明细`
                                 : "健康明细"
                         }
                     >
                         <div className="operations-dashboard-health-detail">
                             <KuzhambuSpace size={8} wrap>
                                 <Text>状态</Text>
-                                <KuzhambuTag type={statusTone(selectedHealth?.healthStatus)}>
-                                    {selectedHealth?.healthStatus || "-"}
+                                <KuzhambuTag type={statusTone(detailHealth?.healthStatus)}>
+                                    {detailHealth?.healthStatus || "-"}
                                 </KuzhambuTag>
                             </KuzhambuSpace>
-                            <Text>采集来源：{selectedHealth?.probeSource || "-"}</Text>
-                            <Text>采集目标：{selectedHealth?.probeTarget || "-"}</Text>
-                            <Text>延迟：{formatLatency(selectedHealth?.latencyMs)}</Text>
-                            <Text>检查时间：{formatDateTime(selectedHealth?.checkedAt)}</Text>
-                            <Text>消息：{selectedHealth?.message || "-"}</Text>
+                            <Text>采集来源：{detailHealth?.probeSource || "-"}</Text>
+                            <Text>采集目标：{detailHealth?.probeTarget || "-"}</Text>
+                            <Text>延迟：{formatLatency(detailHealth?.latencyMs)}</Text>
+                            <Text>检查时间：{formatDateTime(detailHealth?.checkedAt)}</Text>
+                            <Text>消息：{detailHealth?.message || "-"}</Text>
                             <div className="operations-dashboard-health-related-alerts">
                                 <div className="operations-dashboard-health-related-alerts-header">
                                     <Text strong>关联告警</Text>

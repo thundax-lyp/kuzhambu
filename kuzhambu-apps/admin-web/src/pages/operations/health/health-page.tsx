@@ -121,7 +121,7 @@ export const OperationsHealthPage = () => {
     const [checkedAtRange, setCheckedAtRange] = useState<CheckedAtRange>(null);
     const [pageNo, setPageNo] = useState(DEFAULT_PAGE_NO);
     const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
-    const [selectedHealth, setSelectedHealth] = useState<OperationsHealthRecord | null>(null);
+    const [detailHealth, setDetailHealth] = useState<OperationsHealthRecord | null>(null);
     const [alertCheckId, setAlertCheckId] = useState<number | null>(null);
     const [submittedQuery, setSubmittedQuery] = useState<OperationsHealthPageQuery>(() =>
         buildQuery("", "ALL", "ALL", "", null, DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE)
@@ -238,7 +238,7 @@ export const OperationsHealthPage = () => {
     const records: OperationsHealthRecord[] = healthPage?.records || [];
     const totalCount = healthPage?.count ?? 0;
     const totalPage = Math.max(1, Math.ceil(totalCount / pageSize));
-    const detailsText = formatDetailsJson(selectedHealth?.detailsJson);
+    const detailsText = formatDetailsJson(detailHealth?.detailsJson);
     const alerts: OperationsHealthAlertRecord[] = alertPageQuery.data?.records || [];
 
     if (!canViewHealth) {
@@ -375,7 +375,7 @@ export const OperationsHealthPage = () => {
                                                 testId="operations-health-health-detail-button"
                                                 size="small"
                                                 type="link"
-                                                onClick={() => setSelectedHealth(record)}
+                                                onClick={() => setDetailHealth(record)}
                                             >
                                                 详情
                                             </KuzhambuButton>
@@ -439,42 +439,40 @@ export const OperationsHealthPage = () => {
             </Card>
             <KuzhambuDrawer
                 testId="operations-health-health-1-drawer"
-                open={selectedHealth !== null}
+                open={detailHealth !== null}
                 size="middle"
-                title={selectedHealth ? `健康详情 #${selectedHealth.checkId}` : "健康详情"}
-                onClose={() => setSelectedHealth(null)}
+                title={detailHealth ? `健康详情 #${detailHealth.checkId}` : "健康详情"}
+                onClose={() => setDetailHealth(null)}
             >
                 <div className="operations-health-detail">
                     <Descriptions size="small" column={1} bordered>
                         <Descriptions.Item label="检查 ID">
-                            {selectedHealth?.checkId || "-"}
+                            {detailHealth?.checkId || "-"}
                         </Descriptions.Item>
                         <Descriptions.Item label="组件">
-                            {selectedHealth?.component || "-"}
+                            {detailHealth?.component || "-"}
                         </Descriptions.Item>
                         <Descriptions.Item label="健康状态">
-                            <KuzhambuTag type={statusTone(selectedHealth?.healthStatus)}>
-                                {selectedHealth?.healthStatus || "-"}
+                            <KuzhambuTag type={statusTone(detailHealth?.healthStatus)}>
+                                {detailHealth?.healthStatus || "-"}
                             </KuzhambuTag>
                         </Descriptions.Item>
                         <Descriptions.Item label="耗时">
-                            {selectedHealth?.latencyMs == null
-                                ? "-"
-                                : `${selectedHealth.latencyMs} ms`}
+                            {detailHealth?.latencyMs == null ? "-" : `${detailHealth.latencyMs} ms`}
                         </Descriptions.Item>
                         <Descriptions.Item label="探针来源">
-                            {selectedHealth?.probeSource || "-"}
+                            {detailHealth?.probeSource || "-"}
                         </Descriptions.Item>
                         <Descriptions.Item label="探针目标">
-                            {selectedHealth?.probeTarget || "-"}
+                            {detailHealth?.probeTarget || "-"}
                         </Descriptions.Item>
                         <Descriptions.Item label="检查时间">
-                            {formatDateTime(selectedHealth?.checkedAt)}
+                            {formatDateTime(detailHealth?.checkedAt)}
                         </Descriptions.Item>
                     </Descriptions>
                     <div>
                         <Text strong>消息</Text>
-                        <Paragraph>{selectedHealth?.message || "-"}</Paragraph>
+                        <Paragraph>{detailHealth?.message || "-"}</Paragraph>
                     </div>
                     <div>
                         <Text strong>诊断 JSON</Text>
