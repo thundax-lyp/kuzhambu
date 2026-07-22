@@ -9,6 +9,7 @@ import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
+import { HealthAlertTable } from "./health-alert-table";
 import * as service from "./health-service";
 import type { OperationsHealthPageQuery } from "./health-service";
 import type {
@@ -77,16 +78,6 @@ const statusTone = (status?: OperationsHealthStatus | null) => {
     return "neutral";
 };
 
-const alertLevelTone = (level?: string | null) => {
-    if (level === "CRITICAL") {
-        return "danger";
-    }
-    if (level === "WARNING") {
-        return "warning";
-    }
-    return "neutral";
-};
-
 const formatDetailsJson = (value?: string | null) => {
     if (!value) {
         return null;
@@ -96,13 +87,6 @@ const formatDetailsJson = (value?: string | null) => {
     } catch {
         return value;
     }
-};
-
-const alertEmptyText = (loading: boolean) => {
-    if (loading) {
-        return "加载中...";
-    }
-    return "暂无关联告警";
 };
 
 const buildQuery = (
@@ -256,86 +240,6 @@ export const OperationsHealthPage = () => {
     const totalPage = Math.max(1, Math.ceil(totalCount / pageSize));
     const detailsText = formatDetailsJson(selectedHealth?.detailsJson);
     const alerts: OperationsHealthAlertRecord[] = alertPageQuery.data?.records || [];
-    let alertContent = <Text type="secondary">{alertEmptyText(alertPageQuery.isLoading)}</Text>;
-    if (alertPageQuery.isError) {
-        alertContent = <Text type="danger">关联告警加载失败</Text>;
-    } else if (alerts.length) {
-        alertContent = (
-            <table className="operations-health-alert-table">
-                <thead>
-                    <tr>
-                        <th>级别</th>
-                        <th>状态</th>
-                        <th>消息</th>
-                        <th>建议</th>
-                        <th>恢复动作</th>
-                        <th>最后触发</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {alerts.map((alert) => (
-                        <tr key={alert.alertId}>
-                            <td>
-                                <KuzhambuTag type={alertLevelTone(alert.alertLevel)}>
-                                    {alert.alertLevel || "-"}
-                                </KuzhambuTag>
-                            </td>
-                            <td>{alert.alertStatus || "-"}</td>
-                            <td>{alert.message || "-"}</td>
-                            <td>{alert.suggestion || "-"}</td>
-                            <td>{alert.recoveryAction || "-"}</td>
-                            <td>{formatDateTime(alert.lastTriggeredAt)}</td>
-                            <td>
-                                <KuzhambuSpace size={4} wrap>
-                                    <KuzhambuButton
-                                        testId="operations-health-health-action-button"
-                                        disabled={
-                                            !canManageHealth || alert.alertStatus !== "ACTIVE"
-                                        }
-                                        loading={ackAlertMutation.isPending}
-                                        size="small"
-                                        onClick={() =>
-                                            ackAlertMutation.mutate({ alertId: alert.alertId })
-                                        }
-                                    >
-                                        确认
-                                    </KuzhambuButton>
-                                    <KuzhambuButton
-                                        testId="operations-health-health-restore-button"
-                                        disabled={
-                                            !canManageHealth || alert.alertStatus === "RECOVERED"
-                                        }
-                                        loading={recoverAlertMutation.isPending}
-                                        size="small"
-                                        type="primary"
-                                        onClick={() =>
-                                            confirm.danger({
-                                                title: "执行告警恢复",
-                                                message: `确认处理告警 #${alert.alertId} 吗？`,
-                                                description: alert.recoveryAction?.startsWith(
-                                                    "RUN_"
-                                                )
-                                                    ? "该操作会触发自动化恢复动作，并回写告警与任务台账。"
-                                                    : "该操作会将告警标记为已恢复。",
-                                                okText: "执行恢复",
-                                                onConfirm: () =>
-                                                    recoverAlertMutation.mutateAsync({
-                                                        alertId: alert.alertId
-                                                    })
-                                            })
-                                        }
-                                    >
-                                        恢复
-                                    </KuzhambuButton>
-                                </KuzhambuSpace>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        );
-    }
 
     if (!canViewHealth) {
         return (
@@ -589,7 +493,31 @@ export const OperationsHealthPage = () => {
                 title={alertCheckId ? `关联告警 #${alertCheckId}` : "关联告警"}
                 onClose={() => setAlertCheckId(null)}
             >
-                <div className="operations-health-alerts">{alertContent}</div>
+                <div className="operations-health-alerts">
+                    <HealthAlertTable
+                        alerts={alerts}
+                        canManageHealth={canManageHealth}
+                        isAckingAlert={ackAlertMutation.isPending}
+                        isError={alertPageQuery.isError}
+                        isLoading={alertPageQuery.isLoading}
+                        isRecoveringAlert={recoverAlertMutation.isPending}
+                        onAckAlert={(alert) => ackAlertMutation.mutate({ alertId: alert.alertId })}
+                        onRecoverAlert={(alert) =>
+                            confirm.danger({
+                                title: "执行告警恢复",
+                                message: `确认处理告警 #${alert.alertId} 吗？`,
+                                description: alert.recoveryAction?.startsWith("RUN_")
+                                    ? "该操作会触发自动化恢复动作，并回写告警与任务台账。"
+                                    : "该操作会将告警标记为已恢复。",
+                                okText: "执行恢复",
+                                onConfirm: () =>
+                                    recoverAlertMutation.mutateAsync({
+                                        alertId: alert.alertId
+                                    })
+                            })
+                        }
+                    />
+                </div>
             </KuzhambuDrawer>
         </KuzhambuPage>
     );
