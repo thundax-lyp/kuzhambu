@@ -60,7 +60,7 @@ export const TaxonomyPage = () => {
     const canEditTaxonomy = hasPermission("knowledge:taxonomy:edit");
     const {
         activeTabKey,
-        categoryEditorOpen,
+        categoryEditDrawerOpen,
         categoryQuery,
         editingCategory,
         editingSynonym,
@@ -87,22 +87,22 @@ export const TaxonomyPage = () => {
         setTagBatchMergePreview,
         setTagBatchReviewDecision,
         setTagBatchReviewOpen,
-        setTagDetailOpen,
+        setTagDetailDrawerOpen,
         setTagDetailReviewMode,
-        setTagEditorOpen,
+        setTagEditDrawerOpen,
         setTagExtractionOpen,
         setTagExtractionResult,
         setTagMergePreview,
         setTagQuery,
-        synonymEditorOpen,
+        synonymEditDrawerOpen,
         synonymQuery,
         tagBatchMergeOpen,
         tagBatchMergePreview,
         tagBatchReviewDecision,
         tagBatchReviewOpen,
-        tagDetailOpen,
+        tagDetailDrawerOpen,
         tagDetailReviewMode,
-        tagEditorOpen,
+        tagEditDrawerOpen,
         tagExtractionOpen,
         tagExtractionResult,
         tagMergePreview,
@@ -130,7 +130,7 @@ export const TaxonomyPage = () => {
     const tagDetailQuery = useQuery({
         queryKey: ["knowledge", "taxonomy", "tag-detail", selectedTag?.id],
         queryFn: () => service.getTagDetail({ tagId: selectedTag?.id || "" }),
-        enabled: tagDetailOpen && Boolean(selectedTag?.id),
+        enabled: tagDetailDrawerOpen && Boolean(selectedTag?.id),
         retry: false
     });
     const synonymPageQuery = useQuery({
@@ -181,7 +181,7 @@ export const TaxonomyPage = () => {
                 ? service.updateTag(request as TagUpdateCommand)
                 : service.createTag(request as TagCreateCommand),
         onSuccess: async () => {
-            setTagEditorOpen(false);
+            setTagEditDrawerOpen(false);
             setEditingTag(null);
             await queryClient.invalidateQueries({ queryKey: ["knowledge", "taxonomy", "tags"] });
             messageApi.success("统一标签已保存");
@@ -263,7 +263,7 @@ export const TaxonomyPage = () => {
     const deprecateTagMutation = useMutation({
         mutationFn: service.deprecateTag,
         onSuccess: async () => {
-            setTagDetailOpen(false);
+            setTagDetailDrawerOpen(false);
             setSelectedTag(null);
             await Promise.all([
                 queryClient.invalidateQueries({ queryKey: ["knowledge", "taxonomy", "tags"] }),
@@ -301,7 +301,7 @@ export const TaxonomyPage = () => {
     const reviewTagMutation = useMutation({
         mutationFn: service.reviewTag,
         onSuccess: async () => {
-            setTagDetailOpen(false);
+            setTagDetailDrawerOpen(false);
             setTagDetailReviewMode(false);
             setSelectedTag(null);
             await Promise.all([
@@ -472,7 +472,7 @@ export const TaxonomyPage = () => {
 
     const openCreateTag = () => {
         setEditingTag(null);
-        setTagEditorOpen(true);
+        setTagEditDrawerOpen(true);
     };
 
     const openTagExtraction = () => {
@@ -482,13 +482,13 @@ export const TaxonomyPage = () => {
 
     const openEditTag = (tag: TagRecord) => {
         setEditingTag(tag);
-        setTagEditorOpen(true);
+        setTagEditDrawerOpen(true);
     };
 
     const openTagDetail = (tag: TagRecord, reviewMode = false) => {
         setSelectedTag(tag);
         setTagDetailReviewMode(reviewMode);
-        setTagDetailOpen(true);
+        setTagDetailDrawerOpen(true);
     };
 
     const openCreateSynonym = () => {
@@ -505,7 +505,7 @@ export const TaxonomyPage = () => {
         if (saveTagMutation.isPending) {
             return;
         }
-        setTagEditorOpen(false);
+        setTagEditDrawerOpen(false);
         setEditingTag(null);
     };
 
@@ -521,7 +521,7 @@ export const TaxonomyPage = () => {
         if (reviewTagMutation.isPending || createAliasMutation.isPending) {
             return;
         }
-        setTagDetailOpen(false);
+        setTagDetailDrawerOpen(false);
         setTagDetailReviewMode(false);
         setSelectedTag(null);
         setRemovingAliasId(null);
@@ -727,7 +727,7 @@ export const TaxonomyPage = () => {
             />
 
             <CategoryEditDrawer
-                open={categoryEditorOpen}
+                open={categoryEditDrawerOpen}
                 category={editingCategory}
                 saving={saveCategoryMutation.isPending}
                 onClose={closeCategoryEditDrawer}
@@ -737,7 +737,7 @@ export const TaxonomyPage = () => {
 
             <TagEditDrawer
                 categories={categories}
-                open={tagEditorOpen}
+                open={tagEditDrawerOpen}
                 saving={saveTagMutation.isPending}
                 tag={editingTag}
                 onClose={closeTagEditor}
@@ -746,7 +746,7 @@ export const TaxonomyPage = () => {
             />
 
             <SynonymEditDrawer
-                open={synonymEditorOpen}
+                open={synonymEditDrawerOpen}
                 saving={saveSynonymMutation.isPending}
                 synonym={editingSynonym}
                 onClose={closeSynonymEditDrawer}
@@ -759,7 +759,7 @@ export const TaxonomyPage = () => {
                 canDeprecateTag={canEditTaxonomy && selectedTag?.status !== "DISABLED"}
                 creatingAlias={createAliasMutation.isPending}
                 deprecating={deprecateTagMutation.isPending}
-                open={tagDetailOpen}
+                open={tagDetailDrawerOpen}
                 loading={tagDetailQuery.isFetching}
                 removingAliasId={removingAliasId}
                 reviewMode={tagDetailReviewMode}

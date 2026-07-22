@@ -36,10 +36,10 @@ export const useTaxonomyEditors = () => {
     const [editingTag, setEditingTag] = useState<TagRecord | null>(null);
     const [editingSynonym, setEditingSynonym] = useState<SynonymRecord | null>(null);
     const [selectedTag, setSelectedTag] = useState<TagRecord | null>(null);
-    const [categoryEditorOpen, setCategoryEditDrawerOpen] = useState(false);
-    const [tagEditorOpen, setTagEditorOpen] = useState(false);
-    const [synonymEditorOpen, setSynonymEditDrawerOpen] = useState(false);
-    const [tagDetailOpen, setTagDetailOpen] = useState(false);
+    const [categoryEditDrawerOpen, setCategoryEditDrawerOpen] = useState(false);
+    const [tagEditDrawerOpen, setTagEditDrawerOpen] = useState(false);
+    const [synonymEditDrawerOpen, setSynonymEditDrawerOpen] = useState(false);
+    const [tagDetailDrawerOpen, setTagDetailDrawerOpen] = useState(false);
     const [tagDetailReviewMode, setTagDetailReviewMode] = useState(false);
     const [removingAliasId, setRemovingAliasId] = useState<string | null>(null);
     const [tagMergePreview, setTagMergePreview] = useState<TagMergePreviewRecord | null>(null);
@@ -58,7 +58,7 @@ export const useTaxonomyEditors = () => {
 
     return {
         activeTabKey,
-        categoryEditorOpen,
+        categoryEditDrawerOpen,
         categoryQuery,
         editingCategory,
         editingSynonym,
@@ -85,22 +85,22 @@ export const useTaxonomyEditors = () => {
         setTagBatchMergePreview,
         setTagBatchReviewDecision,
         setTagBatchReviewOpen,
-        setTagDetailOpen,
+        setTagDetailDrawerOpen,
         setTagDetailReviewMode,
-        setTagEditorOpen,
+        setTagEditDrawerOpen,
         setTagExtractionOpen,
         setTagExtractionResult,
         setTagMergePreview,
         setTagQuery,
-        synonymEditorOpen,
+        synonymEditDrawerOpen,
         synonymQuery,
         tagBatchMergeOpen,
         tagBatchMergePreview,
         tagBatchReviewDecision,
         tagBatchReviewOpen,
-        tagDetailOpen,
+        tagDetailDrawerOpen,
         tagDetailReviewMode,
-        tagEditorOpen,
+        tagEditDrawerOpen,
         tagExtractionOpen,
         tagExtractionResult,
         tagMergePreview,
