@@ -7,7 +7,7 @@ import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { TextArea } = Input;
 
-interface DepartmentEditProps {
+interface DepartmentEditDrawerProps {
     open?: boolean;
     department?: DepartmentNode | null;
     parentOptions: Array<{ label: string; value: string }>;
@@ -49,14 +49,14 @@ const toFormValues = (department: DepartmentNode): DepartmentFormValues => {
     };
 };
 
-export const DepartmentEdit = ({
+export const DepartmentEditDrawer = ({
     open,
     department,
     parentOptions,
     saving,
     onClose,
     onSave
-}: DepartmentEditProps) => {
+}: DepartmentEditDrawerProps) => {
     const [form] = Form.useForm<DepartmentFormValues>();
 
     useEffect(() => {
@@ -77,14 +77,14 @@ export const DepartmentEdit = ({
 
     return (
         <KuzhambuDrawer
-            testId="system-department-department-editor-drawer"
+            testId="system-department-department-edit-drawer"
             className="department-edit-drawer"
             title={department ? "编辑部门" : "新增部门"}
             open={Boolean(open)}
             size="small"
             onClose={onClose}
             footer={
-                <div className="department-edit-footer">
+                <div className="department-edit-drawer-footer">
                     <KuzhambuButton
                         testId="system-department-department-cancel-button"
                         onClick={onClose}
@@ -105,7 +105,7 @@ export const DepartmentEdit = ({
             <Form<DepartmentFormValues>
                 form={form}
                 layout="vertical"
-                className="department-editor-form"
+                className="department-edit-drawer-form"
             >
                 <Form.Item name="id" hidden>
                     <Input />

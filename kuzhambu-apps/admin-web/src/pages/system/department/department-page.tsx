@@ -13,7 +13,7 @@ import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
-import { DepartmentEdit } from "./components/department-edit";
+import { DepartmentEditDrawer } from "./components/department-edit-drawer";
 import * as service from "./department-service";
 import type { DepartmentMoveCommand, DepartmentSaveCommand } from "./department-service";
 import type { DepartmentNode, DepartmentTableNode } from "./department-types";
@@ -374,7 +374,7 @@ export const DepartmentPage = () => {
                 sortable={canEditDepartment}
             />
 
-            <DepartmentEdit
+            <DepartmentEditDrawer
                 open={editorOpen}
                 department={editingDepartment}
                 parentOptions={parentOptions}
