@@ -3,9 +3,9 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { KnowledgeHomePage } from "./knowledge-home-page";
+import { KnowledgeHomePage } from "./home-page";
 
-vi.mock("./knowledge-home-service", () => ({
+vi.mock("./home-service", () => ({
     KNOWLEDGE_HOME_FALLBACK: {
         featureCollections: [],
         heroSubtitle:

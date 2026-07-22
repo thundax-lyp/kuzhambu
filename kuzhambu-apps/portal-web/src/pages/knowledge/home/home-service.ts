@@ -1,5 +1,5 @@
 import { postJson } from "@/api/http";
-import type { KnowledgeHomeResponse } from "./knowledge-home-types";
+import type { KnowledgeHomeResponse } from "./home-types";
 
 export const KNOWLEDGE_HOME_FALLBACK: KnowledgeHomeResponse = {
     featureCollections: [

@@ -3,9 +3,9 @@ import { ArrowRight, Binary, ChartSpline, GitBranch, ScrollText, Sparkles } from
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import * as KnowledgeHomeService from "./knowledge-home-service";
+import * as KnowledgeHomeService from "./home-service";
 
-import "./knowledge-home-page.css";
+import "./home-page.css";
 
 export const KnowledgeHomePage = () => {
     const homeQuery = useQuery({
