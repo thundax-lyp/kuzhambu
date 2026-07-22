@@ -4,17 +4,18 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, describe, expect, it } from "vitest";
 import { PortalLayout } from "@/components/portal-layout";
 
-const renderLayout = () => {
+const renderLayout = (initialPath = "/") => {
     const container = document.createElement("div");
     document.body.appendChild(container);
     const root = createRoot(container);
 
     act(() => {
         root.render(
-            <MemoryRouter>
+            <MemoryRouter initialEntries={[initialPath]}>
                 <Routes>
                     <Route element={<PortalLayout />}>
                         <Route path="/" element={<main>Portal content</main>} />
+                        <Route path="/knowledge" element={<main>Knowledge content</main>} />
                     </Route>
                 </Routes>
             </MemoryRouter>
@@ -65,6 +66,22 @@ describe("PortalLayout", () => {
 
         expect(themeToggle?.getAttribute("aria-label")).toBe("切换浅色主题");
         expect(document.documentElement.classList.contains("dark")).toBe(true);
+
+        act(() => {
+            root.unmount();
+        });
+    });
+
+    it("does not apply the saved dark theme on unsupported routes", () => {
+        window.localStorage.setItem("kuzhambu.portal.theme", "dark");
+
+        const { container, root } = renderLayout("/knowledge");
+
+        expect(
+            container.querySelector<HTMLButtonElement>("[data-testid='portal-header-theme-toggle']")
+        ).toBeNull();
+        expect(document.documentElement.classList.contains("dark")).toBe(false);
+        expect(window.localStorage.getItem("kuzhambu.portal.theme")).toBe("dark");
 
         act(() => {
             root.unmount();
