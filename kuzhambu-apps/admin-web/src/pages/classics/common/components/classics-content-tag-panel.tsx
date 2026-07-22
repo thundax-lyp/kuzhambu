@@ -1,6 +1,6 @@
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import { App, Card, Empty, Form, Input, Select } from "antd";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { KuzhambuModal } from "@/components/kuzhambu-modal";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
@@ -16,6 +16,8 @@ interface ClassicsContentTagPanelProps {
     contentType: ClassicsContentType;
     onChanged?: () => void;
     panelTitle?: string;
+    showHeader?: boolean;
+    toolbarExtra?: ReactNode;
 }
 
 interface TagEditorValues {
@@ -59,7 +61,9 @@ export const ClassicsContentTagPanel = ({
     contentId,
     contentType,
     onChanged,
-    panelTitle
+    panelTitle,
+    showHeader = true,
+    toolbarExtra
 }: ClassicsContentTagPanelProps) => {
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
@@ -243,10 +247,12 @@ export const ClassicsContentTagPanel = ({
         return <Empty description="标签列表加载失败" image={Empty.PRESENTED_IMAGE_SIMPLE} />;
     }
 
+    const cardTitle = showHeader ? panelTitle || "标签治理" : undefined;
+
     return (
-        <Card size="small" title={panelTitle || "标签治理"}>
+        <Card size="small" title={cardTitle}>
             <KuzhambuSpace orientation="vertical" size={16}>
-                <div>
+                <KuzhambuSpace wrap>
                     <KuzhambuButton
                         testId="classics-common-classics-content-tag-action-button"
                         icon={<PlusOutlined />}
@@ -255,7 +261,8 @@ export const ClassicsContentTagPanel = ({
                     >
                         新增标签
                     </KuzhambuButton>
-                </div>
+                    {toolbarExtra}
+                </KuzhambuSpace>
 
                 <KuzhambuTable
                     ariaLabel="标签列表"
