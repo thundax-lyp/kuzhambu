@@ -44,6 +44,16 @@ const navigationItems = [
     { label: "问答", href: "/discovery/qa" }
 ];
 
+const themeSupportedRoutes = new Set(["/", "/classics/sancai"]);
+const readerRoutes = new Set(["/classics/sancai"]);
+
+const normalizePortalPathname = (pathname: string) => {
+    if (pathname === "/") {
+        return pathname;
+    }
+    return pathname.replace(/\/+$/u, "");
+};
+
 const footerGroups = [
     {
         title: "资源导航",
@@ -70,7 +80,9 @@ const footerGroups = [
 export const PortalLayout = () => {
     const location = useLocation();
     const [theme, setTheme] = useState<PortalTheme>(getInitialTheme);
-    const isThemeSupportedRoute = location.pathname === "/";
+    const currentPathname = normalizePortalPathname(location.pathname);
+    const isThemeSupportedRoute = themeSupportedRoutes.has(currentPathname);
+    const isReaderRoute = readerRoutes.has(currentPathname);
     const isDarkTheme = theme === "dark";
     const themeToggleLabel = isDarkTheme ? "切换浅色主题" : "切换深色主题";
 
@@ -91,7 +103,13 @@ export const PortalLayout = () => {
     };
 
     return (
-        <div className="portal-shell portal-effect-layout">
+        <div
+            className={
+                isReaderRoute
+                    ? "portal-shell portal-effect-layout portal-effect-layout--reader"
+                    : "portal-shell portal-effect-layout"
+            }
+        >
             <TooltipProvider>
                 <header className="portal-effect-header">
                     <Link className="portal-effect-brand" to="/" aria-label="Kuzhambu 首页">

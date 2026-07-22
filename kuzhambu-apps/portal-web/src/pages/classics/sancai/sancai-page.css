@@ -1,5 +1,8 @@
 .sancai-portal-page {
-    min-height: 100vh;
+    display: flex;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
     background:
         linear-gradient(
             180deg,
@@ -19,8 +22,15 @@
 
 .sancai-browser {
     display: grid;
-    grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
-    min-height: calc(100vh - 48px);
+    grid-template-columns: minmax(168px, 204px) minmax(0, 1fr);
+    --sancai-scrollbar-thumb: color-mix(in srgb, var(--line-strong) 62%, transparent);
+    --sancai-scrollbar-thumb-hover: color-mix(in srgb, var(--line-strong) 86%, transparent);
+    width: 100%;
+    min-width: 0;
+    flex: 1 1 auto;
+    height: 100%;
+    max-height: 100%;
+    min-height: 0;
     border: 1px solid var(--line-subtle);
     border-radius: 8px;
     background: var(--surface-panel);
@@ -28,21 +38,56 @@
     overflow: hidden;
 }
 
+.sancai-browser * {
+    scrollbar-color: var(--sancai-scrollbar-thumb) transparent;
+    scrollbar-width: thin;
+}
+
+.sancai-browser *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.sancai-browser *::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sancai-browser *::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: var(--sancai-scrollbar-thumb);
+}
+
+.sancai-browser *::-webkit-scrollbar-thumb:hover {
+    background: var(--sancai-scrollbar-thumb-hover);
+}
+
 .sancai-browser-nav {
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
     border-right: 1px solid var(--line-subtle);
-    background: color-mix(in srgb, var(--surface-soft) 42%, transparent);
-    padding: 20px;
+    background:
+        linear-gradient(
+            90deg,
+            color-mix(in srgb, var(--surface-soft) 74%, transparent),
+            color-mix(in srgb, var(--surface-panel) 86%, transparent)
+        ),
+        var(--surface-soft);
+    padding: 18px 10px;
 }
 
 .sancai-browser-title {
     display: flex;
-    gap: 12px;
-    align-items: center;
-    margin-bottom: 20px;
+    gap: 9px;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    padding: 0 2px 14px;
+    border-bottom: 1px solid var(--line-subtle);
+    color: var(--accent-cinnabar);
 }
 
 .sancai-browser-title p,
-.sancai-browser-toolbar p,
+.sancai-browser-title span,
 .sancai-detail-kicker {
     margin: 0;
     color: var(--text-secondary);
@@ -50,29 +95,58 @@
 }
 
 .sancai-browser-title h1,
-.sancai-browser-toolbar h2,
 .sancai-entry-detail h2 {
     margin: 0;
     letter-spacing: 0;
 }
 
+.sancai-browser-title h1 {
+    color: var(--text-primary);
+    font-size: 21px;
+    font-weight: 650;
+    line-height: 1.2;
+}
+
+.sancai-browser-title span {
+    display: block;
+    margin-top: 5px;
+    font-size: 13px;
+}
+
 .sancai-nav-list {
     display: grid;
-    gap: 8px;
-    margin-top: 8px;
+    min-height: 0;
+    gap: 3px;
+    overflow-y: auto;
 }
 
 .sancai-nav-button {
     justify-content: flex-start;
     width: 100%;
     height: auto;
-    min-height: 44px;
-    gap: 10px;
+    min-height: 46px;
+    gap: 7px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-primary);
+    padding: 8px 7px;
     white-space: normal;
 }
 
+.sancai-nav-button:hover {
+    border-color: color-mix(in srgb, var(--accent-cinnabar) 20%, var(--line-subtle));
+    background: color-mix(in srgb, var(--surface-panel) 72%, transparent);
+}
+
+.sancai-nav-button.is-active {
+    border-color: color-mix(in srgb, var(--accent-cinnabar) 28%, var(--line-subtle));
+    background: color-mix(in srgb, var(--surface-panel) 92%, var(--surface-soft));
+    box-shadow: inset 3px 0 0 var(--accent-cinnabar);
+}
+
 .sancai-category-thumb {
-    width: 38px;
+    width: 30px;
     height: 38px;
     flex: 0 0 auto;
     border: 1px solid var(--line-subtle);
@@ -83,75 +157,69 @@
 .sancai-category-summary {
     display: grid;
     min-width: 0;
-    gap: 2px;
+    color: inherit;
     text-align: left;
 }
 
 .sancai-category-summary span:first-child {
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.sancai-category-summary span:last-child {
-    color: var(--text-secondary);
-    font-size: 14px;
+    font-size: 16px;
+    font-weight: 560;
+    line-height: 1.5;
 }
 
 .sancai-browser-content {
     min-width: 0;
-    padding: 20px;
-}
-
-.sancai-browser-toolbar {
-    display: flex;
-    gap: 16px;
-    justify-content: space-between;
-    align-items: flex-start;
-}
-
-.sancai-search-form {
-    display: flex;
-    gap: 8px;
-    width: min(460px, 100%);
-}
-
-.sancai-volume-strip {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding: 16px 0;
-}
-
-.sancai-volume-button {
-    flex: 0 0 auto;
+    min-height: 0;
+    overflow: hidden;
+    padding: 18px;
 }
 
 .sancai-content-grid {
     display: grid;
-    grid-template-columns: minmax(260px, 360px) minmax(0, 1fr);
-    gap: 16px;
+    grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+    gap: 14px;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    align-items: stretch;
 }
 
 .sancai-entry-list {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow-y: auto;
     border: 1px solid var(--line-subtle);
     border-radius: 8px;
-    background: color-mix(in srgb, var(--surface-panel) 82%, white);
-    padding: 10px;
+    background: color-mix(in srgb, var(--surface-panel) 86%, var(--surface-soft));
+    padding: 8px;
 }
 
 .sancai-entry-item {
     display: flex;
     width: 100%;
-    min-height: 44px;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 40px;
     align-items: center;
     justify-content: space-between;
     border: 0;
     border-bottom: 1px solid var(--line-subtle);
     background: transparent;
     color: var(--text-primary);
-    padding: 10px 8px;
-    font-size: 16px;
+    padding: 8px 6px;
+    font-size: 15px;
     text-align: left;
+    white-space: normal;
+}
+
+.sancai-entry-item span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .sancai-entry-item.is-active {
@@ -160,39 +228,73 @@
     color: #fffaf1;
 }
 
-.sancai-pagination {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-    padding-top: 12px;
+.sancai-entry-more-button {
+    width: 100%;
+    max-width: 100%;
+    min-height: 42px;
+    margin-top: 10px;
+    border-color: color-mix(in srgb, var(--accent-cinnabar) 24%, var(--line-subtle));
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--surface-panel) 90%, var(--surface-soft));
+    color: var(--text-primary);
+    white-space: normal;
+}
+
+.sancai-entry-more-button:hover {
+    background: color-mix(in srgb, var(--surface-soft) 86%, var(--surface-panel));
+}
+
+.dark .sancai-entry-item.is-active {
+    background: color-mix(in srgb, var(--accent-jade) 58%, var(--surface-panel));
+    color: var(--text-primary);
 }
 
 .sancai-entry-detail {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow-y: auto;
     border: 1px solid var(--line-subtle);
     border-radius: 6px;
-    background: color-mix(in srgb, var(--surface-panel) 88%, white);
+    background: color-mix(in srgb, var(--surface-panel) 92%, var(--surface-soft));
     padding: 20px;
 }
 
-.sancai-image-strip {
-    display: flex;
-    gap: 10px;
-    overflow-x: auto;
-    margin: 14px 0;
-    padding-bottom: 4px;
+.sancai-figure-list {
+    display: grid;
+    gap: 14px;
+    margin: 18px 0 20px;
 }
 
-.sancai-entry-image {
-    width: 132px;
-    height: 88px;
-    flex: 0 0 auto;
+.sancai-entry-figure {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 12px;
     border: 1px solid var(--line-subtle);
-    object-fit: cover;
-    background: var(--surface-muted);
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--surface-soft) 76%, var(--surface-panel));
 }
 
-.sancai-entry-image.is-cover {
+.sancai-entry-figure img {
+    display: block;
+    width: 100%;
+    max-height: min(48vh, 420px);
+    border: 1px solid color-mix(in srgb, var(--line-subtle) 72%, transparent);
+    border-radius: 4px;
+    object-fit: contain;
+    background: color-mix(in srgb, var(--surface-panel) 82%, var(--surface-muted));
+}
+
+.sancai-entry-figure figcaption {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.45;
+    text-align: center;
+}
+
+.sancai-entry-figure.is-cover {
     border-color: var(--accent-jade);
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-jade) 18%, transparent);
 }
@@ -210,7 +312,7 @@
     min-height: 30px;
     border: 1px solid color-mix(in srgb, var(--accent-jade) 28%, var(--line-subtle));
     border-radius: 999px;
-    background: color-mix(in srgb, var(--surface-soft) 72%, white);
+    background: color-mix(in srgb, var(--surface-soft) 88%, var(--surface-panel));
     color: color-mix(in srgb, var(--accent-blue) 72%, var(--text-primary));
     padding: 4px 11px;
     font-size: 15px;
@@ -233,7 +335,9 @@
     color: var(--text-primary);
     font-size: 18px;
     line-height: 1.95;
+    overflow-wrap: anywhere;
     white-space: pre-wrap;
+    word-break: break-word;
 }
 
 .sancai-muted {
@@ -243,6 +347,8 @@
 
 @media (max-width: 900px) {
     .sancai-portal-page {
+        height: auto;
+        overflow: visible;
         padding: 12px;
     }
 
@@ -251,13 +357,70 @@
         grid-template-columns: 1fr;
     }
 
+    .sancai-browser {
+        height: auto;
+        max-width: 100%;
+        min-height: 0;
+        overflow: visible;
+    }
+
+    .sancai-browser > * {
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .sancai-browser-content {
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
+        padding: 12px;
+    }
+
     .sancai-browser-nav {
         border-right: 0;
         border-bottom: 1px solid var(--line-subtle);
+        padding: 14px;
     }
 
-    .sancai-browser-toolbar,
-    .sancai-search-form {
-        flex-direction: column;
+    .sancai-browser-title {
+        margin-bottom: 10px;
+        padding-bottom: 12px;
+    }
+
+    .sancai-browser-title h1 {
+        font-size: 21px;
+    }
+
+    .sancai-nav-list {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-bottom: 2px;
+    }
+
+    .sancai-content-grid {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        overflow: hidden;
+    }
+
+    .sancai-entry-list {
+        max-height: 52vh;
+    }
+
+    .sancai-entry-detail {
+        overflow: visible;
+    }
+
+    .sancai-nav-button {
+        width: auto;
+        min-width: 88px;
+        flex: 0 0 auto;
+    }
+
+    .sancai-category-thumb {
+        display: none;
     }
 }

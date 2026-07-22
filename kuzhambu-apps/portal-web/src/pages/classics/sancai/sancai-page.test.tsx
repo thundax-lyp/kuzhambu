@@ -36,6 +36,18 @@ const installFetchMock = () => {
         }
         if (url.includes("/portal/classics/sancai/entries/get")) {
             const entryId = Number(body.id) || 1001;
+            if (entryId === 1002) {
+                return apiResponse({
+                    id: 1002,
+                    volumeId: 11,
+                    title: "地",
+                    originalText: "地者，万物之成。",
+                    translationText: "地承载万物。",
+                    summary: "地理条目",
+                    lifecycleStatus: "PUBLISHED",
+                    visibility: "PUBLIC"
+                });
+            }
             return apiResponse({
                 id: entryId,
                 volumeId: 11,
@@ -68,12 +80,13 @@ const installFetchMock = () => {
             });
         }
         if (url.includes("/portal/classics/sancai/entries/page")) {
-            if (body.pageNo === 2) {
+            if (body.categoryId === 1) {
                 return apiResponse({
-                    pageNo: 2,
-                    pageSize: 12,
-                    totalCount: 13,
-                    totalPage: 2,
+                    count: 1,
+                    pageNo: 1,
+                    pageSize: 100,
+                    totalCount: 1,
+                    totalPage: 1,
                     records: [
                         {
                             id: 1002,
@@ -88,10 +101,32 @@ const installFetchMock = () => {
                     ]
                 });
             }
+            if (body.pageNo === 2) {
+                return apiResponse({
+                    count: 2,
+                    pageNo: 2,
+                    pageSize: 100,
+                    totalCount: 2,
+                    totalPage: 2,
+                    records: [
+                        {
+                            id: 1003,
+                            volumeId: 11,
+                            title: "人",
+                            originalText: "人者，万物之灵。",
+                            translationText: "人是万物之灵。",
+                            summary: "人物条目",
+                            lifecycleStatus: "PUBLISHED",
+                            visibility: "PUBLIC"
+                        }
+                    ]
+                });
+            }
             return apiResponse({
+                count: 2,
                 pageNo: 1,
-                pageSize: 12,
-                totalCount: 13,
+                pageSize: 100,
+                totalCount: 2,
                 totalPage: 2,
                 records: [
                     {
@@ -144,12 +179,13 @@ describe("SancaiPage", () => {
         renderPage();
 
         expect(await screen.findByRole("heading", { name: "三才图会" })).toBeTruthy();
-        expect(await screen.findByText("13 条 / 配图 9")).toBeTruthy();
-        expect((await screen.findByAltText("天图")).getAttribute("src")).toBe(
-            "/kuzhambu-api/api/portal/classics/sancai/images/1001/8001/content"
-        );
-        await user.click(await screen.findByRole("button", { name: /天地/ }));
-        await user.click(await screen.findByRole("button", { name: "卷一" }));
+        expect(await screen.findByText("古籍阅览")).toBeTruthy();
+        expect(await screen.findByText("总目")).toBeTruthy();
+        expect(screen.queryByText("全部公开条目")).toBeNull();
+        expect(screen.queryByText("分目")).toBeNull();
+        expect(screen.queryByText("13 条 / 配图 9")).toBeNull();
+        expect(screen.queryByRole("button", { name: "全部卷目" })).toBeNull();
+        expect(screen.queryByRole("button", { name: "下一页" })).toBeNull();
 
         const list = await screen.findByLabelText("三才图会条目列表");
         await user.click(await within(list).findByRole("button", { name: /天/ }));
@@ -165,10 +201,16 @@ describe("SancaiPage", () => {
         expect(within(detail).getByAltText("天图").getAttribute("src")).toBe(
             "/kuzhambu-api/api/portal/classics/sancai/images/1001/8001/content"
         );
+        expect(within(detail).getByAltText("天图像").getAttribute("src")).toBe(
+            "/kuzhambu-api/api/portal/classics/sancai/visual-assets/1001/9001/generated-content"
+        );
+        expect(within(detail).getByLabelText("三才图会正文图版")).toBeTruthy();
+        expect(within(detail).getByText("天图")).toBeTruthy();
+        expect(within(detail).getByText("融合图像")).toBeTruthy();
         expect(within(detail).queryByText("发布状态")).toBeNull();
     });
 
-    it("clears selected entry when changing page", async () => {
+    it("clears selected entry when changing catalog scope", async () => {
         const user = userEvent.setup();
         renderPage();
 
@@ -176,7 +218,7 @@ describe("SancaiPage", () => {
         await user.click(await within(list).findByRole("button", { name: /天/ }));
         await screen.findByText("天地门条目");
 
-        await user.click(screen.getByRole("button", { name: "下一页" }));
+        await user.click(await screen.findByRole("button", { name: /天地/ }));
 
         const detail = await screen.findByLabelText("三才图会条目详情");
         await waitFor(() => {
@@ -184,6 +226,41 @@ describe("SancaiPage", () => {
         });
         expect(within(detail).getByText("地理条目")).toBeTruthy();
         expect(within(detail).getByText("地承载万物。")).toBeTruthy();
+
+        const categoryEntryPageCall = vi
+            .mocked(globalThis.fetch)
+            .mock.calls.find(
+                ([input, init]) =>
+                    String(input).includes("/entries/page") &&
+                    JSON.parse(String(init?.body)).categoryId === 1
+            );
+        expect(categoryEntryPageCall).toBeTruthy();
+    });
+
+    it("loads additional entry pages from the catalog list", async () => {
+        const user = userEvent.setup();
+        renderPage();
+
+        const list = await screen.findByLabelText("三才图会条目列表");
+        const moreButton = await within(list).findByRole("button", {
+            name: /加载更多条目（1 \/ 2）/
+        });
+
+        await user.click(moreButton);
+
+        expect(await within(list).findByRole("button", { name: /人/ })).toBeTruthy();
+        await waitFor(() => {
+            expect(within(list).queryByRole("button", { name: /加载更多条目/ })).toBeNull();
+        });
+
+        const nextPageCall = vi
+            .mocked(globalThis.fetch)
+            .mock.calls.find(
+                ([input, init]) =>
+                    String(input).includes("/entries/page") &&
+                    JSON.parse(String(init?.body)).pageNo === 2
+            );
+        expect(nextPageCall).toBeTruthy();
     });
 
     it("loads entry detail from id query parameter", async () => {

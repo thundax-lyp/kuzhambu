@@ -87,6 +87,18 @@ class SancaiRepositoryTest {
         assertTrue(repositorySource.contains(".orderByDesc(SancaiShowcaseDO::getRequestedAt)"));
     }
 
+    @Test
+    void pageEntriesShouldApplyCategoryVolumeFilter() {
+        String repositorySource = readFromKnownRoots(
+                "biz/classics/kuzhambu-classics-infra/src/main/java/com/thundax/kuzhambu/classics/infra/sancai/repository/impl/SancaiRepositoryImpl.java");
+
+        assertTrue(repositorySource.contains("List<Long> categoryVolumeIds = listVolumeIdsByCategory(categoryId);"));
+        assertTrue(repositorySource.contains("categoryId != null && categoryVolumeIds.isEmpty()"));
+        assertTrue(repositorySource.contains("!categoryVolumeIds.contains(SancaiVolumeIdCodec.toValue(volumeId))"));
+        assertTrue(repositorySource.contains(
+                ".in(volumeId == null && categoryId != null, SancaiEntryDO::getVolumeId, categoryVolumeIds)"));
+    }
+
     private static boolean existsInKnownRoots(String path) {
         return Files.exists(Path.of(path))
                 || Files.exists(Path.of("../" + path))

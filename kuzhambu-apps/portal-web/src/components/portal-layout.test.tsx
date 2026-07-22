@@ -16,6 +16,7 @@ const renderLayout = (initialPath = "/") => {
                     <Route element={<PortalLayout />}>
                         <Route path="/" element={<main>Portal content</main>} />
                         <Route path="/knowledge" element={<main>Knowledge content</main>} />
+                        <Route path="/classics/sancai" element={<main>Sancai content</main>} />
                     </Route>
                 </Routes>
             </MemoryRouter>
@@ -82,6 +83,54 @@ describe("PortalLayout", () => {
         ).toBeNull();
         expect(document.documentElement.classList.contains("dark")).toBe(false);
         expect(window.localStorage.getItem("kuzhambu.portal.theme")).toBe("dark");
+
+        act(() => {
+            root.unmount();
+        });
+    });
+
+    it("keeps the global search and theme entry on the classics reader route", () => {
+        const { container, root } = renderLayout("/classics/sancai");
+
+        expect(container.querySelector(".portal-effect-search")).not.toBeNull();
+        expect(
+            container.querySelector<HTMLButtonElement>("[data-testid='portal-header-theme-toggle']")
+        ).not.toBeNull();
+        expect(container.querySelector(".portal-effect-layout--reader")).not.toBeNull();
+        expect(container.textContent).toContain("Sancai content");
+
+        act(() => {
+            root.unmount();
+        });
+    });
+
+    it("applies the saved dark theme on the classics reader route", () => {
+        window.localStorage.setItem("kuzhambu.portal.theme", "dark");
+
+        const { container, root } = renderLayout("/classics/sancai");
+        const themeToggle = container.querySelector<HTMLButtonElement>(
+            "[data-testid='portal-header-theme-toggle']"
+        );
+
+        expect(themeToggle?.getAttribute("aria-label")).toBe("切换浅色主题");
+        expect(document.documentElement.classList.contains("dark")).toBe(true);
+
+        act(() => {
+            root.unmount();
+        });
+    });
+
+    it("keeps reader shell behavior on trailing slash classics routes", () => {
+        window.localStorage.setItem("kuzhambu.portal.theme", "dark");
+
+        const { container, root } = renderLayout("/classics/sancai/");
+
+        expect(
+            container.querySelector<HTMLButtonElement>("[data-testid='portal-header-theme-toggle']")
+        ).not.toBeNull();
+        expect(container.querySelector(".portal-effect-layout--reader")).not.toBeNull();
+        expect(document.documentElement.classList.contains("dark")).toBe(true);
+        expect(container.textContent).toContain("Sancai content");
 
         act(() => {
             root.unmount();
