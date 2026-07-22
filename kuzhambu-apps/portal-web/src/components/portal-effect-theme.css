@@ -181,23 +181,20 @@
 
 .dark .portal-effect-hero {
     border-bottom-color: rgba(226, 210, 177, 0.16);
-    background: #171b18;
-}
-
-.dark .portal-effect-hero::after {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
     background:
         linear-gradient(
             90deg,
-            rgba(15, 19, 16, 0.86) 0%,
-            rgba(15, 19, 16, 0.58) 42%,
-            transparent 72%
+            rgba(15, 19, 16, 0.92) 0%,
+            rgba(15, 19, 16, 0.78) 36%,
+            rgba(15, 19, 16, 0.3) 64%,
+            rgba(15, 19, 16, 0.08) 100%
         ),
-        rgba(15, 19, 16, 0.18);
-    content: "";
-    pointer-events: none;
+        url("../assets/home/portal-home-hero.png") center / cover no-repeat,
+        #171b18;
+}
+
+.dark .portal-effect-hero::after {
+    content: none;
 }
 
 .dark .portal-effect-book {
@@ -288,8 +285,8 @@
 }
 
 .dark .portal-effect-footer::before {
-    opacity: 0.14;
-    filter: grayscale(1) brightness(0.52) contrast(1.1);
+    opacity: 0.28;
+    filter: brightness(0.72) contrast(1.06) saturate(0.78);
 }
 
 .dark .portal-effect-footer-seal {

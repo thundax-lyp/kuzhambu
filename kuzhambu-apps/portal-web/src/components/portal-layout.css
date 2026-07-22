@@ -9,6 +9,10 @@
     color: #1d241f;
 }
 
+.portal-shell.portal-effect-layout {
+    padding: 0;
+}
+
 .portal-effect-layout > .portal-shell,
 .portal-effect-layout > .knowledge-shell,
 .portal-effect-layout > .knowledge-atlas-shell,
@@ -21,7 +25,7 @@
 
 .portal-effect-header {
     display: grid;
-    grid-template-columns: 300px minmax(480px, 1fr) minmax(360px, 424px);
+    grid-template-columns: minmax(220px, 300px) minmax(0, 1fr) minmax(38px, 424px);
     align-items: center;
     height: 90px;
     padding: 0 clamp(32px, 3.6vw, 48px);
@@ -94,6 +98,7 @@
 .portal-effect-header-actions {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     justify-self: end;
     gap: 10px;
     width: min(424px, 100%);

@@ -44,6 +44,8 @@ const navigationItems = [
     { label: "问答", href: "/discovery/qa" }
 ];
 
+const themeSupportedRoutes = new Set(["/", "/classics/sancai"]);
+
 const footerGroups = [
     {
         title: "资源导航",
@@ -70,7 +72,7 @@ const footerGroups = [
 export const PortalLayout = () => {
     const location = useLocation();
     const [theme, setTheme] = useState<PortalTheme>(getInitialTheme);
-    const isThemeSupportedRoute = location.pathname === "/";
+    const isThemeSupportedRoute = themeSupportedRoutes.has(location.pathname);
     const isDarkTheme = theme === "dark";
     const themeToggleLabel = isDarkTheme ? "切换浅色主题" : "切换深色主题";
 
