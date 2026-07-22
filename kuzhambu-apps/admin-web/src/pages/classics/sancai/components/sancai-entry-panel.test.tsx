@@ -581,7 +581,7 @@ const openSelectAndChoose = async (label: string, optionText: string) => {
 
 const switchEntryDrawerSection = async (
     user: ReturnType<typeof userEvent.setup>,
-    sectionName: "基础信息" | "内容处理" | "视觉处理" | "标签" | "问答" | "版本"
+    sectionName: "基础信息" | "视觉处理" | "标签" | "问答" | "版本"
 ) => {
     await user.click(
         await screen.findByText(sectionName, {
@@ -600,7 +600,7 @@ const openVisualAssetSection = async (user: ReturnType<typeof userEvent.setup>) 
 };
 
 const openRefinementSection = async (user: ReturnType<typeof userEvent.setup>) => {
-    await switchEntryDrawerSection(user, "内容处理");
+    await switchEntryDrawerSection(user, "视觉处理");
 };
 
 const openTagSection = async (user: ReturnType<typeof userEvent.setup>) => {
@@ -1408,7 +1408,9 @@ describe("SancaiEntryPanel sharing", () => {
         const entryTable = await screen.findByLabelText("三才图会条目表格");
         await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
         await user.click(await screen.findByTestId("classics-sancai-sancai-entry-ai-button"));
-        await user.click(await screen.findByTestId("classics-sancai-sancai-entry-action-button-8"));
+        await user.click(
+            await screen.findByTestId("classics-sancai-sancai-entry-create-ai-text-task-button")
+        );
 
         await waitFor(() => {
             expect(aiRefinementTaskService.createTask).toHaveBeenCalled();
@@ -1434,6 +1436,220 @@ describe("SancaiEntryPanel sharing", () => {
         expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
             "modelName"
         );
+    }, 30000);
+
+    it("creates summary refinement task from the entry basic information drawer", async () => {
+        const user = userEvent.setup();
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
+        await user.click(
+            await screen.findByTestId("classics-sancai-sancai-entry-ai-summary-button")
+        );
+        await user.click(
+            await screen.findByTestId("classics-sancai-sancai-entry-create-ai-text-task-button")
+        );
+
+        await waitFor(() => {
+            expect(aiRefinementTaskService.createTask).toHaveBeenCalled();
+        });
+        expect(vi.mocked(currentUserService.getCurrentUserInfo)).toHaveBeenCalled();
+        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).toMatchObject({
+            capability: "summary",
+            scope: "classics",
+            contentType: "SANCAI_ENTRY",
+            contentId: 3001,
+            requestedBy: 99,
+            locale: "zh-CN"
+        });
+        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
+            "serviceId"
+        );
+        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
+            "serviceRole"
+        );
+        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
+            "modelId"
+        );
+        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
+            "modelName"
+        );
+    }, 30000);
+
+    it("creates summary refinement task from the current unsaved entry draft", async () => {
+        const user = userEvent.setup();
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
+        const originalTextInput = await screen.findByLabelText("三才图会原文");
+        await user.clear(originalTextInput);
+        await user.type(originalTextInput, "编辑后的天地原文");
+        await user.click(
+            await screen.findByTestId("classics-sancai-sancai-entry-ai-summary-button")
+        );
+        await user.click(
+            await screen.findByTestId("classics-sancai-sancai-entry-create-ai-text-task-button")
+        );
+
+        await waitFor(() => {
+            expect(aiRefinementTaskService.createTask).toHaveBeenCalled();
+        });
+        const command = vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0];
+        expect(JSON.parse(command?.inputPayloadJson || "{}")).toMatchObject({
+            capability: "summary",
+            originalText: "编辑后的天地原文",
+            translationText: "译文"
+        });
+        const promptMessages = JSON.parse(command?.promptMessagesJson || "[]");
+        expect(JSON.parse(promptMessages[1]?.content || "{}")).toMatchObject({
+            originalText: "编辑后的天地原文",
+            translationText: "译文"
+        });
+    }, 30000);
+
+    it("applies loaded summary candidate when adopting AI summary draft", async () => {
+        const user = userEvent.setup();
+        vi.mocked(aiCandidateService.list).mockReset();
+        vi.mocked(aiCandidateService.list).mockResolvedValue([
+            {
+                candidateId: 8101,
+                capability: "summary",
+                contentType: "SANCAI_ENTRY",
+                contentId: 3001,
+                objectId: null,
+                resultFormat: "TEXT",
+                resultPayload: "候选摘要",
+                status: "PENDING",
+                requestedAt: "2026-06-22T01:00:00.000+08:00"
+            }
+        ]);
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
+        await user.click(
+            await screen.findByTestId("classics-sancai-sancai-entry-ai-summary-button")
+        );
+        expect(await screen.findByDisplayValue("候选摘要")).toBeInTheDocument();
+        await user.click(
+            await screen.findByTestId("classics-sancai-sancai-entry-apply-ai-text-button")
+        );
+
+        await waitFor(() => {
+            expect(aiCandidateService.apply).toHaveBeenCalledTimes(1);
+        });
+        expect(vi.mocked(aiCandidateService.apply).mock.calls[0]?.[0]).toMatchObject({
+            candidateId: 8101,
+            contentType: "SANCAI_ENTRY",
+            contentId: 3001,
+            capability: "summary",
+            objectId: null,
+            resultFormat: "TEXT",
+            resultPayload: "候选摘要",
+            changeSummary: "AI 应用：摘要"
+        });
+    }, 30000);
+
+    it("keeps summary form unchanged when loaded candidate application fails", async () => {
+        const user = userEvent.setup();
+        vi.mocked(aiCandidateService.list).mockReset();
+        vi.mocked(aiCandidateService.list).mockResolvedValue([
+            {
+                candidateId: 8102,
+                capability: "summary",
+                contentType: "SANCAI_ENTRY",
+                contentId: 3001,
+                objectId: null,
+                resultFormat: "TEXT",
+                resultPayload: "失败候选摘要",
+                status: "PENDING",
+                requestedAt: "2026-06-22T01:00:00.000+08:00"
+            }
+        ]);
+        vi.mocked(aiCandidateService.apply).mockRejectedValueOnce(new Error("候选已处理"));
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
+        await user.click(
+            await screen.findByTestId("classics-sancai-sancai-entry-ai-summary-button")
+        );
+        expect(await screen.findByDisplayValue("失败候选摘要")).toBeInTheDocument();
+        await user.click(
+            await screen.findByTestId("classics-sancai-sancai-entry-apply-ai-text-button")
+        );
+
+        await waitFor(() => {
+            expect(aiCandidateService.apply).toHaveBeenCalledTimes(1);
+        });
+        await user.click(
+            await screen.findByTestId("classics-sancai-sancai-entry-cancel-ai-text-button")
+        );
+
+        expect(await screen.findByLabelText("三才图会摘要")).toHaveValue("天地摘要");
+    }, 30000);
+
+    it("disables AI text adoption while summary candidates are loading", async () => {
+        const user = userEvent.setup();
+        let resolveCandidates: (
+            records: Awaited<ReturnType<typeof aiCandidateService.list>>
+        ) => void = () => undefined;
+        vi.mocked(aiCandidateService.list).mockReset();
+        vi.mocked(aiCandidateService.list).mockImplementation(
+            () =>
+                new Promise((resolve) => {
+                    resolveCandidates = resolve;
+                })
+        );
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
+        await user.click(
+            await screen.findByTestId("classics-sancai-sancai-entry-ai-summary-button")
+        );
+
+        expect(
+            await screen.findByTestId("classics-sancai-sancai-entry-apply-ai-text-button")
+        ).toBeDisabled();
+        resolveCandidates([]);
+    }, 30000);
+
+    it("labels running summary refinement task as summary work", async () => {
+        const user = userEvent.setup();
+        vi.mocked(aiRefinementTaskService.pageTasks).mockResolvedValueOnce({
+            items: [
+                {
+                    taskId: 8201,
+                    status: "RUNNING",
+                    capability: "summary",
+                    contentType: "SANCAI_ENTRY",
+                    contentId: 3001,
+                    requestedAt: "2026-06-22T01:00:00.000+08:00"
+                }
+            ],
+            total: 1,
+            pageNo: 1,
+            pageSize: 20
+        });
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
+        await user.click(
+            await screen.findByTestId("classics-sancai-sancai-entry-ai-summary-button")
+        );
+
+        expect(await screen.findByText("摘要任务：摘要中")).toBeInTheDocument();
+        expect(screen.queryByText("摘要任务：翻译中")).not.toBeInTheDocument();
     }, 30000);
 
     it("shows expired export task as disabled download", async () => {

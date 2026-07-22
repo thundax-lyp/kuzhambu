@@ -955,9 +955,12 @@ export const SancaiEntryPanel = ({
                 onCreateVisualAssetTask={(capability, asset) => {
                     createRefinementTask(capability, asset);
                 }}
-                onCreateTranslationTask={() => createRefinementTask("translate")}
+                onCreateTranslationTask={(draft) => createRefinementTask("translate", null, draft)}
+                onCreateSummaryTask={(draft) => createRefinementTask("summary", null, draft)}
                 isCreatingTranslationTask={creatingRefinementCapability === "translate"}
+                isCreatingSummaryTask={creatingRefinementCapability === "summary"}
                 translationTasks={refinementTasks.filter((task) => task.capability === "translate")}
+                summaryTasks={refinementTasks.filter((task) => task.capability === "summary")}
                 creatingVisualAssetCapability={
                     creatingRefinementCapability === "image_analysis" ||
                     creatingRefinementCapability === "fusion" ||
@@ -1106,21 +1109,11 @@ export const SancaiEntryPanel = ({
                         </div>
                     ) : null
                 }
-                refinementContent={
+                visualRefinementContent={
                     !isCreating && selectedEntry ? (
                         <>
                             <Card size="small" title="AI 精修任务">
-                                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                                    <KuzhambuButton
-                                        testId="classics-sancai-sancai-entry-action-button-2"
-                                        type="primary"
-                                        loading={creatingRefinementCapability === "summary"}
-                                        onClick={() => createRefinementTask("summary")}
-                                    >
-                                        摘要
-                                    </KuzhambuButton>
-                                </div>
-                                <div style={{ marginTop: 12, display: "grid", gap: 8 }}>
+                                <div style={{ display: "grid", gap: 8 }}>
                                     {refinementTasks
                                         .filter(
                                             (task) =>

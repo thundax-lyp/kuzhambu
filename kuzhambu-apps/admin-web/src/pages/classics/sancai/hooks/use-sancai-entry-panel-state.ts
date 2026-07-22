@@ -11,6 +11,10 @@ import type { SancaiVisualAssetRefinementCapability } from "../services/sancai-e
 import type { SancaiEntryRecord, SancaiVisualAssetRecord } from "../sancai-types";
 
 type RefinementCapability = "translate" | "summary" | SancaiVisualAssetRefinementCapability;
+type TextRefinementEntryDraft = Pick<
+    SancaiEntryRecord,
+    "originalText" | "summary" | "title" | "translationText"
+>;
 
 const isStreamRefinementCapability = (capability: string) => {
     return capability === "image_analysis" || capability === "image_gen";
@@ -190,7 +194,8 @@ interface UseSancaiEntryPanelStateResult {
     refreshSancaiEntryDetail: () => Promise<void>;
     createRefinementTask: (
         capability: RefinementCapability,
-        imageAnalysisAsset?: SancaiVisualAssetRecord | null
+        imageAnalysisAsset?: SancaiVisualAssetRecord | null,
+        entryDraft?: TextRefinementEntryDraft | null
     ) => void;
     retryRefinementTask: (task: AiRefinementTaskRecord) => void;
     closeStreamingRefinementTask: () => void;
@@ -429,7 +434,8 @@ export const useSancaiEntryPanelState = ({
         (
             capability: RefinementCapability,
             imageAnalysisAsset: SancaiVisualAssetRecord | null = null,
-            sourceTaskId: number | null = null
+            sourceTaskId: number | null = null,
+            entryDraft: TextRefinementEntryDraft | null = null
         ) => {
             if (!selectedEntry?.id) {
                 return;
@@ -438,6 +444,7 @@ export const useSancaiEntryPanelState = ({
                 messageApi.warning("当前用户信息尚未加载完成");
                 return;
             }
+            const taskEntry = entryDraft ? { ...selectedEntry, ...entryDraft } : selectedEntry;
             const resolvedVisualAsset = imageAnalysisAsset ?? selectedVisualAsset;
             const imageAnalysisObjectId = resolvedVisualAsset
                 ? (resolvedVisualAsset.visualAssetId ?? resolvedVisualAsset.id ?? null)
@@ -493,7 +500,7 @@ export const useSancaiEntryPanelState = ({
                 capability !== "visual" &&
                 capability !== "fusion" &&
                 capability !== "image_gen" &&
-                !selectedEntry.originalText?.trim()
+                !taskEntry.originalText?.trim()
             ) {
                 messageApi.warning("当前条目缺少原文，无法创建 AI 精修任务");
                 return;
@@ -519,15 +526,15 @@ export const useSancaiEntryPanelState = ({
                     traceId: createEventId("sancai-trace"),
                     promptMessagesJson: buildPromptMessagesJson(
                         capability,
-                        selectedEntry,
+                        taskEntry,
                         resolvedVisualAsset
                     ),
                     promptVariablesJson: JSON.stringify({
-                        title: selectedEntry.title
+                        title: taskEntry.title
                     }),
                     inputPayloadJson: buildInputPayloadJson(
                         capability,
-                        selectedEntry,
+                        taskEntry,
                         capability === "image_analysis" ||
                             capability === "visual" ||
                             capability === "fusion" ||
@@ -564,9 +571,10 @@ export const useSancaiEntryPanelState = ({
 
     const createRefinementTask = (
         capability: RefinementCapability,
-        imageAnalysisAsset: SancaiVisualAssetRecord | null = null
+        imageAnalysisAsset: SancaiVisualAssetRecord | null = null,
+        entryDraft: TextRefinementEntryDraft | null = null
     ) => {
-        submitRefinementTask(capability, imageAnalysisAsset);
+        submitRefinementTask(capability, imageAnalysisAsset, null, entryDraft);
     };
 
     const retryRefinementTask = (task: AiRefinementTaskRecord) => {
