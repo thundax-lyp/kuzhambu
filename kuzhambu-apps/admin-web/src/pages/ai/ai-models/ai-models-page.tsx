@@ -11,7 +11,7 @@ import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
-import { AiModelEdit } from "./components/ai-model-edit";
+import { AiModelEditDrawer } from "./components/ai-model-edit-drawer";
 import {
     API_SOURCE_OPTIONS,
     normalizeJsonText,
@@ -481,7 +481,7 @@ export const AiModelsPage = () => {
                 }}
             />
 
-            <AiModelEdit
+            <AiModelEditDrawer
                 open={drawerOpen}
                 model={editingModel}
                 canEdit={canEditConfig}

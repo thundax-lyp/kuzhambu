@@ -49,7 +49,7 @@ const toFormValues = (model: AiModelRecord | null): AiModelFormValues => {
     };
 };
 
-interface AiModelEditProps {
+interface AiModelEditDrawerProps {
     canEdit: boolean;
     model: AiModelRecord | null;
     open: boolean;
@@ -67,18 +67,18 @@ const omitBlankApiKey = (command: AiModelChangeCommand): AiModelChangeCommand =>
     return command;
 };
 
-export const AiModelEdit = ({
+export const AiModelEditDrawer = ({
     canEdit,
     model,
     open,
     saving,
     onClose,
     onSave
-}: AiModelEditProps) => {
+}: AiModelEditDrawerProps) => {
     const formKey = `${open ? "open" : "closed"}-${model?.id ?? "create"}`;
 
     return (
-        <AiModelEditForm
+        <AiModelEditDrawerForm
             key={formKey}
             canEdit={canEdit}
             model={model}
@@ -90,7 +90,14 @@ export const AiModelEdit = ({
     );
 };
 
-const AiModelEditForm = ({ canEdit, model, open, saving, onClose, onSave }: AiModelEditProps) => {
+const AiModelEditDrawerForm = ({
+    canEdit,
+    model,
+    open,
+    saving,
+    onClose,
+    onSave
+}: AiModelEditDrawerProps) => {
     const { message: messageApi } = App.useApp();
     const [form, setForm] = useState<AiModelFormValues>(() => toFormValues(model));
 
@@ -141,7 +148,7 @@ const AiModelEditForm = ({ canEdit, model, open, saving, onClose, onSave }: AiMo
 
     return (
         <KuzhambuDrawer
-            testId="ai-ai-models-ai-model-editor-drawer"
+            testId="ai-ai-models-ai-model-edit-drawer"
             open={open}
             title={model ? "编辑模型" : "新增模型"}
             size="large"
