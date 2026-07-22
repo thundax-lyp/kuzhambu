@@ -51,7 +51,7 @@ export const QaConsolePage = () => {
     const [sessionDetail, setSessionDetail] = useState<DiscoveryQaSessionDetailRecord | null>(null);
     const [sessionOperationText, setSessionOperationText] = useState<string | null>(null);
 
-    const healthQuery = useQuery({
+    const qaConsoleHealthQuery = useQuery({
         queryFn: service.getKnowledgeHealth,
         queryKey: ["discovery-qa-console-knowledge-health"]
     });
@@ -59,18 +59,18 @@ export const QaConsolePage = () => {
     const rebuildMutation = useMutation({
         mutationFn: service.rebuildKnowledge
     });
-    const syncMutation = useMutation({
+    const syncKnowledgeMutation = useMutation({
         mutationFn: service.createKnowledgeSync
     });
-    const syncPageMutation = useMutation({
+    const syncRecordPageMutation = useMutation({
         mutationFn: service.pageKnowledgeSyncItems
     });
     const {
         data: syncPageData,
         isPending: isSyncPagePending,
         mutate: mutateSyncPage
-    } = syncPageMutation;
-    const sessionMutation = useMutation({
+    } = syncRecordPageMutation;
+    const sessionDetailMutation = useMutation({
         mutationFn: service.getQaSession,
         onSuccess: (nextDetail) => {
             setSessionDetail(nextDetail);
@@ -78,14 +78,14 @@ export const QaConsolePage = () => {
             setSessionOperationText(null);
         }
     });
-    const sessionPageMutation = useMutation({
+    const sessionRecordPageMutation = useMutation({
         mutationFn: service.pageQaSessions
     });
     const {
         data: sessionPageData,
         isPending: isSessionPagePending,
         mutate: mutateSessionPage
-    } = sessionPageMutation;
+    } = sessionRecordPageMutation;
     const syncItems = syncPageData?.records ?? [];
 
     const loadSyncItems = useCallback(
@@ -233,9 +233,9 @@ export const QaConsolePage = () => {
 
                     {activePanel === "health" ? (
                         <QaHealthPanel
-                            data={healthQuery.data}
-                            loading={healthQuery.isFetching}
-                            onRefresh={() => void healthQuery.refetch()}
+                            data={qaConsoleHealthQuery.data}
+                            loading={qaConsoleHealthQuery.isFetching}
+                            onRefresh={() => void qaConsoleHealthQuery.refetch()}
                         />
                     ) : null}
 
@@ -254,7 +254,7 @@ export const QaConsolePage = () => {
                             }}
                             onRebuild={() => rebuildMutation.mutate({})}
                             onSyncItem={(record: KnowledgeSyncItemRecord) =>
-                                syncMutation.mutate({
+                                syncKnowledgeMutation.mutate({
                                     contentId: record.contentId ?? 0,
                                     contentType: record.contentType ?? "",
                                     currentVersionNo: record.currentVersionNo ?? null
@@ -266,7 +266,7 @@ export const QaConsolePage = () => {
                             pageSize={DEFAULT_PAGE_SIZE}
                             rebuildLoading={rebuildMutation.isPending}
                             syncItems={syncItems}
-                            syncLoading={syncMutation.isPending}
+                            syncLoading={syncKnowledgeMutation.isPending}
                             syncStatus={syncStatus}
                         />
                     ) : null}
@@ -286,7 +286,7 @@ export const QaConsolePage = () => {
                                 onOpen={(sessionId) => {
                                     const nextSessionId = parseString(sessionId);
                                     if (nextSessionId) {
-                                        sessionMutation.mutate({ sessionId: nextSessionId });
+                                        sessionDetailMutation.mutate({ sessionId: nextSessionId });
                                     }
                                 }}
                                 onPageChange={(nextPageNo) => {
@@ -301,7 +301,7 @@ export const QaConsolePage = () => {
                                 pageSize={DEFAULT_PAGE_SIZE}
                                 range={sessionOpenedRange}
                                 rows={sessionRows}
-                                sessionLoading={sessionMutation.isPending}
+                                sessionLoading={sessionDetailMutation.isPending}
                                 title={sessionTitle}
                             />
                             <QaSessionDetailDrawer

@@ -92,16 +92,16 @@ export const SearchStatisticsPage = () => {
     const [confirmRebuild, setConfirmRebuild] = useState(true);
     const [activePanel, setActivePanel] = useState<SearchStatisticsPanel>("summary");
     const [pageResult, setPageResult] = useState<DiscoverySearchEventPageRecord | null>(null);
-    const [detailResults, setDetailResults] = useState<
+    const [detailSearchRecords, setDetailResults] = useState<
         Record<string, DiscoverySearchEventDetailRecord | null>
     >({});
     const [rebuildResult, setRebuildResult] = useState<number | null>(null);
-    const analysisQuery = useQuery({
+    const searchAnalysisQuery = useQuery({
         queryKey: ["discovery-search-statistics", "summary", summaryQuery],
         queryFn: () => service.getSearchStatisticsSummary(summaryQuery),
         retry: false
     });
-    const analysisResult = analysisQuery.data ?? null;
+    const analysisResult = searchAnalysisQuery.data ?? null;
     const topQueryBars = buildTopQueryBars(analysisResult);
     const summaryMetrics = [
         {
@@ -126,13 +126,13 @@ export const SearchStatisticsPage = () => {
         }
     ];
 
-    const pageMutation = useMutation({
+    const searchRecordPageMutation = useMutation({
         mutationFn: service.pageSearchEvents,
         onSuccess: (nextPage) => {
             setPageResult(nextPage);
         }
     });
-    const detailMutation = useMutation({
+    const searchRecordDetailMutation = useMutation({
         mutationFn: service.getSearchEventDetail,
         onSuccess: (nextDetail, variables) => {
             setDetailResults((currentDetails) => ({
@@ -204,7 +204,7 @@ export const SearchStatisticsPage = () => {
 
     const loadEventPage = (nextQuery: DiscoverySearchEventPageQuery) => {
         setEventQuery(nextQuery);
-        pageMutation.mutate(nextQuery);
+        searchRecordPageMutation.mutate(nextQuery);
     };
 
     const queryEvents = () => {
@@ -218,7 +218,7 @@ export const SearchStatisticsPage = () => {
             nextQuery.dateFrom === summaryQuery.dateFrom &&
             nextQuery.dateTo === summaryQuery.dateTo
         ) {
-            void analysisQuery.refetch();
+            void searchAnalysisQuery.refetch();
         }
     };
 
@@ -243,8 +243,8 @@ export const SearchStatisticsPage = () => {
                 : currentKeys.filter((key) => key !== recordKey)
         );
 
-        if (expanded && record.searchEventId && !(record.searchEventId in detailResults)) {
-            detailMutation.mutate({
+        if (expanded && record.searchEventId && !(record.searchEventId in detailSearchRecords)) {
+            searchRecordDetailMutation.mutate({
                 searchEventId: record.searchEventId
             });
         }
@@ -252,11 +252,11 @@ export const SearchStatisticsPage = () => {
 
     const renderRecordDetail = (record: DiscoverySearchEventRecord) => {
         const detail =
-            record.searchEventId && record.searchEventId in detailResults
-                ? detailResults[record.searchEventId]
+            record.searchEventId && record.searchEventId in detailSearchRecords
+                ? detailSearchRecords[record.searchEventId]
                 : null;
 
-        if (record.searchEventId && detailMutation.isPending) {
+        if (record.searchEventId && searchRecordDetailMutation.isPending) {
             return <Text type="secondary">详情加载中...</Text>;
         }
 
@@ -364,7 +364,7 @@ export const SearchStatisticsPage = () => {
                             >
                                 <SearchStatisticsFilterPanel
                                     dateTimeFormat={DATE_TIME_FORMAT}
-                                    loading={analysisQuery.isFetching}
+                                    loading={searchAnalysisQuery.isFetching}
                                     mode="summary"
                                     summaryDateRange={summaryDateRange}
                                     onRefreshSummary={refreshSummary}
@@ -383,7 +383,7 @@ export const SearchStatisticsPage = () => {
                             <SearchStatisticsFilterPanel
                                 dateTimeFormat={DATE_TIME_FORMAT}
                                 hasActiveEventFilters={hasActiveEventFilters}
-                                loading={pageMutation.isPending}
+                                loading={searchRecordPageMutation.isPending}
                                 mode="records"
                                 pageLoaded={Boolean(pageResult)}
                                 queryText={queryText}
@@ -411,7 +411,7 @@ export const SearchStatisticsPage = () => {
                                             expandedRowRender: renderRecordDetail,
                                             onExpand: expandRecord
                                         }}
-                                        loading={pageMutation.isPending}
+                                        loading={searchRecordPageMutation.isPending}
                                         pagination={{
                                             current: currentPageNo,
                                             pageSize: currentPageSize,
