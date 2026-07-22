@@ -1,33 +1,16 @@
-import {
-    Background,
-    BackgroundVariant,
-    Controls,
-    Handle,
-    MiniMap,
-    Position,
-    ReactFlow,
-    type Edge,
-    type Node,
-    type NodeProps
-} from "@xyflow/react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, GitBranch, Search, UserRound } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { LineageFlowCanvas } from "./components/lineage-flow-canvas";
 import * as KnowledgeLineageService from "./lineage-service";
 import type { KnowledgeLineageCanvasQuery } from "./lineage-service";
-import type { KnowledgeLineageCanvasRecord, KnowledgeLineageNodeRecord } from "./lineage-types";
+import type { KnowledgeLineageCanvasRecord } from "./lineage-types";
 
 import "@xyflow/react/dist/style.css";
 import "./lineage-page.css";
-
-interface FlowData extends Record<string, unknown> {
-    label: string;
-    meta: string;
-    status?: string | null;
-}
 
 const EMPTY_CANVAS: KnowledgeLineageCanvasRecord = {
     summary: {
@@ -53,22 +36,6 @@ const EMPTY_CANVAS: KnowledgeLineageCanvasRecord = {
     }
 };
 
-const LineageFlowCard = ({ data, selected }: NodeProps<Node<FlowData>>) => {
-    return (
-        <div className={["knowledge-lineage-flow-card", selected ? "is-selected" : ""].join(" ")}>
-            <Handle isConnectable={false} position={Position.Left} type="target" />
-            <Handle isConnectable={false} position={Position.Right} type="source" />
-            <span>{data.status || "UNCONFIRMED"}</span>
-            <strong>{data.label}</strong>
-            <small>{data.meta}</small>
-        </div>
-    );
-};
-
-const nodeTypes = {
-    lineage: LineageFlowCard
-};
-
 const readVersionLabel = (
     versionId: number | null | undefined,
     canvas: KnowledgeLineageCanvasRecord
@@ -81,52 +48,6 @@ const readVersionLabel = (
     }
     const versionText = version.versionNo == null ? version.versionId : version.versionNo;
     return `版本 ${versionText} / ${version.sourceCategoryName || version.sourceContentType || "世系"}`;
-};
-
-const buildFlow = (
-    canvas: KnowledgeLineageCanvasRecord,
-    selectedNodeId?: number | null,
-    selectedRelationId?: number | null
-) => {
-    const groupedNodes = canvas.nodes.reduce<Map<number, KnowledgeLineageNodeRecord[]>>(
-        (groups, node, index) => {
-            const generation = node.generation ?? index;
-            const current = groups.get(generation) || [];
-            groups.set(generation, [...current, node]);
-            return groups;
-        },
-        new Map()
-    );
-    const generations = Array.from(groupedNodes.keys()).sort((left, right) => left - right);
-    const nodes: Node<FlowData>[] = generations.flatMap((generation, columnIndex) => {
-        const group = groupedNodes.get(generation) || [];
-        return group.map((node, rowIndex) => ({
-            data: {
-                label: node.name || node.nodeKey || `节点 ${node.nodeId}`,
-                meta: `${node.nodeType || "未分类"} / ${node.generation ?? "-"}`,
-                status: node.confirmationStatus
-            },
-            id: String(node.nodeId),
-            position: {
-                x: node.x ?? columnIndex * 240,
-                y: node.y ?? rowIndex * 130
-            },
-            selected: node.nodeId === selectedNodeId,
-            type: "lineage"
-        }));
-    });
-    const edges: Edge[] = canvas.relations
-        .filter((relation) => relation.sourceNodeId != null && relation.targetNodeId != null)
-        .map((relation) => ({
-            id: String(relation.relationId),
-            label: relation.relationLabel || relation.relationType || "关系",
-            source: String(relation.sourceNodeId),
-            target: String(relation.targetNodeId),
-            selected: relation.relationId === selectedRelationId,
-            type: "default"
-        }));
-
-    return { edges, nodes };
 };
 
 const renderSourceRefs = (
@@ -169,10 +90,6 @@ export const KnowledgeLineagePage = () => {
         queryKey: ["knowledge-lineage", query]
     });
     const canvas = lineageQuery.data ?? EMPTY_CANVAS;
-    const flow = useMemo(
-        () => buildFlow(canvas, query.focusNodeId, query.focusRelationId),
-        [canvas, query.focusNodeId, query.focusRelationId]
-    );
     const selectedNode = canvas.selectedNode;
     const selectedRelation = canvas.selectedRelation;
     const emptyText = canvas.empty?.description || canvas.empty?.title;
@@ -375,48 +292,25 @@ export const KnowledgeLineagePage = () => {
                         </div>
                     </div>
 
-                    <div className="knowledge-lineage-flow-frame">
-                        <ReactFlow
-                            fitView
-                            edges={flow.edges}
-                            edgesFocusable={false}
-                            elementsSelectable
-                            maxZoom={1.6}
-                            minZoom={0.35}
-                            nodes={flow.nodes}
-                            nodesConnectable={false}
-                            nodesDraggable={false}
-                            nodeTypes={nodeTypes}
-                            panOnDrag
-                            proOptions={{ hideAttribution: true }}
-                            zoomOnDoubleClick={false}
-                            onEdgeClick={(_, edge) =>
-                                updateQuery({
-                                    focusNodeId: null,
-                                    focusRelationId: Number(edge.id)
-                                })
-                            }
-                            onNodeClick={(_, node) =>
-                                updateQuery({
-                                    focusNodeId: Number(node.id),
-                                    focusRelationId: null
-                                })
-                            }
-                        >
-                            <Background color="#d4ddd8" gap={24} variant={BackgroundVariant.Dots} />
-                            <MiniMap nodeBorderRadius={8} pannable zoomable />
-                            <Controls showInteractive={false} />
-                        </ReactFlow>
-                        {lineageQuery.isFetching ? (
-                            <div className="knowledge-lineage-loading">正在读取世系图</div>
-                        ) : null}
-                        {emptyText ? (
-                            <div className="knowledge-lineage-empty">
-                                <h3>{canvas.empty?.title}</h3>
-                                <p>{emptyText}</p>
-                            </div>
-                        ) : null}
-                    </div>
+                    <LineageFlowCanvas
+                        canvas={canvas}
+                        emptyText={emptyText}
+                        fetching={lineageQuery.isFetching}
+                        selectedNodeId={query.focusNodeId}
+                        selectedRelationId={query.focusRelationId}
+                        onSelectNode={(nodeId) =>
+                            updateQuery({
+                                focusNodeId: nodeId,
+                                focusRelationId: null
+                            })
+                        }
+                        onSelectRelation={(relationId) =>
+                            updateQuery({
+                                focusNodeId: null,
+                                focusRelationId: relationId
+                            })
+                        }
+                    />
                 </section>
 
                 <aside className="knowledge-lineage-detail" aria-label="世系详情">
