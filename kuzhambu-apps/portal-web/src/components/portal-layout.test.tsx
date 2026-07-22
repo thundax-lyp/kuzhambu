@@ -119,4 +119,21 @@ describe("PortalLayout", () => {
             root.unmount();
         });
     });
+
+    it("keeps reader shell behavior on trailing slash classics routes", () => {
+        window.localStorage.setItem("kuzhambu.portal.theme", "dark");
+
+        const { container, root } = renderLayout("/classics/sancai/");
+
+        expect(
+            container.querySelector<HTMLButtonElement>("[data-testid='portal-header-theme-toggle']")
+        ).not.toBeNull();
+        expect(container.querySelector(".portal-effect-layout--reader")).not.toBeNull();
+        expect(document.documentElement.classList.contains("dark")).toBe(true);
+        expect(container.textContent).toContain("Sancai content");
+
+        act(() => {
+            root.unmount();
+        });
+    });
 });

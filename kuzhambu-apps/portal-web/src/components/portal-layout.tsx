@@ -47,6 +47,13 @@ const navigationItems = [
 const themeSupportedRoutes = new Set(["/", "/classics/sancai"]);
 const readerRoutes = new Set(["/classics/sancai"]);
 
+const normalizePortalPathname = (pathname: string) => {
+    if (pathname === "/") {
+        return pathname;
+    }
+    return pathname.replace(/\/+$/u, "");
+};
+
 const footerGroups = [
     {
         title: "资源导航",
@@ -73,8 +80,9 @@ const footerGroups = [
 export const PortalLayout = () => {
     const location = useLocation();
     const [theme, setTheme] = useState<PortalTheme>(getInitialTheme);
-    const isThemeSupportedRoute = themeSupportedRoutes.has(location.pathname);
-    const isReaderRoute = readerRoutes.has(location.pathname);
+    const currentPathname = normalizePortalPathname(location.pathname);
+    const isThemeSupportedRoute = themeSupportedRoutes.has(currentPathname);
+    const isReaderRoute = readerRoutes.has(currentPathname);
     const isDarkTheme = theme === "dark";
     const themeToggleLabel = isDarkTheme ? "切换浅色主题" : "切换深色主题";
 
