@@ -1,9 +1,9 @@
 import { Typography } from "antd";
-import { KuzhambuTable } from "@/components/kuzhambu-table";
-import { KuzhambuTag } from "@/components/kuzhambu-tag";
-import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
-import type { WangqiDocumentRecord } from "../wangqi-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuTable } from "@/components/kuzhambu-table";
+import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
+import { KuzhambuTag } from "@/components/kuzhambu-tag";
+import type { WangqiDocumentRecord } from "../wangqi-types";
 
 const { Text } = Typography;
 
@@ -52,7 +52,7 @@ const readSummaryLines = (summary?: string | null) => {
         .slice(0, 3);
 };
 
-export interface WangqiDocumentListProps {
+export interface WangqiDocumentTableProps {
     canExport?: boolean;
     canShare?: boolean;
     dataSource: WangqiDocumentRecord[];
@@ -68,7 +68,7 @@ export interface WangqiDocumentListProps {
     sortDirection: "ASC" | "DESC";
 }
 
-export const WangqiDocumentList = ({
+export const WangqiDocumentTable = ({
     canExport = true,
     canShare = true,
     dataSource,
@@ -82,7 +82,7 @@ export const WangqiDocumentList = ({
     pagination,
     selectedDocumentIds,
     sortDirection
-}: WangqiDocumentListProps) => {
+}: WangqiDocumentTableProps) => {
     const columns: KuzhambuTableProps<WangqiDocumentRecord>["columns"] = [
         {
             title: "文档",

@@ -6,7 +6,7 @@ import {
     SearchOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Card, Input, Select, Tooltip, Typography } from "antd";
+import { App, Card, Input, Select, Tooltip } from "antd";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
@@ -37,7 +37,8 @@ import type {
     ClassicsExportJobRecord,
     ClassicsExportScopePayload
 } from "@/pages/classics/common/classics-export-types";
-import { WangqiDocumentList } from "./components/wangqi-document-list";
+import { WangqiDocumentTable } from "./components/wangqi-document-table";
+import { WangqiDocumentToolbar } from "./components/wangqi-document-toolbar";
 import { WangqiDocumentEditDrawer } from "./components/wangqi-document-edit-drawer";
 import { WangqiQaAiModal, type WangqiQaTaskPair } from "./components/wangqi-qa-ai-modal";
 import { WangqiStorageFilePanel } from "./components/wangqi-storage-file-panel";
@@ -49,10 +50,6 @@ import type { WangqiDocumentCommand, WangqiDocumentQuery } from "./wangqi-servic
 import type { WangqiContentVersionRecord, WangqiDocumentRecord } from "./wangqi-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./wangqi-page.css";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
-
-const { Text } = Typography;
-
 type WangqiVisibilityFilter = "ALL" | "PUBLIC" | "PRIVATE";
 type WangqiSortDirectionFilter = "ASC" | "DESC";
 
@@ -920,81 +917,20 @@ export const WangqiPage = () => {
                     onReset={resetFilters}
                 />
                 <div className="wangqi-document-panel">
-                    <div className="wangqi-document-toolbar">
-                        <Text type="secondary">
-                            已选 {selectedDocuments.length} / 当前页 {records.length}
-                        </Text>
-                        <KuzhambuSpace className="wangqi-document-toolbar-actions" wrap>
-                            <KuzhambuButton
-                                testId="classics-wangqi-wangqi-batch-share-button"
-                                disabled={!selectedDocuments.length || !canShareDocuments}
-                                loading={batchShareMutation.isPending}
-                                onClick={shareSelectedDocuments}
-                            >
-                                分享文档
-                            </KuzhambuButton>
-                            <KuzhambuButton
-                                testId="classics-wangqi-wangqi-action-button"
-                                disabled={!selectedDocuments.length || !canChangeDocumentVisibility}
-                                onClick={openBatchCandidateDrawer}
-                            >
-                                候选治理
-                            </KuzhambuButton>
-                            <KuzhambuButton
-                                testId="classics-wangqi-wangqi-batch-public-button"
-                                disabled={!selectedDocuments.length || !canChangeDocumentVisibility}
-                                loading={batchVisibilityMutation.isPending}
-                                onClick={() => changeSelectedVisibility("PUBLIC")}
-                            >
-                                设为公开
-                            </KuzhambuButton>
-                            <KuzhambuButton
-                                testId="classics-wangqi-wangqi-batch-private-button"
-                                disabled={!selectedDocuments.length || !canChangeDocumentVisibility}
-                                loading={batchVisibilityMutation.isPending}
-                                onClick={() => changeSelectedVisibility("PRIVATE")}
-                            >
-                                设为私有
-                            </KuzhambuButton>
-                        </KuzhambuSpace>
-                    </div>
-                    {batchShareResult ? (
-                        <KuzhambuAlert
-                            showIcon
-                            type={batchShareResult.failureCount > 0 ? "warning" : "success"}
-                            className="wangqi-result-alert"
-                            title={`分享结果：成功 ${batchShareResult.successCount}，失败 ${batchShareResult.failureCount}`}
-                            description={
-                                batchShareResult.failures.length
-                                    ? batchShareResult.failures
-                                          .map(
-                                              (item) =>
-                                                  `${item.contentType}#${item.contentId}: ${item.failureReason || item.failureCode || "未知失败"}`
-                                          )
-                                          .join("；")
-                                    : "全部选中王圻文档已创建分享记录。"
-                            }
-                        />
-                    ) : null}
-                    {batchVisibilityResult ? (
-                        <KuzhambuAlert
-                            showIcon
-                            type={batchVisibilityResult.failureCount > 0 ? "warning" : "success"}
-                            className="wangqi-result-alert"
-                            title={`可见性结果：成功 ${batchVisibilityResult.successCount}，失败 ${batchVisibilityResult.failureCount}`}
-                            description={
-                                batchVisibilityResult.failures.length
-                                    ? batchVisibilityResult.failures
-                                          .map(
-                                              (item) =>
-                                                  `${item.contentType}#${item.contentId}: ${item.failureReason || item.failureCode || "未知失败"}`
-                                          )
-                                          .join("；")
-                                    : "全部选中王圻文档已更新可见性。"
-                            }
-                        />
-                    ) : null}
-                    <WangqiDocumentList
+                    <WangqiDocumentToolbar
+                        batchShareResult={batchShareResult}
+                        batchVisibilityResult={batchVisibilityResult}
+                        canChangeDocumentVisibility={canChangeDocumentVisibility}
+                        canShareDocuments={canShareDocuments}
+                        isBatchSharing={batchShareMutation.isPending}
+                        isBatchVisibilityChanging={batchVisibilityMutation.isPending}
+                        recordCount={records.length}
+                        selectedCount={selectedDocuments.length}
+                        onChangeSelectedVisibility={changeSelectedVisibility}
+                        onOpenBatchCandidateDrawer={openBatchCandidateDrawer}
+                        onShareSelectedDocuments={shareSelectedDocuments}
+                    />
+                    <WangqiDocumentTable
                         canExport={canExportDocuments}
                         canShare={canShareDocuments}
                         loading={pageQuery.isLoading}
