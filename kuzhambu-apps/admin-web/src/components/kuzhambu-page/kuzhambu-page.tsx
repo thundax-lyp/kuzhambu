@@ -12,6 +12,9 @@ interface KuzhambuPageProps {
     title: ReactNode;
 }
 
+// AI NOTE: This is the base admin page frame.
+// Use it to keep title, description, actions, and content spacing consistent.
+// Do not move page-specific fetches, permissions, or workflow state into this frame.
 export const KuzhambuPage = ({
     actions,
     children,

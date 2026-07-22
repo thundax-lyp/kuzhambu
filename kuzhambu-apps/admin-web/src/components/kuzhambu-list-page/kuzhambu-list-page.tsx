@@ -59,6 +59,10 @@ export interface KuzhambuListPageProps<RecordType extends object = object> exten
     title: ReactNode;
 }
 
+// AI NOTE: This is the default admin list-page scaffold.
+// Use it when a page is "header + search/filter + batch actions + table".
+// Do not hide page-specific data fetching, permissions, or mutation behavior in this component.
+// Pages should pass semantic actions and table columns; this component owns only layout composition.
 export const KuzhambuListPage = <RecordType extends object = object>({
     batchActions,
     batchClassName,

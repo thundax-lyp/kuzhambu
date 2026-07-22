@@ -8,6 +8,8 @@ export interface KuzhambuTagProps extends Omit<TagProps, "className" | "color"> 
     type?: KuzhambuTagType;
 }
 
+// AI NOTE: This tag wrapper maps semantic tag types to the local visual palette.
+// Pages choose the semantic type; this component should not infer domain status rules.
 export const KuzhambuTag = ({ type = "neutral", ...props }: KuzhambuTagProps) => {
     return <Tag {...props} className={`kuzhambu-tag kuzhambu-tag-${type}`} />;
 };

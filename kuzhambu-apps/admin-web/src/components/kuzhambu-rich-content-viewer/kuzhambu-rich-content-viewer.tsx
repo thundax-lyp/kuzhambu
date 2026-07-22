@@ -51,6 +51,9 @@ const toSanitizedHtml = (content: string, format: KuzhambuRichContentViewerProps
     return DOMPurify.sanitize(renderMarkdown(normalizedContent));
 };
 
+// AI NOTE: This is the only shared renderer for user/content-provided rich text.
+// Always sanitize rendered HTML here; never bypass it with page-level dangerouslySetInnerHTML.
+// Pages choose format and content, but this component owns normalization and XSS-safe rendering.
 export const KuzhambuRichContentViewer = ({
     className,
     content,
