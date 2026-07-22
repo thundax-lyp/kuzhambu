@@ -10,6 +10,8 @@ export interface KuzhambuBatchActionBarProps {
     selectedCount: number;
 }
 
+// AI NOTE: This is a passive selected-count + batch-actions bar.
+// It must not decide which actions are allowed; pages own permissions, disabled states, and confirmations.
 export const KuzhambuBatchActionBar = ({
     actions,
     className,

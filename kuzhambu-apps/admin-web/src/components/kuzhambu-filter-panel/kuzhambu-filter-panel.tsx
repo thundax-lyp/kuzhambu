@@ -24,6 +24,9 @@ const resolveActionOffset = (fieldCount: number, columns: number, span: number) 
     return (columns - usedColumns - 1) * span;
 };
 
+// AI NOTE: This component owns only the shared filter panel layout.
+// Keep filter state, query normalization, and domain-specific option loading in the page.
+// Prefer fields[] for simple filters and children only when the layout genuinely needs custom structure.
 export const KuzhambuFilterPanel = ({
     actionsAlign = "default",
     children,

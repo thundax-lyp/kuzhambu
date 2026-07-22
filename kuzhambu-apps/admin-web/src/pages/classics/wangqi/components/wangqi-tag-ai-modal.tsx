@@ -2,11 +2,16 @@ import { FileTextOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Empty, Input, Tag, Typography } from "antd";
 import { useCallback, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuModal } from "@/components/kuzhambu-modal";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { KuzhambuSyncTaskModal } from "@/components/kuzhambu-sync-task-modal";
+import type {
+    KuzhambuSyncTaskAdapter,
+    KuzhambuSyncTaskModalState
+} from "@/components/kuzhambu-sync-task-modal";
 import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
 import type { AiCandidateRecord } from "@/pages/classics/common/ai-candidate-types";
 import { AiCandidatePayloadEditor } from "@/pages/classics/common/components/ai-candidate-payload-editor";
@@ -19,8 +24,7 @@ import type { WangqiDocumentRecord } from "../wangqi-types";
 const { Text } = Typography;
 
 const TAG_CANDIDATE_POLL_INTERVAL_MS = 3000;
-
-type TagTaskAlertType = "success" | "info" | "warning" | "error";
+const TAG_AI_MODAL_TEST_ID = "classics-wangqi-document-tags-ai-modal";
 
 interface WangqiTagAiModalProps {
     creatingTagTask?: boolean;
@@ -40,7 +44,7 @@ const TAG_TASK_STATUS_LABELS: Record<string, string> = {
     CANCELLED: "已取消"
 };
 
-const TAG_TASK_ALERT_TYPES: Record<string, TagTaskAlertType> = {
+const TAG_TASK_ALERT_TYPES: Record<string, "success" | "info" | "warning" | "error"> = {
     PENDING: "info",
     RUNNING: "info",
     SUCCEEDED: "success",
@@ -56,11 +60,11 @@ const sortTasksByNewest = (left: AiRefinementTaskRecord, right: AiRefinementTask
     return right.taskId - left.taskId;
 };
 
-const isTagTaskActive = (task?: AiRefinementTaskRecord) => {
+const isTagTaskActive = (task?: AiRefinementTaskRecord | null) => {
     return task?.status === "PENDING" || task?.status === "RUNNING";
 };
 
-const isTagTaskCompleted = (task?: AiRefinementTaskRecord) => {
+const isTagTaskCompleted = (task?: AiRefinementTaskRecord | null) => {
     return task?.status === "SUCCEEDED" || task?.status === "PARTIAL";
 };
 
@@ -108,6 +112,103 @@ const selectLatestTagCandidate = (
 
 const defaultResultFormatForTags = (candidate?: AiCandidateRecord) => {
     return candidate?.resultFormat?.trim() || "STRUCTURED";
+};
+
+const tagTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = {
+    getId: (task) => task.taskId,
+    getMessage: getTagTaskDescription,
+    getPhase: (task) => {
+        if (isTagTaskActive(task)) {
+            return "tracking";
+        }
+        if (isTagTaskCompleted(task)) {
+            return task.candidateId ? "result_ready" : "waiting_result";
+        }
+        if (task.status === "CANCELLED") {
+            return "cancelled";
+        }
+        if (task.status === "FAILED") {
+            return "failed";
+        }
+        return "tracking";
+    },
+    getResultKey: (task) => task.candidateId,
+    getStatusLabel: (task) => {
+        const statusLabel = TAG_TASK_STATUS_LABELS[task.status] || task.status;
+        return `标签任务${statusLabel}`;
+    }
+};
+
+const renderTagTaskStatus = ({
+    creating,
+    resultError,
+    resultLoading,
+    task,
+    tracking
+}: KuzhambuSyncTaskModalState<AiRefinementTaskRecord, AiCandidateRecord>) => {
+    let taskAlert: ReactNode = null;
+    if (creating) {
+        taskAlert = (
+            <KuzhambuAlert
+                showIcon
+                className="kuzhambu-sync-task-modal-status"
+                type="info"
+                title="正在创建标签任务"
+                description="任务创建成功后会自动进入状态跟踪。"
+            />
+        );
+    } else if (task) {
+        const statusLabel = TAG_TASK_STATUS_LABELS[task.status] || task.status;
+        taskAlert = (
+            <KuzhambuAlert
+                showIcon
+                className="kuzhambu-sync-task-modal-status"
+                type={TAG_TASK_ALERT_TYPES[task.status] || "info"}
+                title={`标签任务${statusLabel}`}
+                description={getTagTaskDescription(task)}
+            />
+        );
+    } else if (resultLoading) {
+        taskAlert = (
+            <KuzhambuAlert
+                showIcon
+                className="kuzhambu-sync-task-modal-status"
+                type="info"
+                title="正在加载候选标签"
+                description="任务完成后会自动刷新候选标签。"
+            />
+        );
+    }
+
+    let resultAlert: ReactNode = null;
+    if (resultError && tracking) {
+        resultAlert = (
+            <KuzhambuAlert
+                showIcon
+                className="kuzhambu-sync-task-modal-status"
+                type="info"
+                title="候选标签暂未返回"
+                description="AI 任务仍在跟踪中，系统会继续刷新候选标签。"
+            />
+        );
+    } else if (resultError) {
+        resultAlert = (
+            <KuzhambuAlert
+                showIcon
+                className="kuzhambu-sync-task-modal-status"
+                type="warning"
+                title="候选标签加载失败"
+                description="请稍后重试加载候选标签。"
+            />
+        );
+    }
+
+    return taskAlert || resultAlert ? (
+        <>
+            {taskAlert}
+            {resultAlert}
+        </>
+    ) : null;
 };
 
 const readTagName = (tag: ClassicsContentTagRecord) => {
@@ -164,87 +265,7 @@ export const WangqiTagAiModal = ({
     const trackedTagTaskFromList = useMemo(() => {
         return tagTasks.find((task) => task.taskId === tagTrackingTaskId);
     }, [tagTasks, tagTrackingTaskId]);
-
-    const trackedTagTaskQuery = useQuery({
-        queryKey: ["classics", "wangqi", "refinement", "task", tagTrackingTaskId],
-        queryFn: () => aiRefinementTaskService.getTask({ taskId: tagTrackingTaskId ?? 0 }),
-        enabled: isOpen && Boolean(tagTrackingTaskId),
-        retry: false,
-        refetchInterval: (query) => {
-            const task = query.state.data;
-            if (!tagTrackingTaskId) {
-                return false;
-            }
-            if (!task || isTagTaskActive(task)) {
-                return TAG_CANDIDATE_POLL_INTERVAL_MS;
-            }
-            if (isTagTaskCompleted(task) && !task.candidateId) {
-                return TAG_CANDIDATE_POLL_INTERVAL_MS;
-            }
-            return false;
-        }
-    });
-    const latestTagTask =
-        trackedTagTaskQuery.data ||
-        trackedTagTaskFromList ||
-        tagTrackingTask ||
-        latestTagTaskFromList;
-    const trackedTagCandidateId =
-        tagTrackingTaskId && latestTagTask?.taskId === tagTrackingTaskId
-            ? latestTagTask.candidateId
-            : null;
-    const shouldPollTagCandidates =
-        creatingTagTask ||
-        isTagTaskActive(latestTagTask) ||
-        Boolean(tagTrackingTaskId && isTagTaskCompleted(latestTagTask) && trackedTagCandidateId);
-
-    const tagCandidatesQuery = useQuery({
-        queryKey: ["ai", "candidates", "WANGQI_DOCUMENT", document.id, "tags", "modal"],
-        queryFn: () =>
-            aiCandidateService.list({
-                contentId: document.id,
-                contentType: "WANGQI_DOCUMENT",
-                capability: "tags",
-                status: "PENDING"
-            }),
-        enabled: isOpen && Boolean(document.id),
-        retry: false,
-        refetchInterval: () => (shouldPollTagCandidates ? TAG_CANDIDATE_POLL_INTERVAL_MS : false)
-    });
-
-    const latestTagCandidate = useMemo(() => {
-        if (creatingTagTask || (tagTrackingTaskId && !trackedTagCandidateId)) {
-            return undefined;
-        }
-        return selectLatestTagCandidate(tagCandidatesQuery.data, trackedTagCandidateId);
-    }, [creatingTagTask, tagCandidatesQuery.data, tagTrackingTaskId, trackedTagCandidateId]);
-
-    const tagTaskAlert = useMemo(() => {
-        if (creatingTagTask) {
-            return {
-                description: "任务创建成功后会自动进入状态跟踪。",
-                title: "正在创建标签任务",
-                type: "info" as const
-            };
-        }
-        if (latestTagTask) {
-            const statusLabel =
-                TAG_TASK_STATUS_LABELS[latestTagTask.status] || latestTagTask.status;
-            return {
-                description: getTagTaskDescription(latestTagTask),
-                title: `标签任务${statusLabel}`,
-                type: TAG_TASK_ALERT_TYPES[latestTagTask.status] || ("info" as const)
-            };
-        }
-        if (tagCandidatesQuery.isFetching) {
-            return {
-                description: "任务完成后会自动刷新候选标签。",
-                title: "正在加载候选标签",
-                type: "info" as const
-            };
-        }
-        return null;
-    }, [creatingTagTask, latestTagTask, tagCandidatesQuery.isFetching]);
+    const latestTagTask = trackedTagTaskFromList || tagTrackingTask || latestTagTaskFromList;
 
     const applyMutation = useMutation({
         mutationFn: aiCandidateService.apply,
@@ -252,6 +273,16 @@ export const WangqiTagAiModal = ({
             await Promise.all([
                 queryClient.invalidateQueries({
                     queryKey: ["ai", "candidates", "WANGQI_DOCUMENT", document.id]
+                }),
+                queryClient.removeQueries({
+                    queryKey: [
+                        "sync-task-modal",
+                        TAG_AI_MODAL_TEST_ID,
+                        "result",
+                        "WANGQI_DOCUMENT",
+                        document.id,
+                        "tags"
+                    ]
                 }),
                 queryClient.invalidateQueries({
                     queryKey: ["classics", "content", "tags", "WANGQI_DOCUMENT", document.id]
@@ -280,6 +311,20 @@ export const WangqiTagAiModal = ({
         onCreateTagTask(currentTagNames);
     };
 
+    const loadTagCandidate = async (task: AiRefinementTaskRecord | null) => {
+        const trackedCandidateId = task?.candidateId ?? null;
+        if (tagTrackingTaskId && !trackedCandidateId) {
+            return null;
+        }
+        const candidates = await aiCandidateService.list({
+            contentId: document.id,
+            contentType: "WANGQI_DOCUMENT",
+            capability: "tags",
+            status: "PENDING"
+        });
+        return selectLatestTagCandidate(candidates, trackedCandidateId) ?? null;
+    };
+
     const updateCandidatePayload = useCallback((candidateId: number, payload: string) => {
         setCandidatePayloads((currentPayloads) => {
             if (currentPayloads[candidateId] === payload) {
@@ -304,26 +349,24 @@ export const WangqiTagAiModal = ({
         });
     }, []);
 
-    const applyCandidate = () => {
-        if (!latestTagCandidate) {
+    const applyCandidate = (candidate: AiCandidateRecord | null) => {
+        if (!candidate) {
             messageApi.warning("暂无可采用的候选标签");
             return;
         }
         const payload =
-            candidatePayloads[latestTagCandidate.candidateId] ||
-            latestTagCandidate.resultPayload?.trim() ||
-            "";
-        if (!payload || !candidateSubmitEnabled[latestTagCandidate.candidateId]) {
+            candidatePayloads[candidate.candidateId] || candidate.resultPayload?.trim() || "";
+        if (!payload || !candidateSubmitEnabled[candidate.candidateId]) {
             messageApi.warning("请先确认候选标签内容");
             return;
         }
         applyMutation.mutate({
-            candidateId: latestTagCandidate.candidateId,
+            candidateId: candidate.candidateId,
             contentId: document.id,
             contentType: "WANGQI_DOCUMENT",
             capability: "tags",
-            objectId: latestTagCandidate.objectId,
-            resultFormat: defaultResultFormatForTags(latestTagCandidate),
+            objectId: candidate.objectId,
+            resultFormat: defaultResultFormatForTags(candidate),
             resultPayload: payload,
             changeSummary: "AI 应用：tags"
         });
@@ -339,160 +382,126 @@ export const WangqiTagAiModal = ({
             >
                 生成标签
             </KuzhambuButton>
-            <KuzhambuModal
-                testId="classics-wangqi-document-tags-ai-modal"
+            <KuzhambuSyncTaskModal<AiRefinementTaskRecord, AiCandidateRecord>
+                testId={TAG_AI_MODAL_TEST_ID}
                 className="wangqi-tags-modal"
-                title={
-                    <div className="wangqi-summary-modal-title">
-                        <span>AI 标签</span>
-                        <KuzhambuButton
-                            testId="classics-wangqi-document-tags-ai-generate-button"
-                            type="primary"
-                            ariaLabel="生成 AI 标签"
-                            icon={<FileTextOutlined />}
-                            loading={creatingTagTask}
-                            onClick={createTagTask}
-                        >
-                            生成标签
-                        </KuzhambuButton>
-                    </div>
-                }
-                destroyOnHidden
-                footer={
-                    <div className="wangqi-summary-modal-footer">
-                        <KuzhambuButton
-                            testId="classics-wangqi-document-tags-ai-cancel-button"
-                            onClick={() => setIsOpen(false)}
-                        >
-                            取消
-                        </KuzhambuButton>
-                        <KuzhambuButton
-                            testId="classics-wangqi-document-tags-ai-apply-button"
-                            type="primary"
-                            disabled={
-                                !latestTagCandidate ||
-                                !candidateSubmitEnabled[latestTagCandidate.candidateId]
-                            }
-                            loading={applyMutation.isPending}
-                            onClick={applyCandidate}
-                        >
-                            采用
-                        </KuzhambuButton>
-                    </div>
-                }
+                title="AI 标签"
                 open={isOpen}
                 width={880}
+                applying={applyMutation.isPending}
+                applyDisabled={({ result }) =>
+                    !result || !candidateSubmitEnabled[result.candidateId]
+                }
+                applyTestId="classics-wangqi-document-tags-ai-apply-button"
+                createAriaLabel="生成 AI 标签"
+                createIcon={<FileTextOutlined />}
+                createTestId="classics-wangqi-document-tags-ai-generate-button"
+                createText="生成标签"
+                creating={creatingTagTask}
+                fetchResult={loadTagCandidate}
+                fetchTask={(taskId) => aiRefinementTaskService.getTask({ taskId: Number(taskId) })}
+                pollIntervalMs={TAG_CANDIDATE_POLL_INTERVAL_MS}
+                resultQueryKey={["WANGQI_DOCUMENT", document.id, "tags"]}
+                task={latestTagTask}
+                taskAdapter={tagTaskAdapter}
+                trackTask={Boolean(tagTrackingTaskId)}
+                onApply={applyCandidate}
                 onCancel={() => setIsOpen(false)}
-            >
-                {tagTaskAlert ? (
-                    <KuzhambuAlert
-                        showIcon
-                        type={tagTaskAlert.type}
-                        title={tagTaskAlert.title}
-                        description={tagTaskAlert.description}
-                    />
-                ) : null}
-                {tagCandidatesQuery.isError && !shouldPollTagCandidates ? (
-                    <KuzhambuAlert
-                        showIcon
-                        type="warning"
-                        title="候选标签加载失败"
-                        description="请稍后重试加载候选标签。"
-                    />
-                ) : null}
-                {tagCandidatesQuery.isError && shouldPollTagCandidates ? (
-                    <KuzhambuAlert
-                        showIcon
-                        type="info"
-                        title="候选标签暂未返回"
-                        description="AI 任务仍在跟踪中，系统会继续刷新候选标签。"
-                    />
-                ) : null}
-                <div className="wangqi-summary-modal-compare-grid">
-                    <section className="wangqi-summary-modal-card" aria-label="当前标签">
-                        <Text strong>当前标签</Text>
-                        {currentTagNames.length ? (
-                            <KuzhambuSpace wrap size="small">
-                                {currentTagNames.map((tagName) => (
-                                    <Tag key={tagName}>{tagName}</Tag>
-                                ))}
-                            </KuzhambuSpace>
-                        ) : (
-                            <Empty
-                                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                description="暂无当前标签"
-                            />
-                        )}
-                    </section>
-                    <section className="wangqi-summary-modal-card" aria-label="AI候选标签">
-                        <Text strong>AI 标签</Text>
-                        {latestTagCandidate ? (
-                            <AiCandidatePayloadEditor
-                                key={`${latestTagCandidate.candidateId}-${
-                                    latestTagCandidate.resultPayload ?? ""
-                                }`}
-                                candidateId={latestTagCandidate.candidateId}
-                                capability="tags"
-                                initialPayload={latestTagCandidate.resultPayload}
-                                onPayloadChange={updateCandidatePayload}
-                                onSubmitEnabledChange={updateCandidateSubmitEnabled}
-                            />
-                        ) : (
-                            <Empty
-                                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                description={
-                                    creatingTagTask || tagCandidatesQuery.isFetching
-                                        ? "AI 标签生成中"
-                                        : "暂无候选标签，可先点击生成标签"
-                                }
-                            />
-                        )}
-                    </section>
-                </div>
-                <section className="wangqi-summary-modal-card" aria-label="AI标签生成依据">
-                    <Text strong>生成依据</Text>
-                    <div className="wangqi-tags-modal-source-grid">
-                        <label>
-                            <Text type="secondary">标题</Text>
-                            <Input
-                                aria-label="AI标签依据标题"
-                                readOnly
-                                value={document.title || "未命名文档"}
-                            />
-                        </label>
-                        <label>
-                            <Text type="secondary">摘要</Text>
-                            <Input.TextArea
-                                aria-label="AI标签依据摘要"
-                                readOnly
-                                autoSize={resolveTextAreaAutoSize({ minRows: 2, maxRows: 4 })}
-                                value={document.summary || "暂无摘要"}
-                            />
-                        </label>
-                        <label>
-                            <Text type="secondary">正文</Text>
-                            <Input.TextArea
-                                aria-label="AI标签依据正文"
-                                readOnly
-                                autoSize={resolveTextAreaAutoSize({ minRows: 4, maxRows: 8 })}
-                                value={document.content || "暂无正文"}
-                            />
-                        </label>
-                        <div aria-label="AI标签依据已有标签">
-                            <Text type="secondary">已有标签</Text>
-                            {currentTagNames.length ? (
-                                <KuzhambuSpace wrap size="small">
-                                    {currentTagNames.map((tagName) => (
-                                        <Tag key={tagName}>{tagName}</Tag>
-                                    ))}
-                                </KuzhambuSpace>
-                            ) : (
-                                <Text type="secondary">暂无已有标签</Text>
-                            )}
+                onCreate={createTagTask}
+                renderStatus={renderTagTaskStatus}
+                renderBody={({ creating, result, resultLoading }) => (
+                    <>
+                        <div className="wangqi-summary-modal-compare-grid">
+                            <section className="wangqi-summary-modal-card" aria-label="当前标签">
+                                <Text strong>当前标签</Text>
+                                {currentTagNames.length ? (
+                                    <KuzhambuSpace wrap size="small">
+                                        {currentTagNames.map((tagName) => (
+                                            <Tag key={tagName}>{tagName}</Tag>
+                                        ))}
+                                    </KuzhambuSpace>
+                                ) : (
+                                    <Empty
+                                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                        description="暂无当前标签"
+                                    />
+                                )}
+                            </section>
+                            <section className="wangqi-summary-modal-card" aria-label="AI候选标签">
+                                <Text strong>AI 标签</Text>
+                                {result ? (
+                                    <AiCandidatePayloadEditor
+                                        key={`${result.candidateId}-${result.resultPayload ?? ""}`}
+                                        candidateId={result.candidateId}
+                                        capability="tags"
+                                        initialPayload={result.resultPayload}
+                                        onPayloadChange={updateCandidatePayload}
+                                        onSubmitEnabledChange={updateCandidateSubmitEnabled}
+                                    />
+                                ) : (
+                                    <Empty
+                                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                        description={
+                                            creating || resultLoading
+                                                ? "AI 标签生成中"
+                                                : "暂无候选标签，可先点击生成标签"
+                                        }
+                                    />
+                                )}
+                            </section>
                         </div>
-                    </div>
-                </section>
-            </KuzhambuModal>
+                        <section className="wangqi-summary-modal-card" aria-label="AI标签生成依据">
+                            <Text strong>生成依据</Text>
+                            <div className="wangqi-tags-modal-source-grid">
+                                <label>
+                                    <Text type="secondary">标题</Text>
+                                    <Input
+                                        aria-label="AI标签依据标题"
+                                        readOnly
+                                        value={document.title || "未命名文档"}
+                                    />
+                                </label>
+                                <label>
+                                    <Text type="secondary">摘要</Text>
+                                    <Input.TextArea
+                                        aria-label="AI标签依据摘要"
+                                        readOnly
+                                        autoSize={resolveTextAreaAutoSize({
+                                            minRows: 2,
+                                            maxRows: 4
+                                        })}
+                                        value={document.summary || "暂无摘要"}
+                                    />
+                                </label>
+                                <label>
+                                    <Text type="secondary">正文</Text>
+                                    <Input.TextArea
+                                        aria-label="AI标签依据正文"
+                                        readOnly
+                                        autoSize={resolveTextAreaAutoSize({
+                                            minRows: 4,
+                                            maxRows: 8
+                                        })}
+                                        value={document.content || "暂无正文"}
+                                    />
+                                </label>
+                                <div aria-label="AI标签依据已有标签">
+                                    <Text type="secondary">已有标签</Text>
+                                    {currentTagNames.length ? (
+                                        <KuzhambuSpace wrap size="small">
+                                            {currentTagNames.map((tagName) => (
+                                                <Tag key={tagName}>{tagName}</Tag>
+                                            ))}
+                                        </KuzhambuSpace>
+                                    ) : (
+                                        <Text type="secondary">暂无已有标签</Text>
+                                    )}
+                                </div>
+                            </div>
+                        </section>
+                    </>
+                )}
+            />
         </>
     );
 };

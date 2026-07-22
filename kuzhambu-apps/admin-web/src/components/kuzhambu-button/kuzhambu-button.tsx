@@ -14,6 +14,8 @@ const shouldExposeTestId = () => {
     return !import.meta.env.PROD || import.meta.env.VITE_EXPOSE_TEST_ID === "true";
 };
 
+// AI NOTE: This is the button wrapper that centralizes testId exposure and ariaLabel conversion.
+// Use it in page code instead of Ant Design Button; keep button text and domain action semantics in the caller.
 export const KuzhambuButton = forwardRef<
     HTMLAnchorElement | HTMLButtonElement,
     KuzhambuButtonProps

@@ -380,6 +380,14 @@ effectiveAt
 | Drawer | 业务表单、详情、复杂关系 |
 | Modal  | 确认、轻量反馈           |
 
+共享容器优先级：
+
+- 页面抽屉包含顶部分段导航、当前分段内容和统一 footer 时，优先使用 `KuzhambuSegmentedDrawer`；页面只声明 `sections`、当前分段、业务 header extra 和 footer，不重复手写 `KuzhambuDrawer + Segmented` 组合。
+- `KuzhambuSegmentedDrawer` 的 `loading` 只表达抽屉容器加载状态，应透传给底层 `KuzhambuDrawer`；分段切换本身不得重新定义 loading 语义。
+- Modal 只适合轻量确认、反馈和短流程；涉及大段业务表单录入时仍使用 Drawer 或 Page。
+- Modal 用于“打开弹窗、展示上下文、启动异步任务、跟踪任务状态、拉取结果并回填/采用”的短流程时，优先使用 `KuzhambuSyncTaskModal`；页面只提供 `taskAdapter`、`fetchTask`、`fetchResult`、业务 body 和 apply 行为，不重复手写任务轮询、状态回显和结果轮询。
+- `KuzhambuSyncTaskModal` 不承载具体业务语义，不直接解析 AI candidate、标签、问答、摘要或业务表单字段；这些解析和采用逻辑保留在页面域或页面私有组件。
+
 底部按钮顺序：
 
 ```text
@@ -521,7 +529,7 @@ CSS Selector
 - Playwright 测试业务控件时优先使用 `getByTestId` 作为明确技术锚点；`getByRole(..., { name })` 用于验证用户可感知语义、可访问名称或没有必要新增技术锚点的简单控件。
 - `data-testid` / `testId` 不替代可访问名称。图标按钮、无文本按钮、表格、搜索框等仍需通过可见文本、DOM `aria-label` / `aria-labelledby` 或组件封装层的 `ariaLabel` 提供业务语义。
 - 页面和页面私有组件使用 `Kuzhambu*` 交互封装时，优先传组件层 `testId`，不要直接写 `data-testid`；封装组件内部统一根据 `import.meta.env.PROD` 和 `VITE_EXPOSE_TEST_ID` 决定是否渲染 `data-testid`。
-- 新增面向业务交互定位的 `Kuzhambu*` 共享组件时，应像 `KuzhambuButton`、`KuzhambuModal`、`KuzhambuDrawer` 一样暴露语义明确的 `testId` prop，并在组件测试中覆盖开发环境保留、生产默认擦除、生产测试构建保留。
+- 新增面向业务交互定位的共享组件时，应像 `KuzhambuButton`、`KuzhambuModal`、`KuzhambuDrawer` 一样暴露语义明确的 `testId` prop，并在组件测试中覆盖开发环境保留、生产默认擦除、生产测试构建保留。
 - 若 E2E 使用生产式构建产物，构建时必须设置 `VITE_EXPOSE_TEST_ID=true` 保留 `data-testid`；生产发布构建不得设置该变量。
 - Playwright 测试禁止使用 `waitForTimeout`。
 - Playwright 测试禁止使用复杂 CSS selector。

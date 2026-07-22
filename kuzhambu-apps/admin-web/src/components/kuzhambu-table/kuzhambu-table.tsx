@@ -242,6 +242,9 @@ export interface KuzhambuTableProps<RecordType extends object = object> extends 
     sortable?: boolean;
 }
 
+// AI NOTE: This is the admin table policy wrapper around Ant Design Table.
+// It owns responsive action-column rendering, optional row sorting, and accessibility anchors.
+// Keep business action decisions in page code; pass them as column options instead of hard-coding domain logic here.
 export const KuzhambuTable = <RecordType extends object = object>({
     actionColumnKey = DEFAULT_ACTION_COLUMN_KEY,
     actionColumnMobileWidth = DEFAULT_ACTION_COLUMN_MOBILE_WIDTH,

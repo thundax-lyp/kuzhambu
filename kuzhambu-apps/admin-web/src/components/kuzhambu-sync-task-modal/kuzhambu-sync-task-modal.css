@@ -1,0 +1,17 @@
+.kuzhambu-sync-task-modal-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.kuzhambu-sync-task-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.kuzhambu-sync-task-modal-status {
+    margin-bottom: 12px;
+}

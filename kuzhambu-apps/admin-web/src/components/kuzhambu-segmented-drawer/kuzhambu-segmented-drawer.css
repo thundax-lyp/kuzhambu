@@ -1,0 +1,11 @@
+.kuzhambu-segmented-drawer-extra {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.kuzhambu-segmented-drawer-section {
+    min-width: 0;
+}
