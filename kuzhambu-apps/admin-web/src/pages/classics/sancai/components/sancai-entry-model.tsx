@@ -453,6 +453,11 @@ export const SancaiEntryModel = ({
                     queryKey: ["classics", "sancai", "refinement", "tasks", entryId]
                 })
             ]);
+            setForm((currentForm) => ({
+                ...currentForm,
+                [command.capability === "summary" ? "summary" : "translationText"]:
+                    command.resultPayload
+            }));
             setActiveAiTextField(null);
             messageApi.success(
                 AI_TEXT_FIELD_CONFIG[command.capability as SancaiAiTextField]?.applyMessage ||
@@ -695,10 +700,6 @@ export const SancaiEntryModel = ({
         const appliedConfig = AI_TEXT_FIELD_CONFIG[appliedField];
         const candidate = loadedAiTextCandidate;
         const resultPayload = aiTextDraft;
-        setForm((currentForm) => ({
-            ...currentForm,
-            [appliedField === "summary" ? "summary" : "translationText"]: resultPayload
-        }));
         if (candidate) {
             applyAiTextCandidateMutation.mutate({
                 candidateId: candidate.candidateId,
@@ -712,6 +713,10 @@ export const SancaiEntryModel = ({
             });
             return;
         }
+        setForm((currentForm) => ({
+            ...currentForm,
+            [appliedField === "summary" ? "summary" : "translationText"]: resultPayload
+        }));
         setActiveAiTextField(null);
         messageApi.success(appliedConfig.applyMessage);
     };

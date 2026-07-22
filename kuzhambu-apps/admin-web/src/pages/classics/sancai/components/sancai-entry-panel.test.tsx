@@ -1555,6 +1555,46 @@ describe("SancaiEntryPanel sharing", () => {
         });
     }, 30000);
 
+    it("keeps summary form unchanged when loaded candidate application fails", async () => {
+        const user = userEvent.setup();
+        vi.mocked(aiCandidateService.list).mockReset();
+        vi.mocked(aiCandidateService.list).mockResolvedValue([
+            {
+                candidateId: 8102,
+                capability: "summary",
+                contentType: "SANCAI_ENTRY",
+                contentId: 3001,
+                objectId: null,
+                resultFormat: "TEXT",
+                resultPayload: "失败候选摘要",
+                status: "PENDING",
+                requestedAt: "2026-06-22T01:00:00.000+08:00"
+            }
+        ]);
+        vi.mocked(aiCandidateService.apply).mockRejectedValueOnce(new Error("候选已处理"));
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
+        await user.click(
+            await screen.findByTestId("classics-sancai-sancai-entry-ai-summary-button")
+        );
+        expect(await screen.findByDisplayValue("失败候选摘要")).toBeInTheDocument();
+        await user.click(
+            await screen.findByTestId("classics-sancai-sancai-entry-apply-ai-text-button")
+        );
+
+        await waitFor(() => {
+            expect(aiCandidateService.apply).toHaveBeenCalledTimes(1);
+        });
+        await user.click(
+            await screen.findByTestId("classics-sancai-sancai-entry-cancel-ai-text-button")
+        );
+
+        expect(await screen.findByLabelText("三才图会摘要")).toHaveValue("天地摘要");
+    }, 30000);
+
     it("labels running summary refinement task as summary work", async () => {
         const user = userEvent.setup();
         vi.mocked(aiRefinementTaskService.pageTasks).mockResolvedValueOnce({
