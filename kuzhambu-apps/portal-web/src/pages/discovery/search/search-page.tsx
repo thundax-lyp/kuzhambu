@@ -9,7 +9,11 @@ import { Label } from "@/components/ui/label";
 import { DiscoveryPagination, MultiOptionControl } from "./components/search-controls";
 import { SearchResultList } from "./components/search-results";
 import * as discoverySearchService from "./search-service";
-import type { DiscoverySearchGroupResponse, DiscoverySearchItemResponse } from "./search-types";
+import type {
+    DiscoverySearchGroupResponse,
+    DiscoverySearchItemResponse,
+    DiscoverySearchRequest
+} from "./search-types";
 import {
     INITIAL_FORM_STATE,
     KNOWLEDGE_BASE_OPTIONS,

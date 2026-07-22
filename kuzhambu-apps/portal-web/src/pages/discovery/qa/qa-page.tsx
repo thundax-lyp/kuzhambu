@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { QaComposer } from "./components/qa-composer";
 import { QaTimeline } from "./components/qa-timeline";
 import * as qaService from "./qa-service";
-import type { DiscoveryQaOpenSessionResponse } from "./qa-types";
+import type { DiscoveryQaChatCompletionResponse, DiscoveryQaOpenSessionResponse } from "./qa-types";
 import {
     FIXED_MODEL,
     SINGLE_DOCUMENT_MODE,
