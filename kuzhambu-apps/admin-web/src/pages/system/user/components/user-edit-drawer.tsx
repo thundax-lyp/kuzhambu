@@ -10,7 +10,7 @@ import type { UserDepartmentNode, UserFormValues, UserRecord, UserRoleRecord } f
 import { UserAvatar } from "./user-avatar";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 
-interface UserEditProps {
+interface UserEditDrawerProps {
     open?: boolean;
     title: string;
     saveText: string;
@@ -95,7 +95,7 @@ const DEFAULT_CREATE_USER_FORM: UserFormValues = {
     enable: true
 };
 
-export const UserEdit = ({
+export const UserEditDrawer = ({
     open,
     title,
     saveText,
@@ -108,7 +108,7 @@ export const UserEdit = ({
     onSave,
     onCreate,
     onAvatarUpload
-}: UserEditProps) => {
+}: UserEditDrawerProps) => {
     const [avatarUploading, setAvatarUploading] = useState(false);
     const editing = Boolean(user?.id);
     const visible = Boolean(open);
@@ -165,7 +165,7 @@ export const UserEdit = ({
 
     return (
         <KuzhambuDrawer
-            testId="system-user-user-editor-drawer"
+            testId="system-user-user-edit-drawer"
             className="user-edit-drawer"
             title={title}
             open={visible}
@@ -179,7 +179,7 @@ export const UserEdit = ({
                 )
             }
             footer={
-                <div className="user-edit-footer">
+                <div className="user-edit-drawer-footer">
                     <KuzhambuButton
                         testId="system-user-user-cancel-button"
                         disabled={saving}
@@ -199,8 +199,8 @@ export const UserEdit = ({
             }
         >
             {!creating && user ? (
-                <Form className="user-edit-form" component="div" layout="vertical">
-                    <div className="user-edit-avatar">
+                <Form className="user-edit-drawer-form" component="div" layout="vertical">
+                    <div className="user-edit-drawer-avatar">
                         <UserAvatar user={user} size={64} />
                         <Upload
                             accept="image/*"
@@ -295,7 +295,7 @@ export const UserEdit = ({
                 </Form>
             ) : null}
             {creating ? (
-                <Form className="user-edit-form" component="div" layout="vertical">
+                <Form className="user-edit-drawer-form" component="div" layout="vertical">
                     <Form.Item label="登录名">
                         <Input
                             value={createForm.loginName}

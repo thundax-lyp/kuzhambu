@@ -271,34 +271,34 @@ html[data-theme="dark"] .user-page {
     white-space: nowrap;
 }
 
-.user-edit-form {
+.user-edit-drawer-form {
     display: grid;
     gap: 0;
 }
 
-.user-edit-avatar {
+.user-edit-drawer-avatar {
     position: relative;
     width: fit-content;
     margin-bottom: 2px;
 }
 
-.user-edit-avatar .ant-btn {
+.user-edit-drawer-avatar .ant-btn {
     position: absolute;
     right: -4px;
     bottom: -3px;
 }
 
-.user-edit-form .ant-form-item {
+.user-edit-drawer-form .ant-form-item {
     margin-bottom: 14px;
 }
 
-.user-edit-form .ant-form-item-label > label {
+.user-edit-drawer-form .ant-form-item-label > label {
     color: var(--user-copy);
     font-size: 12px;
     font-weight: 700;
 }
 
-.user-edit-footer {
+.user-edit-drawer-footer {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;

@@ -12,7 +12,7 @@ import type { OptionsRecord } from "@/types/options";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { UserBatchActions } from "./components/user-batch-actions";
 import { ALL_DEPARTMENT_ID, UserDepartmentTree } from "./components/user-department-tree";
-import { UserEdit } from "./components/user-edit";
+import { UserEditDrawer } from "./components/user-edit-drawer";
 import { UserFilterPanel } from "./components/user-filter-panel";
 import type { UserFilters, UserFilterStatus } from "./components/user-filter-panel";
 import { UserPageActions } from "./components/user-page-actions";
@@ -69,7 +69,7 @@ export const UserPage = () => {
     const [departmentTreeFetching, setDepartmentTreeFetching] = useState(false);
     const [departmentRefreshSignal, setDepartmentRefreshSignal] = useState(0);
     const [activeUser, setActiveUser] = useState<UserRecord | null>(null);
-    const [userEditorOpen, setUserEditorOpen] = useState(false);
+    const [userEditorOpen, setUserEditDrawerorOpen] = useState(false);
     const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
     const hasSelectedUsers = selectedRowKeys.length > 0;
     const hasActiveFilters = Boolean(filters.loginName.trim()) || filters.enable !== "ALL";
@@ -157,7 +157,7 @@ export const UserPage = () => {
         onSuccess: async (savedUser) => {
             setActiveUser(savedUser);
             await invalidatePage();
-            setUserEditorOpen(false);
+            setUserEditDrawerorOpen(false);
             setActiveUser(null);
             messageApi.success("用户已更新");
         },
@@ -174,7 +174,7 @@ export const UserPage = () => {
             );
         },
         onSuccess: async () => {
-            setUserEditorOpen(false);
+            setUserEditDrawerorOpen(false);
             await invalidatePage();
             messageApi.success("用户已新增");
         },
@@ -283,7 +283,7 @@ export const UserPage = () => {
                       roles: []
                   }
         );
-        setUserEditorOpen(true);
+        setUserEditDrawerorOpen(true);
     };
 
     const toSaveCommand = (user: UserRecord, form: UserFormValues): SaveCommand => ({
@@ -430,7 +430,7 @@ export const UserPage = () => {
                             onStatusChange={updateSingleStatus}
                             onEdit={(user) => {
                                 setActiveUser(user);
-                                setUserEditorOpen(true);
+                                setUserEditDrawerorOpen(true);
                             }}
                             onDelete={confirmDeleteUser}
                         />
@@ -438,7 +438,7 @@ export const UserPage = () => {
                 </Splitter>
             </KuzhambuPage>
 
-            <UserEdit
+            <UserEditDrawer
                 key={`${userEditorOpen ? "open" : "closed"}-${activeUser?.id || "create"}-${currentUserQuery.data?.ranks ?? "rank"}`}
                 open={userEditorOpen}
                 title={isCreatingUser ? "新增用户" : "编辑用户"}
@@ -449,7 +449,7 @@ export const UserPage = () => {
                 rankOptions={userOptions.rankOptions}
                 saving={isCreatingUser ? createMutation.isPending : updateMutation.isPending}
                 onClose={() => {
-                    setUserEditorOpen(false);
+                    setUserEditDrawerorOpen(false);
                     setActiveUser(null);
                 }}
                 onCreate={saveCreatingUser}
