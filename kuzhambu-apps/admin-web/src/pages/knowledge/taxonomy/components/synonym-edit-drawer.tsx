@@ -5,7 +5,7 @@ import type { SynonymCreateCommand, SynonymUpdateCommand } from "../taxonomy-ser
 import type { SynonymRecord } from "../taxonomy-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 
-interface SynonymEditProps {
+interface SynonymEditDrawerProps {
     open?: boolean;
     saving?: boolean;
     synonym?: SynonymRecord | null;
@@ -14,7 +14,7 @@ interface SynonymEditProps {
     onSave?: (request: SynonymUpdateCommand) => void;
 }
 
-interface SynonymEditFormValues {
+interface SynonymEditDrawerFormValues {
     id?: string | null;
     synonym: string;
     term: string;
@@ -32,33 +32,33 @@ const createSynonymId = () => {
     return `${Date.now()}`;
 };
 
-const toFormValues = (record: SynonymRecord): SynonymEditFormValues => ({
+const toFormValues = (record: SynonymRecord): SynonymEditDrawerFormValues => ({
     id: record.id,
     synonym: record.synonym || "",
     term: record.term || ""
 });
 
-const toCreateRequest = (values: SynonymEditFormValues): SynonymCreateCommand => ({
+const toCreateRequest = (values: SynonymEditDrawerFormValues): SynonymCreateCommand => ({
     id: values.id || createSynonymId(),
     synonym: values.synonym.trim(),
     term: values.term.trim()
 });
 
-const toUpdateRequest = (values: SynonymEditFormValues): SynonymUpdateCommand => ({
+const toUpdateRequest = (values: SynonymEditDrawerFormValues): SynonymUpdateCommand => ({
     id: values.id || "",
     synonym: values.synonym.trim(),
     term: values.term.trim()
 });
 
-export const SynonymEdit = ({
+export const SynonymEditDrawer = ({
     open,
     saving = false,
     synonym,
     onClose,
     onCreate,
     onSave
-}: SynonymEditProps) => {
-    const [form] = Form.useForm<SynonymEditFormValues>();
+}: SynonymEditDrawerProps) => {
+    const [form] = Form.useForm<SynonymEditDrawerFormValues>();
     const visible = Boolean(open);
     const editing = Boolean(synonym?.id);
     const title = editing ? "编辑同义词" : "新增同义词";
@@ -96,14 +96,14 @@ export const SynonymEdit = ({
 
     return (
         <KuzhambuDrawer
-            testId="knowledge-taxonomy-synonym-editor-drawer"
-            className="knowledge-taxonomy-synonym-editor"
+            testId="knowledge-taxonomy-synonym-edit-drawer"
+            className="knowledge-taxonomy-synonym-edit-drawer"
             title={title}
             open={visible}
             size="small"
             onClose={onClose}
             footer={
-                <div className="knowledge-taxonomy-synonym-editor-footer">
+                <div className="knowledge-taxonomy-synonym-edit-drawer-footer">
                     <KuzhambuButton
                         testId="knowledge-taxonomy-synonym-cancel-button"
                         disabled={saving}
@@ -122,7 +122,7 @@ export const SynonymEdit = ({
                 </div>
             }
         >
-            <Form<SynonymEditFormValues>
+            <Form<SynonymEditDrawerFormValues>
                 form={form}
                 layout="vertical"
                 className="taxonomy-synonym-form"
