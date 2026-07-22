@@ -24,6 +24,7 @@ import type { WangqiDocumentRecord } from "../wangqi-types";
 const { Text } = Typography;
 
 const QA_CANDIDATE_POLL_INTERVAL_MS = 3000;
+const QA_AI_MODAL_TEST_ID = "classics-wangqi-document-qa-ai-modal";
 
 interface WangqiQaAiModalProps {
     creatingQaTask?: boolean;
@@ -272,6 +273,16 @@ export const WangqiQaAiModal = ({
                     queryKey: ["ai", "candidates", "WANGQI_DOCUMENT", document.id]
                 }),
                 queryClient.invalidateQueries({
+                    queryKey: [
+                        "sync-task-modal",
+                        QA_AI_MODAL_TEST_ID,
+                        "result",
+                        "WANGQI_DOCUMENT",
+                        document.id,
+                        "qa"
+                    ]
+                }),
+                queryClient.invalidateQueries({
                     queryKey: ["classics", "content", "qa-pairs", "WANGQI_DOCUMENT", document.id]
                 })
             ]);
@@ -370,7 +381,7 @@ export const WangqiQaAiModal = ({
                 生成问答
             </KuzhambuButton>
             <KuzhambuSyncTaskModal<AiRefinementTaskRecord, AiCandidateRecord>
-                testId="classics-wangqi-document-qa-ai-modal"
+                testId={QA_AI_MODAL_TEST_ID}
                 className="wangqi-qa-modal"
                 title="问答生成"
                 open={isOpen}

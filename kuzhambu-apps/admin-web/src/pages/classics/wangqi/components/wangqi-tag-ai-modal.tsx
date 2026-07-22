@@ -24,6 +24,7 @@ import type { WangqiDocumentRecord } from "../wangqi-types";
 const { Text } = Typography;
 
 const TAG_CANDIDATE_POLL_INTERVAL_MS = 3000;
+const TAG_AI_MODAL_TEST_ID = "classics-wangqi-document-tags-ai-modal";
 
 interface WangqiTagAiModalProps {
     creatingTagTask?: boolean;
@@ -274,6 +275,16 @@ export const WangqiTagAiModal = ({
                     queryKey: ["ai", "candidates", "WANGQI_DOCUMENT", document.id]
                 }),
                 queryClient.invalidateQueries({
+                    queryKey: [
+                        "sync-task-modal",
+                        TAG_AI_MODAL_TEST_ID,
+                        "result",
+                        "WANGQI_DOCUMENT",
+                        document.id,
+                        "tags"
+                    ]
+                }),
+                queryClient.invalidateQueries({
                     queryKey: ["classics", "content", "tags", "WANGQI_DOCUMENT", document.id]
                 })
             ]);
@@ -372,7 +383,7 @@ export const WangqiTagAiModal = ({
                 生成标签
             </KuzhambuButton>
             <KuzhambuSyncTaskModal<AiRefinementTaskRecord, AiCandidateRecord>
-                testId="classics-wangqi-document-tags-ai-modal"
+                testId={TAG_AI_MODAL_TEST_ID}
                 className="wangqi-tags-modal"
                 title="AI 标签"
                 open={isOpen}

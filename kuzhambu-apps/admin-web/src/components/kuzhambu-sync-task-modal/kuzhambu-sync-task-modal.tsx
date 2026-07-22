@@ -174,7 +174,6 @@ export const KuzhambuSyncTaskModal = <TTask, TResult>({
     const effectiveTask = (taskQuery.data ?? task) as TTask | null;
     const taskPhase = effectiveTask ? taskAdapter.getPhase(effectiveTask) : "idle";
     const resultKey = effectiveTask ? taskAdapter.getResultKey?.(effectiveTask) : null;
-    const shouldPollResult = creating || taskPhase === "tracking" || taskPhase === "waiting_result";
     const resultQuery = useQuery({
         queryKey: [
             "sync-task-modal",
@@ -187,7 +186,21 @@ export const KuzhambuSyncTaskModal = <TTask, TResult>({
         queryFn: () => fetchResult?.(effectiveTask),
         enabled: open && Boolean(fetchResult),
         retry: false,
-        refetchInterval: () => (shouldPollResult ? pollIntervalMs : false)
+        refetchInterval: (query) => {
+            const latestResult = query.state.data as TResult | null | undefined;
+            if (latestResult) {
+                return false;
+            }
+            if (
+                creating ||
+                taskPhase === "tracking" ||
+                taskPhase === "waiting_result" ||
+                taskPhase === "result_ready"
+            ) {
+                return pollIntervalMs;
+            }
+            return false;
+        }
     });
     const result = (resultQuery.data ?? null) as TResult | null;
     const phase = resolvePhase({

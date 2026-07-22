@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
@@ -103,5 +103,31 @@ describe("KuzhambuSyncTaskModal", () => {
 
         expect(await screen.findByText("任务结果获取失败")).toBeInTheDocument();
         expect(screen.getByText("candidate request failed")).toBeInTheDocument();
+    });
+
+    it("keeps polling a result-ready task until the result is returned", async () => {
+        const fetchResult = vi
+            .fn<() => Promise<string | null>>()
+            .mockResolvedValueOnce(null)
+            .mockResolvedValueOnce("候选结果");
+
+        renderWithQueryClient(
+            <KuzhambuSyncTaskModal<DemoTask, string>
+                open
+                createText="启动"
+                fetchResult={fetchResult}
+                pollIntervalMs={10}
+                task={{ id: 1, status: "SUCCEEDED" }}
+                taskAdapter={adapter}
+                testId="sync-task-modal-demo"
+                title="任务"
+                onCancel={vi.fn()}
+                onCreate={vi.fn()}
+                renderBody={({ result }) => <span>{result || "加载中"}</span>}
+            />
+        );
+
+        expect(await screen.findByText("候选结果")).toBeInTheDocument();
+        await waitFor(() => expect(fetchResult).toHaveBeenCalledTimes(2));
     });
 });
