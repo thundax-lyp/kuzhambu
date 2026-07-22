@@ -274,7 +274,7 @@ export const WangqiTagAiModal = ({
                 queryClient.invalidateQueries({
                     queryKey: ["ai", "candidates", "WANGQI_DOCUMENT", document.id]
                 }),
-                queryClient.invalidateQueries({
+                queryClient.removeQueries({
                     queryKey: [
                         "sync-task-modal",
                         TAG_AI_MODAL_TEST_ID,
