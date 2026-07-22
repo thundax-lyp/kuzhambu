@@ -8,6 +8,7 @@ import topicGuduImage from "@/assets/home/portal-home-topic-gudu.png";
 import topicQiyongImage from "@/assets/home/portal-home-topic-qiyong.png";
 import topicShanchuanImage from "@/assets/home/portal-home-topic-shanchuan.png";
 import topicTianwenImage from "@/assets/home/portal-home-topic-tianwen.png";
+import "./home-page.css";
 
 const valueStatements = [
     {

@@ -1,19 +1,24 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { PortalLayout } from "@/components/portal-layout";
-import { SancaiPage } from "@/pages/classics/sancai-page";
-import { DiscoveryQaPage } from "@/pages/discovery/qa-page";
-import { DiscoverySearchItemPage } from "@/pages/discovery/search-item-page";
-import { DiscoverySearchPage } from "@/pages/discovery/search-page";
+import { SancaiPage } from "@/pages/classics/sancai/sancai-page";
+import { DiscoveryQaPage } from "@/pages/discovery/qa/qa-page";
+import { DiscoverySearchPage } from "@/pages/discovery/search/search-page";
+import { DiscoverySearchItemPage } from "@/pages/discovery/search-item/search-item-page";
 import { HomePage } from "@/pages/home/home-page";
-import { KnowledgeAtlasPage } from "@/pages/knowledge/knowledge-atlas-page";
-import { KnowledgeHomePage } from "@/pages/knowledge/knowledge-home-page";
-import { KnowledgeLineagePage } from "@/pages/knowledge/knowledge-lineage-page";
-import { KnowledgeQualityPage } from "@/pages/knowledge/knowledge-quality-page";
-import { ShareForm } from "@/pages/share/share-form";
-import { SharePage } from "@/pages/share/share-page";
+import { KnowledgeAtlasPage } from "@/pages/knowledge/atlas/atlas-page";
+import { KnowledgeHomePage } from "@/pages/knowledge/home/home-page";
+import { KnowledgeLineagePage } from "@/pages/knowledge/lineage/lineage-page";
+import { KnowledgeQualityPage } from "@/pages/knowledge/quality/quality-page";
+import { ShareDetailPage } from "@/pages/share-detail/share-detail-page";
+import { ShareListPage } from "@/pages/share-list/share-list-page";
 
 import "./styles.css";
-import "@/pages/knowledge/knowledge-page.css";
+import "@/components/portal-shared.css";
+import "@/components/portal-shared-responsive.css";
+import "@/pages/discovery/qa/qa-page.css";
+import "@/pages/discovery/search/search-page.css";
+import "@/pages/knowledge/knowledge-shell.css";
+import "@/pages/share-detail/share-detail-page.css";
 
 const normalizeRouterBasename = (baseUrl: string) => {
     const normalizedBaseUrl = baseUrl.replace(/\/+$/, "");
@@ -34,8 +39,8 @@ export const App = () => {
                     <Route path="/discovery/search" element={<DiscoverySearchPage />} />
                     <Route path="/discovery/search-item" element={<DiscoverySearchItemPage />} />
                     <Route path="/discovery/qa" element={<DiscoveryQaPage />} />
-                    <Route path="/shares" element={<SharePage />} />
-                    <Route path="/share/:shareToken" element={<ShareForm />} />
+                    <Route path="/shares" element={<ShareListPage />} />
+                    <Route path="/share/:shareToken" element={<ShareDetailPage />} />
                 </Route>
             </Routes>
         </BrowserRouter>
