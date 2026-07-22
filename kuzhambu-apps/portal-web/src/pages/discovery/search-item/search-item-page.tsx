@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import type { SancaiEntryRecord } from "@/pages/classics/sancai-types";
 import * as searchItemService from "./search-item-service";
 import type { DiscoverySearchItemModel, DiscoverySearchItemType } from "./search-item-service";
-import type { DiscoverySearchPreviewResponse } from "./search-types";
+import type { DiscoverySearchPreviewResponse } from "@/pages/discovery/search/search-types";
 
 import "./search-item-page.css";
 

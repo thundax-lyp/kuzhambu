@@ -1,6 +1,6 @@
 import { buildApiUrl, postJson } from "@/api/http";
 import type { SancaiEntryRecord } from "@/pages/classics/sancai-types";
-import type { DiscoverySearchPreviewResponse } from "./search-types";
+import type { DiscoverySearchPreviewResponse } from "@/pages/discovery/search/search-types";
 
 export type DiscoverySearchItemType = "SANCAI_ENTRY" | "WANGQI_DOCUMENT" | "MING_CUSTOMS";
 
