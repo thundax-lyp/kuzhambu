@@ -82,7 +82,7 @@ export const GraphExtractionPage = () => {
         enabled: canViewGraph || canEditGraph,
         retry: false
     });
-    const detailQuery = useQuery({
+    const taskDetailQuery = useQuery({
         queryKey: ["knowledge", "graph-extraction", "task-detail", detailTaskId],
         queryFn: () => service.getTaskDetail({ taskId: detailTaskId || 0 }),
         enabled: taskDetailDrawerOpen && detailTaskId !== null,
@@ -160,7 +160,7 @@ export const GraphExtractionPage = () => {
 
     const tasks = taskPageQuery.data?.records || [];
 
-    const openTaskDetail = (task: GraphExtractionTaskRecord) => {
+    const openTaskDetailDrawer = (task: GraphExtractionTaskRecord) => {
         const taskId = Number(task.taskId);
         if (Number.isNaN(taskId)) {
             return;
@@ -294,7 +294,7 @@ export const GraphExtractionPage = () => {
                                 tasks={tasks}
                                 onApply={applyTask}
                                 onCancelBatch={cancelBatchTask}
-                                onOpenDetail={openTaskDetail}
+                                onOpenDetail={openTaskDetailDrawer}
                                 onRegenerate={regenerateTask}
                             />
                         ) : (
@@ -307,9 +307,9 @@ export const GraphExtractionPage = () => {
                     <GraphExtractionTaskDetail
                         applying={applyTaskMutation.isPending}
                         canApply={canApplyGraph}
-                        loading={detailQuery.isLoading}
+                        loading={taskDetailQuery.isLoading}
                         open={taskDetailDrawerOpen}
-                        task={detailQuery.data || null}
+                        task={taskDetailQuery.data || null}
                         onApply={() => {
                             if (detailTaskId !== null) {
                                 applyTaskMutation.mutate(detailTaskId);

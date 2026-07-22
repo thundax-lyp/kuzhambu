@@ -30,21 +30,21 @@ interface GraphResultsTabsProps {
     versionDetailDrawerOpen: boolean;
     entities: GraphEntityRecord[];
     entityDetail: GraphEntityRecord | null;
-    entityDetailOpen: boolean;
+    entityDetailDrawerOpen: boolean;
     entityDetailLoading: boolean;
     entityLoading: boolean;
     lineageNodeDetail: GraphLineageNodeRecord | null;
-    lineageNodeDetailOpen: boolean;
+    lineageNodeDetailDrawerOpen: boolean;
     lineageNodeDetailLoading: boolean;
     lineageNodeLoading: boolean;
     lineageNodes: GraphLineageNodeRecord[];
     lineageRelationDetail: GraphLineageRelationRecord | null;
-    lineageRelationDetailOpen: boolean;
+    lineageRelationDetailDrawerOpen: boolean;
     lineageRelationDetailLoading: boolean;
     lineageRelationLoading: boolean;
     lineageRelations: GraphLineageRelationRecord[];
     relationDetail: GraphRelationRecord | null;
-    relationDetailOpen: boolean;
+    relationDetailDrawerOpen: boolean;
     relationDetailLoading: boolean;
     relationLoading: boolean;
     relations: GraphRelationRecord[];
@@ -74,21 +74,21 @@ export const GraphResultsTabs = ({
     versionDetailDrawerOpen,
     entities,
     entityDetail,
-    entityDetailOpen,
+    entityDetailDrawerOpen,
     entityDetailLoading,
     entityLoading,
     lineageNodeDetail,
-    lineageNodeDetailOpen,
+    lineageNodeDetailDrawerOpen,
     lineageNodeDetailLoading,
     lineageNodeLoading,
     lineageNodes,
     lineageRelationDetail,
-    lineageRelationDetailOpen,
+    lineageRelationDetailDrawerOpen,
     lineageRelationDetailLoading,
     lineageRelationLoading,
     lineageRelations,
     relationDetail,
-    relationDetailOpen,
+    relationDetailDrawerOpen,
     relationDetailLoading,
     relationLoading,
     relations,
@@ -200,7 +200,7 @@ export const GraphResultsTabs = ({
                                         <GraphEntityDetail
                                             entity={entityDetail}
                                             loading={entityDetailLoading}
-                                            open={entityDetailOpen}
+                                            open={entityDetailDrawerOpen}
                                             onClose={onCloseEntityDetail}
                                         />
                                     </>
@@ -242,7 +242,7 @@ export const GraphResultsTabs = ({
                                         />
                                         <GraphRelationDetail
                                             loading={relationDetailLoading}
-                                            open={relationDetailOpen}
+                                            open={relationDetailDrawerOpen}
                                             relation={relationDetail}
                                             onClose={onCloseRelationDetail}
                                         />
@@ -316,12 +316,12 @@ export const GraphResultsTabs = ({
                                         <GraphLineageNodeDetail
                                             loading={lineageNodeDetailLoading}
                                             node={lineageNodeDetail}
-                                            open={lineageNodeDetailOpen}
+                                            open={lineageNodeDetailDrawerOpen}
                                             onClose={onCloseLineageNodeDetail}
                                         />
                                         <GraphLineageRelationDetail
                                             loading={lineageRelationDetailLoading}
-                                            open={lineageRelationDetailOpen}
+                                            open={lineageRelationDetailDrawerOpen}
                                             relation={lineageRelationDetail}
                                             onClose={onCloseLineageRelationDetail}
                                         />

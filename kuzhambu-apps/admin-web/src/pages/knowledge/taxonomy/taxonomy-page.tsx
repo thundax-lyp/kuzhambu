@@ -452,12 +452,12 @@ export const TaxonomyPage = () => {
     const selectedReviewIds = selectedReviewRowKeys.map(String);
     const selectedReviewTags = reviewTags.filter((tag) => selectedReviewIds.includes(tag.id));
 
-    const openCreateCategory = () => {
+    const openCreateCategoryDrawer = () => {
         setEditingCategory(null);
         setCategoryEditDrawerOpen(true);
     };
 
-    const openEditCategory = (category: TagCategoryRecord) => {
+    const openEditCategoryDrawer = (category: TagCategoryRecord) => {
         setEditingCategory(category);
         setCategoryEditDrawerOpen(true);
     };
@@ -470,22 +470,22 @@ export const TaxonomyPage = () => {
         setEditingCategory(null);
     };
 
-    const openCreateTag = () => {
+    const openCreateTagDrawer = () => {
         setEditingTag(null);
         setTagEditDrawerOpen(true);
     };
 
-    const openTagExtraction = () => {
+    const openTagExtractionDrawer = () => {
         setTagExtractionResult(null);
         setTagExtractionOpen(true);
     };
 
-    const openEditTag = (tag: TagRecord) => {
+    const openEditTagDrawer = (tag: TagRecord) => {
         setEditingTag(tag);
         setTagEditDrawerOpen(true);
     };
 
-    const openTagDetail = (tag: TagRecord, reviewMode = false) => {
+    const openTagDetailDrawer = (tag: TagRecord, reviewMode = false) => {
         setSelectedTag(tag);
         setTagDetailReviewMode(reviewMode);
         setTagDetailDrawerOpen(true);
@@ -501,7 +501,7 @@ export const TaxonomyPage = () => {
         setSynonymEditDrawerOpen(true);
     };
 
-    const closeTagEditor = () => {
+    const closeTagEditDrawer = () => {
         if (saveTagMutation.isPending) {
             return;
         }
@@ -517,7 +517,7 @@ export const TaxonomyPage = () => {
         setEditingSynonym(null);
     };
 
-    const closeTagDetail = () => {
+    const closeTagDetailDrawer = () => {
         if (reviewTagMutation.isPending || createAliasMutation.isPending) {
             return;
         }
@@ -527,7 +527,7 @@ export const TaxonomyPage = () => {
         setRemovingAliasId(null);
     };
 
-    const closeTagExtraction = () => {
+    const closeTagExtractionDrawer = () => {
         if (requestTagExtractionMutation.isPending || applyExtractedTagsMutation.isPending) {
             return;
         }
@@ -551,12 +551,12 @@ export const TaxonomyPage = () => {
         applyTagMergeMutation.mutate(request);
     };
 
-    const openTagBatchMerge = () => {
+    const openTagBatchMergeDrawer = () => {
         setTagBatchMergePreview(null);
         setTagBatchMergeOpen(true);
     };
 
-    const closeTagBatchMerge = () => {
+    const closeTagBatchMergeDrawer = () => {
         if (previewTagBatchMergeMutation.isPending || applyTagBatchMergeMutation.isPending) {
             return;
         }
@@ -591,12 +591,12 @@ export const TaxonomyPage = () => {
         });
     };
 
-    const openTagBatchReview = (decision: "APPROVE" | "REJECT") => {
+    const openTagBatchReviewDrawer = (decision: "APPROVE" | "REJECT") => {
         setTagBatchReviewDecision(decision);
         setTagBatchReviewOpen(true);
     };
 
-    const closeTagBatchReview = () => {
+    const closeTagBatchReviewDrawer = () => {
         if (reviewBatchTagsMutation.isPending) {
             return;
         }
@@ -624,9 +624,9 @@ export const TaxonomyPage = () => {
                                     loading={categoryPageQuery.isFetching}
                                     totalCount={readTotalCount(categoryPage)}
                                     query={categoryQuery}
-                                    onAdd={openCreateCategory}
+                                    onAdd={openCreateCategoryDrawer}
                                     onChange={setCategoryQuery}
-                                    onEdit={openEditCategory}
+                                    onEdit={openEditCategoryDrawer}
                                     onRefresh={() => categoryPageQuery.refetch()}
                                     onStatusChange={(request) =>
                                         categoryStatusMutation.mutate(request)
@@ -653,14 +653,14 @@ export const TaxonomyPage = () => {
                                     selectedRowKeys={selectedTagRowKeys}
                                     tags={tags}
                                     totalCount={readTotalCount(tagPage)}
-                                    onAdd={openCreateTag}
+                                    onAdd={openCreateTagDrawer}
                                     onApplyMerge={applyTagMerge}
                                     onBatchDeprecate={confirmDeprecateBatchTags}
-                                    onBatchMerge={openTagBatchMerge}
+                                    onBatchMerge={openTagBatchMergeDrawer}
                                     onChange={setTagQuery}
-                                    onEdit={openEditTag}
-                                    onExtract={openTagExtraction}
-                                    onOpenDetail={(tag) => openTagDetail(tag)}
+                                    onEdit={openEditTagDrawer}
+                                    onExtract={openTagExtractionDrawer}
+                                    onOpenDetail={(tag) => openTagDetailDrawer(tag)}
                                     onPreviewMerge={previewTagMergeImpact}
                                     onRefresh={() => tagPageQuery.refetch()}
                                     onRefreshMetrics={() => governanceMetricsQuery.refetch()}
@@ -682,10 +682,10 @@ export const TaxonomyPage = () => {
                                     selectedRowKeys={selectedReviewRowKeys}
                                     tags={reviewTags}
                                     totalCount={readTotalCount(reviewPage)}
-                                    onBatchApprove={() => openTagBatchReview("APPROVE")}
-                                    onBatchReject={() => openTagBatchReview("REJECT")}
+                                    onBatchApprove={() => openTagBatchReviewDrawer("APPROVE")}
+                                    onBatchReject={() => openTagBatchReviewDrawer("REJECT")}
                                     onChange={setReviewQuery}
-                                    onOpenReview={(tag) => openTagDetail(tag, true)}
+                                    onOpenReview={(tag) => openTagDetailDrawer(tag, true)}
                                     onRefresh={() => reviewPageQuery.refetch()}
                                     onSelectedRowKeysChange={setSelectedReviewRowKeys}
                                 />
@@ -740,7 +740,7 @@ export const TaxonomyPage = () => {
                 open={tagEditDrawerOpen}
                 saving={saveTagMutation.isPending}
                 tag={editingTag}
-                onClose={closeTagEditor}
+                onClose={closeTagEditDrawer}
                 onCreate={(request) => saveTagMutation.mutate(request)}
                 onSave={(request) => saveTagMutation.mutate(request)}
             />
@@ -766,7 +766,7 @@ export const TaxonomyPage = () => {
                 reviewing={reviewTagMutation.isPending}
                 tagDetail={tagDetailQuery.data}
                 onCreateAlias={createAlias}
-                onClose={closeTagDetail}
+                onClose={closeTagDetailDrawer}
                 onDeprecate={deprecateTag}
                 onApprove={(request: TagReviewCommand) => reviewTagMutation.mutate(request)}
                 onReject={(request: TagReviewCommand) => reviewTagMutation.mutate(request)}
@@ -779,7 +779,7 @@ export const TaxonomyPage = () => {
                     extracting={requestTagExtractionMutation.isPending}
                     applying={applyExtractedTagsMutation.isPending}
                     result={tagExtractionResult}
-                    onClose={closeTagExtraction}
+                    onClose={closeTagExtractionDrawer}
                     onExtract={(request) => requestTagExtractionMutation.mutate(request)}
                     onApply={(request) => applyExtractedTagsMutation.mutate(request)}
                     onResetResult={() => setTagExtractionResult(null)}
@@ -796,7 +796,7 @@ export const TaxonomyPage = () => {
                     selectedSourceTagIds={selectedTagIds}
                     selectedSourceTags={selectedTags}
                     onApply={applyTagBatchMerge}
-                    onClose={closeTagBatchMerge}
+                    onClose={closeTagBatchMergeDrawer}
                     onPreview={previewTagBatchMergeImpact}
                 />
             ) : null}
@@ -808,7 +808,7 @@ export const TaxonomyPage = () => {
                     open={tagBatchReviewOpen}
                     reviewing={reviewBatchTagsMutation.isPending}
                     selectedTags={selectedReviewTags}
-                    onClose={closeTagBatchReview}
+                    onClose={closeTagBatchReviewDrawer}
                     onSubmit={reviewBatchTags}
                 />
             ) : null}

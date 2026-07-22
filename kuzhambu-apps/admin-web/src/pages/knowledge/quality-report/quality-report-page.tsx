@@ -67,7 +67,7 @@ export const QualityReportPage = () => {
     const [graphVersionId, setGraphVersionId] = useState<number | null>(() =>
         readGraphVersionIdFromSearch()
     );
-    const [selectedDetail, setSelectedDetail] = useState<QualityReportDetailRecord | null>(null);
+    const [detailReport, setDetailReport] = useState<QualityReportDetailRecord | null>(null);
     const [latestReextractTask, setLatestReextractTask] =
         useState<ReextractLowQualityCategoryRecord | null>(null);
 
@@ -88,10 +88,10 @@ export const QualityReportPage = () => {
         enabled: canView,
         retry: false
     });
-    const detailMutation = useMutation({
+    const reportDetailMutation = useMutation({
         mutationFn: (report: QualityReportRecord) =>
             service.getReportDetail({ reportId: report.reportId }),
-        onSuccess: setSelectedDetail,
+        onSuccess: setDetailReport,
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "加载质量报告详情失败");
         }
@@ -103,7 +103,7 @@ export const QualityReportPage = () => {
                 generatedBy: 1
             }),
         onSuccess: async (detail) => {
-            setSelectedDetail(detail);
+            setDetailReport(detail);
             await Promise.all([
                 queryClient.invalidateQueries({
                     queryKey: ["knowledge", "quality-report", "latest"]
@@ -119,8 +119,8 @@ export const QualityReportPage = () => {
         }
     });
 
-    const currentDetail = selectedDetail || latestReportQuery.data || null;
-    const currentReport = currentDetail?.report || null;
+    const currentReportDetail = detailReport || latestReportQuery.data || null;
+    const currentReport = currentReportDetail?.report || null;
     const staleGraphVersionId = currentReport?.graphVersionId || graphVersionId || null;
     const reportItems = reportPageQuery.data?.records || [];
 
@@ -195,7 +195,7 @@ export const QualityReportPage = () => {
 
                 {currentReport ? (
                     <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
-                        {currentDetail?.stale ? (
+                        {currentReportDetail?.stale ? (
                             <KuzhambuAlert
                                 action={
                                     <KuzhambuButton
@@ -213,7 +213,7 @@ export const QualityReportPage = () => {
                                         重新生成报告
                                     </KuzhambuButton>
                                 }
-                                description={`最新精修时间：${formatTimestamp(currentDetail.lastRefinementAppliedAt)}`}
+                                description={`最新精修时间：${formatTimestamp(currentReportDetail.lastRefinementAppliedAt)}`}
                                 showIcon
                                 title="该版本质量报告早于最新精修应用"
                                 type="warning"
@@ -265,7 +265,7 @@ export const QualityReportPage = () => {
                                         label: "问题清单",
                                         children: (
                                             <QualityReportIssueTable
-                                                issues={currentDetail?.issues || []}
+                                                issues={currentReportDetail?.issues || []}
                                             />
                                         )
                                     },
@@ -281,7 +281,9 @@ export const QualityReportPage = () => {
                                                         : null
                                                 }
                                                 reportNo={currentReport.reportNo}
-                                                sourceDetails={currentDetail?.sourceDetails || []}
+                                                sourceDetails={
+                                                    currentReportDetail?.sourceDetails || []
+                                                }
                                                 onReextract={openReextractConfirm}
                                             />
                                         )
@@ -291,7 +293,7 @@ export const QualityReportPage = () => {
                                         label: "人工标注",
                                         children: (
                                             <QualityReportAnnotationTable
-                                                annotations={currentDetail?.annotations || []}
+                                                annotations={currentReportDetail?.annotations || []}
                                             />
                                         )
                                     }
@@ -318,9 +320,9 @@ export const QualityReportPage = () => {
                     </div>
                     <Card className="knowledge-quality-report-card" variant="borderless">
                         <QualityReportHistoryTable
-                            loading={reportPageQuery.isLoading || detailMutation.isPending}
+                            loading={reportPageQuery.isLoading || reportDetailMutation.isPending}
                             reports={reportItems}
-                            onView={(report) => detailMutation.mutate(report)}
+                            onView={(report) => reportDetailMutation.mutate(report)}
                         />
                     </Card>
                 </section>

@@ -28,13 +28,13 @@ export const GraphResultsPage = () => {
     const [detailVersionId, setDetailVersionId] = useState<number | null>(null);
     const [versionDetailDrawerOpen, setVersionDetailDrawerOpen] = useState(false);
     const [entityDetailId, setEntityDetailId] = useState<number | null>(null);
-    const [entityDetailOpen, setEntityDetailOpen] = useState(false);
+    const [entityDetailDrawerOpen, setEntityDetailDrawerOpen] = useState(false);
     const [relationDetailId, setRelationDetailId] = useState<number | null>(null);
-    const [relationDetailOpen, setRelationDetailOpen] = useState(false);
+    const [relationDetailDrawerOpen, setRelationDetailDrawerOpen] = useState(false);
     const [lineageNodeDetailId, setLineageNodeDetailId] = useState<number | null>(null);
-    const [lineageNodeDetailOpen, setLineageNodeDetailOpen] = useState(false);
+    const [lineageNodeDetailDrawerOpen, setLineageNodeDetailDrawerOpen] = useState(false);
     const [lineageRelationDetailId, setLineageRelationDetailId] = useState<number | null>(null);
-    const [lineageRelationDetailOpen, setLineageRelationDetailOpen] = useState(false);
+    const [lineageRelationDetailDrawerOpen, setLineageRelationDetailDrawerOpen] = useState(false);
 
     const versionPageQuery = useQuery({
         queryKey: ["knowledge", "graph-results", "versions", versionQuery],
@@ -83,19 +83,19 @@ export const GraphResultsPage = () => {
     const entityDetailQuery = useQuery({
         queryKey: ["knowledge", "graph-results", "entity-detail", entityDetailId],
         queryFn: () => service.getEntityDetail({ entityId: entityDetailId || 0 }),
-        enabled: entityDetailOpen && entityDetailId !== null,
+        enabled: entityDetailDrawerOpen && entityDetailId !== null,
         retry: false
     });
     const relationDetailQuery = useQuery({
         queryKey: ["knowledge", "graph-results", "relation-detail", relationDetailId],
         queryFn: () => service.getRelationDetail({ relationId: relationDetailId || 0 }),
-        enabled: relationDetailOpen && relationDetailId !== null,
+        enabled: relationDetailDrawerOpen && relationDetailId !== null,
         retry: false
     });
     const lineageNodeDetailQuery = useQuery({
         queryKey: ["knowledge", "graph-results", "lineage-node-detail", lineageNodeDetailId],
         queryFn: () => service.getLineageNodeDetail({ nodeId: lineageNodeDetailId || 0 }),
-        enabled: lineageNodeDetailOpen && lineageNodeDetailId !== null,
+        enabled: lineageNodeDetailDrawerOpen && lineageNodeDetailId !== null,
         retry: false
     });
     const lineageRelationDetailQuery = useQuery({
@@ -107,7 +107,7 @@ export const GraphResultsPage = () => {
         ],
         queryFn: () =>
             service.getLineageRelationDetail({ relationId: lineageRelationDetailId || 0 }),
-        enabled: lineageRelationDetailOpen && lineageRelationDetailId !== null,
+        enabled: lineageRelationDetailDrawerOpen && lineageRelationDetailId !== null,
         retry: false
     });
 
@@ -116,12 +116,12 @@ export const GraphResultsPage = () => {
     const lineageNodes = lineageNodePageQuery.data?.records || [];
     const lineageRelations = lineageRelationPageQuery.data?.records || [];
 
-    const openVersionDetail = (version: GraphVersionRecord) => {
+    const openVersionDetailDrawer = (version: GraphVersionRecord) => {
         setDetailVersionId(version.versionId);
         setVersionDetailDrawerOpen(true);
     };
 
-    const openVersionResults = (version: GraphVersionRecord) => {
+    const openVersionResultsTab = (version: GraphVersionRecord) => {
         selectVersionResults(version);
         setVersionDetailDrawerOpen(false);
     };
@@ -155,21 +155,21 @@ export const GraphResultsPage = () => {
                     entities={entities}
                     entityDetail={entityDetailQuery.data || null}
                     entityDetailLoading={entityDetailQuery.isLoading}
-                    entityDetailOpen={entityDetailOpen}
+                    entityDetailDrawerOpen={entityDetailDrawerOpen}
                     entityLoading={entityPageQuery.isLoading}
                     lineageNodeDetail={lineageNodeDetailQuery.data || null}
                     lineageNodeDetailLoading={lineageNodeDetailQuery.isLoading}
-                    lineageNodeDetailOpen={lineageNodeDetailOpen}
+                    lineageNodeDetailDrawerOpen={lineageNodeDetailDrawerOpen}
                     lineageNodeLoading={lineageNodePageQuery.isLoading}
                     lineageNodes={lineageNodes}
                     lineageRelationDetail={lineageRelationDetailQuery.data || null}
                     lineageRelationDetailLoading={lineageRelationDetailQuery.isLoading}
-                    lineageRelationDetailOpen={lineageRelationDetailOpen}
+                    lineageRelationDetailDrawerOpen={lineageRelationDetailDrawerOpen}
                     lineageRelationLoading={lineageRelationPageQuery.isLoading}
                     lineageRelations={lineageRelations}
                     relationDetail={relationDetailQuery.data || null}
                     relationDetailLoading={relationDetailQuery.isLoading}
-                    relationDetailOpen={relationDetailOpen}
+                    relationDetailDrawerOpen={relationDetailDrawerOpen}
                     relationLoading={relationPageQuery.isLoading}
                     relations={relations}
                     versionDetail={versionDetailQuery.data || null}
@@ -177,29 +177,29 @@ export const GraphResultsPage = () => {
                     versionLoading={versionPageQuery.isLoading}
                     versions={versions}
                     onActiveTabChange={setActiveTab}
-                    onCloseEntityDetail={() => setEntityDetailOpen(false)}
-                    onCloseLineageNodeDetail={() => setLineageNodeDetailOpen(false)}
-                    onCloseLineageRelationDetail={() => setLineageRelationDetailOpen(false)}
-                    onCloseRelationDetail={() => setRelationDetailOpen(false)}
+                    onCloseEntityDetail={() => setEntityDetailDrawerOpen(false)}
+                    onCloseLineageNodeDetail={() => setLineageNodeDetailDrawerOpen(false)}
+                    onCloseLineageRelationDetail={() => setLineageRelationDetailDrawerOpen(false)}
+                    onCloseRelationDetail={() => setRelationDetailDrawerOpen(false)}
                     onCloseVersionDetail={() => setVersionDetailDrawerOpen(false)}
                     onOpenEntityDetail={(entity) => {
                         setEntityDetailId(entity.entityId);
-                        setEntityDetailOpen(true);
+                        setEntityDetailDrawerOpen(true);
                     }}
                     onOpenLineageNodeDetail={(node) => {
                         setLineageNodeDetailId(node.nodeId);
-                        setLineageNodeDetailOpen(true);
+                        setLineageNodeDetailDrawerOpen(true);
                     }}
                     onOpenLineageRelationDetail={(relation) => {
                         setLineageRelationDetailId(relation.relationId);
-                        setLineageRelationDetailOpen(true);
+                        setLineageRelationDetailDrawerOpen(true);
                     }}
                     onOpenRelationDetail={(relation) => {
                         setRelationDetailId(relation.relationId);
-                        setRelationDetailOpen(true);
+                        setRelationDetailDrawerOpen(true);
                     }}
-                    onOpenVersionDetail={openVersionDetail}
-                    onOpenVersionResults={openVersionResults}
+                    onOpenVersionDetail={openVersionDetailDrawer}
+                    onOpenVersionResults={openVersionResultsTab}
                 />
             </KuzhambuSpace>
         </KuzhambuPage>
