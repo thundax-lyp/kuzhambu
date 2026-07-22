@@ -7,7 +7,7 @@ import type { DictItem } from "@/types/dict";
 import type { SancaiVolumeFormValues } from "./sancai-form-values";
 import { SancaiVolumeList } from "./sancai-volume-list";
 import { SancaiVolumeEditModal } from "./sancai-volume-edit-modal";
-import * as volumeService from "../services/sancai-volume-service";
+import * as volumeService from "../sancai-volume-service";
 import type { SancaiCategoryRecord, SancaiVolumeRecord } from "../sancai-types";
 
 interface SancaiVolumePanelProps {

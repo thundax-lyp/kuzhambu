@@ -16,7 +16,7 @@ import { SancaiCategoryPanel } from "./components/sancai-category-panel";
 import { SancaiEntryPanel } from "./components/sancai-entry-panel";
 import { SancaiVolumePanel } from "./components/sancai-volume-panel";
 import * as categoryService from "./sancai-category-service";
-import * as volumeService from "./services/sancai-volume-service";
+import * as volumeService from "./sancai-volume-service";
 import type {
     SancaiCatalogTreeNode,
     SancaiCategoryRecord,
