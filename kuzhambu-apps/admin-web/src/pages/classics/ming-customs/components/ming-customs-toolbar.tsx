@@ -22,7 +22,7 @@ export interface MingCustomsSelectedTagFilter {
     tagNameSnapshot: string;
 }
 
-export interface MingCustomsToolbarProps {
+interface MingCustomsToolbarProps {
     categoryOptions: Array<{ label: string; value: string }>;
     content: ReactNode;
     filterActive: boolean;

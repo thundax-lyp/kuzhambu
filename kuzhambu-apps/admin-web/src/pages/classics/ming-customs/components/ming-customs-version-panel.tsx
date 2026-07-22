@@ -1,7 +1,7 @@
 import { MingCustomsVersionHistoryPanel } from "./ming-customs-version-history-panel";
 import type { MingCustomsContentVersionRecord, MingCustomsRecord } from "../ming-customs-types";
 
-export interface MingCustomsVersionPanelProps {
+interface MingCustomsVersionPanelProps {
     currentEntry: MingCustomsRecord;
     detailLoading: boolean;
     listLoading: boolean;

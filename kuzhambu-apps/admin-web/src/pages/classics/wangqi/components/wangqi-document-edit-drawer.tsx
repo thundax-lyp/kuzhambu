@@ -30,7 +30,7 @@ const SUMMARY_CANDIDATE_POLL_INTERVAL_MS = 3000;
 type WangqiDocumentEditDrawerSection = "basic" | "tags" | "qa" | "source" | "versions";
 type SummaryTaskAlertType = "success" | "info" | "warning" | "error";
 
-export interface WangqiDocumentEditDrawerProps {
+interface WangqiDocumentEditDrawerProps {
     document?: WangqiDocumentRecord | null;
     loading?: boolean;
     mode: "create" | "edit";
