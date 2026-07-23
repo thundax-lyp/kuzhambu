@@ -1,4 +1,4 @@
-import { Form, Input, Select, Switch, Typography } from "antd";
+import { Col, Form, Input, Row, Select, Switch, Typography } from "antd";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
@@ -84,35 +84,43 @@ export const MingCustomsEditDrawer = ({
                 layout="vertical"
                 className="ming-customs-edit-drawer-form"
             >
-                <div className="ming-customs-edit-drawer-grid">
-                    <Form.Item
-                        name="title"
-                        label="标题"
-                        rules={[{ required: true, message: "请输入标题" }]}
-                    >
-                        <Input aria-label="明代习俗标题" maxLength={100} showCount />
-                    </Form.Item>
-                    <Form.Item
-                        name="category"
-                        label="分类"
-                        rules={[{ required: true, message: "请选择分类" }]}
-                    >
-                        <Select
-                            aria-label="明代习俗编辑分类"
-                            options={categoryOptions.map((option) => ({
-                                label: option.label,
-                                value: option.value
-                            }))}
-                            placeholder="选择分类"
-                        />
-                    </Form.Item>
-                    <Form.Item name="chapter" label="章节">
-                        <Input aria-label="明代习俗章节" maxLength={100} showCount />
-                    </Form.Item>
-                    <Form.Item name="section" label="小节">
-                        <Input aria-label="明代习俗小节" maxLength={100} showCount />
-                    </Form.Item>
-                </div>
+                <Row gutter={16}>
+                    <Col xs={24} md={12}>
+                        <Form.Item
+                            name="title"
+                            label="标题"
+                            rules={[{ required: true, message: "请输入标题" }]}
+                        >
+                            <Input aria-label="明代习俗标题" maxLength={100} showCount />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24} md={12}>
+                        <Form.Item
+                            name="category"
+                            label="分类"
+                            rules={[{ required: true, message: "请选择分类" }]}
+                        >
+                            <Select
+                                aria-label="明代习俗编辑分类"
+                                options={categoryOptions.map((option) => ({
+                                    label: option.label,
+                                    value: option.value
+                                }))}
+                                placeholder="选择分类"
+                            />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24} md={12}>
+                        <Form.Item name="chapter" label="章节">
+                            <Input aria-label="明代习俗章节" maxLength={100} showCount />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24} md={12}>
+                        <Form.Item name="section" label="小节">
+                            <Input aria-label="明代习俗小节" maxLength={100} showCount />
+                        </Form.Item>
+                    </Col>
+                </Row>
                 <Form.Item name="summary" label="概述">
                     <TextArea
                         aria-label="明代习俗概述"
@@ -121,25 +129,29 @@ export const MingCustomsEditDrawer = ({
                         showCount
                     />
                 </Form.Item>
-                <div className="ming-customs-edit-drawer-grid">
-                    <Form.Item name="contentFormat" label="正文格式">
-                        <Select
-                            aria-label="明代习俗正文格式"
-                            options={[
-                                { label: "Markdown", value: "MARKDOWN" },
-                                { label: "HTML", value: "HTML" },
-                                { label: "纯文本", value: "TEXT" }
-                            ]}
-                        />
-                    </Form.Item>
-                    <Form.Item name="isPublic" label="可见性" valuePropName="checked">
-                        <Switch
-                            aria-label="明代习俗公开状态"
-                            checkedChildren="公开"
-                            unCheckedChildren="私有"
-                        />
-                    </Form.Item>
-                </div>
+                <Row gutter={16}>
+                    <Col xs={24} md={12}>
+                        <Form.Item name="contentFormat" label="正文格式">
+                            <Select
+                                aria-label="明代习俗正文格式"
+                                options={[
+                                    { label: "Markdown", value: "MARKDOWN" },
+                                    { label: "HTML", value: "HTML" },
+                                    { label: "纯文本", value: "TEXT" }
+                                ]}
+                            />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24} md={12}>
+                        <Form.Item name="isPublic" label="可见性" valuePropName="checked">
+                            <Switch
+                                aria-label="明代习俗公开状态"
+                                checkedChildren="公开"
+                                unCheckedChildren="私有"
+                            />
+                        </Form.Item>
+                    </Col>
+                </Row>
                 <Form.Item name="content" label="正文">
                     <TextArea
                         aria-label="明代习俗正文"
