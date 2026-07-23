@@ -18,6 +18,215 @@
     content: none;
 }
 
+.portal-effect-hero-atmosphere {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.portal-effect-hero-atmosphere::before {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 74% 24%, rgba(255, 255, 245, 0.44), transparent 18%),
+        radial-gradient(circle at 82% 62%, rgba(226, 203, 154, 0.32), transparent 24%);
+    content: "";
+    mix-blend-mode: screen;
+    opacity: 0.88;
+}
+
+.portal-effect-hero-atmosphere::after {
+    position: absolute;
+    top: -22%;
+    left: 50%;
+    width: 28%;
+    height: 150%;
+    border-radius: 999px;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 252, 229, 0.08) 18%,
+        rgba(255, 252, 229, 0.38) 44%,
+        rgba(241, 208, 136, 0.16) 64%,
+        transparent 100%
+    );
+    content: "";
+    filter: blur(22px);
+    mix-blend-mode: screen;
+    opacity: 0.6;
+    transform: skewX(-19deg) rotate(9deg);
+}
+
+.portal-effect-tyndall {
+    position: absolute;
+    top: -24%;
+    left: 32%;
+    width: 30%;
+    height: 148%;
+    border-radius: 999px;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 240, 0.08) 24%,
+        rgba(255, 255, 236, 0.74) 47%,
+        rgba(255, 233, 172, 0.24) 61%,
+        transparent 100%
+    );
+    filter: blur(14px);
+    mix-blend-mode: screen;
+    opacity: 0.82;
+    transform: translateX(-78%) skewX(-18deg) rotate(9deg);
+    animation: portal-tyndall-sweep 7.8s ease-in-out infinite;
+    animation-delay: -3.9s;
+}
+
+.portal-effect-tyndall--fine {
+    left: 46%;
+    width: 12%;
+    opacity: 0.7;
+    filter: blur(7px);
+    animation-delay: -6.2s;
+    animation-duration: 9.2s;
+}
+
+.portal-effect-candle-glow {
+    display: none;
+}
+
+.portal-effect-page-turn {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border-radius: 0;
+    background:
+        linear-gradient(
+            93deg,
+            rgba(76, 50, 30, 0.22),
+            transparent 9%,
+            rgba(255, 252, 235, 0.16) 57%,
+            rgba(78, 51, 31, 0.2) 100%
+        ),
+        url("../../assets/home/portal-home-hero.png") center / cover no-repeat;
+    clip-path: polygon(72% 8%, 96.5% 6%, 97% 91%, 72% 88%);
+    filter: brightness(1.08) contrast(0.95) saturate(0.92);
+    opacity: 0;
+    transform: perspective(980px) rotateY(0deg) translateX(0) rotateZ(0deg);
+    transform-origin: 72% 50%;
+    transform-style: preserve-3d;
+    animation: portal-page-turn 14.8s cubic-bezier(0.42, 0, 0.18, 1) infinite;
+    animation-delay: -5.8s;
+}
+
+.portal-effect-page-turn::before,
+.portal-effect-page-turn::after {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    content: "";
+    pointer-events: none;
+}
+
+.portal-effect-page-turn::before {
+    background:
+        radial-gradient(ellipse at 72% 50%, rgba(55, 37, 21, 0.38), transparent 17%),
+        linear-gradient(
+            90deg,
+            transparent 67%,
+            rgba(255, 255, 238, 0.34) 78%,
+            rgba(75, 48, 30, 0.14) 100%
+        );
+    opacity: 0.72;
+}
+
+.portal-effect-page-turn::after {
+    left: 69%;
+    width: 6%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 236, 0.42), transparent);
+    filter: blur(2px);
+    opacity: 0.86;
+}
+
+.portal-effect-petal {
+    position: absolute;
+    display: block;
+    width: 11px;
+    height: 17px;
+    border-radius: 70% 30% 72% 28%;
+    background: linear-gradient(135deg, rgba(220, 145, 137, 0.56), rgba(160, 66, 61, 0.3));
+    box-shadow: 0 0 12px rgba(166, 87, 72, 0.12);
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(18deg);
+    animation: portal-petal-drift 9s linear infinite;
+}
+
+.portal-effect-petal--one {
+    top: 18%;
+    left: 88%;
+    animation-delay: -1.4s;
+}
+
+.portal-effect-petal--two {
+    top: 35%;
+    left: 94%;
+    width: 9px;
+    height: 14px;
+    animation-delay: -4.2s;
+    animation-duration: 11s;
+    animation-name: portal-petal-drift-high;
+}
+
+.portal-effect-petal--three {
+    top: 52%;
+    left: 90%;
+    width: 13px;
+    height: 18px;
+    animation-delay: -6.1s;
+    animation-duration: 10.2s;
+    animation-name: portal-petal-drift-low;
+}
+
+.portal-effect-petal--four {
+    top: 28%;
+    left: 78%;
+    width: 8px;
+    height: 13px;
+    animation-delay: -7.6s;
+    animation-duration: 12.5s;
+    animation-name: portal-petal-drift-high;
+}
+
+.portal-effect-petal--five {
+    top: 47%;
+    left: 102%;
+    width: 10px;
+    height: 16px;
+    animation-delay: -2.3s;
+    animation-duration: 13.5s;
+    animation-name: portal-petal-drift-low;
+}
+
+.portal-effect-petal--six {
+    top: 22%;
+    left: 99%;
+    width: 7px;
+    height: 12px;
+    animation-delay: -8.8s;
+    animation-duration: 10.8s;
+    animation-name: portal-petal-drift-high;
+}
+
+.portal-effect-petal--seven {
+    top: 62%;
+    left: 96%;
+    width: 12px;
+    height: 17px;
+    animation-delay: -5.4s;
+    animation-duration: 14s;
+    animation-name: portal-petal-drift-low;
+}
+
 .portal-effect-ink-left {
     display: none;
 }
@@ -261,4 +470,330 @@
     color: #6d665b;
     font-size: 13px;
     white-space: nowrap;
+}
+
+.dark .portal-effect-hero-atmosphere::before {
+    background:
+        radial-gradient(circle at 68% 54%, rgba(255, 211, 133, 0.42), transparent 21%),
+        radial-gradient(circle at 60% 58%, rgba(205, 95, 55, 0.2), transparent 28%),
+        linear-gradient(90deg, rgba(18, 22, 19, 0.1), rgba(18, 22, 19, 0));
+    opacity: 1;
+}
+
+.dark .portal-effect-hero-atmosphere::after {
+    display: none;
+}
+
+.dark .portal-effect-tyndall {
+    display: none;
+}
+
+.dark .portal-effect-candle-glow {
+    position: absolute;
+    top: 43%;
+    left: 61%;
+    display: block;
+    width: clamp(420px, 48vw, 760px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background:
+        radial-gradient(
+            circle,
+            rgba(255, 235, 177, 0.34) 0 8%,
+            rgba(255, 188, 101, 0.26) 22%,
+            rgba(205, 105, 62, 0.16) 46%,
+            rgba(98, 47, 33, 0.06) 70%,
+            transparent 82%
+        ),
+        radial-gradient(circle at 48% 46%, rgba(255, 241, 190, 0.2), transparent 18%);
+    box-shadow: 0 0 96px rgba(255, 166, 78, 0.16);
+    filter: blur(18px);
+    mix-blend-mode: screen;
+    opacity: 0.86;
+    transform: translate(-38%, -50%);
+    animation: portal-candle-sweep 18s ease-in-out infinite;
+    animation-delay: -7.2s;
+}
+
+.dark .portal-effect-petal {
+    background: linear-gradient(135deg, rgba(232, 176, 164, 0.92), rgba(169, 71, 67, 0.62));
+    box-shadow: 0 0 14px rgba(231, 150, 124, 0.18);
+}
+
+.dark .portal-effect-page-turn {
+    background:
+        linear-gradient(
+            93deg,
+            rgba(16, 12, 8, 0.36),
+            transparent 11%,
+            rgba(255, 192, 105, 0.2) 58%,
+            rgba(18, 13, 9, 0.28) 100%
+        ),
+        url("../../assets/home/portal-home-hero.png") center / cover no-repeat;
+    filter: brightness(0.72) contrast(1.08) saturate(0.82);
+    mix-blend-mode: screen;
+}
+
+@keyframes portal-tyndall-sweep {
+    0%,
+    18% {
+        transform: translateX(-92%) skewX(-18deg) rotate(9deg);
+        opacity: 0.24;
+    }
+
+    38% {
+        opacity: 0.92;
+    }
+
+    64% {
+        transform: translateX(72%) skewX(-18deg) rotate(9deg);
+        opacity: 0.72;
+    }
+
+    100% {
+        transform: translateX(122%) skewX(-18deg) rotate(9deg);
+        opacity: 0.2;
+    }
+}
+
+@keyframes portal-candle-sweep {
+    0%,
+    12% {
+        transform: translate(-38%, -50%) scale(0.98);
+        opacity: 0.62;
+    }
+
+    30% {
+        transform: translate(-31%, -52%) scale(1.03);
+        opacity: 0.82;
+    }
+
+    52% {
+        transform: translate(-23%, -48%) scale(1.06);
+        opacity: 0.76;
+    }
+
+    74% {
+        transform: translate(-29%, -45%) scale(1.02);
+        opacity: 0.86;
+    }
+
+    100% {
+        transform: translate(-38%, -50%) scale(0.98);
+        opacity: 0.62;
+    }
+}
+
+@keyframes portal-page-turn {
+    0%,
+    22% {
+        opacity: 0;
+        transform: perspective(980px) rotateY(0deg) translateX(0) rotateZ(0deg);
+    }
+
+    34% {
+        opacity: 0.38;
+        transform: perspective(980px) rotateY(-14deg) translateX(-2px) rotateZ(0.1deg);
+    }
+
+    52% {
+        opacity: 0.58;
+        transform: perspective(980px) rotateY(-50deg) translateX(-12px) rotateZ(-0.35deg);
+    }
+
+    68% {
+        opacity: 0.36;
+        transform: perspective(980px) rotateY(-98deg) translateX(-32px) rotateZ(-0.9deg);
+    }
+
+    84%,
+    100% {
+        opacity: 0;
+        transform: perspective(980px) rotateY(-132deg) translateX(-44px) rotateZ(-1.2deg);
+    }
+}
+
+@keyframes portal-petal-drift {
+    0% {
+        opacity: 0;
+        transform: translate3d(0, 0, 0) rotate(18deg);
+    }
+
+    16% {
+        opacity: 0.86;
+    }
+
+    64% {
+        opacity: 0.7;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate3d(-62vw, 46px, 0) rotate(-210deg);
+    }
+}
+
+@keyframes portal-petal-drift-high {
+    0% {
+        opacity: 0;
+        transform: translate3d(0, 0, 0) rotate(-12deg);
+    }
+
+    14% {
+        opacity: 0.72;
+    }
+
+    34% {
+        transform: translate3d(-18vw, -42px, 0) rotate(68deg);
+    }
+
+    62% {
+        opacity: 0.68;
+        transform: translate3d(-42vw, -64px, 0) rotate(156deg);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate3d(-74vw, 18px, 0) rotate(298deg);
+    }
+}
+
+@keyframes portal-petal-drift-low {
+    0% {
+        opacity: 0;
+        transform: translate3d(0, 0, 0) rotate(34deg);
+    }
+
+    18% {
+        opacity: 0.8;
+    }
+
+    42% {
+        transform: translate3d(-24vw, -30px, 0) rotate(-74deg);
+    }
+
+    72% {
+        opacity: 0.64;
+        transform: translate3d(-50vw, -12px, 0) rotate(-168deg);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate3d(-82vw, 64px, 0) rotate(-292deg);
+    }
+}
+
+@media (max-width: 1180px) {
+    .portal-effect-hero-atmosphere {
+        opacity: 0.72;
+    }
+
+    .portal-effect-hero-copy {
+        width: 100%;
+    }
+
+    .portal-effect-content {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 760px) {
+    .portal-effect-hero-atmosphere {
+        opacity: 0.46;
+    }
+
+    .portal-effect-tyndall {
+        left: 50%;
+        width: 34%;
+    }
+
+    .dark .portal-effect-candle-glow {
+        left: 50%;
+        width: 320px;
+    }
+
+    .portal-effect-hero-copy {
+        padding: 34px 22px 24px;
+    }
+
+    .portal-effect-hero-copy h1 {
+        font-size: clamp(42px, 13vw, 58px);
+    }
+
+    .portal-effect-hero-copy > p {
+        font-size: 17px;
+    }
+
+    .portal-effect-actions,
+    .portal-effect-values {
+        grid-template-columns: 1fr;
+    }
+
+    .portal-effect-primary,
+    .portal-effect-secondary {
+        width: 100%;
+    }
+
+    .portal-effect-content {
+        display: block;
+    }
+
+    .portal-effect-panel {
+        min-height: auto;
+        padding: 22px;
+        border-right: 0;
+        border-bottom: 1px solid rgba(79, 70, 52, 0.2);
+    }
+
+    .portal-effect-entry {
+        grid-template-columns: 76px minmax(0, 1fr);
+    }
+
+    .portal-effect-entry time {
+        display: none;
+    }
+
+    .portal-effect-topic {
+        grid-template-columns: 112px minmax(0, 1fr);
+    }
+
+    .portal-effect-topic img {
+        width: 112px;
+    }
+
+    .portal-effect-hot-list a {
+        grid-template-columns: 24px minmax(0, 1fr);
+    }
+
+    .portal-effect-hot-list small {
+        grid-column: 2;
+    }
+
+    .portal-effect-page-turn {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .portal-effect-tyndall,
+    .portal-effect-page-turn,
+    .portal-effect-petal,
+    .dark .portal-effect-candle-glow,
+    .dark .portal-effect-petal {
+        animation: none;
+    }
+
+    .portal-effect-tyndall {
+        opacity: 0.34;
+        transform: translateX(14%) skewX(-18deg) rotate(9deg);
+    }
+
+    .dark .portal-effect-candle-glow {
+        opacity: 0.54;
+        transform: translate(-34%, -48%) scale(1);
+    }
+
+    .portal-effect-petal {
+        opacity: 0.32;
+    }
 }
