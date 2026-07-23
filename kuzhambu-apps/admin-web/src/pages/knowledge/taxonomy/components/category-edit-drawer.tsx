@@ -1,7 +1,7 @@
 import { Form, Input, InputNumber } from "antd";
 import { useEffect, useMemo } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
+import { KuzhambuForm, KuzhambuFormHiddenItem, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import type { TagCategoryCreateCommand, TagCategoryUpdateCommand } from "../taxonomy-service";
 import type { TagCategoryRecord } from "../taxonomy-types";
 
@@ -131,9 +131,9 @@ export const CategoryEditDrawer = ({
                 form={form}
                 className="taxonomy-category-form"
             >
-                <Form.Item name="id" hidden>
+                <KuzhambuFormHiddenItem name="id">
                     <Input />
-                </Form.Item>
+                </KuzhambuFormHiddenItem>
                 <KuzhambuFormItem
                     name="name"
                     label="分类名"

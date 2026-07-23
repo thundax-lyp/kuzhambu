@@ -1,7 +1,7 @@
 import { Form, Input, Select } from "antd";
 import { useEffect, useMemo } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
+import { KuzhambuForm, KuzhambuFormHiddenItem, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import type { TagCreateCommand, TagUpdateCommand } from "../taxonomy-service";
 import type { TagCategoryRecord, TagRecord } from "../taxonomy-types";
 
@@ -138,9 +138,9 @@ export const TagEditDrawer = ({
             ]}
         >
             <KuzhambuForm<TagEditDrawerFormValues> form={form} className="taxonomy-tag-form">
-                <Form.Item name="id" hidden>
+                <KuzhambuFormHiddenItem name="id">
                     <Input />
-                </Form.Item>
+                </KuzhambuFormHiddenItem>
                 <KuzhambuFormItem
                     name="name"
                     label="标签名"

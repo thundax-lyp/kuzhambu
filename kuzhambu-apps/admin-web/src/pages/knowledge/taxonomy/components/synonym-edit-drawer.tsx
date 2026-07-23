@@ -1,7 +1,7 @@
 import { Form, Input } from "antd";
 import { useEffect, useMemo } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
+import { KuzhambuForm, KuzhambuFormHiddenItem, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import type { SynonymCreateCommand, SynonymUpdateCommand } from "../taxonomy-service";
 import type { SynonymRecord } from "../taxonomy-types";
 
@@ -122,9 +122,9 @@ export const SynonymEditDrawer = ({
                 form={form}
                 className="taxonomy-synonym-form"
             >
-                <Form.Item name="id" hidden>
+                <KuzhambuFormHiddenItem name="id">
                     <Input />
-                </Form.Item>
+                </KuzhambuFormHiddenItem>
                 <KuzhambuFormItem
                     name="term"
                     label="术语"

@@ -1,6 +1,6 @@
 import { Form, Input, InputNumber } from "antd";
 import { useEffect } from "react";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
+import { KuzhambuForm, KuzhambuFormHiddenItem, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuModal } from "@/components/kuzhambu-modal";
 import type { RefinementEntityRecord } from "../refinement-types";
 
@@ -39,15 +39,15 @@ export const RefinementEntityEditModal = ({
             onOk={() => form.submit()}
         >
             <KuzhambuForm form={form} onFinish={onSubmit}>
-                <Form.Item hidden name="entityId">
+                <KuzhambuFormHiddenItem name="entityId">
                     <Input />
-                </Form.Item>
-                <Form.Item hidden name="entityKey">
+                </KuzhambuFormHiddenItem>
+                <KuzhambuFormHiddenItem name="entityKey">
                     <Input />
-                </Form.Item>
-                <Form.Item hidden name="draftId">
+                </KuzhambuFormHiddenItem>
+                <KuzhambuFormHiddenItem name="draftId">
                     <InputNumber />
-                </Form.Item>
+                </KuzhambuFormHiddenItem>
                 <KuzhambuFormItem
                     label="名称"
                     name="name"

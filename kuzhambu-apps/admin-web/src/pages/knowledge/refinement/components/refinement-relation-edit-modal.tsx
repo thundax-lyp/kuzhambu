@@ -1,6 +1,6 @@
 import { Form, Input, InputNumber } from "antd";
 import { useEffect } from "react";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
+import { KuzhambuForm, KuzhambuFormHiddenItem, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuModal } from "@/components/kuzhambu-modal";
 import type { RefinementRelationRecord } from "../refinement-types";
 
@@ -39,12 +39,12 @@ export const RefinementRelationEditModal = ({
             onOk={() => form.submit()}
         >
             <KuzhambuForm form={form} onFinish={onSubmit}>
-                <Form.Item hidden name="relationId">
+                <KuzhambuFormHiddenItem name="relationId">
                     <Input />
-                </Form.Item>
-                <Form.Item hidden name="relationKey">
+                </KuzhambuFormHiddenItem>
+                <KuzhambuFormHiddenItem name="relationKey">
                     <Input />
-                </Form.Item>
+                </KuzhambuFormHiddenItem>
                 <KuzhambuFormItem
                     label="源实体 Key"
                     name="sourceEntityKey"
