@@ -1639,6 +1639,14 @@ describe("SancaiEntryPanel sharing", () => {
             pageNo: 1,
             pageSize: 20
         });
+        vi.mocked(aiRefinementTaskService.getTask).mockResolvedValueOnce({
+            taskId: 8201,
+            status: "RUNNING",
+            capability: "summary",
+            contentType: "SANCAI_ENTRY",
+            contentId: 3001,
+            requestedAt: "2026-06-22T01:00:00.000+08:00"
+        });
 
         renderEntryPanel();
 
