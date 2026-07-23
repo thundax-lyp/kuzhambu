@@ -133,6 +133,29 @@
     min-width: 0;
 }
 
+.portal-effect-mobile-menu {
+    display: none;
+    width: 38px;
+    height: 38px;
+    border-color: rgba(50, 61, 50, 0.48);
+    border-radius: 5px;
+    color: #315f55;
+}
+
+.portal-effect-mobile-menu-content {
+    min-width: 168px;
+    border-color: rgba(79, 70, 52, 0.18);
+    border-radius: 5px;
+    background: rgba(255, 253, 248, 0.98);
+    color: #1d241f;
+    font-family: "STSong", "Songti SC", "SimSun", serif;
+}
+
+.portal-effect-mobile-menu-content a {
+    min-height: 34px;
+    font-size: 15px;
+}
+
 .portal-effect-search {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) 68px;

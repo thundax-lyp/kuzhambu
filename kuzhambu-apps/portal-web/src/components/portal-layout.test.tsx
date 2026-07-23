@@ -104,6 +104,21 @@ describe("PortalLayout", () => {
         });
     });
 
+    it("renders a mobile navigation menu trigger with portal navigation links", () => {
+        const { container, root } = renderLayout();
+
+        expect(
+            container.querySelector<HTMLButtonElement>("[data-testid='portal-header-mobile-menu']")
+        ).not.toBeNull();
+        expect(container.querySelector(".portal-effect-nav")?.textContent).toContain("三才图会");
+        expect(container.querySelector(".portal-effect-nav")?.textContent).toContain("知识图谱");
+        expect(container.querySelector(".portal-effect-nav")?.textContent).toContain("问答");
+
+        act(() => {
+            root.unmount();
+        });
+    });
+
     it("applies the saved dark theme on the classics reader route", () => {
         window.localStorage.setItem("kuzhambu.portal.theme", "dark");
 

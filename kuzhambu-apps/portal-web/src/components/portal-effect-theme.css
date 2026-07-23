@@ -7,8 +7,10 @@
     }
 
     .portal-effect-nav {
+        flex-wrap: wrap;
         justify-content: flex-start;
-        overflow-x: auto;
+        gap: 10px 28px;
+        overflow-x: visible;
     }
 
     .portal-effect-header-actions {
@@ -33,12 +35,15 @@
     }
 
     .portal-effect-nav {
-        gap: 24px;
-        font-size: 16px;
+        display: none;
     }
 
     .portal-effect-header-actions {
         gap: 8px;
+    }
+
+    .portal-effect-mobile-menu {
+        display: inline-flex;
     }
 
     .portal-effect-search {
@@ -241,6 +246,17 @@
 
 .dark .portal-effect-theme-toggle {
     border-color: rgba(226, 210, 177, 0.28);
+    color: #f2eadb;
+}
+
+.dark .portal-effect-mobile-menu {
+    border-color: rgba(226, 210, 177, 0.28);
+    color: #f2eadb;
+}
+
+.dark .portal-effect-mobile-menu-content {
+    border-color: rgba(226, 210, 177, 0.2);
+    background: rgba(24, 29, 25, 0.98);
     color: #f2eadb;
 }
 
