@@ -10,6 +10,10 @@ export interface KuzhambuTextCompareProps {
     title?: string;
 }
 
+const shouldExposeTestId = () => {
+    return !import.meta.env.PROD || import.meta.env.VITE_EXPOSE_TEST_ID === "true";
+};
+
 export const KuzhambuTextCompare = ({
     baseline,
     candidate,
@@ -21,6 +25,7 @@ export const KuzhambuTextCompare = ({
     const changes = diffWordsWithSpace(baseline || "", candidate || "");
     const hasChanges = changes.some((change) => change.added || change.removed);
     const classNames = ["kuzhambu-text-compare", className].filter(Boolean).join(" ");
+    const testIdProps = shouldExposeTestId() && testId ? { "data-testid": testId } : {};
     const readChangeClassName = (change: (typeof changes)[number]) => {
         if (change.added) {
             return "is-added";
@@ -32,7 +37,7 @@ export const KuzhambuTextCompare = ({
     };
 
     return (
-        <section className={classNames} data-testid={testId} aria-label={title}>
+        <section className={classNames} {...testIdProps} aria-label={title}>
             <div className="kuzhambu-text-compare-title">{title}</div>
             <div className="kuzhambu-text-compare-content">
                 {hasChanges ? (

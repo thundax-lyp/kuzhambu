@@ -914,7 +914,7 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
             value: "visual",
             content: (
                 <>
-                    <KuzhambuForm {...formProps}>{visualAssetContent}</KuzhambuForm>
+                    {visualAssetContent}
                     {visualRefinementContent}
                 </>
             ),
