@@ -12,6 +12,7 @@ import type {
     SancaiCategoryRecord,
     SancaiVolumeRecord
 } from "@/pages/classics/sancai/sancai-types";
+import "./sancai-volume-panel.css";
 
 interface SancaiVolumePanelProps {
     categories: SancaiCategoryRecord[];

@@ -100,25 +100,6 @@ html[data-theme="dark"] .sancai-form-field {
     padding-right: 2px;
 }
 
-.sancai-volume-main {
-    display: flex;
-    min-width: 0;
-    align-items: center;
-    gap: 8px;
-}
-
-.sancai-volume-main a {
-    overflow: hidden;
-    color: var(--sancai-ink);
-    font-weight: 700;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.sancai-volume-main a:hover {
-    color: var(--sancai-accent);
-}
-
 .sancai-category-edit-modal {
     display: grid;
     min-width: 0;
@@ -181,10 +162,6 @@ html[data-theme="dark"] .sancai-form-field {
 
 .sancai-entry-title-cell a:hover {
     color: var(--sancai-accent);
-}
-
-.sancai-volume-table-row-active > td {
-    background: var(--sancai-accent-soft);
 }
 
 .sancai-detail-card {

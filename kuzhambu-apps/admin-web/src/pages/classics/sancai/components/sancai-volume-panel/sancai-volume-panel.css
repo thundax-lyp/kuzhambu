@@ -1,0 +1,22 @@
+.sancai-volume-main {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 8px;
+}
+
+.sancai-volume-main a {
+    overflow: hidden;
+    color: var(--sancai-ink);
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sancai-volume-main a:hover {
+    color: var(--sancai-accent);
+}
+
+.sancai-volume-table-row-active > td {
+    background: var(--sancai-accent-soft);
+}
