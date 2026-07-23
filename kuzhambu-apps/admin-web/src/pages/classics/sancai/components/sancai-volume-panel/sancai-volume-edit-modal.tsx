@@ -1,5 +1,6 @@
 import { Form, Input, Select } from "antd";
 import { useState } from "react";
+import { ADMIN_FORM_COMPACT_HORIZONTAL_LAYOUT } from "@/components/form/form-layout";
 import { KuzhambuModal } from "@/components/kuzhambu-modal";
 import type { DictItem } from "@/types/dict";
 import { toVolumeFormValues, type SancaiVolumeFormValues } from "../sancai-form-values";
@@ -96,8 +97,9 @@ const SancaiVolumeForm = ({
             aria-label={volume ? "编辑卷目" : "新增卷目"}
             className="sancai-category-edit-modal sancai-editor-form"
             component="div"
-            labelCol={{ flex: "72px" }}
+            labelCol={ADMIN_FORM_COMPACT_HORIZONTAL_LAYOUT.labelCol}
             layout="horizontal"
+            wrapperCol={ADMIN_FORM_COMPACT_HORIZONTAL_LAYOUT.wrapperCol}
         >
             <Form.Item label="卷目标题">
                 <Input
