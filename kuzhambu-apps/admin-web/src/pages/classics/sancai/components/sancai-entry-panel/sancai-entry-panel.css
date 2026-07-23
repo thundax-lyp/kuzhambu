@@ -1,0 +1,121 @@
+.sancai-candidate-panel-anchor {
+    outline: none;
+}
+
+.sancai-entry-table-wrap {
+    display: grid;
+    min-width: 0;
+    gap: 12px;
+}
+
+.sancai-entry-table .ant-table {
+    color: var(--sancai-ink);
+    background: var(--sancai-soft);
+    border: 1px solid var(--sancai-line);
+    border-radius: 8px;
+}
+
+.sancai-entry-table .ant-table-thead > tr > th {
+    color: var(--sancai-copy);
+    font-weight: 700;
+    background: var(--sancai-panel);
+    border-bottom-color: var(--sancai-line);
+}
+
+.sancai-entry-table .ant-table-tbody > tr > td {
+    border-bottom-color: var(--sancai-line);
+}
+
+.sancai-entry-title-cell {
+    display: grid;
+    min-width: 0;
+    gap: 2px;
+}
+
+.sancai-entry-title-cell a,
+.sancai-entry-table .ant-table-cell .ant-typography-secondary {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sancai-entry-title-cell a {
+    color: var(--sancai-ink);
+    font-weight: 700;
+}
+
+.sancai-entry-title-cell a:hover {
+    color: var(--sancai-accent);
+}
+
+.sancai-entry-image-manager {
+    display: grid;
+    min-width: 0;
+    gap: 12px;
+}
+
+.sancai-entry-image-toolbar {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.sancai-entry-image-cell {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: 132px minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    width: 100%;
+    padding: 0;
+    color: inherit;
+    text-align: left;
+    text-decoration: none;
+    background: transparent;
+    border: 0;
+    cursor: default;
+}
+
+.sancai-entry-image-cell .ant-image,
+.sancai-entry-image-cell img {
+    border-radius: 4px;
+}
+
+.sancai-entry-image-cell .ant-image {
+    width: 132px;
+    height: 88px;
+    cursor: zoom-in;
+}
+
+.sancai-entry-image-cell img {
+    object-fit: cover;
+}
+
+.sancai-entry-image-cover-thumbnail,
+.sancai-entry-image-cover-thumbnail img {
+    border: 2px solid var(--sancai-accent);
+    box-shadow: 0 0 0 2px var(--sancai-accent-soft);
+}
+
+.sancai-entry-image-cover,
+.sancai-entry-image-cover .ant-ribbon-wrapper {
+    display: block;
+    width: 132px;
+    height: 88px;
+}
+
+.sancai-entry-image-cover .ant-ribbon {
+    background: var(--sancai-accent);
+}
+
+.sancai-entry-image-meta {
+    display: grid;
+    min-width: 0;
+    gap: 4px;
+}
+
+.sancai-entry-image-meta .ant-typography {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

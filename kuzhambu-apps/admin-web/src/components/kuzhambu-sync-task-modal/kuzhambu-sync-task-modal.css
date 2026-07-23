@@ -4,6 +4,21 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
+    min-height: 32px;
+}
+
+.kuzhambu-sync-task-modal-title > span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.kuzhambu-sync-task-modal-title-actions {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 8px;
 }
 
 .kuzhambu-sync-task-modal-footer {

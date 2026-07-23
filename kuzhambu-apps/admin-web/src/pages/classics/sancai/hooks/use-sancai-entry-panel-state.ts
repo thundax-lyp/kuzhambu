@@ -332,6 +332,33 @@ export const useSancaiEntryPanelState = ({
             }
         },
         onSuccess: async (acceptedTask, command) => {
+            queryClient.setQueryData(
+                ["classics", "sancai", "refinement", "tasks", selectedEntryId],
+                (
+                    current:
+                        | {
+                              items?: AiRefinementTaskRecord[];
+                              pageNo?: number;
+                              pageSize?: number;
+                              total?: number;
+                          }
+                        | undefined
+                ) => {
+                    if (!acceptedTask?.taskId) {
+                        return current;
+                    }
+                    const items = current?.items || [];
+                    if (items.some((task) => task.taskId === acceptedTask.taskId)) {
+                        return current;
+                    }
+                    return {
+                        pageNo: current?.pageNo ?? 1,
+                        pageSize: current?.pageSize ?? Math.max(items.length + 1, 20),
+                        total: (current?.total ?? items.length) + 1,
+                        items: [acceptedTask, ...items]
+                    };
+                }
+            );
             await invalidateRefinementTasks();
             if (acceptedTask?.taskId && isStreamRefinementCapability(command.capability)) {
                 const task = await aiRefinementTaskService.getTask({

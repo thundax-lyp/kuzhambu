@@ -5,15 +5,18 @@ import {
     FileTextOutlined,
     PictureOutlined
 } from "@ant-design/icons";
-import { Empty, Form, Image, Input, Select, Tag, Typography } from "antd";
+import { Col, Empty, Form, Image, Input, Row, Select, Tag, Typography } from "antd";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
-import type { SancaiVisualAssetRefinementCapability } from "../sancai-entry-service";
-import type { SancaiEntryImageRecord, SancaiVisualAssetRecord } from "../sancai-types";
+import type { SancaiVisualAssetRefinementCapability } from "@/pages/classics/sancai/sancai-entry-service";
+import type {
+    SancaiEntryImageRecord,
+    SancaiVisualAssetRecord
+} from "@/pages/classics/sancai/sancai-types";
 
 const { Text } = Typography;
 
@@ -373,34 +376,38 @@ export const SancaiEntryVisualSection = ({
                             </KuzhambuButton>
                         </KuzhambuSpace>
                     </div>
-                    <div className="sancai-entry-edit-drawer-catalog-row">
-                        <Form.Item label="文本权重">
-                            <Input
-                                aria-label="三才图会视觉处理文本权重"
-                                value={visualAssetFormValue?.textWeight ?? ""}
-                                onChange={(event) =>
-                                    onUpdateVisualAssetForm({
-                                        textWeight: event.target.value
-                                            ? Number(event.target.value)
-                                            : null
-                                    })
-                                }
-                            />
-                        </Form.Item>
-                        <Form.Item label="图片权重">
-                            <Input
-                                aria-label="三才图会视觉处理图片权重"
-                                value={visualAssetFormValue?.imageWeight ?? ""}
-                                onChange={(event) =>
-                                    onUpdateVisualAssetForm({
-                                        imageWeight: event.target.value
-                                            ? Number(event.target.value)
-                                            : null
-                                    })
-                                }
-                            />
-                        </Form.Item>
-                    </div>
+                    <Row gutter={10}>
+                        <Col xs={24} md={12}>
+                            <Form.Item label="文本权重">
+                                <Input
+                                    aria-label="三才图会视觉处理文本权重"
+                                    value={visualAssetFormValue?.textWeight ?? ""}
+                                    onChange={(event) =>
+                                        onUpdateVisualAssetForm({
+                                            textWeight: event.target.value
+                                                ? Number(event.target.value)
+                                                : null
+                                        })
+                                    }
+                                />
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} md={12}>
+                            <Form.Item label="图片权重">
+                                <Input
+                                    aria-label="三才图会视觉处理图片权重"
+                                    value={visualAssetFormValue?.imageWeight ?? ""}
+                                    onChange={(event) =>
+                                        onUpdateVisualAssetForm({
+                                            imageWeight: event.target.value
+                                                ? Number(event.target.value)
+                                                : null
+                                        })
+                                    }
+                                />
+                            </Form.Item>
+                        </Col>
+                    </Row>
                     <Form.Item label="图片理解" className="sancai-entry-edit-drawer-form-item-top">
                         <Input.TextArea
                             aria-label="三才图会视觉处理图片理解"

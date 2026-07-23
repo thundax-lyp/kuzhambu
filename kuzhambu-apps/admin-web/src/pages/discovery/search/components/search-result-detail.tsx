@@ -1,5 +1,4 @@
 import { Descriptions, Empty, Spin, Tag, Typography } from "antd";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import type { DiscoverySearchPreviewRecord } from "../search-types";
 import type { SearchResultEntry } from "./search-result-table";
@@ -91,11 +90,13 @@ export const SearchResultDetail = ({
             size="large"
             testId="discovery-search-preview-drawer"
             title={previewTitle}
-            footer={
-                <KuzhambuButton testId="discovery-search-preview-close-button" onClick={onClose}>
-                    关闭预览
-                </KuzhambuButton>
-            }
+            footerActions={[
+                {
+                    testId: "discovery-search-preview-close-button",
+                    title: "关闭预览",
+                    action: onClose
+                }
+            ]}
             onClose={onClose}
         >
             <Spin spinning={loading}>

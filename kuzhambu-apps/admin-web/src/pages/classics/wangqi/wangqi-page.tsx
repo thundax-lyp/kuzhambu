@@ -33,7 +33,7 @@ import type {
     ClassicsExportScopePayload
 } from "@/pages/classics/common/classics-export-types";
 import { WangqiDocumentTable } from "./components/wangqi-document-table";
-import { WangqiDocumentToolbar } from "./components/wangqi-document-toolbar";
+import { WangqiDocumentBatchResults } from "./components/wangqi-document-batch-results";
 import { WangqiExportActions } from "./components/wangqi-export-actions";
 import { WangqiDocumentEditDrawer } from "./components/wangqi-document-edit-drawer";
 import type { WangqiQaTaskPair } from "./components/wangqi-qa-ai-modal";
@@ -937,28 +937,25 @@ export const WangqiPage = () => {
                     onReset={resetFilters}
                 />
                 <div className="wangqi-document-panel">
-                    <WangqiDocumentToolbar
+                    <WangqiDocumentBatchResults
                         batchShareResult={batchShareResult}
                         batchVisibilityResult={batchVisibilityResult}
-                        canChangeDocumentVisibility={canChangeDocumentVisibility}
-                        canShareDocuments={canShareDocuments}
-                        isBatchSharing={batchShareMutation.isPending}
-                        isBatchVisibilityChanging={batchVisibilityMutation.isPending}
-                        recordCount={records.length}
-                        selectedCount={selectedDocuments.length}
-                        onChangeSelectedVisibility={changeSelectedVisibility}
-                        onOpenBatchCandidateDrawer={openBatchCandidateDrawer}
-                        onShareSelectedDocuments={shareSelectedDocuments}
                     />
                     <WangqiDocumentTable
+                        canChangeDocumentVisibility={canChangeDocumentVisibility}
                         canExport={canExportDocuments}
                         canShare={canShareDocuments}
+                        isBatchSharing={batchShareMutation.isPending}
+                        isBatchVisibilityChanging={batchVisibilityMutation.isPending}
                         loading={wangqiDocumentPageQuery.isLoading}
                         dataSource={records}
+                        onChangeSelectedVisibility={changeSelectedVisibility}
                         onDelete={deleteDocument}
                         onExport={exportDocument}
                         onOpenEdit={openEditWangqiDocumentDrawer}
+                        onOpenBatchCandidateDrawer={openBatchCandidateDrawer}
                         onShare={shareDocument}
+                        onShareSelectedDocuments={shareSelectedDocuments}
                         onSelectedDocumentIdsChange={setSelectedDocumentIds}
                         onSortDirectionChange={sortWangqiDocuments}
                         pagination={{
@@ -1012,6 +1009,7 @@ export const WangqiPage = () => {
                         ? () => createRefinementTask(editingDocumentData, "summary")
                         : undefined
                 }
+                onSummaryTaskChange={setSummaryTrackingTask}
                 onClose={closeWangqiDocumentEditDrawer}
                 onSave={(command) => saveMutation.mutate(command)}
                 tagContent={
@@ -1038,7 +1036,9 @@ export const WangqiPage = () => {
                                 })
                             }
                             onOpenSingleDocumentQa={openSingleDocumentQa}
+                            onQaTaskChange={setQaTrackingTask}
                             onRejectedCandidate={invalidateWangqiCandidates}
+                            onTagTaskChange={setTagTrackingTask}
                         />
                     ) : null
                 }
@@ -1066,7 +1066,9 @@ export const WangqiPage = () => {
                                 })
                             }
                             onOpenSingleDocumentQa={openSingleDocumentQa}
+                            onQaTaskChange={setQaTrackingTask}
                             onRejectedCandidate={invalidateWangqiCandidates}
+                            onTagTaskChange={setTagTrackingTask}
                         />
                     ) : null
                 }

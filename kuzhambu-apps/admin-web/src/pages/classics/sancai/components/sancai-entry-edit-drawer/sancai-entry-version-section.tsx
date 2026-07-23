@@ -1,5 +1,8 @@
-import { SancaiVersionHistoryPanel } from "./sancai-version-history-panel";
-import type { SancaiContentVersionRecord, SancaiEntryRecord } from "../sancai-types";
+import { SancaiVersionHistoryPanel } from "../sancai-version-history-panel";
+import type {
+    SancaiContentVersionRecord,
+    SancaiEntryRecord
+} from "@/pages/classics/sancai/sancai-types";
 
 interface SancaiEntryVersionSectionProps {
     currentEntry: SancaiEntryRecord | undefined;

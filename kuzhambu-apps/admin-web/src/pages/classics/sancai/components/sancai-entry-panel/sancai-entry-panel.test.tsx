@@ -10,7 +10,7 @@ import * as shareService from "@/pages/classics/common/classics-share-service";
 import * as currentUserService from "@/service/current-user-service";
 import { clearPermissions, replacePermissions } from "@/auth/permission-storage";
 import { SancaiEntryPanel } from "./sancai-entry-panel";
-import * as entryService from "../sancai-entry-service";
+import * as entryService from "@/pages/classics/sancai/sancai-entry-service";
 
 const confirmDangerMock = vi.hoisted(() =>
     vi.fn((options: { onConfirm: () => unknown }) => options.onConfirm())
@@ -245,7 +245,7 @@ vi.mock("@/pages/classics/common/classics-export-service", () => ({
     getContentUrl: vi.fn()
 }));
 
-vi.mock("../sancai-entry-service", () => ({
+vi.mock("@/pages/classics/sancai/sancai-entry-service", () => ({
     add: vi.fn(),
     deleteById: vi.fn(),
     get: vi.fn(async () => ({
@@ -1638,6 +1638,14 @@ describe("SancaiEntryPanel sharing", () => {
             total: 1,
             pageNo: 1,
             pageSize: 20
+        });
+        vi.mocked(aiRefinementTaskService.getTask).mockResolvedValueOnce({
+            taskId: 8201,
+            status: "RUNNING",
+            capability: "summary",
+            contentType: "SANCAI_ENTRY",
+            contentId: 3001,
+            requestedAt: "2026-06-22T01:00:00.000+08:00"
         });
 
         renderEntryPanel();

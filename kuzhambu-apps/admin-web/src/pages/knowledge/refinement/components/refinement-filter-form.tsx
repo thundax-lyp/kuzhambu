@@ -1,4 +1,4 @@
-import { Form, Input, Select } from "antd";
+import { Col, Form, Input, Row, Select } from "antd";
 import { useEffect } from "react";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { RefinementTaskPageQuery } from "../refinement-types";
@@ -28,7 +28,6 @@ export const RefinementFilterForm = ({
     return (
         <Form
             form={form}
-            layout="inline"
             initialValues={value}
             onFinish={(values) =>
                 onChange({
@@ -38,59 +37,69 @@ export const RefinementFilterForm = ({
                 })
             }
         >
-            <Form.Item label="任务类型" name="taskType">
-                <Select
-                    allowClear
-                    style={{ width: 140 }}
-                    options={[
-                        { label: "图谱", value: "GRAPH" },
-                        { label: "关系", value: "RELATION" },
-                        { label: "世系", value: "LINEAGE" }
-                    ]}
-                />
-            </Form.Item>
-            <Form.Item label="门类编码" name="sourceCategoryCode">
-                <Input allowClear placeholder="如 myth" />
-            </Form.Item>
-            <Form.Item label="来源类型" name="sourceContentType">
-                <Input allowClear placeholder="如 SANCAI_ENTRY" />
-            </Form.Item>
-            <Form.Item label="状态" name="status">
-                <Select
-                    allowClear
-                    style={{ width: 140 }}
-                    options={[
-                        { label: "草稿", value: "DRAFT" },
-                        { label: "已应用", value: "APPLIED" }
-                    ]}
-                />
-            </Form.Item>
-            <Form.Item>
-                <KuzhambuSpace>
-                    <KuzhambuButton
-                        testId="knowledge-refinement-refinement-filter-filter-button"
-                        htmlType="submit"
-                        loading={loading}
-                        type="primary"
-                    >
-                        筛选
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="knowledge-refinement-refinement-filter-reset-button"
-                        onClick={() => {
-                            form.setFieldsValue({
-                                taskType: undefined,
-                                sourceCategoryCode: undefined,
-                                sourceContentType: undefined,
-                                status: undefined
-                            });
-                            onChange(resetValues);
-                        }}
-                    >
-                        重置
-                    </KuzhambuButton>
-                </KuzhambuSpace>
-            </Form.Item>
+            <Row gutter={12}>
+                <Col xs={24} sm={12} md={8} lg={6}>
+                    <Form.Item label="任务类型" name="taskType">
+                        <Select
+                            allowClear
+                            options={[
+                                { label: "图谱", value: "GRAPH" },
+                                { label: "关系", value: "RELATION" },
+                                { label: "世系", value: "LINEAGE" }
+                            ]}
+                        />
+                    </Form.Item>
+                </Col>
+                <Col xs={24} sm={12} md={8} lg={6}>
+                    <Form.Item label="门类编码" name="sourceCategoryCode">
+                        <Input allowClear placeholder="如 myth" />
+                    </Form.Item>
+                </Col>
+                <Col xs={24} sm={12} md={8} lg={6}>
+                    <Form.Item label="来源类型" name="sourceContentType">
+                        <Input allowClear placeholder="如 SANCAI_ENTRY" />
+                    </Form.Item>
+                </Col>
+                <Col xs={24} sm={12} md={8} lg={6}>
+                    <Form.Item label="状态" name="status">
+                        <Select
+                            allowClear
+                            options={[
+                                { label: "草稿", value: "DRAFT" },
+                                { label: "已应用", value: "APPLIED" }
+                            ]}
+                        />
+                    </Form.Item>
+                </Col>
+                <Col xs={24}>
+                    <Form.Item>
+                        <KuzhambuSpace>
+                            <KuzhambuButton
+                                testId="knowledge-refinement-refinement-filter-filter-button"
+                                htmlType="submit"
+                                loading={loading}
+                                type="primary"
+                            >
+                                筛选
+                            </KuzhambuButton>
+                            <KuzhambuButton
+                                testId="knowledge-refinement-refinement-filter-reset-button"
+                                onClick={() => {
+                                    form.setFieldsValue({
+                                        taskType: undefined,
+                                        sourceCategoryCode: undefined,
+                                        sourceContentType: undefined,
+                                        status: undefined
+                                    });
+                                    onChange(resetValues);
+                                }}
+                            >
+                                重置
+                            </KuzhambuButton>
+                        </KuzhambuSpace>
+                    </Form.Item>
+                </Col>
+            </Row>
         </Form>
     );
 };

@@ -8,7 +8,7 @@ import {
 import { Markdown } from "@tiptap/markdown";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { DatePicker, Form, Input, Select, Switch, Typography } from "antd";
+import { Col, DatePicker, Form, Input, Row, Select, Switch, Typography } from "antd";
 import { useEffect, useMemo } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
@@ -120,84 +120,111 @@ const WangqiRichTextEditor = ({ value, onChange }: WangqiRichTextEditorProps) =>
 
 interface WangqiDocumentBasicSectionProps {
     mode: "create" | "edit";
+    summaryLocked?: boolean;
     onOpenSummaryModal: () => void;
 }
 
 export const WangqiDocumentBasicSection = ({
     mode,
+    summaryLocked = false,
     onOpenSummaryModal
 }: WangqiDocumentBasicSectionProps) => {
     return (
-        <div className="wangqi-document-edit-drawer-basic">
-            <div className="wangqi-document-edit-drawer-basic-head">
-                <Form.Item
-                    name="title"
-                    label="标题"
-                    rules={[{ required: true, message: "请输入标题" }]}
-                >
-                    <Input aria-label="王圻文档标题" maxLength={120} showCount />
-                </Form.Item>
-                <div className="wangqi-document-edit-drawer-grid">
-                    <Form.Item name="contentFormat" label="格式">
-                        <Select
-                            aria-label="王圻文档正文格式"
-                            options={[
-                                { label: "Markdown", value: "MARKDOWN" },
-                                { label: "HTML", value: "HTML" }
-                            ]}
-                        />
-                    </Form.Item>
-                    <Form.Item name="documentTime" label="文档时间">
-                        <DatePicker
-                            aria-label="王圻文档时间"
-                            picker="month"
-                            format="YYYY-MM"
-                            className="wangqi-document-edit-drawer-date-picker"
-                        />
-                    </Form.Item>
-                    <Form.Item name="isPublic" label="可见性" valuePropName="checked">
-                        <Switch
-                            aria-label="王圻文档公开状态"
-                            checkedChildren="公开"
-                            unCheckedChildren="私有"
-                        />
-                    </Form.Item>
-                </div>
-            </div>
-            <div className="wangqi-document-edit-drawer-text-fields">
-                <Form.Item label="摘要" className="wangqi-document-edit-drawer-form-item-top">
-                    <div className="wangqi-document-summary-field">
-                        {mode === "edit" ? (
-                            <div className="wangqi-document-summary-field-action">
-                                <KuzhambuButton
-                                    testId="classics-wangqi-document-summary-ai-button"
-                                    type="primary"
-                                    ariaLabel="AI 摘要"
-                                    icon={<FileTextOutlined />}
-                                    onClick={onOpenSummaryModal}
-                                >
-                                    AI 摘要
-                                </KuzhambuButton>
-                            </div>
-                        ) : null}
-                        <Form.Item name="summary" noStyle>
-                            <TextArea
-                                aria-label="王圻文档摘要"
-                                autoSize={resolveTextAreaAutoSize({ minRows: 4, maxRows: 8 })}
-                                maxLength={500}
-                                showCount
-                            />
+        <Row gutter={[0, 18]} className="wangqi-document-edit-drawer-basic">
+            <Col xs={24}>
+                <Row gutter={[0, 10]} className="wangqi-document-edit-drawer-basic-head">
+                    <Col xs={24}>
+                        <Form.Item
+                            name="title"
+                            label="标题"
+                            rules={[{ required: true, message: "请输入标题" }]}
+                        >
+                            <Input aria-label="王圻文档标题" maxLength={120} showCount />
                         </Form.Item>
-                    </div>
-                </Form.Item>
-                <Form.Item
-                    name="content"
-                    label="正文"
-                    className="wangqi-document-edit-drawer-form-item-top"
-                >
-                    <WangqiRichTextEditor />
-                </Form.Item>
-            </div>
-        </div>
+                    </Col>
+                    <Col xs={24}>
+                        <Row gutter={16}>
+                            <Col xs={24} lg={12}>
+                                <Form.Item name="contentFormat" label="格式">
+                                    <Select
+                                        aria-label="王圻文档正文格式"
+                                        options={[
+                                            { label: "Markdown", value: "MARKDOWN" },
+                                            { label: "HTML", value: "HTML" }
+                                        ]}
+                                    />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} sm={12} lg={8}>
+                                <Form.Item name="documentTime" label="文档时间">
+                                    <DatePicker
+                                        aria-label="王圻文档时间"
+                                        picker="month"
+                                        format="YYYY-MM"
+                                        className="wangqi-document-edit-drawer-date-picker"
+                                    />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} sm={12} lg={4}>
+                                <Form.Item name="isPublic" label="可见性" valuePropName="checked">
+                                    <Switch
+                                        aria-label="王圻文档公开状态"
+                                        checkedChildren="公开"
+                                        unCheckedChildren="私有"
+                                    />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Col>
+                </Row>
+            </Col>
+            <Col xs={24}>
+                <Row gutter={[0, 18]} className="wangqi-document-edit-drawer-text-fields">
+                    <Col xs={24}>
+                        <Form.Item
+                            label="摘要"
+                            className="wangqi-document-edit-drawer-form-item-top"
+                        >
+                            <div className="wangqi-document-summary-field">
+                                {mode === "edit" ? (
+                                    <div className="wangqi-document-summary-field-action">
+                                        <KuzhambuButton
+                                            testId="classics-wangqi-document-summary-ai-button"
+                                            type="primary"
+                                            ariaLabel="AI 摘要"
+                                            icon={<FileTextOutlined />}
+                                            onClick={onOpenSummaryModal}
+                                        >
+                                            AI 摘要
+                                        </KuzhambuButton>
+                                    </div>
+                                ) : null}
+                                <Form.Item name="summary" noStyle>
+                                    <TextArea
+                                        aria-label="王圻文档摘要"
+                                        autoSize={resolveTextAreaAutoSize({
+                                            minRows: 4,
+                                            maxRows: 8
+                                        })}
+                                        disabled={summaryLocked}
+                                        maxLength={500}
+                                        showCount
+                                    />
+                                </Form.Item>
+                            </div>
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24}>
+                        <Form.Item
+                            name="content"
+                            label="正文"
+                            className="wangqi-document-edit-drawer-form-item-top"
+                        >
+                            <WangqiRichTextEditor />
+                        </Form.Item>
+                    </Col>
+                </Row>
+            </Col>
+        </Row>
     );
 };

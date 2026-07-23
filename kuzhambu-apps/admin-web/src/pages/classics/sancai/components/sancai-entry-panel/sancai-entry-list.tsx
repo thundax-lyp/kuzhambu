@@ -3,7 +3,6 @@ import { App, Empty, Skeleton, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuAlert } from "@/components/kuzhambu-alert";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
@@ -13,12 +12,12 @@ import {
     hasClassicsContentPermission,
     type ClassicsBatchOperationRecord
 } from "@/pages/classics/common/classics-content-types";
-import * as entryService from "../sancai-entry-service";
+import * as entryService from "@/pages/classics/sancai/sancai-entry-service";
 import type {
     SancaiEntryLifecycleStatus,
     SancaiEntryRecord,
     SancaiVolumeRecord
-} from "../sancai-types";
+} from "@/pages/classics/sancai/sancai-types";
 
 const { Text } = Typography;
 
@@ -424,94 +423,6 @@ export const SancaiEntryList = ({
 
     return (
         <div className="sancai-entry-table-wrap">
-            <KuzhambuSpace
-                wrap
-                style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}
-            >
-                <KuzhambuSpace wrap>
-                    <Text type="secondary">当前页已选 {selectedEntries.length} 条</Text>
-                    <KuzhambuButton
-                        testId="classics-sancai-sancai-entry-action-button"
-                        disabled={!selectedEntries.length}
-                        loading={createBatchMutation.isPending}
-                        onClick={() => startBatch("image_analysis")}
-                    >
-                        图片理解
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="classics-sancai-sancai-entry-action-button-2"
-                        disabled={!selectedEntries.length}
-                        loading={createBatchMutation.isPending}
-                        onClick={() => startBatch("visual")}
-                    >
-                        视觉处理
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="classics-sancai-sancai-entry-share-button"
-                        disabled={!selectedEntries.length || !canShareEntries}
-                        loading={createBatchShareMutation.isPending}
-                        onClick={startBatchShare}
-                    >
-                        分享
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="classics-sancai-sancai-entry-action-button-3"
-                        disabled={!selectedEntries.length || !canChangeEntryVisibility}
-                        loading={changeVisibilityBatchMutation.isPending}
-                        onClick={() => changeBatchVisibility("PUBLIC")}
-                    >
-                        公开
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="classics-sancai-sancai-entry-action-button-4"
-                        disabled={!selectedEntries.length || !canChangeEntryVisibility}
-                        loading={changeVisibilityBatchMutation.isPending}
-                        onClick={() => changeBatchVisibility("PRIVATE")}
-                    >
-                        私有
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="classics-sancai-sancai-entry-action-button-5"
-                        disabled={!selectedEntries.length || !canChangeEntryVisibility}
-                        onClick={openBatchCandidateGovernance}
-                    >
-                        候选治理
-                    </KuzhambuButton>
-                </KuzhambuSpace>
-                <KuzhambuSpace wrap>
-                    <KuzhambuButton
-                        testId="classics-sancai-sancai-entry-refresh-button"
-                        onClick={onRefresh}
-                    >
-                        刷新
-                    </KuzhambuButton>
-                    {activeBatch ? (
-                        <>
-                            <Text type="secondary">
-                                批量任务 #{activeBatch.batchId} / {activeBatch.capability} /{" "}
-                                {activeBatch.status || "UNKNOWN"}
-                            </Text>
-                            <Text type="secondary">
-                                成功 {activeBatch.successCount ?? 0} / 失败{" "}
-                                {activeBatch.failedCount ?? 0} / 取消{" "}
-                                {activeBatch.cancelledCount ?? 0}
-                            </Text>
-                            <KuzhambuButton
-                                testId="classics-sancai-sancai-entry-action-button-6"
-                                disabled={!canCancelBatch}
-                                loading={cancelBatchMutation.isPending}
-                                onClick={() => {
-                                    if (activeBatch.batchId) {
-                                        cancelBatchMutation.mutate(activeBatch.batchId);
-                                    }
-                                }}
-                            >
-                                取消批量任务
-                            </KuzhambuButton>
-                        </>
-                    ) : null}
-                </KuzhambuSpace>
-            </KuzhambuSpace>
             {batchShareResult ? (
                 <KuzhambuAlert
                     showIcon
@@ -553,6 +464,89 @@ export const SancaiEntryList = ({
                 ariaLabel="三才图会条目表格"
                 columns={columns}
                 dataSource={entries}
+                toolbar={{
+                    leading: (
+                        <KuzhambuSpace wrap>
+                            <Text type="secondary">当前页已选 {selectedEntries.length} 条</Text>
+                            {activeBatch ? (
+                                <>
+                                    <Text type="secondary">
+                                        批量任务 #{activeBatch.batchId} / {activeBatch.capability} /{" "}
+                                        {activeBatch.status || "UNKNOWN"}
+                                    </Text>
+                                    <Text type="secondary">
+                                        成功 {activeBatch.successCount ?? 0} / 失败{" "}
+                                        {activeBatch.failedCount ?? 0} / 取消{" "}
+                                        {activeBatch.cancelledCount ?? 0}
+                                    </Text>
+                                </>
+                            ) : null}
+                        </KuzhambuSpace>
+                    ),
+                    actions: [
+                        {
+                            testId: "classics-sancai-sancai-entry-action-button",
+                            title: "图片理解",
+                            disabled: !selectedEntries.length,
+                            loading: createBatchMutation.isPending,
+                            action: () => startBatch("image_analysis")
+                        },
+                        {
+                            testId: "classics-sancai-sancai-entry-action-button-2",
+                            title: "视觉处理",
+                            disabled: !selectedEntries.length,
+                            loading: createBatchMutation.isPending,
+                            action: () => startBatch("visual")
+                        },
+                        {
+                            testId: "classics-sancai-sancai-entry-share-button",
+                            title: "分享",
+                            disabled: !selectedEntries.length || !canShareEntries,
+                            loading: createBatchShareMutation.isPending,
+                            action: startBatchShare
+                        },
+                        {
+                            testId: "classics-sancai-sancai-entry-action-button-3",
+                            title: "公开",
+                            disabled: !selectedEntries.length || !canChangeEntryVisibility,
+                            loading: changeVisibilityBatchMutation.isPending,
+                            action: () => changeBatchVisibility("PUBLIC")
+                        },
+                        {
+                            testId: "classics-sancai-sancai-entry-action-button-4",
+                            title: "私有",
+                            disabled: !selectedEntries.length || !canChangeEntryVisibility,
+                            loading: changeVisibilityBatchMutation.isPending,
+                            action: () => changeBatchVisibility("PRIVATE")
+                        },
+                        {
+                            testId: "classics-sancai-sancai-entry-action-button-5",
+                            title: "候选治理",
+                            disabled: !selectedEntries.length || !canChangeEntryVisibility,
+                            action: openBatchCandidateGovernance
+                        },
+                        {
+                            testId: "classics-sancai-sancai-entry-refresh-button",
+                            title: "刷新",
+                            action: onRefresh
+                        },
+                        ...(activeBatch
+                            ? [
+                                  {
+                                      testId: "classics-sancai-sancai-entry-action-button-6",
+                                      title: "取消批量任务",
+                                      disabled: !canCancelBatch,
+                                      loading: cancelBatchMutation.isPending,
+                                      action: () => {
+                                          if (activeBatch.batchId) {
+                                              cancelBatchMutation.mutate(activeBatch.batchId);
+                                          }
+                                      }
+                                  }
+                              ]
+                            : [])
+                    ]
+                }}
                 pagination={{
                     showTotal: (total) => `${total} 条稿件`
                 }}

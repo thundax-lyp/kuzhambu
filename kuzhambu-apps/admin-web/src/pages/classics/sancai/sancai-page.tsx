@@ -5,9 +5,8 @@ import {
     ScheduleOutlined,
     SearchOutlined
 } from "@ant-design/icons";
-import { useQuery } from "@tanstack/react-query";
 import { Input, Select, Splitter } from "antd";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { KuzhambuFilterPanel } from "@/components/kuzhambu-filter-panel";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
@@ -15,13 +14,7 @@ import { SancaiCatalogTreePanel } from "./components/sancai-catalog-tree-panel";
 import { SancaiCategoryPanel } from "./components/sancai-category-panel";
 import { SancaiEntryPanel } from "./components/sancai-entry-panel";
 import { SancaiVolumePanel } from "./components/sancai-volume-panel";
-import * as categoryService from "./sancai-category-service";
-import * as volumeService from "./sancai-volume-service";
-import type {
-    SancaiCatalogTreeNode,
-    SancaiCategoryRecord,
-    SancaiVolumeRecord
-} from "./sancai-types";
+import { useSancaiCatalogState } from "./hooks/use-sancai-catalog-state";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./sancai-page.css";
 import { KuzhambuAlert } from "@/components/kuzhambu-alert";
@@ -33,73 +26,12 @@ const entryStatusOptions = [
     { label: "已下线", value: "ARCHIVED" }
 ];
 
-const EMPTY_CATEGORIES: SancaiCategoryRecord[] = [];
-const EMPTY_VOLUMES: SancaiVolumeRecord[] = [];
-const ROOT_KEY = "sancai-root";
-
-const isQueryLoading = (...queries: Array<{ isLoading: boolean }>) => {
-    return queries.some((query) => query.isLoading);
-};
-
-const isQueryError = (...queries: Array<{ isError: boolean }>) => {
-    return queries.some((query) => query.isError);
-};
-
-const reloadQueries = (...queries: Array<{ refetch: () => Promise<unknown> }>) => {
-    void Promise.all(queries.map((query) => query.refetch()));
-};
-
 const normalizeKeyword = (value: string) => {
     const keyword = value.trim();
     return keyword || undefined;
 };
 
-const readTitle = (value: { id: number; title?: string | null }, fallback: string) => {
-    return value.title?.trim() || `${fallback} ${value.id}`;
-};
-
-const toCategoryKey = (id: number) => `category:${id}`;
-
-const toVolumeKey = (id: number) => `volume:${id}`;
-
-const readNodeId = (key: string | null, nodeType: string) => {
-    if (!key?.startsWith(`${nodeType}:`)) {
-        return null;
-    }
-    const id = Number(key.slice(nodeType.length + 1));
-    return Number.isFinite(id) ? id : null;
-};
-
-const buildTreeNodes = (
-    categories: SancaiCategoryRecord[],
-    volumes: SancaiVolumeRecord[]
-): SancaiCatalogTreeNode[] => {
-    const categoryNodes: SancaiCatalogTreeNode[] = categories.map((category) => {
-        const categoryVolumes = volumes.filter((volume) => volume.categoryId === category.id);
-        return {
-            children: categoryVolumes.map((volume) => ({
-                key: toVolumeKey(volume.id),
-                nodeType: "volume",
-                title: readTitle(volume, "卷")
-            })),
-            key: toCategoryKey(category.id),
-            nodeType: "category",
-            title: readTitle(category, "门类")
-        };
-    });
-    return [
-        {
-            children: categoryNodes,
-            key: ROOT_KEY,
-            nodeType: "root",
-            title: "三才图会"
-        }
-    ];
-};
-
 export const SancaiPage = () => {
-    const [selectedKey, setSelectedKey] = useState<string | null>(null);
-    const [expandedKeys, setExpandedKeys] = useState<string[]>([]);
     const [createIntent, setCreateIntent] = useState<{
         target: "category" | "entry" | "volume";
         version: number;
@@ -111,41 +43,25 @@ export const SancaiPage = () => {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [lifecycleStatus, setLifecycleStatus] = useState("ALL");
     const [appliedLifecycleStatus, setAppliedLifecycleStatus] = useState<string | null>(null);
-    const categoriesQuery = useQuery({
-        queryKey: ["classics", "sancai", "categories"],
-        queryFn: categoryService.list,
-        retry: false
-    });
-    const volumesQuery = useQuery({
-        queryKey: ["classics", "sancai", "volumes"],
-        queryFn: () => volumeService.list(),
-        retry: false
-    });
-    const categories = categoriesQuery.data ?? EMPTY_CATEGORIES;
-    const volumes = volumesQuery.data ?? EMPTY_VOLUMES;
-    const treeNodes = useMemo(() => buildTreeNodes(categories, volumes), [categories, volumes]);
-    const defaultSelectedKey = ROOT_KEY;
-    const actualSelectedKey = selectedKey || defaultSelectedKey;
-    const isRootSelected = actualSelectedKey === ROOT_KEY;
-    const selectedCategoryIdFromKey = readNodeId(actualSelectedKey, "category");
-    const selectedVolumeIdFromKey = readNodeId(actualSelectedKey, "volume");
-    const selectedVolume = volumes.find((volume) => volume.id === selectedVolumeIdFromKey) ?? null;
-    const selectedCategoryId = selectedVolume?.categoryId ?? selectedCategoryIdFromKey;
-    const selectedCategory =
-        categories.find((category) => category.id === selectedCategoryId) ?? null;
-    const visibleVolumes = selectedCategory
-        ? volumes.filter((volume) => volume.categoryId === selectedCategory.id)
-        : volumes;
-    let selectedPanel: "category" | "entry" | "volume" = "category";
-    if (selectedCategory && !isRootSelected) {
-        selectedPanel = "volume";
-    }
-    if (selectedVolume) {
-        selectedPanel = "entry";
-    }
-    const treeExpandedKeys = expandedKeys.length ? expandedKeys : [ROOT_KEY];
-    const isLoading = isQueryLoading(categoriesQuery, volumesQuery);
-    const hasError = isQueryError(categoriesQuery, volumesQuery);
+    const {
+        actualSelectedKey,
+        categories,
+        hasError,
+        isLoading,
+        isRefreshing,
+        refreshCatalogTree,
+        selectCatalogNode,
+        selectCategory,
+        selectedCategory,
+        selectedPanel,
+        selectedVolume,
+        selectVolume,
+        setExpandedKeys,
+        treeExpandedKeys,
+        treeNodes,
+        visibleVolumes,
+        volumes
+    } = useSancaiCatalogState();
     const enableEntryFilter = selectedPanel === "entry";
     const filterActive = Boolean(appliedLifecycleStatus);
     let addText = "新增门类";
@@ -162,27 +78,6 @@ export const SancaiPage = () => {
     if (selectedPanel === "entry") {
         enableAdd = Boolean(selectedVolume);
     }
-    const selectVolume = (volume: SancaiVolumeRecord) => {
-        setSelectedKey(toVolumeKey(volume.id));
-        const categoryId = volume.categoryId;
-        if (categoryId !== null && categoryId !== undefined) {
-            setExpandedKeys((keys) => Array.from(new Set([...keys, toCategoryKey(categoryId)])));
-        }
-    };
-
-    const selectCategory = (category: SancaiCategoryRecord) => {
-        setSelectedKey(toCategoryKey(category.id));
-        setExpandedKeys((keys) =>
-            Array.from(new Set([...keys, ROOT_KEY, toCategoryKey(category.id)]))
-        );
-    };
-
-    const selectCatalogNode = (node: SancaiCatalogTreeNode) => {
-        setSelectedKey(node.key);
-        if (node.nodeType === "category") {
-            setExpandedKeys((keys) => Array.from(new Set([...keys, ROOT_KEY, node.key])));
-        }
-    };
 
     const applyFilters = () => {
         setAppliedKeyword(normalizeKeyword(searchText) ?? null);
@@ -197,12 +92,8 @@ export const SancaiPage = () => {
     };
 
     const refreshPage = () => {
-        reloadQueries(categoriesQuery, volumesQuery);
+        refreshCatalogTree();
         setRefreshVersion((version) => version + 1);
-    };
-
-    const refreshCatalogTree = () => {
-        reloadQueries(categoriesQuery, volumesQuery);
     };
 
     const startCreate = () => {
@@ -211,49 +102,6 @@ export const SancaiPage = () => {
             version: intent.version + 1
         }));
     };
-
-    let panelContent = (
-        <SancaiCategoryPanel
-            key={`category-${createIntent.version}`}
-            categories={categories}
-            defaultCreateOpen={createIntent.target === "category" && createIntent.version > 0}
-            isLoading={isLoading}
-            selectedCategory={selectedCategory}
-            onSelect={selectCategory}
-        />
-    );
-    if (selectedPanel === "volume") {
-        panelContent = (
-            <SancaiVolumePanel
-                key={`volume-${selectedCategory?.id ?? "none"}-${createIntent.version}`}
-                categories={categories}
-                defaultCreateOpen={createIntent.target === "volume" && createIntent.version > 0}
-                volumes={visibleVolumes}
-                isLoading={isLoading}
-                selectedCategory={selectedCategory}
-                selectedVolume={selectedVolume}
-                onSelect={selectVolume}
-            />
-        );
-    }
-    if (selectedVolume) {
-        panelContent = (
-            <SancaiEntryPanel
-                key={`entry-${selectedVolume.id}-${createIntent.version}`}
-                categories={categories}
-                categoryId={selectedCategory?.id ?? null}
-                defaultCreateOpen={createIntent.target === "entry" && createIntent.version > 0}
-                exportJobsDrawerOpen={exportJobsDrawerOpen}
-                isCatalogLoading={isLoading}
-                keyword={appliedKeyword}
-                lifecycleStatus={appliedLifecycleStatus}
-                refreshVersion={refreshVersion}
-                volumeId={selectedVolume.id}
-                volumes={volumes}
-                onExportJobsDrawerOpenChange={setExportJobsDrawerOpen}
-            />
-        );
-    }
 
     return (
         <KuzhambuPage
@@ -358,7 +206,7 @@ export const SancaiPage = () => {
                     <aside className="sancai-catalog-panel">
                         <SancaiCatalogTreePanel
                             expandedKeys={treeExpandedKeys}
-                            isRefreshing={categoriesQuery.isFetching || volumesQuery.isFetching}
+                            isRefreshing={isRefreshing}
                             isLoading={isLoading}
                             nodes={treeNodes}
                             selectedKey={actualSelectedKey}
@@ -369,7 +217,50 @@ export const SancaiPage = () => {
                         />
                     </aside>
                 </Splitter.Panel>
-                <Splitter.Panel className="sancai-work-panel">{panelContent}</Splitter.Panel>
+                <Splitter.Panel className="sancai-work-panel">
+                    {selectedVolume ? (
+                        <SancaiEntryPanel
+                            key={`entry-${selectedVolume.id}-${createIntent.version}`}
+                            categories={categories}
+                            categoryId={selectedCategory?.id ?? null}
+                            defaultCreateOpen={
+                                createIntent.target === "entry" && createIntent.version > 0
+                            }
+                            exportJobsDrawerOpen={exportJobsDrawerOpen}
+                            isCatalogLoading={isLoading}
+                            keyword={appliedKeyword}
+                            lifecycleStatus={appliedLifecycleStatus}
+                            refreshVersion={refreshVersion}
+                            volumeId={selectedVolume.id}
+                            volumes={volumes}
+                            onExportJobsDrawerOpenChange={setExportJobsDrawerOpen}
+                        />
+                    ) : selectedPanel === "volume" ? (
+                        <SancaiVolumePanel
+                            key={`volume-${selectedCategory?.id ?? "none"}-${createIntent.version}`}
+                            categories={categories}
+                            defaultCreateOpen={
+                                createIntent.target === "volume" && createIntent.version > 0
+                            }
+                            volumes={visibleVolumes}
+                            isLoading={isLoading}
+                            selectedCategory={selectedCategory}
+                            selectedVolume={selectedVolume}
+                            onSelect={selectVolume}
+                        />
+                    ) : (
+                        <SancaiCategoryPanel
+                            key={`category-${createIntent.version}`}
+                            categories={categories}
+                            defaultCreateOpen={
+                                createIntent.target === "category" && createIntent.version > 0
+                            }
+                            isLoading={isLoading}
+                            selectedCategory={selectedCategory}
+                            onSelect={selectCategory}
+                        />
+                    )}
+                </Splitter.Panel>
             </Splitter>
         </KuzhambuPage>
     );

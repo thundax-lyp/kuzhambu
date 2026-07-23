@@ -31,12 +31,6 @@
     box-shadow: 0 14px 32px rgba(15, 23, 42, 0.06);
 }
 
-.graph-extraction-create-grid {
-    display: grid;
-    gap: 0 16px;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
 .knowledge-graph-extraction-placeholder .ant-empty {
     margin-block: 24px 12px;
 }
@@ -44,9 +38,5 @@
 @media (max-width: 768px) {
     .knowledge-graph-extraction-page {
         padding: 12px;
-    }
-
-    .graph-extraction-create-grid {
-        grid-template-columns: 1fr;
     }
 }

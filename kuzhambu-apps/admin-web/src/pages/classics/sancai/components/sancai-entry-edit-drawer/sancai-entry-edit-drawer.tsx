@@ -1,30 +1,80 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Empty, Form } from "antd";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
+import { ADMIN_FORM_HORIZONTAL_LAYOUT } from "@/components/form/form-layout";
 import { KuzhambuSegmentedDrawer } from "@/components/kuzhambu-segmented-drawer";
 import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
+import type { AiCandidateRecord } from "@/pages/classics/common/ai-candidate-types";
+import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { readSancaiAiTextFieldConfig } from "./sancai-entry-ai-text-config";
-import type { SancaiAiTextField } from "./sancai-entry-ai-text-config";
-import { SancaiEntryAiTextModal } from "./sancai-entry-ai-text-modal";
+import { readSancaiAiTextFieldConfig } from "../sancai-entry-ai-text-config";
+import type { SancaiAiTextField } from "../sancai-entry-ai-text-config";
 import { SancaiEntryBasicSection } from "./sancai-entry-basic-section";
+import { SancaiEntrySummaryModal } from "../sancai-entry-summary-modal";
+import { SancaiEntryTranslationModal } from "../sancai-entry-translation-modal";
 import { SancaiEntryVisualSection } from "./sancai-entry-visual-section";
-import { toEntryFormValues, type SancaiEntryFormValues } from "./sancai-form-values";
-import type { SancaiVisualAssetRefinementCapability } from "../sancai-entry-service";
-import * as entryService from "../sancai-entry-service";
+import { toEntryFormValues, type SancaiEntryFormValues } from "../sancai-form-values";
+import type { SancaiVisualAssetRefinementCapability } from "@/pages/classics/sancai/sancai-entry-service";
+import * as entryService from "@/pages/classics/sancai/sancai-entry-service";
 import type {
     SancaiEntryImageContentMode,
     SancaiEntryImageRecord,
     SancaiEntryRecord,
     SancaiVisualAssetRecord
-} from "../sancai-types";
+} from "@/pages/classics/sancai/sancai-types";
+import "./sancai-entry-edit-drawer.css";
 
 type SancaiEntryEditDrawerSection = "basic" | "visual" | "tags" | "qa" | "versions";
 const AI_TEXT_CANDIDATE_POLL_INTERVAL_MS = 3000;
 const RUNNING_REFINEMENT_STATUSES = new Set(["PENDING", "RUNNING"]);
+
+const sortRefinementTasksByNewest = (
+    left: AiRefinementTaskRecord,
+    right: AiRefinementTaskRecord
+) => {
+    if (left.requestedAt && right.requestedAt && left.requestedAt !== right.requestedAt) {
+        return right.requestedAt.localeCompare(left.requestedAt);
+    }
+    return right.taskId - left.taskId;
+};
+
+const selectLatestRefinementTask = (
+    tasks: AiRefinementTaskRecord[],
+    capability: SancaiAiTextField
+) => {
+    return (
+        [...tasks]
+            .filter((task) => task.capability === capability)
+            .sort(sortRefinementTasksByNewest)[0] ?? null
+    );
+};
+
+const selectLatestAiTextCandidate = (
+    candidates: AiCandidateRecord[] | undefined,
+    capability: SancaiAiTextField
+) => {
+    return [...(candidates || [])]
+        .filter(
+            (candidate) =>
+                candidate.capability === capability &&
+                candidate.status === "PENDING" &&
+                typeof candidate.resultPayload === "string" &&
+                candidate.resultPayload.trim().length > 0
+        )
+        .sort((left, right) => {
+            if (left.requestedAt && right.requestedAt && left.requestedAt !== right.requestedAt) {
+                return right.requestedAt.localeCompare(left.requestedAt);
+            }
+            return right.candidateId - left.candidateId;
+        })[0];
+};
+
+const isRunningRefinementTask = (task?: AiRefinementTaskRecord | null) => {
+    return Boolean(task?.status) && RUNNING_REFINEMENT_STATUSES.has(task?.status ?? "");
+};
 
 const selectCurrentImage = (images: SancaiEntryImageRecord[]) => {
     return [...images]
@@ -150,48 +200,97 @@ export const SancaiEntryEditDrawer = ({
         toEntryFormValues(entry, volumes, initialCategoryId, initialVolumeId)
     );
     const [activeSection, setActiveSection] = useState<SancaiEntryEditDrawerSection>("basic");
-    const [activeAiTextField, setActiveAiTextField] = useState<SancaiAiTextField | null>(null);
-    const [aiTextDraft, setAiTextDraft] = useState("");
-    const [loadedAiTextCandidateId, setLoadedAiTextCandidateId] = useState<number | null>(null);
-    const entryId = mode === "edit" ? entry?.id : undefined;
-    const aiTextTasks = activeAiTextField === "summary" ? summaryTasks : translationTasks;
-    const aiTextConfig = activeAiTextField
-        ? readSancaiAiTextFieldConfig(activeAiTextField)
-        : readSancaiAiTextFieldConfig("translate");
-    const isCreatingAiTextTask =
-        activeAiTextField === "summary" ? isCreatingSummaryTask : isCreatingTranslationTask;
-    const latestAiTextTask = useMemo(
-        () =>
-            [...aiTextTasks]
-                .filter((task) => task.capability === activeAiTextField)
-                .sort((left, right) => {
-                    if (
-                        left.requestedAt &&
-                        right.requestedAt &&
-                        left.requestedAt !== right.requestedAt
-                    ) {
-                        return right.requestedAt.localeCompare(left.requestedAt);
-                    }
-                    return right.taskId - left.taskId;
-                })[0] ?? null,
-        [activeAiTextField, aiTextTasks]
+    const [summaryModalOpen, setSummaryModalOpen] = useState(false);
+    const [translationModalOpen, setTranslationModalOpen] = useState(false);
+    const [summaryDraft, setSummaryDraft] = useState("");
+    const [translationDraft, setTranslationDraft] = useState("");
+    const [loadedSummaryCandidateId, setLoadedSummaryCandidateId] = useState<number | null>(null);
+    const [loadedTranslationCandidateId, setLoadedTranslationCandidateId] = useState<number | null>(
+        null
     );
-    const hasRunningAiTextTask =
-        Boolean(latestAiTextTask?.status) &&
-        RUNNING_REFINEMENT_STATUSES.has(latestAiTextTask?.status ?? "");
-    const aiTextCandidatesQuery = useQuery({
-        queryKey: ["ai", "candidates", "SANCAI_ENTRY", entryId, activeAiTextField, "modal"],
+    const entryId = mode === "edit" ? entry?.id : undefined;
+    const latestSummaryTask = useMemo(
+        () => selectLatestRefinementTask(summaryTasks, "summary"),
+        [summaryTasks]
+    );
+    const latestTranslationTask = useMemo(
+        () => selectLatestRefinementTask(translationTasks, "translate"),
+        [translationTasks]
+    );
+    const hasRunningSummaryTask = isRunningRefinementTask(latestSummaryTask);
+    const hasRunningTranslationTask = isRunningRefinementTask(latestTranslationTask);
+    const syncAiTextTask = useCallback(
+        (field: SancaiAiTextField, task: AiRefinementTaskRecord | null) => {
+            if (!task || !entryId) {
+                return;
+            }
+            const capability =
+                task.capability === "summary" || task.capability === "translate"
+                    ? task.capability
+                    : field;
+            const normalizedTask = capability ? { ...task, capability } : task;
+            queryClient.setQueryData<{
+                items?: AiRefinementTaskRecord[];
+                [key: string]: unknown;
+            }>(["classics", "sancai", "refinement", "tasks", entryId], (currentPage) => {
+                if (!currentPage?.items) {
+                    return currentPage;
+                }
+                const taskExists = currentPage.items.some(
+                    (item) => item.taskId === normalizedTask.taskId
+                );
+                return {
+                    ...currentPage,
+                    items: taskExists
+                        ? currentPage.items.map((item) =>
+                              item.taskId === normalizedTask.taskId
+                                  ? { ...item, ...normalizedTask }
+                                  : item
+                          )
+                        : [normalizedTask, ...currentPage.items]
+                };
+            });
+        },
+        [entryId, queryClient]
+    );
+    const syncSummaryTask = useCallback(
+        (task: AiRefinementTaskRecord | null) => syncAiTextTask("summary", task),
+        [syncAiTextTask]
+    );
+    const syncTranslationTask = useCallback(
+        (task: AiRefinementTaskRecord | null) => syncAiTextTask("translate", task),
+        [syncAiTextTask]
+    );
+    const summaryCandidatesQuery = useQuery({
+        queryKey: ["ai", "candidates", "SANCAI_ENTRY", entryId, "summary", "modal"],
         queryFn: () =>
             aiCandidateService.list({
                 contentId: entryId,
                 contentType: "SANCAI_ENTRY",
-                capability: activeAiTextField,
+                capability: "summary",
                 status: "PENDING"
             }),
-        enabled: Boolean(activeAiTextField) && Boolean(entryId),
+        enabled: summaryModalOpen && Boolean(entryId),
         retry: false,
         refetchInterval: () => {
-            return isCreatingAiTextTask || hasRunningAiTextTask
+            return isCreatingSummaryTask || hasRunningSummaryTask
+                ? AI_TEXT_CANDIDATE_POLL_INTERVAL_MS
+                : false;
+        }
+    });
+    const translationCandidatesQuery = useQuery({
+        queryKey: ["ai", "candidates", "SANCAI_ENTRY", entryId, "translate", "modal"],
+        queryFn: () =>
+            aiCandidateService.list({
+                contentId: entryId,
+                contentType: "SANCAI_ENTRY",
+                capability: "translate",
+                status: "PENDING"
+            }),
+        enabled: translationModalOpen && Boolean(entryId),
+        retry: false,
+        refetchInterval: () => {
+            return isCreatingTranslationTask || hasRunningTranslationTask
                 ? AI_TEXT_CANDIDATE_POLL_INTERVAL_MS
                 : false;
         }
@@ -290,7 +389,11 @@ export const SancaiEntryEditDrawer = ({
                 [command.capability === "summary" ? "summary" : "translationText"]:
                     command.resultPayload
             }));
-            setActiveAiTextField(null);
+            if (command.capability === "summary") {
+                setSummaryModalOpen(false);
+            } else {
+                setTranslationModalOpen(false);
+            }
             messageApi.success(
                 readSancaiAiTextFieldConfig(command.capability as SancaiAiTextField)
                     ?.applyMessage || "AI 候选已应用"
@@ -300,68 +403,108 @@ export const SancaiEntryEditDrawer = ({
             messageApi.error(error instanceof Error ? error.message : "AI 候选应用失败");
         }
     });
-    const latestAiTextCandidate = useMemo(() => {
-        const candidates = aiTextCandidatesQuery.data || [];
-        return [...candidates]
-            .filter(
-                (candidate) =>
-                    candidate.capability === activeAiTextField &&
-                    candidate.status === "PENDING" &&
-                    typeof candidate.resultPayload === "string" &&
-                    candidate.resultPayload.trim().length > 0
-            )
-            .sort((left, right) => {
-                if (
-                    left.requestedAt &&
-                    right.requestedAt &&
-                    left.requestedAt !== right.requestedAt
-                ) {
-                    return right.requestedAt.localeCompare(left.requestedAt);
-                }
-                return right.candidateId - left.candidateId;
-            })[0];
-    }, [activeAiTextField, aiTextCandidatesQuery.data]);
-    const loadedAiTextCandidate = useMemo(() => {
-        if (!loadedAiTextCandidateId) {
+    const latestSummaryCandidate = useMemo(
+        () => selectLatestAiTextCandidate(summaryCandidatesQuery.data, "summary"),
+        [summaryCandidatesQuery.data]
+    );
+    const latestTranslationCandidate = useMemo(
+        () => selectLatestAiTextCandidate(translationCandidatesQuery.data, "translate"),
+        [translationCandidatesQuery.data]
+    );
+    const loadedSummaryCandidate = useMemo(() => {
+        if (!loadedSummaryCandidateId) {
             return null;
         }
         return (
-            (aiTextCandidatesQuery.data || []).find(
+            (summaryCandidatesQuery.data || []).find(
                 (candidate) =>
-                    candidate.candidateId === loadedAiTextCandidateId &&
-                    candidate.capability === activeAiTextField
+                    candidate.candidateId === loadedSummaryCandidateId &&
+                    candidate.capability === "summary"
             ) ?? null
         );
-    }, [activeAiTextField, aiTextCandidatesQuery.data, loadedAiTextCandidateId]);
-    const isAiTextApplyDisabled = !aiTextDraft.trim() || aiTextCandidatesQuery.isFetching;
+    }, [summaryCandidatesQuery.data, loadedSummaryCandidateId]);
+    const loadedTranslationCandidate = useMemo(() => {
+        if (!loadedTranslationCandidateId) {
+            return null;
+        }
+        return (
+            (translationCandidatesQuery.data || []).find(
+                (candidate) =>
+                    candidate.candidateId === loadedTranslationCandidateId &&
+                    candidate.capability === "translate"
+            ) ?? null
+        );
+    }, [translationCandidatesQuery.data, loadedTranslationCandidateId]);
+    const isSummaryApplyDisabled =
+        !summaryDraft.trim() ||
+        isCreatingSummaryTask ||
+        hasRunningSummaryTask ||
+        summaryCandidatesQuery.isFetching;
+    const isTranslationApplyDisabled =
+        !translationDraft.trim() ||
+        isCreatingTranslationTask ||
+        hasRunningTranslationTask ||
+        translationCandidatesQuery.isFetching;
 
     useEffect(() => {
-        if (!activeAiTextField || !latestAiTextCandidate) {
+        if (!summaryModalOpen || !latestSummaryCandidate) {
             return;
         }
-        if (latestAiTextCandidate.candidateId === loadedAiTextCandidateId) {
+        if (latestSummaryCandidate.candidateId === loadedSummaryCandidateId) {
             return;
         }
         const timer = window.setTimeout(() => {
-            setLoadedAiTextCandidateId(latestAiTextCandidate.candidateId);
-            setAiTextDraft(latestAiTextCandidate.resultPayload?.trim() || "");
+            setLoadedSummaryCandidateId(latestSummaryCandidate.candidateId);
+            setSummaryDraft(latestSummaryCandidate.resultPayload?.trim() || "");
         }, 0);
         return () => window.clearTimeout(timer);
-    }, [activeAiTextField, latestAiTextCandidate, loadedAiTextCandidateId]);
+    }, [latestSummaryCandidate, loadedSummaryCandidateId, summaryModalOpen]);
 
     useEffect(() => {
-        if (!activeAiTextField || !latestAiTextTask?.taskId) {
+        if (!translationModalOpen || !latestTranslationCandidate) {
             return;
         }
-        if (latestAiTextTask.status !== "SUCCEEDED" && latestAiTextTask.status !== "PARTIAL") {
+        if (latestTranslationCandidate.candidateId === loadedTranslationCandidateId) {
             return;
         }
-        void aiTextCandidatesQuery.refetch();
+        const timer = window.setTimeout(() => {
+            setLoadedTranslationCandidateId(latestTranslationCandidate.candidateId);
+            setTranslationDraft(latestTranslationCandidate.resultPayload?.trim() || "");
+        }, 0);
+        return () => window.clearTimeout(timer);
+    }, [latestTranslationCandidate, loadedTranslationCandidateId, translationModalOpen]);
+
+    useEffect(() => {
+        if (!summaryModalOpen || !latestSummaryTask?.taskId) {
+            return;
+        }
+        if (latestSummaryTask.status !== "SUCCEEDED" && latestSummaryTask.status !== "PARTIAL") {
+            return;
+        }
+        void summaryCandidatesQuery.refetch();
     }, [
-        activeAiTextField,
-        latestAiTextTask?.status,
-        latestAiTextTask?.taskId,
-        aiTextCandidatesQuery
+        latestSummaryTask?.status,
+        latestSummaryTask?.taskId,
+        summaryCandidatesQuery,
+        summaryModalOpen
+    ]);
+
+    useEffect(() => {
+        if (!translationModalOpen || !latestTranslationTask?.taskId) {
+            return;
+        }
+        if (
+            latestTranslationTask.status !== "SUCCEEDED" &&
+            latestTranslationTask.status !== "PARTIAL"
+        ) {
+            return;
+        }
+        void translationCandidatesQuery.refetch();
+    }, [
+        latestTranslationTask?.status,
+        latestTranslationTask?.taskId,
+        translationCandidatesQuery,
+        translationModalOpen
     ]);
 
     useEffect(() => {
@@ -499,12 +642,12 @@ export const SancaiEntryEditDrawer = ({
         }
         onCreateVisualAssetTask(capability, visualAssetFormValue);
     };
-    const requestAiTextTask = () => {
-        if (!activeAiTextField || !entryId) {
+    const requestAiTextTask = (field: SancaiAiTextField) => {
+        if (!entryId) {
             return false;
         }
-        const createTask =
-            activeAiTextField === "summary" ? onCreateSummaryTask : onCreateTranslationTask;
+        const aiTextConfig = readSancaiAiTextFieldConfig(field);
+        const createTask = field === "summary" ? onCreateSummaryTask : onCreateTranslationTask;
         if (!createTask) {
             messageApi.warning(`请先保存条目后再使用 ${aiTextConfig.fieldLabel}`);
             return false;
@@ -516,28 +659,38 @@ export const SancaiEntryEditDrawer = ({
         createTask(form);
         return true;
     };
-    const openAiTextModal = (field: SancaiAiTextField) => {
-        setAiTextDraft(field === "summary" ? form.summary || "" : form.translationText || "");
-        setLoadedAiTextCandidateId(null);
-        setActiveAiTextField(field);
+    const openSummaryModal = () => {
+        setSummaryDraft(form.summary || "");
+        setLoadedSummaryCandidateId(null);
+        setSummaryModalOpen(true);
     };
-    const closeAiTextModal = () => {
-        setActiveAiTextField(null);
+    const openTranslationModal = () => {
+        setTranslationDraft(form.translationText || "");
+        setLoadedTranslationCandidateId(null);
+        setTranslationModalOpen(true);
     };
-    const applyAiTextDraft = () => {
-        if (!activeAiTextField || !entryId) {
+    const closeSummaryModal = () => {
+        setSummaryModalOpen(false);
+    };
+    const closeTranslationModal = () => {
+        setTranslationModalOpen(false);
+    };
+    const applyAiTextDraft = (
+        field: SancaiAiTextField,
+        draft: string,
+        candidate: AiCandidateRecord | null
+    ) => {
+        if (!entryId) {
             return;
         }
-        const appliedField = activeAiTextField;
-        const appliedConfig = readSancaiAiTextFieldConfig(appliedField);
-        const candidate = loadedAiTextCandidate;
-        const resultPayload = aiTextDraft;
+        const appliedConfig = readSancaiAiTextFieldConfig(field);
+        const resultPayload = draft;
         if (candidate) {
             applyAiTextCandidateMutation.mutate({
                 candidateId: candidate.candidateId,
                 contentId: entryId,
                 contentType: "SANCAI_ENTRY",
-                capability: appliedField,
+                capability: field,
                 objectId: candidate.objectId,
                 resultFormat: candidate.resultFormat?.trim() || "TEXT",
                 resultPayload,
@@ -547,9 +700,13 @@ export const SancaiEntryEditDrawer = ({
         }
         setForm((currentForm) => ({
             ...currentForm,
-            [appliedField === "summary" ? "summary" : "translationText"]: resultPayload
+            [field === "summary" ? "summary" : "translationText"]: resultPayload
         }));
-        setActiveAiTextField(null);
+        if (field === "summary") {
+            setSummaryModalOpen(false);
+        } else {
+            setTranslationModalOpen(false);
+        }
         messageApi.success(appliedConfig.applyMessage);
     };
     const changeCategory = (categoryId: number | null) => {
@@ -602,6 +759,50 @@ export const SancaiEntryEditDrawer = ({
         return null;
     }
 
+    const summaryModal = (
+        <SancaiEntrySummaryModal
+            aiTextDraft={summaryDraft}
+            form={form}
+            hasRunningAiTextTask={hasRunningSummaryTask}
+            isAiTextApplyDisabled={isSummaryApplyDisabled}
+            isAiTextCandidateFetching={summaryCandidatesQuery.isFetching}
+            isAiTextCandidateLoadError={summaryCandidatesQuery.isError}
+            isApplyingAiText={applyAiTextCandidateMutation.isPending}
+            isCreatingAiTextTask={isCreatingSummaryTask}
+            latestAiTextTask={latestSummaryTask}
+            open={summaryModalOpen}
+            onApply={() => applyAiTextDraft("summary", summaryDraft, loadedSummaryCandidate)}
+            onCancel={closeSummaryModal}
+            onFetchTask={(taskId) => aiRefinementTaskService.getTask({ taskId: Number(taskId) })}
+            onRequestTask={() => requestAiTextTask("summary")}
+            onTaskChange={syncSummaryTask}
+            onTextDraftChange={setSummaryDraft}
+        />
+    );
+
+    const translationModal = (
+        <SancaiEntryTranslationModal
+            aiTextDraft={translationDraft}
+            form={form}
+            hasRunningAiTextTask={hasRunningTranslationTask}
+            isAiTextApplyDisabled={isTranslationApplyDisabled}
+            isAiTextCandidateFetching={translationCandidatesQuery.isFetching}
+            isAiTextCandidateLoadError={translationCandidatesQuery.isError}
+            isApplyingAiText={applyAiTextCandidateMutation.isPending}
+            isCreatingAiTextTask={isCreatingTranslationTask}
+            latestAiTextTask={latestTranslationTask}
+            open={translationModalOpen}
+            onApply={() =>
+                applyAiTextDraft("translate", translationDraft, loadedTranslationCandidate)
+            }
+            onCancel={closeTranslationModal}
+            onFetchTask={(taskId) => aiRefinementTaskService.getTask({ taskId: Number(taskId) })}
+            onRequestTask={() => requestAiTextTask("translate")}
+            onTaskChange={syncTranslationTask}
+            onTextDraftChange={setTranslationDraft}
+        />
+    );
+
     const basicContent = (
         <SancaiEntryBasicSection
             categoryOptions={categoryOptions}
@@ -614,9 +815,12 @@ export const SancaiEntryEditDrawer = ({
             mode={mode}
             previewUrl={previewUrl}
             setForm={setForm}
+            summaryModal={summaryModal}
+            translationModal={translationModal}
             volumeOptions={volumeOptions}
             onChangeCategory={changeCategory}
-            onOpenAiTextModal={openAiTextModal}
+            onOpenSummaryModal={openSummaryModal}
+            onOpenTranslationModal={openTranslationModal}
             onUploadImage={(file) => uploadImageMutation.mutate(file)}
         />
     );
@@ -698,8 +902,9 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
         className: "sancai-detail-card sancai-entry-edit-drawer-form",
         colon: false,
         component: "div" as const,
-        labelCol: { flex: "88px" },
-        layout: "horizontal" as const
+        labelCol: ADMIN_FORM_HORIZONTAL_LAYOUT.labelCol,
+        layout: "horizontal" as const,
+        wrapperCol: ADMIN_FORM_HORIZONTAL_LAYOUT.wrapperCol
     };
     const sections = [
         {
@@ -772,43 +977,22 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
             open={open}
             size="large"
             destroyOnHidden
-            footer={
-                <div className="sancai-drawer-footer">
-                    <KuzhambuButton
-                        testId="classics-sancai-sancai-entry-cancel-button"
-                        onClick={onCancel}
-                    >
-                        取消
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="classics-sancai-sancai-entry-create-button"
-                        type="primary"
-                        loading={isSubmitting}
-                        onClick={submitForm}
-                    >
-                        保存
-                    </KuzhambuButton>
-                </div>
-            }
+            footerActions={[
+                {
+                    testId: "classics-sancai-sancai-entry-cancel-button",
+                    title: "取消",
+                    action: onCancel
+                },
+                {
+                    testId: "classics-sancai-sancai-entry-create-button",
+                    title: "保存",
+                    type: "primary",
+                    loading: isSubmitting,
+                    action: submitForm
+                }
+            ]}
             onClose={onCancel}
             onSectionChange={setActiveSection}
-        >
-            <SancaiEntryAiTextModal
-                activeAiTextField={activeAiTextField}
-                aiTextDraft={aiTextDraft}
-                form={form}
-                hasRunningAiTextTask={hasRunningAiTextTask}
-                isAiTextApplyDisabled={isAiTextApplyDisabled}
-                isAiTextCandidateFetching={aiTextCandidatesQuery.isFetching}
-                isAiTextCandidateLoadError={aiTextCandidatesQuery.isError}
-                isApplyingAiText={applyAiTextCandidateMutation.isPending}
-                isCreatingAiTextTask={isCreatingAiTextTask}
-                latestAiTextTask={latestAiTextTask}
-                onApply={applyAiTextDraft}
-                onCancel={closeAiTextModal}
-                onRequestTask={requestAiTextTask}
-                onTextDraftChange={setAiTextDraft}
-            />
-        </KuzhambuSegmentedDrawer>
+        />
     );
 };

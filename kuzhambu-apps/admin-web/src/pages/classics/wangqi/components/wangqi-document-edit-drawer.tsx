@@ -2,6 +2,7 @@ import { FileTextOutlined } from "@ant-design/icons";
 import { App, Form, Input } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
+import { ADMIN_FORM_HORIZONTAL_LAYOUT } from "@/components/form/form-layout";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 import { KuzhambuSegmentedDrawer } from "@/components/kuzhambu-segmented-drawer";
@@ -26,7 +27,6 @@ import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
 import type { WangqiDocumentCommand } from "../wangqi-service";
 import type { WangqiDocumentRecord } from "../wangqi-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { TextArea } = Input;
 const SUMMARY_CANDIDATE_POLL_INTERVAL_MS = 3000;
@@ -47,6 +47,7 @@ interface WangqiDocumentEditDrawerProps {
     summaryTasks?: AiRefinementTaskRecord[];
     summaryTrackingTask?: AiRefinementTaskRecord | null;
     onCreateSummaryTask?: () => void;
+    onSummaryTaskChange?: (task: AiRefinementTaskRecord | null) => void;
     onClose: () => void;
     onSave: (command: WangqiDocumentCommand) => void;
 }
@@ -237,6 +238,7 @@ export const WangqiDocumentEditDrawer = ({
     summaryTasks = [],
     summaryTrackingTask,
     onCreateSummaryTask,
+    onSummaryTaskChange,
     onClose,
     onSave
 }: WangqiDocumentEditDrawerProps) => {
@@ -258,6 +260,10 @@ export const WangqiDocumentEditDrawer = ({
     const summaryTrackingTaskId = summaryTrackingTask?.taskId;
     const latestSummaryTask =
         trackedSummaryTaskFromList || summaryTrackingTask || latestSummaryTaskFromList;
+    const summaryLocked =
+        creatingSummaryTask ||
+        isSummaryTaskActive(latestSummaryTask) ||
+        (isSummaryModalOpen && Boolean(summaryTrackingTaskId));
 
     useEffect(() => {
         if (!open) {
@@ -331,7 +337,11 @@ export const WangqiDocumentEditDrawer = ({
             label: "基础信息",
             value: "basic",
             content: (
-                <WangqiDocumentBasicSection mode={mode} onOpenSummaryModal={openSummaryModal} />
+                <WangqiDocumentBasicSection
+                    mode={mode}
+                    summaryLocked={summaryLocked}
+                    onOpenSummaryModal={openSummaryModal}
+                />
             )
         },
         {
@@ -383,31 +393,28 @@ export const WangqiDocumentEditDrawer = ({
                 <Form<WangqiDocumentFormValues>
                     form={form}
                     colon={false}
-                    labelCol={{ flex: "88px" }}
+                    labelCol={ADMIN_FORM_HORIZONTAL_LAYOUT.labelCol}
                     layout="horizontal"
+                    wrapperCol={ADMIN_FORM_HORIZONTAL_LAYOUT.wrapperCol}
                     className="wangqi-document-edit-drawer-form"
                 >
                     {content}
                 </Form>
             )}
-            footer={
-                <div className="wangqi-document-edit-drawer-footer">
-                    <KuzhambuButton
-                        testId="classics-wangqi-document-cancel-button"
-                        onClick={closeModel}
-                    >
-                        取消
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="classics-wangqi-document-save-button"
-                        type="primary"
-                        loading={saving}
-                        onClick={saveDocument}
-                    >
-                        保存
-                    </KuzhambuButton>
-                </div>
-            }
+            footerActions={[
+                {
+                    testId: "classics-wangqi-document-cancel-button",
+                    title: "取消",
+                    action: closeModel
+                },
+                {
+                    testId: "classics-wangqi-document-save-button",
+                    title: "保存",
+                    type: "primary",
+                    loading: saving,
+                    action: saveDocument
+                }
+            ]}
         >
             <KuzhambuSyncTaskModal<AiRefinementTaskRecord, AiCandidateRecord>
                 testId="classics-wangqi-document-summary-ai-modal"
@@ -415,26 +422,32 @@ export const WangqiDocumentEditDrawer = ({
                 title="AI 摘要"
                 open={isSummaryModalOpen}
                 width={880}
-                applyDisabled={!summaryDraft.trim()}
+                applyDisabled={({ creating, resultLoading, tracking }) =>
+                    creating || tracking || resultLoading || !summaryDraft.trim()
+                }
                 applyTestId="classics-wangqi-document-summary-ai-apply-button"
                 createAriaLabel="生成 AI 摘要"
                 createIcon={<FileTextOutlined />}
                 createTestId="classics-wangqi-document-summary-ai-generate-button"
                 createText="生成摘要"
                 creating={creatingSummaryTask}
-                fetchResult={loadSummaryCandidate}
-                fetchTask={(taskId) => aiRefinementTaskService.getTask({ taskId: Number(taskId) })}
-                pollIntervalMs={SUMMARY_CANDIDATE_POLL_INTERVAL_MS}
-                resultQueryKey={["WANGQI_DOCUMENT", documentId, "summary"]}
-                task={latestSummaryTask}
-                taskAdapter={summaryTaskAdapter}
-                trackTask={Boolean(summaryTrackingTaskId)}
-                onApply={applySummaryDraft}
                 onCancel={closeSummaryModal}
-                onCreate={requestSummaryTask}
-                onResultChange={updateSummaryDraftFromCandidate}
+                workflow={{
+                    ...summaryTaskAdapter,
+                    task: latestSummaryTask,
+                    createTask: requestSummaryTask,
+                    fetchResult: loadSummaryCandidate,
+                    fetchTask: (taskId) =>
+                        aiRefinementTaskService.getTask({ taskId: Number(taskId) }),
+                    applyResult: applySummaryDraft,
+                    onTaskChange: onSummaryTaskChange,
+                    onResultChange: updateSummaryDraftFromCandidate,
+                    pollIntervalMs: SUMMARY_CANDIDATE_POLL_INTERVAL_MS,
+                    resultQueryKey: ["WANGQI_DOCUMENT", documentId, "summary"],
+                    trackTask: Boolean(summaryTrackingTaskId)
+                }}
                 renderStatus={renderSummaryTaskStatus}
-                renderBody={({ creating, resultLoading }) => (
+                renderBody={({ creating, resultLoading, tracking }) => (
                     <>
                         <div className="wangqi-summary-modal-compare-grid">
                             <Form
@@ -462,6 +475,7 @@ export const WangqiDocumentEditDrawer = ({
                                 <Form.Item label="AI 摘要">
                                     <TextArea
                                         aria-label="AI摘要候选摘要"
+                                        disabled={creating || tracking || resultLoading}
                                         value={summaryDraft}
                                         placeholder={
                                             creating || resultLoading

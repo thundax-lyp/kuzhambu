@@ -3,7 +3,6 @@ import { useEffect } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import type { DictSaveCommand } from "../dictionary-service";
 import type { DictRecord } from "../dictionary-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { TextArea } = Input;
 
@@ -81,24 +80,20 @@ export const DictionaryEditDrawer = ({
             open={Boolean(open)}
             size="small"
             onClose={onClose}
-            footer={
-                <div className="dictionary-edit-drawer-footer">
-                    <KuzhambuButton
-                        testId="system-dictionary-dictionary-cancel-button"
-                        onClick={onClose}
-                    >
-                        取消
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="system-dictionary-dictionary-save-button"
-                        type="primary"
-                        loading={saving}
-                        onClick={saveDictionary}
-                    >
-                        保存
-                    </KuzhambuButton>
-                </div>
-            }
+            footerActions={[
+                {
+                    testId: "system-dictionary-dictionary-cancel-button",
+                    title: "取消",
+                    action: onClose
+                },
+                {
+                    testId: "system-dictionary-dictionary-save-button",
+                    title: "保存",
+                    type: "primary",
+                    loading: saving,
+                    action: saveDictionary
+                }
+            ]}
         >
             <Form<DictFormValues>
                 form={form}

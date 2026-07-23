@@ -122,12 +122,6 @@ html[data-theme="dark"] .role-page {
     padding-top: 6px;
 }
 
-.role-edit-drawer-switches {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-}
-
 .role-menu-panel {
     display: grid;
     gap: 10px;
@@ -160,8 +154,4 @@ html[data-theme="dark"] .role-page {
 }
 
 @media (max-width: 760px) {
-    .role-edit-drawer-switches {
-        grid-template-columns: 1fr;
-        align-items: stretch;
-    }
 }

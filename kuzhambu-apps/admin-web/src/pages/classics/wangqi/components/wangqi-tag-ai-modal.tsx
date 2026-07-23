@@ -31,6 +31,7 @@ interface WangqiTagAiModalProps {
     document: WangqiDocumentRecord;
     onChanged: () => Promise<void> | void;
     onCreateTagTask?: (existingTags: string[]) => void;
+    onTaskChange?: (task: AiRefinementTaskRecord | null) => void;
     tagTasks?: AiRefinementTaskRecord[];
     tagTrackingTask?: AiRefinementTaskRecord | null;
 }
@@ -230,6 +231,7 @@ export const WangqiTagAiModal = ({
     document,
     onChanged,
     onCreateTagTask,
+    onTaskChange,
     tagTasks = [],
     tagTrackingTask
 }: WangqiTagAiModalProps) => {
@@ -389,8 +391,12 @@ export const WangqiTagAiModal = ({
                 open={isOpen}
                 width={880}
                 applying={applyMutation.isPending}
-                applyDisabled={({ result }) =>
-                    !result || !candidateSubmitEnabled[result.candidateId]
+                applyDisabled={({ creating, result, resultLoading, tracking }) =>
+                    creating ||
+                    tracking ||
+                    resultLoading ||
+                    !result ||
+                    !candidateSubmitEnabled[result.candidateId]
                 }
                 applyTestId="classics-wangqi-document-tags-ai-apply-button"
                 createAriaLabel="生成 AI 标签"
@@ -398,18 +404,22 @@ export const WangqiTagAiModal = ({
                 createTestId="classics-wangqi-document-tags-ai-generate-button"
                 createText="生成标签"
                 creating={creatingTagTask}
-                fetchResult={loadTagCandidate}
-                fetchTask={(taskId) => aiRefinementTaskService.getTask({ taskId: Number(taskId) })}
-                pollIntervalMs={TAG_CANDIDATE_POLL_INTERVAL_MS}
-                resultQueryKey={["WANGQI_DOCUMENT", document.id, "tags"]}
-                task={latestTagTask}
-                taskAdapter={tagTaskAdapter}
-                trackTask={Boolean(tagTrackingTaskId)}
-                onApply={applyCandidate}
                 onCancel={() => setIsOpen(false)}
-                onCreate={createTagTask}
+                workflow={{
+                    ...tagTaskAdapter,
+                    task: latestTagTask,
+                    createTask: createTagTask,
+                    fetchResult: loadTagCandidate,
+                    fetchTask: (taskId) =>
+                        aiRefinementTaskService.getTask({ taskId: Number(taskId) }),
+                    applyResult: applyCandidate,
+                    onTaskChange,
+                    pollIntervalMs: TAG_CANDIDATE_POLL_INTERVAL_MS,
+                    resultQueryKey: ["WANGQI_DOCUMENT", document.id, "tags"],
+                    trackTask: Boolean(tagTrackingTaskId)
+                }}
                 renderStatus={renderTagTaskStatus}
-                renderBody={({ creating, result, resultLoading }) => (
+                renderBody={({ creating, result, resultLoading, tracking }) => (
                     <>
                         <div className="wangqi-summary-modal-compare-grid">
                             <section className="wangqi-summary-modal-card" aria-label="当前标签">
@@ -435,6 +445,7 @@ export const WangqiTagAiModal = ({
                                         candidateId={result.candidateId}
                                         capability="tags"
                                         initialPayload={result.resultPayload}
+                                        disabled={creating || tracking || resultLoading}
                                         onPayloadChange={updateCandidatePayload}
                                         onSubmitEnabledChange={updateCandidateSubmitEnabled}
                                     />

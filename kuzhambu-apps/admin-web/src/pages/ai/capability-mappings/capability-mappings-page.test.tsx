@@ -16,12 +16,18 @@ vi.mock("./capability-mappings-service", () => ({
 vi.mock("@/components/kuzhambu-drawer", () => {
     const mockDrawer = ({
         children,
-        footer,
+        footerActions,
         open,
         title
     }: {
         children: React.ReactNode;
-        footer?: React.ReactNode;
+        footerActions?: Array<{
+            action: () => void;
+            disabled?: boolean;
+            loading?: boolean;
+            title: React.ReactNode;
+            type?: "default" | "primary";
+        }>;
         open?: boolean;
         title?: React.ReactNode;
     }) =>
@@ -29,7 +35,16 @@ vi.mock("@/components/kuzhambu-drawer", () => {
             <div>
                 <h3>{title}</h3>
                 {children}
-                {footer}
+                {footerActions?.map((action) => (
+                    <button
+                        key={String(action.title)}
+                        type="button"
+                        disabled={action.disabled || action.loading}
+                        onClick={action.action}
+                    >
+                        {action.title}
+                    </button>
+                ))}
             </div>
         ) : null;
 

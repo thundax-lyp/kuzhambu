@@ -1,9 +1,6 @@
-import { SaveOutlined } from "@ant-design/icons";
 import { Form, Select, Switch } from "antd";
 import type { FormInstance } from "antd";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { CapabilityModelMatchPanel } from "./capability-model-match-panel";
 import type { CapabilityModelTagMatch } from "./capability-model-match-panel";
 import type { AiCapabilityMappingChangeCommand } from "../capability-mappings-service";
@@ -45,26 +42,21 @@ export const CapabilityMappingDrawer = ({
             title={editingMapping ? "配置模型" : "新增映射"}
             size="large"
             onClose={onClose}
-            footer={
-                <KuzhambuSpace>
-                    <KuzhambuButton
-                        testId="ai-capability-mappings-capability-mappings-cancel-button"
-                        onClick={onClose}
-                    >
-                        取消
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="ai-capability-mappings-capability-mappings-save-button"
-                        type="primary"
-                        icon={<SaveOutlined />}
-                        disabled={!canEditConfig}
-                        loading={saving}
-                        onClick={onSubmit}
-                    >
-                        保存
-                    </KuzhambuButton>
-                </KuzhambuSpace>
-            }
+            footerActions={[
+                {
+                    testId: "ai-capability-mappings-capability-mappings-cancel-button",
+                    title: "取消",
+                    action: onClose
+                },
+                {
+                    testId: "ai-capability-mappings-capability-mappings-save-button",
+                    title: "保存",
+                    type: "primary",
+                    disabled: !canEditConfig,
+                    loading: saving,
+                    action: onSubmit
+                }
+            ]}
         >
             <Form form={form} layout="vertical" className="capability-mappings-form">
                 <Form.Item

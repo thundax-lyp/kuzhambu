@@ -31,6 +31,7 @@ interface WangqiQaAiModalProps {
     document: WangqiDocumentRecord;
     onChanged: () => Promise<void> | void;
     onCreateQaTask?: (existingQaPairs: WangqiQaTaskPair[]) => void;
+    onTaskChange?: (task: AiRefinementTaskRecord | null) => void;
     qaTasks?: AiRefinementTaskRecord[];
     qaTrackingTask?: AiRefinementTaskRecord | null;
 }
@@ -230,6 +231,7 @@ export const WangqiQaAiModal = ({
     document,
     onChanged,
     onCreateQaTask,
+    onTaskChange,
     qaTasks = [],
     qaTrackingTask
 }: WangqiQaAiModalProps) => {
@@ -387,8 +389,12 @@ export const WangqiQaAiModal = ({
                 open={isOpen}
                 width={880}
                 applying={applyMutation.isPending}
-                applyDisabled={({ result }) =>
-                    !result || !candidateSubmitEnabled[result.candidateId]
+                applyDisabled={({ creating, result, resultLoading, tracking }) =>
+                    creating ||
+                    tracking ||
+                    resultLoading ||
+                    !result ||
+                    !candidateSubmitEnabled[result.candidateId]
                 }
                 applyTestId="classics-wangqi-document-qa-ai-apply-button"
                 createAriaLabel="生成问答"
@@ -396,18 +402,22 @@ export const WangqiQaAiModal = ({
                 createTestId="classics-wangqi-document-qa-ai-generate-button"
                 createText="生成问答"
                 creating={creatingQaTask}
-                fetchResult={loadQaCandidate}
-                fetchTask={(taskId) => aiRefinementTaskService.getTask({ taskId: Number(taskId) })}
-                pollIntervalMs={QA_CANDIDATE_POLL_INTERVAL_MS}
-                resultQueryKey={["WANGQI_DOCUMENT", document.id, "qa"]}
-                task={latestQaTask}
-                taskAdapter={qaTaskAdapter}
-                trackTask={Boolean(qaTrackingTaskId)}
-                onApply={applyCandidate}
                 onCancel={() => setIsOpen(false)}
-                onCreate={createQaTask}
+                workflow={{
+                    ...qaTaskAdapter,
+                    task: latestQaTask,
+                    createTask: createQaTask,
+                    fetchResult: loadQaCandidate,
+                    fetchTask: (taskId) =>
+                        aiRefinementTaskService.getTask({ taskId: Number(taskId) }),
+                    applyResult: applyCandidate,
+                    onTaskChange,
+                    pollIntervalMs: QA_CANDIDATE_POLL_INTERVAL_MS,
+                    resultQueryKey: ["WANGQI_DOCUMENT", document.id, "qa"],
+                    trackTask: Boolean(qaTrackingTaskId)
+                }}
                 renderStatus={renderQaTaskStatus}
-                renderBody={({ creating, result, resultLoading }) => (
+                renderBody={({ creating, result, resultLoading, tracking }) => (
                     <>
                         <div className="wangqi-summary-modal-compare-grid">
                             <section className="wangqi-summary-modal-card" aria-label="当前问答">
@@ -435,6 +445,7 @@ export const WangqiQaAiModal = ({
                                         candidateId={result.candidateId}
                                         capability="qa"
                                         initialPayload={result.resultPayload}
+                                        disabled={creating || tracking || resultLoading}
                                         onPayloadChange={updateCandidatePayload}
                                         onSubmitEnabledChange={updateCandidateSubmitEnabled}
                                     />

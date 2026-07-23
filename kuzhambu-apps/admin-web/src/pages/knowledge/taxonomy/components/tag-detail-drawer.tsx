@@ -1,7 +1,7 @@
 import { Descriptions, Empty, Input, Typography } from "antd";
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import { KuzhambuList, KuzhambuListItem, KuzhambuListMeta } from "@/components/kuzhambu-list";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
+import { KuzhambuDrawer, type KuzhambuDrawerFooterAction } from "@/components/kuzhambu-drawer";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { TagAliasList } from "./tag-alias-list";
 import type {
@@ -11,7 +11,6 @@ import type {
     TagReviewCommand
 } from "../taxonomy-service";
 import type { TagDetailRecord } from "../taxonomy-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Paragraph, Text, Title } = Typography;
 const { TextArea } = Input;
@@ -141,57 +140,46 @@ export const TagDetailDrawer = ({
         onClose();
     };
 
-    let footer: ReactNode;
+    let footerActions: KuzhambuDrawerFooterAction[] | undefined;
     if (reviewMode) {
-        footer = (
-            <div className="knowledge-taxonomy-tag-detail-footer">
-                <KuzhambuButton
-                    testId="knowledge-taxonomy-tag-detail-close-button"
-                    disabled={reviewing}
-                    onClick={closeDrawer}
-                >
-                    关闭
-                </KuzhambuButton>
-                <KuzhambuSpace>
-                    <KuzhambuButton
-                        testId="knowledge-taxonomy-tag-detail-action-button"
-                        type="primary"
-                        loading={reviewing}
-                        onClick={approveTag}
-                    >
-                        通过
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="knowledge-taxonomy-tag-detail-action-button-2"
-                        danger
-                        loading={reviewing}
-                        onClick={rejectTag}
-                    >
-                        拒绝
-                    </KuzhambuButton>
-                </KuzhambuSpace>
-            </div>
-        );
+        footerActions = [
+            {
+                testId: "knowledge-taxonomy-tag-detail-close-button",
+                title: "关闭",
+                disabled: reviewing,
+                action: closeDrawer
+            },
+            {
+                testId: "knowledge-taxonomy-tag-detail-action-button",
+                title: "通过",
+                type: "primary",
+                loading: reviewing,
+                action: approveTag
+            },
+            {
+                testId: "knowledge-taxonomy-tag-detail-action-button-2",
+                title: "拒绝",
+                danger: true,
+                loading: reviewing,
+                action: rejectTag
+            }
+        ];
     } else if (canDeprecateTag) {
-        footer = (
-            <div className="knowledge-taxonomy-tag-detail-footer">
-                <KuzhambuButton
-                    testId="knowledge-taxonomy-tag-detail-close-button-2"
-                    disabled={deprecating}
-                    onClick={closeDrawer}
-                >
-                    关闭
-                </KuzhambuButton>
-                <KuzhambuButton
-                    testId="knowledge-taxonomy-tag-detail-action-button-3"
-                    danger
-                    loading={deprecating}
-                    onClick={deprecateTag}
-                >
-                    废弃标签
-                </KuzhambuButton>
-            </div>
-        );
+        footerActions = [
+            {
+                testId: "knowledge-taxonomy-tag-detail-close-button-2",
+                title: "关闭",
+                disabled: deprecating,
+                action: closeDrawer
+            },
+            {
+                testId: "knowledge-taxonomy-tag-detail-action-button-3",
+                title: "废弃标签",
+                danger: true,
+                loading: deprecating,
+                action: deprecateTag
+            }
+        ];
     }
 
     return (
@@ -203,7 +191,7 @@ export const TagDetailDrawer = ({
             size="large"
             loading={loading}
             onClose={closeDrawer}
-            footer={footer}
+            footerActions={footerActions}
         >
             {tag ? (
                 <div className="knowledge-taxonomy-tag-detail">

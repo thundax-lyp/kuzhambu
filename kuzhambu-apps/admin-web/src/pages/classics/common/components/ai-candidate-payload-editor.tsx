@@ -20,6 +20,7 @@ const TEXT_CAPABILITY_ARIA_LABEL: Record<
 interface AiCandidatePayloadEditorProps {
     candidateId: number;
     capability: AiCandidateCapability;
+    disabled?: boolean;
     initialPayload?: string | null;
     onPayloadChange: (candidateId: number, payload: string) => void;
     onSubmitEnabledChange: (candidateId: number, canSubmit: boolean) => void;
@@ -95,6 +96,7 @@ const buildTextPayload = (payload?: string | null): string => {
 export const AiCandidatePayloadEditor = ({
     candidateId,
     capability,
+    disabled = false,
     initialPayload,
     onPayloadChange,
     onSubmitEnabledChange
@@ -199,6 +201,7 @@ export const AiCandidatePayloadEditor = ({
             <Input.TextArea
                 aria-label={TEXT_CAPABILITY_ARIA_LABEL[capability]}
                 autoSize={resolveTextAreaAutoSize({ minRows: 4, maxRows: 10 })}
+                disabled={disabled}
                 value={textPayload}
                 onChange={(event) => setTextPayload(event.target.value)}
             />
@@ -215,12 +218,14 @@ export const AiCandidatePayloadEditor = ({
                     >
                         <Input
                             aria-label={`候选标签 ${index + 1}`}
+                            disabled={disabled}
                             placeholder="标签"
                             value={tag}
                             onChange={(event) => updateTag(index, event.target.value)}
                         />
                         <KuzhambuButton
                             testId="classics-common-ai-candidate-payload-editor-action-button"
+                            disabled={disabled}
                             onClick={() => removeTag(index)}
                         >
                             删除
@@ -229,6 +234,7 @@ export const AiCandidatePayloadEditor = ({
                 ))}
                 <KuzhambuButton
                     testId="classics-common-ai-candidate-payload-editor-create-candidate-tag-button"
+                    disabled={disabled}
                     onClick={appendTag}
                 >
                     新增标签
@@ -244,6 +250,7 @@ export const AiCandidatePayloadEditor = ({
                     <Input.TextArea
                         aria-label={`问答问题 ${index + 1}`}
                         placeholder="问题"
+                        disabled={disabled}
                         autoSize={resolveTextAreaAutoSize({ minRows: 2, maxRows: 4 })}
                         value={pair.question}
                         onChange={(event) => updateQaPair(index, "question", event.target.value)}
@@ -251,6 +258,7 @@ export const AiCandidatePayloadEditor = ({
                     <Input.TextArea
                         aria-label={`问答答案 ${index + 1}`}
                         placeholder="答案"
+                        disabled={disabled}
                         autoSize={resolveTextAreaAutoSize({ minRows: 2, maxRows: 4 })}
                         style={{ marginTop: 8 }}
                         value={pair.answer}
@@ -258,6 +266,7 @@ export const AiCandidatePayloadEditor = ({
                     />
                     <KuzhambuButton
                         testId="classics-common-ai-candidate-payload-editor-action-button-2"
+                        disabled={disabled}
                         style={{ marginTop: 8 }}
                         onClick={() => removeQaPair(index)}
                     >
@@ -267,6 +276,7 @@ export const AiCandidatePayloadEditor = ({
             ))}
             <KuzhambuButton
                 testId="classics-common-ai-candidate-payload-editor-create-candidate-qa-button"
+                disabled={disabled}
                 onClick={appendQaPair}
             >
                 新增问答

@@ -1,4 +1,4 @@
-import { Card, Checkbox, Form, Input, InputNumber } from "antd";
+import { Card, Checkbox, Col, Form, Input, InputNumber, Row } from "antd";
 import { useEffect } from "react";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type {
@@ -123,17 +123,23 @@ export const GraphExtractionCreate = ({
                             type="warning"
                             title="精修应用后的图谱重生成参数已载入"
                         />
-                        <div className="graph-extraction-create-grid">
-                            <Form.Item label="源任务 ID">
-                                <Input value={regenerateCommand.sourceTaskId || ""} disabled />
-                            </Form.Item>
-                            <Form.Item label="任务类型">
-                                <Input value={regenerateCommand.taskType || ""} disabled />
-                            </Form.Item>
-                            <Form.Item label="触发来源">
-                                <Input value={regenerateCommand.triggerSource || ""} disabled />
-                            </Form.Item>
-                        </div>
+                        <Row gutter={16}>
+                            <Col xs={24} md={12}>
+                                <Form.Item label="源任务 ID">
+                                    <Input value={regenerateCommand.sourceTaskId || ""} disabled />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} md={12}>
+                                <Form.Item label="任务类型">
+                                    <Input value={regenerateCommand.taskType || ""} disabled />
+                                </Form.Item>
+                            </Col>
+                            <Col xs={24} md={12}>
+                                <Form.Item label="触发来源">
+                                    <Input value={regenerateCommand.triggerSource || ""} disabled />
+                                </Form.Item>
+                            </Col>
+                        </Row>
                         <KuzhambuButton
                             testId="knowledge-graph-extraction-graph-extraction-create-action-button"
                             type="primary"
@@ -156,42 +162,54 @@ export const GraphExtractionCreate = ({
                         replaceUnconfirmedOnly: true
                     }}
                 >
-                    <div className="graph-extraction-create-grid">
-                        <Form.Item
-                            name="sourceContentType"
-                            label="来源内容类型"
-                            rules={[{ required: true, message: "请输入来源内容类型" }]}
-                        >
-                            <Input placeholder="例如：SANCAI_ENTRY" />
-                        </Form.Item>
-                        <Form.Item
-                            name="sourceContentId"
-                            label="来源内容 ID"
-                            rules={[{ required: true, message: "请输入来源内容 ID" }]}
-                        >
-                            <InputNumber min={1} precision={0} style={{ width: "100%" }} />
-                        </Form.Item>
-                        <Form.Item name="scopeType" label="作用域类型">
-                            <Input placeholder="例如：CLASSICS_ENTRY" />
-                        </Form.Item>
-                        <Form.Item name="locale" label="语言">
-                            <Input placeholder="例如：zh-CN" />
-                        </Form.Item>
-                        <Form.Item
-                            name="modelId"
-                            label="模型 ID"
-                            rules={[{ required: true, message: "请输入模型 ID" }]}
-                        >
-                            <InputNumber min={1} precision={0} style={{ width: "100%" }} />
-                        </Form.Item>
-                        <Form.Item
-                            name="modelName"
-                            label="模型名"
-                            rules={[{ required: true, message: "请输入模型名" }]}
-                        >
-                            <Input placeholder="例如：gpt-5.5" />
-                        </Form.Item>
-                    </div>
+                    <Row gutter={16}>
+                        <Col xs={24} md={12}>
+                            <Form.Item
+                                name="sourceContentType"
+                                label="来源内容类型"
+                                rules={[{ required: true, message: "请输入来源内容类型" }]}
+                            >
+                                <Input placeholder="例如：SANCAI_ENTRY" />
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} md={12}>
+                            <Form.Item
+                                name="sourceContentId"
+                                label="来源内容 ID"
+                                rules={[{ required: true, message: "请输入来源内容 ID" }]}
+                            >
+                                <InputNumber min={1} precision={0} style={{ width: "100%" }} />
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} md={12}>
+                            <Form.Item name="scopeType" label="作用域类型">
+                                <Input placeholder="例如：CLASSICS_ENTRY" />
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} md={12}>
+                            <Form.Item name="locale" label="语言">
+                                <Input placeholder="例如：zh-CN" />
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} md={12}>
+                            <Form.Item
+                                name="modelId"
+                                label="模型 ID"
+                                rules={[{ required: true, message: "请输入模型 ID" }]}
+                            >
+                                <InputNumber min={1} precision={0} style={{ width: "100%" }} />
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} md={12}>
+                            <Form.Item
+                                name="modelName"
+                                label="模型名"
+                                rules={[{ required: true, message: "请输入模型名" }]}
+                            >
+                                <Input placeholder="例如：gpt-5.5" />
+                            </Form.Item>
+                        </Col>
+                    </Row>
 
                     <Form.Item name="scopeJson" label="作用域 JSON">
                         <TextArea rows={3} placeholder='例如：{"entryId":1001}' />

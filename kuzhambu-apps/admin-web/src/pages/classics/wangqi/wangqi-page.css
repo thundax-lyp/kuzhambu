@@ -34,18 +34,6 @@
     gap: 12px;
 }
 
-.wangqi-document-toolbar {
-    display: flex;
-    min-width: 0;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-}
-
-.wangqi-document-toolbar-actions {
-    justify-content: flex-end;
-}
-
 .wangqi-result-alert {
     margin-bottom: 0;
 }
@@ -140,29 +128,17 @@
 }
 
 .wangqi-document-edit-drawer-basic {
-    display: grid;
     min-width: 0;
-    gap: 18px;
 }
 
 .wangqi-document-edit-drawer-basic-head {
-    display: grid;
     min-width: 0;
-    gap: 10px;
     padding-bottom: 4px;
     border-bottom: 1px solid var(--wangqi-panel-border);
 }
 
-.wangqi-document-edit-drawer-grid {
-    display: grid;
-    grid-template-columns: minmax(320px, 1fr) 260px 180px;
-    gap: 0 16px;
-}
-
 .wangqi-document-edit-drawer-text-fields {
-    display: grid;
     min-width: 0;
-    gap: 18px;
 }
 
 .wangqi-document-edit-drawer-form-item-top .ant-form-item-label {
@@ -383,7 +359,6 @@
 }
 
 @media (max-width: 980px) {
-    .wangqi-document-edit-drawer-grid,
     .wangqi-summary-modal-compare-grid,
     .wangqi-version-history-panel-grid {
         grid-template-columns: minmax(0, 1fr);

@@ -4,14 +4,13 @@ import {
     TranslationOutlined,
     UploadOutlined
 } from "@ant-design/icons";
-import { Form, Image, Input, Select, Switch, Typography, Upload } from "antd";
+import { Col, Form, Image, Input, Row, Select, Switch, Typography, Upload } from "antd";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import type { SancaiAiTextField } from "./sancai-entry-ai-text-config";
-import type { SancaiEntryFormValues } from "./sancai-form-values";
-import type { SancaiEntryImageRecord } from "../sancai-types";
+import type { SancaiEntryFormValues } from "../sancai-form-values";
+import type { SancaiEntryImageRecord } from "@/pages/classics/sancai/sancai-types";
 
 const { Text } = Typography;
 const IMAGE_ACCEPT = ".jpg,.jpeg,.png,.gif,.webp";
@@ -40,9 +39,12 @@ interface SancaiEntryBasicSectionProps {
     mode: "create" | "edit";
     previewUrl?: string;
     setForm: Dispatch<SetStateAction<SancaiEntryFormValues>>;
+    summaryModal?: ReactNode;
+    translationModal?: ReactNode;
     volumeOptions: Array<{ label: string; value: number }>;
     onChangeCategory: (categoryId: number | null) => void;
-    onOpenAiTextModal: (field: SancaiAiTextField) => void;
+    onOpenSummaryModal: () => void;
+    onOpenTranslationModal: () => void;
     onUploadImage: (file: File) => void;
 }
 
@@ -57,39 +59,46 @@ export const SancaiEntryBasicSection = ({
     mode,
     previewUrl,
     setForm,
+    summaryModal,
+    translationModal,
     volumeOptions,
     onChangeCategory,
-    onOpenAiTextModal,
+    onOpenSummaryModal,
+    onOpenTranslationModal,
     onUploadImage
 }: SancaiEntryBasicSectionProps) => {
     return (
         <>
-            <div className="sancai-entry-edit-drawer-catalog-row">
-                <Form.Item label="门类">
-                    <Select
-                        aria-label="三才图会条目门类"
-                        placeholder="选择门类"
-                        options={categoryOptions}
-                        value={form.categoryId ?? undefined}
-                        onChange={(value) => onChangeCategory(value ?? null)}
-                    />
-                </Form.Item>
-                <Form.Item label="卷">
-                    <Select
-                        aria-label="三才图会条目卷"
-                        disabled={!form.categoryId}
-                        placeholder="选择卷"
-                        options={volumeOptions}
-                        value={form.volumeId ?? undefined}
-                        onChange={(value) =>
-                            setForm((currentForm) => ({
-                                ...currentForm,
-                                volumeId: value ?? null
-                            }))
-                        }
-                    />
-                </Form.Item>
-            </div>
+            <Row gutter={10}>
+                <Col xs={24} md={12}>
+                    <Form.Item label="门类">
+                        <Select
+                            aria-label="三才图会条目门类"
+                            placeholder="选择门类"
+                            options={categoryOptions}
+                            value={form.categoryId ?? undefined}
+                            onChange={(value) => onChangeCategory(value ?? null)}
+                        />
+                    </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                    <Form.Item label="卷">
+                        <Select
+                            aria-label="三才图会条目卷"
+                            disabled={!form.categoryId}
+                            placeholder="选择卷"
+                            options={volumeOptions}
+                            value={form.volumeId ?? undefined}
+                            onChange={(value) =>
+                                setForm((currentForm) => ({
+                                    ...currentForm,
+                                    volumeId: value ?? null
+                                }))
+                            }
+                        />
+                    </Form.Item>
+                </Col>
+            </Row>
             <Form.Item label="标题">
                 <Input
                     aria-label="三才图会条目标题"
@@ -134,12 +143,13 @@ export const SancaiEntryBasicSection = ({
                                 testId="classics-sancai-sancai-entry-ai-button"
                                 className="sancai-entry-ai-text-button"
                                 icon={<TranslationOutlined />}
-                                onClick={() => onOpenAiTextModal("translate")}
+                                onClick={onOpenTranslationModal}
                             >
                                 AI翻译
                             </KuzhambuButton>
                         </KuzhambuSpace>
                     ) : null}
+                    {translationModal}
                 </div>
             </Form.Item>
             <Form.Item label="摘要" className="sancai-entry-edit-drawer-form-item-top">
@@ -161,12 +171,13 @@ export const SancaiEntryBasicSection = ({
                                 testId="classics-sancai-sancai-entry-ai-summary-button"
                                 className="sancai-entry-ai-text-button"
                                 icon={<FileTextOutlined />}
-                                onClick={() => onOpenAiTextModal("summary")}
+                                onClick={onOpenSummaryModal}
                             >
                                 AI摘要
                             </KuzhambuButton>
                         </KuzhambuSpace>
                     ) : null}
+                    {summaryModal}
                 </div>
             </Form.Item>
             <Form.Item label="可见性">

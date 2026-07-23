@@ -3,7 +3,6 @@ import { useEffect, useMemo } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import type { TagCreateCommand, TagUpdateCommand } from "../taxonomy-service";
 import type { TagCategoryRecord, TagRecord } from "../taxonomy-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { TextArea } = Input;
 
@@ -121,25 +120,21 @@ export const TagEditDrawer = ({
             open={visible}
             size="small"
             onClose={onClose}
-            footer={
-                <div className="knowledge-taxonomy-tag-edit-drawer-footer">
-                    <KuzhambuButton
-                        testId="knowledge-taxonomy-tag-cancel-button"
-                        disabled={saving}
-                        onClick={onClose}
-                    >
-                        取消
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="knowledge-taxonomy-tag-action-button"
-                        type="primary"
-                        loading={saving}
-                        onClick={saveTag}
-                    >
-                        {saveButtonText}
-                    </KuzhambuButton>
-                </div>
-            }
+            footerActions={[
+                {
+                    testId: "knowledge-taxonomy-tag-cancel-button",
+                    title: "取消",
+                    disabled: saving,
+                    action: onClose
+                },
+                {
+                    testId: "knowledge-taxonomy-tag-action-button",
+                    title: saveButtonText,
+                    type: "primary",
+                    loading: saving,
+                    action: saveTag
+                }
+            ]}
         >
             <Form<TagEditDrawerFormValues>
                 form={form}

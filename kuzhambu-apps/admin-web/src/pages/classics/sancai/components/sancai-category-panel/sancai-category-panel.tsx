@@ -6,9 +6,10 @@ import { KuzhambuTable } from "@/components/kuzhambu-table";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import type { DictItem } from "@/types/dict";
 import { SancaiCategoryEditDrawerModal } from "./sancai-category-edit-modal";
-import type { SancaiCategoryFormValues } from "./sancai-form-values";
-import * as categoryService from "../sancai-category-service";
-import type { SancaiCategoryRecord } from "../sancai-types";
+import type { SancaiCategoryFormValues } from "../sancai-form-values";
+import * as categoryService from "@/pages/classics/sancai/sancai-category-service";
+import type { SancaiCategoryRecord } from "@/pages/classics/sancai/sancai-types";
+import "./sancai-category-panel.css";
 
 interface SancaiCategoryPanelProps {
     categories: SancaiCategoryRecord[];

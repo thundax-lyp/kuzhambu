@@ -1,4 +1,4 @@
-import { Form, Input, Tree, Typography } from "antd";
+import { Col, Form, Input, Row, Tree, Typography } from "antd";
 import type { DataNode } from "antd/es/tree";
 import { useEffect, useState } from "react";
 import type { Key } from "react";
@@ -7,7 +7,6 @@ import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import type { OptionsRecord } from "@/types/options";
 import type { RoleSaveCommand } from "../role-service";
 import type { RoleRecord } from "../role-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -107,21 +106,16 @@ export const RoleEditDrawer = ({
             open={Boolean(open)}
             size="middle"
             onClose={onClose}
-            footer={
-                <div className="role-edit-drawer-footer">
-                    <KuzhambuButton testId="system-role-role-cancel-button" onClick={onClose}>
-                        取消
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="system-role-role-save-button"
-                        type="primary"
-                        loading={saving}
-                        onClick={saveRole}
-                    >
-                        保存
-                    </KuzhambuButton>
-                </div>
-            }
+            footerActions={[
+                { testId: "system-role-role-cancel-button", title: "取消", action: onClose },
+                {
+                    testId: "system-role-role-save-button",
+                    title: "保存",
+                    type: "primary",
+                    loading: saving,
+                    action: saveRole
+                }
+            ]}
         >
             <Form<RoleFormValues> form={form} layout="vertical" className="role-edit-drawer-form">
                 <Form.Item name="id" hidden>
@@ -134,28 +128,36 @@ export const RoleEditDrawer = ({
                 >
                     <Input placeholder="例如：运营管理员" />
                 </Form.Item>
-                <div className="role-edit-drawer-switches">
-                    <Form.Item name="admin" label="管理权限" valuePropName="checked">
-                        <KuzhambuSwitch
-                            checkedChildren={readOptionLabel(
-                                privilegeOptions,
-                                "ADMIN",
-                                "管理员角色"
-                            )}
-                            unCheckedChildren={readOptionLabel(
-                                privilegeOptions,
-                                "NORMAL",
-                                "普通角色"
-                            )}
-                        />
-                    </Form.Item>
-                    <Form.Item name="enable" label="角色状态" valuePropName="checked">
-                        <KuzhambuSwitch
-                            checkedChildren={readOptionLabel(statusOptions, "ENABLED", "启用")}
-                            unCheckedChildren={readOptionLabel(statusOptions, "DISABLED", "禁用")}
-                        />
-                    </Form.Item>
-                </div>
+                <Row gutter={14}>
+                    <Col xs={24} md={12}>
+                        <Form.Item name="admin" label="管理权限" valuePropName="checked">
+                            <KuzhambuSwitch
+                                checkedChildren={readOptionLabel(
+                                    privilegeOptions,
+                                    "ADMIN",
+                                    "管理员角色"
+                                )}
+                                unCheckedChildren={readOptionLabel(
+                                    privilegeOptions,
+                                    "NORMAL",
+                                    "普通角色"
+                                )}
+                            />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24} md={12}>
+                        <Form.Item name="enable" label="角色状态" valuePropName="checked">
+                            <KuzhambuSwitch
+                                checkedChildren={readOptionLabel(statusOptions, "ENABLED", "启用")}
+                                unCheckedChildren={readOptionLabel(
+                                    statusOptions,
+                                    "DISABLED",
+                                    "禁用"
+                                )}
+                            />
+                        </Form.Item>
+                    </Col>
+                </Row>
                 <Form.Item name="remarks" label="备注">
                     <TextArea rows={3} maxLength={200} showCount placeholder="角色说明" />
                 </Form.Item>

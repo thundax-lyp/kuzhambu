@@ -3,5 +3,7 @@ export type {
     KuzhambuTableColumn,
     KuzhambuTableProps,
     KuzhambuTableRowActionOption,
-    KuzhambuTableSortPosition
+    KuzhambuTableSortPosition,
+    KuzhambuTableToolbar,
+    KuzhambuTableToolbarAction
 } from "./kuzhambu-table";

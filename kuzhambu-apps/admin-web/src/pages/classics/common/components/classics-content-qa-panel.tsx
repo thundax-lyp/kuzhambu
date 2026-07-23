@@ -2,6 +2,7 @@ import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import { App, Card, Empty, Form, Input, Select } from "antd";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ADMIN_FORM_HORIZONTAL_LAYOUT } from "@/components/form/form-layout";
 import { KuzhambuModal } from "@/components/kuzhambu-modal";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
@@ -331,9 +332,9 @@ export const ClassicsContentQaPanel = ({
                             contentType,
                             source: "MANUAL"
                         }}
-                        labelCol={{ span: 6 }}
+                        labelCol={ADMIN_FORM_HORIZONTAL_LAYOUT.labelCol}
                         labelWrap
-                        wrapperCol={{ span: 18 }}
+                        wrapperCol={ADMIN_FORM_HORIZONTAL_LAYOUT.wrapperCol}
                     >
                         <Form.Item
                             label="问题"

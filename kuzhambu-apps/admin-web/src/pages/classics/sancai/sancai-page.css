@@ -100,107 +100,6 @@ html[data-theme="dark"] .sancai-form-field {
     padding-right: 2px;
 }
 
-.sancai-candidate-panel-anchor {
-    outline: none;
-}
-
-.sancai-catalog-tree-panel {
-    display: grid;
-    min-width: 0;
-    gap: 10px;
-}
-
-.sancai-catalog-panel-head {
-    display: flex;
-    min-width: 0;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--sancai-line);
-}
-
-.sancai-catalog-panel-head .anticon {
-    color: var(--sancai-accent);
-}
-
-.sancai-catalog-refresh {
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 120ms ease;
-}
-
-.sancai-catalog-tree-panel:hover .sancai-catalog-refresh,
-.sancai-catalog-tree-panel:focus-within .sancai-catalog-refresh {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.sancai-catalog-tree-panel .ant-tree {
-    color: var(--sancai-ink);
-    background: transparent;
-}
-
-.sancai-catalog-tree-title {
-    display: inline-flex;
-    min-width: 0;
-    align-items: center;
-    gap: 8px;
-}
-
-.sancai-catalog-tree-icon {
-    display: inline-flex;
-    flex: 0 0 auto;
-    color: var(--sancai-accent);
-}
-
-.sancai-catalog-tree-title .ant-typography {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.sancai-volume-main {
-    display: flex;
-    min-width: 0;
-    align-items: center;
-    gap: 8px;
-}
-
-.sancai-volume-main a {
-    overflow: hidden;
-    color: var(--sancai-ink);
-    font-weight: 700;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.sancai-volume-main a:hover {
-    color: var(--sancai-accent);
-}
-
-.sancai-category-title-cell {
-    display: grid;
-    min-width: 0;
-    gap: 2px;
-}
-
-.sancai-category-title-cell a {
-    overflow: hidden;
-    color: var(--sancai-ink);
-    font-weight: 700;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.sancai-category-title-cell a:hover {
-    color: var(--sancai-accent);
-}
-
-.sancai-category-table-row-active > td {
-    background: var(--sancai-accent-soft);
-}
-
 .sancai-category-edit-modal {
     display: grid;
     min-width: 0;
@@ -218,57 +117,6 @@ html[data-theme="dark"] .sancai-form-field {
     border-color: var(--sancai-line) !important;
 }
 
-.sancai-entry-table-wrap {
-    display: grid;
-    min-width: 0;
-    gap: 12px;
-}
-
-.sancai-entry-table .ant-table {
-    color: var(--sancai-ink);
-    background: var(--sancai-soft);
-    border: 1px solid var(--sancai-line);
-    border-radius: 8px;
-}
-
-.sancai-entry-table .ant-table-thead > tr > th {
-    color: var(--sancai-copy);
-    font-weight: 700;
-    background: var(--sancai-panel);
-    border-bottom-color: var(--sancai-line);
-}
-
-.sancai-entry-table .ant-table-tbody > tr > td {
-    border-bottom-color: var(--sancai-line);
-}
-
-.sancai-entry-title-cell {
-    display: grid;
-    min-width: 0;
-    gap: 2px;
-}
-
-.sancai-entry-title-cell a,
-.sancai-entry-table .ant-table-cell .ant-typography-secondary {
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.sancai-entry-title-cell a {
-    color: var(--sancai-ink);
-    font-weight: 700;
-}
-
-.sancai-entry-title-cell a:hover {
-    color: var(--sancai-accent);
-}
-
-.sancai-volume-table-row-active > td {
-    background: var(--sancai-accent-soft);
-}
-
 .sancai-detail-card {
     position: relative;
     display: grid;
@@ -281,64 +129,14 @@ html[data-theme="dark"] .sancai-form-field {
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.44);
 }
 
-.sancai-detail-card.sancai-entry-edit-drawer-form .ant-input.ant-input-outlined,
-.sancai-detail-card.sancai-entry-edit-drawer-form .ant-select-selector {
-    color: var(--sancai-ink);
-    background: var(--sancai-panel) !important;
-    border-color: var(--sancai-line) !important;
-    border-radius: 5px !important;
-}
-
-.sancai-detail-card.sancai-entry-edit-drawer-form .ant-input.ant-input-outlined:hover,
-.sancai-detail-card.sancai-entry-edit-drawer-form .ant-select-selector:hover {
-    border-color: color-mix(in srgb, var(--sancai-accent) 44%, var(--sancai-line)) !important;
-}
-
-.sancai-detail-card.sancai-entry-edit-drawer-form .ant-input.ant-input-outlined:focus,
-.sancai-detail-card.sancai-entry-edit-drawer-form .ant-input.ant-input-outlined:focus-within,
-.sancai-detail-card.sancai-entry-edit-drawer-form .ant-input-focused,
-.sancai-detail-card.sancai-entry-edit-drawer-form .ant-select-focused .ant-select-selector {
-    border-color: color-mix(in srgb, var(--sancai-accent) 58%, var(--sancai-line)) !important;
-    box-shadow: 0 0 0 2px var(--sancai-accent-soft) !important;
-}
-
-.sancai-editor-form .ant-form-item,
-.sancai-entry-edit-drawer-form .ant-form-item {
+.sancai-editor-form .ant-form-item {
     margin-bottom: 0;
 }
 
-.sancai-editor-form .ant-form-item-label > label,
-.sancai-entry-edit-drawer-form .ant-form-item-label > label {
+.sancai-editor-form .ant-form-item-label > label {
     color: color-mix(in srgb, var(--sancai-ink) 82%, #7e2e25 18%);
     font-weight: 700;
     letter-spacing: 0;
-}
-
-.sancai-entry-edit-drawer-form .ant-form-item-label {
-    padding-inline-end: 12px;
-}
-
-.sancai-entry-edit-drawer-form .ant-form-item-control {
-    min-width: 0;
-}
-
-.sancai-entry-edit-drawer-header-sections {
-    background: color-mix(in srgb, var(--sancai-panel) 78%, #fff7df 22%);
-    border: 1px solid color-mix(in srgb, var(--sancai-line) 78%, #7c5f35 22%);
-}
-
-.sancai-entry-edit-drawer-header-actions {
-    justify-content: flex-end;
-}
-
-.sancai-entry-edit-drawer-section {
-    display: grid;
-    min-width: 0;
-    gap: 12px;
-}
-
-.sancai-entry-edit-drawer-form-item-top .ant-form-item-label {
-    padding-top: 5px;
 }
 
 .sancai-form-field {
@@ -349,13 +147,6 @@ html[data-theme="dark"] .sancai-form-field {
     background: color-mix(in srgb, var(--sancai-panel) 82%, #fff7df 18%);
     border: 1px solid color-mix(in srgb, var(--sancai-line) 78%, #7c5f35 22%);
     border-radius: 6px;
-}
-
-.sancai-entry-edit-drawer-catalog-row {
-    display: grid;
-    min-width: 0;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
 }
 
 .sancai-entry-image-field {
@@ -412,77 +203,6 @@ html[data-theme="dark"] .sancai-form-field {
 
 .sancai-entry-image-frame img {
     border-radius: 4px;
-}
-
-.sancai-entry-image-manager {
-    display: grid;
-    min-width: 0;
-    gap: 12px;
-}
-
-.sancai-entry-image-toolbar {
-    display: flex;
-    justify-content: flex-start;
-}
-
-.sancai-entry-image-cell {
-    display: grid;
-    min-width: 0;
-    grid-template-columns: 132px minmax(0, 1fr);
-    gap: 12px;
-    align-items: center;
-    width: 100%;
-    padding: 0;
-    color: inherit;
-    text-align: left;
-    background: transparent;
-    border: 0;
-    cursor: default;
-    text-decoration: none;
-}
-
-.sancai-entry-image-cell .ant-image,
-.sancai-entry-image-cell img {
-    border-radius: 4px;
-}
-
-.sancai-entry-image-cell .ant-image {
-    width: 132px;
-    height: 88px;
-    cursor: zoom-in;
-}
-
-.sancai-entry-image-cell img {
-    object-fit: cover;
-}
-
-.sancai-entry-image-cover-thumbnail,
-.sancai-entry-image-cover-thumbnail img {
-    border: 2px solid var(--sancai-accent);
-    box-shadow: 0 0 0 2px var(--sancai-accent-soft);
-}
-
-.sancai-entry-image-cover,
-.sancai-entry-image-cover .ant-ribbon-wrapper {
-    display: block;
-    width: 132px;
-    height: 88px;
-}
-
-.sancai-entry-image-cover .ant-ribbon {
-    background: var(--sancai-accent);
-}
-
-.sancai-entry-image-meta {
-    display: grid;
-    min-width: 0;
-    gap: 4px;
-}
-
-.sancai-entry-image-meta .ant-typography {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 .sancai-visual-asset-field {
@@ -686,10 +406,6 @@ html[data-theme="dark"] .sancai-form-field {
         grid-template-columns: minmax(0, 1fr);
     }
 
-    .sancai-entry-edit-drawer-catalog-row {
-        grid-template-columns: minmax(0, 1fr);
-    }
-
     .sancai-visual-asset-image-list {
         grid-template-columns: minmax(0, 1fr);
     }
@@ -698,12 +414,7 @@ html[data-theme="dark"] .sancai-form-field {
         grid-template-columns: minmax(0, 1fr);
     }
 
-    .sancai-editor-form .ant-form-item,
-    .sancai-entry-edit-drawer-form .ant-form-item {
+    .sancai-editor-form .ant-form-item {
         display: block;
-    }
-
-    .sancai-entry-edit-drawer-form-item-top .ant-form-item-label {
-        padding-top: 0;
     }
 }

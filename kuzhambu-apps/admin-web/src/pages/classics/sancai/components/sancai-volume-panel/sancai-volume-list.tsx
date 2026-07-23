@@ -1,7 +1,7 @@
 import { Empty, Skeleton, Tag } from "antd";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
 import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
-import type { SancaiVolumeRecord } from "../sancai-types";
+import type { SancaiVolumeRecord } from "@/pages/classics/sancai/sancai-types";
 
 interface SancaiVolumeListProps {
     isLoading: boolean;

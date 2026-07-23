@@ -1,8 +1,6 @@
-import { DeleteOutlined, ReloadOutlined } from "@ant-design/icons";
 import { Checkbox, Empty, Input, Select, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 import {
     KuzhambuTable,
     type KuzhambuTableColumn,
@@ -257,28 +255,6 @@ export const ClassicsExportJobSection = ({
                 >
                     仅过期
                 </Checkbox>
-                {onRefresh ? (
-                    <KuzhambuButton
-                        testId="classics-common-classics-export-job-refresh-button"
-                        icon={<ReloadOutlined />}
-                        onClick={() => {
-                            onRefresh();
-                        }}
-                    >
-                        刷新
-                    </KuzhambuButton>
-                ) : null}
-                {onBatchDelete ? (
-                    <KuzhambuButton
-                        testId="classics-common-classics-export-job-delete-button"
-                        danger
-                        disabled={!selectedJobs.length}
-                        icon={<DeleteOutlined />}
-                        onClick={() => onBatchDelete(selectedJobs)}
-                    >
-                        删除
-                    </KuzhambuButton>
-                ) : null}
             </KuzhambuSpace>
             <KuzhambuTable<ClassicsExportJobRecord>
                 ariaLabel={`${sectionTitle}表格`}
@@ -287,6 +263,35 @@ export const ClassicsExportJobSection = ({
                 columns={columns}
                 dataSource={visibleItems}
                 loading={loading}
+                toolbar={{
+                    leading: onBatchDelete ? (
+                        <Text type="secondary">已选任务 {selectedJobs.length} 个</Text>
+                    ) : undefined,
+                    actions: [
+                        ...(onRefresh
+                            ? [
+                                  {
+                                      testId: "classics-common-classics-export-job-refresh-button",
+                                      title: "刷新",
+                                      action: () => {
+                                          onRefresh();
+                                      }
+                                  }
+                              ]
+                            : []),
+                        ...(onBatchDelete
+                            ? [
+                                  {
+                                      testId: "classics-common-classics-export-job-delete-button",
+                                      title: "删除",
+                                      danger: true,
+                                      disabled: !selectedJobs.length,
+                                      action: () => onBatchDelete(selectedJobs)
+                                  }
+                              ]
+                            : [])
+                    ]
+                }}
                 locale={{
                     emptyText: (
                         <Empty

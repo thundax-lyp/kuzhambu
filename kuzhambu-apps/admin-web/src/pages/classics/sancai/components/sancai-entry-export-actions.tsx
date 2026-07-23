@@ -1,5 +1,4 @@
 import { KuzhambuAlert } from "@/components/kuzhambu-alert";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import type { ClassicsExportJobRecord } from "@/pages/classics/common/classics-export-types";
 import { ClassicsExportJobSection } from "@/pages/classics/common/components/classics-export-job-section";
@@ -34,15 +33,14 @@ export const SancaiEntryExportActions = ({
             open={open}
             size="large"
             title="导出任务"
-            footer={
-                <KuzhambuButton
-                    testId="classics-sancai-sancai-entry-close-button"
-                    type="primary"
-                    onClick={onClose}
-                >
-                    关闭
-                </KuzhambuButton>
-            }
+            footerActions={[
+                {
+                    testId: "classics-sancai-sancai-entry-close-button",
+                    title: "关闭",
+                    type: "primary",
+                    action: onClose
+                }
+            ]}
             onClose={onClose}
         >
             {isError ? (

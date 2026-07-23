@@ -3,7 +3,6 @@ import { useEffect } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import type { DepartmentSaveCommand } from "../department-service";
 import type { DepartmentNode } from "../department-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { TextArea } = Input;
 
@@ -83,24 +82,20 @@ export const DepartmentEditDrawer = ({
             open={Boolean(open)}
             size="small"
             onClose={onClose}
-            footer={
-                <div className="department-edit-drawer-footer">
-                    <KuzhambuButton
-                        testId="system-department-department-cancel-button"
-                        onClick={onClose}
-                    >
-                        取消
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="system-department-department-save-button"
-                        type="primary"
-                        loading={saving}
-                        onClick={saveDepartment}
-                    >
-                        保存
-                    </KuzhambuButton>
-                </div>
-            }
+            footerActions={[
+                {
+                    testId: "system-department-department-cancel-button",
+                    title: "取消",
+                    action: onClose
+                },
+                {
+                    testId: "system-department-department-save-button",
+                    title: "保存",
+                    type: "primary",
+                    loading: saving,
+                    action: saveDepartment
+                }
+            ]}
         >
             <Form<DepartmentFormValues>
                 form={form}

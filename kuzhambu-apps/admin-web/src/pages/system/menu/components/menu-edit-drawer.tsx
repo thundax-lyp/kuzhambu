@@ -3,7 +3,6 @@ import { useEffect } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import type { MenuSaveCommand } from "../menu-service";
 import type { MenuNode } from "../menu-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { TextArea } = Input;
 
@@ -96,21 +95,16 @@ export const MenuEditDrawer = ({
             open={Boolean(open)}
             size="small"
             onClose={onClose}
-            footer={
-                <div className="menu-edit-drawer-footer">
-                    <KuzhambuButton testId="system-menu-menu-cancel-button" onClick={onClose}>
-                        取消
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="system-menu-menu-save-button"
-                        type="primary"
-                        loading={saving}
-                        onClick={saveMenu}
-                    >
-                        保存
-                    </KuzhambuButton>
-                </div>
-            }
+            footerActions={[
+                { testId: "system-menu-menu-cancel-button", title: "取消", action: onClose },
+                {
+                    testId: "system-menu-menu-save-button",
+                    title: "保存",
+                    type: "primary",
+                    loading: saving,
+                    action: saveMenu
+                }
+            ]}
         >
             <Form<MenuFormValues> form={form} layout="vertical" className="menu-edit-drawer-form">
                 <Form.Item name="id" hidden>
