@@ -3,7 +3,6 @@ import { App, Empty, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTable, type KuzhambuTableProps } from "@/components/kuzhambu-table";
 import * as aiCandidateService from "../ai-candidate-service";
 import type { AiCandidateApplyCommand } from "../ai-candidate-service";
@@ -449,16 +448,6 @@ export const AiCandidateBatchDrawer = ({
                 }
             ]}
         >
-            <KuzhambuSpace
-                className="ai-candidate-batch-stats"
-                style={{ display: "flex", flexDirection: "column" }}
-            >
-                <Text>
-                    已选内容 {requestCandidateIds.length} 个 / 待处理候选 {pendingCandidates.length}{" "}
-                    个 / 已选择候选 {selectedCandidateIds.length} 个
-                </Text>
-            </KuzhambuSpace>
-
             {hasLoadError ? (
                 <KuzhambuAlert
                     type="warning"
@@ -496,6 +485,15 @@ export const AiCandidateBatchDrawer = ({
                     ariaLabel="AI 候选批量治理列表"
                     columns={columns}
                     dataSource={pendingCandidates}
+                    toolbar={{
+                        leading: (
+                            <Text>
+                                已选内容 {requestCandidateIds.length} 个 / 待处理候选{" "}
+                                {pendingCandidates.length} 个 / 已选择候选{" "}
+                                {selectedCandidateIds.length} 个
+                            </Text>
+                        )
+                    }}
                     rowKey="candidateId"
                     rowSelection={{
                         selectedRowKeys: selectedCandidateIds,
