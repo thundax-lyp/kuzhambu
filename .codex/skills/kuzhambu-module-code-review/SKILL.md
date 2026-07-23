@@ -1,15 +1,19 @@
 ---
 name: kuzhambu-module-code-review
-description: Run this skill whenever the user asks to review a module, perform a module code review, audit a package or directory, review all code under a module path, uses slash-command style input like "/module-review <moduleName>" or "/模块审查 <moduleName>", or says phrases like "阅读 module code review prompt，对这个模块做 review". This skill performs Kuzhambu's systematic full-module code review, not a PR diff review. Use it for repository subdirectories, Java Maven modules, frontend app areas, Python worker packages, and named business modules.
+description: Kuzhambu systematic full-module code review workflow for direct slash-command invocation with a module name or path. It reviews the current state of a repository subdirectory, Java Maven module, frontend app area, Python worker package, or named business module, not a PR diff. Do not modify code.
 ---
 
 # Kuzhambu Module Code Review
 
 请对用户指定模块的全部代码进行一次系统性 Code Review。这个 skill 审查模块当前状态，不以最近 Git diff 为边界。
 
+## 调用方式
+
+本 skill 只用于 slash command 直接调用，不定义额外自然语言触发或适用语义。
+
 ## 模块路径
 
-- 支持快捷命令形态：`/<command> <moduleName>`。将 slash command 后面的全部内容视为模块名或模块路径；例如 `ai`、`admin-web`、`kuzhambu-servers/biz/ai`、`kuzhambu-apps/admin-web/src/features/system`。
+- 将 slash command 后面的全部内容视为模块名或模块路径；例如 `ai`、`admin-web`、`kuzhambu-servers/biz/ai`、`kuzhambu-apps/admin-web/src/features/system`。
 - 如果用户给出明确路径，将该路径作为 `<MODULE_PATH>`。
 - 如果用户只给出模块名，先在仓库内定位最匹配的目录或 Maven/package 模块；无法唯一确定时，先提出一个简短澄清问题。
 - 如果用户没有指定模块，不能自行扩大到全仓审查；请要求用户提供模块路径或模块名。

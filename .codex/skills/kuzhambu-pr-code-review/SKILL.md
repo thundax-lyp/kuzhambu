@@ -1,11 +1,15 @@
 ---
 name: kuzhambu-pr-code-review
-description: Run this skill whenever the user asks to read the PR code review prompt, review the current branch, review this branch against main, perform a PR review, audit the branch diff, or says phrases like "阅读 PR code review prompt，对本分支进行review". This skill performs the project's strict current-branch code review directly from the skill instructions. Use it even when the user does not explicitly mention a skill.
+description: Kuzhambu strict current-branch PR code review workflow for direct slash-command invocation. It reviews committed changes on the current branch against main, reports only actionable issues introduced or exposed by the branch diff, and does not modify code.
 ---
 
 # Kuzhambu PR Code Review
 
 请对当前分支相对于 `main` 分支的代码变更进行一次严格的 Pull Request Review。
+
+## 调用方式
+
+本 skill 只用于 slash command 直接调用，不定义额外自然语言触发或适用语义。
 
 ## 前置步骤
 
