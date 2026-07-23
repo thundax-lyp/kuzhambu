@@ -1,10 +1,11 @@
-import { Empty, Form, Input, Popconfirm, Typography } from "antd";
+import { Empty, Form, Popconfirm, Typography } from "antd";
 import { useMemo } from "react";
 import { KuzhambuList, KuzhambuListItem } from "@/components/kuzhambu-list";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { TagAliasCreateCommand, TagAliasRemoveCommand } from "../taxonomy-service";
 import type { TagAliasRecord } from "../taxonomy-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { TagAliasCreateField } from "./tag-alias-create-field";
 
 const { Text } = Typography;
 
@@ -28,11 +29,6 @@ const createAliasId = () => {
         return crypto.randomUUID();
     }
     return `${Date.now()}`;
-};
-
-const normalizeText = (value?: string | null) => {
-    const normalizedValue = value?.trim();
-    return normalizedValue || undefined;
 };
 
 const readSourceLabel = (source?: string | null) => {
@@ -82,51 +78,11 @@ export const TagAliasList = ({
         <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
             {canEdit ? (
                 <Form<TagAliasFormValues> form={form} layout="inline">
-                    <Form.Item
-                        name="name"
-                        style={{ flex: 1, marginBottom: 0 }}
-                        rules={[
-                            { required: true, message: "请输入别名" },
-                            { max: 128, message: "别名最多 128 个字符" },
-                            {
-                                validator: async (_, value?: string) => {
-                                    const normalizedValue = normalizeText(value);
-                                    if (!normalizedValue) {
-                                        return;
-                                    }
-                                    if (
-                                        aliases.some(
-                                            (alias) =>
-                                                alias.name?.toLowerCase() ===
-                                                normalizedValue.toLowerCase()
-                                        )
-                                    ) {
-                                        throw new Error("该别名已存在");
-                                    }
-                                }
-                            }
-                        ]}
-                    >
-                        <Input
-                            disabled={saving}
-                            maxLength={128}
-                            placeholder="新增标签别名"
-                            onPressEnter={(event) => {
-                                event.preventDefault();
-                                void createAlias();
-                            }}
-                        />
-                    </Form.Item>
-                    <Form.Item style={{ marginBottom: 0 }}>
-                        <KuzhambuButton
-                            testId="knowledge-taxonomy-tag-alias-action-button"
-                            type="primary"
-                            loading={saving}
-                            onClick={() => void createAlias()}
-                        >
-                            新增别名
-                        </KuzhambuButton>
-                    </Form.Item>
+                    <TagAliasCreateField
+                        aliases={aliases}
+                        saving={saving}
+                        onSubmit={() => void createAlias()}
+                    />
                 </Form>
             ) : null}
 
