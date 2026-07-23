@@ -117,53 +117,6 @@ html[data-theme="dark"] .sancai-form-field {
     border-color: var(--sancai-line) !important;
 }
 
-.sancai-entry-table-wrap {
-    display: grid;
-    min-width: 0;
-    gap: 12px;
-}
-
-.sancai-entry-table .ant-table {
-    color: var(--sancai-ink);
-    background: var(--sancai-soft);
-    border: 1px solid var(--sancai-line);
-    border-radius: 8px;
-}
-
-.sancai-entry-table .ant-table-thead > tr > th {
-    color: var(--sancai-copy);
-    font-weight: 700;
-    background: var(--sancai-panel);
-    border-bottom-color: var(--sancai-line);
-}
-
-.sancai-entry-table .ant-table-tbody > tr > td {
-    border-bottom-color: var(--sancai-line);
-}
-
-.sancai-entry-title-cell {
-    display: grid;
-    min-width: 0;
-    gap: 2px;
-}
-
-.sancai-entry-title-cell a,
-.sancai-entry-table .ant-table-cell .ant-typography-secondary {
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.sancai-entry-title-cell a {
-    color: var(--sancai-ink);
-    font-weight: 700;
-}
-
-.sancai-entry-title-cell a:hover {
-    color: var(--sancai-accent);
-}
-
 .sancai-detail-card {
     position: relative;
     display: grid;
