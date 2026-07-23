@@ -1,4 +1,4 @@
-import type { SancaiEntryFormValues } from "../sancai-form-values";
+import type { SancaiEntryFormValues } from "./sancai-entry-form-values";
 import type { SancaiVisualAssetRecord } from "@/pages/classics/sancai/sancai-types";
 
 interface OpenSancaiEntryPreviewWindowOptions {

@@ -10,7 +10,7 @@ import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { SancaiEntryBasicSection } from "./sancai-entry-basic-section";
 import { openSancaiEntryPreviewWindow } from "./sancai-entry-preview-window";
 import { SancaiEntryVisualSection } from "./sancai-entry-visual-section";
-import { toEntryFormValues, type SancaiEntryFormValues } from "../sancai-form-values";
+import { toEntryFormValues, type SancaiEntryFormValues } from "./sancai-entry-form-values";
 import type { SancaiVisualAssetRefinementCapability } from "@/pages/classics/sancai/sancai-entry-service";
 import * as entryService from "@/pages/classics/sancai/sancai-entry-service";
 import type {
