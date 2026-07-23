@@ -4,7 +4,6 @@ import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { TagBatchReviewCommand } from "../taxonomy-service";
 import type { TagCategoryRecord, TagRecord } from "../taxonomy-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -80,27 +79,23 @@ export const TagBatchReviewPanel = ({
             open={open}
             size="small"
             onClose={onClose}
-            footer={
-                <div className="knowledge-taxonomy-drawer-footer">
-                    <KuzhambuButton
-                        testId="knowledge-taxonomy-tag-batch-review-cancel-button"
-                        disabled={reviewing}
-                        onClick={onClose}
-                    >
-                        取消
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="knowledge-taxonomy-tag-batch-review-action-button"
-                        type="primary"
-                        danger={!approving}
-                        loading={reviewing}
-                        disabled={approving && !categoryId}
-                        onClick={submitReview}
-                    >
-                        {submitText}
-                    </KuzhambuButton>
-                </div>
-            }
+            footerActions={[
+                {
+                    testId: "knowledge-taxonomy-tag-batch-review-cancel-button",
+                    title: "取消",
+                    disabled: reviewing,
+                    action: onClose
+                },
+                {
+                    testId: "knowledge-taxonomy-tag-batch-review-action-button",
+                    title: submitText,
+                    type: "primary",
+                    danger: !approving,
+                    loading: reviewing,
+                    disabled: approving && !categoryId,
+                    action: submitReview
+                }
+            ]}
         >
             <div className="knowledge-taxonomy-tag-batch-panel">
                 <KuzhambuSpace orientation="vertical" size={4}>

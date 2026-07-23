@@ -10,7 +10,6 @@ import type {
     TagContentRefRecord,
     TagRecord
 } from "../taxonomy-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 
@@ -153,37 +152,30 @@ export const TagBatchMergePanel = ({
             open={open}
             size="large"
             onClose={onClose}
-            footer={
-                <div className="knowledge-taxonomy-drawer-footer">
-                    <KuzhambuButton
-                        testId="knowledge-taxonomy-tag-batch-merge-cancel-button"
-                        disabled={previewing || applying}
-                        onClick={onClose}
-                    >
-                        取消
-                    </KuzhambuButton>
-                    <KuzhambuSpace>
-                        <KuzhambuButton
-                            testId="knowledge-taxonomy-tag-batch-merge-action-button"
-                            loading={previewing}
-                            disabled={submitDisabled}
-                            onClick={previewImpact}
-                        >
-                            预览影响
-                        </KuzhambuButton>
-                        <KuzhambuButton
-                            testId="knowledge-taxonomy-tag-batch-merge-action-button-2"
-                            type="primary"
-                            danger
-                            loading={applying}
-                            disabled={submitDisabled || !preview}
-                            onClick={applyMerge}
-                        >
-                            执行批量合并
-                        </KuzhambuButton>
-                    </KuzhambuSpace>
-                </div>
-            }
+            footerActions={[
+                {
+                    testId: "knowledge-taxonomy-tag-batch-merge-cancel-button",
+                    title: "取消",
+                    disabled: previewing || applying,
+                    action: onClose
+                },
+                {
+                    testId: "knowledge-taxonomy-tag-batch-merge-action-button",
+                    title: "预览影响",
+                    loading: previewing,
+                    disabled: submitDisabled,
+                    action: previewImpact
+                },
+                {
+                    testId: "knowledge-taxonomy-tag-batch-merge-action-button-2",
+                    title: "执行批量合并",
+                    type: "primary",
+                    danger: true,
+                    loading: applying,
+                    disabled: submitDisabled || !preview,
+                    action: applyMerge
+                }
+            ]}
         >
             <div className="knowledge-taxonomy-tag-batch-panel">
                 <div className="knowledge-taxonomy-tag-batch-field">

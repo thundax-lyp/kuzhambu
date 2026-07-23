@@ -143,25 +143,21 @@ export const TagExtractionDrawer = ({
             open={visible}
             size="middle"
             onClose={closeDrawer}
-            footer={
-                <div className="knowledge-taxonomy-tag-extraction-footer">
-                    <KuzhambuButton
-                        testId="knowledge-taxonomy-tag-extraction-cancel-button"
-                        disabled={extracting || applying}
-                        onClick={closeDrawer}
-                    >
-                        取消
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="knowledge-taxonomy-tag-extraction-action-button"
-                        type="primary"
-                        loading={extracting}
-                        onClick={extractTags}
-                    >
-                        开始抽取
-                    </KuzhambuButton>
-                </div>
-            }
+            footerActions={[
+                {
+                    testId: "knowledge-taxonomy-tag-extraction-cancel-button",
+                    title: "取消",
+                    disabled: extracting || applying,
+                    action: closeDrawer
+                },
+                {
+                    testId: "knowledge-taxonomy-tag-extraction-action-button",
+                    title: "开始抽取",
+                    type: "primary",
+                    loading: extracting,
+                    action: extractTags
+                }
+            ]}
         >
             <Form<TagExtractionFormValues>
                 form={form}
