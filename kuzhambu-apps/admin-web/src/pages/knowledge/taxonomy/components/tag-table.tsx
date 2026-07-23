@@ -7,8 +7,8 @@ import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
-import type { TagStatusCommand } from "../taxonomy-service";
-import type { TagPageQuery, TagRecord } from "../taxonomy-types";
+import type { TagPageQuery, TagStatusCommand } from "../taxonomy-service";
+import type { TagRecord } from "../taxonomy-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;

@@ -1,6 +1,6 @@
 import { CategoryTable } from "./category-table";
-import type { TagCategoryStatusCommand } from "../taxonomy-service";
-import type { TagCategoryPageQuery, TagCategoryRecord } from "../taxonomy-types";
+import type { TagCategoryPageQuery, TagCategoryStatusCommand } from "../taxonomy-service";
+import type { TagCategoryRecord } from "../taxonomy-types";
 
 interface TaxonomyCategorySectionProps {
     canEditTaxonomy: boolean;

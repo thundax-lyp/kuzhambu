@@ -4,20 +4,52 @@ import type {
     SynonymRecord,
     TagAliasRecord,
     TagBatchMergePreviewRecord,
-    TagCategoryPageQuery,
     TagCategoryRecord,
     TagDetailRecord,
     TagExtractionCandidateRecord,
     TagExtractionResultRecord,
     TagGovernanceMetricsRecord,
     TagMergePreviewRecord,
-    TagPageQuery,
-    TagRecord,
-    TagReviewPageQuery,
-    SynonymPageQuery
+    TagRecord
 } from "./taxonomy-types";
 
 const API_PREFIX = "/knowledge/taxonomy";
+
+export interface TagCategoryPageQuery {
+    pageNo?: number;
+    pageSize?: number;
+    name?: string | null;
+    status?: string | null;
+    sortDirection?: "ASC" | "DESC" | null;
+}
+
+export interface TagPageQuery {
+    pageNo?: number;
+    pageSize?: number;
+    name?: string | null;
+    categoryId?: string | null;
+    status?: string | null;
+    source?: string | null;
+    reviewStatus?: string | null;
+    sortDirection?: "ASC" | "DESC" | null;
+}
+
+export interface TagReviewPageQuery {
+    pageNo?: number;
+    pageSize?: number;
+    name?: string | null;
+    source?: string | null;
+    sortDirection?: "ASC" | "DESC" | null;
+}
+
+export interface SynonymPageQuery {
+    pageNo?: number;
+    pageSize?: number;
+    term?: string | null;
+    synonym?: string | null;
+    status?: string | null;
+    sortDirection?: "ASC" | "DESC" | null;
+}
 
 export interface TagCategoryCreateCommand {
     id: string;
