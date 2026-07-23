@@ -12,7 +12,6 @@ import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refineme
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { SancaiEntryBasicSection } from "./sancai-entry-basic-section";
 import type { SancaiEntrySummaryModalProps } from "./sancai-entry-summary-text-field";
-import type { SancaiEntryTranslationModalProps } from "./sancai-entry-translation-text-field";
 import { SancaiEntryVisualSection } from "./sancai-entry-visual-section";
 import { toEntryFormValues, type SancaiEntryFormValues } from "../sancai-form-values";
 import type { SancaiVisualAssetRefinementCapability } from "@/pages/classics/sancai/sancai-entry-service";
@@ -25,7 +24,6 @@ import type {
 } from "@/pages/classics/sancai/sancai-types";
 import "./sancai-entry-edit-drawer.css";
 
-type SancaiAiTextField = "translate" | "summary";
 type SancaiEntryEditDrawerSection = "basic" | "visual" | "tags" | "qa" | "versions";
 const AI_TEXT_CANDIDATE_POLL_INTERVAL_MS = 3000;
 const RUNNING_REFINEMENT_STATUSES = new Set(["PENDING", "RUNNING"]);
@@ -40,25 +38,11 @@ const sortRefinementTasksByNewest = (
     return right.taskId - left.taskId;
 };
 
-const selectLatestRefinementTask = (
-    tasks: AiRefinementTaskRecord[],
-    capability: SancaiAiTextField
-) => {
-    return (
-        [...tasks]
-            .filter((task) => task.capability === capability)
-            .sort(sortRefinementTasksByNewest)[0] ?? null
-    );
-};
-
-const selectLatestAiTextCandidate = (
-    candidates: AiCandidateRecord[] | undefined,
-    capability: SancaiAiTextField
-) => {
+const selectLatestSummaryCandidate = (candidates: AiCandidateRecord[] | undefined) => {
     return [...(candidates || [])]
         .filter(
             (candidate) =>
-                candidate.capability === capability &&
+                candidate.capability === "summary" &&
                 candidate.status === "PENDING" &&
                 typeof candidate.resultPayload === "string" &&
                 candidate.resultPayload.trim().length > 0
@@ -200,34 +184,23 @@ export const SancaiEntryEditDrawer = ({
     );
     const [activeSection, setActiveSection] = useState<SancaiEntryEditDrawerSection>("basic");
     const [summaryModalOpen, setSummaryModalOpen] = useState(false);
-    const [translationModalOpen, setTranslationModalOpen] = useState(false);
     const [summaryDraft, setSummaryDraft] = useState("");
-    const [translationDraft, setTranslationDraft] = useState("");
     const [loadedSummaryCandidateId, setLoadedSummaryCandidateId] = useState<number | null>(null);
-    const [loadedTranslationCandidateId, setLoadedTranslationCandidateId] = useState<number | null>(
-        null
-    );
     const entryId = mode === "edit" ? entry?.id : undefined;
     const latestSummaryTask = useMemo(
-        () => selectLatestRefinementTask(summaryTasks, "summary"),
+        () =>
+            [...summaryTasks]
+                .filter((task) => task.capability === "summary")
+                .sort(sortRefinementTasksByNewest)[0] ?? null,
         [summaryTasks]
     );
-    const latestTranslationTask = useMemo(
-        () => selectLatestRefinementTask(translationTasks, "translate"),
-        [translationTasks]
-    );
     const hasRunningSummaryTask = isRunningRefinementTask(latestSummaryTask);
-    const hasRunningTranslationTask = isRunningRefinementTask(latestTranslationTask);
-    const syncAiTextTask = useCallback(
-        (field: SancaiAiTextField, task: AiRefinementTaskRecord | null) => {
+    const syncSummaryTask = useCallback(
+        (task: AiRefinementTaskRecord | null) => {
             if (!task || !entryId) {
                 return;
             }
-            const capability =
-                task.capability === "summary" || task.capability === "translate"
-                    ? task.capability
-                    : field;
-            const normalizedTask = capability ? { ...task, capability } : task;
+            const normalizedTask = { ...task, capability: "summary" };
             queryClient.setQueryData<{
                 items?: AiRefinementTaskRecord[];
                 [key: string]: unknown;
@@ -252,14 +225,6 @@ export const SancaiEntryEditDrawer = ({
         },
         [entryId, queryClient]
     );
-    const syncSummaryTask = useCallback(
-        (task: AiRefinementTaskRecord | null) => syncAiTextTask("summary", task),
-        [syncAiTextTask]
-    );
-    const syncTranslationTask = useCallback(
-        (task: AiRefinementTaskRecord | null) => syncAiTextTask("translate", task),
-        [syncAiTextTask]
-    );
     const summaryCandidatesQuery = useQuery({
         queryKey: ["ai", "candidates", "SANCAI_ENTRY", entryId, "summary", "modal"],
         queryFn: () =>
@@ -273,23 +238,6 @@ export const SancaiEntryEditDrawer = ({
         retry: false,
         refetchInterval: () => {
             return isCreatingSummaryTask || hasRunningSummaryTask
-                ? AI_TEXT_CANDIDATE_POLL_INTERVAL_MS
-                : false;
-        }
-    });
-    const translationCandidatesQuery = useQuery({
-        queryKey: ["ai", "candidates", "SANCAI_ENTRY", entryId, "translate", "modal"],
-        queryFn: () =>
-            aiCandidateService.list({
-                contentId: entryId,
-                contentType: "SANCAI_ENTRY",
-                capability: "translate",
-                status: "PENDING"
-            }),
-        enabled: translationModalOpen && Boolean(entryId),
-        retry: false,
-        refetchInterval: () => {
-            return isCreatingTranslationTask || hasRunningTranslationTask
                 ? AI_TEXT_CANDIDATE_POLL_INTERVAL_MS
                 : false;
         }
@@ -385,29 +333,18 @@ export const SancaiEntryEditDrawer = ({
             ]);
             setForm((currentForm) => ({
                 ...currentForm,
-                [command.capability === "summary" ? "summary" : "translationText"]:
-                    command.resultPayload
+                summary: command.resultPayload
             }));
-            if (command.capability === "summary") {
-                setSummaryModalOpen(false);
-            } else {
-                setTranslationModalOpen(false);
-            }
-            messageApi.success(
-                command.capability === "summary" ? "摘要已写入基础信息" : "译文已写入基础信息"
-            );
+            setSummaryModalOpen(false);
+            messageApi.success("摘要已写入基础信息");
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "AI 候选应用失败");
         }
     });
     const latestSummaryCandidate = useMemo(
-        () => selectLatestAiTextCandidate(summaryCandidatesQuery.data, "summary"),
+        () => selectLatestSummaryCandidate(summaryCandidatesQuery.data),
         [summaryCandidatesQuery.data]
-    );
-    const latestTranslationCandidate = useMemo(
-        () => selectLatestAiTextCandidate(translationCandidatesQuery.data, "translate"),
-        [translationCandidatesQuery.data]
     );
     const loadedSummaryCandidate = useMemo(() => {
         if (!loadedSummaryCandidateId) {
@@ -421,28 +358,11 @@ export const SancaiEntryEditDrawer = ({
             ) ?? null
         );
     }, [summaryCandidatesQuery.data, loadedSummaryCandidateId]);
-    const loadedTranslationCandidate = useMemo(() => {
-        if (!loadedTranslationCandidateId) {
-            return null;
-        }
-        return (
-            (translationCandidatesQuery.data || []).find(
-                (candidate) =>
-                    candidate.candidateId === loadedTranslationCandidateId &&
-                    candidate.capability === "translate"
-            ) ?? null
-        );
-    }, [translationCandidatesQuery.data, loadedTranslationCandidateId]);
     const isSummaryApplyDisabled =
         !summaryDraft.trim() ||
         isCreatingSummaryTask ||
         hasRunningSummaryTask ||
         summaryCandidatesQuery.isFetching;
-    const isTranslationApplyDisabled =
-        !translationDraft.trim() ||
-        isCreatingTranslationTask ||
-        hasRunningTranslationTask ||
-        translationCandidatesQuery.isFetching;
 
     useEffect(() => {
         if (!summaryModalOpen || !latestSummaryCandidate) {
@@ -459,20 +379,6 @@ export const SancaiEntryEditDrawer = ({
     }, [latestSummaryCandidate, loadedSummaryCandidateId, summaryModalOpen]);
 
     useEffect(() => {
-        if (!translationModalOpen || !latestTranslationCandidate) {
-            return;
-        }
-        if (latestTranslationCandidate.candidateId === loadedTranslationCandidateId) {
-            return;
-        }
-        const timer = window.setTimeout(() => {
-            setLoadedTranslationCandidateId(latestTranslationCandidate.candidateId);
-            setTranslationDraft(latestTranslationCandidate.resultPayload?.trim() || "");
-        }, 0);
-        return () => window.clearTimeout(timer);
-    }, [latestTranslationCandidate, loadedTranslationCandidateId, translationModalOpen]);
-
-    useEffect(() => {
         if (!summaryModalOpen || !latestSummaryTask?.taskId) {
             return;
         }
@@ -485,24 +391,6 @@ export const SancaiEntryEditDrawer = ({
         latestSummaryTask?.taskId,
         summaryCandidatesQuery,
         summaryModalOpen
-    ]);
-
-    useEffect(() => {
-        if (!translationModalOpen || !latestTranslationTask?.taskId) {
-            return;
-        }
-        if (
-            latestTranslationTask.status !== "SUCCEEDED" &&
-            latestTranslationTask.status !== "PARTIAL"
-        ) {
-            return;
-        }
-        void translationCandidatesQuery.refetch();
-    }, [
-        latestTranslationTask?.status,
-        latestTranslationTask?.taskId,
-        translationCandidatesQuery,
-        translationModalOpen
     ]);
 
     useEffect(() => {
@@ -640,20 +528,19 @@ export const SancaiEntryEditDrawer = ({
         }
         onCreateVisualAssetTask(capability, visualAssetFormValue);
     };
-    const requestAiTextTask = (field: SancaiAiTextField) => {
+    const requestSummaryTask = () => {
         if (!entryId) {
             return false;
         }
-        const createTask = field === "summary" ? onCreateSummaryTask : onCreateTranslationTask;
-        if (!createTask) {
-            messageApi.warning(`请先保存条目后再使用 ${field === "summary" ? "AI摘要" : "AI翻译"}`);
+        if (!onCreateSummaryTask) {
+            messageApi.warning("请先保存条目后再使用 AI摘要");
             return false;
         }
         if (!form.originalText?.trim()) {
             messageApi.warning("请先填写原文");
             return false;
         }
-        createTask(form);
+        onCreateSummaryTask(form);
         return true;
     };
     const openSummaryModal = () => {
@@ -661,22 +548,10 @@ export const SancaiEntryEditDrawer = ({
         setLoadedSummaryCandidateId(null);
         setSummaryModalOpen(true);
     };
-    const openTranslationModal = () => {
-        setTranslationDraft(form.translationText || "");
-        setLoadedTranslationCandidateId(null);
-        setTranslationModalOpen(true);
-    };
     const closeSummaryModal = () => {
         setSummaryModalOpen(false);
     };
-    const closeTranslationModal = () => {
-        setTranslationModalOpen(false);
-    };
-    const applyAiTextDraft = (
-        field: SancaiAiTextField,
-        draft: string,
-        candidate: AiCandidateRecord | null
-    ) => {
+    const applySummaryDraft = (draft: string, candidate: AiCandidateRecord | null) => {
         if (!entryId) {
             return;
         }
@@ -686,24 +561,20 @@ export const SancaiEntryEditDrawer = ({
                 candidateId: candidate.candidateId,
                 contentId: entryId,
                 contentType: "SANCAI_ENTRY",
-                capability: field,
+                capability: "summary",
                 objectId: candidate.objectId,
                 resultFormat: candidate.resultFormat?.trim() || "TEXT",
                 resultPayload,
-                changeSummary: field === "summary" ? "AI 应用：摘要" : "AI 应用：译文"
+                changeSummary: "AI 应用：摘要"
             });
             return;
         }
         setForm((currentForm) => ({
             ...currentForm,
-            [field === "summary" ? "summary" : "translationText"]: resultPayload
+            summary: resultPayload
         }));
-        if (field === "summary") {
-            setSummaryModalOpen(false);
-        } else {
-            setTranslationModalOpen(false);
-        }
-        messageApi.success(field === "summary" ? "摘要已写入基础信息" : "译文已写入基础信息");
+        setSummaryModalOpen(false);
+        messageApi.success("摘要已写入基础信息");
     };
     const changeCategory = (categoryId: number | null) => {
         setForm((currentForm) => {
@@ -766,31 +637,12 @@ export const SancaiEntryEditDrawer = ({
         isCreatingAiTextTask: isCreatingSummaryTask,
         latestAiTextTask: latestSummaryTask,
         open: summaryModalOpen,
-        onApply: () => applyAiTextDraft("summary", summaryDraft, loadedSummaryCandidate),
+        onApply: () => applySummaryDraft(summaryDraft, loadedSummaryCandidate),
         onCancel: closeSummaryModal,
         onFetchTask: (taskId) => aiRefinementTaskService.getTask({ taskId: Number(taskId) }),
-        onRequestTask: () => requestAiTextTask("summary"),
+        onRequestTask: requestSummaryTask,
         onTaskChange: syncSummaryTask,
         onTextDraftChange: setSummaryDraft
-    };
-
-    const translationModalProps: SancaiEntryTranslationModalProps = {
-        aiTextDraft: translationDraft,
-        form,
-        hasRunningAiTextTask: hasRunningTranslationTask,
-        isAiTextApplyDisabled: isTranslationApplyDisabled,
-        isAiTextCandidateFetching: translationCandidatesQuery.isFetching,
-        isAiTextCandidateLoadError: translationCandidatesQuery.isError,
-        isApplyingAiText: applyAiTextCandidateMutation.isPending,
-        isCreatingAiTextTask: isCreatingTranslationTask,
-        latestAiTextTask: latestTranslationTask,
-        open: translationModalOpen,
-        onApply: () => applyAiTextDraft("translate", translationDraft, loadedTranslationCandidate),
-        onCancel: closeTranslationModal,
-        onFetchTask: (taskId) => aiRefinementTaskService.getTask({ taskId: Number(taskId) }),
-        onRequestTask: () => requestAiTextTask("translate"),
-        onTaskChange: syncTranslationTask,
-        onTextDraftChange: setTranslationDraft
     };
 
     const basicContent = (
@@ -801,16 +653,17 @@ export const SancaiEntryEditDrawer = ({
             entryId={entryId}
             form={form}
             imageContent={imageContent}
+            isCreatingTranslationTask={isCreatingTranslationTask}
             isUploadingImage={uploadImageMutation.isPending}
             mode={mode}
             previewUrl={previewUrl}
             setForm={setForm}
             summaryModalProps={summaryModalProps}
-            translationModalProps={translationModalProps}
+            translationTasks={translationTasks}
             volumeOptions={volumeOptions}
             onChangeCategory={changeCategory}
             onOpenSummaryModal={openSummaryModal}
-            onOpenTranslationModal={openTranslationModal}
+            onRequestTranslationTask={onCreateTranslationTask}
             onUploadImage={(file) => uploadImageMutation.mutate(file)}
         />
     );

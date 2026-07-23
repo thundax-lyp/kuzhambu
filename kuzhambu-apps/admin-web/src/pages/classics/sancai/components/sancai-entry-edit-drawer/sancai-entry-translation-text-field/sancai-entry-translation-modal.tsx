@@ -61,7 +61,7 @@ const translationTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = 
     getStatusLabel: (task) => `${TASK_LABEL}任务：${readRefinementTaskStatusLabel(task.status)}`
 };
 
-export interface SancaiEntryTranslationModalProps {
+interface SancaiEntryTranslationModalProps {
     aiTextDraft: string;
     form: SancaiEntryFormValues;
     hasRunningAiTextTask: boolean;

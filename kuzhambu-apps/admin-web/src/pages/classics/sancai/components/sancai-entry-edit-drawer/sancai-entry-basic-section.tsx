@@ -8,7 +8,7 @@ import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { SancaiEntrySummaryTextField } from "./sancai-entry-summary-text-field";
 import type { SancaiEntrySummaryModalProps } from "./sancai-entry-summary-text-field";
 import { SancaiEntryTranslationTextField } from "./sancai-entry-translation-text-field";
-import type { SancaiEntryTranslationModalProps } from "./sancai-entry-translation-text-field";
+import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
 import type { SancaiEntryFormValues } from "../sancai-form-values";
 import type { SancaiEntryImageRecord } from "@/pages/classics/sancai/sancai-types";
 
@@ -35,16 +35,17 @@ interface SancaiEntryBasicSectionProps {
     entryId?: number;
     form: SancaiEntryFormValues;
     imageContent?: ReactNode;
+    isCreatingTranslationTask: boolean;
     isUploadingImage: boolean;
     mode: "create" | "edit";
     previewUrl?: string;
     setForm: Dispatch<SetStateAction<SancaiEntryFormValues>>;
     summaryModalProps: SancaiEntrySummaryModalProps;
-    translationModalProps: SancaiEntryTranslationModalProps;
+    translationTasks: AiRefinementTaskRecord[];
     volumeOptions: Array<{ label: string; value: number }>;
     onChangeCategory: (categoryId: number | null) => void;
     onOpenSummaryModal: () => void;
-    onOpenTranslationModal: () => void;
+    onRequestTranslationTask?: (draft: SancaiEntryFormValues) => void;
     onUploadImage: (file: File) => void;
 }
 
@@ -55,16 +56,17 @@ export const SancaiEntryBasicSection = ({
     entryId,
     form,
     imageContent,
+    isCreatingTranslationTask,
     isUploadingImage,
     mode,
     previewUrl,
     setForm,
     summaryModalProps,
-    translationModalProps,
+    translationTasks,
     volumeOptions,
     onChangeCategory,
     onOpenSummaryModal,
-    onOpenTranslationModal,
+    onRequestTranslationTask,
     onUploadImage
 }: SancaiEntryBasicSectionProps) => {
     return (
@@ -120,16 +122,19 @@ export const SancaiEntryBasicSection = ({
             </KuzhambuFormItem>
             <KuzhambuFormItem label="译文" layoutSize="large">
                 <SancaiEntryTranslationTextField
+                    entryId={entryId}
+                    form={form}
+                    isCreatingTranslationTask={isCreatingTranslationTask}
                     mode={mode}
+                    translationTasks={translationTasks}
                     value={form.translationText}
-                    translationModalProps={translationModalProps}
                     onChange={(translationText) =>
                         setForm((currentForm) => ({
                             ...currentForm,
                             translationText
                         }))
                     }
-                    onOpenTranslationModal={onOpenTranslationModal}
+                    onRequestTranslationTask={onRequestTranslationTask}
                 />
             </KuzhambuFormItem>
             <KuzhambuFormItem label="摘要" layoutSize="large">
