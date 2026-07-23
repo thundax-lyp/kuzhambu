@@ -1,17 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Empty } from "antd";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { KuzhambuForm } from "@/components/kuzhambu-form";
 import { KuzhambuSegmentedDrawer } from "@/components/kuzhambu-segmented-drawer";
-import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
-import type { AiCandidateRecord } from "@/pages/classics/common/ai-candidate-types";
-import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { SancaiEntryBasicSection } from "./sancai-entry-basic-section";
-import type { SancaiEntrySummaryModalProps } from "./sancai-entry-summary-text-field";
 import { SancaiEntryVisualSection } from "./sancai-entry-visual-section";
 import { toEntryFormValues, type SancaiEntryFormValues } from "../sancai-form-values";
 import type { SancaiVisualAssetRefinementCapability } from "@/pages/classics/sancai/sancai-entry-service";
@@ -25,39 +21,6 @@ import type {
 import "./sancai-entry-edit-drawer.css";
 
 type SancaiEntryEditDrawerSection = "basic" | "visual" | "tags" | "qa" | "versions";
-const AI_TEXT_CANDIDATE_POLL_INTERVAL_MS = 3000;
-const RUNNING_REFINEMENT_STATUSES = new Set(["PENDING", "RUNNING"]);
-
-const sortRefinementTasksByNewest = (
-    left: AiRefinementTaskRecord,
-    right: AiRefinementTaskRecord
-) => {
-    if (left.requestedAt && right.requestedAt && left.requestedAt !== right.requestedAt) {
-        return right.requestedAt.localeCompare(left.requestedAt);
-    }
-    return right.taskId - left.taskId;
-};
-
-const selectLatestSummaryCandidate = (candidates: AiCandidateRecord[] | undefined) => {
-    return [...(candidates || [])]
-        .filter(
-            (candidate) =>
-                candidate.capability === "summary" &&
-                candidate.status === "PENDING" &&
-                typeof candidate.resultPayload === "string" &&
-                candidate.resultPayload.trim().length > 0
-        )
-        .sort((left, right) => {
-            if (left.requestedAt && right.requestedAt && left.requestedAt !== right.requestedAt) {
-                return right.requestedAt.localeCompare(left.requestedAt);
-            }
-            return right.candidateId - left.candidateId;
-        })[0];
-};
-
-const isRunningRefinementTask = (task?: AiRefinementTaskRecord | null) => {
-    return Boolean(task?.status) && RUNNING_REFINEMENT_STATUSES.has(task?.status ?? "");
-};
 
 const selectCurrentImage = (images: SancaiEntryImageRecord[]) => {
     return [...images]
@@ -183,65 +146,7 @@ export const SancaiEntryEditDrawer = ({
         toEntryFormValues(entry, volumes, initialCategoryId, initialVolumeId)
     );
     const [activeSection, setActiveSection] = useState<SancaiEntryEditDrawerSection>("basic");
-    const [summaryModalOpen, setSummaryModalOpen] = useState(false);
-    const [summaryDraft, setSummaryDraft] = useState("");
-    const [loadedSummaryCandidateId, setLoadedSummaryCandidateId] = useState<number | null>(null);
     const entryId = mode === "edit" ? entry?.id : undefined;
-    const latestSummaryTask = useMemo(
-        () =>
-            [...summaryTasks]
-                .filter((task) => task.capability === "summary")
-                .sort(sortRefinementTasksByNewest)[0] ?? null,
-        [summaryTasks]
-    );
-    const hasRunningSummaryTask = isRunningRefinementTask(latestSummaryTask);
-    const syncSummaryTask = useCallback(
-        (task: AiRefinementTaskRecord | null) => {
-            if (!task || !entryId) {
-                return;
-            }
-            const normalizedTask = { ...task, capability: "summary" };
-            queryClient.setQueryData<{
-                items?: AiRefinementTaskRecord[];
-                [key: string]: unknown;
-            }>(["classics", "sancai", "refinement", "tasks", entryId], (currentPage) => {
-                if (!currentPage?.items) {
-                    return currentPage;
-                }
-                const taskExists = currentPage.items.some(
-                    (item) => item.taskId === normalizedTask.taskId
-                );
-                return {
-                    ...currentPage,
-                    items: taskExists
-                        ? currentPage.items.map((item) =>
-                              item.taskId === normalizedTask.taskId
-                                  ? { ...item, ...normalizedTask }
-                                  : item
-                          )
-                        : [normalizedTask, ...currentPage.items]
-                };
-            });
-        },
-        [entryId, queryClient]
-    );
-    const summaryCandidatesQuery = useQuery({
-        queryKey: ["ai", "candidates", "SANCAI_ENTRY", entryId, "summary", "modal"],
-        queryFn: () =>
-            aiCandidateService.list({
-                contentId: entryId,
-                contentType: "SANCAI_ENTRY",
-                capability: "summary",
-                status: "PENDING"
-            }),
-        enabled: summaryModalOpen && Boolean(entryId),
-        retry: false,
-        refetchInterval: () => {
-            return isCreatingSummaryTask || hasRunningSummaryTask
-                ? AI_TEXT_CANDIDATE_POLL_INTERVAL_MS
-                : false;
-        }
-    });
     const imagesQuery = useQuery({
         queryKey: ["classics", "sancai", "entries", "images", entryId],
         queryFn: () => entryService.listImages(entryId ?? 0),
@@ -307,92 +212,6 @@ export const SancaiEntryEditDrawer = ({
         ) ||
         currentVisualAsset ||
         null;
-    const applyAiTextCandidateMutation = useMutation({
-        mutationFn: aiCandidateService.apply,
-        onSuccess: async (_, command) => {
-            await Promise.all([
-                queryClient.invalidateQueries({
-                    queryKey: [
-                        "ai",
-                        "candidates",
-                        "SANCAI_ENTRY",
-                        entryId,
-                        command.capability,
-                        "modal"
-                    ]
-                }),
-                queryClient.invalidateQueries({
-                    queryKey: ["classics", "sancai", "entries"]
-                }),
-                queryClient.invalidateQueries({
-                    queryKey: ["classics", "sancai", "entries", "versions", entryId]
-                }),
-                queryClient.invalidateQueries({
-                    queryKey: ["classics", "sancai", "refinement", "tasks", entryId]
-                })
-            ]);
-            setForm((currentForm) => ({
-                ...currentForm,
-                summary: command.resultPayload
-            }));
-            setSummaryModalOpen(false);
-            messageApi.success("摘要已写入基础信息");
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "AI 候选应用失败");
-        }
-    });
-    const latestSummaryCandidate = useMemo(
-        () => selectLatestSummaryCandidate(summaryCandidatesQuery.data),
-        [summaryCandidatesQuery.data]
-    );
-    const loadedSummaryCandidate = useMemo(() => {
-        if (!loadedSummaryCandidateId) {
-            return null;
-        }
-        return (
-            (summaryCandidatesQuery.data || []).find(
-                (candidate) =>
-                    candidate.candidateId === loadedSummaryCandidateId &&
-                    candidate.capability === "summary"
-            ) ?? null
-        );
-    }, [summaryCandidatesQuery.data, loadedSummaryCandidateId]);
-    const isSummaryApplyDisabled =
-        !summaryDraft.trim() ||
-        isCreatingSummaryTask ||
-        hasRunningSummaryTask ||
-        summaryCandidatesQuery.isFetching;
-
-    useEffect(() => {
-        if (!summaryModalOpen || !latestSummaryCandidate) {
-            return;
-        }
-        if (latestSummaryCandidate.candidateId === loadedSummaryCandidateId) {
-            return;
-        }
-        const timer = window.setTimeout(() => {
-            setLoadedSummaryCandidateId(latestSummaryCandidate.candidateId);
-            setSummaryDraft(latestSummaryCandidate.resultPayload?.trim() || "");
-        }, 0);
-        return () => window.clearTimeout(timer);
-    }, [latestSummaryCandidate, loadedSummaryCandidateId, summaryModalOpen]);
-
-    useEffect(() => {
-        if (!summaryModalOpen || !latestSummaryTask?.taskId) {
-            return;
-        }
-        if (latestSummaryTask.status !== "SUCCEEDED" && latestSummaryTask.status !== "PARTIAL") {
-            return;
-        }
-        void summaryCandidatesQuery.refetch();
-    }, [
-        latestSummaryTask?.status,
-        latestSummaryTask?.taskId,
-        summaryCandidatesQuery,
-        summaryModalOpen
-    ]);
-
     useEffect(() => {
         if (onSelectedVisualAssetChange) {
             onSelectedVisualAssetChange(selectedVisualAsset);
@@ -528,54 +347,6 @@ export const SancaiEntryEditDrawer = ({
         }
         onCreateVisualAssetTask(capability, visualAssetFormValue);
     };
-    const requestSummaryTask = () => {
-        if (!entryId) {
-            return false;
-        }
-        if (!onCreateSummaryTask) {
-            messageApi.warning("请先保存条目后再使用 AI摘要");
-            return false;
-        }
-        if (!form.originalText?.trim()) {
-            messageApi.warning("请先填写原文");
-            return false;
-        }
-        onCreateSummaryTask(form);
-        return true;
-    };
-    const openSummaryModal = () => {
-        setSummaryDraft(form.summary || "");
-        setLoadedSummaryCandidateId(null);
-        setSummaryModalOpen(true);
-    };
-    const closeSummaryModal = () => {
-        setSummaryModalOpen(false);
-    };
-    const applySummaryDraft = (draft: string, candidate: AiCandidateRecord | null) => {
-        if (!entryId) {
-            return;
-        }
-        const resultPayload = draft;
-        if (candidate) {
-            applyAiTextCandidateMutation.mutate({
-                candidateId: candidate.candidateId,
-                contentId: entryId,
-                contentType: "SANCAI_ENTRY",
-                capability: "summary",
-                objectId: candidate.objectId,
-                resultFormat: candidate.resultFormat?.trim() || "TEXT",
-                resultPayload,
-                changeSummary: "AI 应用：摘要"
-            });
-            return;
-        }
-        setForm((currentForm) => ({
-            ...currentForm,
-            summary: resultPayload
-        }));
-        setSummaryModalOpen(false);
-        messageApi.success("摘要已写入基础信息");
-    };
     const changeCategory = (categoryId: number | null) => {
         setForm((currentForm) => {
             const currentVolume = volumes.find((volume) => volume.id === currentForm.volumeId);
@@ -626,25 +397,6 @@ export const SancaiEntryEditDrawer = ({
         return null;
     }
 
-    const summaryModalProps: SancaiEntrySummaryModalProps = {
-        aiTextDraft: summaryDraft,
-        form,
-        hasRunningAiTextTask: hasRunningSummaryTask,
-        isAiTextApplyDisabled: isSummaryApplyDisabled,
-        isAiTextCandidateFetching: summaryCandidatesQuery.isFetching,
-        isAiTextCandidateLoadError: summaryCandidatesQuery.isError,
-        isApplyingAiText: applyAiTextCandidateMutation.isPending,
-        isCreatingAiTextTask: isCreatingSummaryTask,
-        latestAiTextTask: latestSummaryTask,
-        open: summaryModalOpen,
-        onApply: () => applySummaryDraft(summaryDraft, loadedSummaryCandidate),
-        onCancel: closeSummaryModal,
-        onFetchTask: (taskId) => aiRefinementTaskService.getTask({ taskId: Number(taskId) }),
-        onRequestTask: requestSummaryTask,
-        onTaskChange: syncSummaryTask,
-        onTextDraftChange: setSummaryDraft
-    };
-
     const basicContent = (
         <SancaiEntryBasicSection
             categoryOptions={categoryOptions}
@@ -653,16 +405,17 @@ export const SancaiEntryEditDrawer = ({
             entryId={entryId}
             form={form}
             imageContent={imageContent}
+            isCreatingSummaryTask={isCreatingSummaryTask}
             isCreatingTranslationTask={isCreatingTranslationTask}
             isUploadingImage={uploadImageMutation.isPending}
             mode={mode}
             previewUrl={previewUrl}
             setForm={setForm}
-            summaryModalProps={summaryModalProps}
+            summaryTasks={summaryTasks}
             translationTasks={translationTasks}
             volumeOptions={volumeOptions}
             onChangeCategory={changeCategory}
-            onOpenSummaryModal={openSummaryModal}
+            onRequestSummaryTask={onCreateSummaryTask}
             onRequestTranslationTask={onCreateTranslationTask}
             onUploadImage={(file) => uploadImageMutation.mutate(file)}
         />

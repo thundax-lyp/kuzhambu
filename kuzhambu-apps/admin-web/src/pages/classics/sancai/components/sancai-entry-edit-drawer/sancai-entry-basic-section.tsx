@@ -6,7 +6,6 @@ import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { SancaiEntrySummaryTextField } from "./sancai-entry-summary-text-field";
-import type { SancaiEntrySummaryModalProps } from "./sancai-entry-summary-text-field";
 import { SancaiEntryTranslationTextField } from "./sancai-entry-translation-text-field";
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
 import type { SancaiEntryFormValues } from "../sancai-form-values";
@@ -35,16 +34,17 @@ interface SancaiEntryBasicSectionProps {
     entryId?: number;
     form: SancaiEntryFormValues;
     imageContent?: ReactNode;
+    isCreatingSummaryTask: boolean;
     isCreatingTranslationTask: boolean;
     isUploadingImage: boolean;
     mode: "create" | "edit";
     previewUrl?: string;
     setForm: Dispatch<SetStateAction<SancaiEntryFormValues>>;
-    summaryModalProps: SancaiEntrySummaryModalProps;
+    summaryTasks: AiRefinementTaskRecord[];
     translationTasks: AiRefinementTaskRecord[];
     volumeOptions: Array<{ label: string; value: number }>;
     onChangeCategory: (categoryId: number | null) => void;
-    onOpenSummaryModal: () => void;
+    onRequestSummaryTask?: (draft: SancaiEntryFormValues) => void;
     onRequestTranslationTask?: (draft: SancaiEntryFormValues) => void;
     onUploadImage: (file: File) => void;
 }
@@ -56,16 +56,17 @@ export const SancaiEntryBasicSection = ({
     entryId,
     form,
     imageContent,
+    isCreatingSummaryTask,
     isCreatingTranslationTask,
     isUploadingImage,
     mode,
     previewUrl,
     setForm,
-    summaryModalProps,
+    summaryTasks,
     translationTasks,
     volumeOptions,
     onChangeCategory,
-    onOpenSummaryModal,
+    onRequestSummaryTask,
     onRequestTranslationTask,
     onUploadImage
 }: SancaiEntryBasicSectionProps) => {
@@ -139,16 +140,19 @@ export const SancaiEntryBasicSection = ({
             </KuzhambuFormItem>
             <KuzhambuFormItem label="摘要" layoutSize="large">
                 <SancaiEntrySummaryTextField
+                    entryId={entryId}
+                    form={form}
+                    isCreatingSummaryTask={isCreatingSummaryTask}
                     mode={mode}
+                    summaryTasks={summaryTasks}
                     value={form.summary}
-                    summaryModalProps={summaryModalProps}
                     onChange={(summary) =>
                         setForm((currentForm) => ({
                             ...currentForm,
                             summary
                         }))
                     }
-                    onOpenSummaryModal={onOpenSummaryModal}
+                    onRequestSummaryTask={onRequestSummaryTask}
                 />
             </KuzhambuFormItem>
             <KuzhambuFormItem label="可见性" layoutSize="large">
