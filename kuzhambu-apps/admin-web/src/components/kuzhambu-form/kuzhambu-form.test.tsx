@@ -1,7 +1,7 @@
 import { Input } from "antd";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { KuzhambuForm, KuzhambuFormItem } from "./kuzhambu-form";
+import { KuzhambuForm, KuzhambuFormHiddenItem, KuzhambuFormItem } from "./kuzhambu-form";
 import { KUZHAMBU_FORM_ITEM_LAYOUTS, KUZHAMBU_FORM_ITEM_OFFSETS } from "./kuzhambu-form-layout";
 
 describe("KuzhambuForm", () => {
@@ -74,5 +74,17 @@ describe("KuzhambuForm", () => {
         expect(container.querySelector(".ant-col-md-offset-12")).toBeInTheDocument();
         expect(container.querySelector(".ant-col-lg-offset-8")).toBeInTheDocument();
         expect(container.querySelector(".ant-form-item-label.ant-col-lg-12")).toBeInTheDocument();
+    });
+
+    it("renders hidden fields without allocating grid columns", () => {
+        const { container } = render(
+            <KuzhambuForm>
+                <KuzhambuFormHiddenItem name="id">
+                    <Input />
+                </KuzhambuFormHiddenItem>
+            </KuzhambuForm>
+        );
+
+        expect(container.querySelector(".ant-col-md-12")).not.toBeInTheDocument();
     });
 });

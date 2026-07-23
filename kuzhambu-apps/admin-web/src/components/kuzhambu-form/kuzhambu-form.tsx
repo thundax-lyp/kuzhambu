@@ -19,6 +19,8 @@ export interface KuzhambuFormItemProps extends Omit<FormItemProps, "labelCol" | 
     offsetSize?: KuzhambuFormItemOffsetSize;
 }
 
+export type KuzhambuFormHiddenItemProps = Omit<FormItemProps, "hidden" | "labelCol" | "wrapperCol">;
+
 // AI NOTE: KuzhambuForm owns only the shared grid container and horizontal label mode.
 // Field rendering, validation, values, and submission remain plain Ant Design Form behavior.
 export const KuzhambuForm = <Values = unknown,>({
@@ -58,4 +60,8 @@ export const KuzhambuFormItem = ({
             {endOfLine ? <Col aria-hidden xs={24} md={24} lg={24} /> : null}
         </Fragment>
     );
+};
+
+export const KuzhambuFormHiddenItem = ({ ...formItemProps }: KuzhambuFormHiddenItemProps) => {
+    return <Form.Item {...formItemProps} hidden />;
 };
