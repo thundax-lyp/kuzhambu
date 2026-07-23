@@ -1,0 +1,42 @@
+.kuzhambu-text-compare {
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid var(--ant-color-border-secondary);
+    border-radius: 6px;
+    background: var(--ant-color-bg-container);
+}
+
+.kuzhambu-text-compare-title {
+    margin-bottom: 8px;
+    color: var(--ant-color-text-secondary);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.kuzhambu-text-compare-content {
+    overflow: auto;
+    max-height: 260px;
+    color: var(--ant-color-text);
+    font-size: 14px;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.kuzhambu-text-compare-content .is-added {
+    border-radius: 3px;
+    background: var(--ant-color-success-bg);
+    color: var(--ant-color-success-text);
+}
+
+.kuzhambu-text-compare-content .is-removed {
+    border-radius: 3px;
+    background: var(--ant-color-error-bg);
+    color: var(--ant-color-error-text);
+    text-decoration: line-through;
+}
+
+.kuzhambu-text-compare-empty {
+    color: var(--ant-color-text-tertiary);
+}
