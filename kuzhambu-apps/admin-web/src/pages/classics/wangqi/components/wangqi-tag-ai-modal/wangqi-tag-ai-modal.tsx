@@ -19,7 +19,8 @@ import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
 import * as contentService from "@/pages/classics/common/classics-content-service";
 import type { ClassicsContentTagRecord } from "@/pages/classics/common/classics-content-types";
-import type { WangqiDocumentRecord } from "../wangqi-types";
+import type { WangqiDocumentRecord } from "@/pages/classics/wangqi/wangqi-types";
+import "./wangqi-tag-ai-modal.css";
 
 const { Text } = Typography;
 
