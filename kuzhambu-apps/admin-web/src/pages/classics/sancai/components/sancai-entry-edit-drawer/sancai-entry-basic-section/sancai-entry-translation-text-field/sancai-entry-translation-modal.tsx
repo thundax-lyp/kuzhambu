@@ -5,7 +5,7 @@ import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 import { KuzhambuSyncTaskModal } from "@/components/kuzhambu-sync-task-modal";
 import type { KuzhambuSyncTaskAdapter } from "@/components/kuzhambu-sync-task-modal";
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
-import type { SancaiEntryFormValues } from "@/pages/classics/sancai/components/sancai-form-values";
+import type { SancaiEntryFormValues } from "@/pages/classics/sancai/components/sancai-entry-edit-drawer/sancai-entry-form-values";
 
 const MODAL_TITLE = "AI翻译";
 const TASK_LABEL = "翻译";
