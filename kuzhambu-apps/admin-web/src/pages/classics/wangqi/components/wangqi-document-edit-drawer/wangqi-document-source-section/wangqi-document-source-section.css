@@ -1,0 +1,6 @@
+.wangqi-document-edit-drawer-source-file {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 12px;
+}

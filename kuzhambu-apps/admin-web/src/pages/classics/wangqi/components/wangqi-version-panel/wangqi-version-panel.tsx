@@ -5,9 +5,10 @@ import type {
     WangqiContentVersionRecord,
     WangqiDocumentRecord,
     WangqiVersionSnapshot
-} from "../wangqi-types";
+} from "@/pages/classics/wangqi/wangqi-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuAlert } from "@/components/kuzhambu-alert";
+import "./wangqi-version-panel.css";
 
 const { Text } = Typography;
 
@@ -105,7 +106,7 @@ const readQaPairs = (snapshot: WangqiVersionSnapshot | null) => {
         .filter((qaPair): qaPair is { question: string; answer: string } => qaPair !== null);
 };
 
-interface WangqiVersionHistoryPanelProps {
+interface WangqiVersionPanelProps {
     currentDocument?: WangqiDocumentRecord | null;
     detailLoading?: boolean;
     listLoading?: boolean;
@@ -116,7 +117,7 @@ interface WangqiVersionHistoryPanelProps {
     onSelectVersion: (version: WangqiContentVersionRecord) => void;
 }
 
-export const WangqiVersionHistoryPanel = ({
+export const WangqiVersionPanel = ({
     currentDocument,
     detailLoading = false,
     listLoading = false,
@@ -125,15 +126,15 @@ export const WangqiVersionHistoryPanel = ({
     versions,
     onResetVersion,
     onSelectVersion
-}: WangqiVersionHistoryPanelProps) => {
+}: WangqiVersionPanelProps) => {
     const snapshot = readSnapshot(selectedVersion);
 
     return (
-        <section className="wangqi-version-history-panel" aria-label="王圻版本历史面板">
-            <div className="wangqi-version-history-panel-grid">
+        <section className="wangqi-version-panel" aria-label="王圻版本历史面板">
+            <div className="wangqi-version-panel-grid">
                 <KuzhambuList<WangqiContentVersionRecord>
                     as="ol"
-                    className="wangqi-version-history-list"
+                    className="wangqi-version-list"
                     aria-label="王圻版本历史列表"
                     loading={listLoading}
                     dataSource={versions}
@@ -171,12 +172,12 @@ export const WangqiVersionHistoryPanel = ({
                         </KuzhambuListItem>
                     )}
                 />
-                <div className="wangqi-version-history-detail" aria-busy={detailLoading}>
+                <div className="wangqi-version-detail" aria-busy={detailLoading}>
                     {selectedVersion ? (
                         <KuzhambuSpace
                             orientation="vertical"
                             size="middle"
-                            className="wangqi-version-history-detail-stack"
+                            className="wangqi-version-detail-stack"
                         >
                             <Descriptions size="small" column={2} bordered>
                                 <Descriptions.Item label="版本号">

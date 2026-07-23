@@ -20,13 +20,14 @@ import {
     toWangqiDocumentCommand,
     toWangqiDocumentFormValues,
     type WangqiDocumentFormValues
-} from "./wangqi-document-form-values";
+} from "../wangqi-document-form-values";
 import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
 import type { AiCandidateRecord } from "@/pages/classics/common/ai-candidate-types";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
-import type { WangqiDocumentCommand } from "../wangqi-service";
-import type { WangqiDocumentRecord } from "../wangqi-types";
+import type { WangqiDocumentCommand } from "@/pages/classics/wangqi/wangqi-service";
+import type { WangqiDocumentRecord } from "@/pages/classics/wangqi/wangqi-types";
+import "./wangqi-document-edit-drawer.css";
 
 const { TextArea } = Input;
 const SUMMARY_CANDIDATE_POLL_INTERVAL_MS = 3000;

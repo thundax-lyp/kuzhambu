@@ -1,0 +1,6 @@
+.wangqi-refinement-task-list {
+    display: grid;
+    gap: 6px;
+    margin-top: 12px;
+    color: var(--text-secondary);
+}

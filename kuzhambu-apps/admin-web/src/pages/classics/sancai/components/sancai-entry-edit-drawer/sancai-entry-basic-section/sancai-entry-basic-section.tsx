@@ -1,32 +1,13 @@
-import { DownloadOutlined, UploadOutlined } from "@ant-design/icons";
-import { Image, Input, Select, Switch, Typography, Upload } from "antd";
+import { Input, Select, Switch } from "antd";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuFormItem } from "@/components/kuzhambu-form";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { SancaiEntryImageField } from "./sancai-entry-image-field";
 import { SancaiEntrySummaryTextField } from "./sancai-entry-summary-text-field";
 import { SancaiEntryTranslationTextField } from "./sancai-entry-translation-text-field";
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
 import type { SancaiEntryFormValues } from "@/pages/classics/sancai/components/sancai-entry-edit-drawer/sancai-entry-form-values";
 import type { SancaiEntryImageRecord } from "@/pages/classics/sancai/sancai-types";
-import "./sancai-entry-basic-section.css";
-
-const { Text } = Typography;
-const IMAGE_ACCEPT = ".jpg,.jpeg,.png,.gif,.webp";
-
-const formatSize = (size?: number | null) => {
-    if (!size) {
-        return "-";
-    }
-    if (size < 1024) {
-        return `${size} B`;
-    }
-    if (size < 1024 * 1024) {
-        return `${(size / 1024).toFixed(1)} KB`;
-    }
-    return `${(size / 1024 / 1024).toFixed(1)} MB`;
-};
 
 interface SancaiEntryBasicSectionProps {
     categoryOptions: Array<{ label: string; value: number }>;
@@ -172,59 +153,14 @@ export const SancaiEntryBasicSection = ({
             </KuzhambuFormItem>
             {entryId ? (
                 <KuzhambuFormItem label="图片" layoutSize="large">
-                    {imageContent || (
-                        <div className="sancai-entry-image-field">
-                            {currentImage && previewUrl ? (
-                                <div className="sancai-entry-image-frame">
-                                    <>
-                                        <Image
-                                            width={180}
-                                            src={previewUrl}
-                                            alt={
-                                                currentImage.title ||
-                                                currentImage.originalFilename ||
-                                                "三才图会图片"
-                                            }
-                                        />
-                                        <Text type="secondary">
-                                            {currentImage.originalFilename ||
-                                                currentImage.title ||
-                                                `图片 ${currentImage.id}`}{" "}
-                                            - {formatSize(currentImage.size)}
-                                        </Text>
-                                    </>
-                                </div>
-                            ) : null}
-                            <KuzhambuSpace wrap>
-                                <Upload
-                                    aria-label="上传三才图会图片"
-                                    accept={IMAGE_ACCEPT}
-                                    showUploadList={false}
-                                    beforeUpload={(file) => {
-                                        onUploadImage(file);
-                                        return Upload.LIST_IGNORE;
-                                    }}
-                                >
-                                    <KuzhambuButton
-                                        testId="classics-sancai-sancai-entry-action-button"
-                                        icon={<UploadOutlined />}
-                                        loading={isUploadingImage}
-                                    >
-                                        上传
-                                    </KuzhambuButton>
-                                </Upload>
-                                <KuzhambuButton
-                                    testId="classics-sancai-sancai-entry-action-button-2"
-                                    icon={<DownloadOutlined />}
-                                    href={downloadUrl}
-                                    target="_blank"
-                                    disabled={!downloadUrl}
-                                >
-                                    下载
-                                </KuzhambuButton>
-                            </KuzhambuSpace>
-                        </div>
-                    )}
+                    <SancaiEntryImageField
+                        content={imageContent}
+                        currentImage={currentImage}
+                        downloadUrl={downloadUrl}
+                        isUploadingImage={isUploadingImage}
+                        previewUrl={previewUrl}
+                        onUploadImage={onUploadImage}
+                    />
                 </KuzhambuFormItem>
             ) : null}
         </>
