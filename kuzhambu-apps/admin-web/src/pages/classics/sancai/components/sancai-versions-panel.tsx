@@ -67,7 +67,7 @@ const formatValue = (value: unknown) => {
     return String(value);
 };
 
-interface SancaiVersionHistoryPanelProps {
+interface SancaiVersionsPanelProps {
     currentEntry?: SancaiEntryRecord | null;
     detailLoading?: boolean;
     listLoading?: boolean;
@@ -78,7 +78,7 @@ interface SancaiVersionHistoryPanelProps {
     onSelectVersion: (version: SancaiContentVersionRecord) => void;
 }
 
-export const SancaiVersionHistoryPanel = ({
+export const SancaiVersionsPanel = ({
     currentEntry,
     detailLoading = false,
     listLoading = false,
@@ -87,12 +87,12 @@ export const SancaiVersionHistoryPanel = ({
     versions,
     onResetVersion,
     onSelectVersion
-}: SancaiVersionHistoryPanelProps) => {
+}: SancaiVersionsPanelProps) => {
     const snapshot = readSnapshot(selectedVersion);
 
     return (
-        <section className="sancai-version-history-panel" aria-label="三才图会版本历史面板">
-            <div className="sancai-version-history-panel-grid">
+        <section className="sancai-versions-panel" aria-label="三才图会版本面板">
+            <div className="sancai-versions-panel-grid">
                 <KuzhambuList<SancaiContentVersionRecord>
                     as="ol"
                     className="sancai-version-history-list"
