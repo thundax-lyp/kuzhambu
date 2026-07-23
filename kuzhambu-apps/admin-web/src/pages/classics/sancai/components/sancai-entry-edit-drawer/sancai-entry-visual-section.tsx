@@ -5,9 +5,10 @@ import {
     FileTextOutlined,
     PictureOutlined
 } from "@ant-design/icons";
-import { Col, Empty, Form, Image, Input, Row, Select, Tag, Typography } from "antd";
+import { Empty, Image, Input, Select, Tag, Typography } from "antd";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
+import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
@@ -125,7 +126,10 @@ export const SancaiEntryVisualSection = ({
     const selectedSourceImageSelectValue = readVisualSourceImageSelectValue(selectedSourceImage);
 
     return (
-        <section className="sancai-visual-asset-field" aria-label="三才图会视觉处理面板">
+        <section
+            className="sancai-detail-card sancai-visual-asset-field"
+            aria-label="三才图会视觉处理面板"
+        >
             <div className="sancai-visual-asset-summary">
                 <Text type="secondary">
                     来源图片：{selectedSourceImage ? readImageTitle(selectedSourceImage) : "未选择"}
@@ -140,21 +144,28 @@ export const SancaiEntryVisualSection = ({
             </div>
             {selectedVisualAsset ? (
                 <>
-                    <Form.Item label="来源图片">
-                        <Select
-                            aria-label="三才图会视觉处理来源图片"
-                            disabled={!defaultSourceImage}
-                            placeholder="选择来源图片"
-                            value={selectedSourceImageSelectValue}
-                            options={entryImages.map((image) => ({
-                                disabled: !image.storageObjectId,
-                                label: readImageTitle(image),
-                                value:
-                                    readVisualSourceImageSelectValue(image) ?? `image:${image.id}`
-                            }))}
-                            onChange={(value) => onSelectVisualSourceImageBySelectValue(value)}
-                        />
-                    </Form.Item>
+                    <KuzhambuForm
+                        className="sancai-entry-edit-drawer-form"
+                        colon={false}
+                        component="div"
+                    >
+                        <KuzhambuFormItem label="来源图片" layoutSize="large">
+                            <Select
+                                aria-label="三才图会视觉处理来源图片"
+                                disabled={!defaultSourceImage}
+                                placeholder="选择来源图片"
+                                value={selectedSourceImageSelectValue}
+                                options={entryImages.map((image) => ({
+                                    disabled: !image.storageObjectId,
+                                    label: readImageTitle(image),
+                                    value:
+                                        readVisualSourceImageSelectValue(image) ??
+                                        `image:${image.id}`
+                                }))}
+                                onChange={(value) => onSelectVisualSourceImageBySelectValue(value)}
+                            />
+                        </KuzhambuFormItem>
+                    </KuzhambuForm>
                     <div className="sancai-visual-asset-image-list">
                         <div className="sancai-entry-image-frame">
                             {sourcePreviewUrl ? (
@@ -376,98 +387,114 @@ export const SancaiEntryVisualSection = ({
                             </KuzhambuButton>
                         </KuzhambuSpace>
                     </div>
-                    <Row gutter={10}>
-                        <Col xs={24} md={12}>
-                            <Form.Item label="文本权重">
-                                <Input
-                                    aria-label="三才图会视觉处理文本权重"
-                                    value={visualAssetFormValue?.textWeight ?? ""}
-                                    onChange={(event) =>
-                                        onUpdateVisualAssetForm({
-                                            textWeight: event.target.value
-                                                ? Number(event.target.value)
-                                                : null
-                                        })
-                                    }
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} md={12}>
-                            <Form.Item label="图片权重">
-                                <Input
-                                    aria-label="三才图会视觉处理图片权重"
-                                    value={visualAssetFormValue?.imageWeight ?? ""}
-                                    onChange={(event) =>
-                                        onUpdateVisualAssetForm({
-                                            imageWeight: event.target.value
-                                                ? Number(event.target.value)
-                                                : null
-                                        })
-                                    }
-                                />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Form.Item label="图片理解" className="sancai-entry-edit-drawer-form-item-top">
-                        <Input.TextArea
-                            aria-label="三才图会视觉处理图片理解"
-                            value={visualAssetFormValue?.imageAnalysisMarkdown ?? ""}
-                            autoSize={resolveTextAreaAutoSize({
-                                minRows: 3,
-                                maxRows: 6
-                            })}
-                            onChange={(event) =>
-                                onUpdateVisualAssetForm({
-                                    imageAnalysisMarkdown: event.target.value
-                                })
-                            }
-                        />
-                    </Form.Item>
-                    <Form.Item label="融合描述" className="sancai-entry-edit-drawer-form-item-top">
-                        <Input.TextArea
-                            aria-label="三才图会视觉处理融合描述"
-                            value={visualAssetFormValue?.fusionDescription ?? ""}
-                            autoSize={resolveTextAreaAutoSize({
-                                minRows: 2,
-                                maxRows: 5
-                            })}
-                            onChange={(event) =>
-                                onUpdateVisualAssetForm({
-                                    fusionDescription: event.target.value
-                                })
-                            }
-                        />
-                    </Form.Item>
-                    <Form.Item label="视觉描述" className="sancai-entry-edit-drawer-form-item-top">
-                        <Input.TextArea
-                            aria-label="三才图会视觉处理视觉描述"
-                            value={visualAssetFormValue?.visualDescription ?? ""}
-                            autoSize={resolveTextAreaAutoSize({
-                                minRows: 2,
-                                maxRows: 5
-                            })}
-                            onChange={(event) =>
-                                onUpdateVisualAssetForm({
-                                    visualDescription: event.target.value
-                                })
-                            }
-                        />
-                    </Form.Item>
-                    <Form.Item label="生成参数" className="sancai-entry-edit-drawer-form-item-top">
-                        <Input.TextArea
-                            aria-label="三才图会视觉处理生成参数"
-                            value={visualAssetFormValue?.generationParamsJson ?? ""}
-                            autoSize={resolveTextAreaAutoSize({
-                                minRows: 2,
-                                maxRows: 5
-                            })}
-                            onChange={(event) =>
-                                onUpdateVisualAssetForm({
-                                    generationParamsJson: event.target.value
-                                })
-                            }
-                        />
-                    </Form.Item>
+                    <KuzhambuForm
+                        className="sancai-entry-edit-drawer-form"
+                        colon={false}
+                        component="div"
+                    >
+                        <KuzhambuFormItem label="文本权重" layoutSize="middle">
+                            <Input
+                                aria-label="三才图会视觉处理文本权重"
+                                value={visualAssetFormValue?.textWeight ?? ""}
+                                onChange={(event) =>
+                                    onUpdateVisualAssetForm({
+                                        textWeight: event.target.value
+                                            ? Number(event.target.value)
+                                            : null
+                                    })
+                                }
+                            />
+                        </KuzhambuFormItem>
+                        <KuzhambuFormItem label="图片权重" layoutSize="middle">
+                            <Input
+                                aria-label="三才图会视觉处理图片权重"
+                                value={visualAssetFormValue?.imageWeight ?? ""}
+                                onChange={(event) =>
+                                    onUpdateVisualAssetForm({
+                                        imageWeight: event.target.value
+                                            ? Number(event.target.value)
+                                            : null
+                                    })
+                                }
+                            />
+                        </KuzhambuFormItem>
+                        <KuzhambuFormItem
+                            label="图片理解"
+                            layoutSize="large"
+                            className="sancai-entry-edit-drawer-form-item-top"
+                        >
+                            <Input.TextArea
+                                aria-label="三才图会视觉处理图片理解"
+                                value={visualAssetFormValue?.imageAnalysisMarkdown ?? ""}
+                                autoSize={resolveTextAreaAutoSize({
+                                    minRows: 3,
+                                    maxRows: 6
+                                })}
+                                onChange={(event) =>
+                                    onUpdateVisualAssetForm({
+                                        imageAnalysisMarkdown: event.target.value
+                                    })
+                                }
+                            />
+                        </KuzhambuFormItem>
+                        <KuzhambuFormItem
+                            label="融合描述"
+                            layoutSize="large"
+                            className="sancai-entry-edit-drawer-form-item-top"
+                        >
+                            <Input.TextArea
+                                aria-label="三才图会视觉处理融合描述"
+                                value={visualAssetFormValue?.fusionDescription ?? ""}
+                                autoSize={resolveTextAreaAutoSize({
+                                    minRows: 2,
+                                    maxRows: 5
+                                })}
+                                onChange={(event) =>
+                                    onUpdateVisualAssetForm({
+                                        fusionDescription: event.target.value
+                                    })
+                                }
+                            />
+                        </KuzhambuFormItem>
+                        <KuzhambuFormItem
+                            label="视觉描述"
+                            layoutSize="large"
+                            className="sancai-entry-edit-drawer-form-item-top"
+                        >
+                            <Input.TextArea
+                                aria-label="三才图会视觉处理视觉描述"
+                                value={visualAssetFormValue?.visualDescription ?? ""}
+                                autoSize={resolveTextAreaAutoSize({
+                                    minRows: 2,
+                                    maxRows: 5
+                                })}
+                                onChange={(event) =>
+                                    onUpdateVisualAssetForm({
+                                        visualDescription: event.target.value
+                                    })
+                                }
+                            />
+                        </KuzhambuFormItem>
+                        <KuzhambuFormItem
+                            label="生成参数"
+                            layoutSize="large"
+                            className="sancai-entry-edit-drawer-form-item-top"
+                        >
+                            <Input.TextArea
+                                aria-label="三才图会视觉处理生成参数"
+                                value={visualAssetFormValue?.generationParamsJson ?? ""}
+                                autoSize={resolveTextAreaAutoSize({
+                                    minRows: 2,
+                                    maxRows: 5
+                                })}
+                                onChange={(event) =>
+                                    onUpdateVisualAssetForm({
+                                        generationParamsJson: event.target.value
+                                    })
+                                }
+                            />
+                        </KuzhambuFormItem>
+                    </KuzhambuForm>
                 </>
             ) : (
                 <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无视觉处理记录" />

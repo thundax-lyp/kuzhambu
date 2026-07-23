@@ -1,6 +1,6 @@
-import { Form, Input, Select } from "antd";
+import { Input, Select } from "antd";
 import { useState } from "react";
-import { ADMIN_FORM_COMPACT_HORIZONTAL_LAYOUT } from "@/components/form/form-layout";
+import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuModal } from "@/components/kuzhambu-modal";
 import type { DictItem } from "@/types/dict";
 import { toCategoryFormValues, type SancaiCategoryFormValues } from "../sancai-form-values";
@@ -52,15 +52,12 @@ export const SancaiCategoryEditDrawerModal = ({
             destroyOnHidden
             onCancel={onCancel}
         >
-            <Form
+            <KuzhambuForm
                 aria-label={category ? "编辑门类" : "新增门类"}
                 className="sancai-category-edit-modal sancai-editor-form"
                 component="div"
-                labelCol={ADMIN_FORM_COMPACT_HORIZONTAL_LAYOUT.labelCol}
-                layout="horizontal"
-                wrapperCol={ADMIN_FORM_COMPACT_HORIZONTAL_LAYOUT.wrapperCol}
             >
-                <Form.Item label="门类标题">
+                <KuzhambuFormItem label="门类标题" layoutSize="large">
                     <Input
                         aria-label="三才图会门类标题"
                         placeholder="门类标题"
@@ -72,8 +69,8 @@ export const SancaiCategoryEditDrawerModal = ({
                             }))
                         }
                     />
-                </Form.Item>
-                <Form.Item label="门类类型">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem label="门类类型" layoutSize="large">
                     <Select
                         aria-label="三才图会门类类型"
                         value={form.categoryType}
@@ -85,8 +82,8 @@ export const SancaiCategoryEditDrawerModal = ({
                             }))
                         }
                     />
-                </Form.Item>
-            </Form>
+                </KuzhambuFormItem>
+            </KuzhambuForm>
         </KuzhambuModal>
     );
 };

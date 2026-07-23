@@ -1,5 +1,6 @@
-import { Card, Checkbox, Col, Form, Input, InputNumber, Row } from "antd";
+import { Card, Checkbox, Form, Input, InputNumber } from "antd";
 import { useEffect } from "react";
+import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type {
     GraphExtractionCreateCommand,
@@ -123,23 +124,17 @@ export const GraphExtractionCreate = ({
                             type="warning"
                             title="精修应用后的图谱重生成参数已载入"
                         />
-                        <Row gutter={16}>
-                            <Col xs={24} md={12}>
-                                <Form.Item label="源任务 ID">
-                                    <Input value={regenerateCommand.sourceTaskId || ""} disabled />
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} md={12}>
-                                <Form.Item label="任务类型">
-                                    <Input value={regenerateCommand.taskType || ""} disabled />
-                                </Form.Item>
-                            </Col>
-                            <Col xs={24} md={12}>
-                                <Form.Item label="触发来源">
-                                    <Input value={regenerateCommand.triggerSource || ""} disabled />
-                                </Form.Item>
-                            </Col>
-                        </Row>
+                        <KuzhambuForm component="div">
+                            <KuzhambuFormItem label="源任务 ID">
+                                <Input value={regenerateCommand.sourceTaskId || ""} disabled />
+                            </KuzhambuFormItem>
+                            <KuzhambuFormItem label="任务类型">
+                                <Input value={regenerateCommand.taskType || ""} disabled />
+                            </KuzhambuFormItem>
+                            <KuzhambuFormItem label="触发来源">
+                                <Input value={regenerateCommand.triggerSource || ""} disabled />
+                            </KuzhambuFormItem>
+                        </KuzhambuForm>
                         <KuzhambuButton
                             testId="knowledge-graph-extraction-graph-extraction-create-action-button"
                             type="primary"
@@ -153,110 +148,100 @@ export const GraphExtractionCreate = ({
                 </Card>
             ) : null}
             <Card className="graph-extraction-create-card" variant="borderless">
-                <Form<GraphExtractionCreateFormValues>
+                <KuzhambuForm<GraphExtractionCreateFormValues>
                     form={form}
-                    layout="vertical"
                     initialValues={{
                         locale: "zh-CN",
                         modelId: 1,
                         replaceUnconfirmedOnly: true
                     }}
                 >
-                    <Row gutter={16}>
-                        <Col xs={24} md={12}>
-                            <Form.Item
-                                name="sourceContentType"
-                                label="来源内容类型"
-                                rules={[{ required: true, message: "请输入来源内容类型" }]}
-                            >
-                                <Input placeholder="例如：SANCAI_ENTRY" />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} md={12}>
-                            <Form.Item
-                                name="sourceContentId"
-                                label="来源内容 ID"
-                                rules={[{ required: true, message: "请输入来源内容 ID" }]}
-                            >
-                                <InputNumber min={1} precision={0} style={{ width: "100%" }} />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} md={12}>
-                            <Form.Item name="scopeType" label="作用域类型">
-                                <Input placeholder="例如：CLASSICS_ENTRY" />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} md={12}>
-                            <Form.Item name="locale" label="语言">
-                                <Input placeholder="例如：zh-CN" />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} md={12}>
-                            <Form.Item
-                                name="modelId"
-                                label="模型 ID"
-                                rules={[{ required: true, message: "请输入模型 ID" }]}
-                            >
-                                <InputNumber min={1} precision={0} style={{ width: "100%" }} />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} md={12}>
-                            <Form.Item
-                                name="modelName"
-                                label="模型名"
-                                rules={[{ required: true, message: "请输入模型名" }]}
-                            >
-                                <Input placeholder="例如：gpt-5.5" />
-                            </Form.Item>
-                        </Col>
-                    </Row>
+                    <KuzhambuFormItem
+                        name="sourceContentType"
+                        label="来源内容类型"
+                        rules={[{ required: true, message: "请输入来源内容类型" }]}
+                    >
+                        <Input placeholder="例如：SANCAI_ENTRY" />
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem
+                        name="sourceContentId"
+                        label="来源内容 ID"
+                        rules={[{ required: true, message: "请输入来源内容 ID" }]}
+                    >
+                        <InputNumber min={1} precision={0} style={{ width: "100%" }} />
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem name="scopeType" label="作用域类型">
+                        <Input placeholder="例如：CLASSICS_ENTRY" />
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem name="locale" label="语言">
+                        <Input placeholder="例如：zh-CN" />
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem
+                        name="modelId"
+                        label="模型 ID"
+                        rules={[{ required: true, message: "请输入模型 ID" }]}
+                    >
+                        <InputNumber min={1} precision={0} style={{ width: "100%" }} />
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem
+                        name="modelName"
+                        label="模型名"
+                        rules={[{ required: true, message: "请输入模型名" }]}
+                    >
+                        <Input placeholder="例如：gpt-5.5" />
+                    </KuzhambuFormItem>
 
-                    <Form.Item name="scopeJson" label="作用域 JSON">
+                    <KuzhambuFormItem name="scopeJson" label="作用域 JSON" layoutSize="large">
                         <TextArea rows={3} placeholder='例如：{"entryId":1001}' />
-                    </Form.Item>
-                    <Form.Item name="selectionScopeJson" label="批量范围 JSON">
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem
+                        name="selectionScopeJson"
+                        label="批量范围 JSON"
+                        layoutSize="large"
+                    >
                         <TextArea rows={3} placeholder='例如：{"sourceContentIds":[1001,1002]}' />
-                    </Form.Item>
-                    <Form.Item
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem
                         name="replaceUnconfirmedOnly"
                         valuePropName="checked"
                         label="重生成策略"
                     >
                         <Checkbox>仅替换未人工确认结果</Checkbox>
-                    </Form.Item>
-                    <Form.Item
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem
                         name="promptMessagesJson"
                         label="Prompt Messages JSON"
+                        layoutSize="large"
                         rules={[{ required: true, message: "请输入 Prompt Messages JSON" }]}
                     >
                         <TextArea
                             rows={4}
                             placeholder='例如：[{"role":"system","content":"extract"}]'
                         />
-                    </Form.Item>
-                    <Form.Item
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem
                         name="inputPayloadJson"
                         label="输入 Payload JSON"
+                        layoutSize="large"
                         rules={[{ required: true, message: "请输入输入 Payload JSON" }]}
                     >
                         <TextArea rows={5} placeholder='例如：{"content":"待抽取正文"}' />
-                    </Form.Item>
-
-                    <KuzhambuSpace wrap>
-                        {CREATE_ACTIONS.map((action) => (
-                            <KuzhambuButton
-                                testId="knowledge-graph-extraction-graph-extraction-create-action-button-2"
-                                key={action.key}
-                                type={action.key === "GRAPH" ? "primary" : "default"}
-                                disabled={!canEdit}
-                                loading={creatingTaskType === action.key}
-                                onClick={() => submitTask(action.key)}
-                            >
-                                {action.label}
-                            </KuzhambuButton>
-                        ))}
-                    </KuzhambuSpace>
-                </Form>
+                    </KuzhambuFormItem>
+                </KuzhambuForm>
+                <KuzhambuSpace wrap>
+                    {CREATE_ACTIONS.map((action) => (
+                        <KuzhambuButton
+                            testId="knowledge-graph-extraction-graph-extraction-create-action-button-2"
+                            key={action.key}
+                            type={action.key === "GRAPH" ? "primary" : "default"}
+                            disabled={!canEdit}
+                            loading={creatingTaskType === action.key}
+                            onClick={() => submitTask(action.key)}
+                        >
+                            {action.label}
+                        </KuzhambuButton>
+                    ))}
+                </KuzhambuSpace>
             </Card>
 
             {latestCreatedTask ? (

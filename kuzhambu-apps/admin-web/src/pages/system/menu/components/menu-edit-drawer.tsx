@@ -1,6 +1,7 @@
 import { Form, Input, InputNumber, Select } from "antd";
 import { useEffect } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
+import { KuzhambuForm, KuzhambuFormHiddenItem, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import type { MenuSaveCommand } from "../menu-service";
 import type { MenuNode } from "../menu-types";
 
@@ -106,49 +107,49 @@ export const MenuEditDrawer = ({
                 }
             ]}
         >
-            <Form<MenuFormValues> form={form} layout="vertical" className="menu-edit-drawer-form">
-                <Form.Item name="id" hidden>
+            <KuzhambuForm<MenuFormValues> form={form} className="menu-edit-drawer-form">
+                <KuzhambuFormHiddenItem name="id">
                     <Input />
-                </Form.Item>
-                <Form.Item name="parentId" label="上级菜单">
+                </KuzhambuFormHiddenItem>
+                <KuzhambuFormItem name="parentId" label="上级菜单" layoutSize="large">
                     <Select allowClear placeholder="不选择则作为根菜单" options={parentOptions} />
-                </Form.Item>
-                <Form.Item
+                </KuzhambuFormItem>
+                <KuzhambuFormItem
                     name="name"
                     label="菜单名称"
                     rules={[{ required: true, message: "请输入菜单名称" }]}
                 >
                     <Input placeholder="例如：菜单管理" />
-                </Form.Item>
-                <Form.Item name="url" label="URL">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem name="url" label="URL">
                     <Input placeholder="例如：/system/menus" />
-                </Form.Item>
-                <Form.Item name="perms" label="权限标识">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem name="perms" label="权限标识">
                     <Input placeholder="例如：sys:menu:view" />
-                </Form.Item>
-                <Form.Item name="ranks" label="等级">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem name="ranks" label="等级">
                     <InputNumber min={0} max={9} precision={0} className="menu-rank-input" />
-                </Form.Item>
-                <Form.Item name="display" label="显示状态">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem name="display" label="显示状态">
                     <Select
                         options={[
                             { label: "显示", value: true },
                             { label: "隐藏", value: false }
                         ]}
                     />
-                </Form.Item>
-                <Form.Item name="displayParams" label="显示参数">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem name="displayParams" label="显示参数" layoutSize="large">
                     <TextArea
                         rows={3}
                         maxLength={1000}
                         showCount
                         placeholder='例如：{"icon":"menu"}'
                     />
-                </Form.Item>
-                <Form.Item name="remarks" label="备注">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem name="remarks" label="备注" layoutSize="large">
                     <TextArea rows={3} maxLength={200} showCount placeholder="菜单说明" />
-                </Form.Item>
-            </Form>
+                </KuzhambuFormItem>
+            </KuzhambuForm>
         </KuzhambuDrawer>
     );
 };

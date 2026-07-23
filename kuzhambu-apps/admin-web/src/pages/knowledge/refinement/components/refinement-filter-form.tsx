@@ -1,5 +1,6 @@
-import { Col, Form, Input, Row, Select } from "antd";
+import { Form, Input, Select } from "antd";
 import { useEffect } from "react";
+import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { RefinementTaskPageQuery } from "../refinement-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
@@ -26,7 +27,7 @@ export const RefinementFilterForm = ({
     }, [form, value]);
 
     return (
-        <Form
+        <KuzhambuForm
             form={form}
             initialValues={value}
             onFinish={(values) =>
@@ -37,69 +38,57 @@ export const RefinementFilterForm = ({
                 })
             }
         >
-            <Row gutter={12}>
-                <Col xs={24} sm={12} md={8} lg={6}>
-                    <Form.Item label="任务类型" name="taskType">
-                        <Select
-                            allowClear
-                            options={[
-                                { label: "图谱", value: "GRAPH" },
-                                { label: "关系", value: "RELATION" },
-                                { label: "世系", value: "LINEAGE" }
-                            ]}
-                        />
-                    </Form.Item>
-                </Col>
-                <Col xs={24} sm={12} md={8} lg={6}>
-                    <Form.Item label="门类编码" name="sourceCategoryCode">
-                        <Input allowClear placeholder="如 myth" />
-                    </Form.Item>
-                </Col>
-                <Col xs={24} sm={12} md={8} lg={6}>
-                    <Form.Item label="来源类型" name="sourceContentType">
-                        <Input allowClear placeholder="如 SANCAI_ENTRY" />
-                    </Form.Item>
-                </Col>
-                <Col xs={24} sm={12} md={8} lg={6}>
-                    <Form.Item label="状态" name="status">
-                        <Select
-                            allowClear
-                            options={[
-                                { label: "草稿", value: "DRAFT" },
-                                { label: "已应用", value: "APPLIED" }
-                            ]}
-                        />
-                    </Form.Item>
-                </Col>
-                <Col xs={24}>
-                    <Form.Item>
-                        <KuzhambuSpace>
-                            <KuzhambuButton
-                                testId="knowledge-refinement-refinement-filter-filter-button"
-                                htmlType="submit"
-                                loading={loading}
-                                type="primary"
-                            >
-                                筛选
-                            </KuzhambuButton>
-                            <KuzhambuButton
-                                testId="knowledge-refinement-refinement-filter-reset-button"
-                                onClick={() => {
-                                    form.setFieldsValue({
-                                        taskType: undefined,
-                                        sourceCategoryCode: undefined,
-                                        sourceContentType: undefined,
-                                        status: undefined
-                                    });
-                                    onChange(resetValues);
-                                }}
-                            >
-                                重置
-                            </KuzhambuButton>
-                        </KuzhambuSpace>
-                    </Form.Item>
-                </Col>
-            </Row>
-        </Form>
+            <KuzhambuFormItem label="任务类型" name="taskType" layoutSize="small">
+                <Select
+                    allowClear
+                    options={[
+                        { label: "图谱", value: "GRAPH" },
+                        { label: "关系", value: "RELATION" },
+                        { label: "世系", value: "LINEAGE" }
+                    ]}
+                />
+            </KuzhambuFormItem>
+            <KuzhambuFormItem label="门类编码" name="sourceCategoryCode" layoutSize="small">
+                <Input allowClear placeholder="如 myth" />
+            </KuzhambuFormItem>
+            <KuzhambuFormItem label="来源类型" name="sourceContentType" layoutSize="small">
+                <Input allowClear placeholder="如 SANCAI_ENTRY" />
+            </KuzhambuFormItem>
+            <KuzhambuFormItem label="状态" name="status" layoutSize="small">
+                <Select
+                    allowClear
+                    options={[
+                        { label: "草稿", value: "DRAFT" },
+                        { label: "已应用", value: "APPLIED" }
+                    ]}
+                />
+            </KuzhambuFormItem>
+            <KuzhambuFormItem layoutSize="large">
+                <KuzhambuSpace>
+                    <KuzhambuButton
+                        testId="knowledge-refinement-refinement-filter-filter-button"
+                        htmlType="submit"
+                        loading={loading}
+                        type="primary"
+                    >
+                        筛选
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        testId="knowledge-refinement-refinement-filter-reset-button"
+                        onClick={() => {
+                            form.setFieldsValue({
+                                taskType: undefined,
+                                sourceCategoryCode: undefined,
+                                sourceContentType: undefined,
+                                status: undefined
+                            });
+                            onChange(resetValues);
+                        }}
+                    >
+                        重置
+                    </KuzhambuButton>
+                </KuzhambuSpace>
+            </KuzhambuFormItem>
+        </KuzhambuForm>
     );
 };

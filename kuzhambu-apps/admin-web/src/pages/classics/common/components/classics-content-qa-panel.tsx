@@ -2,7 +2,7 @@ import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import { App, Card, Empty, Form, Input, Select } from "antd";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ADMIN_FORM_HORIZONTAL_LAYOUT } from "@/components/form/form-layout";
+import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuModal } from "@/components/kuzhambu-modal";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
@@ -325,20 +325,19 @@ export const ClassicsContentQaPanel = ({
                     onCancel={closeEditor}
                     onOk={submitQaPair}
                 >
-                    <Form
+                    <KuzhambuForm
                         form={form}
                         initialValues={{
                             contentId,
                             contentType,
                             source: "MANUAL"
                         }}
-                        labelCol={ADMIN_FORM_HORIZONTAL_LAYOUT.labelCol}
                         labelWrap
-                        wrapperCol={ADMIN_FORM_HORIZONTAL_LAYOUT.wrapperCol}
                     >
-                        <Form.Item
+                        <KuzhambuFormItem
                             label="问题"
                             name="question"
+                            layoutSize="large"
                             rules={[{ required: true, message: "请输入问题" }]}
                         >
                             <Input.TextArea
@@ -346,10 +345,11 @@ export const ClassicsContentQaPanel = ({
                                 rows={3}
                                 placeholder="请输入问题"
                             />
-                        </Form.Item>
-                        <Form.Item
+                        </KuzhambuFormItem>
+                        <KuzhambuFormItem
                             label="答案"
                             name="answer"
+                            layoutSize="large"
                             rules={[{ required: true, message: "请输入答案" }]}
                         >
                             <Input.TextArea
@@ -357,8 +357,8 @@ export const ClassicsContentQaPanel = ({
                                 rows={4}
                                 placeholder="请输入答案"
                             />
-                        </Form.Item>
-                        <Form.Item label="来源" name="source">
+                        </KuzhambuFormItem>
+                        <KuzhambuFormItem label="来源" name="source" layoutSize="large">
                             <Select
                                 aria-label="问答来源"
                                 options={[
@@ -366,8 +366,8 @@ export const ClassicsContentQaPanel = ({
                                     { label: "AI 提取", value: "AI_EXTRACTED" }
                                 ]}
                             />
-                        </Form.Item>
-                    </Form>
+                        </KuzhambuFormItem>
+                    </KuzhambuForm>
                 </KuzhambuModal>
             </KuzhambuSpace>
         </Card>

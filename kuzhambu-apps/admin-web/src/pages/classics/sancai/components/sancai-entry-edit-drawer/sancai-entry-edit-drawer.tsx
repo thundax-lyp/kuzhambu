@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Empty, Form } from "antd";
+import { App, Empty } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
-import { ADMIN_FORM_HORIZONTAL_LAYOUT } from "@/components/form/form-layout";
+import { KuzhambuForm } from "@/components/kuzhambu-form";
 import { KuzhambuSegmentedDrawer } from "@/components/kuzhambu-segmented-drawer";
 import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
 import type { AiCandidateRecord } from "@/pages/classics/common/ai-candidate-types";
@@ -901,23 +901,20 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
     const formProps = {
         className: "sancai-detail-card sancai-entry-edit-drawer-form",
         colon: false,
-        component: "div" as const,
-        labelCol: ADMIN_FORM_HORIZONTAL_LAYOUT.labelCol,
-        layout: "horizontal" as const,
-        wrapperCol: ADMIN_FORM_HORIZONTAL_LAYOUT.wrapperCol
+        component: "div" as const
     };
     const sections = [
         {
             label: "基础信息",
             value: "basic",
-            content: <Form {...formProps}>{basicContent}</Form>
+            content: <KuzhambuForm {...formProps}>{basicContent}</KuzhambuForm>
         },
         {
             label: "视觉处理",
             value: "visual",
             content: (
                 <>
-                    <Form {...formProps}>{visualAssetContent}</Form>
+                    {visualAssetContent}
                     {visualRefinementContent}
                 </>
             ),

@@ -1,6 +1,7 @@
 import { Form, Input, Select } from "antd";
 import { useEffect, useMemo } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
+import { KuzhambuForm, KuzhambuFormHiddenItem, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import type { TagCreateCommand, TagUpdateCommand } from "../taxonomy-service";
 import type { TagCategoryRecord, TagRecord } from "../taxonomy-types";
 
@@ -136,15 +137,11 @@ export const TagEditDrawer = ({
                 }
             ]}
         >
-            <Form<TagEditDrawerFormValues>
-                form={form}
-                layout="vertical"
-                className="taxonomy-tag-form"
-            >
-                <Form.Item name="id" hidden>
+            <KuzhambuForm<TagEditDrawerFormValues> form={form} className="taxonomy-tag-form">
+                <KuzhambuFormHiddenItem name="id">
                     <Input />
-                </Form.Item>
-                <Form.Item
+                </KuzhambuFormHiddenItem>
+                <KuzhambuFormItem
                     name="name"
                     label="标签名"
                     rules={[
@@ -153,8 +150,8 @@ export const TagEditDrawer = ({
                     ]}
                 >
                     <Input placeholder="例如：王圻" />
-                </Form.Item>
-                <Form.Item name="categoryId" label="分类">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem name="categoryId" label="分类">
                     <Select
                         allowClear
                         showSearch
@@ -162,11 +159,11 @@ export const TagEditDrawer = ({
                         placeholder="选择标签分类"
                         options={categoryOptions}
                     />
-                </Form.Item>
-                <Form.Item name="description" label="描述">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem name="description" label="描述" layoutSize="large">
                     <TextArea rows={4} maxLength={1024} showCount placeholder="补充标签说明" />
-                </Form.Item>
-            </Form>
+                </KuzhambuFormItem>
+            </KuzhambuForm>
         </KuzhambuDrawer>
     );
 };

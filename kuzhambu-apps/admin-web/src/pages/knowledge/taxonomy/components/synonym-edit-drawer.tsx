@@ -1,6 +1,7 @@
 import { Form, Input } from "antd";
 import { useEffect, useMemo } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
+import { KuzhambuForm, KuzhambuFormHiddenItem, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import type { SynonymCreateCommand, SynonymUpdateCommand } from "../taxonomy-service";
 import type { SynonymRecord } from "../taxonomy-types";
 
@@ -117,15 +118,14 @@ export const SynonymEditDrawer = ({
                 }
             ]}
         >
-            <Form<SynonymEditDrawerFormValues>
+            <KuzhambuForm<SynonymEditDrawerFormValues>
                 form={form}
-                layout="vertical"
                 className="taxonomy-synonym-form"
             >
-                <Form.Item name="id" hidden>
+                <KuzhambuFormHiddenItem name="id">
                     <Input />
-                </Form.Item>
-                <Form.Item
+                </KuzhambuFormHiddenItem>
+                <KuzhambuFormItem
                     name="term"
                     label="术语"
                     rules={[
@@ -141,8 +141,8 @@ export const SynonymEditDrawer = ({
                     ]}
                 >
                     <Input maxLength={128} placeholder="例如：王圻" />
-                </Form.Item>
-                <Form.Item
+                </KuzhambuFormItem>
+                <KuzhambuFormItem
                     name="synonym"
                     label="同义词"
                     rules={[
@@ -163,8 +163,8 @@ export const SynonymEditDrawer = ({
                     ]}
                 >
                     <Input maxLength={128} placeholder="例如：王元翰" />
-                </Form.Item>
-            </Form>
+                </KuzhambuFormItem>
+            </KuzhambuForm>
         </KuzhambuDrawer>
     );
 };

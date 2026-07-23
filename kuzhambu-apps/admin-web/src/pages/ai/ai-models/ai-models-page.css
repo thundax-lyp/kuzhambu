@@ -27,22 +27,6 @@
     padding-top: 4px;
 }
 
-.ai-models-form-item-compact .ant-form-item-control {
-    max-width: 360px;
-}
-
-.ai-models-form-item-medium .ant-form-item-control {
-    max-width: 520px;
-}
-
-.ai-models-form-item-wide .ant-form-item-control {
-    max-width: 760px;
-}
-
-.ai-models-form-item-top .ant-form-item-label {
-    align-self: flex-start;
-}
-
 .ai-models-drawer-footer {
     display: flex;
     justify-content: flex-end;

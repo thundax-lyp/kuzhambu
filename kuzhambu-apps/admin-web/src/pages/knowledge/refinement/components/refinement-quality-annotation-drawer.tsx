@@ -1,5 +1,6 @@
 import { Form, Input, Select } from "antd";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
+import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type {
     QualityAnnotationRecord,
@@ -60,59 +61,58 @@ export const RefinementQualityAnnotationDrawer = ({
             title={`质量标注${target ? ` / ${target.objectType} / ${target.objectKey}` : ""}`}
             onClose={onCancel}
         >
-            <Form<QualityAnnotationFormValues>
+            <KuzhambuForm<QualityAnnotationFormValues>
                 form={form}
                 initialValues={{
                     annotationStatus: existingAnnotation?.annotationStatus || "ISSUE",
                     annotationLabel: existingAnnotation?.annotationLabel || "OTHER",
                     comment: existingAnnotation?.comment || ""
                 }}
-                layout="vertical"
                 onFinish={onSave}
             >
-                <Form.Item
+                <KuzhambuFormItem
                     label="标注状态"
                     name="annotationStatus"
                     rules={[{ required: true, message: "请选择标注状态" }]}
                 >
                     <Select options={statusOptions} />
-                </Form.Item>
-                <Form.Item
+                </KuzhambuFormItem>
+                <KuzhambuFormItem
                     label="标注标签"
                     name="annotationLabel"
                     rules={[{ required: true, message: "请选择标注标签" }]}
                 >
                     <Select options={labelOptions} />
-                </Form.Item>
-                <Form.Item label="备注" name="comment">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem label="备注" name="comment" layoutSize="large">
                     <Input.TextArea rows={5} />
-                </Form.Item>
-                <KuzhambuSpace size={8}>
-                    <KuzhambuButton
-                        testId="knowledge-refinement-refinement-quality-annotation-save-button"
-                        htmlType="submit"
-                        loading={saving}
-                        type="primary"
-                    >
-                        保存
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="knowledge-refinement-refinement-quality-annotation-action-button"
-                        danger
-                        disabled={!existingAnnotation}
-                        loading={deleting}
-                        onClick={() => existingAnnotation && onDelete(existingAnnotation)}
-                    >
-                        删除标注
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="knowledge-refinement-refinement-quality-annotation-cancel-button"
-                        onClick={onCancel}
-                    >
-                        取消
-                    </KuzhambuButton>
-                </KuzhambuSpace>
-            </Form>
+                </KuzhambuFormItem>
+            </KuzhambuForm>
+            <KuzhambuSpace size={8}>
+                <KuzhambuButton
+                    testId="knowledge-refinement-refinement-quality-annotation-save-button"
+                    loading={saving}
+                    type="primary"
+                    onClick={() => form.submit()}
+                >
+                    保存
+                </KuzhambuButton>
+                <KuzhambuButton
+                    testId="knowledge-refinement-refinement-quality-annotation-action-button"
+                    danger
+                    disabled={!existingAnnotation}
+                    loading={deleting}
+                    onClick={() => existingAnnotation && onDelete(existingAnnotation)}
+                >
+                    删除标注
+                </KuzhambuButton>
+                <KuzhambuButton
+                    testId="knowledge-refinement-refinement-quality-annotation-cancel-button"
+                    onClick={onCancel}
+                >
+                    取消
+                </KuzhambuButton>
+            </KuzhambuSpace>
         </KuzhambuDrawer>
     );
 };

@@ -1,6 +1,7 @@
 import { Form, Input, Select } from "antd";
 import { useEffect } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
+import { KuzhambuForm, KuzhambuFormHiddenItem, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import type { DepartmentSaveCommand } from "../department-service";
 import type { DepartmentNode } from "../department-types";
 
@@ -97,31 +98,27 @@ export const DepartmentEditDrawer = ({
                 }
             ]}
         >
-            <Form<DepartmentFormValues>
-                form={form}
-                layout="vertical"
-                className="department-edit-drawer-form"
-            >
-                <Form.Item name="id" hidden>
+            <KuzhambuForm<DepartmentFormValues> form={form} className="department-edit-drawer-form">
+                <KuzhambuFormHiddenItem name="id">
                     <Input />
-                </Form.Item>
-                <Form.Item name="parentId" label="上级部门">
+                </KuzhambuFormHiddenItem>
+                <KuzhambuFormItem name="parentId" label="上级部门" layoutSize="large">
                     <Select allowClear placeholder="不选择则作为根部门" options={parentOptions} />
-                </Form.Item>
-                <Form.Item
+                </KuzhambuFormItem>
+                <KuzhambuFormItem
                     name="name"
                     label="部门名称"
                     rules={[{ required: true, message: "请输入部门名称" }]}
                 >
                     <Input placeholder="例如：研发中心" />
-                </Form.Item>
-                <Form.Item name="shortName" label="简称">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem name="shortName" label="简称">
                     <Input placeholder="例如：R&D" />
-                </Form.Item>
-                <Form.Item name="remarks" label="备注">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem name="remarks" label="备注" layoutSize="large">
                     <TextArea rows={4} maxLength={200} showCount placeholder="部门职责说明" />
-                </Form.Item>
-            </Form>
+                </KuzhambuFormItem>
+            </KuzhambuForm>
         </KuzhambuDrawer>
     );
 };

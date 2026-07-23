@@ -1,6 +1,6 @@
 import { ReloadOutlined, SyncOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Card, Col, Form, Row, Select, Table, Tag, Tooltip, Typography } from "antd";
+import { App, Card, Form, Select, Table, Tag, Tooltip, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useEffect, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
@@ -10,6 +10,7 @@ import * as service from "./action-status-service";
 import type { AiActionStatusQuery } from "./action-status-service";
 import type { AiActionStatusRecord } from "./action-status-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import "./action-status-page.css";
 
 const SCOPE_OPTIONS = [
@@ -203,74 +204,59 @@ export const ActionStatusPage = () => {
             }
         >
             <Card className="action-status-filter-card">
-                <Form form={form} className="action-status-filter-form">
-                    <Row gutter={12}>
-                        <Col xs={24} sm={12} md={8} lg={6}>
-                            <Form.Item label="scope" name="scope">
-                                <Select
-                                    allowClear
-                                    className="action-status-filter-control"
-                                    options={SCOPE_OPTIONS}
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} sm={12} md={8} lg={6}>
-                            <Form.Item label="capability" name="capability">
-                                <Select
-                                    allowClear
-                                    className="action-status-filter-control"
-                                    options={capabilityOptions}
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} sm={12} md={8} lg={6}>
-                            <Form.Item label="available" name="available">
-                                <Select
-                                    allowClear
-                                    className="action-status-filter-control"
-                                    options={[
-                                        { label: "可用", value: "true" },
-                                        { label: "不可用", value: "false" }
-                                    ]}
-                                    onChange={(value) =>
-                                        form.setFieldValue("available", parseAvailable(value))
-                                    }
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} md={16} lg={6}>
-                            <Form.Item>
-                                <KuzhambuSpace>
-                                    <KuzhambuButton
-                                        testId="ai-action-status-action-status-query-button"
-                                        type="primary"
-                                        onClick={() => void applyFilter()}
-                                    >
-                                        查询
-                                    </KuzhambuButton>
-                                    <KuzhambuButton
-                                        testId="ai-action-status-action-status-reset-button"
-                                        onClick={resetFilter}
-                                    >
-                                        重置
-                                    </KuzhambuButton>
-                                    <KuzhambuButton
-                                        testId="ai-action-status-action-status-refresh-all-button"
-                                        icon={<SyncOutlined />}
-                                        disabled={
-                                            !canEditConfig ||
-                                            (actionStatusPageQuery.data || []).length === 0
-                                        }
-                                        loading={refreshMutation.isPending}
-                                        onClick={() => void refreshAll()}
-                                    >
-                                        刷新全部
-                                    </KuzhambuButton>
-                                </KuzhambuSpace>
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                </Form>
+                <KuzhambuForm form={form} className="action-status-filter-form">
+                    <KuzhambuFormItem label="scope" name="scope" layoutSize="small">
+                        <Select
+                            allowClear
+                            className="action-status-filter-control"
+                            options={SCOPE_OPTIONS}
+                        />
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem label="capability" name="capability" layoutSize="small">
+                        <Select
+                            allowClear
+                            className="action-status-filter-control"
+                            options={capabilityOptions}
+                        />
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem label="available" name="available" layoutSize="small">
+                        <Select
+                            allowClear
+                            className="action-status-filter-control"
+                            options={[
+                                { label: "可用", value: "true" },
+                                { label: "不可用", value: "false" }
+                            ]}
+                            onChange={(value) =>
+                                form.setFieldValue("available", parseAvailable(value))
+                            }
+                        />
+                    </KuzhambuFormItem>
+                </KuzhambuForm>
+                <KuzhambuSpace>
+                    <KuzhambuButton
+                        testId="ai-action-status-action-status-query-button"
+                        type="primary"
+                        onClick={() => void applyFilter()}
+                    >
+                        查询
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        testId="ai-action-status-action-status-reset-button"
+                        onClick={resetFilter}
+                    >
+                        重置
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        testId="ai-action-status-action-status-refresh-all-button"
+                        icon={<SyncOutlined />}
+                        disabled={!canEditConfig || (actionStatusPageQuery.data || []).length === 0}
+                        loading={refreshMutation.isPending}
+                        onClick={() => void refreshAll()}
+                    >
+                        刷新全部
+                    </KuzhambuButton>
+                </KuzhambuSpace>
             </Card>
 
             <Table<AiActionStatusRecord>

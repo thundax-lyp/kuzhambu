@@ -1,5 +1,6 @@
 import { Form, Input, InputNumber } from "antd";
 import { useEffect } from "react";
+import { KuzhambuForm, KuzhambuFormHiddenItem, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuModal } from "@/components/kuzhambu-modal";
 import type { RefinementEntityRecord } from "../refinement-types";
 
@@ -37,40 +38,40 @@ export const RefinementEntityEditModal = ({
             onCancel={onCancel}
             onOk={() => form.submit()}
         >
-            <Form form={form} layout="vertical" onFinish={onSubmit}>
-                <Form.Item hidden name="entityId">
+            <KuzhambuForm form={form} onFinish={onSubmit}>
+                <KuzhambuFormHiddenItem name="entityId">
                     <Input />
-                </Form.Item>
-                <Form.Item hidden name="entityKey">
+                </KuzhambuFormHiddenItem>
+                <KuzhambuFormHiddenItem name="entityKey">
                     <Input />
-                </Form.Item>
-                <Form.Item hidden name="draftId">
+                </KuzhambuFormHiddenItem>
+                <KuzhambuFormHiddenItem name="draftId">
                     <InputNumber />
-                </Form.Item>
-                <Form.Item
+                </KuzhambuFormHiddenItem>
+                <KuzhambuFormItem
                     label="名称"
                     name="name"
                     rules={[{ required: true, message: "请输入名称" }]}
                 >
                     <Input />
-                </Form.Item>
-                <Form.Item
+                </KuzhambuFormItem>
+                <KuzhambuFormItem
                     label="实体类型"
                     name="entityType"
                     rules={[{ required: true, message: "请输入实体类型" }]}
                 >
                     <Input />
-                </Form.Item>
-                <Form.Item label="描述" name="description">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem label="描述" name="description" layoutSize="large">
                     <Input.TextArea rows={4} />
-                </Form.Item>
-                <Form.Item label="来源引用 JSON" name="sourceRefsJson">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem label="来源引用 JSON" name="sourceRefsJson" layoutSize="large">
                     <Input.TextArea rows={3} />
-                </Form.Item>
-                <Form.Item label="排序" name="sortOrder">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem label="排序" name="sortOrder">
                     <InputNumber min={1} style={{ width: "100%" }} />
-                </Form.Item>
-            </Form>
+                </KuzhambuFormItem>
+            </KuzhambuForm>
         </KuzhambuModal>
     );
 };

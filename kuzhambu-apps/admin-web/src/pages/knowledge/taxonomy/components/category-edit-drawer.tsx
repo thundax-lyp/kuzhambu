@@ -1,6 +1,7 @@
 import { Form, Input, InputNumber } from "antd";
 import { useEffect, useMemo } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
+import { KuzhambuForm, KuzhambuFormHiddenItem, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import type { TagCategoryCreateCommand, TagCategoryUpdateCommand } from "../taxonomy-service";
 import type { TagCategoryRecord } from "../taxonomy-types";
 
@@ -126,15 +127,14 @@ export const CategoryEditDrawer = ({
                 }
             ]}
         >
-            <Form<CategoryEditDrawerFormValues>
+            <KuzhambuForm<CategoryEditDrawerFormValues>
                 form={form}
-                layout="vertical"
                 className="taxonomy-category-form"
             >
-                <Form.Item name="id" hidden>
+                <KuzhambuFormHiddenItem name="id">
                     <Input />
-                </Form.Item>
-                <Form.Item
+                </KuzhambuFormHiddenItem>
+                <KuzhambuFormItem
                     name="name"
                     label="分类名"
                     rules={[
@@ -143,11 +143,11 @@ export const CategoryEditDrawer = ({
                     ]}
                 >
                     <Input placeholder="例如：人物" />
-                </Form.Item>
-                <Form.Item name="description" label="描述">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem name="description" label="描述" layoutSize="large">
                     <TextArea rows={3} maxLength={512} showCount placeholder="补充分类说明" />
-                </Form.Item>
-                <Form.Item
+                </KuzhambuFormItem>
+                <KuzhambuFormItem
                     name="priority"
                     label="排序优先级"
                     rules={[{ required: true, message: "请输入优先级" }]}
@@ -158,8 +158,8 @@ export const CategoryEditDrawer = ({
                         precision={0}
                         placeholder="数字越小越靠前"
                     />
-                </Form.Item>
-            </Form>
+                </KuzhambuFormItem>
+            </KuzhambuForm>
         </KuzhambuDrawer>
     );
 };

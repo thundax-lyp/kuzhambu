@@ -7,13 +7,13 @@ import {
     RetweetOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Col, Form, Input, Row, Select, Table, Typography } from "antd";
+import { App, Form, Input, Select, Table, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useEffect, useMemo, useState } from "react";
-import { ADMIN_FORM_HORIZONTAL_LAYOUT } from "@/components/form/form-layout";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
+import { KuzhambuForm, KuzhambuFormHiddenItem, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuModal } from "@/components/kuzhambu-modal";
 import { KuzhambuSpace, KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
@@ -664,77 +664,71 @@ export const PromptEditDrawer = ({
                     }
                 ]}
             >
-                <Form
+                <KuzhambuForm
                     form={form}
                     colon={false}
                     component="div"
-                    labelCol={ADMIN_FORM_HORIZONTAL_LAYOUT.labelCol}
-                    layout="horizontal"
-                    wrapperCol={ADMIN_FORM_HORIZONTAL_LAYOUT.wrapperCol}
                     className="prompts-editor-form"
                 >
-                    <Form.Item name="id" hidden>
+                    <KuzhambuFormHiddenItem name="id">
                         <Input />
-                    </Form.Item>
-                    <Row gutter={12}>
-                        <Col xs={24} lg={12}>
+                    </KuzhambuFormHiddenItem>
+                    <KuzhambuFormItem
+                        label="模板名称"
+                        name="name"
+                        layoutSize="middle"
+                        className="prompts-editor-item-compact"
+                        rules={[{ required: true, message: "请输入模板名称" }]}
+                    >
+                        <Input />
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem
+                        label="能力"
+                        layoutSize="middle"
+                        className="prompts-editor-item-compact"
+                    >
+                        <KuzhambuSpaceCompact block>
                             <Form.Item
-                                label="模板名称"
-                                name="name"
-                                className="prompts-editor-item-compact"
-                                rules={[{ required: true, message: "请输入模板名称" }]}
+                                name="capability"
+                                noStyle
+                                rules={[{ required: true, message: "请选择能力" }]}
                             >
-                                <Input />
+                                <Select aria-label="提示词能力" options={capabilityOptions} />
                             </Form.Item>
-                        </Col>
-                        <Col xs={24} lg={12}>
-                            <Form.Item label="能力" className="prompts-editor-item-compact">
-                                <KuzhambuSpaceCompact block>
-                                    <Form.Item
-                                        name="capability"
-                                        noStyle
-                                        rules={[{ required: true, message: "请选择能力" }]}
-                                    >
-                                        <Select
-                                            aria-label="提示词能力"
-                                            options={capabilityOptions}
-                                        />
-                                    </Form.Item>
-                                    <KuzhambuButton
-                                        testId="ai-prompts-prompts-view-variables-button"
-                                        disabled={allowedVariableNames.length === 0}
-                                        onClick={() => setVariableModalOpen(true)}
-                                    >
-                                        变量
-                                    </KuzhambuButton>
-                                </KuzhambuSpaceCompact>
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} lg={12}>
-                            <Form.Item
-                                label="状态"
-                                name="status"
-                                valuePropName="checked"
-                                className="prompts-editor-item-status"
+                            <KuzhambuButton
+                                testId="ai-prompts-prompts-view-variables-button"
+                                disabled={allowedVariableNames.length === 0}
+                                onClick={() => setVariableModalOpen(true)}
                             >
-                                <KuzhambuSwitch
-                                    checkedChildren="启用"
-                                    unCheckedChildren="禁用"
-                                    aria-label="提示词模板状态"
-                                />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Form.Item
+                                变量
+                            </KuzhambuButton>
+                        </KuzhambuSpaceCompact>
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem
+                        label="状态"
+                        name="status"
+                        layoutSize="middle"
+                        valuePropName="checked"
+                        className="prompts-editor-item-status"
+                    >
+                        <KuzhambuSwitch
+                            checkedChildren="启用"
+                            unCheckedChildren="禁用"
+                            aria-label="提示词模板状态"
+                        />
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem
                         label="说明"
                         name="description"
+                        layoutSize="large"
                         className="prompts-editor-item-full prompts-editor-item-top"
                     >
                         <Input.TextArea rows={2} />
-                    </Form.Item>
-                    <Form.Item
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem
                         label="正文"
                         name="messageTemplatesJson"
+                        layoutSize="large"
                         className="prompts-editor-item-top"
                         rules={[
                             { required: true, message: "请输入正文" },
@@ -742,19 +736,19 @@ export const PromptEditDrawer = ({
                         ]}
                     >
                         <PromptMarkdownEditor />
-                    </Form.Item>
-                    <Form.Item
+                    </KuzhambuFormItem>
+                    <KuzhambuFormHiddenItem
                         name="variablesSnapshotJson"
-                        hidden
                         rules={[
                             { validator: (_, value) => assertJsonText(value, EMPTY_JSON_ARRAY) }
                         ]}
                     >
                         <Input />
-                    </Form.Item>
-                    <Form.Item
+                    </KuzhambuFormHiddenItem>
+                    <KuzhambuFormItem
                         label="输出格式"
                         name="outputStructure"
+                        layoutSize="small"
                         className="prompts-editor-item-compact"
                     >
                         <Select
@@ -773,24 +767,28 @@ export const PromptEditDrawer = ({
                                 );
                             }}
                         />
-                    </Form.Item>
-                    <Form.Item
+                    </KuzhambuFormItem>
+                    <KuzhambuFormHiddenItem
                         name="outputSchemaJson"
-                        hidden
                         rules={[
                             { validator: (_, value) => assertJsonText(value, TEXT_OUTPUT_SCHEMA) }
                         ]}
                     >
                         <Input />
-                    </Form.Item>
-                    <Form.Item
+                    </KuzhambuFormHiddenItem>
+                    <KuzhambuFormItem
                         label="变更说明"
                         name="changeSummary"
+                        layoutSize="middle"
                         className="prompts-editor-item-wide"
                     >
                         <Input />
-                    </Form.Item>
-                    <Form.Item label="辅助操作" className="prompts-editor-item-wide">
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem
+                        label="辅助操作"
+                        layoutSize="large"
+                        className="prompts-editor-item-wide"
+                    >
                         <KuzhambuSpace wrap>
                             <KuzhambuButton
                                 testId="ai-prompts-prompts-validate-variables-button"
@@ -802,8 +800,8 @@ export const PromptEditDrawer = ({
                                 校验变量
                             </KuzhambuButton>
                         </KuzhambuSpace>
-                    </Form.Item>
-                </Form>
+                    </KuzhambuFormItem>
+                </KuzhambuForm>
                 {template ? (
                     <div className="prompts-version-section">
                         <Typography.Title level={5}>版本</Typography.Title>

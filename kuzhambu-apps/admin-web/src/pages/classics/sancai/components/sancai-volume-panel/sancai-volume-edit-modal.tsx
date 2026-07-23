@@ -1,6 +1,6 @@
-import { Form, Input, Select } from "antd";
+import { Input, Select } from "antd";
 import { useState } from "react";
-import { ADMIN_FORM_COMPACT_HORIZONTAL_LAYOUT } from "@/components/form/form-layout";
+import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuModal } from "@/components/kuzhambu-modal";
 import type { DictItem } from "@/types/dict";
 import { toVolumeFormValues, type SancaiVolumeFormValues } from "../sancai-form-values";
@@ -93,23 +93,20 @@ const SancaiVolumeForm = ({
     volumeTypeItems: DictItem[];
 }) => {
     return (
-        <Form
+        <KuzhambuForm
             aria-label={volume ? "编辑卷目" : "新增卷目"}
             className="sancai-category-edit-modal sancai-editor-form"
             component="div"
-            labelCol={ADMIN_FORM_COMPACT_HORIZONTAL_LAYOUT.labelCol}
-            layout="horizontal"
-            wrapperCol={ADMIN_FORM_COMPACT_HORIZONTAL_LAYOUT.wrapperCol}
         >
-            <Form.Item label="卷目标题">
+            <KuzhambuFormItem label="卷目标题" layoutSize="large">
                 <Input
                     aria-label="三才图会卷目标题"
                     placeholder="卷目标题"
                     value={form.title}
                     onChange={(event) => onChange({ title: event.target.value })}
                 />
-            </Form.Item>
-            <Form.Item label="所属门类">
+            </KuzhambuFormItem>
+            <KuzhambuFormItem label="所属门类" layoutSize="large">
                 <Select
                     aria-label="三才图会卷目所属门类"
                     placeholder="所属门类"
@@ -120,15 +117,15 @@ const SancaiVolumeForm = ({
                     }))}
                     onChange={(categoryId) => onChange({ categoryId })}
                 />
-            </Form.Item>
-            <Form.Item label="卷目类型">
+            </KuzhambuFormItem>
+            <KuzhambuFormItem label="卷目类型" layoutSize="large">
                 <Select
                     aria-label="三才图会卷目类型"
                     value={form.volumeType}
                     options={volumeTypeItems}
                     onChange={(volumeType) => onChange({ volumeType })}
                 />
-            </Form.Item>
-        </Form>
+            </KuzhambuFormItem>
+        </KuzhambuForm>
     );
 };
