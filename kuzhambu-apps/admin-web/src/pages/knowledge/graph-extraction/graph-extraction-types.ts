@@ -1,5 +1,3 @@
-/* eslint-disable local/service-input-type-location */
-
 export type GraphExtractionTaskType = "RELATION" | "GRAPH" | "LINEAGE" | string;
 export type GraphExtractionTriggerSource =
     "MANUAL" | "QUALITY_REPORT" | "REGENERATE" | "REFINEMENT_APPLIED" | string;
@@ -27,61 +25,6 @@ export interface GraphExtractionTaskRecord {
     requestedAt?: number | null;
     completedAt?: number | null;
     appliedAt?: number | null;
-}
-
-export interface GraphExtractionCreateCommand {
-    taskType: GraphExtractionTaskType;
-    triggerSource?: GraphExtractionTriggerSource | null;
-    scopeType?: string | null;
-    scopeJson?: string | null;
-    selectionScopeJson?: string | null;
-    replaceUnconfirmedOnly?: boolean | null;
-    sourceContentType?: string | null;
-    sourceContentId?: number | null;
-    requestedBy?: number | null;
-    serviceId?: number | null;
-    serviceRole?: string | null;
-    modelId?: number | null;
-    modelName?: string | null;
-    promptVersionId?: number | null;
-    requestId?: string | null;
-    traceId?: string | null;
-    promptMessagesJson?: string | null;
-    promptVariablesJson?: string | null;
-    promptHash?: string | null;
-    inputPayloadJson?: string | null;
-    outputSchemaJson?: string | null;
-    forceJson?: boolean | null;
-    locale?: string | null;
-}
-
-export interface GraphExtractionTaskPageQuery {
-    pageNo?: number;
-    pageSize?: number;
-    batchJobId?: number | null;
-    triggerSource?: GraphExtractionTriggerSource | null;
-    taskType?: GraphExtractionTaskType | null;
-    status?: GraphExtractionTaskStatus | null;
-    sourceContentType?: string | null;
-    sourceContentId?: number | null;
-}
-
-export interface GraphExtractionTaskIdCommand {
-    taskId: number;
-}
-
-export interface GraphExtractionRegenerateCommand {
-    taskType: GraphExtractionTaskType;
-    sourceTaskId?: number | null;
-    triggerSource?: GraphExtractionTriggerSource | null;
-    selectionScopeJson?: string | null;
-    replaceUnconfirmedOnly?: boolean | null;
-    requestedBy?: number | null;
-}
-
-export interface GraphExtractionBatchCancelCommand {
-    batchJobId: number;
-    requestedBy?: number | null;
 }
 
 export interface GraphExtractionBatchCancelRecord {

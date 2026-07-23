@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as service from "./graph-extraction-service";
-import type { GraphExtractionCreateCommand } from "./graph-extraction-types";
+import type { GraphExtractionCreateCommand } from "./graph-extraction-service";
 
 interface CapturedCall {
     body: unknown;

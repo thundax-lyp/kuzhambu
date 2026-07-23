@@ -12,8 +12,10 @@ import * as service from "./graph-extraction-service";
 import type {
     GraphExtractionCreateCommand,
     GraphExtractionRegenerateCommand,
+    GraphExtractionTaskPageQuery
+} from "./graph-extraction-service";
+import type {
     GraphExtractionTriggerSource,
-    GraphExtractionTaskPageQuery,
     GraphExtractionTaskRecord
 } from "./graph-extraction-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
