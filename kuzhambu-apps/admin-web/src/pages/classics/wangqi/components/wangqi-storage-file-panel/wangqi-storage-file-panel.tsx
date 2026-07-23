@@ -2,13 +2,14 @@ import { DownloadOutlined, EyeOutlined, ReloadOutlined, UploadOutlined } from "@
 import { Descriptions, Empty, Typography, Upload } from "antd";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
-import * as wangqiService from "../wangqi-service";
+import * as wangqiService from "@/pages/classics/wangqi/wangqi-service";
 import type {
     WangqiDocumentRecord,
     WangqiSourceFileContentMode,
     WangqiSourceFileRecord
-} from "../wangqi-types";
+} from "@/pages/classics/wangqi/wangqi-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
+import "./wangqi-storage-file-panel.css";
 
 const { Text } = Typography;
 

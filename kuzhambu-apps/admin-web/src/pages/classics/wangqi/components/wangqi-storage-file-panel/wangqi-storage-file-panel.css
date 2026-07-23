@@ -1,0 +1,18 @@
+.wangqi-storage-file-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 14px;
+    background: var(--wangqi-panel-bg);
+    border: 1px solid var(--wangqi-panel-border);
+    border-radius: 8px;
+}
+
+.wangqi-storage-file-panel-actions {
+    justify-content: flex-start;
+}
+
+.wangqi-storage-file-panel-note {
+    font-size: 12px;
+}
