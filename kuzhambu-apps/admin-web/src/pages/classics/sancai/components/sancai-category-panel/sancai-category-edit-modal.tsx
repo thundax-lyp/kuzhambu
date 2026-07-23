@@ -2,8 +2,8 @@ import { Form, Input, Select } from "antd";
 import { useState } from "react";
 import { KuzhambuModal } from "@/components/kuzhambu-modal";
 import type { DictItem } from "@/types/dict";
-import { toCategoryFormValues, type SancaiCategoryFormValues } from "./sancai-form-values";
-import type { SancaiCategoryRecord } from "../sancai-types";
+import { toCategoryFormValues, type SancaiCategoryFormValues } from "../sancai-form-values";
+import type { SancaiCategoryRecord } from "@/pages/classics/sancai/sancai-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 interface SancaiCategoryEditDrawerModalProps {
