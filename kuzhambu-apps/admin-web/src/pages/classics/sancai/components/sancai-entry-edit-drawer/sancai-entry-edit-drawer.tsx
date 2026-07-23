@@ -8,6 +8,7 @@ import { KuzhambuSegmentedDrawer } from "@/components/kuzhambu-segmented-drawer"
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { SancaiEntryBasicSection } from "./sancai-entry-basic-section";
+import { openSancaiEntryPreviewWindow } from "./sancai-entry-preview-window";
 import { SancaiEntryVisualSection } from "./sancai-entry-visual-section";
 import { toEntryFormValues, type SancaiEntryFormValues } from "../sancai-form-values";
 import type { SancaiVisualAssetRefinementCapability } from "@/pages/classics/sancai/sancai-entry-service";
@@ -51,13 +52,6 @@ const selectCurrentVisualAsset = (assets: SancaiVisualAssetRecord[]) => {
         .sort((left, right) => (right.versionNo ?? 0) - (left.versionNo ?? 0))[0];
 };
 
-const readVisualAssetTitle = (asset: SancaiVisualAssetRecord | undefined) => {
-    if (!asset) {
-        return "未选择视觉处理";
-    }
-    return `处理记录 ${asset.versionNo ?? asset.visualAssetId ?? asset.id ?? "-"}`;
-};
-
 const isSameStorageObjectId = (
     left: number | string | null | undefined,
     right: number | string | null | undefined
@@ -67,15 +61,6 @@ const isSameStorageObjectId = (
 
 const resolveStorageUrl = (url?: string | null) => {
     return url ? toAuthenticatedResourceUrl(url) : undefined;
-};
-
-const escapeHtml = (value?: string | number | null) => {
-    return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
 };
 
 interface SancaiEntryEditDrawerProps {
@@ -445,53 +430,13 @@ export const SancaiEntryEditDrawer = ({
     ) : null;
 
     const openPreviewWindow = () => {
-        const imageUrl =
-            previewUrl && typeof window !== "undefined"
-                ? new URL(previewUrl, window.location.origin).toString()
-                : "";
-        const visualUrl =
-            generatedPreviewUrl && typeof window !== "undefined"
-                ? new URL(generatedPreviewUrl, window.location.origin).toString()
-                : "";
-        const html = `<!doctype html>
-<html lang="zh-CN">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>${escapeHtml(form.title || "三才图会条目预览")}</title>
-<style>
-body{margin:0;background:#f7f1e6;color:#2f2418;font:16px/1.75 "Songti SC","STSong","Noto Serif CJK SC",serif;}
-main{max-width:960px;margin:0 auto;padding:48px 28px 64px;}
-h1{margin:0 0 10px;font-size:30px;line-height:1.3;font-weight:800;}
-h2{margin:32px 0 10px;font-size:18px;border-bottom:1px solid rgba(124,93,59,.28);padding-bottom:8px;}
-.meta{display:flex;gap:12px;flex-wrap:wrap;color:#7c5d3b;font-size:14px;}
-.paper{margin-top:24px;padding:28px;background:#fffaf0;border:1px solid rgba(124,93,59,.26);box-shadow:0 18px 48px rgba(72,48,24,.08);}
-p{white-space:pre-wrap;margin:0;}
-img{display:block;max-width:100%;height:auto;border:1px solid rgba(124,93,59,.24);background:#fffaf0;}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;}
-</style>
-</head>
-<body>
-<main>
-<h1>${escapeHtml(form.title || "未命名条目")}</h1>
-<div class="meta">
-<span>可见性：${escapeHtml(form.visibility)}</span>
-<span>当前视觉处理记录：${escapeHtml(readVisualAssetTitle(currentVisualAsset))}</span>
-</div>
-<section class="paper">
-<h2>原文</h2><p>${escapeHtml(form.originalText || "-")}</p>
-<h2>译文</h2><p>${escapeHtml(form.translationText || "-")}</p>
-<h2>摘要</h2><p>${escapeHtml(form.summary || "-")}</p>
-${imageUrl || visualUrl ? `<h2>图像</h2><div class="grid">${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="条目图片" />` : ""}${visualUrl ? `<img src="${escapeHtml(visualUrl)}" alt="视觉处理生成图" />` : ""}</div>` : ""}
-${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtml(visualAssetFormValue.visualDescription)}</p>` : ""}
-</section>
-</main>
-</body>
-</html>`;
-        const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-        const url = URL.createObjectURL(blob);
-        window.open(url, "_blank", "noopener,noreferrer");
-        window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+        openSancaiEntryPreviewWindow({
+            currentVisualAsset,
+            form,
+            imageUrl: previewUrl,
+            visualDescription: visualAssetFormValue?.visualDescription,
+            visualUrl: generatedPreviewUrl
+        });
     };
 
     const formProps = {
