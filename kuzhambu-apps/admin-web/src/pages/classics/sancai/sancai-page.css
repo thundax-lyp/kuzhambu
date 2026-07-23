@@ -156,34 +156,6 @@ html[data-theme="dark"] .sancai-form-field {
     justify-items: start;
 }
 
-.sancai-entry-ai-text-field {
-    display: grid;
-    min-width: 0;
-    gap: 10px;
-    justify-items: start;
-}
-
-.sancai-entry-ai-text-button.ant-btn {
-    color: var(--sancai-accent);
-    background: var(--sancai-accent-soft);
-    border-color: var(--sancai-accent-line);
-    box-shadow: none;
-}
-
-.sancai-entry-ai-text-button.ant-btn:hover,
-.sancai-entry-ai-text-button.ant-btn:focus-visible {
-    color: var(--sancai-accent);
-    background: color-mix(in srgb, var(--sancai-accent-soft) 76%, var(--sancai-panel) 24%);
-    border-color: var(--sancai-accent);
-}
-
-.sancai-entry-ai-text-button.ant-btn[disabled],
-.sancai-entry-ai-text-button.ant-btn[disabled]:hover {
-    color: var(--text-tertiary);
-    background: var(--surface-muted);
-    border-color: var(--border-subtle);
-}
-
 .sancai-entry-image-frame {
     display: grid;
     width: min(100%, 280px);

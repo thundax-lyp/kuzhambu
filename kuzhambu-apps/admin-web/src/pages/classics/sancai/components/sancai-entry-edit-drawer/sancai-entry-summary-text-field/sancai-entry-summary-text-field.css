@@ -1,0 +1,27 @@
+.sancai-entry-summary-text-field {
+    display: grid;
+    min-width: 0;
+    gap: 10px;
+    justify-items: start;
+}
+
+.sancai-entry-summary-text-field-button.ant-btn {
+    color: var(--sancai-accent);
+    background: var(--sancai-accent-soft);
+    border-color: var(--sancai-accent-line);
+    box-shadow: none;
+}
+
+.sancai-entry-summary-text-field-button.ant-btn:hover,
+.sancai-entry-summary-text-field-button.ant-btn:focus-visible {
+    color: var(--sancai-accent);
+    background: color-mix(in srgb, var(--sancai-accent-soft) 76%, var(--sancai-panel) 24%);
+    border-color: var(--sancai-accent);
+}
+
+.sancai-entry-summary-text-field-button.ant-btn[disabled],
+.sancai-entry-summary-text-field-button.ant-btn[disabled]:hover {
+    color: var(--text-tertiary);
+    background: var(--surface-muted);
+    border-color: var(--border-subtle);
+}

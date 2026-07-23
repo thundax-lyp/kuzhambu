@@ -10,11 +10,9 @@ import type { AiCandidateRecord } from "@/pages/classics/common/ai-candidate-typ
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { readSancaiAiTextFieldConfig } from "../sancai-entry-ai-text-config";
-import type { SancaiAiTextField } from "../sancai-entry-ai-text-config";
 import { SancaiEntryBasicSection } from "./sancai-entry-basic-section";
-import { SancaiEntrySummaryModal } from "../sancai-entry-summary-modal";
-import { SancaiEntryTranslationModal } from "../sancai-entry-translation-modal";
+import type { SancaiEntrySummaryModalProps } from "./sancai-entry-summary-text-field";
+import type { SancaiEntryTranslationModalProps } from "./sancai-entry-translation-text-field";
 import { SancaiEntryVisualSection } from "./sancai-entry-visual-section";
 import { toEntryFormValues, type SancaiEntryFormValues } from "../sancai-form-values";
 import type { SancaiVisualAssetRefinementCapability } from "@/pages/classics/sancai/sancai-entry-service";
@@ -27,6 +25,7 @@ import type {
 } from "@/pages/classics/sancai/sancai-types";
 import "./sancai-entry-edit-drawer.css";
 
+type SancaiAiTextField = "translate" | "summary";
 type SancaiEntryEditDrawerSection = "basic" | "visual" | "tags" | "qa" | "versions";
 const AI_TEXT_CANDIDATE_POLL_INTERVAL_MS = 3000;
 const RUNNING_REFINEMENT_STATUSES = new Set(["PENDING", "RUNNING"]);
@@ -395,8 +394,7 @@ export const SancaiEntryEditDrawer = ({
                 setTranslationModalOpen(false);
             }
             messageApi.success(
-                readSancaiAiTextFieldConfig(command.capability as SancaiAiTextField)
-                    ?.applyMessage || "AI 候选已应用"
+                command.capability === "summary" ? "摘要已写入基础信息" : "译文已写入基础信息"
             );
         },
         onError: (error) => {
@@ -646,10 +644,9 @@ export const SancaiEntryEditDrawer = ({
         if (!entryId) {
             return false;
         }
-        const aiTextConfig = readSancaiAiTextFieldConfig(field);
         const createTask = field === "summary" ? onCreateSummaryTask : onCreateTranslationTask;
         if (!createTask) {
-            messageApi.warning(`请先保存条目后再使用 ${aiTextConfig.fieldLabel}`);
+            messageApi.warning(`请先保存条目后再使用 ${field === "summary" ? "AI摘要" : "AI翻译"}`);
             return false;
         }
         if (!form.originalText?.trim()) {
@@ -683,7 +680,6 @@ export const SancaiEntryEditDrawer = ({
         if (!entryId) {
             return;
         }
-        const appliedConfig = readSancaiAiTextFieldConfig(field);
         const resultPayload = draft;
         if (candidate) {
             applyAiTextCandidateMutation.mutate({
@@ -694,7 +690,7 @@ export const SancaiEntryEditDrawer = ({
                 objectId: candidate.objectId,
                 resultFormat: candidate.resultFormat?.trim() || "TEXT",
                 resultPayload,
-                changeSummary: appliedConfig.candidateChangeSummary
+                changeSummary: field === "summary" ? "AI 应用：摘要" : "AI 应用：译文"
             });
             return;
         }
@@ -707,7 +703,7 @@ export const SancaiEntryEditDrawer = ({
         } else {
             setTranslationModalOpen(false);
         }
-        messageApi.success(appliedConfig.applyMessage);
+        messageApi.success(field === "summary" ? "摘要已写入基础信息" : "译文已写入基础信息");
     };
     const changeCategory = (categoryId: number | null) => {
         setForm((currentForm) => {
@@ -759,49 +755,43 @@ export const SancaiEntryEditDrawer = ({
         return null;
     }
 
-    const summaryModal = (
-        <SancaiEntrySummaryModal
-            aiTextDraft={summaryDraft}
-            form={form}
-            hasRunningAiTextTask={hasRunningSummaryTask}
-            isAiTextApplyDisabled={isSummaryApplyDisabled}
-            isAiTextCandidateFetching={summaryCandidatesQuery.isFetching}
-            isAiTextCandidateLoadError={summaryCandidatesQuery.isError}
-            isApplyingAiText={applyAiTextCandidateMutation.isPending}
-            isCreatingAiTextTask={isCreatingSummaryTask}
-            latestAiTextTask={latestSummaryTask}
-            open={summaryModalOpen}
-            onApply={() => applyAiTextDraft("summary", summaryDraft, loadedSummaryCandidate)}
-            onCancel={closeSummaryModal}
-            onFetchTask={(taskId) => aiRefinementTaskService.getTask({ taskId: Number(taskId) })}
-            onRequestTask={() => requestAiTextTask("summary")}
-            onTaskChange={syncSummaryTask}
-            onTextDraftChange={setSummaryDraft}
-        />
-    );
+    const summaryModalProps: SancaiEntrySummaryModalProps = {
+        aiTextDraft: summaryDraft,
+        form,
+        hasRunningAiTextTask: hasRunningSummaryTask,
+        isAiTextApplyDisabled: isSummaryApplyDisabled,
+        isAiTextCandidateFetching: summaryCandidatesQuery.isFetching,
+        isAiTextCandidateLoadError: summaryCandidatesQuery.isError,
+        isApplyingAiText: applyAiTextCandidateMutation.isPending,
+        isCreatingAiTextTask: isCreatingSummaryTask,
+        latestAiTextTask: latestSummaryTask,
+        open: summaryModalOpen,
+        onApply: () => applyAiTextDraft("summary", summaryDraft, loadedSummaryCandidate),
+        onCancel: closeSummaryModal,
+        onFetchTask: (taskId) => aiRefinementTaskService.getTask({ taskId: Number(taskId) }),
+        onRequestTask: () => requestAiTextTask("summary"),
+        onTaskChange: syncSummaryTask,
+        onTextDraftChange: setSummaryDraft
+    };
 
-    const translationModal = (
-        <SancaiEntryTranslationModal
-            aiTextDraft={translationDraft}
-            form={form}
-            hasRunningAiTextTask={hasRunningTranslationTask}
-            isAiTextApplyDisabled={isTranslationApplyDisabled}
-            isAiTextCandidateFetching={translationCandidatesQuery.isFetching}
-            isAiTextCandidateLoadError={translationCandidatesQuery.isError}
-            isApplyingAiText={applyAiTextCandidateMutation.isPending}
-            isCreatingAiTextTask={isCreatingTranslationTask}
-            latestAiTextTask={latestTranslationTask}
-            open={translationModalOpen}
-            onApply={() =>
-                applyAiTextDraft("translate", translationDraft, loadedTranslationCandidate)
-            }
-            onCancel={closeTranslationModal}
-            onFetchTask={(taskId) => aiRefinementTaskService.getTask({ taskId: Number(taskId) })}
-            onRequestTask={() => requestAiTextTask("translate")}
-            onTaskChange={syncTranslationTask}
-            onTextDraftChange={setTranslationDraft}
-        />
-    );
+    const translationModalProps: SancaiEntryTranslationModalProps = {
+        aiTextDraft: translationDraft,
+        form,
+        hasRunningAiTextTask: hasRunningTranslationTask,
+        isAiTextApplyDisabled: isTranslationApplyDisabled,
+        isAiTextCandidateFetching: translationCandidatesQuery.isFetching,
+        isAiTextCandidateLoadError: translationCandidatesQuery.isError,
+        isApplyingAiText: applyAiTextCandidateMutation.isPending,
+        isCreatingAiTextTask: isCreatingTranslationTask,
+        latestAiTextTask: latestTranslationTask,
+        open: translationModalOpen,
+        onApply: () => applyAiTextDraft("translate", translationDraft, loadedTranslationCandidate),
+        onCancel: closeTranslationModal,
+        onFetchTask: (taskId) => aiRefinementTaskService.getTask({ taskId: Number(taskId) }),
+        onRequestTask: () => requestAiTextTask("translate"),
+        onTaskChange: syncTranslationTask,
+        onTextDraftChange: setTranslationDraft
+    };
 
     const basicContent = (
         <SancaiEntryBasicSection
@@ -815,8 +805,8 @@ export const SancaiEntryEditDrawer = ({
             mode={mode}
             previewUrl={previewUrl}
             setForm={setForm}
-            summaryModal={summaryModal}
-            translationModal={translationModal}
+            summaryModalProps={summaryModalProps}
+            translationModalProps={translationModalProps}
             volumeOptions={volumeOptions}
             onChangeCategory={changeCategory}
             onOpenSummaryModal={openSummaryModal}
