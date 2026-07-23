@@ -26,6 +26,8 @@ description: Kuzhambu strict current-branch PR code review workflow for direct s
 
 审查时围绕“本 PR 想完成什么”和“diff 实际改变了什么”判断风险，不要把 review 做成逐行风格建议。
 
+如果本 PR 新增或修改共享抽象、公共接口、跨层协议、路由/配置判断、数据访问规则或 worker capability，先提炼它们的使用契约，再按契约审查调用点和边界情况。
+
 ## 审查目标
 
 - 使用 `git diff main...HEAD` 作为本次 PR 的主要审查范围。
@@ -55,10 +57,10 @@ git diff main...HEAD
 
 遵循 `docs/AGENTS.md` 的最小文档加载原则。根据 diff 类型读取必要治理文档：
 
-- Java servers 变更：读取 `docs/00-governance/ARCHITECTURE.md` 和 `docs/00-governance/SERVERS-ARCHITECTURE.md`；涉及目录、命名或模块归属时，再读 `docs/00-governance/SERVERS-ARCHITECTURE-RULES.md`。
-- admin-web 变更：读取 `docs/00-governance/ARCHITECTURE.md` 和 `docs/00-governance/ADMIN-WEB-RULES.md`。
-- portal-web 变更：读取 `docs/00-governance/ARCHITECTURE.md` 和 `docs/00-governance/PORTAL-WEB-RULES.md`。
-- Python workers 变更：读取 `docs/00-governance/ARCHITECTURE.md` 和 `docs/00-governance/WORKERS-RULES.md`。
+- Java servers 变更：读取 `docs/00-governance/ARCHITECTURE.md` 和 `docs/00-governance/SERVERS-ARCHITECTURE.md`；涉及目录、命名、模块归属或依赖方向时，再读 `docs/00-governance/SERVERS-ARCHITECTURE-RULES.md`；涉及数据库、表字段、索引、MyBatis、查询、分页、迁移或缓存真相源时，再读 `docs/00-governance/SERVERS-DATABASE-RULES.md`；涉及业务 ID、ULID、强类型标识或 token 边界时，再读 `docs/00-governance/SERVERS-UNIFIED-ID-DESIGN.md`。
+- admin-web 变更：读取 `docs/00-governance/ARCHITECTURE.md` 和 `docs/00-governance/ADMIN-WEB-RULES.md`；涉及 UI、CSS、页面布局、组件、动效、视觉资产、hero、`testId` 或 `data-testid` 时，再读 `docs/00-governance/UI-RULES.md`。
+- portal-web 变更：读取 `docs/00-governance/ARCHITECTURE.md` 和 `docs/00-governance/PORTAL-WEB-RULES.md`；涉及 UI、CSS、页面布局、组件、动效、视觉资产、hero、`testId` 或 `data-testid` 时，再读 `docs/00-governance/UI-RULES.md`。
+- Python workers 变更：读取 `docs/00-governance/ARCHITECTURE.md` 和 `docs/00-governance/WORKERS-RULES.md`；涉及 worker 能力、接口、流式输出、AI/render 边界或跨服务协议时，再读 `docs/10-requirements/WORKERS-REQUIREMENTS.md`、`docs/30-designs/WORKERS-DESIGN.md` 和相关 `docs/20-interfaces/WORKERS-*-INTERFACE.md`。
 - 文档、TODO、PR 或收口流程变更：读取 `docs/00-governance/DOCUMENT-RULES.md`、`docs/00-governance/TODO-RULES.md` 或 `docs/00-governance/PR-RULES.md` 中与 diff 直接相关的文件。
 
 如果 diff 涉及以下任一关键词或相关接口行为，先阅读 `docs/30-designs/SORT-ORDERING-SPECIAL-DESIGN.md`，并以该专项设计作为排序规则依据：
@@ -69,7 +71,28 @@ git diff main...HEAD
 - `*SortRequest`
 - 排序接口、排序拖拽、排序保存或排序回显
 
+## 审查步骤
+
+1. 推断本 PR 的目标和主要风险区域。
+2. 列出本 PR 新增或修改的共享抽象、公共接口、服务方法、domain/repository 合约、worker capability、hook、layout wrapper、配置 helper、序列化/反序列化工具、路由/状态判断和跨工程协议。
+3. 对每个新增或修改的抽象提炼 1-5 条使用契约。
+4. 扫描本 PR 中所有调用点、迁移点、测试、配置和文档是否满足这些契约。
+5. 对使用 exact string、Set membership、数组 includes、枚举映射、路径前缀、SQL 条件、状态机分支或协议字段判断行为的变更，检查合法边界变体。
+6. 只把明确违反契约、造成回归风险、安全风险、架构边界问题或真实维护阻塞的问题作为 finding。
+
 ## 重点检查
+
+### 0. 新增或修改抽象的契约
+
+如果 diff 新增或修改共享组件、公共 service、应用服务、domain 接口、repository、worker capability、client、hook、layout wrapper、配置 helper、序列化/反序列化工具或通用工具，必须先总结它的使用契约，再扫描本 PR 所有调用点是否违反。
+
+- 输入契约：参数是否允许 null、空集合、非法枚举、缺失字段、超大 payload、重复 ID 或历史数据。
+- 输出契约：返回值、错误码、异常、分页字段、状态字段、空结果语义和 partial result 是否稳定。
+- 生命周期契约：事务、连接、流、文件、异步任务、React state/effect、worker process 是否正确创建和释放。
+- 上下文契约：权限、租户/用户边界、路由、主题、env、profile、locale、timezone、traceId 是否被正确传入或隔离。
+- 结构契约：父子容器、层级依赖、包边界、模块边界、调用方向、wrapper/provider/adapter 是否满足要求。
+- 兼容契约：旧调用方、已有数据、已有 API、已有测试、生产配置和部署环境是否仍兼容。
+- 失败契约：异常是否被吞掉、错误是否错误转换成成功、重试/超时/降级是否造成重复执行或状态不一致。
 
 ### 1. 正确性
 
@@ -105,7 +128,39 @@ git diff main...HEAD
 - MyBatis/SQL 查询条件、分页边界、排序边界和批量操作的数据范围。
 - Python worker 调用的超时、重试、错误回传和跨服务协议兼容性。
 
-### 5. 测试
+### 5. Java servers 契约
+
+如果 diff 涉及 Java servers，必须检查：
+
+- Controller / application / domain / infra 的依赖方向是否符合治理文档。
+- 应用服务事务边界是否覆盖完整写操作，是否把外部 IO 放进不必要的事务。
+- Repository 查询条件是否保持权限、业务范围、生命周期状态、分页边界和排序边界。
+- MyBatis SQL 是否存在漏条件、错字段、N+1、排序不可控或批量范围过宽。
+- DTO / command / response 是否与前端、worker 或公开接口协议一致。
+- 强类型 ID、ULID、token、外部 ID 是否没有退化成裸字符串误用。
+- 异常、幂等、重复提交、并发更新是否有明确语义。
+
+### 6. Python workers 契约
+
+如果 diff 涉及 Python workers，必须检查：
+
+- worker capability 输入/输出 schema 是否与 `docs/20-interfaces/` 协议一致。
+- 流式输出事件顺序、结束事件、错误事件和 partial result 是否稳定。
+- 超时、重试、取消、异常回传是否会让 Java 调用方误判成功或挂起。
+- 文件路径、上传内容、render 输入、AI prompt 参数、第三方 base URL 是否经过边界校验。
+- 大文件、大响应和长任务是否有资源上限和清理逻辑。
+- worker 错误是否包含可诊断信息，同时不泄露密钥、token、prompt 敏感内容。
+
+### 7. 边界变体
+
+如果 diff 使用 exact string、Set membership、数组 includes、枚举映射、路径前缀、SQL 条件、状态机分支或协议字段判断行为，必须检查合法变体：
+
+- 前端路由：trailing slash、base path、嵌套路由、query/hash 和 React Router 实际匹配行为。
+- 后端 API：缺省字段、旧枚举值、空集合、分页边界、排序字段和历史数据。
+- 数据库：null、空字符串、重复值、软删除状态、生命周期状态和唯一性约束。
+- Workers：缺省参数、partial chunk、空结果、错误事件、取消事件和超时事件。
+
+### 8. 测试
 
 - 新增或变更行为是否有测试覆盖。
 - 测试是否覆盖失败路径、边界情况和回归风险。
