@@ -2,9 +2,9 @@ import { FileTextOutlined } from "@ant-design/icons";
 import { App, Form, Input } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { ADMIN_FORM_HORIZONTAL_LAYOUT } from "@/components/form/form-layout";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuAlert } from "@/components/kuzhambu-alert";
+import { KuzhambuForm } from "@/components/kuzhambu-form";
 import { KuzhambuSegmentedDrawer } from "@/components/kuzhambu-segmented-drawer";
 import { KuzhambuSyncTaskModal } from "@/components/kuzhambu-sync-task-modal";
 import type {
@@ -337,11 +337,17 @@ export const WangqiDocumentEditDrawer = ({
             label: "基础信息",
             value: "basic",
             content: (
-                <WangqiDocumentBasicSection
-                    mode={mode}
-                    summaryLocked={summaryLocked}
-                    onOpenSummaryModal={openSummaryModal}
-                />
+                <KuzhambuForm<WangqiDocumentFormValues>
+                    form={form}
+                    colon={false}
+                    className="wangqi-document-edit-drawer-form"
+                >
+                    <WangqiDocumentBasicSection
+                        mode={mode}
+                        summaryLocked={summaryLocked}
+                        onOpenSummaryModal={openSummaryModal}
+                    />
+                </KuzhambuForm>
             )
         },
         {
@@ -389,18 +395,6 @@ export const WangqiDocumentEditDrawer = ({
             destroyOnHidden
             onClose={closeModel}
             onSectionChange={setActiveSection}
-            renderSectionContent={(content) => (
-                <Form<WangqiDocumentFormValues>
-                    form={form}
-                    colon={false}
-                    labelCol={ADMIN_FORM_HORIZONTAL_LAYOUT.labelCol}
-                    layout="horizontal"
-                    wrapperCol={ADMIN_FORM_HORIZONTAL_LAYOUT.wrapperCol}
-                    className="wangqi-document-edit-drawer-form"
-                >
-                    {content}
-                </Form>
-            )}
             footerActions={[
                 {
                     testId: "classics-wangqi-document-cancel-button",
