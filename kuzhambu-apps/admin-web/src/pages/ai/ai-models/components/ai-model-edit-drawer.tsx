@@ -1,8 +1,6 @@
-import { SaveOutlined } from "@ant-design/icons";
 import { App, Form, Input, Select } from "antd";
 import { useState } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import type { AiModelChangeCommand } from "../ai-models-service";
@@ -153,23 +151,17 @@ const AiModelEditDrawerForm = ({
             title={model ? "编辑模型" : "新增模型"}
             size="large"
             onClose={onClose}
-            footer={
-                <div className="ai-models-drawer-footer">
-                    <KuzhambuButton testId="ai-models-cancel-button" onClick={onClose}>
-                        取消
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="ai-models-save-button"
-                        type="primary"
-                        icon={<SaveOutlined />}
-                        disabled={!canEdit}
-                        loading={saving}
-                        onClick={submitForm}
-                    >
-                        保存
-                    </KuzhambuButton>
-                </div>
-            }
+            footerActions={[
+                { testId: "ai-models-cancel-button", title: "取消", action: onClose },
+                {
+                    testId: "ai-models-save-button",
+                    title: "保存",
+                    type: "primary",
+                    disabled: !canEdit,
+                    loading: saving,
+                    action: submitForm
+                }
+            ]}
         >
             <Form {...formProps}>
                 <Form.Item label="模型名称" className="ai-models-form-item-compact">

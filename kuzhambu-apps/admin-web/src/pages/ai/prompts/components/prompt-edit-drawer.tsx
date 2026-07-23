@@ -4,8 +4,7 @@ import {
     DeleteOutlined,
     EyeOutlined,
     PlusOutlined,
-    RetweetOutlined,
-    SaveOutlined
+    RetweetOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Form, Input, Select, Table, Typography } from "antd";
@@ -652,23 +651,17 @@ export const PromptEditDrawer = ({
                 title={template ? "编辑提示词" : "新建提示词"}
                 size="large"
                 onClose={closeDrawer}
-                footer={
-                    <div className="prompts-drawer-footer">
-                        <KuzhambuButton testId="ai-prompts-prompts-cancel-button" onClick={onClose}>
-                            取消
-                        </KuzhambuButton>
-                        <KuzhambuButton
-                            testId="ai-prompts-prompts-save-new-version-button"
-                            type="primary"
-                            icon={<SaveOutlined />}
-                            disabled={!canEdit}
-                            loading={changeMutation.isPending}
-                            onClick={() => void submitTemplate()}
-                        >
-                            {template ? "保存新版本" : "创建模板"}
-                        </KuzhambuButton>
-                    </div>
-                }
+                footerActions={[
+                    { testId: "ai-prompts-prompts-cancel-button", title: "取消", action: onClose },
+                    {
+                        testId: "ai-prompts-prompts-save-new-version-button",
+                        title: template ? "保存新版本" : "创建模板",
+                        type: "primary",
+                        disabled: !canEdit,
+                        loading: changeMutation.isPending,
+                        action: () => void submitTemplate()
+                    }
+                ]}
             >
                 <Form
                     form={form}
