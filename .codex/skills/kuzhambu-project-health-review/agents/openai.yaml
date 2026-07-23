@@ -1,0 +1,4 @@
+interface:
+  display_name: "Kuzhambu Project Health Review"
+  short_description: "Review Kuzhambu project health over a time or PR range."
+  default_prompt: "/project-health-review 最近 7 天"
