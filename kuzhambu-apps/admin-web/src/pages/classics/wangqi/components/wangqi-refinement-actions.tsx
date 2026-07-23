@@ -12,6 +12,7 @@ import type { WangqiQaTaskPair } from "./wangqi-qa-ai-modal";
 import { WangqiQaAiModal } from "./wangqi-qa-ai-modal";
 import { WangqiTagAiModal } from "./wangqi-tag-ai-modal";
 import type { WangqiDocumentRecord } from "../wangqi-types";
+import "./wangqi-refinement-actions.css";
 
 interface WangqiRefinementActionsProps {
     canOpenDiscoveryQa: boolean;
