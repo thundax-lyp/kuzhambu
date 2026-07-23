@@ -1,12 +1,18 @@
-import { Moon, Search, Sun } from "lucide-react";
+import { Menu, Moon, Search, Sun } from "lucide-react";
 import { useEffect, useState, type CSSProperties } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import kuzhambuLogoImage from "@/assets/home/kuzhambu-logo.svg";
 import footerMountainImage from "@/assets/home/portal-home-effect-footer-mountain.png";
 import { Button } from "@/components/ui/button";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import "./portal-effect-theme.css";
 import "./portal-layout.css";
+import "./portal-effect-theme.css";
 
 type PortalTheme = "light" | "dark";
 
@@ -124,6 +130,32 @@ export const PortalLayout = () => {
                         ))}
                     </nav>
                     <div className="portal-effect-header-actions">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="icon-lg"
+                                    className="portal-effect-mobile-menu"
+                                    aria-label="打开门户导航"
+                                    {...(isTestIdExposed
+                                        ? { "data-testid": "portal-header-mobile-menu" }
+                                        : {})}
+                                >
+                                    <Menu aria-hidden="true" data-icon="inline-start" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                                align="start"
+                                className="portal-effect-mobile-menu-content"
+                            >
+                                {navigationItems.map((item) => (
+                                    <DropdownMenuItem key={item.href} asChild>
+                                        <Link to={item.href}>{item.label}</Link>
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                         <Link
                             className="portal-effect-search"
                             to="/discovery/search"
