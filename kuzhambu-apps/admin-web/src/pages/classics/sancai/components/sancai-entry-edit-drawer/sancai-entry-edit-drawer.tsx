@@ -9,21 +9,22 @@ import type { AiCandidateRecord } from "@/pages/classics/common/ai-candidate-typ
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { readSancaiAiTextFieldConfig } from "./sancai-entry-ai-text-config";
-import type { SancaiAiTextField } from "./sancai-entry-ai-text-config";
-import { SancaiEntryBasicSection } from "./sancai-entry-basic-section";
-import { SancaiEntrySummaryModal } from "./sancai-entry-summary-modal";
-import { SancaiEntryTranslationModal } from "./sancai-entry-translation-modal";
-import { SancaiEntryVisualSection } from "./sancai-entry-visual-section";
-import { toEntryFormValues, type SancaiEntryFormValues } from "./sancai-form-values";
-import type { SancaiVisualAssetRefinementCapability } from "../sancai-entry-service";
-import * as entryService from "../sancai-entry-service";
+import { readSancaiAiTextFieldConfig } from "../sancai-entry-ai-text-config";
+import type { SancaiAiTextField } from "../sancai-entry-ai-text-config";
+import { SancaiEntryBasicSection } from "../sancai-entry-basic-section";
+import { SancaiEntrySummaryModal } from "../sancai-entry-summary-modal";
+import { SancaiEntryTranslationModal } from "../sancai-entry-translation-modal";
+import { SancaiEntryVisualSection } from "../sancai-entry-visual-section";
+import { toEntryFormValues, type SancaiEntryFormValues } from "../sancai-form-values";
+import type { SancaiVisualAssetRefinementCapability } from "@/pages/classics/sancai/sancai-entry-service";
+import * as entryService from "@/pages/classics/sancai/sancai-entry-service";
 import type {
     SancaiEntryImageContentMode,
     SancaiEntryImageRecord,
     SancaiEntryRecord,
     SancaiVisualAssetRecord
-} from "../sancai-types";
+} from "@/pages/classics/sancai/sancai-types";
+import "./sancai-entry-edit-drawer.css";
 
 type SancaiEntryEditDrawerSection = "basic" | "visual" | "tags" | "qa" | "versions";
 const AI_TEXT_CANDIDATE_POLL_INTERVAL_MS = 3000;
