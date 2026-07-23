@@ -8,7 +8,7 @@ import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { SancaiEntrySummaryTextField } from "./sancai-entry-summary-text-field";
 import { SancaiEntryTranslationTextField } from "./sancai-entry-translation-text-field";
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
-import type { SancaiEntryFormValues } from "@/pages/classics/sancai/components/sancai-form-values";
+import type { SancaiEntryFormValues } from "@/pages/classics/sancai/components/sancai-entry-edit-drawer/sancai-entry-form-values";
 import type { SancaiEntryImageRecord } from "@/pages/classics/sancai/sancai-types";
 import "./sancai-entry-basic-section.css";
 
