@@ -7,7 +7,6 @@ import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import type { OptionsRecord } from "@/types/options";
 import type { RoleSaveCommand } from "../role-service";
 import type { RoleRecord } from "../role-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -107,21 +106,16 @@ export const RoleEditDrawer = ({
             open={Boolean(open)}
             size="middle"
             onClose={onClose}
-            footer={
-                <div className="role-edit-drawer-footer">
-                    <KuzhambuButton testId="system-role-role-cancel-button" onClick={onClose}>
-                        取消
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="system-role-role-save-button"
-                        type="primary"
-                        loading={saving}
-                        onClick={saveRole}
-                    >
-                        保存
-                    </KuzhambuButton>
-                </div>
-            }
+            footerActions={[
+                { testId: "system-role-role-cancel-button", title: "取消", action: onClose },
+                {
+                    testId: "system-role-role-save-button",
+                    title: "保存",
+                    type: "primary",
+                    loading: saving,
+                    action: saveRole
+                }
+            ]}
         >
             <Form<RoleFormValues> form={form} layout="vertical" className="role-edit-drawer-form">
                 <Form.Item name="id" hidden>
