@@ -1,8 +1,8 @@
-import { App, Form, Input, Select } from "antd";
+import { App, Input, Select } from "antd";
 import { useState } from "react";
-import { ADMIN_FORM_HORIZONTAL_LAYOUT } from "@/components/form/form-layout";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
+import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import type { AiModelChangeCommand } from "../ai-models-service";
 import type { AiModelRecord } from "../ai-models-types";
@@ -140,10 +140,7 @@ const AiModelEditDrawerForm = ({
     const formProps = {
         className: "ai-models-form",
         colon: false,
-        component: "div" as const,
-        labelCol: ADMIN_FORM_HORIZONTAL_LAYOUT.labelCol,
-        layout: "horizontal" as const,
-        wrapperCol: ADMIN_FORM_HORIZONTAL_LAYOUT.wrapperCol
+        component: "div" as const
     };
 
     return (
@@ -165,8 +162,8 @@ const AiModelEditDrawerForm = ({
                 }
             ]}
         >
-            <Form {...formProps}>
-                <Form.Item label="模型名称" className="ai-models-form-item-compact">
+            <KuzhambuForm {...formProps}>
+                <KuzhambuFormItem label="模型名称">
                     <Input
                         aria-label="AI模型名称"
                         placeholder="对后台用户展示的名称"
@@ -178,8 +175,8 @@ const AiModelEditDrawerForm = ({
                             }))
                         }
                     />
-                </Form.Item>
-                <Form.Item label="供应商" className="ai-models-form-item-compact">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem label="供应商">
                     <Select
                         aria-label="AI模型供应商"
                         options={API_SOURCE_OPTIONS.map((value) => ({
@@ -194,8 +191,8 @@ const AiModelEditDrawerForm = ({
                             }))
                         }
                     />
-                </Form.Item>
-                <Form.Item label="服务地址" className="ai-models-form-item-wide">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem label="服务地址" layoutSize="large">
                     <Input
                         aria-label="AI模型服务地址"
                         placeholder="https://api.example.com/v1"
@@ -207,8 +204,8 @@ const AiModelEditDrawerForm = ({
                             }))
                         }
                     />
-                </Form.Item>
-                <Form.Item label="API 密钥" className="ai-models-form-item-wide">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem label="API 密钥" layoutSize="large">
                     <Input.Password
                         aria-label="AI模型API密钥"
                         placeholder={model?.apiKeyConfigured ? "已配置，留空则不更新" : ""}
@@ -220,8 +217,8 @@ const AiModelEditDrawerForm = ({
                             }))
                         }
                     />
-                </Form.Item>
-                <Form.Item label="模型标识" className="ai-models-form-item-wide">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem label="模型标识" layoutSize="large">
                     <Input
                         aria-label="AI模型标识"
                         placeholder="gpt-4o"
@@ -233,8 +230,8 @@ const AiModelEditDrawerForm = ({
                             }))
                         }
                     />
-                </Form.Item>
-                <Form.Item label="能力" className="ai-models-form-item-medium">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem label="能力" layoutSize="middle">
                     <Select
                         aria-label="AI模型能力"
                         mode="multiple"
@@ -250,8 +247,8 @@ const AiModelEditDrawerForm = ({
                             }))
                         }
                     />
-                </Form.Item>
-                <Form.Item label="状态">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem label="状态" layoutSize="middle">
                     <KuzhambuSwitch
                         aria-label="AI模型状态"
                         checked={form.enabled}
@@ -264,8 +261,8 @@ const AiModelEditDrawerForm = ({
                             }))
                         }
                     />
-                </Form.Item>
-                <Form.Item label="默认参数 JSON" className="ai-models-form-item-top">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem label="默认参数 JSON" layoutSize="large">
                     <Input.TextArea
                         aria-label="AI模型默认参数JSON"
                         value={form.defaultParamsJson ?? ""}
@@ -277,8 +274,8 @@ const AiModelEditDrawerForm = ({
                             }))
                         }
                     />
-                </Form.Item>
-                <Form.Item label="说明" className="ai-models-form-item-top">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem label="说明" layoutSize="large">
                     <Input.TextArea
                         aria-label="AI模型说明"
                         value={form.description ?? ""}
@@ -290,8 +287,8 @@ const AiModelEditDrawerForm = ({
                             }))
                         }
                     />
-                </Form.Item>
-            </Form>
+                </KuzhambuFormItem>
+            </KuzhambuForm>
         </KuzhambuDrawer>
     );
 };
