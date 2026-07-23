@@ -4,10 +4,11 @@ import {
     TranslationOutlined,
     UploadOutlined
 } from "@ant-design/icons";
-import { Col, Form, Image, Input, Row, Select, Switch, Typography, Upload } from "antd";
+import { Image, Input, Select, Switch, Typography, Upload } from "antd";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { SancaiEntryFormValues } from "../sancai-form-values";
 import type { SancaiEntryImageRecord } from "@/pages/classics/sancai/sancai-types";
@@ -69,37 +70,31 @@ export const SancaiEntryBasicSection = ({
 }: SancaiEntryBasicSectionProps) => {
     return (
         <>
-            <Row gutter={10}>
-                <Col xs={24} md={12}>
-                    <Form.Item label="门类">
-                        <Select
-                            aria-label="三才图会条目门类"
-                            placeholder="选择门类"
-                            options={categoryOptions}
-                            value={form.categoryId ?? undefined}
-                            onChange={(value) => onChangeCategory(value ?? null)}
-                        />
-                    </Form.Item>
-                </Col>
-                <Col xs={24} md={12}>
-                    <Form.Item label="卷">
-                        <Select
-                            aria-label="三才图会条目卷"
-                            disabled={!form.categoryId}
-                            placeholder="选择卷"
-                            options={volumeOptions}
-                            value={form.volumeId ?? undefined}
-                            onChange={(value) =>
-                                setForm((currentForm) => ({
-                                    ...currentForm,
-                                    volumeId: value ?? null
-                                }))
-                            }
-                        />
-                    </Form.Item>
-                </Col>
-            </Row>
-            <Form.Item label="标题">
+            <KuzhambuFormItem label="门类">
+                <Select
+                    aria-label="三才图会条目门类"
+                    placeholder="选择门类"
+                    options={categoryOptions}
+                    value={form.categoryId ?? undefined}
+                    onChange={(value) => onChangeCategory(value ?? null)}
+                />
+            </KuzhambuFormItem>
+            <KuzhambuFormItem label="卷">
+                <Select
+                    aria-label="三才图会条目卷"
+                    disabled={!form.categoryId}
+                    placeholder="选择卷"
+                    options={volumeOptions}
+                    value={form.volumeId ?? undefined}
+                    onChange={(value) =>
+                        setForm((currentForm) => ({
+                            ...currentForm,
+                            volumeId: value ?? null
+                        }))
+                    }
+                />
+            </KuzhambuFormItem>
+            <KuzhambuFormItem label="标题" layoutSize="large">
                 <Input
                     aria-label="三才图会条目标题"
                     value={form.title}
@@ -110,8 +105,8 @@ export const SancaiEntryBasicSection = ({
                         }))
                     }
                 />
-            </Form.Item>
-            <Form.Item label="原文" className="sancai-entry-edit-drawer-form-item-top">
+            </KuzhambuFormItem>
+            <KuzhambuFormItem label="原文" layoutSize="large">
                 <Input.TextArea
                     aria-label="三才图会原文"
                     value={form.originalText}
@@ -123,8 +118,8 @@ export const SancaiEntryBasicSection = ({
                         }))
                     }
                 />
-            </Form.Item>
-            <Form.Item label="译文" className="sancai-entry-edit-drawer-form-item-top">
+            </KuzhambuFormItem>
+            <KuzhambuFormItem label="译文" layoutSize="large">
                 <div className="sancai-entry-ai-text-field">
                     <Input.TextArea
                         aria-label="三才图会译文"
@@ -151,8 +146,8 @@ export const SancaiEntryBasicSection = ({
                     ) : null}
                     {translationModal}
                 </div>
-            </Form.Item>
-            <Form.Item label="摘要" className="sancai-entry-edit-drawer-form-item-top">
+            </KuzhambuFormItem>
+            <KuzhambuFormItem label="摘要" layoutSize="large">
                 <div className="sancai-entry-ai-text-field">
                     <Input.TextArea
                         aria-label="三才图会摘要"
@@ -179,8 +174,8 @@ export const SancaiEntryBasicSection = ({
                     ) : null}
                     {summaryModal}
                 </div>
-            </Form.Item>
-            <Form.Item label="可见性">
+            </KuzhambuFormItem>
+            <KuzhambuFormItem label="可见性" layoutSize="large">
                 <Switch
                     checked={form.visibility === "PUBLIC"}
                     checkedChildren="公开"
@@ -193,9 +188,9 @@ export const SancaiEntryBasicSection = ({
                         }))
                     }
                 />
-            </Form.Item>
+            </KuzhambuFormItem>
             {entryId ? (
-                <Form.Item label="图片">
+                <KuzhambuFormItem label="图片" layoutSize="large">
                     {imageContent || (
                         <div className="sancai-entry-image-field">
                             {currentImage && previewUrl ? (
@@ -249,7 +244,7 @@ export const SancaiEntryBasicSection = ({
                             </KuzhambuSpace>
                         </div>
                     )}
-                </Form.Item>
+                </KuzhambuFormItem>
             ) : null}
         </>
     );
