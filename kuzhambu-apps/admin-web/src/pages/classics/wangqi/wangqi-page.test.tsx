@@ -538,7 +538,7 @@ describe("WangqiPage", () => {
         expect(screen.queryByLabelText("王圻文档正文预览")).not.toBeInTheDocument();
     }, 30000);
 
-    it("opens summary ai modal and creates task inside the modal", async () => {
+    it("opens summary ai modal and locks create while task is running", async () => {
         const user = userEvent.setup();
 
         vi.mocked(aiRefinementTaskService.pageTasks).mockImplementation(async (query) => {
@@ -574,27 +574,19 @@ describe("WangqiPage", () => {
         await user.click(await screen.findByTestId("wangqi-document-edit-1-button"));
         await user.click(await screen.findByRole("button", { name: "AI 摘要" }));
 
-        expect(await screen.findByText("摘要任务运行中")).toBeInTheDocument();
-        expect(
-            await screen.findByTestId("classics-wangqi-document-summary-ai-generate-button")
-        ).toBeInTheDocument();
+        expect(await screen.findByText("摘要任务排队中")).toBeInTheDocument();
+        const generateButton = await screen.findByTestId(
+            "classics-wangqi-document-summary-ai-generate-button"
+        );
+        expect(generateButton).toBeDisabled();
         expect(screen.getByLabelText("AI摘要当前摘要")).toHaveValue("记录王圻古籍条目。");
         expect(screen.getByLabelText("AI摘要参考正文")).toHaveValue("## 王圻");
-        expect(await screen.findByLabelText("AI摘要候选摘要")).toHaveValue("文档摘要候选");
+        expect(await screen.findByLabelText("AI摘要候选摘要")).toBeDisabled();
         expect(aiRefinementTaskService.createTask).not.toHaveBeenCalled();
 
-        await user.click(screen.getByTestId("classics-wangqi-document-summary-ai-generate-button"));
+        await user.click(generateButton);
 
-        await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(1));
-        expect(await screen.findByText("摘要任务排队中")).toBeInTheDocument();
-        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).toEqual(
-            expect.objectContaining({
-                capability: "summary",
-                contentType: "WANGQI_DOCUMENT",
-                contentId: 1,
-                requestedBy: 99
-            })
-        );
+        expect(aiRefinementTaskService.createTask).not.toHaveBeenCalled();
     }, 30000);
 
     it("applies summary ai draft back to the basic form", async () => {

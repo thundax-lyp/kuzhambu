@@ -28,6 +28,8 @@ interface WangqiRefinementActionsProps {
     onCreateTagTask: (existingTags: string[]) => void;
     onOpenSingleDocumentQa: (document: WangqiDocumentRecord) => void;
     onRejectedCandidate: () => void | Promise<void>;
+    onQaTaskChange?: (task: AiRefinementTaskRecord | null) => void;
+    onTagTaskChange?: (task: AiRefinementTaskRecord | null) => void;
 }
 
 export const WangqiRefinementActions = ({
@@ -44,7 +46,9 @@ export const WangqiRefinementActions = ({
     onCreateQaTask,
     onCreateTagTask,
     onOpenSingleDocumentQa,
-    onRejectedCandidate
+    onRejectedCandidate,
+    onQaTaskChange,
+    onTagTaskChange
 }: WangqiRefinementActionsProps) => {
     if (section === "tags") {
         return (
@@ -61,6 +65,7 @@ export const WangqiRefinementActions = ({
                             tagTrackingTask={tagTrackingTask}
                             onChanged={onChanged}
                             onCreateTagTask={onCreateTagTask}
+                            onTaskChange={onTagTaskChange}
                         />
                     }
                     onChanged={onChanged}
@@ -99,6 +104,7 @@ export const WangqiRefinementActions = ({
                             qaTrackingTask={qaTrackingTask}
                             onChanged={onChanged}
                             onCreateQaTask={onCreateQaTask}
+                            onTaskChange={onQaTaskChange}
                         />
                     </KuzhambuSpaceCompact>
                 }

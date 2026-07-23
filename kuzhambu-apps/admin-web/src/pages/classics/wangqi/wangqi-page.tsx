@@ -1012,6 +1012,7 @@ export const WangqiPage = () => {
                         ? () => createRefinementTask(editingDocumentData, "summary")
                         : undefined
                 }
+                onSummaryTaskChange={setSummaryTrackingTask}
                 onClose={closeWangqiDocumentEditDrawer}
                 onSave={(command) => saveMutation.mutate(command)}
                 tagContent={
@@ -1038,7 +1039,9 @@ export const WangqiPage = () => {
                                 })
                             }
                             onOpenSingleDocumentQa={openSingleDocumentQa}
+                            onQaTaskChange={setQaTrackingTask}
                             onRejectedCandidate={invalidateWangqiCandidates}
+                            onTagTaskChange={setTagTrackingTask}
                         />
                     ) : null
                 }
@@ -1066,7 +1069,9 @@ export const WangqiPage = () => {
                                 })
                             }
                             onOpenSingleDocumentQa={openSingleDocumentQa}
+                            onQaTaskChange={setQaTrackingTask}
                             onRejectedCandidate={invalidateWangqiCandidates}
+                            onTagTaskChange={setTagTrackingTask}
                         />
                     ) : null
                 }
