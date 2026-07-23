@@ -1,8 +1,10 @@
 import { PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Card, Col, Form, Row, Select, Tooltip } from "antd";
+import { App, Card, Form, Select, Tooltip } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { CapabilityMappingDrawer } from "./components/capability-mapping-drawer";
@@ -16,7 +18,6 @@ import type {
     AiCapabilityModelRecord,
     AiCapabilityRecord
 } from "./capability-mappings-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./capability-mappings-page.css";
 
 const SCOPE_OPTIONS = [
@@ -235,73 +236,59 @@ export const CapabilityMappingsPage = () => {
             }
         >
             <Card className="capability-mappings-filter-card">
-                <Form className="capability-mappings-filter-form">
-                    <Row gutter={12}>
-                        <Col xs={24} sm={12} md={8} lg={6}>
-                            <Form.Item label="scope">
-                                <Select
-                                    allowClear
-                                    className="capability-mappings-filter-control"
-                                    options={SCOPE_OPTIONS}
-                                    value={query.scope ?? undefined}
-                                    onChange={(scope) =>
-                                        setQuery((current) => ({
-                                            ...current,
-                                            scope: scope ?? null
-                                        }))
-                                    }
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} sm={12} md={8} lg={6}>
-                            <Form.Item label="capability">
-                                <Select
-                                    allowClear
-                                    className="capability-mappings-filter-control"
-                                    options={capabilityOptions}
-                                    value={query.capability ?? undefined}
-                                    onChange={(capability) =>
-                                        setQuery((current) => ({
-                                            ...current,
-                                            capability: capability ?? null
-                                        }))
-                                    }
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} sm={12} md={8} lg={6}>
-                            <Form.Item label="enabled">
-                                <Select
-                                    allowClear
-                                    className="capability-mappings-filter-control"
-                                    value={
-                                        query.enabled == null ? undefined : String(query.enabled)
-                                    }
-                                    options={[
-                                        { label: "启用", value: "true" },
-                                        { label: "禁用", value: "false" }
-                                    ]}
-                                    onChange={(enabled) =>
-                                        setQuery((current) => ({
-                                            ...current,
-                                            enabled: parseEnabled(enabled)
-                                        }))
-                                    }
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} sm={12} md={8} lg={6}>
-                            <Form.Item>
-                                <KuzhambuButton
-                                    testId="ai-capability-mappings-capability-mappings-reset-button"
-                                    onClick={() => setQuery({})}
-                                >
-                                    重置
-                                </KuzhambuButton>
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                </Form>
+                <KuzhambuForm className="capability-mappings-filter-form">
+                    <KuzhambuFormItem label="scope" layoutSize="small">
+                        <Select
+                            allowClear
+                            className="capability-mappings-filter-control"
+                            options={SCOPE_OPTIONS}
+                            value={query.scope ?? undefined}
+                            onChange={(scope) =>
+                                setQuery((current) => ({
+                                    ...current,
+                                    scope: scope ?? null
+                                }))
+                            }
+                        />
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem label="capability" layoutSize="small">
+                        <Select
+                            allowClear
+                            className="capability-mappings-filter-control"
+                            options={capabilityOptions}
+                            value={query.capability ?? undefined}
+                            onChange={(capability) =>
+                                setQuery((current) => ({
+                                    ...current,
+                                    capability: capability ?? null
+                                }))
+                            }
+                        />
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem label="enabled" layoutSize="small">
+                        <Select
+                            allowClear
+                            className="capability-mappings-filter-control"
+                            value={query.enabled == null ? undefined : String(query.enabled)}
+                            options={[
+                                { label: "启用", value: "true" },
+                                { label: "禁用", value: "false" }
+                            ]}
+                            onChange={(enabled) =>
+                                setQuery((current) => ({
+                                    ...current,
+                                    enabled: parseEnabled(enabled)
+                                }))
+                            }
+                        />
+                    </KuzhambuFormItem>
+                </KuzhambuForm>
+                <KuzhambuButton
+                    testId="ai-capability-mappings-capability-mappings-reset-button"
+                    onClick={() => setQuery({})}
+                >
+                    重置
+                </KuzhambuButton>
             </Card>
 
             <CapabilityMappingTable
