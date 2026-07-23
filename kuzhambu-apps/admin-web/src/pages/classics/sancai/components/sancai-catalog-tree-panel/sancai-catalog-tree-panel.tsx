@@ -4,19 +4,28 @@ import type { DataNode } from "antd/es/tree";
 import type { Key, ReactNode } from "react";
 import { useMemo } from "react";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import type { SancaiCatalogNodeType, SancaiCatalogTreeNode } from "../sancai-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
+import "./sancai-catalog-tree-panel.css";
 
 const { Text } = Typography;
+
+type SancaiCatalogNodeType = "category" | "root" | "volume";
+
+interface CatalogTreePanelItem {
+    children?: CatalogTreePanelItem[];
+    key: string;
+    nodeType: SancaiCatalogNodeType;
+    title: string;
+}
 
 interface SancaiCatalogTreePanelProps {
     expandedKeys: string[];
     isRefreshing: boolean;
     isLoading: boolean;
-    nodes: SancaiCatalogTreeNode[];
+    nodes: CatalogTreePanelItem[];
     onExpandedKeysChange: (keys: string[]) => void;
     onRefresh: () => void;
-    onSelectNode: (node: SancaiCatalogTreeNode) => void;
+    onSelectNode: (node: CatalogTreePanelItem) => void;
     selectedKey: string | null;
     title: string;
 }
@@ -27,11 +36,11 @@ const iconByType: Record<SancaiCatalogNodeType, ReactNode> = {
     volume: <BookOutlined />
 };
 
-const flattenNodes = (nodes: SancaiCatalogTreeNode[]): SancaiCatalogTreeNode[] => {
+const flattenNodes = (nodes: CatalogTreePanelItem[]): CatalogTreePanelItem[] => {
     return nodes.flatMap((node) => [node, ...flattenNodes(node.children || [])]);
 };
 
-const toTreeData = (nodes: SancaiCatalogTreeNode[]): DataNode[] => {
+const toTreeData = (nodes: CatalogTreePanelItem[]): DataNode[] => {
     return nodes.map((node) => ({
         children: node.children ? toTreeData(node.children) : undefined,
         key: node.key,

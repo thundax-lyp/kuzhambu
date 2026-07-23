@@ -104,62 +104,6 @@ html[data-theme="dark"] .sancai-form-field {
     outline: none;
 }
 
-.sancai-catalog-tree-panel {
-    display: grid;
-    min-width: 0;
-    gap: 10px;
-}
-
-.sancai-catalog-panel-head {
-    display: flex;
-    min-width: 0;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--sancai-line);
-}
-
-.sancai-catalog-panel-head .anticon {
-    color: var(--sancai-accent);
-}
-
-.sancai-catalog-refresh {
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 120ms ease;
-}
-
-.sancai-catalog-tree-panel:hover .sancai-catalog-refresh,
-.sancai-catalog-tree-panel:focus-within .sancai-catalog-refresh {
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.sancai-catalog-tree-panel .ant-tree {
-    color: var(--sancai-ink);
-    background: transparent;
-}
-
-.sancai-catalog-tree-title {
-    display: inline-flex;
-    min-width: 0;
-    align-items: center;
-    gap: 8px;
-}
-
-.sancai-catalog-tree-icon {
-    display: inline-flex;
-    flex: 0 0 auto;
-    color: var(--sancai-accent);
-}
-
-.sancai-catalog-tree-title .ant-typography {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
 .sancai-volume-main {
     display: flex;
     min-width: 0;
