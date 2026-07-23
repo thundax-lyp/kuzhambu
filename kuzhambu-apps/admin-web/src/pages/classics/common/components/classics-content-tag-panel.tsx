@@ -2,7 +2,7 @@ import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import { App, Card, Empty, Form, Input, Select } from "antd";
 import { useMemo, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ADMIN_FORM_HORIZONTAL_LAYOUT } from "@/components/form/form-layout";
+import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuModal } from "@/components/kuzhambu-modal";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
@@ -337,7 +337,7 @@ export const ClassicsContentTagPanel = ({
                     onCancel={closeEditor}
                     onOk={submitTag}
                 >
-                    <Form
+                    <KuzhambuForm
                         form={form}
                         initialValues={{
                             contentId,
@@ -345,18 +345,17 @@ export const ClassicsContentTagPanel = ({
                             source: "MANUAL",
                             status: "ACTIVE"
                         }}
-                        labelCol={ADMIN_FORM_HORIZONTAL_LAYOUT.labelCol}
                         labelWrap
-                        wrapperCol={ADMIN_FORM_HORIZONTAL_LAYOUT.wrapperCol}
                     >
-                        <Form.Item
+                        <KuzhambuFormItem
                             label="标签名称"
                             name="tagNameSnapshot"
+                            layoutSize="large"
                             rules={[{ required: true, message: "请输入标签名称" }]}
                         >
                             <Input aria-label="标签名称" placeholder="请输入标签名称" />
-                        </Form.Item>
-                        <Form.Item label="来源" name="source">
+                        </KuzhambuFormItem>
+                        <KuzhambuFormItem label="来源" name="source">
                             <Select
                                 aria-label="标签来源"
                                 options={[
@@ -364,8 +363,8 @@ export const ClassicsContentTagPanel = ({
                                     { label: "AI 提取", value: "AI_EXTRACTED" }
                                 ]}
                             />
-                        </Form.Item>
-                        <Form.Item label="状态" name="status">
+                        </KuzhambuFormItem>
+                        <KuzhambuFormItem label="状态" name="status">
                             <Select
                                 aria-label="标签状态"
                                 options={[
@@ -373,8 +372,8 @@ export const ClassicsContentTagPanel = ({
                                     { label: "已移除", value: "REMOVED" }
                                 ]}
                             />
-                        </Form.Item>
-                    </Form>
+                        </KuzhambuFormItem>
+                    </KuzhambuForm>
                 </KuzhambuModal>
             </KuzhambuSpace>
         </Card>
