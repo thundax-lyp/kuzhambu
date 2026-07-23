@@ -1,21 +1,20 @@
 import {
     BlockOutlined,
     BoldOutlined,
-    FileTextOutlined,
     OrderedListOutlined,
     UnorderedListOutlined
 } from "@ant-design/icons";
 import { Markdown } from "@tiptap/markdown";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { DatePicker, Form, Input, Select, Switch, Typography } from "antd";
+import { DatePicker, Input, Select, Switch, Typography } from "antd";
 import { useEffect, useMemo } from "react";
-import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuFormItem } from "@/components/kuzhambu-form";
+import { WangqiDocumentSummaryField } from "./wangqi-document-summary-field";
+import "./wangqi-document-basic-section.css";
 
 const { Text } = Typography;
-const { TextArea } = Input;
 
 interface WangqiRichTextEditorProps {
     value?: string;
@@ -165,33 +164,11 @@ export const WangqiDocumentBasicSection = ({
                 />
             </KuzhambuFormItem>
             <KuzhambuFormItem label="摘要" layoutSize="large">
-                <div className="wangqi-document-summary-field">
-                    {mode === "edit" ? (
-                        <div className="wangqi-document-summary-field-action">
-                            <KuzhambuButton
-                                testId="classics-wangqi-document-summary-ai-button"
-                                type="primary"
-                                ariaLabel="AI 摘要"
-                                icon={<FileTextOutlined />}
-                                onClick={onOpenSummaryModal}
-                            >
-                                AI 摘要
-                            </KuzhambuButton>
-                        </div>
-                    ) : null}
-                    <Form.Item name="summary" noStyle>
-                        <TextArea
-                            aria-label="王圻文档摘要"
-                            autoSize={resolveTextAreaAutoSize({
-                                minRows: 4,
-                                maxRows: 8
-                            })}
-                            disabled={summaryLocked}
-                            maxLength={500}
-                            showCount
-                        />
-                    </Form.Item>
-                </div>
+                <WangqiDocumentSummaryField
+                    mode={mode}
+                    summaryLocked={summaryLocked}
+                    onOpenSummaryModal={onOpenSummaryModal}
+                />
             </KuzhambuFormItem>
             <KuzhambuFormItem name="content" label="正文" layoutSize="large">
                 <WangqiRichTextEditor />
