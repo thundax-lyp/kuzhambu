@@ -5,7 +5,7 @@ import type {
     SancaiContentVersionRecord,
     SancaiEntryRecord,
     SancaiVersionSnapshot
-} from "../sancai-types";
+} from "@/pages/classics/sancai/sancai-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 import "./sancai-versions-panel.css";
