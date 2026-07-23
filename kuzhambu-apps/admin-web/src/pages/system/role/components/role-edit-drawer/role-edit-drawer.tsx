@@ -1,15 +1,16 @@
-import { Form, Input, Tree, Typography } from "antd";
+import { Form, Input } from "antd";
 import type { DataNode } from "antd/es/tree";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import type { Key } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuForm, KuzhambuFormHiddenItem, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
+import { MenuTreeField } from "@/pages/system/role/components/menu-tree-field";
+import type { RoleSaveCommand } from "@/pages/system/role/role-service";
+import type { RoleRecord } from "@/pages/system/role/role-types";
 import type { OptionsRecord } from "@/types/options";
-import type { RoleSaveCommand } from "../role-service";
-import type { RoleRecord } from "../role-types";
+import "./role-edit-drawer.css";
 
-const { Text } = Typography;
 const { TextArea } = Input;
 
 interface RoleEditDrawerProps {
@@ -30,6 +31,7 @@ interface RoleFormValues {
     admin?: boolean | null;
     enable?: boolean | null;
     remarks?: string | null;
+    menus?: Key[];
 }
 
 const normalizeText = (value?: string | null) => {
@@ -37,14 +39,14 @@ const normalizeText = (value?: string | null) => {
     return normalizedValue || undefined;
 };
 
-const readFormRequest = (values: RoleFormValues, checkedMenuKeys: Key[]): RoleSaveCommand => {
+const readFormRequest = (values: RoleFormValues): RoleSaveCommand => {
     return {
         id: values.id,
         name: values.name.trim(),
         admin: Boolean(values.admin),
         enable: values.enable !== false,
         remarks: normalizeText(values.remarks),
-        menus: checkedMenuKeys.map(String).map((id) => ({ id }))
+        menus: (values.menus || []).map(String).map((id) => ({ id }))
     };
 };
 
@@ -54,7 +56,8 @@ const toFormValues = (role: RoleRecord): RoleFormValues => {
         name: role.name,
         admin: Boolean(role.admin),
         enable: role.enable !== false,
-        remarks: role.remarks
+        remarks: role.remarks,
+        menus: (role.menus || []).map((menu) => menu.id)
     };
 };
 
@@ -78,9 +81,6 @@ export const RoleEditDrawer = ({
     onSave
 }: RoleEditDrawerProps) => {
     const [form] = Form.useForm<RoleFormValues>();
-    const [checkedMenuKeys, setCheckedMenuKeys] = useState<Key[]>(
-        (role?.menus || []).map((menu) => menu.id)
-    );
 
     useEffect(() => {
         if (!open) {
@@ -91,12 +91,12 @@ export const RoleEditDrawer = ({
             return;
         }
         form.resetFields();
-        form.setFieldsValue({ admin: false, enable: true });
+        form.setFieldsValue({ admin: false, enable: true, menus: [] });
     }, [form, open, role]);
 
     const saveRole = async () => {
         const values = await form.validateFields();
-        onSave(readFormRequest(values, checkedMenuKeys));
+        onSave(readFormRequest(values));
     };
 
     return (
@@ -118,7 +118,7 @@ export const RoleEditDrawer = ({
                 }
             ]}
         >
-            <KuzhambuForm<RoleFormValues> form={form} className="role-edit-drawer-form">
+            <KuzhambuForm<RoleFormValues> form={form} className="system-role-edit-drawer-form">
                 <KuzhambuFormHiddenItem name="id">
                     <Input />
                 </KuzhambuFormHiddenItem>
@@ -142,27 +142,13 @@ export const RoleEditDrawer = ({
                         unCheckedChildren={readOptionLabel(statusOptions, "DISABLED", "禁用")}
                     />
                 </KuzhambuFormItem>
+                <KuzhambuFormItem name="menus" layoutSize="large">
+                    <MenuTreeField treeData={treeData} expandedMenuIds={expandedMenuIds} />
+                </KuzhambuFormItem>
                 <KuzhambuFormItem name="remarks" label="备注" layoutSize="large">
                     <TextArea rows={3} maxLength={200} showCount placeholder="角色说明" />
                 </KuzhambuFormItem>
             </KuzhambuForm>
-            <div className="role-menu-panel">
-                <div className="role-menu-panel-head">
-                    <Text strong>菜单权限</Text>
-                    <Text type="secondary">{checkedMenuKeys.length} 项已选</Text>
-                </div>
-                <Tree
-                    checkable
-                    defaultExpandAll
-                    checkedKeys={checkedMenuKeys}
-                    defaultExpandedKeys={expandedMenuIds}
-                    treeData={treeData}
-                    selectable={false}
-                    onCheck={(keys) =>
-                        setCheckedMenuKeys(Array.isArray(keys) ? keys : keys.checked)
-                    }
-                />
-            </div>
         </KuzhambuDrawer>
     );
 };

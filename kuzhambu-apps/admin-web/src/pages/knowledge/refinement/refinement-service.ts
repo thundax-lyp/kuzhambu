@@ -1,31 +1,144 @@
 import { postJson } from "@/api/http";
-import type { Page } from "@/types/page";
+import type { Page, PageQuery } from "@/types/page";
 import type {
-    ConfirmRefinementEntityCommand,
-    ConfirmRefinementRelationCommand,
-    DeleteQualityAnnotationCommand,
-    DeleteRefinementEntityCommand,
-    DeleteRefinementRelationCommand,
-    QualityAnnotationPageQuery,
+    QualityAnnotationLabel,
+    QualityAnnotationObjectType,
     QualityAnnotationRecord,
+    QualityAnnotationStatus,
     RefinementApplyRecord,
-    QualitySummaryRecord,
     RefinementDetailRecord,
     RefinementEntityRecord,
+    RefinementTaskStatus,
+    RefinementTaskType,
+    QualitySummaryRecord,
     RefinementRelationRecord,
-    RefinementTaskApplyCommand,
-    RefinementTaskIdCommand,
-    RefinementTaskOpenCommand,
-    RefinementTaskPageQuery,
-    RefinementWorkbenchRecord,
-    UpsertQualityAnnotationCommand,
-    UpsertRefinementEntityCommand,
-    UpsertRefinementLineageNodeCommand,
-    UpsertRefinementLineageRelationCommand,
-    UpsertRefinementRelationCommand
+    RefinementWorkbenchRecord
 } from "./refinement-types";
 
 const API_PREFIX = "/knowledge/refinement";
+
+export type RefinementTaskPageQuery = PageQuery<{
+    taskType?: RefinementTaskType | null;
+    sourceContentType?: string | null;
+    sourceContentId?: number | null;
+    sourceCategoryCode?: string | null;
+    status?: RefinementTaskStatus | null;
+}>;
+
+export interface RefinementTaskOpenCommand {
+    graphVersionId: number;
+    openedBy?: number | null;
+}
+
+export interface RefinementTaskIdCommand {
+    refinementTaskId: number;
+}
+
+export interface RefinementTaskApplyCommand extends RefinementTaskIdCommand {
+    appliedBy?: number | null;
+}
+
+export interface UpsertRefinementEntityCommand {
+    refinementTaskId: number;
+    entityId?: number | null;
+    entityKey?: string | null;
+    name?: string | null;
+    entityType?: string | null;
+    description?: string | null;
+    sourceRefsJson?: string | null;
+    sortOrder?: number | null;
+    operatorId?: number | null;
+}
+
+export interface ConfirmRefinementEntityCommand {
+    refinementTaskId: number;
+    entityKey: string;
+    operatorId?: number | null;
+}
+
+export interface DeleteRefinementEntityCommand {
+    refinementTaskId: number;
+    entityKey: string;
+    operatorId?: number | null;
+}
+
+export interface UpsertRefinementRelationCommand {
+    refinementTaskId: number;
+    relationId?: number | null;
+    relationKey?: string | null;
+    sourceEntityKey?: string | null;
+    targetEntityKey?: string | null;
+    sourceName?: string | null;
+    targetName?: string | null;
+    relationType?: string | null;
+    evidence?: string | null;
+    sourceRefsJson?: string | null;
+    sortOrder?: number | null;
+    operatorId?: number | null;
+}
+
+export interface ConfirmRefinementRelationCommand {
+    refinementTaskId: number;
+    relationKey: string;
+    operatorId?: number | null;
+}
+
+export interface DeleteRefinementRelationCommand {
+    refinementTaskId: number;
+    relationKey: string;
+    operatorId?: number | null;
+}
+
+export interface UpsertRefinementLineageNodeCommand {
+    refinementTaskId: number;
+    nodeId?: number | null;
+    nodeKey?: string | null;
+    name?: string | null;
+    nodeType?: string | null;
+    generation?: number | null;
+    gender?: string | null;
+    sourceRefsJson?: string | null;
+    sortOrder?: number | null;
+    operatorId?: number | null;
+}
+
+export interface UpsertRefinementLineageRelationCommand {
+    refinementTaskId: number;
+    relationId?: number | null;
+    relationKey?: string | null;
+    sourceNodeKey?: string | null;
+    targetNodeKey?: string | null;
+    sourceName?: string | null;
+    targetName?: string | null;
+    relationType?: string | null;
+    evidence?: string | null;
+    sourceRefsJson?: string | null;
+    sortOrder?: number | null;
+    operatorId?: number | null;
+}
+
+export interface UpsertQualityAnnotationCommand {
+    annotationId?: number | null;
+    objectType?: QualityAnnotationObjectType | null;
+    objectKey?: string | null;
+    sourceContentType?: string | null;
+    sourceContentId?: number | null;
+    graphVersionId?: number | null;
+    annotationStatus?: QualityAnnotationStatus | null;
+    annotationLabel?: QualityAnnotationLabel | null;
+    comment?: string | null;
+    operatorId?: number | null;
+}
+
+export interface DeleteQualityAnnotationCommand {
+    annotationId: number;
+    operatorId?: number | null;
+}
+
+export type QualityAnnotationPageQuery = PageQuery<{
+    refinementTaskId: number;
+    objectType?: string | null;
+}>;
 
 export const pageTasks = (request: RefinementTaskPageQuery = {}) => {
     return postJson<Page<RefinementWorkbenchRecord>, RefinementTaskPageQuery>(

@@ -6,7 +6,7 @@ import type {
     GraphLineageRelationPageQuery,
     GraphRelationPageQuery,
     GraphVersionPageQuery
-} from "./graph-results-types";
+} from "./graph-results-service";
 
 interface CapturedCall {
     body: unknown;

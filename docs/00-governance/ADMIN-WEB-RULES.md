@@ -110,7 +110,8 @@
 - `ADMIN_WEB_NAME_API_CONTRACT_TYPE_EXPOSURE`：`XxxRequest` / `XxxResponse` 是 service 内部 API 契约，不从 service 导出。
 - `ADMIN_WEB_NAME_SERVICE_INPUT_TYPE_LOCATION`：`XxxQuery` / `XxxCommand` 只定义在 `*-service.ts`；`PageQuery<T>` 只定义在 `src/types/page.ts`。
 - `ADMIN_WEB_NAME_OPTION_RECORD_LOCATION`：`*OptionRecord` / `*OptionsRecord` 只定义在 `src/types/options.ts`；领域选项接口使用 `OptionsRecord<"xxxOptions">` 表达。
-- `ADMIN_WEB_NAME_BUSINESS_DATA_TYPE_LOCATION`：`XxxRecord` / `XxxNode` 只定义在明确边界的 `*-types.ts`。
+- `ADMIN_WEB_NAME_BUSINESS_DATA_TYPE_LOCATION`：`XxxRecord` / `XxxNode` 只定义在明确边界的 `*-types.ts`；`*-types.ts` 只承载领域数据类型、领域节点类型、领域枚举和跨组件领域只读视图类型，不承载 HTTP 接口协议或表单草稿。
+- `ADMIN_WEB_NAME_FORM_VALUES_LOCATION`：`XxxFormValues` 必须和实际表单组件放在一起；只被单个表单组件使用时定义在该组件 `.tsx` 内，跨同一表单容器和子组件复用时放在该表单组件目录的 `*-form-values.ts`。`XxxFormValues` 不得定义在页面域 `*-types.ts`、`*-service.ts` 或跨页面共享 `src/types/`。
 - `ADMIN_WEB_NAME_BOOLEAN`：布尔变量使用 `is`、`has`、`can` 前缀。
 - `ADMIN_WEB_NAME_CONSTANT`：常量使用 `UPPER_SNAKE_CASE`。
 - `ADMIN_WEB_NAME_PROPS_CAMEL_CASE`：`*Props` 属性必须使用 camelCase；原生 DOM attribute 只在渲染边界转换。
@@ -195,7 +196,7 @@
 - 表格列变量：
   - 单表页面可以命名为 `columns`。
   - 同页多表必须使用领域前缀，例如 `userColumns`、`roleColumns`、`tagColumns`。
-- 页面 UI 状态类型使用 `XxxFilters`、`XxxFormValues`、`XxxViewState`；service 层输入类型使用 `XxxQuery` / `XxxCommand`；领域数据类型使用 `XxxRecord` / `XxxNode`。
+- 页面 UI 状态类型使用 `XxxFilters`、`XxxFormValues`、`XxxViewState`；`XxxFormValues` 必须贴近表单组件放置；service 层输入类型使用 `XxxQuery` / `XxxCommand`；接口协议类型使用内部 `XxxRequest` / `XxxResponse`；领域数据类型使用 `XxxRecord` / `XxxNode`。
 
 ### Placement
 

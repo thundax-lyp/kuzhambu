@@ -840,7 +840,7 @@ describe("SancaiEntryPanel sharing", () => {
         const entryTable = await screen.findByLabelText("三才图会条目表格");
         await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
         await openVersionSection(user);
-        expect(await screen.findByLabelText("三才图会版本历史面板")).toBeInTheDocument();
+        expect(await screen.findByLabelText("三才图会版本面板")).toBeInTheDocument();
 
         await user.click(within(entryTable).getByTestId("sancai-entry-3001-lifecycle-button"));
 
@@ -1351,7 +1351,7 @@ describe("SancaiEntryPanel sharing", () => {
         await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
 
         await openVersionSection(user);
-        expect(await screen.findByLabelText("三才图会版本历史面板")).toBeInTheDocument();
+        expect(await screen.findByLabelText("三才图会版本面板")).toBeInTheDocument();
         await user.click(
             await screen.findByTestId("classics-sancai-sancai-version-history-action-button")
         );
@@ -1656,8 +1656,8 @@ describe("SancaiEntryPanel sharing", () => {
             await screen.findByTestId("classics-sancai-sancai-entry-ai-summary-button")
         );
 
-        expect(await screen.findByText("摘要任务：摘要中")).toBeInTheDocument();
-        expect(screen.queryByText("摘要任务：翻译中")).not.toBeInTheDocument();
+        expect(await screen.findByText("摘要任务：处理中")).toBeInTheDocument();
+        expect(screen.queryByText("摘要任务：摘要中")).not.toBeInTheDocument();
     }, 30000);
 
     it("shows expired export task as disabled download", async () => {

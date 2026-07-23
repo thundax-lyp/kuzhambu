@@ -1,19 +1,59 @@
 import { postJson } from "@/api/http";
 import type { Page } from "@/types/page";
 import type {
-    GraphEntityPageQuery,
     GraphEntityRecord,
-    GraphLineageNodePageQuery,
     GraphLineageNodeRecord,
-    GraphLineageRelationPageQuery,
     GraphLineageRelationRecord,
-    GraphRelationPageQuery,
     GraphRelationRecord,
-    GraphVersionPageQuery,
     GraphVersionRecord
 } from "./graph-results-types";
 
 const API_PREFIX = "/knowledge/graph-extraction";
+
+export interface GraphVersionPageQuery {
+    pageNo?: number;
+    pageSize?: number;
+    taskType?: string | null;
+    status?: string | null;
+    sourceContentType?: string | null;
+    sourceContentId?: number | null;
+}
+
+export interface GraphEntityPageQuery {
+    pageNo?: number;
+    pageSize?: number;
+    versionId?: number | null;
+    keyword?: string | null;
+    entityType?: string | null;
+    confirmationStatus?: string | null;
+}
+
+export interface GraphRelationPageQuery {
+    pageNo?: number;
+    pageSize?: number;
+    versionId?: number | null;
+    keyword?: string | null;
+    relationType?: string | null;
+    confirmationStatus?: string | null;
+}
+
+export interface GraphLineageNodePageQuery {
+    pageNo?: number;
+    pageSize?: number;
+    versionId?: number | null;
+    keyword?: string | null;
+    nodeType?: string | null;
+    confirmationStatus?: string | null;
+}
+
+export interface GraphLineageRelationPageQuery {
+    pageNo?: number;
+    pageSize?: number;
+    versionId?: number | null;
+    keyword?: string | null;
+    relationType?: string | null;
+    confirmationStatus?: string | null;
+}
 
 interface GraphVersionDetailCommand {
     versionId: number;

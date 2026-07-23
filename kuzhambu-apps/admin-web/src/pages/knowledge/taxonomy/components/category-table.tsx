@@ -3,8 +3,8 @@ import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
-import type { TagCategoryPageQuery, TagCategoryRecord } from "../taxonomy-types";
-import type { TagCategoryStatusCommand } from "../taxonomy-service";
+import type { TagCategoryPageQuery, TagCategoryStatusCommand } from "../taxonomy-service";
+import type { TagCategoryRecord } from "../taxonomy-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const DEFAULT_COLUMN_WIDTHS = {

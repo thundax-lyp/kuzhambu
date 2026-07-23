@@ -1,19 +1,67 @@
-import { FileTextOutlined } from "@ant-design/icons";
+import { TranslationOutlined } from "@ant-design/icons";
 import { Form, Input } from "antd";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 import { KuzhambuSyncTaskModal } from "@/components/kuzhambu-sync-task-modal";
+import type { KuzhambuSyncTaskAdapter } from "@/components/kuzhambu-sync-task-modal";
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
-import { readSancaiAiTextFieldConfig } from "./sancai-entry-ai-text-config";
-import {
-    aiTextTaskAdapter,
-    readRefinementTaskAlertType,
-    readRefinementTaskStatusLabel,
-    resolveAiTextField
-} from "./sancai-entry-ai-text-workflow";
-import type { SancaiEntryFormValues } from "./sancai-form-values";
+import type { SancaiEntryFormValues } from "@/pages/classics/sancai/components/sancai-entry-edit-drawer/sancai-entry-form-values";
 
-interface SancaiEntrySummaryModalProps {
+const MODAL_TITLE = "AI翻译";
+const TASK_LABEL = "翻译";
+
+const readRefinementTaskStatusLabel = (status?: string | null) => {
+    switch (status) {
+        case "PENDING":
+            return "等待中";
+        case "RUNNING":
+            return "处理中";
+        case "SUCCEEDED":
+            return "已完成";
+        case "PARTIAL":
+            return "部分完成";
+        case "FAILED":
+            return "失败";
+        case "CANCELLED":
+            return "已取消";
+        default:
+            return status || "-";
+    }
+};
+
+const readRefinementTaskAlertType = (status?: string | null) => {
+    if (status === "SUCCEEDED" || status === "PARTIAL") {
+        return "success";
+    }
+    if (status === "FAILED" || status === "CANCELLED") {
+        return "warning";
+    }
+    return "info";
+};
+
+const translationTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = {
+    getId: (task) => task.taskId,
+    getMessage: (task) => task.errorMessage || undefined,
+    getPhase: (task) => {
+        if (task.status === "PENDING" || task.status === "RUNNING") {
+            return "tracking";
+        }
+        if (task.status === "SUCCEEDED" || task.status === "PARTIAL") {
+            return task.candidateId ? "result_ready" : "waiting_result";
+        }
+        if (task.status === "CANCELLED") {
+            return "cancelled";
+        }
+        if (task.status === "FAILED") {
+            return "failed";
+        }
+        return "tracking";
+    },
+    getResultKey: (task) => task.candidateId,
+    getStatusLabel: (task) => `${TASK_LABEL}任务：${readRefinementTaskStatusLabel(task.status)}`
+};
+
+interface SancaiEntryTranslationModalProps {
     aiTextDraft: string;
     form: SancaiEntryFormValues;
     hasRunningAiTextTask: boolean;
@@ -32,7 +80,7 @@ interface SancaiEntrySummaryModalProps {
     open: boolean;
 }
 
-export const SancaiEntrySummaryModal = ({
+export const SancaiEntryTranslationModal = ({
     aiTextDraft,
     form,
     hasRunningAiTextTask,
@@ -49,26 +97,24 @@ export const SancaiEntrySummaryModal = ({
     onTaskChange,
     onTextDraftChange,
     open
-}: SancaiEntrySummaryModalProps) => {
-    const aiTextConfig = readSancaiAiTextFieldConfig("summary");
-
+}: SancaiEntryTranslationModalProps) => {
     return (
         <KuzhambuSyncTaskModal<AiRefinementTaskRecord, null>
             testId="classics-sancai-sancai-entry-ai-text-modal"
-            title={aiTextConfig.modalTitle}
+            title={MODAL_TITLE}
             open={open}
             width={960}
             applying={isApplyingAiText}
             applyDisabled={isAiTextApplyDisabled}
             applyTestId="classics-sancai-sancai-entry-apply-ai-text-button"
             cancelTestId="classics-sancai-sancai-entry-cancel-ai-text-button"
-            createIcon={<FileTextOutlined />}
+            createIcon={<TranslationOutlined />}
             createTestId="classics-sancai-sancai-entry-create-ai-text-task-button"
-            createText={aiTextConfig.actionLabel}
+            createText="翻译"
             creating={isCreatingAiTextTask}
             onCancel={onCancel}
             workflow={{
-                ...aiTextTaskAdapter,
+                ...translationTaskAdapter,
                 task: latestAiTextTask,
                 createTask: onRequestTask,
                 fetchTask: onFetchTask,
@@ -84,15 +130,12 @@ export const SancaiEntrySummaryModal = ({
                         type={creating ? "info" : readRefinementTaskAlertType(task?.status)}
                         title={
                             creating
-                                ? `正在创建${aiTextConfig.taskLabel}任务`
-                                : `${aiTextConfig.taskLabel}任务：${readRefinementTaskStatusLabel(
-                                      task?.status,
-                                      resolveAiTextField(task?.capability, "summary")
-                                  )}`
+                                ? `正在创建${TASK_LABEL}任务`
+                                : `${TASK_LABEL}任务：${readRefinementTaskStatusLabel(task?.status)}`
                         }
                         description={
                             hasRunningAiTextTask
-                                ? `任务完成后会自动刷新 ${aiTextConfig.aiLabel}。`
+                                ? "任务完成后会自动刷新 AI译文。"
                                 : task?.errorMessage || undefined
                         }
                     />
@@ -106,9 +149,9 @@ export const SancaiEntrySummaryModal = ({
                         component="div"
                         layout="vertical"
                     >
-                        <Form.Item label={aiTextConfig.sourceLabel}>
+                        <Form.Item label="原文">
                             <Input.TextArea
-                                aria-label={`${aiTextConfig.modalTitle}${aiTextConfig.sourceLabel}`}
+                                aria-label={`${MODAL_TITLE}原文`}
                                 value={form.originalText}
                                 readOnly
                                 autoSize={resolveTextAreaAutoSize({ minRows: 5, maxRows: 8 })}
@@ -122,10 +165,10 @@ export const SancaiEntrySummaryModal = ({
                             component="div"
                             layout="vertical"
                         >
-                            <Form.Item label={aiTextConfig.currentLabel}>
+                            <Form.Item label="当前译文">
                                 <Input.TextArea
-                                    aria-label={`${aiTextConfig.modalTitle}${aiTextConfig.currentLabel}`}
-                                    value={form.summary}
+                                    aria-label={`${MODAL_TITLE}当前译文`}
+                                    value={form.translationText}
                                     readOnly
                                     autoSize={resolveTextAreaAutoSize({ minRows: 10, maxRows: 16 })}
                                 />
@@ -137,14 +180,14 @@ export const SancaiEntrySummaryModal = ({
                             component="div"
                             layout="vertical"
                         >
-                            <Form.Item label={aiTextConfig.aiLabel}>
+                            <Form.Item label="AI译文">
                                 <Input.TextArea
-                                    aria-label={`${aiTextConfig.modalTitle}${aiTextConfig.aiLabel}`}
+                                    aria-label={`${MODAL_TITLE}AI译文`}
                                     value={aiTextDraft}
                                     placeholder={
                                         isCreatingAiTextTask || isAiTextCandidateFetching
-                                            ? aiTextConfig.loadingText
-                                            : aiTextConfig.emptyText
+                                            ? "AI 翻译生成中..."
+                                            : "暂无候选译文，可先保留当前译文或稍后重试"
                                     }
                                     disabled={
                                         isCreatingAiTextTask ||
@@ -159,7 +202,7 @@ export const SancaiEntrySummaryModal = ({
                                 <KuzhambuAlert
                                     showIcon
                                     type="warning"
-                                    title={`候选${aiTextConfig.taskLabel}加载失败`}
+                                    title={`候选${TASK_LABEL}加载失败`}
                                     description="AI 任务可能仍在执行，请稍后重新打开。"
                                 />
                             ) : null}

@@ -1,0 +1,101 @@
+import fs from "node:fs";
+import path from "node:path";
+import process from "node:process";
+
+const SOURCE_ROOT = path.resolve("src");
+const GLOBAL_PAGE_TYPE_FILE = path.join(SOURCE_ROOT, "types", "page.ts").split(path.sep).join("/");
+const DECLARATION_PATTERN = /\bexport\s+(?:interface|type|class|enum)\s+([A-Za-z0-9_]+)/g;
+const SERVICE_INPUT_TYPE_PATTERN = /(?:Command|Query)$/;
+const API_CONTRACT_TYPE_PATTERN = /(?:Request|Response)$/;
+const FORM_VALUES_TYPE_PATTERN = /FormValues$/;
+
+const listFiles = (directory, predicate) => {
+    if (!fs.existsSync(directory)) {
+        return [];
+    }
+
+    return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+        const entryPath = path.join(directory, entry.name);
+        if (entry.isDirectory()) {
+            return listFiles(entryPath, predicate);
+        }
+        return predicate(entryPath) ? [entryPath] : [];
+    });
+};
+
+const normalizePath = (filePath) => filePath.split(path.sep).join("/");
+
+const isAllowedFormValuesFile = (filePath) => {
+    const normalizedFilePath = normalizePath(filePath);
+    return (
+        normalizedFilePath.includes("/components/") &&
+        (normalizedFilePath.endsWith(".tsx") || normalizedFilePath.endsWith("-form-values.ts"))
+    );
+};
+
+const sourceFiles = listFiles(SOURCE_ROOT, (filePath) => /\.(?:ts|tsx)$/.test(filePath));
+const violations = [];
+
+sourceFiles.forEach((filePath) => {
+    const normalizedFilePath = normalizePath(filePath);
+    const content = fs.readFileSync(filePath, "utf8");
+
+    for (const match of content.matchAll(DECLARATION_PATTERN)) {
+        const declarationName = match[1];
+
+        if (
+            normalizedFilePath.endsWith("-types.ts") &&
+            (SERVICE_INPUT_TYPE_PATTERN.test(declarationName) ||
+                API_CONTRACT_TYPE_PATTERN.test(declarationName) ||
+                FORM_VALUES_TYPE_PATTERN.test(declarationName))
+        ) {
+            violations.push(
+                `${normalizedFilePath}: ADMIN_WEB_NAME_BUSINESS_DATA_TYPE_LOCATION ${declarationName} must not be defined in *-types.ts.`
+            );
+        }
+
+        if (
+            normalizedFilePath.endsWith("-service.ts") &&
+            (API_CONTRACT_TYPE_PATTERN.test(declarationName) ||
+                FORM_VALUES_TYPE_PATTERN.test(declarationName))
+        ) {
+            violations.push(
+                `${normalizedFilePath}: ADMIN_WEB_NAME_API_CONTRACT_TYPE_EXPOSURE ${declarationName} must not be exported from service.`
+            );
+        }
+
+        if (
+            normalizedFilePath.includes("/src/types/") &&
+            normalizedFilePath !== GLOBAL_PAGE_TYPE_FILE &&
+            (SERVICE_INPUT_TYPE_PATTERN.test(declarationName) ||
+                API_CONTRACT_TYPE_PATTERN.test(declarationName) ||
+                FORM_VALUES_TYPE_PATTERN.test(declarationName))
+        ) {
+            violations.push(
+                `${normalizedFilePath}: ADMIN_WEB_PATH_GLOBAL_TYPES ${declarationName} must not define page service input, API contract, or form values.`
+            );
+        }
+
+        if (
+            normalizedFilePath.includes("/src/types/") &&
+            normalizedFilePath === GLOBAL_PAGE_TYPE_FILE &&
+            SERVICE_INPUT_TYPE_PATTERN.test(declarationName) &&
+            declarationName !== "PageQuery"
+        ) {
+            violations.push(
+                `${normalizedFilePath}: ADMIN_WEB_NAME_SERVICE_INPUT_TYPE_LOCATION only PageQuery is allowed in src/types/page.ts.`
+            );
+        }
+
+        if (FORM_VALUES_TYPE_PATTERN.test(declarationName) && !isAllowedFormValuesFile(filePath)) {
+            violations.push(
+                `${normalizedFilePath}: ADMIN_WEB_NAME_FORM_VALUES_LOCATION ${declarationName} must live with the form component.`
+            );
+        }
+    }
+});
+
+if (violations.length > 0) {
+    process.stderr.write(violations.join("\n") + "\n");
+    process.exit(1);
+}

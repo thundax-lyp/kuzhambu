@@ -1,6 +1,10 @@
 import { SynonymTable } from "./synonym-table";
-import type { SynonymRemoveCommand, SynonymStatusCommand } from "../taxonomy-service";
-import type { SynonymPageQuery, SynonymRecord } from "../taxonomy-types";
+import type {
+    SynonymPageQuery,
+    SynonymRemoveCommand,
+    SynonymStatusCommand
+} from "../taxonomy-service";
+import type { SynonymRecord } from "../taxonomy-types";
 
 interface TaxonomySynonymSectionProps {
     canEditTaxonomy: boolean;

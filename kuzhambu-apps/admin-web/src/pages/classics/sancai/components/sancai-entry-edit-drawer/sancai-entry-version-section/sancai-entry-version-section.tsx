@@ -1,4 +1,4 @@
-import { SancaiVersionHistoryPanel } from "../sancai-version-history-panel";
+import { SancaiVersionsPanel } from "@/pages/classics/sancai/components/sancai-versions-panel";
 import type {
     SancaiContentVersionRecord,
     SancaiEntryRecord
@@ -32,7 +32,7 @@ export const SancaiEntryVersionSection = ({
     }
 
     return (
-        <SancaiVersionHistoryPanel
+        <SancaiVersionsPanel
             currentEntry={currentEntry}
             detailLoading={detailLoading}
             listLoading={listLoading}

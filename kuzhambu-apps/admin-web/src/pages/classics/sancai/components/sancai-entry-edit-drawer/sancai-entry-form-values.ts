@@ -1,15 +1,4 @@
-import type { SancaiCategoryRecord, SancaiEntryRecord, SancaiVolumeRecord } from "../sancai-types";
-
-export interface SancaiCategoryFormValues {
-    categoryType: string;
-    title: string;
-}
-
-export interface SancaiVolumeFormValues {
-    categoryId: number | null;
-    title: string;
-    volumeType: string;
-}
+import type { SancaiEntryRecord, SancaiVolumeRecord } from "@/pages/classics/sancai/sancai-types";
 
 export interface SancaiEntryFormValues {
     categoryId: number | null;
@@ -20,24 +9,6 @@ export interface SancaiEntryFormValues {
     volumeId: number | null;
     visibility: string;
 }
-
-export const toCategoryFormValues = (category?: SancaiCategoryRecord): SancaiCategoryFormValues => {
-    return {
-        categoryType: category?.categoryType || "FORMAL",
-        title: category?.title || ""
-    };
-};
-
-export const toVolumeFormValues = (
-    volume?: SancaiVolumeRecord,
-    fallbackCategoryId?: number | null
-): SancaiVolumeFormValues => {
-    return {
-        categoryId: volume?.categoryId ?? fallbackCategoryId ?? null,
-        title: volume?.title || "",
-        volumeType: volume?.volumeType || "MAIN"
-    };
-};
 
 export const toEntryFormValues = (
     entry?: SancaiEntryRecord,

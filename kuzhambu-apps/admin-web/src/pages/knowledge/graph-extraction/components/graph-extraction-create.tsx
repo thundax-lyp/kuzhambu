@@ -4,10 +4,9 @@ import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type {
     GraphExtractionCreateCommand,
-    GraphExtractionRegenerateCommand,
-    GraphExtractionTaskRecord,
-    GraphExtractionTaskType
-} from "../graph-extraction-types";
+    GraphExtractionRegenerateCommand
+} from "../graph-extraction-service";
+import type { GraphExtractionTaskRecord, GraphExtractionTaskType } from "../graph-extraction-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 

@@ -1,5 +1,3 @@
-/* eslint-disable local/service-input-type-location */
-
 export interface TagCategoryRecord {
     id: string;
     name: string;
@@ -112,40 +110,4 @@ export interface SynonymRecord {
     term?: string | null;
     synonym?: string | null;
     status?: string | null;
-}
-
-export interface TagCategoryPageQuery {
-    pageNo?: number;
-    pageSize?: number;
-    name?: string | null;
-    status?: string | null;
-    sortDirection?: "ASC" | "DESC" | null;
-}
-
-export interface TagPageQuery {
-    pageNo?: number;
-    pageSize?: number;
-    name?: string | null;
-    categoryId?: string | null;
-    status?: string | null;
-    source?: string | null;
-    reviewStatus?: string | null;
-    sortDirection?: "ASC" | "DESC" | null;
-}
-
-export interface TagReviewPageQuery {
-    pageNo?: number;
-    pageSize?: number;
-    name?: string | null;
-    source?: string | null;
-    sortDirection?: "ASC" | "DESC" | null;
-}
-
-export interface SynonymPageQuery {
-    pageNo?: number;
-    pageSize?: number;
-    term?: string | null;
-    synonym?: string | null;
-    status?: string | null;
-    sortDirection?: "ASC" | "DESC" | null;
 }

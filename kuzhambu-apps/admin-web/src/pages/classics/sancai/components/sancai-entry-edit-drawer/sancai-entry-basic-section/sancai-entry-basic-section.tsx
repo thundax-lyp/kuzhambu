@@ -1,17 +1,16 @@
-import {
-    DownloadOutlined,
-    FileTextOutlined,
-    TranslationOutlined,
-    UploadOutlined
-} from "@ant-design/icons";
+import { DownloadOutlined, UploadOutlined } from "@ant-design/icons";
 import { Image, Input, Select, Switch, Typography, Upload } from "antd";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import type { SancaiEntryFormValues } from "../sancai-form-values";
+import { SancaiEntrySummaryTextField } from "./sancai-entry-summary-text-field";
+import { SancaiEntryTranslationTextField } from "./sancai-entry-translation-text-field";
+import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
+import type { SancaiEntryFormValues } from "@/pages/classics/sancai/components/sancai-entry-edit-drawer/sancai-entry-form-values";
 import type { SancaiEntryImageRecord } from "@/pages/classics/sancai/sancai-types";
+import "./sancai-entry-basic-section.css";
 
 const { Text } = Typography;
 const IMAGE_ACCEPT = ".jpg,.jpeg,.png,.gif,.webp";
@@ -36,16 +35,18 @@ interface SancaiEntryBasicSectionProps {
     entryId?: number;
     form: SancaiEntryFormValues;
     imageContent?: ReactNode;
+    isCreatingSummaryTask: boolean;
+    isCreatingTranslationTask: boolean;
     isUploadingImage: boolean;
     mode: "create" | "edit";
     previewUrl?: string;
     setForm: Dispatch<SetStateAction<SancaiEntryFormValues>>;
-    summaryModal?: ReactNode;
-    translationModal?: ReactNode;
+    summaryTasks: AiRefinementTaskRecord[];
+    translationTasks: AiRefinementTaskRecord[];
     volumeOptions: Array<{ label: string; value: number }>;
     onChangeCategory: (categoryId: number | null) => void;
-    onOpenSummaryModal: () => void;
-    onOpenTranslationModal: () => void;
+    onRequestSummaryTask?: (draft: SancaiEntryFormValues) => void;
+    onRequestTranslationTask?: (draft: SancaiEntryFormValues) => void;
     onUploadImage: (file: File) => void;
 }
 
@@ -56,16 +57,18 @@ export const SancaiEntryBasicSection = ({
     entryId,
     form,
     imageContent,
+    isCreatingSummaryTask,
+    isCreatingTranslationTask,
     isUploadingImage,
     mode,
     previewUrl,
     setForm,
-    summaryModal,
-    translationModal,
+    summaryTasks,
+    translationTasks,
     volumeOptions,
     onChangeCategory,
-    onOpenSummaryModal,
-    onOpenTranslationModal,
+    onRequestSummaryTask,
+    onRequestTranslationTask,
     onUploadImage
 }: SancaiEntryBasicSectionProps) => {
     return (
@@ -120,60 +123,38 @@ export const SancaiEntryBasicSection = ({
                 />
             </KuzhambuFormItem>
             <KuzhambuFormItem label="译文" layoutSize="large">
-                <div className="sancai-entry-ai-text-field">
-                    <Input.TextArea
-                        aria-label="三才图会译文"
-                        value={form.translationText}
-                        autoSize={resolveTextAreaAutoSize({ minRows: 4, maxRows: 8 })}
-                        onChange={(event) =>
-                            setForm((currentForm) => ({
-                                ...currentForm,
-                                translationText: event.target.value
-                            }))
-                        }
-                    />
-                    {mode === "edit" ? (
-                        <KuzhambuSpace wrap>
-                            <KuzhambuButton
-                                testId="classics-sancai-sancai-entry-ai-button"
-                                className="sancai-entry-ai-text-button"
-                                icon={<TranslationOutlined />}
-                                onClick={onOpenTranslationModal}
-                            >
-                                AI翻译
-                            </KuzhambuButton>
-                        </KuzhambuSpace>
-                    ) : null}
-                    {translationModal}
-                </div>
+                <SancaiEntryTranslationTextField
+                    entryId={entryId}
+                    form={form}
+                    isCreatingTranslationTask={isCreatingTranslationTask}
+                    mode={mode}
+                    translationTasks={translationTasks}
+                    value={form.translationText}
+                    onChange={(translationText) =>
+                        setForm((currentForm) => ({
+                            ...currentForm,
+                            translationText
+                        }))
+                    }
+                    onRequestTranslationTask={onRequestTranslationTask}
+                />
             </KuzhambuFormItem>
             <KuzhambuFormItem label="摘要" layoutSize="large">
-                <div className="sancai-entry-ai-text-field">
-                    <Input.TextArea
-                        aria-label="三才图会摘要"
-                        value={form.summary}
-                        autoSize={resolveTextAreaAutoSize({ minRows: 3, maxRows: 6 })}
-                        onChange={(event) =>
-                            setForm((currentForm) => ({
-                                ...currentForm,
-                                summary: event.target.value
-                            }))
-                        }
-                    />
-                    {mode === "edit" ? (
-                        <KuzhambuSpace wrap>
-                            <KuzhambuButton
-                                testId="classics-sancai-sancai-entry-ai-summary-button"
-                                className="sancai-entry-ai-text-button"
-                                icon={<FileTextOutlined />}
-                                onClick={onOpenSummaryModal}
-                            >
-                                AI摘要
-                            </KuzhambuButton>
-                        </KuzhambuSpace>
-                    ) : null}
-                    {summaryModal}
-                </div>
+                <SancaiEntrySummaryTextField
+                    entryId={entryId}
+                    form={form}
+                    isCreatingSummaryTask={isCreatingSummaryTask}
+                    mode={mode}
+                    summaryTasks={summaryTasks}
+                    value={form.summary}
+                    onChange={(summary) =>
+                        setForm((currentForm) => ({
+                            ...currentForm,
+                            summary
+                        }))
+                    }
+                    onRequestSummaryTask={onRequestSummaryTask}
+                />
             </KuzhambuFormItem>
             <KuzhambuFormItem label="可见性" layoutSize="large">
                 <Switch

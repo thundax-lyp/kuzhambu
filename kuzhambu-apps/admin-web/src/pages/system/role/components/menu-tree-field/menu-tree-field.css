@@ -1,0 +1,24 @@
+.menu-tree-field {
+    display: grid;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid var(--role-line, rgba(107, 124, 150, 0.24));
+    border-radius: 8px;
+}
+
+.menu-tree-field-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.menu-tree-field .ant-tree {
+    max-height: 360px;
+    overflow: auto;
+    border-radius: 8px;
+}
+
+.menu-tree-field .ant-tree-node-content-wrapper {
+    min-width: 0;
+}

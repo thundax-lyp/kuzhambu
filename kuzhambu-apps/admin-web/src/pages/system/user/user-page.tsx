@@ -17,9 +17,10 @@ import { UserFilterPanel } from "./components/user-filter-panel";
 import type { UserFilters, UserFilterStatus } from "./components/user-filter-panel";
 import { UserPageActions } from "./components/user-page-actions";
 import { UserTable } from "./components/user-table";
+import type { UserFormValues } from "./components/user-form-values";
 import * as service from "./user-service";
 import type { PageQuery, SaveCommand, UserOptionKeys } from "./user-service";
-import type { UserDepartmentNode, UserFormValues, UserRecord } from "./user-types";
+import type { UserDepartmentNode, UserRecord } from "./user-types";
 import "./user-page.css";
 
 const DEFAULT_USER_FILTERS: UserFilters = {

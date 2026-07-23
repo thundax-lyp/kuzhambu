@@ -3,15 +3,17 @@ import { useState } from "react";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import type {
     SynonymPageQuery,
+    TagCategoryPageQuery,
+    TagPageQuery,
+    TagReviewPageQuery
+} from "../taxonomy-service";
+import type {
     SynonymRecord,
     TagBatchMergePreviewRecord,
-    TagCategoryPageQuery,
     TagCategoryRecord,
     TagExtractionResultRecord,
     TagMergePreviewRecord,
-    TagPageQuery,
-    TagRecord,
-    TagReviewPageQuery
+    TagRecord
 } from "../taxonomy-types";
 
 export const useTaxonomyEditors = () => {

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuModal } from "@/components/kuzhambu-modal";
 import type { DictItem } from "@/types/dict";
-import { toCategoryFormValues, type SancaiCategoryFormValues } from "../sancai-form-values";
+import { toCategoryFormValues, type SancaiCategoryFormValues } from "./sancai-category-form-values";
 import type { SancaiCategoryRecord } from "@/pages/classics/sancai/sancai-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 

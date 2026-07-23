@@ -1,12 +1,12 @@
 import { useMemo, useState } from "react";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
+import type { RefinementTaskPageQuery } from "../refinement-service";
 import type {
     QualityAnnotationTarget,
     RefinementApplyRecord,
     RefinementDetailRecord,
     RefinementEntityRecord,
-    RefinementRelationRecord,
-    RefinementTaskPageQuery
+    RefinementRelationRecord
 } from "../refinement-types";
 
 export const readRefinementDetailTaskId = (detail: RefinementDetailRecord | null) =>

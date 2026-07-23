@@ -5,9 +5,9 @@ import type {
     GraphLineageNodePageQuery,
     GraphLineageRelationPageQuery,
     GraphRelationPageQuery,
-    GraphVersionPageQuery,
-    GraphVersionRecord
-} from "../graph-results-types";
+    GraphVersionPageQuery
+} from "../graph-results-service";
+import type { GraphVersionRecord } from "../graph-results-types";
 
 export type GraphResultsTabKey = "versions" | "entities" | "relations" | "lineage";
 

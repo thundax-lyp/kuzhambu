@@ -1,5 +1,3 @@
-/* eslint-disable local/service-input-type-location */
-
 export interface GraphVersionRecord {
     versionId: number;
     taskId?: string | null;
@@ -13,15 +11,6 @@ export interface GraphVersionRecord {
     refinementApplied?: boolean | null;
     lastRefinementTaskId?: number | null;
     lastRefinementAppliedAt?: number | null;
-}
-
-export interface GraphVersionPageQuery {
-    pageNo?: number;
-    pageSize?: number;
-    taskType?: string | null;
-    status?: string | null;
-    sourceContentType?: string | null;
-    sourceContentId?: number | null;
 }
 
 export interface GraphEntityRecord {
@@ -81,40 +70,4 @@ export interface GraphLineageRelationRecord {
     firstExtractedAt?: number | null;
     lastExtractedAt?: number | null;
     confirmedAt?: number | null;
-}
-
-export interface GraphEntityPageQuery {
-    pageNo?: number;
-    pageSize?: number;
-    versionId?: number | null;
-    keyword?: string | null;
-    entityType?: string | null;
-    confirmationStatus?: string | null;
-}
-
-export interface GraphRelationPageQuery {
-    pageNo?: number;
-    pageSize?: number;
-    versionId?: number | null;
-    keyword?: string | null;
-    relationType?: string | null;
-    confirmationStatus?: string | null;
-}
-
-export interface GraphLineageNodePageQuery {
-    pageNo?: number;
-    pageSize?: number;
-    versionId?: number | null;
-    keyword?: string | null;
-    nodeType?: string | null;
-    confirmationStatus?: string | null;
-}
-
-export interface GraphLineageRelationPageQuery {
-    pageNo?: number;
-    pageSize?: number;
-    versionId?: number | null;
-    keyword?: string | null;
-    relationType?: string | null;
-    confirmationStatus?: string | null;
 }

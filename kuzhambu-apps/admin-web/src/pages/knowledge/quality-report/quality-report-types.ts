@@ -1,7 +1,3 @@
-/* eslint-disable local/service-input-type-location */
-
-import type { PageQuery } from "@/types/page";
-
 export type QualityReportStatus = "PUBLISHED" | "DRAFT" | string;
 
 export interface QualityReportRecord {
@@ -77,23 +73,6 @@ export interface QualityReportDetailRecord {
     lastRefinementAppliedAt?: number | null;
 }
 
-export interface GenerateQualityReportCommand {
-    graphVersionId: number;
-    generatedBy?: number | null;
-}
-
-export interface ReextractLowQualityCategoryCommand {
-    reportId: number;
-    sourceCategoryCode: string;
-    taskType?: string | null;
-    replaceUnconfirmedOnly?: boolean | null;
-    modelId?: number | null;
-    modelName?: string | null;
-    promptMessagesJson?: string | null;
-    inputPayloadJson?: string | null;
-    requestedBy?: number | null;
-}
-
 export interface ReextractLowQualityCategoryRecord {
     reportId?: number | null;
     sourceCategoryCode?: string | null;
@@ -106,19 +85,4 @@ export interface ReextractLowQualityCategoryRecord {
     triggerSource?: string | null;
     selectionScopeJson?: string | null;
     replaceUnconfirmedOnly?: boolean | null;
-}
-
-export type QualityReportPageQuery = PageQuery<{
-    graphVersionId?: number | null;
-    sourceContentType?: string | null;
-    sourceContentId?: number | null;
-    reportStatus?: QualityReportStatus | null;
-}>;
-
-export interface QualityReportDetailQuery {
-    reportId: number;
-}
-
-export interface QualityReportLatestQuery {
-    graphVersionId?: number | null;
 }

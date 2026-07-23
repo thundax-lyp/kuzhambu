@@ -1,19 +1,47 @@
 /* eslint-disable local/service-method-verb-prefix */
 
 import { postJson } from "@/api/http";
-import type { Page } from "@/types/page";
+import type { Page, PageQuery } from "@/types/page";
 import type {
-    GenerateQualityReportCommand,
-    QualityReportDetailQuery,
     QualityReportDetailRecord,
-    QualityReportLatestQuery,
-    QualityReportPageQuery,
     QualityReportRecord,
-    ReextractLowQualityCategoryCommand,
+    QualityReportStatus,
     ReextractLowQualityCategoryRecord
 } from "./quality-report-types";
 
 const API_PREFIX = "/knowledge/quality/report";
+
+export interface GenerateQualityReportCommand {
+    graphVersionId: number;
+    generatedBy?: number | null;
+}
+
+export interface ReextractLowQualityCategoryCommand {
+    reportId: number;
+    sourceCategoryCode: string;
+    taskType?: string | null;
+    replaceUnconfirmedOnly?: boolean | null;
+    modelId?: number | null;
+    modelName?: string | null;
+    promptMessagesJson?: string | null;
+    inputPayloadJson?: string | null;
+    requestedBy?: number | null;
+}
+
+export type QualityReportPageQuery = PageQuery<{
+    graphVersionId?: number | null;
+    sourceContentType?: string | null;
+    sourceContentId?: number | null;
+    reportStatus?: QualityReportStatus | null;
+}>;
+
+export interface QualityReportDetailQuery {
+    reportId: number;
+}
+
+export interface QualityReportLatestQuery {
+    graphVersionId?: number | null;
+}
 
 export const generateReport = (request: GenerateQualityReportCommand) => {
     return postJson<QualityReportDetailRecord, GenerateQualityReportCommand>(
