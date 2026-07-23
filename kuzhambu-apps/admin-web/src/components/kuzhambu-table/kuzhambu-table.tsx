@@ -8,6 +8,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { HolderOutlined, MoreOutlined } from "@ant-design/icons";
 import { Button, Dropdown, Table } from "antd";
 import type { MenuProps, TableProps } from "antd";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { PAGE_SIZE_OPTIONS } from "@/types/page";
 import "./kuzhambu-table.css";
 
@@ -55,6 +56,21 @@ export type KuzhambuTableRowActions<RecordType extends object = object> =
 export interface KuzhambuTableActionColumn<RecordType extends object = object> {
     inlineLimit?: number;
     options?: KuzhambuTableRowActions<RecordType>;
+}
+
+export interface KuzhambuTableToolbarAction {
+    action: () => void;
+    danger?: boolean;
+    disabled?: boolean;
+    loading?: boolean;
+    testId: string;
+    title: ReactNode;
+    type?: "default" | "primary";
+}
+
+export interface KuzhambuTableToolbar {
+    actions?: KuzhambuTableToolbarAction[];
+    leading?: ReactNode;
 }
 
 export type KuzhambuTableColumn<RecordType extends object = object> = NonNullable<
@@ -240,6 +256,7 @@ export interface KuzhambuTableProps<RecordType extends object = object> extends 
     resizableColumns?: boolean;
     responsive?: boolean;
     sortable?: boolean;
+    toolbar?: KuzhambuTableToolbar;
 }
 
 // AI NOTE: This is the admin table policy wrapper around Ant Design Table.
@@ -265,6 +282,7 @@ export const KuzhambuTable = <RecordType extends object = object>({
     rowSelection,
     scroll,
     sortable = false,
+    toolbar,
     ...tableProps
 }: KuzhambuTableProps<RecordType>) => {
     const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
@@ -711,19 +729,12 @@ export const KuzhambuTable = <RecordType extends object = object>({
         [draggingRecord, dropTarget, onRow, onSort, readDropPosition, readRowKey, sortableEnabled]
     );
 
-    return (
+    const table = (
         <Table<RecordType>
             {...tableProps}
             aria-label={ariaLabel}
             aria-labelledby={ariaLabelledBy}
-            className={[
-                "kuzhambu-table",
-                sortable ? "kuzhambu-table-sortable" : "kuzhambu-table-static",
-                rowSelection ? "kuzhambu-table-selectable" : "",
-                className
-            ]
-                .filter(Boolean)
-                .join(" ")}
+            className="kuzhambu-table"
             columns={normalizedColumns}
             onRow={mergedOnRow}
             pagination={mergedPagination}
@@ -731,5 +742,40 @@ export const KuzhambuTable = <RecordType extends object = object>({
             rowSelection={rowSelection}
             scroll={{ ...scroll, x: scrollX }}
         />
+    );
+
+    return (
+        <div
+            className={[
+                "kuzhambu-table-shell",
+                sortable ? "kuzhambu-table-sortable" : "kuzhambu-table-static",
+                rowSelection ? "kuzhambu-table-selectable" : "",
+                className
+            ]
+                .filter(Boolean)
+                .join(" ")}
+        >
+            {toolbar?.leading || toolbar?.actions?.length ? (
+                <div className="kuzhambu-table-toolbar">
+                    <div className="kuzhambu-table-toolbar-leading">{toolbar.leading}</div>
+                    <div className="kuzhambu-table-toolbar-actions">
+                        {toolbar.actions?.map((action) => (
+                            <KuzhambuButton
+                                key={action.testId}
+                                testId={action.testId}
+                                type={action.type}
+                                danger={action.danger}
+                                disabled={action.disabled}
+                                loading={action.loading}
+                                onClick={action.action}
+                            >
+                                {action.title}
+                            </KuzhambuButton>
+                        ))}
+                    </div>
+                </div>
+            ) : null}
+            {table}
+        </div>
     );
 };
