@@ -21,12 +21,6 @@
     gap: 12px;
 }
 
-.prompts-editor-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 12px;
-}
-
 .prompts-editor-item-compact .ant-form-item-control {
     max-width: 360px;
 }

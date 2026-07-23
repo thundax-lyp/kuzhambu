@@ -7,7 +7,7 @@ import {
     RetweetOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Form, Input, Select, Table, Typography } from "antd";
+import { App, Col, Form, Input, Row, Select, Table, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useEffect, useMemo, useState } from "react";
 import { ADMIN_FORM_HORIZONTAL_LAYOUT } from "@/components/form/form-layout";
@@ -676,46 +676,55 @@ export const PromptEditDrawer = ({
                     <Form.Item name="id" hidden>
                         <Input />
                     </Form.Item>
-                    <div className="prompts-editor-grid">
-                        <Form.Item
-                            label="模板名称"
-                            name="name"
-                            className="prompts-editor-item-compact"
-                            rules={[{ required: true, message: "请输入模板名称" }]}
-                        >
-                            <Input />
-                        </Form.Item>
-                        <Form.Item label="能力" className="prompts-editor-item-compact">
-                            <KuzhambuSpaceCompact block>
-                                <Form.Item
-                                    name="capability"
-                                    noStyle
-                                    rules={[{ required: true, message: "请选择能力" }]}
-                                >
-                                    <Select aria-label="提示词能力" options={capabilityOptions} />
-                                </Form.Item>
-                                <KuzhambuButton
-                                    testId="ai-prompts-prompts-view-variables-button"
-                                    disabled={allowedVariableNames.length === 0}
-                                    onClick={() => setVariableModalOpen(true)}
-                                >
-                                    变量
-                                </KuzhambuButton>
-                            </KuzhambuSpaceCompact>
-                        </Form.Item>
-                        <Form.Item
-                            label="状态"
-                            name="status"
-                            valuePropName="checked"
-                            className="prompts-editor-item-status"
-                        >
-                            <KuzhambuSwitch
-                                checkedChildren="启用"
-                                unCheckedChildren="禁用"
-                                aria-label="提示词模板状态"
-                            />
-                        </Form.Item>
-                    </div>
+                    <Row gutter={12}>
+                        <Col xs={24} lg={12}>
+                            <Form.Item
+                                label="模板名称"
+                                name="name"
+                                className="prompts-editor-item-compact"
+                                rules={[{ required: true, message: "请输入模板名称" }]}
+                            >
+                                <Input />
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} lg={12}>
+                            <Form.Item label="能力" className="prompts-editor-item-compact">
+                                <KuzhambuSpaceCompact block>
+                                    <Form.Item
+                                        name="capability"
+                                        noStyle
+                                        rules={[{ required: true, message: "请选择能力" }]}
+                                    >
+                                        <Select
+                                            aria-label="提示词能力"
+                                            options={capabilityOptions}
+                                        />
+                                    </Form.Item>
+                                    <KuzhambuButton
+                                        testId="ai-prompts-prompts-view-variables-button"
+                                        disabled={allowedVariableNames.length === 0}
+                                        onClick={() => setVariableModalOpen(true)}
+                                    >
+                                        变量
+                                    </KuzhambuButton>
+                                </KuzhambuSpaceCompact>
+                            </Form.Item>
+                        </Col>
+                        <Col xs={24} lg={12}>
+                            <Form.Item
+                                label="状态"
+                                name="status"
+                                valuePropName="checked"
+                                className="prompts-editor-item-status"
+                            >
+                                <KuzhambuSwitch
+                                    checkedChildren="启用"
+                                    unCheckedChildren="禁用"
+                                    aria-label="提示词模板状态"
+                                />
+                            </Form.Item>
+                        </Col>
+                    </Row>
                     <Form.Item
                         label="说明"
                         name="description"
