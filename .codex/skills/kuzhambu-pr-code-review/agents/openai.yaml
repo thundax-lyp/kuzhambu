@@ -1,0 +1,7 @@
+interface:
+  display_name: "Kuzhambu PR Code Review"
+  short_description: "Review the current branch diff."
+  default_prompt: "Use $kuzhambu-pr-code-review to review the current branch against main."
+
+policy:
+  allow_implicit_invocation: false

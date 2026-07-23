@@ -1,0 +1,7 @@
+interface:
+  display_name: "Kuzhambu Module Code Review"
+  short_description: "Review one Kuzhambu module deeply."
+  default_prompt: "Use $kuzhambu-module-code-review to review kuzhambu-servers/biz/ai."
+
+policy:
+  allow_implicit_invocation: false

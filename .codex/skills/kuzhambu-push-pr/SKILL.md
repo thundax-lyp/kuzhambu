@@ -1,21 +1,15 @@
 ---
 name: kuzhambu-push-pr
-description: Run this skill whenever the user asks to read PR rules, push and create a PR, update a PR, finish PR setup, ensure the PR is complete, monitor Codex comments, handle PR review comments, or says phrases like "阅读PR RULES，push & PR，确保PR完成，关注codex的评论，及时处理并回复". This skill performs Kuzhambu's branch-to-PR closeout workflow: read PR-RULES, validate scope, push a non-main branch, create or update the GitHub PR, watch checks and Codex/reviewer comments, fix actionable feedback, reply, and leave the PR ready for human review. Do not merge unless the user explicitly asks to merge.
+description: Kuzhambu branch-to-PR closeout workflow for direct slash-command invocation. This skill reads PR-RULES, validates scope, pushes a non-main branch, creates or updates the GitHub PR, watches checks and comments, fixes actionable feedback, replies, and leaves the PR ready for human review. Do not merge unless the user explicitly asks to merge.
 ---
 
 # Kuzhambu Push And PR
 
 将当前已完成的小步工作收口为 GitHub Pull Request，并持续处理 PR 上的 Codex 或 reviewer 评论，直到 PR 处于可审状态。
 
-## 触发语义
+## 调用方式
 
-支持自然语言和快捷命令形态，例如：
-
-- `阅读PR RULES，push & PR，确保PR完成，关注codex的评论，及时处理并回复`
-- `push & PR`
-- `创建 PR 并处理 codex 评论`
-- `/push-pr`
-- `/pr`
+本 skill 只用于 slash command 直接调用，不定义额外自然语言触发或适用语义。
 
 ## 核心边界
 
@@ -176,4 +170,4 @@ git diff --stat main...HEAD
 * Next action:
 ```
 
-如果创建了 PR，必须给出 PR URL。若执行了 stage、commit、push 或 PR 创建，应按 Codex app 要求在最终答复中附带对应 git directive。
+如果创建了 PR，必须给出 PR URL。
