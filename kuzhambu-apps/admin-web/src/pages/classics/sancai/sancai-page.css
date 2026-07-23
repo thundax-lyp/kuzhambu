@@ -119,28 +119,6 @@ html[data-theme="dark"] .sancai-form-field {
     color: var(--sancai-accent);
 }
 
-.sancai-category-title-cell {
-    display: grid;
-    min-width: 0;
-    gap: 2px;
-}
-
-.sancai-category-title-cell a {
-    overflow: hidden;
-    color: var(--sancai-ink);
-    font-weight: 700;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.sancai-category-title-cell a:hover {
-    color: var(--sancai-accent);
-}
-
-.sancai-category-table-row-active > td {
-    background: var(--sancai-accent-soft);
-}
-
 .sancai-category-edit-modal {
     display: grid;
     min-width: 0;
