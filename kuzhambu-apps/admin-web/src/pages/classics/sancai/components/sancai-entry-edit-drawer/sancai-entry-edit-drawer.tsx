@@ -3,6 +3,7 @@ import { App, Empty, Form } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
+import { ADMIN_FORM_HORIZONTAL_LAYOUT } from "@/components/form/form-layout";
 import { KuzhambuSegmentedDrawer } from "@/components/kuzhambu-segmented-drawer";
 import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
 import type { AiCandidateRecord } from "@/pages/classics/common/ai-candidate-types";
@@ -901,8 +902,9 @@ ${visualAssetFormValue?.visualDescription ? `<h2>视觉描述</h2><p>${escapeHtm
         className: "sancai-detail-card sancai-entry-edit-drawer-form",
         colon: false,
         component: "div" as const,
-        labelCol: { flex: "88px" },
-        layout: "horizontal" as const
+        labelCol: ADMIN_FORM_HORIZONTAL_LAYOUT.labelCol,
+        layout: "horizontal" as const,
+        wrapperCol: ADMIN_FORM_HORIZONTAL_LAYOUT.wrapperCol
     };
     const sections = [
         {

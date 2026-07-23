@@ -1,5 +1,6 @@
 import { App, Form, Input, Select } from "antd";
 import { useState } from "react";
+import { ADMIN_FORM_HORIZONTAL_LAYOUT } from "@/components/form/form-layout";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
@@ -140,8 +141,9 @@ const AiModelEditDrawerForm = ({
         className: "ai-models-form",
         colon: false,
         component: "div" as const,
-        labelCol: { flex: "104px" },
-        layout: "horizontal" as const
+        labelCol: ADMIN_FORM_HORIZONTAL_LAYOUT.labelCol,
+        layout: "horizontal" as const,
+        wrapperCol: ADMIN_FORM_HORIZONTAL_LAYOUT.wrapperCol
     };
 
     return (

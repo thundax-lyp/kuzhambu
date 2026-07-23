@@ -10,6 +10,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Form, Input, Select, Table, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useEffect, useMemo, useState } from "react";
+import { ADMIN_FORM_HORIZONTAL_LAYOUT } from "@/components/form/form-layout";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
@@ -667,8 +668,9 @@ export const PromptEditDrawer = ({
                     form={form}
                     colon={false}
                     component="div"
-                    labelCol={{ flex: "112px" }}
+                    labelCol={ADMIN_FORM_HORIZONTAL_LAYOUT.labelCol}
                     layout="horizontal"
+                    wrapperCol={ADMIN_FORM_HORIZONTAL_LAYOUT.wrapperCol}
                     className="prompts-editor-form"
                 >
                     <Form.Item name="id" hidden>

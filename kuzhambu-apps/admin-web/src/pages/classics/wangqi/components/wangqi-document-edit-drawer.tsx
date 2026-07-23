@@ -2,6 +2,7 @@ import { FileTextOutlined } from "@ant-design/icons";
 import { App, Form, Input } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
+import { ADMIN_FORM_HORIZONTAL_LAYOUT } from "@/components/form/form-layout";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 import { KuzhambuSegmentedDrawer } from "@/components/kuzhambu-segmented-drawer";
@@ -392,8 +393,9 @@ export const WangqiDocumentEditDrawer = ({
                 <Form<WangqiDocumentFormValues>
                     form={form}
                     colon={false}
-                    labelCol={{ flex: "88px" }}
+                    labelCol={ADMIN_FORM_HORIZONTAL_LAYOUT.labelCol}
                     layout="horizontal"
+                    wrapperCol={ADMIN_FORM_HORIZONTAL_LAYOUT.wrapperCol}
                     className="wangqi-document-edit-drawer-form"
                 >
                     {content}
