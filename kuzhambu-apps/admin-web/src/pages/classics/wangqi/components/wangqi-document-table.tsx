@@ -53,14 +53,20 @@ const readSummaryLines = (summary?: string | null) => {
 };
 
 interface WangqiDocumentTableProps {
+    canChangeDocumentVisibility: boolean;
     canExport?: boolean;
     canShare?: boolean;
     dataSource: WangqiDocumentRecord[];
+    isBatchSharing: boolean;
+    isBatchVisibilityChanging: boolean;
     loading?: boolean;
+    onChangeSelectedVisibility: (visibility: "PRIVATE" | "PUBLIC") => void;
     onDelete: (record: WangqiDocumentRecord) => void;
     onExport: (record: WangqiDocumentRecord) => void;
     onOpenEdit: (record: WangqiDocumentRecord) => void;
+    onOpenBatchCandidateDrawer: () => void;
     onShare: (record: WangqiDocumentRecord) => void;
+    onShareSelectedDocuments: () => void;
     onSelectedDocumentIdsChange: (ids: number[]) => void;
     onSortDirectionChange: (sortDirection: "ASC" | "DESC") => void;
     pagination: KuzhambuTableProps<WangqiDocumentRecord>["pagination"];
@@ -69,14 +75,20 @@ interface WangqiDocumentTableProps {
 }
 
 export const WangqiDocumentTable = ({
+    canChangeDocumentVisibility,
     canExport = true,
     canShare = true,
     dataSource,
+    isBatchSharing,
+    isBatchVisibilityChanging,
     loading = false,
+    onChangeSelectedVisibility,
     onDelete,
     onExport,
     onOpenEdit,
+    onOpenBatchCandidateDrawer,
     onShare,
+    onShareSelectedDocuments,
     onSelectedDocumentIdsChange,
     onSortDirectionChange,
     pagination,
@@ -182,6 +194,42 @@ export const WangqiDocumentTable = ({
             loading={loading}
             dataSource={dataSource}
             columns={columns}
+            toolbar={{
+                leading: (
+                    <Text type="secondary">
+                        已选 {selectedDocumentIds.length} / 当前页 {dataSource.length}
+                    </Text>
+                ),
+                actions: [
+                    {
+                        testId: "classics-wangqi-wangqi-batch-share-button",
+                        title: "分享文档",
+                        disabled: !selectedDocumentIds.length || !canShare,
+                        loading: isBatchSharing,
+                        action: onShareSelectedDocuments
+                    },
+                    {
+                        testId: "classics-wangqi-wangqi-action-button",
+                        title: "候选治理",
+                        disabled: !selectedDocumentIds.length || !canChangeDocumentVisibility,
+                        action: onOpenBatchCandidateDrawer
+                    },
+                    {
+                        testId: "classics-wangqi-wangqi-batch-public-button",
+                        title: "设为公开",
+                        disabled: !selectedDocumentIds.length || !canChangeDocumentVisibility,
+                        loading: isBatchVisibilityChanging,
+                        action: () => onChangeSelectedVisibility("PUBLIC")
+                    },
+                    {
+                        testId: "classics-wangqi-wangqi-batch-private-button",
+                        title: "设为私有",
+                        disabled: !selectedDocumentIds.length || !canChangeDocumentVisibility,
+                        loading: isBatchVisibilityChanging,
+                        action: () => onChangeSelectedVisibility("PRIVATE")
+                    }
+                ]
+            }}
             onChange={(_pagination, _filters, sorter) => {
                 const activeSorter = Array.isArray(sorter) ? sorter[0] : sorter;
                 if (activeSorter?.columnKey !== "documentTime" || !activeSorter.order) {

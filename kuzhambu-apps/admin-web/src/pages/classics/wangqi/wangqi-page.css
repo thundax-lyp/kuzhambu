@@ -34,18 +34,6 @@
     gap: 12px;
 }
 
-.wangqi-document-toolbar {
-    display: flex;
-    min-width: 0;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-}
-
-.wangqi-document-toolbar-actions {
-    justify-content: flex-end;
-}
-
 .wangqi-result-alert {
     margin-bottom: 0;
 }
