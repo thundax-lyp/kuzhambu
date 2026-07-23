@@ -1,8 +1,9 @@
-import { Col, Form, Input, Row, Select, Switch, Typography } from "antd";
+import { Form, Input, Select, Switch, Typography } from "antd";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
+import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuRichContentViewer } from "@/components/kuzhambu-rich-content-viewer";
 import type { DictItem } from "@/types/dict";
 import {
@@ -79,100 +80,88 @@ export const MingCustomsEditDrawer = ({
                 }
             ]}
         >
-            <Form<MingCustomsFormValues>
+            <KuzhambuForm<MingCustomsFormValues>
                 form={form}
-                layout="vertical"
                 className="ming-customs-edit-drawer-form"
             >
-                <Row gutter={16}>
-                    <Col xs={24} md={12}>
-                        <Form.Item
-                            name="title"
-                            label="标题"
-                            rules={[{ required: true, message: "请输入标题" }]}
-                        >
-                            <Input aria-label="明代习俗标题" maxLength={100} showCount />
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} md={12}>
-                        <Form.Item
-                            name="category"
-                            label="分类"
-                            rules={[{ required: true, message: "请选择分类" }]}
-                        >
-                            <Select
-                                aria-label="明代习俗编辑分类"
-                                options={categoryOptions.map((option) => ({
-                                    label: option.label,
-                                    value: option.value
-                                }))}
-                                placeholder="选择分类"
-                            />
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} md={12}>
-                        <Form.Item name="chapter" label="章节">
-                            <Input aria-label="明代习俗章节" maxLength={100} showCount />
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} md={12}>
-                        <Form.Item name="section" label="小节">
-                            <Input aria-label="明代习俗小节" maxLength={100} showCount />
-                        </Form.Item>
-                    </Col>
-                </Row>
-                <Form.Item name="summary" label="概述">
+                <KuzhambuFormItem
+                    name="title"
+                    label="标题"
+                    rules={[{ required: true, message: "请输入标题" }]}
+                >
+                    <Input aria-label="明代习俗标题" maxLength={100} showCount />
+                </KuzhambuFormItem>
+                <KuzhambuFormItem
+                    name="category"
+                    label="分类"
+                    rules={[{ required: true, message: "请选择分类" }]}
+                >
+                    <Select
+                        aria-label="明代习俗编辑分类"
+                        options={categoryOptions.map((option) => ({
+                            label: option.label,
+                            value: option.value
+                        }))}
+                        placeholder="选择分类"
+                    />
+                </KuzhambuFormItem>
+                <KuzhambuFormItem name="chapter" label="章节">
+                    <Input aria-label="明代习俗章节" maxLength={100} showCount />
+                </KuzhambuFormItem>
+                <KuzhambuFormItem name="section" label="小节">
+                    <Input aria-label="明代习俗小节" maxLength={100} showCount />
+                </KuzhambuFormItem>
+                <KuzhambuFormItem name="summary" label="概述" layoutSize="large">
                     <TextArea
                         aria-label="明代习俗概述"
                         autoSize={resolveTextAreaAutoSize({ minRows: 3, maxRows: 6 })}
                         maxLength={500}
                         showCount
                     />
-                </Form.Item>
-                <Row gutter={16}>
-                    <Col xs={24} md={12}>
-                        <Form.Item name="contentFormat" label="正文格式">
-                            <Select
-                                aria-label="明代习俗正文格式"
-                                options={[
-                                    { label: "Markdown", value: "MARKDOWN" },
-                                    { label: "HTML", value: "HTML" },
-                                    { label: "纯文本", value: "TEXT" }
-                                ]}
-                            />
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} md={12}>
-                        <Form.Item name="isPublic" label="可见性" valuePropName="checked">
-                            <Switch
-                                aria-label="明代习俗公开状态"
-                                checkedChildren="公开"
-                                unCheckedChildren="私有"
-                            />
-                        </Form.Item>
-                    </Col>
-                </Row>
-                <Form.Item name="content" label="正文">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem name="contentFormat" label="正文格式">
+                    <Select
+                        aria-label="明代习俗正文格式"
+                        options={[
+                            { label: "Markdown", value: "MARKDOWN" },
+                            { label: "HTML", value: "HTML" },
+                            { label: "纯文本", value: "TEXT" }
+                        ]}
+                    />
+                </KuzhambuFormItem>
+                <KuzhambuFormItem name="isPublic" label="可见性" valuePropName="checked">
+                    <Switch
+                        aria-label="明代习俗公开状态"
+                        checkedChildren="公开"
+                        unCheckedChildren="私有"
+                    />
+                </KuzhambuFormItem>
+                <KuzhambuFormItem name="content" label="正文" layoutSize="large">
                     <TextArea
                         aria-label="明代习俗正文"
                         autoSize={resolveTextAreaAutoSize({ minRows: 8, maxRows: 14 })}
                     />
-                </Form.Item>
-                <section className="ming-customs-edit-drawer-preview" aria-label="明代习俗正文预览">
-                    <Text strong>正文预览</Text>
-                    <KuzhambuRichContentViewer
-                        className="ming-customs-edit-drawer-preview-content"
-                        content={content}
-                        format={contentFormat}
-                    />
-                </section>
-                <Form.Item name="originalExcerpts" label="原文摘录">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem colon={false} label="预览" layoutSize="large">
+                    <section
+                        className="ming-customs-edit-drawer-preview"
+                        aria-label="明代习俗正文预览"
+                    >
+                        <Text strong>正文预览</Text>
+                        <KuzhambuRichContentViewer
+                            className="ming-customs-edit-drawer-preview-content"
+                            content={content}
+                            format={contentFormat}
+                        />
+                    </section>
+                </KuzhambuFormItem>
+                <KuzhambuFormItem name="originalExcerpts" label="原文摘录" layoutSize="large">
                     <TextArea
                         aria-label="明代习俗原文摘录"
                         autoSize={resolveTextAreaAutoSize({ minRows: 4, maxRows: 8 })}
                     />
-                </Form.Item>
-            </Form>
+                </KuzhambuFormItem>
+            </KuzhambuForm>
             {afterForm}
         </KuzhambuDrawer>
     );

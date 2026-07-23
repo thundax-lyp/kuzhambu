@@ -1,8 +1,9 @@
 import { CameraOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Form, Input, Select, Switch, Upload } from "antd";
+import { Input, Select, Switch, Upload } from "antd";
 import { useMemo, useState } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
+import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import type { CurrentUserRecord } from "@/service/current-user-types";
 import type { OptionsRecord } from "@/types/options";
 import * as service from "../user-service";
@@ -195,7 +196,7 @@ export const UserEditDrawer = ({
             ]}
         >
             {!creating && user ? (
-                <Form className="user-edit-drawer-form" component="div" layout="vertical">
+                <>
                     <div className="user-edit-drawer-avatar">
                         <UserAvatar user={user} size={64} />
                         <Upload
@@ -221,113 +222,115 @@ export const UserEditDrawer = ({
                             />
                         </Upload>
                     </div>
-                    <Form.Item label="姓名">
-                        <Input
-                            value={createForm.name}
-                            placeholder="用户姓名"
-                            onChange={(event) => updateForm({ name: event.target.value })}
-                        />
-                    </Form.Item>
-                    <Form.Item label="登录名">
-                        <Input
-                            value={createForm.loginName}
-                            placeholder="lin.zhiyuan"
-                            onChange={(event) => updateForm({ loginName: event.target.value })}
-                        />
-                    </Form.Item>
-                    <Form.Item label="邮箱">
-                        <Input
-                            value={createForm.email || ""}
-                            placeholder="name@example.com"
-                            onChange={(event) => updateForm({ email: event.target.value })}
-                        />
-                    </Form.Item>
-                    <Form.Item label="手机">
-                        <Input
-                            value={createForm.mobile || ""}
-                            placeholder="手机号"
-                            onChange={(event) => updateForm({ mobile: event.target.value })}
-                        />
-                    </Form.Item>
-                    <Form.Item label="部门">
-                        <Select
-                            value={createForm.departmentId || undefined}
-                            options={departmentOptions(departments)}
-                            placeholder="选择部门"
-                            showSearch
-                            optionFilterProp="label"
-                            onChange={(departmentId) => updateForm({ departmentId })}
-                        />
-                    </Form.Item>
-                    <Form.Item label="角色">
-                        <Select
-                            mode="multiple"
-                            value={createForm.roleIds}
-                            options={roleOptions}
-                            loading={userRoleQuery.isFetching}
-                            placeholder="选择角色"
-                            onChange={(roleIds) => updateForm({ roleIds })}
-                        />
-                    </Form.Item>
-                    <Form.Item label="等级">
-                        <Select
-                            value={createForm.ranks}
-                            options={editableRankOptions}
-                            onChange={(ranks) => updateForm({ ranks })}
-                        />
-                    </Form.Item>
-                    <Form.Item label="管理员">
-                        <Switch
-                            checked={createForm.admin}
-                            onChange={(admin) => updateForm({ admin })}
-                        />
-                    </Form.Item>
-                    <Form.Item label="启用">
-                        <Switch
-                            checked={createForm.enable}
-                            onChange={(enable) => updateForm({ enable })}
-                        />
-                    </Form.Item>
-                </Form>
+                    <KuzhambuForm className="user-edit-drawer-form" component="div">
+                        <KuzhambuFormItem label="姓名">
+                            <Input
+                                value={createForm.name}
+                                placeholder="用户姓名"
+                                onChange={(event) => updateForm({ name: event.target.value })}
+                            />
+                        </KuzhambuFormItem>
+                        <KuzhambuFormItem label="登录名">
+                            <Input
+                                value={createForm.loginName}
+                                placeholder="lin.zhiyuan"
+                                onChange={(event) => updateForm({ loginName: event.target.value })}
+                            />
+                        </KuzhambuFormItem>
+                        <KuzhambuFormItem label="邮箱">
+                            <Input
+                                value={createForm.email || ""}
+                                placeholder="name@example.com"
+                                onChange={(event) => updateForm({ email: event.target.value })}
+                            />
+                        </KuzhambuFormItem>
+                        <KuzhambuFormItem label="手机">
+                            <Input
+                                value={createForm.mobile || ""}
+                                placeholder="手机号"
+                                onChange={(event) => updateForm({ mobile: event.target.value })}
+                            />
+                        </KuzhambuFormItem>
+                        <KuzhambuFormItem label="部门">
+                            <Select
+                                value={createForm.departmentId || undefined}
+                                options={departmentOptions(departments)}
+                                placeholder="选择部门"
+                                showSearch
+                                optionFilterProp="label"
+                                onChange={(departmentId) => updateForm({ departmentId })}
+                            />
+                        </KuzhambuFormItem>
+                        <KuzhambuFormItem label="角色">
+                            <Select
+                                mode="multiple"
+                                value={createForm.roleIds}
+                                options={roleOptions}
+                                loading={userRoleQuery.isFetching}
+                                placeholder="选择角色"
+                                onChange={(roleIds) => updateForm({ roleIds })}
+                            />
+                        </KuzhambuFormItem>
+                        <KuzhambuFormItem label="等级">
+                            <Select
+                                value={createForm.ranks}
+                                options={editableRankOptions}
+                                onChange={(ranks) => updateForm({ ranks })}
+                            />
+                        </KuzhambuFormItem>
+                        <KuzhambuFormItem label="管理员">
+                            <Switch
+                                checked={createForm.admin}
+                                onChange={(admin) => updateForm({ admin })}
+                            />
+                        </KuzhambuFormItem>
+                        <KuzhambuFormItem label="启用">
+                            <Switch
+                                checked={createForm.enable}
+                                onChange={(enable) => updateForm({ enable })}
+                            />
+                        </KuzhambuFormItem>
+                    </KuzhambuForm>
+                </>
             ) : null}
             {creating ? (
-                <Form className="user-edit-drawer-form" component="div" layout="vertical">
-                    <Form.Item label="登录名">
+                <KuzhambuForm className="user-edit-drawer-form" component="div">
+                    <KuzhambuFormItem label="登录名">
                         <Input
                             value={createForm.loginName}
                             placeholder="lin.zhiyuan"
                             onChange={(event) => updateForm({ loginName: event.target.value })}
                         />
-                    </Form.Item>
-                    <Form.Item label="登录密码">
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem label="登录密码">
                         <Input.Password
                             value={createForm.loginPass}
                             placeholder="设置初始密码"
                             onChange={(event) => updateForm({ loginPass: event.target.value })}
                         />
-                    </Form.Item>
-                    <Form.Item label="姓名">
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem label="姓名">
                         <Input
                             value={createForm.name}
                             placeholder="用户姓名"
                             onChange={(event) => updateForm({ name: event.target.value })}
                         />
-                    </Form.Item>
-                    <Form.Item label="邮箱">
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem label="邮箱">
                         <Input
                             value={createForm.email || ""}
                             placeholder="name@example.com"
                             onChange={(event) => updateForm({ email: event.target.value })}
                         />
-                    </Form.Item>
-                    <Form.Item label="手机">
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem label="手机">
                         <Input
                             value={createForm.mobile || ""}
                             placeholder="手机号"
                             onChange={(event) => updateForm({ mobile: event.target.value })}
                         />
-                    </Form.Item>
-                    <Form.Item label="部门">
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem label="部门">
                         <Select
                             value={createForm.departmentId || undefined}
                             options={departmentOptions(departments)}
@@ -336,8 +339,8 @@ export const UserEditDrawer = ({
                             optionFilterProp="label"
                             onChange={(departmentId) => updateForm({ departmentId })}
                         />
-                    </Form.Item>
-                    <Form.Item label="角色">
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem label="角色">
                         <Select
                             mode="multiple"
                             value={createForm.roleIds}
@@ -346,27 +349,27 @@ export const UserEditDrawer = ({
                             placeholder="选择角色"
                             onChange={(roleIds) => updateForm({ roleIds })}
                         />
-                    </Form.Item>
-                    <Form.Item label="等级">
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem label="等级">
                         <Select
                             value={createForm.ranks}
                             options={editableRankOptions}
                             onChange={(ranks) => updateForm({ ranks })}
                         />
-                    </Form.Item>
-                    <Form.Item label="管理员">
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem label="管理员">
                         <Switch
                             checked={createForm.admin}
                             onChange={(admin) => updateForm({ admin })}
                         />
-                    </Form.Item>
-                    <Form.Item label="启用">
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem label="启用">
                         <Switch
                             checked={createForm.enable}
                             onChange={(enable) => updateForm({ enable })}
                         />
-                    </Form.Item>
-                </Form>
+                    </KuzhambuFormItem>
+                </KuzhambuForm>
             ) : null}
         </KuzhambuDrawer>
     );
