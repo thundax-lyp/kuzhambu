@@ -145,24 +145,24 @@ export const RoleEditDrawer = ({
                 <KuzhambuFormItem name="remarks" label="备注" layoutSize="large">
                     <TextArea rows={3} maxLength={200} showCount placeholder="角色说明" />
                 </KuzhambuFormItem>
-                <div className="role-menu-panel">
-                    <div className="role-menu-panel-head">
-                        <Text strong>菜单权限</Text>
-                        <Text type="secondary">{checkedMenuKeys.length} 项已选</Text>
-                    </div>
-                    <Tree
-                        checkable
-                        defaultExpandAll
-                        checkedKeys={checkedMenuKeys}
-                        defaultExpandedKeys={expandedMenuIds}
-                        treeData={treeData}
-                        selectable={false}
-                        onCheck={(keys) =>
-                            setCheckedMenuKeys(Array.isArray(keys) ? keys : keys.checked)
-                        }
-                    />
-                </div>
             </KuzhambuForm>
+            <div className="role-menu-panel">
+                <div className="role-menu-panel-head">
+                    <Text strong>菜单权限</Text>
+                    <Text type="secondary">{checkedMenuKeys.length} 项已选</Text>
+                </div>
+                <Tree
+                    checkable
+                    defaultExpandAll
+                    checkedKeys={checkedMenuKeys}
+                    defaultExpandedKeys={expandedMenuIds}
+                    treeData={treeData}
+                    selectable={false}
+                    onCheck={(keys) =>
+                        setCheckedMenuKeys(Array.isArray(keys) ? keys : keys.checked)
+                    }
+                />
+            </div>
         </KuzhambuDrawer>
     );
 };
