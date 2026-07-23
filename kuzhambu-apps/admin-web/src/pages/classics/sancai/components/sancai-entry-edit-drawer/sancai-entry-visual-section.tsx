@@ -5,9 +5,10 @@ import {
     FileTextOutlined,
     PictureOutlined
 } from "@ant-design/icons";
-import { Col, Empty, Form, Image, Input, Row, Select, Tag, Typography } from "antd";
+import { Empty, Image, Input, Select, Tag, Typography } from "antd";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
+import { KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
@@ -140,7 +141,7 @@ export const SancaiEntryVisualSection = ({
             </div>
             {selectedVisualAsset ? (
                 <>
-                    <Form.Item label="来源图片">
+                    <KuzhambuFormItem label="来源图片" layoutSize="large">
                         <Select
                             aria-label="三才图会视觉处理来源图片"
                             disabled={!defaultSourceImage}
@@ -154,7 +155,7 @@ export const SancaiEntryVisualSection = ({
                             }))}
                             onChange={(value) => onSelectVisualSourceImageBySelectValue(value)}
                         />
-                    </Form.Item>
+                    </KuzhambuFormItem>
                     <div className="sancai-visual-asset-image-list">
                         <div className="sancai-entry-image-frame">
                             {sourcePreviewUrl ? (
@@ -376,39 +377,37 @@ export const SancaiEntryVisualSection = ({
                             </KuzhambuButton>
                         </KuzhambuSpace>
                     </div>
-                    <Row gutter={10}>
-                        <Col xs={24} md={12}>
-                            <Form.Item label="文本权重">
-                                <Input
-                                    aria-label="三才图会视觉处理文本权重"
-                                    value={visualAssetFormValue?.textWeight ?? ""}
-                                    onChange={(event) =>
-                                        onUpdateVisualAssetForm({
-                                            textWeight: event.target.value
-                                                ? Number(event.target.value)
-                                                : null
-                                        })
-                                    }
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} md={12}>
-                            <Form.Item label="图片权重">
-                                <Input
-                                    aria-label="三才图会视觉处理图片权重"
-                                    value={visualAssetFormValue?.imageWeight ?? ""}
-                                    onChange={(event) =>
-                                        onUpdateVisualAssetForm({
-                                            imageWeight: event.target.value
-                                                ? Number(event.target.value)
-                                                : null
-                                        })
-                                    }
-                                />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Form.Item label="图片理解" className="sancai-entry-edit-drawer-form-item-top">
+                    <KuzhambuFormItem label="文本权重" layoutSize="middle">
+                        <Input
+                            aria-label="三才图会视觉处理文本权重"
+                            value={visualAssetFormValue?.textWeight ?? ""}
+                            onChange={(event) =>
+                                onUpdateVisualAssetForm({
+                                    textWeight: event.target.value
+                                        ? Number(event.target.value)
+                                        : null
+                                })
+                            }
+                        />
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem label="图片权重" layoutSize="middle">
+                        <Input
+                            aria-label="三才图会视觉处理图片权重"
+                            value={visualAssetFormValue?.imageWeight ?? ""}
+                            onChange={(event) =>
+                                onUpdateVisualAssetForm({
+                                    imageWeight: event.target.value
+                                        ? Number(event.target.value)
+                                        : null
+                                })
+                            }
+                        />
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem
+                        label="图片理解"
+                        layoutSize="large"
+                        className="sancai-entry-edit-drawer-form-item-top"
+                    >
                         <Input.TextArea
                             aria-label="三才图会视觉处理图片理解"
                             value={visualAssetFormValue?.imageAnalysisMarkdown ?? ""}
@@ -422,8 +421,12 @@ export const SancaiEntryVisualSection = ({
                                 })
                             }
                         />
-                    </Form.Item>
-                    <Form.Item label="融合描述" className="sancai-entry-edit-drawer-form-item-top">
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem
+                        label="融合描述"
+                        layoutSize="large"
+                        className="sancai-entry-edit-drawer-form-item-top"
+                    >
                         <Input.TextArea
                             aria-label="三才图会视觉处理融合描述"
                             value={visualAssetFormValue?.fusionDescription ?? ""}
@@ -437,8 +440,12 @@ export const SancaiEntryVisualSection = ({
                                 })
                             }
                         />
-                    </Form.Item>
-                    <Form.Item label="视觉描述" className="sancai-entry-edit-drawer-form-item-top">
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem
+                        label="视觉描述"
+                        layoutSize="large"
+                        className="sancai-entry-edit-drawer-form-item-top"
+                    >
                         <Input.TextArea
                             aria-label="三才图会视觉处理视觉描述"
                             value={visualAssetFormValue?.visualDescription ?? ""}
@@ -452,8 +459,12 @@ export const SancaiEntryVisualSection = ({
                                 })
                             }
                         />
-                    </Form.Item>
-                    <Form.Item label="生成参数" className="sancai-entry-edit-drawer-form-item-top">
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem
+                        label="生成参数"
+                        layoutSize="large"
+                        className="sancai-entry-edit-drawer-form-item-top"
+                    >
                         <Input.TextArea
                             aria-label="三才图会视觉处理生成参数"
                             value={visualAssetFormValue?.generationParamsJson ?? ""}
@@ -467,7 +478,7 @@ export const SancaiEntryVisualSection = ({
                                 })
                             }
                         />
-                    </Form.Item>
+                    </KuzhambuFormItem>
                 </>
             ) : (
                 <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无视觉处理记录" />
