@@ -3,11 +3,10 @@ import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { TagGovernanceMetricsPanel } from "./tag-governance-metrics-panel";
 import { TagMergePanel } from "./tag-merge-panel";
 import { TagTable } from "./tag-table";
-import type { TagMergeCommand, TagStatusCommand } from "../taxonomy-service";
+import type { TagMergeCommand, TagPageQuery, TagStatusCommand } from "../taxonomy-service";
 import type {
     TagGovernanceMetricsRecord,
     TagMergePreviewRecord,
-    TagPageQuery,
     TagRecord
 } from "../taxonomy-types";
 

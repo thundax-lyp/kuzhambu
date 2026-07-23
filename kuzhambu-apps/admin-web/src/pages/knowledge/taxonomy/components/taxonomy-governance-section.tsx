@@ -1,6 +1,7 @@
 import type { Key } from "react";
 import { TagReviewTable } from "./tag-review-table";
-import type { TagRecord, TagReviewPageQuery } from "../taxonomy-types";
+import type { TagReviewPageQuery } from "../taxonomy-service";
+import type { TagRecord } from "../taxonomy-types";
 
 interface TaxonomyGovernanceSectionProps {
     loading: boolean;
