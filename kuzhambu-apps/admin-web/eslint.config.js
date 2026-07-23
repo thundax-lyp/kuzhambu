@@ -73,6 +73,33 @@ const localRules = {
                 };
             }
         },
+        "no-nested-ternary": {
+            create(context) {
+                const isDirectJsxRenderBranch = (node) => {
+                    return (
+                        node.parent?.type === "ConditionalExpression" &&
+                        node.parent.parent?.type === "JSXExpressionContainer"
+                    );
+                };
+
+                return {
+                    ConditionalExpression(node) {
+                        if (node.parent?.type !== "ConditionalExpression") {
+                            return;
+                        }
+                        if (isDirectJsxRenderBranch(node)) {
+                            return;
+                        }
+
+                        context.report({
+                            node,
+                            message:
+                                "ADMIN_WEB_NAME_NO_NESTED_TERNARY: nested ternary expressions are forbidden except direct three-branch JSX rendering."
+                        });
+                    }
+                };
+            }
+        },
         "hook-file-path": {
             create(context) {
                 const isHookFilePath = (normalizedFilePath) => {
@@ -1849,10 +1876,6 @@ const frontendRestrictedSyntax = [
         selector: "FunctionDeclaration",
         message:
             "ADMIN_WEB_NAME_FUNCTION_ARROW: use arrow functions by default for frontend methods."
-    },
-    {
-        selector: "ConditionalExpression > ConditionalExpression",
-        message: "ADMIN_WEB_NAME_NO_NESTED_TERNARY: nested ternary expressions are forbidden."
     }
 ];
 
@@ -1950,6 +1973,7 @@ export default tseslint.config(
             "local/service-input-type-location": "error",
             "local/business-data-type-location": "error",
             "local/kuzhambu-component-name": "error",
+            "local/no-nested-ternary": "error",
             "local/service-method-verb-prefix": "error",
             "local/service-method-input-shape": "error",
             "local/service-helper-contract-types": "error",

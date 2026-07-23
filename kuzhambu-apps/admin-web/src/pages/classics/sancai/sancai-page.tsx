@@ -212,49 +212,6 @@ export const SancaiPage = () => {
         }));
     };
 
-    let panelContent = (
-        <SancaiCategoryPanel
-            key={`category-${createIntent.version}`}
-            categories={categories}
-            defaultCreateOpen={createIntent.target === "category" && createIntent.version > 0}
-            isLoading={isLoading}
-            selectedCategory={selectedCategory}
-            onSelect={selectCategory}
-        />
-    );
-    if (selectedPanel === "volume") {
-        panelContent = (
-            <SancaiVolumePanel
-                key={`volume-${selectedCategory?.id ?? "none"}-${createIntent.version}`}
-                categories={categories}
-                defaultCreateOpen={createIntent.target === "volume" && createIntent.version > 0}
-                volumes={visibleVolumes}
-                isLoading={isLoading}
-                selectedCategory={selectedCategory}
-                selectedVolume={selectedVolume}
-                onSelect={selectVolume}
-            />
-        );
-    }
-    if (selectedVolume) {
-        panelContent = (
-            <SancaiEntryPanel
-                key={`entry-${selectedVolume.id}-${createIntent.version}`}
-                categories={categories}
-                categoryId={selectedCategory?.id ?? null}
-                defaultCreateOpen={createIntent.target === "entry" && createIntent.version > 0}
-                exportJobsDrawerOpen={exportJobsDrawerOpen}
-                isCatalogLoading={isLoading}
-                keyword={appliedKeyword}
-                lifecycleStatus={appliedLifecycleStatus}
-                refreshVersion={refreshVersion}
-                volumeId={selectedVolume.id}
-                volumes={volumes}
-                onExportJobsDrawerOpenChange={setExportJobsDrawerOpen}
-            />
-        );
-    }
-
     return (
         <KuzhambuPage
             className="sancai-page"
@@ -369,7 +326,50 @@ export const SancaiPage = () => {
                         />
                     </aside>
                 </Splitter.Panel>
-                <Splitter.Panel className="sancai-work-panel">{panelContent}</Splitter.Panel>
+                <Splitter.Panel className="sancai-work-panel">
+                    {selectedVolume ? (
+                        <SancaiEntryPanel
+                            key={`entry-${selectedVolume.id}-${createIntent.version}`}
+                            categories={categories}
+                            categoryId={selectedCategory?.id ?? null}
+                            defaultCreateOpen={
+                                createIntent.target === "entry" && createIntent.version > 0
+                            }
+                            exportJobsDrawerOpen={exportJobsDrawerOpen}
+                            isCatalogLoading={isLoading}
+                            keyword={appliedKeyword}
+                            lifecycleStatus={appliedLifecycleStatus}
+                            refreshVersion={refreshVersion}
+                            volumeId={selectedVolume.id}
+                            volumes={volumes}
+                            onExportJobsDrawerOpenChange={setExportJobsDrawerOpen}
+                        />
+                    ) : selectedPanel === "volume" ? (
+                        <SancaiVolumePanel
+                            key={`volume-${selectedCategory?.id ?? "none"}-${createIntent.version}`}
+                            categories={categories}
+                            defaultCreateOpen={
+                                createIntent.target === "volume" && createIntent.version > 0
+                            }
+                            volumes={visibleVolumes}
+                            isLoading={isLoading}
+                            selectedCategory={selectedCategory}
+                            selectedVolume={selectedVolume}
+                            onSelect={selectVolume}
+                        />
+                    ) : (
+                        <SancaiCategoryPanel
+                            key={`category-${createIntent.version}`}
+                            categories={categories}
+                            defaultCreateOpen={
+                                createIntent.target === "category" && createIntent.version > 0
+                            }
+                            isLoading={isLoading}
+                            selectedCategory={selectedCategory}
+                            onSelect={selectCategory}
+                        />
+                    )}
+                </Splitter.Panel>
             </Splitter>
         </KuzhambuPage>
     );

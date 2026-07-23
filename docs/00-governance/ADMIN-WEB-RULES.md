@@ -104,7 +104,7 @@
 - `ADMIN_WEB_COMPONENT_SINGLE_EXPORT`：页面私有组件文件最多导出一个 PascalCase 组件。
 - `ADMIN_WEB_NAME_PAGE_EXPORT`：页面组件使用 `export const XxxPage = () => {}`。
 - `ADMIN_WEB_NAME_FUNCTION_ARROW`：前端方法默认使用箭头函数。
-- `ADMIN_WEB_NAME_NO_NESTED_TERNARY`：禁止嵌套三元表达式。
+- `ADMIN_WEB_NAME_NO_NESTED_TERNARY`：默认禁止嵌套三元表达式；允许 JSX 渲染边界使用直接三段分支。
 - `ADMIN_WEB_NAME_CAMEL_CASE`：变量和方法使用 camelCase。
 - `ADMIN_WEB_NAME_API_CONTRACT_TYPE_LOCATION`：`XxxRequest` / `XxxResponse` 只定义在 `*-service.ts` 或 `src/api/`。
 - `ADMIN_WEB_NAME_API_CONTRACT_TYPE_EXPOSURE`：`XxxRequest` / `XxxResponse` 是 service 内部 API 契约，不从 service 导出。
