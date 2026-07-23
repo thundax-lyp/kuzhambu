@@ -4,7 +4,7 @@ import {
     TranslationOutlined,
     UploadOutlined
 } from "@ant-design/icons";
-import { Form, Image, Input, Select, Switch, Typography, Upload } from "antd";
+import { Col, Form, Image, Input, Row, Select, Switch, Typography, Upload } from "antd";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
@@ -69,32 +69,36 @@ export const SancaiEntryBasicSection = ({
 }: SancaiEntryBasicSectionProps) => {
     return (
         <>
-            <div className="sancai-entry-edit-drawer-catalog-row">
-                <Form.Item label="门类">
-                    <Select
-                        aria-label="三才图会条目门类"
-                        placeholder="选择门类"
-                        options={categoryOptions}
-                        value={form.categoryId ?? undefined}
-                        onChange={(value) => onChangeCategory(value ?? null)}
-                    />
-                </Form.Item>
-                <Form.Item label="卷">
-                    <Select
-                        aria-label="三才图会条目卷"
-                        disabled={!form.categoryId}
-                        placeholder="选择卷"
-                        options={volumeOptions}
-                        value={form.volumeId ?? undefined}
-                        onChange={(value) =>
-                            setForm((currentForm) => ({
-                                ...currentForm,
-                                volumeId: value ?? null
-                            }))
-                        }
-                    />
-                </Form.Item>
-            </div>
+            <Row gutter={10}>
+                <Col xs={24} md={12}>
+                    <Form.Item label="门类">
+                        <Select
+                            aria-label="三才图会条目门类"
+                            placeholder="选择门类"
+                            options={categoryOptions}
+                            value={form.categoryId ?? undefined}
+                            onChange={(value) => onChangeCategory(value ?? null)}
+                        />
+                    </Form.Item>
+                </Col>
+                <Col xs={24} md={12}>
+                    <Form.Item label="卷">
+                        <Select
+                            aria-label="三才图会条目卷"
+                            disabled={!form.categoryId}
+                            placeholder="选择卷"
+                            options={volumeOptions}
+                            value={form.volumeId ?? undefined}
+                            onChange={(value) =>
+                                setForm((currentForm) => ({
+                                    ...currentForm,
+                                    volumeId: value ?? null
+                                }))
+                            }
+                        />
+                    </Form.Item>
+                </Col>
+            </Row>
             <Form.Item label="标题">
                 <Input
                     aria-label="三才图会条目标题"
