@@ -4,11 +4,14 @@ import { useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import type { DictItem } from "@/types/dict";
-import type { SancaiVolumeFormValues } from "./sancai-form-values";
+import type { SancaiVolumeFormValues } from "../sancai-form-values";
 import { SancaiVolumeList } from "./sancai-volume-list";
 import { SancaiVolumeEditModal } from "./sancai-volume-edit-modal";
-import * as volumeService from "../sancai-volume-service";
-import type { SancaiCategoryRecord, SancaiVolumeRecord } from "../sancai-types";
+import * as volumeService from "@/pages/classics/sancai/sancai-volume-service";
+import type {
+    SancaiCategoryRecord,
+    SancaiVolumeRecord
+} from "@/pages/classics/sancai/sancai-types";
 
 interface SancaiVolumePanelProps {
     categories: SancaiCategoryRecord[];
