@@ -4,7 +4,7 @@ import type {
     GenerateQualityReportCommand,
     QualityReportPageQuery,
     ReextractLowQualityCategoryCommand
-} from "./quality-report-types";
+} from "./quality-report-service";
 
 interface CapturedCall {
     body: unknown;
