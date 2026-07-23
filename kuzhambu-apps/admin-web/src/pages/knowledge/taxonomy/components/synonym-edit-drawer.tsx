@@ -3,7 +3,6 @@ import { useEffect, useMemo } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import type { SynonymCreateCommand, SynonymUpdateCommand } from "../taxonomy-service";
 import type { SynonymRecord } from "../taxonomy-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 interface SynonymEditDrawerProps {
     open?: boolean;
@@ -102,25 +101,21 @@ export const SynonymEditDrawer = ({
             open={visible}
             size="small"
             onClose={onClose}
-            footer={
-                <div className="knowledge-taxonomy-synonym-edit-drawer-footer">
-                    <KuzhambuButton
-                        testId="knowledge-taxonomy-synonym-cancel-button"
-                        disabled={saving}
-                        onClick={onClose}
-                    >
-                        取消
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="knowledge-taxonomy-synonym-action-button"
-                        type="primary"
-                        loading={saving}
-                        onClick={() => void saveSynonym()}
-                    >
-                        {saveButtonText}
-                    </KuzhambuButton>
-                </div>
-            }
+            footerActions={[
+                {
+                    testId: "knowledge-taxonomy-synonym-cancel-button",
+                    title: "取消",
+                    disabled: saving,
+                    action: onClose
+                },
+                {
+                    testId: "knowledge-taxonomy-synonym-action-button",
+                    title: saveButtonText,
+                    type: "primary",
+                    loading: saving,
+                    action: () => void saveSynonym()
+                }
+            ]}
         >
             <Form<SynonymEditDrawerFormValues>
                 form={form}

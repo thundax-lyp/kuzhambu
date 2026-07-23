@@ -3,7 +3,6 @@ import { useEffect, useMemo } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import type { TagCategoryCreateCommand, TagCategoryUpdateCommand } from "../taxonomy-service";
 import type { TagCategoryRecord } from "../taxonomy-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { TextArea } = Input;
 
@@ -111,25 +110,21 @@ export const CategoryEditDrawer = ({
             open={visible}
             size="small"
             onClose={onClose}
-            footer={
-                <div className="knowledge-taxonomy-category-edit-drawer-footer">
-                    <KuzhambuButton
-                        testId="knowledge-taxonomy-category-cancel-button"
-                        disabled={saving}
-                        onClick={onClose}
-                    >
-                        取消
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="knowledge-taxonomy-category-action-button"
-                        type="primary"
-                        loading={saving}
-                        onClick={saveCategory}
-                    >
-                        {saveButtonText}
-                    </KuzhambuButton>
-                </div>
-            }
+            footerActions={[
+                {
+                    testId: "knowledge-taxonomy-category-cancel-button",
+                    title: "取消",
+                    disabled: saving,
+                    action: onClose
+                },
+                {
+                    testId: "knowledge-taxonomy-category-action-button",
+                    title: saveButtonText,
+                    type: "primary",
+                    loading: saving,
+                    action: saveCategory
+                }
+            ]}
         >
             <Form<CategoryEditDrawerFormValues>
                 form={form}
