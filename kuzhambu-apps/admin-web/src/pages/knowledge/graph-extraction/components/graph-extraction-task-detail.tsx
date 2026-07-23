@@ -1,7 +1,6 @@
 import { Descriptions } from "antd";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import type { GraphExtractionTaskRecord } from "../graph-extraction-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 interface GraphExtractionTaskDetailProps {
     applying?: boolean;
@@ -45,17 +44,16 @@ export const GraphExtractionTaskDetail = ({
             size="middle"
             loading={loading}
             onClose={onClose}
-            footer={
-                <KuzhambuButton
-                    testId="knowledge-graph-extraction-graph-extraction-task-detail-action-button"
-                    type="primary"
-                    disabled={!canApply || !task?.aiCandidateId || task?.status === "APPLIED"}
-                    loading={applying}
-                    onClick={onApply}
-                >
-                    应用候选结果
-                </KuzhambuButton>
-            }
+            footerActions={[
+                {
+                    testId: "knowledge-graph-extraction-graph-extraction-task-detail-action-button",
+                    title: "应用候选结果",
+                    type: "primary",
+                    disabled: !canApply || !task?.aiCandidateId || task?.status === "APPLIED",
+                    loading: applying,
+                    action: onApply
+                }
+            ]}
         >
             <Descriptions column={1} bordered size="small">
                 <Descriptions.Item label="任务号">{task?.taskId || "-"}</Descriptions.Item>
