@@ -100,10 +100,6 @@ html[data-theme="dark"] .sancai-form-field {
     padding-right: 2px;
 }
 
-.sancai-candidate-panel-anchor {
-    outline: none;
-}
-
 .sancai-volume-main {
     display: flex;
     min-width: 0;
@@ -356,77 +352,6 @@ html[data-theme="dark"] .sancai-form-field {
 
 .sancai-entry-image-frame img {
     border-radius: 4px;
-}
-
-.sancai-entry-image-manager {
-    display: grid;
-    min-width: 0;
-    gap: 12px;
-}
-
-.sancai-entry-image-toolbar {
-    display: flex;
-    justify-content: flex-start;
-}
-
-.sancai-entry-image-cell {
-    display: grid;
-    min-width: 0;
-    grid-template-columns: 132px minmax(0, 1fr);
-    gap: 12px;
-    align-items: center;
-    width: 100%;
-    padding: 0;
-    color: inherit;
-    text-align: left;
-    background: transparent;
-    border: 0;
-    cursor: default;
-    text-decoration: none;
-}
-
-.sancai-entry-image-cell .ant-image,
-.sancai-entry-image-cell img {
-    border-radius: 4px;
-}
-
-.sancai-entry-image-cell .ant-image {
-    width: 132px;
-    height: 88px;
-    cursor: zoom-in;
-}
-
-.sancai-entry-image-cell img {
-    object-fit: cover;
-}
-
-.sancai-entry-image-cover-thumbnail,
-.sancai-entry-image-cover-thumbnail img {
-    border: 2px solid var(--sancai-accent);
-    box-shadow: 0 0 0 2px var(--sancai-accent-soft);
-}
-
-.sancai-entry-image-cover,
-.sancai-entry-image-cover .ant-ribbon-wrapper {
-    display: block;
-    width: 132px;
-    height: 88px;
-}
-
-.sancai-entry-image-cover .ant-ribbon {
-    background: var(--sancai-accent);
-}
-
-.sancai-entry-image-meta {
-    display: grid;
-    min-width: 0;
-    gap: 4px;
-}
-
-.sancai-entry-image-meta .ant-typography {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 .sancai-visual-asset-field {

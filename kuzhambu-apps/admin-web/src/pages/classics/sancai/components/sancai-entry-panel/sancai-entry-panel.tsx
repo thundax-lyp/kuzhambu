@@ -18,13 +18,13 @@ import { ClassicsContentQaPanel } from "@/pages/classics/common/components/class
 import { ClassicsContentTagPanel } from "@/pages/classics/common/components/classics-content-tag-panel";
 import { AiCandidateBatchDrawer } from "@/pages/classics/common/components/ai-candidate-batch-drawer";
 import { hasClassicsContentPermission } from "@/pages/classics/common/classics-content-types";
-import { SancaiEntryList } from "./sancai-entry-list";
-import { SancaiEntryEditDrawer } from "./sancai-entry-edit-drawer";
-import { SancaiEntryExportActions } from "./sancai-entry-export-actions";
-import type { SancaiEntryFormValues } from "./sancai-form-values";
-import { SancaiEntryVersionSection } from "./sancai-entry-version-section";
-import { useSancaiEntryPanelState } from "../hooks/use-sancai-entry-panel-state";
-import * as entryService from "../sancai-entry-service";
+import { SancaiEntryList } from "../sancai-entry-list";
+import { SancaiEntryEditDrawer } from "../sancai-entry-edit-drawer";
+import { SancaiEntryExportActions } from "../sancai-entry-export-actions";
+import type { SancaiEntryFormValues } from "../sancai-form-values";
+import { SancaiEntryVersionSection } from "../sancai-entry-version-section";
+import { useSancaiEntryPanelState } from "@/pages/classics/sancai/hooks/use-sancai-entry-panel-state";
+import * as entryService from "@/pages/classics/sancai/sancai-entry-service";
 import type {
     SancaiCategoryRecord,
     SancaiContentVersionRecord,
@@ -32,9 +32,10 @@ import type {
     SancaiEntryRecord,
     SancaiVisualAssetRecord,
     SancaiVolumeRecord
-} from "../sancai-types";
+} from "@/pages/classics/sancai/sancai-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuAlert } from "@/components/kuzhambu-alert";
+import "./sancai-entry-panel.css";
 
 const { Text } = Typography;
 
