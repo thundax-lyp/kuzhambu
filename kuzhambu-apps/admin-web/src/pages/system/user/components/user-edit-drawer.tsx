@@ -178,25 +178,21 @@ export const UserEditDrawer = ({
                     </KuzhambuButton>
                 )
             }
-            footer={
-                <div className="user-edit-drawer-footer">
-                    <KuzhambuButton
-                        testId="system-user-user-cancel-button"
-                        disabled={saving}
-                        onClick={onClose}
-                    >
-                        取消
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="system-user-user-action-button"
-                        type="primary"
-                        loading={saving}
-                        onClick={saveForm}
-                    >
-                        {saveText}
-                    </KuzhambuButton>
-                </div>
-            }
+            footerActions={[
+                {
+                    testId: "system-user-user-cancel-button",
+                    title: "取消",
+                    disabled: saving,
+                    action: onClose
+                },
+                {
+                    testId: "system-user-user-action-button",
+                    title: saveText,
+                    type: "primary",
+                    loading: saving,
+                    action: saveForm
+                }
+            ]}
         >
             {!creating && user ? (
                 <Form className="user-edit-drawer-form" component="div" layout="vertical">
