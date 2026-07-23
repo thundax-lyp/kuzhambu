@@ -6,10 +6,7 @@ import type {
     GraphExtractionCreateCommand,
     GraphExtractionRegenerateCommand
 } from "../graph-extraction-service";
-import type {
-    GraphExtractionTaskRecord,
-    GraphExtractionTaskType
-} from "../graph-extraction-types";
+import type { GraphExtractionTaskRecord, GraphExtractionTaskType } from "../graph-extraction-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 

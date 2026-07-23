@@ -1,7 +1,4 @@
-import type {
-    SancaiEntryRecord,
-    SancaiVolumeRecord
-} from "@/pages/classics/sancai/sancai-types";
+import type { SancaiEntryRecord, SancaiVolumeRecord } from "@/pages/classics/sancai/sancai-types";
 
 export interface SancaiEntryFormValues {
     categoryId: number | null;

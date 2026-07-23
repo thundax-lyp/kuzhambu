@@ -7,9 +7,7 @@ import type {
     GraphRelationPageQuery,
     GraphVersionPageQuery
 } from "../graph-results-service";
-import type {
-    GraphVersionRecord
-} from "../graph-results-types";
+import type { GraphVersionRecord } from "../graph-results-types";
 
 export type GraphResultsTabKey = "versions" | "entities" | "relations" | "lineage";
 

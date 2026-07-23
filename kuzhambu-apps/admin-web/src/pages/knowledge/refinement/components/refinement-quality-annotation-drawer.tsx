@@ -3,10 +3,7 @@ import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { UpsertQualityAnnotationCommand } from "../refinement-service";
-import type {
-    QualityAnnotationRecord,
-    QualityAnnotationTarget
-} from "../refinement-types";
+import type { QualityAnnotationRecord, QualityAnnotationTarget } from "../refinement-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 type QualityAnnotationFormValues = Pick<
