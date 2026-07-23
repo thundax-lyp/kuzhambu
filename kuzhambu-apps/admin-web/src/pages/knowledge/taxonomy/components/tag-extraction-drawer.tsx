@@ -1,7 +1,8 @@
-import { Col, Form, Input, InputNumber, Row, Select, Switch } from "antd";
+import { Form, Input, InputNumber, Select, Switch } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import type { Key } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
+import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { TagCandidateApplyCommand, TagExtractionCommand } from "../taxonomy-service";
@@ -159,81 +160,91 @@ export const TagExtractionDrawer = ({
                 }
             ]}
         >
-            <Form<TagExtractionFormValues>
+            <KuzhambuForm<TagExtractionFormValues>
                 form={form}
-                layout="vertical"
                 className="knowledge-taxonomy-tag-extraction-form"
                 initialValues={DEFAULT_VALUES}
             >
-                <Form.Item name="sourceContentType" label="内容类型" rules={[{ required: true }]}>
+                <KuzhambuFormItem
+                    name="sourceContentType"
+                    label="内容类型"
+                    rules={[{ required: true }]}
+                >
                     <Select options={CONTENT_TYPE_OPTIONS} />
-                </Form.Item>
-                <Form.Item name="sourceContentId" label="内容 ID" rules={[{ required: true }]}>
+                </KuzhambuFormItem>
+                <KuzhambuFormItem
+                    name="sourceContentId"
+                    label="内容 ID"
+                    rules={[{ required: true }]}
+                >
                     <Input />
-                </Form.Item>
-                <Form.Item name="contentTitle" label="内容标题">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem name="contentTitle" label="内容标题">
                     <Input />
-                </Form.Item>
-                <Form.Item name="contentText" label="内容片段" rules={[{ required: true }]}>
+                </KuzhambuFormItem>
+                <KuzhambuFormItem
+                    name="contentText"
+                    label="内容片段"
+                    layoutSize="large"
+                    rules={[{ required: true }]}
+                >
                     <TextArea rows={6} />
-                </Form.Item>
-                <Row gutter={16}>
-                    <Col xs={24} md={12}>
-                        <Form.Item name="modelId" label="模型 ID" rules={[{ required: true }]}>
-                            <InputNumber min={1} style={{ width: "100%" }} />
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} md={12}>
-                        <Form.Item name="modelName" label="模型名称" rules={[{ required: true }]}>
-                            <Input />
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} md={12}>
-                        <Form.Item name="promptVersionId" label="提示词版本 ID">
-                            <InputNumber min={1} style={{ width: "100%" }} />
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} md={12}>
-                        <Form.Item name="maxTags" label="最大标签数">
-                            <InputNumber min={1} max={50} style={{ width: "100%" }} />
-                        </Form.Item>
-                    </Col>
-                </Row>
-                <Form.Item name="allowNewTags" label="允许创建新标签" valuePropName="checked">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem name="modelId" label="模型 ID" rules={[{ required: true }]}>
+                    <InputNumber min={1} style={{ width: "100%" }} />
+                </KuzhambuFormItem>
+                <KuzhambuFormItem name="modelName" label="模型名称" rules={[{ required: true }]}>
+                    <Input />
+                </KuzhambuFormItem>
+                <KuzhambuFormItem name="promptVersionId" label="提示词版本 ID">
+                    <InputNumber min={1} style={{ width: "100%" }} />
+                </KuzhambuFormItem>
+                <KuzhambuFormItem name="maxTags" label="最大标签数">
+                    <InputNumber min={1} max={50} style={{ width: "100%" }} />
+                </KuzhambuFormItem>
+                <KuzhambuFormItem
+                    name="allowNewTags"
+                    label="允许创建新标签"
+                    valuePropName="checked"
+                >
                     <Switch defaultChecked />
-                </Form.Item>
+                </KuzhambuFormItem>
 
                 {result ? (
-                    <div className="knowledge-taxonomy-tag-extraction-result">
-                        <TagExtractionCandidateTable
-                            candidates={candidates}
-                            selectedRowKeys={selectedRowKeys}
-                            onSelectionChange={setSelectedRowKeys}
-                        />
-                        <Form.Item name="reviewNote" label="审核备注">
+                    <>
+                        <KuzhambuFormItem colon={false} label="候选标签" layoutSize="large">
+                            <TagExtractionCandidateTable
+                                candidates={candidates}
+                                selectedRowKeys={selectedRowKeys}
+                                onSelectionChange={setSelectedRowKeys}
+                            />
+                        </KuzhambuFormItem>
+                        <KuzhambuFormItem name="reviewNote" label="审核备注" layoutSize="large">
                             <TextArea rows={3} />
-                        </Form.Item>
-                        <KuzhambuSpace wrap>
-                            <KuzhambuButton
-                                testId="knowledge-taxonomy-tag-extraction-action-button-2"
-                                type="primary"
-                                disabled={!result.aiCandidateId || selectedTags.length === 0}
-                                loading={applying}
-                                onClick={applySelectedTags}
-                            >
-                                应用选中标签
-                            </KuzhambuButton>
-                            <KuzhambuButton
-                                testId="knowledge-taxonomy-tag-extraction-action-button-3"
-                                disabled={extracting || applying}
-                                onClick={reExtractTags}
-                            >
-                                重新抽取
-                            </KuzhambuButton>
-                        </KuzhambuSpace>
-                    </div>
+                        </KuzhambuFormItem>
+                    </>
                 ) : null}
-            </Form>
+            </KuzhambuForm>
+            {result ? (
+                <KuzhambuSpace wrap>
+                    <KuzhambuButton
+                        testId="knowledge-taxonomy-tag-extraction-action-button-2"
+                        type="primary"
+                        disabled={!result.aiCandidateId || selectedTags.length === 0}
+                        loading={applying}
+                        onClick={applySelectedTags}
+                    >
+                        应用选中标签
+                    </KuzhambuButton>
+                    <KuzhambuButton
+                        testId="knowledge-taxonomy-tag-extraction-action-button-3"
+                        disabled={extracting || applying}
+                        onClick={reExtractTags}
+                    >
+                        重新抽取
+                    </KuzhambuButton>
+                </KuzhambuSpace>
+            ) : null}
         </KuzhambuDrawer>
     );
 };
