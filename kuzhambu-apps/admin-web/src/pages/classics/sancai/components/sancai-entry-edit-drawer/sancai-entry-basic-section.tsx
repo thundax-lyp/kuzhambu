@@ -9,8 +9,8 @@ import type { Dispatch, ReactNode, SetStateAction } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import type { SancaiEntryFormValues } from "./sancai-form-values";
-import type { SancaiEntryImageRecord } from "../sancai-types";
+import type { SancaiEntryFormValues } from "../sancai-form-values";
+import type { SancaiEntryImageRecord } from "@/pages/classics/sancai/sancai-types";
 
 const { Text } = Typography;
 const IMAGE_ACCEPT = ".jpg,.jpeg,.png,.gif,.webp";

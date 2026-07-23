@@ -12,8 +12,11 @@ import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
 import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
-import type { SancaiVisualAssetRefinementCapability } from "../sancai-entry-service";
-import type { SancaiEntryImageRecord, SancaiVisualAssetRecord } from "../sancai-types";
+import type { SancaiVisualAssetRefinementCapability } from "@/pages/classics/sancai/sancai-entry-service";
+import type {
+    SancaiEntryImageRecord,
+    SancaiVisualAssetRecord
+} from "@/pages/classics/sancai/sancai-types";
 
 const { Text } = Typography;
 

@@ -11,10 +11,10 @@ import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refineme
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { readSancaiAiTextFieldConfig } from "../sancai-entry-ai-text-config";
 import type { SancaiAiTextField } from "../sancai-entry-ai-text-config";
-import { SancaiEntryBasicSection } from "../sancai-entry-basic-section";
+import { SancaiEntryBasicSection } from "./sancai-entry-basic-section";
 import { SancaiEntrySummaryModal } from "../sancai-entry-summary-modal";
 import { SancaiEntryTranslationModal } from "../sancai-entry-translation-modal";
-import { SancaiEntryVisualSection } from "../sancai-entry-visual-section";
+import { SancaiEntryVisualSection } from "./sancai-entry-visual-section";
 import { toEntryFormValues, type SancaiEntryFormValues } from "../sancai-form-values";
 import type { SancaiVisualAssetRefinementCapability } from "@/pages/classics/sancai/sancai-entry-service";
 import * as entryService from "@/pages/classics/sancai/sancai-entry-service";
