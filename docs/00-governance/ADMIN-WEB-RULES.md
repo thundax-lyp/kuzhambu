@@ -75,7 +75,7 @@
 - `ADMIN_WEB_LAYER_AUTH_NO_PAGE`：`src/auth/` 不导入页面、布局或页面 service。
 - `ADMIN_WEB_LAYER_NO_DEEP_RELATIVE_IMPORT`：`src` 下禁止 `../../` 及更深相对 import。
 - `ADMIN_WEB_LAYER_PAGE_NO_PARENT_RELATIVE_IMPORT`：页面文件禁止 `../` import。
-- `ADMIN_WEB_LAYER_PAGE_COMPONENT_NO_EXTERNAL_PAGE`：页面私有组件不引用其他页面域；同模块 `common` 组件例外。
+- `ADMIN_WEB_LAYER_PAGE_COMPONENT_NO_EXTERNAL_PAGE`：页面私有组件不引用其他页面域；同页面域绝对导入和同模块 `common` 组件例外。
 - `ADMIN_WEB_LAYER_PAGE_NO_EXTERNAL_SERVICE`：页面域代码不导入其他页面域的 service；同模块 `common` service 例外。
 - `ADMIN_WEB_LAYER_SHARED_COMPONENT_CSS_LOCAL`：共享组件禁止 `../*.css` import。
 

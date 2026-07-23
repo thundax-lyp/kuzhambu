@@ -764,12 +764,13 @@ const localRules = {
                             const resolvedImportPath = `/src/${importPath.slice(2)}`;
                             const importModuleRoot = readPageModuleRoot(resolvedImportPath);
                             const importPageDomainRoot = readPageDomainRoot(resolvedImportPath);
+                            const isSamePageDomainImport = importPageDomainRoot === pageDomainRoot;
                             const isModuleCommonImport =
                                 pageModuleRoot &&
                                 importModuleRoot === pageModuleRoot &&
                                 importPageDomainRoot?.endsWith("/common/");
 
-                            if (isModuleCommonImport) {
+                            if (isSamePageDomainImport || isModuleCommonImport) {
                                 return;
                             }
 
