@@ -120,11 +120,13 @@ const WangqiRichTextEditor = ({ value, onChange }: WangqiRichTextEditorProps) =>
 
 interface WangqiDocumentBasicSectionProps {
     mode: "create" | "edit";
+    summaryLocked?: boolean;
     onOpenSummaryModal: () => void;
 }
 
 export const WangqiDocumentBasicSection = ({
     mode,
+    summaryLocked = false,
     onOpenSummaryModal
 }: WangqiDocumentBasicSectionProps) => {
     return (
@@ -184,6 +186,7 @@ export const WangqiDocumentBasicSection = ({
                             <TextArea
                                 aria-label="王圻文档摘要"
                                 autoSize={resolveTextAreaAutoSize({ minRows: 4, maxRows: 8 })}
+                                disabled={summaryLocked}
                                 maxLength={500}
                                 showCount
                             />

@@ -64,15 +64,14 @@ export const WangqiTimeline = ({
                 size="middle"
                 title="时间线"
                 onClose={() => setOpen(false)}
-                footer={
-                    <KuzhambuButton
-                        testId="classics-wangqi-wangqi-timeline-close-button"
-                        type="primary"
-                        onClick={() => setOpen(false)}
-                    >
-                        关闭
-                    </KuzhambuButton>
-                }
+                footerActions={[
+                    {
+                        testId: "classics-wangqi-wangqi-timeline-close-button",
+                        title: "关闭",
+                        type: "primary",
+                        action: () => setOpen(false)
+                    }
+                ]}
             >
                 {dataSource.length === 0 ? (
                     <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无王圻时间线" />
