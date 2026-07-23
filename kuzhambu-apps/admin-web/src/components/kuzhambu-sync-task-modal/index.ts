@@ -3,5 +3,6 @@ export type {
     KuzhambuSyncTaskAdapter,
     KuzhambuSyncTaskModalProps,
     KuzhambuSyncTaskModalState,
-    KuzhambuSyncTaskPhase
+    KuzhambuSyncTaskPhase,
+    KuzhambuSyncTaskWorkflow
 } from "./kuzhambu-sync-task-modal";
