@@ -1,6 +1,7 @@
 import { Form, Input, Select, Typography } from "antd";
 import { useMemo } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
+import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { TagBatchReviewCommand } from "../taxonomy-service";
 import type { TagCategoryRecord, TagRecord } from "../taxonomy-types";
@@ -102,15 +103,15 @@ export const TagBatchReviewPanel = ({
                     <Text strong>已选标签：{selectedTags.length} 个</Text>
                     <Text type="secondary">{readSelectedTagSummary(selectedTags)}</Text>
                 </KuzhambuSpace>
-                <Form<TagBatchReviewFormValues>
+                <KuzhambuForm<TagBatchReviewFormValues>
                     form={form}
-                    layout="vertical"
                     className="knowledge-taxonomy-tag-batch-form"
                 >
                     {approving ? (
-                        <Form.Item
+                        <KuzhambuFormItem
                             name="categoryId"
                             label="正式分类"
+                            layoutSize="large"
                             rules={[{ required: true, message: "请选择正式分类" }]}
                         >
                             <Select
@@ -120,12 +121,12 @@ export const TagBatchReviewPanel = ({
                                 optionFilterProp="label"
                                 options={categoryOptions}
                             />
-                        </Form.Item>
+                        </KuzhambuFormItem>
                     ) : null}
-                    <Form.Item name="reviewNote" label="审核备注">
+                    <KuzhambuFormItem name="reviewNote" label="审核备注" layoutSize="large">
                         <TextArea aria-label="批量审核备注" rows={5} maxLength={512} showCount />
-                    </Form.Item>
-                </Form>
+                    </KuzhambuFormItem>
+                </KuzhambuForm>
             </div>
         </KuzhambuDrawer>
     );
