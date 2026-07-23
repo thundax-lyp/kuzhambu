@@ -149,121 +149,6 @@ html[data-theme="dark"] .sancai-form-field {
     border-radius: 6px;
 }
 
-.sancai-entry-image-field {
-    display: grid;
-    min-width: 0;
-    gap: 10px;
-    justify-items: start;
-}
-
-.sancai-entry-image-frame {
-    display: grid;
-    width: min(100%, 280px);
-    min-height: 148px;
-    align-content: center;
-    justify-items: center;
-    gap: 8px;
-    padding: 12px;
-    background: color-mix(in srgb, var(--sancai-panel) 86%, #fff7df 14%);
-    border: 1px solid color-mix(in srgb, var(--sancai-line) 72%, #7c5f35 28%);
-    border-radius: 6px;
-}
-
-.sancai-entry-image-frame .ant-image {
-    max-width: 100%;
-}
-
-.sancai-entry-image-frame img {
-    border-radius: 4px;
-}
-
-.sancai-visual-asset-field {
-    display: grid;
-    min-width: 0;
-    gap: 12px;
-}
-
-.sancai-visual-asset-summary,
-.sancai-visual-asset-toolbar {
-    display: flex;
-    min-width: 0;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.sancai-visual-asset-summary {
-    padding: 10px 12px;
-    background: color-mix(in srgb, var(--sancai-panel) 82%, #fff7df 18%);
-    border: 1px solid var(--sancai-line);
-    border-radius: 6px;
-}
-
-.sancai-visual-workflow {
-    display: flex;
-    min-width: 0;
-    align-items: center;
-}
-
-.sancai-visual-workflow-arrow {
-    display: inline-flex;
-    align-items: center;
-    color: var(--sancai-copy);
-    font-size: 18px;
-    line-height: 1;
-}
-
-.sancai-visual-asset-version-table,
-.sancai-visual-source-image-table {
-    min-width: 0;
-}
-
-.sancai-visual-asset-table-preview {
-    object-fit: cover;
-    border: 1px solid var(--sancai-line);
-    border-radius: 6px;
-    background: var(--sancai-paper);
-}
-
-.sancai-visual-asset-empty-records {
-    padding: 8px 0;
-}
-
-.sancai-visual-generated-placeholder {
-    display: grid;
-    width: 180px;
-    max-width: 100%;
-    height: 120px;
-    place-items: center;
-    align-content: center;
-    gap: 8px;
-    color: var(--text-tertiary);
-    background: color-mix(in srgb, var(--sancai-paper) 72%, var(--sancai-panel) 28%);
-    border: 1px dashed var(--sancai-line);
-    border-radius: 4px;
-}
-
-.sancai-visual-generated-placeholder .anticon {
-    font-size: 28px;
-}
-
-.sancai-visual-asset-image-list {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(220px, 1fr));
-    gap: 12px;
-    align-items: start;
-}
-
-.sancai-visual-asset-image-actions {
-    display: flex;
-    min-width: 0;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
 .sancai-entry-preview {
     display: grid;
     min-width: 0;
@@ -281,50 +166,6 @@ html[data-theme="dark"] .sancai-form-field {
     display: flex;
     justify-content: flex-end;
     gap: 8px;
-}
-
-.sancai-versions-panel {
-    min-width: 0;
-}
-
-.sancai-versions-panel-grid {
-    display: grid;
-    grid-template-columns: minmax(220px, 0.85fr) minmax(0, 1.15fr);
-    min-width: 0;
-    gap: 12px;
-}
-
-.sancai-version-history-list,
-.sancai-version-history-detail {
-    min-width: 0;
-    padding: 12px;
-    background: var(--sancai-soft);
-    border: 1px solid var(--sancai-line);
-    border-radius: 8px;
-}
-
-.sancai-version-history-list-item {
-    align-items: flex-start;
-    padding-inline: 0;
-}
-
-.sancai-version-history-detail {
-    min-height: 220px;
-}
-
-.sancai-version-history-detail-stack {
-    width: 100%;
-}
-
-.sancai-version-compare .ant-descriptions-item-label {
-    width: 132px;
-    color: var(--sancai-copy);
-    font-weight: 700;
-}
-
-.sancai-version-compare .is-changed .ant-descriptions-item-label {
-    color: var(--sancai-accent);
-    background: var(--sancai-accent-soft);
 }
 
 .sancai-modal-footer {
@@ -372,14 +213,6 @@ html[data-theme="dark"] .sancai-form-field {
 
     .sancai-panel-scroll {
         overflow: visible;
-    }
-
-    .sancai-versions-panel-grid {
-        grid-template-columns: minmax(0, 1fr);
-    }
-
-    .sancai-visual-asset-image-list {
-        grid-template-columns: minmax(0, 1fr);
     }
 
     .sancai-ai-text-modal-compare-grid {

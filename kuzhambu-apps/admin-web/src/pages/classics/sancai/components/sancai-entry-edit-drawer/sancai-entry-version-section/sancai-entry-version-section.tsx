@@ -1,4 +1,4 @@
-import { SancaiVersionsPanel } from "../sancai-versions-panel";
+import { SancaiVersionsPanel } from "@/pages/classics/sancai/components/sancai-versions-panel";
 import type {
     SancaiContentVersionRecord,
     SancaiEntryRecord

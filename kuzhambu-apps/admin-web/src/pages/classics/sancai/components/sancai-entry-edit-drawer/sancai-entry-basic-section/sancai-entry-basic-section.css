@@ -1,0 +1,27 @@
+.sancai-entry-image-field {
+    display: grid;
+    min-width: 0;
+    gap: 10px;
+    justify-items: start;
+}
+
+.sancai-entry-image-frame {
+    display: grid;
+    width: min(100%, 280px);
+    min-height: 148px;
+    align-content: center;
+    justify-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: color-mix(in srgb, var(--sancai-panel) 86%, #fff7df 14%);
+    border: 1px solid color-mix(in srgb, var(--sancai-line) 72%, #7c5f35 28%);
+    border-radius: 6px;
+}
+
+.sancai-entry-image-frame .ant-image {
+    max-width: 100%;
+}
+
+.sancai-entry-image-frame img {
+    border-radius: 4px;
+}

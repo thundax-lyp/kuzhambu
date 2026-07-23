@@ -8,6 +8,7 @@ import type {
 } from "../sancai-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuAlert } from "@/components/kuzhambu-alert";
+import "./sancai-versions-panel.css";
 
 const { Text } = Typography;
 

@@ -18,6 +18,7 @@ import type {
     SancaiEntryImageRecord,
     SancaiVisualAssetRecord
 } from "@/pages/classics/sancai/sancai-types";
+import "./sancai-entry-visual-section.css";
 
 const { Text } = Typography;
 
@@ -167,7 +168,7 @@ export const SancaiEntryVisualSection = ({
                         </KuzhambuFormItem>
                     </KuzhambuForm>
                     <div className="sancai-visual-asset-image-list">
-                        <div className="sancai-entry-image-frame">
+                        <div className="sancai-visual-asset-image-frame">
                             {sourcePreviewUrl ? (
                                 <Image
                                     width={180}
@@ -184,7 +185,7 @@ export const SancaiEntryVisualSection = ({
                                 <Text type="secondary">来源图片</Text>
                             </div>
                         </div>
-                        <div className="sancai-entry-image-frame">
+                        <div className="sancai-visual-asset-image-frame">
                             {generatedPreviewUrl ? (
                                 <Image
                                     width={180}
