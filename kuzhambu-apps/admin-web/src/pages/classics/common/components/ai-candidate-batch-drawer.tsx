@@ -12,7 +12,6 @@ import { type AiCandidateCapability, type AiCandidateRecord } from "../ai-candid
 import type { ClassicsBatchOperationRecord, ClassicsContentType } from "../classics-content-types";
 import type { ClassicsAiCandidateBatchApplyCommand } from "../classics-content-service";
 import { AiCandidatePayloadEditor } from "./ai-candidate-payload-editor";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Text } = Typography;
@@ -418,43 +417,37 @@ export const AiCandidateBatchDrawer = ({
             open={open}
             size="large"
             onClose={closeDrawer}
-            footer={
-                <KuzhambuSpace style={{ display: "flex", justifyContent: "flex-end" }}>
-                    <KuzhambuButton
-                        testId="classics-common-ai-candidate-batch-close-button"
-                        onClick={closeDrawer}
-                    >
-                        关闭
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="classics-common-ai-candidate-batch-action-button"
-                        loading={applyBatchMutation.isPending || rejectBatchMutation.isPending}
-                        onClick={() => {
-                            void refreshCandidates();
-                        }}
-                    >
-                        刷新候选
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="classics-common-ai-candidate-batch-action-button-2"
-                        type="primary"
-                        loading={applyBatchMutation.isPending}
-                        disabled={!canEdit}
-                        onClick={applyCandidates}
-                    >
-                        批量应用
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="classics-common-ai-candidate-batch-action-button-3"
-                        danger
-                        loading={rejectBatchMutation.isPending}
-                        disabled={!canEdit}
-                        onClick={rejectCandidates}
-                    >
-                        批量拒绝
-                    </KuzhambuButton>
-                </KuzhambuSpace>
-            }
+            footerActions={[
+                {
+                    testId: "classics-common-ai-candidate-batch-close-button",
+                    title: "关闭",
+                    action: closeDrawer
+                },
+                {
+                    testId: "classics-common-ai-candidate-batch-action-button",
+                    title: "刷新候选",
+                    loading: applyBatchMutation.isPending || rejectBatchMutation.isPending,
+                    action: () => {
+                        void refreshCandidates();
+                    }
+                },
+                {
+                    testId: "classics-common-ai-candidate-batch-action-button-2",
+                    title: "批量应用",
+                    type: "primary",
+                    loading: applyBatchMutation.isPending,
+                    disabled: !canEdit,
+                    action: applyCandidates
+                },
+                {
+                    testId: "classics-common-ai-candidate-batch-action-button-3",
+                    title: "批量拒绝",
+                    danger: true,
+                    loading: rejectBatchMutation.isPending,
+                    disabled: !canEdit,
+                    action: rejectCandidates
+                }
+            ]}
         >
             <KuzhambuSpace
                 className="ai-candidate-batch-stats"

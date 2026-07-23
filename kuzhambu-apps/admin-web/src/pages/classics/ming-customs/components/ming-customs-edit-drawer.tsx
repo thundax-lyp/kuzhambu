@@ -12,7 +12,6 @@ import {
 } from "./ming-customs-form-values";
 import type { MingCustomsCommand } from "../ming-customs-service";
 import type { MingCustomsRecord } from "../ming-customs-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -65,24 +64,20 @@ export const MingCustomsEditDrawer = ({
             loading={loading}
             destroyOnHidden
             onClose={onClose}
-            footer={
-                <div className="ming-customs-edit-drawer-footer">
-                    <KuzhambuButton
-                        testId="classics-ming-customs-ming-customs-cancel-button"
-                        onClick={onClose}
-                    >
-                        取消
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="classics-ming-customs-ming-customs-create-button"
-                        type="primary"
-                        loading={saving}
-                        onClick={saveEntry}
-                    >
-                        保存
-                    </KuzhambuButton>
-                </div>
-            }
+            footerActions={[
+                {
+                    testId: "classics-ming-customs-ming-customs-cancel-button",
+                    title: "取消",
+                    action: onClose
+                },
+                {
+                    testId: "classics-ming-customs-ming-customs-create-button",
+                    title: "保存",
+                    type: "primary",
+                    loading: saving,
+                    action: saveEntry
+                }
+            ]}
         >
             <Form<MingCustomsFormValues>
                 form={form}

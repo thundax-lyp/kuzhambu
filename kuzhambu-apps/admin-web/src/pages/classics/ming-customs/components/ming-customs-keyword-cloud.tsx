@@ -55,15 +55,14 @@ export const MingCustomsTagCloud = ({
                 size="middle"
                 title="标签云"
                 onClose={() => setOpen(false)}
-                footer={
-                    <KuzhambuButton
-                        testId="classics-ming-customs-ming-customs-keyword-cloud-close-button"
-                        type="primary"
-                        onClick={() => setOpen(false)}
-                    >
-                        关闭
-                    </KuzhambuButton>
-                }
+                footerActions={[
+                    {
+                        testId: "classics-ming-customs-ming-customs-keyword-cloud-close-button",
+                        title: "关闭",
+                        type: "primary",
+                        action: () => setOpen(false)
+                    }
+                ]}
             >
                 {items.length > 0 ? (
                     <div className="ming-customs-keyword-cloud-body">
