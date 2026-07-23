@@ -7,8 +7,9 @@ import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import type { CurrentUserRecord } from "@/service/current-user-types";
 import type { OptionsRecord } from "@/types/options";
 import * as service from "../user-service";
-import type { UserDepartmentNode, UserFormValues, UserRecord, UserRoleRecord } from "../user-types";
+import type { UserDepartmentNode, UserRecord, UserRoleRecord } from "../user-types";
 import { UserAvatar } from "./user-avatar";
+import type { UserFormValues } from "./user-form-values";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 interface UserEditDrawerProps {
