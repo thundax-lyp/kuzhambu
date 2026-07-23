@@ -1,7 +1,7 @@
 import { Form, Input, InputNumber, Select } from "antd";
 import { useEffect } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
+import { KuzhambuForm, KuzhambuFormHiddenItem, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import type { MenuSaveCommand } from "../menu-service";
 import type { MenuNode } from "../menu-types";
 
@@ -108,9 +108,9 @@ export const MenuEditDrawer = ({
             ]}
         >
             <KuzhambuForm<MenuFormValues> form={form} className="menu-edit-drawer-form">
-                <Form.Item name="id" hidden>
+                <KuzhambuFormHiddenItem name="id">
                     <Input />
-                </Form.Item>
+                </KuzhambuFormHiddenItem>
                 <KuzhambuFormItem name="parentId" label="上级菜单" layoutSize="large">
                     <Select allowClear placeholder="不选择则作为根菜单" options={parentOptions} />
                 </KuzhambuFormItem>

@@ -3,7 +3,7 @@ import type { DataNode } from "antd/es/tree";
 import { useEffect, useState } from "react";
 import type { Key } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
+import { KuzhambuForm, KuzhambuFormHiddenItem, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import type { OptionsRecord } from "@/types/options";
 import type { RoleSaveCommand } from "../role-service";
@@ -119,9 +119,9 @@ export const RoleEditDrawer = ({
             ]}
         >
             <KuzhambuForm<RoleFormValues> form={form} className="role-edit-drawer-form">
-                <Form.Item name="id" hidden>
+                <KuzhambuFormHiddenItem name="id">
                     <Input />
-                </Form.Item>
+                </KuzhambuFormHiddenItem>
                 <KuzhambuFormItem
                     name="name"
                     label="角色名称"

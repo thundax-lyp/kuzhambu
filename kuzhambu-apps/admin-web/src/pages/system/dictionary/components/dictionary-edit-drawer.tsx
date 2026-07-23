@@ -1,7 +1,7 @@
 import { Form, Input } from "antd";
 import { useEffect } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
+import { KuzhambuForm, KuzhambuFormHiddenItem, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import type { DictSaveCommand } from "../dictionary-service";
 import type { DictRecord } from "../dictionary-types";
 
@@ -97,9 +97,9 @@ export const DictionaryEditDrawer = ({
             ]}
         >
             <KuzhambuForm<DictFormValues> form={form} className="dictionary-edit-drawer-form">
-                <Form.Item name="id" hidden>
+                <KuzhambuFormHiddenItem name="id">
                     <Input />
-                </Form.Item>
+                </KuzhambuFormHiddenItem>
                 <KuzhambuFormItem
                     name="type"
                     label="字典类型"
