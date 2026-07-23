@@ -1,6 +1,7 @@
 import { Form, Input } from "antd";
 import { useEffect } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
+import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import type { DictSaveCommand } from "../dictionary-service";
 import type { DictRecord } from "../dictionary-types";
 
@@ -95,39 +96,35 @@ export const DictionaryEditDrawer = ({
                 }
             ]}
         >
-            <Form<DictFormValues>
-                form={form}
-                layout="vertical"
-                className="dictionary-edit-drawer-form"
-            >
+            <KuzhambuForm<DictFormValues> form={form} className="dictionary-edit-drawer-form">
                 <Form.Item name="id" hidden>
                     <Input />
                 </Form.Item>
-                <Form.Item
+                <KuzhambuFormItem
                     name="type"
                     label="字典类型"
                     rules={[{ required: true, message: "请输入字典类型" }]}
                 >
                     <Input placeholder="例如：user_status" />
-                </Form.Item>
-                <Form.Item
+                </KuzhambuFormItem>
+                <KuzhambuFormItem
                     name="label"
                     label="标签"
                     rules={[{ required: true, message: "请输入标签" }]}
                 >
                     <Input placeholder="例如：启用" />
-                </Form.Item>
-                <Form.Item
+                </KuzhambuFormItem>
+                <KuzhambuFormItem
                     name="value"
                     label="值"
                     rules={[{ required: true, message: "请输入值" }]}
                 >
                     <Input placeholder="例如：ENABLED" />
-                </Form.Item>
-                <Form.Item name="remarks" label="备注">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem name="remarks" label="备注" layoutSize="large">
                     <TextArea rows={3} maxLength={200} showCount placeholder="补充使用说明" />
-                </Form.Item>
-            </Form>
+                </KuzhambuFormItem>
+            </KuzhambuForm>
         </KuzhambuDrawer>
     );
 };

@@ -1,8 +1,9 @@
-import { Col, Form, Input, Row, Tree, Typography } from "antd";
+import { Form, Input, Tree, Typography } from "antd";
 import type { DataNode } from "antd/es/tree";
 import { useEffect, useState } from "react";
 import type { Key } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
+import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import type { OptionsRecord } from "@/types/options";
 import type { RoleSaveCommand } from "../role-service";
@@ -117,50 +118,33 @@ export const RoleEditDrawer = ({
                 }
             ]}
         >
-            <Form<RoleFormValues> form={form} layout="vertical" className="role-edit-drawer-form">
+            <KuzhambuForm<RoleFormValues> form={form} className="role-edit-drawer-form">
                 <Form.Item name="id" hidden>
                     <Input />
                 </Form.Item>
-                <Form.Item
+                <KuzhambuFormItem
                     name="name"
                     label="角色名称"
+                    layoutSize="large"
                     rules={[{ required: true, message: "请输入角色名称" }]}
                 >
                     <Input placeholder="例如：运营管理员" />
-                </Form.Item>
-                <Row gutter={14}>
-                    <Col xs={24} md={12}>
-                        <Form.Item name="admin" label="管理权限" valuePropName="checked">
-                            <KuzhambuSwitch
-                                checkedChildren={readOptionLabel(
-                                    privilegeOptions,
-                                    "ADMIN",
-                                    "管理员角色"
-                                )}
-                                unCheckedChildren={readOptionLabel(
-                                    privilegeOptions,
-                                    "NORMAL",
-                                    "普通角色"
-                                )}
-                            />
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} md={12}>
-                        <Form.Item name="enable" label="角色状态" valuePropName="checked">
-                            <KuzhambuSwitch
-                                checkedChildren={readOptionLabel(statusOptions, "ENABLED", "启用")}
-                                unCheckedChildren={readOptionLabel(
-                                    statusOptions,
-                                    "DISABLED",
-                                    "禁用"
-                                )}
-                            />
-                        </Form.Item>
-                    </Col>
-                </Row>
-                <Form.Item name="remarks" label="备注">
+                </KuzhambuFormItem>
+                <KuzhambuFormItem name="admin" label="管理权限" valuePropName="checked">
+                    <KuzhambuSwitch
+                        checkedChildren={readOptionLabel(privilegeOptions, "ADMIN", "管理员角色")}
+                        unCheckedChildren={readOptionLabel(privilegeOptions, "NORMAL", "普通角色")}
+                    />
+                </KuzhambuFormItem>
+                <KuzhambuFormItem name="enable" label="角色状态" valuePropName="checked">
+                    <KuzhambuSwitch
+                        checkedChildren={readOptionLabel(statusOptions, "ENABLED", "启用")}
+                        unCheckedChildren={readOptionLabel(statusOptions, "DISABLED", "禁用")}
+                    />
+                </KuzhambuFormItem>
+                <KuzhambuFormItem name="remarks" label="备注" layoutSize="large">
                     <TextArea rows={3} maxLength={200} showCount placeholder="角色说明" />
-                </Form.Item>
+                </KuzhambuFormItem>
                 <div className="role-menu-panel">
                     <div className="role-menu-panel-head">
                         <Text strong>菜单权限</Text>
@@ -178,7 +162,7 @@ export const RoleEditDrawer = ({
                         }
                     />
                 </div>
-            </Form>
+            </KuzhambuForm>
         </KuzhambuDrawer>
     );
 };
