@@ -103,19 +103,6 @@ export const HomePage = () => {
     return (
         <>
             <section className="portal-effect-hero" aria-labelledby="portal-home-title">
-                <div className="portal-effect-hero-atmosphere" aria-hidden="true">
-                    <span className="portal-effect-tyndall portal-effect-tyndall--wide" />
-                    <span className="portal-effect-tyndall portal-effect-tyndall--fine" />
-                    <span className="portal-effect-candle-glow" />
-                    <span className="portal-effect-petal portal-effect-petal--one" />
-                    <span className="portal-effect-petal portal-effect-petal--two" />
-                    <span className="portal-effect-petal portal-effect-petal--three" />
-                    <span className="portal-effect-petal portal-effect-petal--four" />
-                    <span className="portal-effect-petal portal-effect-petal--five" />
-                    <span className="portal-effect-petal portal-effect-petal--six" />
-                    <span className="portal-effect-petal portal-effect-petal--seven" />
-                    <span className="portal-effect-page-turn portal-effect-page-turn--one" />
-                </div>
                 <div className="portal-effect-hero-copy">
                     <h1 id="portal-home-title">让古籍、图像与知识线索互相照见</h1>
                     <p>面向阅读、整理与研究的开放古籍知识门户。</p>
