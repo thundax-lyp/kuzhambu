@@ -6,7 +6,7 @@ import { clearPermissions, replacePermissions } from "@/auth/permission-storage"
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import * as currentUserService from "@/service/current-user-service";
 import { WangqiPage } from "./wangqi-page";
-import { WangqiVersionHistoryPanel } from "./components/wangqi-version-history-panel";
+import { WangqiVersionPanel } from "./components/wangqi-version-panel";
 import type { WangqiContentVersionRecord } from "./wangqi-types";
 
 vi.mock("@/pages/classics/common/components/ai-candidate-panel", () => {
@@ -602,8 +602,12 @@ describe("WangqiPage", () => {
 
         await user.click(await screen.findByTestId("wangqi-document-edit-1-button"));
         await user.click(await screen.findByRole("button", { name: "AI 摘要" }));
-        await user.clear(await screen.findByLabelText("AI摘要候选摘要"));
-        await user.type(screen.getByLabelText("AI摘要候选摘要"), "采用后的摘要");
+        const candidateSummaryInput = await screen.findByLabelText("AI摘要候选摘要");
+        await waitFor(() => {
+            expect(candidateSummaryInput).toBeEnabled();
+        });
+        await user.clear(candidateSummaryInput);
+        await user.type(candidateSummaryInput, "采用后的摘要");
         await user.click(screen.getByTestId("classics-wangqi-document-summary-ai-apply-button"));
 
         await waitFor(() => {
@@ -1230,7 +1234,7 @@ describe("WangqiPage", () => {
         };
 
         render(
-            <WangqiVersionHistoryPanel
+            <WangqiVersionPanel
                 currentDocument={{
                     id: 1,
                     title: "正文标题",

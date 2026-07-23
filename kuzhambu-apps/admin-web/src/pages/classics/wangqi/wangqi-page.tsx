@@ -40,7 +40,7 @@ import type { WangqiQaTaskPair } from "./components/wangqi-qa-ai-modal";
 import { WangqiRefinementActions } from "./components/wangqi-refinement-actions";
 import { WangqiStorageFilePanel } from "./components/wangqi-storage-file-panel";
 import { WangqiTimeline } from "./components/wangqi-timeline";
-import { WangqiVersionHistoryPanel } from "./components/wangqi-version-history-panel";
+import { WangqiVersionPanel } from "./components/wangqi-version-panel";
 import * as wangqiService from "./wangqi-service";
 import type { WangqiDocumentCommand, WangqiDocumentQuery } from "./wangqi-service";
 import type { WangqiContentVersionRecord, WangqiDocumentRecord } from "./wangqi-types";
@@ -1086,7 +1086,7 @@ export const WangqiPage = () => {
                 }
                 versionContent={
                     wangqiDocumentEditDrawerMode === "edit" && editingDocumentData ? (
-                        <WangqiVersionHistoryPanel
+                        <WangqiVersionPanel
                             currentDocument={editingDocumentData}
                             detailLoading={versionDetailQuery.isLoading}
                             listLoading={versionsQuery.isLoading}
