@@ -9,7 +9,6 @@ import type { Dispatch, ReactNode, SetStateAction } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import type { SancaiAiTextField } from "./sancai-entry-ai-text-config";
 import type { SancaiEntryFormValues } from "./sancai-form-values";
 import type { SancaiEntryImageRecord } from "../sancai-types";
 
@@ -40,9 +39,12 @@ interface SancaiEntryBasicSectionProps {
     mode: "create" | "edit";
     previewUrl?: string;
     setForm: Dispatch<SetStateAction<SancaiEntryFormValues>>;
+    summaryModal?: ReactNode;
+    translationModal?: ReactNode;
     volumeOptions: Array<{ label: string; value: number }>;
     onChangeCategory: (categoryId: number | null) => void;
-    onOpenAiTextModal: (field: SancaiAiTextField) => void;
+    onOpenSummaryModal: () => void;
+    onOpenTranslationModal: () => void;
     onUploadImage: (file: File) => void;
 }
 
@@ -57,9 +59,12 @@ export const SancaiEntryBasicSection = ({
     mode,
     previewUrl,
     setForm,
+    summaryModal,
+    translationModal,
     volumeOptions,
     onChangeCategory,
-    onOpenAiTextModal,
+    onOpenSummaryModal,
+    onOpenTranslationModal,
     onUploadImage
 }: SancaiEntryBasicSectionProps) => {
     return (
@@ -134,12 +139,13 @@ export const SancaiEntryBasicSection = ({
                                 testId="classics-sancai-sancai-entry-ai-button"
                                 className="sancai-entry-ai-text-button"
                                 icon={<TranslationOutlined />}
-                                onClick={() => onOpenAiTextModal("translate")}
+                                onClick={onOpenTranslationModal}
                             >
                                 AI翻译
                             </KuzhambuButton>
                         </KuzhambuSpace>
                     ) : null}
+                    {translationModal}
                 </div>
             </Form.Item>
             <Form.Item label="摘要" className="sancai-entry-edit-drawer-form-item-top">
@@ -161,12 +167,13 @@ export const SancaiEntryBasicSection = ({
                                 testId="classics-sancai-sancai-entry-ai-summary-button"
                                 className="sancai-entry-ai-text-button"
                                 icon={<FileTextOutlined />}
-                                onClick={() => onOpenAiTextModal("summary")}
+                                onClick={onOpenSummaryModal}
                             >
                                 AI摘要
                             </KuzhambuButton>
                         </KuzhambuSpace>
                     ) : null}
+                    {summaryModal}
                 </div>
             </Form.Item>
             <Form.Item label="可见性">

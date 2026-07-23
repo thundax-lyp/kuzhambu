@@ -44,6 +44,13 @@ const readRefinementTaskAlertType = (status?: string | null) => {
     return "info";
 };
 
+const resolveAiTextField = (
+    capability?: string | null,
+    fallback: SancaiAiTextField = "translate"
+) => {
+    return capability === "summary" || capability === "translate" ? capability : fallback;
+};
+
 const aiTextTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = {
     getId: (task) => task.taskId,
     getMessage: (task) => task.errorMessage || undefined,
@@ -64,15 +71,15 @@ const aiTextTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = {
     },
     getResultKey: (task) => task.candidateId,
     getStatusLabel: (task) =>
-        `${readSancaiAiTextFieldConfig(task.capability as SancaiAiTextField).taskLabel}任务：${readRefinementTaskStatusLabel(
+        `${readSancaiAiTextFieldConfig(resolveAiTextField(task.capability)).taskLabel}任务：${readRefinementTaskStatusLabel(
             task.status,
             task.capability
         )}`
 };
 
-interface SancaiEntryAiTextModalProps {
-    activeAiTextField: SancaiAiTextField | null;
+export interface SancaiEntryAiTextWorkflowModalProps {
     aiTextDraft: string;
+    field: SancaiAiTextField;
     form: SancaiEntryFormValues;
     hasRunningAiTextTask: boolean;
     isAiTextApplyDisabled: boolean;
@@ -81,15 +88,18 @@ interface SancaiEntryAiTextModalProps {
     isApplyingAiText: boolean;
     isCreatingAiTextTask: boolean;
     latestAiTextTask: AiRefinementTaskRecord | null;
+    onFetchTask: (taskId: number | string) => Promise<AiRefinementTaskRecord>;
     onApply: () => void;
     onCancel: () => void;
     onRequestTask: () => void;
+    onTaskChange?: (task: AiRefinementTaskRecord | null) => void;
     onTextDraftChange: (draft: string) => void;
+    open: boolean;
 }
 
-export const SancaiEntryAiTextModal = ({
-    activeAiTextField,
+export const SancaiEntryAiTextWorkflowModal = ({
     aiTextDraft,
+    field,
     form,
     hasRunningAiTextTask,
     isAiTextApplyDisabled,
@@ -98,22 +108,22 @@ export const SancaiEntryAiTextModal = ({
     isApplyingAiText,
     isCreatingAiTextTask,
     latestAiTextTask,
+    onFetchTask,
     onApply,
     onCancel,
     onRequestTask,
-    onTextDraftChange
-}: SancaiEntryAiTextModalProps) => {
-    const aiTextConfig = activeAiTextField
-        ? readSancaiAiTextFieldConfig(activeAiTextField)
-        : readSancaiAiTextFieldConfig("translate");
-    const createIcon =
-        activeAiTextField === "summary" ? <FileTextOutlined /> : <TranslationOutlined />;
+    onTaskChange,
+    onTextDraftChange,
+    open
+}: SancaiEntryAiTextWorkflowModalProps) => {
+    const aiTextConfig = readSancaiAiTextFieldConfig(field);
+    const createIcon = field === "summary" ? <FileTextOutlined /> : <TranslationOutlined />;
 
     return (
         <KuzhambuSyncTaskModal<AiRefinementTaskRecord, null>
             testId="classics-sancai-sancai-entry-ai-text-modal"
             title={aiTextConfig.modalTitle}
-            open={Boolean(activeAiTextField)}
+            open={open}
             width={960}
             applying={isApplyingAiText}
             applyDisabled={isAiTextApplyDisabled}
@@ -123,33 +133,34 @@ export const SancaiEntryAiTextModal = ({
             createTestId="classics-sancai-sancai-entry-create-ai-text-task-button"
             createText={aiTextConfig.actionLabel}
             creating={isCreatingAiTextTask}
-            task={latestAiTextTask}
-            taskAdapter={aiTextTaskAdapter}
-            onApply={onApply}
             onCancel={onCancel}
-            onCreate={onRequestTask}
-            renderStatus={() =>
-                isCreatingAiTextTask || latestAiTextTask ? (
+            workflow={{
+                ...aiTextTaskAdapter,
+                task: latestAiTextTask,
+                createTask: onRequestTask,
+                fetchTask: onFetchTask,
+                applyResult: onApply,
+                onTaskChange,
+                trackTask: Boolean(latestAiTextTask?.taskId)
+            }}
+            renderStatus={({ creating, task }) =>
+                creating || task ? (
                     <KuzhambuAlert
                         showIcon
                         className="sancai-ai-text-task-alert"
-                        type={
-                            isCreatingAiTextTask
-                                ? "info"
-                                : readRefinementTaskAlertType(latestAiTextTask?.status)
-                        }
+                        type={creating ? "info" : readRefinementTaskAlertType(task?.status)}
                         title={
-                            isCreatingAiTextTask
+                            creating
                                 ? `正在创建${aiTextConfig.taskLabel}任务`
                                 : `${aiTextConfig.taskLabel}任务：${readRefinementTaskStatusLabel(
-                                      latestAiTextTask?.status,
-                                      latestAiTextTask?.capability
+                                      task?.status,
+                                      resolveAiTextField(task?.capability, field)
                                   )}`
                         }
                         description={
                             hasRunningAiTextTask
                                 ? `任务完成后会自动刷新 ${aiTextConfig.aiLabel}。`
-                                : latestAiTextTask?.errorMessage || undefined
+                                : task?.errorMessage || undefined
                         }
                     />
                 ) : null
@@ -182,9 +193,7 @@ export const SancaiEntryAiTextModal = ({
                                 <Input.TextArea
                                     aria-label={`${aiTextConfig.modalTitle}${aiTextConfig.currentLabel}`}
                                     value={
-                                        activeAiTextField === "summary"
-                                            ? form.summary
-                                            : form.translationText
+                                        field === "summary" ? form.summary : form.translationText
                                     }
                                     readOnly
                                     autoSize={resolveTextAreaAutoSize({ minRows: 10, maxRows: 16 })}
@@ -205,6 +214,11 @@ export const SancaiEntryAiTextModal = ({
                                         isCreatingAiTextTask || isAiTextCandidateFetching
                                             ? aiTextConfig.loadingText
                                             : aiTextConfig.emptyText
+                                    }
+                                    disabled={
+                                        isCreatingAiTextTask ||
+                                        hasRunningAiTextTask ||
+                                        isAiTextCandidateFetching
                                     }
                                     autoSize={resolveTextAreaAutoSize({ minRows: 10, maxRows: 16 })}
                                     onChange={(event) => onTextDraftChange(event.target.value)}
