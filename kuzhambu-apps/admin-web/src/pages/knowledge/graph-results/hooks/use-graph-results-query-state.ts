@@ -5,7 +5,9 @@ import type {
     GraphLineageNodePageQuery,
     GraphLineageRelationPageQuery,
     GraphRelationPageQuery,
-    GraphVersionPageQuery,
+    GraphVersionPageQuery
+} from "../graph-results-service";
+import type {
     GraphVersionRecord
 } from "../graph-results-types";
 
