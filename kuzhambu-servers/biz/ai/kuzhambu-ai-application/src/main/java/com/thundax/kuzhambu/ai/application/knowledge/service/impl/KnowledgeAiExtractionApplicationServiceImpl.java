@@ -58,6 +58,7 @@ public class KnowledgeAiExtractionApplicationServiceImpl implements KnowledgeAiE
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope("knowledge");
         command.setCapability(spec.capability());
+        command.setWorkerCapability(spec.workerCapability());
         command.setOperation(spec.operation());
         command.setWorkerPath(spec.workerPath());
         command.setContentType(request.getSourceContentType());

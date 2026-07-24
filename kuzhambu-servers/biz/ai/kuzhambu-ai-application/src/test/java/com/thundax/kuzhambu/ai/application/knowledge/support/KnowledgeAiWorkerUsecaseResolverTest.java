@@ -20,6 +20,7 @@ class KnowledgeAiWorkerUsecaseResolverTest {
         assertEquals("KNOWLEDGE_RELATION_EXTRACTION", spec.operation());
         assertNull(spec.workerPath());
         assertEquals(AiBusinessCapability.KNOWLEDGE_RELATION_EXTRACT.value(), spec.capability());
+        assertEquals("relation_extraction", spec.workerCapability());
     }
 
     @Test
@@ -29,6 +30,7 @@ class KnowledgeAiWorkerUsecaseResolverTest {
         assertEquals("KNOWLEDGE_GRAPH_EXTRACTION", spec.operation());
         assertNull(spec.workerPath());
         assertEquals(AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT.value(), spec.capability());
+        assertEquals("knowledge_graph", spec.workerCapability());
     }
 
     @Test
@@ -38,6 +40,7 @@ class KnowledgeAiWorkerUsecaseResolverTest {
         assertEquals("KNOWLEDGE_TAG_EXTRACTION", spec.operation());
         assertNull(spec.workerPath());
         assertEquals(AiBusinessCapability.KNOWLEDGE_TAG_EXTRACT.value(), spec.capability());
+        assertEquals("tags", spec.workerCapability());
     }
 
     @Test

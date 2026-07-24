@@ -33,6 +33,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         assertEquals("KNOWLEDGE_GRAPH_EXTRACTION", capturedCommand.getOperation());
         assertNull(capturedCommand.getWorkerPath());
         assertEquals(AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT.value(), capturedCommand.getCapability());
+        assertEquals("knowledge_graph", capturedCommand.getWorkerCapability());
     }
 
     @Test
@@ -75,6 +76,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         assertEquals("KNOWLEDGE_TAG_EXTRACTION", capturedCommand.getOperation());
         assertNull(capturedCommand.getWorkerPath());
         assertEquals(AiBusinessCapability.KNOWLEDGE_TAG_EXTRACT.value(), capturedCommand.getCapability());
+        assertEquals("tags", capturedCommand.getWorkerCapability());
         assertEquals(true, capturedCommand.isForceJson());
         assertEquals(true, capturedCommand.isCreateCandidate());
     }
