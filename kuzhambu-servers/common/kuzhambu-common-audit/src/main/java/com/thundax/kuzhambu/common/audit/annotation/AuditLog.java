@@ -20,5 +20,9 @@ public @interface AuditLog {
 
     String condition() default "";
 
+    String before() default "";
+
+    String after() default "";
+
     boolean recordWhenUnchanged() default false;
 }

@@ -35,6 +35,7 @@ public class StoredObject implements Sortable {
     private Instant storedAt;
     private StoredObjectStatus objectStatus = StoredObjectStatus.ACTIVE;
     private StoredObjectReferenceStatus referenceStatus = StoredObjectReferenceStatus.UNREFERENCED;
+    private String referenceOwnerType;
     private int priority;
     private String remarks;
 

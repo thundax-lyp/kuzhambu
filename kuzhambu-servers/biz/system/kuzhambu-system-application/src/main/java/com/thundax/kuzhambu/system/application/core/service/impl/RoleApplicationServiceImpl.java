@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.system.application.core.service.impl;
 
+import com.thundax.kuzhambu.common.audit.annotation.AuditLog;
+import com.thundax.kuzhambu.common.audit.model.enums.AuditAction;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.exception.ErrorCode;
@@ -71,6 +73,7 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @AuditLog(type = "Role", id = "", action = AuditAction.CREATE, summary = "创建角色")
     public RoleId create(CreateRoleCommand command) {
         Role role = toRole(command);
         role.setPriority(dao.maxPriority() + PRIORITY_STEP);
@@ -104,6 +107,12 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @AuditLog(
+            type = "Role",
+            id = "#command.id.value()",
+            action = AuditAction.UPDATE,
+            summary = "更新角色",
+            recordWhenUnchanged = true)
     public void changeInfo(ChangeRoleInfoCommand command) {
         Role role = toRole(command);
         dao.update(role);
@@ -121,6 +130,12 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @AuditLog(
+            type = "Role",
+            id = "#command.roleId.value()",
+            action = AuditAction.UPDATE_RELATION,
+            summary = "分配角色用户",
+            recordWhenUnchanged = true)
     public void assignUsers(AssignRoleUsersCommand command) {
         dao.deleteRoleUser(RoleIdCodec.toValue(command.getRoleId()));
 
@@ -135,6 +150,12 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @AuditLog(
+            type = "Role",
+            id = "#command.id.value()",
+            action = AuditAction.UPDATE,
+            summary = "变更角色状态",
+            recordWhenUnchanged = true)
     public int changeStatus(ChangeRoleStatusCommand command) {
         Role role = new Role();
         role.setId(command.getId());
@@ -147,6 +168,7 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
     }
 
     @Transactional(rollbackFor = Exception.class)
+    @AuditLog(type = "Role", id = "#id == null ? null : #id.value()", action = AuditAction.DELETE, summary = "删除角色")
     public int remove(RoleId id) {
         Role role = get(id);
         if (role == null) {

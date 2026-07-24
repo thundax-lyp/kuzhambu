@@ -46,4 +46,8 @@ public class StorageObjectResponse implements Serializable {
     @Schema(name = "referenceStatus", description = "引用状态")
     @JsonProperty(value = "referenceStatus")
     private String referenceStatus;
+
+    @Schema(name = "referenceOwnerType", description = "引用归属类型")
+    @JsonProperty(value = "referenceOwnerType")
+    private String referenceOwnerType;
 }

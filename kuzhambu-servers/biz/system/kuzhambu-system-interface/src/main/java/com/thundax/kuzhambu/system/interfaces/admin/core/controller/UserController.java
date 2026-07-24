@@ -419,7 +419,9 @@ public class UserController {
             }
             validateEditableStatusUser(currentUser, bean);
             commandList.add(new ChangeUserStatusCommand(
-                    bean.getId(), Boolean.TRUE.equals(request.getEnable()) ? UserStatus.ENABLED : UserStatus.DISABLED));
+                    bean.getId(),
+                    Boolean.TRUE.equals(request.getEnable()) ? UserStatus.ENABLED : UserStatus.DISABLED,
+                    bean));
         }
         if (commandList.isEmpty()) {
             throw AdminResponseExceptions.invalidParameter("list");

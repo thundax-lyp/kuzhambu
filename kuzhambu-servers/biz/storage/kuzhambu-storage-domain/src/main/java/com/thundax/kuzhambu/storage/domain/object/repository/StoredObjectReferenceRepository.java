@@ -12,6 +12,8 @@ public interface StoredObjectReferenceRepository {
 
     List<StoredObjectReference> listReferences(StoredObject entity);
 
+    List<StoredObjectReference> listReferencesByObjectIds(List<StoredObjectId> objectIds);
+
     List<StoredObjectId> listObjectIdsByOwner(StorageOwnerRef ownerRef);
 
     void insertReferences(List<StoredObjectReference> list);

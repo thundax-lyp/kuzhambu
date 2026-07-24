@@ -50,6 +50,7 @@ public final class StorageInterfaceAssembler {
                 .accessEndpoint(entity.getAccessEndpoint())
                 .objectStatus(objectStatusValue(entity.getObjectStatus()))
                 .referenceStatus(referenceStatusValue(entity.getReferenceStatus()))
+                .referenceOwnerType(entity.getReferenceOwnerType())
                 .build();
     }
 
