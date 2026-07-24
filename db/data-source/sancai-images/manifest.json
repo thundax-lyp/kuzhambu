@@ -36,7 +36,7 @@
       "sizeBytes": 85452,
       "uploaded": {
         "assetId": 1,
-        "storageObjectId": 868462791734853600
+        "storageObjectId": "868462791734853600"
       }
     },
     {
@@ -54,7 +54,7 @@
       "sizeBytes": 114321,
       "uploaded": {
         "assetId": 2,
-        "storageObjectId": 868462793337077800
+        "storageObjectId": "868462793337077800"
       }
     },
     {
@@ -72,7 +72,7 @@
       "sizeBytes": 560996,
       "uploaded": {
         "assetId": 3,
-        "storageObjectId": 868462804246462500
+        "storageObjectId": "868462804246462500"
       }
     },
     {
@@ -90,7 +90,7 @@
       "sizeBytes": 583628,
       "uploaded": {
         "assetId": 4,
-        "storageObjectId": 868462816166674400
+        "storageObjectId": "868462816166674400"
       }
     },
     {
@@ -108,7 +108,7 @@
       "sizeBytes": 514753,
       "uploaded": {
         "assetId": 5,
-        "storageObjectId": 868462827503878100
+        "storageObjectId": "868462827503878100"
       }
     },
     {
@@ -126,7 +126,7 @@
       "sizeBytes": 473696,
       "uploaded": {
         "assetId": 6,
-        "storageObjectId": 868462838476177400
+        "storageObjectId": "868462838476177400"
       }
     },
     {
@@ -144,7 +144,7 @@
       "sizeBytes": 602727,
       "uploaded": {
         "assetId": 7,
-        "storageObjectId": 868462850186674200
+        "storageObjectId": "868462850186674200"
       }
     },
     {
@@ -162,7 +162,7 @@
       "sizeBytes": 526647,
       "uploaded": {
         "assetId": 8,
-        "storageObjectId": 868462864694771700
+        "storageObjectId": "868462864694771700"
       }
     },
     {
@@ -180,7 +180,7 @@
       "sizeBytes": 490162,
       "uploaded": {
         "assetId": 9,
-        "storageObjectId": 868462877030219800
+        "storageObjectId": "868462877030219800"
       }
     },
     {
@@ -198,7 +198,7 @@
       "sizeBytes": 491961,
       "uploaded": {
         "assetId": 10,
-        "storageObjectId": 868462888543584300
+        "storageObjectId": "868462888543584300"
       }
     },
     {
@@ -216,7 +216,7 @@
       "sizeBytes": 599841,
       "uploaded": {
         "assetId": 11,
-        "storageObjectId": 868462900166000600
+        "storageObjectId": "868462900166000600"
       }
     },
     {
@@ -234,7 +234,7 @@
       "sizeBytes": 654782,
       "uploaded": {
         "assetId": 12,
-        "storageObjectId": 868462913105428500
+        "storageObjectId": "868462913105428500"
       }
     },
     {
@@ -252,7 +252,7 @@
       "sizeBytes": 546108,
       "uploaded": {
         "assetId": 13,
-        "storageObjectId": 868462926808219600
+        "storageObjectId": "868462926808219600"
       }
     },
     {
@@ -270,7 +270,7 @@
       "sizeBytes": 499484,
       "uploaded": {
         "assetId": 14,
-        "storageObjectId": 868462940452290600
+        "storageObjectId": "868462940452290600"
       }
     },
     {
@@ -288,7 +288,7 @@
       "sizeBytes": 552984,
       "uploaded": {
         "assetId": 15,
-        "storageObjectId": 868462952200536000
+        "storageObjectId": "868462952200536000"
       }
     },
     {
@@ -306,7 +306,7 @@
       "sizeBytes": 83925,
       "uploaded": {
         "assetId": 16,
-        "storageObjectId": 868462953429467100
+        "storageObjectId": "868462953429467100"
       }
     },
     {
@@ -324,7 +324,7 @@
       "sizeBytes": 88521,
       "uploaded": {
         "assetId": 17,
-        "storageObjectId": 868462954641621000
+        "storageObjectId": "868462954641621000"
       }
     },
     {
@@ -342,7 +342,7 @@
       "sizeBytes": 77193,
       "uploaded": {
         "assetId": 18,
-        "storageObjectId": 868462955774083100
+        "storageObjectId": "868462955774083100"
       }
     },
     {
@@ -360,7 +360,7 @@
       "sizeBytes": 111723,
       "uploaded": {
         "assetId": 19,
-        "storageObjectId": 868462956977848300
+        "storageObjectId": "868462956977848300"
       }
     },
     {
@@ -378,7 +378,7 @@
       "sizeBytes": 85815,
       "uploaded": {
         "assetId": 20,
-        "storageObjectId": 868462958148059100
+        "storageObjectId": "868462958148059100"
       }
     }
   ]
