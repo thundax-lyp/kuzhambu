@@ -40,7 +40,11 @@ class PromptRepositoryIT {
         assertTrue(schemaSql.contains("CREATE TABLE IF NOT EXISTS `ai_model`"));
         assertTrue(schemaSql.contains("CREATE TABLE IF NOT EXISTS `ai_business_config`"));
         assertFalse(schemaSql.contains("UNIQUE KEY `uk_ai_business_config_capability`"));
-        assertTrue(schemaSql.contains("KEY `idx_ai_business_config_capability`"));
+        assertTrue(schemaSql.contains("UNIQUE KEY `uk_ai_business_config_priority` (`priority`)"));
+        assertTrue(schemaSql.contains("KEY `idx_ai_business_config_capability` (`capability`, `enabled`)"));
+        assertTrue(schemaSql.contains("KEY `idx_ai_business_config_enabled` (`enabled`)"));
+        assertFalse(schemaSql.contains("KEY `idx_ai_business_config_capability` (`capability`, `enabled`, `priority`"));
+        assertFalse(schemaSql.contains("KEY `idx_ai_business_config_enabled` (`enabled`, `priority`)"));
         assertFalse(schemaSql.contains("CREATE TABLE IF NOT EXISTS `ai_capability_mapping`"));
         assertFalse(schemaSql.contains("CREATE TABLE IF NOT EXISTS `ai_action_status`"));
         assertTrue(schemaSql.contains("UNIQUE KEY `uk_ai_prompt_template_capability`"));
