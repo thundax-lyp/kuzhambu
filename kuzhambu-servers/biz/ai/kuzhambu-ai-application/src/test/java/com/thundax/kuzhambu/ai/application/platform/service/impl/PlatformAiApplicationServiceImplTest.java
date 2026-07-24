@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.ai.application.platform.service.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
@@ -31,7 +32,7 @@ class PlatformAiApplicationServiceImplTest {
         assertNotNull(result);
         assertEquals("platform", capturedCommand.getScope());
         assertEquals("PLATFORM_PROMPT_SUGGESTION", capturedCommand.getOperation());
-        assertEquals("/internal/ai/platform/prompt-suggestion", capturedCommand.getWorkerPath());
+        assertNull(capturedCommand.getWorkerPath());
         assertEquals(AiBusinessCapability.PROMPT_SUGGEST.value(), capturedCommand.getCapability());
         assertFalse(capturedCommand.isStream());
         assertTrue(capturedCommand.isCreateCandidate());
@@ -49,7 +50,7 @@ class PlatformAiApplicationServiceImplTest {
 
         assertNotNull(result);
         assertEquals("PLATFORM_VERSION_SUMMARY", capturedCommand.getOperation());
-        assertEquals("/internal/ai/platform/version-summary", capturedCommand.getWorkerPath());
+        assertNull(capturedCommand.getWorkerPath());
         assertEquals(AiBusinessCapability.PLATFORM_VERSION_SUMMARY.value(), capturedCommand.getCapability());
         assertFalse(capturedCommand.isStream());
         assertFalse(capturedCommand.isCreateCandidate());

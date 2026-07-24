@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.ai.application.platform.support;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -20,7 +21,7 @@ class PlatformAiWorkerUsecaseResolverTest {
 
         assertNotNull(spec);
         assertEquals("PLATFORM_PROMPT_SUGGESTION", spec.operation());
-        assertEquals("/internal/ai/platform/prompt-suggestion", spec.workerPath());
+        assertNull(spec.workerPath());
         assertEquals(AiBusinessCapability.PROMPT_SUGGEST.value(), spec.capability());
         assertTrue(spec.defaultCreateCandidate());
     }
@@ -31,7 +32,7 @@ class PlatformAiWorkerUsecaseResolverTest {
 
         assertNotNull(spec);
         assertEquals("PLATFORM_VERSION_SUMMARY", spec.operation());
-        assertEquals("/internal/ai/platform/version-summary", spec.workerPath());
+        assertNull(spec.workerPath());
         assertEquals(AiBusinessCapability.PLATFORM_VERSION_SUMMARY.value(), spec.capability());
         assertFalse(spec.defaultCreateCandidate());
     }
