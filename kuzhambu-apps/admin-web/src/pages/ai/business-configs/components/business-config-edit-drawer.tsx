@@ -156,6 +156,7 @@ export const BusinessConfigEditDrawer = ({
     return (
         <KuzhambuDrawer
             testId="ai-business-configs-business-config-edit-drawer"
+            className="business-configs-edit-drawer"
             open={open}
             title={config ? "编辑业务配置" : "新增业务配置"}
             size="large"
@@ -183,6 +184,7 @@ export const BusinessConfigEditDrawer = ({
                     name="capability"
                     rules={[{ required: true, message: "请选择业务能力" }]}
                     layoutSize="middle"
+                    className="business-configs-form-item-compact"
                 >
                     <KuzhambuSelect options={capabilityOptions} showSearch />
                 </KuzhambuFormItem>
@@ -192,6 +194,7 @@ export const BusinessConfigEditDrawer = ({
                     name="promptTemplateId"
                     rules={[{ required: true, message: "请选择提示词模板" }]}
                     layoutSize="middle"
+                    className="business-configs-form-item-compact"
                 >
                     <KuzhambuSelect options={promptOptions} showSearch />
                 </KuzhambuFormItem>
@@ -201,11 +204,17 @@ export const BusinessConfigEditDrawer = ({
                     name="modelId"
                     rules={[{ required: true, message: "请选择模型" }]}
                     layoutSize="middle"
+                    className="business-configs-form-item-compact"
                 >
                     <KuzhambuSelect options={modelOptions} showSearch />
                 </KuzhambuFormItem>
                 <KuzhambuFormPlaceholderItem />
-                <KuzhambuFormItem label="启用" name="enabled" valuePropName="checked">
+                <KuzhambuFormItem
+                    label="启用"
+                    name="enabled"
+                    valuePropName="checked"
+                    className="business-configs-form-item-status"
+                >
                     <KuzhambuSwitch checkedChildren="启用" unCheckedChildren="禁用" />
                 </KuzhambuFormItem>
                 <KuzhambuFormItem
@@ -213,6 +222,7 @@ export const BusinessConfigEditDrawer = ({
                     name="defaultParamsJson"
                     rules={[{ validator: (_, value) => assertJsonText(value) }]}
                     layoutSize="large"
+                    className="business-configs-form-item-json"
                 >
                     <Input.TextArea aria-label="默认参数 JSON" rows={8} />
                 </KuzhambuFormItem>
