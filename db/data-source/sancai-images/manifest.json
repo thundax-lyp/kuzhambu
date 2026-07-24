@@ -1,0 +1,385 @@
+{
+  "title": "三才图会章节配图资源",
+  "purpose": "保存可重新上传的三才图会配图源文件和业务绑定说明。切换环境后，使用本 manifest 中的 file、entryId、imageType、currentUsed、description 重新调用 /classics/sancai/assets/images/upload。",
+  "uploadedEnvironment": {
+    "baseUrl": "http://127.0.0.1:20010/kuzhambu-admin-api/api",
+    "uploadedAt": "2026-07-24",
+    "note": "assetId 和 storageObjectId 是当前环境结果，切换环境后需要重新上传生成新 ID。"
+  },
+  "sources": {
+    "dpm": {
+      "name": "故宫博物院《三才图会》页面",
+      "pageUrl": "https://www.dpm.org.cn/ancient/yuanmingqing/149802.html",
+      "note": "官方页面样图主要覆盖卷首和天文。"
+    },
+    "ndl": {
+      "name": "国立国会图书馆数字馆藏 IIIF，《三才圖會 106卷》",
+      "exampleManifestUrl": "https://dl.ndl.go.jp/api/iiif/2574370/manifest.json",
+      "rights": "PDM",
+      "attribution": "国立国会図書館 National Diet Library, JAPAN",
+      "note": "用于补齐各门类代表图。"
+    }
+  },
+  "images": [
+    {
+      "order": 1,
+      "file": "./sancai-00-preface-dpm.jpg",
+      "businessCategory": "卷首",
+      "entryId": 300000000001,
+      "entryTitle": "三才图会序 (何尔复撰)",
+      "imageType": "ORIGINAL",
+      "currentUsed": true,
+      "title": "三才图会卷首代表图 - 故宫博物院《三才图会》总目及卷一",
+      "description": "卷首总目及卷一页面，作为卷首资源入口代表图。",
+      "sourceUrl": "https://img.dpm.org.cn/Uploads/Picture/dc/4859.jpg",
+      "sourceType": "dpm",
+      "sizeBytes": 85452,
+      "uploaded": {
+        "assetId": 1,
+        "storageObjectId": 868462791734853600
+      }
+    },
+    {
+      "order": 2,
+      "file": "./sancai-01-tianwen-dpm.jpg",
+      "businessCategory": "天文",
+      "entryId": 300000000007,
+      "entryTitle": "天文卷一图目",
+      "imageType": "ORIGINAL",
+      "currentUsed": true,
+      "title": "三才图会天文代表图 - 故宫博物院《三才图会》卷一·天文·天文总图",
+      "description": "天文总图，匹配天文卷图目。",
+      "sourceUrl": "https://img.dpm.org.cn/Uploads/Picture/dc/4858.jpg",
+      "sourceType": "dpm",
+      "sizeBytes": 114321,
+      "uploaded": {
+        "assetId": 2,
+        "storageObjectId": 868462793337077800
+      }
+    },
+    {
+      "order": 3,
+      "file": "./sancai-02-dili-ndl.jpg",
+      "businessCategory": "地理",
+      "entryId": 300000000192,
+      "entryTitle": "卷首信息",
+      "imageType": "ORIGINAL",
+      "currentUsed": true,
+      "title": "三才图会地理代表图 - NDL PDM 三才圖會 106卷[5]",
+      "description": "地理门类代表页图，用于补齐地理章节配图。",
+      "sourceUrl": "https://dl.ndl.go.jp/api/iiif/2574370/R0000020/full/1400,/0/default.jpg",
+      "sourceType": "ndl",
+      "sizeBytes": 560996,
+      "uploaded": {
+        "assetId": 3,
+        "storageObjectId": 868462804246462500
+      }
+    },
+    {
+      "order": 4,
+      "file": "./sancai-03-renwu-ndl.jpg",
+      "businessCategory": "人物",
+      "entryId": 300000000602,
+      "entryTitle": "三才图会简介",
+      "imageType": "ORIGINAL",
+      "currentUsed": true,
+      "title": "三才图会人物代表图 - NDL PDM 三才圖會 106卷[10]",
+      "description": "人物门类代表页图，用于补齐人物章节配图。",
+      "sourceUrl": "https://dl.ndl.go.jp/api/iiif/2574375/R0000020/full/1400,/0/default.jpg",
+      "sourceType": "ndl",
+      "sizeBytes": 583628,
+      "uploaded": {
+        "assetId": 4,
+        "storageObjectId": 868462816166674400
+      }
+    },
+    {
+      "order": 5,
+      "file": "./sancai-04-shiling-ndl.jpg",
+      "businessCategory": "时令",
+      "entryId": 300000001034,
+      "entryTitle": "三才图会时令卷一简介",
+      "imageType": "ORIGINAL",
+      "currentUsed": true,
+      "title": "三才图会时令代表图 - NDL PDM 三才圖會 106卷[13]",
+      "description": "时令门类代表页图，用于补齐时令章节配图。",
+      "sourceUrl": "https://dl.ndl.go.jp/api/iiif/2574378/R0000020/full/1400,/0/default.jpg",
+      "sourceType": "ndl",
+      "sizeBytes": 514753,
+      "uploaded": {
+        "assetId": 5,
+        "storageObjectId": 868462827503878100
+      }
+    },
+    {
+      "order": 6,
+      "file": "./sancai-05-gongshi-ndl.jpg",
+      "businessCategory": "宫室",
+      "entryId": 300000001192,
+      "entryTitle": "宫",
+      "imageType": "ORIGINAL",
+      "currentUsed": true,
+      "title": "三才图会宫室代表图 - NDL PDM 三才圖會 106卷[15]",
+      "description": "宫室门类代表页图，用于补齐宫室章节配图。",
+      "sourceUrl": "https://dl.ndl.go.jp/api/iiif/2574380/R0000020/full/1400,/0/default.jpg",
+      "sourceType": "ndl",
+      "sizeBytes": 473696,
+      "uploaded": {
+        "assetId": 6,
+        "storageObjectId": 868462838476177400
+      }
+    },
+    {
+      "order": 7,
+      "file": "./sancai-06-qiyong-ndl.jpg",
+      "businessCategory": "器用",
+      "entryId": 300000001421,
+      "entryTitle": "尊、罍总说",
+      "imageType": "ORIGINAL",
+      "currentUsed": true,
+      "title": "三才图会器用代表图 - NDL PDM 三才圖會 106卷[17]",
+      "description": "器用门类代表页图，用于补齐器用章节配图。",
+      "sourceUrl": "https://dl.ndl.go.jp/api/iiif/2574382/R0000020/full/1400,/0/default.jpg",
+      "sourceType": "ndl",
+      "sizeBytes": 602727,
+      "uploaded": {
+        "assetId": 7,
+        "storageObjectId": 868462850186674200
+      }
+    },
+    {
+      "order": 8,
+      "file": "./sancai-07-shenti-ndl.jpg",
+      "businessCategory": "身体",
+      "entryId": 300000001821,
+      "entryTitle": "三才图会身体卷一简介",
+      "imageType": "ORIGINAL",
+      "currentUsed": true,
+      "title": "三才图会身体代表图 - NDL PDM 三才圖會 106卷[18]",
+      "description": "身体门类代表页图，用于补齐身体章节配图。",
+      "sourceUrl": "https://dl.ndl.go.jp/api/iiif/2574383/R0000020/full/1400,/0/default.jpg",
+      "sourceType": "ndl",
+      "sizeBytes": 526647,
+      "uploaded": {
+        "assetId": 8,
+        "storageObjectId": 868462864694771700
+      }
+    },
+    {
+      "order": 9,
+      "file": "./sancai-08-yifu-ndl.jpg",
+      "businessCategory": "衣服",
+      "entryId": 300000002076,
+      "entryTitle": "衮冕",
+      "imageType": "ORIGINAL",
+      "currentUsed": true,
+      "title": "三才图会衣服代表图 - NDL PDM 三才圖會 106卷[19]",
+      "description": "衣服门类代表页图，用于补齐衣服章节配图。",
+      "sourceUrl": "https://dl.ndl.go.jp/api/iiif/2574384/R0000020/full/1400,/0/default.jpg",
+      "sourceType": "ndl",
+      "sizeBytes": 490162,
+      "uploaded": {
+        "assetId": 9,
+        "storageObjectId": 868462877030219800
+      }
+    },
+    {
+      "order": 10,
+      "file": "./sancai-09-renshi-ndl.jpg",
+      "businessCategory": "人事",
+      "entryId": 300000002222,
+      "entryTitle": "下马例",
+      "imageType": "ORIGINAL",
+      "currentUsed": true,
+      "title": "三才图会人事代表图 - NDL PDM 三才圖會 106卷[20]",
+      "description": "人事门类代表页图，用于补齐人事章节配图。",
+      "sourceUrl": "https://dl.ndl.go.jp/api/iiif/2574385/R0000020/full/1400,/0/default.jpg",
+      "sourceType": "ndl",
+      "sizeBytes": 491961,
+      "uploaded": {
+        "assetId": 10,
+        "storageObjectId": 868462888543584300
+      }
+    },
+    {
+      "order": 11,
+      "file": "./sancai-10-yizhi-ndl.jpg",
+      "businessCategory": "仪制",
+      "entryId": 300000002282,
+      "entryTitle": "三才图会第十函",
+      "imageType": "ORIGINAL",
+      "currentUsed": true,
+      "title": "三才图会仪制代表图 - NDL PDM 三才圖會 106卷[21]",
+      "description": "仪制门类代表页图，用于补齐仪制章节配图。",
+      "sourceUrl": "https://dl.ndl.go.jp/api/iiif/2574386/R0000020/full/1400,/0/default.jpg",
+      "sourceType": "ndl",
+      "sizeBytes": 599841,
+      "uploaded": {
+        "assetId": 11,
+        "storageObjectId": 868462900166000600
+      }
+    },
+    {
+      "order": 12,
+      "file": "./sancai-11-zhenbao-ndl.jpg",
+      "businessCategory": "珍宝",
+      "entryId": 300000002468,
+      "entryTitle": "三才图会珍宝卷一简介",
+      "imageType": "ORIGINAL",
+      "currentUsed": true,
+      "title": "三才图会珍宝代表图 - NDL PDM 三才圖會 106卷[23]",
+      "description": "珍宝门类代表页图，用于补齐珍宝章节配图。",
+      "sourceUrl": "https://dl.ndl.go.jp/api/iiif/2574388/R0000020/full/1400,/0/default.jpg",
+      "sourceType": "ndl",
+      "sizeBytes": 654782,
+      "uploaded": {
+        "assetId": 12,
+        "storageObjectId": 868462913105428500
+      }
+    },
+    {
+      "order": 13,
+      "file": "./sancai-12-wenshi-ndl.jpg",
+      "businessCategory": "文史",
+      "entryId": 300000002529,
+      "entryTitle": "三才图会文史卷一简介",
+      "imageType": "ORIGINAL",
+      "currentUsed": true,
+      "title": "三才图会文史代表图 - NDL PDM 三才圖會 106卷[24]",
+      "description": "文史门类代表页图，用于补齐文史章节配图。",
+      "sourceUrl": "https://dl.ndl.go.jp/api/iiif/2574389/R0000020/full/1400,/0/default.jpg",
+      "sourceType": "ndl",
+      "sizeBytes": 546108,
+      "uploaded": {
+        "assetId": 13,
+        "storageObjectId": 868462926808219600
+      }
+    },
+    {
+      "order": 14,
+      "file": "./sancai-13-niaoshou-ndl.jpg",
+      "businessCategory": "鸟兽",
+      "entryId": 300000002573,
+      "entryTitle": "凤",
+      "imageType": "ORIGINAL",
+      "currentUsed": true,
+      "title": "三才图会鸟兽代表图 - NDL PDM 三才圖會 106卷[25]",
+      "description": "鸟兽门类代表页图，用于补齐鸟兽章节配图。",
+      "sourceUrl": "https://dl.ndl.go.jp/api/iiif/2574390/R0000020/full/1400,/0/default.jpg",
+      "sourceType": "ndl",
+      "sizeBytes": 499484,
+      "uploaded": {
+        "assetId": 14,
+        "storageObjectId": 868462940452290600
+      }
+    },
+    {
+      "order": 15,
+      "file": "./sancai-14-caomu-ndl.jpg",
+      "businessCategory": "草木",
+      "entryId": 300000002864,
+      "entryTitle": "三才图会草木卷一简介",
+      "imageType": "ORIGINAL",
+      "currentUsed": true,
+      "title": "三才图会草木代表图 - NDL PDM 三才圖會 106卷[28]",
+      "description": "草木门类代表页图，用于补齐草木章节配图。",
+      "sourceUrl": "https://dl.ndl.go.jp/api/iiif/2574393/R0000020/full/1400,/0/default.jpg",
+      "sourceType": "ndl",
+      "sizeBytes": 552984,
+      "uploaded": {
+        "assetId": 15,
+        "storageObjectId": 868462952200536000
+      }
+    },
+    {
+      "order": 16,
+      "file": "./sancai-15-taiweiyuan-dpm.jpg",
+      "businessCategory": "天文",
+      "entryId": 300000000021,
+      "entryTitle": "太微垣总叙",
+      "imageType": "ORIGINAL",
+      "currentUsed": true,
+      "title": "三才图会天文补图 - 故宫博物院《三才图会》卷一·天文·太微垣",
+      "description": "太微垣图，匹配天文卷太微垣条目。",
+      "sourceUrl": "https://img.dpm.org.cn/Uploads/Picture/dc/4856.jpg",
+      "sourceType": "dpm",
+      "sizeBytes": 83925,
+      "uploaded": {
+        "assetId": 16,
+        "storageObjectId": 868462953429467100
+      }
+    },
+    {
+      "order": 17,
+      "file": "./sancai-16-riyuefengyun-1-dpm.jpg",
+      "businessCategory": "天文",
+      "entryId": 300000000191,
+      "entryTitle": "日月风云气色",
+      "imageType": "ORIGINAL",
+      "currentUsed": true,
+      "title": "三才图会天文补图 - 故宫博物院《三才图会》卷四·天文·日月风云气色图1",
+      "description": "日月风云气色图 1，匹配天文卷日月风云气色条目。",
+      "sourceUrl": "https://img.dpm.org.cn/Uploads/Picture/dc/4853.jpg",
+      "sourceType": "dpm",
+      "sizeBytes": 88521,
+      "uploaded": {
+        "assetId": 17,
+        "storageObjectId": 868462954641621000
+      }
+    },
+    {
+      "order": 18,
+      "file": "./sancai-17-riyuefengyun-2-dpm.jpg",
+      "businessCategory": "天文",
+      "entryId": 300000000191,
+      "entryTitle": "日月风云气色",
+      "imageType": "ORIGINAL",
+      "currentUsed": false,
+      "title": "三才图会天文补图 - 故宫博物院《三才图会》卷四·天文·日月风云气色图2",
+      "description": "日月风云气色图 2，作为同条目补充图。",
+      "sourceUrl": "https://img.dpm.org.cn/Uploads/Picture/dc/4852.jpg",
+      "sourceType": "dpm",
+      "sizeBytes": 77193,
+      "uploaded": {
+        "assetId": 18,
+        "storageObjectId": 868462955774083100
+      }
+    },
+    {
+      "order": 19,
+      "file": "./sancai-18-yingxunajia-dpm.jpg",
+      "businessCategory": "天文",
+      "entryId": 300000000190,
+      "entryTitle": "盈虚纳甲",
+      "imageType": "ORIGINAL",
+      "currentUsed": true,
+      "title": "三才图会天文补图 - 故宫博物院《三才图会》卷四·天文·盈虚纳甲图",
+      "description": "盈虚纳甲图，匹配天文卷盈虚纳甲条目。",
+      "sourceUrl": "https://img.dpm.org.cn/Uploads/Picture/dc/4854.jpg",
+      "sourceType": "dpm",
+      "sizeBytes": 111723,
+      "uploaded": {
+        "assetId": 19,
+        "storageObjectId": 868462956977848300
+      }
+    },
+    {
+      "order": 20,
+      "file": "./sancai-19-rishi-yueshi-dpm.jpg",
+      "businessCategory": "天文",
+      "entryId": 300000000186,
+      "entryTitle": "日蚀、月蚀",
+      "imageType": "ORIGINAL",
+      "currentUsed": true,
+      "title": "三才图会天文补图 - 故宫博物院《三才图会》卷四·天文·日蚀、月蚀图",
+      "description": "日蚀、月蚀图，匹配天文卷日蚀、月蚀条目。",
+      "sourceUrl": "https://img.dpm.org.cn/Uploads/Picture/dc/4855.jpg",
+      "sourceType": "dpm",
+      "sizeBytes": 85815,
+      "uploaded": {
+        "assetId": 20,
+        "storageObjectId": 868462958148059100
+      }
+    }
+  ]
+}
