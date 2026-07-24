@@ -6,7 +6,7 @@ import {
     SearchOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Input, Select } from "antd";
+import { App, Input } from "antd";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
@@ -46,6 +46,7 @@ import type { WangqiDocumentCommand, WangqiDocumentQuery } from "./wangqi-servic
 import type { WangqiContentVersionRecord, WangqiDocumentRecord } from "./wangqi-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./wangqi-page.css";
+import { KuzhambuSelect } from "@/components/kuzhambu-select";
 type WangqiVisibilityFilter = "ALL" | "PUBLIC" | "PRIVATE";
 type WangqiSortDirectionFilter = "ASC" | "DESC";
 
@@ -892,7 +893,7 @@ export const WangqiPage = () => {
                             name: "visibility",
                             label: "可见性",
                             render: () => (
-                                <Select
+                                <KuzhambuSelect
                                     aria-label="王圻文档可见性"
                                     value={filters.visibility}
                                     options={[
@@ -913,7 +914,7 @@ export const WangqiPage = () => {
                             name: "sortDirection",
                             label: "排序",
                             render: () => (
-                                <Select
+                                <KuzhambuSelect
                                     aria-label="王圻文档排序方向"
                                     value={filters.sortDirection}
                                     options={[

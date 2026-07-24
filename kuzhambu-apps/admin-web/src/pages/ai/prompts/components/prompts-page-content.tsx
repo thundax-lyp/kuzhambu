@@ -5,10 +5,11 @@ import {
     ReloadOutlined,
     StopOutlined
 } from "@ant-design/icons";
-import { Select, Typography } from "antd";
+import { Typography } from "antd";
 import type { Dispatch, Key, SetStateAction } from "react";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
+import { KuzhambuSelect } from "@/components/kuzhambu-select";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
@@ -231,7 +232,7 @@ export const PromptsPageContent = ({
                         name: "capability",
                         label: "能力",
                         render: () => (
-                            <Select
+                            <KuzhambuSelect
                                 allowClear
                                 placeholder="全部"
                                 value={filters.capability || undefined}
@@ -250,7 +251,7 @@ export const PromptsPageContent = ({
                         name: "enabled",
                         label: "状态",
                         render: () => (
-                            <Select
+                            <KuzhambuSelect
                                 value={filters.enabled}
                                 options={[
                                     { label: "全部", value: "ALL" },

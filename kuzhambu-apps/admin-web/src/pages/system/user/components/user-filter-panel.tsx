@@ -1,6 +1,7 @@
-import { Input, Select } from "antd";
+import { Input } from "antd";
 import { KuzhambuFilterPanel } from "@/components/kuzhambu-filter-panel";
 import type { OptionRecord } from "@/types/options";
+import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 export type UserFilterStatus = "ALL" | "ENABLED" | "DISABLED";
 
@@ -55,7 +56,7 @@ export const UserFilterPanel = ({
                 name: "enable",
                 label: "状态",
                 render: () => (
-                    <Select<UserFilterStatus>
+                    <KuzhambuSelect<UserFilterStatus>
                         value={filters.enable}
                         options={[
                             { value: "ALL", label: "全部" },

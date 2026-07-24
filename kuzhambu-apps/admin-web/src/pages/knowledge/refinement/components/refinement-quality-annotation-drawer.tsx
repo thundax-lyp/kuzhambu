@@ -1,10 +1,11 @@
-import { Form, Input, Select } from "antd";
+import { Form, Input } from "antd";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { UpsertQualityAnnotationCommand } from "../refinement-service";
 import type { QualityAnnotationRecord, QualityAnnotationTarget } from "../refinement-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 type QualityAnnotationFormValues = Pick<
     UpsertQualityAnnotationCommand,
@@ -72,14 +73,14 @@ export const RefinementQualityAnnotationDrawer = ({
                     name="annotationStatus"
                     rules={[{ required: true, message: "请选择标注状态" }]}
                 >
-                    <Select options={statusOptions} />
+                    <KuzhambuSelect options={statusOptions} />
                 </KuzhambuFormItem>
                 <KuzhambuFormItem
                     label="标注标签"
                     name="annotationLabel"
                     rules={[{ required: true, message: "请选择标注标签" }]}
                 >
-                    <Select options={labelOptions} />
+                    <KuzhambuSelect options={labelOptions} />
                 </KuzhambuFormItem>
                 <KuzhambuFormItem label="备注" name="comment" layoutSize="large">
                     <Input.TextArea rows={5} />

@@ -1,4 +1,4 @@
-import { Input, Select } from "antd";
+import { Input } from "antd";
 import { useState } from "react";
 import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuModal } from "@/components/kuzhambu-modal";
@@ -9,6 +9,7 @@ import type {
     SancaiVolumeRecord
 } from "@/pages/classics/sancai/sancai-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 interface SancaiVolumeEditModalProps {
     categories: SancaiCategoryRecord[];
@@ -107,7 +108,7 @@ const SancaiVolumeForm = ({
                 />
             </KuzhambuFormItem>
             <KuzhambuFormItem label="所属门类" layoutSize="large">
-                <Select
+                <KuzhambuSelect
                     aria-label="三才图会卷目所属门类"
                     placeholder="所属门类"
                     value={form.categoryId}
@@ -119,7 +120,7 @@ const SancaiVolumeForm = ({
                 />
             </KuzhambuFormItem>
             <KuzhambuFormItem label="卷目类型" layoutSize="large">
-                <Select
+                <KuzhambuSelect
                     aria-label="三才图会卷目类型"
                     value={form.volumeType}
                     options={volumeTypeItems}

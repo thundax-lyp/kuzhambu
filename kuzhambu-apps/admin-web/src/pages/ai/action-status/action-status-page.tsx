@@ -1,6 +1,6 @@
 import { ReloadOutlined, SyncOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Card, Form, Select, Table, Tag, Tooltip, Typography } from "antd";
+import { App, Card, Form, Table, Tag, Tooltip, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useEffect, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
@@ -12,6 +12,7 @@ import type { AiActionStatusRecord } from "./action-status-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import "./action-status-page.css";
+import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 const SCOPE_OPTIONS = [
     { label: "classics", value: "classics" },
@@ -206,21 +207,21 @@ export const ActionStatusPage = () => {
             <Card className="action-status-filter-card">
                 <KuzhambuForm form={form} className="action-status-filter-form">
                     <KuzhambuFormItem label="scope" name="scope" layoutSize="small">
-                        <Select
+                        <KuzhambuSelect
                             allowClear
                             className="action-status-filter-control"
                             options={SCOPE_OPTIONS}
                         />
                     </KuzhambuFormItem>
                     <KuzhambuFormItem label="capability" name="capability" layoutSize="small">
-                        <Select
+                        <KuzhambuSelect
                             allowClear
                             className="action-status-filter-control"
                             options={capabilityOptions}
                         />
                     </KuzhambuFormItem>
                     <KuzhambuFormItem label="available" name="available" layoutSize="small">
-                        <Select
+                        <KuzhambuSelect
                             allowClear
                             className="action-status-filter-control"
                             options={[

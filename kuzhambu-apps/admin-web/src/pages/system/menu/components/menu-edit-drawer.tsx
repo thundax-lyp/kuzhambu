@@ -1,4 +1,4 @@
-import { Form, Input, InputNumber, Select } from "antd";
+import { Form, Input, InputNumber } from "antd";
 import { useEffect } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import {
@@ -7,6 +7,8 @@ import {
     KuzhambuFormItem,
     KuzhambuFormPlaceholderItem
 } from "@/components/kuzhambu-form";
+import { KuzhambuSelect } from "@/components/kuzhambu-select";
+import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import type { MenuSaveCommand } from "../menu-service";
 import type { MenuNode } from "../menu-types";
 
@@ -117,7 +119,11 @@ export const MenuEditDrawer = ({
                     <Input />
                 </KuzhambuFormHiddenItem>
                 <KuzhambuFormItem name="parentId" label="上级菜单" layoutSize="middle">
-                    <Select allowClear placeholder="不选择则作为根菜单" options={parentOptions} />
+                    <KuzhambuSelect
+                        allowClear
+                        placeholder="不选择则作为根菜单"
+                        options={parentOptions}
+                    />
                 </KuzhambuFormItem>
                 <KuzhambuFormPlaceholderItem />
                 <KuzhambuFormItem
@@ -138,13 +144,8 @@ export const MenuEditDrawer = ({
                     <InputNumber min={0} max={9} precision={0} className="menu-rank-input" />
                 </KuzhambuFormItem>
                 <KuzhambuFormPlaceholderItem />
-                <KuzhambuFormItem name="display" label="显示状态">
-                    <Select
-                        options={[
-                            { label: "显示", value: true },
-                            { label: "隐藏", value: false }
-                        ]}
-                    />
+                <KuzhambuFormItem name="display" label="显示状态" valuePropName="checked">
+                    <KuzhambuSwitch checkedChildren="显示" unCheckedChildren="隐藏" />
                 </KuzhambuFormItem>
                 <KuzhambuFormItem name="displayParams" label="显示参数" layoutSize="large">
                     <TextArea

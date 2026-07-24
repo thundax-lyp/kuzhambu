@@ -1,4 +1,4 @@
-import { Checkbox, Empty, Input, Select, Tag, Typography } from "antd";
+import { Checkbox, Empty, Input, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import {
@@ -8,6 +8,7 @@ import {
 } from "@/components/kuzhambu-table";
 import "./classics-export-job-section.css";
 import type { ClassicsExportJobRecord } from "../classics-export-types";
+import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 const { Text } = Typography;
 
@@ -235,7 +236,7 @@ export const ClassicsExportJobSection = ({
                     onSearch={setKeyword}
                     style={{ width: 240 }}
                 />
-                <Select
+                <KuzhambuSelect
                     aria-label="筛选导出任务状态"
                     value={status}
                     options={[

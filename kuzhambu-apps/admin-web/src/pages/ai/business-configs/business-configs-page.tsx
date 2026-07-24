@@ -1,11 +1,12 @@
 import { ReloadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Select, Typography } from "antd";
+import { App, Typography } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
+import { KuzhambuSelect } from "@/components/kuzhambu-select";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
@@ -472,12 +473,11 @@ export const BusinessConfigsPage = () => {
                         label: "业务能力",
                         name: "capability",
                         render: () => (
-                            <Select
+                            <KuzhambuSelect
                                 allowClear
                                 options={capabilityOptions}
                                 value={filters.capability ?? undefined}
                                 showSearch
-                                optionFilterProp="label"
                                 onChange={(capability) =>
                                     setFilters((current) => ({
                                         ...current,
@@ -491,7 +491,7 @@ export const BusinessConfigsPage = () => {
                         label: "状态",
                         name: "enabled",
                         render: () => (
-                            <Select
+                            <KuzhambuSelect
                                 options={[
                                     { label: "全部", value: "ALL" },
                                     { label: "启用", value: "ENABLED" },

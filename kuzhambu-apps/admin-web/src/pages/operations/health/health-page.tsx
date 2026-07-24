@@ -1,6 +1,6 @@
 import { ReloadOutlined, SearchOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Card, DatePicker, Descriptions, Input, Select, Tooltip, Typography } from "antd";
+import { App, Card, DatePicker, Descriptions, Input, Tooltip, Typography } from "antd";
 import { useEffect, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
@@ -19,9 +19,9 @@ import type {
 } from "./health-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./health-page.css";
+import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 const { RangePicker } = DatePicker;
-const { Option } = Select;
 const { Paragraph, Text } = Typography;
 
 type CheckedAtRange = [DateLike | null, DateLike | null] | null;
@@ -37,6 +37,18 @@ const HEALTH_STATUS_OPTIONS: Array<OperationsHealthStatus | "ALL"> = [
     "DOWN"
 ];
 const PROBE_SOURCE_OPTIONS = ["ALL", "LOCAL", "HTTP"];
+const HEALTH_STATUS_SELECT_OPTIONS = HEALTH_STATUS_OPTIONS.map((status) => ({
+    label: status === "ALL" ? "全部" : status,
+    value: status
+}));
+const PROBE_SOURCE_SELECT_OPTIONS = PROBE_SOURCE_OPTIONS.map((source) => ({
+    label: source === "ALL" ? "全部" : source,
+    value: source
+}));
+const HEALTH_PAGE_SIZE_OPTIONS = [10, 20, 50].map((size) => ({
+    label: String(size),
+    value: size
+}));
 
 const trimToNull = (value: string) => {
     const trimmed = value.trim();
@@ -269,30 +281,20 @@ export const OperationsHealthPage = () => {
                         onPressEnter={() => submitQuery()}
                         allowClear
                     />
-                    <Select
+                    <KuzhambuSelect
                         aria-label="健康状态"
                         value={healthStatus}
+                        options={HEALTH_STATUS_SELECT_OPTIONS}
                         onChange={setHealthStatus}
                         className="operations-health-select"
-                    >
-                        {HEALTH_STATUS_OPTIONS.map((status) => (
-                            <Option key={status} value={status}>
-                                {status === "ALL" ? "全部" : status}
-                            </Option>
-                        ))}
-                    </Select>
-                    <Select
+                    />
+                    <KuzhambuSelect
                         aria-label="探针来源"
                         value={probeSource}
+                        options={PROBE_SOURCE_SELECT_OPTIONS}
                         onChange={setProbeSource}
                         className="operations-health-select"
-                    >
-                        {PROBE_SOURCE_OPTIONS.map((source) => (
-                            <Option key={source} value={source}>
-                                {source === "ALL" ? "全部" : source}
-                            </Option>
-                        ))}
-                    </Select>
+                    />
                     <Input
                         aria-label="探针目标"
                         placeholder="探针目标"
@@ -421,18 +423,13 @@ export const OperationsHealthPage = () => {
                     </KuzhambuButton>
                     <KuzhambuSpace size={8}>
                         <Text>每页</Text>
-                        <Select
+                        <KuzhambuSelect
                             aria-label="每页条数"
                             value={pageSize}
+                            options={HEALTH_PAGE_SIZE_OPTIONS}
                             className="operations-health-page-size"
                             onChange={(size) => submitQuery(DEFAULT_PAGE_NO, size)}
-                        >
-                            {[10, 20, 50].map((size) => (
-                                <Option value={size} key={size}>
-                                    {size}
-                                </Option>
-                            ))}
-                        </Select>
+                        />
                         <Text>条</Text>
                     </KuzhambuSpace>
                 </div>

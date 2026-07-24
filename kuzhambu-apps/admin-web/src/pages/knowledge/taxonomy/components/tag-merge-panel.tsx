@@ -1,6 +1,9 @@
-import { Card, Descriptions, Empty, Select, Typography } from "antd";
+import { Card, Descriptions, Empty, Typography } from "antd";
 import { useState } from "react";
+import { KuzhambuAlert } from "@/components/kuzhambu-alert";
+import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuList, KuzhambuListItem } from "@/components/kuzhambu-list";
+import { KuzhambuSelect } from "@/components/kuzhambu-select";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { TagMergeCommand } from "../taxonomy-service";
 import type {
@@ -9,8 +12,6 @@ import type {
     TagMergePreviewRecord,
     TagRecord
 } from "../taxonomy-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Paragraph, Text, Title } = Typography;
 
@@ -158,11 +159,10 @@ export const TagMergePanel = ({
                 <div className="knowledge-taxonomy-merge-controls">
                     <div className="knowledge-taxonomy-merge-field">
                         <Text strong>源标签</Text>
-                        <Select
+                        <KuzhambuSelect
                             aria-label="源标签"
                             placeholder="选择要并入的源标签"
                             showSearch
-                            optionFilterProp="label"
                             value={sourceTagId}
                             disabled={!canEditTag}
                             options={tags.map((tag) => ({
@@ -174,11 +174,10 @@ export const TagMergePanel = ({
                     </div>
                     <div className="knowledge-taxonomy-merge-field">
                         <Text strong>目标标签</Text>
-                        <Select
+                        <KuzhambuSelect
                             aria-label="目标标签"
                             placeholder="选择接收治理结果的目标标签"
                             showSearch
-                            optionFilterProp="label"
                             value={targetTagId}
                             disabled={!canEditTag}
                             options={tags

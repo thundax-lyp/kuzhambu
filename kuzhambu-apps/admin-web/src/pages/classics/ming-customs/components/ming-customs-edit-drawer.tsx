@@ -1,4 +1,4 @@
-import { Form, Input, Select, Switch, Typography } from "antd";
+import { Form, Input, Switch, Typography } from "antd";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
@@ -13,6 +13,7 @@ import {
 } from "./ming-customs-form-values";
 import type { MingCustomsCommand } from "../ming-customs-service";
 import type { MingCustomsRecord } from "../ming-customs-types";
+import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 const { Text } = Typography;
 const { TextArea } = Input;
@@ -96,7 +97,7 @@ export const MingCustomsEditDrawer = ({
                     label="分类"
                     rules={[{ required: true, message: "请选择分类" }]}
                 >
-                    <Select
+                    <KuzhambuSelect
                         aria-label="明代习俗编辑分类"
                         options={categoryOptions.map((option) => ({
                             label: option.label,
@@ -120,7 +121,7 @@ export const MingCustomsEditDrawer = ({
                     />
                 </KuzhambuFormItem>
                 <KuzhambuFormItem name="contentFormat" label="正文格式">
-                    <Select
+                    <KuzhambuSelect
                         aria-label="明代习俗正文格式"
                         options={[
                             { label: "Markdown", value: "MARKDOWN" },

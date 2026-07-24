@@ -7,7 +7,7 @@ import {
     UploadOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Input, Select, Typography } from "antd";
+import { App, Input, Typography } from "antd";
 import { useMemo, useRef, useState } from "react";
 import type { ChangeEvent, Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
@@ -28,6 +28,7 @@ import type {
 } from "./storage-object-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./storage-object-page.css";
+import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 const { Text } = Typography;
 
@@ -521,7 +522,7 @@ export const StorageObjectPage = () => {
                         name: "objectStatus",
                         label: "对象状态",
                         render: () => (
-                            <Select<StorageObjectStatusFilter>
+                            <KuzhambuSelect<StorageObjectStatusFilter>
                                 value={filters.objectStatus}
                                 options={[
                                     { value: "ALL", label: "全部" },
@@ -542,7 +543,7 @@ export const StorageObjectPage = () => {
                         name: "referenceStatus",
                         label: "引用状态",
                         render: () => (
-                            <Select<StorageReferenceStatusFilter>
+                            <KuzhambuSelect<StorageReferenceStatusFilter>
                                 value={filters.referenceStatus}
                                 options={[
                                     { value: "ALL", label: "全部" },

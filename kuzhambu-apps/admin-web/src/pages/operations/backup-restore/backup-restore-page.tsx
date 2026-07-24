@@ -6,7 +6,7 @@ import {
     SafetyCertificateOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Card, Descriptions, Select, Statistic, Typography } from "antd";
+import { App, Card, Descriptions, Statistic, Typography } from "antd";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
@@ -26,6 +26,7 @@ import type {
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./backup-restore-page.css";
 import { KuzhambuAlert } from "@/components/kuzhambu-alert";
+import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 const { Text, Title } = Typography;
 
@@ -327,7 +328,7 @@ export const BackupRestorePage = () => {
                     <div className="backup-restore-page-toolbar-fields">
                         <label className="backup-restore-page-toolbar-field">
                             <Text type="secondary">备份类型</Text>
-                            <Select
+                            <KuzhambuSelect
                                 aria-label="备份类型"
                                 options={backupTypeOptions}
                                 value={backupFilter.backupType || "ALL"}
@@ -342,7 +343,7 @@ export const BackupRestorePage = () => {
                         </label>
                         <label className="backup-restore-page-toolbar-field">
                             <Text type="secondary">备份状态</Text>
-                            <Select
+                            <KuzhambuSelect
                                 aria-label="备份状态"
                                 options={ledgerStatusOptions}
                                 value={backupFilter.backupStatus || "ALL"}
@@ -357,7 +358,7 @@ export const BackupRestorePage = () => {
                         </label>
                         <label className="backup-restore-page-toolbar-field">
                             <Text type="secondary">恢复状态</Text>
-                            <Select
+                            <KuzhambuSelect
                                 aria-label="恢复状态"
                                 options={ledgerStatusOptions}
                                 value={restoreFilter.restoreStatus || "ALL"}
@@ -372,7 +373,7 @@ export const BackupRestorePage = () => {
                         </label>
                         <label className="backup-restore-page-toolbar-field">
                             <Text type="secondary">恢复模式</Text>
-                            <Select
+                            <KuzhambuSelect
                                 aria-label="恢复模式"
                                 options={restoreModeOptions}
                                 value={restoreFilter.restoreMode || "ALL"}

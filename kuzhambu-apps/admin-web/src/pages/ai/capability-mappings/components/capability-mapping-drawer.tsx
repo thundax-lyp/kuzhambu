@@ -1,4 +1,4 @@
-import { Select, Switch } from "antd";
+import { Switch } from "antd";
 import type { FormInstance } from "antd";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
@@ -6,6 +6,7 @@ import { CapabilityModelMatchPanel } from "./capability-model-match-panel";
 import type { CapabilityModelTagMatch } from "./capability-model-match-panel";
 import type { AiCapabilityMappingChangeCommand } from "../capability-mappings-service";
 import type { AiCapabilityMappingRecord } from "../capability-mappings-types";
+import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 export type MappingFormValues = AiCapabilityMappingChangeCommand;
 
@@ -65,21 +66,21 @@ export const CapabilityMappingDrawer = ({
                     name="scope"
                     rules={[{ required: true, message: "请选择 scope" }]}
                 >
-                    <Select options={scopeOptions} />
+                    <KuzhambuSelect options={scopeOptions} />
                 </KuzhambuFormItem>
                 <KuzhambuFormItem
                     label="capability"
                     name="capability"
                     rules={[{ required: true, message: "请选择 capability" }]}
                 >
-                    <Select options={capabilityOptions} />
+                    <KuzhambuSelect options={capabilityOptions} />
                 </KuzhambuFormItem>
                 <KuzhambuFormItem
                     label="modelId"
                     name="modelId"
                     rules={[{ required: true, message: "请选择启用模型" }]}
                 >
-                    <Select options={modelOptions} />
+                    <KuzhambuSelect options={modelOptions} />
                 </KuzhambuFormItem>
                 <KuzhambuFormItem label="enabled" name="enabled" valuePropName="checked">
                     <Switch checkedChildren="启用" unCheckedChildren="禁用" />

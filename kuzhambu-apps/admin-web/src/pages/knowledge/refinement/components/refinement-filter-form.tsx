@@ -1,9 +1,10 @@
-import { Form, Input, Select } from "antd";
+import { Form, Input } from "antd";
 import { useEffect } from "react";
 import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { RefinementTaskPageQuery } from "../refinement-service";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 interface RefinementFilterFormProps {
     loading?: boolean;
@@ -39,7 +40,7 @@ export const RefinementFilterForm = ({
             }
         >
             <KuzhambuFormItem label="任务类型" name="taskType" layoutSize="small">
-                <Select
+                <KuzhambuSelect
                     allowClear
                     options={[
                         { label: "图谱", value: "GRAPH" },
@@ -55,7 +56,7 @@ export const RefinementFilterForm = ({
                 <Input allowClear placeholder="如 SANCAI_ENTRY" />
             </KuzhambuFormItem>
             <KuzhambuFormItem label="状态" name="status" layoutSize="small">
-                <Select
+                <KuzhambuSelect
                     allowClear
                     options={[
                         { label: "草稿", value: "DRAFT" },

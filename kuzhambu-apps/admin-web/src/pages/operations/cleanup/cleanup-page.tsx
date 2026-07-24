@@ -5,7 +5,7 @@ import {
     ReloadOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Card, Descriptions, Select, Statistic, Typography } from "antd";
+import { App, Card, Descriptions, Statistic, Typography } from "antd";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
@@ -20,6 +20,7 @@ import type { OperationsCleanupRecord } from "./cleanup-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./cleanup-page.css";
 import { KuzhambuAlert } from "@/components/kuzhambu-alert";
+import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 const { Text, Title } = Typography;
 
@@ -231,7 +232,7 @@ export const CleanupPage = () => {
                     <KuzhambuSpace className="operations-cleanup-filters" size={12} wrap>
                         <label className="operations-cleanup-filter">
                             <Text type="secondary">清理类型</Text>
-                            <Select
+                            <KuzhambuSelect
                                 aria-label="清理类型"
                                 style={{ width: 200 }}
                                 options={cleanupTypeOptions}
@@ -247,7 +248,7 @@ export const CleanupPage = () => {
                         </label>
                         <label className="operations-cleanup-filter">
                             <Text type="secondary">清理状态</Text>
-                            <Select
+                            <KuzhambuSelect
                                 aria-label="清理状态"
                                 style={{ width: 140 }}
                                 options={cleanupStatusOptions}
@@ -270,7 +271,7 @@ export const CleanupPage = () => {
                                 刷新
                             </KuzhambuButton>
                             {canExecuteCleanup ? (
-                                <Select
+                                <KuzhambuSelect
                                     aria-label="执行清理类型"
                                     style={{ width: 220 }}
                                     onSelect={(value) => executeCleanup(value as string)}

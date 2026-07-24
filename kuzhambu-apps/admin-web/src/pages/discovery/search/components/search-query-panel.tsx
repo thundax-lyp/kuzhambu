@@ -1,10 +1,11 @@
 import { SearchOutlined } from "@ant-design/icons";
-import { DatePicker, Input, Select } from "antd";
+import { DatePicker, Input } from "antd";
 import dayjs from "dayjs";
 import type { Dayjs } from "dayjs";
 import type { ReactNode } from "react";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
+import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 export interface SearchFormState {
     dateFrom: string;
@@ -68,7 +69,7 @@ export const SearchQueryPanel = ({
                     name: "knowledgeBases",
                     label: "知识库",
                     render: () => (
-                        <Select
+                        <KuzhambuSelect
                             mode="multiple"
                             allowClear
                             options={knowledgeBaseOptions}

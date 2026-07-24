@@ -5,7 +5,7 @@ import {
     ReloadOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Card, DatePicker, Descriptions, InputNumber, Select, Spin, Typography } from "antd";
+import { Card, DatePicker, Descriptions, InputNumber, Spin, Typography } from "antd";
 import type { Dayjs } from "dayjs";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
@@ -26,6 +26,7 @@ import type {
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./reports-page.css";
 import { KuzhambuAlert } from "@/components/kuzhambu-alert";
+import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 const { RangePicker } = DatePicker;
 const { Text } = Typography;
@@ -218,7 +219,7 @@ export const OperationsReportsPage = () => {
                     <KuzhambuSpace className="operations-reports-controls" size={12} wrap>
                         <label className="operations-reports-field">
                             <Text type="secondary">报表类型</Text>
-                            <Select
+                            <KuzhambuSelect
                                 aria-label="报表类型"
                                 options={reportTypeOptions}
                                 value={filter.reportType || "ALL"}
@@ -227,7 +228,7 @@ export const OperationsReportsPage = () => {
                         </label>
                         <label className="operations-reports-field">
                             <Text type="secondary">导出格式</Text>
-                            <Select
+                            <KuzhambuSelect
                                 aria-label="导出格式"
                                 options={formatOptions}
                                 value={filter.format || "ALL"}
@@ -236,7 +237,7 @@ export const OperationsReportsPage = () => {
                         </label>
                         <label className="operations-reports-field">
                             <Text type="secondary">状态</Text>
-                            <Select
+                            <KuzhambuSelect
                                 aria-label="状态"
                                 options={statusOptions}
                                 value={filter.reportStatus || "ALL"}
@@ -278,7 +279,7 @@ export const OperationsReportsPage = () => {
                     <KuzhambuSpace className="operations-reports-controls" size={12} wrap>
                         <label className="operations-reports-field">
                             <Text type="secondary">生成类型</Text>
-                            <Select
+                            <KuzhambuSelect
                                 aria-label="生成类型"
                                 options={reportTypeOptions.filter(
                                     (option) => option.value !== "ALL"
@@ -294,7 +295,7 @@ export const OperationsReportsPage = () => {
                         </label>
                         <label className="operations-reports-field">
                             <Text type="secondary">生成格式</Text>
-                            <Select
+                            <KuzhambuSelect
                                 aria-label="生成格式"
                                 options={formatOptions.filter((option) => option.value !== "ALL")}
                                 value={generateForm.format}

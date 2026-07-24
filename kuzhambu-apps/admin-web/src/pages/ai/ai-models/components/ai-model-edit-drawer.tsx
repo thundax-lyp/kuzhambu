@@ -1,4 +1,4 @@
-import { App, Input, Select } from "antd";
+import { App, Input } from "antd";
 import { useState } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
@@ -6,6 +6,7 @@ import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import type { AiModelChangeCommand } from "../ai-models-service";
 import type { AiModelRecord } from "../ai-models-types";
+import { KuzhambuSelect } from "@/components/kuzhambu-select";
 import {
     API_SOURCE_OPTIONS,
     DEFAULT_MODEL_PARAMS,
@@ -177,7 +178,7 @@ const AiModelEditDrawerForm = ({
                     />
                 </KuzhambuFormItem>
                 <KuzhambuFormItem label="供应商">
-                    <Select
+                    <KuzhambuSelect
                         aria-label="AI模型供应商"
                         options={API_SOURCE_OPTIONS.map((value) => ({
                             label: readApiSourceMeta(value).label,
@@ -232,7 +233,7 @@ const AiModelEditDrawerForm = ({
                     />
                 </KuzhambuFormItem>
                 <KuzhambuFormItem label="能力" layoutSize="middle">
-                    <Select
+                    <KuzhambuSelect
                         aria-label="AI模型能力"
                         mode="multiple"
                         options={MODEL_CAPABILITY_OPTIONS.map((value) => ({

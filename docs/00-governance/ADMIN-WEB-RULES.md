@@ -141,6 +141,7 @@
 - `ADMIN_WEB_UI_NO_ANTD_MODAL_DIRECT_IN_PAGES`：`src/pages/**/*.{ts,tsx}` 禁止直接从 `antd` 导入 `Modal`；页面层弹窗统一使用 `src/components/kuzhambu-modal/` 暴露的 `KuzhambuModal`。
 - `ADMIN_WEB_UI_NO_ANTD_ALERT_DIRECT_IN_PAGES`：`src/pages/**/*.{ts,tsx}` 禁止直接从 `antd` 导入 `Alert`；页面层提示统一使用 `src/components/kuzhambu-alert/` 暴露的 `KuzhambuAlert`。
 - `ADMIN_WEB_UI_NO_ANTD_BUTTON_DIRECT_IN_PAGES`：`src/pages/**/*.{ts,tsx}` 禁止直接从 `antd` 导入 `Button`；页面层按钮统一使用 `src/components/kuzhambu-button/` 暴露的 `KuzhambuButton`。
+- `ADMIN_WEB_UI_NO_ANTD_SELECT_DIRECT_IN_PAGES`：`src/pages/**/*.{ts,tsx}` 禁止直接从 `antd` 导入 `Select`；页面层选择器统一使用 `src/components/kuzhambu-select/` 暴露的 `KuzhambuSelect`。
 - `ADMIN_WEB_UI_TABLE_ACTION_COLUMN`：表格操作列使用 `key: "actions"`，优先传 `options`；`render` 只作为复杂逃生口。
 - `ADMIN_WEB_UI_INTERACTIVE_ACCESSIBLE_NAME`：可机器判断的业务交互控件必须有业务可访问名称。当前门禁覆盖无可见文本的 `Button`、`Input.Search`、`Table` 和 `KuzhambuTable`；名称来自可见文本、`aria-label` 或 `aria-labelledby`，不作为自动化测试稳定锚点。
 

@@ -474,6 +474,43 @@ const localRules = {
                 };
             }
         },
+        "no-antd-select-direct-in-pages": {
+            create(context) {
+                const readNormalizedFilePath = () => {
+                    return context.physicalFilename.split(path.sep).join("/");
+                };
+
+                const isPageFile = (normalizedFilePath) => {
+                    return (
+                        normalizedFilePath.includes("/src/pages/") &&
+                        /\.(?:ts|tsx)$/.test(normalizedFilePath)
+                    );
+                };
+
+                return {
+                    ImportDeclaration(node) {
+                        if (node.source.value !== "antd" || !isPageFile(readNormalizedFilePath())) {
+                            return;
+                        }
+
+                        node.specifiers.forEach((specifier) => {
+                            if (
+                                specifier.type !== "ImportSpecifier" ||
+                                specifier.imported.name !== "Select"
+                            ) {
+                                return;
+                            }
+
+                            context.report({
+                                node: specifier,
+                                message:
+                                    "ADMIN_WEB_UI_NO_ANTD_SELECT_DIRECT_IN_PAGES: pages/**/*.{ts,tsx} must use KuzhambuSelect from src/components/kuzhambu-select/ instead of importing Select from antd."
+                            });
+                        });
+                    }
+                };
+            }
+        },
         "shared-component-css-local": {
             create(context) {
                 return {
@@ -1987,6 +2024,7 @@ export default tseslint.config(
             "local/no-antd-modal-direct-in-pages": "error",
             "local/no-antd-alert-direct-in-pages": "error",
             "local/no-antd-button-direct-in-pages": "error",
+            "local/no-antd-select-direct-in-pages": "error",
             "@typescript-eslint/no-explicit-any": "off",
             "local/confirm-hook-only": "error",
             "local/table-action-column-shape": "error",

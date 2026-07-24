@@ -1,7 +1,13 @@
-import { Form, Input, Select } from "antd";
+import { Form, Input } from "antd";
 import { useEffect, useMemo } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuForm, KuzhambuFormHiddenItem, KuzhambuFormItem } from "@/components/kuzhambu-form";
+import {
+    KuzhambuForm,
+    KuzhambuFormHiddenItem,
+    KuzhambuFormItem,
+    KuzhambuFormPlaceholderItem
+} from "@/components/kuzhambu-form";
+import { KuzhambuSelect } from "@/components/kuzhambu-select";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import type { AiBusinessConfigChangeCommand } from "../business-configs-service";
 import type {
@@ -176,26 +182,29 @@ export const BusinessConfigEditDrawer = ({
                     label="业务能力"
                     name="capability"
                     rules={[{ required: true, message: "请选择业务能力" }]}
-                    layoutSize="large"
+                    layoutSize="middle"
                 >
-                    <Select options={capabilityOptions} showSearch optionFilterProp="label" />
+                    <KuzhambuSelect options={capabilityOptions} showSearch />
                 </KuzhambuFormItem>
+                <KuzhambuFormPlaceholderItem />
                 <KuzhambuFormItem
                     label="提示词模板"
                     name="promptTemplateId"
                     rules={[{ required: true, message: "请选择提示词模板" }]}
-                    layoutSize="large"
+                    layoutSize="middle"
                 >
-                    <Select options={promptOptions} showSearch optionFilterProp="label" />
+                    <KuzhambuSelect options={promptOptions} showSearch />
                 </KuzhambuFormItem>
+                <KuzhambuFormPlaceholderItem />
                 <KuzhambuFormItem
                     label="模型"
                     name="modelId"
                     rules={[{ required: true, message: "请选择模型" }]}
-                    layoutSize="large"
+                    layoutSize="middle"
                 >
-                    <Select options={modelOptions} showSearch optionFilterProp="label" />
+                    <KuzhambuSelect options={modelOptions} showSearch />
                 </KuzhambuFormItem>
+                <KuzhambuFormPlaceholderItem />
                 <KuzhambuFormItem label="启用" name="enabled" valuePropName="checked">
                     <KuzhambuSwitch checkedChildren="启用" unCheckedChildren="禁用" />
                 </KuzhambuFormItem>

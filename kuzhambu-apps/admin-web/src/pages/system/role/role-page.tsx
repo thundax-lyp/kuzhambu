@@ -1,6 +1,6 @@
 import { DeleteOutlined, ReloadOutlined, SafetyCertificateOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Select, Typography } from "antd";
+import { App, Typography } from "antd";
 import type { DataNode } from "antd/es/tree";
 import { useMemo, useState } from "react";
 import type { Key } from "react";
@@ -18,6 +18,7 @@ import type { RoleOptionKeys, RoleSaveCommand } from "./role-service";
 import type { RoleMenuNode, RoleMenuTreeNode, RoleRecord } from "./role-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./role-page.css";
+import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 const { Text } = Typography;
 
@@ -406,7 +407,7 @@ export const RolePage = () => {
                         name: "enable",
                         label: "状态",
                         render: () => (
-                            <Select
+                            <KuzhambuSelect
                                 value={filters.enable}
                                 options={[
                                     { label: "全部", value: "ALL" },

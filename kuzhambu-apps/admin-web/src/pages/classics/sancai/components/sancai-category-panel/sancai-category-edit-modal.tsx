@@ -1,4 +1,4 @@
-import { Input, Select } from "antd";
+import { Input } from "antd";
 import { useState } from "react";
 import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
 import { KuzhambuModal } from "@/components/kuzhambu-modal";
@@ -6,6 +6,7 @@ import type { DictItem } from "@/types/dict";
 import { toCategoryFormValues, type SancaiCategoryFormValues } from "./sancai-category-form-values";
 import type { SancaiCategoryRecord } from "@/pages/classics/sancai/sancai-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 interface SancaiCategoryEditDrawerModalProps {
     category: SancaiCategoryRecord | null;
@@ -71,7 +72,7 @@ export const SancaiCategoryEditDrawerModal = ({
                     />
                 </KuzhambuFormItem>
                 <KuzhambuFormItem label="门类类型" layoutSize="large">
-                    <Select
+                    <KuzhambuSelect
                         aria-label="三才图会门类类型"
                         value={form.categoryType}
                         options={categoryTypeOptions}

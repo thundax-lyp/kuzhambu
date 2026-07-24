@@ -1,5 +1,5 @@
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
-import { App, Card, Empty, Form, Input, Select } from "antd";
+import { App, Card, Empty, Form, Input } from "antd";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
@@ -15,6 +15,7 @@ import {
     type ClassicsContentQaPairSortCommand
 } from "../classics-content-service";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 interface ClassicsContentQaPanelProps {
     contentId: number;
@@ -359,7 +360,7 @@ export const ClassicsContentQaPanel = ({
                             />
                         </KuzhambuFormItem>
                         <KuzhambuFormItem label="来源" name="source" layoutSize="large">
-                            <Select
+                            <KuzhambuSelect
                                 aria-label="问答来源"
                                 options={[
                                     { label: "手工", value: "MANUAL" },

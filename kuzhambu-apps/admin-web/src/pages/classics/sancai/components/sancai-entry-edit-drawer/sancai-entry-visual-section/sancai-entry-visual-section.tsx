@@ -5,7 +5,7 @@ import {
     FileTextOutlined,
     PictureOutlined
 } from "@ant-design/icons";
-import { Empty, Image, Input, Select, Tag, Typography } from "antd";
+import { Empty, Image, Input, Tag, Typography } from "antd";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
@@ -19,6 +19,7 @@ import type {
     SancaiVisualAssetRecord
 } from "@/pages/classics/sancai/sancai-types";
 import "./sancai-entry-visual-section.css";
+import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 const { Text } = Typography;
 
@@ -151,7 +152,7 @@ export const SancaiEntryVisualSection = ({
                         component="div"
                     >
                         <KuzhambuFormItem label="来源图片" layoutSize="large">
-                            <Select
+                            <KuzhambuSelect
                                 aria-label="三才图会视觉处理来源图片"
                                 disabled={!defaultSourceImage}
                                 placeholder="选择来源图片"
