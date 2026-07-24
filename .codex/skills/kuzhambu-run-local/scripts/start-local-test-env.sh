@@ -56,6 +56,19 @@ if [[ ! -f docs/AGENTS.md || ! -d kuzhambu-servers || ! -d kuzhambu-apps ]]; the
     exit 2
 fi
 
+require_command() {
+    local command_name="$1"
+    if ! command -v "$command_name" >/dev/null 2>&1; then
+        echo "ERROR: required command not found: $command_name" >&2
+        exit 2
+    fi
+}
+
+require_command curl
+require_command lsof
+require_command mvn
+require_command pnpm
+
 if [[ -f "$env_file" ]]; then
     set -a
     # shellcheck disable=SC1090
@@ -217,6 +230,26 @@ wait_for_http() {
     done
 }
 
+prepare_server_starters() {
+    local projects=()
+    local projects_csv
+
+    if has_target admin; then
+        projects+=("starter/kuzhambu-admin-starter")
+    fi
+    if has_target portal; then
+        projects+=("starter/kuzhambu-portal-starter")
+    fi
+
+    projects_csv="$(IFS=,; echo "${projects[*]}")"
+
+    echo "installing server reactor dependencies: $projects_csv"
+    (
+        cd kuzhambu-servers
+        mvn -pl "$projects_csv" -am -DskipTests install
+    )
+}
+
 port_notes=()
 
 workers_requested="$(port_from_url "${KUZHAMBU_AI_WORKER_BASE_URL:-http://127.0.0.1:8000}" 8000)"
@@ -256,6 +289,11 @@ fi
 export KUZHAMBU_ADMIN_SERVER_PORT="$admin_backend_port"
 export KUZHAMBU_PORTAL_SERVER_PORT="$portal_backend_port"
 export KUZHAMBU_AI_WORKER_BASE_URL="http://127.0.0.1:$workers_port"
+if has_target portal; then
+    export KUZHAMBU_PORTAL_WEB_BASE_URL="http://127.0.0.1:$portal_web_port"
+fi
+
+prepare_server_starters
 
 if has_target admin; then
     start_process workers "$workers_port" kuzhambu-workers \
