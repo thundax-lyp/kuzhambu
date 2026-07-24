@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplicationService, DiscoveryAiDomainService {
 
     private static final String SCOPE_DISCOVERY = "discovery";
+    private static final String CONTENT_TYPE_DISCOVERY_QUERY = "DISCOVERY_QUERY";
 
     private final AiWorkerInvocationApplicationService invocationApplicationService;
     private final DiscoveryAiWorkerUsecaseResolver resolver;
@@ -78,8 +79,10 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope(SCOPE_DISCOVERY);
         command.setCapability(spec.capability());
+        command.setWorkerCapability(spec.workerCapability());
         command.setOperation(spec.operation());
         command.setWorkerPath(spec.workerPath());
+        command.setContentType(CONTENT_TYPE_DISCOVERY_QUERY);
         command.setServiceId(request.getServiceId());
         command.setServiceRole(request.getServiceRole());
         command.setModelId(request.getModelId());

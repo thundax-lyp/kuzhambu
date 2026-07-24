@@ -22,6 +22,7 @@ class DiscoveryAiWorkerUsecaseResolverTest {
         assertEquals("DISCOVERY_QUERY_UNDERSTANDING", spec.operation());
         assertNull(spec.workerPath());
         assertEquals(AiBusinessCapability.DISCOVERY_QUERY_UNDERSTANDING.value(), spec.capability());
+        assertEquals("query_understanding", spec.workerCapability());
         assertFalse(spec.stream());
     }
 
@@ -42,6 +43,7 @@ class DiscoveryAiWorkerUsecaseResolverTest {
         assertEquals("DISCOVERY_ANSWER_GENERATION", spec.operation());
         assertNull(spec.workerPath());
         assertEquals(AiBusinessCapability.DISCOVERY_ANSWER_GENERATION.value(), spec.capability());
+        assertEquals("answer_generation", spec.workerCapability());
         assertFalse(spec.stream());
     }
 
@@ -52,6 +54,7 @@ class DiscoveryAiWorkerUsecaseResolverTest {
         assertEquals("DISCOVERY_ANSWER_GENERATION_STREAM", spec.operation());
         assertNull(spec.workerPath());
         assertEquals(AiBusinessCapability.DISCOVERY_ANSWER_GENERATION.value(), spec.capability());
+        assertEquals("answer_generation", spec.workerCapability());
         assertTrue(spec.stream());
     }
 
