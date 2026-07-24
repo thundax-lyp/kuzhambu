@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
@@ -89,6 +90,7 @@ public final class AuditExpressionEvaluator {
             return null;
         }
         StandardEvaluationContext context = new StandardEvaluationContext();
+        bindStableArgumentAliases(context, args);
         String[] parameterNames = PARAMETER_NAME_DISCOVERER.getParameterNames(method);
         if (parameterNames != null) {
             for (int i = 0; i < parameterNames.length && i < args.length; i++) {
@@ -96,5 +98,34 @@ public final class AuditExpressionEvaluator {
             }
         }
         return PARSER.parseExpression(expression).getValue(context);
+    }
+
+    private static void bindStableArgumentAliases(StandardEvaluationContext context, Object[] args) {
+        if (args == null) {
+            return;
+        }
+        for (int i = 0; i < args.length; i++) {
+            context.setVariable("p" + i, args[i]);
+            context.setVariable("a" + i, args[i]);
+            context.setVariable("arg" + i, args[i]);
+        }
+        if (args.length == 1) {
+            context.setVariable("command", args[0]);
+            String variableName = simpleVariableName(args[0]);
+            if (StringUtils.isNotBlank(variableName)) {
+                context.setVariable(variableName, args[0]);
+            }
+        }
+    }
+
+    private static String simpleVariableName(Object value) {
+        if (value == null) {
+            return null;
+        }
+        String simpleName = value.getClass().getSimpleName();
+        if (StringUtils.isBlank(simpleName)) {
+            return null;
+        }
+        return Character.toLowerCase(simpleName.charAt(0)) + simpleName.substring(1);
     }
 }
