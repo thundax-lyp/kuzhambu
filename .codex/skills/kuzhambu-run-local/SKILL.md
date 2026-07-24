@@ -39,7 +39,7 @@ description: "Kuzhambu project-local slash-command skill for starting the local 
    - 读取 env 文件。
    - 检查默认端口是否已被占用。
    - 如有端口冲突，选择后续可用端口。
-   - 后端端口变化时，通过 `KUZHAMBU_*_SERVER_PORT` 和 `VITE_*_API_BASE_URL` 环境变量同步前端代理目标。
+   - 后端端口变化时，通过 `KUZHAMBU_*_SERVER_PORT` 同步 Vite 代理目标，浏览器端 API base 继续使用相对路径。
    - 后台启动进程并写入 `.codex/local-test-env/logs/`、`.codex/local-test-env/pids/`。
    - 输出最终访问 URL 和健康检查 URL。
 
@@ -51,7 +51,7 @@ description: "Kuzhambu project-local slash-command skill for starting the local 
 - Admin web 默认 `5173`。
 - Portal web 默认 `5174`。
 
-不要为了处理端口冲突修改 `vite.config.ts`；使用脚本设置的环境变量即可。
+不要为了处理端口冲突修改 `vite.config.ts`；使用脚本设置的 `KUZHAMBU_*_SERVER_PORT` 环境变量即可。不要导出 `VITE_*_API_BASE_URL`，避免浏览器端绕过 Vite 代理。
 
 ## 完成输出
 

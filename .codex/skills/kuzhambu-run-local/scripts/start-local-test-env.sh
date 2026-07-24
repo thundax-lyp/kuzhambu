@@ -129,9 +129,36 @@ note_port() {
     fi
 }
 
+pid_owns_port() {
+    local pid="$1"
+    local port="$2"
+    local owner_pid
+    while IFS= read -r owner_pid; do
+        [[ "$owner_pid" == "$pid" ]] && return 0
+    done < <(lsof -nP -t -iTCP:"$port" -sTCP:LISTEN 2>/dev/null || true)
+    return 1
+}
+
 is_running() {
-    local pid_file="$pid_dir/$1.pid"
-    [[ -f "$pid_file" ]] && kill -0 "$(cat "$pid_file")" >/dev/null 2>&1
+    local name="$1"
+    local pid_file="$pid_dir/$name.pid"
+    local port_file="$pid_dir/$name.port"
+    local pid
+    local port
+
+    if [[ ! -f "$pid_file" || ! -f "$port_file" ]]; then
+        rm -f "$pid_file" "$port_file"
+        return 1
+    fi
+
+    pid="$(cat "$pid_file")"
+    port="$(cat "$port_file")"
+    if [[ "$pid" =~ ^[0-9]+$ ]] && [[ "$port" =~ ^[0-9]+$ ]] && kill -0 "$pid" >/dev/null 2>&1 && pid_owns_port "$pid" "$port"; then
+        return 0
+    fi
+
+    rm -f "$pid_file" "$port_file"
+    return 1
 }
 
 select_port() {
@@ -229,8 +256,6 @@ fi
 export KUZHAMBU_ADMIN_SERVER_PORT="$admin_backend_port"
 export KUZHAMBU_PORTAL_SERVER_PORT="$portal_backend_port"
 export KUZHAMBU_AI_WORKER_BASE_URL="http://127.0.0.1:$workers_port"
-export VITE_ADMIN_API_BASE_URL="http://127.0.0.1:$admin_backend_port"
-export VITE_PORTAL_API_BASE_URL="http://127.0.0.1:$portal_backend_port"
 
 if has_target admin; then
     start_process workers "$workers_port" kuzhambu-workers \
