@@ -74,6 +74,11 @@ class PromptApplicationServiceImplTest {
         }
 
         @Override
+        public PromptVersion getVersion(PromptVersionId versionId) {
+            return null;
+        }
+
+        @Override
         public List<PromptVersion> listVersions(PromptTemplateId templateId) {
             return Collections.emptyList();
         }

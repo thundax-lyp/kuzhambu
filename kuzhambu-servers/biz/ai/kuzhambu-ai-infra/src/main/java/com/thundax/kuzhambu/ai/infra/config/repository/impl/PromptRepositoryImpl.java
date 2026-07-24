@@ -87,6 +87,12 @@ public class PromptRepositoryImpl implements PromptRepository {
     }
 
     @Override
+    public PromptVersion getVersion(PromptVersionId versionId) {
+        return PromptVersionPersistenceAssembler.toDomain(
+                promptMapper.selectVersionById(PromptVersionIdCodec.toValue(versionId)));
+    }
+
+    @Override
     public List<PromptVersion> listVersions(PromptTemplateId templateId) {
         return PromptVersionPersistenceAssembler.toDomainList(
                 promptMapper.selectVersions(PromptTemplateIdCodec.toValue(templateId)));

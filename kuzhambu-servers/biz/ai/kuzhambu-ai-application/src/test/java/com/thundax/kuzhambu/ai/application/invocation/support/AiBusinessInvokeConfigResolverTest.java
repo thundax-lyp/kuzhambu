@@ -63,6 +63,28 @@ class AiBusinessInvokeConfigResolverTest {
     }
 
     @Test
+    void resolveShouldRejectDisabledPromptTemplate() {
+        AiBusinessInvokeConfigResolver resolver = newResolver(
+                promptRepository(List.of(variable("contentType", true), variable("sourceText", true)), null, false));
+
+        assertThatThrownBy(() -> resolver.resolve(command()))
+                .isInstanceOf(BizException.class)
+                .hasMessageContaining("AI business config prompt template is disabled or mismatched: 930106");
+    }
+
+    @Test
+    void validatePromptVersionEnabledShouldRejectDisabledPromptTemplate() {
+        AiBusinessInvokeConfigResolver resolver = newResolver(
+                promptRepository(List.of(variable("contentType", true), variable("sourceText", true)), null, false));
+        AiInvokeCommand command = command();
+        command.setPromptVersionId(940106L);
+
+        assertThatThrownBy(() -> resolver.validatePromptVersionEnabled(command))
+                .isInstanceOf(BizException.class)
+                .hasMessageContaining("AI business config prompt template is disabled or mismatched: 930106");
+    }
+
+    @Test
     void resolveShouldUsePromptVersionVariableSnapshotWhenLiveVariablesChanged() throws Exception {
         String variablesSnapshotJson =
                 """
@@ -134,10 +156,22 @@ class AiBusinessInvokeConfigResolverTest {
     }
 
     private static PromptRepository promptRepository(List<PromptVariable> variables, String variablesSnapshotJson) {
+        return promptRepository(variables, variablesSnapshotJson, true);
+    }
+
+    private static PromptRepository promptRepository(
+            List<PromptVariable> variables, String variablesSnapshotJson, boolean templateEnabled) {
         return new PromptRepository() {
             @Override
             public PromptTemplate get(PromptTemplateId templateId) {
-                return null;
+                return new PromptTemplate(
+                        templateId,
+                        AiBusinessCapability.CLASSICS_SUMMARY,
+                        "summary prompt",
+                        "summary prompt",
+                        templateEnabled,
+                        1,
+                        null);
             }
 
             @Override
@@ -174,6 +208,13 @@ class AiBusinessInvokeConfigResolverTest {
                         """);
                 version.setVariablesSnapshotJson(variablesSnapshotJson);
                 version.setOutputSchemaJson("{\"type\":\"text\"}");
+                return version;
+            }
+
+            @Override
+            public PromptVersion getVersion(PromptVersionId versionId) {
+                PromptVersion version = getCurrentVersion(new PromptTemplateId(930106L));
+                version.setId(versionId);
                 return version;
             }
 
