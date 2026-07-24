@@ -1,0 +1,20 @@
+来源标题：{{sourceTitle}}
+相关条目：
+{{entryRefs}}
+
+来源文本：
+{{sourceText}}
+
+请生成知识图谱候选，返回 JSON：
+{
+  "entities": [
+    { "name": "实体名", "entityType": "实体类型", "description": "说明" }
+  ],
+  "relations": [
+    { "sourceName": "来源实体", "targetName": "目标实体", "relationType": "关系类型", "evidence": "证据" }
+  ],
+  "entryRefs": [
+    { "contentType": "内容类型", "contentId": "内容ID", "title": "标题" }
+  ],
+  "warnings": []
+}
