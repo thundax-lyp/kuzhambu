@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
-import com.thundax.kuzhambu.ai.application.invocation.support.AiWorkerModelConfigResolver;
+import com.thundax.kuzhambu.ai.application.invocation.support.AiBusinessInvokeConfigResolver;
 import com.thundax.kuzhambu.ai.application.refinement.command.AiRefinementRequestCommand;
 import com.thundax.kuzhambu.ai.application.refinement.result.AiCandidateResult;
 import com.thundax.kuzhambu.ai.application.refinement.service.AiRefinementApplicationService;
@@ -31,16 +31,16 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
 
     private final AiWorkerInvocationApplicationService invocationApplicationService;
     private final ClassicsAiWorkerUsecaseResolver classicsAiWorkerUsecaseResolver;
-    private final AiWorkerModelConfigResolver modelConfigResolver;
+    private final AiBusinessInvokeConfigResolver businessInvokeConfigResolver;
 
     @Autowired
     public AiRefinementApplicationServiceImpl(
             AiWorkerInvocationApplicationService invocationApplicationService,
             ClassicsAiWorkerUsecaseResolver classicsAiWorkerUsecaseResolver,
-            AiWorkerModelConfigResolver modelConfigResolver) {
+            AiBusinessInvokeConfigResolver businessInvokeConfigResolver) {
         this.invocationApplicationService = invocationApplicationService;
         this.classicsAiWorkerUsecaseResolver = classicsAiWorkerUsecaseResolver;
-        this.modelConfigResolver = modelConfigResolver;
+        this.businessInvokeConfigResolver = businessInvokeConfigResolver;
     }
 
     @Override
@@ -111,7 +111,7 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
         AiInvokeCommand invokeCommand = command.toInvokeCommand(capability);
         invokeCommand.setOperation(spec.operation());
         invokeCommand.setWorkerPath(spec.workerPath());
-        enrichModelConfig(invokeCommand);
+        enrichBusinessInvokeConfig(invokeCommand);
         if (CAPABILITY_IMAGE_ANALYSIS.equals(capability) || CAPABILITY_IMAGE_GEN.equals(capability)) {
             invokeCommand.setStream(true);
         }
@@ -122,15 +122,11 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
         return AiCandidateResult.from(result);
     }
 
-    private void enrichModelConfig(AiInvokeCommand command) {
-        if (modelConfigResolver == null || command == null) {
+    private void enrichBusinessInvokeConfig(AiInvokeCommand command) {
+        if (businessInvokeConfigResolver == null || command == null) {
             return;
         }
-        var resolved = modelConfigResolver.resolve(command);
-        command.setServiceId(resolved.serviceId());
-        command.setServiceRole(resolved.serviceRole());
-        command.setModelId(resolved.modelId());
-        command.setModelName(resolved.modelName());
+        businessInvokeConfigResolver.resolve(command);
     }
 
     private void validateCommand(AiRefinementRequestCommand command) {
@@ -140,7 +136,6 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
                 || isBlank(command.getTraceId())
                 || isBlank(command.getContentType())
                 || command.getContentId() == null
-                || isBlank(command.getPromptMessagesJson())
                 || isBlank(command.getInputPayloadJson())) {
             throw new BizException("AI refinement request is incomplete");
         }
