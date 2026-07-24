@@ -69,6 +69,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     public AiRefinementTask addTask(AiRefinementRequestCommand command) {
         normalizeCommandCapability(command);
         validateAddCommand(command);
+        refinementApplicationService.snapshotInvokeConfig(command);
         Instant now = Instant.now();
         AiRefinementTask task = new AiRefinementTask();
         task.setScope(command.getScope());

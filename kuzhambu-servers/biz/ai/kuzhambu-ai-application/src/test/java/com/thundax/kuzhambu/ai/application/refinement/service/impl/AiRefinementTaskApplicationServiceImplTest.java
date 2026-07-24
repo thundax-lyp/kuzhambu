@@ -167,7 +167,60 @@ class AiRefinementTaskApplicationServiceImplTest {
         AiRefinementTask accepted = service.addTask(command);
         AiRefinementTask completed = awaitTerminal(repository, accepted.getTaskId());
 
-        assertNull(accepted.getPromptVersionId());
+        assertEquals("PRIMARY", accepted.getServiceRole());
+        assertEquals(2001L, accepted.getModelId());
+        assertEquals("gpt-4o", accepted.getModelName());
+        assertEquals(940106L, accepted.getPromptVersionId());
+        assertEquals("SUCCEEDED", completed.getStatus());
+        assertEquals("PRIMARY", completed.getServiceRole());
+        assertEquals(2001L, completed.getModelId());
+        assertEquals("gpt-4o", completed.getModelName());
+        assertEquals(940106L, completed.getPromptVersionId());
+    }
+
+    @Test
+    void addTaskShouldSnapshotResolvedPromptConfigBeforeTransactionCommit() {
+        RecordingTaskRepository repository = new RecordingTaskRepository();
+        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
+                101L,
+                201L,
+                "SUCCEEDED",
+                AiBusinessCapability.CLASSICS_SUMMARY.value(),
+                null,
+                "TEXT",
+                "摘要",
+                null,
+                null));
+        refinementService.setResolvedPromptConfig("PRIMARY", 2001L, "gpt-4o", 940106L);
+        AiRefinementTaskApplicationServiceImpl service =
+                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
+        AiRefinementRequestCommand command = command(AiBusinessCapability.CLASSICS_SUMMARY.value());
+        command.setServiceRole(null);
+        command.setModelId(null);
+        command.setModelName(null);
+        command.setPromptVersionId(null);
+        command.setPromptMessagesJson(null);
+        command.setPromptVariablesJson(null);
+
+        TransactionSynchronizationManager.initSynchronization();
+        AiRefinementTask accepted;
+        try {
+            accepted = service.addTask(command);
+            AiRefinementTask pending = repository.get(accepted.getTaskId());
+            assertEquals("PENDING", pending.getStatus());
+            assertEquals("PRIMARY", pending.getServiceRole());
+            assertEquals(2001L, pending.getModelId());
+            assertEquals("gpt-4o", pending.getModelName());
+            assertEquals(940106L, pending.getPromptVersionId());
+
+            refinementService.setResolvedPromptConfig("SECONDARY", 3001L, "gpt-5", 950106L);
+            TransactionSynchronizationManager.getSynchronizations()
+                    .forEach(synchronization -> synchronization.afterCommit());
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+
+        AiRefinementTask completed = awaitTerminal(repository, accepted.getTaskId());
         assertEquals("SUCCEEDED", completed.getStatus());
         assertEquals("PRIMARY", completed.getServiceRole());
         assertEquals(2001L, completed.getModelId());
@@ -306,6 +359,11 @@ class AiRefinementTaskApplicationServiceImplTest {
         }
 
         @Override
+        public void snapshotInvokeConfig(AiRefinementRequestCommand command) {
+            applyResolvedPromptConfig(command);
+        }
+
+        @Override
         public AiCandidateResult translate(AiRefinementRequestCommand command) {
             applyResolvedPromptConfig(command);
             return result;
@@ -360,13 +418,15 @@ class AiRefinementTaskApplicationServiceImplTest {
         }
 
         private void applyResolvedPromptConfig(AiRefinementRequestCommand command) {
-            if (resolvedPromptVersionId == null) {
+            if (resolvedPromptVersionId == null || command.getPromptVersionId() != null) {
                 return;
             }
             command.setServiceRole(resolvedServiceRole);
             command.setModelId(resolvedModelId);
             command.setModelName(resolvedModelName);
             command.setPromptVersionId(resolvedPromptVersionId);
+            command.setPromptMessagesJson("[{\"role\":\"user\",\"content\":\"resolved\"}]");
+            command.setPromptVariablesJson("{}");
         }
     }
 

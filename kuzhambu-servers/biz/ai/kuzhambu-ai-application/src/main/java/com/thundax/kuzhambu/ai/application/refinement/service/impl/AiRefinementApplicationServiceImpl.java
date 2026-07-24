@@ -44,6 +44,11 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
     }
 
     @Override
+    public void snapshotInvokeConfig(AiRefinementRequestCommand command) {
+        prepareInvokeCommand(command, command.getCapability());
+    }
+
+    @Override
     public AiCandidateResult translate(AiRefinementRequestCommand command) {
         return invokeCandidate(command, CAPABILITY_TRANSLATE);
     }
@@ -106,14 +111,7 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
 
     private AiCandidateResult invokeCandidate(
             AiRefinementRequestCommand command, String capability, Consumer<AiStreamEventResult> eventConsumer) {
-        validateCommand(command);
-        var spec = classicsAiWorkerUsecaseResolver.resolve(command.getContentType(), capability);
-        AiInvokeCommand invokeCommand = command.toInvokeCommand(capability);
-        invokeCommand.setOperation(spec.operation());
-        invokeCommand.setWorkerPath(spec.workerPath());
-        invokeCommand.setWorkerCapability(spec.workerCapability());
-        enrichBusinessInvokeConfig(invokeCommand);
-        copyResolvedInvokeConfig(command, invokeCommand);
+        AiInvokeCommand invokeCommand = prepareInvokeCommand(command, capability);
         if (CAPABILITY_IMAGE_ANALYSIS.equals(capability) || CAPABILITY_IMAGE_GEN.equals(capability)) {
             invokeCommand.setStream(true);
         }
@@ -124,11 +122,35 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
         return AiCandidateResult.from(result);
     }
 
+    private AiInvokeCommand prepareInvokeCommand(AiRefinementRequestCommand command, String capability) {
+        validateCommand(command);
+        var spec = classicsAiWorkerUsecaseResolver.resolve(command.getContentType(), capability);
+        AiInvokeCommand invokeCommand = command.toInvokeCommand(capability);
+        invokeCommand.setOperation(spec.operation());
+        invokeCommand.setWorkerPath(spec.workerPath());
+        invokeCommand.setWorkerCapability(spec.workerCapability());
+        enrichBusinessInvokeConfig(invokeCommand);
+        copyResolvedInvokeConfig(command, invokeCommand);
+        return invokeCommand;
+    }
+
     private void enrichBusinessInvokeConfig(AiInvokeCommand command) {
         if (businessInvokeConfigResolver == null || command == null) {
             return;
         }
+        if (hasResolvedInvokeConfig(command)) {
+            return;
+        }
         businessInvokeConfigResolver.resolve(command);
+    }
+
+    private boolean hasResolvedInvokeConfig(AiInvokeCommand command) {
+        return !isBlank(command.getServiceRole())
+                && command.getModelId() != null
+                && !isBlank(command.getModelName())
+                && command.getPromptVersionId() != null
+                && !isBlank(command.getPromptMessagesJson())
+                && !isBlank(command.getPromptVariablesJson());
     }
 
     private void copyResolvedInvokeConfig(AiRefinementRequestCommand command, AiInvokeCommand invokeCommand) {
