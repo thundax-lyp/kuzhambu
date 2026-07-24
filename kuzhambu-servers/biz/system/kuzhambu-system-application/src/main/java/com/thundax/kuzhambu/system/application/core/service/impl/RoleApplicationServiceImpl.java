@@ -151,7 +151,12 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @AuditLog(type = "Role", id = "#command.id.value()", action = AuditAction.UPDATE, summary = "变更角色状态")
+    @AuditLog(
+            type = "Role",
+            id = "#command.id.value()",
+            action = AuditAction.UPDATE,
+            summary = "变更角色状态",
+            recordWhenUnchanged = true)
     public int changeStatus(ChangeRoleStatusCommand command) {
         Role role = new Role();
         role.setId(command.getId());

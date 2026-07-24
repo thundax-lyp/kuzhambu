@@ -70,7 +70,7 @@ public class AuditLogAspect {
         command.setObjectId(objectId);
         command.setAction(auditLog.action());
         command.setSummary(auditLog.summary());
-        command.setBeforeSnapshot(before);
+        command.setBeforeSnapshot(beforeSnapshot);
         command.setAfterSnapshot(after);
         command.setRecordWhenUnchanged(auditLog.recordWhenUnchanged());
         command.setOperatorType(AuditOperatorResolver.operatorType());

@@ -119,7 +119,12 @@ public class UserApplicationServiceImpl implements UserApplicationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @AuditLog(type = "User", id = "#command.id.value()", action = AuditAction.UPDATE, summary = "变更后台用户状态")
+    @AuditLog(
+            type = "User",
+            id = "#command.id.value()",
+            action = AuditAction.UPDATE,
+            summary = "变更后台用户状态",
+            recordWhenUnchanged = true)
     public int changeStatus(ChangeUserStatusCommand command) {
         User user = new User();
         user.setId(command.getId());
