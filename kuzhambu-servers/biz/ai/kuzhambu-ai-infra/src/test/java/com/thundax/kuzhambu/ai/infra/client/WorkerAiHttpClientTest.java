@@ -70,6 +70,8 @@ class WorkerAiHttpClientTest {
                 new WorkerAiSignatureSupport()
                         .sign("POST", "/internal/ai/invoke", timestamp, "req-1", capturedBody.get(), "worker-secret"),
                 captured.get().getRequestHeaders().getFirst("X-Kuzhambu-Signature"));
+        assertTrue(capturedBody.get().contains("\"capability\":\"summary\""));
+        assertTrue(capturedBody.get().contains("\"contentType\":\"entry\""));
     }
 
     @Test
@@ -274,7 +276,8 @@ class WorkerAiHttpClientTest {
     private AiInvokeCommand command() {
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope("classics");
-        command.setCapability("translate");
+        command.setCapability("classics_summary");
+        command.setWorkerCapability("summary");
         command.setOperation("translate");
         command.setContentType("entry");
         command.setContentId(10L);

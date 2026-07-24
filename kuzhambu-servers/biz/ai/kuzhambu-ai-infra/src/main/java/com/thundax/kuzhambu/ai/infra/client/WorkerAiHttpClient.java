@@ -193,7 +193,7 @@ public class WorkerAiHttpClient implements WorkerAiClient {
         request.setTraceId(command.getTraceId());
         request.setCallerDomain(CALLER_DOMAIN);
         request.setOperation(command.getOperation());
-        request.setCapability(command.getCapability());
+        request.setCapability(defaultString(command.getWorkerCapability(), command.getCapability()));
         request.setScope(command.getScope());
         request.setModelConfig(modelConfig(command));
         request.setPrompt(prompt(command));

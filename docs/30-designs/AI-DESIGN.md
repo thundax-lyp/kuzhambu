@@ -163,19 +163,20 @@ Admin Web 交互流程：
 4. AI application 根据 capability 读取第一个启用的 `ai_business_config`，从业务配置中取得 `model_id`、`prompt_template_id` 和 `default_params_json`。
 5. AI application 根据 `prompt_template_id` 读取当前 prompt version，把业务参数 JSON 按 `{{variableName}}` 注入提示词模板，生成本次调用的 `promptMessagesJson`、`promptVariablesJson` 和 `promptVersionId`。
 6. AI application 合并模型默认参数和业务配置辅助参数；业务配置参数覆盖模型默认参数。
-7. AI application 把任务状态更新为 `RUNNING`，并以解析后的模型、提示词和参数开始本次 worker 调用。
-8. 对同步 capability，AI application 等待 worker JSON 完成，再统一写入：
+7. AI application 保留业务 `capability` 作为业务配置、调用记录和候选归档字段，同时把本次调用映射为 workers canonical `workerCapability`，例如 `classics_summary -> summary`、`knowledge_graph_extract -> knowledge_graph`。
+8. AI application 把任务状态更新为 `RUNNING`，并以解析后的模型、提示词、参数和 `workerCapability` 开始本次 worker 调用。
+9. 对同步 capability，AI application 等待 worker JSON 完成，再统一写入：
    - `ai_call_record`
    - `ai_candidate`
    - `ai_refinement_task.callId`
    - `ai_refinement_task.candidateId`
    - `ai_refinement_task.status`
-9. 对流式 capability，AI application 内部消费 workers SSE；`delta/progress/warning` 只更新任务进度快照，`completed/error` 才形成最终态。
-10. 成功时，AI application 把任务状态更新为 `SUCCEEDED`，并写入 `candidateId`、`resultFormat`、`resultPreview`、`completedAt`。
-11. 失败时，AI application 把任务状态更新为 `FAILED` 或 `PARTIAL`，并写入 `failureStage`、`errorType`、`errorMessage`、`completedAt`。
-12. Admin Web 通过 `POST /api/ai/refinement/task/get` 或 `POST /api/ai/refinement/task/page` 轮询任务状态。
-13. 当任务进入 `SUCCEEDED` 且存在 `candidateId` 后，Admin Web 刷新候选面板，用户再通过候选应用接口把结果落到正式内容。
-14. `task/add` 的成功只表示“任务已受理”，不表示候选已生成；候选是否可用必须以后续 `task/get` 返回的最终状态判断。
+10. 对流式 capability，AI application 内部消费 workers SSE；`delta/progress/warning` 只更新任务进度快照，`completed/error` 才形成最终态。
+11. 成功时，AI application 把任务状态更新为 `SUCCEEDED`，并写入 `candidateId`、`resultFormat`、`resultPreview`、`completedAt`。
+12. 失败时，AI application 把任务状态更新为 `FAILED` 或 `PARTIAL`，并写入 `failureStage`、`errorType`、`errorMessage`、`completedAt`。
+13. Admin Web 通过 `POST /api/ai/refinement/task/get` 或 `POST /api/ai/refinement/task/page` 轮询任务状态。
+14. 当任务进入 `SUCCEEDED` 且存在 `candidateId` 后，Admin Web 刷新候选面板，用户再通过候选应用接口把结果落到正式内容。
+15. `task/add` 的成功只表示“任务已受理”，不表示候选已生成；候选是否可用必须以后续 `task/get` 返回的最终状态判断。
 
 精修任务失效清理流程：
 
