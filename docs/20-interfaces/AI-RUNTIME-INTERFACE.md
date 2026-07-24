@@ -21,8 +21,15 @@ AI 运行时协议只接收业务调用意图和业务参数快照。模型选�
 外部协议中的 `capability` 永远表示 AI 域业务能力编码，例如：
 
 - `classics_translate`
+- `classics_translate_batch_item`
 - `classics_summary`
+- `classics_tags`
+- `classics_qa`
+- `classics_split`
 - `classics_image_describe`
+- `classics_image_prompt_fusion`
+- `classics_visual_describe`
+- `classics_image_generate`
 - `discovery_query_understanding`
 - `discovery_answer_generation`
 - `knowledge_relation_extract`
@@ -44,14 +51,22 @@ Workers canonical capability 是 Java AI 域内部传输字段，不进入外部
 
 | 业务 capability | Workers canonical capability |
 | --- | --- |
+| `classics_translate` | `translate` |
+| `classics_translate_batch_item` | `translate` |
 | `classics_summary` | `summary` |
+| `classics_tags` | `tags` |
+| `classics_qa` | `qa` |
+| `classics_split` | `split` |
 | `classics_image_describe` | `image_analysis` |
+| `classics_image_prompt_fusion` | `fusion` |
+| `classics_visual_describe` | `visual` |
 | `classics_image_generate` | `image_gen` |
 | `discovery_query_understanding` | `query_understanding` |
 | `discovery_answer_generation` | `answer_generation` |
 | `knowledge_relation_extract` | `relation_extraction` |
 | `knowledge_graph_extract` | `knowledge_graph` |
 | `knowledge_lineage_extract` | `lineage_extraction` |
+| `knowledge_tags` | `tags` |
 | `prompt_suggestion` | `prompt_suggestion` |
 | `platform_version_summary` | `version_summary` |
 
@@ -127,7 +142,7 @@ Admin Web 默认使用异步任务协议：
   "objectId": 940001,
   "requestId": "req_20260601_000002",
   "traceId": "trace_20260601_000001",
-  "inputPayloadJson": "{\"template\":\"...\",\"changeSummary\":\"...\"}",
+  "inputPayloadJson": "{\"template\":\"...\",\"changeGoal\":\"压缩输出\",\"knownIssues\":\"输出太长\"}",
   "forceJson": true,
   "locale": "zh-CN",
   "createCandidate": true
