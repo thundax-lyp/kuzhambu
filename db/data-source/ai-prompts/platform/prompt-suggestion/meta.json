@@ -1,0 +1,42 @@
+{
+  "templateId": 930116,
+  "promptVersionId": 940116,
+  "variableIdStart": 961701,
+  "capability": "prompt_suggestion",
+  "suite": "platform-default-v1",
+  "name": "提示词优化建议提示词",
+  "description": "提示词优化建议默认提示词。",
+  "enabled": true,
+  "versionNo": 1,
+  "current": true,
+  "variables": [
+    {
+      "name": "template",
+      "required": true,
+      "description": "当前提示词模板",
+      "priority": 961701
+    },
+    {
+      "name": "changeGoal",
+      "required": false,
+      "description": "优化目标",
+      "priority": 961702
+    },
+    {
+      "name": "knownIssues",
+      "required": false,
+      "description": "已知问题",
+      "priority": 961703
+    }
+  ],
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "suggestedTemplate": { "type": "string" },
+      "changeSummary": { "type": "string" },
+      "risks": { "type": "array", "items": { "type": "string" } }
+    },
+    "required": ["suggestedTemplate", "changeSummary"]
+  },
+  "changeSummary": "Initial platform default prompt suggestion prompt."
+}
