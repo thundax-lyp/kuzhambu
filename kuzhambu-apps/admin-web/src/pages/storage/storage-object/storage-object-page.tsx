@@ -12,12 +12,15 @@ import { useMemo, useRef, useState } from "react";
 import type { ChangeEvent, Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
-import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
-import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import { KuzhambuTag } from "@/components/kuzhambu-tag";
-import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
-import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
+import {
+    KuzhambuListPage,
+    KuzhambuSpace,
+    KuzhambuTag,
+    type KuzhambuTableProps,
+    type KuzhambuTableSortPosition,
+    DEFAULT_PAGE_NO,
+    DEFAULT_PAGE_SIZE
+} from "@/types/page";
 import * as service from "./storage-object-service";
 import type { StoragePageQuery } from "./storage-object-service";
 import { StorageUploadTaskCard } from "./components/storage-upload-task-card";
@@ -26,9 +29,10 @@ import type {
     StorageRecord,
     StorageUploadTaskRecord
 } from "./storage-object-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuButton, KuzhambuSelect } from "@/components";
+import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
+
 import "./storage-object-page.css";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 const { Text } = Typography;
 
