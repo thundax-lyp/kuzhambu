@@ -39,6 +39,11 @@ export interface StorageObjectContentUrlCommand {
     storageObjectId: string;
 }
 
+export interface UploadStorageObjectCommand {
+    file: File;
+    signal?: AbortSignal;
+}
+
 export const pageStorageObjects = (request: StoragePageQuery = {}) => {
     return postJson<Page<StorageRecord>, StoragePageQuery>("/storage/object/page", {
         body: request
@@ -51,10 +56,12 @@ export const removeStorageObjects = (ids: string[]) => {
     });
 };
 
-export const uploadStorageObject = (file: File) => {
+export const uploadStorageObject = (request: UploadStorageObjectCommand) => {
     const body = new FormData();
-    body.append("file", file);
-    return postFormData<StorageRecord>("/storage/object/upload", body);
+    body.append("file", request.file);
+    return postFormData<StorageRecord>("/storage/object/upload", body, {
+        signal: request.signal
+    });
 };
 
 export interface UploadMultipartPartCommand {
@@ -223,11 +230,11 @@ export const uploadStorageFile = async (request: UploadStorageFileCommand) => {
         const singleTask = createStorageUploadTask(file, {
             stage: "uploading-single",
             totalPartCount: 0,
-            canCancel: false
+            canCancel: Boolean(signal && !signal.aborted)
         });
         emitTask(singleTask);
         try {
-            const record = await uploadStorageObject(file);
+            const record = await uploadStorageObject({ file, signal });
             emitTask(
                 createStorageUploadTask(file, {
                     stage: "success",
@@ -238,15 +245,19 @@ export const uploadStorageFile = async (request: UploadStorageFileCommand) => {
             );
             return record;
         } catch (error) {
-            const errorMessage = `上传失败：${readErrorMessage(error)}`;
+            const isAborted = isAbortedError(error);
+            const errorMessage = isAborted ? "上传已取消" : `上传失败：${readErrorMessage(error)}`;
             emitTask(
                 createStorageUploadTask(file, {
-                    stage: "error",
+                    stage: isAborted ? "aborted" : "error",
                     uploadedBytes: 0,
                     errorMessage,
                     canCancel: false
                 })
             );
+            if (isAborted) {
+                throw new ApiError("ABORTED", "Request was aborted");
+            }
             throw error;
         }
     }

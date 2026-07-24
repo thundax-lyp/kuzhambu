@@ -20,6 +20,29 @@ describe("storage-object-service", () => {
         vi.restoreAllMocks();
     });
 
+    it("passes cancellation signal through single-file uploads", async () => {
+        const abortController = new AbortController();
+        const taskUpdates: string[] = [];
+        vi.spyOn(globalThis, "fetch").mockImplementation((_input, init) => {
+            expect(init?.signal).toBe(abortController.signal);
+            abortController.abort();
+            return Promise.reject(new DOMException("The operation was aborted.", "AbortError"));
+        });
+
+        await expect(
+            service.uploadStorageFile({
+                file: new File(["small"], "small.txt", { type: "text/plain" }),
+                onTaskUpdate: (task) => taskUpdates.push(task.stage),
+                signal: abortController.signal
+            })
+        ).rejects.toMatchObject({
+            code: "ABORTED",
+            message: "Request was aborted"
+        });
+
+        expect(taskUpdates).toEqual(["uploading-single", "aborted"]);
+    });
+
     it("aborts server multipart upload when cancelled after initiation", async () => {
         const abortController = new AbortController();
         const fetchCalls: Array<{ body?: BodyInit | null; url: string }> = [];
