@@ -27,11 +27,8 @@ def test_schema_output_requests_json_schema_response_format() -> None:
     payload = _request_payload("tags")
     payload["outputSchema"] = {
         "type": "object",
-        "schema": {
-            "type": "object",
-            "properties": {"tags": {"type": "array", "items": {"type": "string"}}},
-            "required": ["tags"],
-        },
+        "properties": {"tags": {"type": "array", "items": {"type": "string"}}},
+        "required": ["tags"],
     }
     request = AiInvokeRequest.model_validate(payload)
 
@@ -45,6 +42,20 @@ def test_schema_output_requests_json_schema_response_format() -> None:
                 "required": ["tags"],
             },
         },
+    }
+
+
+def test_parse_structured_output_enforces_array_bounds() -> None:
+    output_schema = AiInvokeRequest.model_validate(_bounded_schema_request_payload()).outputSchema
+
+    with pytest.raises(WorkerError) as raised:
+        parse_structured_output('{"tags":["a"]}', AiCapability.TAGS, output_schema)
+
+    assert raised.value.error_type == WorkerErrorType.OUTPUT_FORMAT_FAILURE
+    assert raised.value.code == "MODEL_OUTPUT_INVALID_JSON"
+    assert raised.value.detail == {
+        "capability": "tags",
+        "schemaPath": "$.tags",
     }
 
 
@@ -189,5 +200,22 @@ def _schema_request_payload() -> dict:
             "properties": {"tags": {"type": "array", "items": {"type": "string"}}},
             "required": ["tags"],
         },
+    }
+    return payload
+
+
+def _bounded_schema_request_payload() -> dict:
+    payload = _request_payload("tags")
+    payload["outputSchema"] = {
+        "type": "object",
+        "properties": {
+            "tags": {
+                "type": "array",
+                "items": {"type": "string"},
+                "minItems": 3,
+                "maxItems": 8,
+            }
+        },
+        "required": ["tags"],
     }
     return payload

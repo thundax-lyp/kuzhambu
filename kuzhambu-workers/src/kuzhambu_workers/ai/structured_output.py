@@ -127,6 +127,12 @@ def _schema_violation(payload: Any, schema: dict[str, Any], path: str) -> str | 
         return None
 
     if isinstance(payload, list):
+        min_items = schema.get("minItems")
+        if isinstance(min_items, int) and len(payload) < min_items:
+            return path
+        max_items = schema.get("maxItems")
+        if isinstance(max_items, int) and len(payload) > max_items:
+            return path
         item_schema = schema.get("items")
         if isinstance(item_schema, dict):
             for index, item in enumerate(payload):
