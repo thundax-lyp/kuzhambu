@@ -235,6 +235,7 @@ describe("PromptsPage", () => {
         expect(await screen.findByRole("heading", { name: "编辑提示词" })).toBeInTheDocument();
         expect(await screen.findByText("版本")).toBeInTheDocument();
         expect(screen.getByRole("table", { name: "提示词版本列表" })).toBeInTheDocument();
+        expect(screen.getByRole("combobox", { name: "提示词能力" })).toBeDisabled();
         const variablesButton = screen.getByTestId("ai-prompts-prompts-view-variables-button");
         await waitFor(() => {
             expect(variablesButton).not.toBeDisabled();
@@ -248,11 +249,11 @@ describe("PromptsPage", () => {
         expect(screen.queryByText("变量快照 JSON")).not.toBeInTheDocument();
     });
 
-    it("updates variable modal content when capability changes", async () => {
+    it("updates create drawer variable modal content when capability changes", async () => {
         renderPage();
 
         await screen.findByText("摘要提示词");
-        fireEvent.click(screen.getByRole("button", { name: "编辑 摘要提示词" }));
+        fireEvent.click(screen.getByRole("button", { name: /新建/ }));
         await openSelectAndChoose("提示词能力", "古籍翻译");
         const variablesButton = screen.getByTestId("ai-prompts-prompts-view-variables-button");
         await waitFor(() => {
