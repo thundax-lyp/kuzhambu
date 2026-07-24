@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.ai.application.knowledge.support;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
@@ -17,7 +18,7 @@ class KnowledgeAiWorkerUsecaseResolverTest {
         KnowledgeAiWorkerUsecaseSpec spec = resolver.resolve("RELATION");
         assertNotNull(spec);
         assertEquals("KNOWLEDGE_RELATION_EXTRACTION", spec.operation());
-        assertEquals("/internal/ai/knowledge/relation-extraction", spec.workerPath());
+        assertNull(spec.workerPath());
         assertEquals(AiBusinessCapability.KNOWLEDGE_RELATION_EXTRACT.value(), spec.capability());
     }
 
@@ -26,7 +27,7 @@ class KnowledgeAiWorkerUsecaseResolverTest {
         KnowledgeAiWorkerUsecaseSpec spec = resolver.resolve("GRAPH");
         assertNotNull(spec);
         assertEquals("KNOWLEDGE_GRAPH_EXTRACTION", spec.operation());
-        assertEquals("/internal/ai/knowledge/graph-extraction", spec.workerPath());
+        assertNull(spec.workerPath());
         assertEquals(AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT.value(), spec.capability());
     }
 
@@ -35,7 +36,7 @@ class KnowledgeAiWorkerUsecaseResolverTest {
         KnowledgeAiWorkerUsecaseSpec spec = resolver.resolve("TAG");
         assertNotNull(spec);
         assertEquals("KNOWLEDGE_TAG_EXTRACTION", spec.operation());
-        assertEquals("/internal/ai/knowledge/tag-extraction", spec.workerPath());
+        assertNull(spec.workerPath());
         assertEquals(AiBusinessCapability.KNOWLEDGE_TAG_EXTRACT.value(), spec.capability());
     }
 

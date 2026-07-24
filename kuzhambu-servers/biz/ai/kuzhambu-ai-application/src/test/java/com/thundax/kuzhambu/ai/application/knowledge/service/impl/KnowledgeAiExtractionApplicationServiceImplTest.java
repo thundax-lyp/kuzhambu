@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.ai.application.knowledge.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
@@ -29,7 +30,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
 
         assertNotNull(result);
         assertEquals("KNOWLEDGE_GRAPH_EXTRACTION", capturedCommand.getOperation());
-        assertEquals("/internal/ai/knowledge/graph-extraction", capturedCommand.getWorkerPath());
+        assertNull(capturedCommand.getWorkerPath());
         assertEquals(AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT.value(), capturedCommand.getCapability());
     }
 
@@ -56,7 +57,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertEquals("KNOWLEDGE_LINEAGE_EXTRACTION", capturedCommand.getOperation());
-        assertEquals("/internal/ai/knowledge/lineage-extraction", capturedCommand.getWorkerPath());
+        assertNull(capturedCommand.getWorkerPath());
         assertEquals(AiBusinessCapability.KNOWLEDGE_LINEAGE_EXTRACT.value(), capturedCommand.getCapability());
     }
 
@@ -71,7 +72,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
 
         assertEquals("knowledge", capturedCommand.getScope());
         assertEquals("KNOWLEDGE_TAG_EXTRACTION", capturedCommand.getOperation());
-        assertEquals("/internal/ai/knowledge/tag-extraction", capturedCommand.getWorkerPath());
+        assertNull(capturedCommand.getWorkerPath());
         assertEquals(AiBusinessCapability.KNOWLEDGE_TAG_EXTRACT.value(), capturedCommand.getCapability());
         assertEquals(true, capturedCommand.isForceJson());
         assertEquals(true, capturedCommand.isCreateCandidate());
