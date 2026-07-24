@@ -203,10 +203,10 @@ describe("QaConsolePage", () => {
     }, 30000);
 
     it("supports row sync action", async () => {
+        const user = userEvent.setup();
         renderPage();
 
-        fireEvent.click(screen.getByText("知识文档"));
-        fireEvent.click(screen.getByRole("button", { name: /查\s*询/u }));
+        await switchPanel(user, "知识文档");
         await screen.findByText("黄帝");
         fireEvent.click(findButtonByNormalizedText("同步"));
 

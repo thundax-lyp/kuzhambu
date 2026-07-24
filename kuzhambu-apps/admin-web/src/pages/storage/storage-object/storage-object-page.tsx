@@ -43,6 +43,7 @@ const DEFAULT_COLUMN_WIDTHS = {
     size: 120,
     objectStatus: 120,
     referenceStatus: 130,
+    referenceOwner: 180,
     remarks: 240
 };
 
@@ -450,6 +451,31 @@ export const StorageObjectPage = () => {
                         ] || status}
                     </KuzhambuTag>
                 ) : null
+        },
+        {
+            title: "引用归属",
+            key: "referenceOwner",
+            width: DEFAULT_COLUMN_WIDTHS.referenceOwner,
+            ellipsis: true,
+            render: (_, storage) => {
+                const referenceOwnerType = normalizeSearch(storage.referenceOwnerType);
+                const referenceOwnerId = normalizeSearch(storage.referenceOwnerId);
+
+                if (!referenceOwnerType && !referenceOwnerId) {
+                    return null;
+                }
+
+                return (
+                    <KuzhambuSpace orientation="vertical" size={2}>
+                        {referenceOwnerType ? <Text code>{referenceOwnerType}</Text> : null}
+                        {referenceOwnerId ? (
+                            <Text type="secondary" title={referenceOwnerId}>
+                                {referenceOwnerId}
+                            </Text>
+                        ) : null}
+                    </KuzhambuSpace>
+                );
+            }
         },
         {
             title: "备注",
