@@ -1,6 +1,6 @@
 ---
 name: kuzhambu-run-local
-description: "Kuzhambu project-local slash-command skill for starting the local test environment. Direct invocation only; requires at least one explicit target parameter: admin, portal, or both. Handles local env loading, port conflicts, backend/frontend proxy alignment, process startup, and URL reporting."
+description: "Kuzhambu project-local slash-command workflow for starting the local test environment. Direct invocation only; requires at least one explicit target parameter: admin, portal, or both. Guides the agent through env loading, port conflict handling, backend/frontend proxy alignment, service startup, readiness checks, and URL reporting without using a bundled launcher script."
 ---
 
 # Run Local
@@ -23,28 +23,160 @@ description: "Kuzhambu project-local slash-command skill for starting the local 
 - `portal`：启动 `kuzhambu-portal-starter`、`portal-web`。
 - 同时传入 `admin portal` 时，workers 只启动一次，portal 不单独要求 workers。
 
-## 工作流
+## 必读上下文
 
-1. 确认当前目录是 Kuzhambu 仓库根目录，且存在 `docs/AGENTS.md`、`kuzhambu-servers/`、`kuzhambu-apps/`。
-2. 运行脚本：
+1. Read root `AGENTS.md` for local starter commands and repository-level rules.
+2. Read `docs/AGENTS.md` for document routing.
+3. Inspect these runtime files before choosing commands:
+   - `dev.env` or the env file explicitly provided by the user.
+   - `kuzhambu-servers/starter/kuzhambu-admin-starter/src/main/resources/application.yml` when `admin` is requested.
+   - `kuzhambu-servers/starter/kuzhambu-portal-starter/src/main/resources/application.yml` when `portal` is requested.
+   - `kuzhambu-apps/admin-web/vite.config.ts` and `kuzhambu-apps/admin-web/src/api/http.ts` when `admin` is requested.
+   - `kuzhambu-apps/portal-web/vite.config.ts` and `kuzhambu-apps/portal-web/src/api/http.ts` when `portal` is requested.
 
-   ```sh
-   .codex/skills/kuzhambu-run-local/scripts/start-local-test-env.sh admin
-   .codex/skills/kuzhambu-run-local/scripts/start-local-test-env.sh portal
-   .codex/skills/kuzhambu-run-local/scripts/start-local-test-env.sh admin portal
-   ```
+## Workflow
 
-3. 如果用户明确指定 env 文件，追加 `--env-file <path>`；否则不要追加，脚本会使用 `dev.env`。
-4. 脚本会：
-   - 读取 env 文件。
-   - 检查默认端口是否已被占用。
-   - 如有端口冲突，选择后续可用端口。
-   - 后端端口变化时，通过 `KUZHAMBU_*_SERVER_PORT` 同步 Vite 代理目标，并清空 `VITE_*_API_BASE_URL`，确保浏览器端 API base 继续使用相对路径。
-   - 启动 Java starter 前，先按 Maven reactor 安装所选 starter 及其依赖模块。
-   - 如果 portal web 端口变化，同步 `KUZHAMBU_PORTAL_WEB_BASE_URL`，保证 admin 生成的分享 URL 指向实际 portal 地址。
-   - 如果 admin backend 端口变化，同步 operations health probe URL，避免探测旧端口。
-   - 后台启动进程并写入 `.codex/local-test-env/logs/`、`.codex/local-test-env/pids/`。
-   - 输出最终访问 URL 和健康检查 URL。
+### 1. Validate Parameters
+
+- Accept only explicit `admin` and/or `portal` targets.
+- If neither target is present, stop and ask for at least one target.
+- If the user provides an env file, use it. Otherwise use repo-root `dev.env` when present.
+
+### 2. Load Environment
+
+Load env values in every shell session that launches services.
+
+First validate whether the env file is shell-sourceable in a throwaway subshell:
+
+```sh
+(set -a && source dev.env && set +a)
+```
+
+If that succeeds, use the repository's normal local-run pattern:
+
+```sh
+set -a
+source dev.env
+set +a
+```
+
+If that fails, or if the env file contains unquoted values with spaces such as cron expressions, do not shell-evaluate it. Launch each service through a dotenv-safe inline parser instead:
+
+```sh
+python3 - dev.env KEY=value OTHER_KEY= -- command arg... <<'PY'
+import os
+import sys
+
+env_file = sys.argv[1]
+separator = sys.argv.index("--")
+overrides = sys.argv[2:separator]
+command = sys.argv[separator + 1 :]
+
+with open(env_file, encoding="utf-8") as handle:
+    for raw_line in handle:
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("export "):
+            line = line[len("export ") :].strip()
+        if "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+            value = value[1:-1]
+        os.environ[key] = value
+
+for override in overrides:
+    key, value = override.split("=", 1)
+    os.environ[key] = value
+
+os.execvp(command[0], command)
+PY
+```
+
+If a custom env file is used, substitute its path for `dev.env`. Put selected port overrides in the `KEY=value` section before `--`.
+
+Do not print secrets from the env file.
+
+### 3. Choose Ports
+
+Use the repo defaults unless occupied:
+
+- Workers: derive from `KUZHAMBU_AI_WORKER_BASE_URL`, default `8000`.
+- Admin backend: `KUZHAMBU_ADMIN_SERVER_PORT`, default `20010`.
+- Portal backend: `KUZHAMBU_PORTAL_SERVER_PORT`, default `20020`.
+- Admin web: default `5173`.
+- Portal web: default `5174`.
+
+Check each requested port before launch, for example:
+
+```sh
+lsof -nP -iTCP:<port> -sTCP:LISTEN
+```
+
+If a requested port is occupied, choose the next available port for that service and record the mapping for the final report. Only reserve ports for targets being launched; for example, `portal` alone does not reserve workers or admin ports.
+
+### 4. Prepare Java Starters
+
+Before starting any Java starter, install the selected starter and its reactor dependencies from `kuzhambu-servers/`:
+
+```sh
+cd kuzhambu-servers
+mvn -pl starter/kuzhambu-admin-starter -am -DskipTests install
+mvn -pl starter/kuzhambu-portal-starter -am -DskipTests install
+```
+
+Run only the command(s) for the requested target(s). For `admin portal`, either run both commands or one combined reactor command that includes both starter modules.
+
+### 5. Launch Services
+
+Use separate long-running terminal sessions for each service. Keep the sessions open and report their names or log locations.
+
+For `admin`:
+
+- Start workers with the selected workers port, for example:
+
+  ```sh
+  cd kuzhambu-workers
+  .venv/bin/uvicorn kuzhambu_workers.main:app --host 0.0.0.0 --port <workers-port>
+  ```
+
+- Start admin backend from `kuzhambu-servers/starter/kuzhambu-admin-starter` with:
+  - `KUZHAMBU_ADMIN_SERVER_PORT=<selected-admin-backend-port>`
+  - `KUZHAMBU_AI_WORKER_BASE_URL=http://127.0.0.1:<selected-workers-port>`
+  - `KUZHAMBU_OPERATIONS_HEALTH_PROBES_TARGETS_0_URL=http://127.0.0.1:<selected-admin-backend-port><admin-context-path>/actuator/health`
+  - If `portal` is also requested, `KUZHAMBU_PORTAL_WEB_BASE_URL=http://127.0.0.1:<selected-portal-web-port>`
+
+- Start admin web from `kuzhambu-apps/admin-web` with:
+  - `KUZHAMBU_ADMIN_SERVER_PORT=<selected-admin-backend-port>`
+  - `VITE_ADMIN_API_BASE_URL=` explicitly empty so app-local `.env` cannot force absolute browser API URLs.
+  - `pnpm run dev -- --port <selected-admin-web-port>`
+
+For `portal`:
+
+- Start portal backend from `kuzhambu-servers/starter/kuzhambu-portal-starter` with:
+  - `KUZHAMBU_PORTAL_SERVER_PORT=<selected-portal-backend-port>`
+
+- Start portal web from `kuzhambu-apps/portal-web` with:
+  - `KUZHAMBU_PORTAL_SERVER_PORT=<selected-portal-backend-port>`
+  - `VITE_PORTAL_API_BASE_URL=` explicitly empty so app-local `.env` cannot force absolute browser API URLs.
+  - `pnpm run dev -- --port <selected-portal-web-port>`
+
+Do not modify `vite.config.ts` for local port retargeting. Vite proxy target should be retargeted through `KUZHAMBU_*_SERVER_PORT`, while browser API clients keep relative defaults such as `/kuzhambu-admin-api/api` and `/kuzhambu-api/api`.
+
+### 6. Verify Readiness
+
+Use HTTP status-aware checks. `curl` must fail on 4xx/5xx:
+
+```sh
+curl --fail http://127.0.0.1:<port>/<context-path>/actuator/health
+curl --fail http://127.0.0.1:<web-port>/
+curl --fail http://127.0.0.1:<workers-port>/internal/health
+```
+
+Only report a service as ready when its readiness URL returns a successful status. If a service is not ready, inspect the relevant terminal output or log before reporting.
 
 ## 端口约定
 
@@ -53,10 +185,6 @@ description: "Kuzhambu project-local slash-command skill for starting the local 
 - Portal backend 默认 `KUZHAMBU_PORTAL_SERVER_PORT`，缺省为 `20020`。
 - Admin web 默认 `5173`。
 - Portal web 默认 `5174`。
-
-不要为了处理端口冲突修改 `vite.config.ts`；使用脚本设置的 `KUZHAMBU_*_SERVER_PORT` 环境变量即可。不要导出绝对地址形式的 `VITE_*_API_BASE_URL`，避免浏览器端绕过 Vite 代理。
-
-脚本依赖 `lsof` 做端口占用和 PID 归属判断；如果环境缺少 `lsof`，应在启动前失败并提示安装，而不是继续误判端口状态。PID 复用必须允许 `pnpm`、`mvn` 等父进程的子进程持有监听端口。
 
 ## 完成输出
 
