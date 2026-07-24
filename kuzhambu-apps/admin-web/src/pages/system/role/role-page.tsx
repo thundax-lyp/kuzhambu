@@ -5,20 +5,23 @@ import type { DataNode } from "antd/es/tree";
 import { useMemo, useState } from "react";
 import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
-import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
-import { KuzhambuTag } from "@/components/kuzhambu-tag";
-import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
-import type { OptionsRecord } from "@/types/options";
+import {
+    KuzhambuListPage,
+    KuzhambuSpace,
+    KuzhambuSwitch,
+    KuzhambuTag,
+    type KuzhambuTableProps,
+    type KuzhambuTableSortPosition,
+    type OptionsRecord
+} from "@/types/options";
 import { RoleEditDrawer } from "./components/role-edit-drawer";
 import * as service from "./role-service";
-import type { RoleOptionKeys, RoleSaveCommand } from "./role-service";
-import type { RoleMenuNode, RoleMenuTreeNode, RoleRecord } from "./role-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+import type { RoleOptionKeys, type RoleSaveCommand } from "./role-service";
+import type { RoleMenuNode, type RoleMenuTreeNode, type RoleRecord } from "./role-types";
+import { KuzhambuButton, KuzhambuSelect } from "@/components";
+import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
+
 import "./role-page.css";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 const { Text } = Typography;
 

@@ -6,7 +6,7 @@ import { sm2 } from "sm-crypto";
 import { createLoginForm } from "@/auth/auth-service";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuPage } from "@/components/kuzhambu-page";
+import { KuzhambuPage } from "@/components";
 import { getCurrentUserInfo } from "@/service/current-user-service";
 import type { OptionsRecord } from "@/types/options";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";

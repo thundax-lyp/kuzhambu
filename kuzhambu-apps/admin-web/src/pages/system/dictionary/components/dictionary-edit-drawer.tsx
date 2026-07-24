@@ -1,12 +1,13 @@
 import { Form, Input } from "antd";
 import { useEffect } from "react";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import {
+    KuzhambuDrawer,
     KuzhambuForm,
     KuzhambuFormHiddenItem,
     KuzhambuFormItem,
     KuzhambuFormPlaceholderItem
-} from "@/components/kuzhambu-form";
+} from "@/components";
+
 import type { DictSaveCommand } from "../dictionary-service";
 import type { DictRecord } from "../dictionary-types";
 

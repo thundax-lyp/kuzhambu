@@ -1,15 +1,15 @@
 import { Form, Input } from "antd";
 import { useEffect } from "react";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import {
+    KuzhambuDrawer,
     KuzhambuForm,
     KuzhambuFormHiddenItem,
     KuzhambuFormItem,
-    KuzhambuFormPlaceholderItem
-} from "@/components/kuzhambu-form";
+    KuzhambuFormPlaceholderItem,
+    KuzhambuSelect
+} from "@/components";
 import type { DepartmentSaveCommand } from "../department-service";
 import type { DepartmentNode } from "../department-types";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 const { TextArea } = Input;
 

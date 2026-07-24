@@ -1,7 +1,7 @@
 import { CameraOutlined } from "@ant-design/icons";
 import { Upload } from "antd";
 import { useState } from "react";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuButton } from "@/components";
 import { UserAvatar } from "@/pages/system/user/components/user-avatar";
 import type { UserRecord } from "@/pages/system/user/user-types";
 import "./user-avatar-field.css";

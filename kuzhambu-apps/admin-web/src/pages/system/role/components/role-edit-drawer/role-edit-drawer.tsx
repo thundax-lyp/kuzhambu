@@ -2,14 +2,15 @@ import { Form, Input } from "antd";
 import type { DataNode } from "antd/es/tree";
 import { useEffect } from "react";
 import type { Key } from "react";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import {
+    KuzhambuDrawer,
     KuzhambuForm,
     KuzhambuFormHiddenItem,
     KuzhambuFormItem,
-    KuzhambuFormPlaceholderItem
-} from "@/components/kuzhambu-form";
-import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
+    KuzhambuFormPlaceholderItem,
+    KuzhambuSwitch
+} from "@/components";
+
 import { MenuTreeField } from "@/pages/system/role/components/menu-tree-field";
 import type { RoleSaveCommand } from "@/pages/system/role/role-service";
 import type { RoleRecord } from "@/pages/system/role/role-types";

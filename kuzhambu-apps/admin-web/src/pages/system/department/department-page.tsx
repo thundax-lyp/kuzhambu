@@ -9,15 +9,19 @@ import { App, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
 import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
-import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
-import { DepartmentEditDrawer } from "./components/department-edit-drawer";
+import {
+    KuzhambuListPage,
+    KuzhambuSpace,
+    type KuzhambuTableProps,
+    type KuzhambuTableSortPosition,
+    DepartmentEditDrawer
+} from "./components/department-edit-drawer";
 import * as service from "./department-service";
 import type { DepartmentMoveCommand, DepartmentSaveCommand } from "./department-service";
 import type { DepartmentNode, DepartmentTableNode } from "./department-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuButton } from "@/components";
+import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
+
 import "./department-page.css";
 
 const { Text } = Typography;

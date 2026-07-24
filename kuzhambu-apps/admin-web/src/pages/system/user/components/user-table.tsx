@@ -1,10 +1,13 @@
 import { Typography } from "antd";
 import type { Key, ReactNode } from "react";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
-import { KuzhambuTag } from "@/components/kuzhambu-tag";
-import { KuzhambuTable } from "@/components/kuzhambu-table";
-import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
+import {
+    KuzhambuSpace,
+    KuzhambuSwitch,
+    KuzhambuTag,
+    KuzhambuTable,
+    type KuzhambuTableProps
+} from "@/components";
+
 import type { CurrentUserRecord } from "@/service/current-user-types";
 import type { UserRecord } from "../user-types";
 import { UserAvatar } from "./user-avatar";

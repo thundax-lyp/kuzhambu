@@ -9,15 +9,19 @@ import { useQuery } from "@tanstack/react-query";
 import { Empty, Input, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import { KuzhambuTag } from "@/components/kuzhambu-tag";
-import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
-import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
+import {
+    KuzhambuListPage,
+    KuzhambuSpace,
+    KuzhambuTag,
+    type KuzhambuTableProps,
+    DEFAULT_PAGE_NO,
+    DEFAULT_PAGE_SIZE
+} from "@/types/page";
 import * as service from "./system-log-service";
 import type { LogPageQuery } from "./system-log-service";
 import type { LogRecord } from "./system-log-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuButton } from "@/components";
+
 import "./system-log-page.css";
 
 const { Text } = Typography;
