@@ -8,6 +8,10 @@ from pydantic import ValidationError
 
 from kuzhambu_workers.ai.graph_registry import GraphRegistry
 from kuzhambu_workers.ai.openai_compatible import iter_chat_completion_chunks
+from kuzhambu_workers.ai.structured_output import (
+    parse_structured_output,
+    requires_structured_output,
+)
 from kuzhambu_workers.core.config import load_settings
 from kuzhambu_workers.core.errors import (
     WorkerError,
@@ -210,7 +214,7 @@ def stream_ai_graph(
                             usage.model_dump(mode="json"),
                         )
                     )
-            result = AiResult(format=_stream_result_format(request), payload="".join(deltas))
+            result = _stream_completed_result(request, "".join(deltas))
             result = _coerce_text_payload(
                 request,
                 {
@@ -261,9 +265,20 @@ def stream_ai_graph(
 
 
 def _stream_result_format(request: AiInvokeRequest) -> ResultFormat:
+    if requires_structured_output(request):
+        return ResultFormat.STRUCTURED
     if request.capability.value in {"image_analysis", "fusion"}:
         return ResultFormat.MARKDOWN
     return ResultFormat.TEXT
+
+
+def _stream_completed_result(request: AiInvokeRequest, content: str) -> AiResult:
+    if requires_structured_output(request):
+        return AiResult(
+            format=ResultFormat.STRUCTURED,
+            payload=parse_structured_output(content, request.capability, request.outputSchema),
+        )
+    return AiResult(format=_stream_result_format(request), payload=content)
 
 
 def _coerce_text_payload(
