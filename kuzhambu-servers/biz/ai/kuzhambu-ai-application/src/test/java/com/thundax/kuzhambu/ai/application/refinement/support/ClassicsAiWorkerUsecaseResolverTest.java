@@ -18,6 +18,7 @@ class ClassicsAiWorkerUsecaseResolverTest {
         assertNotNull(spec);
         assertEquals("CLASSICS_SANCAI_SUMMARY", spec.operation());
         assertNull(spec.workerPath());
+        assertEquals("summary", spec.workerCapability());
     }
 
     @Test
@@ -68,6 +69,7 @@ class ClassicsAiWorkerUsecaseResolverTest {
         assertNotNull(spec);
         assertEquals("CLASSICS_SANCAI_IMAGE_ANALYSIS", spec.operation());
         assertNull(spec.workerPath());
+        assertEquals("image_analysis", spec.workerCapability());
     }
 
     @Test
@@ -84,5 +86,6 @@ class ClassicsAiWorkerUsecaseResolverTest {
         assertNotNull(spec);
         assertEquals("CLASSICS_SANCAI_IMAGE_GEN", spec.operation());
         assertNull(spec.workerPath());
+        assertEquals("image_gen", spec.workerCapability());
     }
 }

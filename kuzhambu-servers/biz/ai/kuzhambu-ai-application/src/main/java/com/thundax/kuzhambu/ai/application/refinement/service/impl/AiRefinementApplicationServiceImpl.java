@@ -111,6 +111,7 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
         AiInvokeCommand invokeCommand = command.toInvokeCommand(capability);
         invokeCommand.setOperation(spec.operation());
         invokeCommand.setWorkerPath(spec.workerPath());
+        invokeCommand.setWorkerCapability(spec.workerCapability());
         enrichBusinessInvokeConfig(invokeCommand);
         copyResolvedInvokeConfig(command, invokeCommand);
         if (CAPABILITY_IMAGE_ANALYSIS.equals(capability) || CAPABILITY_IMAGE_GEN.equals(capability)) {
