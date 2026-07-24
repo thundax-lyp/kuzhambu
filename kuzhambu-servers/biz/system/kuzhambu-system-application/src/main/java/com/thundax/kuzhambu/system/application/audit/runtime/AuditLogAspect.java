@@ -2,9 +2,15 @@ package com.thundax.kuzhambu.system.application.audit.runtime;
 
 import com.thundax.kuzhambu.common.audit.annotation.AuditLog;
 import com.thundax.kuzhambu.common.audit.model.valueobject.AuditSnapshot;
+import com.thundax.kuzhambu.common.core.id.Identifier;
 import com.thundax.kuzhambu.system.application.audit.command.CreateAuditLogCommand;
 import com.thundax.kuzhambu.system.application.audit.service.AuditApplicationService;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -43,27 +49,57 @@ public class AuditLogAspect {
         if (!AuditExpressionEvaluator.booleanValue(auditLog.condition(), method, args, true)) {
             return joinPoint.proceed();
         }
-        String objectId = AuditExpressionEvaluator.stringValue(auditLog.id(), method, args);
-        AuditSnapshot before = snapshot(auditLog.type(), objectId);
+        List<String> objectIds = objectIds(AuditExpressionEvaluator.objectValue(auditLog.id(), method, args));
+        Map<String, AuditSnapshot> beforeSnapshots = StringUtils.isBlank(auditLog.before())
+                ? snapshots(auditLog.type(), objectIds)
+                : snapshots(
+                        auditLog.type(),
+                        objectIds,
+                        AuditExpressionEvaluator.objectValue(auditLog.before(), method, args));
         Object result = joinPoint.proceed();
-        if (objectId == null && result != null) {
-            objectId = String.valueOf(result);
+        if (objectIds.isEmpty() && result != null) {
+            objectIds = objectIds(result);
         }
-        AuditSnapshot after = snapshot(auditLog.type(), objectId);
+        Map<String, AuditSnapshot> afterSnapshots = StringUtils.isBlank(auditLog.after())
+                ? null
+                : snapshots(
+                        auditLog.type(),
+                        objectIds,
+                        AuditExpressionEvaluator.objectValue(auditLog.after(), method, args));
+        for (String objectId : objectIds) {
+            record(
+                    auditLog,
+                    objectId,
+                    beforeSnapshots.get(objectId),
+                    beforeSnapshots.containsKey(objectId),
+                    afterSnapshots == null ? null : afterSnapshots.get(objectId),
+                    afterSnapshots != null && afterSnapshots.containsKey(objectId));
+        }
+        return result;
+    }
+
+    private void record(
+            AuditLog auditLog,
+            String objectId,
+            AuditSnapshot before,
+            boolean beforeSnapshotCaptured,
+            AuditSnapshot after,
+            boolean afterSnapshotCaptured) {
+        AuditSnapshot beforeSnapshot = beforeSnapshotCaptured ? before : null;
+        AuditSnapshot afterSnapshot = afterSnapshotCaptured ? after : snapshot(auditLog.type(), objectId);
 
         CreateAuditLogCommand command = new CreateAuditLogCommand();
         command.setObjectType(auditLog.type());
         command.setObjectId(objectId);
         command.setAction(auditLog.action());
         command.setSummary(auditLog.summary());
-        command.setBeforeSnapshot(before);
-        command.setAfterSnapshot(after);
+        command.setBeforeSnapshot(beforeSnapshot);
+        command.setAfterSnapshot(afterSnapshot);
         command.setRecordWhenUnchanged(auditLog.recordWhenUnchanged());
         command.setOperatorType(AuditOperatorResolver.operatorType());
         command.setOperatorId(AuditOperatorResolver.operatorId());
         command.setOperatorName(AuditOperatorResolver.operatorName());
         auditService.record(command);
-        return result;
     }
 
     private Method mostSpecificMethod(ProceedingJoinPoint joinPoint) {
@@ -71,6 +107,76 @@ public class AuditLogAspect {
         Class<?> targetClass =
                 joinPoint.getTarget() == null ? null : joinPoint.getTarget().getClass();
         return targetClass == null ? method : AopUtils.getMostSpecificMethod(method, targetClass);
+    }
+
+    private Map<String, AuditSnapshot> snapshots(String objectType, List<String> objectIds) {
+        Map<String, AuditSnapshot> snapshots = new LinkedHashMap<>();
+        for (String objectId : objectIds) {
+            snapshots.put(objectId, snapshot(objectType, objectId));
+        }
+        return snapshots;
+    }
+
+    private Map<String, AuditSnapshot> snapshots(String objectType, List<String> objectIds, Object value) {
+        Map<String, AuditSnapshot> snapshots = new LinkedHashMap<>();
+        collectSnapshots(objectType, value, snapshots);
+        if (snapshots.isEmpty() && value != null && objectIds.size() == 1) {
+            snapshots.put(objectIds.get(0), assembleSnapshot(objectType, value));
+        }
+        return snapshots;
+    }
+
+    private void collectSnapshots(String objectType, Object value, Map<String, AuditSnapshot> snapshots) {
+        if (value == null) {
+            return;
+        }
+        if (value instanceof Iterable<?> iterable) {
+            for (Object item : iterable) {
+                collectSnapshots(objectType, item, snapshots);
+            }
+            return;
+        }
+        if (value.getClass().isArray()) {
+            int length = Array.getLength(value);
+            for (int i = 0; i < length; i++) {
+                collectSnapshots(objectType, Array.get(value, i), snapshots);
+            }
+            return;
+        }
+        AuditSnapshot snapshot = assembleSnapshot(objectType, value);
+        if (snapshot != null && StringUtils.isNotBlank(snapshot.getObjectId())) {
+            snapshots.put(snapshot.getObjectId(), snapshot);
+        }
+    }
+
+    private List<String> objectIds(Object value) {
+        List<String> objectIds = new ArrayList<>();
+        collectObjectIds(value, objectIds);
+        return objectIds;
+    }
+
+    private void collectObjectIds(Object value, List<String> objectIds) {
+        if (value == null) {
+            return;
+        }
+        if (value instanceof Iterable<?> iterable) {
+            for (Object item : iterable) {
+                collectObjectIds(item, objectIds);
+            }
+            return;
+        }
+        if (value.getClass().isArray()) {
+            int length = Array.getLength(value);
+            for (int i = 0; i < length; i++) {
+                collectObjectIds(Array.get(value, i), objectIds);
+            }
+            return;
+        }
+        if (value instanceof Identifier<?> identifier) {
+            objectIds.add(identifier.asString());
+            return;
+        }
+        objectIds.add(String.valueOf(value));
     }
 
     private AuditSnapshot snapshot(String objectType, String objectId) {
@@ -83,5 +189,13 @@ public class AuditLogAspect {
             return null;
         }
         return assembler.assemble(loader.load(objectId));
+    }
+
+    private AuditSnapshot assembleSnapshot(String objectType, Object value) {
+        if (value instanceof AuditSnapshot snapshot) {
+            return snapshot;
+        }
+        com.thundax.kuzhambu.common.audit.runtime.AuditSnapshotAssembler assembler = assemblerRegistry.get(objectType);
+        return assembler == null ? null : assembler.assemble(value);
     }
 }

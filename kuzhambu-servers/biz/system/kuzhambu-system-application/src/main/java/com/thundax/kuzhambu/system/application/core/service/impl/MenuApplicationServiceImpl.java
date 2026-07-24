@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.system.application.core.service.impl;
 
+import com.thundax.kuzhambu.common.audit.annotation.AuditLog;
+import com.thundax.kuzhambu.common.audit.model.enums.AuditAction;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
@@ -66,6 +68,7 @@ public class MenuApplicationServiceImpl implements MenuApplicationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @AuditLog(type = "Menu", id = "", action = AuditAction.CREATE, summary = "创建菜单")
     public MenuId create(CreateMenuCommand command) {
         Menu menu = toMenu(command);
         menu.setId(dao.insert(menu));
@@ -75,6 +78,7 @@ public class MenuApplicationServiceImpl implements MenuApplicationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @AuditLog(type = "Menu", id = "#command.id.value()", action = AuditAction.UPDATE, summary = "更新菜单")
     public void changeInfo(ChangeMenuInfoCommand command) {
         Menu menu = toMenu(command);
         dao.update(menu);
@@ -87,6 +91,7 @@ public class MenuApplicationServiceImpl implements MenuApplicationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @AuditLog(type = "Menu", id = "#command.id.value()", action = AuditAction.UPDATE, summary = "变更菜单可见性")
     public int changeVisibility(ChangeMenuVisibilityCommand command) {
         Menu menu = new Menu();
         menu.setId(command.getId());
@@ -97,6 +102,7 @@ public class MenuApplicationServiceImpl implements MenuApplicationService {
     }
 
     @Transactional(rollbackFor = Exception.class)
+    @AuditLog(type = "Menu", id = "#id == null ? null : #id.value()", action = AuditAction.DELETE, summary = "删除菜单")
     public int remove(MenuId id) {
         dao.deleteMenuRole(MenuIdCodec.toValue(id));
         Menu bean = this.get(id);
@@ -113,6 +119,7 @@ public class MenuApplicationServiceImpl implements MenuApplicationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @AuditLog(type = "Menu", id = "#command.fromId.value()", action = AuditAction.UPDATE, summary = "移动菜单")
     public void move(MoveMenuCommand command) {
         dao.moveTreeNode(
                 MenuIdCodec.toValue(command.getFromId()),

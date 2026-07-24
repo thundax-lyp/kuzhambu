@@ -145,7 +145,7 @@ INSERT INTO `system_menu` (
     (37, 32, 80, 81, '字典管理', 'sys:dict:view,sys:dict:edit', 40, 'VISIBLE', '{"icon":"dictionaries"}', '/system/dictionaries', '_self', '后台字典管理'),
     (38, 32, 82, 85, '存储管理', 'storage', 35, 'VISIBLE', '{"icon":"storage"}', '/storage', '_self', '对象存储管理'),
     (39, 38, 83, 84, '对象管理', 'storage:object:view,storage:object:edit', 35, 'VISIBLE', '{"icon":"storage-objects"}', '/storage/objects', '_self', '对象存储文件管理'),
-    (40, 32, 86, 87, '系统日志', 'super', 30, 'VISIBLE', '{"icon":"logs"}', '/system/logs', '_self', '后台运行日志')
+    (40, 32, 86, 87, '系统日志', 'system:log:view', 30, 'VISIBLE', '{"icon":"logs"}', '/system/logs', '_self', '后台运行日志')
 ON DUPLICATE KEY UPDATE
     `parent_id` = VALUES(`parent_id`),
     `lft` = VALUES(`lft`),

@@ -1,16 +1,10 @@
-import {
-    DeleteOutlined,
-    DownloadOutlined,
-    EyeOutlined,
-    FileOutlined,
-    ReloadOutlined,
-    UploadOutlined
-} from "@ant-design/icons";
+import { DeleteOutlined, FileOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Input, Select, Typography } from "antd";
-import { useMemo, useRef, useState } from "react";
-import type { ChangeEvent, Key } from "react";
+import { useMemo, useState } from "react";
+import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
+import { useCurrentAccessToken } from "@/auth/hooks/use-current-access-token";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
@@ -20,12 +14,7 @@ import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import * as service from "./storage-object-service";
 import type { StoragePageQuery } from "./storage-object-service";
-import { StorageUploadTaskCard } from "./components/storage-upload-task-card";
-import type {
-    StorageContentMode,
-    StorageRecord,
-    StorageUploadTaskRecord
-} from "./storage-object-types";
+import type { StorageContentMode, StorageRecord } from "./storage-object-types";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import "./storage-object-page.css";
 
@@ -37,28 +26,28 @@ const DEFAULT_COLUMN_WIDTHS = {
     size: 120,
     objectStatus: 120,
     referenceStatus: 130,
-    remarks: 240
+    referenceOwnerType: 160
 };
 
 type StorageObjectStatusFilter = "ALL" | "ACTIVE" | "DELETING" | "DELETED";
 type StorageReferenceStatusFilter = "ALL" | "REFERENCED" | "UNREFERENCED";
 
 interface StorageObjectFilters {
+    originalFilename: string;
     contentType: string;
     objectStatus: StorageObjectStatusFilter;
     referenceStatus: StorageReferenceStatusFilter;
     referenceOwnerId: string;
     referenceOwnerType: string;
-    remarks: string;
 }
 
 const DEFAULT_STORAGE_OBJECT_FILTERS: StorageObjectFilters = {
+    originalFilename: "",
     contentType: "",
     objectStatus: "ALL",
     referenceStatus: "ALL",
     referenceOwnerId: "",
-    referenceOwnerType: "",
-    remarks: ""
+    referenceOwnerType: ""
 };
 
 const objectStatusLabels: Record<Exclude<StorageObjectStatusFilter, "ALL">, string> = {
@@ -72,9 +61,6 @@ const referenceStatusLabels: Record<Exclude<StorageReferenceStatusFilter, "ALL">
     UNREFERENCED: "未引用"
 };
 
-const uploadAccept =
-    ".jpg,.jpeg,.png,.gif,.webp,.pdf,.txt,.md,.csv,.json,.html,.zip,.docx,.xlsx,.pptx";
-
 const normalizeSearch = (value?: string | null) => {
     const normalizedValue = value?.trim();
     return normalizedValue || undefined;
@@ -84,7 +70,11 @@ const readFilename = (storage: StorageRecord) => {
     return normalizeSearch(storage.originalFilename) || `对象 ${storage.id}`;
 };
 
-const toStorageContentUrl = (storage: StorageRecord, mode: StorageContentMode) => {
+const toStorageContentUrl = (
+    storage: StorageRecord,
+    mode: StorageContentMode,
+    accessToken: string | null
+) => {
     if (!storage.id) {
         return undefined;
     }
@@ -92,7 +82,8 @@ const toStorageContentUrl = (storage: StorageRecord, mode: StorageContentMode) =
         service.getStorageObjectContentUrl({
             mode,
             storageObjectId: storage.id
-        })
+        }),
+        accessToken
     );
 };
 
@@ -167,6 +158,7 @@ export const StorageObjectPage = () => {
     const { message: messageApi } = App.useApp();
     const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
+    const accessToken = useCurrentAccessToken();
     const canEditStorage = hasPermission("storage:object:edit");
     const [query, setQuery] = useState<StoragePageQuery>({
         pageNo: DEFAULT_PAGE_NO,
@@ -175,15 +167,12 @@ export const StorageObjectPage = () => {
     const [searchText, setSearchText] = useState("");
     const [filters, setFilters] = useState<StorageObjectFilters>(DEFAULT_STORAGE_OBJECT_FILTERS);
     const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
-    const [uploadTask, setUploadTask] = useState<StorageUploadTaskRecord | null>(null);
-    const uploadInputRef = useRef<HTMLInputElement>(null);
-    const uploadAbortControllerRef = useRef<AbortController | null>(null);
     const hasSelectedStorages = selectedRowKeys.length > 0;
     const hasActiveFilters = Boolean(
+        filters.originalFilename.trim() ||
         filters.contentType.trim() ||
         filters.referenceOwnerId.trim() ||
         filters.referenceOwnerType.trim() ||
-        filters.remarks.trim() ||
         filters.objectStatus !== "ALL" ||
         filters.referenceStatus !== "ALL"
     );
@@ -212,31 +201,6 @@ export const StorageObjectPage = () => {
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "删除失败");
-        }
-    });
-
-    const uploadMutation = useMutation({
-        mutationFn: (file: File) => {
-            uploadAbortControllerRef.current?.abort();
-            uploadAbortControllerRef.current = new AbortController();
-            return service.uploadStorageFile({
-                file,
-                signal: uploadAbortControllerRef.current.signal,
-                onTaskUpdate: setUploadTask
-            });
-        },
-        onSuccess: async () => {
-            await invalidateStoragePage();
-            messageApi.success("文件已上传");
-        },
-        onError: (error) => {
-            if (error instanceof Error && error.message === "Request was aborted") {
-                return;
-            }
-            messageApi.error(error instanceof Error ? error.message : "上传失败");
-        },
-        onSettled: () => {
-            uploadAbortControllerRef.current = null;
         }
     });
 
@@ -272,62 +236,37 @@ export const StorageObjectPage = () => {
 
     const searchStorages = (value: string) => {
         setSearchText(value);
+        setFilters((currentFilters) => ({
+            ...currentFilters,
+            originalFilename: value
+        }));
         updateQuery({ originalFilename: normalizeSearch(value) });
     };
 
     const applyFilters = () => {
+        setSearchText(filters.originalFilename);
         updateQuery({
+            originalFilename: normalizeSearch(filters.originalFilename),
             contentType: normalizeSearch(filters.contentType),
             objectStatus: readStatusFilterValue(filters.objectStatus),
             referenceStatus: readStatusFilterValue(filters.referenceStatus),
             referenceOwnerId: readReferenceFilterValue(filters.referenceOwnerId),
-            referenceOwnerType: readReferenceFilterValue(filters.referenceOwnerType),
-            remarks: normalizeSearch(filters.remarks)
+            referenceOwnerType: readReferenceFilterValue(filters.referenceOwnerType)
         });
     };
 
     const resetFilters = () => {
         setFilters(DEFAULT_STORAGE_OBJECT_FILTERS);
+        setSearchText("");
         updateQuery({
+            originalFilename: undefined,
             contentType: undefined,
             objectStatus: undefined,
             referenceStatus: undefined,
             referenceOwnerId: undefined,
-            referenceOwnerType: undefined,
-            remarks: undefined
+            referenceOwnerType: undefined
         });
     };
-
-    const openUploadPicker = () => {
-        uploadInputRef.current?.click();
-    };
-
-    const uploadSelectedFile = (event: ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        event.target.value = "";
-        if (file) {
-            setUploadTask(null);
-            uploadMutation.mutate(file);
-        }
-    };
-
-    const cancelUpload = () => {
-        if (!uploadTask?.canCancel) {
-            return;
-        }
-        uploadAbortControllerRef.current?.abort();
-    };
-
-    const isUploadInProgress = Boolean(
-        uploadMutation.isPending ||
-        (uploadTask &&
-            [
-                "uploading-single",
-                "initiating-multipart",
-                "uploading-parts",
-                "completing-multipart"
-            ].includes(uploadTask.stage))
-    );
 
     const openDeleteConfirm = (storage: StorageRecord) => {
         confirm.danger({
@@ -376,12 +315,7 @@ export const StorageObjectPage = () => {
             render: (_, storage) => (
                 <KuzhambuSpace size={10}>
                     <FileOutlined className="storage-object-file-icon" />
-                    <div className="storage-object-name-cell">
-                        <Text strong>{readFilename(storage)}</Text>
-                        {formatFileSize(storage.size) ? (
-                            <Text type="secondary">{formatFileSize(storage.size)}</Text>
-                        ) : null}
-                    </div>
+                    <Text strong>{readFilename(storage)}</Text>
                 </KuzhambuSpace>
             )
         },
@@ -429,44 +363,35 @@ export const StorageObjectPage = () => {
                 ) : null
         },
         {
-            title: "备注",
-            dataIndex: "remarks",
-            key: "remarks",
-            width: DEFAULT_COLUMN_WIDTHS.remarks,
+            title: "归属类型",
+            dataIndex: "referenceOwnerType",
+            key: "referenceOwnerType",
+            width: DEFAULT_COLUMN_WIDTHS.referenceOwnerType,
             ellipsis: true,
-            render: (remarks?: string | null) => remarks || null
+            render: (referenceOwnerType?: string | null) => referenceOwnerType || null
         },
         {
             key: "actions",
             options: (storage) => {
                 const filename = readFilename(storage);
-                const previewUrl = toStorageContentUrl(storage, "preview");
-                const downloadUrl = toStorageContentUrl(storage, "download");
+                const previewUrl = toStorageContentUrl(storage, "preview", accessToken);
+                const downloadUrl = toStorageContentUrl(storage, "download", accessToken);
                 return [
-                    ...(previewUrl
-                        ? [
-                              {
-                                  key: "preview",
-                                  text: "预览",
-                                  icon: <EyeOutlined />,
-                                  ariaLabel: `预览 ${filename}`,
-                                  onClick: () =>
-                                      window.open(previewUrl, "_blank", "noopener,noreferrer")
-                              }
-                          ]
-                        : []),
-                    ...(downloadUrl
-                        ? [
-                              {
-                                  key: "download",
-                                  text: "下载",
-                                  icon: <DownloadOutlined />,
-                                  ariaLabel: `下载 ${filename}`,
-                                  onClick: () =>
-                                      window.open(downloadUrl, "_blank", "noopener,noreferrer")
-                              }
-                          ]
-                        : []),
+                    {
+                        key: "preview",
+                        text: "预览",
+                        ariaLabel: `预览 ${filename}`,
+                        disabled: !previewUrl,
+                        onClick: () => window.open(previewUrl, "_blank", "noopener,noreferrer")
+                    },
+                    {
+                        key: "download",
+                        text: "下载",
+                        ariaLabel: `下载 ${filename}`,
+                        disabled: !downloadUrl,
+                        onClick: () => window.open(downloadUrl, "_blank", "noopener,noreferrer")
+                    },
+                    { type: "divider" },
                     {
                         key: "delete",
                         text: "删除",
@@ -482,11 +407,6 @@ export const StorageObjectPage = () => {
 
     return (
         <>
-            {uploadTask ? (
-                <div className="storage-object-upload-task-wrap">
-                    <StorageUploadTaskCard task={uploadTask} onCancel={cancelUpload} />
-                </div>
-            ) : null}
             <KuzhambuListPage<StorageRecord>
                 pageClassName="storage-object-page"
                 title="存储对象"
@@ -500,6 +420,23 @@ export const StorageObjectPage = () => {
                 onSearchChange={searchStorages}
                 filterActive={hasActiveFilters}
                 filterFields={[
+                    {
+                        name: "originalFilename",
+                        label: "文件名",
+                        render: () => (
+                            <Input
+                                allowClear
+                                placeholder="文件名"
+                                value={filters.originalFilename}
+                                onChange={(event) =>
+                                    setFilters((currentFilters) => ({
+                                        ...currentFilters,
+                                        originalFilename: event.target.value
+                                    }))
+                                }
+                            />
+                        )
+                    },
                     {
                         name: "contentType",
                         label: "MIME",
@@ -560,7 +497,7 @@ export const StorageObjectPage = () => {
                     },
                     {
                         name: "referenceOwnerType",
-                        label: "引用归属类型",
+                        label: "归属类型",
                         render: () => (
                             <Input
                                 allowClear
@@ -577,7 +514,7 @@ export const StorageObjectPage = () => {
                     },
                     {
                         name: "referenceOwnerId",
-                        label: "引用归属ID",
+                        label: "归属ID",
                         render: () => (
                             <Input
                                 allowClear
@@ -591,46 +528,12 @@ export const StorageObjectPage = () => {
                                 }
                             />
                         )
-                    },
-                    {
-                        name: "remarks",
-                        label: "备注",
-                        render: () => (
-                            <Input
-                                allowClear
-                                placeholder="业务说明"
-                                value={filters.remarks}
-                                onChange={(event) =>
-                                    setFilters((currentFilters) => ({
-                                        ...currentFilters,
-                                        remarks: event.target.value
-                                    }))
-                                }
-                            />
-                        )
                     }
                 ]}
                 onFilterApply={applyFilters}
                 onFilterReset={resetFilters}
                 pageActions={
                     <KuzhambuSpace wrap>
-                        <input
-                            ref={uploadInputRef}
-                            aria-label="选择上传文件"
-                            className="storage-object-upload-input"
-                            type="file"
-                            accept={uploadAccept}
-                            onChange={uploadSelectedFile}
-                        />
-                        <KuzhambuButton
-                            testId="storage-storage-object-storage-object-upload-button"
-                            icon={<UploadOutlined />}
-                            disabled={!canEditStorage || isUploadInProgress}
-                            loading={isUploadInProgress}
-                            onClick={openUploadPicker}
-                        >
-                            上传
-                        </KuzhambuButton>
                         <KuzhambuButton
                             testId="storage-storage-object-storage-object-refresh-button"
                             icon={<ReloadOutlined />}
@@ -661,11 +564,7 @@ export const StorageObjectPage = () => {
                 className="storage-object-table"
                 columns={columns}
                 dataSource={storages}
-                loading={
-                    storageObjectPageQuery.isFetching ||
-                    sortMutation.isPending ||
-                    uploadMutation.isPending
-                }
+                loading={storageObjectPageQuery.isFetching || sortMutation.isPending}
                 onSort={moveStorage}
                 pagination={{
                     current: currentPageNo,
