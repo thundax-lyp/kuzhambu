@@ -112,6 +112,7 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
         invokeCommand.setOperation(spec.operation());
         invokeCommand.setWorkerPath(spec.workerPath());
         enrichBusinessInvokeConfig(invokeCommand);
+        copyResolvedInvokeConfig(command, invokeCommand);
         if (CAPABILITY_IMAGE_ANALYSIS.equals(capability) || CAPABILITY_IMAGE_GEN.equals(capability)) {
             invokeCommand.setStream(true);
         }
@@ -127,6 +128,17 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
             return;
         }
         businessInvokeConfigResolver.resolve(command);
+    }
+
+    private void copyResolvedInvokeConfig(AiRefinementRequestCommand command, AiInvokeCommand invokeCommand) {
+        command.setServiceId(invokeCommand.getServiceId());
+        command.setServiceRole(invokeCommand.getServiceRole());
+        command.setModelId(invokeCommand.getModelId());
+        command.setModelName(invokeCommand.getModelName());
+        command.setPromptVersionId(invokeCommand.getPromptVersionId());
+        command.setPromptMessagesJson(invokeCommand.getPromptMessagesJson());
+        command.setPromptVariablesJson(invokeCommand.getPromptVariablesJson());
+        command.setOutputSchemaJson(invokeCommand.getOutputSchemaJson());
     }
 
     private void validateCommand(AiRefinementRequestCommand command) {

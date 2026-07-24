@@ -53,7 +53,7 @@ public class AiBusinessInvokeConfigResolver {
         AiBusinessConfig config = resolveBusinessConfig(command.getCapability());
         PromptVersion promptVersion = resolveCurrentPromptVersion(config);
         ObjectNode inputPayload = withCommandMetadata(parseInputPayload(command.getInputPayloadJson()), command);
-        List<PromptVariable> variables = promptRepository.listVariables(config.getPromptTemplateId());
+        List<PromptVariable> variables = resolvePromptVariables(config, promptVersion);
         ObjectNode promptVariables = buildPromptVariables(variables, inputPayload);
 
         command.setModelId(AiModelIdCodec.toValue(config.getModelId()));
@@ -89,6 +89,41 @@ public class AiBusinessInvokeConfigResolver {
                     + PromptTemplateIdCodec.toValue(config.getPromptTemplateId()));
         }
         return promptVersion;
+    }
+
+    private List<PromptVariable> resolvePromptVariables(AiBusinessConfig config, PromptVersion promptVersion) {
+        String variablesSnapshotJson = promptVersion.getVariablesSnapshotJson();
+        if (isBlank(variablesSnapshotJson)) {
+            return promptRepository.listVariables(config.getPromptTemplateId());
+        }
+        try {
+            JsonNode variablesSnapshot = objectMapper.readTree(variablesSnapshotJson);
+            if (!variablesSnapshot.isArray()) {
+                throw new BizException("AI prompt variables snapshot must be a JSON array");
+            }
+            List<PromptVariable> variables = new ArrayList<>();
+            for (JsonNode variableSnapshot : variablesSnapshot) {
+                if (variableSnapshot == null || !variableSnapshot.isObject()) {
+                    continue;
+                }
+                PromptVariable variable = new PromptVariable();
+                variable.setTemplateId(config.getPromptTemplateId());
+                variable.setVariableName(textValue(variableSnapshot, "variableName"));
+                variable.setRequired(!variableSnapshot.has("required")
+                        || variableSnapshot.get("required").asBoolean(true));
+                variable.setDescription(textValue(variableSnapshot, "description"));
+                variable.setPriority(variableSnapshot.path("priority").asInt(0));
+                variables.add(variable);
+            }
+            return variables;
+        } catch (JsonProcessingException ex) {
+            throw new BizException("AI prompt variables snapshot is not valid JSON");
+        }
+    }
+
+    private String textValue(JsonNode node, String fieldName) {
+        JsonNode value = node.get(fieldName);
+        return value == null || value.isNull() ? null : value.asText();
     }
 
     private ObjectNode parseInputPayload(String inputPayloadJson) {
