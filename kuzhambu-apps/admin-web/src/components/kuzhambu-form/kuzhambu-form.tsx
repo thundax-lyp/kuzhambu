@@ -6,6 +6,7 @@ import {
     cloneElement,
     isValidElement,
     type ReactElement,
+    type Key,
     type ReactNode
 } from "react";
 import {
@@ -63,14 +64,18 @@ type KuzhambuFormItemElement = ReactElement<KuzhambuFormItemProps>;
 type KuzhambuFormHiddenItemElement = ReactElement<KuzhambuFormHiddenItemProps>;
 type KuzhambuFormPlaceholderItemElement = ReactElement<KuzhambuFormPlaceholderItemProps>;
 type KuzhambuFormLayoutElement =
-    | { element: KuzhambuFormItemElement; kind: "item" }
-    | { element: KuzhambuFormHiddenItemElement; kind: "hidden" }
-    | { element: KuzhambuFormPlaceholderItemElement; kind: "placeholder" };
+    | { element: KuzhambuFormItemElement; key: Key; kind: "item" }
+    | { element: KuzhambuFormHiddenItemElement; key: Key; kind: "hidden" }
+    | { element: KuzhambuFormPlaceholderItemElement; key: Key; kind: "placeholder" };
 
 interface FormLayoutItem {
     ariaHidden?: boolean;
     child: ReactNode;
     colProps: ColProps;
+    hasChildren?: boolean;
+    key: Key;
+    kind: "item" | "placeholder";
+    span: number;
 }
 
 const isFragmentElement = (child: ReactNode): child is ReactElement<{ children?: ReactNode }> => {
@@ -93,19 +98,23 @@ const isKuzhambuFormPlaceholderItemElement = (
     return isValidElement(child) && child.type === KuzhambuFormPlaceholderItem;
 };
 
-const collectLayoutChildren = (children: ReactNode): KuzhambuFormLayoutElement[] => {
-    return Children.toArray(children).flatMap((child) => {
+const collectLayoutChildren = (
+    children: ReactNode,
+    keyPrefix = ""
+): KuzhambuFormLayoutElement[] => {
+    return Children.toArray(children).flatMap((child, index) => {
+        const childKey = `${keyPrefix}${isValidElement(child) && child.key !== null ? child.key : index}`;
         if (isFragmentElement(child)) {
-            return collectLayoutChildren(child.props.children);
+            return collectLayoutChildren(child.props.children, `${childKey}/`);
         }
         if (isKuzhambuFormItemElement(child)) {
-            return [{ element: child, kind: "item" }];
+            return [{ element: child, key: childKey, kind: "item" }];
         }
         if (isKuzhambuFormHiddenItemElement(child)) {
-            return [{ element: child, kind: "hidden" }];
+            return [{ element: child, key: childKey, kind: "hidden" }];
         }
         if (isKuzhambuFormPlaceholderItemElement(child)) {
-            return [{ element: child, kind: "placeholder" }];
+            return [{ element: child, key: childKey, kind: "placeholder" }];
         }
         return [];
     });
@@ -141,6 +150,15 @@ const hasRenderablePlaceholderChildren = (children: ReactNode) => {
     return children !== null && children !== undefined && children !== false;
 };
 
+const isEmptyFullLinePlaceholderRow = (row: FormLayoutItem[]) => {
+    return (
+        row.length === 1 &&
+        row[0].kind === "placeholder" &&
+        row[0].span >= 24 &&
+        !row[0].hasChildren
+    );
+};
+
 const buildFormRows = (children: ReactNode, layoutTier: KuzhambuFormLayoutTier) => {
     const hiddenItems: ReactNode[] = [];
     const rows: FormLayoutItem[][] = [];
@@ -171,13 +189,14 @@ const buildFormRows = (children: ReactNode, layoutTier: KuzhambuFormLayoutTier) 
             if (currentRow.length && currentSpan + itemSpan > 24) {
                 pushCurrentRow();
             }
-            if (!hasChildren && itemSpan >= 24 && !currentRow.length) {
-                return;
-            }
             currentRow.push({
                 ariaHidden: !hasChildren,
                 child: hasChildren ? child.props.children : null,
-                colProps: readPlaceholderColProps(child.props, currentSpan, layoutTier)
+                colProps: readPlaceholderColProps(child.props, currentSpan, layoutTier),
+                hasChildren,
+                key: layoutChild.key,
+                kind: "placeholder",
+                span: itemSpan
             });
             currentSpan += itemSpan;
             if (currentSpan >= 24) {
@@ -193,7 +212,10 @@ const buildFormRows = (children: ReactNode, layoutTier: KuzhambuFormLayoutTier) 
         }
         currentRow.push({
             child: cloneElement(child, { layoutTier }),
-            colProps: readFormItemColProps(child.props, layoutTier)
+            colProps: readFormItemColProps(child.props, layoutTier),
+            key: layoutChild.key,
+            kind: "item",
+            span: itemSpan
         });
         currentSpan += itemSpan;
         if (currentSpan >= 24) {
@@ -202,7 +224,11 @@ const buildFormRows = (children: ReactNode, layoutTier: KuzhambuFormLayoutTier) 
     });
     pushCurrentRow();
 
-    return { hiddenItems, rows };
+    return { hiddenItems, rows: rows.filter((row) => !isEmptyFullLinePlaceholderRow(row)) };
+};
+
+const readRowKey = (row: FormLayoutItem[]) => {
+    return row.map((item) => item.key).join("|");
 };
 
 // AI NOTE: KuzhambuForm owns grid layout from container width, not viewport width.
@@ -222,11 +248,11 @@ export const KuzhambuForm = <Values = unknown,>({
         <div ref={containerRef} className={className} style={style}>
             <Form<Values> {...formProps} colon={colon} layout="horizontal">
                 {hiddenItems}
-                {rows.map((row, rowIndex) => (
-                    <Row key={rowIndex} className="kuzhambu-form-row" gutter={rowGutter}>
-                        {row.map((item, itemIndex) => (
+                {rows.map((row) => (
+                    <Row key={readRowKey(row)} className="kuzhambu-form-row" gutter={rowGutter}>
+                        {row.map((item) => (
                             <Col
-                                key={itemIndex}
+                                key={item.key}
                                 aria-hidden={item.ariaHidden}
                                 {...item.colProps}
                                 className={`kuzhambu-form-col ${item.colProps.className || ""}`.trim()}
