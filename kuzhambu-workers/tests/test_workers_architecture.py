@@ -2,8 +2,6 @@ from pathlib import Path
 
 import tomli
 
-from kuzhambu_workers.ai.usecase_registry import USECASE_PATHS
-from kuzhambu_workers.core import service_paths
 from kuzhambu_workers.core.security import SERVICE_PATHS
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -81,12 +79,13 @@ def test_WORKERS_ARCHITECTURE_IMPORT_LINTER_CONTRACTS_match_rules() -> None:
     assert contracts == EXPECTED_IMPORT_LINTER_CONTRACTS, "WORKERS_TEST_ARCHITECTURE_CONTRACT"
 
 
-def test_WORKERS_AI_USECASE_SERVICE_BOUNDARY_path_allowlist_is_shared() -> None:
+def test_WORKERS_AI_SERVICE_BOUNDARY_uses_unified_paths() -> None:
     ai_paths = SERVICE_PATHS["kuzhambu-ai"]
 
-    assert USECASE_PATHS == service_paths.AI_USECASE_PATHS, "WORKERS_AI_CANONICAL_CAPABILITY"
-    assert set(service_paths.AI_USECASE_PATHS).issubset(ai_paths), (
-        "WORKERS_AI_USECASE_SERVICE_BOUNDARY"
+    assert "/internal/ai/invoke" in ai_paths, "WORKERS_AI_UNIFIED_INVOKE"
+    assert "/internal/ai/stream" in ai_paths, "WORKERS_AI_UNIFIED_STREAM"
+    assert not any(path.startswith("/internal/ai/classics/") for path in ai_paths), (
+        "WORKERS_AI_NO_BUSINESS_USECASE_PATH"
     )
 
 
@@ -96,7 +95,7 @@ def test_WORKERS_NO_FORMAL_DISCOVERY_QA_RUNTIME_OR_KNOWLEDGE_SYNC() -> None:
         for path in PACKAGE_ROOT.rglob("*.py")
         if "__pycache__" not in path.parts
     )
-    app_routes = set(service_paths.AI_USECASE_PATHS)
+    app_routes = SERVICE_PATHS["kuzhambu-ai"]
 
     assert not any(token in source_text for token in FORMAL_DISCOVERY_QA_FORBIDDEN_TOKENS), (
         "WORKERS_NO_DISCOVERY_QA_RUNTIME / WORKERS_NO_KNOWLEDGE_SYNC_TASK"

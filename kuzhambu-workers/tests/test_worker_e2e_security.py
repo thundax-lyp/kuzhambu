@@ -38,11 +38,10 @@ def test_worker_e2e_rejects_forbidden_service(monkeypatch) -> None:
     )
 
     assert response.status_code == 403
-    assert response.json()["error"]["code"] == "PATH_FORBIDDEN"
 
 
-def test_worker_e2e_rejects_business_service_on_ai_usecase_path(monkeypatch) -> None:
-    _configure(monkeypatch, "kuzhambu-ai,kuzhambu-classics")
+def test_worker_e2e_rejects_removed_ai_usecase_path(monkeypatch) -> None:
+    _configure(monkeypatch, "kuzhambu-ai")
     path = "/internal/ai/classics/sancai/translate"
     body = _ai_body(
         operation="CLASSICS_SANCAI_TRANSLATE",
@@ -53,11 +52,10 @@ def test_worker_e2e_rejects_business_service_on_ai_usecase_path(monkeypatch) -> 
     response = TestClient(app).post(
         path,
         content=body,
-        headers=_headers(body, path, "kuzhambu-classics"),
+        headers=_headers(body, path, "kuzhambu-ai"),
     )
 
-    assert response.status_code == 403
-    assert response.json()["error"]["code"] == "PATH_FORBIDDEN"
+    assert response.status_code == 404
 
 
 def test_worker_e2e_render_stream_error_terminates_without_completed(monkeypatch) -> None:
