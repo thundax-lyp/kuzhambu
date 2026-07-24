@@ -63,6 +63,14 @@ Workers 不拥有 AI 配置、提示词、调用记录或候选结果。Classics
 
 数据模型必须记录 worker 调用所需的稳定追踪信息，包括模型、服务、能力、提示词版本、请求标识、链路标识、耗时、用量、失败类型和降级状态。stream 片段不是业务事实，默认不逐片段持久化；最终结果、失败或部分失败状态必须进入调用记录。
 
+提示词模板能力归属固定规则：
+
+- `PromptTemplate.capability` 是模板的运行时契约归属键，一旦创建不得修改。
+- 模板名称、说明和启用状态可以更新；提示词正文、输出 schema 和变量快照通过新增 `PromptVersion` 表达。
+- 更新已有模板时，请求中的 capability 必须与已保存模板一致；不一致时后端拒绝保存。
+- `PromptVariable` 表示模板创建时的能力变量基线；更新提示词版本时不替换模板级变量列表，版本变量以 `PromptVersion.variablesSnapshotJson` 为准。
+- 如需把提示词迁移到另一 capability，必须创建新的 `PromptTemplate`，不得复用原 template id。
+
 AI 调用记录固定补充以下字段口径：
 
 - `failureStage`
