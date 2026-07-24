@@ -1,0 +1,20 @@
+来源标题：{{sourceTitle}}
+已知实体：
+{{knownEntities}}
+
+来源文本：
+{{sourceText}}
+
+请抽取实体和关系候选，返回 JSON：
+{
+  "entities": [
+    { "name": "实体名", "entityType": "实体类型", "description": "说明" }
+  ],
+  "relations": [
+    { "sourceName": "来源实体", "targetName": "目标实体", "relationType": "关系类型", "evidence": "证据" }
+  ],
+  "sourceSnippets": [
+    { "snippet": "证据片段", "sourceRef": "来源引用" }
+  ],
+  "warnings": []
+}
