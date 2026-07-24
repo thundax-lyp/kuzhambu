@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Input, Select, Switch, TreeSelect } from "antd";
+import type { TreeSelectProps } from "antd";
 import { useMemo, useState } from "react";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
@@ -79,7 +80,9 @@ const toEditableRankOptions = (options: OptionsRecord[string] | undefined, maxRa
         .filter((option) => Number.isFinite(option.value) && option.value <= maxRank);
 };
 
-const departmentTreeOptions = (departments: UserDepartmentNode[]) => {
+type DepartmentTreeOption = NonNullable<TreeSelectProps["treeData"]>[number];
+
+const departmentTreeOptions = (departments: UserDepartmentNode[]): DepartmentTreeOption[] => {
     const departmentById = new Map(departments.map((department) => [department.id, department]));
     const childrenByParentId = new Map<string | null | undefined, UserDepartmentNode[]>();
     departments.forEach((department) => {
@@ -89,7 +92,7 @@ const departmentTreeOptions = (departments: UserDepartmentNode[]) => {
         childrenByParentId.set(parentId, children);
     });
 
-    const toNode = (department: UserDepartmentNode) => ({
+    const toNode = (department: UserDepartmentNode): DepartmentTreeOption => ({
         value: department.id,
         title: department.name,
         children: childrenByParentId.get(department.id)?.map(toNode)
@@ -257,7 +260,9 @@ export const UserEditDrawer = ({
         >
             <KuzhambuForm className="user-edit-drawer-form" component="div">
                 {!creating && user ? (
-                    <UserAvatarField user={user} onAvatarUpload={onAvatarUpload} />
+                    <KuzhambuFormItem label="头像" layoutSize="large">
+                        <UserAvatarField user={user} onAvatarUpload={onAvatarUpload} />
+                    </KuzhambuFormItem>
                 ) : null}
                 <KuzhambuFormItem label="登录名" layoutSize="small">
                     <Input
@@ -275,7 +280,7 @@ export const UserEditDrawer = ({
                         />
                     </KuzhambuFormItem>
                 ) : null}
-                <KuzhambuFormItem endOfLine label="姓名" layoutSize="small">
+                <KuzhambuFormItem label="姓名" layoutSize="small">
                     <Input
                         value={formValues.name}
                         placeholder="用户姓名"
@@ -289,14 +294,14 @@ export const UserEditDrawer = ({
                         onChange={(event) => updateForm({ email: event.target.value })}
                     />
                 </KuzhambuFormItem>
-                <KuzhambuFormItem endOfLine label="手机">
+                <KuzhambuFormItem label="手机">
                     <Input
                         value={formValues.mobile || ""}
                         placeholder="手机号"
                         onChange={(event) => updateForm({ mobile: event.target.value })}
                     />
                 </KuzhambuFormItem>
-                <KuzhambuFormItem endOfLine label="部门" layoutSize="large">
+                <KuzhambuFormItem label="部门" layoutSize="large">
                     <TreeSelect
                         value={formValues.departmentId || undefined}
                         treeData={departmentOptions}
@@ -307,7 +312,7 @@ export const UserEditDrawer = ({
                         onChange={(departmentId) => updateForm({ departmentId })}
                     />
                 </KuzhambuFormItem>
-                <KuzhambuFormItem endOfLine label="角色" layoutSize="large">
+                <KuzhambuFormItem label="角色" layoutSize="large">
                     <Select
                         mode="multiple"
                         value={formValues.roleIds}
@@ -330,7 +335,7 @@ export const UserEditDrawer = ({
                         onChange={(admin) => updateForm({ admin })}
                     />
                 </KuzhambuFormItem>
-                <KuzhambuFormItem endOfLine label="启用" layoutSize="small">
+                <KuzhambuFormItem label="启用" layoutSize="small">
                     <Switch
                         checked={formValues.enable}
                         onChange={(enable) => updateForm({ enable })}
