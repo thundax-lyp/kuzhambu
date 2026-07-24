@@ -1,0 +1,9 @@
+内容类型：{{contentType}}
+标题：{{title}}
+批量上下文：
+{{batchContext}}
+
+原文：
+{{sourceText}}
+
+请翻译为现代中文，并保持与批量上下文一致。

@@ -1,0 +1,35 @@
+{
+  "templateId": 930115,
+  "promptVersionId": 940115,
+  "variableIdStart": 962301,
+  "capability": "knowledge_lineage_extract",
+  "suite": "knowledge-default-v1",
+  "name": "世系图抽取提示词",
+  "description": "世系图候选抽取默认提示词。",
+  "enabled": true,
+  "versionNo": 1,
+  "current": true,
+  "variables": [
+    {
+      "name": "document",
+      "required": true,
+      "description": "世系相关原文或说明",
+      "priority": 962301
+    },
+    {
+      "name": "constraints",
+      "required": false,
+      "description": "已知人物、关系或时代约束",
+      "priority": 962302
+    }
+  ],
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "nodes": { "type": "array", "items": { "type": "object" } },
+      "relations": { "type": "array", "items": { "type": "object" } }
+    },
+    "required": ["nodes", "relations"]
+  },
+  "changeSummary": "Initial knowledge default lineage extraction prompt."
+}

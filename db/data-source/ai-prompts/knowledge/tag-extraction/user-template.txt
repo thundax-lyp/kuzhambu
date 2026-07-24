@@ -1,0 +1,15 @@
+标签体系上下文：
+{{taxonomyContext}}
+
+内容：
+{{document}}
+
+请返回 JSON：
+{
+  "tags": [
+    {
+      "name": "标签名",
+      "reason": "推荐理由"
+    }
+  ]
+}

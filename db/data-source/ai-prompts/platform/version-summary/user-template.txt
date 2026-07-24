@@ -1,0 +1,10 @@
+业务域：{{domain}}
+操作上下文：{{operationContext}}
+
+变更前：
+{{beforeContent}}
+
+变更后：
+{{afterContent}}
+
+请生成一段简洁的中文版本摘要。

@@ -1,0 +1,24 @@
+约束：
+{{constraints}}
+
+内容：
+{{document}}
+
+请返回 JSON：
+{
+  "nodes": [
+    {
+      "name": "人物名称",
+      "evidence": "文本证据"
+    }
+  ],
+  "relations": [
+    {
+      "source": "人物A",
+      "relation": "关系",
+      "target": "人物B",
+      "evidence": "文本证据",
+      "confidence": "HIGH"
+    }
+  ]
+}

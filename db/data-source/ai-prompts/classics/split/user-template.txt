@@ -1,0 +1,17 @@
+当前标题：{{title}}
+分类路径：{{categoryPath}}
+拆分提示：{{splitHint}}
+
+内容：
+{{sourceText}}
+
+请返回 JSON：
+{
+  "items": [
+    {
+      "title": "候选条目标题",
+      "content": "候选条目内容",
+      "reason": "拆分理由"
+    }
+  ]
+}

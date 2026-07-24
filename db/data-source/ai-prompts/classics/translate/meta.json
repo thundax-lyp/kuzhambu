@@ -4,7 +4,7 @@
   "variableIdStart": 960201,
   "capability": "classics_translate",
   "suite": "classics-default-v1",
-  "name": "Classics Default Translate",
+  "name": "古籍翻译提示词",
   "description": "古籍文言文默认现代中文翻译提示词。",
   "enabled": true,
   "versionNo": 1,

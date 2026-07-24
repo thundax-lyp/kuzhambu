@@ -1,0 +1,17 @@
+上下文：
+{{context}}
+
+内容：
+{{document}}
+
+请返回 JSON：
+{
+  "relations": [
+    {
+      "subject": "主体实体",
+      "predicate": "关系",
+      "object": "客体实体",
+      "evidence": "文本证据"
+    }
+  ]
+}

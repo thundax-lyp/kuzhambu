@@ -1,0 +1,46 @@
+{
+  "templateId": 930113,
+  "promptVersionId": 940113,
+  "variableIdStart": 962101,
+  "capability": "knowledge_relation_extract",
+  "suite": "knowledge-default-v1",
+  "name": "实体关系抽取提示词",
+  "description": "知识实体关系候选抽取默认提示词。",
+  "enabled": true,
+  "versionNo": 1,
+  "current": true,
+  "variables": [
+    {
+      "name": "document",
+      "required": true,
+      "description": "待抽取关系的内容",
+      "priority": 962101
+    },
+    {
+      "name": "context",
+      "required": false,
+      "description": "人工精修上下文或已有实体关系",
+      "priority": 962102
+    }
+  ],
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "relations": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "subject": { "type": "string" },
+            "predicate": { "type": "string" },
+            "object": { "type": "string" },
+            "evidence": { "type": "string" }
+          },
+          "required": ["subject", "predicate", "object", "evidence"]
+        }
+      }
+    },
+    "required": ["relations"]
+  },
+  "changeSummary": "Initial knowledge default relation extraction prompt."
+}

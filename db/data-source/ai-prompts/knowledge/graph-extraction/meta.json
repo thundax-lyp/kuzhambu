@@ -1,0 +1,35 @@
+{
+  "templateId": 930114,
+  "promptVersionId": 940114,
+  "variableIdStart": 962201,
+  "capability": "knowledge_graph_extract",
+  "suite": "knowledge-default-v1",
+  "name": "知识图谱抽取提示词",
+  "description": "知识图谱节点和边候选抽取默认提示词。",
+  "enabled": true,
+  "versionNo": 1,
+  "current": true,
+  "variables": [
+    {
+      "name": "scope",
+      "required": false,
+      "description": "知识库、门类或卷册范围",
+      "priority": 962201
+    },
+    {
+      "name": "documents",
+      "required": true,
+      "description": "待抽取图谱的内容片段",
+      "priority": 962202
+    }
+  ],
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "nodes": { "type": "array", "items": { "type": "object" } },
+      "edges": { "type": "array", "items": { "type": "object" } }
+    },
+    "required": ["nodes", "edges"]
+  },
+  "changeSummary": "Initial knowledge default graph extraction prompt."
+}

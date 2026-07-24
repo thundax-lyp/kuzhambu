@@ -1,0 +1,21 @@
+目标能力：{{targetCapability}}
+
+当前提示词：
+{{currentPrompt}}
+
+变量定义：
+{{variables}}
+
+失败样例或质量问题：
+{{failureSamples}}
+
+请返回 JSON：
+{
+  "suggestions": [
+    {
+      "problem": "发现的问题",
+      "recommendation": "建议修改",
+      "impact": "预期影响"
+    }
+  ]
+}

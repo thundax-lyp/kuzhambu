@@ -4,7 +4,7 @@
   "variableIdStart": 960301,
   "capability": "classics_tags",
   "suite": "classics-default-v1",
-  "name": "Classics Default Tags",
+  "name": "古籍标签提取提示词",
   "description": "古籍内容默认标签抽取提示词。",
   "enabled": true,
   "versionNo": 1,

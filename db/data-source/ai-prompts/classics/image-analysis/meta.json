@@ -4,7 +4,7 @@
   "variableIdStart": 960501,
   "capability": "classics_image_describe",
   "suite": "classics-default-v1",
-  "name": "Classics Default Image Analysis",
+  "name": "古籍图片理解提示词",
   "description": "古籍图像默认解读提示词。",
   "enabled": true,
   "versionNo": 1,
