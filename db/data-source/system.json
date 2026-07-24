@@ -1034,7 +1034,7 @@
         {
           "id": 40,
           "name": "系统日志",
-          "perms": ["super"],
+          "perms": ["system:log:view"],
           "priority": 30,
           "icon": "logs",
           "url": "/system/logs",
