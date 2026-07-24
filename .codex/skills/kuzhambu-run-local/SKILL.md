@@ -15,7 +15,7 @@ description: "Kuzhambu project-local slash-command workflow for starting the loc
 
 - 必须显式传入 `admin`、`portal` 中至少一个。
 - 可以同时传入 `admin portal`。
-- 未指定 env 文件时，默认使用仓库根目录 `dev.env`。
+- 未指定 env 文件时，默认使用仓库根目录 `dev.env`；该文件必须已从 `.env.example` 创建并保持未跟踪。
 
 ## 启动范围
 
@@ -28,7 +28,7 @@ description: "Kuzhambu project-local slash-command workflow for starting the loc
 1. Read root `AGENTS.md` for local starter commands and repository-level rules.
 2. Read `docs/AGENTS.md` for document routing.
 3. Inspect these runtime files before choosing commands:
-   - `dev.env` or the env file explicitly provided by the user.
+   - `dev.env` or the env file explicitly provided by the user. If no custom env file is provided and repo-root `dev.env` is absent, stop and tell the user to create it from `.env.example` before continuing.
    - `kuzhambu-servers/starter/kuzhambu-admin-starter/src/main/resources/application.yml` when `admin` is requested.
    - `kuzhambu-servers/starter/kuzhambu-portal-starter/src/main/resources/application.yml` when `portal` is requested.
    - `kuzhambu-apps/admin-web/vite.config.ts` and `kuzhambu-apps/admin-web/src/api/http.ts` when `admin` is requested.
@@ -40,13 +40,15 @@ description: "Kuzhambu project-local slash-command workflow for starting the loc
 
 - Accept only explicit `admin` and/or `portal` targets.
 - If neither target is present, stop and ask for at least one target.
-- If the user provides an env file, use it. Otherwise use repo-root `dev.env` when present.
+- If the user provides an env file, use it.
+- If no custom env file is provided, require repo-root `dev.env`.
+- If the selected env file is absent or unreadable, stop before any startup command. For the default path, tell the user to create it from `.env.example` and keep it untracked; for a custom path, ask for a usable env file path.
 
 ### 2. Load Environment
 
 Load env values in every shell session that launches services.
 
-First validate whether the env file is shell-sourceable in a throwaway subshell:
+After the selected env file exists and is readable, validate whether it is shell-sourceable in a throwaway subshell:
 
 ```sh
 (set -a && source dev.env && set +a)
