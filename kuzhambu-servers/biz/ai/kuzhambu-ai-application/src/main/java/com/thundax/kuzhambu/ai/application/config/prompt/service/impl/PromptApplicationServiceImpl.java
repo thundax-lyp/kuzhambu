@@ -67,7 +67,7 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
         ensureTemplateVariablesDefined(command.getMessageTemplatesJson(), variables);
         int versionNo = nextVersionNo(templateId);
         PromptVersion version = command.toVersion(templateId, versionNo, variablesSnapshotJson(command));
-        promptRepository.replaceVariables(templateId, variables);
+        replaceVariablesOnCreate(template, templateId, variables);
         insertVersion(version);
         promptRepository.markCurrentVersion(templateId, versionNo);
         return PromptTemplateIdCodec.toValue(templateId);
@@ -150,11 +150,30 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
         if (template.getId() == null) {
             return promptRepository.insertTemplate(template);
         }
+        validateImmutableCapability(template);
         int affectedRows = promptRepository.updateTemplate(template);
         if (affectedRows <= 0) {
             throw new BizException("Prompt template update failed: " + template.getId());
         }
         return template.getId();
+    }
+
+    private void validateImmutableCapability(PromptTemplate template) {
+        PromptTemplate existing = promptRepository.get(template.getId());
+        if (existing == null) {
+            throw new BizException("Prompt template not found: " + PromptTemplateIdCodec.toValue(template.getId()));
+        }
+        if (existing.getCapability() != template.getCapability()) {
+            throw new BizException("Prompt template capability can not be changed: "
+                    + PromptTemplateIdCodec.toValue(template.getId()));
+        }
+    }
+
+    private void replaceVariablesOnCreate(
+            PromptTemplate template, PromptTemplateId templateId, List<PromptVariable> variables) {
+        if (template.getId() == null) {
+            promptRepository.replaceVariables(templateId, variables);
+        }
     }
 
     private int nextVersionNo(PromptTemplateId templateId) {

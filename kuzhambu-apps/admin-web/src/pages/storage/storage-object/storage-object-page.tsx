@@ -10,6 +10,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Input, Typography } from "antd";
 import { useMemo, useRef, useState } from "react";
 import type { ChangeEvent, Key } from "react";
+import { useCurrentAccessToken } from "@/auth/hooks/use-current-access-token";
 import { hasPermission } from "@/auth/permission-storage";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
@@ -49,6 +50,7 @@ type StorageObjectStatusFilter = "ALL" | "ACTIVE" | "DELETING" | "DELETED";
 type StorageReferenceStatusFilter = "ALL" | "REFERENCED" | "UNREFERENCED";
 
 interface StorageObjectFilters {
+    originalFilename: string;
     contentType: string;
     objectStatus: StorageObjectStatusFilter;
     referenceStatus: StorageReferenceStatusFilter;
@@ -58,6 +60,7 @@ interface StorageObjectFilters {
 }
 
 const DEFAULT_STORAGE_OBJECT_FILTERS: StorageObjectFilters = {
+    originalFilename: "",
     contentType: "",
     objectStatus: "ALL",
     referenceStatus: "ALL",
@@ -89,7 +92,11 @@ const readFilename = (storage: StorageRecord) => {
     return normalizeSearch(storage.originalFilename) || `对象 ${storage.id}`;
 };
 
-const toStorageContentUrl = (storage: StorageRecord, mode: StorageContentMode) => {
+const toStorageContentUrl = (
+    storage: StorageRecord,
+    mode: StorageContentMode,
+    accessToken: string | null
+) => {
     if (!storage.id) {
         return undefined;
     }
@@ -97,7 +104,8 @@ const toStorageContentUrl = (storage: StorageRecord, mode: StorageContentMode) =
         service.getStorageObjectContentUrl({
             mode,
             storageObjectId: storage.id
-        })
+        }),
+        accessToken
     );
 };
 
@@ -172,6 +180,7 @@ export const StorageObjectPage = () => {
     const { message: messageApi } = App.useApp();
     const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
+    const accessToken = useCurrentAccessToken();
     const canEditStorage = hasPermission("storage:object:edit");
     const [query, setQuery] = useState<StoragePageQuery>({
         pageNo: DEFAULT_PAGE_NO,
@@ -185,6 +194,7 @@ export const StorageObjectPage = () => {
     const uploadAbortControllerRef = useRef<AbortController | null>(null);
     const hasSelectedStorages = selectedRowKeys.length > 0;
     const hasActiveFilters = Boolean(
+        filters.originalFilename.trim() ||
         filters.contentType.trim() ||
         filters.referenceOwnerId.trim() ||
         filters.referenceOwnerType.trim() ||
@@ -277,11 +287,17 @@ export const StorageObjectPage = () => {
 
     const searchStorages = (value: string) => {
         setSearchText(value);
+        setFilters((currentFilters) => ({
+            ...currentFilters,
+            originalFilename: value
+        }));
         updateQuery({ originalFilename: normalizeSearch(value) });
     };
 
     const applyFilters = () => {
+        setSearchText(filters.originalFilename);
         updateQuery({
+            originalFilename: normalizeSearch(filters.originalFilename),
             contentType: normalizeSearch(filters.contentType),
             objectStatus: readStatusFilterValue(filters.objectStatus),
             referenceStatus: readStatusFilterValue(filters.referenceStatus),
@@ -293,7 +309,9 @@ export const StorageObjectPage = () => {
 
     const resetFilters = () => {
         setFilters(DEFAULT_STORAGE_OBJECT_FILTERS);
+        setSearchText("");
         updateQuery({
+            originalFilename: undefined,
             contentType: undefined,
             objectStatus: undefined,
             referenceStatus: undefined,
@@ -445,8 +463,8 @@ export const StorageObjectPage = () => {
             key: "actions",
             options: (storage) => {
                 const filename = readFilename(storage);
-                const previewUrl = toStorageContentUrl(storage, "preview");
-                const downloadUrl = toStorageContentUrl(storage, "download");
+                const previewUrl = toStorageContentUrl(storage, "preview", accessToken);
+                const downloadUrl = toStorageContentUrl(storage, "download", accessToken);
                 return [
                     ...(previewUrl
                         ? [
@@ -505,6 +523,23 @@ export const StorageObjectPage = () => {
                 onSearchChange={searchStorages}
                 filterActive={hasActiveFilters}
                 filterFields={[
+                    {
+                        name: "originalFilename",
+                        label: "文件名",
+                        render: () => (
+                            <Input
+                                allowClear
+                                placeholder="文件名"
+                                value={filters.originalFilename}
+                                onChange={(event) =>
+                                    setFilters((currentFilters) => ({
+                                        ...currentFilters,
+                                        originalFilename: event.target.value
+                                    }))
+                                }
+                            />
+                        )
+                    },
                     {
                         name: "contentType",
                         label: "MIME",

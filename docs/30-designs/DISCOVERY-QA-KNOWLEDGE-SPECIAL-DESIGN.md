@@ -33,9 +33,9 @@ Classics content change -> Discovery Server -> kuzhambu-common-knowledge -> Know
 portal-web/admin-web -> Discovery Server -> kuzhambu-common-knowledge -> FastGPT
 ```
 
-`biz/ai` 的 Discovery `answer_generation` usecase 只服务非正式知识库问答链路，例如查询理解实验、离线评估、后备能力或经设计文档明确切换的独立 AI 编排。该 usecase 不创建、不恢复、不删除 Discovery QA 会话，不负责 provider trace 诊断，也不得替代 `KnowledgeBaseClient.chat()` 成为正式 QA 默认运行时入口。
+`biz/ai` 的 Discovery `answer_generation` capability 只服务非正式知识库问答链路，例如查询理解实验、离线评估、后备能力或经设计文档明确切换的独立 AI 编排。该 capability 不创建、不恢复、不删除 Discovery QA 会话，不负责 provider trace 诊断，也不得替代 `KnowledgeBaseClient.chat()` 成为正式 QA 默认运行时入口。
 
-当未来需要把正式 QA 从 FastGPT Knowledge Base 链路切换到 AI 域 `answer_generation` 时，必须先更新本专项设计、Discovery requirements、AI requirements 和 workers usecase interface，并同步迁移会话、来源、trace、权限过滤和运维诊断口径。
+当未来需要把正式 QA 从 FastGPT Knowledge Base 链路切换到 AI 域 `answer_generation` 时，必须先更新本专项设计、Discovery requirements、AI requirements 和 workers AI interface，并同步迁移会话、来源、trace、权限过滤和运维诊断口径。
 
 ## Knowledge Scope
 

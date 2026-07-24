@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.ai.application.refinement.support;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.thundax.kuzhambu.common.core.exception.BizException;
@@ -16,7 +17,8 @@ class ClassicsAiWorkerUsecaseResolverTest {
         ClassicsAiWorkerUsecaseSpec spec = resolver.resolve("SANCAI_ENTRY", "classics_summary");
         assertNotNull(spec);
         assertEquals("CLASSICS_SANCAI_SUMMARY", spec.operation());
-        assertEquals("/internal/ai/classics/sancai/summary", spec.workerPath());
+        assertNull(spec.workerPath());
+        assertEquals("summary", spec.workerCapability());
     }
 
     @Test
@@ -24,7 +26,7 @@ class ClassicsAiWorkerUsecaseResolverTest {
         ClassicsAiWorkerUsecaseSpec spec = resolver.resolve("SANCAI_ENTRY", "classics_translate_batch_item");
         assertNotNull(spec);
         assertEquals("CLASSICS_SANCAI_TRANSLATE_BATCH_ITEM", spec.operation());
-        assertEquals("/internal/ai/classics/sancai/translate-batch-item", spec.workerPath());
+        assertNull(spec.workerPath());
     }
 
     @Test
@@ -32,7 +34,7 @@ class ClassicsAiWorkerUsecaseResolverTest {
         ClassicsAiWorkerUsecaseSpec spec = resolver.resolve("WANGQI_DOCUMENT", "classics_qa");
         assertNotNull(spec);
         assertEquals("CLASSICS_WANGQI_QA", spec.operation());
-        assertEquals("/internal/ai/classics/wangqi/qa", spec.workerPath());
+        assertNull(spec.workerPath());
     }
 
     @Test
@@ -40,7 +42,7 @@ class ClassicsAiWorkerUsecaseResolverTest {
         ClassicsAiWorkerUsecaseSpec spec = resolver.resolve("MING_CUSTOMS", "classics_tags");
         assertNotNull(spec);
         assertEquals("CLASSICS_MING_CUSTOMS_TAGS", spec.operation());
-        assertEquals("/internal/ai/classics/ming-customs/tags", spec.workerPath());
+        assertNull(spec.workerPath());
     }
 
     @Test
@@ -66,7 +68,8 @@ class ClassicsAiWorkerUsecaseResolverTest {
         ClassicsAiWorkerUsecaseSpec spec = resolver.resolve("SANCAI_ENTRY", "classics_image_describe");
         assertNotNull(spec);
         assertEquals("CLASSICS_SANCAI_IMAGE_ANALYSIS", spec.operation());
-        assertEquals("/internal/ai/classics/sancai/image-analysis", spec.workerPath());
+        assertNull(spec.workerPath());
+        assertEquals("image_analysis", spec.workerCapability());
     }
 
     @Test
@@ -74,7 +77,7 @@ class ClassicsAiWorkerUsecaseResolverTest {
         ClassicsAiWorkerUsecaseSpec spec = resolver.resolve("SANCAI_ENTRY", "classics_image_prompt_fusion");
         assertNotNull(spec);
         assertEquals("CLASSICS_SANCAI_FUSION", spec.operation());
-        assertEquals("/internal/ai/classics/sancai/fusion", spec.workerPath());
+        assertNull(spec.workerPath());
     }
 
     @Test
@@ -82,6 +85,7 @@ class ClassicsAiWorkerUsecaseResolverTest {
         ClassicsAiWorkerUsecaseSpec spec = resolver.resolve("SANCAI_ENTRY", "classics_image_generate");
         assertNotNull(spec);
         assertEquals("CLASSICS_SANCAI_IMAGE_GEN", spec.operation());
-        assertEquals("/internal/ai/classics/sancai/image-gen", spec.workerPath());
+        assertNull(spec.workerPath());
+        assertEquals("image_gen", spec.workerCapability());
     }
 }

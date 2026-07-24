@@ -301,7 +301,7 @@ const appendPromptVersionSql = (lines: string[], prompts: PromptSeed[]) => {
           ]),
           JSON.stringify(
             prompt.variables.map(({ name, required, description }) => ({
-              name,
+              variableName: name,
               required,
               description,
             })),

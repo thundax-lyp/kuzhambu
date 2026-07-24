@@ -115,7 +115,7 @@ AI 负责配置、调用、候选结果、确认、失败反馈和统计；不�
 - AI 生成结果应用后应触发可追溯版本记录。
 - 图片理解人工编辑后的结果不应自动覆盖底层图片分析缓存。
 - 正式 Portal/Admin Discovery QA 运行时不经过 AI 域或 workers，固定由 Discovery 通过 `kuzhambu-common-knowledge` 调用 Knowledge Base provider。
-- AI 域的 Discovery `answer_generation` 只用于非正式知识库问答链路的专项 AI 编排、实验能力、后备能力或明确切换后的独立 usecase，不得作为正式 FastGPT 知识库问答的默认运行时入口。
+- AI 域的 Discovery `answer_generation` 只用于非正式知识库问答链路的专项 AI 编排、实验能力、后备能力或明确切换后的独立 capability，不得作为正式 FastGPT 知识库问答的默认运行时入口。
 - Discovery 问答会话、消息和来源归 Discovery；AI 域只提供专项回答生成能力和调用记录。
 - Knowledge 标签、实体、关系、图谱版本和质量指标归 Knowledge；AI 域只提供抽取候选和调用记录。
 

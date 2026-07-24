@@ -8,6 +8,10 @@ from pydantic import ValidationError
 
 from kuzhambu_workers.ai.graph_registry import GraphRegistry
 from kuzhambu_workers.ai.openai_compatible import iter_chat_completion_chunks
+from kuzhambu_workers.ai.structured_output import (
+    parse_structured_output,
+    requires_structured_output,
+)
 from kuzhambu_workers.core.config import load_settings
 from kuzhambu_workers.core.errors import (
     WorkerError,
@@ -35,12 +39,12 @@ from kuzhambu_workers.streaming.events import (
 )
 from kuzhambu_workers.streaming.sse import encode_sse
 
-router = APIRouter(prefix="/internal/ai", tags=["AI Debug"])
+router = APIRouter(prefix="/internal/ai", tags=["AI"])
 _REGISTRY = GraphRegistry.build_default()
 AiRequestValidator = Callable[[AiInvokeRequest], WorkerErrorPayload | None]
-DEBUG_INTERFACE_NOTICE = (
-    "通用 AI 接口仅用于调试、平台联调和协议验证；真实业务必须使用基于 usecase "
-    "定义的稳定接口，不得把该通用接口作为业务域长期集成入口。"
+AI_INTERFACE_NOTICE = (
+    "统一 AI 执行接口。Java AI 域必须在调用前完成业务类型识别、业务配置选择、"
+    "提示词渲染、模型配置组装、权限、审计和任务台账处理；workers 只执行本次已组装的无状态 AI 请求。"
 )
 
 
@@ -53,8 +57,8 @@ class ParsedAiRequest(NamedTuple):
 @router.post(
     "/invoke",
     response_model=None,
-    summary="Debug AI invoke",
-    description=DEBUG_INTERFACE_NOTICE,
+    summary="AI invoke",
+    description=AI_INTERFACE_NOTICE,
 )
 async def invoke(request: Request) -> JSONResponse:
     return await invoke_ai_request(request)
@@ -63,8 +67,8 @@ async def invoke(request: Request) -> JSONResponse:
 @router.post(
     "/stream",
     response_model=None,
-    summary="Debug AI stream",
-    description=DEBUG_INTERFACE_NOTICE,
+    summary="AI stream",
+    description=AI_INTERFACE_NOTICE,
 )
 async def stream(request: Request) -> StreamingResponse | JSONResponse:
     return await stream_ai_request(request)
@@ -210,7 +214,7 @@ def stream_ai_graph(
                             usage.model_dump(mode="json"),
                         )
                     )
-            result = AiResult(format=_stream_result_format(request), payload="".join(deltas))
+            result = _stream_completed_result(request, "".join(deltas))
             result = _coerce_text_payload(
                 request,
                 {
@@ -261,9 +265,20 @@ def stream_ai_graph(
 
 
 def _stream_result_format(request: AiInvokeRequest) -> ResultFormat:
+    if requires_structured_output(request):
+        return ResultFormat.STRUCTURED
     if request.capability.value in {"image_analysis", "fusion"}:
         return ResultFormat.MARKDOWN
     return ResultFormat.TEXT
+
+
+def _stream_completed_result(request: AiInvokeRequest, content: str) -> AiResult:
+    if requires_structured_output(request):
+        return AiResult(
+            format=ResultFormat.STRUCTURED,
+            payload=parse_structured_output(content, request.capability, request.outputSchema),
+        )
+    return AiResult(format=_stream_result_format(request), payload=content)
 
 
 def _coerce_text_payload(

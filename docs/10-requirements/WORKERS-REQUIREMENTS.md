@@ -67,12 +67,12 @@ Workers 是无状态执行器，负责 AI 编排执行、流式输出转发、�
 
 Workers 对外接口按能力族组织，接口命名应表达执行动作而不是业务写入动作。
 
-AI 执行接口示例：
+AI 执行接口固定为统一执行入口：
 
 - `POST /internal/ai/invoke`
 - `POST /internal/ai/stream`
 
-按能力命名的路径可以作为 worker 内部路由或调试别名存在，但 Java AI 域默认只依赖统一 AI 执行接口。
+Workers 不再暴露按业务或 usecase 命名的 AI 路径。业务类型识别、业务配置选择、提示词模板渲染、模型配置和辅助参数组装均由 Java AI 域完成；Workers 只接收已组装完成的单次无状态 AI 执行请求。
 
 文件和渲染接口示例：
 

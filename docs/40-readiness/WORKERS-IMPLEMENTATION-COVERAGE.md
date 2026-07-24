@@ -3,7 +3,7 @@
 ## Status
 
 - 当前状态：已完成
-- 覆盖范围：AI usecase 路由、graph registry、OpenAI-compatible 调用、SSE final-state、临时 artifact、render worker。
+- 覆盖范围：统一 AI 执行路由、graph registry、OpenAI-compatible 调用、SSE final-state、临时 artifact、render worker。
 - 真相源：`docs/10-requirements/WORKERS-REQUIREMENTS.md`、`docs/20-interfaces/WORKERS-AI-INTERFACE.md`、`docs/20-interfaces/WORKERS-RENDER-INTERFACE.md`、本文件。
 
 ## Scope Boundary
@@ -12,7 +12,7 @@
 
 ## Completion Summary
 
-- Classics、Discovery、Knowledge、Platform 的 AI usecase 已注册并可通过 `GraphRegistry.invoke` 调用。
+- Classics、Discovery、Knowledge、Platform 的 AI capability 已注册并可通过统一 AI 执行路由调用。
 - Workers AI graph 已切换为真实 OpenAI-compatible `/chat/completions` 调用。
 - 同步响应和 SSE `completed/error` 已统一输出 `failureStage`、`fallbackUsed`、`artifactReference`。
 - 结构化 JSON 输出、Knowledge payload 归一、provider usage、`latencyMs` 和模型错误归一化已完成。
@@ -24,7 +24,7 @@
 ## Open Items
 
 - 无当前 worker 阻塞项。
-- 新增 Java 业务 usecase 时必须同步补 Workers registry、路由测试和对应业务域 coverage。
+- 新增 Java 业务 AI 能力时必须同步补 AI 业务配置、提示词、模型配置、Java 调用入口、候选应用方和 readiness 矩阵；workers 只有在 capability 或统一协议变化时才需要更新。
 
 ## Validation Evidence
 

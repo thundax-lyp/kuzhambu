@@ -6,7 +6,7 @@ from time import time
 
 from kuzhambu_workers.core.config import WorkerSettings
 from kuzhambu_workers.core.errors import WorkerError, WorkerErrorType
-from kuzhambu_workers.core.service_paths import AI_USECASE_PATHS, OPENAI_COMPATIBLE_PATHS
+from kuzhambu_workers.core.service_paths import OPENAI_COMPATIBLE_PATHS
 
 SERVICE_HEADER = "x-kuzhambu-service"
 REQUEST_ID_HEADER = "x-kuzhambu-request-id"
@@ -24,7 +24,6 @@ SERVICE_PATHS = {
     "kuzhambu-ai": {
         "/internal/ai/invoke",
         "/internal/ai/stream",
-        *AI_USECASE_PATHS,
         *OPENAI_COMPATIBLE_PATHS,
     },
     "kuzhambu-classics": {

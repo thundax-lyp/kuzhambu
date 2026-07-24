@@ -1,7 +1,7 @@
 {
-  "templateId": 930117,
-  "promptVersionId": 940117,
-  "variableIdStart": 963101,
+  "templateId": 930116,
+  "promptVersionId": 940116,
+  "variableIdStart": 961701,
   "capability": "prompt_suggestion",
   "suite": "platform-default-v1",
   "name": "提示词优化建议提示词",
@@ -11,36 +11,32 @@
   "current": true,
   "variables": [
     {
-      "name": "targetCapability",
+      "name": "template",
       "required": true,
-      "description": "目标业务能力",
-      "priority": 963101
+      "description": "当前提示词模板",
+      "priority": 961701
     },
     {
-      "name": "currentPrompt",
-      "required": true,
-      "description": "当前提示词内容",
-      "priority": 963102
-    },
-    {
-      "name": "variables",
+      "name": "changeGoal",
       "required": false,
-      "description": "变量定义",
-      "priority": 963103
+      "description": "优化目标",
+      "priority": 961702
     },
     {
-      "name": "failureSamples",
+      "name": "knownIssues",
       "required": false,
-      "description": "失败样例或质量问题",
-      "priority": 963104
+      "description": "已知问题",
+      "priority": 961703
     }
   ],
   "outputSchema": {
     "type": "object",
     "properties": {
-      "suggestions": { "type": "array", "items": { "type": "object" } }
+      "suggestedTemplate": { "type": "string" },
+      "changeSummary": { "type": "string" },
+      "risks": { "type": "array", "items": { "type": "string" } }
     },
-    "required": ["suggestions"]
+    "required": ["suggestedTemplate", "changeSummary"]
   },
   "changeSummary": "Initial platform default prompt suggestion prompt."
 }

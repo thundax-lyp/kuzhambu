@@ -1,23 +1,20 @@
-抽取范围：{{scope}}
+来源标题：{{sourceTitle}}
+相关条目：
+{{entryRefs}}
 
-内容片段：
-{{documents}}
+来源文本：
+{{sourceText}}
 
-请返回 JSON：
+请生成知识图谱候选，返回 JSON：
 {
-  "nodes": [
-    {
-      "name": "实体名称",
-      "type": "实体类型",
-      "evidence": "文本证据"
-    }
+  "entities": [
+    { "name": "实体名", "entityType": "实体类型", "description": "说明" }
   ],
-  "edges": [
-    {
-      "source": "源实体",
-      "relation": "关系",
-      "target": "目标实体",
-      "evidence": "文本证据"
-    }
-  ]
+  "relations": [
+    { "sourceName": "来源实体", "targetName": "目标实体", "relationType": "关系类型", "evidence": "证据" }
+  ],
+  "entryRefs": [
+    { "contentType": "内容类型", "contentId": "内容ID", "title": "标题" }
+  ],
+  "warnings": []
 }

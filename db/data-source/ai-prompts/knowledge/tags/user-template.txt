@@ -1,0 +1,11 @@
+来源标题：{{sourceTitle}}
+最大标签数量：{{maxTags}}
+
+来源文本：
+{{sourceText}}
+
+请抽取知识标签候选，返回 JSON：
+{
+  "tags": ["标签1", "标签2", "标签3"],
+  "warnings": []
+}

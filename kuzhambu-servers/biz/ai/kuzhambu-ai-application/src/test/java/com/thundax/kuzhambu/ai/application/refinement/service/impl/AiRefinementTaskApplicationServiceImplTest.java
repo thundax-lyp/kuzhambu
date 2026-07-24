@@ -11,6 +11,7 @@ import com.thundax.kuzhambu.ai.application.refinement.service.AiRefinementApplic
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.refinement.model.entity.AiRefinementTask;
 import com.thundax.kuzhambu.ai.domain.refinement.repository.AiRefinementTaskRepository;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -142,6 +143,155 @@ class AiRefinementTaskApplicationServiceImplTest {
     }
 
     @Test
+    void addTaskShouldAcceptBusinessPayloadAndPersistResolvedPromptConfig() {
+        RecordingTaskRepository repository = new RecordingTaskRepository();
+        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
+                101L,
+                201L,
+                "SUCCEEDED",
+                AiBusinessCapability.CLASSICS_SUMMARY.value(),
+                null,
+                "TEXT",
+                "摘要",
+                null,
+                null));
+        refinementService.setResolvedPromptConfig("PRIMARY", 2001L, "gpt-4o", 940106L);
+        AiRefinementTaskApplicationServiceImpl service =
+                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
+        AiRefinementRequestCommand command = command(AiBusinessCapability.CLASSICS_SUMMARY.value());
+        command.setServiceRole(null);
+        command.setModelId(null);
+        command.setModelName(null);
+        command.setPromptVersionId(null);
+        command.setPromptMessagesJson(null);
+
+        AiRefinementTask accepted = service.addTask(command);
+        AiRefinementTask completed = awaitTerminal(repository, accepted.getTaskId());
+
+        assertEquals("PRIMARY", accepted.getServiceRole());
+        assertEquals(2001L, accepted.getModelId());
+        assertEquals("gpt-4o", accepted.getModelName());
+        assertEquals(940106L, accepted.getPromptVersionId());
+        assertEquals("SUCCEEDED", completed.getStatus());
+        assertEquals("PRIMARY", completed.getServiceRole());
+        assertEquals(2001L, completed.getModelId());
+        assertEquals("gpt-4o", completed.getModelName());
+        assertEquals(940106L, completed.getPromptVersionId());
+    }
+
+    @Test
+    void addTaskShouldSnapshotResolvedPromptConfigBeforeTransactionCommit() {
+        RecordingTaskRepository repository = new RecordingTaskRepository();
+        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
+                101L,
+                201L,
+                "SUCCEEDED",
+                AiBusinessCapability.CLASSICS_SUMMARY.value(),
+                null,
+                "TEXT",
+                "摘要",
+                null,
+                null));
+        refinementService.setResolvedPromptConfig("PRIMARY", 2001L, "gpt-4o", 940106L);
+        AiRefinementTaskApplicationServiceImpl service =
+                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
+        AiRefinementRequestCommand command = command(AiBusinessCapability.CLASSICS_SUMMARY.value());
+        command.setServiceRole(null);
+        command.setModelId(null);
+        command.setModelName(null);
+        command.setPromptVersionId(null);
+        command.setPromptMessagesJson(null);
+        command.setPromptVariablesJson(null);
+
+        TransactionSynchronizationManager.initSynchronization();
+        AiRefinementTask accepted;
+        try {
+            accepted = service.addTask(command);
+            AiRefinementTask pending = repository.get(accepted.getTaskId());
+            assertEquals("PENDING", pending.getStatus());
+            assertEquals("PRIMARY", pending.getServiceRole());
+            assertEquals(2001L, pending.getModelId());
+            assertEquals("gpt-4o", pending.getModelName());
+            assertEquals(940106L, pending.getPromptVersionId());
+
+            refinementService.setResolvedPromptConfig("SECONDARY", 3001L, "gpt-5", 950106L);
+            TransactionSynchronizationManager.getSynchronizations()
+                    .forEach(synchronization -> synchronization.afterCommit());
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+
+        AiRefinementTask completed = awaitTerminal(repository, accepted.getTaskId());
+        assertEquals("SUCCEEDED", completed.getStatus());
+        assertEquals("PRIMARY", completed.getServiceRole());
+        assertEquals(2001L, completed.getModelId());
+        assertEquals("gpt-4o", completed.getModelName());
+        assertEquals(940106L, completed.getPromptVersionId());
+    }
+
+    @Test
+    void addTaskShouldRevalidateSnapshotBeforeDispatch() {
+        RecordingTaskRepository repository = new RecordingTaskRepository();
+        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
+                101L,
+                201L,
+                "SUCCEEDED",
+                AiBusinessCapability.CLASSICS_SUMMARY.value(),
+                null,
+                "TEXT",
+                "摘要",
+                null,
+                null));
+        refinementService.setResolvedPromptConfig("PRIMARY", 2001L, "gpt-4o", 940106L);
+        AiRefinementTaskApplicationServiceImpl service =
+                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
+        AiRefinementRequestCommand command = command(AiBusinessCapability.CLASSICS_SUMMARY.value());
+        command.setPromptVersionId(null);
+        command.setPromptMessagesJson(null);
+        command.setPromptVariablesJson(null);
+
+        AiRefinementTask accepted = service.addTask(command);
+        AiRefinementTask completed = awaitTerminal(repository, accepted.getTaskId());
+
+        assertEquals(1, refinementService.validateSnapshotInvokeConfigCount);
+        assertEquals("SUCCEEDED", completed.getStatus());
+    }
+
+    @Test
+    void addTaskShouldFailWhenSnapshotPromptTemplateIsDisabledBeforeDispatch() {
+        RecordingTaskRepository repository = new RecordingTaskRepository();
+        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
+                101L,
+                201L,
+                "SUCCEEDED",
+                AiBusinessCapability.CLASSICS_SUMMARY.value(),
+                null,
+                "TEXT",
+                "摘要",
+                null,
+                null));
+        refinementService.setResolvedPromptConfig("PRIMARY", 2001L, "gpt-4o", 940106L);
+        refinementService.setSnapshotValidationException(
+                new BizException("AI business config prompt template is disabled or mismatched: 930106"));
+        AiRefinementTaskApplicationServiceImpl service =
+                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
+        AiRefinementRequestCommand command = command(AiBusinessCapability.CLASSICS_SUMMARY.value());
+        command.setPromptVersionId(null);
+        command.setPromptMessagesJson(null);
+        command.setPromptVariablesJson(null);
+
+        AiRefinementTask accepted = service.addTask(command);
+        AiRefinementTask completed = awaitTerminal(repository, accepted.getTaskId());
+
+        assertEquals(1, refinementService.validateSnapshotInvokeConfigCount);
+        assertEquals("FAILED", completed.getStatus());
+        assertEquals("WORKER_REQUEST", completed.getFailureStage());
+        assertEquals("INTERNAL_FAILURE", completed.getErrorType());
+        assertEquals(
+                "AI business config prompt template is disabled or mismatched: 930106", completed.getErrorMessage());
+    }
+
+    @Test
     void conditionalUpdateShouldKeepCancelledWhenWorkerCompletionArrivesLate() {
         RecordingTaskRepository repository = new RecordingTaskRepository();
         AiRefinementTask task = task(AiBusinessCapability.CLASSICS_TRANSLATE.value(), "RUNNING");
@@ -255,54 +405,105 @@ class AiRefinementTaskApplicationServiceImplTest {
     private static class StubRefinementApplicationService implements AiRefinementApplicationService {
 
         private final AiCandidateResult result;
+        private String resolvedServiceRole;
+        private Long resolvedModelId;
+        private String resolvedModelName;
+        private Long resolvedPromptVersionId;
+        private RuntimeException snapshotValidationException;
+        private int validateSnapshotInvokeConfigCount;
 
         StubRefinementApplicationService(AiCandidateResult result) {
             this.result = result;
         }
 
+        void setResolvedPromptConfig(String serviceRole, Long modelId, String modelName, Long promptVersionId) {
+            this.resolvedServiceRole = serviceRole;
+            this.resolvedModelId = modelId;
+            this.resolvedModelName = modelName;
+            this.resolvedPromptVersionId = promptVersionId;
+        }
+
+        void setSnapshotValidationException(RuntimeException exception) {
+            this.snapshotValidationException = exception;
+        }
+
+        @Override
+        public void snapshotInvokeConfig(AiRefinementRequestCommand command) {
+            applyResolvedPromptConfig(command);
+        }
+
+        @Override
+        public void validateSnapshotInvokeConfig(AiRefinementRequestCommand command) {
+            validateSnapshotInvokeConfigCount++;
+            if (snapshotValidationException != null) {
+                throw snapshotValidationException;
+            }
+        }
+
         @Override
         public AiCandidateResult translate(AiRefinementRequestCommand command) {
+            applyResolvedPromptConfig(command);
             return result;
         }
 
         @Override
         public AiCandidateResult summarize(AiRefinementRequestCommand command) {
+            applyResolvedPromptConfig(command);
             return result;
         }
 
         @Override
         public AiCandidateResult generateTags(AiRefinementRequestCommand command) {
+            applyResolvedPromptConfig(command);
             return result;
         }
 
         @Override
         public AiCandidateResult generateQa(AiRefinementRequestCommand command) {
+            applyResolvedPromptConfig(command);
             return result;
         }
 
         @Override
         public AiCandidateResult analyzeImage(AiRefinementRequestCommand command) {
+            applyResolvedPromptConfig(command);
             return result;
         }
 
         @Override
         public AiCandidateResult fuseVisualContext(AiRefinementRequestCommand command) {
+            applyResolvedPromptConfig(command);
             return result;
         }
 
         @Override
         public AiCandidateResult generateImage(AiRefinementRequestCommand command) {
+            applyResolvedPromptConfig(command);
             return result;
         }
 
         @Override
         public AiCandidateResult describeVisual(AiRefinementRequestCommand command) {
+            applyResolvedPromptConfig(command);
             return result;
         }
 
         @Override
         public AiCandidateResult splitEntry(AiRefinementRequestCommand command) {
+            applyResolvedPromptConfig(command);
             return result;
+        }
+
+        private void applyResolvedPromptConfig(AiRefinementRequestCommand command) {
+            if (resolvedPromptVersionId == null || command.getPromptVersionId() != null) {
+                return;
+            }
+            command.setServiceRole(resolvedServiceRole);
+            command.setModelId(resolvedModelId);
+            command.setModelName(resolvedModelName);
+            command.setPromptVersionId(resolvedPromptVersionId);
+            command.setPromptMessagesJson("[{\"role\":\"user\",\"content\":\"resolved\"}]");
+            command.setPromptVariablesJson("{}");
         }
     }
 

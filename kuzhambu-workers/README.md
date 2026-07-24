@@ -60,10 +60,6 @@ PDF 渲染通过 Browser Pool 复用 Chromium。每次渲染创建独立 context
 - `GET /internal/capabilities`
 - `POST /internal/ai/invoke`
 - `POST /internal/ai/stream`
-- `POST /internal/ai/classics/*`
-- `POST /internal/ai/discovery/*`
-- `POST /internal/ai/knowledge/*`
-- `POST /internal/ai/platform/*`
 - `POST /internal/render/classics-export`
 - `POST /internal/render/operations-report`
 
@@ -71,15 +67,13 @@ PDF 渲染通过 Browser Pool 复用 Chromium。每次渲染创建独立 context
 
 OpenAPI 和 Swagger UI 只暴露在 `/internal/*` 路径下，用于内网开发、联调和接口排查。
 
-`/internal/ai/invoke` 和 `/internal/ai/stream` 是通用调试接口，仅用于平台联调和协议验证。真实业务应接入基于 usecase 定义的稳定接口。
-
-AI usecase 路径只允许 `kuzhambu-ai` 服务身份调用；Classics、Discovery、Knowledge 等业务域不得绕过 AI 域直接访问 workers AI 接口。完整 usecase path、capability 和 stream 约束见 `docs/20-interfaces/WORKERS-AI-USECASE-INTERFACE.md`。
+`/internal/ai/invoke` 和 `/internal/ai/stream` 是 Java AI 域调用 workers 的统一执行入口。Workers 不暴露 `/internal/ai/classics/*`、`/internal/ai/discovery/*`、`/internal/ai/knowledge/*` 或 `/internal/ai/platform/*` 等业务专项 AI 路径；业务类型识别、业务配置选择、提示词模板渲染、模型配置、辅助参数、权限、审计和任务台账由 Java AI 域完成。
 
 ## Discovery QA Boundary
 
 Workers 不承载正式 Discovery QA 问答运行时，不提供 Discovery QA `chat/completions`、`question/ask` 或知识同步 task。
 
-`/internal/ai/discovery/*` 仅是 AI 域调用的模型能力 usecase，用于 query understanding、query rewrite 和 answer generation 等 AI 计算。正式 Discovery QA 会话、权限、知识库同步、来源回显和 provider trace 由 Java Discovery 服务负责。
+Discovery 相关 AI 能力只能通过 Java AI 域组装后调用统一 workers AI 接口。正式 Discovery QA 会话、权限、知识库同步、来源回显和 provider trace 由 Java Discovery 服务负责。
 
 ## Local Development
 
@@ -94,7 +88,6 @@ python3.10 -m venv .venv
 - `docs/10-requirements/WORKERS-REQUIREMENTS.md`
 - `docs/00-governance/WORKERS-RULES.md`
 - `docs/20-interfaces/WORKERS-AI-INTERFACE.md`
-- `docs/20-interfaces/WORKERS-AI-USECASE-INTERFACE.md`
 - `docs/20-interfaces/WORKERS-RENDER-INTERFACE.md`
 - `docs/30-designs/WORKERS-DESIGN.md`
 

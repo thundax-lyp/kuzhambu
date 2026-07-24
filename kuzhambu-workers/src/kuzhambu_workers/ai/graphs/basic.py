@@ -50,7 +50,9 @@ def _execute(state: BasicGraphState) -> BasicGraphState:
     result_format = _result_format(request)
     payload: str | dict[str, Any] | list[Any] = model_result.content
     if result_format == ResultFormat.STRUCTURED:
-        payload = parse_structured_output(model_result.content, request.capability)
+        payload = parse_structured_output(
+            model_result.content, request.capability, request.outputSchema
+        )
 
     return {
         **state,

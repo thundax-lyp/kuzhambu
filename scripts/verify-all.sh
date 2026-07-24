@@ -21,7 +21,7 @@ required_files=(
     "docs/00-governance/SERVERS-ARCHITECTURE.md"
     "docs/00-governance/SERVERS-ARCHITECTURE-RULES.md"
     "docs/00-governance/TODO-RULES.md"
-    "docs/40-readiness/PR-WORKFLOW.md"
+    "docs/00-governance/PR-RULES.md"
     ".github/pull_request_template.md"
     ".github/workflows/pr-verify.yml"
 )
@@ -86,7 +86,12 @@ node -e "JSON.parse(require('fs').readFileSync('${ROOT_DIR}/kuzhambu-apps/admin-
 node -e "JSON.parse(require('fs').readFileSync('${ROOT_DIR}/kuzhambu-apps/portal-web/package.json', 'utf8'))"
 
 echo "Verify Python worker manifest"
-python3 - <<PY
+WORKER_PYTHON="${ROOT_DIR}/kuzhambu-workers/.venv/bin/python"
+if [[ ! -x "${WORKER_PYTHON}" ]]; then
+    WORKER_PYTHON="python3"
+fi
+
+"${WORKER_PYTHON}" - <<PY
 import pathlib
 import sys
 

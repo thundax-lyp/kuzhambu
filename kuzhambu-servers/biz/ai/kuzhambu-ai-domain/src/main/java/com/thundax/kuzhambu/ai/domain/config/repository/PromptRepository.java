@@ -22,6 +22,8 @@ public interface PromptRepository {
 
     PromptVersion getCurrentVersion(PromptTemplateId templateId);
 
+    PromptVersion getVersion(PromptVersionId versionId);
+
     List<PromptVersion> listVersions(PromptTemplateId templateId);
 
     PromptVersionId insertVersion(PromptVersion version);

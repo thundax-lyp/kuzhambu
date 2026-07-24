@@ -1,11 +1,11 @@
 {
-  "templateId": 930112,
-  "promptVersionId": 940112,
+  "templateId": 930111,
+  "promptVersionId": 940111,
   "variableIdStart": 961201,
   "capability": "classics_split",
   "suite": "classics-default-v1",
   "name": "古籍条目拆分提示词",
-  "description": "古籍长条目拆分默认提示词。",
+  "description": "古籍条目拆分默认提示词。",
   "enabled": true,
   "versionNo": 1,
   "current": true,
@@ -13,45 +13,45 @@
     {
       "name": "title",
       "required": false,
-      "description": "当前条目标题",
+      "description": "父条目标题",
       "priority": 961201
-    },
-    {
-      "name": "categoryPath",
-      "required": false,
-      "description": "门类、卷册或目标归属",
-      "priority": 961202
     },
     {
       "name": "sourceText",
       "required": true,
-      "description": "待拆分原文或译文",
+      "description": "待拆分的原文或正文",
+      "priority": 961202
+    },
+    {
+      "name": "translationText",
+      "required": false,
+      "description": "已有译文",
       "priority": 961203
     },
     {
       "name": "splitHint",
       "required": false,
-      "description": "拆分粒度、数量或归属提示",
+      "description": "拆分粒度或人工提示",
       "priority": 961204
     }
   ],
   "outputSchema": {
     "type": "object",
     "properties": {
-      "items": {
+      "entries": {
         "type": "array",
         "items": {
           "type": "object",
           "properties": {
             "title": { "type": "string" },
-            "content": { "type": "string" },
-            "reason": { "type": "string" }
+            "originalText": { "type": "string" },
+            "translationText": { "type": "string" }
           },
-          "required": ["title", "content"]
+          "required": ["title", "originalText"]
         }
       }
     },
-    "required": ["items"]
+    "required": ["entries"]
   },
-  "changeSummary": "Initial classics default entry split prompt."
+  "changeSummary": "Initial classics default split prompt."
 }

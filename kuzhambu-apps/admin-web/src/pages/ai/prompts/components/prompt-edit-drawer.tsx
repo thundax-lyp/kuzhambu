@@ -434,9 +434,10 @@ export const PromptEditDrawer = ({
                 EMPTY_JSON_ARRAY
             ),
             variablesSnapshotJson:
-                variablesQuery.data && variablesQuery.data.length > 0
+                currentVersion?.variablesSnapshotJson ||
+                (variablesQuery.data && variablesQuery.data.length > 0
                     ? variablesToJson(variablesQuery.data)
-                    : formatJsonText(currentVersion?.variablesSnapshotJson, EMPTY_JSON_ARRAY),
+                    : formatJsonText(currentVersion?.variablesSnapshotJson, EMPTY_JSON_ARRAY)),
             outputSchemaJson,
             outputStructure: readPromptOutputStructure(outputSchemaJson),
             changeSummary: ""
@@ -494,12 +495,13 @@ export const PromptEditDrawer = ({
         const variables = overrideVersion?.variablesSnapshotJson
             ? toVariableRows(overrideVersion.variablesSnapshotJson)
             : variableRows;
+        const effectiveCapability = template?.capability || values.capability;
         const placeholderNames = extractPromptVariableNames(messageTemplatesJson);
         const submittedVariableNames = Array.from(
             new Set([...placeholderNames, ...variables.map((variable) => variable.variableName)])
         );
         const unsupportedVariableNames = findUnsupportedPromptVariableNames(
-            values.capability,
+            effectiveCapability,
             submittedVariableNames
         );
         if (unsupportedVariableNames.length > 0) {
@@ -510,7 +512,7 @@ export const PromptEditDrawer = ({
             overrideVersion?.variablesSnapshotJson || variablesToJson(variableRows);
         await changeMutation.mutateAsync({
             id: values.id || null,
-            capability: values.capability,
+            capability: effectiveCapability,
             name: values.name,
             description: values.description || null,
             enabled: enabledFromStatus(values.status),
@@ -703,6 +705,7 @@ export const PromptEditDrawer = ({
                             >
                                 <KuzhambuSelect
                                     aria-label="提示词能力"
+                                    disabled={Boolean(template)}
                                     options={capabilityOptions}
                                 />
                             </Form.Item>

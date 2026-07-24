@@ -7,7 +7,7 @@ import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
-import com.thundax.kuzhambu.ai.application.invocation.support.AiWorkerModelConfigResolver;
+import com.thundax.kuzhambu.ai.application.invocation.support.AiBusinessInvokeConfigResolver;
 import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiRequest;
 import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiResult;
 import com.thundax.kuzhambu.ai.domain.discovery.service.DiscoveryAiDomainService;
@@ -22,19 +22,20 @@ import org.springframework.stereotype.Service;
 public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplicationService, DiscoveryAiDomainService {
 
     private static final String SCOPE_DISCOVERY = "discovery";
+    private static final String CONTENT_TYPE_DISCOVERY_QUERY = "DISCOVERY_QUERY";
 
     private final AiWorkerInvocationApplicationService invocationApplicationService;
     private final DiscoveryAiWorkerUsecaseResolver resolver;
-    private final AiWorkerModelConfigResolver modelConfigResolver;
+    private final AiBusinessInvokeConfigResolver businessInvokeConfigResolver;
 
     @Autowired
     public DiscoveryAiApplicationServiceImpl(
             AiWorkerInvocationApplicationService invocationApplicationService,
             DiscoveryAiWorkerUsecaseResolver resolver,
-            AiWorkerModelConfigResolver modelConfigResolver) {
+            AiBusinessInvokeConfigResolver businessInvokeConfigResolver) {
         this.invocationApplicationService = invocationApplicationService;
         this.resolver = resolver;
-        this.modelConfigResolver = modelConfigResolver;
+        this.businessInvokeConfigResolver = businessInvokeConfigResolver;
     }
 
     @Override
@@ -67,7 +68,7 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
         validateRequest(request);
         DiscoveryAiWorkerUsecaseSpec spec = resolver.resolve(usecase);
         AiInvokeCommand command = toInvokeCommand(request, spec);
-        enrichModelConfig(command);
+        enrichBusinessInvokeConfig(command);
         AiInvokeResult result = spec.stream()
                 ? invocationApplicationService.stream(command, eventConsumer == null ? event -> {} : eventConsumer)
                 : invocationApplicationService.invoke(command);
@@ -78,8 +79,10 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope(SCOPE_DISCOVERY);
         command.setCapability(spec.capability());
+        command.setWorkerCapability(spec.workerCapability());
         command.setOperation(spec.operation());
         command.setWorkerPath(spec.workerPath());
+        command.setContentType(CONTENT_TYPE_DISCOVERY_QUERY);
         command.setServiceId(request.getServiceId());
         command.setServiceRole(request.getServiceRole());
         command.setModelId(request.getModelId());
@@ -99,28 +102,17 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
         return command;
     }
 
-    private void enrichModelConfig(AiInvokeCommand command) {
-        if (modelConfigResolver == null || command == null) {
+    private void enrichBusinessInvokeConfig(AiInvokeCommand command) {
+        if (businessInvokeConfigResolver == null || command == null) {
             return;
         }
-        if (isBlank(command.getServiceRole()) && command.getServiceId() == null) {
-            return;
-        }
-        var resolved = modelConfigResolver.resolve(command);
-        command.setServiceRole(resolved.serviceRole());
-        command.setModelName(resolved.modelName());
+        businessInvokeConfigResolver.resolve(command);
     }
 
     private void validateRequest(DiscoveryAiRequest request) {
         if (request == null
-                || request.getServiceId() == null
-                || isBlank(request.getServiceRole())
-                || request.getModelId() == null
-                || isBlank(request.getModelName())
-                || request.getPromptVersionId() == null
                 || isBlank(request.getRequestId())
                 || isBlank(request.getTraceId())
-                || isBlank(request.getPromptMessagesJson())
                 || isBlank(request.getInputPayloadJson())) {
             throw new BizException("Discovery AI request is incomplete");
         }

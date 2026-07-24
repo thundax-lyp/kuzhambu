@@ -70,47 +70,8 @@ class WorkerAiHttpClientTest {
                 new WorkerAiSignatureSupport()
                         .sign("POST", "/internal/ai/invoke", timestamp, "req-1", capturedBody.get(), "worker-secret"),
                 captured.get().getRequestHeaders().getFirst("X-Kuzhambu-Signature"));
-    }
-
-    @Test
-    void invokeShouldSendSignedWorkerRequestWithWorkerPath() throws IOException {
-        AtomicReference<HttpExchange> captured = new AtomicReference<>();
-        AtomicReference<String> capturedBody = new AtomicReference<>();
-        String usecasePath = "/internal/ai/classics/sancai/summary";
-        startServer(usecasePath, exchange -> {
-            captured.set(exchange);
-            capturedBody.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
-            respond(
-                    exchange,
-                    200,
-                    """
-                            {
-                              "requestId":"req-1",
-                              "traceId":"trace-1",
-                              "status":"SUCCEEDED",
-                              "capability":"summary",
-                              "result":{"format":"text","payload":"done"},
-                              "usage":{"latencyMs":12,"inputTokens":3,"outputTokens":4,"costAmount":"0.01"}
-                            }
-                            """);
-        });
-        WorkerAiHttpClient client = new WorkerAiHttpClient(properties(), new WorkerAiSignatureSupport(), null);
-        AiInvokeCommand command = command();
-        command.setWorkerPath(usecasePath);
-
-        AiInvokeResult result = client.invoke(command);
-
-        assertTrue(result.isSucceeded());
-        assertEquals("done", result.getResultPayload());
-        assertEquals(usecasePath, captured.get().getRequestURI().getPath());
-        assertEquals("kuzhambu-ai-test", captured.get().getRequestHeaders().getFirst("X-Kuzhambu-Service"));
-        assertEquals("req-1", captured.get().getRequestHeaders().getFirst("X-Kuzhambu-Request-Id"));
-        String timestamp = captured.get().getRequestHeaders().getFirst("X-Kuzhambu-Timestamp");
-        assertNotNull(timestamp);
-        assertEquals(
-                new WorkerAiSignatureSupport()
-                        .sign("POST", usecasePath, timestamp, "req-1", capturedBody.get(), "worker-secret"),
-                captured.get().getRequestHeaders().getFirst("X-Kuzhambu-Signature"));
+        assertTrue(capturedBody.get().contains("\"capability\":\"summary\""));
+        assertTrue(capturedBody.get().contains("\"contentType\":\"entry\""));
     }
 
     @Test
@@ -126,34 +87,31 @@ class WorkerAiHttpClientTest {
     }
 
     @Test
-    void streamShouldUseCanonicalWorkerPathForInvocation() throws IOException {
+    void streamShouldUseUnifiedWorkerPathForInvocation() throws IOException {
         AtomicReference<HttpExchange> captured = new AtomicReference<>();
         AtomicReference<String> capturedBody = new AtomicReference<>();
         AtomicReference<AiStreamEventResult> capturedEvent = new AtomicReference<>();
-        String usecasePath = "/internal/ai/classics/sancai/summary";
-        startServer(usecasePath, exchange -> {
+        startServer("/internal/ai/stream", exchange -> {
             captured.set(exchange);
             capturedBody.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
             respond(exchange, 200, STREAM_COMPLETED_EVENT);
         });
         WorkerAiHttpClient client = new WorkerAiHttpClient(properties(), new WorkerAiSignatureSupport(), null);
-        AiInvokeCommand command = command();
-        command.setWorkerPath(usecasePath);
 
-        client.stream(command, capturedEvent::set);
+        client.stream(command(), capturedEvent::set);
 
-        assertEquals(usecasePath, captured.get().getRequestURI().getPath());
+        assertEquals("/internal/ai/stream", captured.get().getRequestURI().getPath());
         assertEquals("completed", capturedEvent.get().getEventType());
         String timestamp = captured.get().getRequestHeaders().getFirst("X-Kuzhambu-Timestamp");
         assertNotNull(timestamp);
         assertEquals(
                 new WorkerAiSignatureSupport()
-                        .sign("POST", usecasePath, timestamp, "req-1", capturedBody.get(), "worker-secret"),
+                        .sign("POST", "/internal/ai/stream", timestamp, "req-1", capturedBody.get(), "worker-secret"),
                 captured.get().getRequestHeaders().getFirst("X-Kuzhambu-Signature"));
     }
 
     @Test
-    void streamShouldFallbackToLegacyStreamPath() throws IOException {
+    void streamShouldUseUnifiedStreamPath() throws IOException {
         AtomicReference<HttpExchange> captured = new AtomicReference<>();
         startServer("/internal/ai/stream", exchange -> {
             captured.set(exchange);
@@ -318,7 +276,8 @@ class WorkerAiHttpClientTest {
     private AiInvokeCommand command() {
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope("classics");
-        command.setCapability("translate");
+        command.setCapability("classics_summary");
+        command.setWorkerCapability("summary");
         command.setOperation("translate");
         command.setContentType("entry");
         command.setContentId(10L);

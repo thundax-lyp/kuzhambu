@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from kuzhambu_workers.schemas.common import UsageSummary, WorkerErrorPayload, WorkerStatus
 
@@ -84,6 +84,18 @@ class AiInput(BaseModel):
 class AiOutputSchema(BaseModel):
     type: str
     schema_: dict[str, Any] | None = Field(default=None, alias="schema")
+
+    @model_validator(mode="before")
+    @classmethod
+    def wrap_flat_schema(cls, data: Any) -> Any:
+        if not isinstance(data, dict) or data.get("schema") is not None:
+            return data
+        schema = {key: value for key, value in data.items() if key in JSON_SCHEMA_KEYS}
+        if len(schema) <= 1:
+            return data
+        wrapped = dict(data)
+        wrapped["schema"] = schema
+        return wrapped
 
 
 class AiOptions(BaseModel):
@@ -189,3 +201,17 @@ class AiInvokeResponse(BaseModel):
     error: WorkerErrorPayload | None = None
     errorType: str | None = None
     errorMessage: str | None = None
+
+
+JSON_SCHEMA_KEYS = frozenset(
+    {
+        "type",
+        "properties",
+        "required",
+        "items",
+        "enum",
+        "minItems",
+        "maxItems",
+        "additionalProperties",
+    }
+)

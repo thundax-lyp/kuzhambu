@@ -82,7 +82,7 @@ public final class AiRefinementRequests {
         @JsonProperty(value = "traceId")
         private String traceId;
 
-        @NotBlank
+        @Schema(description = "兼容字段；默认由后端按 capability 的业务配置和 inputPayloadJson 渲染生成")
         @JsonProperty(value = "promptMessagesJson")
         private String promptMessagesJson;
 

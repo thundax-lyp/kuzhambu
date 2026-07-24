@@ -49,7 +49,6 @@ select = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"src/kuzhambu_workers/ai/usecase_registry.py" = ["RUF001"]
 "src/kuzhambu_workers/api/*_routes.py" = ["RUF001"]
 "src/kuzhambu_workers/core/security.py" = ["RUF001"]
 

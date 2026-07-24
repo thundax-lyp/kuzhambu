@@ -16,6 +16,7 @@ public class AiInvokeCommand {
     private Long batchId;
     private String scope;
     private String capability;
+    private String workerCapability;
     private String operation;
     private String workerPath;
     private String contentType;

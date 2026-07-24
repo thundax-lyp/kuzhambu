@@ -25,7 +25,7 @@ Discovery 拥有搜索查询、检索统计事件、问答会话、问答消息�
 - Search 内容源只接 `SANCAI_ENTRY`、`WANGQI_DOCUMENT`、`MING_CUSTOMS`。
 - Search 查询只消费未删除内容；权限组只控制搜索接口入口，结果字段必须保持有限输出。
 - Search 当前不接入 Knowledge 图谱读取，不以知识图谱作为必需前置。
-- Search 查询理解可通过 AI 域 usecase 调度；正式 Discovery QA 问答不依赖 Workers 作为运行时入口。
+- Search 查询理解可通过 AI 域 capability 调度；正式 Discovery QA 问答不依赖 Workers 作为运行时入口。
 
 ## DDD Model
 

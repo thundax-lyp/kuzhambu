@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.ai.application.discovery.support;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -19,8 +20,9 @@ class DiscoveryAiWorkerUsecaseResolverTest {
         DiscoveryAiWorkerUsecaseSpec spec = resolver.resolve("DISCOVERY_QUERY_UNDERSTANDING");
         assertNotNull(spec);
         assertEquals("DISCOVERY_QUERY_UNDERSTANDING", spec.operation());
-        assertEquals("/internal/ai/discovery/query-understanding", spec.workerPath());
+        assertNull(spec.workerPath());
         assertEquals(AiBusinessCapability.DISCOVERY_QUERY_UNDERSTANDING.value(), spec.capability());
+        assertEquals("query_understanding", spec.workerCapability());
         assertFalse(spec.stream());
     }
 
@@ -29,7 +31,7 @@ class DiscoveryAiWorkerUsecaseResolverTest {
         DiscoveryAiWorkerUsecaseSpec spec = resolver.resolve("DISCOVERY_QUERY_REWRITE");
         assertNotNull(spec);
         assertEquals("DISCOVERY_QUERY_REWRITE", spec.operation());
-        assertEquals("/internal/ai/discovery/query-rewrite", spec.workerPath());
+        assertNull(spec.workerPath());
         assertEquals(AiBusinessCapability.DISCOVERY_QUERY_UNDERSTANDING.value(), spec.capability());
         assertFalse(spec.stream());
     }
@@ -39,8 +41,9 @@ class DiscoveryAiWorkerUsecaseResolverTest {
         DiscoveryAiWorkerUsecaseSpec spec = resolver.resolve("DISCOVERY_ANSWER_GENERATION");
         assertNotNull(spec);
         assertEquals("DISCOVERY_ANSWER_GENERATION", spec.operation());
-        assertEquals("/internal/ai/discovery/answer-generation", spec.workerPath());
+        assertNull(spec.workerPath());
         assertEquals(AiBusinessCapability.DISCOVERY_ANSWER_GENERATION.value(), spec.capability());
+        assertEquals("answer_generation", spec.workerCapability());
         assertFalse(spec.stream());
     }
 
@@ -49,8 +52,9 @@ class DiscoveryAiWorkerUsecaseResolverTest {
         DiscoveryAiWorkerUsecaseSpec spec = resolver.resolve("DISCOVERY_ANSWER_GENERATION_STREAM");
         assertNotNull(spec);
         assertEquals("DISCOVERY_ANSWER_GENERATION_STREAM", spec.operation());
-        assertEquals("/internal/ai/discovery/answer-generation/stream", spec.workerPath());
+        assertNull(spec.workerPath());
         assertEquals(AiBusinessCapability.DISCOVERY_ANSWER_GENERATION.value(), spec.capability());
+        assertEquals("answer_generation", spec.workerCapability());
         assertTrue(spec.stream());
     }
 

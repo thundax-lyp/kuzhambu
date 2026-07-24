@@ -1,10 +1,10 @@
-业务域：{{domain}}
-操作上下文：{{operationContext}}
+上一版本提示词：
+{{previousTemplate}}
 
-变更前：
-{{beforeContent}}
+当前版本提示词：
+{{currentTemplate}}
 
-变更后：
-{{afterContent}}
+人工变更摘要：
+{{changeSummary}}
 
-请生成一段简洁的中文版本摘要。
+请生成一段版本摘要，说明主要变化和需要关注的兼容风险。

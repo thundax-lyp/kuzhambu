@@ -18,6 +18,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class AiWorkerModelConfigResolver {
 
+    private static final String DEFAULT_SERVICE_ROLE = "PRIMARY";
+
     private final AiBusinessConfigApplicationService businessConfigService;
     private final AiModelApplicationService modelService;
     private final ObjectMapper objectMapper;
@@ -52,7 +54,7 @@ public class AiWorkerModelConfigResolver {
 
         return new ResolvedModelConfig(
                 command.getServiceId(),
-                command.getServiceRole(),
+                resolveServiceRole(command),
                 value(model.getId()),
                 model.getApiSource() == null ? null : model.getApiSource().value(),
                 model.getBaseUrl(),
@@ -129,6 +131,10 @@ public class AiWorkerModelConfigResolver {
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private String resolveServiceRole(AiInvokeCommand command) {
+        return isBlank(command.getServiceRole()) ? DEFAULT_SERVICE_ROLE : command.getServiceRole();
     }
 
     private Long value(AiModelId id) {

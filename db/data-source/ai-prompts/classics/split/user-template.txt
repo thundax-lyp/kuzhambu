@@ -1,17 +1,19 @@
-当前标题：{{title}}
-分类路径：{{categoryPath}}
+父条目标题：{{title}}
 拆分提示：{{splitHint}}
 
-内容：
+原文：
 {{sourceText}}
 
-请返回 JSON：
+已有译文：
+{{translationText}}
+
+请拆分为条目候选，返回 JSON：
 {
-  "items": [
+  "entries": [
     {
-      "title": "候选条目标题",
-      "content": "候选条目内容",
-      "reason": "拆分理由"
+      "title": "条目标题",
+      "originalText": "对应原文",
+      "translationText": "对应译文"
     }
   ]
 }

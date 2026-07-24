@@ -63,6 +63,14 @@ Workers 不拥有 AI 配置、提示词、调用记录或候选结果。Classics
 
 数据模型必须记录 worker 调用所需的稳定追踪信息，包括模型、服务、能力、提示词版本、请求标识、链路标识、耗时、用量、失败类型和降级状态。stream 片段不是业务事实，默认不逐片段持久化；最终结果、失败或部分失败状态必须进入调用记录。
 
+提示词模板能力归属固定规则：
+
+- `PromptTemplate.capability` 是模板的运行时契约归属键，一旦创建不得修改。
+- 模板名称、说明和启用状态可以更新；提示词正文、输出 schema 和变量快照通过新增 `PromptVersion` 表达。
+- 更新已有模板时，请求中的 capability 必须与已保存模板一致；不一致时后端拒绝保存。
+- `PromptVariable` 表示模板创建时的能力变量基线；更新提示词版本时不替换模板级变量列表，版本变量以 `PromptVersion.variablesSnapshotJson` 为准。
+- 如需把提示词迁移到另一 capability，必须创建新的 `PromptTemplate`，不得复用原 template id。
+
 AI 调用记录固定补充以下字段口径：
 
 - `failureStage`
@@ -157,23 +165,32 @@ Admin Web 交互流程：
 
 默认任务协议详细流程：
 
-1. Admin Web 调用 `POST /api/ai/refinement/task/add`，传入 `contentType`、`contentId`、`capability`、`modelId`、`promptVersionId`、`requestId`、`requestedBy` 等字段。
+1. Admin Web 调用 `POST /api/ai/refinement/task/add`，传入 `contentType`、`contentId`、`capability`、`requestId`、`requestedBy` 和业务参数 JSON；前端默认不传 `modelId`、`promptVersionId` 或已渲染 prompt。
 2. AI interface 校验权限、请求字段、AI 动作开关和内容类型与 capability 的匹配关系。
 3. AI application 创建 `ai_refinement_task`，初始状态为 `PENDING`。
-4. AI application 读取业务内容快照、模型配置、能力映射和 prompt 真相源。
-5. AI application 把任务状态更新为 `RUNNING`，并开始本次 worker 调用。
-6. 对同步 capability，AI application 等待 worker JSON 完成，再统一写入：
+4. AI application 根据 capability 读取第一个启用的 `ai_business_config`，从业务配置中取得 `model_id`、`prompt_template_id` 和 `default_params_json`。
+5. AI application 根据 `prompt_template_id` 读取当前 prompt version，把业务参数 JSON 按 `{{variableName}}` 注入提示词模板，生成本次调用的 `promptMessagesJson`、`promptVariablesJson` 和 `promptVersionId`。
+6. AI application 合并模型默认参数和业务配置辅助参数；业务配置参数覆盖模型默认参数。
+7. AI application 保留业务 `capability` 作为业务配置、调用记录和候选归档字段，同时把本次调用映射为 workers canonical `workerCapability`，例如 `classics_summary -> summary`、`knowledge_graph_extract -> knowledge_graph`。
+8. AI application 把任务状态更新为 `RUNNING`，并以解析后的模型、提示词、参数和 `workerCapability` 开始本次 worker 调用。
+9. 对同步 capability，AI application 等待 worker JSON 完成，再统一写入：
    - `ai_call_record`
    - `ai_candidate`
    - `ai_refinement_task.callId`
    - `ai_refinement_task.candidateId`
    - `ai_refinement_task.status`
-7. 对流式 capability，AI application 内部消费 workers SSE；`delta/progress/warning` 只更新任务进度快照，`completed/error` 才形成最终态。
-8. 成功时，AI application 把任务状态更新为 `SUCCEEDED`，并写入 `candidateId`、`resultFormat`、`resultPreview`、`completedAt`。
-9. 失败时，AI application 把任务状态更新为 `FAILED` 或 `PARTIAL`，并写入 `failureStage`、`errorType`、`errorMessage`、`completedAt`。
-10. Admin Web 通过 `POST /api/ai/refinement/task/get` 或 `POST /api/ai/refinement/task/page` 轮询任务状态。
-11. 当任务进入 `SUCCEEDED` 且存在 `candidateId` 后，Admin Web 刷新候选面板，用户再通过候选应用接口把结果落到正式内容。
-12. `task/add` 的成功只表示“任务已受理”，不表示候选已生成；候选是否可用必须以后续 `task/get` 返回的最终状态判断。
+10. 对流式 capability，AI application 内部消费 workers SSE；`delta/progress/warning` 只更新任务进度快照，`completed/error` 才形成最终态。
+11. 成功时，AI application 把任务状态更新为 `SUCCEEDED`，并写入 `candidateId`、`resultFormat`、`resultPreview`、`completedAt`。
+12. 失败时，AI application 把任务状态更新为 `FAILED` 或 `PARTIAL`，并写入 `failureStage`、`errorType`、`errorMessage`、`completedAt`。
+13. Admin Web 通过 `POST /api/ai/refinement/task/get` 或 `POST /api/ai/refinement/task/page` 轮询任务状态。
+14. 当任务进入 `SUCCEEDED` 且存在 `candidateId` 后，Admin Web 刷新候选面板，用户再通过候选应用接口把结果落到正式内容。
+15. `task/add` 的成功只表示“任务已受理”，不表示候选已生成；候选是否可用必须以后续 `task/get` 返回的最终状态判断。
+
+运行时接口协议见 [`AI-RUNTIME-INTERFACE.md`](../20-interfaces/AI-RUNTIME-INTERFACE.md)。该协议固定：
+
+- Admin Web 和跨域 facade 默认只传业务 capability、内容标识和业务参数 JSON。
+- `modelId`、`promptVersionId`、`promptMessagesJson`、`workerCapability` 和 `workerPath` 不属于默认外部运行时协议。
+- Java AI 域对外响应和持久化字段始终使用业务 capability；workers canonical capability 只存在于 Java AI 域到 workers 的内部请求。
 
 精修任务失效清理流程：
 
@@ -262,7 +279,7 @@ Discovery 调用入口：
 
 - `WorkerAiClient` 适配 Python workers 内部 HTTP、SSE 和临时 artifact 下载接口。
 - AI 域向 workers 传入主服务或备用服务的模型配置、调用参数、渲染后 messages、结构化输出 schema 和完整上下文。
-- Knowledge 三个稳定 usecase path 为 `/internal/ai/knowledge/relation-extraction`、`/internal/ai/knowledge/graph-extraction` 和 `/internal/ai/knowledge/lineage-extraction`。
+- Knowledge 抽取能力通过统一 workers AI 接口 `/internal/ai/invoke` 或 `/internal/ai/stream` 执行；业务差异由 AI 域选择的业务配置、提示词版本、模型配置、辅助参数和输出 schema 表达，不再依赖 workers 业务专项 path。
 - workers 内部执行 LangGraph；AI 域不直接依赖 workers 内部 graph 实现。
 - AI 域与 workers 的协议见 [`WORKERS-AI-INTERFACE.md`](../20-interfaces/WORKERS-AI-INTERFACE.md)。
 - Repository 持久化 AI 配置、提示词、调用记录和候选结果。

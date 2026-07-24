@@ -28,6 +28,22 @@ description: Kuzhambu strict current-branch PR code review workflow for direct s
 
 如果本 PR 新增或修改共享抽象、公共接口、跨层协议、路由/配置判断、数据访问规则或 worker capability，先提炼它们的使用契约，再按契约审查调用点和边界情况。
 
+## 契约闭环审查
+
+本 review 不只检查 diff 局部代码，还必须验证本 PR 引入或改变的运行时契约是否闭环。契约包括配置、协议字段、默认值、状态、权限、schema、数据约束、异步任务、跨服务调用、生命周期和执行入口。
+
+当 diff 改变这些契约时，必须先回答：
+
+- 契约的 source of truth 是什么。
+- 契约从哪里产生，经过哪些层传递，最终在哪里被消费。
+- 每一层是只转发字段，还是实际执行、校验或持久化了契约。
+- 默认值、缺省字段、禁用状态、历史数据、并发变化和失败路径是否仍符合契约。
+- 同一契约在等价执行路径上是否一致，例如 sync/async、stream/non-stream、create/update、admin/runtime、configured/default。
+- 如果契约依赖数据库约束、外部 provider、worker schema、seed 数据或配置文件，是否用真实数据形态验证，而不是只看类型定义。
+- 测试是否覆盖契约闭环，而不是只覆盖某个实现分支。
+
+如果 PR 声称某个字段、配置、schema、状态或默认协议已经生效，但实际只在上游生成或传递、没有在最终消费点执行或校验，应作为 correctness finding。
+
 ## 审查目标
 
 - 使用 `git diff main...HEAD` 作为本次 PR 的主要审查范围。

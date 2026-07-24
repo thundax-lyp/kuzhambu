@@ -484,8 +484,9 @@ class TaxonomyApplicationServiceImplTest {
         JsonNode input = OBJECT_MAPPER.readTree(request.getInputPayloadJson());
         assertEquals("SANCAI_ENTRY", input.get("contentType").asText());
         assertEquals(1001L, input.get("contentId").asLong());
-        assertEquals("条目标题", input.get("contentTitle").asText());
-        assertEquals("正文片段", input.get("contentText").asText());
+        assertEquals("条目标题", input.get("sourceTitle").asText());
+        assertEquals("正文片段", input.get("sourceText").asText());
+        assertNull(input.get("contentText"));
         assertEquals("21", input.get("existingTags").get(0).get("tagId").asText());
         assertEquals("礼制", input.get("existingTags").get(0).get("name").asText());
         assertEquals("11", input.get("categories").get(0).get("categoryId").asText());

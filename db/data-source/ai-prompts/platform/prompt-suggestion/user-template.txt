@@ -1,21 +1,15 @@
-目标能力：{{targetCapability}}
+当前提示词模板：
+{{template}}
 
-当前提示词：
-{{currentPrompt}}
+优化目标：
+{{changeGoal}}
 
-变量定义：
-{{variables}}
+已知问题：
+{{knownIssues}}
 
-失败样例或质量问题：
-{{failureSamples}}
-
-请返回 JSON：
+请给出优化建议，返回 JSON：
 {
-  "suggestions": [
-    {
-      "problem": "发现的问题",
-      "recommendation": "建议修改",
-      "impact": "预期影响"
-    }
-  ]
+  "suggestedTemplate": "优化后的提示词模板",
+  "changeSummary": "变更摘要",
+  "risks": ["风险或注意事项"]
 }

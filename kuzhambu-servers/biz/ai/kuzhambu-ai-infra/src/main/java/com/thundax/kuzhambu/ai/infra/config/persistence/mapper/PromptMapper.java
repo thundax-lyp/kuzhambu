@@ -40,6 +40,9 @@ public interface PromptMapper extends BaseMapper<PromptTemplateDO> {
             """)
     PromptVersionDO selectCurrentVersion(Long templateId);
 
+    @Select("select * from ai_prompt_version where id = #{versionId}")
+    PromptVersionDO selectVersionById(Long versionId);
+
     @Select("select * from ai_prompt_version where template_id = #{templateId} order by version_no desc")
     List<PromptVersionDO> selectVersions(Long templateId);
 

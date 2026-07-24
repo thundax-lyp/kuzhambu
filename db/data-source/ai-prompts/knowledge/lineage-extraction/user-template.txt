@@ -1,24 +1,19 @@
-约束：
-{{constraints}}
+来源标题：{{sourceTitle}}
+世系提示：{{lineageHint}}
 
-内容：
-{{document}}
+来源文本：
+{{sourceText}}
 
-请返回 JSON：
+请抽取世系图候选，返回 JSON：
 {
   "nodes": [
-    {
-      "name": "人物名称",
-      "evidence": "文本证据"
-    }
+    { "name": "人物名", "nodeType": "PERSON", "generation": 1, "gender": "未知" }
   ],
   "relations": [
-    {
-      "source": "人物A",
-      "relation": "关系",
-      "target": "人物B",
-      "evidence": "文本证据",
-      "confidence": "HIGH"
-    }
-  ]
+    { "sourceName": "来源人物", "targetName": "目标人物", "relationType": "关系类型", "evidence": "证据" }
+  ],
+  "sourceSnippets": [
+    { "snippet": "证据片段", "sourceRef": "来源引用" }
+  ],
+  "warnings": []
 }
