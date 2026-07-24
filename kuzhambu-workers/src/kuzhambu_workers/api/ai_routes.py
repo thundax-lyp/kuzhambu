@@ -35,12 +35,12 @@ from kuzhambu_workers.streaming.events import (
 )
 from kuzhambu_workers.streaming.sse import encode_sse
 
-router = APIRouter(prefix="/internal/ai", tags=["AI Debug"])
+router = APIRouter(prefix="/internal/ai", tags=["AI"])
 _REGISTRY = GraphRegistry.build_default()
 AiRequestValidator = Callable[[AiInvokeRequest], WorkerErrorPayload | None]
-DEBUG_INTERFACE_NOTICE = (
-    "通用 AI 接口仅用于调试、平台联调和协议验证；真实业务必须使用基于 usecase "
-    "定义的稳定接口，不得把该通用接口作为业务域长期集成入口。"
+AI_INTERFACE_NOTICE = (
+    "统一 AI 执行接口。Java AI 域必须在调用前完成业务类型识别、业务配置选择、"
+    "提示词渲染、模型配置组装、权限、审计和任务台账处理；workers 只执行本次已组装的无状态 AI 请求。"
 )
 
 
@@ -53,8 +53,8 @@ class ParsedAiRequest(NamedTuple):
 @router.post(
     "/invoke",
     response_model=None,
-    summary="Debug AI invoke",
-    description=DEBUG_INTERFACE_NOTICE,
+    summary="AI invoke",
+    description=AI_INTERFACE_NOTICE,
 )
 async def invoke(request: Request) -> JSONResponse:
     return await invoke_ai_request(request)
@@ -63,8 +63,8 @@ async def invoke(request: Request) -> JSONResponse:
 @router.post(
     "/stream",
     response_model=None,
-    summary="Debug AI stream",
-    description=DEBUG_INTERFACE_NOTICE,
+    summary="AI stream",
+    description=AI_INTERFACE_NOTICE,
 )
 async def stream(request: Request) -> StreamingResponse | JSONResponse:
     return await stream_ai_request(request)
