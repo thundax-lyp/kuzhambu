@@ -4,7 +4,11 @@ import type { TreeSelectProps } from "antd";
 import { useMemo, useState } from "react";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
+import {
+    KuzhambuForm,
+    KuzhambuFormItem,
+    KuzhambuFormPlaceholderItem
+} from "@/components/kuzhambu-form";
 import * as service from "@/pages/system/user/user-service";
 import type {
     UserDepartmentNode,
@@ -264,7 +268,7 @@ export const UserEditDrawer = ({
                         <UserAvatarField user={user} onAvatarUpload={onAvatarUpload} />
                     </KuzhambuFormItem>
                 ) : null}
-                <KuzhambuFormItem label="登录名" layoutSize="small">
+                <KuzhambuFormItem label="登录名" layoutSize="middle">
                     <Input
                         value={formValues.loginName}
                         placeholder="lin.zhiyuan"
@@ -272,7 +276,7 @@ export const UserEditDrawer = ({
                     />
                 </KuzhambuFormItem>
                 {creating ? (
-                    <KuzhambuFormItem label="登录密码" layoutSize="small">
+                    <KuzhambuFormItem label="登录密码" layoutSize="middle">
                         <Input.Password
                             value={formValues.loginPass}
                             placeholder="设置初始密码"
@@ -280,13 +284,15 @@ export const UserEditDrawer = ({
                         />
                     </KuzhambuFormItem>
                 ) : null}
-                <KuzhambuFormItem label="姓名" layoutSize="small">
+                <KuzhambuFormPlaceholderItem layoutSize="large" />
+                <KuzhambuFormItem label="姓名" layoutSize="middle">
                     <Input
                         value={formValues.name}
                         placeholder="用户姓名"
                         onChange={(event) => updateForm({ name: event.target.value })}
                     />
                 </KuzhambuFormItem>
+                <KuzhambuFormPlaceholderItem layoutSize="large" />
                 <KuzhambuFormItem label="邮箱">
                     <Input
                         value={formValues.email || ""}
@@ -301,7 +307,7 @@ export const UserEditDrawer = ({
                         onChange={(event) => updateForm({ mobile: event.target.value })}
                     />
                 </KuzhambuFormItem>
-                <KuzhambuFormItem label="部门" layoutSize="large">
+                <KuzhambuFormItem label="部门" layoutSize="middle">
                     <TreeSelect
                         value={formValues.departmentId || undefined}
                         treeData={departmentOptions}
@@ -312,7 +318,8 @@ export const UserEditDrawer = ({
                         onChange={(departmentId) => updateForm({ departmentId })}
                     />
                 </KuzhambuFormItem>
-                <KuzhambuFormItem label="角色" layoutSize="large">
+                <KuzhambuFormPlaceholderItem layoutSize="large" />
+                <KuzhambuFormItem label="角色" layoutSize="middle">
                     <Select
                         mode="multiple"
                         value={formValues.roleIds}
@@ -329,12 +336,14 @@ export const UserEditDrawer = ({
                         onChange={(ranks) => updateForm({ ranks })}
                     />
                 </KuzhambuFormItem>
+                <KuzhambuFormPlaceholderItem layoutSize="large" />
                 <KuzhambuFormItem label="管理员" layoutSize="small">
                     <Switch
                         checked={formValues.admin}
                         onChange={(admin) => updateForm({ admin })}
                     />
                 </KuzhambuFormItem>
+                <KuzhambuFormPlaceholderItem layoutSize="large" />
                 <KuzhambuFormItem label="启用" layoutSize="small">
                     <Switch
                         checked={formValues.enable}
