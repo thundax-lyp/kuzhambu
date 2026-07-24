@@ -10,16 +10,16 @@ import { useMemo, useState } from "react";
 import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import {
+    KuzhambuButton,
     KuzhambuListPage,
     KuzhambuSpace,
     type KuzhambuTableProps,
-    type KuzhambuTableSortPosition,
-    DepartmentEditDrawer
-} from "./components/department-edit-drawer";
+    type KuzhambuTableSortPosition
+} from "@/components";
+import { DepartmentEditDrawer } from "./components/department-edit-drawer";
 import * as service from "./department-service";
 import type { DepartmentMoveCommand, DepartmentSaveCommand } from "./department-service";
 import type { DepartmentNode, DepartmentTableNode } from "./department-types";
-import { KuzhambuButton } from "@/components";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 
 import "./department-page.css";

@@ -2,22 +2,24 @@ import { useQuery } from "@tanstack/react-query";
 import { Input, Switch, TreeSelect } from "antd";
 import type { TreeSelectProps } from "antd";
 import { useMemo, useState } from "react";
-import {
-    KuzhambuButton,
-    KuzhambuDrawer,
-    KuzhambuForm,
-    KuzhambuFormItem,
-    KuzhambuFormPlaceholderItem,
-    type UserDepartmentNode,
-    type UserRecord,
-    type UserRoleRecord
+import type {
+    UserDepartmentNode,
+    UserRecord,
+    UserRoleRecord
 } from "@/pages/system/user/user-types";
 import type { CurrentUserRecord } from "@/service/current-user-types";
 import type { OptionsRecord } from "@/types/options";
 import type { UserFormValues } from "../user-form-values";
 import { UserAvatarField } from "./user-avatar-field";
 import "./user-edit-drawer.css";
-import { KuzhambuSelect } from "@/components";
+import {
+    KuzhambuButton,
+    KuzhambuDrawer,
+    KuzhambuForm,
+    KuzhambuFormItem,
+    KuzhambuFormPlaceholderItem,
+    KuzhambuSelect
+} from "@/components";
 
 import * as service from "@/pages/system/user/user-service";
 

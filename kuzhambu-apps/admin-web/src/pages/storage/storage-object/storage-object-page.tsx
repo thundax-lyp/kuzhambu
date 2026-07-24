@@ -12,15 +12,16 @@ import { useMemo, useRef, useState } from "react";
 import type { ChangeEvent, Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
+import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import {
+    KuzhambuButton,
     KuzhambuListPage,
+    KuzhambuSelect,
     KuzhambuSpace,
     KuzhambuTag,
     type KuzhambuTableProps,
-    type KuzhambuTableSortPosition,
-    DEFAULT_PAGE_NO,
-    DEFAULT_PAGE_SIZE
-} from "@/types/page";
+    type KuzhambuTableSortPosition
+} from "@/components";
 import * as service from "./storage-object-service";
 import type { StoragePageQuery } from "./storage-object-service";
 import { StorageUploadTaskCard } from "./components/storage-upload-task-card";
@@ -29,7 +30,6 @@ import type {
     StorageRecord,
     StorageUploadTaskRecord
 } from "./storage-object-types";
-import { KuzhambuButton, KuzhambuSelect } from "@/components";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 
 import "./storage-object-page.css";

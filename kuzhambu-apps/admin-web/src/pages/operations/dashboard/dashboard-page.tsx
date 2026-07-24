@@ -15,13 +15,7 @@ import { App, Card, Empty, Segmented, Spin, Typography } from "antd";
 import { type ReactNode, useState } from "react";
 import { Link } from "react-router-dom";
 import { hasPermission } from "@/auth/permission-storage";
-import {
-    KuzhambuDrawer,
-    KuzhambuPage,
-    KuzhambuSpace,
-    KuzhambuTag,
-    DashboardAlertDrawer
-} from "./dashboard-alert-drawer";
+import { DashboardAlertDrawer } from "./dashboard-alert-drawer";
 import { DashboardMetricCard } from "./dashboard-metric-card";
 import * as service from "./dashboard-service";
 import type { OperationsDashboardOverviewQuery } from "./dashboard-service";
@@ -30,7 +24,14 @@ import type {
     OperationsHealthAlertRecord,
     OperationsHealthSummaryRecord
 } from "./dashboard-types";
-import { KuzhambuButton, KuzhambuAlert } from "@/components";
+import {
+    KuzhambuAlert,
+    KuzhambuButton,
+    KuzhambuDrawer,
+    KuzhambuPage,
+    KuzhambuSpace,
+    KuzhambuTag
+} from "@/components";
 
 import "./dashboard-page.css";
 

@@ -9,14 +9,13 @@ import { useQuery } from "@tanstack/react-query";
 import { Empty, Input, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
+import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import {
     KuzhambuListPage,
     KuzhambuSpace,
     KuzhambuTag,
-    type KuzhambuTableProps,
-    DEFAULT_PAGE_NO,
-    DEFAULT_PAGE_SIZE
-} from "@/types/page";
+    type KuzhambuTableProps
+} from "@/components";
 import * as service from "./system-log-service";
 import type { LogPageQuery } from "./system-log-service";
 import type { LogRecord } from "./system-log-types";

@@ -18,8 +18,8 @@ import {
 } from "@/components";
 import { RoleEditDrawer } from "./components/role-edit-drawer";
 import * as service from "./role-service";
-import type { RoleOptionKeys, type RoleSaveCommand } from "./role-service";
-import type { RoleMenuNode, type RoleMenuTreeNode, type RoleRecord } from "./role-types";
+import type { RoleOptionKeys, RoleSaveCommand } from "./role-service";
+import type { RoleMenuNode, RoleMenuTreeNode, RoleRecord } from "./role-types";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 
 import "./role-page.css";
