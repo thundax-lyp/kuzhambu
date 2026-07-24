@@ -40,7 +40,7 @@ export const UserFilterPanel = ({
                 render: () => (
                     <Input
                         allowClear
-                        placeholder="developer"
+                        placeholder="输入登录名"
                         value={filters.loginName}
                         onChange={(event) =>
                             onFiltersChange({

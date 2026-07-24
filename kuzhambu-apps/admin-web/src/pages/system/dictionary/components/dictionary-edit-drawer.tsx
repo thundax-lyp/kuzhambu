@@ -1,7 +1,12 @@
 import { Form, Input } from "antd";
 import { useEffect } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuForm, KuzhambuFormHiddenItem, KuzhambuFormItem } from "@/components/kuzhambu-form";
+import {
+    KuzhambuForm,
+    KuzhambuFormHiddenItem,
+    KuzhambuFormItem,
+    KuzhambuFormPlaceholderItem
+} from "@/components/kuzhambu-form";
 import type { DictSaveCommand } from "../dictionary-service";
 import type { DictRecord } from "../dictionary-types";
 
@@ -79,7 +84,7 @@ export const DictionaryEditDrawer = ({
             className="dictionary-edit-drawer"
             title={dictionary ? "编辑字典项" : "新增字典项"}
             open={Boolean(open)}
-            size="small"
+            size="large"
             onClose={onClose}
             footerActions={[
                 {
@@ -107,6 +112,7 @@ export const DictionaryEditDrawer = ({
                 >
                     <Input placeholder="例如：user_status" />
                 </KuzhambuFormItem>
+                <KuzhambuFormPlaceholderItem />
                 <KuzhambuFormItem
                     name="label"
                     label="标签"
@@ -114,6 +120,7 @@ export const DictionaryEditDrawer = ({
                 >
                     <Input placeholder="例如：启用" />
                 </KuzhambuFormItem>
+                <KuzhambuFormPlaceholderItem />
                 <KuzhambuFormItem
                     name="value"
                     label="值"
