@@ -6,18 +6,22 @@ import { hasPermission } from "@/auth/permission-storage";
 import { useCurrentAccessToken } from "@/auth/hooks/use-current-access-token";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { ADMIN_API_BASE_URL } from "@/api/http";
-import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import { KuzhambuTag } from "@/components/kuzhambu-tag";
-import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
-import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
+import {
+    KuzhambuListPage,
+    KuzhambuSpace,
+    KuzhambuTag,
+    type KuzhambuTableProps,
+    DEFAULT_PAGE_NO,
+    DEFAULT_PAGE_SIZE
+} from "@/types/page";
 import { AuditLogDetail } from "./components/audit-log-detail";
 import { createAuditLogFilterFields } from "./components/audit-log-filter";
 import type { AuditLogFilters } from "./components/audit-log-filter";
 import * as service from "./audit-log-service";
 import type { AuditLogPageQuery } from "./audit-log-service";
 import type { AuditLogRecord } from "./audit-log-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuButton } from "@/components";
+
 import "./audit-log-page.css";
 
 const { Text } = Typography;

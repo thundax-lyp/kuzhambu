@@ -1,9 +1,8 @@
 import { Avatar, Descriptions, Empty, Typography } from "antd";
 import { ADMIN_API_BASE_URL } from "@/api/http";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import { KuzhambuTag } from "@/components/kuzhambu-tag";
+import { KuzhambuDrawer, KuzhambuSpace, KuzhambuTag } from "@/components";
+
 import type {
     AuditFieldRecord,
     AuditLogDetailRecord,
