@@ -135,7 +135,7 @@ describe("BusinessConfigsPage", () => {
     it("renders business configs with prompt and model details", async () => {
         renderPage();
 
-        expect(await screen.findByRole("heading", { name: "AI 业务配置" })).toBeInTheDocument();
+        expect(await screen.findByRole("heading", { name: "业务配置" })).toBeInTheDocument();
         expect(await screen.findByText("古籍摘要")).toBeInTheDocument();
         expect(screen.getByText("古籍摘要提示词")).toBeInTheDocument();
         expect(screen.getByText("GPT 4o / gpt-4o")).toBeInTheDocument();

@@ -17,7 +17,7 @@ type TextRefinementEntryDraft = Pick<
 >;
 
 const isStreamRefinementCapability = (capability: string) => {
-    const normalizedCapability = aiRefinementTaskService.normalizeTaskCapability(capability);
+    const normalizedCapability = aiRefinementTaskService.getNormalizedTaskCapability(capability);
     return normalizedCapability === "image_analysis" || normalizedCapability === "image_gen";
 };
 
@@ -609,7 +609,7 @@ export const useSancaiEntryPanelState = ({
         if (!selectedEntry?.id) {
             return;
         }
-        const capability = aiRefinementTaskService.normalizeTaskCapability(
+        const capability = aiRefinementTaskService.getNormalizedTaskCapability(
             task.capability
         ) as RefinementCapability;
         if (

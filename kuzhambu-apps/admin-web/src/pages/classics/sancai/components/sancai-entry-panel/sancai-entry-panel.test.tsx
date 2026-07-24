@@ -152,7 +152,7 @@ vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
             });
         }
     ),
-    normalizeTaskCapability: vi.fn(normalizeTaskCapabilityMock),
+    getNormalizedTaskCapability: vi.fn(normalizeTaskCapabilityMock),
     getTaskCapabilityLabel: vi.fn((capability: string) => normalizeTaskCapabilityMock(capability)),
     getTaskFailureText: vi.fn(
         (failureStage?: string | null, errorType?: string | null, errorMessage?: string | null) =>

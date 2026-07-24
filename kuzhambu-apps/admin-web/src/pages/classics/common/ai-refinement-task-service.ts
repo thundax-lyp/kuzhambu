@@ -47,12 +47,12 @@ const CAPABILITY_LABELS: Record<string, string> = {
     image_gen: "生图"
 };
 
-export const normalizeTaskCapability = (capability: string) => {
+export const getNormalizedTaskCapability = (capability: string) => {
     return TASK_CAPABILITY_ALIASES[capability] ?? capability;
 };
 
 export const getTaskCapabilityLabel = (capability: string) => {
-    const normalizedCapability = normalizeTaskCapability(capability);
+    const normalizedCapability = getNormalizedTaskCapability(capability);
     return CAPABILITY_LABELS[normalizedCapability] ?? capability;
 };
 
@@ -69,7 +69,8 @@ export const getTaskFailureText = (
 
 export const getTaskRetryable = (status: string, capability: string) => {
     return (
-        RETRYABLE_STATUSES.has(status) && normalizeTaskCapability(capability) in CAPABILITY_LABELS
+        RETRYABLE_STATUSES.has(status) &&
+        getNormalizedTaskCapability(capability) in CAPABILITY_LABELS
     );
 };
 

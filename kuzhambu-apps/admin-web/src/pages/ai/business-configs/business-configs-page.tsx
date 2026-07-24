@@ -389,10 +389,10 @@ export const BusinessConfigsPage = () => {
             key: "promptName",
             width: DEFAULT_COLUMN_WIDTHS.prompt,
             ellipsis: true,
-            render: (promptName: string, record) => (
-                    <Text ellipsis title={promptName}>
-                        {promptName}
-                    </Text>
+            render: (promptName: string) => (
+                <Text ellipsis title={promptName}>
+                    {promptName}
+                </Text>
             )
         },
         {
@@ -401,10 +401,10 @@ export const BusinessConfigsPage = () => {
             key: "modelName",
             width: DEFAULT_COLUMN_WIDTHS.model,
             ellipsis: true,
-            render: (modelName: string, record) => (
-                    <Text ellipsis title={modelName}>
-                        {modelName}
-                    </Text>
+            render: (modelName: string) => (
+                <Text ellipsis title={modelName}>
+                    {modelName}
+                </Text>
             )
         },
         {
@@ -461,7 +461,7 @@ export const BusinessConfigsPage = () => {
         <>
             <KuzhambuListPage<BusinessConfigTableRow>
                 pageClassName="business-configs-page"
-                title="AI 业务配置"
+                title="业务配置"
                 description="绑定业务能力、提示词模板和模型，统一控制业务 AI 调用配置"
                 subjectName="业务配置"
                 enableSearch

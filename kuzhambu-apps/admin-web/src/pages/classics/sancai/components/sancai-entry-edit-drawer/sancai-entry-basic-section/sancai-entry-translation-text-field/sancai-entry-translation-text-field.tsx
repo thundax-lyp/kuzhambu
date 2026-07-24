@@ -80,7 +80,7 @@ export const SancaiEntryTranslationTextField = ({
             [...translationTasks]
                 .filter(
                     (task) =>
-                        aiRefinementTaskService.normalizeTaskCapability(task.capability) ===
+                        aiRefinementTaskService.getNormalizedTaskCapability(task.capability) ===
                         "translate"
                 )
                 .sort(sortRefinementTasksByNewest)[0] ?? null,

@@ -78,7 +78,7 @@ export const SancaiEntrySummaryTextField = ({
             [...summaryTasks]
                 .filter(
                     (task) =>
-                        aiRefinementTaskService.normalizeTaskCapability(task.capability) ===
+                        aiRefinementTaskService.getNormalizedTaskCapability(task.capability) ===
                         "summary"
                 )
                 .sort(sortRefinementTasksByNewest)[0] ?? null,

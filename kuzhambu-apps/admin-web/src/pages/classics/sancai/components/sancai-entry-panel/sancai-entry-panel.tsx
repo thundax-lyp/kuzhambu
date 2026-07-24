@@ -931,12 +931,12 @@ export const SancaiEntryPanel = ({
                 isCreatingSummaryTask={creatingRefinementCapability === "summary"}
                 translationTasks={refinementTasks.filter(
                     (task) =>
-                        aiRefinementTaskService.normalizeTaskCapability(task.capability) ===
+                        aiRefinementTaskService.getNormalizedTaskCapability(task.capability) ===
                         "translate"
                 )}
                 summaryTasks={refinementTasks.filter(
                     (task) =>
-                        aiRefinementTaskService.normalizeTaskCapability(task.capability) ===
+                        aiRefinementTaskService.getNormalizedTaskCapability(task.capability) ===
                         "summary"
                 )}
                 creatingVisualAssetCapability={
@@ -1095,7 +1095,7 @@ export const SancaiEntryPanel = ({
                                     {refinementTasks
                                         .filter((task) => {
                                             const capability =
-                                                aiRefinementTaskService.normalizeTaskCapability(
+                                                aiRefinementTaskService.getNormalizedTaskCapability(
                                                     task.capability
                                                 );
                                             return (
