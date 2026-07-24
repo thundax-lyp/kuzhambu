@@ -1,5 +1,5 @@
 import { Typography } from "antd";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { KuzhambuSpace } from "@/components";
 import { SearchKeywordTable } from "./search-keyword-table";
 import type { SearchKeywordBarItem } from "./search-keyword-table";
 

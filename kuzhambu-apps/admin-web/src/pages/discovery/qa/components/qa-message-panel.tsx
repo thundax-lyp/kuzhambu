@@ -2,7 +2,7 @@ import { CheckCircleOutlined, ExclamationCircleOutlined, LoadingOutlined } from 
 import { Bubble, Sender, type BubbleItemType } from "@ant-design/x";
 import { Input, Tag, Tooltip, Typography } from "antd";
 import { forwardRef, useMemo, type ComponentProps, type ElementRef, type ReactNode } from "react";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { KuzhambuSpace } from "@/components";
 import ancientReaderAvatar from "@/assets/ancient-reader-avatar-face.jpg";
 import ancientScholarAvatar from "@/assets/ancient-scholar-avatar-face.jpg";
 import type { DiscoveryQaSessionRecord, DiscoveryQaSourceRecord } from "../qa-types";

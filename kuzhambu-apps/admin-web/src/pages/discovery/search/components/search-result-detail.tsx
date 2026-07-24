@@ -1,5 +1,5 @@
 import { Descriptions, Empty, Spin, Tag, Typography } from "antd";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
+import { KuzhambuDrawer } from "@/components";
 import type { DiscoverySearchPreviewRecord } from "../search-types";
 import type { SearchResultEntry } from "./search-result-table";
 

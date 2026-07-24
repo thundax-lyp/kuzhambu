@@ -1,6 +1,6 @@
 import { CloseOutlined } from "@ant-design/icons";
 import { Empty } from "antd";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuButton } from "@/components";
 import type { DiscoveryQaSessionRecord } from "../qa-types";
 
 const toSessionId = (value?: string | null) => {
