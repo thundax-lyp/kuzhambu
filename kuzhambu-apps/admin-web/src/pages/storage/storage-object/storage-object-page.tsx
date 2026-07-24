@@ -4,6 +4,7 @@ import { App, Input, Select, Typography } from "antd";
 import { useMemo, useState } from "react";
 import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
+import { useCurrentAccessToken } from "@/auth/hooks/use-current-access-token";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
@@ -69,7 +70,11 @@ const readFilename = (storage: StorageRecord) => {
     return normalizeSearch(storage.originalFilename) || `对象 ${storage.id}`;
 };
 
-const toStorageContentUrl = (storage: StorageRecord, mode: StorageContentMode) => {
+const toStorageContentUrl = (
+    storage: StorageRecord,
+    mode: StorageContentMode,
+    accessToken: string | null
+) => {
     if (!storage.id) {
         return undefined;
     }
@@ -77,7 +82,8 @@ const toStorageContentUrl = (storage: StorageRecord, mode: StorageContentMode) =
         service.getStorageObjectContentUrl({
             mode,
             storageObjectId: storage.id
-        })
+        }),
+        accessToken
     );
 };
 
@@ -152,6 +158,7 @@ export const StorageObjectPage = () => {
     const { message: messageApi } = App.useApp();
     const confirm = useKuzhambuConfirm();
     const queryClient = useQueryClient();
+    const accessToken = useCurrentAccessToken();
     const canEditStorage = hasPermission("storage:object:edit");
     const [query, setQuery] = useState<StoragePageQuery>({
         pageNo: DEFAULT_PAGE_NO,
@@ -367,8 +374,8 @@ export const StorageObjectPage = () => {
             key: "actions",
             options: (storage) => {
                 const filename = readFilename(storage);
-                const previewUrl = toStorageContentUrl(storage, "preview");
-                const downloadUrl = toStorageContentUrl(storage, "download");
+                const previewUrl = toStorageContentUrl(storage, "preview", accessToken);
+                const downloadUrl = toStorageContentUrl(storage, "download", accessToken);
                 return [
                     {
                         key: "preview",

@@ -744,13 +744,14 @@ describe("App", () => {
         expect(screen.getByText("已变更")).toBeInTheDocument();
     }, 30000);
 
-    it("uploads storage objects and refreshes after delete", async () => {
+    it("opens authenticated storage content urls and refreshes after delete", async () => {
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         localStorage.setItem(
             "kuzhambu.admin.permissions",
             JSON.stringify(["storage:object:view", "storage:object:edit"])
         );
         replacePermissions(["storage:object:view", "storage:object:edit"]);
+        const windowOpen = vi.spyOn(window, "open").mockImplementation(() => null);
         let records = [
             {
                 id: "storage-1",
@@ -760,6 +761,7 @@ describe("App", () => {
                 accessEndpoint: "/api/storage/object/storage-1/content",
                 objectStatus: "ACTIVE",
                 referenceStatus: "UNREFERENCED",
+                referenceOwnerType: "SANCAI_ENTRY",
                 priority: 100,
                 remarks: "三才图会图片"
             }
@@ -796,45 +798,6 @@ describe("App", () => {
                                 count: records.length,
                                 records
                             }
-                        }),
-                        {
-                            headers: { "Content-Type": "application/json" },
-                            status: 200
-                        }
-                    )
-                );
-            }
-
-            if (url.endsWith("/storage/object/upload")) {
-                expect(init).toEqual(
-                    expect.objectContaining({
-                        body: expect.any(FormData),
-                        headers: expect.objectContaining({
-                            "Access-Token": "test-token"
-                        }),
-                        method: "POST"
-                    })
-                );
-                const body = init?.body as FormData;
-                expect((body.get("file") as File).name).toBe("upload.txt");
-                const uploadedRecord = {
-                    id: "storage-2",
-                    originalFilename: "upload.txt",
-                    contentType: "text/plain",
-                    size: 5,
-                    accessEndpoint: "/api/storage/object/storage-2/content",
-                    objectStatus: "ACTIVE",
-                    referenceStatus: "UNREFERENCED",
-                    priority: 101,
-                    remarks: ""
-                };
-                records = [uploadedRecord, ...records];
-                return Promise.resolve(
-                    new Response(
-                        JSON.stringify({
-                            code: "COMMON-00000",
-                            message: "success",
-                            data: uploadedRecord
                         }),
                         {
                             headers: { "Content-Type": "application/json" },
@@ -885,16 +848,21 @@ describe("App", () => {
         expect(screen.getAllByText("1.50 KB").length).toBeGreaterThan(0);
         expect(screen.getByText("可用")).toBeInTheDocument();
         expect(screen.getByText("未引用")).toBeInTheDocument();
+        expect(screen.getByText("SANCAI_ENTRY")).toBeInTheDocument();
 
-        fireEvent.change(screen.getByLabelText("选择上传文件"), {
-            target: {
-                files: [new File(["hello"], "upload.txt", { type: "text/plain" })]
-            }
-        });
+        await userEvent.click(screen.getByRole("button", { name: "预览 sancai.png" }));
+        expect(windowOpen).toHaveBeenCalledWith(
+            "/kuzhambu-admin-api/api/storage/object/storage-1/content?token=test-token",
+            "_blank",
+            "noopener,noreferrer"
+        );
 
-        expect((await screen.findAllByText("upload.txt")).length).toBeGreaterThan(0);
-        expect(screen.getByRole("button", { name: "预览 upload.txt" })).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: "下载 upload.txt" })).toBeInTheDocument();
+        await userEvent.click(screen.getByRole("button", { name: "下载 sancai.png" }));
+        expect(windowOpen).toHaveBeenCalledWith(
+            "/kuzhambu-admin-api/api/storage/object/storage-1/content?download=true&token=test-token",
+            "_blank",
+            "noopener,noreferrer"
+        );
 
         fireEvent.click(screen.getByRole("button", { name: "删除 sancai.png" }));
 
