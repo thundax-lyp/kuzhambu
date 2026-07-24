@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.io.FilenameUtils;
@@ -124,15 +125,30 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         if (storages == null || storages.isEmpty()) {
             return;
         }
+        List<StoredObjectId> objectIds = storages.stream()
+                .filter(Objects::nonNull)
+                .map(StoredObject::getId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+        Map<StoredObjectId, String> referenceOwnerTypesByObjectId =
+                businessRepository.listReferencesByObjectIds(objectIds).stream()
+                        .filter(Objects::nonNull)
+                        .filter(reference -> reference.getObjectId() != null)
+                        .collect(Collectors.groupingBy(
+                                StoredObjectReference::getObjectId,
+                                Collectors.mapping(
+                                        StoredObjectReference::getReferenceOwnerType,
+                                        Collectors.filtering(
+                                                StringUtils::isNotBlank,
+                                                Collectors.collectingAndThen(
+                                                        Collectors.toCollection(LinkedHashSet::new),
+                                                        values -> String.join(", ", values))))));
         for (StoredObject storage : storages) {
             if (storage == null || storage.getId() == null) {
                 continue;
             }
-            String referenceOwnerTypes = businessRepository.listReferences(storage).stream()
-                    .map(StoredObjectReference::getReferenceOwnerType)
-                    .filter(StringUtils::isNotBlank)
-                    .distinct()
-                    .collect(Collectors.joining(", "));
+            String referenceOwnerTypes = referenceOwnerTypesByObjectId.get(storage.getId());
             storage.setReferenceOwnerType(StringUtils.defaultIfBlank(referenceOwnerTypes, null));
         }
     }

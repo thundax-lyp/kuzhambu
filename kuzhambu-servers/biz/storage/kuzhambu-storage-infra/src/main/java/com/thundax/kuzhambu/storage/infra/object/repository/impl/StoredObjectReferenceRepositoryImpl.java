@@ -47,6 +47,24 @@ public class StoredObjectReferenceRepositoryImpl implements StoredObjectReferenc
     }
 
     @Override
+    public List<StoredObjectReference> listReferencesByObjectIds(List<StoredObjectId> objectIds) {
+        if (objectIds == null || objectIds.isEmpty()) {
+            return List.of();
+        }
+        List<Long> objectIdValues = objectIds.stream()
+                .filter(Objects::nonNull)
+                .map(StoredObjectId::value)
+                .distinct()
+                .collect(Collectors.toList());
+        if (objectIdValues.isEmpty()) {
+            return List.of();
+        }
+        LambdaQueryWrapper<StoredObjectReferenceDO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(StoredObjectReferenceDO::getObjectId, objectIdValues);
+        return StoragePersistenceAssembler.toBusinessDomainList(mapper.selectList(wrapper));
+    }
+
+    @Override
     public List<StoredObjectId> listObjectIdsByOwner(StorageOwnerRef ownerRef) {
         if (ownerRef == null) {
             return List.of();
