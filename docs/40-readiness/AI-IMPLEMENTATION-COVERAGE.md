@@ -20,7 +20,7 @@
 ## Open Items
 
 - 无阻塞项。
-- 后续如新增 AI capability，必须同步补齐 AI capability mapping、Workers usecase、Java 调用入口、候选应用方和 readiness 矩阵。
+- 后续如新增 AI capability，必须同步补齐 AI 业务配置、提示词、模型配置、Java 调用入口、候选应用方和 readiness 矩阵；workers 只有在 capability 或统一协议变化时才需要更新。
 
 ## Validation Evidence
 
