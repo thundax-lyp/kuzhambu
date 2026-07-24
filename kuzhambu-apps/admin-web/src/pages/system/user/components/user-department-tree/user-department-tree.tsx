@@ -5,8 +5,9 @@ import type { DataNode } from "antd/es/tree";
 import { useEffect, useMemo } from "react";
 import type { Key } from "react";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import * as service from "../user-service";
-import type { UserDepartmentNode } from "../user-types";
+import * as service from "@/pages/system/user/user-service";
+import type { UserDepartmentNode } from "@/pages/system/user/user-types";
+import "./user-department-tree.css";
 
 const { Text } = Typography;
 

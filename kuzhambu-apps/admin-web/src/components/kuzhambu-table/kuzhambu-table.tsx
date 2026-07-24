@@ -10,6 +10,8 @@ import { Button, Dropdown, Table } from "antd";
 import type { MenuProps, TableProps } from "antd";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { PAGE_SIZE_OPTIONS } from "@/types/page";
+import { KuzhambuTableBatchActionBar } from "./kuzhambu-table-batch-action-bar";
+import type { KuzhambuTableBatchActionBarProps } from "./kuzhambu-table-batch-action-bar";
 import "./kuzhambu-table.css";
 
 const DEFAULT_ACTION_COLUMN_KEY = "actions";
@@ -244,6 +246,7 @@ export interface KuzhambuTableProps<RecordType extends object = object> extends 
     actionColumnWidth?: number;
     ariaLabel?: string;
     ariaLabelledBy?: string;
+    batchActionBar?: KuzhambuTableBatchActionBarProps;
     columns?: KuzhambuTableColumn<RecordType>[];
     getSortableRowKey?: (record: RecordType, index?: number) => Key;
     getSortableRowLabel?: (record: RecordType, index?: number) => string;
@@ -268,6 +271,7 @@ export const KuzhambuTable = <RecordType extends object = object>({
     actionColumnWidth = DEFAULT_ACTION_COLUMN_WIDTH,
     ariaLabel,
     ariaLabelledBy,
+    batchActionBar,
     className,
     columns,
     getSortableRowKey,
@@ -775,6 +779,7 @@ export const KuzhambuTable = <RecordType extends object = object>({
                     </div>
                 </div>
             ) : null}
+            {batchActionBar ? <KuzhambuTableBatchActionBar {...batchActionBar} /> : null}
             {table}
         </div>
     );

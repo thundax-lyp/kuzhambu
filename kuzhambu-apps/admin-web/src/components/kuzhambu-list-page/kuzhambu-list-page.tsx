@@ -2,13 +2,15 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import { FilterOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { Button, Input } from "antd";
-import { KuzhambuBatchActionBar } from "@/components/kuzhambu-batch-action-bar";
 import { KuzhambuFilterPanel } from "@/components/kuzhambu-filter-panel";
 import type { KuzhambuFilterPanelField } from "@/components/kuzhambu-filter-panel";
 import { KuzhambuPage } from "@/components/kuzhambu-page";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
-import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
+import type {
+    KuzhambuTableBatchActionBarProps,
+    KuzhambuTableProps
+} from "@/components/kuzhambu-table";
 import { KuzhambuListPageTableArea } from "./kuzhambu-list-page-table-area";
 import "./kuzhambu-list-page.css";
 
@@ -120,6 +122,13 @@ export const KuzhambuListPage = <RecordType extends object = object>({
     const resolvedSearchAriaLabel = subjectName ? `搜索${subjectName}` : "搜索列表";
     const resolvedAddText = addText ?? (subjectName ? `新增${subjectName}` : undefined);
     const resolvedTableAriaLabel = tableProps.ariaLabel ?? `${subjectName ?? "数据"}列表`;
+    const tableBatchActionBar: KuzhambuTableBatchActionBarProps | undefined = batchActions
+        ? {
+              actions: batchActions,
+              className: batchClassName,
+              selectedCount
+          }
+        : undefined;
     const headerActions = (
         <KuzhambuSpace className="kuzhambu-list-page-actions">
             {enableSearch ? (
@@ -193,12 +202,22 @@ export const KuzhambuListPage = <RecordType extends object = object>({
                     areaClassName={tableAreaClassName}
                     placement={tableAsidePlacement}
                 >
-                    <KuzhambuTable<RecordType> {...tableProps} ariaLabel={resolvedTableAriaLabel} />
+                    <KuzhambuTable<RecordType>
+                        {...tableProps}
+                        ariaLabel={resolvedTableAriaLabel}
+                        batchActionBar={tableBatchActionBar}
+                    />
                 </KuzhambuListPageTableArea>
             );
         }
 
-        return <KuzhambuTable<RecordType> {...tableProps} ariaLabel={resolvedTableAriaLabel} />;
+        return (
+            <KuzhambuTable<RecordType>
+                {...tableProps}
+                ariaLabel={resolvedTableAriaLabel}
+                batchActionBar={tableBatchActionBar}
+            />
+        );
     };
 
     return (
@@ -222,14 +241,6 @@ export const KuzhambuListPage = <RecordType extends object = object>({
                 >
                     {resolvedFilter}
                 </KuzhambuFilterPanel>
-            ) : null}
-
-            {batchActions ? (
-                <KuzhambuBatchActionBar
-                    actions={batchActions}
-                    className={batchClassName}
-                    selectedCount={selectedCount}
-                />
             ) : null}
 
             {renderBody()}

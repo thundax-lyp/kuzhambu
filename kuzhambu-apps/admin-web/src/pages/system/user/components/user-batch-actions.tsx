@@ -1,5 +1,4 @@
 import { DeleteOutlined, PoweroffOutlined } from "@ant-design/icons";
-import { KuzhambuBatchActionBar } from "@/components/kuzhambu-batch-action-bar";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 
@@ -25,43 +24,37 @@ export const UserBatchActions = ({
     const hasSelectedUsers = selectedCount > 0;
 
     return (
-        <KuzhambuBatchActionBar
-            className="user-table-toolbar"
-            selectedCount={selectedCount}
-            actions={
-                <KuzhambuSpace wrap>
-                    <KuzhambuButton
-                        testId="system-user-user-batch-actions-disable-button"
-                        className="user-batch-neutral"
-                        icon={<PoweroffOutlined />}
-                        disabled={!hasSelectedUsers || !canEditUser}
-                        loading={statusPending}
-                        onClick={onDisable}
-                    >
-                        禁用
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="system-user-user-batch-actions-enable-button"
-                        className="user-batch-enable"
-                        icon={<PoweroffOutlined />}
-                        disabled={!hasSelectedUsers || !canEditUser}
-                        loading={statusPending}
-                        onClick={onEnable}
-                    >
-                        启用
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="system-user-user-batch-actions-batch-delete-button"
-                        danger
-                        icon={<DeleteOutlined />}
-                        disabled={!hasSelectedUsers || !canEditUser}
-                        loading={deletePending}
-                        onClick={onDelete}
-                    >
-                        批量删除
-                    </KuzhambuButton>
-                </KuzhambuSpace>
-            }
-        />
+        <KuzhambuSpace wrap>
+            <KuzhambuButton
+                testId="system-user-user-batch-actions-disable-button"
+                className="user-batch-neutral"
+                icon={<PoweroffOutlined />}
+                disabled={!hasSelectedUsers || !canEditUser}
+                loading={statusPending}
+                onClick={onDisable}
+            >
+                禁用
+            </KuzhambuButton>
+            <KuzhambuButton
+                testId="system-user-user-batch-actions-enable-button"
+                className="user-batch-enable"
+                icon={<PoweroffOutlined />}
+                disabled={!hasSelectedUsers || !canEditUser}
+                loading={statusPending}
+                onClick={onEnable}
+            >
+                启用
+            </KuzhambuButton>
+            <KuzhambuButton
+                testId="system-user-user-batch-actions-batch-delete-button"
+                danger
+                icon={<DeleteOutlined />}
+                disabled={!hasSelectedUsers || !canEditUser}
+                loading={deletePending}
+                onClick={onDelete}
+            >
+                批量删除
+            </KuzhambuButton>
+        </KuzhambuSpace>
     );
 };

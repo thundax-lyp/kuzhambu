@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { KuzhambuButton } from "@/components/kuzhambu-button";
 import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import type { KuzhambuTableBatchActionBarProps } from "@/components/kuzhambu-table";
 import { API_SOURCE_OPTIONS, readApiSourceMeta } from "../ai-models-metadata";
 import type { AiModelRecord } from "../ai-models-types";
 
@@ -30,7 +31,7 @@ interface AiModelFilterPanelProps {
     onSearchChange: (value: string) => void;
     searchText: string;
     selectedCount: number;
-    table: ReactNode;
+    table: (batchActionBar: KuzhambuTableBatchActionBarProps) => ReactNode;
 }
 
 export const AiModelFilterPanel = ({
@@ -53,6 +54,41 @@ export const AiModelFilterPanel = ({
     selectedCount,
     table
 }: AiModelFilterPanelProps) => {
+    const batchActionBar: KuzhambuTableBatchActionBarProps = {
+        className: "ai-models-table-toolbar",
+        selectedCount,
+        actions: (
+            <KuzhambuSpace wrap>
+                <KuzhambuButton
+                    testId="ai-models-enable-button"
+                    disabled={!canEditConfig || !hasSelectedModels}
+                    loading={batchUpdating}
+                    onClick={() => onBatchUpdateEnabled(true)}
+                >
+                    启用
+                </KuzhambuButton>
+                <KuzhambuButton
+                    testId="ai-models-disable-button"
+                    disabled={!canEditConfig || !hasSelectedModels}
+                    loading={batchUpdating}
+                    onClick={() => onBatchUpdateEnabled(false)}
+                >
+                    禁用
+                </KuzhambuButton>
+                <KuzhambuButton
+                    testId="ai-models-batch-delete-button"
+                    danger
+                    icon={<DeleteOutlined />}
+                    disabled={!canEditConfig || !hasSelectedModels}
+                    loading={batchDeleting}
+                    onClick={onBatchDelete}
+                >
+                    批量删除
+                </KuzhambuButton>
+            </KuzhambuSpace>
+        )
+    };
+
     return (
         <KuzhambuListPage<AiModelRecord>
             pageClassName="ai-models-page"
@@ -122,39 +158,7 @@ export const AiModelFilterPanel = ({
                     刷新
                 </KuzhambuButton>
             }
-            batchClassName="ai-models-table-toolbar"
-            selectedCount={selectedCount}
-            batchActions={
-                <KuzhambuSpace wrap>
-                    <KuzhambuButton
-                        testId="ai-models-enable-button"
-                        disabled={!canEditConfig || !hasSelectedModels}
-                        loading={batchUpdating}
-                        onClick={() => onBatchUpdateEnabled(true)}
-                    >
-                        启用
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="ai-models-disable-button"
-                        disabled={!canEditConfig || !hasSelectedModels}
-                        loading={batchUpdating}
-                        onClick={() => onBatchUpdateEnabled(false)}
-                    >
-                        禁用
-                    </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="ai-models-batch-delete-button"
-                        danger
-                        icon={<DeleteOutlined />}
-                        disabled={!canEditConfig || !hasSelectedModels}
-                        loading={batchDeleting}
-                        onClick={onBatchDelete}
-                    >
-                        批量删除
-                    </KuzhambuButton>
-                </KuzhambuSpace>
-            }
-            content={table}
+            content={table(batchActionBar)}
         />
     );
 };

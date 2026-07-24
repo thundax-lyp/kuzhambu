@@ -2,7 +2,10 @@ import { Typography } from "antd";
 import type { Key } from "react";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import { KuzhambuTable } from "@/components/kuzhambu-table";
-import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
+import type {
+    KuzhambuTableBatchActionBarProps,
+    KuzhambuTableProps
+} from "@/components/kuzhambu-table";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import { readApiSourceMeta, readCapabilityMeta } from "../ai-models-metadata";
 import type { AiModelRecord } from "../ai-models-types";
@@ -42,6 +45,7 @@ const centerColumnTitle = (title: string) => (
 
 interface AiModelTableProps {
     canEditConfig: boolean;
+    batchActionBar?: KuzhambuTableBatchActionBarProps;
     changing: boolean;
     dataSource: AiModelRecord[];
     loading: boolean;
@@ -54,6 +58,7 @@ interface AiModelTableProps {
 }
 
 export const AiModelTable = ({
+    batchActionBar,
     canEditConfig,
     changing,
     dataSource,
@@ -173,6 +178,7 @@ export const AiModelTable = ({
         <KuzhambuTable<AiModelRecord>
             ariaLabel="模型列表"
             rowKey="id"
+            batchActionBar={batchActionBar}
             className="ai-models-table"
             columns={columns}
             dataSource={dataSource}

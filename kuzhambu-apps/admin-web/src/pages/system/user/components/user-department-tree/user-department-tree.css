@@ -1,0 +1,85 @@
+.user-department-panel {
+    box-sizing: border-box;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    height: 100%;
+    margin-right: 4px;
+    padding: 12px;
+    color: var(--user-ink);
+    background: var(--user-department-panel);
+    border: 1px solid var(--user-line);
+    border-radius: 8px;
+    box-shadow: none;
+}
+
+.user-department-panel-head {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--user-line);
+}
+
+.user-department-panel-head .anticon {
+    color: var(--user-department-accent);
+}
+
+.user-department-panel .ant-tree {
+    color: var(--user-ink);
+    min-height: 0;
+    overflow: auto;
+    background: transparent !important;
+}
+
+.user-department-panel .ant-tree-treenode {
+    width: 100%;
+    padding: 1px 0;
+    align-items: center;
+}
+
+.user-department-panel .ant-tree-node-content-wrapper {
+    flex: 1;
+    min-width: 0;
+    height: 28px;
+    padding-inline: 8px;
+    line-height: 28px;
+    border-radius: 7px;
+}
+
+.user-department-panel .ant-tree-switcher {
+    align-self: center;
+    line-height: 28px;
+}
+
+.user-department-panel .ant-tree-node-content-wrapper:hover {
+    background: var(--user-department-soft) !important;
+}
+
+.user-department-panel .ant-tree-node-selected {
+    color: var(--user-department-accent);
+    background: var(--user-department-accent-soft) !important;
+}
+
+.user-department-panel .ant-tree-node-selected .user-department-node > span:first-child {
+    color: var(--user-department-accent);
+}
+
+.user-department-node {
+    display: block;
+    min-width: 0;
+}
+
+.user-department-node > span:first-child {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+    .user-department-panel {
+        display: none;
+    }
+}
