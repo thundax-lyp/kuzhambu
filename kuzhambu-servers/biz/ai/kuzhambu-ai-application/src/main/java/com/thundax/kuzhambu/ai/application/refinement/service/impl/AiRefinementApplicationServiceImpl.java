@@ -49,6 +49,12 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
     }
 
     @Override
+    public void validateSnapshotInvokeConfig(AiRefinementRequestCommand command) {
+        validateCommand(command);
+        businessInvokeConfigResolver.validatePromptVersionEnabled(command.toInvokeCommand(command.getCapability()));
+    }
+
+    @Override
     public AiCandidateResult translate(AiRefinementRequestCommand command) {
         return invokeCandidate(command, CAPABILITY_TRANSLATE);
     }

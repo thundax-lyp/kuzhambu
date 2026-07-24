@@ -181,6 +181,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
 
         AiCandidateResult result;
         try {
+            refinementApplicationService.validateSnapshotInvokeConfig(command);
             result = invoke(taskId, command, task.isStreamEnabled());
         } catch (RuntimeException exception) {
             result = new AiCandidateResult(

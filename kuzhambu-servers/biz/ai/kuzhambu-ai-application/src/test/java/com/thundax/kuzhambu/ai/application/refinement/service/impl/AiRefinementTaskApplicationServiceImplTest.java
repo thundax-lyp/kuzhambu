@@ -11,6 +11,7 @@ import com.thundax.kuzhambu.ai.application.refinement.service.AiRefinementApplic
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.refinement.model.entity.AiRefinementTask;
 import com.thundax.kuzhambu.ai.domain.refinement.repository.AiRefinementTaskRepository;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -229,6 +230,68 @@ class AiRefinementTaskApplicationServiceImplTest {
     }
 
     @Test
+    void addTaskShouldRevalidateSnapshotBeforeDispatch() {
+        RecordingTaskRepository repository = new RecordingTaskRepository();
+        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
+                101L,
+                201L,
+                "SUCCEEDED",
+                AiBusinessCapability.CLASSICS_SUMMARY.value(),
+                null,
+                "TEXT",
+                "摘要",
+                null,
+                null));
+        refinementService.setResolvedPromptConfig("PRIMARY", 2001L, "gpt-4o", 940106L);
+        AiRefinementTaskApplicationServiceImpl service =
+                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
+        AiRefinementRequestCommand command = command(AiBusinessCapability.CLASSICS_SUMMARY.value());
+        command.setPromptVersionId(null);
+        command.setPromptMessagesJson(null);
+        command.setPromptVariablesJson(null);
+
+        AiRefinementTask accepted = service.addTask(command);
+        AiRefinementTask completed = awaitTerminal(repository, accepted.getTaskId());
+
+        assertEquals(1, refinementService.validateSnapshotInvokeConfigCount);
+        assertEquals("SUCCEEDED", completed.getStatus());
+    }
+
+    @Test
+    void addTaskShouldFailWhenSnapshotPromptTemplateIsDisabledBeforeDispatch() {
+        RecordingTaskRepository repository = new RecordingTaskRepository();
+        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
+                101L,
+                201L,
+                "SUCCEEDED",
+                AiBusinessCapability.CLASSICS_SUMMARY.value(),
+                null,
+                "TEXT",
+                "摘要",
+                null,
+                null));
+        refinementService.setResolvedPromptConfig("PRIMARY", 2001L, "gpt-4o", 940106L);
+        refinementService.setSnapshotValidationException(
+                new BizException("AI business config prompt template is disabled or mismatched: 930106"));
+        AiRefinementTaskApplicationServiceImpl service =
+                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
+        AiRefinementRequestCommand command = command(AiBusinessCapability.CLASSICS_SUMMARY.value());
+        command.setPromptVersionId(null);
+        command.setPromptMessagesJson(null);
+        command.setPromptVariablesJson(null);
+
+        AiRefinementTask accepted = service.addTask(command);
+        AiRefinementTask completed = awaitTerminal(repository, accepted.getTaskId());
+
+        assertEquals(1, refinementService.validateSnapshotInvokeConfigCount);
+        assertEquals("FAILED", completed.getStatus());
+        assertEquals("WORKER_REQUEST", completed.getFailureStage());
+        assertEquals("INTERNAL_FAILURE", completed.getErrorType());
+        assertEquals(
+                "AI business config prompt template is disabled or mismatched: 930106", completed.getErrorMessage());
+    }
+
+    @Test
     void conditionalUpdateShouldKeepCancelledWhenWorkerCompletionArrivesLate() {
         RecordingTaskRepository repository = new RecordingTaskRepository();
         AiRefinementTask task = task(AiBusinessCapability.CLASSICS_TRANSLATE.value(), "RUNNING");
@@ -346,6 +409,8 @@ class AiRefinementTaskApplicationServiceImplTest {
         private Long resolvedModelId;
         private String resolvedModelName;
         private Long resolvedPromptVersionId;
+        private RuntimeException snapshotValidationException;
+        private int validateSnapshotInvokeConfigCount;
 
         StubRefinementApplicationService(AiCandidateResult result) {
             this.result = result;
@@ -358,9 +423,21 @@ class AiRefinementTaskApplicationServiceImplTest {
             this.resolvedPromptVersionId = promptVersionId;
         }
 
+        void setSnapshotValidationException(RuntimeException exception) {
+            this.snapshotValidationException = exception;
+        }
+
         @Override
         public void snapshotInvokeConfig(AiRefinementRequestCommand command) {
             applyResolvedPromptConfig(command);
+        }
+
+        @Override
+        public void validateSnapshotInvokeConfig(AiRefinementRequestCommand command) {
+            validateSnapshotInvokeConfigCount++;
+            if (snapshotValidationException != null) {
+                throw snapshotValidationException;
+            }
         }
 
         @Override

@@ -14,6 +14,7 @@ import com.thundax.kuzhambu.ai.domain.config.model.entity.AiBusinessConfig;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVariable;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVersion;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.repository.PromptRepository;
 import com.thundax.kuzhambu.ai.domain.config.service.PromptVariableDomainService;
 import com.thundax.kuzhambu.common.core.exception.BizException;
@@ -70,6 +71,23 @@ public class AiBusinessInvokeConfigResolver {
         command.setServiceRole(resolved.serviceRole());
         command.setModelId(resolved.modelId());
         command.setModelName(resolved.modelName());
+    }
+
+    public void validatePromptVersionEnabled(AiInvokeCommand command) {
+        if (command == null || isBlank(command.getCapability()) || command.getPromptVersionId() == null) {
+            throw new BizException("AI prompt version is required");
+        }
+        PromptVersion promptVersion =
+                promptRepository.getVersion(PromptVersionIdCodec.toDomain(command.getPromptVersionId()));
+        if (promptVersion == null || promptVersion.getTemplateId() == null) {
+            throw new BizException("AI prompt version is not configured: " + command.getPromptVersionId());
+        }
+        PromptTemplate promptTemplate = promptRepository.get(promptVersion.getTemplateId());
+        AiBusinessCapability capability = AiBusinessCapability.from(command.getCapability());
+        if (promptTemplate == null || !promptTemplate.isEnabled() || promptTemplate.getCapability() != capability) {
+            throw new BizException("AI business config prompt template is disabled or mismatched: "
+                    + PromptTemplateIdCodec.toValue(promptVersion.getTemplateId()));
+        }
     }
 
     private AiBusinessConfig resolveBusinessConfig(String capability) {
