@@ -35,6 +35,18 @@ class AuditExpressionEvaluatorTest {
         assertEquals(4L, value);
     }
 
+    @Test
+    void objectValueShouldBindIdAliasForSingleIdentifierArgument() throws NoSuchMethodException {
+        Method method = AuditExpressionEvaluatorTest.class.getDeclaredMethod("remove", UserId.class);
+
+        Object value = AuditExpressionEvaluator.objectValue("#id.value()", method, new Object[] {UserId.of(5L)});
+
+        assertEquals(5L, value);
+    }
+
     @SuppressWarnings("unused")
     private void changeStatus(ChangeUserStatusCommand command) {}
+
+    @SuppressWarnings("unused")
+    private void remove(UserId id) {}
 }

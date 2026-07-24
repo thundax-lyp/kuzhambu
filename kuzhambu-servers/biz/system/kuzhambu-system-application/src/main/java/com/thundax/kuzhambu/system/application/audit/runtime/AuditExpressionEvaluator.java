@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.system.application.audit.runtime;
 
 import com.thundax.kuzhambu.common.audit.model.valueobject.AuditField;
 import com.thundax.kuzhambu.common.audit.model.valueobject.AuditSnapshot;
+import com.thundax.kuzhambu.common.core.id.Identifier;
 import com.thundax.kuzhambu.system.domain.audit.model.valueobject.AuditChangedField;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -111,6 +112,9 @@ public final class AuditExpressionEvaluator {
         }
         if (args.length == 1) {
             context.setVariable("command", args[0]);
+            if (args[0] instanceof Identifier<?>) {
+                context.setVariable("id", args[0]);
+            }
             String variableName = simpleVariableName(args[0]);
             if (StringUtils.isNotBlank(variableName)) {
                 context.setVariable(variableName, args[0]);
