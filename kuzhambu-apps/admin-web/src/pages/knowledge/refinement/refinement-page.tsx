@@ -2,8 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Card, Col, Empty, Row, Typography } from "antd";
 import { useMemo } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import { KuzhambuPage } from "@/components/kuzhambu-page";
+import { KuzhambuSpace, KuzhambuPage } from "@/components";
+
 import { RefinementApplyResultPanel } from "./components/refinement-apply-result-panel";
 import { RefinementEntityDeleteModal } from "./components/refinement-entity-delete-modal";
 import { RefinementEntityEditModal } from "./components/refinement-entity-edit-modal";

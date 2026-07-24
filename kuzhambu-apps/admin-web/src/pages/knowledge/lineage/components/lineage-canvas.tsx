@@ -3,7 +3,7 @@ import { Empty, Tooltip } from "antd";
 import { useMemo, useRef, useState } from "react";
 import type { MouseEvent as ReactMouseEvent, WheelEvent as ReactWheelEvent } from "react";
 import type { LineageNodeRecord, LineageRelationRecord } from "../lineage-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuButton } from "@/components";
 
 interface LineageCanvasProps {
     nodes: LineageNodeRecord[];

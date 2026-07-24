@@ -1,7 +1,12 @@
 import { Form, Input, InputNumber } from "antd";
 import { useEffect } from "react";
-import { KuzhambuForm, KuzhambuFormHiddenItem, KuzhambuFormItem } from "@/components/kuzhambu-form";
-import { KuzhambuModal } from "@/components/kuzhambu-modal";
+import {
+    KuzhambuForm,
+    KuzhambuFormHiddenItem,
+    KuzhambuFormItem,
+    KuzhambuModal
+} from "@/components";
+
 import type { RefinementEntityRecord } from "../refinement-types";
 
 interface RefinementEntityEditModalProps {

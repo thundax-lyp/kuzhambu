@@ -1,11 +1,15 @@
 import { Form, Input } from "antd";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import {
+    KuzhambuDrawer,
+    KuzhambuForm,
+    KuzhambuFormItem,
+    KuzhambuSpace,
+    KuzhambuButton,
+    KuzhambuSelect
+} from "@/components";
+
 import type { UpsertQualityAnnotationCommand } from "../refinement-service";
 import type { QualityAnnotationRecord, QualityAnnotationTarget } from "../refinement-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 type QualityAnnotationFormValues = Pick<
     UpsertQualityAnnotationCommand,

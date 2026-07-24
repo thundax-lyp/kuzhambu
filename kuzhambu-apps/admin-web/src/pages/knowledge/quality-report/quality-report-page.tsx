@@ -3,8 +3,8 @@ import { App, Card, Empty, Tabs, Typography } from "antd";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuPage } from "@/components/kuzhambu-page";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { KuzhambuPage, KuzhambuSpace, KuzhambuButton, KuzhambuAlert } from "@/components";
+
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { QualityReportGenerateForm } from "./components/quality-report-generate-form";
 import { QualityReportAnnotationTable } from "./components/quality-report-annotation-table";
@@ -19,9 +19,8 @@ import type {
     QualityReportSourceDetailRecord,
     ReextractLowQualityCategoryRecord
 } from "./quality-report-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+
 import "./quality-report-page.css";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Text, Title } = Typography;
 const QUALITY_REEXTRACT_TASK_TYPE = "GRAPH";

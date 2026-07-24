@@ -1,9 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import { KuzhambuPage } from "@/components/kuzhambu-page";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
+import { KuzhambuSpace, KuzhambuPage, KuzhambuAlert } from "@/components";
+
 import { GraphResultsTabs } from "./components/graph-results-tabs";
 import { GraphResultsToolbar } from "./components/graph-results-toolbar";
 import * as service from "./graph-results-service";

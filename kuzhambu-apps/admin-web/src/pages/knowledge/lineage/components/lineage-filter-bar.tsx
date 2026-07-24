@@ -2,8 +2,7 @@ import { ReloadOutlined } from "@ant-design/icons";
 import { Input } from "antd";
 import type { LineageCanvasQuery } from "../lineage-service";
 import type { LineageAvailableFiltersRecord, LineageVersionRecord } from "../lineage-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
+import { KuzhambuButton, KuzhambuSelect } from "@/components";
 
 interface LineageFilterBarProps {
     filters: LineageAvailableFiltersRecord;

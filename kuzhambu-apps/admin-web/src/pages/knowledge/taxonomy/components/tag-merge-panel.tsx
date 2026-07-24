@@ -1,10 +1,14 @@
 import { Card, Descriptions, Empty, Typography } from "antd";
 import { useState } from "react";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuList, KuzhambuListItem } from "@/components/kuzhambu-list";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import {
+    KuzhambuAlert,
+    KuzhambuButton,
+    KuzhambuList,
+    KuzhambuListItem,
+    KuzhambuSelect,
+    KuzhambuSpace
+} from "@/components";
+
 import type { TagMergeCommand } from "../taxonomy-service";
 import type {
     TagAliasRecord,

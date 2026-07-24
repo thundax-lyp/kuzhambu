@@ -1,8 +1,7 @@
 import { Table, Tag } from "antd";
-import { KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
+import { KuzhambuSpaceCompact, KuzhambuButton } from "@/components";
 import type { ColumnsType } from "antd/es/table";
 import type { RefinementRelationRecord } from "../refinement-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 interface RefinementRelationTableProps {
     canEdit?: boolean;

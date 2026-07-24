@@ -3,13 +3,16 @@ import { Typography } from "antd";
 import type { Key } from "react";
 import type { ReactNode } from "react";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
-import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
-import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
-import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
-import { KuzhambuTag } from "@/components/kuzhambu-tag";
+import {
+    KuzhambuListPage,
+    type KuzhambuTableProps,
+    KuzhambuSwitch,
+    KuzhambuTag,
+    KuzhambuButton
+} from "@/components";
+
 import type { TagPageQuery, TagStatusCommand } from "../taxonomy-service";
 import type { TagRecord } from "../taxonomy-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 

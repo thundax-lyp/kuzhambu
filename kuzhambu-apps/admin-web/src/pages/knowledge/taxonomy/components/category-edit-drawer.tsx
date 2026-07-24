@@ -1,7 +1,12 @@
 import { Form, Input, InputNumber } from "antd";
 import { useEffect, useMemo } from "react";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuForm, KuzhambuFormHiddenItem, KuzhambuFormItem } from "@/components/kuzhambu-form";
+import {
+    KuzhambuDrawer,
+    KuzhambuForm,
+    KuzhambuFormHiddenItem,
+    KuzhambuFormItem
+} from "@/components";
+
 import type { TagCategoryCreateCommand, TagCategoryUpdateCommand } from "../taxonomy-service";
 import type { TagCategoryRecord } from "../taxonomy-types";
 

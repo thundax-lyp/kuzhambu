@@ -1,10 +1,14 @@
 import { Form, Input } from "antd";
 import { useEffect } from "react";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import {
+    KuzhambuForm,
+    KuzhambuFormItem,
+    KuzhambuSpace,
+    KuzhambuButton,
+    KuzhambuSelect
+} from "@/components";
+
 import type { RefinementTaskPageQuery } from "../refinement-service";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 interface RefinementFilterFormProps {
     loading?: boolean;

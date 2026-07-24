@@ -1,6 +1,5 @@
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { KuzhambuAlert, KuzhambuButton, KuzhambuSpace } from "@/components";
+
 import type { RefinementApplyRecord } from "../refinement-types";
 
 interface RefinementApplyResultPanelProps {

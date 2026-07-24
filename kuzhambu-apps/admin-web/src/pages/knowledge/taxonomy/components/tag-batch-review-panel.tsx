@@ -1,9 +1,13 @@
 import { Form, Input, Typography } from "antd";
 import { useMemo } from "react";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import {
+    KuzhambuDrawer,
+    KuzhambuForm,
+    KuzhambuFormItem,
+    KuzhambuSelect,
+    KuzhambuSpace
+} from "@/components";
+
 import type { TagBatchReviewCommand } from "../taxonomy-service";
 import type { TagCategoryRecord, TagRecord } from "../taxonomy-types";
 

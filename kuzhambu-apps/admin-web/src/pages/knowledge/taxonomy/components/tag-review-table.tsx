@@ -2,12 +2,15 @@ import { CheckOutlined, CloseOutlined, ReloadOutlined } from "@ant-design/icons"
 import { Typography } from "antd";
 import type { Key } from "react";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
-import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
-import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
-import { KuzhambuTag } from "@/components/kuzhambu-tag";
+import {
+    KuzhambuListPage,
+    type KuzhambuTableProps,
+    KuzhambuTag,
+    KuzhambuButton
+} from "@/components";
+
 import type { TagReviewPageQuery } from "../taxonomy-service";
 import type { TagRecord } from "../taxonomy-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 

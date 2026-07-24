@@ -1,9 +1,13 @@
 import { Descriptions, Empty, Typography } from "antd";
 import { useState } from "react";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuList, KuzhambuListItem } from "@/components/kuzhambu-list";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import {
+    KuzhambuDrawer,
+    KuzhambuList,
+    KuzhambuListItem,
+    KuzhambuSelect,
+    KuzhambuSpace
+} from "@/components";
+
 import type { TagBatchMergeCommand } from "../taxonomy-service";
 import type {
     TagAliasRecord,
