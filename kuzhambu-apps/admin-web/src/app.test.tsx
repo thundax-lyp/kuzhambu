@@ -1160,13 +1160,13 @@ describe("App", () => {
 
         const filterButton = screen.getByRole("button", { name: /筛选/ });
         fireEvent.click(filterButton);
-        fireEvent.change(screen.getByPlaceholderText("developer"), {
+        fireEvent.change(screen.getByPlaceholderText("输入登录名"), {
             target: { value: "ethan" }
         });
         fireEvent.click(screen.getByRole("button", { name: /查\s*询/ }));
 
         expect(filterButton).toHaveAttribute("aria-expanded", "false");
-        expect(screen.getByPlaceholderText("developer")).toHaveValue("ethan");
+        expect(screen.getByPlaceholderText("输入登录名")).toHaveValue("ethan");
 
         fireEvent.click(filterButton);
 

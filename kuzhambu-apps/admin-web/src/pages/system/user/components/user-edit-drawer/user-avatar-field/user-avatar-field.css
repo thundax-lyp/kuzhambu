@@ -1,0 +1,10 @@
+.user-avatar-field {
+    position: relative;
+    width: fit-content;
+}
+
+.user-avatar-field .ant-btn {
+    position: absolute;
+    right: -4px;
+    bottom: -3px;
+}

@@ -3,7 +3,12 @@ import type { DataNode } from "antd/es/tree";
 import { useEffect } from "react";
 import type { Key } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuForm, KuzhambuFormHiddenItem, KuzhambuFormItem } from "@/components/kuzhambu-form";
+import {
+    KuzhambuForm,
+    KuzhambuFormHiddenItem,
+    KuzhambuFormItem,
+    KuzhambuFormPlaceholderItem
+} from "@/components/kuzhambu-form";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import { MenuTreeField } from "@/pages/system/role/components/menu-tree-field";
 import type { RoleSaveCommand } from "@/pages/system/role/role-service";
@@ -105,7 +110,7 @@ export const RoleEditDrawer = ({
             className="role-edit-drawer"
             title={role ? "编辑角色" : "新增角色"}
             open={Boolean(open)}
-            size="middle"
+            size="large"
             onClose={onClose}
             footerActions={[
                 { testId: "system-role-role-cancel-button", title: "取消", action: onClose },
@@ -125,24 +130,26 @@ export const RoleEditDrawer = ({
                 <KuzhambuFormItem
                     name="name"
                     label="角色名称"
-                    layoutSize="large"
+                    layoutSize="middle"
                     rules={[{ required: true, message: "请输入角色名称" }]}
                 >
                     <Input placeholder="例如：运营管理员" />
                 </KuzhambuFormItem>
+                <KuzhambuFormPlaceholderItem />
                 <KuzhambuFormItem name="admin" label="管理权限" valuePropName="checked">
                     <KuzhambuSwitch
                         checkedChildren={readOptionLabel(privilegeOptions, "ADMIN", "管理员角色")}
                         unCheckedChildren={readOptionLabel(privilegeOptions, "NORMAL", "普通角色")}
                     />
                 </KuzhambuFormItem>
+                <KuzhambuFormPlaceholderItem />
                 <KuzhambuFormItem name="enable" label="角色状态" valuePropName="checked">
                     <KuzhambuSwitch
                         checkedChildren={readOptionLabel(statusOptions, "ENABLED", "启用")}
                         unCheckedChildren={readOptionLabel(statusOptions, "DISABLED", "禁用")}
                     />
                 </KuzhambuFormItem>
-                <KuzhambuFormItem name="menus" layoutSize="large">
+                <KuzhambuFormItem name="menus" label="菜单权限" layoutSize="large">
                     <MenuTreeField treeData={treeData} expandedMenuIds={expandedMenuIds} />
                 </KuzhambuFormItem>
                 <KuzhambuFormItem name="remarks" label="备注" layoutSize="large">

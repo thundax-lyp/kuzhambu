@@ -1,5 +1,5 @@
 export type KuzhambuFormItemLayoutSize = "small" | "middle" | "large";
-export type KuzhambuFormItemOffsetSize = Exclude<KuzhambuFormItemLayoutSize, "large">;
+export type KuzhambuFormLayoutTier = "xs" | "md" | "lg";
 
 export const KUZHAMBU_FORM_ITEM_LAYOUTS = {
     small: {
@@ -19,7 +19,12 @@ export const KUZHAMBU_FORM_ITEM_LAYOUTS = {
     }
 } as const;
 
-export const KUZHAMBU_FORM_ITEM_OFFSETS = {
-    small: { md: 12, lg: 8 },
-    middle: { md: 12, lg: 12 }
-} as const;
+export const readKuzhambuFormLayoutTier = (containerWidth: number): KuzhambuFormLayoutTier => {
+    if (containerWidth < 768) {
+        return "xs";
+    }
+    if (containerWidth < 992) {
+        return "md";
+    }
+    return "lg";
+};

@@ -1,5 +1,5 @@
 import { Typography } from "antd";
-import type { Key } from "react";
+import type { Key, ReactNode } from "react";
 import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
 import { KuzhambuTag } from "@/components/kuzhambu-tag";
@@ -77,6 +77,7 @@ interface UserTableProps {
     currentPage: number;
     currentUser?: CurrentUserRecord;
     loading: boolean;
+    batchActions: ReactNode;
     pageSize: number;
     rankLabelByValue: Map<string, string>;
     selectedRowKeys: Key[];
@@ -96,6 +97,7 @@ export const UserTable = ({
     currentPage,
     currentUser,
     loading,
+    batchActions,
     pageSize,
     rankLabelByValue,
     selectedRowKeys,
@@ -236,6 +238,11 @@ export const UserTable = ({
             ariaLabel="用户列表"
             rowKey="id"
             className="user-table"
+            batchActionBar={{
+                actions: batchActions,
+                className: "user-table-toolbar",
+                selectedCount: selectedRowKeys.length
+            }}
             columns={columns}
             dataSource={users}
             loading={loading}

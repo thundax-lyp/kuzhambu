@@ -1,9 +1,7 @@
-import { Tree, Typography } from "antd";
+import { Tree } from "antd";
 import type { DataNode } from "antd/es/tree";
 import type { Key } from "react";
 import "./menu-tree-field.css";
-
-const { Text } = Typography;
 
 interface MenuTreeFieldProps {
     value?: Key[];
@@ -20,10 +18,6 @@ export const MenuTreeField = ({
 }: MenuTreeFieldProps) => {
     return (
         <div className="menu-tree-field">
-            <div className="menu-tree-field-head">
-                <Text strong>菜单权限</Text>
-                <Text type="secondary">{value.length} 项已选</Text>
-            </div>
             <Tree
                 checkable
                 defaultExpandAll

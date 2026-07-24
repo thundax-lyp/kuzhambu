@@ -1,7 +1,12 @@
 import { Form, Input, Select } from "antd";
 import { useEffect } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuForm, KuzhambuFormHiddenItem, KuzhambuFormItem } from "@/components/kuzhambu-form";
+import {
+    KuzhambuForm,
+    KuzhambuFormHiddenItem,
+    KuzhambuFormItem,
+    KuzhambuFormPlaceholderItem
+} from "@/components/kuzhambu-form";
 import type { DepartmentSaveCommand } from "../department-service";
 import type { DepartmentNode } from "../department-types";
 
@@ -81,7 +86,7 @@ export const DepartmentEditDrawer = ({
             className="department-edit-drawer"
             title={department ? "编辑部门" : "新增部门"}
             open={Boolean(open)}
-            size="small"
+            size="large"
             onClose={onClose}
             footerActions={[
                 {
@@ -102,9 +107,10 @@ export const DepartmentEditDrawer = ({
                 <KuzhambuFormHiddenItem name="id">
                     <Input />
                 </KuzhambuFormHiddenItem>
-                <KuzhambuFormItem name="parentId" label="上级部门" layoutSize="large">
+                <KuzhambuFormItem name="parentId" label="上级部门" layoutSize="middle">
                     <Select allowClear placeholder="不选择则作为根部门" options={parentOptions} />
                 </KuzhambuFormItem>
+                <KuzhambuFormPlaceholderItem />
                 <KuzhambuFormItem
                     name="name"
                     label="部门名称"
@@ -112,9 +118,11 @@ export const DepartmentEditDrawer = ({
                 >
                     <Input placeholder="例如：研发中心" />
                 </KuzhambuFormItem>
+                <KuzhambuFormPlaceholderItem />
                 <KuzhambuFormItem name="shortName" label="简称">
                     <Input placeholder="例如：R&D" />
                 </KuzhambuFormItem>
+                <KuzhambuFormPlaceholderItem />
                 <KuzhambuFormItem name="remarks" label="备注" layoutSize="large">
                     <TextArea rows={4} maxLength={200} showCount placeholder="部门职责说明" />
                 </KuzhambuFormItem>

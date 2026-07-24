@@ -230,8 +230,9 @@ export const AiModelsPage = () => {
                 onSearchChange={setSearchText}
                 searchText={searchText}
                 selectedCount={selectedRowKeys.length}
-                table={
+                table={(batchActionBar) => (
                     <AiModelTable
+                        batchActionBar={batchActionBar}
                         canEditConfig={canEditConfig}
                         changing={updateModelMutation.isPending}
                         dataSource={filteredModels}
@@ -247,7 +248,7 @@ export const AiModelsPage = () => {
                         onSelectedRowKeysChange={setSelectedRowKeys}
                         selectedRowKeys={selectedRowKeys}
                     />
-                }
+                )}
             />
 
             <AiModelEditDrawer

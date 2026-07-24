@@ -1,7 +1,12 @@
 import { Form, Input, InputNumber, Select } from "antd";
 import { useEffect } from "react";
 import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuForm, KuzhambuFormHiddenItem, KuzhambuFormItem } from "@/components/kuzhambu-form";
+import {
+    KuzhambuForm,
+    KuzhambuFormHiddenItem,
+    KuzhambuFormItem,
+    KuzhambuFormPlaceholderItem
+} from "@/components/kuzhambu-form";
 import type { MenuSaveCommand } from "../menu-service";
 import type { MenuNode } from "../menu-types";
 
@@ -94,7 +99,7 @@ export const MenuEditDrawer = ({
             className="menu-edit-drawer"
             title={menu ? "编辑菜单" : "新增菜单"}
             open={Boolean(open)}
-            size="small"
+            size="large"
             onClose={onClose}
             footerActions={[
                 { testId: "system-menu-menu-cancel-button", title: "取消", action: onClose },
@@ -111,9 +116,10 @@ export const MenuEditDrawer = ({
                 <KuzhambuFormHiddenItem name="id">
                     <Input />
                 </KuzhambuFormHiddenItem>
-                <KuzhambuFormItem name="parentId" label="上级菜单" layoutSize="large">
+                <KuzhambuFormItem name="parentId" label="上级菜单" layoutSize="middle">
                     <Select allowClear placeholder="不选择则作为根菜单" options={parentOptions} />
                 </KuzhambuFormItem>
+                <KuzhambuFormPlaceholderItem />
                 <KuzhambuFormItem
                     name="name"
                     label="菜单名称"
@@ -121,6 +127,7 @@ export const MenuEditDrawer = ({
                 >
                     <Input placeholder="例如：菜单管理" />
                 </KuzhambuFormItem>
+                <KuzhambuFormPlaceholderItem />
                 <KuzhambuFormItem name="url" label="URL">
                     <Input placeholder="例如：/system/menus" />
                 </KuzhambuFormItem>
@@ -130,6 +137,7 @@ export const MenuEditDrawer = ({
                 <KuzhambuFormItem name="ranks" label="等级">
                     <InputNumber min={0} max={9} precision={0} className="menu-rank-input" />
                 </KuzhambuFormItem>
+                <KuzhambuFormPlaceholderItem />
                 <KuzhambuFormItem name="display" label="显示状态">
                     <Select
                         options={[
