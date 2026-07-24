@@ -10,28 +10,14 @@ public class DiscoveryAiWorkerUsecaseResolver {
     private static final Map<String, DiscoveryAiWorkerUsecaseSpec> SUPPORTED_USECASES = Map.of(
             "DISCOVERY_QUERY_UNDERSTANDING",
             new DiscoveryAiWorkerUsecaseSpec(
-                    "DISCOVERY_QUERY_UNDERSTANDING",
-                    "/internal/ai/discovery/query-understanding",
-                    "discovery_query_understanding",
-                    false),
+                    "DISCOVERY_QUERY_UNDERSTANDING", null, "discovery_query_understanding", false),
             "DISCOVERY_QUERY_REWRITE",
-            new DiscoveryAiWorkerUsecaseSpec(
-                    "DISCOVERY_QUERY_REWRITE",
-                    "/internal/ai/discovery/query-rewrite",
-                    "discovery_query_understanding",
-                    false),
+            new DiscoveryAiWorkerUsecaseSpec("DISCOVERY_QUERY_REWRITE", null, "discovery_query_understanding", false),
             "DISCOVERY_ANSWER_GENERATION",
-            new DiscoveryAiWorkerUsecaseSpec(
-                    "DISCOVERY_ANSWER_GENERATION",
-                    "/internal/ai/discovery/answer-generation",
-                    "discovery_answer_generation",
-                    false),
+            new DiscoveryAiWorkerUsecaseSpec("DISCOVERY_ANSWER_GENERATION", null, "discovery_answer_generation", false),
             "DISCOVERY_ANSWER_GENERATION_STREAM",
             new DiscoveryAiWorkerUsecaseSpec(
-                    "DISCOVERY_ANSWER_GENERATION_STREAM",
-                    "/internal/ai/discovery/answer-generation/stream",
-                    "discovery_answer_generation",
-                    true));
+                    "DISCOVERY_ANSWER_GENERATION_STREAM", null, "discovery_answer_generation", true));
 
     public DiscoveryAiWorkerUsecaseSpec resolve(String usecase) {
         DiscoveryAiWorkerUsecaseSpec spec = SUPPORTED_USECASES.get(usecase);
