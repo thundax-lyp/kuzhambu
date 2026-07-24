@@ -1,13 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Card, Empty } from "antd";
 import { useCallback, useMemo, useState } from "react";
-import { KuzhambuList, KuzhambuListItem } from "@/components/kuzhambu-list";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import {
+    KuzhambuList,
+    KuzhambuListItem,
+    KuzhambuSpace,
+    KuzhambuButton,
+    KuzhambuAlert
+} from "@/components";
+
 import * as aiCandidateService from "../ai-candidate-service";
 import type { AiCandidateCapability, AiCandidateRecord } from "../ai-candidate-types";
 import { AiCandidatePayloadEditor } from "./ai-candidate-payload-editor";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
+
 type CandidateContentType = "SANCAI_ENTRY" | "WANGQI_DOCUMENT" | "MING_CUSTOMS";
 
 interface AiCandidatePanelProps {

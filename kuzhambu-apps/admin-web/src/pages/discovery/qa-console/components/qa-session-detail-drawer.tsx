@@ -1,6 +1,6 @@
 import { Descriptions, Typography } from "antd";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { KuzhambuDrawer, KuzhambuSpace } from "@/components";
+
 import type { DiscoveryQaSessionDetailRecord } from "../qa-console-types";
 
 const { Text } = Typography;

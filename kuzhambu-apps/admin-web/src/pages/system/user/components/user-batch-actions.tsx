@@ -1,6 +1,5 @@
 import { DeleteOutlined, PoweroffOutlined } from "@ant-design/icons";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuSpace, KuzhambuButton } from "@/components";
 
 interface UserBatchActionsProps {
     canEditUser: boolean;

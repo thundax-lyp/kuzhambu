@@ -2,8 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Empty, Spin, Tabs, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { KuzhambuPage } from "@/components/kuzhambu-page";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { KuzhambuPage, KuzhambuSpace, KuzhambuAlert } from "@/components";
+
 import { LineageCanvas } from "./components/lineage-canvas";
 import { LineageDetailPanel } from "./components/lineage-detail-panel";
 import { LineageFilterBar } from "./components/lineage-filter-bar";
@@ -17,7 +17,6 @@ import type {
     LineageRelationRecord
 } from "./lineage-types";
 import "./lineage-page.css";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Text, Title } = Typography;
 

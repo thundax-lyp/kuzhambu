@@ -4,8 +4,14 @@ import { App, Badge, Card, Empty, Image, Typography, Upload } from "antd";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuTable } from "@/components/kuzhambu-table";
-import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
+import {
+    KuzhambuTable,
+    type KuzhambuTableProps,
+    type KuzhambuTableSortPosition,
+    KuzhambuButton,
+    KuzhambuAlert
+} from "@/components";
+
 import { hasPermission } from "@/auth/permission-storage";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import * as exportService from "@/pages/classics/common/classics-export-service";
@@ -32,8 +38,7 @@ import type {
     SancaiVisualAssetRecord,
     SancaiVolumeRecord
 } from "@/pages/classics/sancai/sancai-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
+
 import "./sancai-entry-panel.css";
 
 const { Text } = Typography;
@@ -929,8 +934,16 @@ export const SancaiEntryPanel = ({
                 onCreateSummaryTask={(draft) => createRefinementTask("summary", null, draft)}
                 isCreatingTranslationTask={creatingRefinementCapability === "translate"}
                 isCreatingSummaryTask={creatingRefinementCapability === "summary"}
-                translationTasks={refinementTasks.filter((task) => task.capability === "translate")}
-                summaryTasks={refinementTasks.filter((task) => task.capability === "summary")}
+                translationTasks={refinementTasks.filter(
+                    (task) =>
+                        aiRefinementTaskService.getNormalizedTaskCapability(task.capability) ===
+                        "translate"
+                )}
+                summaryTasks={refinementTasks.filter(
+                    (task) =>
+                        aiRefinementTaskService.getNormalizedTaskCapability(task.capability) ===
+                        "summary"
+                )}
                 creatingVisualAssetCapability={
                     creatingRefinementCapability === "image_analysis" ||
                     creatingRefinementCapability === "fusion" ||
@@ -1085,15 +1098,20 @@ export const SancaiEntryPanel = ({
                             <Card size="small" title="AI 精修任务">
                                 <div style={{ display: "grid", gap: 8 }}>
                                     {refinementTasks
-                                        .filter(
-                                            (task) =>
-                                                task.capability === "translate" ||
-                                                task.capability === "summary" ||
-                                                task.capability === "image_analysis" ||
-                                                task.capability === "visual" ||
-                                                task.capability === "fusion" ||
-                                                task.capability === "image_gen"
-                                        )
+                                        .filter((task) => {
+                                            const capability =
+                                                aiRefinementTaskService.getNormalizedTaskCapability(
+                                                    task.capability
+                                                );
+                                            return (
+                                                capability === "translate" ||
+                                                capability === "summary" ||
+                                                capability === "image_analysis" ||
+                                                capability === "visual" ||
+                                                capability === "fusion" ||
+                                                capability === "image_gen"
+                                            );
+                                        })
                                         .slice(0, 6)
                                         .map((task) => {
                                             const failureText =

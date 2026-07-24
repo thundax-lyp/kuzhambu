@@ -3,7 +3,6 @@ import { Card, Checkbox, Descriptions, Progress, Segmented, Table, Typography } 
 import type { ColumnsType } from "antd/es/table";
 import type { Key } from "react";
 import { useState } from "react";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { SearchStatisticsFilterPanel } from "./components/search-statistics-filter-panel";
 import type { SearchStatisticsDateRangeValue } from "./components/search-statistics-filter-panel";
@@ -19,7 +18,8 @@ import type {
     DiscoverySearchEventPageRecord,
     DiscoverySearchEventRecord
 } from "./search-statistics-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuButton, KuzhambuSpace } from "@/components";
+
 import "./search-statistics-page.css";
 
 const { Text, Title } = Typography;

@@ -2,8 +2,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Tag } from "antd";
 import { useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuTable } from "@/components/kuzhambu-table";
-import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
+import {
+    KuzhambuTable,
+    type KuzhambuTableProps,
+    type KuzhambuTableSortPosition
+} from "@/components";
+
 import type { DictItem } from "@/types/dict";
 import { SancaiCategoryEditDrawerModal } from "./sancai-category-edit-modal";
 import type { SancaiCategoryFormValues } from "./sancai-category-form-values";

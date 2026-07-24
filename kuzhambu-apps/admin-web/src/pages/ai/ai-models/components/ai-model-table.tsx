@@ -1,12 +1,13 @@
 import { Typography } from "antd";
 import type { Key } from "react";
-import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
-import { KuzhambuTable } from "@/components/kuzhambu-table";
-import type {
-    KuzhambuTableBatchActionBarProps,
-    KuzhambuTableProps
-} from "@/components/kuzhambu-table";
-import { KuzhambuTag } from "@/components/kuzhambu-tag";
+import {
+    KuzhambuSwitch,
+    KuzhambuTable,
+    type KuzhambuTableBatchActionBarProps,
+    type KuzhambuTableProps,
+    KuzhambuTag
+} from "@/components";
+
 import { readApiSourceMeta, readCapabilityMeta } from "../ai-models-metadata";
 import type { AiModelRecord } from "../ai-models-types";
 

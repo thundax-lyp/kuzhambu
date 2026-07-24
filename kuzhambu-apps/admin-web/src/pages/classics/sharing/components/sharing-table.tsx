@@ -1,5 +1,5 @@
-import { KuzhambuTag } from "@/components/kuzhambu-tag";
-import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
+import { KuzhambuTag, type KuzhambuTableProps } from "@/components";
+
 import type {
     ClassicsShareLinkStatus,
     ClassicsShareRecord,

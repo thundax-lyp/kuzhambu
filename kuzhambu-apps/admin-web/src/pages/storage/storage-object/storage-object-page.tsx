@@ -1,21 +1,38 @@
-import { DeleteOutlined, FileOutlined, ReloadOutlined } from "@ant-design/icons";
+import {
+    DeleteOutlined,
+    DownloadOutlined,
+    EyeOutlined,
+    FileOutlined,
+    ReloadOutlined,
+    UploadOutlined
+} from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Input, Select, Typography } from "antd";
-import { useMemo, useState } from "react";
-import type { Key } from "react";
-import { hasPermission } from "@/auth/permission-storage";
+import { App, Input, Typography } from "antd";
+import { useMemo, useRef, useState } from "react";
+import type { ChangeEvent, Key } from "react";
 import { useCurrentAccessToken } from "@/auth/hooks/use-current-access-token";
+import { hasPermission } from "@/auth/permission-storage";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
-import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
-import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import { KuzhambuTag } from "@/components/kuzhambu-tag";
-import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
+import {
+    KuzhambuButton,
+    KuzhambuListPage,
+    KuzhambuSelect,
+    KuzhambuSpace,
+    KuzhambuTag,
+    type KuzhambuTableProps,
+    type KuzhambuTableSortPosition
+} from "@/components";
 import * as service from "./storage-object-service";
 import type { StoragePageQuery } from "./storage-object-service";
-import type { StorageContentMode, StorageRecord } from "./storage-object-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { StorageUploadTaskCard } from "./components/storage-upload-task-card";
+import type {
+    StorageContentMode,
+    StorageRecord,
+    StorageUploadTaskRecord
+} from "./storage-object-types";
+import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
+
 import "./storage-object-page.css";
 
 const { Text } = Typography;
@@ -26,7 +43,8 @@ const DEFAULT_COLUMN_WIDTHS = {
     size: 120,
     objectStatus: 120,
     referenceStatus: 130,
-    referenceOwnerType: 160
+    referenceOwner: 180,
+    remarks: 240
 };
 
 type StorageObjectStatusFilter = "ALL" | "ACTIVE" | "DELETING" | "DELETED";
@@ -39,6 +57,7 @@ interface StorageObjectFilters {
     referenceStatus: StorageReferenceStatusFilter;
     referenceOwnerId: string;
     referenceOwnerType: string;
+    remarks: string;
 }
 
 const DEFAULT_STORAGE_OBJECT_FILTERS: StorageObjectFilters = {
@@ -47,7 +66,8 @@ const DEFAULT_STORAGE_OBJECT_FILTERS: StorageObjectFilters = {
     objectStatus: "ALL",
     referenceStatus: "ALL",
     referenceOwnerId: "",
-    referenceOwnerType: ""
+    referenceOwnerType: "",
+    remarks: ""
 };
 
 const objectStatusLabels: Record<Exclude<StorageObjectStatusFilter, "ALL">, string> = {
@@ -60,6 +80,9 @@ const referenceStatusLabels: Record<Exclude<StorageReferenceStatusFilter, "ALL">
     REFERENCED: "已引用",
     UNREFERENCED: "未引用"
 };
+
+const uploadAccept =
+    ".jpg,.jpeg,.png,.gif,.webp,.pdf,.txt,.md,.csv,.json,.html,.zip,.docx,.xlsx,.pptx";
 
 const normalizeSearch = (value?: string | null) => {
     const normalizedValue = value?.trim();
@@ -167,12 +190,16 @@ export const StorageObjectPage = () => {
     const [searchText, setSearchText] = useState("");
     const [filters, setFilters] = useState<StorageObjectFilters>(DEFAULT_STORAGE_OBJECT_FILTERS);
     const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
+    const [uploadTask, setUploadTask] = useState<StorageUploadTaskRecord | null>(null);
+    const uploadInputRef = useRef<HTMLInputElement>(null);
+    const uploadAbortControllerRef = useRef<AbortController | null>(null);
     const hasSelectedStorages = selectedRowKeys.length > 0;
     const hasActiveFilters = Boolean(
         filters.originalFilename.trim() ||
         filters.contentType.trim() ||
         filters.referenceOwnerId.trim() ||
         filters.referenceOwnerType.trim() ||
+        filters.remarks.trim() ||
         filters.objectStatus !== "ALL" ||
         filters.referenceStatus !== "ALL"
     );
@@ -201,6 +228,31 @@ export const StorageObjectPage = () => {
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "删除失败");
+        }
+    });
+
+    const uploadMutation = useMutation({
+        mutationFn: (file: File) => {
+            uploadAbortControllerRef.current?.abort();
+            uploadAbortControllerRef.current = new AbortController();
+            return service.uploadStorageFile({
+                file,
+                signal: uploadAbortControllerRef.current.signal,
+                onTaskUpdate: setUploadTask
+            });
+        },
+        onSuccess: async () => {
+            await invalidateStoragePage();
+            messageApi.success("文件已上传");
+        },
+        onError: (error) => {
+            if (error instanceof Error && error.message === "Request was aborted") {
+                return;
+            }
+            messageApi.error(error instanceof Error ? error.message : "上传失败");
+        },
+        onSettled: () => {
+            uploadAbortControllerRef.current = null;
         }
     });
 
@@ -251,7 +303,8 @@ export const StorageObjectPage = () => {
             objectStatus: readStatusFilterValue(filters.objectStatus),
             referenceStatus: readStatusFilterValue(filters.referenceStatus),
             referenceOwnerId: readReferenceFilterValue(filters.referenceOwnerId),
-            referenceOwnerType: readReferenceFilterValue(filters.referenceOwnerType)
+            referenceOwnerType: readReferenceFilterValue(filters.referenceOwnerType),
+            remarks: normalizeSearch(filters.remarks)
         });
     };
 
@@ -264,9 +317,41 @@ export const StorageObjectPage = () => {
             objectStatus: undefined,
             referenceStatus: undefined,
             referenceOwnerId: undefined,
-            referenceOwnerType: undefined
+            referenceOwnerType: undefined,
+            remarks: undefined
         });
     };
+
+    const openUploadPicker = () => {
+        uploadInputRef.current?.click();
+    };
+
+    const uploadSelectedFile = (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        event.target.value = "";
+        if (file) {
+            setUploadTask(null);
+            uploadMutation.mutate(file);
+        }
+    };
+
+    const cancelUpload = () => {
+        if (!uploadTask?.canCancel) {
+            return;
+        }
+        uploadAbortControllerRef.current?.abort();
+    };
+
+    const isUploadInProgress = Boolean(
+        uploadMutation.isPending ||
+        (uploadTask &&
+            [
+                "uploading-single",
+                "initiating-multipart",
+                "uploading-parts",
+                "completing-multipart"
+            ].includes(uploadTask.stage))
+    );
 
     const openDeleteConfirm = (storage: StorageRecord) => {
         confirm.danger({
@@ -315,7 +400,12 @@ export const StorageObjectPage = () => {
             render: (_, storage) => (
                 <KuzhambuSpace size={10}>
                     <FileOutlined className="storage-object-file-icon" />
-                    <Text strong>{readFilename(storage)}</Text>
+                    <div className="storage-object-name-cell">
+                        <Text strong>{readFilename(storage)}</Text>
+                        {formatFileSize(storage.size) ? (
+                            <Text type="secondary">{formatFileSize(storage.size)}</Text>
+                        ) : null}
+                    </div>
                 </KuzhambuSpace>
             )
         },
@@ -363,12 +453,37 @@ export const StorageObjectPage = () => {
                 ) : null
         },
         {
-            title: "归属类型",
-            dataIndex: "referenceOwnerType",
-            key: "referenceOwnerType",
-            width: DEFAULT_COLUMN_WIDTHS.referenceOwnerType,
+            title: "引用归属",
+            key: "referenceOwner",
+            width: DEFAULT_COLUMN_WIDTHS.referenceOwner,
             ellipsis: true,
-            render: (referenceOwnerType?: string | null) => referenceOwnerType || null
+            render: (_, storage) => {
+                const referenceOwnerType = normalizeSearch(storage.referenceOwnerType);
+                const referenceOwnerId = normalizeSearch(storage.referenceOwnerId);
+
+                if (!referenceOwnerType && !referenceOwnerId) {
+                    return null;
+                }
+
+                return (
+                    <KuzhambuSpace orientation="vertical" size={2}>
+                        {referenceOwnerType ? <Text code>{referenceOwnerType}</Text> : null}
+                        {referenceOwnerId ? (
+                            <Text type="secondary" title={referenceOwnerId}>
+                                {referenceOwnerId}
+                            </Text>
+                        ) : null}
+                    </KuzhambuSpace>
+                );
+            }
+        },
+        {
+            title: "备注",
+            dataIndex: "remarks",
+            key: "remarks",
+            width: DEFAULT_COLUMN_WIDTHS.remarks,
+            ellipsis: true,
+            render: (remarks?: string | null) => remarks || null
         },
         {
             key: "actions",
@@ -377,21 +492,30 @@ export const StorageObjectPage = () => {
                 const previewUrl = toStorageContentUrl(storage, "preview", accessToken);
                 const downloadUrl = toStorageContentUrl(storage, "download", accessToken);
                 return [
-                    {
-                        key: "preview",
-                        text: "预览",
-                        ariaLabel: `预览 ${filename}`,
-                        disabled: !previewUrl,
-                        onClick: () => window.open(previewUrl, "_blank", "noopener,noreferrer")
-                    },
-                    {
-                        key: "download",
-                        text: "下载",
-                        ariaLabel: `下载 ${filename}`,
-                        disabled: !downloadUrl,
-                        onClick: () => window.open(downloadUrl, "_blank", "noopener,noreferrer")
-                    },
-                    { type: "divider" },
+                    ...(previewUrl
+                        ? [
+                              {
+                                  key: "preview",
+                                  text: "预览",
+                                  icon: <EyeOutlined />,
+                                  ariaLabel: `预览 ${filename}`,
+                                  onClick: () =>
+                                      window.open(previewUrl, "_blank", "noopener,noreferrer")
+                              }
+                          ]
+                        : []),
+                    ...(downloadUrl
+                        ? [
+                              {
+                                  key: "download",
+                                  text: "下载",
+                                  icon: <DownloadOutlined />,
+                                  ariaLabel: `下载 ${filename}`,
+                                  onClick: () =>
+                                      window.open(downloadUrl, "_blank", "noopener,noreferrer")
+                              }
+                          ]
+                        : []),
                     {
                         key: "delete",
                         text: "删除",
@@ -407,6 +531,11 @@ export const StorageObjectPage = () => {
 
     return (
         <>
+            {uploadTask ? (
+                <div className="storage-object-upload-task-wrap">
+                    <StorageUploadTaskCard task={uploadTask} onCancel={cancelUpload} />
+                </div>
+            ) : null}
             <KuzhambuListPage<StorageRecord>
                 pageClassName="storage-object-page"
                 title="存储对象"
@@ -458,7 +587,7 @@ export const StorageObjectPage = () => {
                         name: "objectStatus",
                         label: "对象状态",
                         render: () => (
-                            <Select<StorageObjectStatusFilter>
+                            <KuzhambuSelect<StorageObjectStatusFilter>
                                 value={filters.objectStatus}
                                 options={[
                                     { value: "ALL", label: "全部" },
@@ -479,7 +608,7 @@ export const StorageObjectPage = () => {
                         name: "referenceStatus",
                         label: "引用状态",
                         render: () => (
-                            <Select<StorageReferenceStatusFilter>
+                            <KuzhambuSelect<StorageReferenceStatusFilter>
                                 value={filters.referenceStatus}
                                 options={[
                                     { value: "ALL", label: "全部" },
@@ -497,7 +626,7 @@ export const StorageObjectPage = () => {
                     },
                     {
                         name: "referenceOwnerType",
-                        label: "归属类型",
+                        label: "引用归属类型",
                         render: () => (
                             <Input
                                 allowClear
@@ -514,7 +643,7 @@ export const StorageObjectPage = () => {
                     },
                     {
                         name: "referenceOwnerId",
-                        label: "归属ID",
+                        label: "引用归属ID",
                         render: () => (
                             <Input
                                 allowClear
@@ -528,12 +657,46 @@ export const StorageObjectPage = () => {
                                 }
                             />
                         )
+                    },
+                    {
+                        name: "remarks",
+                        label: "备注",
+                        render: () => (
+                            <Input
+                                allowClear
+                                placeholder="业务说明"
+                                value={filters.remarks}
+                                onChange={(event) =>
+                                    setFilters((currentFilters) => ({
+                                        ...currentFilters,
+                                        remarks: event.target.value
+                                    }))
+                                }
+                            />
+                        )
                     }
                 ]}
                 onFilterApply={applyFilters}
                 onFilterReset={resetFilters}
                 pageActions={
                     <KuzhambuSpace wrap>
+                        <input
+                            ref={uploadInputRef}
+                            aria-label="选择上传文件"
+                            className="storage-object-upload-input"
+                            type="file"
+                            accept={uploadAccept}
+                            onChange={uploadSelectedFile}
+                        />
+                        <KuzhambuButton
+                            testId="storage-storage-object-storage-object-upload-button"
+                            icon={<UploadOutlined />}
+                            disabled={!canEditStorage || isUploadInProgress}
+                            loading={isUploadInProgress}
+                            onClick={openUploadPicker}
+                        >
+                            上传
+                        </KuzhambuButton>
                         <KuzhambuButton
                             testId="storage-storage-object-storage-object-refresh-button"
                             icon={<ReloadOutlined />}
@@ -564,7 +727,11 @@ export const StorageObjectPage = () => {
                 className="storage-object-table"
                 columns={columns}
                 dataSource={storages}
-                loading={storageObjectPageQuery.isFetching || sortMutation.isPending}
+                loading={
+                    storageObjectPageQuery.isFetching ||
+                    sortMutation.isPending ||
+                    uploadMutation.isPending
+                }
                 onSort={moveStorage}
                 pagination={{
                     current: currentPageNo,

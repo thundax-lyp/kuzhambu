@@ -1,8 +1,7 @@
-import { Card, Select, Table, Tag, Typography } from "antd";
+import { Card, Table, Tag, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import type { KnowledgeSyncItemPageRecord, KnowledgeSyncItemRecord } from "../qa-console-types";
+import { KuzhambuButton, KuzhambuSelect, KuzhambuSpace } from "@/components";
 
 const { Text } = Typography;
 
@@ -158,7 +157,7 @@ export const QaSyncTable = ({
                     <KuzhambuSpace align="end" wrap>
                         <label className="qa-console-form-item">
                             <Text type="secondary">内容类型</Text>
-                            <Select
+                            <KuzhambuSelect
                                 allowClear
                                 aria-label="内容类型"
                                 options={CONTENT_TYPE_OPTIONS}
@@ -170,7 +169,7 @@ export const QaSyncTable = ({
                         </label>
                         <label className="qa-console-form-item">
                             <Text type="secondary">同步状态</Text>
-                            <Select
+                            <KuzhambuSelect
                                 allowClear
                                 aria-label="同步状态"
                                 options={SYNC_STATUS_OPTIONS}

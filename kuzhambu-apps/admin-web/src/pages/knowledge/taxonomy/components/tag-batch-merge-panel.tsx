@@ -1,8 +1,13 @@
-import { Descriptions, Empty, Select, Typography } from "antd";
+import { Descriptions, Empty, Typography } from "antd";
 import { useState } from "react";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuList, KuzhambuListItem } from "@/components/kuzhambu-list";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import {
+    KuzhambuDrawer,
+    KuzhambuList,
+    KuzhambuListItem,
+    KuzhambuSelect,
+    KuzhambuSpace
+} from "@/components";
+
 import type { TagBatchMergeCommand } from "../taxonomy-service";
 import type {
     TagAliasRecord,
@@ -184,11 +189,10 @@ export const TagBatchMergePanel = ({
                 </div>
                 <div className="knowledge-taxonomy-tag-batch-field">
                     <Text strong>目标标签</Text>
-                    <Select
+                    <KuzhambuSelect
                         aria-label="批量合并目标标签"
                         placeholder="选择接收治理结果的目标标签"
                         showSearch
-                        optionFilterProp="label"
                         value={targetTagId}
                         options={candidateTargetTags.map((tag) => ({
                             label: readTagOptionLabel(tag),

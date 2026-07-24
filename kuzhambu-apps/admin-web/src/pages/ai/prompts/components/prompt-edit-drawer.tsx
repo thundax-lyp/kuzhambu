@@ -7,19 +7,26 @@ import {
     RetweetOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Form, Input, Select, Table, Typography } from "antd";
+import { App, Form, Input, Table, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useEffect, useMemo, useState } from "react";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+import {
+    KuzhambuButton,
+    KuzhambuDrawer,
+    KuzhambuForm,
+    KuzhambuFormHiddenItem,
+    KuzhambuFormItem,
+    KuzhambuModal,
+    KuzhambuSpace,
+    KuzhambuSpaceCompact,
+    KuzhambuSwitch,
+    KuzhambuTable,
+    type KuzhambuTableProps,
+    KuzhambuTag,
+    KuzhambuSelect
+} from "@/components";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuForm, KuzhambuFormHiddenItem, KuzhambuFormItem } from "@/components/kuzhambu-form";
-import { KuzhambuModal } from "@/components/kuzhambu-modal";
-import { KuzhambuSpace, KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
-import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
-import { KuzhambuTable } from "@/components/kuzhambu-table";
-import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
-import { KuzhambuTag } from "@/components/kuzhambu-tag";
+
 import {
     findUnsupportedPromptVariableNames,
     getPromptCapabilityVariables
@@ -27,6 +34,7 @@ import {
 import type { PromptCapabilityVariableDefinition } from "../prompt-capability-variables";
 import type { AiPromptTemplateChangeCommand } from "../prompts-service";
 import * as service from "../prompts-service";
+
 import type {
     AiPromptTemplateRecord,
     AiPromptVariableRecord,
@@ -269,7 +277,7 @@ const PromptMarkdownEditor = ({
                         className="prompt-markdown-editor-message"
                     >
                         <div className="prompt-markdown-editor-toolbar">
-                            <Select
+                            <KuzhambuSelect
                                 aria-label={`第 ${index + 1} 条消息角色`}
                                 value={message.role}
                                 options={PROMPT_ROLE_OPTIONS}
@@ -695,7 +703,7 @@ export const PromptEditDrawer = ({
                                 noStyle
                                 rules={[{ required: true, message: "请选择能力" }]}
                             >
-                                <Select
+                                <KuzhambuSelect
                                     aria-label="提示词能力"
                                     disabled={Boolean(template)}
                                     options={capabilityOptions}
@@ -757,7 +765,7 @@ export const PromptEditDrawer = ({
                         layoutSize="small"
                         className="prompts-editor-item-compact"
                     >
-                        <Select
+                        <KuzhambuSelect
                             aria-label="输出格式"
                             options={[
                                 { label: "TEXT", value: "TEXT" },

@@ -6,6 +6,7 @@ export interface StorageRecord {
     accessEndpoint?: string | null;
     objectStatus?: string | null;
     referenceStatus?: string | null;
+    referenceOwnerId?: string | null;
     referenceOwnerType?: string | null;
     priority?: number | null;
     remarks?: string | null;

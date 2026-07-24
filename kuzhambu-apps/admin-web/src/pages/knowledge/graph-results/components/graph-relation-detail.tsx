@@ -1,5 +1,5 @@
 import { Descriptions } from "antd";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
+import { KuzhambuDrawer } from "@/components";
 import type { GraphRelationRecord } from "../graph-results-types";
 
 interface GraphRelationDetailProps {

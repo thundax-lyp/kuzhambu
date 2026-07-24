@@ -1,6 +1,6 @@
 import { Card, Descriptions } from "antd";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { KuzhambuButton, KuzhambuSpace } from "@/components";
+
 import type { KnowledgeHealthRecord } from "../qa-console-types";
 
 const formatTime = (value?: number | string | null) => {

@@ -3,8 +3,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Input } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { KuzhambuButton, KuzhambuSpace } from "@/components";
+
 import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
 import type { AiCandidateRecord } from "@/pages/classics/common/ai-candidate-types";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
@@ -76,7 +76,11 @@ export const SancaiEntrySummaryTextField = ({
     const latestSummaryTask = useMemo(
         () =>
             [...summaryTasks]
-                .filter((task) => task.capability === "summary")
+                .filter(
+                    (task) =>
+                        aiRefinementTaskService.getNormalizedTaskCapability(task.capability) ===
+                        "summary"
+                )
                 .sort(sortRefinementTasksByNewest)[0] ?? null,
         [summaryTasks]
     );

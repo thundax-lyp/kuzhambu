@@ -1,12 +1,17 @@
 import { PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Card, Form, Select, Tooltip } from "antd";
+import { App, Card, Form, Tooltip } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
-import { KuzhambuPage } from "@/components/kuzhambu-page";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import {
+    KuzhambuButton,
+    KuzhambuForm,
+    KuzhambuFormItem,
+    KuzhambuPage,
+    KuzhambuSpace,
+    KuzhambuSelect
+} from "@/components";
+
 import { CapabilityMappingDrawer } from "./components/capability-mapping-drawer";
 import type { MappingFormValues } from "./components/capability-mapping-drawer";
 import { CapabilityMappingTable } from "./components/capability-mapping-table";
@@ -238,7 +243,7 @@ export const CapabilityMappingsPage = () => {
             <Card className="capability-mappings-filter-card">
                 <KuzhambuForm className="capability-mappings-filter-form">
                     <KuzhambuFormItem label="scope" layoutSize="small">
-                        <Select
+                        <KuzhambuSelect
                             allowClear
                             className="capability-mappings-filter-control"
                             options={SCOPE_OPTIONS}
@@ -252,7 +257,7 @@ export const CapabilityMappingsPage = () => {
                         />
                     </KuzhambuFormItem>
                     <KuzhambuFormItem label="capability" layoutSize="small">
-                        <Select
+                        <KuzhambuSelect
                             allowClear
                             className="capability-mappings-filter-control"
                             options={capabilityOptions}
@@ -266,7 +271,7 @@ export const CapabilityMappingsPage = () => {
                         />
                     </KuzhambuFormItem>
                     <KuzhambuFormItem label="enabled" layoutSize="small">
-                        <Select
+                        <KuzhambuSelect
                             allowClear
                             className="capability-mappings-filter-control"
                             value={query.enabled == null ? undefined : String(query.enabled)}

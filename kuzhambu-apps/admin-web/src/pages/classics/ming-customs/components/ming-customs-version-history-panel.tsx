@@ -1,13 +1,18 @@
 import { Descriptions, Empty, Tag, Typography } from "antd";
-import { KuzhambuList, KuzhambuListItem, KuzhambuListMeta } from "@/components/kuzhambu-list";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import {
+    KuzhambuList,
+    KuzhambuListItem,
+    KuzhambuListMeta,
+    KuzhambuSpace,
+    KuzhambuButton,
+    KuzhambuAlert
+} from "@/components";
+
 import type {
     MingCustomsContentVersionRecord,
     MingCustomsRecord,
     MingCustomsVersionSnapshot
 } from "../ming-customs-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Text } = Typography;
 

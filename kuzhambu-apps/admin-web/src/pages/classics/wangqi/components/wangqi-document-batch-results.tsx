@@ -1,4 +1,4 @@
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
+import { KuzhambuAlert } from "@/components";
 import type { ClassicsBatchOperationRecord } from "@/pages/classics/common/classics-content-types";
 
 interface WangqiDocumentBatchResultsProps {

@@ -7,10 +7,10 @@ import {
 import { Markdown } from "@tiptap/markdown";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { DatePicker, Input, Select, Switch, Typography } from "antd";
+import { DatePicker, Input, Switch, Typography } from "antd";
 import { useEffect, useMemo } from "react";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuFormItem } from "@/components/kuzhambu-form";
+import { KuzhambuButton, KuzhambuFormItem, KuzhambuSelect } from "@/components";
+
 import { WangqiDocumentSummaryField } from "./wangqi-document-summary-field";
 import "./wangqi-document-basic-section.css";
 
@@ -140,7 +140,7 @@ export const WangqiDocumentBasicSection = ({
                 <Input aria-label="王圻文档标题" maxLength={120} showCount />
             </KuzhambuFormItem>
             <KuzhambuFormItem name="contentFormat" label="格式">
-                <Select
+                <KuzhambuSelect
                     aria-label="王圻文档正文格式"
                     options={[
                         { label: "Markdown", value: "MARKDOWN" },

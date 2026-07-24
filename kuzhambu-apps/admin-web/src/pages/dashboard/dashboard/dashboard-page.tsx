@@ -5,7 +5,7 @@ import {
     TeamOutlined
 } from "@ant-design/icons";
 import { Card, Typography } from "antd";
-import { KuzhambuPage } from "@/components/kuzhambu-page";
+import { KuzhambuPage } from "@/components";
 import "./dashboard-page.css";
 
 const { Title, Text } = Typography;

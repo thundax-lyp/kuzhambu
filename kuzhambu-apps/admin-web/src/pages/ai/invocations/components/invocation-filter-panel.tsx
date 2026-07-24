@@ -1,9 +1,14 @@
-import { Card, DatePicker, Select } from "antd";
+import { Card, DatePicker } from "antd";
 import type { FormInstance } from "antd";
 import type { Dayjs } from "dayjs";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import {
+    KuzhambuButton,
+    KuzhambuForm,
+    KuzhambuFormItem,
+    KuzhambuSpace,
+    KuzhambuSelect
+} from "@/components";
+
 import type { AiCallRecordPageQuery, AiInvocationSummaryQuery } from "../invocations-service";
 
 const { RangePicker } = DatePicker;
@@ -62,7 +67,7 @@ export const InvocationFilterPanel = ({
                         />
                     </KuzhambuFormItem>
                     <KuzhambuFormItem label="统计粒度" name="bucketType" layoutSize="small">
-                        <Select
+                        <KuzhambuSelect
                             className="invocations-filter-control"
                             options={[
                                 { label: "按天", value: "DAY" },
@@ -71,7 +76,7 @@ export const InvocationFilterPanel = ({
                         />
                     </KuzhambuFormItem>
                     <KuzhambuFormItem label="能力" name="capability" layoutSize="small">
-                        <Select
+                        <KuzhambuSelect
                             allowClear
                             className="invocations-filter-control"
                             options={capabilityOptions}
@@ -93,7 +98,7 @@ export const InvocationFilterPanel = ({
         <>
             <KuzhambuForm form={callsForm} className="invocations-filter-form">
                 <KuzhambuFormItem label="状态" name="status" layoutSize="small">
-                    <Select
+                    <KuzhambuSelect
                         allowClear
                         className="invocations-filter-control"
                         options={STATUS_OPTIONS}

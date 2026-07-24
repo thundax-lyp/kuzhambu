@@ -1,15 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { Input, Select, Switch, TreeSelect } from "antd";
+import { Input, Switch, TreeSelect } from "antd";
 import type { TreeSelectProps } from "antd";
 import { useMemo, useState } from "react";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import {
-    KuzhambuForm,
-    KuzhambuFormItem,
-    KuzhambuFormPlaceholderItem
-} from "@/components/kuzhambu-form";
-import * as service from "@/pages/system/user/user-service";
 import type {
     UserDepartmentNode,
     UserRecord,
@@ -20,6 +12,16 @@ import type { OptionsRecord } from "@/types/options";
 import type { UserFormValues } from "../user-form-values";
 import { UserAvatarField } from "./user-avatar-field";
 import "./user-edit-drawer.css";
+import {
+    KuzhambuButton,
+    KuzhambuDrawer,
+    KuzhambuForm,
+    KuzhambuFormItem,
+    KuzhambuFormPlaceholderItem,
+    KuzhambuSelect
+} from "@/components";
+
+import * as service from "@/pages/system/user/user-service";
 
 interface UserEditDrawerProps {
     open?: boolean;
@@ -320,7 +322,7 @@ export const UserEditDrawer = ({
                 </KuzhambuFormItem>
                 <KuzhambuFormPlaceholderItem layoutSize="large" />
                 <KuzhambuFormItem label="角色" layoutSize="middle">
-                    <Select
+                    <KuzhambuSelect
                         mode="multiple"
                         value={formValues.roleIds}
                         options={roleOptions}
@@ -330,7 +332,7 @@ export const UserEditDrawer = ({
                     />
                 </KuzhambuFormItem>
                 <KuzhambuFormItem label="等级" layoutSize="small">
-                    <Select
+                    <KuzhambuSelect
                         value={formValues.ranks}
                         options={editableRankOptions}
                         onChange={(ranks) => updateForm({ ranks })}

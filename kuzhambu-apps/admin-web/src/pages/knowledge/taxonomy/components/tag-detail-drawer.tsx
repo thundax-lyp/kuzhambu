@@ -1,8 +1,14 @@
 import { Descriptions, Empty, Input, Typography } from "antd";
 import { useState } from "react";
-import { KuzhambuList, KuzhambuListItem, KuzhambuListMeta } from "@/components/kuzhambu-list";
-import { KuzhambuDrawer, type KuzhambuDrawerFooterAction } from "@/components/kuzhambu-drawer";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import {
+    KuzhambuList,
+    KuzhambuListItem,
+    KuzhambuListMeta,
+    KuzhambuDrawer,
+    type KuzhambuDrawerFooterAction,
+    KuzhambuSpace
+} from "@/components";
+
 import { TagAliasList } from "./tag-alias-list";
 import type {
     TagAliasCreateCommand,

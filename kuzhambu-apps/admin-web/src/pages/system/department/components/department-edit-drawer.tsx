@@ -1,12 +1,13 @@
-import { Form, Input, Select } from "antd";
+import { Form, Input } from "antd";
 import { useEffect } from "react";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import {
+    KuzhambuDrawer,
     KuzhambuForm,
     KuzhambuFormHiddenItem,
     KuzhambuFormItem,
-    KuzhambuFormPlaceholderItem
-} from "@/components/kuzhambu-form";
+    KuzhambuFormPlaceholderItem,
+    KuzhambuSelect
+} from "@/components";
 import type { DepartmentSaveCommand } from "../department-service";
 import type { DepartmentNode } from "../department-types";
 
@@ -108,7 +109,11 @@ export const DepartmentEditDrawer = ({
                     <Input />
                 </KuzhambuFormHiddenItem>
                 <KuzhambuFormItem name="parentId" label="上级部门" layoutSize="middle">
-                    <Select allowClear placeholder="不选择则作为根部门" options={parentOptions} />
+                    <KuzhambuSelect
+                        allowClear
+                        placeholder="不选择则作为根部门"
+                        options={parentOptions}
+                    />
                 </KuzhambuFormItem>
                 <KuzhambuFormPlaceholderItem />
                 <KuzhambuFormItem

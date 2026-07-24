@@ -1,8 +1,8 @@
 import { ReloadOutlined } from "@ant-design/icons";
-import { Input, Select } from "antd";
+import { Input } from "antd";
 import type { LineageCanvasQuery } from "../lineage-service";
 import type { LineageAvailableFiltersRecord, LineageVersionRecord } from "../lineage-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuButton, KuzhambuSelect } from "@/components";
 
 interface LineageFilterBarProps {
     filters: LineageAvailableFiltersRecord;
@@ -43,7 +43,7 @@ export const LineageFilterBar = ({
 
     return (
         <div className="knowledge-lineage-filter-bar">
-            <Select
+            <KuzhambuSelect
                 aria-label="图谱版本"
                 className="knowledge-lineage-filter-bar__version"
                 allowClear
@@ -77,7 +77,7 @@ export const LineageFilterBar = ({
                     })
                 }
             />
-            <Select
+            <KuzhambuSelect
                 aria-label="节点类型"
                 allowClear
                 placeholder="节点类型"
@@ -91,7 +91,7 @@ export const LineageFilterBar = ({
                     })
                 }
             />
-            <Select
+            <KuzhambuSelect
                 aria-label="关系类型"
                 allowClear
                 placeholder="关系类型"
@@ -105,7 +105,7 @@ export const LineageFilterBar = ({
                     })
                 }
             />
-            <Select
+            <KuzhambuSelect
                 aria-label="确认状态"
                 allowClear
                 placeholder="确认状态"
@@ -119,7 +119,7 @@ export const LineageFilterBar = ({
                     })
                 }
             />
-            <Select
+            <KuzhambuSelect
                 aria-label="深度"
                 className="knowledge-lineage-filter-bar__depth"
                 value={query.depth ?? 2}

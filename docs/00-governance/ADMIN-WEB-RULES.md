@@ -109,8 +109,8 @@
 - `ADMIN_WEB_NAME_API_CONTRACT_TYPE_LOCATION`：`XxxRequest` / `XxxResponse` 只定义在 `*-service.ts` 或 `src/api/`。
 - `ADMIN_WEB_NAME_API_CONTRACT_TYPE_EXPOSURE`：`XxxRequest` / `XxxResponse` 是 service 内部 API 契约，不从 service 导出。
 - `ADMIN_WEB_NAME_SERVICE_INPUT_TYPE_LOCATION`：`XxxQuery` / `XxxCommand` 只定义在 `*-service.ts`；`PageQuery<T>` 只定义在 `src/types/page.ts`。
-- `ADMIN_WEB_NAME_OPTION_RECORD_LOCATION`：`*OptionRecord` / `*OptionsRecord` 只定义在 `src/types/options.ts`；领域选项接口使用 `OptionsRecord<"xxxOptions">` 表达。
-- `ADMIN_WEB_NAME_BUSINESS_DATA_TYPE_LOCATION`：`XxxRecord` / `XxxNode` 只定义在明确边界的 `*-types.ts`；`*-types.ts` 只承载领域数据类型、领域节点类型、领域枚举和跨组件领域只读视图类型，不承载 HTTP 接口协议或表单草稿。
+- `ADMIN_WEB_NAME_OPTION_RECORD_LOCATION`：`src/pages/**` 不定义 `*OptionRecord` / `*OptionsRecord`；跨页面选项基础类型只定义在 `src/types/options.ts`，页面可通过 `@/components` 聚合入口引用 `OptionRecord` / `OptionsRecord`。
+- `ADMIN_WEB_NAME_BUSINESS_DATA_TYPE_LOCATION`：`src/pages/**` 的 `XxxRecord` / `XxxNode` 只定义在明确边界的 `*-types.ts`；`*-types.ts` 只承载领域数据类型、领域节点类型、领域枚举和跨组件领域只读视图类型，不承载 HTTP 接口协议或表单草稿。`src/components/**` 和 `src/types/**` 的共享组件、共享基础类型不套页面业务类型位置规则。
 - `ADMIN_WEB_NAME_FORM_VALUES_LOCATION`：`XxxFormValues` 必须和实际表单组件放在一起；只被单个表单组件使用时定义在该组件 `.tsx` 内，跨同一表单容器和子组件复用时放在该表单组件目录的 `*-form-values.ts`。`XxxFormValues` 不得定义在页面域 `*-types.ts`、`*-service.ts` 或跨页面共享 `src/types/`。
 - `ADMIN_WEB_NAME_BOOLEAN`：布尔变量使用 `is`、`has`、`can` 前缀。
 - `ADMIN_WEB_NAME_CONSTANT`：常量使用 `UPPER_SNAKE_CASE`。
@@ -141,6 +141,7 @@
 - `ADMIN_WEB_UI_NO_ANTD_MODAL_DIRECT_IN_PAGES`：`src/pages/**/*.{ts,tsx}` 禁止直接从 `antd` 导入 `Modal`；页面层弹窗统一使用 `src/components/kuzhambu-modal/` 暴露的 `KuzhambuModal`。
 - `ADMIN_WEB_UI_NO_ANTD_ALERT_DIRECT_IN_PAGES`：`src/pages/**/*.{ts,tsx}` 禁止直接从 `antd` 导入 `Alert`；页面层提示统一使用 `src/components/kuzhambu-alert/` 暴露的 `KuzhambuAlert`。
 - `ADMIN_WEB_UI_NO_ANTD_BUTTON_DIRECT_IN_PAGES`：`src/pages/**/*.{ts,tsx}` 禁止直接从 `antd` 导入 `Button`；页面层按钮统一使用 `src/components/kuzhambu-button/` 暴露的 `KuzhambuButton`。
+- `ADMIN_WEB_UI_NO_ANTD_SELECT_DIRECT_IN_PAGES`：`src/pages/**/*.{ts,tsx}` 禁止直接从 `antd` 导入 `Select`；页面层选择器统一使用 `src/components/kuzhambu-select/` 暴露的 `KuzhambuSelect`。
 - `ADMIN_WEB_UI_TABLE_ACTION_COLUMN`：表格操作列使用 `key: "actions"`，优先传 `options`；`render` 只作为复杂逃生口。
 - `ADMIN_WEB_UI_INTERACTIVE_ACCESSIBLE_NAME`：可机器判断的业务交互控件必须有业务可访问名称。当前门禁覆盖无可见文本的 `Button`、`Input.Search`、`Table` 和 `KuzhambuTable`；名称来自可见文本、`aria-label` 或 `aria-labelledby`，不作为自动化测试稳定锚点。
 

@@ -4,16 +4,20 @@ import { App, Typography } from "antd";
 import { useMemo, useState } from "react";
 import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
-import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
-import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
+import {
+    KuzhambuButton,
+    KuzhambuListPage,
+    KuzhambuSpace,
+    KuzhambuSwitch,
+    type KuzhambuTableProps,
+    type KuzhambuTableSortPosition
+} from "@/components";
 import { MenuEditDrawer } from "./components/menu-edit-drawer";
 import * as service from "./menu-service";
 import type { MenuMoveCommand, MenuSaveCommand } from "./menu-service";
 import type { MenuNode, MenuTableNode } from "./menu-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
+
 import "./menu-page.css";
 
 const { Text } = Typography;

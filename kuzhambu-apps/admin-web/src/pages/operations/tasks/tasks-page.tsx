@@ -1,26 +1,37 @@
 import { DashboardOutlined, SettingOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Card, Descriptions, Input, Select, Spin, Typography } from "antd";
+import { Card, Descriptions, Input, Spin, Typography } from "antd";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { hasPermission } from "@/auth/permission-storage";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuPage } from "@/components/kuzhambu-page";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import { KuzhambuTag } from "@/components/kuzhambu-tag";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
+import {
+    KuzhambuAlert,
+    KuzhambuButton,
+    KuzhambuDrawer,
+    KuzhambuPage,
+    KuzhambuSelect,
+    KuzhambuSpace,
+    KuzhambuTag
+} from "@/components";
 import * as service from "./tasks-service";
 import type { OperationsTaskPageQuery } from "./tasks-service";
 import type { OperationsTaskRecord } from "./tasks-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+
 import "./tasks-page.css";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Text, Title } = Typography;
-const { Option } = Select;
 
 const EMPTY_TASK_QUERY: OperationsTaskPageQuery = {};
 const TASK_STATUS_OPTIONS = ["ALL", "QUEUED", "RUNNING", "SUCCEEDED", "FAILED", "CANCELLED"];
+const TASK_STATUS_SELECT_OPTIONS = TASK_STATUS_OPTIONS.map((status) => ({
+    label: status,
+    value: status
+}));
+const TASK_PAGE_SIZE_OPTIONS = [10, 20, 50].map((size) => ({
+    label: String(size),
+    value: size
+}));
 
 const normalizeSearch = (value?: string | null) => {
     const trimmed = value?.trim();
@@ -199,17 +210,12 @@ export const OperationsTasksPage = () => {
                                     style={{ width: 180 }}
                                     allowClear
                                 />
-                                <Select
+                                <KuzhambuSelect
                                     value={filters.taskStatus || "ALL"}
+                                    options={TASK_STATUS_SELECT_OPTIONS}
                                     style={{ width: 140 }}
                                     onChange={(status) => updateFilters({ taskStatus: status })}
-                                >
-                                    {TASK_STATUS_OPTIONS.map((status) => (
-                                        <Option value={status} key={status}>
-                                            {status}
-                                        </Option>
-                                    ))}
-                                </Select>
+                                />
                             </KuzhambuSpace>
                             <KuzhambuSpace size={8} wrap>
                                 <KuzhambuButton
@@ -316,20 +322,15 @@ export const OperationsTasksPage = () => {
                             </KuzhambuButton>
                             <KuzhambuSpace size={8}>
                                 <Text>每页</Text>
-                                <Select
+                                <KuzhambuSelect
                                     value={taskPageSize}
+                                    options={TASK_PAGE_SIZE_OPTIONS}
                                     style={{ width: 86 }}
                                     onChange={(size) => {
                                         setTaskPageNo(DEFAULT_PAGE_NO);
                                         setTaskPageSize(size);
                                     }}
-                                >
-                                    {[10, 20, 50].map((size) => (
-                                        <Option value={size} key={size}>
-                                            {size}
-                                        </Option>
-                                    ))}
-                                </Select>
+                                />
                                 <Text>条</Text>
                             </KuzhambuSpace>
                         </div>

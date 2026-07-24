@@ -1,16 +1,19 @@
 import { ReloadOutlined } from "@ant-design/icons";
 import { Typography } from "antd";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
-import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
-import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
-import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
+import {
+    KuzhambuListPage,
+    type KuzhambuTableProps,
+    KuzhambuSwitch,
+    KuzhambuButton
+} from "@/components";
+
 import type {
     SynonymPageQuery,
     SynonymRemoveCommand,
     SynonymStatusCommand
 } from "../taxonomy-service";
 import type { SynonymRecord } from "../taxonomy-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 

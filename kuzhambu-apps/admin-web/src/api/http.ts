@@ -22,6 +22,7 @@ interface ApiResponse<T> {
 
 interface RequestOptions<TBody> {
     body?: TBody;
+    signal?: AbortSignal;
 }
 
 interface FormDataProgressOptions {
@@ -152,7 +153,8 @@ const requestJson = async <TResponse, TBody = unknown>(
     const response = await fetch(`${ADMIN_API_BASE_URL}${path}`, {
         method: "POST",
         headers,
-        body: options.body === undefined ? undefined : JSON.stringify(options.body)
+        body: options.body === undefined ? undefined : JSON.stringify(options.body),
+        signal: options.signal
     });
 
     const payload = (await response.json()) as ApiResponse<TResponse>;
@@ -195,7 +197,12 @@ const requestGetJson = async <TResponse>(path: string, token: string | null) => 
     return { response, payload };
 };
 
-const requestFormData = async <TResponse>(path: string, body: FormData, token: string | null) => {
+const requestFormData = async <TResponse>(
+    path: string,
+    body: FormData,
+    token: string | null,
+    options: FormDataProgressOptions = {}
+) => {
     const headers: HeadersInit = {};
     if (token) {
         headers[ACCESS_TOKEN_HEADER] = token;
@@ -204,7 +211,8 @@ const requestFormData = async <TResponse>(path: string, body: FormData, token: s
     const response = await fetch(`${ADMIN_API_BASE_URL}${path}`, {
         method: "POST",
         headers,
-        body
+        body,
+        signal: options.signal
     });
 
     const payload = (await response.json()) as ApiResponse<TResponse>;
@@ -344,11 +352,15 @@ export const getJson = async <TResponse>(path: string) => {
     return payload.data;
 };
 
-export const postFormData = async <TResponse>(path: string, body: FormData) => {
+export const postFormData = async <TResponse>(
+    path: string,
+    body: FormData,
+    options: FormDataProgressOptions = {}
+) => {
     await refreshAccessTokenIfNeeded();
 
     const token = getAccessToken();
-    let { response, payload } = await requestFormData<TResponse>(path, body, token);
+    let { response, payload } = await requestFormData<TResponse>(path, body, token, options);
 
     if (!response.ok || !isSuccessCode(payload.code)) {
         const code = payload.code ?? response.status;
@@ -358,7 +370,8 @@ export const postFormData = async <TResponse>(path: string, body: FormData) => {
                 const retryResult = await requestFormData<TResponse>(
                     path,
                     body,
-                    refreshedToken.token
+                    refreshedToken.token,
+                    options
                 );
                 response = retryResult.response;
                 payload = retryResult.payload;

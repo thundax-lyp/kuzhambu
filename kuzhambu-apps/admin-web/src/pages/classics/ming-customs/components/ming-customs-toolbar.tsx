@@ -1,8 +1,7 @@
 import type { ReactNode } from "react";
-import { Badge, Select } from "antd";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
+import { Badge } from "antd";
+import { KuzhambuAlert, KuzhambuButton, KuzhambuListPage, KuzhambuSelect } from "@/components";
+
 import { MingCustomsTagCloud } from "./ming-customs-keyword-cloud";
 import type { MingCustomsQuery } from "../ming-customs-service";
 import type { MingCustomsRecord, MingCustomsTagCloudItem } from "../ming-customs-types";
@@ -71,7 +70,7 @@ export const MingCustomsToolbar = ({
                     name: "category",
                     label: "分类",
                     render: () => (
-                        <Select
+                        <KuzhambuSelect
                             allowClear
                             aria-label="明代习俗分类"
                             placeholder="全部分类"
@@ -93,7 +92,7 @@ export const MingCustomsToolbar = ({
                     name: "visibility",
                     label: "可见性",
                     render: () => (
-                        <Select
+                        <KuzhambuSelect
                             aria-label="明代习俗可见性"
                             value={filters.visibility}
                             options={[
@@ -114,7 +113,7 @@ export const MingCustomsToolbar = ({
                     name: "sortDirection",
                     label: "排序",
                     render: () => (
-                        <Select
+                        <KuzhambuSelect
                             aria-label="明代习俗排序方向"
                             value={filters.sortDirection}
                             options={[

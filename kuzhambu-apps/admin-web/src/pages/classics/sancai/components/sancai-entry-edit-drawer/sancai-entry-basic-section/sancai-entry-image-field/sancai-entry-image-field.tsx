@@ -1,8 +1,8 @@
 import { DownloadOutlined, UploadOutlined } from "@ant-design/icons";
 import { Image, Typography, Upload } from "antd";
 import type { ReactNode } from "react";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { KuzhambuButton, KuzhambuSpace } from "@/components";
+
 import type { SancaiEntryImageRecord } from "@/pages/classics/sancai/sancai-types";
 import "./sancai-entry-image-field.css";
 

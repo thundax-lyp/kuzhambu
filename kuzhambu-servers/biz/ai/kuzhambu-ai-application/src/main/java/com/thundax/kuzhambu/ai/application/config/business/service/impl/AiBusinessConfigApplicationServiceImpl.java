@@ -70,8 +70,11 @@ public class AiBusinessConfigApplicationServiceImpl implements AiBusinessConfigA
         if (config == null || config.getId() == null) {
             throw new BizException("AI business config id is required");
         }
-        validateConfig(config);
         AiBusinessConfig existing = aiBusinessConfigRepository.get(config.getId());
+        if (existing != null && existing.getCapability() != config.getCapability()) {
+            throw new BizException("AI business config capability cannot be changed");
+        }
+        validateConfig(config);
         config.setPriority(existing == null ? aiBusinessConfigRepository.maxPriority() + 1 : existing.getPriority());
         return aiBusinessConfigRepository.update(config);
     }

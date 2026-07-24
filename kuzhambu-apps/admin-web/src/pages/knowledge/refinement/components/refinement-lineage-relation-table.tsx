@@ -1,6 +1,6 @@
 import { Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuButton } from "@/components";
 import type { QualityAnnotationTarget, RefinementLineageRelationRecord } from "../refinement-types";
 
 interface RefinementLineageRelationTableProps {

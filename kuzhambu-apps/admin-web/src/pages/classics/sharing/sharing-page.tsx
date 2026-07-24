@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App } from "antd";
 import { useMemo, useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
+import { KuzhambuListPage, KuzhambuButton } from "@/components";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { DEFAULT_FILTERS, type ShareFilters } from "./components/sharing-filter-config";
 import { SharingDetailDrawer } from "./components/sharing-detail-drawer";
@@ -15,7 +15,7 @@ import type {
     ClassicsShareLinkStatus,
     ClassicsShareRecord
 } from "@/pages/classics/common/classics-share-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+
 import "./sharing-page.css";
 
 const toOptionalQueryValue = (value: string) => {

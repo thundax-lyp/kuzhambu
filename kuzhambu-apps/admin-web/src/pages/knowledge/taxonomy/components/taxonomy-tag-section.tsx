@@ -1,5 +1,5 @@
 import type { Key } from "react";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuButton } from "@/components";
 import { TagGovernanceMetricsPanel } from "./tag-governance-metrics-panel";
 import { TagMergePanel } from "./tag-merge-panel";
 import { TagTable } from "./tag-table";

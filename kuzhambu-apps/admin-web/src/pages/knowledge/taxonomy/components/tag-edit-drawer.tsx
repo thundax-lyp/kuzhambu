@@ -1,7 +1,13 @@
-import { Form, Input, Select } from "antd";
+import { Form, Input } from "antd";
 import { useEffect, useMemo } from "react";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuForm, KuzhambuFormHiddenItem, KuzhambuFormItem } from "@/components/kuzhambu-form";
+import {
+    KuzhambuDrawer,
+    KuzhambuForm,
+    KuzhambuFormHiddenItem,
+    KuzhambuFormItem,
+    KuzhambuSelect
+} from "@/components";
+
 import type { TagCreateCommand, TagUpdateCommand } from "../taxonomy-service";
 import type { TagCategoryRecord, TagRecord } from "../taxonomy-types";
 
@@ -152,10 +158,9 @@ export const TagEditDrawer = ({
                     <Input placeholder="例如：王圻" />
                 </KuzhambuFormItem>
                 <KuzhambuFormItem name="categoryId" label="分类">
-                    <Select
+                    <KuzhambuSelect
                         allowClear
                         showSearch
-                        optionFilterProp="label"
                         placeholder="选择标签分类"
                         options={categoryOptions}
                     />

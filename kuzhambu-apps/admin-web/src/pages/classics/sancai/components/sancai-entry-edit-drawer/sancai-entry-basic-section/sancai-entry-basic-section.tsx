@@ -1,7 +1,7 @@
-import { Input, Select, Switch } from "antd";
+import { Input, Switch } from "antd";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
-import { KuzhambuFormItem } from "@/components/kuzhambu-form";
+import { KuzhambuFormItem, KuzhambuSelect } from "@/components";
 import { SancaiEntryImageField } from "./sancai-entry-image-field";
 import { SancaiEntrySummaryTextField } from "./sancai-entry-summary-text-field";
 import { SancaiEntryTranslationTextField } from "./sancai-entry-translation-text-field";
@@ -55,7 +55,7 @@ export const SancaiEntryBasicSection = ({
     return (
         <>
             <KuzhambuFormItem label="门类">
-                <Select
+                <KuzhambuSelect
                     aria-label="三才图会条目门类"
                     placeholder="选择门类"
                     options={categoryOptions}
@@ -64,7 +64,7 @@ export const SancaiEntryBasicSection = ({
                 />
             </KuzhambuFormItem>
             <KuzhambuFormItem label="卷">
-                <Select
+                <KuzhambuSelect
                     aria-label="三才图会条目卷"
                     disabled={!form.categoryId}
                     placeholder="选择卷"

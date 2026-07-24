@@ -1,8 +1,13 @@
-import { Form, Input, Select, Typography } from "antd";
+import { Form, Input, Typography } from "antd";
 import { useMemo } from "react";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import {
+    KuzhambuDrawer,
+    KuzhambuForm,
+    KuzhambuFormItem,
+    KuzhambuSelect,
+    KuzhambuSpace
+} from "@/components";
+
 import type { TagBatchReviewCommand } from "../taxonomy-service";
 import type { TagCategoryRecord, TagRecord } from "../taxonomy-types";
 
@@ -114,11 +119,10 @@ export const TagBatchReviewPanel = ({
                             layoutSize="large"
                             rules={[{ required: true, message: "请选择正式分类" }]}
                         >
-                            <Select
+                            <KuzhambuSelect
                                 aria-label="批量审核正式分类"
                                 placeholder="选择通过后写入的正式分类"
                                 showSearch
-                                optionFilterProp="label"
                                 options={categoryOptions}
                             />
                         </KuzhambuFormItem>

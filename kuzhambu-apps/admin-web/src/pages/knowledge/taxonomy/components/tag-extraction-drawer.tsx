@@ -1,14 +1,20 @@
-import { Form, Input, InputNumber, Select, Switch } from "antd";
+import { Form, Input, InputNumber, Switch } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import type { Key } from "react";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
+import {
+    KuzhambuDrawer,
+    KuzhambuForm,
+    KuzhambuFormItem,
+    KuzhambuSpace,
+    KuzhambuButton,
+    KuzhambuSelect
+} from "@/components";
+
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+
 import type { TagCandidateApplyCommand, TagExtractionCommand } from "../taxonomy-service";
 import type { TagExtractionCandidateRecord, TagExtractionResultRecord } from "../taxonomy-types";
 import { TagExtractionCandidateTable } from "./tag-extraction-candidate-table";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { TextArea } = Input;
 
@@ -170,7 +176,7 @@ export const TagExtractionDrawer = ({
                     label="内容类型"
                     rules={[{ required: true }]}
                 >
-                    <Select options={CONTENT_TYPE_OPTIONS} />
+                    <KuzhambuSelect options={CONTENT_TYPE_OPTIONS} />
                 </KuzhambuFormItem>
                 <KuzhambuFormItem
                     name="sourceContentId"

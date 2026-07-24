@@ -2,9 +2,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Card, Empty, Typography } from "antd";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { KuzhambuSpace, KuzhambuPage, KuzhambuButton, KuzhambuAlert } from "@/components";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
-import { KuzhambuPage } from "@/components/kuzhambu-page";
+
 import { GraphExtractionCreate } from "./components/graph-extraction-create";
 import { GraphExtractionTaskDetail } from "./components/graph-extraction-task-detail";
 import { GraphExtractionTaskTable } from "./components/graph-extraction-task-table";
@@ -18,9 +18,8 @@ import type {
     GraphExtractionTriggerSource,
     GraphExtractionTaskRecord
 } from "./graph-extraction-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+
 import "./graph-extraction-page.css";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Paragraph, Text, Title } = Typography;
 

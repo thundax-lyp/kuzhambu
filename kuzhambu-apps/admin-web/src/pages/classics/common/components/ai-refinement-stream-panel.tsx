@@ -1,12 +1,10 @@
 import { Card, Tag, Typography } from "antd";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { KuzhambuSpace, KuzhambuButton, KuzhambuAlert } from "@/components";
 import type {
     AiRefinementStreamEventRecord,
     AiRefinementTaskRecord
 } from "../ai-refinement-task-types";
 import * as aiRefinementTaskService from "../ai-refinement-task-service";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 interface AiRefinementStreamPanelProps {
     events: AiRefinementStreamEventRecord[];

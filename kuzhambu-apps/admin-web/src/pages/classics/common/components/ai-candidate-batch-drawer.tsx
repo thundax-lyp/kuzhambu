@@ -2,8 +2,13 @@ import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { App, Empty, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuTable, type KuzhambuTableProps } from "@/components/kuzhambu-table";
+import {
+    KuzhambuDrawer,
+    KuzhambuTable,
+    type KuzhambuTableProps,
+    KuzhambuAlert
+} from "@/components";
+
 import * as aiCandidateService from "../ai-candidate-service";
 import type { AiCandidateApplyCommand } from "../ai-candidate-service";
 import * as classicsContentService from "../classics-content-service";
@@ -11,7 +16,6 @@ import { type AiCandidateCapability, type AiCandidateRecord } from "../ai-candid
 import type { ClassicsBatchOperationRecord, ClassicsContentType } from "../classics-content-types";
 import type { ClassicsAiCandidateBatchApplyCommand } from "../classics-content-service";
 import { AiCandidatePayloadEditor } from "./ai-candidate-payload-editor";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Text } = Typography;
 

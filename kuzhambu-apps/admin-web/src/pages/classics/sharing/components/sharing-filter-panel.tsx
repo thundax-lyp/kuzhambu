@@ -1,5 +1,5 @@
-import { Select } from "antd";
 import type { ShareFilters, ShareStatusFilter } from "./sharing-filter-config";
+import { KuzhambuSelect } from "@/components";
 
 const SHARE_CONTENT_TYPE_OPTIONS = [
     { label: "全部", value: "ALL" },
@@ -32,7 +32,7 @@ export const SharingFilterPanel = ({ filters, onChange }: SharingFilterPanelProp
             name: "contentType",
             label: "内容类型",
             render: () => (
-                <Select
+                <KuzhambuSelect
                     aria-label="分享内容类型"
                     value={filters.contentType}
                     options={SHARE_CONTENT_TYPE_OPTIONS}
@@ -49,7 +49,7 @@ export const SharingFilterPanel = ({ filters, onChange }: SharingFilterPanelProp
             name: "status",
             label: "分享状态",
             render: () => (
-                <Select
+                <KuzhambuSelect
                     aria-label="分享状态"
                     value={filters.status}
                     options={SHARE_STATUS_OPTIONS}
@@ -66,7 +66,7 @@ export const SharingFilterPanel = ({ filters, onChange }: SharingFilterPanelProp
             name: "visibility",
             label: "可见性",
             render: () => (
-                <Select
+                <KuzhambuSelect
                     aria-label="分享可见性"
                     value={filters.visibility}
                     options={SHARE_VISIBILITY_OPTIONS}

@@ -1,6 +1,6 @@
 import { Card, Empty, Tabs, Typography } from "antd";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { KuzhambuAlert, KuzhambuSpace } from "@/components";
+
 import { GraphEntityDetail } from "./graph-entity-detail";
 import { GraphEntityTable } from "./graph-entity-table";
 import { GraphLineageNodeDetail } from "./graph-lineage-node-detail";

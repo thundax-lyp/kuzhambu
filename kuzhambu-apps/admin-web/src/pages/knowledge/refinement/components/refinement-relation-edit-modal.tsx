@@ -1,7 +1,12 @@
 import { Form, Input, InputNumber } from "antd";
 import { useEffect } from "react";
-import { KuzhambuForm, KuzhambuFormHiddenItem, KuzhambuFormItem } from "@/components/kuzhambu-form";
-import { KuzhambuModal } from "@/components/kuzhambu-modal";
+import {
+    KuzhambuForm,
+    KuzhambuFormHiddenItem,
+    KuzhambuFormItem,
+    KuzhambuModal
+} from "@/components";
+
 import type { RefinementRelationRecord } from "../refinement-types";
 
 interface RefinementRelationEditModalProps {

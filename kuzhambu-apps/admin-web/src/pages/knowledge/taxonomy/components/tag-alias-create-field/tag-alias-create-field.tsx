@@ -1,5 +1,5 @@
 import { Form, Input } from "antd";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuButton } from "@/components";
 import type { TagAliasRecord } from "@/pages/knowledge/taxonomy/taxonomy-types";
 import "./tag-alias-create-field.css";
 

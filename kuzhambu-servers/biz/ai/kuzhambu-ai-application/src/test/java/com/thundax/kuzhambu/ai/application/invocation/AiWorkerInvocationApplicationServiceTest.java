@@ -208,6 +208,46 @@ class AiWorkerInvocationApplicationServiceTest {
         assertNotNull(repository.savedCandidate.get().getRejectedAt());
     }
 
+    @Test
+    void invokeShouldDefaultResultFormatWhenWorkerOmitsFormat() {
+        RecordingInvocationRepository repository = new RecordingInvocationRepository();
+        WorkerAiClient workerClient = new WorkerAiClient() {
+            @Override
+            public AiInvokeResult invoke(AiInvokeCommand command) {
+                AiInvokeResult result = new AiInvokeResult();
+                result.setRequestId(command.getRequestId());
+                result.setTraceId(command.getTraceId());
+                result.setStatus("SUCCEEDED");
+                result.setCapability(command.getCapability());
+                result.setResultPayload("{\"ok\":true}");
+                result.setUsage(AiUsageSnapshot.empty());
+                return result;
+            }
+
+            @Override
+            public void stream(AiInvokeCommand command, Consumer<AiStreamEventResult> eventConsumer) {
+                throw new UnsupportedOperationException("not used");
+            }
+
+            @Override
+            public DownloadedArtifact downloadArtifact(String requestId, String traceId, String downloadPath) {
+                throw new UnsupportedOperationException("not used");
+            }
+        };
+        AiWorkerInvocationApplicationServiceImpl service =
+                new AiWorkerInvocationApplicationServiceImpl(repository, workerClient, unusedStorageFacade());
+
+        AiInvokeCommand command = command();
+        command.setForceJson(true);
+        command.setCreateCandidate(true);
+        AiInvokeResult result = service.invoke(command);
+
+        assertEquals("SUCCEEDED", result.getStatus());
+        assertEquals("JSON", result.getResultFormat());
+        assertEquals("JSON", repository.updatedCallRecord.get().getResultFormat());
+        assertEquals("JSON", repository.savedCandidate.get().getResultFormat());
+    }
+
     private AiInvokeCommand command() {
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope("classics");

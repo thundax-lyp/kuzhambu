@@ -5,19 +5,24 @@ import {
     ScheduleOutlined,
     SearchOutlined
 } from "@ant-design/icons";
-import { Input, Select, Splitter } from "antd";
+import { Input, Splitter } from "antd";
 import { useState } from "react";
-import { KuzhambuFilterPanel } from "@/components/kuzhambu-filter-panel";
-import { KuzhambuPage } from "@/components/kuzhambu-page";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import {
+    KuzhambuFilterPanel,
+    KuzhambuPage,
+    KuzhambuSpace,
+    KuzhambuButton,
+    KuzhambuAlert,
+    KuzhambuSelect
+} from "@/components";
+
 import { SancaiCatalogTreePanel } from "./components/sancai-catalog-tree-panel";
 import { SancaiCategoryPanel } from "./components/sancai-category-panel";
 import { SancaiEntryPanel } from "./components/sancai-entry-panel";
 import { SancaiVolumePanel } from "./components/sancai-volume-panel";
 import { useSancaiCatalogState } from "./hooks/use-sancai-catalog-state";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+
 import "./sancai-page.css";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const entryStatusOptions = [
     { label: "全部状态", value: "ALL" },
@@ -176,7 +181,7 @@ export const SancaiPage = () => {
                             name: "lifecycleStatus",
                             label: "条目状态",
                             render: () => (
-                                <Select
+                                <KuzhambuSelect
                                     aria-label="三才图会条目状态"
                                     value={lifecycleStatus}
                                     options={entryStatusOptions}

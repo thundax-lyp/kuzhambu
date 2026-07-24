@@ -1,16 +1,21 @@
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
-import { App, Card, Empty, Form, Input, Select } from "antd";
+import { App, Card, Empty, Form, Input } from "antd";
 import { useMemo, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
-import { KuzhambuModal } from "@/components/kuzhambu-modal";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import { KuzhambuTable } from "@/components/kuzhambu-table";
-import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
+import {
+    KuzhambuForm,
+    KuzhambuFormItem,
+    KuzhambuModal,
+    KuzhambuSpace,
+    KuzhambuTable,
+    type KuzhambuTableSortPosition,
+    KuzhambuButton,
+    KuzhambuSelect
+} from "@/components";
+
 import * as contentService from "../classics-content-service";
 import type { ClassicsContentTagRecord, ClassicsContentType } from "../classics-content-types";
 import { type ClassicsContentTagCommand } from "../classics-content-service";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 interface ClassicsContentTagPanelProps {
     contentId: number;
@@ -356,7 +361,7 @@ export const ClassicsContentTagPanel = ({
                             <Input aria-label="标签名称" placeholder="请输入标签名称" />
                         </KuzhambuFormItem>
                         <KuzhambuFormItem label="来源" name="source">
-                            <Select
+                            <KuzhambuSelect
                                 aria-label="标签来源"
                                 options={[
                                     { label: "手工", value: "MANUAL" },
@@ -365,7 +370,7 @@ export const ClassicsContentTagPanel = ({
                             />
                         </KuzhambuFormItem>
                         <KuzhambuFormItem label="状态" name="status">
-                            <Select
+                            <KuzhambuSelect
                                 aria-label="标签状态"
                                 options={[
                                     { label: "启用", value: "ACTIVE" },

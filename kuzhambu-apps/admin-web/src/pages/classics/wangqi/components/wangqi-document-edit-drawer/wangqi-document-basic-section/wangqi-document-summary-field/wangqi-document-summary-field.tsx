@@ -1,7 +1,7 @@
 import { FileTextOutlined } from "@ant-design/icons";
 import { Form, Input } from "antd";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuButton } from "@/components";
 import "./wangqi-document-summary-field.css";
 
 const { TextArea } = Input;

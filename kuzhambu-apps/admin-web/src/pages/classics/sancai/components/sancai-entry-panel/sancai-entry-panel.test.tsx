@@ -86,6 +86,20 @@ vi.mock("@/service/current-user-service", () => ({
     }))
 }));
 
+const normalizeTaskCapabilityMock = vi.hoisted(() => {
+    const aliases: Record<string, string> = {
+        classics_translate: "translate",
+        classics_summary: "summary",
+        classics_tags: "tags",
+        classics_qa: "qa",
+        classics_image_describe: "image_analysis",
+        classics_image_prompt_fusion: "fusion",
+        classics_visual_describe: "visual",
+        classics_image_generate: "image_gen"
+    };
+    return (capability: string) => aliases[capability] ?? capability;
+});
+
 vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
     createTask: vi.fn(
         async (command: { capability: string; contentId: number; contentType: string }) => ({
@@ -138,7 +152,8 @@ vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
             });
         }
     ),
-    getTaskCapabilityLabel: vi.fn((capability: string) => capability),
+    getNormalizedTaskCapability: vi.fn(normalizeTaskCapabilityMock),
+    getTaskCapabilityLabel: vi.fn((capability: string) => normalizeTaskCapabilityMock(capability)),
     getTaskFailureText: vi.fn(
         (failureStage?: string | null, errorType?: string | null, errorMessage?: string | null) =>
             [failureStage, errorType, errorMessage].filter(Boolean).join(" / ") || null
@@ -147,7 +162,7 @@ vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
         (status: string, capability: string) =>
             ["FAILED", "PARTIAL", "CANCELLED"].includes(status) &&
             ["translate", "summary", "image_analysis", "fusion", "visual", "image_gen"].includes(
-                capability
+                normalizeTaskCapabilityMock(capability)
             )
     )
 }));
@@ -1436,6 +1451,41 @@ describe("SancaiEntryPanel sharing", () => {
         expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
             "modelName"
         );
+    }, 30000);
+
+    it("tracks normalized backend translate refinement task in the AI translation modal", async () => {
+        const user = userEvent.setup();
+        vi.mocked(aiRefinementTaskService.pageTasks).mockResolvedValueOnce({
+            items: [
+                {
+                    taskId: 8202,
+                    status: "RUNNING",
+                    capability: "classics_translate",
+                    contentType: "SANCAI_ENTRY",
+                    contentId: 3001,
+                    requestedAt: "2026-06-22T01:00:00.000+08:00"
+                }
+            ],
+            total: 1,
+            pageNo: 1,
+            pageSize: 20
+        });
+        vi.mocked(aiRefinementTaskService.getTask).mockResolvedValueOnce({
+            taskId: 8202,
+            status: "RUNNING",
+            capability: "classics_translate",
+            contentType: "SANCAI_ENTRY",
+            contentId: 3001,
+            requestedAt: "2026-06-22T01:00:00.000+08:00"
+        });
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
+        await user.click(await screen.findByTestId("classics-sancai-sancai-entry-ai-button"));
+
+        expect(await screen.findByText("翻译任务：处理中")).toBeInTheDocument();
     }, 30000);
 
     it("creates summary refinement task from the entry basic information drawer", async () => {

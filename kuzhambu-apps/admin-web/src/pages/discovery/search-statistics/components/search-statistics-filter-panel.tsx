@@ -1,7 +1,6 @@
 import { Card, DatePicker, Input, Typography } from "antd";
 import type { Dayjs } from "dayjs";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { KuzhambuButton, KuzhambuSpace } from "@/components";
 
 const { Text } = Typography;
 const { RangePicker } = DatePicker;

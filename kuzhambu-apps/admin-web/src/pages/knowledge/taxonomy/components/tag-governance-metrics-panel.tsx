@@ -1,8 +1,7 @@
 import { Card, Empty, Typography } from "antd";
-import { KuzhambuList, KuzhambuListItem } from "@/components/kuzhambu-list";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { KuzhambuList, KuzhambuListItem, KuzhambuSpace, KuzhambuButton } from "@/components";
+
 import type { TagGovernanceMetricsRecord } from "../taxonomy-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Paragraph, Text } = Typography;
 

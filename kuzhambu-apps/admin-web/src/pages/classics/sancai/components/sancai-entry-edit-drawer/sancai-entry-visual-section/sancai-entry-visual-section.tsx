@@ -5,14 +5,19 @@ import {
     FileTextOutlined,
     PictureOutlined
 } from "@ant-design/icons";
-import { Empty, Image, Input, Select, Tag, Typography } from "antd";
+import { Empty, Image, Input, Tag, Typography } from "antd";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import { KuzhambuTable } from "@/components/kuzhambu-table";
-import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
+import {
+    KuzhambuForm,
+    KuzhambuFormItem,
+    KuzhambuButton,
+    KuzhambuSpace,
+    KuzhambuTable,
+    type KuzhambuTableProps,
+    KuzhambuSelect
+} from "@/components";
+
 import type { SancaiVisualAssetRefinementCapability } from "@/pages/classics/sancai/sancai-entry-service";
 import type {
     SancaiEntryImageRecord,
@@ -151,7 +156,7 @@ export const SancaiEntryVisualSection = ({
                         component="div"
                     >
                         <KuzhambuFormItem label="来源图片" layoutSize="large">
-                            <Select
+                            <KuzhambuSelect
                                 aria-label="三才图会视觉处理来源图片"
                                 disabled={!defaultSourceImage}
                                 placeholder="选择来源图片"

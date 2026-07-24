@@ -3,7 +3,7 @@ import { Segmented, Typography } from "antd";
 import type { Dayjs } from "dayjs";
 import { useCallback, useEffect, useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { KuzhambuSpace } from "@/components";
 import { QaDiagnosticsPanel } from "./components/qa-diagnostics-panel";
 import { QaHealthPanel } from "./components/qa-health-panel";
 import { QaSessionDetailDrawer } from "./components/qa-session-detail-drawer";

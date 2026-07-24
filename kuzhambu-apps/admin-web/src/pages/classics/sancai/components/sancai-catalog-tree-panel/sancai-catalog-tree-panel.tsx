@@ -3,8 +3,8 @@ import { Empty, Skeleton, Tree, Typography } from "antd";
 import type { DataNode } from "antd/es/tree";
 import type { Key, ReactNode } from "react";
 import { useMemo } from "react";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuSpace, KuzhambuButton } from "@/components";
+
 import "./sancai-catalog-tree-panel.css";
 
 const { Text } = Typography;

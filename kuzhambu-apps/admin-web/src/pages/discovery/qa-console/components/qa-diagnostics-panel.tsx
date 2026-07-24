@@ -1,6 +1,5 @@
 import { Card, Typography } from "antd";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { KuzhambuButton, KuzhambuSpace } from "@/components";
 
 const { Text } = Typography;
 

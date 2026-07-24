@@ -1,6 +1,6 @@
 import { Card, Tooltip } from "antd";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
+import { KuzhambuButton, KuzhambuSpaceCompact } from "@/components";
+
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import type {
     AiRefinementTaskCapability,

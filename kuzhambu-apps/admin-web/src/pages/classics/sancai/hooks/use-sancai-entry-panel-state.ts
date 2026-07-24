@@ -17,7 +17,8 @@ type TextRefinementEntryDraft = Pick<
 >;
 
 const isStreamRefinementCapability = (capability: string) => {
-    return capability === "image_analysis" || capability === "image_gen";
+    const normalizedCapability = aiRefinementTaskService.getNormalizedTaskCapability(capability);
+    return normalizedCapability === "image_analysis" || normalizedCapability === "image_gen";
 };
 
 const createEventId = (prefix: string) => {
@@ -608,7 +609,9 @@ export const useSancaiEntryPanelState = ({
         if (!selectedEntry?.id) {
             return;
         }
-        const capability = task.capability as RefinementCapability;
+        const capability = aiRefinementTaskService.getNormalizedTaskCapability(
+            task.capability
+        ) as RefinementCapability;
         if (
             capability !== "translate" &&
             capability !== "summary" &&

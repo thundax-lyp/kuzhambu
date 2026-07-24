@@ -1,6 +1,6 @@
 import { FileSearchOutlined } from "@ant-design/icons";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { KuzhambuButton, KuzhambuSpace } from "@/components";
+
 import type {
     ClassicsShareLinkStatus,
     ClassicsShareRecord

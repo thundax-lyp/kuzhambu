@@ -1,8 +1,7 @@
 import { GlobalOutlined, IdcardOutlined } from "@ant-design/icons";
-import { Input, Select } from "antd";
-import type { KuzhambuListPageFilterField } from "@/components/kuzhambu-list-page";
-import type { OptionsRecord } from "@/types/options";
+import { Input } from "antd";
 import type { AuditOptionKeys } from "../audit-log-service";
+import { KuzhambuSelect, type KuzhambuListPageFilterField, type OptionsRecord } from "@/components";
 
 export interface AuditLogFilters {
     objectType: string;
@@ -46,7 +45,7 @@ export const createAuditLogFilterFields = ({
             name: "objectType",
             label: "对象类型",
             render: () => (
-                <Select
+                <KuzhambuSelect
                     value={filters.objectType}
                     options={optionItems(auditOptions?.objectTypes)}
                     loading={loading}
@@ -58,7 +57,7 @@ export const createAuditLogFilterFields = ({
             name: "action",
             label: "动作",
             render: () => (
-                <Select
+                <KuzhambuSelect
                     value={filters.action}
                     options={optionItems(auditOptions?.actions)}
                     loading={loading}
@@ -70,7 +69,7 @@ export const createAuditLogFilterFields = ({
             name: "operatorType",
             label: "操作者类型",
             render: () => (
-                <Select
+                <KuzhambuSelect
                     value={filters.operatorType}
                     options={optionItems(auditOptions?.operatorTypes)}
                     loading={loading}

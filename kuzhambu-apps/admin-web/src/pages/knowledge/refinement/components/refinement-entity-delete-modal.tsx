@@ -1,4 +1,4 @@
-import { KuzhambuModal } from "@/components/kuzhambu-modal";
+import { KuzhambuModal } from "@/components";
 import type { RefinementEntityRecord } from "../refinement-types";
 
 interface RefinementEntityDeleteModalProps {

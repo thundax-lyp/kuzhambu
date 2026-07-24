@@ -1,9 +1,8 @@
 import { Input } from "antd";
 import { useEffect, useState } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { KuzhambuSpace, KuzhambuButton } from "@/components";
 import type { AiCandidateCapability } from "../ai-candidate-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const TEXT_CAPABILITY_ARIA_LABEL: Record<
     "translate" | "summary" | "image_analysis" | "visual" | "fusion" | "image_gen",

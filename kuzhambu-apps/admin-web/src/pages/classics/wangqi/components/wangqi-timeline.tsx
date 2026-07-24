@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { ClockCircleOutlined } from "@ant-design/icons";
 import { Empty, Timeline, Typography } from "antd";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
+import { KuzhambuDrawer, KuzhambuButton } from "@/components";
 import type { WangqiDocumentRecord } from "../wangqi-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
 
 const { Text } = Typography;
 

@@ -1,14 +1,18 @@
 import { Card, Checkbox, Form, Input, InputNumber } from "antd";
 import { useEffect } from "react";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import {
+    KuzhambuForm,
+    KuzhambuFormItem,
+    KuzhambuSpace,
+    KuzhambuButton,
+    KuzhambuAlert
+} from "@/components";
+
 import type {
     GraphExtractionCreateCommand,
     GraphExtractionRegenerateCommand
 } from "../graph-extraction-service";
 import type { GraphExtractionTaskRecord, GraphExtractionTaskType } from "../graph-extraction-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { TextArea } = Input;
 

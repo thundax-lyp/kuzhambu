@@ -3,14 +3,15 @@ import { App, Form, Input } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
-import { KuzhambuForm } from "@/components/kuzhambu-form";
-import { KuzhambuSegmentedDrawer } from "@/components/kuzhambu-segmented-drawer";
-import { KuzhambuSyncTaskModal } from "@/components/kuzhambu-sync-task-modal";
-import type {
-    KuzhambuSyncTaskAdapter,
-    KuzhambuSyncTaskModalState
-} from "@/components/kuzhambu-sync-task-modal";
+import {
+    KuzhambuAlert,
+    KuzhambuForm,
+    KuzhambuSegmentedDrawer,
+    KuzhambuSyncTaskModal,
+    type KuzhambuSyncTaskAdapter,
+    type KuzhambuSyncTaskModalState
+} from "@/components";
+
 import { WangqiDocumentBasicSection } from "./wangqi-document-basic-section";
 import { WangqiDocumentQaSection } from "./wangqi-document-qa-section";
 import { WangqiDocumentSourceSection } from "./wangqi-document-source-section";

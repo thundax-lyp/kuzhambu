@@ -1,6 +1,5 @@
 import { InputNumber } from "antd";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuSpace, KuzhambuButton } from "@/components";
 
 interface QualityReportGenerateFormProps {
     disabled?: boolean;

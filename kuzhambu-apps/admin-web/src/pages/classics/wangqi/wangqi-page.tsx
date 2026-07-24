@@ -6,13 +6,18 @@ import {
     SearchOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Input, Select } from "antd";
+import { App, Input } from "antd";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuFilterPanel } from "@/components/kuzhambu-filter-panel";
-import { KuzhambuPage } from "@/components/kuzhambu-page";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import {
+    KuzhambuFilterPanel,
+    KuzhambuPage,
+    KuzhambuSpace,
+    KuzhambuButton,
+    KuzhambuSelect
+} from "@/components";
+
 import { AiCandidateBatchDrawer } from "@/pages/classics/common/components/ai-candidate-batch-drawer";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import type {
@@ -44,8 +49,9 @@ import { WangqiVersionPanel } from "./components/wangqi-version-panel";
 import * as wangqiService from "./wangqi-service";
 import type { WangqiDocumentCommand, WangqiDocumentQuery } from "./wangqi-service";
 import type { WangqiContentVersionRecord, WangqiDocumentRecord } from "./wangqi-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+
 import "./wangqi-page.css";
+
 type WangqiVisibilityFilter = "ALL" | "PUBLIC" | "PRIVATE";
 type WangqiSortDirectionFilter = "ASC" | "DESC";
 
@@ -892,7 +898,7 @@ export const WangqiPage = () => {
                             name: "visibility",
                             label: "可见性",
                             render: () => (
-                                <Select
+                                <KuzhambuSelect
                                     aria-label="王圻文档可见性"
                                     value={filters.visibility}
                                     options={[
@@ -913,7 +919,7 @@ export const WangqiPage = () => {
                             name: "sortDirection",
                             label: "排序",
                             render: () => (
-                                <Select
+                                <KuzhambuSelect
                                     aria-label="王圻文档排序方向"
                                     value={filters.sortDirection}
                                     options={[

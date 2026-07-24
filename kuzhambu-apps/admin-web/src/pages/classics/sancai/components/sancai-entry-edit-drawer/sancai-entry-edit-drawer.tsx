@@ -3,10 +3,10 @@ import { App, Empty } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
-import { KuzhambuForm } from "@/components/kuzhambu-form";
-import { KuzhambuSegmentedDrawer } from "@/components/kuzhambu-segmented-drawer";
+import { KuzhambuForm, KuzhambuSegmentedDrawer, KuzhambuButton } from "@/components";
+
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+
 import { SancaiEntryBasicSection } from "./sancai-entry-basic-section";
 import { openSancaiEntryPreviewWindow } from "./sancai-entry-preview-window";
 import { SancaiEntryVisualSection } from "./sancai-entry-visual-section";

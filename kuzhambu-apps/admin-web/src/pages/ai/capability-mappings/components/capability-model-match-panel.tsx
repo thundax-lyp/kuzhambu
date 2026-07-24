@@ -1,6 +1,5 @@
 import { Tag } from "antd";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { KuzhambuAlert, KuzhambuSpace } from "@/components";
 
 export interface CapabilityModelTagMatch {
     matched: boolean;

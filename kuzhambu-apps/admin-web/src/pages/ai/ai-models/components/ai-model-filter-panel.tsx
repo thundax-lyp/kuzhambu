@@ -1,10 +1,13 @@
 import { DeleteOutlined, ReloadOutlined } from "@ant-design/icons";
-import { Select } from "antd";
 import type { ReactNode } from "react";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import type { KuzhambuTableBatchActionBarProps } from "@/components/kuzhambu-table";
+import {
+    KuzhambuButton,
+    KuzhambuListPage,
+    KuzhambuSelect,
+    KuzhambuSpace,
+    type KuzhambuTableBatchActionBarProps
+} from "@/components";
+
 import { API_SOURCE_OPTIONS, readApiSourceMeta } from "../ai-models-metadata";
 import type { AiModelRecord } from "../ai-models-types";
 
@@ -109,7 +112,7 @@ export const AiModelFilterPanel = ({
                     name: "apiSource",
                     label: "供应商",
                     render: () => (
-                        <Select
+                        <KuzhambuSelect
                             allowClear
                             value={filters.apiSource ?? undefined}
                             options={API_SOURCE_OPTIONS.map((value) => ({
@@ -129,7 +132,7 @@ export const AiModelFilterPanel = ({
                     name: "enabled",
                     label: "状态",
                     render: () => (
-                        <Select
+                        <KuzhambuSelect
                             value={filters.enabled}
                             options={[
                                 { label: "全部", value: "ALL" },

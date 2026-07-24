@@ -1,6 +1,6 @@
 import { Card } from "antd";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
+import { KuzhambuButton, KuzhambuSpaceCompact } from "@/components";
+
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
 import { ClassicsContentTagPanel } from "@/pages/classics/common/components/classics-content-tag-panel";

@@ -1,9 +1,8 @@
 import { EyeOutlined, PlayCircleOutlined, SyncOutlined } from "@ant-design/icons";
 import { Table, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import { KuzhambuTag } from "@/components/kuzhambu-tag";
+import { KuzhambuButton, KuzhambuSpace, KuzhambuTag } from "@/components";
+
 import { DEFAULT_PAGE_SIZE } from "@/types/page";
 import type { OperationsBackupRecord, OperationsBackupType } from "./backup-restore-types";
 
