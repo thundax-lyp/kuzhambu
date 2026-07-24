@@ -452,8 +452,8 @@ live_ai_smoke() {
     api_post "ai.refinement.image-gen.live" "/api/ai/refinement/image-gen" "$(live_ai_body "classics_image_generate" 940108 900201)" || true
     api_post "ai.refinement.image-analysis.live" "/api/ai/refinement/image-analysis" "$(live_ai_body "classics_image_describe" 940107 900101)" || true
 
-    api_post "ai.platform.prompt-suggestion.live" "/api/ai/platform/prompt-suggestion" "$(live_ai_body "prompt_suggestion" 940117 | jq '.contentType="AI_PROMPT" | .forceJson=true | .outputSchemaJson="{\"type\":\"object\"}"')" || true
-    api_post "ai.platform.version-summary.live" "/api/ai/platform/version-summary" "$(live_ai_body "platform_version_summary" 940118 | jq '.contentType="AI_PROMPT"')" || true
+    api_post "ai.platform.prompt-suggestion.live" "/api/ai/platform/prompt-suggestion" "$(live_ai_body "prompt_suggestion" 940116 | jq '.contentType="AI_PROMPT" | .forceJson=true | .outputSchemaJson="{\"type\":\"object\"}"')" || true
+    api_post "ai.platform.version-summary.live" "/api/ai/platform/version-summary" "$(live_ai_body "platform_version_summary" 940117 | jq '.contentType="AI_PROMPT"')" || true
 
     log_skip "ai.refinement.task.add" "live async task creation is not run by default; call endpoint manually when worker stream behavior is under test"
     log_skip "ai.refinement.task.cancel" "requires a disposable task id"
