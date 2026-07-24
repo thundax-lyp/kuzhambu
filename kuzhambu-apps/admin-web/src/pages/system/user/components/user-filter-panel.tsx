@@ -1,6 +1,5 @@
 import { Input } from "antd";
-import type { OptionRecord } from "@/types/options";
-import { KuzhambuFilterPanel, KuzhambuSelect } from "@/components";
+import { KuzhambuFilterPanel, KuzhambuSelect, type OptionRecord } from "@/components";
 
 export type UserFilterStatus = "ALL" | "ENABLED" | "DISABLED";
 

@@ -5,7 +5,6 @@ import type { DataNode } from "antd/es/tree";
 import { useMemo, useState } from "react";
 import type { Key } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import type { OptionsRecord } from "@/types/options";
 import {
     KuzhambuButton,
     KuzhambuListPage,
@@ -14,7 +13,8 @@ import {
     KuzhambuSwitch,
     KuzhambuTag,
     type KuzhambuTableProps,
-    type KuzhambuTableSortPosition
+    type KuzhambuTableSortPosition,
+    type OptionsRecord
 } from "@/components";
 import { RoleEditDrawer } from "./components/role-edit-drawer";
 import * as service from "./role-service";
