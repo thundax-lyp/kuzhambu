@@ -8,10 +8,9 @@ import { createLoginForm, getCaptchaUrl, refreshCaptcha } from "@/auth/auth-serv
 import { loginWithPermissions } from "@/auth/auth-session-service";
 import { getAccessToken } from "@/auth/token-storage";
 import { KuzhambuLogo } from "@/components/kuzhambu-logo";
-import { KuzhambuSpace, KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuSpace, KuzhambuSpaceCompact, KuzhambuButton, KuzhambuAlert } from "@/components";
+
 import "./login-page.css";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
 
 const { Title, Text, Paragraph } = Typography;
 
