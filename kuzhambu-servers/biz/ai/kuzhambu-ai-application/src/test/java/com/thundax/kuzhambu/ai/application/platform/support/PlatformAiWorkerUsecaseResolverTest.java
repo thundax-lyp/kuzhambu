@@ -23,6 +23,7 @@ class PlatformAiWorkerUsecaseResolverTest {
         assertEquals("PLATFORM_PROMPT_SUGGESTION", spec.operation());
         assertNull(spec.workerPath());
         assertEquals(AiBusinessCapability.PROMPT_SUGGEST.value(), spec.capability());
+        assertEquals("prompt_suggestion", spec.workerCapability());
         assertTrue(spec.defaultCreateCandidate());
     }
 
@@ -34,6 +35,7 @@ class PlatformAiWorkerUsecaseResolverTest {
         assertEquals("PLATFORM_VERSION_SUMMARY", spec.operation());
         assertNull(spec.workerPath());
         assertEquals(AiBusinessCapability.PLATFORM_VERSION_SUMMARY.value(), spec.capability());
+        assertEquals("version_summary", spec.workerCapability());
         assertFalse(spec.defaultCreateCandidate());
     }
 

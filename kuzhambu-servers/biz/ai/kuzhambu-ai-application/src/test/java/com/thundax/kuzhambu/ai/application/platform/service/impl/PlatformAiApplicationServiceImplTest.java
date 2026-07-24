@@ -35,6 +35,7 @@ class PlatformAiApplicationServiceImplTest {
         assertEquals("PLATFORM_PROMPT_SUGGESTION", capturedCommand.getOperation());
         assertNull(capturedCommand.getWorkerPath());
         assertEquals(AiBusinessCapability.PROMPT_SUGGEST.value(), capturedCommand.getCapability());
+        assertEquals("prompt_suggestion", capturedCommand.getWorkerCapability());
         assertFalse(capturedCommand.isStream());
         assertTrue(capturedCommand.isCreateCandidate());
         assertEquals(AiBusinessCapability.PROMPT_SUGGEST.value(), result.getCapability());
@@ -53,6 +54,7 @@ class PlatformAiApplicationServiceImplTest {
         assertEquals("PLATFORM_VERSION_SUMMARY", capturedCommand.getOperation());
         assertNull(capturedCommand.getWorkerPath());
         assertEquals(AiBusinessCapability.PLATFORM_VERSION_SUMMARY.value(), capturedCommand.getCapability());
+        assertEquals("version_summary", capturedCommand.getWorkerCapability());
         assertFalse(capturedCommand.isStream());
         assertFalse(capturedCommand.isCreateCandidate());
         assertEquals(AiBusinessCapability.PLATFORM_VERSION_SUMMARY.value(), result.getCapability());
