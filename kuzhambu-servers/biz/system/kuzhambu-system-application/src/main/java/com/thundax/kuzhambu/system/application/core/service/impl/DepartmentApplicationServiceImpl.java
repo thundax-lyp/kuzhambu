@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.system.application.core.service.impl;
 
+import com.thundax.kuzhambu.common.audit.annotation.AuditLog;
+import com.thundax.kuzhambu.common.audit.model.enums.AuditAction;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
@@ -52,6 +54,7 @@ public class DepartmentApplicationServiceImpl implements DepartmentApplicationSe
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @AuditLog(type = "Department", id = "", action = AuditAction.CREATE, summary = "创建部门")
     public DepartmentId create(CreateDepartmentCommand command) {
         Department entity = toDepartment(command);
         entity.setId(dao.insert(entity));
@@ -60,12 +63,18 @@ public class DepartmentApplicationServiceImpl implements DepartmentApplicationSe
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @AuditLog(type = "Department", id = "#command.id.value()", action = AuditAction.UPDATE, summary = "更新部门")
     public void changeInfo(ChangeDepartmentInfoCommand command) {
         Department entity = toDepartment(command);
         dao.update(entity);
     }
 
     @Transactional(rollbackFor = Exception.class)
+    @AuditLog(
+            type = "Department",
+            id = "#id == null ? null : #id.value()",
+            action = AuditAction.DELETE,
+            summary = "删除部门")
     public int remove(DepartmentId id) {
         Department bean = this.get(id);
         if (bean == null) {
@@ -79,6 +88,7 @@ public class DepartmentApplicationServiceImpl implements DepartmentApplicationSe
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @AuditLog(type = "Department", id = "#command.fromId.value()", action = AuditAction.UPDATE, summary = "移动部门")
     public void move(MoveDepartmentCommand command) {
         dao.moveTreeNode(
                 DepartmentIdCodec.toValue(command.getFromId()),

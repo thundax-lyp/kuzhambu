@@ -2,9 +2,15 @@ package com.thundax.kuzhambu.system.application.audit.runtime;
 
 import com.thundax.kuzhambu.common.audit.annotation.AuditLog;
 import com.thundax.kuzhambu.common.audit.model.valueobject.AuditSnapshot;
+import com.thundax.kuzhambu.common.core.id.Identifier;
 import com.thundax.kuzhambu.system.application.audit.command.CreateAuditLogCommand;
 import com.thundax.kuzhambu.system.application.audit.service.AuditApplicationService;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -43,12 +49,20 @@ public class AuditLogAspect {
         if (!AuditExpressionEvaluator.booleanValue(auditLog.condition(), method, args, true)) {
             return joinPoint.proceed();
         }
-        String objectId = AuditExpressionEvaluator.stringValue(auditLog.id(), method, args);
-        AuditSnapshot before = snapshot(auditLog.type(), objectId);
+        List<String> objectIds = objectIds(AuditExpressionEvaluator.objectValue(auditLog.id(), method, args));
+        Map<String, AuditSnapshot> beforeSnapshots = beforeSnapshots(auditLog.type(), objectIds);
         Object result = joinPoint.proceed();
-        if (objectId == null && result != null) {
-            objectId = String.valueOf(result);
+        if (objectIds.isEmpty() && result != null) {
+            objectIds = objectIds(result);
         }
+        for (String objectId : objectIds) {
+            record(auditLog, objectId, beforeSnapshots.get(objectId), beforeSnapshots.containsKey(objectId));
+        }
+        return result;
+    }
+
+    private void record(AuditLog auditLog, String objectId, AuditSnapshot before, boolean beforeSnapshotCaptured) {
+        AuditSnapshot beforeSnapshot = beforeSnapshotCaptured ? before : null;
         AuditSnapshot after = snapshot(auditLog.type(), objectId);
 
         CreateAuditLogCommand command = new CreateAuditLogCommand();
@@ -63,7 +77,6 @@ public class AuditLogAspect {
         command.setOperatorId(AuditOperatorResolver.operatorId());
         command.setOperatorName(AuditOperatorResolver.operatorName());
         auditService.record(command);
-        return result;
     }
 
     private Method mostSpecificMethod(ProceedingJoinPoint joinPoint) {
@@ -71,6 +84,44 @@ public class AuditLogAspect {
         Class<?> targetClass =
                 joinPoint.getTarget() == null ? null : joinPoint.getTarget().getClass();
         return targetClass == null ? method : AopUtils.getMostSpecificMethod(method, targetClass);
+    }
+
+    private Map<String, AuditSnapshot> beforeSnapshots(String objectType, List<String> objectIds) {
+        Map<String, AuditSnapshot> snapshots = new LinkedHashMap<>();
+        for (String objectId : objectIds) {
+            snapshots.put(objectId, snapshot(objectType, objectId));
+        }
+        return snapshots;
+    }
+
+    private List<String> objectIds(Object value) {
+        List<String> objectIds = new ArrayList<>();
+        collectObjectIds(value, objectIds);
+        return objectIds;
+    }
+
+    private void collectObjectIds(Object value, List<String> objectIds) {
+        if (value == null) {
+            return;
+        }
+        if (value instanceof Iterable<?> iterable) {
+            for (Object item : iterable) {
+                collectObjectIds(item, objectIds);
+            }
+            return;
+        }
+        if (value.getClass().isArray()) {
+            int length = Array.getLength(value);
+            for (int i = 0; i < length; i++) {
+                collectObjectIds(Array.get(value, i), objectIds);
+            }
+            return;
+        }
+        if (value instanceof Identifier<?> identifier) {
+            objectIds.add(identifier.asString());
+            return;
+        }
+        objectIds.add(String.valueOf(value));
     }
 
     private AuditSnapshot snapshot(String objectType, String objectId) {

@@ -40,12 +40,29 @@ public final class AuditExpressionEvaluator {
                         after.getDisplayValue()));
             }
         }
+        for (Map.Entry<String, AuditField> entry : beforeFields.entrySet()) {
+            if (afterFields.containsKey(entry.getKey())) {
+                continue;
+            }
+            AuditField before = entry.getValue();
+            changedFields.add(new AuditChangedField(
+                    before.getFieldName(),
+                    before.getFieldLabel(),
+                    before.getValue(),
+                    before.getDisplayValue(),
+                    null,
+                    null));
+        }
         return changedFields;
     }
 
     public static String stringValue(String expression, Method method, Object[] args) {
         Object value = value(expression, method, args);
         return value == null ? null : String.valueOf(value);
+    }
+
+    public static Object objectValue(String expression, Method method, Object[] args) {
+        return value(expression, method, args);
     }
 
     public static boolean booleanValue(String expression, Method method, Object[] args, boolean defaultValue) {

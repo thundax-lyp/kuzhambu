@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.system.application.core.service.impl;
 
+import com.thundax.kuzhambu.common.audit.annotation.AuditLog;
+import com.thundax.kuzhambu.common.audit.model.enums.AuditAction;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
@@ -83,6 +85,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @AuditLog(type = "User", id = "", action = AuditAction.CREATE, summary = "创建后台用户")
     public UserId create(CreateUserCommand command) {
         User user = toUser(command);
         user.setId(dao.insert(user));
@@ -92,6 +95,12 @@ public class UserApplicationServiceImpl implements UserApplicationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @AuditLog(
+            type = "User",
+            id = "#command.id.value()",
+            action = AuditAction.UPDATE,
+            summary = "更新后台用户",
+            recordWhenUnchanged = true)
     public void changeInfo(ChangeUserInfoCommand command) {
         User user = toUser(command);
         dao.update(user);
@@ -110,6 +119,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @AuditLog(type = "User", id = "#command.id.value()", action = AuditAction.UPDATE, summary = "变更后台用户状态")
     public int changeStatus(ChangeUserStatusCommand command) {
         User user = new User();
         user.setId(command.getId());
@@ -120,6 +130,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
     }
 
     @Transactional(rollbackFor = Exception.class)
+    @AuditLog(type = "User", id = "#id == null ? null : #id.value()", action = AuditAction.DELETE, summary = "删除后台用户")
     public int remove(UserId id) {
         User user = get(id);
         if (user == null) {

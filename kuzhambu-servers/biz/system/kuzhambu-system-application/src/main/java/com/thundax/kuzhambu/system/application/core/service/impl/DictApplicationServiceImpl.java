@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.system.application.core.service.impl;
 
+import com.thundax.kuzhambu.common.audit.annotation.AuditLog;
+import com.thundax.kuzhambu.common.audit.model.enums.AuditAction;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.exception.ErrorCode;
@@ -78,6 +80,7 @@ public class DictApplicationServiceImpl implements DictApplicationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @AuditLog(type = "Dict", id = "", action = AuditAction.CREATE, summary = "创建字典")
     public DictId create(CreateDictCommand command) {
         Dict dict = toDomain(command);
         dict.setPriority(dao.maxPriority() + PRIORITY_STEP);
@@ -87,6 +90,7 @@ public class DictApplicationServiceImpl implements DictApplicationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @AuditLog(type = "Dict", id = "#command.orderedIds.![value()]", action = AuditAction.UPDATE, summary = "字典排序")
     public void sort(DictSortCommand command) {
         List<DictId> orderedIdList =
                 command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
@@ -110,12 +114,14 @@ public class DictApplicationServiceImpl implements DictApplicationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @AuditLog(type = "Dict", id = "#command.id.value()", action = AuditAction.UPDATE, summary = "更新字典")
     public void changeInfo(ChangeDictInfoCommand command) {
         dao.update(toDomain(command));
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @AuditLog(type = "Dict", id = "#id == null ? null : #id.value()", action = AuditAction.DELETE, summary = "删除字典")
     public void remove(DictId id) {
         if (id != null) {
             dao.deleteById(id);
