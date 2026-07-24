@@ -82,6 +82,49 @@ def test_ai_stream_returns_started_and_completed(monkeypatch) -> None:
     assert "hello" in text
 
 
+def test_ai_stream_rejects_invalid_structured_output(monkeypatch) -> None:
+    monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
+    monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")
+    monkeypatch.setattr(
+        "kuzhambu_workers.api.ai_routes.iter_chat_completion_chunks",
+        lambda request: iter(
+            [
+                OpenAiChatCompletionChunk(
+                    delta='{"answer":"ok"}',
+                    usage=UsageSummary(latencyMs=12, inputTokens=3, outputTokens=4),
+                    finish_reason="stop",
+                ),
+            ]
+        ),
+    )
+    body = _body("answer_generation", stream=True, operation="DISCOVERY_ANSWER_GENERATION")
+    payload = json.loads(body)
+    payload["outputSchema"] = {
+        "type": "object",
+        "properties": {
+            "answer": {"type": "string"},
+            "answerStatus": {"type": "string"},
+            "sourceSummaries": {"type": "array", "items": {"type": "string"}},
+        },
+        "required": ["answer", "answerStatus", "sourceSummaries"],
+    }
+    body = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode()
+
+    response = TestClient(app).post(
+        "/internal/ai/stream",
+        content=body,
+        headers=_headers(body, "/internal/ai/stream"),
+    )
+
+    assert response.status_code == 200
+    assert "event: started" in response.text
+    assert "event: error" in response.text
+    assert "event: completed" not in response.text
+    assert '"status":"FAILED"' in response.text
+    assert '"failureStage":"WORKER_RESULT"' in response.text
+    assert '"code":"MODEL_OUTPUT_INVALID_JSON"' in response.text
+
+
 def test_ai_invoke_rejects_bad_signature(monkeypatch) -> None:
     monkeypatch.setenv("KUZHAMBU_WORKER_ALLOWED_SERVICES", "kuzhambu-ai")
     monkeypatch.setenv("KUZHAMBU_WORKER_INTERNAL_SECRET", "worker-secret")

@@ -1,0 +1,15 @@
+当前提示词模板：
+{{template}}
+
+优化目标：
+{{changeGoal}}
+
+已知问题：
+{{knownIssues}}
+
+请给出优化建议，返回 JSON：
+{
+  "suggestedTemplate": "优化后的提示词模板",
+  "changeSummary": "变更摘要",
+  "risks": ["风险或注意事项"]
+}

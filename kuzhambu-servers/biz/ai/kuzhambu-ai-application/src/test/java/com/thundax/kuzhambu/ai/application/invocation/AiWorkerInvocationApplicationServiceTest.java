@@ -104,7 +104,7 @@ class AiWorkerInvocationApplicationServiceTest {
     }
 
     @Test
-    void invokeShouldPreserveCanonicalOperationAndWorkerPath() {
+    void invokeShouldPreserveBusinessCapabilityWhenWorkerReturnsCanonicalCapability() {
         RecordingInvocationRepository repository = new RecordingInvocationRepository();
         AtomicReference<AiInvokeCommand> capturedCommand = new AtomicReference<>();
         WorkerAiClient workerClient = new WorkerAiClient() {
@@ -115,7 +115,7 @@ class AiWorkerInvocationApplicationServiceTest {
                 result.setRequestId(command.getRequestId());
                 result.setTraceId(command.getTraceId());
                 result.setStatus("SUCCEEDED");
-                result.setCapability(command.getCapability());
+                result.setCapability(command.getWorkerCapability());
                 result.setResultFormat("text");
                 result.setResultPayload("candidate-result");
                 result.setUsage(AiUsageSnapshot.empty());
@@ -137,21 +137,21 @@ class AiWorkerInvocationApplicationServiceTest {
 
         AiInvokeCommand command = command();
         command.setOperation("CLASSICS_SANCAI_SUMMARY");
-        command.setWorkerPath("/internal/ai/classics/sancai/summary");
+        command.setCapability("classics_summary");
+        command.setWorkerCapability("summary");
         command.setCreateCandidate(true);
 
         AiInvokeResult result = service.invoke(command);
 
         assertEquals("CLASSICS_SANCAI_SUMMARY", capturedCommand.get().getOperation());
-        assertEquals(
-                "/internal/ai/classics/sancai/summary", capturedCommand.get().getWorkerPath());
         assertFalse(capturedCommand.get().isStream());
+        assertEquals("classics_summary", result.getCapability());
         assertEquals(100L, result.getCallId());
         assertEquals("text", repository.updatedCallRecord.get().getResultFormat());
         assertEquals("candidate-result", repository.updatedCallRecord.get().getResultPayload());
         assertEquals(200L, result.getCandidateId());
         assertEquals(100L, repository.savedCandidate.get().getCallId());
-        assertEquals("translate", repository.savedCandidate.get().getCapability());
+        assertEquals("classics_summary", repository.savedCandidate.get().getCapability());
     }
 
     @Test

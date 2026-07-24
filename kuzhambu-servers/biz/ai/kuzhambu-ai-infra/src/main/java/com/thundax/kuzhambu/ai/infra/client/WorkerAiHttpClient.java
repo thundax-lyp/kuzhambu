@@ -180,17 +180,11 @@ public class WorkerAiHttpClient implements WorkerAiClient {
     }
 
     private String resolveInvokePath(AiInvokeCommand command) {
-        if (command == null || isBlank(command.getWorkerPath())) {
-            return INVOKE_PATH;
-        }
-        return command.getWorkerPath();
+        return INVOKE_PATH;
     }
 
     private String resolveStreamPath(AiInvokeCommand command) {
-        if (command == null || isBlank(command.getWorkerPath())) {
-            return STREAM_PATH;
-        }
-        return command.getWorkerPath();
+        return STREAM_PATH;
     }
 
     private WorkerAiDtos.WorkerAiRequest toRequest(AiInvokeCommand command, boolean stream) {
@@ -199,7 +193,7 @@ public class WorkerAiHttpClient implements WorkerAiClient {
         request.setTraceId(command.getTraceId());
         request.setCallerDomain(CALLER_DOMAIN);
         request.setOperation(command.getOperation());
-        request.setCapability(command.getCapability());
+        request.setCapability(defaultString(command.getWorkerCapability(), command.getCapability()));
         request.setScope(command.getScope());
         request.setModelConfig(modelConfig(command));
         request.setPrompt(prompt(command));

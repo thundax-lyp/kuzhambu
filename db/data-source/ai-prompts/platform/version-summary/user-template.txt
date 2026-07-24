@@ -1,0 +1,10 @@
+上一版本提示词：
+{{previousTemplate}}
+
+当前版本提示词：
+{{currentTemplate}}
+
+人工变更摘要：
+{{changeSummary}}
+
+请生成一段版本摘要，说明主要变化和需要关注的兼容风险。

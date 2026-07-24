@@ -28,7 +28,7 @@ Worker health evidence:
 | Endpoint | Result |
 | --- | --- |
 | `GET /internal/health` | `200`, `status=UP`, `service=kuzhambu-workers`, `version=0.0.1-dev` |
-| `GET /internal/openapi.json` | `200`, contains `/internal/ai/classics/sancai/summary` |
+| `GET /internal/openapi.json` | `200`, contains `/internal/ai/invoke` and `/internal/ai/stream` |
 
 Admin login smoke used `POST /auth/session/pre-auth-session` and `POST /auth/session/login`; both returned `COMMON-00000`. The access token was used only as a runtime header and is not persisted in this document.
 

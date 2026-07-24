@@ -1,0 +1,19 @@
+父条目标题：{{title}}
+拆分提示：{{splitHint}}
+
+原文：
+{{sourceText}}
+
+已有译文：
+{{translationText}}
+
+请拆分为条目候选，返回 JSON：
+{
+  "entries": [
+    {
+      "title": "条目标题",
+      "originalText": "对应原文",
+      "translationText": "对应译文"
+    }
+  ]
+}

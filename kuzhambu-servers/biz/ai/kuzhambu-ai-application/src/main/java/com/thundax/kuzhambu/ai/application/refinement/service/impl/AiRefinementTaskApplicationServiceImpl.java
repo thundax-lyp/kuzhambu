@@ -69,6 +69,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     public AiRefinementTask addTask(AiRefinementRequestCommand command) {
         normalizeCommandCapability(command);
         validateAddCommand(command);
+        refinementApplicationService.snapshotInvokeConfig(command);
         Instant now = Instant.now();
         AiRefinementTask task = new AiRefinementTask();
         task.setScope(command.getScope());
@@ -204,6 +205,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         if (!isBlank(command.getModelName())) {
             latestTask.setModelName(command.getModelName());
         }
+        latestTask.setPromptVersionId(command.getPromptVersionId());
         applyResult(latestTask, result);
         if (taskRepository.updateWhenStatusIn(latestTask, List.of(STATUS_RUNNING)) == 0) {
             AiRefinementTask finalTask = taskRepository.get(taskId);
@@ -363,7 +365,6 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
                 || isBlank(command.getContentType())
                 || command.getContentId() == null
                 || command.getRequestedBy() == null
-                || isBlank(command.getPromptMessagesJson())
                 || isBlank(command.getInputPayloadJson())) {
             throw new BizException("AI refinement task add command is incomplete");
         }

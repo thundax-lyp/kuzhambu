@@ -919,8 +919,8 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("contentType", sourceContentType);
         payload.put("contentId", sourceContentId);
-        payload.put("contentTitle", trimOptionalText(command.getContentTitle()));
-        payload.put("contentText", contentText);
+        payload.put("sourceTitle", trimOptionalText(command.getContentTitle()));
+        payload.put("sourceText", contentText);
         payload.put("existingTags", existingTagPayloads());
         payload.put("categories", categoryPayloads());
         payload.put("aliases", aliasPayloads());

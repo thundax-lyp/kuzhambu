@@ -5,7 +5,6 @@ from fastapi import FastAPI
 
 from kuzhambu_workers import __version__
 from kuzhambu_workers.api.ai_routes import router as ai_router
-from kuzhambu_workers.api.ai_usecase_routes import router as ai_usecase_router
 from kuzhambu_workers.api.artifact_routes import router as artifact_router
 from kuzhambu_workers.api.health_routes import router as health_router
 from kuzhambu_workers.api.openai_routes import router as openai_router
@@ -43,11 +42,7 @@ def create_app() -> FastAPI:
         docs_url="/internal/docs",
         redoc_url="/internal/redoc",
         openapi_tags=[
-            {"name": "Classics", "description": "Classics AI usecase interfaces."},
-            {"name": "Discovery", "description": "Discovery AI usecase interfaces."},
-            {"name": "Knowledge", "description": "Knowledge AI usecase interfaces."},
-            {"name": "Platform", "description": "Platform AI usecase interfaces."},
-            {"name": "AI Debug", "description": "Generic AI debug interfaces."},
+            {"name": "AI", "description": "Unified internal AI execution interfaces."},
             {
                 "name": "OpenAI Compatible",
                 "description": "Internal OpenAI-compatible facade interfaces.",
@@ -62,7 +57,6 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(ai_router)
-    app.include_router(ai_usecase_router)
     app.include_router(artifact_router)
     app.include_router(health_router)
     app.include_router(openai_router)

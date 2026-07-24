@@ -1,0 +1,36 @@
+{
+  "templateId": 930117,
+  "promptVersionId": 940117,
+  "variableIdStart": 961801,
+  "capability": "platform_version_summary",
+  "suite": "platform-default-v1",
+  "name": "提示词版本摘要提示词",
+  "description": "提示词版本摘要默认提示词。",
+  "enabled": true,
+  "versionNo": 1,
+  "current": true,
+  "variables": [
+    {
+      "name": "previousTemplate",
+      "required": false,
+      "description": "上一版本提示词",
+      "priority": 961801
+    },
+    {
+      "name": "currentTemplate",
+      "required": true,
+      "description": "当前版本提示词",
+      "priority": 961802
+    },
+    {
+      "name": "changeSummary",
+      "required": false,
+      "description": "人工变更摘要",
+      "priority": 961803
+    }
+  ],
+  "outputSchema": {
+    "type": "text"
+  },
+  "changeSummary": "Initial platform default version summary prompt."
+}

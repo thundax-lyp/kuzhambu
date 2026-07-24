@@ -8,6 +8,8 @@ import com.thundax.kuzhambu.ai.application.platform.service.PlatformAiApplicatio
 import com.thundax.kuzhambu.ai.interfaces.admin.platform.controller.request.PlatformAiRequests.InvokeRequest;
 import com.thundax.kuzhambu.ai.interfaces.admin.platform.controller.response.PlatformAiResponses.InvokeResponse;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import java.lang.reflect.Method;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -47,6 +49,16 @@ class PlatformAiControllerTest {
 
         assertEquals("summary", service.lastMethod);
         assertEquals("version_summary", response.getCapability());
+    }
+
+    @Test
+    void requestValidationShouldAcceptBusinessPayloadWithoutModelAndPrompt() {
+        InvokeRequest request = request();
+        request.setModelId(null);
+        request.setPromptMessagesJson(null);
+        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+
+        assertEquals(0, validator.validate(request).size());
     }
 
     private static void assertPostMapping(String methodName, String path, String permission) throws Exception {

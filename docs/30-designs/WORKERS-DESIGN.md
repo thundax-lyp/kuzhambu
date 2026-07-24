@@ -97,7 +97,7 @@ Workers 只接受 Java servers 发起的内部调用。
 
 AI 能力必须经由 AI 域治理入口。凡是涉及模型、提示词、能力映射、用量统计、候选结果或 AI 失败分类的调用，都不得绕过 AI 域。
 
-Workers 的 AI 对外接口按 usecase 建模。`/internal/ai/invoke` 和 `/internal/ai/stream` 只作为调试、平台联调和协议验证接口，不作为真实业务域长期集成入口。真实业务入口必须由 AI 域或业务域定义稳定 usecase path、请求模型、权限边界、审计语义和失败分类。
+Workers 的 AI 对外接口统一为 `/internal/ai/invoke` 和 `/internal/ai/stream`。真实业务不得在 workers 增加按业务或 usecase 命名的 AI 路径；业务类型识别、业务配置选择、提示词模板渲染、模型配置、辅助参数、权限、审计和任务台账均由 Java AI 域完成。
 
 Render 能力只处理调用方已经完成权限过滤、风险确认和数据快照准备后的内容。Workers 返回的文件在进入 Storage 前只是临时产物。文件类 AI 结果与 render 结果统一使用 `temporary artifact reference` 表达；Java servers 负责根据该引用下载临时产物并转存到 `Storage`。
 
@@ -119,8 +119,6 @@ Render 能力只处理调用方已经完成权限过滤、风险确认和数据�
 - `POST /internal/render/operations-report/stream`
 
 AI 接口契约见 [`WORKERS-AI-INTERFACE.md`](../20-interfaces/WORKERS-AI-INTERFACE.md)。
-
-AI usecase 接口契约见 [`WORKERS-AI-USECASE-INTERFACE.md`](../20-interfaces/WORKERS-AI-USECASE-INTERFACE.md)。
 
 Render 接口契约见 [`WORKERS-RENDER-INTERFACE.md`](../20-interfaces/WORKERS-RENDER-INTERFACE.md)。
 
@@ -204,13 +202,7 @@ AI 执行流程：
 
 Workers 不得根据 `templateId`、`promptVersionId` 或业务 ID 回调 Java servers 读取提示词、模型配置或业务内容。每次请求必须包含完整执行上下文。
 
-Knowledge 抽取 usecase 的结构化输出固定为：
-
-- `/internal/ai/knowledge/relation-extraction`：`entities`、`relations`、`sourceSnippets`、`warnings`
-- `/internal/ai/knowledge/graph-extraction`：`entities`、`relations`、`entryRefs`、`warnings`
-- `/internal/ai/knowledge/lineage-extraction`：`nodes`、`relations`、`sourceSnippets`、`warnings`
-
-这些输出只作为候选 payload 返回给 AI 和 Knowledge，不包含正式表主键，也不由 workers 直接写入正式知识表。
+Knowledge 抽取的结构化输出 schema 由 Java AI 域从业务配置对应的当前提示词版本取得，并随 `/internal/ai/invoke` 请求传给 workers。Workers 只按 schema 返回候选 payload，不包含正式表主键，也不直接写入正式知识表。
 
 ## Render Execution
 

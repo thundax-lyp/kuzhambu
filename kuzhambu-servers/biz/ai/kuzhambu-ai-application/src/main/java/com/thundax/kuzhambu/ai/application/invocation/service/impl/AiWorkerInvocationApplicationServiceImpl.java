@@ -168,7 +168,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
         if (result.getTraceId() == null) {
             result.setTraceId(command.getTraceId());
         }
-        if (result.getCapability() == null) {
+        if (!isBlank(command.getCapability())) {
             result.setCapability(command.getCapability());
         }
         if (result.isSucceeded() && !isBlank(result.getArtifactReferenceJson())) {

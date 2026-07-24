@@ -274,7 +274,9 @@ jobs:
             - name: Verify affected backend tests
               if: needs.detect-changes.outputs.backend_full_changed != 'true'
               working-directory: kuzhambu-servers
-              run: mvn -q test
+              run: mvn -q -pl "$BACKEND_PROJECTS" -am test
+              env:
+                  BACKEND_PROJECTS: ${{ needs.detect-changes.outputs.backend_projects }}
 
     verify-apps:
         name: Verify Frontend

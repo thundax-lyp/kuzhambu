@@ -99,14 +99,14 @@ Workers 不使用回调接口。任何回调能力都不得复用当前 AI 执�
 
 ## Endpoints
 
-当前通用 AI 调试接口固定为两个：
+当前 AI 执行接口固定为两个：
 
 - `POST /internal/ai/invoke`：一次性 JSON 响应。
 - `POST /internal/ai/stream`：SSE 流式响应。
 - `POST /internal/openai/v1/chat-completions`：内部 OpenAI-compatible chat facade，用于文本和 image2text。
 - `POST /internal/openai/v1/images/generations`：内部 OpenAI-compatible image generations facade，用于 text2image。
 
-这两个通用接口仅用于调试、平台联调和协议验证，不作为真实业务域长期集成入口。真实业务必须使用基于 usecase 定义的稳定接口，由 AI 域或对应业务域明确 path、请求模型、权限边界、审计语义和失败分类。workers 内部仍可以复用 graph registry、model adapter、artifact store 和 SSE 编码等通用能力。
+`/internal/ai/invoke` 和 `/internal/ai/stream` 是 Java AI 域调用 workers 的正式统一入口。真实业务不得在 workers 增加 `/internal/ai/classics/*`、`/internal/ai/discovery/*`、`/internal/ai/knowledge/*` 或 `/internal/ai/platform/*` 等业务专项路径。业务类型识别、业务配置选择、提示词模板渲染、模型配置、辅助参数、权限、审计、调用记录、候选结果和任务台账由 Java AI 域负责；workers 只执行本次请求体中已经组装好的无状态 AI graph。
 
 OpenAI-compatible facade 只用于需要以 OpenAI 接口形态对接 workers 的内部调用方。该接口仍位于 `/internal/*`，仍必须使用 HMAC 请求头，并且请求体必须包含 `requestId`、`traceId`、`model` 和本次调用的 `extendParams`。Workers 不保存供应商配置、模型 Key 或跨请求路由状态；调用方必须在每次请求中提供完整下游供应商配置。
 
@@ -161,22 +161,15 @@ OpenAI-compatible 响应使用 OpenAI chat completion、`data: ...` chunk 或 im
 
 当 text2image 使用 `response_format: "url"` 时，workers 返回的是 `/internal/artifacts/{artifactId}` 内部临时下载路径，不是最终业务 URL。Java servers 仍需使用服务身份下载 artifact 并转存到 Storage。
 
-通用接口不承载业务权限、用例级审计或稳定业务语义。后续 usecase 接口示例：
+统一 AI 执行接口不承载业务权限、业务写入、用例级审计或稳定业务结果语义。业务语义通过 `scope`、`operation`、`prompt`、`input.payload` 和 `outputSchema` 随请求传入，由 Java AI 域负责解释和归档。请求体 `capability` 是 workers canonical capability，只用于选择 worker graph；Java AI 域对前端、facade、调用记录、候选结果和任务台账返回的 capability 仍是业务 capability。
 
-- `POST /internal/ai/classics/translate`
-- `POST /internal/ai/classics/summary`
-- `POST /internal/ai/discovery/answer-generation`
-- `POST /internal/ai/knowledge/lineage-extraction`
-
-完整 usecase path、capability、stream 和输入快照要求见 [`WORKERS-AI-USECASE-INTERFACE.md`](./WORKERS-AI-USECASE-INTERFACE.md)。
-
-Discovery `answer_generation` usecase 可以在 `input.payload` 接收单文档问答上下文：
+Discovery `answer_generation` capability 可以在 `input.payload` 接收单文档问答上下文：
 
 - `contextMode`：单文档追问时固定为 `SINGLE_DOCUMENT`。
 - `contextContentType`：当前支持 `WANGQI_DOCUMENT`。
 - `contextContentId`：单文档内容 ID，字符串格式。
 
-这些字段只作为 workers 本次无状态回答生成的输入上下文。Discovery `answer_generation` 是非正式知识库问答链路、实验、评估、后备能力或经设计文档明确切换后的独立 AI 编排能力；正式 Portal/Admin Discovery QA 当前固定由 Discovery 通过 `kuzhambu-common-knowledge` 调用 Knowledge Base provider。正式 Discovery QA 会话、消息、来源、trace、知识同步状态和业务写入仍由 Java Discovery 域拥有；workers 不暴露 `/internal/ai/discovery/qa/session/*` 路径，也不提供 Discovery QA 会话运行时接口。
+这些字段只作为 workers 本次无状态回答生成的输入上下文。Discovery `answer_generation` 是非正式知识库问答链路、实验、评估、后备能力或经设计文档明确切换后的独立 AI 编排能力；正式 Portal/Admin Discovery QA 当前固定由 Discovery 通过 `kuzhambu-common-knowledge` 调用 Knowledge Base provider。正式 Discovery QA 会话、消息、来源、trace、知识同步状态和业务写入仍由 Java Discovery 域拥有；workers 不暴露任何 Discovery QA 会话运行时接口。
 
 健康与能力发现接口：
 
@@ -266,7 +259,7 @@ Health 接口不得检查数据库、Redis 或 MQ。
   "requestId": "req_20260601_000001",
   "traceId": "trace_20260601_000001",
   "callerDomain": "AI",
-  "operation": "SANCAI_TRANSLATE",
+  "operation": "CLASSICS_SANCAI_SUMMARY",
   "capability": "translate",
   "scope": "SANCAI",
   "modelConfig": {
@@ -326,7 +319,7 @@ Health 接口不得检查数据库、Redis 或 MQ。
 - `traceId`：跨服务链路标识。
 - `callerDomain`：固定为调用来源域，AI 域调用时使用 `AI`。
 - `operation`：AI 域侧业务动作，用于日志和排查。
-- `capability`：AI 能力编码，必须来自 AI 域能力定义。
+- `capability`：workers canonical capability，必须来自 workers capability matrix，例如 `summary`、`image_analysis`、`answer_generation`。不得传 `classics_summary`、`knowledge_graph_extract` 等业务 capability。
 - `scope`：知识库或业务范围，例如 `SANCAI`、`WANGQI`、`MING_CUSTOMS`、`DISCOVERY`、`KNOWLEDGE`。
 - `modelConfig`：AI 域选择后的模型服务配置。workers 只使用，不持久化。
 - `prompt.messages`：AI 域渲染后的最终 messages，workers 必须优先使用该字段。

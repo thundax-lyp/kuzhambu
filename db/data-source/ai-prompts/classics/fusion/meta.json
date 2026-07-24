@@ -4,7 +4,7 @@
   "variableIdStart": 960701,
   "capability": "classics_image_prompt_fusion",
   "suite": "classics-default-v1",
-  "name": "Classics Default Visual Fusion",
+  "name": "古籍图文融合提示词",
   "description": "古籍图文信息融合默认提示词。",
   "enabled": true,
   "versionNo": 1,

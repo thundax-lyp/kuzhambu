@@ -33,6 +33,7 @@ public class PlatformAiInvokeCommand {
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope("platform");
         command.setCapability(spec.capability());
+        command.setWorkerCapability(spec.workerCapability());
         command.setOperation(spec.operation());
         command.setWorkerPath(spec.workerPath());
         command.setContentType(contentType);

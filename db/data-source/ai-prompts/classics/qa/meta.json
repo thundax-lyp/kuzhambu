@@ -4,7 +4,7 @@
   "variableIdStart": 960401,
   "capability": "classics_qa",
   "suite": "classics-default-v1",
-  "name": "Classics Default QA",
+  "name": "古籍问答生成提示词",
   "description": "古籍内容默认问答生成提示词。",
   "enabled": true,
   "versionNo": 1,

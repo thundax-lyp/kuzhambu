@@ -4,7 +4,7 @@
   "variableIdStart": 961001,
   "capability": "discovery_query_understanding",
   "suite": "discovery-default-v1",
-  "name": "Discovery Default Query Understanding",
+  "name": "知识发现查询理解提示词",
   "description": "知识发现默认查询理解提示词。",
   "enabled": true,
   "versionNo": 1,

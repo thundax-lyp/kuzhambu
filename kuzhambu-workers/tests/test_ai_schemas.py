@@ -21,6 +21,37 @@ def test_ai_invoke_request_accepts_contract_shape() -> None:
     assert request.outputSchema.type == "text"
 
 
+def test_ai_invoke_request_wraps_flat_output_schema_constraints() -> None:
+    payload = _request_payload("tags")
+    payload["outputSchema"] = {
+        "type": "object",
+        "properties": {
+            "tags": {
+                "type": "array",
+                "items": {"type": "string"},
+                "minItems": 3,
+                "maxItems": 8,
+            }
+        },
+        "required": ["tags"],
+    }
+
+    request = AiInvokeRequest.model_validate(payload)
+
+    assert request.outputSchema.schema_ == {
+        "type": "object",
+        "properties": {
+            "tags": {
+                "type": "array",
+                "items": {"type": "string"},
+                "minItems": 3,
+                "maxItems": 8,
+            }
+        },
+        "required": ["tags"],
+    }
+
+
 @pytest.mark.parametrize(
     "capability",
     ["image_gen", "fusion", "version_summary", "visual"],
