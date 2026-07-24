@@ -167,6 +167,7 @@
         "AI 管理",
         "AI 管理/模型配置",
         "AI 管理/提示词",
+        "AI 管理/业务配置",
         "AI 管理/调用统计",
         "系统管理",
         "系统管理/字典管理",
@@ -700,6 +701,15 @@
           "icon": "ai-prompt",
           "url": "/ai/prompts",
           "remarks": "AI 提示词模板和版本"
+        },
+        {
+          "id": 45,
+          "name": "业务配置",
+          "perms": ["ai:config:view", "ai:config:edit"],
+          "priority": 73,
+          "icon": "ai-capability",
+          "url": "/ai/business-configs",
+          "remarks": "AI 业务能力、提示词模板和模型绑定配置"
         },
         {
           "id": 11,

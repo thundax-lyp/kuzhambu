@@ -2,6 +2,7 @@ import { Navigate, RouterProvider, createBrowserRouter } from "react-router-dom"
 import { AdminLayout } from "../layouts/admin-layout";
 import { InvocationsPage } from "../pages/ai/invocations/invocations-page";
 import { AiModelsPage } from "../pages/ai/ai-models/ai-models-page";
+import { BusinessConfigsPage } from "../pages/ai/business-configs/business-configs-page";
 import { PromptsPage } from "../pages/ai/prompts/prompts-page";
 import { AuditLogPage } from "../pages/audit/audit-log/audit-log-page";
 import { LoginPage } from "../pages/auth/login/login-page";
@@ -100,6 +101,10 @@ const router = createBrowserRouter(
                         {
                             path: "ai/prompts",
                             element: <PromptsPage />
+                        },
+                        {
+                            path: "ai/business-configs",
+                            element: <BusinessConfigsPage />
                         },
                         {
                             path: "ai/invocations",
