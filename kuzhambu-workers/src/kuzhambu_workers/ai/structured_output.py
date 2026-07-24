@@ -48,13 +48,26 @@ def requires_structured_output(request: AiInvokeRequest) -> bool:
     )
 
 
-def openai_response_format(request: AiInvokeRequest) -> dict[str, str] | None:
+def openai_response_format(request: AiInvokeRequest) -> dict[str, Any] | None:
     if not requires_structured_output(request):
         return None
+    if request.outputSchema.schema_ is not None:
+        return {
+            "type": "json_schema",
+            "json_schema": {
+                "name": _response_schema_name(request),
+                "strict": True,
+                "schema": request.outputSchema.schema_,
+            },
+        }
     return {"type": "json_object"}
 
 
-def parse_structured_output(content: str, capability: AiCapability) -> dict[str, Any] | list[Any]:
+def parse_structured_output(
+    content: str,
+    capability: AiCapability,
+    output_schema: AiOutputSchema | None = None,
+) -> dict[str, Any] | list[Any]:
     try:
         payload = json.loads(content)
     except json.JSONDecodeError as exc:
@@ -64,9 +77,82 @@ def parse_structured_output(content: str, capability: AiCapability) -> dict[str,
 
     if not isinstance(payload, dict | list):
         raise model_output_invalid_json(detail={"capability": capability.value})
+    if output_schema is not None and output_schema.schema_ is not None:
+        _validate_schema(payload, output_schema.schema_, capability)
     if isinstance(payload, dict):
         return _normalize_structured_object(payload, capability)
     return payload
+
+
+def _response_schema_name(request: AiInvokeRequest) -> str:
+    return f"{request.scope}_{request.capability.value}_{request.operation}".lower()
+
+
+def _validate_schema(payload: Any, schema: dict[str, Any], capability: AiCapability) -> None:
+    violation = _schema_violation(payload, schema, "$")
+    if violation is None:
+        return
+    raise model_output_invalid_json(
+        detail={
+            "capability": capability.value,
+            "schemaPath": violation,
+        }
+    )
+
+
+def _schema_violation(payload: Any, schema: dict[str, Any], path: str) -> str | None:
+    expected_type = schema.get("type")
+    if isinstance(expected_type, list):
+        if not any(_matches_schema_type(payload, type_name) for type_name in expected_type):
+            return path
+    elif isinstance(expected_type, str) and not _matches_schema_type(payload, expected_type):
+        return path
+
+    enum_values = schema.get("enum")
+    if isinstance(enum_values, list) and payload not in enum_values:
+        return path
+
+    if isinstance(payload, dict):
+        required = schema.get("required", [])
+        if isinstance(required, list):
+            for field in required:
+                if isinstance(field, str) and field not in payload:
+                    return f"{path}.{field}"
+        properties = schema.get("properties", {})
+        if isinstance(properties, dict):
+            for field, field_schema in properties.items():
+                if field in payload and isinstance(field_schema, dict):
+                    violation = _schema_violation(payload[field], field_schema, f"{path}.{field}")
+                    if violation is not None:
+                        return violation
+        return None
+
+    if isinstance(payload, list):
+        item_schema = schema.get("items")
+        if isinstance(item_schema, dict):
+            for index, item in enumerate(payload):
+                violation = _schema_violation(item, item_schema, f"{path}[{index}]")
+                if violation is not None:
+                    return violation
+    return None
+
+
+def _matches_schema_type(payload: Any, expected_type: str) -> bool:
+    if expected_type == "object":
+        return isinstance(payload, dict)
+    if expected_type == "array":
+        return isinstance(payload, list)
+    if expected_type == "string":
+        return isinstance(payload, str)
+    if expected_type == "integer":
+        return isinstance(payload, int) and not isinstance(payload, bool)
+    if expected_type == "number":
+        return isinstance(payload, int | float) and not isinstance(payload, bool)
+    if expected_type == "boolean":
+        return isinstance(payload, bool)
+    if expected_type == "null":
+        return payload is None
+    return True
 
 
 def _normalize_structured_object(
