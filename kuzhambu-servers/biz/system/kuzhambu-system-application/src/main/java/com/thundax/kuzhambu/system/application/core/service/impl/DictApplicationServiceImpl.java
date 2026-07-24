@@ -90,11 +90,6 @@ public class DictApplicationServiceImpl implements DictApplicationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @AuditLog(
-            type = "Dict",
-            id = "#command == null || #command.orderedIds == null ? null : #command.orderedIds.![value()]",
-            action = AuditAction.UPDATE,
-            summary = "字典排序")
     public void sort(DictSortCommand command) {
         List<DictId> orderedIdList =
                 command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();

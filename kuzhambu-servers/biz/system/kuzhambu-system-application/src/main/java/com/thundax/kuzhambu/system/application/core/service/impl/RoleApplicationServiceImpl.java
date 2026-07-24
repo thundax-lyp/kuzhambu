@@ -84,11 +84,6 @@ public class RoleApplicationServiceImpl implements RoleApplicationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @AuditLog(
-            type = "Role",
-            id = "#command == null || #command.orderedIds == null ? null : #command.orderedIds.![value()]",
-            action = AuditAction.UPDATE,
-            summary = "角色排序")
     public void sort(RoleSortCommand command) {
         List<RoleId> orderedIdList =
                 command == null || command.getOrderedIds() == null ? Collections.emptyList() : command.getOrderedIds();
