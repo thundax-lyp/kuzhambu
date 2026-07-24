@@ -178,6 +178,12 @@ Admin Web 交互流程：
 14. 当任务进入 `SUCCEEDED` 且存在 `candidateId` 后，Admin Web 刷新候选面板，用户再通过候选应用接口把结果落到正式内容。
 15. `task/add` 的成功只表示“任务已受理”，不表示候选已生成；候选是否可用必须以后续 `task/get` 返回的最终状态判断。
 
+运行时接口协议见 [`AI-RUNTIME-INTERFACE.md`](../20-interfaces/AI-RUNTIME-INTERFACE.md)。该协议固定：
+
+- Admin Web 和跨域 facade 默认只传业务 capability、内容标识和业务参数 JSON。
+- `modelId`、`promptVersionId`、`promptMessagesJson`、`workerCapability` 和 `workerPath` 不属于默认外部运行时协议。
+- Java AI 域对外响应和持久化字段始终使用业务 capability；workers canonical capability 只存在于 Java AI 域到 workers 的内部请求。
+
 精修任务失效清理流程：
 
 1. 清理范围只包含 `ai_refinement_task`。

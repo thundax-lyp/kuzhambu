@@ -161,7 +161,7 @@ OpenAI-compatible 响应使用 OpenAI chat completion、`data: ...` chunk 或 im
 
 当 text2image 使用 `response_format: "url"` 时，workers 返回的是 `/internal/artifacts/{artifactId}` 内部临时下载路径，不是最终业务 URL。Java servers 仍需使用服务身份下载 artifact 并转存到 Storage。
 
-统一 AI 执行接口不承载业务权限、业务写入、用例级审计或稳定业务结果语义。业务语义通过 `capability`、`scope`、`prompt`、`input.payload` 和 `outputSchema` 随请求传入，由 Java AI 域负责解释和归档。
+统一 AI 执行接口不承载业务权限、业务写入、用例级审计或稳定业务结果语义。业务语义通过 `scope`、`operation`、`prompt`、`input.payload` 和 `outputSchema` 随请求传入，由 Java AI 域负责解释和归档。请求体 `capability` 是 workers canonical capability，只用于选择 worker graph；Java AI 域对前端、facade、调用记录、候选结果和任务台账返回的 capability 仍是业务 capability。
 
 Discovery `answer_generation` capability 可以在 `input.payload` 接收单文档问答上下文：
 
@@ -259,7 +259,7 @@ Health 接口不得检查数据库、Redis 或 MQ。
   "requestId": "req_20260601_000001",
   "traceId": "trace_20260601_000001",
   "callerDomain": "AI",
-  "operation": "SANCAI_TRANSLATE",
+  "operation": "CLASSICS_SANCAI_SUMMARY",
   "capability": "translate",
   "scope": "SANCAI",
   "modelConfig": {
@@ -319,7 +319,7 @@ Health 接口不得检查数据库、Redis 或 MQ。
 - `traceId`：跨服务链路标识。
 - `callerDomain`：固定为调用来源域，AI 域调用时使用 `AI`。
 - `operation`：AI 域侧业务动作，用于日志和排查。
-- `capability`：AI 能力编码，必须来自 AI 域能力定义。
+- `capability`：workers canonical capability，必须来自 workers capability matrix，例如 `summary`、`image_analysis`、`answer_generation`。不得传 `classics_summary`、`knowledge_graph_extract` 等业务 capability。
 - `scope`：知识库或业务范围，例如 `SANCAI`、`WANGQI`、`MING_CUSTOMS`、`DISCOVERY`、`KNOWLEDGE`。
 - `modelConfig`：AI 域选择后的模型服务配置。workers 只使用，不持久化。
 - `prompt.messages`：AI 域渲染后的最终 messages，workers 必须优先使用该字段。
