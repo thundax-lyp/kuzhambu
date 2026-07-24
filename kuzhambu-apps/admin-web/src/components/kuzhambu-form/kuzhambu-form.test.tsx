@@ -163,6 +163,29 @@ describe("KuzhambuForm", () => {
         expect(container.querySelector(".kuzhambu-form-col.ant-col-24")).toBeInTheDocument();
     });
 
+    it("keeps componentized form sections as full-line compatibility content", () => {
+        const FormSection = () => (
+            <>
+                <KuzhambuFormItem label="分区字段一">
+                    <Input />
+                </KuzhambuFormItem>
+                <KuzhambuFormItem label="分区字段二">
+                    <Input />
+                </KuzhambuFormItem>
+            </>
+        );
+
+        const { container } = render(
+            <KuzhambuForm>
+                <FormSection />
+            </KuzhambuForm>
+        );
+
+        expect(screen.getByText("分区字段一")).toBeInTheDocument();
+        expect(screen.getByText("分区字段二")).toBeInTheDocument();
+        expect(container.querySelector(".kuzhambu-form-col.ant-col-24")).toBeInTheDocument();
+    });
+
     it("renders hidden fields without allocating grid columns", () => {
         const { container } = render(
             <KuzhambuForm>

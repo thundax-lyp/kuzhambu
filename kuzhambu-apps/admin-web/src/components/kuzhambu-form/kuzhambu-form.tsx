@@ -66,7 +66,8 @@ type KuzhambuFormPlaceholderItemElement = ReactElement<KuzhambuFormPlaceholderIt
 type KuzhambuFormLayoutElement =
     | { element: KuzhambuFormItemElement; key: Key; kind: "item" }
     | { element: KuzhambuFormHiddenItemElement; key: Key; kind: "hidden" }
-    | { element: KuzhambuFormPlaceholderItemElement; key: Key; kind: "placeholder" };
+    | { element: KuzhambuFormPlaceholderItemElement; key: Key; kind: "placeholder" }
+    | { child: ReactNode; key: Key; kind: "raw" };
 
 interface FormLayoutItem {
     ariaHidden?: boolean;
@@ -74,7 +75,7 @@ interface FormLayoutItem {
     colProps: ColProps;
     hasChildren?: boolean;
     key: Key;
-    kind: "item" | "placeholder";
+    kind: "item" | "placeholder" | "raw";
     span: number;
 }
 
@@ -116,7 +117,7 @@ const collectLayoutChildren = (
         if (isKuzhambuFormPlaceholderItemElement(child)) {
             return [{ element: child, key: childKey, kind: "placeholder" }];
         }
-        return [];
+        return [{ child, key: childKey, kind: "raw" }];
     });
 };
 
@@ -205,6 +206,19 @@ const buildFormRows = (children: ReactNode, layoutTier: KuzhambuFormLayoutTier) 
             return;
         }
 
+        if (layoutChild.kind === "raw") {
+            pushCurrentRow();
+            currentRow.push({
+                child: layoutChild.child,
+                colProps: { span: 24 },
+                key: layoutChild.key,
+                kind: "raw",
+                span: 24
+            });
+            pushCurrentRow();
+            return;
+        }
+
         const child = layoutChild.element;
         const itemSpan = readItemSpan(child.props.layoutSize, layoutTier);
         if (currentRow.length && currentSpan + itemSpan > 24) {
@@ -232,7 +246,8 @@ const readRowKey = (row: FormLayoutItem[]) => {
 };
 
 // AI NOTE: KuzhambuForm owns grid layout from container width, not viewport width.
-// Only KuzhambuFormItem, KuzhambuFormPlaceholderItem, and hidden items participate in layout.
+// KuzhambuFormItem and KuzhambuFormPlaceholderItem participate in grid layout;
+// unknown renderable children are preserved as full-line compatibility content.
 export const KuzhambuForm = <Values = unknown,>({
     children,
     className,
