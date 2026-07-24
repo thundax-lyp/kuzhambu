@@ -117,7 +117,7 @@
 - `WORKERS_AI_GRAPH_REQUIRED`：AI 能力必须通过 LangGraph graph 执行。
 - `WORKERS_AI_CANONICAL_CAPABILITY`：AI capability 必须来自 canonical capability matrix。
 - `WORKERS_AI_NO_CALLBACK_PROMPT`：Workers 不得根据业务 ID 回调 Java servers 读取模型配置、提示词、候选结果或任务状态。
-- `WORKERS_AI_USECASE_SERVICE_BOUNDARY`：AI usecase 接口只允许 AI 域服务身份调用。
+- `WORKERS_AI_SERVICE_BOUNDARY`：AI 统一执行接口只允许 AI 域服务身份调用。
 
 ### Render
 
