@@ -39,7 +39,6 @@ def test_schema_output_requests_json_schema_response_format() -> None:
         "type": "json_schema",
         "json_schema": {
             "name": "sancai_tags_test",
-            "strict": True,
             "schema": {
                 "type": "object",
                 "properties": {"tags": {"type": "array", "items": {"type": "string"}}},

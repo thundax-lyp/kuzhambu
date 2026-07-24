@@ -56,7 +56,6 @@ def openai_response_format(request: AiInvokeRequest) -> dict[str, Any] | None:
             "type": "json_schema",
             "json_schema": {
                 "name": _response_schema_name(request),
-                "strict": True,
                 "schema": request.outputSchema.schema_,
             },
         }
