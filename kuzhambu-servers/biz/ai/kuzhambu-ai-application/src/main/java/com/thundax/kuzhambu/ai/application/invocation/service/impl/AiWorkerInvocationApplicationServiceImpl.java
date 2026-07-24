@@ -171,6 +171,9 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
         if (result.getCapability() == null) {
             result.setCapability(command.getCapability());
         }
+        if (isBlank(result.getResultFormat())) {
+            result.setResultFormat(defaultResultFormat(command, result));
+        }
         if (result.isSucceeded() && !isBlank(result.getArtifactReferenceJson())) {
             return persistArtifactResult(command, result);
         }
@@ -191,6 +194,13 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private String defaultResultFormat(AiInvokeCommand command, AiInvokeResult result) {
+        if (result != null && !isBlank(result.getArtifactReferenceJson())) {
+            return "ARTIFACT";
+        }
+        return command != null && command.isForceJson() ? "JSON" : "TEXT";
     }
 
     private AiInvokeResult persistArtifactResult(AiInvokeCommand command, AiInvokeResult result) {
