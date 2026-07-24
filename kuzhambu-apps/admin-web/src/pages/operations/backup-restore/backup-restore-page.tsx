@@ -11,9 +11,7 @@ import type { ReactNode } from "react";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuTag } from "@/components/kuzhambu-tag";
-import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
+import { KuzhambuDrawer, KuzhambuTag, DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { BackupLedgerTable } from "./backup-ledger-table";
 import * as service from "./backup-restore-service";
 import type { BackupLedgerQuery, RestoreLedgerQuery } from "./backup-restore-service";
@@ -23,10 +21,9 @@ import type {
     OperationsRestoreMode,
     OperationsRestoreRecord
 } from "./backup-restore-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuButton, KuzhambuAlert, KuzhambuSelect } from "@/components";
+
 import "./backup-restore-page.css";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 const { Text, Title } = Typography;
 

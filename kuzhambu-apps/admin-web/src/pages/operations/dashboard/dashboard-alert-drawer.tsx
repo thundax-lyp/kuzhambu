@@ -1,9 +1,7 @@
 import { Card, Empty, Typography } from "antd";
 import { Link } from "react-router-dom";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuTag } from "@/components/kuzhambu-tag";
+import { KuzhambuAlert, KuzhambuButton, KuzhambuDrawer, KuzhambuTag } from "@/components";
+
 import type { OperationsHealthAlertRecord } from "./dashboard-types";
 
 const { Text } = Typography;

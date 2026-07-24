@@ -9,11 +9,14 @@ import { Card, DatePicker, Descriptions, InputNumber, Spin, Typography } from "a
 import type { Dayjs } from "dayjs";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuPage } from "@/components/kuzhambu-page";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import { KuzhambuTag } from "@/components/kuzhambu-tag";
-import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
+import {
+    KuzhambuDrawer,
+    KuzhambuPage,
+    KuzhambuSpace,
+    KuzhambuTag,
+    DEFAULT_PAGE_NO,
+    DEFAULT_PAGE_SIZE
+} from "@/types/page";
 import type { Page } from "@/types/page";
 import * as service from "./reports-service";
 import type { OperationsReportGenerateCommand, OperationsReportPageQuery } from "./reports-service";
@@ -23,10 +26,9 @@ import type {
     OperationsReportStatus,
     OperationsReportType
 } from "./reports-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuButton, KuzhambuAlert, KuzhambuSelect } from "@/components";
+
 import "./reports-page.css";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 const { RangePicker } = DatePicker;
 const { Text } = Typography;

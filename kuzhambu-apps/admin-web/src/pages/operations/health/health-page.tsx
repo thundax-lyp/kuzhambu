@@ -4,11 +4,14 @@ import { App, Card, DatePicker, Descriptions, Input, Tooltip, Typography } from 
 import { useEffect, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuPage } from "@/components/kuzhambu-page";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import { KuzhambuTag } from "@/components/kuzhambu-tag";
-import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
+import {
+    KuzhambuDrawer,
+    KuzhambuPage,
+    KuzhambuSpace,
+    KuzhambuTag,
+    DEFAULT_PAGE_NO,
+    DEFAULT_PAGE_SIZE
+} from "@/types/page";
 import { HealthAlertTable } from "./health-alert-table";
 import * as service from "./health-service";
 import type { OperationsHealthPageQuery } from "./health-service";
@@ -17,9 +20,9 @@ import type {
     OperationsHealthRecord,
     OperationsHealthStatus
 } from "./health-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuButton, KuzhambuSelect } from "@/components";
+
 import "./health-page.css";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 const { RangePicker } = DatePicker;
 const { Paragraph, Text } = Typography;
