@@ -41,6 +41,7 @@ class AiBusinessInvokeConfigResolverTest {
         JsonNode variables = objectMapper.readTree(command.getPromptVariablesJson());
 
         assertThat(command.getModelId()).isEqualTo(2001L);
+        assertThat(command.getServiceRole()).isEqualTo("PRIMARY");
         assertThat(command.getModelName()).isEqualTo("gpt-4o");
         assertThat(command.getPromptVersionId()).isEqualTo(940106L);
         assertThat(command.getOutputSchemaJson()).isEqualTo("{\"type\":\"text\"}");
