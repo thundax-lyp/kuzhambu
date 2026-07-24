@@ -75,6 +75,7 @@ export const BusinessConfigEditDrawer = ({
     saving
 }: BusinessConfigEditDrawerProps) => {
     const [form] = Form.useForm<BusinessConfigFormValues>();
+    const isEditingConfig = Boolean(config);
     const selectedCapability = Form.useWatch("capability", form);
     const capabilityNameByCode = useMemo(() => {
         return new Map(capabilities.map((capability) => [capability.capability, capability.name]));
@@ -146,7 +147,7 @@ export const BusinessConfigEditDrawer = ({
         const values = await form.validateFields();
         onSave({
             id: values.id ?? null,
-            capability: values.capability,
+            capability: config?.capability ?? values.capability,
             promptTemplateId: values.promptTemplateId,
             modelId: values.modelId,
             defaultParamsJson: normalizeJsonText(values.defaultParamsJson),
@@ -187,7 +188,11 @@ export const BusinessConfigEditDrawer = ({
                     layoutSize="middle"
                     className="business-configs-form-item-compact"
                 >
-                    <KuzhambuSelect options={capabilityOptions} showSearch />
+                    <KuzhambuSelect
+                        options={capabilityOptions}
+                        showSearch
+                        disabled={isEditingConfig}
+                    />
                 </KuzhambuFormItem>
                 <KuzhambuFormPlaceholderItem />
                 <KuzhambuFormItem

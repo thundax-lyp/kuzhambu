@@ -169,6 +169,7 @@ Admin Web 交互流程：
 2. AI interface 校验权限、请求字段、AI 动作开关和内容类型与 capability 的匹配关系。
 3. AI application 创建 `ai_refinement_task`，初始状态为 `PENDING`。
 4. AI application 根据 capability 读取第一个启用的 `ai_business_config`，从业务配置中取得 `model_id`、`prompt_template_id` 和 `default_params_json`。
+   `ai_business_config.capability` 是业务配置的能力归属键，创建后不可在编辑流程中切换；编辑业务配置只允许调整提示词模板、模型、默认参数和启停状态。
 5. AI application 根据 `prompt_template_id` 读取当前 prompt version，把业务参数 JSON 按 `{{variableName}}` 注入提示词模板，生成本次调用的 `promptMessagesJson`、`promptVariablesJson` 和 `promptVersionId`。
 6. AI application 合并模型默认参数和业务配置辅助参数；业务配置参数覆盖模型默认参数。
 7. AI application 保留业务 `capability` 作为业务配置、调用记录和候选归档字段，同时把本次调用映射为 workers canonical `workerCapability`，例如 `classics_summary -> summary`、`knowledge_graph_extract -> knowledge_graph`。

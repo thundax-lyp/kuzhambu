@@ -163,4 +163,29 @@ describe("BusinessConfigsPage", () => {
             );
         });
     });
+
+    it("keeps business capability immutable while editing a config", async () => {
+        const { container } = renderPage();
+        await screen.findByText("古籍摘要");
+
+        fireEvent.click(screen.getByRole("button", { name: /编辑 古籍摘要 业务配置/ }));
+        expect(await screen.findByRole("heading", { name: "编辑业务配置" })).toBeInTheDocument();
+
+        expect(container.querySelector(".ant-select-disabled")).toBeInTheDocument();
+        fireEvent.click(screen.getByRole("button", { name: /保存/ }));
+
+        await waitFor(() => {
+            expect(service.changeBusinessConfig).toHaveBeenCalledWith(
+                {
+                    id: 700001,
+                    capability: "classics_summary",
+                    promptTemplateId: 800001,
+                    modelId: 900001,
+                    defaultParamsJson: '{"temperature":0.2}',
+                    enabled: true
+                },
+                expect.anything()
+            );
+        });
+    });
 });
