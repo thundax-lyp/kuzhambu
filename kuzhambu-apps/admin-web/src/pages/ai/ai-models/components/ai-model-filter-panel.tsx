@@ -1,10 +1,13 @@
 import { DeleteOutlined, ReloadOutlined } from "@ant-design/icons";
 import type { ReactNode } from "react";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import type { KuzhambuTableBatchActionBarProps } from "@/components/kuzhambu-table";
+import {
+    KuzhambuButton,
+    KuzhambuListPage,
+    KuzhambuSelect,
+    KuzhambuSpace,
+    type KuzhambuTableBatchActionBarProps
+} from "@/components";
+
 import { API_SOURCE_OPTIONS, readApiSourceMeta } from "../ai-models-metadata";
 import type { AiModelRecord } from "../ai-models-types";
 

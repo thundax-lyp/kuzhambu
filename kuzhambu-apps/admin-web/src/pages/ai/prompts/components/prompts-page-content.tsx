@@ -7,13 +7,16 @@ import {
 } from "@ant-design/icons";
 import { Typography } from "antd";
 import type { Dispatch, Key, SetStateAction } from "react";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
-import { KuzhambuTag } from "@/components/kuzhambu-tag";
-import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
+import {
+    KuzhambuButton,
+    KuzhambuListPage,
+    KuzhambuSelect,
+    KuzhambuSpace,
+    KuzhambuSwitch,
+    KuzhambuTag,
+    type KuzhambuTableProps
+} from "@/components";
+
 import type { AiPromptCapabilityRecord, AiPromptTemplateRecord } from "../prompts-types";
 import {
     readCapabilityDomainTag,

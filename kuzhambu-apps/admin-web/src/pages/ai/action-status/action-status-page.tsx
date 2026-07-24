@@ -4,15 +4,20 @@ import { App, Card, Form, Table, Tag, Tooltip, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useEffect, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { KuzhambuPage } from "@/components/kuzhambu-page";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import {
+    KuzhambuPage,
+    KuzhambuSpace,
+    KuzhambuButton,
+    KuzhambuForm,
+    KuzhambuFormItem,
+    KuzhambuSelect
+} from "@/components";
+
 import * as service from "./action-status-service";
 import type { AiActionStatusQuery } from "./action-status-service";
 import type { AiActionStatusRecord } from "./action-status-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
+
 import "./action-status-page.css";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 const SCOPE_OPTIONS = [
     { label: "classics", value: "classics" },

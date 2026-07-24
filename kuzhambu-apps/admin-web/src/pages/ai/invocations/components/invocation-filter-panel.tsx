@@ -1,11 +1,15 @@
 import { Card, DatePicker } from "antd";
 import type { FormInstance } from "antd";
 import type { Dayjs } from "dayjs";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import {
+    KuzhambuButton,
+    KuzhambuForm,
+    KuzhambuFormItem,
+    KuzhambuSpace,
+    KuzhambuSelect
+} from "@/components";
+
 import type { AiCallRecordPageQuery, AiInvocationSummaryQuery } from "../invocations-service";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 const { RangePicker } = DatePicker;
 const DATE_TIME_FORMAT = "YYYYMMDD HH:mm";

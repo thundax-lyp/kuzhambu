@@ -10,16 +10,23 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Form, Input, Table, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useEffect, useMemo, useState } from "react";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+import {
+    KuzhambuButton,
+    KuzhambuDrawer,
+    KuzhambuForm,
+    KuzhambuFormHiddenItem,
+    KuzhambuFormItem,
+    KuzhambuModal,
+    KuzhambuSpace,
+    KuzhambuSpaceCompact,
+    KuzhambuSwitch,
+    KuzhambuTable,
+    type KuzhambuTableProps,
+    KuzhambuTag,
+    KuzhambuSelect
+} from "@/components";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuForm, KuzhambuFormHiddenItem, KuzhambuFormItem } from "@/components/kuzhambu-form";
-import { KuzhambuModal } from "@/components/kuzhambu-modal";
-import { KuzhambuSpace, KuzhambuSpaceCompact } from "@/components/kuzhambu-space";
-import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
-import { KuzhambuTable } from "@/components/kuzhambu-table";
-import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
-import { KuzhambuTag } from "@/components/kuzhambu-tag";
+
 import {
     findUnsupportedPromptVariableNames,
     getPromptCapabilityVariables
@@ -27,7 +34,7 @@ import {
 import type { PromptCapabilityVariableDefinition } from "../prompt-capability-variables";
 import type { AiPromptTemplateChangeCommand } from "../prompts-service";
 import * as service from "../prompts-service";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
+
 import type {
     AiPromptTemplateRecord,
     AiPromptVariableRecord,

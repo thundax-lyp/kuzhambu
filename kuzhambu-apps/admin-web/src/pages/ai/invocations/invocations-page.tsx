@@ -5,8 +5,8 @@ import type { TablePaginationConfig } from "antd/es/table";
 import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { KuzhambuPage } from "@/components/kuzhambu-page";
-import { KuzhambuTabs } from "@/components/kuzhambu-tabs";
+import { KuzhambuPage, KuzhambuTabs, KuzhambuButton } from "@/components";
+
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { InvocationDetailDrawer } from "./components/invocation-detail-drawer";
 import {
@@ -19,7 +19,7 @@ import { InvocationTable } from "./components/invocation-table";
 import * as service from "./invocations-service";
 import type { AiCallRecordPageQuery, AiInvocationSummaryQuery } from "./invocations-service";
 import type { AiCallRecord } from "./invocations-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+
 import "./invocations-page.css";
 
 const CAPABILITY_LABELS: Record<string, string> = {

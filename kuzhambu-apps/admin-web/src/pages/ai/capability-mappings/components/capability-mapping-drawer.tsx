@@ -1,12 +1,11 @@
 import { Switch } from "antd";
 import type { FormInstance } from "antd";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
+import { KuzhambuDrawer, KuzhambuForm, KuzhambuFormItem, KuzhambuSelect } from "@/components";
+
 import { CapabilityModelMatchPanel } from "./capability-model-match-panel";
 import type { CapabilityModelTagMatch } from "./capability-model-match-panel";
 import type { AiCapabilityMappingChangeCommand } from "../capability-mappings-service";
 import type { AiCapabilityMappingRecord } from "../capability-mappings-types";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 export type MappingFormValues = AiCapabilityMappingChangeCommand;
 

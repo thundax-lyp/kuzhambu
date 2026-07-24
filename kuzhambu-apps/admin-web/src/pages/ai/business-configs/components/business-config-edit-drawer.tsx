@@ -1,14 +1,15 @@
 import { Form, Input } from "antd";
 import { useEffect, useMemo } from "react";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
 import {
+    KuzhambuDrawer,
     KuzhambuForm,
     KuzhambuFormHiddenItem,
     KuzhambuFormItem,
-    KuzhambuFormPlaceholderItem
-} from "@/components/kuzhambu-form";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
-import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
+    KuzhambuFormPlaceholderItem,
+    KuzhambuSelect,
+    KuzhambuSwitch
+} from "@/components";
+
 import type { AiBusinessConfigChangeCommand } from "../business-configs-service";
 import type {
     AiBusinessConfigCapabilityRecord,

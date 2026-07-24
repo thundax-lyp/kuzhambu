@@ -3,10 +3,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Card, Form, Tooltip } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
-import { KuzhambuPage } from "@/components/kuzhambu-page";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import {
+    KuzhambuButton,
+    KuzhambuForm,
+    KuzhambuFormItem,
+    KuzhambuPage,
+    KuzhambuSpace,
+    KuzhambuSelect
+} from "@/components";
+
 import { CapabilityMappingDrawer } from "./components/capability-mapping-drawer";
 import type { MappingFormValues } from "./components/capability-mapping-drawer";
 import { CapabilityMappingTable } from "./components/capability-mapping-table";
@@ -19,7 +24,6 @@ import type {
     AiCapabilityRecord
 } from "./capability-mappings-types";
 import "./capability-mappings-page.css";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 const SCOPE_OPTIONS = [
     { label: "classics", value: "classics" },

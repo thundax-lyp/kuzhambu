@@ -1,4 +1,4 @@
-import type { KuzhambuTagType } from "@/components/kuzhambu-tag";
+import { type KuzhambuTagType } from "@/components";
 
 export const DEFAULT_MODEL_PARAMS = "{}";
 

@@ -1,12 +1,17 @@
 import { App, Input } from "antd";
 import { useState } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
-import { KuzhambuSwitch } from "@/components/kuzhambu-switch";
+import {
+    KuzhambuDrawer,
+    KuzhambuForm,
+    KuzhambuFormItem,
+    KuzhambuSwitch,
+    KuzhambuSelect
+} from "@/components";
+
 import type { AiModelChangeCommand } from "../ai-models-service";
 import type { AiModelRecord } from "../ai-models-types";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
+
 import {
     API_SOURCE_OPTIONS,
     DEFAULT_MODEL_PARAMS,
