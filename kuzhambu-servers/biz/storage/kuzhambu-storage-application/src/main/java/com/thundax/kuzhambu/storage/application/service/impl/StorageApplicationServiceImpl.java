@@ -38,6 +38,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -79,7 +80,7 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
         }
         String referenceOwnerType = query == null ? null : query.getReferenceOwnerType();
         String referenceOwnerId = query == null ? null : query.getReferenceOwnerId();
-        return dao.list(
+        List<StoredObject> storages = dao.list(
                 query == null ? null : query.getContentType(),
                 query == null || query.getObjectStatus() == null
                         ? null
@@ -92,13 +93,15 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
                 query == null ? null : query.getOriginalFilename(),
                 query == null ? null : query.getRemarks(),
                 query == null ? null : query.getSortDirection());
+        fillReferenceOwnerTypes(storages);
+        return storages;
     }
 
     @Override
     public PageResult<StoredObject> page(StorageQuery query, PageQuery page) {
         String referenceOwnerType = query == null ? null : query.getReferenceOwnerType();
         String referenceOwnerId = query == null ? null : query.getReferenceOwnerId();
-        return dao.page(
+        PageResult<StoredObject> storagePage = dao.page(
                 query == null ? null : query.getContentType(),
                 query == null || query.getObjectStatus() == null
                         ? null
@@ -113,6 +116,25 @@ public class StorageApplicationServiceImpl implements StorageApplicationService 
                 query == null ? null : query.getSortDirection(),
                 page.getPageNo(),
                 page.getPageSize());
+        fillReferenceOwnerTypes(storagePage.getRecords());
+        return storagePage;
+    }
+
+    private void fillReferenceOwnerTypes(List<StoredObject> storages) {
+        if (storages == null || storages.isEmpty()) {
+            return;
+        }
+        for (StoredObject storage : storages) {
+            if (storage == null || storage.getId() == null) {
+                continue;
+            }
+            String referenceOwnerTypes = businessRepository.listReferences(storage).stream()
+                    .map(StoredObjectReference::getReferenceOwnerType)
+                    .filter(StringUtils::isNotBlank)
+                    .distinct()
+                    .collect(Collectors.joining(", "));
+            storage.setReferenceOwnerType(StringUtils.defaultIfBlank(referenceOwnerTypes, null));
+        }
     }
 
     @Override
