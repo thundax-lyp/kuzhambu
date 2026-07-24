@@ -77,6 +77,7 @@ export interface InitMultipartUploadCommand {
     uploadId?: string | null;
     totalSize: number;
     partSize: number;
+    signal?: AbortSignal;
 }
 
 export interface CompleteMultipartUploadCommand {
@@ -85,6 +86,7 @@ export interface CompleteMultipartUploadCommand {
     objectKey?: string | null;
     size?: number | null;
     accessEndpoint?: string | null;
+    signal?: AbortSignal;
 }
 
 export interface AbortMultipartUploadCommand {
@@ -119,19 +121,23 @@ export const uploadMultipartPart = (request: UploadMultipartPartCommand) => {
 };
 
 export const initMultipartUpload = (request: InitMultipartUploadCommand) => {
+    const { signal, ...body } = request;
     return postJson<InitMultipartUploadRecord, InitMultipartUploadCommand>(
         "/storage/object/multipart/initiate",
         {
-            body: request
+            body,
+            signal
         }
     );
 };
 
 export const completeMultipartUpload = (request: CompleteMultipartUploadCommand) => {
+    const { signal, ...body } = request;
     return postJson<StorageRecord, CompleteMultipartUploadCommand>(
         "/storage/object/multipart/complete",
         {
-            body: request
+            body,
+            signal
         }
     );
 };
@@ -257,7 +263,26 @@ export const uploadStorageFile = async (request: UploadStorageFileCommand) => {
     });
     emitTask(task);
 
-    let initRecord: InitMultipartUploadRecord;
+    let initRecord: InitMultipartUploadRecord | null = null;
+    let abortServerMultipartUploadPromise: Promise<unknown> | null = null;
+    const abortServerMultipartUpload = async () => {
+        if (!initRecord?.uploadId) {
+            return;
+        }
+        if (!abortServerMultipartUploadPromise) {
+            abortServerMultipartUploadPromise = abortMultipartUpload({
+                uploadId: initRecord.uploadId
+            }).catch(() => undefined);
+        }
+        await abortServerMultipartUploadPromise;
+    };
+    const abortServerMultipartUploadIfNeeded = async () => {
+        if (signal?.aborted) {
+            await abortServerMultipartUpload();
+            throw new ApiError("ABORTED", "Request was aborted");
+        }
+    };
+
     try {
         initRecord = await initMultipartUpload({
             originalFilename: file.name,
@@ -268,7 +293,8 @@ export const uploadStorageFile = async (request: UploadStorageFileCommand) => {
             providerUploadId: providerUploadId ?? null,
             uploadId: uploadId ?? null,
             totalSize: file.size,
-            partSize: normalizedPartSize
+            partSize: normalizedPartSize,
+            signal
         });
     } catch (error) {
         const errorMessage = `初始化分片上传失败：${readErrorMessage(error)}`;
@@ -282,6 +308,12 @@ export const uploadStorageFile = async (request: UploadStorageFileCommand) => {
         );
         throw error;
     }
+    await abortServerMultipartUploadIfNeeded();
+
+    const abortServerOnSignal = () => {
+        void abortServerMultipartUpload();
+    };
+    signal?.addEventListener("abort", abortServerOnSignal, { once: true });
 
     const uploadPartSize = Math.max(normalizedPartSize, initRecord.partSize || normalizedPartSize);
     const parts: { partNumber: number; file: Blob }[] = [];
@@ -349,9 +381,7 @@ export const uploadStorageFile = async (request: UploadStorageFileCommand) => {
                         throw error;
                     }
 
-                    await abortMultipartUpload({ uploadId: initRecord.uploadId }).catch(
-                        () => undefined
-                    );
+                    await abortServerMultipartUpload();
                     throw error;
                 }
 
@@ -378,24 +408,17 @@ export const uploadStorageFile = async (request: UploadStorageFileCommand) => {
         });
         emitTask(task);
 
-        if (!isAborted) {
-            await abortMultipartUpload({ uploadId: initRecord.uploadId }).catch(() => undefined);
-            emitTask({
-                ...task,
-                stage: "error",
-                canCancel: false
-            });
-        } else {
-            emitTask({
-                ...task,
-                stage: "aborted",
-                canCancel: false
-            });
-        }
+        await abortServerMultipartUpload();
+        emitTask({
+            ...task,
+            stage: isAborted ? "aborted" : "error",
+            canCancel: false
+        });
         throw error;
     }
 
     try {
+        await abortServerMultipartUploadIfNeeded();
         task = createStorageUploadTask(file, {
             ...task,
             stage: "completing-multipart",
@@ -409,7 +432,8 @@ export const uploadStorageFile = async (request: UploadStorageFileCommand) => {
             bucketName: initRecord.bucketName || bucketName || null,
             objectKey: initRecord.objectKey || objectKey || null,
             size: file.size,
-            accessEndpoint: null
+            accessEndpoint: null,
+            signal
         });
 
         emitTask(
@@ -422,12 +446,11 @@ export const uploadStorageFile = async (request: UploadStorageFileCommand) => {
                 canCancel: false
             })
         );
+        signal?.removeEventListener("abort", abortServerOnSignal);
         return result;
     } catch (error) {
         const isAborted = isAbortedError(error);
-        if (!isAborted) {
-            await abortMultipartUpload({ uploadId: initRecord.uploadId }).catch(() => undefined);
-        }
+        await abortServerMultipartUpload();
 
         emitTask(
             createStorageUploadTask(file, {
@@ -441,6 +464,8 @@ export const uploadStorageFile = async (request: UploadStorageFileCommand) => {
             })
         );
         throw error;
+    } finally {
+        signal?.removeEventListener("abort", abortServerOnSignal);
     }
 };
 

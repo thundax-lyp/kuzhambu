@@ -22,6 +22,7 @@ interface ApiResponse<T> {
 
 interface RequestOptions<TBody> {
     body?: TBody;
+    signal?: AbortSignal;
 }
 
 interface FormDataProgressOptions {
@@ -152,7 +153,8 @@ const requestJson = async <TResponse, TBody = unknown>(
     const response = await fetch(`${ADMIN_API_BASE_URL}${path}`, {
         method: "POST",
         headers,
-        body: options.body === undefined ? undefined : JSON.stringify(options.body)
+        body: options.body === undefined ? undefined : JSON.stringify(options.body),
+        signal: options.signal
     });
 
     const payload = (await response.json()) as ApiResponse<TResponse>;
