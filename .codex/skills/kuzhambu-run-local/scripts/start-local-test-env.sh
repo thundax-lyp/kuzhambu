@@ -67,6 +67,7 @@ require_command() {
 require_command curl
 require_command lsof
 require_command mvn
+require_command ps
 require_command pnpm
 
 if [[ -f "$env_file" ]]; then
@@ -232,7 +233,7 @@ wait_for_http() {
     started_at="$(date +%s)"
 
     while true; do
-        if curl -sS --connect-timeout 2 --max-time 5 -o /dev/null "$url" >/dev/null 2>&1; then
+        if curl --fail -sS --connect-timeout 2 --max-time 5 -o /dev/null "$url" >/dev/null 2>&1; then
             echo "$name is reachable: $url"
             return 0
         fi
@@ -273,9 +274,11 @@ portal_backend_requested="${KUZHAMBU_PORTAL_SERVER_PORT:-20020}"
 admin_web_requested="${KUZHAMBU_ADMIN_WEB_PORT:-5173}"
 portal_web_requested="${KUZHAMBU_PORTAL_WEB_PORT:-5174}"
 
+reserved_ports=()
 workers_port="$workers_requested"
 if has_target admin; then
-    workers_port="$(select_port workers "$workers_requested")"
+    workers_port="$(select_port workers "$workers_requested" "${reserved_ports[@]}")"
+    reserved_ports+=("$workers_port")
 fi
 admin_backend_port="$admin_backend_requested"
 admin_web_port="$admin_web_requested"
@@ -283,12 +286,16 @@ portal_backend_port="$portal_backend_requested"
 portal_web_port="$portal_web_requested"
 
 if has_target admin; then
-    admin_backend_port="$(select_port admin-starter "$admin_backend_requested" "$workers_port")"
-    admin_web_port="$(select_port admin-web "$admin_web_requested" "$workers_port" "$admin_backend_port")"
+    admin_backend_port="$(select_port admin-starter "$admin_backend_requested" "${reserved_ports[@]}")"
+    reserved_ports+=("$admin_backend_port")
+    admin_web_port="$(select_port admin-web "$admin_web_requested" "${reserved_ports[@]}")"
+    reserved_ports+=("$admin_web_port")
 fi
 if has_target portal; then
-    portal_backend_port="$(select_port portal-starter "$portal_backend_requested" "$workers_port" "$admin_backend_port" "$admin_web_port")"
-    portal_web_port="$(select_port portal-web "$portal_web_requested" "$workers_port" "$admin_backend_port" "$admin_web_port" "$portal_backend_port")"
+    portal_backend_port="$(select_port portal-starter "$portal_backend_requested" "${reserved_ports[@]}")"
+    reserved_ports+=("$portal_backend_port")
+    portal_web_port="$(select_port portal-web "$portal_web_requested" "${reserved_ports[@]}")"
+    reserved_ports+=("$portal_web_port")
 fi
 
 if has_target admin; then
@@ -314,9 +321,11 @@ export KUZHAMBU_PORTAL_SERVER_PORT="$portal_backend_port"
 export KUZHAMBU_AI_WORKER_BASE_URL="http://127.0.0.1:$workers_port"
 if has_target admin; then
     export KUZHAMBU_OPERATIONS_HEALTH_PROBES_TARGETS_0_URL="$admin_health_url"
+    export VITE_ADMIN_API_BASE_URL=
 fi
 if has_target portal; then
     export KUZHAMBU_PORTAL_WEB_BASE_URL="$portal_web_url"
+    export VITE_PORTAL_API_BASE_URL=
 fi
 
 prepare_server_starters

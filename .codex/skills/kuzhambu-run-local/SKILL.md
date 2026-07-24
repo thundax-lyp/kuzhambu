@@ -39,7 +39,7 @@ description: "Kuzhambu project-local slash-command skill for starting the local 
    - 读取 env 文件。
    - 检查默认端口是否已被占用。
    - 如有端口冲突，选择后续可用端口。
-   - 后端端口变化时，通过 `KUZHAMBU_*_SERVER_PORT` 同步 Vite 代理目标，浏览器端 API base 继续使用相对路径。
+   - 后端端口变化时，通过 `KUZHAMBU_*_SERVER_PORT` 同步 Vite 代理目标，并清空 `VITE_*_API_BASE_URL`，确保浏览器端 API base 继续使用相对路径。
    - 启动 Java starter 前，先按 Maven reactor 安装所选 starter 及其依赖模块。
    - 如果 portal web 端口变化，同步 `KUZHAMBU_PORTAL_WEB_BASE_URL`，保证 admin 生成的分享 URL 指向实际 portal 地址。
    - 如果 admin backend 端口变化，同步 operations health probe URL，避免探测旧端口。
@@ -54,7 +54,7 @@ description: "Kuzhambu project-local slash-command skill for starting the local 
 - Admin web 默认 `5173`。
 - Portal web 默认 `5174`。
 
-不要为了处理端口冲突修改 `vite.config.ts`；使用脚本设置的 `KUZHAMBU_*_SERVER_PORT` 环境变量即可。不要导出 `VITE_*_API_BASE_URL`，避免浏览器端绕过 Vite 代理。
+不要为了处理端口冲突修改 `vite.config.ts`；使用脚本设置的 `KUZHAMBU_*_SERVER_PORT` 环境变量即可。不要导出绝对地址形式的 `VITE_*_API_BASE_URL`，避免浏览器端绕过 Vite 代理。
 
 脚本依赖 `lsof` 做端口占用和 PID 归属判断；如果环境缺少 `lsof`，应在启动前失败并提示安装，而不是继续误判端口状态。PID 复用必须允许 `pnpm`、`mvn` 等父进程的子进程持有监听端口。
 
