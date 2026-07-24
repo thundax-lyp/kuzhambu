@@ -39,6 +39,8 @@ class PromptRepositoryIT {
         assertFalse(schemaSql.contains("CREATE TABLE IF NOT EXISTS `ai_service_config`"));
         assertTrue(schemaSql.contains("CREATE TABLE IF NOT EXISTS `ai_model`"));
         assertTrue(schemaSql.contains("CREATE TABLE IF NOT EXISTS `ai_business_config`"));
+        assertFalse(schemaSql.contains("UNIQUE KEY `uk_ai_business_config_capability`"));
+        assertTrue(schemaSql.contains("KEY `idx_ai_business_config_capability`"));
         assertFalse(schemaSql.contains("CREATE TABLE IF NOT EXISTS `ai_capability_mapping`"));
         assertFalse(schemaSql.contains("CREATE TABLE IF NOT EXISTS `ai_action_status`"));
         assertTrue(schemaSql.contains("UNIQUE KEY `uk_ai_prompt_template_capability`"));
@@ -68,6 +70,7 @@ class PromptRepositoryIT {
         assertTrue(normalized.contains("(910106, 'classics_translate', 930106, 900102, NULL, 1, 6"));
         assertTrue(normalized.contains("(910107, 'classics_image_describe', 930107, 900101, NULL, 1, 7"));
         assertTrue(normalized.contains("(910108, 'classics_image_generate', 930108, 900201, NULL, 1, 8"));
+        assertSeedContainsAllBusinessCapabilities(normalized);
         assertTrue(normalized.contains("`model_id` = COALESCE(`model_id`, VALUES(`model_id`))"));
         assertFalse(normalized.contains("INSERT INTO `ai_capability_mapping`"));
         assertFalse(normalized.contains("INSERT INTO `ai_action_status`"));
@@ -75,10 +78,10 @@ class PromptRepositoryIT {
         assertTrue(normalized.contains("(940101, 930101, 1,"));
         assertTrue(normalized.contains("(940106, 930106, 1,"));
         assertTrue(normalized.contains("(940108, 930108, 1,"));
-        assertTrue(normalized.contains("\"contentType\",\"required\":true"));
-        assertTrue(normalized.contains("\"existingSummary\",\"required\":false"));
-        assertTrue(normalized.contains("\"contextPath\",\"required\":false"));
-        assertTrue(normalized.contains("\"sourceText\",\"required\":true"));
+        assertTrue(normalized.contains("\"variableName\":\"contentType\",\"required\":true"));
+        assertTrue(normalized.contains("\"variableName\":\"existingSummary\",\"required\":false"));
+        assertTrue(normalized.contains("\"variableName\":\"contextPath\",\"required\":false"));
+        assertTrue(normalized.contains("\"variableName\":\"sourceText\",\"required\":true"));
         assertTrue(normalized.contains("{\"type\":\"text\"}"));
         assertTrue(existsInKnownRoots("db/data-source/ai-prompts/classics/summary/system-template.txt"));
         assertTrue(existsInKnownRoots("db/data-source/ai-prompts/discovery/answer-generation/sample.md"));
@@ -160,6 +163,30 @@ class PromptRepositoryIT {
             }
         }
         throw new IOException("Required SQL file not found: " + path);
+    }
+
+    private static void assertSeedContainsAllBusinessCapabilities(String normalizedSql) {
+        String promptTemplateSection =
+                section(normalizedSql, "INSERT INTO `ai_prompt_template`", "INSERT INTO `ai_business_config`");
+        String businessConfigSection =
+                section(normalizedSql, "INSERT INTO `ai_business_config`", "INSERT INTO `ai_prompt_version`");
+        for (AiBusinessCapability capability : AiBusinessCapability.values()) {
+            assertTrue(
+                    promptTemplateSection.contains("'" + capability.value() + "'"),
+                    "missing prompt template seed for " + capability.value());
+            assertTrue(
+                    businessConfigSection.contains("'" + capability.value() + "'"),
+                    "missing business config seed for " + capability.value());
+        }
+    }
+
+    private static String section(String value, String startMarker, String endMarker) {
+        int start = value.indexOf(startMarker);
+        int end = value.indexOf(endMarker, start + startMarker.length());
+        if (start < 0 || end < 0) {
+            return "";
+        }
+        return value.substring(start, end);
     }
 
     private static boolean existsInKnownRoots(String path) {

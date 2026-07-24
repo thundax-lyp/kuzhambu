@@ -108,7 +108,7 @@ public class AiBusinessInvokeConfigResolver {
                 }
                 PromptVariable variable = new PromptVariable();
                 variable.setTemplateId(config.getPromptTemplateId());
-                variable.setVariableName(textValue(variableSnapshot, "variableName"));
+                variable.setVariableName(variableNameValue(variableSnapshot));
                 variable.setRequired(!variableSnapshot.has("required")
                         || variableSnapshot.get("required").asBoolean(true));
                 variable.setDescription(textValue(variableSnapshot, "description"));
@@ -124,6 +124,11 @@ public class AiBusinessInvokeConfigResolver {
     private String textValue(JsonNode node, String fieldName) {
         JsonNode value = node.get(fieldName);
         return value == null || value.isNull() ? null : value.asText();
+    }
+
+    private String variableNameValue(JsonNode node) {
+        String variableName = textValue(node, "variableName");
+        return isBlank(variableName) ? textValue(node, "name") : variableName;
     }
 
     private ObjectNode parseInputPayload(String inputPayloadJson) {

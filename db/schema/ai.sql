@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS `ai_business_config` (
     `priority` int NOT NULL DEFAULT 0,
     `configured_at` datetime(3) NOT NULL,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_ai_business_config_capability` (`capability`),
+    KEY `idx_ai_business_config_capability` (`capability`, `enabled`, `priority`, `id`),
     KEY `idx_ai_business_config_prompt` (`prompt_template_id`),
     KEY `idx_ai_business_config_model` (`model_id`),
     KEY `idx_ai_business_config_enabled` (`enabled`, `priority`)

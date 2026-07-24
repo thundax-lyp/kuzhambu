@@ -81,6 +81,26 @@ class AiBusinessInvokeConfigResolverTest {
         assertThat(variables.has("latestText")).isFalse();
     }
 
+    @Test
+    void resolveShouldAcceptLegacyPromptVersionVariableSnapshotNameField() throws Exception {
+        String variablesSnapshotJson =
+                """
+                [
+                  {"name":"contentType","required":true,"description":"内容类型"},
+                  {"name":"sourceText","required":true,"description":"原文"}
+                ]
+                """;
+        AiBusinessInvokeConfigResolver resolver =
+                newResolver(promptRepository(List.of(variable("latestText", true)), variablesSnapshotJson));
+        AiInvokeCommand command = command();
+
+        resolver.resolve(command);
+
+        JsonNode variables = objectMapper.readTree(command.getPromptVariablesJson());
+        assertThat(variables.get("contentType").asText()).isEqualTo("SANCAI_ENTRY");
+        assertThat(variables.get("sourceText").asText()).isEqualTo("天地玄黄");
+    }
+
     private AiBusinessInvokeConfigResolver newResolver(PromptRepository promptRepository) {
         FakeBusinessConfigApplicationService businessConfigService = new FakeBusinessConfigApplicationService();
         AiWorkerModelConfigResolver modelConfigResolver =
