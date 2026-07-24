@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.ai.application.platform.service.impl;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
-import com.thundax.kuzhambu.ai.application.invocation.support.AiWorkerModelConfigResolver;
+import com.thundax.kuzhambu.ai.application.invocation.support.AiBusinessInvokeConfigResolver;
 import com.thundax.kuzhambu.ai.application.platform.command.PlatformAiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.platform.service.PlatformAiApplicationService;
 import com.thundax.kuzhambu.ai.application.platform.support.PlatformAiWorkerUsecaseResolver;
@@ -18,15 +18,15 @@ public class PlatformAiApplicationServiceImpl implements PlatformAiApplicationSe
 
     private final AiWorkerInvocationApplicationService invocationApplicationService;
     private final PlatformAiWorkerUsecaseResolver resolver;
-    private final AiWorkerModelConfigResolver modelConfigResolver;
+    private final AiBusinessInvokeConfigResolver businessInvokeConfigResolver;
 
     public PlatformAiApplicationServiceImpl(
             AiWorkerInvocationApplicationService invocationApplicationService,
             PlatformAiWorkerUsecaseResolver resolver,
-            AiWorkerModelConfigResolver modelConfigResolver) {
+            AiBusinessInvokeConfigResolver businessInvokeConfigResolver) {
         this.invocationApplicationService = invocationApplicationService;
         this.resolver = resolver;
-        this.modelConfigResolver = modelConfigResolver;
+        this.businessInvokeConfigResolver = businessInvokeConfigResolver;
     }
 
     @Override
@@ -43,28 +43,21 @@ public class PlatformAiApplicationServiceImpl implements PlatformAiApplicationSe
         validateCommand(command);
         PlatformAiWorkerUsecaseSpec spec = resolver.resolve(usecase);
         AiInvokeCommand invokeCommand = command.toInvokeCommand(spec);
-        enrichModelConfig(invokeCommand);
+        enrichBusinessInvokeConfig(invokeCommand);
         return invocationApplicationService.invoke(invokeCommand);
     }
 
-    private void enrichModelConfig(AiInvokeCommand command) {
-        if (modelConfigResolver == null || command == null) {
+    private void enrichBusinessInvokeConfig(AiInvokeCommand command) {
+        if (businessInvokeConfigResolver == null || command == null) {
             return;
         }
-        if (isBlank(command.getServiceRole()) && command.getServiceId() == null) {
-            return;
-        }
-        var resolved = modelConfigResolver.resolve(command);
-        command.setServiceRole(resolved.serviceRole());
-        command.setModelName(resolved.modelName());
+        businessInvokeConfigResolver.resolve(command);
     }
 
     private void validateCommand(PlatformAiInvokeCommand command) {
         if (command == null
-                || command.getModelId() == null
                 || isBlank(command.getRequestId())
                 || isBlank(command.getTraceId())
-                || isBlank(command.getPromptMessagesJson())
                 || isBlank(command.getInputPayloadJson())) {
             throw new BizException("Platform AI invoke command is incomplete");
         }
