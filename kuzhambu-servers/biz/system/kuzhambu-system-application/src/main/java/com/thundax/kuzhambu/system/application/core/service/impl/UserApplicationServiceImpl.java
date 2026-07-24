@@ -5,6 +5,10 @@ import com.thundax.kuzhambu.common.audit.model.enums.AuditAction;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.system.application.audit.command.CreateAuditLogCommand;
+import com.thundax.kuzhambu.system.application.audit.runtime.AuditOperatorResolver;
+import com.thundax.kuzhambu.system.application.audit.runtime.sys.UserAuditSnapshotAssembler;
+import com.thundax.kuzhambu.system.application.audit.service.AuditApplicationService;
 import com.thundax.kuzhambu.system.application.core.command.ChangeUserInfoCommand;
 import com.thundax.kuzhambu.system.application.core.command.ChangeUserStatusCommand;
 import com.thundax.kuzhambu.system.application.core.command.CreateUserCommand;
@@ -34,16 +38,22 @@ public class UserApplicationServiceImpl implements UserApplicationService {
     private final UserRepository dao;
     private final List<UserDeleteCascadeHandler> deleteCascadeHandlers;
     private final ObjectProvider<List<RoleApplicationServiceImpl.CacheChangedListener>> roleCacheChangedListeners;
+    private final AuditApplicationService auditService;
+    private final UserAuditSnapshotAssembler userAuditSnapshotAssembler;
 
     public UserApplicationServiceImpl(
             UserRepository dao,
             ObjectProvider<List<UserDeleteCascadeHandler>> deleteCascadeHandlers,
-            ObjectProvider<List<RoleApplicationServiceImpl.CacheChangedListener>> roleCacheChangedListeners) {
+            ObjectProvider<List<RoleApplicationServiceImpl.CacheChangedListener>> roleCacheChangedListeners,
+            AuditApplicationService auditService,
+            UserAuditSnapshotAssembler userAuditSnapshotAssembler) {
         this.dao = dao;
         this.deleteCascadeHandlers = deleteCascadeHandlers == null
                 ? Collections.emptyList()
                 : deleteCascadeHandlers.getIfAvailable(Collections::emptyList);
         this.roleCacheChangedListeners = roleCacheChangedListeners;
+        this.auditService = auditService;
+        this.userAuditSnapshotAssembler = userAuditSnapshotAssembler;
     }
 
     public User get(UserId id) {
@@ -119,19 +129,49 @@ public class UserApplicationServiceImpl implements UserApplicationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @AuditLog(
-            type = "User",
-            id = "#command.id.value()",
-            action = AuditAction.UPDATE,
-            summary = "变更后台用户状态",
-            recordWhenUnchanged = true)
     public int changeStatus(ChangeUserStatusCommand command) {
+        User beforeUser = command.getBeforeUser() == null ? dao.getById(command.getId()) : command.getBeforeUser();
         User user = new User();
         user.setId(command.getId());
         user.setStatus(command.getStatus());
         int result = dao.updateStatus(user);
+        recordStatusAudit(command, beforeUser);
         notifyRoleCacheChanged();
         return result;
+    }
+
+    private void recordStatusAudit(ChangeUserStatusCommand command, User beforeUser) {
+        User afterUser = copyAuditUser(beforeUser);
+        if (afterUser == null) {
+            afterUser = new User();
+            afterUser.setId(command.getId());
+        }
+        afterUser.setStatus(command.getStatus());
+
+        CreateAuditLogCommand auditCommand = new CreateAuditLogCommand();
+        auditCommand.setObjectType("User");
+        auditCommand.setObjectId(command.getId().asString());
+        auditCommand.setAction(AuditAction.UPDATE);
+        auditCommand.setSummary("变更后台用户状态");
+        auditCommand.setBeforeSnapshot(userAuditSnapshotAssembler.assemble(beforeUser));
+        auditCommand.setAfterSnapshot(userAuditSnapshotAssembler.assemble(afterUser));
+        auditCommand.setRecordWhenUnchanged(true);
+        auditCommand.setOperatorType(AuditOperatorResolver.operatorType());
+        auditCommand.setOperatorId(AuditOperatorResolver.operatorId());
+        auditCommand.setOperatorName(AuditOperatorResolver.operatorName());
+        auditService.record(auditCommand);
+    }
+
+    private User copyAuditUser(User source) {
+        if (source == null) {
+            return null;
+        }
+        User user = new User();
+        user.setId(source.getId());
+        user.setName(source.getName());
+        user.setStatus(source.getStatus());
+        user.setPrivilege(source.getPrivilege());
+        return user;
     }
 
     @Transactional(rollbackFor = Exception.class)
