@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.io.Serializable;
 import lombok.Getter;
@@ -22,6 +21,7 @@ public final class PlatformAiRequests {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class InvokeRequest implements Serializable {
 
+        @NotBlank
         @Size(max = 64)
         @JsonProperty(value = "contentType")
         private String contentType;
@@ -39,7 +39,6 @@ public final class PlatformAiRequests {
         @JsonProperty(value = "serviceRole")
         private String serviceRole;
 
-        @NotNull
         @JsonProperty(value = "modelId")
         private Long modelId;
 
@@ -60,7 +59,7 @@ public final class PlatformAiRequests {
         @JsonProperty(value = "traceId")
         private String traceId;
 
-        @NotBlank
+        @Schema(description = "兼容字段；默认由后端按平台能力的业务配置和 inputPayloadJson 渲染生成")
         @JsonProperty(value = "promptMessagesJson")
         private String promptMessagesJson;
 
