@@ -142,12 +142,27 @@ note_port() {
     fi
 }
 
-pid_owns_port() {
-    local pid="$1"
+is_descendant_process() {
+    local child_pid="$1"
+    local ancestor_pid="$2"
+    local parent_pid
+
+    while [[ "$child_pid" =~ ^[0-9]+$ ]] && [[ "$child_pid" != "0" ]] && [[ "$child_pid" != "1" ]]; do
+        [[ "$child_pid" == "$ancestor_pid" ]] && return 0
+        parent_pid="$(ps -o ppid= -p "$child_pid" 2>/dev/null | tr -d '[:space:]')"
+        [[ -z "$parent_pid" ]] && break
+        child_pid="$parent_pid"
+    done
+
+    return 1
+}
+
+process_tree_owns_port() {
+    local root_pid="$1"
     local port="$2"
     local owner_pid
     while IFS= read -r owner_pid; do
-        [[ "$owner_pid" == "$pid" ]] && return 0
+        is_descendant_process "$owner_pid" "$root_pid" && return 0
     done < <(lsof -nP -t -iTCP:"$port" -sTCP:LISTEN 2>/dev/null || true)
     return 1
 }
@@ -166,7 +181,7 @@ is_running() {
 
     pid="$(cat "$pid_file")"
     port="$(cat "$port_file")"
-    if [[ "$pid" =~ ^[0-9]+$ ]] && [[ "$port" =~ ^[0-9]+$ ]] && kill -0 "$pid" >/dev/null 2>&1 && pid_owns_port "$pid" "$port"; then
+    if [[ "$pid" =~ ^[0-9]+$ ]] && [[ "$port" =~ ^[0-9]+$ ]] && kill -0 "$pid" >/dev/null 2>&1 && process_tree_owns_port "$pid" "$port"; then
         return 0
     fi
 
@@ -286,11 +301,22 @@ if has_target portal; then
     note_port "portal web" "$portal_web_requested" "$portal_web_port"
 fi
 
+admin_context_path="${KUZHAMBU_ADMIN_SERVER_CONTEXT_PATH:-/kuzhambu-admin-api}"
+portal_context_path="${KUZHAMBU_PORTAL_SERVER_CONTEXT_PATH:-/kuzhambu-api}"
+admin_health_url="http://127.0.0.1:$admin_backend_port$admin_context_path/actuator/health"
+portal_health_url="http://127.0.0.1:$portal_backend_port$portal_context_path/actuator/health"
+workers_health_url="http://127.0.0.1:$workers_port/internal/health"
+admin_web_url="http://127.0.0.1:$admin_web_port/"
+portal_web_url="http://127.0.0.1:$portal_web_port/"
+
 export KUZHAMBU_ADMIN_SERVER_PORT="$admin_backend_port"
 export KUZHAMBU_PORTAL_SERVER_PORT="$portal_backend_port"
 export KUZHAMBU_AI_WORKER_BASE_URL="http://127.0.0.1:$workers_port"
+if has_target admin; then
+    export KUZHAMBU_OPERATIONS_HEALTH_PROBES_TARGETS_0_URL="$admin_health_url"
+fi
 if has_target portal; then
-    export KUZHAMBU_PORTAL_WEB_BASE_URL="http://127.0.0.1:$portal_web_port"
+    export KUZHAMBU_PORTAL_WEB_BASE_URL="$portal_web_url"
 fi
 
 prepare_server_starters
@@ -313,12 +339,6 @@ if has_target portal; then
     start_process portal-web "$portal_web_port" kuzhambu-apps/portal-web \
         pnpm run dev -- --port "$portal_web_port"
 fi
-
-admin_health_url="http://127.0.0.1:$admin_backend_port${KUZHAMBU_ADMIN_SERVER_CONTEXT_PATH:-/kuzhambu-admin-api}/actuator/health"
-portal_health_url="http://127.0.0.1:$portal_backend_port${KUZHAMBU_PORTAL_SERVER_CONTEXT_PATH:-/kuzhambu-api}/actuator/health"
-workers_health_url="http://127.0.0.1:$workers_port/internal/health"
-admin_web_url="http://127.0.0.1:$admin_web_port/"
-portal_web_url="http://127.0.0.1:$portal_web_port/"
 
 wait_failures=0
 if has_target admin; then
