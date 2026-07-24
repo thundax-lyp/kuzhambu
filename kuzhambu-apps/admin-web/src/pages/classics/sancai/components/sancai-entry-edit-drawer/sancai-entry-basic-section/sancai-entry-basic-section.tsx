@@ -1,14 +1,13 @@
 import { Input, Switch } from "antd";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
-import { KuzhambuFormItem } from "@/components/kuzhambu-form";
+import { KuzhambuFormItem, KuzhambuSelect } from "@/components";
 import { SancaiEntryImageField } from "./sancai-entry-image-field";
 import { SancaiEntrySummaryTextField } from "./sancai-entry-summary-text-field";
 import { SancaiEntryTranslationTextField } from "./sancai-entry-translation-text-field";
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
 import type { SancaiEntryFormValues } from "@/pages/classics/sancai/components/sancai-entry-edit-drawer/sancai-entry-form-values";
 import type { SancaiEntryImageRecord } from "@/pages/classics/sancai/sancai-types";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 interface SancaiEntryBasicSectionProps {
     categoryOptions: Array<{ label: string; value: number }>;

@@ -1,9 +1,12 @@
 import { Descriptions, Tag, Typography } from "antd";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import { KuzhambuTag } from "@/components/kuzhambu-tag";
-import { KuzhambuTable } from "@/components/kuzhambu-table";
-import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
+import {
+    KuzhambuDrawer,
+    KuzhambuSpace,
+    KuzhambuTag,
+    KuzhambuTable,
+    type KuzhambuTableProps
+} from "@/components";
+
 import { DEFAULT_PAGE_SIZE } from "@/types/page";
 import { SharingAccessActions } from "./sharing-access-actions";
 import type {

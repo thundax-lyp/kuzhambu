@@ -1,6 +1,6 @@
 import { DownloadOutlined, EyeOutlined, ReloadOutlined, UploadOutlined } from "@ant-design/icons";
 import { Descriptions, Empty, Typography, Upload } from "antd";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import { KuzhambuSpace, KuzhambuButton } from "@/components";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import * as wangqiService from "@/pages/classics/wangqi/wangqi-service";
 import type {
@@ -8,7 +8,7 @@ import type {
     WangqiSourceFileContentMode,
     WangqiSourceFileRecord
 } from "@/pages/classics/wangqi/wangqi-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+
 import "./wangqi-storage-file-panel.css";
 
 const { Text } = Typography;

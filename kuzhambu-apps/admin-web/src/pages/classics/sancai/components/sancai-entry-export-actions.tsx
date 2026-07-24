@@ -1,5 +1,5 @@
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
+import { KuzhambuAlert, KuzhambuDrawer } from "@/components";
+
 import type { ClassicsExportJobRecord } from "@/pages/classics/common/classics-export-types";
 import { ClassicsExportJobSection } from "@/pages/classics/common/components/classics-export-job-section";
 

@@ -1,12 +1,16 @@
 import { Input } from "antd";
 import { useState } from "react";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
-import { KuzhambuModal } from "@/components/kuzhambu-modal";
+import {
+    KuzhambuForm,
+    KuzhambuFormItem,
+    KuzhambuModal,
+    KuzhambuButton,
+    KuzhambuSelect
+} from "@/components";
+
 import type { DictItem } from "@/types/dict";
 import { toCategoryFormValues, type SancaiCategoryFormValues } from "./sancai-category-form-values";
 import type { SancaiCategoryRecord } from "@/pages/classics/sancai/sancai-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 interface SancaiCategoryEditDrawerModalProps {
     category: SancaiCategoryRecord | null;

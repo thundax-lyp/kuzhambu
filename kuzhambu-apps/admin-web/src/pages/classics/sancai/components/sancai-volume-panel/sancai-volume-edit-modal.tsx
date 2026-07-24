@@ -1,15 +1,19 @@
 import { Input } from "antd";
 import { useState } from "react";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
-import { KuzhambuModal } from "@/components/kuzhambu-modal";
+import {
+    KuzhambuForm,
+    KuzhambuFormItem,
+    KuzhambuModal,
+    KuzhambuButton,
+    KuzhambuSelect
+} from "@/components";
+
 import type { DictItem } from "@/types/dict";
 import { toVolumeFormValues, type SancaiVolumeFormValues } from "./sancai-volume-form-values";
 import type {
     SancaiCategoryRecord,
     SancaiVolumeRecord
 } from "@/pages/classics/sancai/sancai-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 interface SancaiVolumeEditModalProps {
     categories: SancaiCategoryRecord[];

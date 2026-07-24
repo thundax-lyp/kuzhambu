@@ -4,8 +4,14 @@ import { App, Badge, Card, Empty, Image, Typography, Upload } from "antd";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuTable } from "@/components/kuzhambu-table";
-import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
+import {
+    KuzhambuTable,
+    type KuzhambuTableProps,
+    type KuzhambuTableSortPosition,
+    KuzhambuButton,
+    KuzhambuAlert
+} from "@/components";
+
 import { hasPermission } from "@/auth/permission-storage";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import * as exportService from "@/pages/classics/common/classics-export-service";
@@ -32,8 +38,7 @@ import type {
     SancaiVisualAssetRecord,
     SancaiVolumeRecord
 } from "@/pages/classics/sancai/sancai-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
+
 import "./sancai-entry-panel.css";
 
 const { Text } = Typography;

@@ -2,9 +2,14 @@ import { Form, Input, Switch, Typography } from "antd";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
-import { KuzhambuRichContentViewer } from "@/components/kuzhambu-rich-content-viewer";
+import {
+    KuzhambuDrawer,
+    KuzhambuForm,
+    KuzhambuFormItem,
+    KuzhambuRichContentViewer,
+    KuzhambuSelect
+} from "@/components";
+
 import type { DictItem } from "@/types/dict";
 import {
     toMingCustomsCommand,
@@ -13,7 +18,6 @@ import {
 } from "./ming-customs-form-values";
 import type { MingCustomsCommand } from "../ming-customs-service";
 import type { MingCustomsRecord } from "../ming-customs-types";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 const { Text } = Typography;
 const { TextArea } = Input;

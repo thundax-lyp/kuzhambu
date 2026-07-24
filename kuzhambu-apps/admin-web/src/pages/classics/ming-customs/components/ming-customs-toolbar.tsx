@@ -1,12 +1,10 @@
 import type { ReactNode } from "react";
 import { Badge } from "antd";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuListPage } from "@/components/kuzhambu-list-page";
+import { KuzhambuAlert, KuzhambuButton, KuzhambuListPage, KuzhambuSelect } from "@/components";
+
 import { MingCustomsTagCloud } from "./ming-customs-keyword-cloud";
 import type { MingCustomsQuery } from "../ming-customs-service";
 import type { MingCustomsRecord, MingCustomsTagCloudItem } from "../ming-customs-types";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 export type MingCustomsVisibilityFilter = "ALL" | "PUBLIC" | "PRIVATE";
 export type MingCustomsSortDirectionFilter = "ASC" | "DESC";

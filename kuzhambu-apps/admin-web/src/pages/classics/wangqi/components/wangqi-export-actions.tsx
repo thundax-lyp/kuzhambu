@@ -1,4 +1,4 @@
-import { KuzhambuDrawer } from "@/components/kuzhambu-drawer";
+import { KuzhambuDrawer } from "@/components";
 import { ClassicsExportJobSection } from "@/pages/classics/common/components/classics-export-job-section";
 import type { ClassicsExportJobRecord } from "@/pages/classics/common/classics-export-types";
 

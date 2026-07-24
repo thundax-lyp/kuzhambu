@@ -4,14 +4,15 @@ import { App, Empty, Input, Tag, Typography } from "antd";
 import { useCallback, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import { KuzhambuSyncTaskModal } from "@/components/kuzhambu-sync-task-modal";
-import type {
-    KuzhambuSyncTaskAdapter,
-    KuzhambuSyncTaskModalState
-} from "@/components/kuzhambu-sync-task-modal";
+import {
+    KuzhambuAlert,
+    KuzhambuButton,
+    KuzhambuSpace,
+    KuzhambuSyncTaskModal,
+    type KuzhambuSyncTaskAdapter,
+    type KuzhambuSyncTaskModalState
+} from "@/components";
+
 import * as aiCandidateService from "@/pages/classics/common/ai-candidate-service";
 import type { AiCandidateRecord } from "@/pages/classics/common/ai-candidate-types";
 import { AiCandidatePayloadEditor } from "@/pages/classics/common/components/ai-candidate-payload-editor";

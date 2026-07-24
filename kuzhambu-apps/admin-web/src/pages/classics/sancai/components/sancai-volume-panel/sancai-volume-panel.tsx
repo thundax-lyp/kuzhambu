@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App } from "antd";
 import { useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
+import { type KuzhambuTableSortPosition } from "@/components";
 import type { DictItem } from "@/types/dict";
 import type { SancaiVolumeFormValues } from "./sancai-volume-form-values";
 import { SancaiVolumeList } from "./sancai-volume-list";

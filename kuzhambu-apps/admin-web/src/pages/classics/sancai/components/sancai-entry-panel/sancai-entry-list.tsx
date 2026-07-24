@@ -2,10 +2,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Empty, Skeleton, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
-import { KuzhambuTable } from "@/components/kuzhambu-table";
-import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import {
+    KuzhambuAlert,
+    KuzhambuTable,
+    type KuzhambuTableProps,
+    type KuzhambuTableSortPosition,
+    KuzhambuSpace
+} from "@/components";
+
 import * as contentService from "@/pages/classics/common/classics-content-service";
 import * as shareService from "@/pages/classics/common/classics-share-service";
 import {

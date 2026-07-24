@@ -1,13 +1,19 @@
 import { Descriptions, Empty, Tag, Typography } from "antd";
-import { KuzhambuList, KuzhambuListItem, KuzhambuListMeta } from "@/components/kuzhambu-list";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import {
+    KuzhambuList,
+    KuzhambuListItem,
+    KuzhambuListMeta,
+    KuzhambuSpace,
+    KuzhambuButton,
+    KuzhambuAlert
+} from "@/components";
+
 import type {
     SancaiContentVersionRecord,
     SancaiEntryRecord,
     SancaiVersionSnapshot
 } from "@/pages/classics/sancai/sancai-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
+
 import "./sancai-versions-panel.css";
 
 const { Text } = Typography;

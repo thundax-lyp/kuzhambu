@@ -1,5 +1,5 @@
 import type { ShareFilters, ShareStatusFilter } from "./sharing-filter-config";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
+import { KuzhambuSelect } from "@/components";
 
 const SHARE_CONTENT_TYPE_OPTIONS = [
     { label: "全部", value: "ALL" },

@@ -9,11 +9,10 @@ import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { DatePicker, Input, Switch, Typography } from "antd";
 import { useEffect, useMemo } from "react";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuFormItem } from "@/components/kuzhambu-form";
+import { KuzhambuButton, KuzhambuFormItem, KuzhambuSelect } from "@/components";
+
 import { WangqiDocumentSummaryField } from "./wangqi-document-summary-field";
 import "./wangqi-document-basic-section.css";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 const { Text } = Typography;
 

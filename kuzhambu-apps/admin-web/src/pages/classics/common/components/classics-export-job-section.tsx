@@ -1,14 +1,15 @@
 import { Checkbox, Empty, Input, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
 import {
+    KuzhambuSpace,
     KuzhambuTable,
     type KuzhambuTableColumn,
-    type KuzhambuTableRowActionOption
-} from "@/components/kuzhambu-table";
+    type KuzhambuTableRowActionOption,
+    KuzhambuSelect
+} from "@/components";
+
 import "./classics-export-job-section.css";
 import type { ClassicsExportJobRecord } from "../classics-export-types";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 const { Text } = Typography;
 

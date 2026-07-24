@@ -1,9 +1,8 @@
 import { FileTextOutlined } from "@ant-design/icons";
 import { Form, Input } from "antd";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
-import { KuzhambuSyncTaskModal } from "@/components/kuzhambu-sync-task-modal";
-import type { KuzhambuSyncTaskAdapter } from "@/components/kuzhambu-sync-task-modal";
+import { KuzhambuAlert, KuzhambuSyncTaskModal, type KuzhambuSyncTaskAdapter } from "@/components";
+
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
 import type { SancaiEntryFormValues } from "@/pages/classics/sancai/components/sancai-entry-edit-drawer/sancai-entry-form-values";
 

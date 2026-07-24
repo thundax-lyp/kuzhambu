@@ -10,9 +10,14 @@ import { App, Input } from "antd";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuFilterPanel } from "@/components/kuzhambu-filter-panel";
-import { KuzhambuPage } from "@/components/kuzhambu-page";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
+import {
+    KuzhambuFilterPanel,
+    KuzhambuPage,
+    KuzhambuSpace,
+    KuzhambuButton,
+    KuzhambuSelect
+} from "@/components";
+
 import { AiCandidateBatchDrawer } from "@/pages/classics/common/components/ai-candidate-batch-drawer";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import type {
@@ -44,9 +49,9 @@ import { WangqiVersionPanel } from "./components/wangqi-version-panel";
 import * as wangqiService from "./wangqi-service";
 import type { WangqiDocumentCommand, WangqiDocumentQuery } from "./wangqi-service";
 import type { WangqiContentVersionRecord, WangqiDocumentRecord } from "./wangqi-types";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+
 import "./wangqi-page.css";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
+
 type WangqiVisibilityFilter = "ALL" | "PUBLIC" | "PRIVATE";
 type WangqiSortDirectionFilter = "ASC" | "DESC";
 

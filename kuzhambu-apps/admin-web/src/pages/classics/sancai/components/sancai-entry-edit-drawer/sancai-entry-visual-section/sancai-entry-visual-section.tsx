@@ -8,18 +8,22 @@ import {
 import { Empty, Image, Input, Tag, Typography } from "antd";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import { KuzhambuTable } from "@/components/kuzhambu-table";
-import type { KuzhambuTableProps } from "@/components/kuzhambu-table";
+import {
+    KuzhambuForm,
+    KuzhambuFormItem,
+    KuzhambuButton,
+    KuzhambuSpace,
+    KuzhambuTable,
+    type KuzhambuTableProps,
+    KuzhambuSelect
+} from "@/components";
+
 import type { SancaiVisualAssetRefinementCapability } from "@/pages/classics/sancai/sancai-entry-service";
 import type {
     SancaiEntryImageRecord,
     SancaiVisualAssetRecord
 } from "@/pages/classics/sancai/sancai-types";
 import "./sancai-entry-visual-section.css";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 const { Text } = Typography;
 

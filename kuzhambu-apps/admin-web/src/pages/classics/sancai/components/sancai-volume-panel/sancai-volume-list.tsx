@@ -1,6 +1,10 @@
 import { Empty, Skeleton, Tag } from "antd";
-import { KuzhambuTable } from "@/components/kuzhambu-table";
-import type { KuzhambuTableProps, KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
+import {
+    KuzhambuTable,
+    type KuzhambuTableProps,
+    type KuzhambuTableSortPosition
+} from "@/components";
+
 import type { SancaiVolumeRecord } from "@/pages/classics/sancai/sancai-types";
 
 interface SancaiVolumeListProps {

@@ -1,8 +1,7 @@
 import { ClassicsExportJobSection } from "@/pages/classics/common/components/classics-export-job-section";
 import type { ClassicsBatchOperationRecord } from "@/pages/classics/common/classics-content-types";
 import type { ClassicsExportJobRecord } from "@/pages/classics/common/classics-export-types";
-import { KuzhambuAlert } from "@/components/kuzhambu-alert";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
+import { KuzhambuAlert, KuzhambuButton } from "@/components";
 
 interface MingCustomsExportActionsProps {
     batchShareResult: ClassicsBatchOperationRecord | null;

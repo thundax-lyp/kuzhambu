@@ -2,11 +2,17 @@ import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import { App, Card, Empty, Form, Input } from "antd";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { KuzhambuForm, KuzhambuFormItem } from "@/components/kuzhambu-form";
-import { KuzhambuModal } from "@/components/kuzhambu-modal";
-import { KuzhambuSpace } from "@/components/kuzhambu-space";
-import { KuzhambuTable } from "@/components/kuzhambu-table";
-import type { KuzhambuTableSortPosition } from "@/components/kuzhambu-table";
+import {
+    KuzhambuForm,
+    KuzhambuFormItem,
+    KuzhambuModal,
+    KuzhambuSpace,
+    KuzhambuTable,
+    type KuzhambuTableSortPosition,
+    KuzhambuButton,
+    KuzhambuSelect
+} from "@/components";
+
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import * as contentService from "../classics-content-service";
 import type { ClassicsContentQaPairRecord, ClassicsContentType } from "../classics-content-types";
@@ -14,8 +20,6 @@ import {
     type ClassicsContentQaPairCommand,
     type ClassicsContentQaPairSortCommand
 } from "../classics-content-service";
-import { KuzhambuButton } from "@/components/kuzhambu-button";
-import { KuzhambuSelect } from "@/components/kuzhambu-select";
 
 interface ClassicsContentQaPanelProps {
     contentId: number;
