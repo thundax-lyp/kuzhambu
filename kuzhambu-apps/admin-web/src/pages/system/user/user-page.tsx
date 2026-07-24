@@ -394,15 +394,6 @@ export const UserPage = () => {
                     }}
                     onReset={resetFilters}
                 />
-                <UserBatchActions
-                    selectedCount={selectedRowKeys.length}
-                    canEditUser={canEditUser}
-                    statusPending={statusMutation.isPending}
-                    deletePending={deleteMutation.isPending}
-                    onDisable={() => batchUpdateStatus(false)}
-                    onEnable={() => batchUpdateStatus(true)}
-                    onDelete={batchDeleteUsers}
-                />
                 <Splitter className="user-department-work-area">
                     <Splitter.Panel defaultSize={280} min={220} max={520}>
                         <UserDepartmentTree
@@ -421,6 +412,17 @@ export const UserPage = () => {
                             pageSize={query.pageSize || DEFAULT_PAGE_SIZE}
                             totalCount={totalCount}
                             selectedRowKeys={selectedRowKeys}
+                            batchActions={
+                                <UserBatchActions
+                                    selectedCount={selectedRowKeys.length}
+                                    canEditUser={canEditUser}
+                                    statusPending={statusMutation.isPending}
+                                    deletePending={deleteMutation.isPending}
+                                    onDisable={() => batchUpdateStatus(false)}
+                                    onEnable={() => batchUpdateStatus(true)}
+                                    onDelete={batchDeleteUsers}
+                                />
+                            }
                             statusPending={statusMutation.isPending}
                             canEditUser={canEditUser}
                             currentUser={currentUserQuery.data}

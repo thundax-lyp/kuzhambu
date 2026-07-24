@@ -44,6 +44,55 @@ html[data-theme="dark"] .kuzhambu-table-shell {
     flex-wrap: wrap;
 }
 
+.kuzhambu-table-batch-action-bar {
+    --kuzhambu-table-batch-action-bar-line: var(--line-subtle);
+    --kuzhambu-table-batch-action-bar-muted: var(--text-muted);
+    position: relative;
+    z-index: 1;
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 4px 0 10px;
+}
+
+.kuzhambu-table-batch-action-bar-actions {
+    display: flex;
+    min-width: 0;
+    margin-left: auto;
+    justify-content: flex-end;
+}
+
+.kuzhambu-table-batch-action-bar-actions .ant-space {
+    justify-content: flex-end;
+}
+
+.kuzhambu-table-batch-action-bar-actions .ant-space-item:has(.ant-btn-dangerous) {
+    order: 10;
+}
+
+.kuzhambu-table-batch-action-bar-muted .kuzhambu-table-batch-action-bar-count {
+    color: var(--kuzhambu-table-batch-action-bar-muted);
+}
+
+.kuzhambu-table-batch-action-bar .ant-btn {
+    border-color: var(--kuzhambu-table-batch-action-bar-line);
+    font-size: 13px;
+    font-weight: 400;
+}
+
+.kuzhambu-table-batch-action-bar .ant-btn > span:not(.anticon) {
+    font-weight: 400;
+}
+
+.kuzhambu-table-batch-action-bar .ant-btn:disabled,
+.kuzhambu-table-batch-action-bar .ant-btn:disabled:hover {
+    color: color-mix(in srgb, var(--kuzhambu-table-batch-action-bar-muted) 78%, transparent);
+    background: transparent;
+    border-color: var(--kuzhambu-table-batch-action-bar-line);
+}
+
 .kuzhambu-table .ant-table {
     color: var(--kuzhambu-table-ink);
     background: transparent;
@@ -333,6 +382,17 @@ html[data-theme="dark"] .kuzhambu-table-shell {
 
     .kuzhambu-table-toolbar-actions {
         justify-content: flex-start;
+    }
+
+    .kuzhambu-table-batch-action-bar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .kuzhambu-table-batch-action-bar-actions,
+    .kuzhambu-table-batch-action-bar-actions .ant-space,
+    .kuzhambu-table-batch-action-bar .ant-btn {
+        width: 100%;
     }
 
     .kuzhambu-table-row-actions-inline {
