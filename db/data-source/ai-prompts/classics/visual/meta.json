@@ -4,7 +4,7 @@
   "variableIdStart": 960801,
   "capability": "classics_visual_describe",
   "suite": "classics-default-v1",
-  "name": "Classics Default Visual Description",
+  "name": "古籍视觉描述提示词",
   "description": "古籍视觉描述默认提示词。",
   "enabled": true,
   "versionNo": 1,

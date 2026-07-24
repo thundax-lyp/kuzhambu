@@ -4,7 +4,7 @@
   "variableIdStart": 960601,
   "capability": "classics_image_generate",
   "suite": "classics-default-v1",
-  "name": "Classics Default Image Generation",
+  "name": "古籍图片生成提示词",
   "description": "古籍视觉资产默认文生图提示词。",
   "enabled": true,
   "versionNo": 1,
