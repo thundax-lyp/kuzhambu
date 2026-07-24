@@ -137,14 +137,11 @@ class AiWorkerInvocationApplicationServiceTest {
 
         AiInvokeCommand command = command();
         command.setOperation("CLASSICS_SANCAI_SUMMARY");
-        command.setWorkerPath("/internal/ai/classics/sancai/summary");
         command.setCreateCandidate(true);
 
         AiInvokeResult result = service.invoke(command);
 
         assertEquals("CLASSICS_SANCAI_SUMMARY", capturedCommand.get().getOperation());
-        assertEquals(
-                "/internal/ai/classics/sancai/summary", capturedCommand.get().getWorkerPath());
         assertFalse(capturedCommand.get().isStream());
         assertEquals(100L, result.getCallId());
         assertEquals("text", repository.updatedCallRecord.get().getResultFormat());
