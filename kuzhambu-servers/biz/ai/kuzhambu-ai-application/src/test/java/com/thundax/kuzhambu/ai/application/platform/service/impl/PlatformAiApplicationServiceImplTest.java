@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
+import com.thundax.kuzhambu.ai.application.invocation.support.AiBusinessInvokeConfigResolver;
 import com.thundax.kuzhambu.ai.application.platform.command.PlatformAiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.platform.support.PlatformAiWorkerUsecaseResolver;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
@@ -70,6 +71,30 @@ class PlatformAiApplicationServiceImplTest {
         assertFalse(invocationService.capturedCommand().isCreateCandidate());
     }
 
+    @Test
+    void promptSuggestionShouldResolveBusinessPromptWhenCommandOmitsModelAndPromptFields() {
+        CapturingInvocationService invocationService = new CapturingInvocationService();
+        CapturingBusinessInvokeConfigResolver businessResolver = new CapturingBusinessInvokeConfigResolver();
+        PlatformAiApplicationServiceImpl service =
+                new PlatformAiApplicationServiceImpl(invocationService, resolver, businessResolver);
+        PlatformAiInvokeCommand command = command();
+        command.setServiceId(null);
+        command.setServiceRole(null);
+        command.setModelId(null);
+        command.setModelName(null);
+        command.setPromptVersionId(null);
+        command.setPromptMessagesJson(null);
+
+        service.buildPromptSuggestion(command);
+        AiInvokeCommand capturedCommand = invocationService.capturedCommand();
+
+        assertEquals(capturedCommand, businessResolver.capturedCommand());
+        assertEquals(2001L, capturedCommand.getModelId());
+        assertEquals("gpt-4o", capturedCommand.getModelName());
+        assertEquals(940106L, capturedCommand.getPromptVersionId());
+        assertEquals("[{\"role\":\"user\",\"content\":\"rendered\"}]", capturedCommand.getPromptMessagesJson());
+    }
+
     private PlatformAiInvokeCommand command() {
         PlatformAiInvokeCommand command = new PlatformAiInvokeCommand();
         command.setContentType("PROMPT_TEMPLATE");
@@ -110,6 +135,31 @@ class PlatformAiApplicationServiceImplTest {
         @Override
         public AiInvokeResult stream(AiInvokeCommand command, Consumer<AiStreamEventResult> eventConsumer) {
             throw new UnsupportedOperationException("platform ai should use sync invoke");
+        }
+
+        private AiInvokeCommand capturedCommand() {
+            return captured;
+        }
+    }
+
+    private static class CapturingBusinessInvokeConfigResolver extends AiBusinessInvokeConfigResolver {
+
+        private AiInvokeCommand captured;
+
+        CapturingBusinessInvokeConfigResolver() {
+            super(null, null, null, null);
+        }
+
+        @Override
+        public void resolve(AiInvokeCommand command) {
+            captured = command;
+            command.setServiceId(1001L);
+            command.setServiceRole("PRIMARY");
+            command.setModelId(2001L);
+            command.setModelName("gpt-4o");
+            command.setPromptVersionId(940106L);
+            command.setPromptMessagesJson("[{\"role\":\"user\",\"content\":\"rendered\"}]");
+            command.setPromptVariablesJson("{\"template\":\"hello\"}");
         }
 
         private AiInvokeCommand capturedCommand() {

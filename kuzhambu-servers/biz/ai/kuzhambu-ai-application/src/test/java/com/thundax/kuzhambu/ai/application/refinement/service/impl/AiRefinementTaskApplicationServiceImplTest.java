@@ -142,6 +142,40 @@ class AiRefinementTaskApplicationServiceImplTest {
     }
 
     @Test
+    void addTaskShouldAcceptBusinessPayloadAndPersistResolvedPromptConfig() {
+        RecordingTaskRepository repository = new RecordingTaskRepository();
+        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
+                101L,
+                201L,
+                "SUCCEEDED",
+                AiBusinessCapability.CLASSICS_SUMMARY.value(),
+                null,
+                "TEXT",
+                "摘要",
+                null,
+                null));
+        refinementService.setResolvedPromptConfig("PRIMARY", 2001L, "gpt-4o", 940106L);
+        AiRefinementTaskApplicationServiceImpl service =
+                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
+        AiRefinementRequestCommand command = command(AiBusinessCapability.CLASSICS_SUMMARY.value());
+        command.setServiceRole(null);
+        command.setModelId(null);
+        command.setModelName(null);
+        command.setPromptVersionId(null);
+        command.setPromptMessagesJson(null);
+
+        AiRefinementTask accepted = service.addTask(command);
+        AiRefinementTask completed = awaitTerminal(repository, accepted.getTaskId());
+
+        assertNull(accepted.getPromptVersionId());
+        assertEquals("SUCCEEDED", completed.getStatus());
+        assertEquals("PRIMARY", completed.getServiceRole());
+        assertEquals(2001L, completed.getModelId());
+        assertEquals("gpt-4o", completed.getModelName());
+        assertEquals(940106L, completed.getPromptVersionId());
+    }
+
+    @Test
     void conditionalUpdateShouldKeepCancelledWhenWorkerCompletionArrivesLate() {
         RecordingTaskRepository repository = new RecordingTaskRepository();
         AiRefinementTask task = task(AiBusinessCapability.CLASSICS_TRANSLATE.value(), "RUNNING");
@@ -255,54 +289,84 @@ class AiRefinementTaskApplicationServiceImplTest {
     private static class StubRefinementApplicationService implements AiRefinementApplicationService {
 
         private final AiCandidateResult result;
+        private String resolvedServiceRole;
+        private Long resolvedModelId;
+        private String resolvedModelName;
+        private Long resolvedPromptVersionId;
 
         StubRefinementApplicationService(AiCandidateResult result) {
             this.result = result;
         }
 
+        void setResolvedPromptConfig(String serviceRole, Long modelId, String modelName, Long promptVersionId) {
+            this.resolvedServiceRole = serviceRole;
+            this.resolvedModelId = modelId;
+            this.resolvedModelName = modelName;
+            this.resolvedPromptVersionId = promptVersionId;
+        }
+
         @Override
         public AiCandidateResult translate(AiRefinementRequestCommand command) {
+            applyResolvedPromptConfig(command);
             return result;
         }
 
         @Override
         public AiCandidateResult summarize(AiRefinementRequestCommand command) {
+            applyResolvedPromptConfig(command);
             return result;
         }
 
         @Override
         public AiCandidateResult generateTags(AiRefinementRequestCommand command) {
+            applyResolvedPromptConfig(command);
             return result;
         }
 
         @Override
         public AiCandidateResult generateQa(AiRefinementRequestCommand command) {
+            applyResolvedPromptConfig(command);
             return result;
         }
 
         @Override
         public AiCandidateResult analyzeImage(AiRefinementRequestCommand command) {
+            applyResolvedPromptConfig(command);
             return result;
         }
 
         @Override
         public AiCandidateResult fuseVisualContext(AiRefinementRequestCommand command) {
+            applyResolvedPromptConfig(command);
             return result;
         }
 
         @Override
         public AiCandidateResult generateImage(AiRefinementRequestCommand command) {
+            applyResolvedPromptConfig(command);
             return result;
         }
 
         @Override
         public AiCandidateResult describeVisual(AiRefinementRequestCommand command) {
+            applyResolvedPromptConfig(command);
             return result;
         }
 
         @Override
         public AiCandidateResult splitEntry(AiRefinementRequestCommand command) {
+            applyResolvedPromptConfig(command);
             return result;
+        }
+
+        private void applyResolvedPromptConfig(AiRefinementRequestCommand command) {
+            if (resolvedPromptVersionId == null) {
+                return;
+            }
+            command.setServiceRole(resolvedServiceRole);
+            command.setModelId(resolvedModelId);
+            command.setModelName(resolvedModelName);
+            command.setPromptVersionId(resolvedPromptVersionId);
         }
     }
 

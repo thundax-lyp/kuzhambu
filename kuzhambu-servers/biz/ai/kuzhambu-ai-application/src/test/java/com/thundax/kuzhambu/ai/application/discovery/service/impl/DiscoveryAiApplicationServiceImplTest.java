@@ -11,6 +11,7 @@ import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
+import com.thundax.kuzhambu.ai.application.invocation.support.AiBusinessInvokeConfigResolver;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiRequest;
 import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiResult;
@@ -102,6 +103,30 @@ class DiscoveryAiApplicationServiceImplTest {
         assertEquals("stream interrupted", result.getErrorMessage());
     }
 
+    @Test
+    void understandQueryShouldResolveBusinessPromptWhenRequestOmitsModelAndPromptFields() {
+        CapturingInvocationService invocationService = new CapturingInvocationService();
+        CapturingBusinessInvokeConfigResolver businessResolver = new CapturingBusinessInvokeConfigResolver();
+        DiscoveryAiApplicationServiceImpl service =
+                new DiscoveryAiApplicationServiceImpl(invocationService, resolver, businessResolver);
+        DiscoveryAiRequest request = request(false);
+        request.setServiceId(null);
+        request.setServiceRole(null);
+        request.setModelId(null);
+        request.setModelName(null);
+        request.setPromptVersionId(null);
+        request.setPromptMessagesJson(null);
+
+        service.understandQuery(request);
+        AiInvokeCommand capturedCommand = invocationService.capturedCommand();
+
+        assertEquals(capturedCommand, businessResolver.capturedCommand());
+        assertEquals(2001L, capturedCommand.getModelId());
+        assertEquals("gpt-4o", capturedCommand.getModelName());
+        assertEquals(940106L, capturedCommand.getPromptVersionId());
+        assertEquals("[{\"role\":\"user\",\"content\":\"rendered\"}]", capturedCommand.getPromptMessagesJson());
+    }
+
     private DiscoveryAiRequest request(boolean stream) {
         return new DiscoveryAiRequest(
                 3L,
@@ -177,6 +202,31 @@ class DiscoveryAiApplicationServiceImplTest {
             event.setTraceId("trace-1");
             event.setDeltaText(content);
             return event;
+        }
+    }
+
+    private static class CapturingBusinessInvokeConfigResolver extends AiBusinessInvokeConfigResolver {
+
+        private AiInvokeCommand captured;
+
+        CapturingBusinessInvokeConfigResolver() {
+            super(null, null, null, null);
+        }
+
+        @Override
+        public void resolve(AiInvokeCommand command) {
+            captured = command;
+            command.setServiceId(1001L);
+            command.setServiceRole("PRIMARY");
+            command.setModelId(2001L);
+            command.setModelName("gpt-4o");
+            command.setPromptVersionId(940106L);
+            command.setPromptMessagesJson("[{\"role\":\"user\",\"content\":\"rendered\"}]");
+            command.setPromptVariablesJson("{\"query\":\"hello\"}");
+        }
+
+        private AiInvokeCommand capturedCommand() {
+            return captured;
         }
     }
 }

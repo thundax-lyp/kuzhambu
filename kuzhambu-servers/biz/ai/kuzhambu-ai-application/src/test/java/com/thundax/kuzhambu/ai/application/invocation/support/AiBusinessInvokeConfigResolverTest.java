@@ -61,6 +61,26 @@ class AiBusinessInvokeConfigResolverTest {
                 .hasMessageContaining("Prompt required variables are missing: [missingText]");
     }
 
+    @Test
+    void resolveShouldUsePromptVersionVariableSnapshotWhenLiveVariablesChanged() throws Exception {
+        String variablesSnapshotJson =
+                """
+                [
+                  {"variableName":"contentType","required":true,"description":"内容类型","priority":1},
+                  {"variableName":"sourceText","required":true,"description":"原文","priority":2}
+                ]
+                """;
+        AiBusinessInvokeConfigResolver resolver =
+                newResolver(promptRepository(List.of(variable("latestText", true)), variablesSnapshotJson));
+        AiInvokeCommand command = command();
+
+        resolver.resolve(command);
+
+        JsonNode variables = objectMapper.readTree(command.getPromptVariablesJson());
+        assertThat(variables.get("sourceText").asText()).isEqualTo("天地玄黄");
+        assertThat(variables.has("latestText")).isFalse();
+    }
+
     private AiBusinessInvokeConfigResolver newResolver(PromptRepository promptRepository) {
         FakeBusinessConfigApplicationService businessConfigService = new FakeBusinessConfigApplicationService();
         AiWorkerModelConfigResolver modelConfigResolver =
@@ -89,6 +109,10 @@ class AiBusinessInvokeConfigResolverTest {
     }
 
     private static PromptRepository promptRepository(List<PromptVariable> variables) {
+        return promptRepository(variables, null);
+    }
+
+    private static PromptRepository promptRepository(List<PromptVariable> variables, String variablesSnapshotJson) {
         return new PromptRepository() {
             @Override
             public PromptTemplate get(PromptTemplateId templateId) {
@@ -127,6 +151,7 @@ class AiBusinessInvokeConfigResolverTest {
                           {"role":"user","content":"内容类型：{{contentType}}\\n原文：{{sourceText}}"}
                         ]
                         """);
+                version.setVariablesSnapshotJson(variablesSnapshotJson);
                 version.setOutputSchemaJson("{\"type\":\"text\"}");
                 return version;
             }
