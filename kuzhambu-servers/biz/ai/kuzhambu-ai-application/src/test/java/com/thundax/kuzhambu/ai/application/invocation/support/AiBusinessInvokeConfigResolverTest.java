@@ -63,6 +63,16 @@ class AiBusinessInvokeConfigResolverTest {
     }
 
     @Test
+    void resolveShouldRejectDisabledPromptTemplate() {
+        AiBusinessInvokeConfigResolver resolver = newResolver(
+                promptRepository(List.of(variable("contentType", true), variable("sourceText", true)), null, false));
+
+        assertThatThrownBy(() -> resolver.resolve(command()))
+                .isInstanceOf(BizException.class)
+                .hasMessageContaining("AI business config prompt template is disabled or mismatched: 930106");
+    }
+
+    @Test
     void resolveShouldUsePromptVersionVariableSnapshotWhenLiveVariablesChanged() throws Exception {
         String variablesSnapshotJson =
                 """
@@ -134,10 +144,22 @@ class AiBusinessInvokeConfigResolverTest {
     }
 
     private static PromptRepository promptRepository(List<PromptVariable> variables, String variablesSnapshotJson) {
+        return promptRepository(variables, variablesSnapshotJson, true);
+    }
+
+    private static PromptRepository promptRepository(
+            List<PromptVariable> variables, String variablesSnapshotJson, boolean templateEnabled) {
         return new PromptRepository() {
             @Override
             public PromptTemplate get(PromptTemplateId templateId) {
-                return null;
+                return new PromptTemplate(
+                        templateId,
+                        AiBusinessCapability.CLASSICS_SUMMARY,
+                        "summary prompt",
+                        "summary prompt",
+                        templateEnabled,
+                        1,
+                        null);
             }
 
             @Override

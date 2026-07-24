@@ -11,6 +11,7 @@ import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptTemplateIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiBusinessConfig;
+import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVariable;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVersion;
 import com.thundax.kuzhambu.ai.domain.config.repository.PromptRepository;
@@ -82,6 +83,11 @@ public class AiBusinessInvokeConfigResolver {
     private PromptVersion resolveCurrentPromptVersion(AiBusinessConfig config) {
         if (config == null || config.getPromptTemplateId() == null) {
             throw new BizException("AI business config prompt template is required");
+        }
+        PromptTemplate promptTemplate = promptRepository.get(config.getPromptTemplateId());
+        if (!config.promptMatches(promptTemplate)) {
+            throw new BizException("AI business config prompt template is disabled or mismatched: "
+                    + PromptTemplateIdCodec.toValue(config.getPromptTemplateId()));
         }
         PromptVersion promptVersion = promptRepository.getCurrentVersion(config.getPromptTemplateId());
         if (promptVersion == null) {
