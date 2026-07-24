@@ -25,6 +25,17 @@ interface AiRefinementTaskStreamCommand {
 
 const RETRYABLE_STATUSES = new Set(["FAILED", "PARTIAL", "CANCELLED"]);
 
+const TASK_CAPABILITY_ALIASES: Record<string, string> = {
+    classics_translate: "translate",
+    classics_summary: "summary",
+    classics_tags: "tags",
+    classics_qa: "qa",
+    classics_image_describe: "image_analysis",
+    classics_image_prompt_fusion: "fusion",
+    classics_visual_describe: "visual",
+    classics_image_generate: "image_gen"
+};
+
 const CAPABILITY_LABELS: Record<string, string> = {
     translate: "译文",
     summary: "摘要",
@@ -36,8 +47,13 @@ const CAPABILITY_LABELS: Record<string, string> = {
     image_gen: "生图"
 };
 
+export const normalizeTaskCapability = (capability: string) => {
+    return TASK_CAPABILITY_ALIASES[capability] ?? capability;
+};
+
 export const getTaskCapabilityLabel = (capability: string) => {
-    return CAPABILITY_LABELS[capability] ?? capability;
+    const normalizedCapability = normalizeTaskCapability(capability);
+    return CAPABILITY_LABELS[normalizedCapability] ?? capability;
 };
 
 export const getTaskFailureText = (
@@ -52,7 +68,9 @@ export const getTaskFailureText = (
 };
 
 export const getTaskRetryable = (status: string, capability: string) => {
-    return RETRYABLE_STATUSES.has(status) && capability in CAPABILITY_LABELS;
+    return (
+        RETRYABLE_STATUSES.has(status) && normalizeTaskCapability(capability) in CAPABILITY_LABELS
+    );
 };
 
 export const createTask = (command: AiRefinementTaskCreateCommand) => {

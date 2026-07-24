@@ -76,7 +76,11 @@ export const SancaiEntrySummaryTextField = ({
     const latestSummaryTask = useMemo(
         () =>
             [...summaryTasks]
-                .filter((task) => task.capability === "summary")
+                .filter(
+                    (task) =>
+                        aiRefinementTaskService.normalizeTaskCapability(task.capability) ===
+                        "summary"
+                )
                 .sort(sortRefinementTasksByNewest)[0] ?? null,
         [summaryTasks]
     );

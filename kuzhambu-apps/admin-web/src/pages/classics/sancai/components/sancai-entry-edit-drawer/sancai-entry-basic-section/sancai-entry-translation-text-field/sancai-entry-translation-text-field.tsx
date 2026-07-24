@@ -78,7 +78,11 @@ export const SancaiEntryTranslationTextField = ({
     const latestTranslationTask = useMemo(
         () =>
             [...translationTasks]
-                .filter((task) => task.capability === "translate")
+                .filter(
+                    (task) =>
+                        aiRefinementTaskService.normalizeTaskCapability(task.capability) ===
+                        "translate"
+                )
                 .sort(sortRefinementTasksByNewest)[0] ?? null,
         [translationTasks]
     );

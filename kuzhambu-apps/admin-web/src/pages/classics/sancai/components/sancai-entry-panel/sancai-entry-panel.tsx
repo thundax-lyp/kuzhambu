@@ -929,8 +929,16 @@ export const SancaiEntryPanel = ({
                 onCreateSummaryTask={(draft) => createRefinementTask("summary", null, draft)}
                 isCreatingTranslationTask={creatingRefinementCapability === "translate"}
                 isCreatingSummaryTask={creatingRefinementCapability === "summary"}
-                translationTasks={refinementTasks.filter((task) => task.capability === "translate")}
-                summaryTasks={refinementTasks.filter((task) => task.capability === "summary")}
+                translationTasks={refinementTasks.filter(
+                    (task) =>
+                        aiRefinementTaskService.normalizeTaskCapability(task.capability) ===
+                        "translate"
+                )}
+                summaryTasks={refinementTasks.filter(
+                    (task) =>
+                        aiRefinementTaskService.normalizeTaskCapability(task.capability) ===
+                        "summary"
+                )}
                 creatingVisualAssetCapability={
                     creatingRefinementCapability === "image_analysis" ||
                     creatingRefinementCapability === "fusion" ||
@@ -1085,15 +1093,20 @@ export const SancaiEntryPanel = ({
                             <Card size="small" title="AI 精修任务">
                                 <div style={{ display: "grid", gap: 8 }}>
                                     {refinementTasks
-                                        .filter(
-                                            (task) =>
-                                                task.capability === "translate" ||
-                                                task.capability === "summary" ||
-                                                task.capability === "image_analysis" ||
-                                                task.capability === "visual" ||
-                                                task.capability === "fusion" ||
-                                                task.capability === "image_gen"
-                                        )
+                                        .filter((task) => {
+                                            const capability =
+                                                aiRefinementTaskService.normalizeTaskCapability(
+                                                    task.capability
+                                                );
+                                            return (
+                                                capability === "translate" ||
+                                                capability === "summary" ||
+                                                capability === "image_analysis" ||
+                                                capability === "visual" ||
+                                                capability === "fusion" ||
+                                                capability === "image_gen"
+                                            );
+                                        })
                                         .slice(0, 6)
                                         .map((task) => {
                                             const failureText =
