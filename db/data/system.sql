@@ -117,7 +117,7 @@ INSERT INTO `system_menu` (
     (12, 8, 24, 25, '调用统计', 'ai:invocation:view,ai:invocation:edit', 70, 'VISIBLE', '{"icon":"ai-invocation"}', '/ai/invocations', '_self', 'AI 调用记录、候选和批量任务'),
     (13, NULL, 27, 46, '知识治理', 'knowledge', 85, 'VISIBLE', '{"icon":"book"}', '/knowledge', '_self', '知识治理根菜单'),
     (14, 13, 28, 41, '知识图谱', 'knowledge:graph:view', 80, 'VISIBLE', '{"icon":"book"}', '/knowledge/graph', '_self', '知识图谱治理分组'),
-    (46, 14, 29, 34, '知识抽取任务', 'knowledge:graph:view', 83, 'VISIBLE', '{"icon":"submissions"}', '/knowledge/graph-extraction', '_self', '知识图谱抽取任务查看'),
+    (46, 14, 29, 34, '知识抽取', 'knowledge:graph:view', 83, 'VISIBLE', '{"icon":"submissions"}', '/knowledge/graph-extraction', '_self', '知识图谱抽取任务查看'),
     (47, 46, 30, 31, '抽取任务编辑', 'knowledge:graph:edit', 82, 'HIDDEN', '{"icon":"submissions"}', '/knowledge/graph-extraction', '_self', '知识图谱抽取任务创建和重生成权限'),
     (48, 46, 32, 33, '抽取候选应用', 'knowledge:graph:apply', 81, 'HIDDEN', '{"icon":"submissions"}', '/knowledge/graph-extraction', '_self', '知识图谱抽取候选应用权限'),
     (41, 14, 35, 36, '图谱工作台', 'knowledge:refinement:view,knowledge:refinement:edit', 82, 'VISIBLE', '{"icon":"submissions"}', '/knowledge/refinement', '_self', '知识图谱工作台'),
