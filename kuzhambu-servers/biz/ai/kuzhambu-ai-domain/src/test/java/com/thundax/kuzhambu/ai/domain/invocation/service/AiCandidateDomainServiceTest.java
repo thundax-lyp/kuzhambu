@@ -17,6 +17,8 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class AiCandidateDomainServiceTest {
 
@@ -31,6 +33,31 @@ class AiCandidateDomainServiceTest {
         check.setContentType("SANCAI_ENTRY");
         check.setContentId(2L);
         check.setCapability(AiBusinessCapability.CLASSICS_SUMMARY.value());
+
+        AiCandidate actual = service.requirePendingForApply(check);
+
+        assertSame(candidate, actual);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "summary, CLASSICS_SUMMARY",
+        "image_analysis, CLASSICS_IMAGE_DESCRIBE",
+        "relation_extraction, KNOWLEDGE_RELATION_EXTRACT",
+        "knowledge_graph, KNOWLEDGE_GRAPH_EXTRACT",
+        "lineage_extraction, KNOWLEDGE_LINEAGE_EXTRACT"
+    })
+    void requirePendingForApplyShouldNormalizeLegacyCapability(
+            String legacyCapability, AiBusinessCapability expectedCapability) {
+        AiCandidate candidate =
+                candidate(1L, "SANCAI_ENTRY", 2L, expectedCapability.value(), AiCandidateStatus.PENDING);
+        FakeRepository repository = new FakeRepository(candidate);
+        AiCandidateDomainService service = new AiCandidateDomainService(repository);
+        AiCandidateApplyCheck check = new AiCandidateApplyCheck();
+        check.setCandidateId(1L);
+        check.setContentType("SANCAI_ENTRY");
+        check.setContentId(2L);
+        check.setCapability(legacyCapability);
 
         AiCandidate actual = service.requirePendingForApply(check);
 

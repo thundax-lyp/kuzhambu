@@ -29,7 +29,7 @@ public class AiCandidateDomainService {
                     "ai.candidate.not-pending",
                     "AI candidate is not pending: " + check.getCandidateId());
         }
-        AiBusinessCapability capability = AiBusinessCapability.from(check.getCapability());
+        AiBusinessCapability capability = AiBusinessCapability.fromAlias(check.getCapability());
         AiContentRef contentRef = AiContentRef.ofNullable(check.getContentType(), check.getContentId());
         if (!Objects.equals(contentRef, candidate.getContentRef()) || capability != candidate.getCapability()) {
             throw new DomainException(
