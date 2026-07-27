@@ -12,6 +12,7 @@ import "./graph-results-page.css";
 
 export const GraphResultsPage = () => {
     const canViewGraph = hasPermission("knowledge:graph:view");
+    const canOpenRefinement = hasPermission("knowledge:refinement:edit");
     const {
         activeTab,
         effectiveEntityQuery,
@@ -149,6 +150,7 @@ export const GraphResultsPage = () => {
                     activeTab={activeTab}
                     activeVersion={activeVersion}
                     activeVersionId={activeVersionId}
+                    canOpenRefinement={canOpenRefinement}
                     canViewGraph={canViewGraph}
                     versionDetailDrawerOpen={versionDetailDrawerOpen}
                     entities={entities}

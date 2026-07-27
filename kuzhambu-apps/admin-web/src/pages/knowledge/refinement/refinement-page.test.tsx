@@ -4,6 +4,7 @@ import { App as AntdApp } from "antd";
 import { replacePermissions } from "@/auth/permission-storage";
 import { queryClient } from "@/query/query-client";
 import { RefinementPage } from "./refinement-page";
+import * as service from "./refinement-service";
 
 const componentMocks = vi.hoisted(() => ({
     mockRefinementEntityEditModal: () => null,
@@ -146,14 +147,24 @@ vi.mock("./refinement-service", () => ({
     }))
 }));
 
+vi.mock("@/service/current-user-service", () => ({
+    getCurrentUserInfo: vi.fn(async () => ({
+        id: "99",
+        loginName: "admin"
+    }))
+}));
+
 describe("RefinementPage", () => {
     beforeEach(() => {
+        vi.clearAllMocks();
         queryClient.clear();
+        window.history.pushState({}, "", "/");
         replacePermissions(["knowledge:refinement:view", "knowledge:refinement:edit"]);
     });
 
     afterEach(() => {
         vi.restoreAllMocks();
+        window.history.pushState({}, "", "/");
         queryClient.clear();
         cleanup();
     });
@@ -185,6 +196,13 @@ describe("RefinementPage", () => {
         fireEvent.click(await screen.findByText("应用任务"));
 
         await waitFor(() => {
+            expect(service.applyTask).toHaveBeenCalled();
+        });
+        expect(vi.mocked(service.applyTask).mock.calls[0]?.[0]).toEqual({
+            refinementTaskId: 31,
+            appliedBy: 99
+        });
+        await waitFor(() => {
             expect(screen.getByRole("link", { name: "查看图谱结果" })).toHaveAttribute(
                 "href",
                 "/knowledge/graph-results?graphVersionId=71"
@@ -198,5 +216,26 @@ describe("RefinementPage", () => {
             "href",
             "/knowledge/quality-report?graphVersionId=71&regenerate=1"
         );
+    }, 30000);
+
+    it("opens refinement task from graph version search param", async () => {
+        window.history.pushState({}, "", "/knowledge/refinement?graphVersionId=71");
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <RefinementPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await waitFor(() => {
+            expect(service.getTaskDraft).toHaveBeenCalled();
+        });
+        expect(vi.mocked(service.getTaskDraft).mock.calls[0]?.[0]).toEqual({
+            graphVersionId: 71,
+            openedBy: 99
+        });
+        expect(await screen.findByTestId("knowledge-refinement-task-drawer")).toBeInTheDocument();
     }, 30000);
 });

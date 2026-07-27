@@ -1188,8 +1188,6 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
             String promptMessagesJson,
             String inputPayloadJson) {
         if (StringUtils.isBlank(sourceContentType)
-                || modelId == null
-                || StringUtils.isBlank(modelName)
                 || StringUtils.isBlank(requestId)
                 || StringUtils.isBlank(traceId)
                 || StringUtils.isBlank(promptMessagesJson)

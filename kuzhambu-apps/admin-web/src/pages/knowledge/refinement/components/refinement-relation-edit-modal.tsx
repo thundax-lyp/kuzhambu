@@ -37,9 +37,10 @@ export const RefinementRelationEditModal = ({
     return (
         <KuzhambuModal
             testId="knowledge-refinement-relation-edit-modal"
-            title={relation?.draftId ? "编辑关系草稿" : "新增关系草稿"}
-            open={open}
             confirmLoading={saving}
+            forceRender
+            open={open}
+            title={relation?.draftId ? "编辑关系草稿" : "新增关系草稿"}
             onCancel={onCancel}
             onOk={() => form.submit()}
         >

@@ -1,30 +1,31 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Card, Empty, Typography } from "antd";
-import { useState } from "react";
+import { App, Card, Col, Empty, Row, Typography } from "antd";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuSpace, KuzhambuPage, KuzhambuButton, KuzhambuAlert } from "@/components";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 
-import { GraphExtractionCreate } from "./components/graph-extraction-create";
+import { GraphExtractionManuscriptDetail } from "./components/graph-extraction-manuscript-detail";
+import { GraphExtractionManuscriptTree } from "./components/graph-extraction-manuscript-tree";
 import { GraphExtractionTaskDetail } from "./components/graph-extraction-task-detail";
 import { GraphExtractionTaskTable } from "./components/graph-extraction-task-table";
 import * as service from "./graph-extraction-service";
 import type {
-    GraphExtractionCreateCommand,
     GraphExtractionRegenerateCommand,
     GraphExtractionTaskPageQuery
 } from "./graph-extraction-service";
 import type {
+    GraphWorkbenchManuscriptNode,
     GraphExtractionTriggerSource,
     GraphExtractionTaskRecord
 } from "./graph-extraction-types";
+import * as workbenchService from "./graph-workbench-service";
+import type { GraphWorkbenchSourceContentType } from "./graph-extraction-types";
 
 import "./graph-extraction-page.css";
 
-const { Paragraph, Text, Title } = Typography;
+const { Text, Title } = Typography;
 
-const QUALITY_TRIGGER_SOURCE: GraphExtractionTriggerSource = "QUALITY_REPORT";
-const MANUAL_TRIGGER_SOURCE: GraphExtractionTriggerSource = "MANUAL";
 const REGENERATE_TRIGGER_SOURCE: GraphExtractionTriggerSource = "REGENERATE";
 const REFINEMENT_APPLIED_TRIGGER_SOURCE: GraphExtractionTriggerSource = "REFINEMENT_APPLIED";
 
@@ -56,17 +57,25 @@ const readRegenerateCommandFromSearch = (): GraphExtractionRegenerateCommand | n
     };
 };
 
+const mergeLoadedNodeChildren = (
+    nodes: GraphWorkbenchManuscriptNode[],
+    childrenByNodeKey: Record<string, GraphWorkbenchManuscriptNode[]>
+): GraphWorkbenchManuscriptNode[] =>
+    nodes.map((node) => {
+        const children = childrenByNodeKey[node.nodeKey] || node.children;
+        return {
+            ...node,
+            children: children ? mergeLoadedNodeChildren(children, childrenByNodeKey) : children
+        };
+    });
+
 export const GraphExtractionPage = () => {
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
     const canViewGraph = hasPermission("knowledge:graph:view");
     const canEditGraph = hasPermission("knowledge:graph:edit");
     const canApplyGraph = hasPermission("knowledge:graph:apply");
-    const [latestCreatedTask, setLatestCreatedTask] = useState<GraphExtractionTaskRecord | null>(
-        null
-    );
-    const [createTriggerSource, setCreateTriggerSource] =
-        useState<GraphExtractionTriggerSource>(MANUAL_TRIGGER_SOURCE);
+    const canOpenRefinement = hasPermission("knowledge:refinement:edit");
     const [handoffRegenerateCommand] = useState<GraphExtractionRegenerateCommand | null>(() =>
         readRegenerateCommandFromSearch()
     );
@@ -76,6 +85,21 @@ export const GraphExtractionPage = () => {
     });
     const [detailTaskId, setDetailTaskId] = useState<number | null>(null);
     const [taskDetailDrawerOpen, setTaskDetailDrawerOpen] = useState(false);
+    const [manuscriptChildrenByNodeKey, setManuscriptChildrenByNodeKey] = useState<
+        Record<string, GraphWorkbenchManuscriptNode[]>
+    >({});
+    const [manuscriptSearchText, setManuscriptSearchText] = useState("");
+    const [effectiveManuscriptSearchText, setEffectiveManuscriptSearchText] = useState("");
+    const [selectedManuscript, setSelectedManuscript] =
+        useState<GraphWorkbenchManuscriptNode | null>(null);
+    const normalizedEffectiveManuscriptSearchText = effectiveManuscriptSearchText.trim();
+
+    useEffect(() => {
+        const timer = window.setTimeout(() => {
+            setEffectiveManuscriptSearchText(manuscriptSearchText);
+        }, 300);
+        return () => window.clearTimeout(timer);
+    }, [manuscriptSearchText]);
 
     const taskPageQuery = useQuery({
         queryKey: ["knowledge", "graph-extraction", "tasks", taskQuery],
@@ -89,26 +113,139 @@ export const GraphExtractionPage = () => {
         enabled: taskDetailDrawerOpen && detailTaskId !== null,
         retry: false
     });
-    const createTaskMutation = useMutation({
-        mutationFn: (request: GraphExtractionCreateCommand) =>
-            service.addTask({
-                ...request,
-                triggerSource: createTriggerSource
+    const manuscriptTreeQuery = useQuery({
+        queryKey: [
+            "knowledge",
+            "graph-workbench",
+            "manuscript-tree",
+            "roots",
+            normalizedEffectiveManuscriptSearchText
+        ],
+        queryFn: () =>
+            workbenchService.listManuscriptTree({
+                keyword: normalizedEffectiveManuscriptSearchText || undefined
             }),
-        onSuccess: async (task) => {
-            setLatestCreatedTask(task);
-            await queryClient.invalidateQueries({
-                queryKey: ["knowledge", "graph-extraction", "tasks"]
+        enabled: canViewGraph,
+        retry: false
+    });
+    const manuscriptDetailQuery = useQuery({
+        queryKey: [
+            "knowledge",
+            "graph-workbench",
+            "manuscript",
+            selectedManuscript?.sourceContentType,
+            selectedManuscript?.sourceContentId
+        ],
+        queryFn: () =>
+            workbenchService.getManuscript({
+                sourceContentType:
+                    selectedManuscript?.sourceContentType as GraphWorkbenchSourceContentType,
+                sourceContentId: selectedManuscript?.sourceContentId || 0
+            }),
+        enabled:
+            canViewGraph &&
+            Boolean(selectedManuscript?.sourceContentType && selectedManuscript.sourceContentId),
+        retry: false
+    });
+    const candidateQuery = useQuery({
+        queryKey: [
+            "knowledge",
+            "graph-workbench",
+            "candidate",
+            selectedManuscript?.sourceContentType,
+            selectedManuscript?.sourceContentId
+        ],
+        queryFn: () =>
+            workbenchService.getLatestCandidate({
+                sourceContentType:
+                    selectedManuscript?.sourceContentType as GraphWorkbenchSourceContentType,
+                sourceContentId: selectedManuscript?.sourceContentId || 0,
+                taskType: "GRAPH"
+            }),
+        enabled:
+            canViewGraph &&
+            Boolean(selectedManuscript?.sourceContentType && selectedManuscript.sourceContentId),
+        retry: false
+    });
+
+    const visibleManuscriptTreeNodes = useMemo(
+        () => mergeLoadedNodeChildren(manuscriptTreeQuery.data || [], manuscriptChildrenByNodeKey),
+        [manuscriptChildrenByNodeKey, manuscriptTreeQuery.data]
+    );
+
+    const loadManuscriptChildren = useCallback(
+        async (nodeKey: string) => {
+            const children = await workbenchService.listManuscriptTree({
+                parentKey: nodeKey,
+                keyword: normalizedEffectiveManuscriptSearchText || undefined
             });
-            messageApi.success("抽取任务已创建");
+            setManuscriptChildrenByNodeKey((current) => ({
+                ...current,
+                [nodeKey]: children
+            }));
+        },
+        [normalizedEffectiveManuscriptSearchText]
+    );
+
+    const changeManuscriptSearchText = useCallback((value: string) => {
+        setManuscriptSearchText(value);
+        setManuscriptChildrenByNodeKey({});
+        setSelectedManuscript(null);
+    }, []);
+
+    const submitManuscriptSearchText = useCallback((value: string) => {
+        setManuscriptSearchText(value);
+        setEffectiveManuscriptSearchText(value);
+        setManuscriptChildrenByNodeKey({});
+        setSelectedManuscript(null);
+    }, []);
+
+    const extractManuscriptMutation = useMutation({
+        mutationFn: (taskType: string) => {
+            return workbenchService.extractManuscript({
+                sourceContentType:
+                    selectedManuscript?.sourceContentType as GraphWorkbenchSourceContentType,
+                sourceContentId: selectedManuscript?.sourceContentId || 0,
+                taskType
+            });
+        },
+        onSuccess: async () => {
+            setManuscriptChildrenByNodeKey({});
+            await Promise.all([
+                queryClient.invalidateQueries({
+                    queryKey: ["knowledge", "graph-extraction", "tasks"]
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: ["knowledge", "graph-workbench"]
+                })
+            ]);
+            messageApi.success("稿件图谱抽取任务已创建");
         },
         onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "抽取任务创建失败");
+            messageApi.error(error instanceof Error ? error.message : "稿件图谱抽取失败");
+        }
+    });
+    const applyWorkbenchCandidateMutation = useMutation({
+        mutationFn: (taskId: number) => workbenchService.applyCandidate({ taskId }),
+        onSuccess: async () => {
+            setManuscriptChildrenByNodeKey({});
+            await Promise.all([
+                queryClient.invalidateQueries({
+                    queryKey: ["knowledge", "graph-extraction", "tasks"]
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: ["knowledge", "graph-workbench"]
+                })
+            ]);
+            messageApi.success("稿件候选结果已应用");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "稿件候选应用失败");
         }
     });
     const applyTaskMutation = useMutation({
         mutationFn: (taskId: number) => service.applyTaskCandidate({ taskId }),
-        onSuccess: async (task) => {
+        onSuccess: async () => {
             await Promise.all([
                 queryClient.invalidateQueries({
                     queryKey: ["knowledge", "graph-extraction", "tasks"]
@@ -117,7 +254,6 @@ export const GraphExtractionPage = () => {
                     queryKey: ["knowledge", "graph-extraction", "task-detail", detailTaskId]
                 })
             ]);
-            setLatestCreatedTask(task);
             messageApi.success("候选结果已应用");
         },
         onError: (error) => {
@@ -126,8 +262,7 @@ export const GraphExtractionPage = () => {
     });
     const regenerateTaskMutation = useMutation({
         mutationFn: service.regenerateTask,
-        onSuccess: async (task) => {
-            setLatestCreatedTask(task);
+        onSuccess: async () => {
             await queryClient.invalidateQueries({
                 queryKey: ["knowledge", "graph-extraction", "tasks"]
             });
@@ -160,6 +295,7 @@ export const GraphExtractionPage = () => {
     });
 
     const tasks = taskPageQuery.data?.records || [];
+    const selectedNodeKey = selectedManuscript?.nodeKey || null;
 
     const openTaskDetailDrawer = (task: GraphExtractionTaskRecord) => {
         const taskId = Number(task.taskId);
@@ -193,10 +329,6 @@ export const GraphExtractionPage = () => {
         });
     };
 
-    const regenerateFromHandoff = (request: GraphExtractionRegenerateCommand) => {
-        regenerateTaskMutation.mutate(request);
-    };
-
     const cancelBatchTask = (task: GraphExtractionTaskRecord) => {
         if (!task.batchJobId) {
             return;
@@ -218,55 +350,69 @@ export const GraphExtractionPage = () => {
                 <KuzhambuAlert
                     banner
                     className="knowledge-graph-extraction-banner"
-                    title="本页已接通知识抽取任务创建、任务列表、详情查看和候选应用动作。"
+                    title="从稿件树选择三才、王圻或明俗稿件，系统会在后台自动创建图谱抽取任务。"
                     type="info"
                 />
 
-                <section aria-labelledby="graph-extraction-create-section">
-                    <div className="knowledge-graph-extraction-section-header">
-                        <Title id="graph-extraction-create-section" level={4}>
-                            创建抽取任务
-                        </Title>
-                        <Text type="secondary">三类抽取任务共用统一任务台账和候选应用链路。</Text>
-                    </div>
-                    <Paragraph className="knowledge-graph-extraction-helper">
-                        当前可切换手工触发或质量结果触发。质量模式下，创建请求会统一写入
-                        `QUALITY_REPORT`，便于后端任务台账追溯触发来源。
-                    </Paragraph>
-                    <KuzhambuSpace wrap>
-                        <KuzhambuAlert
-                            title={
-                                createTriggerSource === QUALITY_TRIGGER_SOURCE
-                                    ? "当前为质量结果触发模式"
-                                    : "当前为手工触发模式"
-                            }
-                            type={
-                                createTriggerSource === QUALITY_TRIGGER_SOURCE ? "warning" : "info"
-                            }
-                            showIcon
-                        />
-                        <KuzhambuButton
-                            testId="knowledge-graph-extraction-graph-extraction-action-button"
-                            onClick={() => setCreateTriggerSource(MANUAL_TRIGGER_SOURCE)}
-                        >
-                            切换为手工触发
-                        </KuzhambuButton>
-                        <KuzhambuButton
-                            testId="knowledge-graph-extraction-graph-extraction-action-button-2"
-                            onClick={() => setCreateTriggerSource(QUALITY_TRIGGER_SOURCE)}
-                        >
-                            切换为质量结果触发
-                        </KuzhambuButton>
-                    </KuzhambuSpace>
-                    <GraphExtractionCreate
-                        canEdit={canEditGraph}
-                        creatingTaskType={createTaskMutation.variables?.taskType || null}
-                        latestCreatedTask={latestCreatedTask}
-                        onCreate={createTaskMutation.mutate}
-                        onRegenerate={regenerateFromHandoff}
-                        regenerateCommand={handoffRegenerateCommand}
-                        regenerating={regenerateTaskMutation.isPending}
+                {handoffRegenerateCommand ? (
+                    <KuzhambuAlert
+                        showIcon
+                        className="knowledge-graph-extraction-banner"
+                        title="精修应用后的图谱重生成参数已载入"
+                        type="warning"
+                        action={
+                            <KuzhambuButton
+                                testId="knowledge-graph-extraction-regenerate-handoff-button"
+                                disabled={!canEditGraph}
+                                loading={regenerateTaskMutation.isPending}
+                                onClick={() =>
+                                    regenerateTaskMutation.mutate(handoffRegenerateCommand)
+                                }
+                            >
+                                提交重生成
+                            </KuzhambuButton>
+                        }
                     />
+                ) : null}
+
+                <section aria-labelledby="graph-extraction-workbench-section">
+                    <div className="knowledge-graph-extraction-section-header">
+                        <Title id="graph-extraction-workbench-section" level={4}>
+                            稿件图谱工作台
+                        </Title>
+                        <Text type="secondary">
+                            稿件树是业务主入口，任务台账用于排查失败、重生成和审计。
+                        </Text>
+                    </div>
+                    <Row gutter={[16, 16]}>
+                        <Col xs={24} lg={8}>
+                            <GraphExtractionManuscriptTree
+                                loading={manuscriptTreeQuery.isLoading}
+                                nodes={visibleManuscriptTreeNodes}
+                                searchText={manuscriptSearchText}
+                                selectedNodeKey={selectedNodeKey}
+                                onLoadChildren={loadManuscriptChildren}
+                                onSearchChange={changeManuscriptSearchText}
+                                onSearchSubmit={submitManuscriptSearchText}
+                                onSelectManuscript={setSelectedManuscript}
+                            />
+                        </Col>
+                        <Col xs={24} lg={16}>
+                            <GraphExtractionManuscriptDetail
+                                applying={applyWorkbenchCandidateMutation.isPending}
+                                canApply={canApplyGraph}
+                                canEdit={canEditGraph}
+                                canOpenRefinement={canOpenRefinement}
+                                candidate={candidateQuery.data || null}
+                                candidateLoading={candidateQuery.isLoading}
+                                detail={manuscriptDetailQuery.data || null}
+                                extracting={extractManuscriptMutation.isPending}
+                                selectedNode={selectedManuscript}
+                                onApplyCandidate={applyWorkbenchCandidateMutation.mutate}
+                                onExtract={extractManuscriptMutation.mutate}
+                            />
+                        </Col>
+                    </Row>
                 </section>
 
                 <section aria-labelledby="graph-extraction-task-section">
@@ -300,7 +446,7 @@ export const GraphExtractionPage = () => {
                             />
                         ) : (
                             <Empty
-                                description="当前还没有抽取任务，可以先从上方创建任务。"
+                                description="当前还没有抽取任务，可以先从稿件树选择稿件并抽取图谱。"
                                 image={Empty.PRESENTED_IMAGE_SIMPLE}
                             />
                         )}

@@ -58,6 +58,7 @@ export const RefinementQualityAnnotationDrawer = ({
         <KuzhambuDrawer
             testId="knowledge-refinement-refinement-quality-annotation-drawer"
             destroyOnClose
+            forceRender
             open={open}
             size="small"
             title={`质量标注${target ? ` / ${target.objectType} / ${target.objectKey}` : ""}`}
