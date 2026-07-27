@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `src/pages/classics/wangqi/components/wangqi-document-edit-drawer`：收敛王圻文档基础表单边界
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-FORM-USEFORM-MIGRATION.md`
-    - 范围对象：`src/pages/classics/wangqi/components/wangqi-document-edit-drawer/wangqi-document-edit-drawer.tsx`、`src/pages/classics/wangqi/components/wangqi-document-edit-drawer/wangqi-document-basic-section/wangqi-document-basic-section.tsx`、`src/pages/classics/wangqi/components/wangqi-document-edit-drawer/wangqi-document-basic-section/wangqi-document-summary-field/wangqi-document-summary-field.tsx`
-    - 处理动作：将 `WangqiDocumentBasicSection` 的 `KuzhambuFormItem` 回收到拥有 `KuzhambuForm` 的文件，并移除 summary field 中的 direct AntD `Form.Item`。
-    - 验收点：`wangqi-document-basic-section.tsx` 不再出现 `KuzhambuFormItem`，`wangqi-document-summary-field.tsx` 不再出现 `Form.Item`。
-    - 重要度：9/10
-
 - [ ] `src/pages/ai/prompts/components/prompt-edit-drawer.tsx`：清理提示词能力字段 direct Form.Item
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-FORM-USEFORM-MIGRATION.md`
