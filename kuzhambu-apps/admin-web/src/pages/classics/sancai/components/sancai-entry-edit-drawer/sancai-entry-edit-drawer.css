@@ -37,6 +37,17 @@
     min-width: 0;
 }
 
+.sancai-ai-text-modal-field {
+    display: grid;
+    gap: 8px;
+}
+
+.sancai-ai-text-modal-label {
+    color: color-mix(in srgb, var(--sancai-ink) 82%, #7e2e25 18%);
+    font-weight: 700;
+    line-height: 1.45;
+}
+
 .sancai-entry-edit-drawer-header-sections {
     background: color-mix(in srgb, var(--sancai-panel) 78%, #fff7df 22%);
     border: 1px solid color-mix(in srgb, var(--sancai-line) 78%, #7c5f35 22%);

@@ -694,29 +694,29 @@ export const PromptEditDrawer = ({
                     </KuzhambuFormItem>
                     <KuzhambuFormItem
                         label="能力"
+                        name="capability"
+                        layoutSize="middle"
+                        className="prompts-editor-item-compact"
+                        rules={[{ required: true, message: "请选择能力" }]}
+                    >
+                        <KuzhambuSelect
+                            aria-label="提示词能力"
+                            disabled={Boolean(template)}
+                            options={capabilityOptions}
+                        />
+                    </KuzhambuFormItem>
+                    <KuzhambuFormItem
+                        label="变量"
                         layoutSize="middle"
                         className="prompts-editor-item-compact"
                     >
-                        <KuzhambuSpaceCompact block>
-                            <Form.Item
-                                name="capability"
-                                noStyle
-                                rules={[{ required: true, message: "请选择能力" }]}
-                            >
-                                <KuzhambuSelect
-                                    aria-label="提示词能力"
-                                    disabled={Boolean(template)}
-                                    options={capabilityOptions}
-                                />
-                            </Form.Item>
-                            <KuzhambuButton
-                                testId="ai-prompts-prompts-view-variables-button"
-                                disabled={allowedVariableNames.length === 0}
-                                onClick={() => setVariableModalOpen(true)}
-                            >
-                                变量
-                            </KuzhambuButton>
-                        </KuzhambuSpaceCompact>
+                        <KuzhambuButton
+                            testId="ai-prompts-prompts-view-variables-button"
+                            disabled={allowedVariableNames.length === 0}
+                            onClick={() => setVariableModalOpen(true)}
+                        >
+                            查看变量
+                        </KuzhambuButton>
                     </KuzhambuFormItem>
                     <KuzhambuFormItem
                         label="状态"

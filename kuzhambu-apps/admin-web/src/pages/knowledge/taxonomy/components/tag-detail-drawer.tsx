@@ -32,7 +32,7 @@ interface TagDetailDrawerProps {
     reviewMode?: boolean;
     reviewing?: boolean;
     tagDetail?: TagDetailRecord | null;
-    onCreateAlias?: (request: TagAliasCreateCommand) => void;
+    onCreateAlias?: (request: TagAliasCreateCommand) => Promise<void> | void;
     onApprove?: (request: TagReviewCommand) => void;
     onClose: () => void;
     onDeprecate?: (request: TagDeprecateCommand) => void;

@@ -1,4 +1,4 @@
-import { Empty, Form, Popconfirm, Typography } from "antd";
+import { Empty, Popconfirm, Typography } from "antd";
 import { useMemo } from "react";
 import { KuzhambuList, KuzhambuListItem, KuzhambuSpace, KuzhambuButton } from "@/components";
 
@@ -6,6 +6,7 @@ import type { TagAliasCreateCommand, TagAliasRemoveCommand } from "../taxonomy-s
 import type { TagAliasRecord } from "../taxonomy-types";
 
 import { TagAliasCreateField } from "./tag-alias-create-field";
+import type { TagAliasCreateFormValues } from "./tag-alias-create-field";
 
 const { Text } = Typography;
 
@@ -16,12 +17,8 @@ interface TagAliasListProps {
     removingAliasId?: string | null;
     saving?: boolean;
     tagId: string;
-    onCreate?: (request: TagAliasCreateCommand) => void;
+    onCreate?: (request: TagAliasCreateCommand) => Promise<void> | void;
     onRemove?: (request: TagAliasRemoveCommand) => void;
-}
-
-interface TagAliasFormValues {
-    name: string;
 }
 
 const createAliasId = () => {
@@ -52,7 +49,6 @@ export const TagAliasList = ({
     onCreate,
     onRemove
 }: TagAliasListProps) => {
-    const [form] = Form.useForm<TagAliasFormValues>();
     const sortedAliases = useMemo(
         () =>
             [...aliases].sort((left, right) =>
@@ -61,29 +57,21 @@ export const TagAliasList = ({
         [aliases]
     );
 
-    const createAlias = async () => {
+    const createAlias = async (values: TagAliasCreateFormValues) => {
         if (!canEdit || !onCreate) {
             return;
         }
-        const values = await form.validateFields();
-        onCreate({
+        await onCreate({
             id: createAliasId(),
             tagId,
             name: values.name.trim()
         });
-        form.resetFields();
     };
 
     return (
         <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
             {canEdit ? (
-                <Form<TagAliasFormValues> form={form} layout="inline">
-                    <TagAliasCreateField
-                        aliases={aliases}
-                        saving={saving}
-                        onSubmit={() => void createAlias()}
-                    />
-                </Form>
+                <TagAliasCreateField aliases={aliases} saving={saving} onSubmit={createAlias} />
             ) : null}
 
             {sortedAliases.length > 0 ? (

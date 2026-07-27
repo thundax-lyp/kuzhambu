@@ -47,6 +47,12 @@ const formatModelLabel = (model: AiCapabilityModelRecord) => {
     return `${displayName} / ${model.modelName}`;
 };
 
+interface CapabilityMappingFilterValues {
+    capability?: string | null;
+    enabled?: string | null;
+    scope?: string | null;
+}
+
 const buildTagMatch = (
     capability: AiCapabilityRecord | undefined,
     model: AiCapabilityModelRecord | undefined
@@ -66,6 +72,7 @@ export const CapabilityMappingsPage = () => {
     const { message } = App.useApp();
     const queryClient = useQueryClient();
     const [form] = Form.useForm<MappingFormValues>();
+    const [filterForm] = Form.useForm<CapabilityMappingFilterValues>();
     const canViewConfig = hasPermission("ai:config:view");
     const canEditConfig = hasPermission("ai:config:edit");
     const [query, setQuery] = useState<AiCapabilityQuery>({});
@@ -142,6 +149,19 @@ export const CapabilityMappingsPage = () => {
 
     const invalidateMappings = async () => {
         await queryClient.invalidateQueries({ queryKey: ["ai", "capability-mappings"] });
+    };
+
+    const updateQueryFromFilter = (_: unknown, values: CapabilityMappingFilterValues) => {
+        setQuery({
+            scope: values.scope ?? null,
+            capability: values.capability ?? null,
+            enabled: parseEnabled(values.enabled ?? undefined)
+        });
+    };
+
+    const resetFilter = () => {
+        filterForm.resetFields();
+        setQuery({});
     };
 
     const updateMappingMutation = useMutation({
@@ -241,56 +261,39 @@ export const CapabilityMappingsPage = () => {
             }
         >
             <Card className="capability-mappings-filter-card">
-                <KuzhambuForm className="capability-mappings-filter-form">
-                    <KuzhambuFormItem label="scope" layoutSize="small">
+                <KuzhambuForm<CapabilityMappingFilterValues>
+                    form={filterForm}
+                    className="capability-mappings-filter-form"
+                    onValuesChange={updateQueryFromFilter}
+                >
+                    <KuzhambuFormItem name="scope" label="scope" layoutSize="small">
                         <KuzhambuSelect
                             allowClear
                             className="capability-mappings-filter-control"
                             options={SCOPE_OPTIONS}
-                            value={query.scope ?? undefined}
-                            onChange={(scope) =>
-                                setQuery((current) => ({
-                                    ...current,
-                                    scope: scope ?? null
-                                }))
-                            }
                         />
                     </KuzhambuFormItem>
-                    <KuzhambuFormItem label="capability" layoutSize="small">
+                    <KuzhambuFormItem name="capability" label="capability" layoutSize="small">
                         <KuzhambuSelect
                             allowClear
                             className="capability-mappings-filter-control"
                             options={capabilityOptions}
-                            value={query.capability ?? undefined}
-                            onChange={(capability) =>
-                                setQuery((current) => ({
-                                    ...current,
-                                    capability: capability ?? null
-                                }))
-                            }
                         />
                     </KuzhambuFormItem>
-                    <KuzhambuFormItem label="enabled" layoutSize="small">
+                    <KuzhambuFormItem name="enabled" label="enabled" layoutSize="small">
                         <KuzhambuSelect
                             allowClear
                             className="capability-mappings-filter-control"
-                            value={query.enabled == null ? undefined : String(query.enabled)}
                             options={[
                                 { label: "启用", value: "true" },
                                 { label: "禁用", value: "false" }
                             ]}
-                            onChange={(enabled) =>
-                                setQuery((current) => ({
-                                    ...current,
-                                    enabled: parseEnabled(enabled)
-                                }))
-                            }
                         />
                     </KuzhambuFormItem>
                 </KuzhambuForm>
                 <KuzhambuButton
                     testId="ai-capability-mappings-capability-mappings-reset-button"
-                    onClick={() => setQuery({})}
+                    onClick={resetFilter}
                 >
                     重置
                 </KuzhambuButton>

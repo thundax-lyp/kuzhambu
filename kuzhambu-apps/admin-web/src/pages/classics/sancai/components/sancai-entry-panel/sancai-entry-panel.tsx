@@ -1,16 +1,8 @@
-import { UploadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Badge, Card, Empty, Image, Typography, Upload } from "antd";
+import { App } from "antd";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import {
-    KuzhambuTable,
-    type KuzhambuTableProps,
-    type KuzhambuTableSortPosition,
-    KuzhambuButton,
-    KuzhambuAlert
-} from "@/components";
+import { type KuzhambuTableSortPosition, KuzhambuAlert } from "@/components";
 
 import { hasPermission } from "@/auth/permission-storage";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
@@ -18,8 +10,6 @@ import * as exportService from "@/pages/classics/common/classics-export-service"
 import * as shareService from "@/pages/classics/common/classics-share-service";
 import * as currentUserService from "@/service/current-user-service";
 import type { ClassicsExportJobRecord } from "@/pages/classics/common/classics-export-types";
-import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
-import { AiRefinementStreamPanel } from "@/pages/classics/common/components/ai-refinement-stream-panel";
 import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
 import { ClassicsContentTagPanel } from "@/pages/classics/common/components/classics-content-tag-panel";
 import { AiCandidateBatchDrawer } from "@/pages/classics/common/components/ai-candidate-batch-drawer";
@@ -33,7 +23,6 @@ import * as entryService from "@/pages/classics/sancai/sancai-entry-service";
 import type {
     SancaiCategoryRecord,
     SancaiContentVersionRecord,
-    SancaiEntryImageRecord,
     SancaiEntryRecord,
     SancaiVisualAssetRecord,
     SancaiVolumeRecord
@@ -41,18 +30,11 @@ import type {
 
 import "./sancai-entry-panel.css";
 
-const { Text } = Typography;
-
 const EXPORT_PAGE_SIZE = 8;
 const TASK_POLL_INTERVAL_MS = 3000;
-const IMAGE_ACCEPT = ".jpg,.jpeg,.png,.gif,.webp";
 
 const readEntryTitle = (entry: SancaiEntryRecord) => {
     return entry.title?.trim() || `条目 ${entry.id}`;
-};
-
-const readImageTitle = (image: SancaiEntryImageRecord) => {
-    return image.title?.trim() || image.originalFilename?.trim() || `图片 ${image.id}`;
 };
 
 interface SancaiEntryLifecycleAction {
@@ -63,32 +45,6 @@ interface SancaiEntryLifecycleAction {
     successMessage: string;
     targetStatus: "DRAFT" | "PUBLISHED" | "ARCHIVED";
 }
-
-const formatImageSize = (size?: number | null) => {
-    if (!size) {
-        return "-";
-    }
-    if (size < 1024) {
-        return `${size} B`;
-    }
-    if (size < 1024 * 1024) {
-        return `${(size / 1024).toFixed(1)} KB`;
-    }
-    return `${(size / 1024 / 1024).toFixed(1)} MB`;
-};
-
-const resolveImagePreviewUrl = (entryId: number | null, image: SancaiEntryImageRecord) => {
-    if (!entryId || !image.id) {
-        return undefined;
-    }
-    return toAuthenticatedResourceUrl(
-        entryService.getImageContentUrl({
-            entryId,
-            imageId: image.id,
-            mode: "preview"
-        })
-    );
-};
 
 interface SancaiEntryPanelProps {
     categories?: SancaiCategoryRecord[];
@@ -130,7 +86,6 @@ export const SancaiEntryPanel = ({
     );
     const [batchCandidateDrawerOpen, setBatchCandidateDrawerOpen] = useState(false);
     const [internalExportJobsDrawerOpen, setInternalExportJobsDrawerOpen] = useState(false);
-    const candidatePanelRef = useRef<HTMLDivElement | null>(null);
     const tagPanelRef = useRef<HTMLDivElement | null>(null);
     const categoryOptions = useMemo(
         () =>
@@ -177,22 +132,6 @@ export const SancaiEntryPanel = ({
     });
     const selectedEntry = isCreating ? undefined : (detailQuery.data ?? editingEntry ?? undefined);
     const selectedEntryId = selectedEntry?.id ?? null;
-    const imagesQuery = useQuery({
-        queryKey: ["classics", "sancai", "entries", "images", selectedEntryId],
-        queryFn: () => entryService.listImages(selectedEntryId ?? 0),
-        enabled: isModelOpen && !isCreating && Boolean(selectedEntryId),
-        retry: false
-    });
-    const entryImages = useMemo(
-        () =>
-            [...(imagesQuery.data || [])].sort((left, right) => {
-                if ((left.priority ?? 0) !== (right.priority ?? 0)) {
-                    return (left.priority ?? 0) - (right.priority ?? 0);
-                }
-                return left.id - right.id;
-            }),
-        [imagesQuery.data]
-    );
     const versionsQuery = useQuery({
         queryKey: ["classics", "sancai", "entries", "versions", selectedEntry?.id],
         queryFn: () => entryService.listVersions(selectedEntry?.id ?? 0),
@@ -318,21 +257,10 @@ export const SancaiEntryPanel = ({
         });
     };
     const {
-        setSelectedVisualAsset,
-        selectedVisualAssetId,
-        streamingRefinementTask,
-        streamEvents,
-        isStreamingRefinementTask,
-        streamErrorText,
         creatingRefinementCapability,
-        retryingRefinementTaskId,
         invalidateSancaiContentGovernance,
-        invalidateSancaiContentCandidates,
         refreshSancaiEntryDetail,
         createRefinementTask,
-        retryRefinementTask,
-        closeStreamingRefinementTask,
-        refreshAfterVisualAssetCandidateHandled,
         resetHandledSucceededTaskIds
     } = useSancaiEntryPanelState({
         queryClient,
@@ -349,20 +277,14 @@ export const SancaiEntryPanel = ({
             queryKey: ["classics", "sancai", "exports", "jobs"]
         });
     };
-    const invalidateEntryImages = async () => {
-        await Promise.all([
-            queryClient.invalidateQueries({
-                queryKey: ["classics", "sancai", "entries", "images", selectedEntryId]
-            }),
-            queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "entries"] })
-        ]);
-    };
 
     const invalidateBatchCandidateData = useCallback(async () => {
         await Promise.all([
             queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "entries"] }),
             refreshSancaiEntryDetail(),
-            invalidateSancaiContentCandidates(selectedVisualAssetId),
+            queryClient.invalidateQueries({
+                queryKey: ["ai", "candidates", "SANCAI_ENTRY", selectedEntryId]
+            }),
             queryClient.invalidateQueries({
                 queryKey: ["classics", "content", "qa-pairs", "SANCAI_ENTRY"]
             }),
@@ -370,13 +292,7 @@ export const SancaiEntryPanel = ({
                 queryKey: ["classics", "content", "tags", "SANCAI_ENTRY", selectedEntryId]
             })
         ]);
-    }, [
-        queryClient,
-        refreshSancaiEntryDetail,
-        invalidateSancaiContentCandidates,
-        selectedVisualAssetId,
-        selectedEntryId
-    ]);
+    }, [queryClient, refreshSancaiEntryDetail, selectedEntryId]);
 
     const openBatchCandidateDrawer = (selectedEntries: SancaiEntryRecord[]) => {
         if (!selectedEntries.length) {
@@ -527,70 +443,16 @@ export const SancaiEntryPanel = ({
             messageApi.error(error instanceof Error ? error.message : "视觉处理切换失败");
         }
     });
-    const changeCurrentImageMutation = useMutation({
-        mutationFn: entryService.changeCurrentImage,
-        onSuccess: async () => {
-            await invalidateEntryImages();
-            messageApi.success("封面图已切换");
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "封面图切换失败");
-        }
-    });
-    const uploadImageMutation = useMutation({
-        mutationFn: (file: File) => {
-            if (!selectedEntryId) {
-                throw new Error("请先选择条目");
-            }
-            return entryService.uploadImage({
-                currentUsed: false,
-                entryId: selectedEntryId,
-                file,
-                imageType: "ORIGINAL",
-                title: file.name
-            });
-        },
-        onSuccess: async () => {
-            await invalidateEntryImages();
-            messageApi.success("图片已上传");
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "图片上传失败");
-        }
-    });
-    const sortImagesMutation = useMutation({
-        mutationFn: entryService.sortImages,
-        onSuccess: async () => {
-            await invalidateEntryImages();
-            messageApi.success("图片顺序已保存");
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "图片排序失败");
-        }
-    });
-    const deleteImageMutation = useMutation({
-        mutationFn: entryService.deleteImage,
-        onSuccess: async () => {
-            await invalidateEntryImages();
-            messageApi.success("图片已删除");
-        },
-        onError: (error) => {
-            messageApi.error(error instanceof Error ? error.message : "图片删除失败");
-        }
-    });
 
     const selectEntry = (entry: SancaiEntryRecord) => {
         setIsCreating(false);
-        setSelectedVisualAsset(null);
         setEditingEntry(entry);
         setSelectedVersionId(null);
         setIsModelOpen(true);
     };
 
     const closeModel = () => {
-        closeStreamingRefinementTask();
         setIsCreating(false);
-        setSelectedVisualAsset(null);
         setEditingEntry(null);
         setSelectedVersionId(null);
         resetHandledSucceededTaskIds();
@@ -757,73 +619,6 @@ export const SancaiEntryPanel = ({
             visualAssetId
         });
     };
-    const downloadImage = (image: SancaiEntryImageRecord) => {
-        if (!selectedEntryId) {
-            return;
-        }
-        window.open(
-            entryService.getImageContentUrl({
-                entryId: selectedEntryId,
-                imageId: image.id,
-                mode: "download"
-            }),
-            "_blank",
-            "noopener,noreferrer"
-        );
-    };
-    const changeCurrentImage = (image: SancaiEntryImageRecord) => {
-        if (!selectedEntryId || image.currentUsed) {
-            return;
-        }
-        changeCurrentImageMutation.mutate({
-            entryId: selectedEntryId,
-            imageId: image.id
-        });
-    };
-    const deleteImage = (image: SancaiEntryImageRecord) => {
-        if (!selectedEntryId) {
-            return;
-        }
-        const title = readImageTitle(image);
-        confirm.danger({
-            title: "删除三才图会图片",
-            message: `确认删除 ${title}？`,
-            description: image.currentUsed
-                ? "删除当前封面图后，系统会按剩余排序第一张自动设为封面图。"
-                : "删除后当前条目的图片列表会立即刷新。",
-            okText: "删除",
-            onConfirm: () =>
-                deleteImageMutation.mutateAsync({
-                    entryId: selectedEntryId,
-                    imageId: image.id
-                })
-        });
-    };
-    const sortImage = (
-        sourceImage: SancaiEntryImageRecord,
-        targetImage: SancaiEntryImageRecord,
-        position: KuzhambuTableSortPosition
-    ) => {
-        if (!selectedEntryId) {
-            return;
-        }
-        if (sourceImage.id === targetImage.id) {
-            return;
-        }
-        const remainingImages = entryImages.filter((image) => image.id !== sourceImage.id);
-        const targetIndex = remainingImages.findIndex((image) => image.id === targetImage.id);
-        if (targetIndex < 0) {
-            return;
-        }
-        const insertIndex = position === "before" ? targetIndex : targetIndex + 1;
-        const nextImages = [...remainingImages];
-        nextImages.splice(insertIndex, 0, sourceImage);
-        sortImagesMutation.mutate({
-            entryId: selectedEntryId,
-            orderedIds: nextImages.map((item) => item.id),
-            sortDirection: "ASC"
-        });
-    };
 
     const sortEntry = (
         sourceEntry: SancaiEntryRecord,
@@ -922,13 +717,17 @@ export const SancaiEntryPanel = ({
                 mode={isCreating ? "create" : "edit"}
                 open={isModelOpen && !isLoading}
                 volumes={volumes}
+                currentUserId={currentUserQuery.data?.id}
                 onCancel={closeModel}
                 onSubmit={submitEntry}
                 onUseVisualAsset={switchVisualAsset}
                 onUpdateVisualAsset={updateVisualAsset}
-                onSelectedVisualAssetChange={setSelectedVisualAsset}
-                onCreateVisualAssetTask={(capability, asset) => {
-                    createRefinementTask(capability, asset);
+                onVisualRefinementChanged={async () => {
+                    await Promise.all([
+                        invalidateEntries(),
+                        refreshSancaiEntryDetail(),
+                        invalidateSancaiContentGovernance()
+                    ]);
                 }}
                 onCreateTranslationTask={(draft) => createRefinementTask("translate", null, draft)}
                 onCreateSummaryTask={(draft) => createRefinementTask("summary", null, draft)}
@@ -944,14 +743,6 @@ export const SancaiEntryPanel = ({
                         aiRefinementTaskService.getNormalizedTaskCapability(task.capability) ===
                         "summary"
                 )}
-                creatingVisualAssetCapability={
-                    creatingRefinementCapability === "image_analysis" ||
-                    creatingRefinementCapability === "fusion" ||
-                    creatingRefinementCapability === "visual" ||
-                    creatingRefinementCapability === "image_gen"
-                        ? creatingRefinementCapability
-                        : null
-                }
                 qaContent={
                     !isCreating && selectedEntry ? (
                         <ClassicsContentQaPanel
@@ -960,270 +751,6 @@ export const SancaiEntryPanel = ({
                             panelTitle="三才图会问答对治理"
                             onChanged={invalidateSancaiContentGovernance}
                         />
-                    ) : null
-                }
-                imageContent={
-                    !isCreating && selectedEntry ? (
-                        <div
-                            className="sancai-entry-image-manager"
-                            aria-label="三才图会图片管理"
-                            aria-busy={imagesQuery.isLoading}
-                        >
-                            <div className="sancai-entry-image-toolbar">
-                                <Upload
-                                    aria-label="上传图片"
-                                    accept={IMAGE_ACCEPT}
-                                    showUploadList={false}
-                                    beforeUpload={(file) => {
-                                        uploadImageMutation.mutate(file);
-                                        return Upload.LIST_IGNORE;
-                                    }}
-                                >
-                                    <KuzhambuButton
-                                        testId="classics-sancai-sancai-entry-action-button"
-                                        icon={<UploadOutlined />}
-                                        loading={uploadImageMutation.isPending}
-                                        type="primary"
-                                    >
-                                        上传图片
-                                    </KuzhambuButton>
-                                </Upload>
-                            </div>
-                            {entryImages.length > 0 ? (
-                                <Image.PreviewGroup>
-                                    <KuzhambuTable
-                                        className="sancai-image-table"
-                                        ariaLabel="三才图会图片列表"
-                                        columns={
-                                            [
-                                                {
-                                                    title: "图片",
-                                                    key: "image",
-                                                    render: (_, image) => {
-                                                        const imageTitle = readImageTitle(image);
-                                                        const thumbnail = (
-                                                            <Image
-                                                                className={
-                                                                    image.currentUsed
-                                                                        ? "sancai-entry-image-cover-thumbnail"
-                                                                        : undefined
-                                                                }
-                                                                width={132}
-                                                                height={88}
-                                                                src={resolveImagePreviewUrl(
-                                                                    selectedEntryId,
-                                                                    image
-                                                                )}
-                                                                alt={imageTitle}
-                                                            />
-                                                        );
-                                                        return (
-                                                            <div className="sancai-entry-image-cell">
-                                                                {image.currentUsed ? (
-                                                                    <span className="sancai-entry-image-cover">
-                                                                        <Badge.Ribbon text="封面">
-                                                                            {thumbnail}
-                                                                        </Badge.Ribbon>
-                                                                    </span>
-                                                                ) : (
-                                                                    thumbnail
-                                                                )}
-                                                                <span className="sancai-entry-image-meta">
-                                                                    <Text strong>{imageTitle}</Text>
-                                                                    <Text type="secondary">
-                                                                        {formatImageSize(
-                                                                            image.size
-                                                                        )}
-                                                                    </Text>
-                                                                </span>
-                                                            </div>
-                                                        );
-                                                    }
-                                                },
-                                                {
-                                                    inlineLimit: 4,
-                                                    key: "actions",
-                                                    title: "操作",
-                                                    width: 220,
-                                                    options: (image) => [
-                                                        {
-                                                            key: "download",
-                                                            text: "下载",
-                                                            ariaLabel: `下载 ${readImageTitle(image)}`,
-                                                            onClick: () => downloadImage(image)
-                                                        },
-                                                        {
-                                                            key: "cover",
-                                                            text: "封面",
-                                                            ariaLabel: `设为封面 ${readImageTitle(image)}`,
-                                                            disabled: Boolean(image.currentUsed),
-                                                            onClick: () => changeCurrentImage(image)
-                                                        },
-                                                        {
-                                                            type: "divider"
-                                                        },
-                                                        {
-                                                            key: "delete",
-                                                            text: "删除",
-                                                            type: "danger",
-                                                            ariaLabel: `删除 ${readImageTitle(image)}`,
-                                                            disabled: deleteImageMutation.isPending,
-                                                            onClick: () => deleteImage(image)
-                                                        }
-                                                    ]
-                                                }
-                                            ] satisfies KuzhambuTableProps<SancaiEntryImageRecord>["columns"]
-                                        }
-                                        dataSource={entryImages}
-                                        pagination={false}
-                                        rowKey="id"
-                                        size="small"
-                                        scroll={{ x: 640 }}
-                                        sortable
-                                        onSort={sortImage}
-                                    />
-                                </Image.PreviewGroup>
-                            ) : (
-                                <Empty
-                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                    description="暂无图片"
-                                />
-                            )}
-                        </div>
-                    ) : null
-                }
-                visualRefinementContent={
-                    !isCreating && selectedEntry ? (
-                        <>
-                            <Card size="small" title="AI 精修任务">
-                                <div style={{ display: "grid", gap: 8 }}>
-                                    {refinementTasks
-                                        .filter((task) => {
-                                            const capability =
-                                                aiRefinementTaskService.getNormalizedTaskCapability(
-                                                    task.capability
-                                                );
-                                            return (
-                                                capability === "translate" ||
-                                                capability === "summary" ||
-                                                capability === "image_analysis" ||
-                                                capability === "visual" ||
-                                                capability === "fusion" ||
-                                                capability === "image_gen"
-                                            );
-                                        })
-                                        .slice(0, 6)
-                                        .map((task) => {
-                                            const failureText =
-                                                aiRefinementTaskService.getTaskFailureText(
-                                                    task.failureStage,
-                                                    task.errorType,
-                                                    task.errorMessage
-                                                );
-                                            return (
-                                                <Card
-                                                    key={task.taskId}
-                                                    size="small"
-                                                    bodyStyle={{ padding: 12 }}
-                                                >
-                                                    <div
-                                                        style={{
-                                                            display: "flex",
-                                                            justifyContent: "space-between",
-                                                            gap: 12,
-                                                            alignItems: "center",
-                                                            flexWrap: "wrap"
-                                                        }}
-                                                    >
-                                                        <div>
-                                                            {aiRefinementTaskService.getTaskCapabilityLabel(
-                                                                task.capability
-                                                            )}
-                                                            ：{task.status}
-                                                            {task.resultPreview
-                                                                ? ` / ${task.resultPreview}`
-                                                                : ""}
-                                                        </div>
-                                                        {aiRefinementTaskService.getTaskRetryable(
-                                                            task.status,
-                                                            task.capability
-                                                        ) ? (
-                                                            <KuzhambuButton
-                                                                testId="classics-sancai-sancai-entry-retry-button"
-                                                                size="small"
-                                                                loading={
-                                                                    retryingRefinementTaskId ===
-                                                                    task.taskId
-                                                                }
-                                                                onClick={() =>
-                                                                    retryRefinementTask(task)
-                                                                }
-                                                            >
-                                                                重试
-                                                            </KuzhambuButton>
-                                                        ) : null}
-                                                    </div>
-                                                    {failureText ? (
-                                                        <KuzhambuAlert
-                                                            showIcon
-                                                            type="error"
-                                                            style={{ marginTop: 8 }}
-                                                            title="失败原因"
-                                                            description={failureText}
-                                                        />
-                                                    ) : null}
-                                                </Card>
-                                            );
-                                        })}
-                                </div>
-                            </Card>
-                            {streamingRefinementTask ? (
-                                <AiRefinementStreamPanel
-                                    events={streamEvents}
-                                    isStreaming={isStreamingRefinementTask}
-                                    streamErrorText={streamErrorText}
-                                    task={streamingRefinementTask}
-                                    onClose={closeStreamingRefinementTask}
-                                    onRetry={() => retryRefinementTask(streamingRefinementTask)}
-                                    onViewCandidate={() => {
-                                        void invalidateSancaiContentCandidates(
-                                            streamingRefinementTask.objectId ??
-                                                selectedVisualAssetId
-                                        );
-                                        candidatePanelRef.current?.scrollIntoView({
-                                            block: "start",
-                                            behavior: "smooth"
-                                        });
-                                        candidatePanelRef.current?.focus();
-                                    }}
-                                />
-                            ) : null}
-                            {selectedVisualAssetId ? (
-                                <div
-                                    ref={candidatePanelRef}
-                                    className="sancai-candidate-panel-anchor"
-                                    tabIndex={-1}
-                                >
-                                    <AiCandidatePanel
-                                        capabilities={[
-                                            "image_analysis",
-                                            "visual",
-                                            "fusion",
-                                            "image_gen"
-                                        ]}
-                                        contentId={selectedEntry.id}
-                                        contentType="SANCAI_ENTRY"
-                                        objectId={selectedVisualAssetId}
-                                        onApplied={async () => {
-                                            await refreshAfterVisualAssetCandidateHandled();
-                                        }}
-                                        onRejected={async () => {
-                                            await refreshAfterVisualAssetCandidateHandled();
-                                        }}
-                                    />
-                                </div>
-                            ) : null}
-                        </>
                     ) : null
                 }
                 tagContent={

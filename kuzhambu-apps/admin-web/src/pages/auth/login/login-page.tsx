@@ -8,7 +8,14 @@ import { createLoginForm, getCaptchaUrl, refreshCaptcha } from "@/auth/auth-serv
 import { loginWithPermissions } from "@/auth/auth-session-service";
 import { getAccessToken } from "@/auth/token-storage";
 import { KuzhambuLogo } from "@/components/kuzhambu-logo";
-import { KuzhambuSpace, KuzhambuSpaceCompact, KuzhambuButton, KuzhambuAlert } from "@/components";
+import {
+    KuzhambuAlert,
+    KuzhambuButton,
+    KuzhambuForm,
+    KuzhambuFormItem,
+    KuzhambuSpace,
+    KuzhambuSpaceCompact
+} from "@/components";
 
 import "./login-page.css";
 
@@ -35,6 +42,7 @@ export const LoginPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { message: messageApi } = App.useApp();
+    const [form] = Form.useForm<LoginFormValues>();
     const [captchaVersion, setCaptchaVersion] = useState(() => Date.now());
 
     const loginFormQuery = useQuery({
@@ -121,14 +129,15 @@ export const LoginPage = () => {
                             />
                         ) : null}
 
-                        <Form<LoginFormValues>
-                            layout="vertical"
+                        <KuzhambuForm<LoginFormValues>
+                            form={form}
                             requiredMark={false}
                             onFinish={(values) => loginMutation.mutate(values)}
                         >
-                            <Form.Item
+                            <KuzhambuFormItem
                                 label="账号"
                                 name="userName"
+                                layoutSize="large"
                                 rules={[{ required: true, message: "请输入账号" }]}
                             >
                                 <Input
@@ -137,11 +146,12 @@ export const LoginPage = () => {
                                     placeholder="请输入后台账号"
                                     autoComplete="username"
                                 />
-                            </Form.Item>
+                            </KuzhambuFormItem>
 
-                            <Form.Item
+                            <KuzhambuFormItem
                                 label="密码"
                                 name="password"
+                                layoutSize="large"
                                 rules={[{ required: true, message: "请输入密码" }]}
                             >
                                 <Input.Password
@@ -150,11 +160,12 @@ export const LoginPage = () => {
                                     placeholder="请输入密码"
                                     autoComplete="current-password"
                                 />
-                            </Form.Item>
+                            </KuzhambuFormItem>
 
-                            <Form.Item
+                            <KuzhambuFormItem
                                 label="验证码"
                                 name="captcha"
+                                layoutSize="large"
                                 rules={[{ required: true, message: "请输入验证码" }]}
                             >
                                 <KuzhambuSpaceCompact className="login-captcha-row">
@@ -173,7 +184,7 @@ export const LoginPage = () => {
                                         )}
                                     </button>
                                 </KuzhambuSpaceCompact>
-                            </Form.Item>
+                            </KuzhambuFormItem>
 
                             <KuzhambuButton
                                 testId="auth-login-login-action-button"
@@ -186,7 +197,7 @@ export const LoginPage = () => {
                             >
                                 登录
                             </KuzhambuButton>
-                        </Form>
+                        </KuzhambuForm>
                     </KuzhambuSpace>
                 </Card>
             </main>

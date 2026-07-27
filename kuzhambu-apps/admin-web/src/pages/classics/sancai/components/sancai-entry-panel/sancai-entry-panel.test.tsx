@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App as AntdApp } from "antd";
@@ -642,9 +642,11 @@ describe("SancaiEntryPanel sharing", () => {
 
     afterEach(() => {
         cleanup();
+        vi.useRealTimers();
         vi.clearAllMocks();
         confirmDangerMock.mockClear();
         entryState.restored = false;
+        localStorage.removeItem("kuzhambu.admin.accessToken");
         clearPermissions();
     });
 
@@ -999,6 +1001,124 @@ describe("SancaiEntryPanel sharing", () => {
         expect(aiRefinementTaskService.getTask).toHaveBeenCalledWith({
             taskId: 7001
         });
+    }, 30000);
+
+    it("preserves edited visual asset draft when the same asset refetches", async () => {
+        const user = userEvent.setup();
+        const client = renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
+
+        const visualAssetPanel = await openVisualAssetSection(user);
+        const descriptionInput =
+            within(visualAssetPanel).getByLabelText("三才图会视觉处理视觉描述");
+        await user.clear(descriptionInput);
+        await user.type(descriptionInput, "用户未保存视觉描述");
+
+        vi.mocked(entryService.listVisualAssets).mockResolvedValueOnce([
+            {
+                id: 5002,
+                visualAssetId: 5002,
+                entryId: 3001,
+                versionNo: 2,
+                status: "READY",
+                sourceImageStorageObjectId: 7001,
+                generatedImageStorageObjectId: 7002,
+                currentUsed: true,
+                textWeight: 60,
+                imageWeight: 40,
+                imageAnalysisMarkdown: "服务端刷新图片理解",
+                fusionDescription: "服务端刷新融合描述",
+                visualDescription: "服务端刷新视觉描述",
+                generationParamsJson: '{"style":"gongbi"}',
+                sourcePreviewUrl:
+                    "/api/classics/sancai/assets/visual-assets/3001/5002/source-content",
+                sourceDownloadUrl:
+                    "/api/classics/sancai/assets/visual-assets/3001/5002/source-content?download=true",
+                generatedPreviewUrl:
+                    "/api/classics/sancai/assets/visual-assets/3001/5002/generated-content",
+                generatedDownloadUrl:
+                    "/api/classics/sancai/assets/visual-assets/3001/5002/generated-content?download=true"
+            }
+        ]);
+        await client.invalidateQueries({
+            queryKey: ["classics", "sancai", "entries", "visual-assets", 3001]
+        });
+
+        await waitFor(() => {
+            expect(entryService.listVisualAssets).toHaveBeenCalledTimes(2);
+        });
+        expect(descriptionInput).toHaveValue("用户未保存视觉描述");
+    }, 30000);
+
+    it("does not poll visual refinement tasks when no task is active", async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true });
+        const user = userEvent.setup();
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
+        await openVisualAssetSection(user);
+        await waitFor(() => {
+            expect(aiRefinementTaskService.pageTasks).toHaveBeenCalled();
+        });
+        const callCount = vi.mocked(aiRefinementTaskService.pageTasks).mock.calls.length;
+
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(3000);
+        });
+
+        expect(aiRefinementTaskService.pageTasks).toHaveBeenCalledTimes(callCount);
+    }, 30000);
+
+    it("resumes active visual task streaming after switching drawer sections", async () => {
+        const user = userEvent.setup();
+        vi.mocked(aiRefinementTaskService.pageTasks).mockResolvedValue({
+            items: [
+                {
+                    taskId: 7001,
+                    status: "RUNNING",
+                    capability: "image_analysis",
+                    contentType: "SANCAI_ENTRY",
+                    contentId: 3001,
+                    objectId: 5002,
+                    streamEnabled: true,
+                    requestId: "req-stream-1",
+                    traceId: "trace-stream-1"
+                }
+            ],
+            total: 1,
+            pageNo: 1,
+            pageSize: 20
+        });
+        vi.mocked(aiRefinementTaskService.requestTaskStream).mockImplementation(
+            async ({ signal }) =>
+                new Promise<void>((resolve) => {
+                    signal?.addEventListener("abort", () => resolve(), { once: true });
+                })
+        );
+
+        renderEntryPanel();
+
+        const entryTable = await screen.findByLabelText("三才图会条目表格");
+        await user.click(await within(entryTable).findByTestId("sancai-entry-3001-view-button"));
+
+        await openVisualAssetSection(user);
+        await waitFor(() => {
+            expect(aiRefinementTaskService.requestTaskStream).toHaveBeenCalledTimes(1);
+        });
+        await switchEntryDrawerSection(user, "基础信息");
+        await openVisualAssetSection(user);
+        await waitFor(() => {
+            expect(aiRefinementTaskService.requestTaskStream).toHaveBeenCalledTimes(2);
+        });
+        expect(aiRefinementTaskService.requestTaskStream).toHaveBeenLastCalledWith(
+            expect.objectContaining({
+                taskId: 7001
+            })
+        );
     }, 30000);
 
     it("filters image analysis candidates by selected visual asset", async () => {
@@ -1836,6 +1956,8 @@ describe("SancaiEntryPanel sharing", () => {
     });
 
     it("renders image preview group thumbnails", async () => {
+        localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
+        const openSpy = vi.spyOn(window, "open").mockImplementation(() => null);
         const user = userEvent.setup();
         renderEntryPanel();
 
@@ -1846,11 +1968,17 @@ describe("SancaiEntryPanel sharing", () => {
         const imagePanel = await screen.findByLabelText("三才图会图片管理");
         expect(within(imagePanel).getByAltText("生成图")).toHaveAttribute(
             "src",
-            "/kuzhambu-admin-api/api/classics/sancai/assets/images/3001/8002/content"
+            "/kuzhambu-admin-api/api/classics/sancai/assets/images/3001/8002/content?token=test-token"
         );
         expect(within(imagePanel).getByAltText("sancai.png")).toHaveAttribute(
             "src",
-            "/kuzhambu-admin-api/api/classics/sancai/assets/images/3001/8001/content"
+            "/kuzhambu-admin-api/api/classics/sancai/assets/images/3001/8001/content?token=test-token"
+        );
+        await user.click(within(imagePanel).getByLabelText("下载 sancai.png"));
+        expect(openSpy).toHaveBeenCalledWith(
+            "/kuzhambu-admin-api/api/classics/sancai/assets/images/3001/8001/content?download=true&token=test-token",
+            "_blank",
+            "noopener,noreferrer"
         );
     });
 
@@ -1935,6 +2063,65 @@ describe("SancaiEntryPanel sharing", () => {
             "src",
             "/api/classics/sancai/assets/visual-assets/3001/5002/generated-content"
         );
+    });
+
+    it("previews current visual asset without opening the visual section", async () => {
+        const user = userEvent.setup();
+        const createObjectURL = vi.fn(() => "blob:sancai-entry-preview");
+        const revokeObjectURL = vi.fn();
+        const openWindow = vi.spyOn(window, "open").mockImplementation(() => null);
+        const originalCreateObjectURL = URL.createObjectURL;
+        const originalRevokeObjectURL = URL.revokeObjectURL;
+        Object.defineProperty(URL, "createObjectURL", {
+            configurable: true,
+            value: createObjectURL
+        });
+        Object.defineProperty(URL, "revokeObjectURL", {
+            configurable: true,
+            value: revokeObjectURL
+        });
+
+        try {
+            renderEntryPanel();
+
+            const entryTable = await screen.findByLabelText("三才图会条目表格");
+            await user.click(
+                await within(entryTable).findByTestId("sancai-entry-3001-view-button")
+            );
+            await waitFor(() => {
+                expect(entryService.listVisualAssets).toHaveBeenCalled();
+            });
+            await user.click(
+                await screen.findByTestId(
+                    "classics-sancai-sancai-entry-preview-sancai-entry-button"
+                )
+            );
+
+            await waitFor(() => {
+                expect(createObjectURL).toHaveBeenCalled();
+            });
+            const previewBlob = createObjectURL.mock.calls[0]?.[0] as Blob;
+            await expect(previewBlob.text()).resolves.toContain("处理记录 2");
+            await expect(previewBlob.text()).resolves.toContain("当前版本视觉描述");
+            await expect(previewBlob.text()).resolves.toContain(
+                "/api/classics/sancai/assets/visual-assets/3001/5002/generated-content"
+            );
+            expect(openWindow).toHaveBeenCalledWith(
+                "blob:sancai-entry-preview",
+                "_blank",
+                "noopener,noreferrer"
+            );
+        } finally {
+            Object.defineProperty(URL, "createObjectURL", {
+                configurable: true,
+                value: originalCreateObjectURL
+            });
+            Object.defineProperty(URL, "revokeObjectURL", {
+                configurable: true,
+                value: originalRevokeObjectURL
+            });
+            openWindow.mockRestore();
+        }
     });
 
     it("saves visual asset editable fields through the formal service contract", async () => {

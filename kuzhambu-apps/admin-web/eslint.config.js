@@ -512,6 +512,124 @@ const localRules = {
                 };
             }
         },
+        "kuzhambu-form-item-in-page-form": {
+            create(context) {
+                const antdFormLocalNames = new Set();
+                const antdNamespaceLocalNames = new Set();
+                let kuzhambuFormDepth = 0;
+
+                const readNormalizedFilePath = () => {
+                    return context.physicalFilename.split(path.sep).join("/");
+                };
+
+                const isPageTsxFile = () => {
+                    const normalizedFilePath = readNormalizedFilePath();
+                    return (
+                        normalizedFilePath.includes("/src/pages/") &&
+                        normalizedFilePath.endsWith(".tsx")
+                    );
+                };
+
+                const readJsxName = (nameNode) => {
+                    if (nameNode.type === "JSXIdentifier") {
+                        return nameNode.name;
+                    }
+                    if (nameNode.type === "JSXMemberExpression") {
+                        return `${readJsxName(nameNode.object)}.${readJsxName(nameNode.property)}`;
+                    }
+                    return "";
+                };
+
+                const isAntdFormItemName = (nameNode) => {
+                    if (nameNode.type !== "JSXMemberExpression") {
+                        return false;
+                    }
+
+                    const componentName = readJsxName(nameNode);
+                    const isNamedFormItem = Array.from(antdFormLocalNames).some((formName) => {
+                        return componentName === `${formName}.Item`;
+                    });
+                    const isNamespaceFormItem = Array.from(antdNamespaceLocalNames).some(
+                        (namespaceName) => {
+                            return componentName === `${namespaceName}.Form.Item`;
+                        }
+                    );
+                    return isNamedFormItem || isNamespaceFormItem;
+                };
+
+                return {
+                    ImportDeclaration(node) {
+                        if (node.source.value !== "antd" || !isPageTsxFile()) {
+                            return;
+                        }
+
+                        node.specifiers.forEach((specifier) => {
+                            if (
+                                specifier.type === "ImportSpecifier" &&
+                                specifier.imported.name === "Form" &&
+                                specifier.local.name
+                            ) {
+                                antdFormLocalNames.add(specifier.local.name);
+                            }
+                            if (
+                                specifier.type === "ImportNamespaceSpecifier" &&
+                                specifier.local.name
+                            ) {
+                                antdNamespaceLocalNames.add(specifier.local.name);
+                            }
+                        });
+                    },
+                    JSXElement(node) {
+                        if (!isPageTsxFile()) {
+                            return;
+                        }
+
+                        if (readJsxName(node.openingElement.name) === "KuzhambuForm") {
+                            kuzhambuFormDepth += 1;
+                        }
+                    },
+                    "JSXElement:exit"(node) {
+                        if (!isPageTsxFile()) {
+                            return;
+                        }
+
+                        if (readJsxName(node.openingElement.name) === "KuzhambuForm") {
+                            kuzhambuFormDepth -= 1;
+                        }
+                    },
+                    JSXOpeningElement(node) {
+                        if (!isPageTsxFile()) {
+                            return;
+                        }
+
+                        const componentName = readJsxName(node.name);
+                        if (isAntdFormItemName(node.name)) {
+                            context.report({
+                                node,
+                                message:
+                                    "ADMIN_WEB_FORM_NO_ANTD_FORM_ITEM_IN_PAGES: pages/**/*.tsx must use KuzhambuFormItem or KuzhambuFormHiddenItem instead of rendering AntD Form.Item directly."
+                            });
+                            return;
+                        }
+
+                        if (
+                            componentName !== "KuzhambuFormItem" &&
+                            componentName !== "KuzhambuFormHiddenItem"
+                        ) {
+                            return;
+                        }
+
+                        if (kuzhambuFormDepth === 0) {
+                            context.report({
+                                node,
+                                message:
+                                    "ADMIN_WEB_FORM_ITEM_IN_PAGE_FORM: pages/**/*.tsx KuzhambuFormItem and KuzhambuFormHiddenItem must be JSX descendants of KuzhambuForm in the same file."
+                            });
+                        }
+                    }
+                };
+            }
+        },
         "shared-component-css-local": {
             create(context) {
                 return {
@@ -2026,6 +2144,7 @@ export default tseslint.config(
             "local/no-antd-alert-direct-in-pages": "error",
             "local/no-antd-button-direct-in-pages": "error",
             "local/no-antd-select-direct-in-pages": "error",
+            "local/kuzhambu-form-item-in-page-form": "error",
             "@typescript-eslint/no-explicit-any": "off",
             "local/confirm-hook-only": "error",
             "local/table-action-column-shape": "error",

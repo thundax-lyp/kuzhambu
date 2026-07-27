@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { Input, Switch, TreeSelect } from "antd";
+import { Form, Input, Switch, TreeSelect } from "antd";
 import type { TreeSelectProps } from "antd";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import type {
     UserDepartmentNode,
     UserRecord,
@@ -178,31 +178,22 @@ export const UserEditDrawer = ({
         [editableMaxRank, rankOptions]
     );
     const formResetKey = readFormResetKey(user, editing, visible, editableMaxRank);
-    const [formState, setFormState] = useState(() => ({
-        resetKey: formResetKey,
-        values: readInitialFormValues(user, editing, editableMaxRank)
-    }));
-    const shouldResetForm = visible && formState.resetKey !== formResetKey;
-    const formValues = shouldResetForm
-        ? readInitialFormValues(user, editing, editableMaxRank)
-        : formState.values;
-    if (shouldResetForm) {
-        setFormState({
-            resetKey: formResetKey,
-            values: formValues
-        });
-    }
-    const updateForm = (values: Partial<UserFormValues>) => {
-        setFormState((currentFormState) => ({
-            resetKey: formResetKey,
-            values: {
-                ...(currentFormState.resetKey === formResetKey
-                    ? currentFormState.values
-                    : formValues),
-                ...values
-            }
-        }));
-    };
+    const [form] = Form.useForm<UserFormValues>();
+    const initialValues = useMemo(
+        () => readInitialFormValues(user, editing, editableMaxRank),
+        [editableMaxRank, editing, user]
+    );
+    const initialValuesRef = useRef(initialValues);
+    useEffect(() => {
+        initialValuesRef.current = initialValues;
+    }, [initialValues]);
+    useEffect(() => {
+        if (visible) {
+            form.setFieldsValue(initialValuesRef.current);
+        } else {
+            form.resetFields();
+        }
+    }, [form, formResetKey, visible]);
     const userRoleQuery = useQuery({
         queryKey: ["user", "role", "list"],
         queryFn: () => service.listRoles(),
@@ -226,11 +217,13 @@ export const UserEditDrawer = ({
     }, [roleById]);
     const departmentOptions = useMemo(() => departmentTreeOptions(departments), [departments]);
     const saveForm = () => {
-        if (creating) {
-            onCreate?.(formValues);
-            return;
-        }
-        onSave?.(formValues);
+        form.validateFields().then((values) => {
+            if (creating) {
+                onCreate?.(values);
+                return;
+            }
+            onSave?.(values);
+        });
     };
 
     return (
@@ -264,93 +257,74 @@ export const UserEditDrawer = ({
                 }
             ]}
         >
-            <KuzhambuForm className="user-edit-drawer-form" component="div">
+            <KuzhambuForm<UserFormValues>
+                form={form}
+                className="user-edit-drawer-form"
+                component="div"
+                initialValues={initialValues}
+            >
                 {!creating && user ? (
                     <KuzhambuFormItem label="头像" layoutSize="large">
                         <UserAvatarField user={user} onAvatarUpload={onAvatarUpload} />
                     </KuzhambuFormItem>
                 ) : null}
-                <KuzhambuFormItem label="登录名" layoutSize="middle">
-                    <Input
-                        value={formValues.loginName}
-                        placeholder="lin.zhiyuan"
-                        onChange={(event) => updateForm({ loginName: event.target.value })}
-                    />
+                <KuzhambuFormItem name="loginName" label="登录名" layoutSize="middle">
+                    <Input placeholder="lin.zhiyuan" />
                 </KuzhambuFormItem>
                 {creating ? (
-                    <KuzhambuFormItem label="登录密码" layoutSize="middle">
-                        <Input.Password
-                            value={formValues.loginPass}
-                            placeholder="设置初始密码"
-                            onChange={(event) => updateForm({ loginPass: event.target.value })}
-                        />
+                    <KuzhambuFormItem name="loginPass" label="登录密码" layoutSize="middle">
+                        <Input.Password placeholder="设置初始密码" />
                     </KuzhambuFormItem>
                 ) : null}
                 <KuzhambuFormPlaceholderItem layoutSize="large" />
-                <KuzhambuFormItem label="姓名" layoutSize="middle">
-                    <Input
-                        value={formValues.name}
-                        placeholder="用户姓名"
-                        onChange={(event) => updateForm({ name: event.target.value })}
-                    />
+                <KuzhambuFormItem name="name" label="姓名" layoutSize="middle">
+                    <Input placeholder="用户姓名" />
                 </KuzhambuFormItem>
                 <KuzhambuFormPlaceholderItem layoutSize="large" />
-                <KuzhambuFormItem label="邮箱">
-                    <Input
-                        value={formValues.email || ""}
-                        placeholder="name@example.com"
-                        onChange={(event) => updateForm({ email: event.target.value })}
-                    />
+                <KuzhambuFormItem name="email" label="邮箱">
+                    <Input placeholder="name@example.com" />
                 </KuzhambuFormItem>
-                <KuzhambuFormItem label="手机">
-                    <Input
-                        value={formValues.mobile || ""}
-                        placeholder="手机号"
-                        onChange={(event) => updateForm({ mobile: event.target.value })}
-                    />
+                <KuzhambuFormItem name="mobile" label="手机">
+                    <Input placeholder="手机号" />
                 </KuzhambuFormItem>
-                <KuzhambuFormItem label="部门" layoutSize="middle">
+                <KuzhambuFormItem name="departmentId" label="部门" layoutSize="middle">
                     <TreeSelect
-                        value={formValues.departmentId || undefined}
                         treeData={departmentOptions}
                         placeholder="选择部门"
                         showSearch
                         treeDefaultExpandAll
                         treeNodeFilterProp="title"
-                        onChange={(departmentId) => updateForm({ departmentId })}
                     />
                 </KuzhambuFormItem>
                 <KuzhambuFormPlaceholderItem layoutSize="large" />
-                <KuzhambuFormItem label="角色" layoutSize="middle">
+                <KuzhambuFormItem name="roleIds" label="角色" layoutSize="middle">
                     <KuzhambuSelect
                         mode="multiple"
-                        value={formValues.roleIds}
                         options={roleOptions}
                         loading={userRoleQuery.isFetching}
                         placeholder="选择角色"
-                        onChange={(roleIds) => updateForm({ roleIds })}
                     />
                 </KuzhambuFormItem>
-                <KuzhambuFormItem label="等级" layoutSize="small">
-                    <KuzhambuSelect
-                        value={formValues.ranks}
-                        options={editableRankOptions}
-                        onChange={(ranks) => updateForm({ ranks })}
-                    />
+                <KuzhambuFormItem name="ranks" label="等级" layoutSize="small">
+                    <KuzhambuSelect options={editableRankOptions} />
                 </KuzhambuFormItem>
                 <KuzhambuFormPlaceholderItem layoutSize="large" />
-                <KuzhambuFormItem label="管理员" layoutSize="small">
-                    <Switch
-                        checked={formValues.admin}
-                        onChange={(admin) => updateForm({ admin })}
-                    />
+                <KuzhambuFormItem
+                    name="admin"
+                    label="管理员"
+                    layoutSize="small"
+                    valuePropName="checked"
+                >
+                    <Switch />
                 </KuzhambuFormItem>
                 <KuzhambuFormPlaceholderItem layoutSize="large" />
-                <KuzhambuFormItem label="启用" layoutSize="small">
-                    <Switch
-                        checked={formValues.enable}
-                        onChange={(enable) => updateForm({ enable })}
-                    />
+                <KuzhambuFormItem
+                    name="enable"
+                    label="启用"
+                    layoutSize="small"
+                    valuePropName="checked"
+                >
+                    <Switch />
                 </KuzhambuFormItem>
             </KuzhambuForm>
         </KuzhambuDrawer>

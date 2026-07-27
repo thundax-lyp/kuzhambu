@@ -1,27 +1,70 @@
-.sancai-entry-image-field {
+.sancai-entry-image-manager {
     display: grid;
     min-width: 0;
-    gap: 10px;
-    justify-items: start;
+    gap: 12px;
 }
 
-.sancai-entry-image-frame {
+.sancai-entry-image-toolbar {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.sancai-entry-image-cell {
     display: grid;
-    width: min(100%, 280px);
-    min-height: 148px;
-    align-content: center;
-    justify-items: center;
-    gap: 8px;
-    padding: 12px;
-    background: color-mix(in srgb, var(--sancai-panel) 86%, #fff7df 14%);
-    border: 1px solid color-mix(in srgb, var(--sancai-line) 72%, #7c5f35 28%);
-    border-radius: 6px;
+    min-width: 0;
+    grid-template-columns: 132px minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    width: 100%;
+    padding: 0;
+    color: inherit;
+    text-align: left;
+    text-decoration: none;
+    background: transparent;
+    border: 0;
+    cursor: default;
 }
 
-.sancai-entry-image-frame .ant-image {
-    max-width: 100%;
-}
-
-.sancai-entry-image-frame img {
+.sancai-entry-image-cell .ant-image,
+.sancai-entry-image-cell img {
     border-radius: 4px;
+}
+
+.sancai-entry-image-cell .ant-image {
+    width: 132px;
+    height: 88px;
+    cursor: zoom-in;
+}
+
+.sancai-entry-image-cell img {
+    object-fit: cover;
+}
+
+.sancai-entry-image-cover-thumbnail,
+.sancai-entry-image-cover-thumbnail img {
+    border: 2px solid var(--sancai-accent);
+    box-shadow: 0 0 0 2px var(--sancai-accent-soft);
+}
+
+.sancai-entry-image-cover,
+.sancai-entry-image-cover .ant-ribbon-wrapper {
+    display: block;
+    width: 132px;
+    height: 88px;
+}
+
+.sancai-entry-image-cover .ant-ribbon {
+    background: var(--sancai-accent);
+}
+
+.sancai-entry-image-meta {
+    display: grid;
+    min-width: 0;
+    gap: 4px;
+}
+
+.sancai-entry-image-meta .ant-typography {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }

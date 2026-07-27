@@ -1,5 +1,4 @@
-import { Input } from "antd";
-import { useState } from "react";
+import { Form, Input } from "antd";
 import {
     KuzhambuForm,
     KuzhambuFormItem,
@@ -27,9 +26,14 @@ export const SancaiCategoryEditDrawerModal = ({
     onCancel,
     onSubmit
 }: SancaiCategoryEditDrawerModalProps) => {
-    const [form, setForm] = useState<SancaiCategoryFormValues>(() =>
-        toCategoryFormValues(category ?? undefined)
-    );
+    const [form] = Form.useForm<SancaiCategoryFormValues>();
+    const initialValues = toCategoryFormValues(category ?? undefined);
+
+    const submitForm = () => {
+        form.validateFields().then((values) => {
+            onSubmit(values);
+        });
+    };
 
     return (
         <KuzhambuModal
@@ -48,7 +52,7 @@ export const SancaiCategoryEditDrawerModal = ({
                         testId="classics-sancai-sancai-category-action-button"
                         loading={isSubmitting}
                         type="primary"
-                        onClick={() => onSubmit(form)}
+                        onClick={submitForm}
                     >
                         保存
                     </KuzhambuButton>
@@ -58,35 +62,17 @@ export const SancaiCategoryEditDrawerModal = ({
             onCancel={onCancel}
         >
             <KuzhambuForm
+                form={form}
                 aria-label={category ? "编辑门类" : "新增门类"}
                 className="sancai-category-edit-modal sancai-editor-form"
                 component="div"
+                initialValues={initialValues}
             >
-                <KuzhambuFormItem label="门类标题" layoutSize="large">
-                    <Input
-                        aria-label="三才图会门类标题"
-                        placeholder="门类标题"
-                        value={form.title}
-                        onChange={(event) =>
-                            setForm((currentForm) => ({
-                                ...currentForm,
-                                title: event.target.value
-                            }))
-                        }
-                    />
+                <KuzhambuFormItem name="title" label="门类标题" layoutSize="large">
+                    <Input aria-label="三才图会门类标题" placeholder="门类标题" />
                 </KuzhambuFormItem>
-                <KuzhambuFormItem label="门类类型" layoutSize="large">
-                    <KuzhambuSelect
-                        aria-label="三才图会门类类型"
-                        value={form.categoryType}
-                        options={categoryTypeOptions}
-                        onChange={(categoryType) =>
-                            setForm((currentForm) => ({
-                                ...currentForm,
-                                categoryType
-                            }))
-                        }
-                    />
+                <KuzhambuFormItem name="categoryType" label="门类类型" layoutSize="large">
+                    <KuzhambuSelect aria-label="三才图会门类类型" options={categoryTypeOptions} />
                 </KuzhambuFormItem>
             </KuzhambuForm>
         </KuzhambuModal>
