@@ -82,34 +82,6 @@ const manuscriptTreeResponse = (requestBody: ApiPayload) => {
         ];
     }
 
-    if (requestBody.parentKey === "SOURCE_ROOT:WANGQI_DOCUMENT") {
-        return [
-            {
-                nodeKey: "MANUSCRIPT:WANGQI_DOCUMENT:2001",
-                parentKey: "SOURCE_ROOT:WANGQI_DOCUMENT",
-                nodeType: "MANUSCRIPT",
-                title: "王圻稿件",
-                sourceContentType: "WANGQI_DOCUMENT",
-                sourceContentId: 2001,
-                graphStatus: "NOT_EXTRACTED"
-            }
-        ];
-    }
-
-    if (requestBody.parentKey === "SOURCE_ROOT:MING_CUSTOMS") {
-        return [
-            {
-                nodeKey: "MANUSCRIPT:MING_CUSTOMS:3001",
-                parentKey: "SOURCE_ROOT:MING_CUSTOMS",
-                nodeType: "MANUSCRIPT",
-                title: "明俗稿件",
-                sourceContentType: "MING_CUSTOMS",
-                sourceContentId: 3001,
-                graphStatus: "NOT_EXTRACTED"
-            }
-        ];
-    }
-
     if (requestBody.parentKey) {
         return [];
     }
@@ -119,16 +91,6 @@ const manuscriptTreeResponse = (requestBody: ApiPayload) => {
             nodeKey: "SOURCE_ROOT:SANCAI_ENTRY",
             nodeType: "SOURCE_ROOT",
             title: "三才"
-        },
-        {
-            nodeKey: "SOURCE_ROOT:WANGQI_DOCUMENT",
-            nodeType: "SOURCE_ROOT",
-            title: "王圻"
-        },
-        {
-            nodeKey: "SOURCE_ROOT:MING_CUSTOMS",
-            nodeType: "SOURCE_ROOT",
-            title: "明俗"
         }
     ];
 };
@@ -332,8 +294,8 @@ test.describe("admin graph extraction smoke", () => {
         await expect(page.getByRole("heading", { name: "知识抽取" })).toBeVisible();
         await expect(page.getByRole("textbox", { name: "搜索稿件" })).toHaveCount(0);
         await expect(page.getByText("三才稿件")).toBeVisible();
-        await expect(page.getByText("王圻稿件")).toBeVisible();
-        await expect(page.getByText("明俗稿件")).toBeVisible();
+        await expect(page.getByText("王圻稿件")).toHaveCount(0);
+        await expect(page.getByText("明俗稿件")).toHaveCount(0);
         await expect(
             page.locator(".knowledge-graph-extraction-work-area .ant-splitter-bar")
         ).toHaveCount(1);
@@ -341,12 +303,7 @@ test.describe("admin graph extraction smoke", () => {
         await expect.poll(() => mocks.getTreePayloads()[0]).toEqual({});
         await expect
             .poll(() => mocks.getTreePayloads().map((payload) => payload.parentKey))
-            .toEqual([
-                undefined,
-                "SOURCE_ROOT:SANCAI_ENTRY",
-                "SOURCE_ROOT:WANGQI_DOCUMENT",
-                "SOURCE_ROOT:MING_CUSTOMS"
-            ]);
+            .toEqual([undefined, "SOURCE_ROOT:SANCAI_ENTRY"]);
 
         await page.getByText("三才稿件").click();
         await expect(page.getByText("三才稿件摘要")).toBeVisible();

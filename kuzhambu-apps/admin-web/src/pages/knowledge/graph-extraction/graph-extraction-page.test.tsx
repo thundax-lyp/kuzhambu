@@ -98,46 +98,12 @@ const workbenchServiceMocks = vi.hoisted(() => ({
                         graphStatus: "CANDIDATE_READY"
                     }
                 ];
-            case "SOURCE_ROOT:WANGQI_DOCUMENT":
-                return [
-                    {
-                        nodeKey: "MANUSCRIPT:WANGQI_DOCUMENT:2001",
-                        parentKey: "SOURCE_ROOT:WANGQI_DOCUMENT",
-                        nodeType: "MANUSCRIPT",
-                        title: "王圻稿件",
-                        sourceContentType: "WANGQI_DOCUMENT",
-                        sourceContentId: 2001,
-                        graphStatus: "NOT_EXTRACTED"
-                    }
-                ];
-            case "SOURCE_ROOT:MING_CUSTOMS":
-                return [
-                    {
-                        nodeKey: "MANUSCRIPT:MING_CUSTOMS:3001",
-                        parentKey: "SOURCE_ROOT:MING_CUSTOMS",
-                        nodeType: "MANUSCRIPT",
-                        title: "明俗稿件",
-                        sourceContentType: "MING_CUSTOMS",
-                        sourceContentId: 3001,
-                        graphStatus: "NOT_EXTRACTED"
-                    }
-                ];
             default:
                 return [
                     {
                         nodeKey: "SOURCE_ROOT:SANCAI_ENTRY",
                         nodeType: "SOURCE_ROOT",
                         title: "三才"
-                    },
-                    {
-                        nodeKey: "SOURCE_ROOT:WANGQI_DOCUMENT",
-                        nodeType: "SOURCE_ROOT",
-                        title: "王圻"
-                    },
-                    {
-                        nodeKey: "SOURCE_ROOT:MING_CUSTOMS",
-                        nodeType: "SOURCE_ROOT",
-                        title: "明俗"
                     }
                 ];
         }
@@ -215,10 +181,8 @@ describe("GraphExtractionPage", () => {
             expect(workbenchServiceMocks.listManuscriptTree).toHaveBeenCalledWith({});
         });
         expect(await screen.findByText("三才稿件")).toBeInTheDocument();
-        expect(await screen.findByText("王圻")).toBeInTheDocument();
-        expect(await screen.findByText("明俗")).toBeInTheDocument();
-        expect(await screen.findByText("王圻稿件")).toBeInTheDocument();
-        expect(await screen.findByText("明俗稿件")).toBeInTheDocument();
+        expect(screen.queryByText("王圻")).not.toBeInTheDocument();
+        expect(screen.queryByText("明俗")).not.toBeInTheDocument();
 
         fireEvent.click(screen.getByRole("button", { name: "任务列表(1)" }));
 

@@ -22,10 +22,7 @@ public class KnowledgeGraphManuscriptTreeAssembler {
     public static final String SOURCE_TYPE_MING_CUSTOMS = "MING_CUSTOMS";
     public static final String STATUS_NOT_EXTRACTED = "NOT_EXTRACTED";
 
-    private static final List<SourceSpec> SOURCE_SPECS = List.of(
-            new SourceSpec(SOURCE_TYPE_SANCAI_ENTRY, "三才图会"),
-            new SourceSpec(SOURCE_TYPE_WANGQI_DOCUMENT, "王圻文档"),
-            new SourceSpec(SOURCE_TYPE_MING_CUSTOMS, "明俗稿件"));
+    private static final List<SourceSpec> SOURCE_SPECS = List.of(new SourceSpec(SOURCE_TYPE_SANCAI_ENTRY, "三才图会"));
     private static final String NODE_KEY_SEPARATOR = ":";
     private static final String CATEGORY_FALLBACK = "未分类";
 
