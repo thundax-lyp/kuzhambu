@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `kuzhambu-apps/admin-web`：复扫表单规则并补齐验证
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-FORM-USEFORM-MIGRATION.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages`
-    - 处理动作：运行 RUNBOOK 复扫命令并处理剩余命中项。
-    - 验收点：pages direct AntD `Form.Item` 为 0，跨文件 `KuzhambuFormItem` 为 0，业务 `KuzhambuForm` 无 `form=` 的剩余项完成分类。
-    - 重要度：9/10
-
 ## 待审阅任务项
 
 ## 待讨论项
