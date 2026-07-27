@@ -1,6 +1,5 @@
-import { Card } from "antd";
 import { useRef } from "react";
-import { KuzhambuAlert, KuzhambuButton } from "@/components";
+import { KuzhambuAlert, KuzhambuButton, KuzhambuCard } from "@/components";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import type {
     AiRefinementStreamEventRecord,
@@ -61,7 +60,7 @@ export const SancaiEntryVisualRefinementSection = ({
 
     return (
         <>
-            <Card size="small" title="AI 精修任务">
+            <KuzhambuCard size="small" title="AI 精修任务">
                 <div style={{ display: "grid", gap: 8 }}>
                     {refinementTasks
                         .filter(isVisualRefinementTask)
@@ -73,7 +72,11 @@ export const SancaiEntryVisualRefinementSection = ({
                                 task.errorMessage
                             );
                             return (
-                                <Card key={task.taskId} size="small" bodyStyle={{ padding: 12 }}>
+                                <KuzhambuCard
+                                    key={task.taskId}
+                                    size="small"
+                                    styles={{ body: { padding: 12 } }}
+                                >
                                     <div
                                         style={{
                                             display: "flex",
@@ -113,11 +116,11 @@ export const SancaiEntryVisualRefinementSection = ({
                                             description={failureText}
                                         />
                                     ) : null}
-                                </Card>
+                                </KuzhambuCard>
                             );
                         })}
                 </div>
-            </Card>
+            </KuzhambuCard>
             {streamingRefinementTask ? (
                 <AiRefinementStreamPanel
                     events={streamEvents}

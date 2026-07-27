@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Card, Checkbox, Descriptions, Progress, Segmented, Table, Typography } from "antd";
+import { Checkbox, Descriptions, Progress, Segmented, Table, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import type { Key } from "react";
 import { useState } from "react";
@@ -18,7 +18,7 @@ import type {
     DiscoverySearchEventPageRecord,
     DiscoverySearchEventRecord
 } from "./search-statistics-types";
-import { KuzhambuButton, KuzhambuSpace } from "@/components";
+import { KuzhambuButton, KuzhambuSpace, KuzhambuCard } from "@/components";
 
 import "./search-statistics-page.css";
 
@@ -396,7 +396,10 @@ export const SearchStatisticsPage = () => {
                                 onSearchStatusesChange={setSearchStatuses}
                             />
 
-                            <Card className="search-statistics-record-table-card" size="small">
+                            <KuzhambuCard
+                                className="search-statistics-record-table-card"
+                                size="small"
+                            >
                                 <KuzhambuSpace
                                     orientation="vertical"
                                     size={12}
@@ -437,12 +440,12 @@ export const SearchStatisticsPage = () => {
                                             : "暂无检索记录。"}
                                     </Text>
                                 </KuzhambuSpace>
-                            </Card>
+                            </KuzhambuCard>
                         </>
                     ) : null}
 
                     {activePanel === "rebuild" ? (
-                        <Card size="small">
+                        <KuzhambuCard size="small">
                             <KuzhambuSpace
                                 orientation="vertical"
                                 size={8}
@@ -482,7 +485,7 @@ export const SearchStatisticsPage = () => {
                                     />
                                 ) : null}
                             </KuzhambuSpace>
-                        </Card>
+                        </KuzhambuCard>
                     ) : null}
                 </KuzhambuSpace>
             </section>

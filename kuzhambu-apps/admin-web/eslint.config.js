@@ -512,6 +512,90 @@ const localRules = {
                 };
             }
         },
+        "no-antd-card-direct-in-pages": {
+            create(context) {
+                const antdNamespaceLocalNames = new Set();
+                const errorMessage =
+                    "ADMIN_WEB_UI_NO_ANTD_CARD_DIRECT_IN_PAGES: pages/**/*.{ts,tsx} must use KuzhambuCard from src/components/kuzhambu-card/ instead of importing Card from antd.";
+
+                const readNormalizedFilePath = () => {
+                    return context.physicalFilename.split(path.sep).join("/");
+                };
+
+                const isPageFile = (normalizedFilePath) => {
+                    return (
+                        normalizedFilePath.includes("/src/pages/") &&
+                        /\.(?:ts|tsx)$/.test(normalizedFilePath)
+                    );
+                };
+
+                const readJsxName = (nameNode) => {
+                    if (nameNode.type === "JSXIdentifier") {
+                        return nameNode.name;
+                    }
+                    if (nameNode.type === "JSXMemberExpression") {
+                        return `${readJsxName(nameNode.object)}.${readJsxName(nameNode.property)}`;
+                    }
+                    return "";
+                };
+
+                const isAntdCardMemberName = (nameNode) => {
+                    if (nameNode.type !== "JSXMemberExpression") {
+                        return false;
+                    }
+
+                    const componentName = readJsxName(nameNode);
+                    return Array.from(antdNamespaceLocalNames).some((namespaceName) => {
+                        return (
+                            componentName === `${namespaceName}.Card` ||
+                            componentName.startsWith(`${namespaceName}.Card.`)
+                        );
+                    });
+                };
+
+                return {
+                    ImportDeclaration(node) {
+                        if (node.source.value !== "antd" || !isPageFile(readNormalizedFilePath())) {
+                            return;
+                        }
+
+                        node.specifiers.forEach((specifier) => {
+                            if (
+                                specifier.type === "ImportNamespaceSpecifier" &&
+                                specifier.local.name
+                            ) {
+                                antdNamespaceLocalNames.add(specifier.local.name);
+                            }
+
+                            if (
+                                specifier.type !== "ImportSpecifier" ||
+                                specifier.imported.name !== "Card"
+                            ) {
+                                return;
+                            }
+
+                            context.report({
+                                node: specifier,
+                                message: errorMessage
+                            });
+                        });
+                    },
+                    JSXOpeningElement(node) {
+                        if (
+                            !isPageFile(readNormalizedFilePath()) ||
+                            !isAntdCardMemberName(node.name)
+                        ) {
+                            return;
+                        }
+
+                        context.report({
+                            node,
+                            message: errorMessage
+                        });
+                    }
+                };
+            }
+        },
         "kuzhambu-form-item-in-page-form": {
             create(context) {
                 const antdFormLocalNames = new Set();
@@ -2144,6 +2228,7 @@ export default tseslint.config(
             "local/no-antd-alert-direct-in-pages": "error",
             "local/no-antd-button-direct-in-pages": "error",
             "local/no-antd-select-direct-in-pages": "error",
+            "local/no-antd-card-direct-in-pages": "error",
             "local/kuzhambu-form-item-in-page-form": "error",
             "@typescript-eslint/no-explicit-any": "off",
             "local/confirm-hook-only": "error",

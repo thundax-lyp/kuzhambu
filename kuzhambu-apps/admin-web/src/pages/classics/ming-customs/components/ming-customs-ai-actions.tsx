@@ -1,5 +1,4 @@
-import { Card } from "antd";
-import { KuzhambuButton, KuzhambuSpaceCompact } from "@/components";
+import { KuzhambuButton, KuzhambuSpaceCompact, KuzhambuCard } from "@/components";
 
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
@@ -34,7 +33,7 @@ export const MingCustomsAiActions = ({
 }: MingCustomsAiActionsProps) => {
     return (
         <>
-            <Card
+            <KuzhambuCard
                 size="small"
                 title="AI 精修任务"
                 extra={
@@ -74,7 +73,7 @@ export const MingCustomsAiActions = ({
                 ) : (
                     <div>暂无精修任务</div>
                 )}
-            </Card>
+            </KuzhambuCard>
             <AiCandidatePanel
                 capabilities={["summary", "tags", "qa"]}
                 contentId={entry.id}

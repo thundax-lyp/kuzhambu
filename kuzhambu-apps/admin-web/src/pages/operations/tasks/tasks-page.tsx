@@ -1,6 +1,6 @@
 import { DashboardOutlined, SettingOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Card, Descriptions, Input, Spin, Typography } from "antd";
+import { Descriptions, Input, Spin, Typography } from "antd";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { hasPermission } from "@/auth/permission-storage";
@@ -12,7 +12,8 @@ import {
     KuzhambuPage,
     KuzhambuSelect,
     KuzhambuSpace,
-    KuzhambuTag
+    KuzhambuTag,
+    KuzhambuCard
 } from "@/components";
 import * as service from "./tasks-service";
 import type { OperationsTaskPageQuery } from "./tasks-service";
@@ -185,7 +186,11 @@ export const OperationsTasksPage = () => {
         >
             <div>
                 <section className="operations-tasks-body">
-                    <Card className="operations-tasks-section-card" title="长任务列表" size="small">
+                    <KuzhambuCard
+                        className="operations-tasks-section-card"
+                        title="长任务列表"
+                        size="small"
+                    >
                         <KuzhambuSpace
                             orientation="vertical"
                             className="operations-tasks-filters"
@@ -334,7 +339,7 @@ export const OperationsTasksPage = () => {
                                 <Text>条</Text>
                             </KuzhambuSpace>
                         </div>
-                    </Card>
+                    </KuzhambuCard>
                 </section>
 
                 <section className="operations-tasks-shortcuts">
@@ -346,7 +351,7 @@ export const OperationsTasksPage = () => {
                                 className="operations-tasks-shortcut"
                                 key={entry.to}
                             >
-                                <Card size="small">
+                                <KuzhambuCard size="small">
                                     <KuzhambuSpace
                                         size={8}
                                         className="operations-tasks-shortcut-header"
@@ -355,7 +360,7 @@ export const OperationsTasksPage = () => {
                                         <Title level={5}>{entry.title}</Title>
                                     </KuzhambuSpace>
                                     <Text type="secondary">{entry.description}</Text>
-                                </Card>
+                                </KuzhambuCard>
                             </Link>
                         ))}
                     </div>

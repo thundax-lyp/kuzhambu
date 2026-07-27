@@ -1,5 +1,5 @@
-import { Card, Tag, Typography } from "antd";
-import { KuzhambuSpace, KuzhambuButton, KuzhambuAlert } from "@/components";
+import { Tag, Typography } from "antd";
+import { KuzhambuSpace, KuzhambuButton, KuzhambuAlert, KuzhambuCard } from "@/components";
 import type {
     AiRefinementStreamEventRecord,
     AiRefinementTaskRecord
@@ -78,7 +78,7 @@ export const AiRefinementStreamPanel = ({
         Boolean(onRetry);
 
     return (
-        <Card
+        <KuzhambuCard
             aria-label="三才图会 AI 流式过程"
             size="small"
             title="AI 流式过程"
@@ -134,6 +134,6 @@ export const AiRefinementStreamPanel = ({
                     </KuzhambuButton>
                 </KuzhambuSpace>
             </KuzhambuSpace>
-        </Card>
+        </KuzhambuCard>
     );
 };

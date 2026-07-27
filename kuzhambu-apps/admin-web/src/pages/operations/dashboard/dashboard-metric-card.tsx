@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { Card, Statistic, Typography } from "antd";
+import { Statistic, Typography } from "antd";
+import { KuzhambuCard } from "@/components";
 
 const { Text } = Typography;
 
@@ -19,9 +20,9 @@ export const DashboardMetricCard = ({
     suffix
 }: DashboardMetricCardProps) => {
     return (
-        <Card className="operations-dashboard-metric-card">
+        <KuzhambuCard className="operations-dashboard-metric-card">
             <Statistic title={title} value={value} suffix={suffix} prefix={prefix} />
             {secondaryText ? <Text type="secondary">{secondaryText}</Text> : null}
-        </Card>
+        </KuzhambuCard>
     );
 };

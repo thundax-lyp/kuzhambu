@@ -1,6 +1,6 @@
 import { ReloadOutlined, SearchOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Card, DatePicker, Descriptions, Input, Tooltip, Typography } from "antd";
+import { App, DatePicker, Descriptions, Input, Tooltip, Typography } from "antd";
 import { useEffect, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
@@ -11,7 +11,8 @@ import {
     KuzhambuPage,
     KuzhambuSelect,
     KuzhambuSpace,
-    KuzhambuTag
+    KuzhambuTag,
+    KuzhambuCard
 } from "@/components";
 import { HealthAlertTable } from "./health-alert-table";
 import * as service from "./health-service";
@@ -263,7 +264,7 @@ export const OperationsHealthPage = () => {
                 title="健康检查"
                 description="查看组件健康检查、探针来源和运行状态。"
             >
-                <Card size="small">缺少 operations:health:view 权限。</Card>
+                <KuzhambuCard size="small">缺少 operations:health:view 权限。</KuzhambuCard>
             </KuzhambuPage>
         );
     }
@@ -274,7 +275,7 @@ export const OperationsHealthPage = () => {
             title="健康检查"
             description="查看组件健康检查、探针来源和运行状态。"
         >
-            <Card className="operations-health-section-card" title="健康记录" size="small">
+            <KuzhambuCard className="operations-health-section-card" title="健康记录" size="small">
                 <KuzhambuSpace className="operations-health-toolbar" size={8} wrap>
                     <Input
                         aria-label="组件"
@@ -436,7 +437,7 @@ export const OperationsHealthPage = () => {
                         <Text>条</Text>
                     </KuzhambuSpace>
                 </div>
-            </Card>
+            </KuzhambuCard>
             <KuzhambuDrawer
                 testId="operations-health-health-1-drawer"
                 open={detailHealth !== null}

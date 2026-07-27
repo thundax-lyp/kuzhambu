@@ -1,5 +1,5 @@
-import { Card, Typography } from "antd";
-import { KuzhambuButton, KuzhambuSpace } from "@/components";
+import { Typography } from "antd";
+import { KuzhambuButton, KuzhambuSpace, KuzhambuCard } from "@/components";
 
 const { Text } = Typography;
 
@@ -9,7 +9,7 @@ interface QaDiagnosticsPanelProps {
 
 export const QaDiagnosticsPanel = ({ fastGptConsoleUrl }: QaDiagnosticsPanelProps) => {
     return (
-        <Card title="问答诊断" size="small">
+        <KuzhambuCard title="问答诊断" size="small">
             <KuzhambuSpace orientation="vertical" size={12}>
                 <Text type="secondary">知识条目、分段、召回配置以 FastGPT 为准。</Text>
                 <KuzhambuButton
@@ -22,6 +22,6 @@ export const QaDiagnosticsPanel = ({ fastGptConsoleUrl }: QaDiagnosticsPanelProp
                     FastGPT 控制台
                 </KuzhambuButton>
             </KuzhambuSpace>
-        </Card>
+        </KuzhambuCard>
     );
 };

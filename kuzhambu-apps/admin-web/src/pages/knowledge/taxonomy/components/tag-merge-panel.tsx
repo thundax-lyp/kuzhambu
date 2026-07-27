@@ -1,4 +1,4 @@
-import { Card, Descriptions, Empty, Typography } from "antd";
+import { Descriptions, Empty, Typography } from "antd";
 import { useState } from "react";
 import {
     KuzhambuAlert,
@@ -6,7 +6,8 @@ import {
     KuzhambuList,
     KuzhambuListItem,
     KuzhambuSelect,
-    KuzhambuSpace
+    KuzhambuSpace,
+    KuzhambuCard
 } from "@/components";
 
 import type { TagMergeCommand } from "../taxonomy-service";
@@ -129,7 +130,7 @@ export const TagMergePanel = ({
     };
 
     return (
-        <Card className="knowledge-taxonomy-merge-panel" variant="borderless">
+        <KuzhambuCard className="knowledge-taxonomy-merge-panel" variant="borderless">
             <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
                 <div className="knowledge-taxonomy-merge-header">
                     <div>
@@ -217,12 +218,12 @@ export const TagMergePanel = ({
                         </Descriptions>
 
                         <div className="knowledge-taxonomy-merge-preview-grid">
-                            <Card size="small" title="待迁移别名">
+                            <KuzhambuCard size="small" title="待迁移别名">
                                 {renderAliasList(preview.aliasesToMerge)}
-                            </Card>
-                            <Card size="small" title="受影响内容引用">
+                            </KuzhambuCard>
+                            <KuzhambuCard size="small" title="受影响内容引用">
                                 {renderContentRefList(preview.impactedContentRefs)}
-                            </Card>
+                            </KuzhambuCard>
                         </div>
                     </div>
                 ) : (
@@ -232,6 +233,6 @@ export const TagMergePanel = ({
                     />
                 )}
             </KuzhambuSpace>
-        </Card>
+        </KuzhambuCard>
     );
 };

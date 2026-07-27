@@ -3,8 +3,9 @@ import type { ColProps, FormItemProps, FormProps, RowProps } from "antd";
 import {
     Children,
     Fragment,
-    cloneElement,
+    createContext,
     isValidElement,
+    useContext,
     type ReactElement,
     type Key,
     type ReactNode
@@ -14,7 +15,7 @@ import {
     type KuzhambuFormItemLayoutSize,
     type KuzhambuFormLayoutTier
 } from "./kuzhambu-form-layout";
-import { useContainerLayoutTier } from "./hooks/use-container-layout-tier";
+import { useKuzhambuFormLayoutTier } from "./hooks/use-kuzhambu-form-layout-tier";
 
 export interface KuzhambuFormProps<Values = unknown> extends Omit<
     FormProps<Values>,
@@ -27,7 +28,6 @@ export interface KuzhambuFormProps<Values = unknown> extends Omit<
 export interface KuzhambuFormItemProps extends Omit<FormItemProps, "labelCol" | "wrapperCol"> {
     colProps?: Omit<ColProps, "lg" | "md" | "offset" | "sm" | "span" | "xl" | "xs" | "xxl">;
     layoutSize?: KuzhambuFormItemLayoutSize;
-    layoutTier?: KuzhambuFormLayoutTier;
 }
 
 export type KuzhambuFormHiddenItemProps = Omit<FormItemProps, "hidden" | "labelCol" | "wrapperCol">;
@@ -39,11 +39,13 @@ export interface KuzhambuFormPlaceholderItemProps {
     layoutSize?: KuzhambuFormItemLayoutSize;
 }
 
+const KuzhambuFormLayoutTierContext = createContext<KuzhambuFormLayoutTier | undefined>(undefined);
+
 export const KuzhambuFormItem = ({
     layoutSize = "middle",
-    layoutTier,
     ...formItemProps
 }: KuzhambuFormItemProps) => {
+    const layoutTier = useContext(KuzhambuFormLayoutTierContext);
     const layout = KUZHAMBU_FORM_ITEM_LAYOUTS[layoutSize];
     const labelCol = layoutTier ? layout.labelCol[layoutTier] : layout.labelCol;
     const wrapperCol = layoutTier ? layout.wrapperCol[layoutTier] : layout.wrapperCol;
@@ -225,7 +227,7 @@ const buildFormRows = (children: ReactNode, layoutTier: KuzhambuFormLayoutTier) 
             pushCurrentRow();
         }
         currentRow.push({
-            child: cloneElement(child, { layoutTier }),
+            child,
             colProps: readFormItemColProps(child.props, layoutTier),
             key: layoutChild.key,
             kind: "item",
@@ -256,28 +258,30 @@ export const KuzhambuForm = <Values = unknown,>({
     style,
     ...formProps
 }: KuzhambuFormProps<Values>) => {
-    const { containerRef, layoutTier } = useContainerLayoutTier();
+    const { containerRef, layoutTier } = useKuzhambuFormLayoutTier();
     const { hiddenItems, rows } = buildFormRows(children, layoutTier);
 
     return (
         <div ref={containerRef} className={className} style={style}>
-            <Form<Values> {...formProps} colon={colon} layout="horizontal">
-                {hiddenItems}
-                {rows.map((row) => (
-                    <Row key={readRowKey(row)} className="kuzhambu-form-row" gutter={rowGutter}>
-                        {row.map((item) => (
-                            <Col
-                                key={item.key}
-                                aria-hidden={item.ariaHidden}
-                                {...item.colProps}
-                                className={`kuzhambu-form-col ${item.colProps.className || ""}`.trim()}
-                            >
-                                {item.child}
-                            </Col>
-                        ))}
-                    </Row>
-                ))}
-            </Form>
+            <KuzhambuFormLayoutTierContext.Provider value={layoutTier}>
+                <Form<Values> {...formProps} colon={colon} layout="horizontal">
+                    {hiddenItems}
+                    {rows.map((row) => (
+                        <Row key={readRowKey(row)} className="kuzhambu-form-row" gutter={rowGutter}>
+                            {row.map((item) => (
+                                <Col
+                                    key={item.key}
+                                    aria-hidden={item.ariaHidden}
+                                    {...item.colProps}
+                                    className={`kuzhambu-form-col ${item.colProps.className || ""}`.trim()}
+                                >
+                                    {item.child}
+                                </Col>
+                            ))}
+                        </Row>
+                    ))}
+                </Form>
+            </KuzhambuFormLayoutTierContext.Provider>
         </div>
     );
 };

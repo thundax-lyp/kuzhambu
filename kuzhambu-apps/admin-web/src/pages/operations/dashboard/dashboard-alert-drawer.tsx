@@ -1,6 +1,12 @@
-import { Card, Empty, Typography } from "antd";
+import { Empty, Typography } from "antd";
 import { Link } from "react-router-dom";
-import { KuzhambuAlert, KuzhambuButton, KuzhambuDrawer, KuzhambuTag } from "@/components";
+import {
+    KuzhambuAlert,
+    KuzhambuButton,
+    KuzhambuDrawer,
+    KuzhambuTag,
+    KuzhambuCard
+} from "@/components";
 
 import type { OperationsHealthAlertRecord } from "./dashboard-types";
 
@@ -94,7 +100,7 @@ export const DashboardAlertDrawer = ({
             <div className="operations-dashboard-alert-list">
                 {alerts.length ? (
                     alerts.map((alert) => (
-                        <Card
+                        <KuzhambuCard
                             className="operations-dashboard-alert-card"
                             key={alert.alertId}
                             size="small"
@@ -156,7 +162,7 @@ export const DashboardAlertDrawer = ({
                                     </KuzhambuButton>
                                 ) : null}
                             </div>
-                        </Card>
+                        </KuzhambuCard>
                     ))
                 ) : (
                     <Empty description="暂无未恢复告警" image={Empty.PRESENTED_IMAGE_SIMPLE} />

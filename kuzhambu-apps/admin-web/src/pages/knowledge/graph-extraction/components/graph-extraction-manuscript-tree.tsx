@@ -1,6 +1,6 @@
-import { Card, Input, Tag, Tree, Typography } from "antd";
+import { Input, Tag, Tree, Typography } from "antd";
 import type { DataNode } from "antd/es/tree";
-import { KuzhambuSpace } from "@/components";
+import { KuzhambuSpace, KuzhambuCard } from "@/components";
 
 import type { GraphWorkbenchManuscriptNode, GraphWorkbenchStatus } from "../graph-extraction-types";
 
@@ -97,7 +97,7 @@ export const GraphExtractionManuscriptTree = ({
     onSelectManuscript
 }: GraphExtractionManuscriptTreeProps) => {
     return (
-        <Card
+        <KuzhambuCard
             className="graph-extraction-create-card graph-extraction-manuscript-tree-card"
             loading={loading && nodes.length === 0}
             title="稿件树"
@@ -125,6 +125,6 @@ export const GraphExtractionManuscriptTree = ({
                     }}
                 />
             </KuzhambuSpace>
-        </Card>
+        </KuzhambuCard>
     );
 };

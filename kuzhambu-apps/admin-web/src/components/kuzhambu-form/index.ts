@@ -10,5 +10,5 @@ export type {
     KuzhambuFormPlaceholderItemProps,
     KuzhambuFormProps
 } from "./kuzhambu-form";
-export { KUZHAMBU_FORM_ITEM_LAYOUTS, readKuzhambuFormLayoutTier } from "./kuzhambu-form-layout";
-export type { KuzhambuFormLayoutTier, KuzhambuFormItemLayoutSize } from "./kuzhambu-form-layout";
+export { KUZHAMBU_FORM_ITEM_LAYOUTS } from "./kuzhambu-form-layout";
+export type { KuzhambuFormItemLayoutSize } from "./kuzhambu-form-layout";

@@ -1,5 +1,5 @@
-import { Card, Descriptions } from "antd";
-import { KuzhambuButton, KuzhambuSpace } from "@/components";
+import { Descriptions } from "antd";
+import { KuzhambuButton, KuzhambuSpace, KuzhambuCard } from "@/components";
 
 import type { KnowledgeHealthRecord } from "../qa-console-types";
 
@@ -25,7 +25,7 @@ interface QaHealthPanelProps {
 
 export const QaHealthPanel = ({ data, loading, onRefresh }: QaHealthPanelProps) => {
     return (
-        <Card title="知识库健康" size="small">
+        <KuzhambuCard title="知识库健康" size="small">
             <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
                 <KuzhambuSpace wrap>
                     <KuzhambuButton
@@ -70,6 +70,6 @@ export const QaHealthPanel = ({ data, loading, onRefresh }: QaHealthPanelProps) 
                     size="small"
                 />
             </KuzhambuSpace>
-        </Card>
+        </KuzhambuCard>
     );
 };

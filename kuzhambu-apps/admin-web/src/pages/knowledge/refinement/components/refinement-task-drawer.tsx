@@ -1,5 +1,5 @@
-import { Card, Col, Empty, Row, Typography } from "antd";
-import { KuzhambuSegmentedDrawer, KuzhambuSpace } from "@/components";
+import { Col, Empty, Row, Typography } from "antd";
+import { KuzhambuSegmentedDrawer, KuzhambuSpace, KuzhambuCard } from "@/components";
 import type { KuzhambuSegmentedDrawerSection } from "@/components";
 
 import { RefinementApplyResultPanel } from "./refinement-apply-result-panel";
@@ -198,14 +198,14 @@ export const RefinementTaskDrawer = ({
                 </div>
                 <Row gutter={[12, 12]}>
                     <Col xs={24} lg={12}>
-                        <Card className="knowledge-refinement-card" title="精修进度">
+                        <KuzhambuCard className="knowledge-refinement-card" title="精修进度">
                             <RefinementProgressSummaryPanel
                                 summary={detail?.progressSummary ?? null}
                             />
-                        </Card>
+                        </KuzhambuCard>
                     </Col>
                     <Col xs={24} lg={12}>
-                        <Card className="knowledge-refinement-card" title="质量汇总">
+                        <KuzhambuCard className="knowledge-refinement-card" title="质量汇总">
                             <dl className="knowledge-refinement-quality-list">
                                 <div>
                                     <dt>实体覆盖率</dt>
@@ -220,7 +220,7 @@ export const RefinementTaskDrawer = ({
                                     <dd>{formatPercent(qualitySummary?.completenessRate)}</dd>
                                 </div>
                             </dl>
-                        </Card>
+                        </KuzhambuCard>
                     </Col>
                 </Row>
             </KuzhambuSpace>

@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Card, Empty } from "antd";
+import { App, Empty } from "antd";
 import { useCallback, useMemo, useState } from "react";
 import {
     KuzhambuList,
     KuzhambuListItem,
     KuzhambuSpace,
     KuzhambuButton,
-    KuzhambuAlert
+    KuzhambuAlert,
+    KuzhambuCard
 } from "@/components";
 
 import * as aiCandidateService from "../ai-candidate-service";
@@ -233,7 +234,7 @@ export const AiCandidatePanel = ({
     }
 
     return (
-        <Card size="small" title="AI 候选确认">
+        <KuzhambuCard size="small" title="AI 候选确认">
             <KuzhambuList
                 dataSource={pendingCandidates}
                 renderItem={(candidate) => (
@@ -279,6 +280,6 @@ export const AiCandidatePanel = ({
                     </KuzhambuListItem>
                 )}
             />
-        </Card>
+        </KuzhambuCard>
     );
 };

@@ -1,11 +1,11 @@
 import { ReloadOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { App, Card, Form, Statistic, Tooltip } from "antd";
+import { App, Form, Statistic, Tooltip } from "antd";
 import type { TablePaginationConfig } from "antd/es/table";
 import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { KuzhambuPage, KuzhambuTabs, KuzhambuButton } from "@/components";
+import { KuzhambuPage, KuzhambuTabs, KuzhambuButton, KuzhambuCard } from "@/components";
 
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { InvocationDetailDrawer } from "./components/invocation-detail-drawer";
@@ -225,33 +225,36 @@ export const InvocationsPage = () => {
                                     />
 
                                     <div className="invocations-metrics">
-                                        <Card>
+                                        <KuzhambuCard>
                                             <Statistic
                                                 title="调用次数"
                                                 value={summary?.invocationCount || 0}
                                             />
-                                        </Card>
-                                        <Card>
+                                        </KuzhambuCard>
+                                        <KuzhambuCard>
                                             <Statistic
                                                 title="成功调用次数"
                                                 value={summary?.succeededInvocationCount || 0}
                                             />
-                                        </Card>
-                                        <Card>
+                                        </KuzhambuCard>
+                                        <KuzhambuCard>
                                             <Statistic
                                                 title="失败调用次数"
                                                 value={summary?.failedInvocationCount || 0}
                                             />
-                                        </Card>
-                                        <Card>
+                                        </KuzhambuCard>
+                                        <KuzhambuCard>
                                             <Statistic
                                                 title="平均耗时毫秒"
                                                 value={summary?.avgLatencyMs || 0}
                                             />
-                                        </Card>
+                                        </KuzhambuCard>
                                     </div>
 
-                                    <Card className="invocations-section-card" title="能力排行">
+                                    <KuzhambuCard
+                                        className="invocations-section-card"
+                                        title="能力排行"
+                                    >
                                         <div
                                             aria-label="AI 能力排行"
                                             className="invocations-capability-bars"
@@ -289,7 +292,7 @@ export const InvocationsPage = () => {
                                                 </div>
                                             )}
                                         </div>
-                                    </Card>
+                                    </KuzhambuCard>
                                 </>
                             )
                         },
@@ -297,7 +300,7 @@ export const InvocationsPage = () => {
                             key: "calls",
                             label: "调用记录",
                             children: (
-                                <Card className="invocations-section-card">
+                                <KuzhambuCard className="invocations-section-card">
                                     <InvocationFilterPanel
                                         callsForm={callsForm}
                                         capabilityOptions={capabilityOptions}
@@ -318,7 +321,7 @@ export const InvocationsPage = () => {
                                         onChange={handleTableChange}
                                         onOpenDetail={setDetailCall}
                                     />
-                                </Card>
+                                </KuzhambuCard>
                             )
                         }
                     ]}

@@ -1,7 +1,7 @@
-import { Card, Table, Tag, Typography } from "antd";
+import { Table, Tag, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import type { KnowledgeSyncItemPageRecord, KnowledgeSyncItemRecord } from "../qa-console-types";
-import { KuzhambuButton, KuzhambuSelect, KuzhambuSpace } from "@/components";
+import { KuzhambuButton, KuzhambuSelect, KuzhambuSpace, KuzhambuCard } from "@/components";
 
 const { Text } = Typography;
 
@@ -148,7 +148,7 @@ export const QaSyncTable = ({
 
     return (
         <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
-            <Card title="知识文档" size="small">
+            <KuzhambuCard title="知识文档" size="small">
                 <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
                     <Text type="secondary">
                         查询同步记录，处理单条失败或过期同步。知识条目、分段和召回配置去
@@ -197,8 +197,8 @@ export const QaSyncTable = ({
                         </KuzhambuButton>
                     </KuzhambuSpace>
                 </KuzhambuSpace>
-            </Card>
-            <Card title="同步记录" size="small">
+            </KuzhambuCard>
+            <KuzhambuCard title="同步记录" size="small">
                 <Table
                     aria-label="知识同步表格"
                     columns={columns}
@@ -215,7 +215,7 @@ export const QaSyncTable = ({
                     scroll={{ x: 900 }}
                     size="small"
                 />
-            </Card>
+            </KuzhambuCard>
         </KuzhambuSpace>
     );
 };

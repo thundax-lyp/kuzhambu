@@ -141,6 +141,7 @@
 - `ADMIN_WEB_UI_NO_ANTD_MODAL_DIRECT_IN_PAGES`：`src/pages/**/*.{ts,tsx}` 禁止直接从 `antd` 导入 `Modal`；页面层弹窗统一使用 `src/components/kuzhambu-modal/` 暴露的 `KuzhambuModal`。
 - `ADMIN_WEB_UI_NO_ANTD_ALERT_DIRECT_IN_PAGES`：`src/pages/**/*.{ts,tsx}` 禁止直接从 `antd` 导入 `Alert`；页面层提示统一使用 `src/components/kuzhambu-alert/` 暴露的 `KuzhambuAlert`。
 - `ADMIN_WEB_UI_NO_ANTD_BUTTON_DIRECT_IN_PAGES`：`src/pages/**/*.{ts,tsx}` 禁止直接从 `antd` 导入 `Button`；页面层按钮统一使用 `src/components/kuzhambu-button/` 暴露的 `KuzhambuButton`。
+- `ADMIN_WEB_UI_NO_ANTD_CARD_DIRECT_IN_PAGES`：`src/pages/**/*.{ts,tsx}` 禁止直接从 `antd` 导入 `Card`；页面层卡片统一使用 `src/components/kuzhambu-card/` 暴露的 `KuzhambuCard`，并使用 `styles.body` 替代已废弃的 `bodyStyle`。
 - `ADMIN_WEB_UI_NO_ANTD_SELECT_DIRECT_IN_PAGES`：`src/pages/**/*.{ts,tsx}` 禁止直接从 `antd` 导入 `Select`；页面层选择器统一使用 `src/components/kuzhambu-select/` 暴露的 `KuzhambuSelect`。
 - `ADMIN_WEB_FORM_NO_ANTD_FORM_ITEM_IN_PAGES`：`src/pages/**/*.tsx` 禁止直接渲染 AntD `Form.Item`；页面层业务字段使用 `KuzhambuFormItem`，隐藏字段使用 `KuzhambuFormHiddenItem`。
 - `ADMIN_WEB_FORM_ITEM_IN_PAGE_FORM`：`src/pages/**/*.tsx` 中的 `KuzhambuFormItem` 和 `KuzhambuFormHiddenItem` 必须是同文件 `KuzhambuForm` JSX 子树内的子节点；禁止把 `KuzhambuForm` 和其 `KuzhambuFormItem` 拆到不同页面 TSX 文件中组合。

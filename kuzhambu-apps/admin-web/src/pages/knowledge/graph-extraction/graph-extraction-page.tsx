@@ -1,8 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Card, Col, Empty, Row, Typography } from "antd";
+import { App, Col, Empty, Row, Typography } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { KuzhambuSpace, KuzhambuPage, KuzhambuButton, KuzhambuAlert } from "@/components";
+import {
+    KuzhambuSpace,
+    KuzhambuPage,
+    KuzhambuButton,
+    KuzhambuAlert,
+    KuzhambuCard
+} from "@/components";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 
 import { GraphExtractionManuscriptDetail } from "./components/graph-extraction-manuscript-detail";
@@ -424,7 +430,10 @@ export const GraphExtractionPage = () => {
                             将展示任务状态、AI 候选关联、失败原因和应用时间线。
                         </Text>
                     </div>
-                    <Card className="knowledge-graph-extraction-placeholder" variant="borderless">
+                    <KuzhambuCard
+                        className="knowledge-graph-extraction-placeholder"
+                        variant="borderless"
+                    >
                         {tasks.length > 0 ? (
                             <GraphExtractionTaskTable
                                 applyingTaskId={applyTaskMutation.variables?.toString() || null}
@@ -450,7 +459,7 @@ export const GraphExtractionPage = () => {
                                 image={Empty.PRESENTED_IMAGE_SIMPLE}
                             />
                         )}
-                    </Card>
+                    </KuzhambuCard>
                     <GraphExtractionTaskDetail
                         applying={applyTaskMutation.isPending}
                         canApply={canApplyGraph}
