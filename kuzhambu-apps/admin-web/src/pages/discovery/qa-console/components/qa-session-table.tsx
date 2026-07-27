@@ -1,7 +1,7 @@
-import { Card, DatePicker, Input, Table, Tag, Typography } from "antd";
+import { DatePicker, Input, Table, Tag, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import type { Dayjs } from "dayjs";
-import { KuzhambuButton, KuzhambuSpace } from "@/components";
+import { KuzhambuButton, KuzhambuSpace, KuzhambuCard } from "@/components";
 
 import type {
     DiscoveryQaSessionDetailRecord,
@@ -156,7 +156,7 @@ export const QaSessionTable = ({
 
     return (
         <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
-            <Card title="会话管理" size="small">
+            <KuzhambuCard title="会话管理" size="small">
                 <KuzhambuSpace align="end" wrap>
                     <label className="qa-console-form-item">
                         <Text type="secondary">标题</Text>
@@ -185,9 +185,9 @@ export const QaSessionTable = ({
                         查询
                     </KuzhambuButton>
                 </KuzhambuSpace>
-            </Card>
+            </KuzhambuCard>
 
-            <Card title="会话记录" size="small">
+            <KuzhambuCard title="会话记录" size="small">
                 <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
                     {operationText ? <Text type="secondary">{operationText}</Text> : null}
                     <Table
@@ -207,7 +207,7 @@ export const QaSessionTable = ({
                         size="small"
                     />
                 </KuzhambuSpace>
-            </Card>
+            </KuzhambuCard>
         </KuzhambuSpace>
     );
 };
