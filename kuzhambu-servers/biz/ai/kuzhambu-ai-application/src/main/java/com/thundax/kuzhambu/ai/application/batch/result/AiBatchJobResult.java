@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.ai.application.batch.result;
 
+import com.thundax.kuzhambu.ai.domain.batch.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.batch.model.entity.AiBatchJob;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
@@ -28,11 +29,11 @@ public class AiBatchJobResult {
             return null;
         }
         return new AiBatchJobResult(
-                job.getBatchId(),
+                AiBatchJobIdCodec.toValue(job.getId()),
                 job.getScope(),
-                job.getCapability(),
+                job.getCapability() == null ? null : job.getCapability().value(),
                 job.getContentType(),
-                job.getStatus(),
+                job.getStatus() == null ? null : job.getStatus().name(),
                 job.getTotalCount(),
                 job.getSuccessCount(),
                 job.getFailedCount(),

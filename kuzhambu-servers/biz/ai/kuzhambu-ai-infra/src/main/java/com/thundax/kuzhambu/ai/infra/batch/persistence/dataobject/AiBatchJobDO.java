@@ -14,10 +14,9 @@ import lombok.NoArgsConstructor;
 @TableName("ai_batch_job")
 public class AiBatchJobDO {
 
-    @TableId(type = IdType.AUTO)
+    @TableId(type = IdType.INPUT)
     private Long id;
 
-    private Long batchId;
     private String scope;
     private String capability;
     private String contentType;

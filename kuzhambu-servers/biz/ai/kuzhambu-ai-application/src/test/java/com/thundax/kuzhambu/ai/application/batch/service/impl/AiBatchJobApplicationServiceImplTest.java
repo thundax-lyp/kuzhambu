@@ -4,7 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.thundax.kuzhambu.ai.application.batch.result.AiBatchJobResult;
 import com.thundax.kuzhambu.ai.domain.batch.model.entity.AiBatchJob;
+import com.thundax.kuzhambu.ai.domain.batch.model.enums.AiBatchJobStatus;
+import com.thundax.kuzhambu.ai.domain.batch.model.valueobject.AiBatchJobId;
 import com.thundax.kuzhambu.ai.domain.batch.repository.AiBatchJobRepository;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.split.model.entity.EntrySplitCandidate;
 import com.thundax.kuzhambu.ai.domain.vision.model.entity.ImageUnderstandingResult;
 import java.util.Collections;
@@ -58,11 +61,11 @@ public class AiBatchJobApplicationServiceImplTest {
 
     private AiBatchJob cancelledJob() {
         AiBatchJob job = new AiBatchJob();
-        job.setBatchId(1L);
+        job.setId(AiBatchJobId.of(1L));
         job.setScope("knowledge");
-        job.setCapability("graph_extraction");
+        job.setCapability(AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT);
         job.setContentType("KNOWLEDGE_ENTITY");
-        job.setStatus("CANCELLED");
+        job.setStatus(AiBatchJobStatus.CANCELLED);
         job.setTotalCount(10);
         job.setSuccessCount(1);
         job.setFailedCount(1);
@@ -80,12 +83,12 @@ public class AiBatchJobApplicationServiceImplTest {
 
         @Override
         public AiBatchJob get(Long batchId) {
-            return batchId.equals(job.getBatchId()) ? job : null;
+            return batchId.equals(job.getId().value()) ? job : null;
         }
 
         @Override
         public Long insert(AiBatchJob batchJob) {
-            return batchJob.getBatchId();
+            return batchJob.getId().value();
         }
 
         @Override

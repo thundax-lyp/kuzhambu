@@ -1,5 +1,8 @@
 package com.thundax.kuzhambu.ai.domain.batch.model.entity;
 
+import com.thundax.kuzhambu.ai.domain.batch.model.enums.AiBatchJobStatus;
+import com.thundax.kuzhambu.ai.domain.batch.model.valueobject.AiBatchJobId;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,12 +15,11 @@ import lombok.Setter;
 @AllArgsConstructor
 public class AiBatchJob {
 
-    private Long id;
-    private Long batchId;
+    private AiBatchJobId id;
     private String scope;
-    private String capability;
+    private AiBusinessCapability capability;
     private String contentType;
-    private String status = "RUNNING";
+    private AiBatchJobStatus status = AiBatchJobStatus.RUNNING;
     private int totalCount;
     private int successCount;
     private int failedCount;
@@ -38,13 +40,13 @@ public class AiBatchJob {
     }
 
     public void cancel(Instant cancelledTime) {
-        status = "CANCELLED";
+        status = AiBatchJobStatus.CANCELLED;
         cancelledAt = cancelledTime;
     }
 
     private void completeIfFinished() {
         if (successCount + failedCount + cancelledCount >= totalCount) {
-            status = failedCount == 0 ? "SUCCEEDED" : "PARTIAL";
+            status = failedCount == 0 ? AiBatchJobStatus.SUCCEEDED : AiBatchJobStatus.PARTIAL;
             completedAt = Instant.now();
         }
     }
