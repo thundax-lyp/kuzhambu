@@ -1,6 +1,13 @@
 package com.thundax.kuzhambu.ai.application.invocation.command;
 
-import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
+import com.thundax.kuzhambu.ai.domain.batch.codec.AiBatchJobIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -40,23 +47,22 @@ public class AiInvokeCommand {
     private boolean allowFallback;
     private boolean createCandidate = true;
 
-    public AiCallRecord toRunningCallRecord() {
-        AiCallRecord record = new AiCallRecord();
-        record.setBatchId(batchId);
-        record.setScope(scope);
-        record.setCapability(capability);
-        record.setContentType(contentType);
-        record.setContentId(contentId);
-        record.setObjectId(objectId);
-        record.setServiceId(serviceId);
-        record.setServiceRole(serviceRole);
-        record.setModelId(modelId);
-        record.setModelName(modelName);
-        record.setPromptVersionId(promptVersionId);
-        record.setRequestId(requestId);
-        record.setTraceId(traceId);
-        record.setStreamUsed(stream);
-        record.setRequestedAt(Instant.now());
-        return record;
+    public AiInvocationLog toRunningInvocationLog() {
+        AiInvocationLog invocationLog = new AiInvocationLog();
+        invocationLog.setBatchId(AiBatchJobIdCodec.toDomain(batchId));
+        invocationLog.setScope(scope);
+        invocationLog.setCapability(capability == null ? null : AiBusinessCapability.from(capability));
+        invocationLog.setContentRef(AiContentRefCodec.toDomain(contentType, contentId));
+        invocationLog.setTargetObjectId(AiTargetObjectIdCodec.toDomain(objectId));
+        invocationLog.setServiceId(serviceId);
+        invocationLog.setServiceRole(serviceRole);
+        invocationLog.setModelId(AiModelIdCodec.toDomain(modelId));
+        invocationLog.setModelName(AiModelNameCodec.toDomain(modelName));
+        invocationLog.setPromptVersionId(PromptVersionIdCodec.toDomain(promptVersionId));
+        invocationLog.setRequestId(requestId);
+        invocationLog.setTraceId(traceId);
+        invocationLog.setStreamUsed(stream);
+        invocationLog.setRequestedAt(Instant.now());
+        return invocationLog;
     }
 }

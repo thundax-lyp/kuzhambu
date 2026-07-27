@@ -1,7 +1,14 @@
 package com.thundax.kuzhambu.ai.application.invocation.result;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
+import com.thundax.kuzhambu.ai.domain.batch.codec.AiBatchJobIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiPromptVersionIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
@@ -36,22 +43,21 @@ public class AiInvokeResult {
         return "SUCCEEDED".equals(status);
     }
 
-    public AiCandidate toCandidate(AiInvokeCommand command, Long effectiveCallId) {
+    public AiCandidate toCandidate(AiInvokeCommand command, AiCallId effectiveCallId) {
         AiCandidate candidate = new AiCandidate();
         candidate.setCallId(effectiveCallId);
-        candidate.setBatchId(command.getBatchId());
-        candidate.setCapability(command.getCapability());
-        candidate.setContentType(command.getContentType());
-        candidate.setContentId(command.getContentId());
-        candidate.setObjectId(command.getObjectId());
+        candidate.setBatchId(AiBatchJobIdCodec.toDomain(command.getBatchId()));
+        candidate.setCapability(AiBusinessCapability.from(command.getCapability()));
+        candidate.setContentRef(AiContentRefCodec.toDomain(command.getContentType(), command.getContentId()));
+        candidate.setTargetObjectId(AiTargetObjectIdCodec.toDomain(command.getObjectId()));
         candidate.setArtifactReferenceJson(artifactReferenceJson);
         candidate.setResultFormat(resultFormat);
         candidate.setResultPayload(resultPayload);
         candidate.setFailureStage(failureStage);
         candidate.setErrorType(errorType);
         candidate.setErrorMessage(errorMessage);
-        candidate.setPromptVersionId(command.getPromptVersionId());
-        candidate.setModelName(command.getModelName());
+        candidate.setPromptVersionId(AiPromptVersionIdCodec.toDomain(command.getPromptVersionId()));
+        candidate.setModelName(AiModelNameCodec.toDomain(command.getModelName()));
         candidate.setRequestedAt(Instant.now());
         return candidate;
     }

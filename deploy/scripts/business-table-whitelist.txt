@@ -2,7 +2,7 @@
 # Exclude system_* and operations_* by current decision.
 ai_action_status
 ai_batch_job
-ai_call_record
+ai_invocation_log
 ai_candidate
 ai_capability
 ai_capability_mapping

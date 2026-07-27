@@ -12,8 +12,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@TableName("ai_call_record")
-public class AiCallRecordDO {
+@TableName("ai_invocation_log")
+public class AiInvocationLogDO {
 
     @TableId(type = IdType.AUTO)
     private Long id;

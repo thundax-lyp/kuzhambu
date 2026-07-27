@@ -11,8 +11,11 @@ import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService.DownloadedArtifact;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService.WorkerAiClient;
 import com.thundax.kuzhambu.ai.application.invocation.service.impl.AiWorkerInvocationApplicationServiceImpl;
-import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiCandidateStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.common.core.page.PageResult;
@@ -59,8 +62,9 @@ class AiWorkerInvocationApplicationServiceTest {
         assertEquals("WORKER_PROTOCOL_FAILURE", result.getErrorType());
         assertEquals("Worker stream ended without completed event", result.getErrorMessage());
         assertEquals(100L, result.getCallId());
-        assertEquals("FAILED", repository.updatedCallRecord.get().getStatus());
-        assertFalse(repository.updatedCallRecord.get().isStreamCompleted());
+        assertEquals(
+                AiInvocationStatus.FAILED, repository.updatedInvocationLog.get().getStatus());
+        assertFalse(repository.updatedInvocationLog.get().isStreamCompleted());
     }
 
     @Test
@@ -99,7 +103,8 @@ class AiWorkerInvocationApplicationServiceTest {
         assertEquals("FAILED", result.getStatus());
         assertEquals(100L, result.getCallId());
         assertNull(result.getCandidateId());
-        assertEquals("FAILED", repository.updatedCallRecord.get().getStatus());
+        assertEquals(
+                AiInvocationStatus.FAILED, repository.updatedInvocationLog.get().getStatus());
         assertNull(repository.savedCandidate.get());
     }
 
@@ -147,11 +152,13 @@ class AiWorkerInvocationApplicationServiceTest {
         assertFalse(capturedCommand.get().isStream());
         assertEquals("classics_summary", result.getCapability());
         assertEquals(100L, result.getCallId());
-        assertEquals("text", repository.updatedCallRecord.get().getResultFormat());
-        assertEquals("candidate-result", repository.updatedCallRecord.get().getResultPayload());
+        assertEquals("text", repository.updatedInvocationLog.get().getResultFormat());
+        assertEquals("candidate-result", repository.updatedInvocationLog.get().getResultPayload());
         assertEquals(200L, result.getCandidateId());
-        assertEquals(100L, repository.savedCandidate.get().getCallId());
-        assertEquals("classics_summary", repository.savedCandidate.get().getCapability());
+        assertEquals(100L, repository.savedCandidate.get().getCallId().value());
+        assertEquals(
+                AiBusinessCapability.CLASSICS_SUMMARY,
+                repository.savedCandidate.get().getCapability());
     }
 
     @Test
@@ -194,14 +201,16 @@ class AiWorkerInvocationApplicationServiceTest {
         assertEquals("FAILED", result.getStatus());
         assertEquals(100L, result.getCallId());
         assertEquals(200L, result.getCandidateId());
-        assertEquals("FAILED", repository.updatedCallRecord.get().getStatus());
         assertEquals(
-                "WORKER_PROTOCOL_FAILURE", repository.updatedCallRecord.get().getErrorType());
-        assertEquals("WORKER_RESULT", repository.updatedCallRecord.get().getFailureStage());
-        assertEquals("TEXT", repository.updatedCallRecord.get().getResultFormat());
-        assertEquals("should-be-persisted", repository.updatedCallRecord.get().getResultPayload());
+                AiInvocationStatus.FAILED, repository.updatedInvocationLog.get().getStatus());
+        assertEquals(
+                "WORKER_PROTOCOL_FAILURE", repository.updatedInvocationLog.get().getErrorType());
+        assertEquals("WORKER_RESULT", repository.updatedInvocationLog.get().getFailureStage());
+        assertEquals("TEXT", repository.updatedInvocationLog.get().getResultFormat());
+        assertEquals(
+                "should-be-persisted", repository.updatedInvocationLog.get().getResultPayload());
         assertNotNull(repository.savedCandidate.get());
-        assertEquals("REJECTED", repository.savedCandidate.get().getStatus());
+        assertEquals(AiCandidateStatus.REJECTED, repository.savedCandidate.get().getStatus());
         assertEquals("WORKER_PROTOCOL_FAILURE", repository.savedCandidate.get().getErrorType());
         assertEquals("WORKER_RESULT", repository.savedCandidate.get().getFailureStage());
         assertEquals("TEXT", repository.savedCandidate.get().getResultFormat());
@@ -244,14 +253,14 @@ class AiWorkerInvocationApplicationServiceTest {
 
         assertEquals("SUCCEEDED", result.getStatus());
         assertEquals("JSON", result.getResultFormat());
-        assertEquals("JSON", repository.updatedCallRecord.get().getResultFormat());
+        assertEquals("JSON", repository.updatedInvocationLog.get().getResultFormat());
         assertEquals("JSON", repository.savedCandidate.get().getResultFormat());
     }
 
     private AiInvokeCommand command() {
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope("classics");
-        command.setCapability("translate");
+        command.setCapability("classics_translate");
         command.setOperation("translate");
         command.setContentType("entry");
         command.setContentId(10L);
@@ -274,33 +283,33 @@ class AiWorkerInvocationApplicationServiceTest {
 
     private static class RecordingInvocationRepository implements AiInvocationRepository {
 
-        private final AtomicReference<AiCallRecord> updatedCallRecord = new AtomicReference<>();
+        private final AtomicReference<AiInvocationLog> updatedInvocationLog = new AtomicReference<>();
         private final AtomicReference<AiCandidate> savedCandidate = new AtomicReference<>();
 
         @Override
-        public AiCallRecord getCallRecord(Long callId) {
+        public AiInvocationLog getInvocationLog(Long callId) {
             return null;
         }
 
         @Override
-        public Long insertCallRecord(AiCallRecord callRecord) {
+        public Long insertInvocationLog(AiInvocationLog invocationLog) {
             return 100L;
         }
 
         @Override
-        public int updateCallRecord(AiCallRecord callRecord) {
-            updatedCallRecord.set(callRecord);
+        public int updateInvocationLog(AiInvocationLog invocationLog) {
+            updatedInvocationLog.set(invocationLog);
             return 1;
         }
 
         @Override
-        public List<AiCallRecord> listCallRecords(
+        public List<AiInvocationLog> listInvocationLogs(
                 java.time.Instant requestedAtStart, java.time.Instant requestedAtEnd) {
             return Collections.emptyList();
         }
 
         @Override
-        public PageResult<AiCallRecord> pageCallRecords(
+        public PageResult<AiInvocationLog> pageInvocationLogs(
                 String scope,
                 String capability,
                 String contentType,
@@ -317,7 +326,7 @@ class AiWorkerInvocationApplicationServiceTest {
         }
 
         @Override
-        public List<AiCallRecord> listCallRecords(
+        public List<AiInvocationLog> listInvocationLogs(
                 String scope,
                 String capability,
                 String serviceRole,
