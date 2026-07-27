@@ -38,7 +38,7 @@
 - `kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/components/graph-extraction-create.tsx`
   - 当前创建任务表单。
   - 现状是工程化输入：用户手填 `sourceContentType`、`sourceContentId`、`scopeJson`、`selectionScopeJson`、`promptMessagesJson`、`inputPayloadJson`。
-  - 目标是降级为高级/调试入口；主入口应由稿件详情自动组装这些字段。
+  - 目标是从业务主流程删除；抽取任务由后台根据稿件自动创建，前端不保留手填 JSON 入口。
 
 - `kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/components/graph-extraction-task-table.tsx`
   - 当前任务台账表。
@@ -169,7 +169,7 @@
    - 最新图谱版本。
    - 质量摘要。
 6. 用户点击 `抽取图谱`。
-7. 系统根据稿件自动组装：
+7. 后台根据稿件自动组装：
    - `sourceContentType`
    - `sourceContentId`
    - `scopeType`
@@ -283,9 +283,9 @@ Verification:
 - 已选择稿件时按钮状态与权限、任务状态一致。
 - `进入精修` 跳转到 `/knowledge/refinement?graphVersionId=...`。
 
-### Step 4: Replace Manual JSON Entry
+### Step 4: Remove Manual JSON Entry
 
-把 `GraphExtractionCreate` 从业务主入口改为高级入口。
+删除前端手填 JSON 创建入口。
 
 Files:
 
@@ -298,14 +298,15 @@ Actions:
 - 主流程不再要求用户手填 `sourceContentType`。
 - 主流程不再要求用户手填 `sourceContentId`。
 - 主流程不再要求用户手填 `inputPayloadJson`。
-- 保留高级表单用于调试和异常补录。
-- 从稿件上下文自动生成 `GraphExtractionCreateCommand`。
+- 删除 `GraphExtractionCreate` 组件或移除页面引用。
+- 前端抽取请求只传稿件、任务类型和业务选项。
+- 后台根据稿件上下文自动生成内部 `GraphExtractionCreateCommand`。
 
 Verification:
 
 - 用户选择稿件后可以一键创建 `GRAPH` 抽取任务。
 - 生成请求仍包含后端必需字段。
-- 高级入口仍可手工提交任务。
+- 前端请求不包含 `inputPayloadJson`、`promptMessagesJson` 或模型手填字段。
 
 ### Step 5: Candidate Preview And Apply
 
@@ -360,10 +361,13 @@ Verification:
 
 ### Step 7: Tests
 
-补齐前端测试。
+补齐后端接口冒烟、后端服务测试和前端测试。
 
 Files:
 
+- `kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/test/java/com/thundax/kuzhambu/knowledge/interfaces/admin/workbench/controller/KnowledgeGraphWorkbenchControllerTest.java`
+- `kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/workbench/service/impl/KnowledgeGraphWorkbenchApplicationServiceImplTest.java`
+- `kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/graph-workbench-service-contract.test.ts`
 - `kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/graph-extraction-page.test.tsx`
 - `kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/components/graph-extraction-task-table.test.tsx`
 - `kuzhambu-apps/admin-web/src/pages/knowledge/graph-results/components/graph-version-table.test.tsx`
@@ -371,8 +375,12 @@ Files:
 
 Actions:
 
+- 覆盖 `manuscript-tree`、`manuscript/get`、`manuscript/extract`、`candidate/get`、`candidate/apply` 接口。
+- 覆盖 `SANCAI_ENTRY`、`WANGQI_DOCUMENT`、`MING_CUSTOMS` 三类来源的统一树节点转换。
+- 覆盖后台自动 payload 组装。
+- 覆盖 knowledge 权限组：`knowledge:graph:view`、`knowledge:graph:edit`、`knowledge:graph:apply`。
 - 覆盖稿件选择。
-- 覆盖一键抽取请求组装。
+- 覆盖一键抽取请求不包含手填 JSON 字段。
 - 覆盖候选应用后的版本跳转。
 - 覆盖图谱版本进入精修。
 - 覆盖 `graphVersionId` 自动打开精修任务。
@@ -380,8 +388,13 @@ Actions:
 Commands:
 
 ```sh
+cd kuzhambu-servers
+mvn -pl biz/knowledge/kuzhambu-knowledge-interface -am test \
+  -Dtest=KnowledgeGraphWorkbenchControllerTest,KnowledgeGraphWorkbenchApplicationServiceImplTest
+
 cd kuzhambu-apps
 pnpm --filter kuzhambu-admin-web exec vitest run \
+  src/pages/knowledge/graph-extraction/graph-workbench-service-contract.test.ts \
   src/pages/knowledge/graph-extraction/graph-extraction-page.test.tsx \
   src/pages/knowledge/graph-results/components/graph-version-table.test.tsx \
   src/pages/knowledge/refinement/refinement-page.test.tsx
@@ -398,7 +411,13 @@ pnpm run build
 Run from `kuzhambu-apps/`:
 
 ```sh
+cd ../kuzhambu-servers
+mvn -pl biz/knowledge/kuzhambu-knowledge-interface -am test \
+  -Dtest=KnowledgeGraphWorkbenchControllerTest,KnowledgeGraphWorkbenchApplicationServiceImplTest
+
+cd ../kuzhambu-apps
 pnpm --filter kuzhambu-admin-web exec vitest run \
+  src/pages/knowledge/graph-extraction/graph-workbench-service-contract.test.ts \
   src/pages/knowledge/graph-extraction/graph-extraction-page.test.tsx \
   src/pages/knowledge/graph-results/components/graph-version-table.test.tsx \
   src/pages/knowledge/refinement/refinement-page.test.tsx
@@ -448,12 +467,20 @@ Suggested sequence:
    - `graph-extraction-service.ts`
    - `graph-extraction-types.ts`
 
-4. `Feat(knowledge): 串联候选应用后续动作`
+4. `Feat(knowledge): 删除手填抽取创建入口`
+   - `graph-extraction-create.tsx`
+   - `graph-extraction-page.tsx`
+   - `graph-workbench-service.ts`
+
+5. `Feat(knowledge): 串联候选应用后续动作`
    - `graph-extraction-task-detail.tsx`
    - `graph-extraction-task-table.tsx`
    - `graph-extraction-page.tsx`
 
-5. `Test(knowledge): 覆盖稿件图谱操作闭环`
+6. `Test(knowledge): 覆盖稿件图谱操作闭环`
+   - `KnowledgeGraphWorkbenchControllerTest.java`
+   - `KnowledgeGraphWorkbenchApplicationServiceImplTest.java`
+   - `graph-workbench-service-contract.test.ts`
    - `graph-extraction-page.test.tsx`
    - `graph-version-table.test.tsx`
    - `refinement-page.test.tsx`
