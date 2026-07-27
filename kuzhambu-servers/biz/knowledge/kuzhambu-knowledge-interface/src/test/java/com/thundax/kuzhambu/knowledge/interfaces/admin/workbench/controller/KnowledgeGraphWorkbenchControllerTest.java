@@ -32,19 +32,24 @@ class KnowledgeGraphWorkbenchControllerTest {
     }
 
     @Test
-    void listManuscriptTreeShouldMapSancaiSourceRoot() {
+    void listManuscriptTreeShouldMapSupportedSourceRoots() {
         KnowledgeGraphWorkbenchApplicationService service = mock(KnowledgeGraphWorkbenchApplicationService.class);
         KnowledgeGraphWorkbenchController controller = new KnowledgeGraphWorkbenchController(service);
         KnowledgeGraphWorkbenchRequests.ManuscriptTreeRequest request =
                 new KnowledgeGraphWorkbenchRequests.ManuscriptTreeRequest();
         when(service.listManuscriptTree(null, null, null, null))
-                .thenReturn(List.of(sourceRoot("SOURCE_ROOT:SANCAI_ENTRY", "三才图会", "SANCAI_ENTRY")));
+                .thenReturn(List.of(
+                        sourceRoot("SOURCE_ROOT:SANCAI_ENTRY", "三才图会", "SANCAI_ENTRY"),
+                        sourceRoot("SOURCE_ROOT:WANGQI_DOCUMENT", "王圻文档", "WANGQI_DOCUMENT"),
+                        sourceRoot("SOURCE_ROOT:MING_CUSTOMS", "明俗稿件", "MING_CUSTOMS")));
 
         var response = controller.listManuscriptTree(request);
 
         verify(service).listManuscriptTree(null, null, null, null);
-        assertEquals(1, response.size());
+        assertEquals(3, response.size());
         assertEquals("SANCAI_ENTRY", response.get(0).getSourceContentType());
+        assertEquals("WANGQI_DOCUMENT", response.get(1).getSourceContentType());
+        assertEquals("MING_CUSTOMS", response.get(2).getSourceContentType());
     }
 
     @Test

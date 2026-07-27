@@ -43,13 +43,15 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Test
-    void listManuscriptTreeShouldExposeSancaiSourceRoot() {
+    void listManuscriptTreeShouldExposeSupportedSourceRoots() {
         Fixtures fixtures = new Fixtures();
 
         var roots = fixtures.service.listManuscriptTree(null, null, null, null);
 
-        assertEquals(1, roots.size());
+        assertEquals(3, roots.size());
         assertEquals("SANCAI_ENTRY", roots.get(0).getSourceContentType());
+        assertEquals("WANGQI_DOCUMENT", roots.get(1).getSourceContentType());
+        assertEquals("MING_CUSTOMS", roots.get(2).getSourceContentType());
         verify(fixtures.classicsFacade, never()).listPublicContents();
     }
 
@@ -71,25 +73,16 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
     }
 
     @Test
-    void listManuscriptTreeShouldSearchOnlySancaiManuscriptsFromRoot() {
-        Fixtures fixtures = new Fixtures();
-
-        var nodes = fixtures.service.listManuscriptTree(null, null, "三才", null);
-
-        assertEquals(2, nodes.size());
-        assertEquals("MANUSCRIPT", nodes.get(0).getNodeType());
-        assertEquals("三才稿件", nodes.get(0).getTitle());
-        assertEquals("SANCAI_ENTRY", nodes.get(0).getSourceContentType());
-        assertEquals(1001L, nodes.get(0).getSourceContentId());
-    }
-
-    @Test
-    void listManuscriptTreeShouldIgnoreUnsupportedGraphSources() {
+    void listManuscriptTreeShouldSearchSupportedManuscriptsFromRoot() {
         Fixtures fixtures = new Fixtures();
 
         var nodes = fixtures.service.listManuscriptTree(null, null, "王圻", null);
 
-        assertEquals(0, nodes.size());
+        assertEquals(1, nodes.size());
+        assertEquals("MANUSCRIPT", nodes.get(0).getNodeType());
+        assertEquals("王圻稿件", nodes.get(0).getTitle());
+        assertEquals("WANGQI_DOCUMENT", nodes.get(0).getSourceContentType());
+        assertEquals(2001L, nodes.get(0).getSourceContentId());
     }
 
     @Test
