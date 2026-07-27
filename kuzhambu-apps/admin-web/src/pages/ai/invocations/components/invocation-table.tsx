@@ -3,11 +3,11 @@ import type { ColumnsType, TablePaginationConfig } from "antd/es/table";
 import dayjs from "dayjs";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE, PAGE_SIZE_OPTIONS } from "@/types/page";
 import type { Page } from "@/types/page";
-import type { AiCallRecord } from "../invocations-types";
+import type { AiInvocationLogRecord } from "../invocations-types";
 
 const DATE_TIME_FORMAT = "YYYYMMDD HH:mm";
 
-const readCallId = (call: AiCallRecord) => call.callIdText || String(call.callId);
+const readCallId = (call: AiInvocationLogRecord) => call.callIdText || String(call.callId);
 
 const formatDateTime = (value?: string | null) => {
     if (!value) {
@@ -37,17 +37,17 @@ const formatStatus = (status?: string | null) => {
 };
 
 interface InvocationTableProps {
-    callPage?: Page<AiCallRecord>;
+    invocationLogPage?: Page<AiInvocationLogRecord>;
     currentPageNo?: number;
     currentPageSize?: number;
     formatCapability: (capability?: string | null) => string;
     loading: boolean;
     onChange: (pagination: TablePaginationConfig) => void;
-    onOpenDetail: (call: AiCallRecord) => void;
+    onOpenDetail: (call: AiInvocationLogRecord) => void;
 }
 
 export const InvocationTable = ({
-    callPage,
+    invocationLogPage,
     currentPageNo = DEFAULT_PAGE_NO,
     currentPageSize = DEFAULT_PAGE_SIZE,
     formatCapability,
@@ -55,7 +55,7 @@ export const InvocationTable = ({
     onChange,
     onOpenDetail
 }: InvocationTableProps) => {
-    const callColumns: ColumnsType<AiCallRecord> = [
+    const invocationLogColumns: ColumnsType<AiInvocationLogRecord> = [
         {
             title: "能力",
             dataIndex: "capability",
@@ -104,19 +104,19 @@ export const InvocationTable = ({
     ];
 
     return (
-        <Table<AiCallRecord>
+        <Table<AiInvocationLogRecord>
             aria-label="AI 调用记录"
             rowKey={readCallId}
             className="invocations-table"
-            columns={callColumns}
-            dataSource={callPage?.records || []}
+            columns={invocationLogColumns}
+            dataSource={invocationLogPage?.records || []}
             loading={loading}
             pagination={{
                 current: currentPageNo,
                 pageSize: currentPageSize,
                 pageSizeOptions: PAGE_SIZE_OPTIONS,
                 showSizeChanger: true,
-                total: callPage?.totalCount ?? callPage?.count ?? 0
+                total: invocationLogPage?.totalCount ?? invocationLogPage?.count ?? 0
             }}
             onRow={(record) => ({
                 onClick: () => onOpenDetail(record)

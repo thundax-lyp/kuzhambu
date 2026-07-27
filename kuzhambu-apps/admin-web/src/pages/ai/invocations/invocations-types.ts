@@ -3,7 +3,7 @@ export interface AiTopCapabilityRecord {
     invocationCount: number;
 }
 
-export interface AiCallSummaryRecord {
+export interface AiInvocationSummaryRecord {
     periodStart?: string | null;
     periodEnd?: string | null;
     invocationCount: number;
@@ -14,7 +14,7 @@ export interface AiCallSummaryRecord {
     topCapabilities: AiTopCapabilityRecord[];
 }
 
-export interface AiCallRecord {
+export interface AiInvocationLogRecord {
     callId: number;
     callIdText?: string | null;
     batchId?: number | null;
