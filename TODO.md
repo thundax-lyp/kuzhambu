@@ -17,14 +17,6 @@
     - 验收点：`manuscript/get` 能返回前端详情页所需的完整稿件图谱状态。
     - 重要度：10/10
 
-- [ ] `KnowledgeGraphManuscriptPayloadBuilder`：后台自动组装抽取 payload
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-FRONTEND-FLOW.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/workbench/support/KnowledgeGraphManuscriptPayloadBuilder.java`
-    - 处理动作：根据稿件来源和 ID 读取正文并生成内部 `inputPayloadJson`、`scopeJson` 和 prompt 参数。
-    - 验收点：`manuscript/extract` 请求无需前端传 `inputPayloadJson` 或 `promptMessagesJson`。
-    - 重要度：10/10
-
 - [ ] `KnowledgeGraphWorkbenchApplicationServiceImpl`：按稿件串联候选查询和应用
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-FRONTEND-FLOW.md`
