@@ -1,11 +1,20 @@
 ---
 name: kuzhambu-pr-code-review
-description: Kuzhambu strict current-branch PR code review workflow for direct slash-command invocation. It reviews committed changes on the current branch against main, reports only actionable issues introduced or exposed by the branch diff, and does not modify code.
+description: Kuzhambu strict current-branch PR code review workflow for direct slash-command invocation. Use this whenever reviewing committed current-branch changes against `main`, especially when the diff changes runtime contracts, task/status flows, permissions, frontend forms, local-vs-remote state boundaries, async refresh behavior, wrappers around controlled inputs, or other places where behavior can drift across layers even when individual files look reasonable. It reports only actionable issues introduced or exposed by the branch diff and does not modify code.
 ---
 
 # Kuzhambu PR Code Review
 
 请对当前分支相对于 `main` 分支的代码变更进行一次严格的 Pull Request Review。
+
+这份 skill 不再把 review 当成“逐段阅读 diff 并做通用检查”，而是当成“对本 PR 引入的运行时系统做失效模式分析”。目标不是找风格问题，而是尽量在首轮 review 中识别：
+
+- 契约在链路中途被改坏，但最终消费点或校验点没跟上
+- 同一能力在等价路径、多 taskType、多状态、多入口之间不一致
+- 权限展示、身份来源、后端校验、seed 数据或资源访问路径脱节
+- 前端受控表单、wrapper、局部状态、异步刷新和 effect 依赖边界失稳
+- 请求规模被放大成全量扫描、N+1 或并发请求风暴
+- 测试只覆盖 happy path，掩盖真实时序、历史数据或刷新路径问题
 
 ## 调用方式
 
@@ -15,42 +24,6 @@ description: Kuzhambu strict current-branch PR code review workflow for direct s
 
 1. Confirm the current working directory is inside the Kuzhambu repository.
 2. Read `docs/AGENTS.md` for document routing.
-
-## 先理解 PR 意图
-
-在报告问题之前，先通过以下信息推断本分支的主要目标：
-
-- `git diff --stat main...HEAD` 的文件分布。
-- `git diff main...HEAD` 中新增、删除和修改的行为。
-- commit message、测试文件名、文档变更、接口/路由/配置变更。
-
-审查时围绕“本 PR 想完成什么”和“diff 实际改变了什么”判断风险，不要把 review 做成逐行风格建议。
-
-如果本 PR 新增或修改共享抽象、公共接口、跨层协议、路由/配置判断、数据访问规则或 worker capability，先提炼它们的使用契约，再按契约审查调用点和边界情况。
-
-## 契约闭环审查
-
-本 review 不只检查 diff 局部代码，还必须验证本 PR 引入或改变的运行时契约是否闭环。契约包括配置、协议字段、默认值、状态、权限、schema、数据约束、异步任务、跨服务调用、生命周期和执行入口。
-
-当 diff 改变这些契约时，必须先回答：
-
-- 契约的 source of truth 是什么。
-- 契约从哪里产生，经过哪些层传递，最终在哪里被消费。
-- 每一层是只转发字段，还是实际执行、校验或持久化了契约。
-- 默认值、缺省字段、禁用状态、历史数据、并发变化和失败路径是否仍符合契约。
-- 同一契约在等价执行路径上是否一致，例如 sync/async、stream/non-stream、create/update、admin/runtime、configured/default。
-- 如果契约依赖数据库约束、外部 provider、worker schema、seed 数据或配置文件，是否用真实数据形态验证，而不是只看类型定义。
-- 测试是否覆盖契约闭环，而不是只覆盖某个实现分支。
-
-如果 PR 声称某个字段、配置、schema、状态或默认协议已经生效，但实际只在上游生成或传递、没有在最终消费点执行或校验，应作为 correctness finding。
-
-## 审查目标
-
-- 使用 `git diff main...HEAD` 作为本次 PR 的主要审查范围。
-- 只报告由当前分支相对 `main` 引入或暴露的问题。
-- 可以阅读必要的上下文代码、测试、配置和治理文档，但不要把上下文中的既有问题当成本次 PR 问题报告。
-- 不要修改代码、格式化代码、提交代码或生成修复补丁；本任务只输出审查结果。
-- 文件路径使用仓库相对路径。
 
 ## 必须先执行并阅读
 
@@ -87,102 +60,340 @@ git diff main...HEAD
 - `*SortRequest`
 - 排序接口、排序拖拽、排序保存或排序回显
 
+## 审查总流程
+
+本 skill 的主流程固定为 6 步，顺序不要跳：
+
+1. **理解 PR 目标**：明确本 PR 想完成什么，哪些运行时语义可能被改动。
+2. **归类失效模式**：不要直接找 bug，先判断这个 PR 最可能落入哪些风险模型。
+3. **建立运行时模型**：为命中的风险模型产出最小必要的链路表 / 一致性表 / 状态表。
+4. **对账调用点和等价路径**：逐层比对 producer、adapter、validator、consumer、UI action、seed、权限、异步刷新路径。
+5. **推演边界与时间线**：至少检查一组历史数据、异常路径、并发或刷新时序。
+6. **输出 findings**：只报告明确、可操作、由当前分支引入或暴露的问题。
+
+如果第 3 步没有形成清晰的运行时模型，不要急着给结论。
+
+## 写边界
+
+- 本任务只输出审查结果。
+- 不要修改代码、格式化代码、提交代码、回复评论或生成修复补丁。
+- 即使已经定位到明确缺陷，也先把它作为 finding 报告，而不是直接修复。
+
+## 先理解 PR 意图
+
+在报告问题之前，先通过以下信息推断本分支的主要目标：
+
+- `git diff --stat main...HEAD` 的文件分布
+- `git diff main...HEAD` 中新增、删除和修改的行为
+- commit message、测试文件名、文档变更、接口/路由/配置变更
+
+审查时围绕“本 PR 想完成什么”和“diff 实际改变了什么”判断风险，不要把 review 做成逐行风格建议。
+
+如果本 PR 新增或修改共享抽象、公共接口、跨层协议、路由/配置判断、数据访问规则、worker capability、前端表单 wrapper、局部状态 hook 或异步任务流，先提炼它们的运行时契约，再按契约审查调用点和边界情况。
+
+## 失效模式分类
+
+先从下面几类里选出 1-3 个与本 PR 最相关的主风险模型，后续 review 重点围绕这些模型展开：
+
+### A. 契约链路失效
+
+适用于：
+
+- DTO / command / request / response 字段改动
+- 默认值、可空性、枚举值、schema、prompt 变量、配置 key、输出结构变化
+- 同一字段从一层生成，另一层校验或消费
+
+常见症状：
+
+- 上游改了字段，但真实消费点没跟上
+- 中间层只转发不校验，最终在更下游炸掉
+- 测试只验证构造结果，没有验证消费点是否接受
+
+### B. 多路径不一致
+
+适用于：
+
+- 同一能力存在 sync/async、create/update、preview/apply、list/detail、page/dialog、新标签页/页内跳转
+- 同一对象有多个 taskType、status、version、candidate、action 路径
+
+常见症状：
+
+- 页面展示 A，按钮操作 B
+- 某条路径修好了，等价路径仍旧走旧语义
+- preview、download、open-in-new-tab 的认证和数据语义不一致
+
+### C. 权限与身份真相源错位
+
+适用于：
+
+- 菜单、按钮、资源链接、controller、subject、role、permission、seed 数据改动
+- 客户端传 actor、tenant、scope、owner、subjectId
+
+常见症状：
+
+- 前端可见但后端 403
+- 角色 seed 变更后通过权限展开逻辑获得额外写权限
+- 身份字段来自客户端而不是认证主体
+
+### D. 状态机与时序失效
+
+适用于：
+
+- 任务、版本、候选、apply、异步回写、刷新、轮询、fallback、局部状态同步
+- 任何“先后顺序变了就可能错”的逻辑
+
+常见症状：
+
+- 旧数据 later apply 覆盖新任务状态
+- unmount 后展示卡在旧状态
+- 局部状态和远端状态在异步刷新后冲突
+
+### E. 数据范围与性能放大
+
+适用于：
+
+- 搜索、树、列表、分页、聚合查询、每项逐个查询、React Query key 依赖输入值
+- 循环内 service / repository / facade 调用
+
+常见症状：
+
+- root 页面打开就全量扫描
+- 输入每个字符都触发昂贵请求
+- 每项触发单独远程/数据库查询，形成 N+1 或请求风暴
+
+### F. 前端受控语义与局部状态边界失效
+
+适用于：
+
+- `Form.Item` / `KuzhambuFormItem` 包裹结构变化
+- 受控组件 wrapper、自定义字段组件、`initialValues`、`setFieldsValue`、`resetFields`
+- `useEffect`、`useCallback`、`useMemo`、本地 draft、refetch、mutation success
+
+常见症状：
+
+- wrapper 吞掉 `value/onChange`、`checked/onChange`
+- 新对象 refresh 覆盖未保存草稿
+- partial patch 留下旧值
+- effect 因依赖身份不稳陷入循环或重复覆盖
+
+### G. 测试伪覆盖
+
+适用于：
+
+- 本 PR 只加了 happy path 测试
+- 测试只断言构造数据，没断言最终用户可见行为
+- 测试没有覆盖刷新、切换、失败、历史数据或交错时序
+
+常见症状：
+
+- 测试全绿，但实际运行在非默认路径失败
+- 测试绑定实现细节，没覆盖运行时语义
+
+## 运行时建模要求
+
+命中哪类风险模型，就必须产出哪类最小分析结果。分析结果不必写进最终回复，但必须在内部先做完。
+
+读取跨层上下文是允许的，但上下文代码、旧路径、旧 seed、旧 wrapper、旧消费者本身不自动构成本次 PR finding。只有当当前 diff 满足以下任一条件时，才可以把问题计入 findings：
+
+- 当前 diff 直接引入了缺陷
+- 当前 diff 改变了旧契约，导致旧消费者现在失效
+- 当前 diff 把原本潜伏的问题连通、放大或变成用户可见问题
+- 当前 diff 声称完成了某个闭环，但实际只改了上游或中游，没有改到真实消费点
+
+如果只是借上下文顺手发现既有问题，但无法证明它由当前分支引入或暴露，不要计入 findings；必要时只作为 open question 提及，或忽略。
+
+### 1. 契约链路表
+
+只要 diff 改了字段默认值、可空性、删字段、硬编码、schema、配置来源、状态字段或 request/response 契约，就必须追完整条链路：
+
+- source of truth 是什么
+- producer 在哪里生成
+- adapter / assembler / wrapper 在哪里转发或改写
+- 第一个真实校验点在哪里
+- 第一个真实消费点在哪里
+- 失败是早失败还是晚失败
+
+**硬规则**：不要停在“字段成功构造”这层。必须找到首个真实校验点和最终真实消费点。
+
+### 2. 一致性对账表
+
+只要同一 feature 同时涉及 taskType、status、version、candidate、permission、preview、download、route、resource URL 或 action，就必须列出：
+
+- 列表/树状态使用什么语义
+- 详情状态使用什么语义
+- action / apply / submit 使用什么语义
+- fallback / preview / dialog / new tab 使用什么语义
+- 等价路径之间是否完全一致
+
+### 3. 状态与时间线表
+
+只要有任务、版本、候选、apply、轮询、refetch、fallback、local draft、effect 同步，就必须至少推演 3 条时间线：
+
+1. 旧数据完成后，新数据开始
+2. 新数据开始后，旧数据才回写或 apply
+3. 不同 taskType / section / tab / refresh 交错发生
+
+如果某个时间线会导致页面状态、按钮动作或持久化结果错位，应作为 finding。
+
+### 4. 前端状态边界表
+
+只要改动 admin-web / portal-web 表单、section、drawer、modal、hook 或 wrapper，就必须先回答：
+
+- 哪个组件拥有真实 draft state
+- 哪个组件只是展示或 patch
+- 表单 direct child 还是不是真实受控控件
+- wrapper 是否透明转发 `value/onChange` / `checked/onChange`
+- `initialValues`、`setFieldsValue`、`resetFields` 分别承担什么语义
+- refetch / mutation success 是否会覆盖未保存编辑
+- child unmount 后 parent 展示是否回退到 live/fallback state
+- effect 依赖里的 callback / object identity 是否稳定
+
+## 强制专项检查
+
+### A. 字段 producer-to-sink tracing
+
+触发条件：
+
+- diff 改动 `Command`、`Request`、`Response`、`DTO`、`Result`、schema、prompt variables、配置 helper、seed、权限字段、资源 URL、taskType、status
+
+必须动作：
+
+- 用 `rg` 搜这个字段 / 常量 / key 的所有读取点
+- 找到首个真实校验点
+- 找到最终真实消费点
+- 检查测试是否覆盖到消费点，而不是只覆盖构造点
+
+### B. 前端表单 direct-child / wrapper 透明性
+
+触发条件：
+
+- `Form.Item` / `KuzhambuFormItem` 子树结构变更
+- 新增 wrapper 组件包裹输入控件
+
+必须动作：
+
+- 检查 named item 的 direct child 是否仍是实际受控控件，或 wrapper 是否完整转发控件协议
+- 对 select、switch、picker、upload、custom field 等非简单 input 特别警惕
+
+### C. partial patch / refresh / draft 覆盖
+
+触发条件：
+
+- `setFieldsValue`、`resetFields`、`initialValues`、`useEffect` 写表单
+- refetch、mutation success、切换对象、切 tab、切 section
+
+必须动作：
+
+- 推演“同一对象刷新”和“切换到不同对象”两种路径
+- 检查 omitted null fields、partial payload、server NON_NULL 返回是否导致旧值残留
+- 检查 refetch 是否覆盖未保存草稿
+
+### D. 权限与认证路径一致性
+
+触发条件：
+
+- 菜单、permission、role、subject、owner、token、download URL、new tab、资源访问路径变更
+
+必须动作：
+
+- 检查 UI 门控与后端鉴权是否一致
+- 检查身份字段是否来自服务端认证主体
+- 检查 preview、download、open-in-new-tab 是否仍能带上认证语义
+- seed 数据必须追权限展开和消费逻辑，不要只看 SQL / JSON 表面
+
+### E. 性能放大器扫描
+
+触发条件：
+
+- 搜索、树、列表、分页、聚合、跨域 facade 调用、React Query key、循环内调用
+
+必须动作：
+
+- 判断是否把 O(1) / O(page) 放大成 O(N) 或 O(N * remote)
+- 检查是否在 root-only、空过滤、每次键入、每条记录上触发昂贵查询
+- 检查请求是否可 debounce、batch、memoize、skip 或只在必要场景触发
+
 ## 审查步骤
 
 1. 推断本 PR 的目标和主要风险区域。
-2. 列出本 PR 新增或修改的共享抽象、公共接口、服务方法、domain/repository 合约、worker capability、hook、layout wrapper、配置 helper、序列化/反序列化工具、路由/状态判断和跨工程协议。
-3. 对每个新增或修改的抽象提炼 1-5 条使用契约。
-4. 扫描本 PR 中所有调用点、迁移点、测试、配置和文档是否满足这些契约。
-5. 对使用 exact string、Set membership、数组 includes、枚举映射、路径前缀、SQL 条件、状态机分支或协议字段判断行为的变更，检查合法边界变体。
-6. 只把明确违反契约、造成回归风险、安全风险、架构边界问题或真实维护阻塞的问题作为 finding。
+2. 归类最相关的 1-3 个失效模式。
+3. 为命中的失效模式建立最小运行时模型。
+4. 扫描本 PR 中所有调用点、迁移点、测试、配置和文档是否满足这些模型。
+5. 对 exact string、Set membership、数组 includes、枚举映射、路径前缀、SQL 条件、状态机分支、协议字段判断以及前端 wrapper/受控组件变更，检查合法边界变体。
+6. 只把明确违反契约、造成回归风险、安全风险、架构边界问题、性能退化或真实维护阻塞的问题作为 finding。
+
+## 边界与时序推演清单
+
+遇到以下改动时，至少手工推演一轮反例：
+
+- **状态/任务/版本**：旧任务 later apply、新任务先开始、不同 taskType 交错
+- **表单/局部状态**：同一对象刷新、切换到另一对象、child unmount、mutation success 后 refetch
+- **权限/身份**：只读角色、无 edit 权限、手工伪造客户端 actor、new tab 访问受保护资源
+- **搜索/树/列表**：root-only、空关键字、快速连续输入、命中大量记录
+- **协议/字段**：字段缺失、null、省略字段、历史数据、旧枚举、空集合、默认配置未命中
 
 ## 重点检查
 
-### 0. 新增或修改抽象的契约
-
-如果 diff 新增或修改共享组件、公共 service、应用服务、domain 接口、repository、worker capability、client、hook、layout wrapper、配置 helper、序列化/反序列化工具或通用工具，必须先总结它的使用契约，再扫描本 PR 所有调用点是否违反。
-
-- 输入契约：参数是否允许 null、空集合、非法枚举、缺失字段、超大 payload、重复 ID 或历史数据。
-- 输出契约：返回值、错误码、异常、分页字段、状态字段、空结果语义和 partial result 是否稳定。
-- 生命周期契约：事务、连接、流、文件、异步任务、React state/effect、worker process 是否正确创建和释放。
-- 上下文契约：权限、租户/用户边界、路由、主题、env、profile、locale、timezone、traceId 是否被正确传入或隔离。
-- 结构契约：父子容器、层级依赖、包边界、模块边界、调用方向、wrapper/provider/adapter 是否满足要求。
-- 兼容契约：旧调用方、已有数据、已有 API、已有测试、生产配置和部署环境是否仍兼容。
-- 失败契约：异常是否被吞掉、错误是否错误转换成成功、重试/超时/降级是否造成重复执行或状态不一致。
-
 ### 1. 正确性
 
-- 逻辑错误、边界条件遗漏、空值处理错误。
-- 异常处理不完整，或错误被吞掉导致调用方误判成功。
-- 并发、状态同步、生命周期、事务边界和资源释放问题。
-- 是否破坏已有功能、数据兼容性、接口兼容性或迁移路径。
-- 前后端字段、枚举、路由、DTO、接口契约是否一致。
+- 逻辑错误、边界条件遗漏、空值处理错误
+- 异常处理不完整，或错误被吞掉导致调用方误判成功
+- 并发、状态同步、生命周期、事务边界和资源释放问题
+- 是否破坏已有功能、数据兼容性、接口兼容性或迁移路径
+- 前后端字段、枚举、路由、DTO、接口契约是否一致
 
 ### 2. 架构与结构
 
-- 文件名、文件路径和模块归属是否准确清晰。
-- 包结构、模块职责和依赖方向是否符合项目边界。
-- 是否存在职责混乱、循环依赖、不必要的抽象或错误的层级穿透。
-- 新增代码是否放在正确的工程组、层级和模块中。
-- 是否让既有大文件继续膨胀，或把可独立的用户流程塞进不合适的组件/服务。
+- 文件名、文件路径和模块归属是否准确清晰
+- 包结构、模块职责和依赖方向是否符合项目边界
+- 是否存在职责混乱、循环依赖、不必要的抽象或错误的层级穿透
+- 新增代码是否放在正确的工程组、层级和模块中
+- 是否让既有大文件继续膨胀，或把可独立的用户流程塞进不合适的组件/服务
 
-### 3. 命名与可读性
+### 3. 安全性与稳定性
 
-- 类名、方法名、属性名、变量名是否准确表达语义。
-- 是否存在模糊、冗余、误导或与既有命名体系不一致的名称。
-- 代码是否可以在不损害行为清晰度的前提下进一步简化。
-- 是否存在重复逻辑、无效封装或不必要的中间层。
-- 是否存在为了通过类型检查、lint 或编译而牺牲业务语义的命名、兜底值或转换逻辑。
+- 输入校验、权限检查、越权访问、敏感信息泄露
+- 注入、路径遍历、不安全反序列化、不可信文件处理等风险
+- 运行时配置、默认值和失败降级是否会造成不可预期行为
+- 管理端权限、用户边界、文件上传/下载、OSS、导出、AI API key、第三方 base URL 和日志脱敏
 
-### 4. 安全性与稳定性
-
-- 输入校验、权限检查、越权访问、敏感信息泄露。
-- 注入、路径遍历、不安全反序列化、不可信文件处理等风险。
-- 性能退化、内存泄漏、阻塞操作、无限重试或异常放大。
-- 运行时配置、默认值和失败降级是否会造成不可预期行为。
-- 管理端权限、用户边界、文件上传/下载、OSS、导出、AI API key、第三方 base URL 和日志脱敏。
-- MyBatis/SQL 查询条件、分页边界、排序边界和批量操作的数据范围。
-- Python worker 调用的超时、重试、错误回传和跨服务协议兼容性。
-
-### 5. Java servers 契约
+### 4. Java servers 契约
 
 如果 diff 涉及 Java servers，必须检查：
 
-- Controller / application / domain / infra 的依赖方向是否符合治理文档。
-- 应用服务事务边界是否覆盖完整写操作，是否把外部 IO 放进不必要的事务。
-- Repository 查询条件是否保持权限、业务范围、生命周期状态、分页边界和排序边界。
-- MyBatis SQL 是否存在漏条件、错字段、N+1、排序不可控或批量范围过宽。
-- DTO / command / response 是否与前端、worker 或公开接口协议一致。
-- 强类型 ID、ULID、token、外部 ID 是否没有退化成裸字符串误用。
-- 异常、幂等、重复提交、并发更新是否有明确语义。
+- Controller / application / domain / infra 的依赖方向是否符合治理文档
+- 应用服务事务边界是否覆盖完整写操作，是否把外部 IO 放进不必要的事务
+- Repository 查询条件是否保持权限、业务范围、生命周期状态、分页边界和排序边界
+- DTO / command / response 是否与前端、worker 或公开接口协议一致
+- 强类型 ID、ULID、token、外部 ID 是否没有退化成裸字符串误用
+- 异常、幂等、重复提交、并发更新是否有明确语义
+
+### 5. Frontend 运行时语义
+
+如果 diff 涉及 admin-web / portal-web，必须检查：
+
+- 受控表单 direct child / wrapper 透明性是否仍成立
+- `initialValues`、`setFieldsValue`、`resetFields` 的语义是否清晰且互不覆盖
+- 本地 draft 是否会被 refetch、mutation success、切换对象或切 tab 覆盖
+- callback / object identity 是否会触发 effect 重跑、循环更新或重复写 state
+- preview / download / modal / new tab / route 路径是否仍带着正确的权限与认证语义
+- 新增测试是否覆盖用户可观察行为，而不是只验证内部 helper
 
 ### 6. Python workers 契约
 
 如果 diff 涉及 Python workers，必须检查：
 
-- worker capability 输入/输出 schema 是否与 `docs/20-interfaces/` 协议一致。
-- 流式输出事件顺序、结束事件、错误事件和 partial result 是否稳定。
-- 超时、重试、取消、异常回传是否会让 Java 调用方误判成功或挂起。
-- 文件路径、上传内容、render 输入、AI prompt 参数、第三方 base URL 是否经过边界校验。
-- 大文件、大响应和长任务是否有资源上限和清理逻辑。
-- worker 错误是否包含可诊断信息，同时不泄露密钥、token、prompt 敏感内容。
+- worker capability 输入/输出 schema 是否与 `docs/20-interfaces/` 协议一致
+- 流式输出事件顺序、结束事件、错误事件和 partial result 是否稳定
+- 超时、重试、取消、异常回传是否会让 Java 调用方误判成功或挂起
+- 大文件、大响应和长任务是否有资源上限和清理逻辑
 
-### 7. 边界变体
+### 7. 测试
 
-如果 diff 使用 exact string、Set membership、数组 includes、枚举映射、路径前缀、SQL 条件、状态机分支或协议字段判断行为，必须检查合法变体：
-
-- 前端路由：trailing slash、base path、嵌套路由、query/hash 和 React Router 实际匹配行为。
-- 后端 API：缺省字段、旧枚举值、空集合、分页边界、排序字段和历史数据。
-- 数据库：null、空字符串、重复值、软删除状态、生命周期状态和唯一性约束。
-- Workers：缺省参数、partial chunk、空结果、错误事件、取消事件和超时事件。
-
-### 8. 测试
-
-- 新增或变更行为是否有测试覆盖。
-- 测试是否覆盖失败路径、边界情况和回归风险。
-- 测试是否真正验证用户可观察行为，而不是只绑定实现细节。
-- 如果缺少测试会掩盖真实回归风险，应作为发现报告；不要只因为“没有测试”泛泛报问题。
-- 如果 diff 修改构建、CI、测试框架、校验脚本或依赖版本，重点审查验证链路是否仍能覆盖目标模块。
+- 新增或变更行为是否有测试覆盖
+- 测试是否覆盖失败路径、边界情况、刷新路径、权限差异、历史数据或交错时序
+- 测试是否真正验证用户可观察行为，而不是只绑定实现细节
+- 如果 diff 修改构建、CI、测试框架、校验脚本或依赖版本，重点审查验证链路是否仍能覆盖目标模块
 
 ## 报告规则
 
@@ -194,7 +405,7 @@ git diff main...HEAD
 - 不把缺少重构、抽象不够漂亮、文件还可以继续拆分当作 bug；只有当它造成真实职责错位、回归风险或后续维护阻塞时才报告。
 - 不确定的问题不要描述为确定缺陷；可以作为 open question 放在 summary 后。
 - 相同根因的问题合并报告，避免对同一缺陷重复计数。
-- 优先报告 bug、回归风险、安全问题和架构边界问题，而不是个人风格偏好。
+- 优先报告 bug、回归风险、安全问题、权限问题、状态/时序问题和性能放大问题，而不是个人风格偏好。
 - 每条 finding 必须包含最小文件位置。行号优先使用 diff 或文件中的具体行；无法精确到单行时，使用最小必要范围。
 - Finding 的位置优先指向当前 diff 新增或修改行附近；如果根因在新增调用方，优先报告调用方，不要把旧代码作为主要位置。
 - 如果发现的问题依赖推断，明确说明推断依据。
@@ -226,7 +437,7 @@ git diff main...HEAD
 ## 优先级定义
 
 - P0：必须立即修复，会导致严重事故、安全漏洞或数据损坏。
-- P1：高概率造成明显错误、严重回归或重要流程不可用。
+- P1：高概率造成明显错误、严重回归、权限失控或重要流程不可用。
 - P2：真实存在但影响范围有限的问题。
 - P3：低风险的维护性、结构性或长期演进问题。
 
@@ -239,12 +450,13 @@ git diff main...HEAD
 
 * 本次审查范围：当前分支相对 `main` 的已提交 diff；如有排除项，明确说明
 * 我理解的 PR 目标：一句话概述
+* 主风险模型：列出本次命中的 1-3 个失效模式
 * 是否建议合并：是 / 修复后合并 / 不建议合并
 * P0 数量
 * P1 数量
 * P2 数量
 * P3 数量
-* 最高风险领域：正确性 / 架构 / 安全 / 测试 / 无
+* 最高风险领域：契约链路 / 多路径一致性 / 权限与身份 / 状态时序 / 性能 / 前端受控语义 / 测试 / 无
 * 最主要的风险概述：一到三句话
 ```
 
