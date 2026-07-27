@@ -9,22 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `KnowledgeGraphWorkbenchApplicationServiceImpl`：聚合稿件图谱详情
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-FRONTEND-FLOW.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/workbench/service/impl/KnowledgeGraphWorkbenchApplicationServiceImpl.java`
-    - 处理动作：按稿件聚合基础信息、最近抽取任务、最新图谱版本和质量摘要。
-    - 验收点：`manuscript/get` 能返回前端详情页所需的完整稿件图谱状态。
-    - 重要度：10/10
-
-- [ ] `KnowledgeGraphWorkbenchApplicationServiceImpl`：按稿件串联候选查询和应用
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-FRONTEND-FLOW.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/workbench/service/impl/KnowledgeGraphWorkbenchApplicationServiceImpl.java`
-    - 处理动作：实现最新候选查询和候选应用后返回 `graphVersionId`、`graphStatus`。
-    - 验收点：前端可从稿件详情直接完成候选查看、应用和进入精修。
-    - 重要度：10/10
-
 - [ ] `graph-workbench-service.ts`：新增前端稿件工作台 service/types
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-FRONTEND-FLOW.md`

@@ -61,7 +61,7 @@ public class KnowledgeGraphManuscriptPayloadBuilder {
                         .contentType(sourceContentType)
                         .contentId(String.valueOf(sourceContentId))
                         .build());
-        ClassicsQaKnowledgeFacadeDto content = response == null ? null : response.getContent();
+        ClassicsQaKnowledgeFacadeDto content = response == null ? null : response.getKnowledge();
         if (content == null) {
             throw new BizException(
                     "Knowledge graph manuscript not found: " + sourceContentType + "#" + sourceContentId);
