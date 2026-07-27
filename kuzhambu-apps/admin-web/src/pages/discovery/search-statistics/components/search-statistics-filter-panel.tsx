@@ -1,6 +1,6 @@
-import { Card, DatePicker, Input, Typography } from "antd";
+import { DatePicker, Input, Typography } from "antd";
 import type { Dayjs } from "dayjs";
-import { KuzhambuButton, KuzhambuSpace } from "@/components";
+import { KuzhambuButton, KuzhambuSpace, KuzhambuCard } from "@/components";
 
 const { Text } = Typography;
 const { RangePicker } = DatePicker;
@@ -46,7 +46,7 @@ export const SearchStatisticsFilterPanel = ({
 }: SearchStatisticsFilterPanelProps) => {
     if (mode === "summary") {
         return (
-            <Card size="small">
+            <KuzhambuCard size="small">
                 <KuzhambuSpace className="search-statistics-summary-filter" wrap>
                     <label>
                         <Text type="secondary">起始时间</Text>
@@ -68,12 +68,12 @@ export const SearchStatisticsFilterPanel = ({
                         统计
                     </KuzhambuButton>
                 </KuzhambuSpace>
-            </Card>
+            </KuzhambuCard>
         );
     }
 
     return (
-        <Card className="search-statistics-record-filter-card" size="small">
+        <KuzhambuCard className="search-statistics-record-filter-card" size="small">
             <KuzhambuSpace className="search-statistics-record-filter-form" wrap>
                 <label>
                     <Text type="secondary">搜索词</Text>
@@ -124,6 +124,6 @@ export const SearchStatisticsFilterPanel = ({
                     </KuzhambuButton>
                 </KuzhambuSpace>
             </KuzhambuSpace>
-        </Card>
+        </KuzhambuCard>
     );
 };
