@@ -1,9 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Card, Col, Empty, Row, Typography } from "antd";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuSpace, KuzhambuPage, KuzhambuButton, KuzhambuAlert } from "@/components";
-import * as currentUserService from "@/service/current-user-service";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 
 import { GraphExtractionManuscriptDetail } from "./components/graph-extraction-manuscript-detail";
@@ -76,6 +75,7 @@ export const GraphExtractionPage = () => {
     const canViewGraph = hasPermission("knowledge:graph:view");
     const canEditGraph = hasPermission("knowledge:graph:edit");
     const canApplyGraph = hasPermission("knowledge:graph:apply");
+    const canOpenRefinement = hasPermission("knowledge:refinement:edit");
     const [handoffRegenerateCommand] = useState<GraphExtractionRegenerateCommand | null>(() =>
         readRegenerateCommandFromSearch()
     );
@@ -89,9 +89,17 @@ export const GraphExtractionPage = () => {
         Record<string, GraphWorkbenchManuscriptNode[]>
     >({});
     const [manuscriptSearchText, setManuscriptSearchText] = useState("");
+    const [effectiveManuscriptSearchText, setEffectiveManuscriptSearchText] = useState("");
     const [selectedManuscript, setSelectedManuscript] =
         useState<GraphWorkbenchManuscriptNode | null>(null);
-    const normalizedManuscriptSearchText = manuscriptSearchText.trim();
+    const normalizedEffectiveManuscriptSearchText = effectiveManuscriptSearchText.trim();
+
+    useEffect(() => {
+        const timer = window.setTimeout(() => {
+            setEffectiveManuscriptSearchText(manuscriptSearchText);
+        }, 300);
+        return () => window.clearTimeout(timer);
+    }, [manuscriptSearchText]);
 
     const taskPageQuery = useQuery({
         queryKey: ["knowledge", "graph-extraction", "tasks", taskQuery],
@@ -105,24 +113,17 @@ export const GraphExtractionPage = () => {
         enabled: taskDetailDrawerOpen && detailTaskId !== null,
         retry: false
     });
-    const currentUserQuery = useQuery({
-        queryKey: ["sys", "current-user", "info"],
-        queryFn: currentUserService.getCurrentUserInfo,
-        enabled: canEditGraph,
-        retry: false
-    });
-
     const manuscriptTreeQuery = useQuery({
         queryKey: [
             "knowledge",
             "graph-workbench",
             "manuscript-tree",
             "roots",
-            normalizedManuscriptSearchText
+            normalizedEffectiveManuscriptSearchText
         ],
         queryFn: () =>
             workbenchService.listManuscriptTree({
-                keyword: normalizedManuscriptSearchText || undefined
+                keyword: normalizedEffectiveManuscriptSearchText || undefined
             }),
         enabled: canViewGraph,
         retry: false
@@ -176,14 +177,14 @@ export const GraphExtractionPage = () => {
         async (nodeKey: string) => {
             const children = await workbenchService.listManuscriptTree({
                 parentKey: nodeKey,
-                keyword: normalizedManuscriptSearchText || undefined
+                keyword: normalizedEffectiveManuscriptSearchText || undefined
             });
             setManuscriptChildrenByNodeKey((current) => ({
                 ...current,
                 [nodeKey]: children
             }));
         },
-        [normalizedManuscriptSearchText]
+        [normalizedEffectiveManuscriptSearchText]
     );
 
     const changeManuscriptSearchText = useCallback((value: string) => {
@@ -192,18 +193,20 @@ export const GraphExtractionPage = () => {
         setSelectedManuscript(null);
     }, []);
 
+    const submitManuscriptSearchText = useCallback((value: string) => {
+        setManuscriptSearchText(value);
+        setEffectiveManuscriptSearchText(value);
+        setManuscriptChildrenByNodeKey({});
+        setSelectedManuscript(null);
+    }, []);
+
     const extractManuscriptMutation = useMutation({
         mutationFn: (taskType: string) => {
-            const requestedBy = Number(currentUserQuery.data?.id ?? 0);
-            if (!requestedBy) {
-                throw new Error("当前用户信息未加载完成，请稍后重试");
-            }
             return workbenchService.extractManuscript({
                 sourceContentType:
                     selectedManuscript?.sourceContentType as GraphWorkbenchSourceContentType,
                 sourceContentId: selectedManuscript?.sourceContentId || 0,
-                taskType,
-                requestedBy
+                taskType
             });
         },
         onSuccess: async () => {
@@ -390,6 +393,7 @@ export const GraphExtractionPage = () => {
                                 selectedNodeKey={selectedNodeKey}
                                 onLoadChildren={loadManuscriptChildren}
                                 onSearchChange={changeManuscriptSearchText}
+                                onSearchSubmit={submitManuscriptSearchText}
                                 onSelectManuscript={setSelectedManuscript}
                             />
                         </Col>
@@ -398,6 +402,7 @@ export const GraphExtractionPage = () => {
                                 applying={applyWorkbenchCandidateMutation.isPending}
                                 canApply={canApplyGraph}
                                 canEdit={canEditGraph}
+                                canOpenRefinement={canOpenRefinement}
                                 candidate={candidateQuery.data || null}
                                 candidateLoading={candidateQuery.isLoading}
                                 detail={manuscriptDetailQuery.data || null}

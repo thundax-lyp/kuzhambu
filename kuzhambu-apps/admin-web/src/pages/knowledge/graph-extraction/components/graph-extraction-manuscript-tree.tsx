@@ -11,6 +11,7 @@ interface GraphExtractionManuscriptTreeProps {
     selectedNodeKey?: string | null;
     onLoadChildren: (nodeKey: string) => Promise<void>;
     onSearchChange: (value: string) => void;
+    onSearchSubmit: (value: string) => void;
     onSelectManuscript: (node: GraphWorkbenchManuscriptNode) => void;
 }
 
@@ -92,6 +93,7 @@ export const GraphExtractionManuscriptTree = ({
     selectedNodeKey,
     onLoadChildren,
     onSearchChange,
+    onSearchSubmit,
     onSelectManuscript
 }: GraphExtractionManuscriptTreeProps) => {
     return (
@@ -108,7 +110,7 @@ export const GraphExtractionManuscriptTree = ({
                     placeholder="搜索稿件标题、摘要或分类"
                     value={searchText}
                     onChange={(event) => onSearchChange(event.target.value)}
-                    onSearch={onSearchChange}
+                    onSearch={onSearchSubmit}
                 />
                 <Tree
                     blockNode

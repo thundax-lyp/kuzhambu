@@ -92,22 +92,6 @@ const workbenchServiceMocks = vi.hoisted(() => ({
             sourceContentType: "SANCAI_ENTRY",
             sourceContentId: 1001,
             graphStatus: "CANDIDATE_READY"
-        },
-        {
-            nodeKey: "MANUSCRIPT:WANGQI_DOCUMENT:2001",
-            nodeType: "MANUSCRIPT",
-            title: "王圻稿件",
-            sourceContentType: "WANGQI_DOCUMENT",
-            sourceContentId: 2001,
-            graphStatus: "NOT_EXTRACTED"
-        },
-        {
-            nodeKey: "MANUSCRIPT:MING_CUSTOMS:3001",
-            nodeType: "MANUSCRIPT",
-            title: "明俗稿件",
-            sourceContentType: "MING_CUSTOMS",
-            sourceContentId: 3001,
-            graphStatus: "NOT_EXTRACTED"
         }
     ])
 }));
@@ -118,13 +102,6 @@ vi.mock("./graph-extraction-service", () => ({
 
 vi.mock("./graph-workbench-service", () => ({
     ...workbenchServiceMocks
-}));
-
-vi.mock("@/service/current-user-service", () => ({
-    getCurrentUserInfo: vi.fn(async () => ({
-        id: "99",
-        loginName: "admin"
-    }))
 }));
 
 const createTestQueryClient = () =>
@@ -147,13 +124,25 @@ const renderPage = () => {
     );
 };
 
+const selectManuscriptTreeNode = async (title: string) => {
+    const titleElements = await screen.findAllByText(title);
+    const treeTitleElement = titleElements.find((element) => element.closest(".ant-tree"));
+    expect(treeTitleElement).toBeDefined();
+
+    fireEvent.click(
+        treeTitleElement?.closest(".ant-tree-node-content-wrapper") || treeTitleElement
+    );
+};
+
 describe("GraphExtractionPage", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        vi.useRealTimers();
         replacePermissions([
             "knowledge:graph:view",
             "knowledge:graph:edit",
-            "knowledge:graph:apply"
+            "knowledge:graph:apply",
+            "knowledge:refinement:edit"
         ]);
     });
 
@@ -194,7 +183,7 @@ describe("GraphExtractionPage", () => {
     it("runs manuscript workbench flow with automatic extraction and candidate apply", async () => {
         renderPage();
 
-        fireEvent.click(await screen.findByText("三才稿件"));
+        await selectManuscriptTreeNode("三才稿件");
 
         await waitFor(() => {
             expect(workbenchServiceMocks.getManuscript).toHaveBeenCalledWith({
@@ -215,8 +204,7 @@ describe("GraphExtractionPage", () => {
             expect(workbenchServiceMocks.extractManuscript).toHaveBeenCalledWith({
                 sourceContentType: "SANCAI_ENTRY",
                 sourceContentId: 1001,
-                taskType: "GRAPH",
-                requestedBy: 99
+                taskType: "GRAPH"
             });
         });
         const extractCommand = workbenchServiceMocks.extractManuscript.mock.calls[0]?.[0];
@@ -227,9 +215,17 @@ describe("GraphExtractionPage", () => {
         await waitFor(() => {
             expect(workbenchServiceMocks.applyCandidate).toHaveBeenCalledWith({ taskId: 9001 });
         });
+        expect(screen.getByRole("link", { name: "查看结果" })).toHaveAttribute(
+            "href",
+            "/knowledge/graph-results?graphVersionId=8001"
+        );
+        expect(screen.getByRole("link", { name: "进入精修" })).toHaveAttribute(
+            "href",
+            "/knowledge/refinement?graphVersionId=8001"
+        );
     });
 
-    it("searches manuscript tree with keyword", async () => {
+    it("debounces manuscript tree search by keyword", async () => {
         renderPage();
 
         fireEvent.change(await screen.findByLabelText("搜索稿件"), {
@@ -238,11 +234,12 @@ describe("GraphExtractionPage", () => {
             }
         });
 
+        expect(workbenchServiceMocks.listManuscriptTree).toHaveBeenCalledTimes(1);
         await waitFor(() => {
             expect(workbenchServiceMocks.listManuscriptTree).toHaveBeenCalledWith({
                 keyword: "黄帝"
             });
-        });
+        }, 1000);
     });
 
     it("disables workbench write actions without edit and apply permissions", async () => {
@@ -250,12 +247,23 @@ describe("GraphExtractionPage", () => {
 
         renderPage();
 
-        fireEvent.click(await screen.findByText("三才稿件"));
+        await selectManuscriptTreeNode("三才稿件");
 
-        const extractButton = await screen.findByRole("button", { name: "抽取图谱" });
-        const applyButton = await screen.findByRole("button", { name: "应用候选" });
+        await waitFor(() => {
+            expect(workbenchServiceMocks.getManuscript).toHaveBeenCalledWith({
+                sourceContentType: "SANCAI_ENTRY",
+                sourceContentId: 1001
+            });
+        });
+        const extractButton = screen.getByTestId(
+            "knowledge-graph-extraction-manuscript-extract-button"
+        );
+        const applyButton = screen.getByTestId(
+            "knowledge-graph-extraction-manuscript-apply-candidate-button"
+        );
         expect(extractButton).toBeDisabled();
         expect(applyButton).toBeDisabled();
+        expect(screen.queryByRole("link", { name: "进入精修" })).not.toBeInTheDocument();
 
         fireEvent.click(extractButton);
         fireEvent.click(applyButton);

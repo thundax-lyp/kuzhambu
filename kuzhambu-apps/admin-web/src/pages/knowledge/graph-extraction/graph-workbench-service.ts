@@ -28,7 +28,6 @@ export interface GraphWorkbenchExtractCommand {
     sourceContentType: GraphWorkbenchSourceContentType;
     sourceContentId: number;
     taskType: GraphExtractionTaskType;
-    requestedBy?: number | null;
 }
 
 export interface GraphWorkbenchCandidateQuery {

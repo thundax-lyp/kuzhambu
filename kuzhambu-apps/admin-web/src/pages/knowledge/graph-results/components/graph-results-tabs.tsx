@@ -26,6 +26,7 @@ interface GraphResultsTabsProps {
     activeTab: GraphResultsTabKey;
     activeVersion: GraphVersionRecord | null;
     activeVersionId: number | null;
+    canOpenRefinement: boolean;
     canViewGraph: boolean;
     versionDetailDrawerOpen: boolean;
     entities: GraphEntityRecord[];
@@ -70,6 +71,7 @@ export const GraphResultsTabs = ({
     activeTab,
     activeVersion,
     activeVersionId,
+    canOpenRefinement,
     canViewGraph,
     versionDetailDrawerOpen,
     entities,
@@ -137,6 +139,7 @@ export const GraphResultsTabs = ({
                             <>
                                 {canViewGraph && versions.length > 0 ? (
                                     <GraphVersionTable
+                                        canOpenRefinement={canOpenRefinement}
                                         loading={versionLoading}
                                         selectedVersionId={activeVersionId}
                                         versions={versions}

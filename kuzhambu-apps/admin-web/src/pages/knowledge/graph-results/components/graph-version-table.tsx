@@ -4,6 +4,7 @@ import type { ColumnsType } from "antd/es/table";
 import type { GraphVersionRecord } from "../graph-results-types";
 
 interface GraphVersionTableProps {
+    canOpenRefinement?: boolean;
     loading?: boolean;
     selectedVersionId?: number | null;
     versions: GraphVersionRecord[];
@@ -25,6 +26,7 @@ const readStatusColor = (status?: string | null) => {
 };
 
 export const GraphVersionTable = ({
+    canOpenRefinement = false,
     loading = false,
     selectedVersionId = null,
     versions,
@@ -89,14 +91,16 @@ export const GraphVersionTable = ({
                     >
                         查看正式结果
                     </KuzhambuButton>
-                    <KuzhambuButton
-                        testId="knowledge-graph-results-graph-version-refinement-button"
-                        href={`/knowledge/refinement?graphVersionId=${encodeURIComponent(
-                            String(version.versionId)
-                        )}`}
-                    >
-                        进入精修
-                    </KuzhambuButton>
+                    {canOpenRefinement ? (
+                        <KuzhambuButton
+                            testId="knowledge-graph-results-graph-version-refinement-button"
+                            href={`/knowledge/refinement?graphVersionId=${encodeURIComponent(
+                                String(version.versionId)
+                            )}`}
+                        >
+                            进入精修
+                        </KuzhambuButton>
+                    ) : null}
                 </KuzhambuSpaceCompact>
             ),
             title: "操作"

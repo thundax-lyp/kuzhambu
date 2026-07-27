@@ -14,6 +14,7 @@ interface GraphExtractionManuscriptDetailProps {
     applying?: boolean;
     canApply?: boolean;
     canEdit?: boolean;
+    canOpenRefinement?: boolean;
     candidate?: GraphWorkbenchCandidateRecord | null;
     candidateLoading?: boolean;
     detail?: GraphWorkbenchManuscriptRecord | null;
@@ -60,6 +61,7 @@ export const GraphExtractionManuscriptDetail = ({
     applying = false,
     canApply = false,
     canEdit = false,
+    canOpenRefinement = false,
     candidate,
     candidateLoading = false,
     detail,
@@ -141,23 +143,31 @@ export const GraphExtractionManuscriptDetail = ({
                         <KuzhambuButton
                             testId="knowledge-graph-extraction-manuscript-view-version-button"
                             disabled={!latestVersionId}
-                            href={latestVersionId ? "/knowledge/graph-results" : undefined}
-                        >
-                            查看结果
-                        </KuzhambuButton>
-                        <KuzhambuButton
-                            testId="knowledge-graph-extraction-manuscript-refinement-button"
-                            disabled={!latestVersionId}
                             href={
                                 latestVersionId
-                                    ? `/knowledge/refinement?graphVersionId=${encodeURIComponent(
+                                    ? `/knowledge/graph-results?graphVersionId=${encodeURIComponent(
                                           String(latestVersionId)
                                       )}`
                                     : undefined
                             }
                         >
-                            进入精修
+                            查看结果
                         </KuzhambuButton>
+                        {canOpenRefinement ? (
+                            <KuzhambuButton
+                                testId="knowledge-graph-extraction-manuscript-refinement-button"
+                                disabled={!latestVersionId}
+                                href={
+                                    latestVersionId
+                                        ? `/knowledge/refinement?graphVersionId=${encodeURIComponent(
+                                              String(latestVersionId)
+                                          )}`
+                                        : undefined
+                                }
+                            >
+                                进入精修
+                            </KuzhambuButton>
+                        ) : null}
                     </KuzhambuSpace>
                 </KuzhambuSpace>
             </Card>

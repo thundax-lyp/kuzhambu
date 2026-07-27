@@ -104,18 +104,16 @@ describe("knowledge graph workbench service request contracts", () => {
 
     it("sends automatic extraction payload without manual JSON fields", async () => {
         await service.extractManuscript({
-            sourceContentType: "MING_CUSTOMS",
-            sourceContentId: 3001,
-            taskType: "GRAPH",
-            requestedBy: 99
+            sourceContentType: "SANCAI_ENTRY",
+            sourceContentId: 1001,
+            taskType: "GRAPH"
         });
 
         const body = capturedCalls.at(-1)?.body;
         expectLastCall("POST", "/knowledge/graph-workbench/manuscript/extract", {
-            sourceContentType: "MING_CUSTOMS",
-            sourceContentId: 3001,
-            taskType: "GRAPH",
-            requestedBy: 99
+            sourceContentType: "SANCAI_ENTRY",
+            sourceContentId: 1001,
+            taskType: "GRAPH"
         });
         expect(body).not.toHaveProperty("scopeJson");
         expect(body).not.toHaveProperty("selectionScopeJson");
