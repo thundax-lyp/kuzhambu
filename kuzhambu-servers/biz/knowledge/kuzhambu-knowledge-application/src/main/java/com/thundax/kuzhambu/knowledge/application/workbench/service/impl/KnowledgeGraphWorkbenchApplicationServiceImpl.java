@@ -1,5 +1,8 @@
 package com.thundax.kuzhambu.knowledge.application.workbench.service.impl;
 
+import com.thundax.kuzhambu.ai.facade.AiFacade;
+import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
+import com.thundax.kuzhambu.ai.facade.request.GetAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsPublicContentFacadeDto;
 import com.thundax.kuzhambu.classics.facade.request.ClassicsPublicContentFacadeRequest;
@@ -53,6 +56,7 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
     private final ClassicsFacade classicsFacade;
     private final KnowledgeGraphExtractionApplicationService graphExtractionApplicationService;
     private final KnowledgeQualityReportApplicationService qualityReportApplicationService;
+    private final AiFacade aiFacade;
     private final KnowledgeGraphManuscriptTreeAssembler treeAssembler;
     private final KnowledgeGraphManuscriptPayloadBuilder payloadBuilder;
 
@@ -60,11 +64,13 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
             ClassicsFacade classicsFacade,
             KnowledgeGraphExtractionApplicationService graphExtractionApplicationService,
             KnowledgeQualityReportApplicationService qualityReportApplicationService,
+            AiFacade aiFacade,
             KnowledgeGraphManuscriptTreeAssembler treeAssembler,
             KnowledgeGraphManuscriptPayloadBuilder payloadBuilder) {
         this.classicsFacade = classicsFacade;
         this.graphExtractionApplicationService = graphExtractionApplicationService;
         this.qualityReportApplicationService = qualityReportApplicationService;
+        this.aiFacade = aiFacade;
         this.treeAssembler = treeAssembler;
         this.payloadBuilder = payloadBuilder;
     }
@@ -125,6 +131,7 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
     @Transactional(readOnly = true)
     public CandidateSummaryResult getLatestCandidate(String sourceContentType, Long sourceContentId, String taskType) {
         GraphExtractionTaskResult task = latestTask(normalizeTaskType(taskType), sourceContentType, sourceContentId);
+        AiCandidateFacadeDto candidate = latestCandidate(task);
         return CandidateSummaryResult.builder()
                 .taskId(parseTaskId(task))
                 .aiCandidateId(task == null ? null : task.getAiCandidateId())
@@ -132,6 +139,7 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
                 .status(task == null ? GRAPH_STATUS_NOT_EXTRACTED : task.getStatus())
                 .sourceContentType(sourceContentType)
                 .sourceContentId(sourceContentId)
+                .candidatePayloadJson(candidate == null ? null : candidate.getResultPayload())
                 .build();
     }
 
@@ -291,6 +299,15 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
                 .relationAccuracyRate(toDouble(report.getRelationAccuracyRate()))
                 .completenessRate(toDouble(report.getCompletenessRate()))
                 .build();
+    }
+
+    private AiCandidateFacadeDto latestCandidate(GraphExtractionTaskResult task) {
+        if (task == null || task.getAiCandidateId() == null) {
+            return null;
+        }
+        return aiFacade.getCandidate(GetAiCandidateFacadeRequest.builder()
+                .candidateId(task.getAiCandidateId())
+                .build());
     }
 
     private String resolveGraphStatus(GraphExtractionTaskResult task, GraphVersionResult version) {

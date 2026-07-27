@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `KnowledgeGraphWorkbenchControllerTest`：补齐新增接口冒烟和前端契约测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-FRONTEND-FLOW.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/test/java/com/thundax/kuzhambu/knowledge/interfaces/admin/workbench/controller/KnowledgeGraphWorkbenchControllerTest.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/test/java/com/thundax/kuzhambu/knowledge/application/workbench/service/impl/KnowledgeGraphWorkbenchApplicationServiceImplTest.java`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/graph-workbench-service-contract.test.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/graph-extraction-page.test.tsx`
-    - 处理动作：覆盖新增接口、三类来源、自动 payload、权限和前端闭环。
-    - 验收点：Maven 指定测试和前端 vitest 均通过，且服务契约断言前端不发送 JSON 手填字段。
-    - 重要度：10/10
-
 ## 待审阅任务项
 
 ## 待讨论项
