@@ -4,7 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiCandidateStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjectId;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.common.core.exception.DomainException;
 import com.thundax.kuzhambu.common.core.page.PageResult;
@@ -17,14 +22,15 @@ class AiCandidateDomainServiceTest {
 
     @Test
     void requirePendingForApplyShouldReturnPendingCandidateWhenTargetMatches() {
-        AiCandidate candidate = candidate(1L, "SANCAI_ENTRY", 2L, "summary", "PENDING");
+        AiCandidate candidate = candidate(
+                1L, "SANCAI_ENTRY", 2L, AiBusinessCapability.CLASSICS_SUMMARY.value(), AiCandidateStatus.PENDING);
         FakeRepository repository = new FakeRepository(candidate);
         AiCandidateDomainService service = new AiCandidateDomainService(repository);
         AiCandidateApplyCheck check = new AiCandidateApplyCheck();
         check.setCandidateId(1L);
         check.setContentType("SANCAI_ENTRY");
         check.setContentId(2L);
-        check.setCapability("summary");
+        check.setCapability(AiBusinessCapability.CLASSICS_SUMMARY.value());
 
         AiCandidate actual = service.requirePendingForApply(check);
 
@@ -33,14 +39,20 @@ class AiCandidateDomainServiceTest {
 
     @Test
     void requirePendingForApplyWithObjectIdShouldMatch() {
-        AiCandidate candidate = candidate(1L, "SANCAI_ENTRY", 2L, "image_analysis", "PENDING", 111L);
+        AiCandidate candidate = candidate(
+                1L,
+                "SANCAI_ENTRY",
+                2L,
+                AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE.value(),
+                AiCandidateStatus.PENDING,
+                111L);
         FakeRepository repository = new FakeRepository(candidate);
         AiCandidateDomainService service = new AiCandidateDomainService(repository);
         AiCandidateApplyCheck check = new AiCandidateApplyCheck();
         check.setCandidateId(1L);
         check.setContentType("SANCAI_ENTRY");
         check.setContentId(2L);
-        check.setCapability("image_analysis");
+        check.setCapability(AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE.value());
 
         AiCandidate actual = service.requirePendingForApply(check, 111L);
 
@@ -49,14 +61,20 @@ class AiCandidateDomainServiceTest {
 
     @Test
     void requirePendingForApplyWithObjectIdShouldFailWhenNotMatch() {
-        AiCandidate candidate = candidate(1L, "SANCAI_ENTRY", 2L, "image_analysis", "PENDING", 111L);
+        AiCandidate candidate = candidate(
+                1L,
+                "SANCAI_ENTRY",
+                2L,
+                AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE.value(),
+                AiCandidateStatus.PENDING,
+                111L);
         FakeRepository repository = new FakeRepository(candidate);
         AiCandidateDomainService service = new AiCandidateDomainService(repository);
         AiCandidateApplyCheck check = new AiCandidateApplyCheck();
         check.setCandidateId(1L);
         check.setContentType("SANCAI_ENTRY");
         check.setContentId(2L);
-        check.setCapability("image_analysis");
+        check.setCapability(AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE.value());
 
         DomainException exception =
                 assertThrows(DomainException.class, () -> service.requirePendingForApply(check, 112L));
@@ -67,14 +85,15 @@ class AiCandidateDomainServiceTest {
 
     @Test
     void requirePendingForApplyShouldFailWhenNotPending() {
-        AiCandidate candidate = candidate(1L, "SANCAI_ENTRY", 2L, "summary", "REJECTED");
+        AiCandidate candidate = candidate(
+                1L, "SANCAI_ENTRY", 2L, AiBusinessCapability.CLASSICS_SUMMARY.value(), AiCandidateStatus.REJECTED);
         FakeRepository repository = new FakeRepository(candidate);
         AiCandidateDomainService service = new AiCandidateDomainService(repository);
         AiCandidateApplyCheck check = new AiCandidateApplyCheck();
         check.setCandidateId(1L);
         check.setContentType("SANCAI_ENTRY");
         check.setContentId(2L);
-        check.setCapability("summary");
+        check.setCapability(AiBusinessCapability.CLASSICS_SUMMARY.value());
 
         DomainException exception = assertThrows(DomainException.class, () -> service.requirePendingForApply(check));
 
@@ -84,14 +103,15 @@ class AiCandidateDomainServiceTest {
 
     @Test
     void requirePendingForApplyShouldFailWhenTargetMismatch() {
-        AiCandidate candidate = candidate(1L, "SANCAI_ENTRY", 2L, "summary", "PENDING");
+        AiCandidate candidate = candidate(
+                1L, "SANCAI_ENTRY", 2L, AiBusinessCapability.CLASSICS_SUMMARY.value(), AiCandidateStatus.PENDING);
         FakeRepository repository = new FakeRepository(candidate);
         AiCandidateDomainService service = new AiCandidateDomainService(repository);
         AiCandidateApplyCheck check = new AiCandidateApplyCheck();
         check.setCandidateId(1L);
         check.setContentType("WANGQI_DOCUMENT");
         check.setContentId(2L);
-        check.setCapability("summary");
+        check.setCapability(AiBusinessCapability.CLASSICS_SUMMARY.value());
 
         DomainException exception = assertThrows(DomainException.class, () -> service.requirePendingForApply(check));
 
@@ -101,7 +121,8 @@ class AiCandidateDomainServiceTest {
 
     @Test
     void markAppliedShouldUpdateCandidateAndReturnAppliedResult() {
-        AiCandidate candidate = candidate(1L, "SANCAI_ENTRY", 2L, "summary", "PENDING");
+        AiCandidate candidate = candidate(
+                1L, "SANCAI_ENTRY", 2L, AiBusinessCapability.CLASSICS_SUMMARY.value(), AiCandidateStatus.PENDING);
         FakeRepository repository = new FakeRepository(candidate);
         AiCandidateDomainService service = new AiCandidateDomainService(repository);
         Instant appliedAt = Instant.parse("2026-06-22T02:00:00Z");
@@ -109,7 +130,7 @@ class AiCandidateDomainServiceTest {
         AiCandidate actual = service.markApplied(1L, "JSON", "{\"text\":\"ok\"}", appliedAt);
 
         assertSame(candidate, actual);
-        assertEquals("APPLIED", actual.getStatus());
+        assertEquals(AiCandidateStatus.APPLIED, actual.getStatus());
         assertEquals("JSON", actual.getResultFormat());
         assertEquals("{\"text\":\"ok\"}", actual.getResultPayload());
         assertEquals(appliedAt, actual.getAppliedAt());
@@ -119,7 +140,8 @@ class AiCandidateDomainServiceTest {
 
     @Test
     void markAppliedShouldFailWhenCandidateIsNotPending() {
-        AiCandidate candidate = candidate(1L, "SANCAI_ENTRY", 2L, "summary", "REJECTED");
+        AiCandidate candidate = candidate(
+                1L, "SANCAI_ENTRY", 2L, AiBusinessCapability.CLASSICS_SUMMARY.value(), AiCandidateStatus.REJECTED);
         FakeRepository repository = new FakeRepository(candidate);
         AiCandidateDomainService service = new AiCandidateDomainService(repository);
 
@@ -134,7 +156,8 @@ class AiCandidateDomainServiceTest {
 
     @Test
     void rejectShouldFailWhenCandidateIsNotPending() {
-        AiCandidate candidate = candidate(1L, "SANCAI_ENTRY", 2L, "summary", "APPLIED");
+        AiCandidate candidate = candidate(
+                1L, "SANCAI_ENTRY", 2L, AiBusinessCapability.CLASSICS_SUMMARY.value(), AiCandidateStatus.APPLIED);
         FakeRepository repository = new FakeRepository(candidate);
         AiCandidateDomainService service = new AiCandidateDomainService(repository);
 
@@ -146,20 +169,20 @@ class AiCandidateDomainServiceTest {
         assertEquals(0, repository.getUpdateCandidateCount());
     }
 
-    private AiCandidate candidate(Long id, String contentType, Long contentId, String capability, String status) {
+    private AiCandidate candidate(
+            Long id, String contentType, Long contentId, String capability, AiCandidateStatus status) {
         AiCandidate candidate = new AiCandidate();
-        candidate.setCandidateId(id);
-        candidate.setContentType(contentType);
-        candidate.setContentId(contentId);
-        candidate.setCapability(capability);
+        candidate.setId(AiCandidateId.of(id));
+        candidate.setContentRef(AiContentRef.ofNullable(contentType, contentId));
+        candidate.setCapability(AiBusinessCapability.from(capability));
         candidate.setStatus(status);
         return candidate;
     }
 
     private AiCandidate candidate(
-            Long id, String contentType, Long contentId, String capability, String status, Long objectId) {
+            Long id, String contentType, Long contentId, String capability, AiCandidateStatus status, Long objectId) {
         AiCandidate candidate = candidate(id, contentType, contentId, capability, status);
-        candidate.setObjectId(objectId);
+        candidate.setTargetObjectId(AiTargetObjectId.ofNullable(objectId));
         return candidate;
     }
 
@@ -174,28 +197,30 @@ class AiCandidateDomainServiceTest {
         }
 
         @Override
-        public com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord getCallRecord(Long callId) {
+        public com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog getInvocationLog(Long callId) {
             return null;
         }
 
         @Override
-        public Long insertCallRecord(com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord callRecord) {
+        public Long insertInvocationLog(
+                com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog invocationLog) {
             return null;
         }
 
         @Override
-        public int updateCallRecord(com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord callRecord) {
+        public int updateInvocationLog(
+                com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog invocationLog) {
             return 0;
         }
 
         @Override
-        public List<com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord> listCallRecords(
+        public List<com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog> listInvocationLogs(
                 java.time.Instant requestedAtStart, java.time.Instant requestedAtEnd) {
             return Collections.emptyList();
         }
 
         @Override
-        public PageResult<com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord> pageCallRecords(
+        public PageResult<com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog> pageInvocationLogs(
                 String scope,
                 String capability,
                 String contentType,
@@ -212,14 +237,14 @@ class AiCandidateDomainServiceTest {
         }
 
         @Override
-        public List<com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord> listCallRecords(
+        public List<com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog> listInvocationLogs(
                 String scope, String capability, String serviceRole, Instant requestedAtStart, Instant requestedAtEnd) {
             return Collections.emptyList();
         }
 
         @Override
         public AiCandidate getCandidate(Long candidateId) {
-            return candidateId.equals(candidate.getCandidateId()) ? candidate : null;
+            return candidateId.equals(candidate.getId().value()) ? candidate : null;
         }
 
         @Override

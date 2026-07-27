@@ -1,5 +1,15 @@
 package com.thundax.kuzhambu.ai.domain.invocation.model.entity;
 
+import com.thundax.kuzhambu.ai.domain.batch.model.valueobject.AiBatchJobId;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiInvocationLogId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjectId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
@@ -11,24 +21,23 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AiCallRecord {
+public class AiInvocationLog {
 
-    private Long id;
-    private Long callId;
-    private Long batchId;
+    private AiInvocationLogId id;
+    private AiCallId callId;
+    private AiBatchJobId batchId;
     private String scope;
-    private String capability;
-    private String contentType;
-    private Long contentId;
-    private Long objectId;
+    private AiBusinessCapability capability;
+    private AiContentRef contentRef;
+    private AiTargetObjectId targetObjectId;
     private Long serviceId;
     private String serviceRole;
-    private Long modelId;
-    private String modelName;
-    private Long promptVersionId;
+    private AiModelId modelId;
+    private AiModelName modelName;
+    private PromptVersionId promptVersionId;
     private String requestId;
     private String traceId;
-    private String status = "RUNNING";
+    private AiInvocationStatus status = AiInvocationStatus.RUNNING;
     private boolean streamUsed;
     private boolean streamCompleted;
     private boolean fallbackUsed;
@@ -44,7 +53,7 @@ public class AiCallRecord {
     private Instant completedAt;
 
     public void markSucceeded(AiUsageSnapshot usageSnapshot, Instant completedTime) {
-        this.status = "SUCCEEDED";
+        this.status = AiInvocationStatus.SUCCEEDED;
         this.streamCompleted = streamUsed;
         this.usage = AiUsageSnapshot.orEmpty(usageSnapshot);
         this.completedAt = completedTime;
@@ -62,7 +71,7 @@ public class AiCallRecord {
 
     public void markFailed(
             String failureType, String failureMessage, AiUsageSnapshot usageSnapshot, Instant completedTime) {
-        this.status = "FAILED";
+        this.status = AiInvocationStatus.FAILED;
         this.usage = AiUsageSnapshot.orEmpty(usageSnapshot);
         this.errorType = failureType;
         this.errorMessage = failureMessage;
