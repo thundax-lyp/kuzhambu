@@ -31,10 +31,10 @@ public final class AiInvocationRequests {
 
     @Getter
     @Setter
-    @Schema(name = "AiCallRecordPageRequest", description = "AI调用记录分页请求")
+    @Schema(name = "AiInvocationLogPageRequest", description = "AI调用记录分页请求")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class CallRecordPageRequest extends PageRequest {
+    public static class InvocationLogPageRequest extends PageRequest {
 
         @Size(max = 64)
         @JsonProperty(value = "scope")
@@ -75,10 +75,10 @@ public final class AiInvocationRequests {
 
     @Getter
     @Setter
-    @Schema(name = "AiCallSummaryRequest", description = "AI调用统计请求")
+    @Schema(name = "AiInvocationSummaryRequest", description = "AI调用统计请求")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class CallSummaryRequest implements Serializable {
+    public static class InvocationSummaryRequest implements Serializable {
 
         @JsonProperty(value = "periodStart")
         private Instant periodStart;

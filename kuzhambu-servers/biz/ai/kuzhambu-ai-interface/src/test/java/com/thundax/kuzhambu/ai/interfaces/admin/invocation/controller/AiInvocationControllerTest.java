@@ -5,16 +5,20 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.thundax.kuzhambu.ai.application.batch.service.AiBatchJobApplicationService;
-import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiCandidateStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainService;
-import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests.CallRecordPageRequest;
-import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests.CallSummaryRequest;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests.CandidateListRequest;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests.CandidateMarkAppliedRequest;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests.CandidateRejectRequest;
+import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests.InvocationLogPageRequest;
+import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests.InvocationSummaryRequest;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.AiInvocationResponses.CandidateResponse;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
@@ -35,16 +39,16 @@ class AiInvocationControllerTest {
         assertRequestMapping(AiInvocationController.class, "/api/ai/invocation");
         assertPostMapping(
                 AiInvocationController.class,
-                "pageCallRecords",
-                "call/page",
+                "pageInvocationLogs",
+                "invocation-log/page",
                 "ai:invocation:view",
-                CallRecordPageRequest.class);
+                InvocationLogPageRequest.class);
         assertPostMapping(
                 AiInvocationController.class,
-                "summarizeCallRecords",
-                "call/summary",
+                "summarizeInvocationLogs",
+                "invocation-log/summary",
                 "ai:invocation:view",
-                CallSummaryRequest.class);
+                InvocationSummaryRequest.class);
         assertPostMapping(
                 AiInvocationController.class,
                 "listCandidates",
@@ -130,10 +134,10 @@ class AiInvocationControllerTest {
     }
 
     @Test
-    void pageCallRecordsShouldPassFiltersToRepository() {
+    void pageInvocationLogsShouldPassFiltersToRepository() {
         AiInvocationRepository repository = new FakeRepository() {
             @Override
-            public PageResult<AiCallRecord> pageCallRecords(
+            public PageResult<AiInvocationLog> pageInvocationLogs(
                     String scope,
                     String capability,
                     String contentType,
@@ -158,12 +162,12 @@ class AiInvocationControllerTest {
                 assertEquals(Instant.parse("2026-07-02T00:00:00Z"), requestedAtEnd);
                 assertEquals(2, pageNo);
                 assertEquals(5, pageSize);
-                return PageResult.of(2, 5, 1, List.of(failedCallRecord()));
+                return PageResult.of(2, 5, 1, List.of(failedInvocationLog()));
             }
         };
         AiInvocationController controller = new AiInvocationController(repository, noBatchService(), noDomainService());
 
-        CallRecordPageRequest request = new CallRecordPageRequest();
+        InvocationLogPageRequest request = new InvocationLogPageRequest();
         request.setScope("classics");
         request.setCapability("summary");
         request.setContentType("ENTRY");
@@ -177,7 +181,7 @@ class AiInvocationControllerTest {
         request.setPageNo(2);
         request.setPageSize(5);
 
-        var response = controller.pageCallRecords(request);
+        var response = controller.pageInvocationLogs(request);
 
         assertEquals(2, response.getPageNo());
         assertEquals(1, response.getCount());
@@ -186,10 +190,10 @@ class AiInvocationControllerTest {
     }
 
     @Test
-    void summarizeCallRecordsShouldAggregateRepositoryRecords() {
+    void summarizeInvocationLogsShouldAggregateRepositoryRecords() {
         AiInvocationRepository repository = new FakeRepository() {
             @Override
-            public List<AiCallRecord> listCallRecords(
+            public List<AiInvocationLog> listInvocationLogs(
                     String scope,
                     String capability,
                     String serviceRole,
@@ -200,26 +204,28 @@ class AiInvocationControllerTest {
                 assertEquals("PRIMARY", serviceRole);
                 assertEquals(Instant.parse("2026-07-01T00:00:00Z"), requestedAtStart);
                 assertEquals(Instant.parse("2026-07-02T00:00:00Z"), requestedAtEnd);
-                return List.of(succeededCallRecord(), failedCallRecord());
+                return List.of(succeededInvocationLog(), failedInvocationLog());
             }
         };
         AiInvocationController controller = new AiInvocationController(repository, noBatchService(), noDomainService());
 
-        CallSummaryRequest request = new CallSummaryRequest();
+        InvocationSummaryRequest request = new InvocationSummaryRequest();
         request.setScope("classics");
         request.setCapability("summary");
         request.setServiceRole("PRIMARY");
         request.setPeriodStart(Instant.parse("2026-07-01T00:00:00Z"));
         request.setPeriodEnd(Instant.parse("2026-07-02T00:00:00Z"));
 
-        var response = controller.summarizeCallRecords(request);
+        var response = controller.summarizeInvocationLogs(request);
 
         assertEquals(2L, response.getInvocationCount());
         assertEquals(1L, response.getSucceededInvocationCount());
         assertEquals(1L, response.getFailedInvocationCount());
         assertEquals(150L, response.getAvgLatencyMs());
         assertEquals(new BigDecimal("0.30"), response.getTotalCostAmount());
-        assertEquals("summary", response.getTopCapabilities().get(0).getCapability());
+        assertEquals(
+                AiBusinessCapability.CLASSICS_SUMMARY.value(),
+                response.getTopCapabilities().get(0).getCapability());
         assertEquals(2L, response.getTopCapabilities().get(0).getInvocationCount());
     }
 
@@ -263,10 +269,10 @@ class AiInvocationControllerTest {
 
     private static AiCandidate currentCandidate() {
         AiCandidate candidate = new AiCandidate();
-        candidate.setCandidateId(22L);
+        candidate.setId(AiCandidateId.of(22L));
         candidate.setResultFormat("TEXT");
         candidate.setResultPayload("existing");
-        candidate.setStatus("PENDING");
+        candidate.setStatus(AiCandidateStatus.PENDING);
         return candidate;
     }
 
@@ -361,8 +367,8 @@ class AiInvocationControllerTest {
 
     private static AiCandidate rejectedCandidate() {
         AiCandidate candidate = new AiCandidate();
-        candidate.setCandidateId(11L);
-        candidate.setStatus("REJECTED");
+        candidate.setId(AiCandidateId.of(11L));
+        candidate.setStatus(AiCandidateStatus.REJECTED);
         candidate.setErrorType("TIMEOUT");
         candidate.setErrorMessage("执行超时");
         return candidate;
@@ -370,32 +376,32 @@ class AiInvocationControllerTest {
 
     private static AiCandidate appliedCandidate() {
         AiCandidate candidate = new AiCandidate();
-        candidate.setCandidateId(22L);
+        candidate.setId(AiCandidateId.of(22L));
         candidate.setResultFormat("TEXT");
         candidate.setResultPayload("existing");
-        candidate.setStatus("APPLIED");
+        candidate.setStatus(AiCandidateStatus.APPLIED);
         return candidate;
     }
 
-    private static AiCallRecord succeededCallRecord() {
-        AiCallRecord record = new AiCallRecord();
-        record.setScope("classics");
-        record.setCapability("summary");
-        record.setServiceRole("PRIMARY");
-        record.setStatus("SUCCEEDED");
-        record.setUsage(new AiUsageSnapshot(100, 10, 20, new BigDecimal("0.10")));
-        return record;
+    private static AiInvocationLog succeededInvocationLog() {
+        AiInvocationLog invocationLog = new AiInvocationLog();
+        invocationLog.setScope("classics");
+        invocationLog.setCapability(AiBusinessCapability.CLASSICS_SUMMARY);
+        invocationLog.setServiceRole("PRIMARY");
+        invocationLog.setStatus(AiInvocationStatus.SUCCEEDED);
+        invocationLog.setUsage(new AiUsageSnapshot(100, 10, 20, new BigDecimal("0.10")));
+        return invocationLog;
     }
 
-    private static AiCallRecord failedCallRecord() {
-        AiCallRecord record = new AiCallRecord();
-        record.setScope("classics");
-        record.setCapability("summary");
-        record.setServiceRole("PRIMARY");
-        record.setStatus("FAILED");
-        record.setFallbackUsed(true);
-        record.setUsage(new AiUsageSnapshot(200, 30, 40, new BigDecimal("0.20")));
-        return record;
+    private static AiInvocationLog failedInvocationLog() {
+        AiInvocationLog invocationLog = new AiInvocationLog();
+        invocationLog.setScope("classics");
+        invocationLog.setCapability(AiBusinessCapability.CLASSICS_SUMMARY);
+        invocationLog.setServiceRole("PRIMARY");
+        invocationLog.setStatus(AiInvocationStatus.FAILED);
+        invocationLog.setFallbackUsed(true);
+        invocationLog.setUsage(new AiUsageSnapshot(200, 30, 40, new BigDecimal("0.20")));
+        return invocationLog;
     }
 
     private static InvocationHandler noOpInvocationHandler(String name) {
@@ -425,28 +431,30 @@ class AiInvocationControllerTest {
 
     private static class FakeRepository implements AiInvocationRepository {
         @Override
-        public com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord getCallRecord(Long callId) {
+        public com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog getInvocationLog(Long callId) {
             return null;
         }
 
         @Override
-        public Long insertCallRecord(com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord callRecord) {
+        public Long insertInvocationLog(
+                com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog invocationLog) {
             return null;
         }
 
         @Override
-        public int updateCallRecord(com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord callRecord) {
+        public int updateInvocationLog(
+                com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog invocationLog) {
             return 0;
         }
 
         @Override
-        public List<com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord> listCallRecords(
+        public List<com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog> listInvocationLogs(
                 java.time.Instant requestedAtStart, java.time.Instant requestedAtEnd) {
             return java.util.Collections.emptyList();
         }
 
         @Override
-        public PageResult<AiCallRecord> pageCallRecords(
+        public PageResult<AiInvocationLog> pageInvocationLogs(
                 String scope,
                 String capability,
                 String contentType,
@@ -463,7 +471,7 @@ class AiInvocationControllerTest {
         }
 
         @Override
-        public List<AiCallRecord> listCallRecords(
+        public List<AiInvocationLog> listInvocationLogs(
                 String scope,
                 String capability,
                 String serviceRole,

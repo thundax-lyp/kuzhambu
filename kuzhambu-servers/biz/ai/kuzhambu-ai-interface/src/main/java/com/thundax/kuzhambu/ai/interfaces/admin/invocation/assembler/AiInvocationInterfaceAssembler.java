@@ -2,8 +2,18 @@ package com.thundax.kuzhambu.ai.interfaces.admin.invocation.assembler;
 
 import com.thundax.kuzhambu.ai.application.batch.command.AiBatchJobCreateCommand;
 import com.thundax.kuzhambu.ai.application.batch.result.AiBatchJobResult;
-import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
+import com.thundax.kuzhambu.ai.domain.batch.codec.AiBatchJobIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiPromptVersionIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.AiInvocationResponses;
@@ -30,56 +40,63 @@ public final class AiInvocationInterfaceAssembler {
         return command;
     }
 
-    public static AiInvocationResponses.CallRecordResponse toResponse(AiCallRecord record) {
-        if (record == null) {
-            return AiInvocationResponses.CallRecordResponse.builder().build();
+    public static AiInvocationResponses.InvocationLogResponse toResponse(AiInvocationLog invocationLog) {
+        if (invocationLog == null) {
+            return AiInvocationResponses.InvocationLogResponse.builder().build();
         }
-        AiUsageSnapshot usage = AiUsageSnapshot.orEmpty(record.getUsage());
-        return AiInvocationResponses.CallRecordResponse.builder()
-                .callId(record.getCallId())
-                .callIdText(longText(record.getCallId()))
-                .batchId(record.getBatchId())
-                .scope(record.getScope())
-                .capability(record.getCapability())
-                .contentType(record.getContentType())
-                .contentId(record.getContentId())
-                .objectId(record.getObjectId())
-                .serviceRole(record.getServiceRole())
-                .modelId(record.getModelId())
-                .modelName(record.getModelName())
-                .promptVersionId(record.getPromptVersionId())
-                .requestId(record.getRequestId())
-                .traceId(record.getTraceId())
-                .status(record.getStatus())
-                .streamUsed(record.isStreamUsed())
-                .streamCompleted(record.isStreamCompleted())
-                .fallbackUsed(record.isFallbackUsed())
+        AiUsageSnapshot usage = AiUsageSnapshot.orEmpty(invocationLog.getUsage());
+        Long callId = AiCallIdCodec.toValue(invocationLog.getCallId());
+        return AiInvocationResponses.InvocationLogResponse.builder()
+                .callId(callId)
+                .callIdText(longText(callId))
+                .batchId(AiBatchJobIdCodec.toValue(invocationLog.getBatchId()))
+                .scope(invocationLog.getScope())
+                .capability(
+                        invocationLog.getCapability() == null
+                                ? null
+                                : invocationLog.getCapability().value())
+                .contentType(AiContentRefCodec.toContentType(invocationLog.getContentRef()))
+                .contentId(AiContentRefCodec.toContentId(invocationLog.getContentRef()))
+                .objectId(AiTargetObjectIdCodec.toValue(invocationLog.getTargetObjectId()))
+                .serviceRole(invocationLog.getServiceRole())
+                .modelId(AiModelIdCodec.toValue(invocationLog.getModelId()))
+                .modelName(AiModelNameCodec.toValue(invocationLog.getModelName()))
+                .promptVersionId(PromptVersionIdCodec.toValue(invocationLog.getPromptVersionId()))
+                .requestId(invocationLog.getRequestId())
+                .traceId(invocationLog.getTraceId())
+                .status(
+                        invocationLog.getStatus() == null
+                                ? null
+                                : invocationLog.getStatus().name())
+                .streamUsed(invocationLog.isStreamUsed())
+                .streamCompleted(invocationLog.isStreamCompleted())
+                .fallbackUsed(invocationLog.isFallbackUsed())
                 .latencyMs(usage.getLatencyMs())
                 .inputTokens(usage.getInputTokens())
                 .outputTokens(usage.getOutputTokens())
                 .costAmount(usage.getCostAmount())
-                .failureStage(record.getFailureStage())
-                .resultFormat(record.getResultFormat())
-                .errorType(record.getErrorType())
-                .errorMessage(record.getErrorMessage())
-                .warningsJson(record.getWarningsJson())
-                .requestedAt(record.getRequestedAt())
-                .completedAt(record.getCompletedAt())
+                .failureStage(invocationLog.getFailureStage())
+                .resultFormat(invocationLog.getResultFormat())
+                .errorType(invocationLog.getErrorType())
+                .errorMessage(invocationLog.getErrorMessage())
+                .warningsJson(invocationLog.getWarningsJson())
+                .requestedAt(invocationLog.getRequestedAt())
+                .completedAt(invocationLog.getCompletedAt())
                 .build();
     }
 
-    public static AiInvocationResponses.CallSummaryResponse toSummaryResponse(
-            Instant periodStart, Instant periodEnd, List<AiCallRecord> records) {
-        List<AiCallRecord> safeRecords = records == null ? Collections.emptyList() : records;
+    public static AiInvocationResponses.InvocationSummaryResponse toSummaryResponse(
+            Instant periodStart, Instant periodEnd, List<AiInvocationLog> records) {
+        List<AiInvocationLog> safeRecords = records == null ? Collections.emptyList() : records;
         long invocationCount = safeRecords.size();
         long succeededInvocationCount = safeRecords.stream()
-                .filter(record -> "SUCCEEDED".equals(record.getStatus()))
+                .filter(record -> AiInvocationStatus.SUCCEEDED == record.getStatus())
                 .count();
         long failedInvocationCount = safeRecords.stream()
-                .filter(record -> "FAILED".equals(record.getStatus()))
+                .filter(record -> AiInvocationStatus.FAILED == record.getStatus())
                 .count();
         long avgLatencyMs = Math.round(safeRecords.stream()
-                .map(AiCallRecord::getUsage)
+                .map(AiInvocationLog::getUsage)
                 .map(AiUsageSnapshot::orEmpty)
                 .map(AiUsageSnapshot::getLatencyMs)
                 .filter(Objects::nonNull)
@@ -90,7 +107,7 @@ public final class AiInvocationInterfaceAssembler {
                 safeRecords.stream().map(AiInvocationInterfaceAssembler::cost).reduce(BigDecimal.ZERO, BigDecimal::add);
         List<AiInvocationResponses.TopCapabilityResponse> topCapabilities = safeRecords.stream()
                 .filter(record -> record.getCapability() != null)
-                .collect(Collectors.groupingBy(AiCallRecord::getCapability, Collectors.counting()))
+                .collect(Collectors.groupingBy(record -> record.getCapability().value(), Collectors.counting()))
                 .entrySet()
                 .stream()
                 .sorted(Map.Entry.<String, Long>comparingByValue(Comparator.reverseOrder())
@@ -100,7 +117,7 @@ public final class AiInvocationInterfaceAssembler {
                         .invocationCount(entry.getValue())
                         .build())
                 .collect(Collectors.toList());
-        return AiInvocationResponses.CallSummaryResponse.builder()
+        return AiInvocationResponses.InvocationSummaryResponse.builder()
                 .periodStart(periodStart)
                 .periodEnd(periodEnd)
                 .invocationCount(invocationCount)
@@ -116,21 +133,30 @@ public final class AiInvocationInterfaceAssembler {
         if (candidate == null) {
             return AiInvocationResponses.CandidateResponse.builder().build();
         }
+        Long candidateId = AiCandidateIdCodec.toValue(candidate.getId());
+        Long callId = AiCallIdCodec.toValue(candidate.getCallId());
+        Long batchId = AiBatchJobIdCodec.toValue(candidate.getBatchId());
         return AiInvocationResponses.CandidateResponse.builder()
-                .candidateId(candidate.getCandidateId())
-                .candidateIdText(longText(candidate.getCandidateId()))
-                .callId(candidate.getCallId())
-                .callIdText(longText(candidate.getCallId()))
-                .batchId(candidate.getBatchId())
-                .capability(candidate.getCapability())
-                .contentType(candidate.getContentType())
-                .contentId(candidate.getContentId())
-                .objectId(candidate.getObjectId())
+                .candidateId(candidateId)
+                .candidateIdText(longText(candidateId))
+                .callId(callId)
+                .callIdText(longText(callId))
+                .batchId(batchId)
+                .capability(
+                        candidate.getCapability() == null
+                                ? null
+                                : candidate.getCapability().value())
+                .contentType(AiContentRefCodec.toContentType(candidate.getContentRef()))
+                .contentId(AiContentRefCodec.toContentId(candidate.getContentRef()))
+                .objectId(AiTargetObjectIdCodec.toValue(candidate.getTargetObjectId()))
                 .resultFormat(candidate.getResultFormat())
                 .resultPayload(candidate.getResultPayload())
-                .status(candidate.getStatus())
-                .promptVersionId(candidate.getPromptVersionId())
-                .modelName(candidate.getModelName())
+                .status(
+                        candidate.getStatus() == null
+                                ? null
+                                : candidate.getStatus().name())
+                .promptVersionId(AiPromptVersionIdCodec.toValue(candidate.getPromptVersionId()))
+                .modelName(AiModelNameCodec.toValue(candidate.getModelName()))
                 .errorType(candidate.getErrorType())
                 .errorMessage(candidate.getErrorMessage())
                 .requestedAt(candidate.getRequestedAt())
@@ -169,8 +195,8 @@ public final class AiInvocationInterfaceAssembler {
         return request;
     }
 
-    public static BigDecimal cost(AiCallRecord record) {
-        return AiUsageSnapshot.orEmpty(record == null ? null : record.getUsage())
+    public static BigDecimal cost(AiInvocationLog invocationLog) {
+        return AiUsageSnapshot.orEmpty(invocationLog == null ? null : invocationLog.getUsage())
                 .getCostAmount();
     }
 

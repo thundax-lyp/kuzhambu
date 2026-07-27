@@ -12,28 +12,39 @@ import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.ai.application.batch.command.AiBatchJobCreateCommand;
 import com.thundax.kuzhambu.ai.application.batch.service.AiBatchJobApplicationService;
+import com.thundax.kuzhambu.ai.application.discovery.command.DiscoveryAiCommand;
+import com.thundax.kuzhambu.ai.application.discovery.result.DiscoveryAiInvokeResult;
 import com.thundax.kuzhambu.ai.application.discovery.service.DiscoveryAiApplicationService;
 import com.thundax.kuzhambu.ai.application.facade.assembler.AiFacadeAssembler;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
-import com.thundax.kuzhambu.ai.application.knowledge.service.impl.KnowledgeAiExtractionApplicationServiceImpl;
 import com.thundax.kuzhambu.ai.application.report.result.AiReportSummaryResult;
 import com.thundax.kuzhambu.ai.application.report.result.AiReportSummaryResult.TopCapabilityResult;
 import com.thundax.kuzhambu.ai.application.report.service.AiReportApplicationService;
+import com.thundax.kuzhambu.ai.domain.batch.model.valueobject.AiBatchJobId;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
-import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiRequest;
-import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiResult;
-import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiCandidateStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiPromptVersionId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjectId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateApplyCheck;
 import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainService;
-import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionRequest;
-import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionResult;
+import com.thundax.kuzhambu.ai.domain.knowledge.model.entity.KnowledgeAiExtractionRecord;
+import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionInput;
+import com.thundax.kuzhambu.ai.domain.knowledge.repository.KnowledgeAiExtractionRepository;
 import com.thundax.kuzhambu.ai.facade.request.AiReportSummaryFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.CreateAiBatchJobFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
-import com.thundax.kuzhambu.ai.facade.request.GetAiCallRecordFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.GetAiInvocationLogFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.KnowledgeAiExtractionFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RejectAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
@@ -65,7 +76,7 @@ class AiFacadeImplTest {
                 aiReportApplicationService,
                 mock(AiBatchJobApplicationService.class),
                 mock(DiscoveryAiApplicationService.class),
-                mock(KnowledgeAiExtractionApplicationServiceImpl.class),
+                mock(KnowledgeAiExtractionRepository.class),
                 mock(AiInvocationRepository.class),
                 mock(AiCandidateDomainService.class));
 
@@ -95,7 +106,7 @@ class AiFacadeImplTest {
                 mock(AiReportApplicationService.class),
                 aiBatchJobApplicationService,
                 mock(DiscoveryAiApplicationService.class),
-                mock(KnowledgeAiExtractionApplicationServiceImpl.class),
+                mock(KnowledgeAiExtractionRepository.class),
                 mock(AiInvocationRepository.class),
                 mock(AiCandidateDomainService.class));
         CreateAiBatchJobFacadeRequest request = CreateAiBatchJobFacadeRequest.builder()
@@ -123,23 +134,23 @@ class AiFacadeImplTest {
     void understandDiscoveryQueryShouldMapRequestAndResponse() {
         DiscoveryAiApplicationService discoveryAiApplicationService = mock(DiscoveryAiApplicationService.class);
         when(discoveryAiApplicationService.understandQuery(any())).thenAnswer(invocation -> {
-            DiscoveryAiRequest request = invocation.getArgument(0);
-            assertEquals(21L, request.getServiceId());
-            assertEquals("DISCOVERY", request.getServiceRole());
-            assertEquals(31L, request.getModelId());
-            assertEquals("gpt-5", request.getModelName());
-            assertEquals(41L, request.getPromptVersionId());
-            assertEquals("req-1", request.getRequestId());
-            assertEquals("trace-1", request.getTraceId());
-            assertEquals("[\"prompt\"]", request.getPromptMessagesJson());
-            assertEquals("{\"lang\":\"zh\"}", request.getPromptVariablesJson());
-            assertEquals("hash-1", request.getPromptHash());
-            assertEquals("{\"query\":\"苏东坡\"}", request.getInputPayloadJson());
-            assertEquals("{\"type\":\"object\"}", request.getOutputSchemaJson());
-            assertTrue(request.isStream());
-            assertTrue(request.isForceJson());
-            assertEquals("zh-CN", request.getLocale());
-            return new DiscoveryAiResult(
+            DiscoveryAiCommand command = invocation.getArgument(0);
+            assertEquals(21L, command.getServiceId());
+            assertEquals("DISCOVERY", command.getServiceRole());
+            assertEquals(31L, command.getModelId());
+            assertEquals("gpt-5", command.getModelName());
+            assertEquals(41L, command.getPromptVersionId());
+            assertEquals("req-1", command.getRequestId());
+            assertEquals("trace-1", command.getTraceId());
+            assertEquals("[\"prompt\"]", command.getPromptMessagesJson());
+            assertEquals("{\"lang\":\"zh\"}", command.getPromptVariablesJson());
+            assertEquals("hash-1", command.getPromptHash());
+            assertEquals("{\"query\":\"苏东坡\"}", command.getInputPayloadJson());
+            assertEquals("{\"type\":\"object\"}", command.getOutputSchemaJson());
+            assertTrue(command.isStream());
+            assertTrue(command.isForceJson());
+            assertEquals("zh-CN", command.getLocale());
+            return new DiscoveryAiInvokeResult(
                     501L,
                     601L,
                     "SUCCEEDED",
@@ -153,7 +164,7 @@ class AiFacadeImplTest {
                 mock(AiReportApplicationService.class),
                 mock(AiBatchJobApplicationService.class),
                 discoveryAiApplicationService,
-                mock(KnowledgeAiExtractionApplicationServiceImpl.class),
+                mock(KnowledgeAiExtractionRepository.class),
                 mock(AiInvocationRepository.class),
                 mock(AiCandidateDomainService.class));
 
@@ -189,23 +200,23 @@ class AiFacadeImplTest {
     void generateDiscoveryAnswerShouldMapCallIdAndFailureFields() {
         DiscoveryAiApplicationService discoveryAiApplicationService = mock(DiscoveryAiApplicationService.class);
         when(discoveryAiApplicationService.generateAnswer(any())).thenAnswer(invocation -> {
-            DiscoveryAiRequest request = invocation.getArgument(0);
-            assertEquals(21L, request.getServiceId());
-            assertEquals("DISCOVERY", request.getServiceRole());
-            assertEquals(31L, request.getModelId());
-            assertEquals("gpt-5", request.getModelName());
-            assertEquals(41L, request.getPromptVersionId());
-            assertEquals("req-answer", request.getRequestId());
-            assertEquals("trace-answer", request.getTraceId());
-            assertEquals("[\"answer-prompt\"]", request.getPromptMessagesJson());
-            assertEquals("{\"lang\":\"zh\"}", request.getPromptVariablesJson());
-            assertEquals("answer-hash", request.getPromptHash());
-            assertEquals("{\"question\":\"王圻是谁\"}", request.getInputPayloadJson());
-            assertEquals("{\"type\":\"object\"}", request.getOutputSchemaJson());
-            assertFalse(request.isStream());
-            assertTrue(request.isForceJson());
-            assertEquals("zh-CN", request.getLocale());
-            return new DiscoveryAiResult(
+            DiscoveryAiCommand command = invocation.getArgument(0);
+            assertEquals(21L, command.getServiceId());
+            assertEquals("DISCOVERY", command.getServiceRole());
+            assertEquals(31L, command.getModelId());
+            assertEquals("gpt-5", command.getModelName());
+            assertEquals(41L, command.getPromptVersionId());
+            assertEquals("req-answer", command.getRequestId());
+            assertEquals("trace-answer", command.getTraceId());
+            assertEquals("[\"answer-prompt\"]", command.getPromptMessagesJson());
+            assertEquals("{\"lang\":\"zh\"}", command.getPromptVariablesJson());
+            assertEquals("answer-hash", command.getPromptHash());
+            assertEquals("{\"question\":\"王圻是谁\"}", command.getInputPayloadJson());
+            assertEquals("{\"type\":\"object\"}", command.getOutputSchemaJson());
+            assertFalse(command.isStream());
+            assertTrue(command.isForceJson());
+            assertEquals("zh-CN", command.getLocale());
+            return new DiscoveryAiInvokeResult(
                     701L,
                     null,
                     "FAILED",
@@ -219,7 +230,7 @@ class AiFacadeImplTest {
                 mock(AiReportApplicationService.class),
                 mock(AiBatchJobApplicationService.class),
                 discoveryAiApplicationService,
-                mock(KnowledgeAiExtractionApplicationServiceImpl.class),
+                mock(KnowledgeAiExtractionRepository.class),
                 mock(AiInvocationRepository.class),
                 mock(AiCandidateDomainService.class));
 
@@ -255,14 +266,14 @@ class AiFacadeImplTest {
     void streamDiscoveryAnswerShouldForwardDeltaEventsAndMapFinalResponse() {
         DiscoveryAiApplicationService discoveryAiApplicationService = mock(DiscoveryAiApplicationService.class);
         when(discoveryAiApplicationService.streamAnswer(any(), any())).thenAnswer(invocation -> {
-            DiscoveryAiRequest request = invocation.getArgument(0);
-            assertEquals("req-answer", request.getRequestId());
-            assertFalse(request.isStream());
+            DiscoveryAiCommand command = invocation.getArgument(0);
+            assertEquals("req-answer", command.getRequestId());
+            assertFalse(command.isStream());
             @SuppressWarnings("unchecked")
             java.util.function.Consumer<AiStreamEventResult> eventConsumer = invocation.getArgument(1);
             eventConsumer.accept(deltaEvent("王圻"));
             eventConsumer.accept(deltaEvent("文档答案"));
-            return new DiscoveryAiResult(
+            return new DiscoveryAiInvokeResult(
                     702L,
                     null,
                     "SUCCEEDED",
@@ -276,7 +287,7 @@ class AiFacadeImplTest {
                 mock(AiReportApplicationService.class),
                 mock(AiBatchJobApplicationService.class),
                 discoveryAiApplicationService,
-                mock(KnowledgeAiExtractionApplicationServiceImpl.class),
+                mock(KnowledgeAiExtractionRepository.class),
                 mock(AiInvocationRepository.class),
                 mock(AiCandidateDomainService.class));
         List<String> deltas = new java.util.ArrayList<>();
@@ -306,38 +317,44 @@ class AiFacadeImplTest {
 
     @Test
     void extractKnowledgeGraphShouldMapRequestAndResponse() {
-        KnowledgeAiExtractionApplicationServiceImpl knowledgeAiExtractionApplicationService =
-                mock(KnowledgeAiExtractionApplicationServiceImpl.class);
-        when(knowledgeAiExtractionApplicationService.extractGraph(any())).thenAnswer(invocation -> {
-            KnowledgeAiExtractionRequest request = invocation.getArgument(0);
-            assertEquals("GRAPH", request.getTaskType());
-            assertEquals("ENTRY", request.getScopeType());
-            assertEquals("{\"entryId\":9}", request.getScopeJson());
-            assertEquals("CLASSICS_CONTENT", request.getSourceContentType());
-            assertEquals(101L, request.getSourceContentId());
-            assertEquals(201L, request.getRequestedBy());
-            assertEquals(301L, request.getServiceId());
-            assertEquals("KNOWLEDGE", request.getServiceRole());
-            assertEquals(401L, request.getModelId());
-            assertEquals("kimi-k2", request.getModelName());
-            assertEquals(501L, request.getPromptVersionId());
-            assertEquals("req-graph", request.getRequestId());
-            assertEquals("trace-graph", request.getTraceId());
-            assertEquals("[\"graph-prompt\"]", request.getPromptMessagesJson());
-            assertEquals("{\"style\":\"full\"}", request.getPromptVariablesJson());
-            assertEquals("graph-hash", request.getPromptHash());
-            assertEquals("{\"content\":\"x\"}", request.getInputPayloadJson());
-            assertEquals("{\"type\":\"graph\"}", request.getOutputSchemaJson());
-            assertFalse(request.isForceJson());
-            assertEquals("zh-CN", request.getLocale());
-            return new KnowledgeAiExtractionResult(
-                    701L, 801L, "SUCCEEDED", "KNOWLEDGE_GRAPH", "JSON", "{\"nodes\":1}", null, null);
+        KnowledgeAiExtractionRepository knowledgeAiExtractionRepository = mock(KnowledgeAiExtractionRepository.class);
+        when(knowledgeAiExtractionRepository.extractGraph(any())).thenAnswer(invocation -> {
+            KnowledgeAiExtractionInput input = invocation.getArgument(0);
+            assertEquals("GRAPH", input.getTaskType());
+            assertEquals("ENTRY", input.getScopeType());
+            assertEquals("{\"entryId\":9}", input.getScopeJson());
+            assertEquals("CLASSICS_CONTENT", input.getSourceContentType());
+            assertEquals(101L, input.getSourceContentId());
+            assertEquals(201L, input.getRequestedBy());
+            assertEquals(301L, input.getServiceId());
+            assertEquals("KNOWLEDGE", input.getServiceRole());
+            assertEquals(401L, input.getModelId());
+            assertEquals("kimi-k2", input.getModelName());
+            assertEquals(501L, input.getPromptVersionId());
+            assertEquals("req-graph", input.getRequestId());
+            assertEquals("trace-graph", input.getTraceId());
+            assertEquals("[\"graph-prompt\"]", input.getPromptMessagesJson());
+            assertEquals("{\"style\":\"full\"}", input.getPromptVariablesJson());
+            assertEquals("graph-hash", input.getPromptHash());
+            assertEquals("{\"content\":\"x\"}", input.getInputPayloadJson());
+            assertEquals("{\"type\":\"graph\"}", input.getOutputSchemaJson());
+            assertFalse(input.isForceJson());
+            assertEquals("zh-CN", input.getLocale());
+            return new KnowledgeAiExtractionRecord(
+                    701L,
+                    801L,
+                    "SUCCEEDED",
+                    AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT.value(),
+                    "JSON",
+                    "{\"nodes\":1}",
+                    null,
+                    null);
         });
         AiFacadeImpl facade = newFacade(
                 mock(AiReportApplicationService.class),
                 mock(AiBatchJobApplicationService.class),
                 mock(DiscoveryAiApplicationService.class),
-                knowledgeAiExtractionApplicationService,
+                knowledgeAiExtractionRepository,
                 mock(AiInvocationRepository.class),
                 mock(AiCandidateDomainService.class));
 
@@ -367,45 +384,44 @@ class AiFacadeImplTest {
         assertEquals(701L, response.getCallId());
         assertEquals(801L, response.getCandidateId());
         assertEquals("SUCCEEDED", response.getStatus());
-        assertEquals("KNOWLEDGE_GRAPH", response.getCapability());
+        assertEquals(AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT.value(), response.getCapability());
         assertEquals("JSON", response.getResultFormat());
         assertEquals("{\"nodes\":1}", response.getResultPayload());
     }
 
     @Test
     void extractKnowledgeTagsShouldMapRequestAndResponse() {
-        KnowledgeAiExtractionApplicationServiceImpl knowledgeAiExtractionApplicationService =
-                mock(KnowledgeAiExtractionApplicationServiceImpl.class);
-        when(knowledgeAiExtractionApplicationService.extractTags(any())).thenAnswer(invocation -> {
-            KnowledgeAiExtractionRequest request = invocation.getArgument(0);
-            assertEquals("TAG", request.getTaskType());
-            assertEquals("CONTENT", request.getScopeType());
-            assertEquals("{\"contentType\":\"SANCAI_ENTRY\",\"contentIds\":[1001]}", request.getScopeJson());
-            assertEquals("SANCAI_ENTRY", request.getSourceContentType());
-            assertEquals(1001L, request.getSourceContentId());
-            assertEquals(2001L, request.getRequestedBy());
-            assertEquals(3001L, request.getServiceId());
-            assertEquals("KNOWLEDGE", request.getServiceRole());
-            assertEquals(4001L, request.getModelId());
-            assertEquals("gpt-5", request.getModelName());
-            assertEquals(5001L, request.getPromptVersionId());
-            assertEquals("req-tag", request.getRequestId());
-            assertEquals("trace-tag", request.getTraceId());
-            assertEquals("[\"tag-prompt\"]", request.getPromptMessagesJson());
-            assertEquals("{\"maxTags\":10}", request.getPromptVariablesJson());
-            assertEquals("tag-hash", request.getPromptHash());
-            assertEquals("{\"contentText\":\"正文\"}", request.getInputPayloadJson());
-            assertEquals("{\"type\":\"object\",\"required\":[\"tags\"]}", request.getOutputSchemaJson());
-            assertTrue(request.isForceJson());
-            assertEquals("zh-CN", request.getLocale());
-            return new KnowledgeAiExtractionResult(
+        KnowledgeAiExtractionRepository knowledgeAiExtractionRepository = mock(KnowledgeAiExtractionRepository.class);
+        when(knowledgeAiExtractionRepository.extractTags(any())).thenAnswer(invocation -> {
+            KnowledgeAiExtractionInput input = invocation.getArgument(0);
+            assertEquals("TAG", input.getTaskType());
+            assertEquals("CONTENT", input.getScopeType());
+            assertEquals("{\"contentType\":\"SANCAI_ENTRY\",\"contentIds\":[1001]}", input.getScopeJson());
+            assertEquals("SANCAI_ENTRY", input.getSourceContentType());
+            assertEquals(1001L, input.getSourceContentId());
+            assertEquals(2001L, input.getRequestedBy());
+            assertEquals(3001L, input.getServiceId());
+            assertEquals("KNOWLEDGE", input.getServiceRole());
+            assertEquals(4001L, input.getModelId());
+            assertEquals("gpt-5", input.getModelName());
+            assertEquals(5001L, input.getPromptVersionId());
+            assertEquals("req-tag", input.getRequestId());
+            assertEquals("trace-tag", input.getTraceId());
+            assertEquals("[\"tag-prompt\"]", input.getPromptMessagesJson());
+            assertEquals("{\"maxTags\":10}", input.getPromptVariablesJson());
+            assertEquals("tag-hash", input.getPromptHash());
+            assertEquals("{\"contentText\":\"正文\"}", input.getInputPayloadJson());
+            assertEquals("{\"type\":\"object\",\"required\":[\"tags\"]}", input.getOutputSchemaJson());
+            assertTrue(input.isForceJson());
+            assertEquals("zh-CN", input.getLocale());
+            return new KnowledgeAiExtractionRecord(
                     711L, 811L, "SUCCEEDED", "KNOWLEDGE_TAG_EXTRACTION", "STRUCTURED", "{\"tags\":[]}", null, null);
         });
         AiFacadeImpl facade = newFacade(
                 mock(AiReportApplicationService.class),
                 mock(AiBatchJobApplicationService.class),
                 mock(DiscoveryAiApplicationService.class),
-                knowledgeAiExtractionApplicationService,
+                knowledgeAiExtractionRepository,
                 mock(AiInvocationRepository.class),
                 mock(AiCandidateDomainService.class));
 
@@ -443,23 +459,23 @@ class AiFacadeImplTest {
     }
 
     @Test
-    void getCallRecordShouldMapUsageSnapshot() {
+    void getInvocationLogShouldMapUsageSnapshot() {
         AiInvocationRepository aiInvocationRepository = mock(AiInvocationRepository.class);
-        when(aiInvocationRepository.getCallRecord(301L)).thenReturn(callRecord());
+        when(aiInvocationRepository.getInvocationLog(301L)).thenReturn(invocationLog());
         AiFacadeImpl facade = newFacade(
                 mock(AiReportApplicationService.class),
                 mock(AiBatchJobApplicationService.class),
                 mock(DiscoveryAiApplicationService.class),
-                mock(KnowledgeAiExtractionApplicationServiceImpl.class),
+                mock(KnowledgeAiExtractionRepository.class),
                 aiInvocationRepository,
                 mock(AiCandidateDomainService.class));
 
-        var response = facade.getCallRecord(
-                GetAiCallRecordFacadeRequest.builder().callId(301L).build());
+        var response = facade.getInvocationLog(
+                GetAiInvocationLogFacadeRequest.builder().callId(301L).build());
 
         assertEquals(301L, response.getCallId());
         assertEquals(401L, response.getBatchId());
-        assertEquals("DISCOVERY_QA", response.getCapability());
+        assertEquals(AiBusinessCapability.DISCOVERY_ANSWER_GENERATION.value(), response.getCapability());
         assertEquals("SUCCEEDED", response.getStatus());
         assertTrue(response.isStreamUsed());
         assertTrue(response.isStreamCompleted());
@@ -488,7 +504,7 @@ class AiFacadeImplTest {
                 mock(AiReportApplicationService.class),
                 mock(AiBatchJobApplicationService.class),
                 mock(DiscoveryAiApplicationService.class),
-                mock(KnowledgeAiExtractionApplicationServiceImpl.class),
+                mock(KnowledgeAiExtractionRepository.class),
                 mock(AiInvocationRepository.class),
                 aiCandidateDomainService);
 
@@ -503,7 +519,7 @@ class AiFacadeImplTest {
         assertEquals(901L, response.getCandidateId());
         assertEquals(701L, response.getCallId());
         assertEquals(801L, response.getBatchId());
-        assertEquals("KNOWLEDGE_GRAPH", response.getCapability());
+        assertEquals(AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT.value(), response.getCapability());
         assertEquals("CLASSICS_CONTENT", response.getContentType());
         assertEquals(902L, response.getContentId());
         assertEquals(903L, response.getObjectId());
@@ -524,7 +540,7 @@ class AiFacadeImplTest {
                 mock(AiReportApplicationService.class),
                 mock(AiBatchJobApplicationService.class),
                 mock(DiscoveryAiApplicationService.class),
-                mock(KnowledgeAiExtractionApplicationServiceImpl.class),
+                mock(KnowledgeAiExtractionRepository.class),
                 mock(AiInvocationRepository.class),
                 aiCandidateDomainService);
 
@@ -542,59 +558,57 @@ class AiFacadeImplTest {
             AiReportApplicationService aiReportApplicationService,
             AiBatchJobApplicationService aiBatchJobApplicationService,
             DiscoveryAiApplicationService discoveryAiApplicationService,
-            KnowledgeAiExtractionApplicationServiceImpl knowledgeAiExtractionApplicationService,
+            KnowledgeAiExtractionRepository knowledgeAiExtractionRepository,
             AiInvocationRepository aiInvocationRepository,
             AiCandidateDomainService aiCandidateDomainService) {
         return new AiFacadeImpl(
                 aiReportApplicationService,
                 aiBatchJobApplicationService,
                 discoveryAiApplicationService,
-                knowledgeAiExtractionApplicationService,
+                knowledgeAiExtractionRepository,
                 aiInvocationRepository,
                 aiCandidateDomainService,
                 new AiFacadeAssembler());
     }
 
-    private static AiCallRecord callRecord() {
-        AiCallRecord record = new AiCallRecord();
-        record.setCallId(301L);
-        record.setBatchId(401L);
-        record.setScope("discovery");
-        record.setCapability("DISCOVERY_QA");
-        record.setContentType("QUESTION");
-        record.setContentId(501L);
-        record.setObjectId(601L);
-        record.setServiceId(701L);
-        record.setServiceRole("DISCOVERY");
-        record.setModelId(801L);
-        record.setModelName("gpt-5");
-        record.setPromptVersionId(901L);
-        record.setRequestId("req-call");
-        record.setTraceId("trace-call");
-        record.setStatus("SUCCEEDED");
-        record.setStreamUsed(true);
-        record.setStreamCompleted(true);
-        record.setFallbackUsed(false);
-        record.setUsage(new AiUsageSnapshot(450, 12, 34, new BigDecimal("1.23")));
-        record.setRequestedAt(Instant.parse("2025-01-01T08:00:00Z"));
-        record.setCompletedAt(Instant.parse("2025-01-01T08:00:01Z"));
-        return record;
+    private static AiInvocationLog invocationLog() {
+        AiInvocationLog invocationLog = new AiInvocationLog();
+        invocationLog.setCallId(AiCallId.of(301L));
+        invocationLog.setBatchId(AiBatchJobId.of(401L));
+        invocationLog.setScope("discovery");
+        invocationLog.setCapability(AiBusinessCapability.DISCOVERY_ANSWER_GENERATION);
+        invocationLog.setContentRef(AiContentRef.of("QUESTION", 501L));
+        invocationLog.setTargetObjectId(AiTargetObjectId.of(601L));
+        invocationLog.setServiceId(701L);
+        invocationLog.setServiceRole("DISCOVERY");
+        invocationLog.setModelId(new AiModelId(801L));
+        invocationLog.setModelName(AiModelName.of("gpt-5"));
+        invocationLog.setPromptVersionId(new PromptVersionId(901L));
+        invocationLog.setRequestId("req-call");
+        invocationLog.setTraceId("trace-call");
+        invocationLog.setStatus(AiInvocationStatus.SUCCEEDED);
+        invocationLog.setStreamUsed(true);
+        invocationLog.setStreamCompleted(true);
+        invocationLog.setFallbackUsed(false);
+        invocationLog.setUsage(new AiUsageSnapshot(450, 12, 34, new BigDecimal("1.23")));
+        invocationLog.setRequestedAt(Instant.parse("2025-01-01T08:00:00Z"));
+        invocationLog.setCompletedAt(Instant.parse("2025-01-01T08:00:01Z"));
+        return invocationLog;
     }
 
     private static AiCandidate candidate() {
         AiCandidate candidate = new AiCandidate();
-        candidate.setCandidateId(901L);
-        candidate.setCallId(701L);
-        candidate.setBatchId(801L);
-        candidate.setCapability("KNOWLEDGE_GRAPH");
-        candidate.setContentType("CLASSICS_CONTENT");
-        candidate.setContentId(902L);
-        candidate.setObjectId(903L);
+        candidate.setId(AiCandidateId.of(901L));
+        candidate.setCallId(AiCallId.of(701L));
+        candidate.setBatchId(AiBatchJobId.of(801L));
+        candidate.setCapability(AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT);
+        candidate.setContentRef(AiContentRef.of("CLASSICS_CONTENT", 902L));
+        candidate.setTargetObjectId(AiTargetObjectId.of(903L));
         candidate.setResultFormat("JSON");
         candidate.setResultPayload("{\"graph\":true}");
-        candidate.setStatus("PENDING");
-        candidate.setPromptVersionId(1001L);
-        candidate.setModelName("gpt-5");
+        candidate.setStatus(AiCandidateStatus.PENDING);
+        candidate.setPromptVersionId(AiPromptVersionId.of(1001L));
+        candidate.setModelName(AiModelName.of("gpt-5"));
         candidate.setRequestedAt(Instant.parse("2025-02-01T10:15:30Z"));
         return candidate;
     }

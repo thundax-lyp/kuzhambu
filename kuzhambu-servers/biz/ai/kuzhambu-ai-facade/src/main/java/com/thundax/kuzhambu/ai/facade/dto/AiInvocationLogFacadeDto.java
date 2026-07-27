@@ -9,7 +9,7 @@ import lombok.Getter;
 @Getter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class AiCallRecordFacadeDto {
+public class AiInvocationLogFacadeDto {
 
     private final Long callId;
     private final Long batchId;
