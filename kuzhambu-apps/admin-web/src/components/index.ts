@@ -1,5 +1,6 @@
 export * from "./kuzhambu-alert";
 export * from "./kuzhambu-button";
+export * from "./kuzhambu-card";
 export * from "./kuzhambu-confirm-modal";
 export * from "./kuzhambu-drawer";
 export * from "./kuzhambu-filter-panel";

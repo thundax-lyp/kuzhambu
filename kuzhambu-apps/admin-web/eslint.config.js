@@ -512,6 +512,43 @@ const localRules = {
                 };
             }
         },
+        "no-antd-card-direct-in-pages": {
+            create(context) {
+                const readNormalizedFilePath = () => {
+                    return context.physicalFilename.split(path.sep).join("/");
+                };
+
+                const isPageFile = (normalizedFilePath) => {
+                    return (
+                        normalizedFilePath.includes("/src/pages/") &&
+                        /\.(?:ts|tsx)$/.test(normalizedFilePath)
+                    );
+                };
+
+                return {
+                    ImportDeclaration(node) {
+                        if (node.source.value !== "antd" || !isPageFile(readNormalizedFilePath())) {
+                            return;
+                        }
+
+                        node.specifiers.forEach((specifier) => {
+                            if (
+                                specifier.type !== "ImportSpecifier" ||
+                                specifier.imported.name !== "Card"
+                            ) {
+                                return;
+                            }
+
+                            context.report({
+                                node: specifier,
+                                message:
+                                    "ADMIN_WEB_UI_NO_ANTD_CARD_DIRECT_IN_PAGES: pages/**/*.{ts,tsx} must use KuzhambuCard from src/components/kuzhambu-card/ instead of importing Card from antd."
+                            });
+                        });
+                    }
+                };
+            }
+        },
         "kuzhambu-form-item-in-page-form": {
             create(context) {
                 const antdFormLocalNames = new Set();
@@ -2144,6 +2181,7 @@ export default tseslint.config(
             "local/no-antd-alert-direct-in-pages": "error",
             "local/no-antd-button-direct-in-pages": "error",
             "local/no-antd-select-direct-in-pages": "error",
+            "local/no-antd-card-direct-in-pages": "error",
             "local/kuzhambu-form-item-in-page-form": "error",
             "@typescript-eslint/no-explicit-any": "off",
             "local/confirm-hook-only": "error",
