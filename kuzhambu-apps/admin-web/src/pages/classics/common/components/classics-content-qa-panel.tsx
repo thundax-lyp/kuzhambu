@@ -1,5 +1,5 @@
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
-import { App, Card, Empty, Form, Input } from "antd";
+import { App, Empty, Form, Input } from "antd";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -10,7 +10,8 @@ import {
     KuzhambuTable,
     type KuzhambuTableSortPosition,
     KuzhambuButton,
-    KuzhambuSelect
+    KuzhambuSelect,
+    KuzhambuCard
 } from "@/components";
 
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
@@ -243,7 +244,7 @@ export const ClassicsContentQaPanel = ({
     }
 
     return (
-        <Card size="small" title={panelTitle || "问答对治理"}>
+        <KuzhambuCard size="small" title={panelTitle || "问答对治理"}>
             <KuzhambuSpace orientation="vertical" size={16}>
                 <div>
                     <KuzhambuButton
@@ -375,6 +376,6 @@ export const ClassicsContentQaPanel = ({
                     </KuzhambuForm>
                 </KuzhambuModal>
             </KuzhambuSpace>
-        </Card>
+        </KuzhambuCard>
     );
 };

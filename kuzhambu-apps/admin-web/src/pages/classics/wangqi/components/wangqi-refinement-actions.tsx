@@ -1,5 +1,5 @@
-import { Card, Tooltip } from "antd";
-import { KuzhambuButton, KuzhambuSpaceCompact } from "@/components";
+import { Tooltip } from "antd";
+import { KuzhambuButton, KuzhambuSpaceCompact, KuzhambuCard } from "@/components";
 
 import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
 import type {
@@ -84,7 +84,7 @@ export const WangqiRefinementActions = ({
 
     return (
         <div className="wangqi-page-drawer-panels">
-            <Card
+            <KuzhambuCard
                 size="small"
                 title="问答生成"
                 extra={
@@ -122,7 +122,7 @@ export const WangqiRefinementActions = ({
                         <div>暂无问答任务</div>
                     )}
                 </div>
-            </Card>
+            </KuzhambuCard>
             <AiCandidatePanel
                 capabilities={["qa"]}
                 contentId={document.id}

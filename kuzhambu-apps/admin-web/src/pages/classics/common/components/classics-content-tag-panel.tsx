@@ -1,5 +1,5 @@
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
-import { App, Card, Empty, Form, Input } from "antd";
+import { App, Empty, Form, Input } from "antd";
 import { useMemo, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -10,7 +10,8 @@ import {
     KuzhambuTable,
     type KuzhambuTableSortPosition,
     KuzhambuButton,
-    KuzhambuSelect
+    KuzhambuSelect,
+    KuzhambuCard
 } from "@/components";
 
 import * as contentService from "../classics-content-service";
@@ -256,7 +257,7 @@ export const ClassicsContentTagPanel = ({
     const cardTitle = showHeader ? panelTitle || "标签治理" : undefined;
 
     return (
-        <Card size="small" title={cardTitle}>
+        <KuzhambuCard size="small" title={cardTitle}>
             <KuzhambuSpace orientation="vertical" size={16}>
                 <KuzhambuSpace wrap>
                     <KuzhambuButton
@@ -381,6 +382,6 @@ export const ClassicsContentTagPanel = ({
                     </KuzhambuForm>
                 </KuzhambuModal>
             </KuzhambuSpace>
-        </Card>
+        </KuzhambuCard>
     );
 };
