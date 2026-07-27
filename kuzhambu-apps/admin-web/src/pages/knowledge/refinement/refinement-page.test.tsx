@@ -147,6 +147,13 @@ vi.mock("./refinement-service", () => ({
     }))
 }));
 
+vi.mock("@/service/current-user-service", () => ({
+    getCurrentUserInfo: vi.fn(async () => ({
+        id: "99",
+        loginName: "admin"
+    }))
+}));
+
 describe("RefinementPage", () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -220,7 +227,7 @@ describe("RefinementPage", () => {
         });
         expect(vi.mocked(service.getTaskDraft).mock.calls[0]?.[0]).toEqual({
             graphVersionId: 71,
-            openedBy: 1
+            openedBy: 99
         });
         expect(await screen.findByTestId("knowledge-refinement-task-drawer")).toBeInTheDocument();
     }, 30000);

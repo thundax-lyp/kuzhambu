@@ -3,6 +3,7 @@ import { App, Card, Typography } from "antd";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuSpace, KuzhambuPage } from "@/components";
+import * as currentUserService from "@/service/current-user-service";
 
 import { RefinementEntityDeleteModal } from "./components/refinement-entity-delete-modal";
 import { RefinementEntityEditModal } from "./components/refinement-entity-edit-modal";
@@ -98,6 +99,13 @@ export const RefinementPage = () => {
         enabled: detail !== null,
         retry: false
     });
+    const currentUserQuery = useQuery({
+        queryKey: ["sys", "current-user", "info"],
+        queryFn: currentUserService.getCurrentUserInfo,
+        enabled: canView || canEdit,
+        retry: false
+    });
+    const currentUserId = Number(currentUserQuery.data?.id ?? 0);
 
     const refreshDetail = async (refinementTaskId: number) => {
         const nextDetail = await service.getTaskDetail({ refinementTaskId });
@@ -156,15 +164,26 @@ export const RefinementPage = () => {
     });
 
     useEffect(() => {
-        if (!initialGraphVersionId || hasOpenedInitialGraphVersion.current) {
+        if (!initialGraphVersionId || !currentUserId || hasOpenedInitialGraphVersion.current) {
             return;
         }
         hasOpenedInitialGraphVersion.current = true;
         openTaskMutation.mutate({
             graphVersionId: initialGraphVersionId,
-            openedBy: 1
+            openedBy: currentUserId
         });
-    }, [initialGraphVersionId, openTaskMutation]);
+    }, [currentUserId, initialGraphVersionId, openTaskMutation]);
+
+    const openRefinementTask = (graphVersionId: number) => {
+        if (!currentUserId) {
+            messageApi.warning("当前用户信息未加载完成，请稍后重试");
+            return;
+        }
+        openTaskMutation.mutate({
+            graphVersionId,
+            openedBy: currentUserId
+        });
+    };
 
     const entityMutation = useMutation({
         mutationFn: async (request: RefinementEntityRecord) => {
@@ -388,12 +407,7 @@ export const RefinementPage = () => {
                             <RefinementWorkbenchTable
                                 items={taskItems}
                                 loading={taskPageQuery.isLoading}
-                                onOpenTask={(item) =>
-                                    openTaskMutation.mutate({
-                                        graphVersionId: item.graphVersionId || 0,
-                                        openedBy: 1
-                                    })
-                                }
+                                onOpenTask={(item) => openRefinementTask(item.graphVersionId || 0)}
                             />
                         </KuzhambuSpace>
                     </Card>
