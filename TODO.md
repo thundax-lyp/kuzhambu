@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `src/pages/classics/sancai/components/sancai-entry-edit-drawer/sancai-entry-visual-section/sancai-entry-visual-section.tsx`：迁移三才视觉资产表单
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-FORM-USEFORM-MIGRATION.md`
-    - 范围对象：`src/pages/classics/sancai/components/sancai-entry-edit-drawer/sancai-entry-visual-section/sancai-entry-visual-section.tsx`
-    - 处理动作：将来源图选择和视觉资产可编辑字段改为 section 内 `Form.useForm` + `KuzhambuFormItem name` 托管。
-    - 验收点：视觉资产提交由 `visualAssetForm.validateFields()` 生成 patch，任务流、记录表格和预览态仍不进入表单。
-    - 重要度：8/10
-
 - [ ] `src/pages/ai/capability-mappings/capability-mappings-page.tsx`：迁移能力映射筛选表单
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-FORM-USEFORM-MIGRATION.md`

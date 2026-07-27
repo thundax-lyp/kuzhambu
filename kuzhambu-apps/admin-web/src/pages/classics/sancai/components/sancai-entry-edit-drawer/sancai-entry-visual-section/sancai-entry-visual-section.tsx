@@ -6,7 +6,7 @@ import {
     PictureOutlined
 } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Empty, Image, Input, Tag, Typography } from "antd";
+import { Empty, Form, Image, Input, Tag, Typography } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
@@ -116,12 +116,33 @@ const readImageTitle = (image: SancaiEntryImageRecord) => {
     return image.title?.trim() || image.originalFilename?.trim() || `图片 ${image.id}`;
 };
 
-const readVisualSourceImageSelectValue = (image: SancaiEntryImageRecord | undefined) => {
-    return image?.storageObjectId != null ? `storage:${image.storageObjectId}` : undefined;
-};
-
 const resolveStorageUrl = (url?: string | null) => {
     return url ? toAuthenticatedResourceUrl(url) : undefined;
+};
+
+const normalizeNumberField = (value: unknown) => {
+    if (value === "" || value == null) {
+        return null;
+    }
+    const numericValue = Number(value);
+    return Number.isFinite(numericValue) ? numericValue : null;
+};
+
+const toVisualAssetFormValue = (
+    asset: SancaiVisualAssetRecord | null,
+    defaultSourceImage: SancaiEntryImageRecord | undefined,
+    entryId: number | undefined
+) => {
+    if (!asset) {
+        return null;
+    }
+    const formValue = { ...asset };
+    if (!formValue.sourceImageStorageObjectId && defaultSourceImage?.storageObjectId) {
+        formValue.sourceImageStorageObjectId = defaultSourceImage.storageObjectId;
+        formValue.sourcePreviewUrl = resolveImageUrl(entryId, defaultSourceImage, "preview");
+        formValue.sourceDownloadUrl = resolveImageUrl(entryId, defaultSourceImage, "download");
+    }
+    return formValue;
 };
 
 interface SancaiEntryVisualSectionProps {
@@ -191,7 +212,7 @@ export const SancaiEntryVisualSection = ({
         [visualAssets]
     );
     const [selectedVisualAssetId, setSelectedVisualAssetId] = useState<number | null>(null);
-    const [visualAssetForm, setVisualAssetForm] = useState<SancaiVisualAssetRecord | null>(null);
+    const [visualAssetForm] = Form.useForm<SancaiVisualAssetRecord>();
     const activeVisualAssetId =
         selectedVisualAssetId ??
         currentVisualAsset?.visualAssetId ??
@@ -204,26 +225,67 @@ export const SancaiEntryVisualSection = ({
         currentVisualAsset ||
         null;
     const defaultSourceImage = entryImages.find((image) => image.storageObjectId);
+    const initialVisualAssetFormValue = useMemo(
+        () => toVisualAssetFormValue(selectedVisualAsset, defaultSourceImage, entryId),
+        [defaultSourceImage, entryId, selectedVisualAsset]
+    );
+    useEffect(() => {
+        if (initialVisualAssetFormValue) {
+            visualAssetForm.setFieldsValue(initialVisualAssetFormValue);
+        } else {
+            visualAssetForm.resetFields();
+        }
+    }, [initialVisualAssetFormValue, visualAssetForm]);
+    const sourceImageStorageObjectId = Form.useWatch("sourceImageStorageObjectId", visualAssetForm);
+    const textWeight = Form.useWatch("textWeight", visualAssetForm);
+    const imageWeight = Form.useWatch("imageWeight", visualAssetForm);
+    const imageAnalysisMarkdown = Form.useWatch("imageAnalysisMarkdown", visualAssetForm);
+    const fusionDescription = Form.useWatch("fusionDescription", visualAssetForm);
+    const visualDescription = Form.useWatch("visualDescription", visualAssetForm);
+    const generationParamsJson = Form.useWatch("generationParamsJson", visualAssetForm);
+    const sourcePreviewUrlField = Form.useWatch("sourcePreviewUrl", visualAssetForm);
+    const sourceDownloadUrl = Form.useWatch("sourceDownloadUrl", visualAssetForm);
+    const generatedPreviewUrlField = Form.useWatch("generatedPreviewUrl", visualAssetForm);
+    const generatedImageStorageObjectId = Form.useWatch(
+        "generatedImageStorageObjectId",
+        visualAssetForm
+    );
     const visualAssetFormValue = useMemo(() => {
         if (!selectedVisualAsset) {
             return null;
         }
-        const selectedId = selectedVisualAsset.visualAssetId ?? selectedVisualAsset.id ?? null;
-        const formId = visualAssetForm?.visualAssetId ?? visualAssetForm?.id ?? null;
-        const baseForm = formId === selectedId ? visualAssetForm : { ...selectedVisualAsset };
-        if (!baseForm) {
-            return null;
-        }
-        if (baseForm.sourceImageStorageObjectId || !defaultSourceImage?.storageObjectId) {
-            return baseForm;
-        }
         return {
-            ...baseForm,
-            sourceImageStorageObjectId: defaultSourceImage.storageObjectId,
-            sourcePreviewUrl: resolveImageUrl(entryId, defaultSourceImage, "preview"),
-            sourceDownloadUrl: resolveImageUrl(entryId, defaultSourceImage, "download")
+            ...selectedVisualAsset,
+            sourceImageStorageObjectId:
+                sourceImageStorageObjectId ?? selectedVisualAsset.sourceImageStorageObjectId,
+            sourcePreviewUrl: sourcePreviewUrlField ?? selectedVisualAsset.sourcePreviewUrl,
+            sourceDownloadUrl: sourceDownloadUrl ?? selectedVisualAsset.sourceDownloadUrl,
+            generatedImageStorageObjectId:
+                generatedImageStorageObjectId ?? selectedVisualAsset.generatedImageStorageObjectId,
+            generatedPreviewUrl:
+                generatedPreviewUrlField ?? selectedVisualAsset.generatedPreviewUrl,
+            textWeight: textWeight ?? selectedVisualAsset.textWeight,
+            imageWeight: imageWeight ?? selectedVisualAsset.imageWeight,
+            imageAnalysisMarkdown:
+                imageAnalysisMarkdown ?? selectedVisualAsset.imageAnalysisMarkdown,
+            fusionDescription: fusionDescription ?? selectedVisualAsset.fusionDescription,
+            visualDescription: visualDescription ?? selectedVisualAsset.visualDescription,
+            generationParamsJson: generationParamsJson ?? selectedVisualAsset.generationParamsJson
         };
-    }, [defaultSourceImage, entryId, selectedVisualAsset, visualAssetForm]);
+    }, [
+        fusionDescription,
+        generatedImageStorageObjectId,
+        generatedPreviewUrlField,
+        generationParamsJson,
+        imageAnalysisMarkdown,
+        imageWeight,
+        selectedVisualAsset,
+        sourceDownloadUrl,
+        sourceImageStorageObjectId,
+        sourcePreviewUrlField,
+        textWeight,
+        visualDescription
+    ]);
     const selectedVisualAssetResourceId = selectedVisualAsset
         ? readVisualAssetId(selectedVisualAsset)
         : null;
@@ -285,42 +347,37 @@ export const SancaiEntryVisualSection = ({
                       : undefined))
             : undefined
     );
-    const saveVisualAsset = () => {
-        if (!visualAssetFormValue || !onUpdateVisualAsset) {
+    const saveVisualAsset = async () => {
+        if (!selectedVisualAsset || !onUpdateVisualAsset) {
             return;
         }
-        onUpdateVisualAsset(visualAssetFormValue);
+        const values = await visualAssetForm.validateFields();
+        onUpdateVisualAsset({
+            ...selectedVisualAsset,
+            ...values,
+            textWeight: normalizeNumberField(values.textWeight),
+            imageWeight: normalizeNumberField(values.imageWeight)
+        });
     };
     const selectVisualAsset = (asset: SancaiVisualAssetRecord) => {
         const assetId = asset.visualAssetId ?? asset.id ?? null;
         setSelectedVisualAssetId(assetId);
-        setVisualAssetForm({ ...asset });
-    };
-    const updateVisualAssetForm = (patch: Partial<SancaiVisualAssetRecord>) => {
-        setVisualAssetForm((currentForm) => {
-            const baseForm = currentForm ?? visualAssetFormValue;
-            return baseForm
-                ? {
-                      ...baseForm,
-                      ...patch
-                  }
-                : currentForm;
-        });
+        const nextFormValue = toVisualAssetFormValue(asset, defaultSourceImage, entryId);
+        if (nextFormValue) {
+            visualAssetForm.setFieldsValue(nextFormValue);
+        }
     };
     const selectVisualSourceImage = (image: SancaiEntryImageRecord) => {
         if (!image.storageObjectId) {
             return;
         }
-        updateVisualAssetForm({
+        visualAssetForm.setFieldsValue({
             sourceImageStorageObjectId: image.storageObjectId,
             sourcePreviewUrl: resolveImageUrl(entryId, image, "preview"),
             sourceDownloadUrl: resolveImageUrl(entryId, image, "download")
         });
     };
-    const selectVisualSourceImageBySelectValue = (selectValue: string) => {
-        const storageObjectId = selectValue.startsWith("storage:")
-            ? selectValue.slice("storage:".length)
-            : selectValue;
+    const selectVisualSourceImageBySelectValue = (storageObjectId: number | string) => {
         const image = entryImages.find((entryImage) =>
             isSameStorageObjectId(entryImage.storageObjectId, storageObjectId)
         );
@@ -328,7 +385,6 @@ export const SancaiEntryVisualSection = ({
             selectVisualSourceImage(image);
         }
     };
-    const selectedSourceImageSelectValue = readVisualSourceImageSelectValue(selectedSourceImage);
     const {
         closeStreamingRefinementTask,
         createVisualAssetTask,
@@ -354,9 +410,9 @@ export const SancaiEntryVisualSection = ({
         onPreviewStateChange({
             currentVisualAsset: currentVisualAsset ?? null,
             generatedPreviewUrl,
-            visualDescription: visualAssetFormValue?.visualDescription
+            visualDescription
         });
-    }, [currentVisualAsset, generatedPreviewUrl, onPreviewStateChange, visualAssetFormValue]);
+    }, [currentVisualAsset, generatedPreviewUrl, onPreviewStateChange, visualDescription]);
 
     return (
         <section
@@ -378,351 +434,315 @@ export const SancaiEntryVisualSection = ({
             {selectedVisualAsset ? (
                 <>
                     <KuzhambuForm
+                        form={visualAssetForm}
                         className="sancai-entry-edit-drawer-form"
                         colon={false}
                         component="div"
                     >
-                        <KuzhambuFormItem label="来源图片" layoutSize="large">
+                        <KuzhambuFormItem
+                            name="sourceImageStorageObjectId"
+                            label="来源图片"
+                            layoutSize="large"
+                        >
                             <KuzhambuSelect
                                 aria-label="三才图会视觉处理来源图片"
                                 disabled={!defaultSourceImage}
                                 placeholder="选择来源图片"
-                                value={selectedSourceImageSelectValue}
                                 options={entryImages.map((image) => ({
                                     disabled: !image.storageObjectId,
                                     label: readImageTitle(image),
-                                    value:
-                                        readVisualSourceImageSelectValue(image) ??
-                                        `image:${image.id}`
+                                    value: image.storageObjectId ?? `image:${image.id}`
                                 }))}
                                 onChange={(value) => selectVisualSourceImageBySelectValue(value)}
                             />
                         </KuzhambuFormItem>
-                    </KuzhambuForm>
-                    <div className="sancai-visual-asset-image-list">
-                        <div className="sancai-visual-asset-image-frame">
-                            {sourcePreviewUrl ? (
-                                <Image
-                                    width={180}
-                                    src={sourcePreviewUrl}
-                                    alt="三才图会视觉处理来源图片"
-                                />
-                            ) : (
-                                <Empty
-                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                    description="未选择来源图片"
-                                />
-                            )}
-                            <div className="sancai-visual-asset-image-actions">
-                                <Text type="secondary">来源图片</Text>
-                            </div>
-                        </div>
-                        <div className="sancai-visual-asset-image-frame">
-                            {generatedPreviewUrl ? (
-                                <Image
-                                    width={180}
-                                    src={generatedPreviewUrl}
-                                    alt="三才图会视觉处理生成图"
-                                />
-                            ) : (
-                                <div
-                                    className="sancai-visual-generated-placeholder"
-                                    role="img"
-                                    aria-label="三才图会视觉处理生成图占位"
-                                >
-                                    <PictureOutlined />
-                                    <Text type="secondary">未生成图片</Text>
+                        <div className="sancai-visual-asset-image-list">
+                            <div className="sancai-visual-asset-image-frame">
+                                {sourcePreviewUrl ? (
+                                    <Image
+                                        width={180}
+                                        src={sourcePreviewUrl}
+                                        alt="三才图会视觉处理来源图片"
+                                    />
+                                ) : (
+                                    <Empty
+                                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                        description="未选择来源图片"
+                                    />
+                                )}
+                                <div className="sancai-visual-asset-image-actions">
+                                    <Text type="secondary">来源图片</Text>
                                 </div>
-                            )}
-                            <div className="sancai-visual-asset-image-actions">
-                                <Text type="secondary">生成图</Text>
+                            </div>
+                            <div className="sancai-visual-asset-image-frame">
+                                {generatedPreviewUrl ? (
+                                    <Image
+                                        width={180}
+                                        src={generatedPreviewUrl}
+                                        alt="三才图会视觉处理生成图"
+                                    />
+                                ) : (
+                                    <div
+                                        className="sancai-visual-generated-placeholder"
+                                        role="img"
+                                        aria-label="三才图会视觉处理生成图占位"
+                                    >
+                                        <PictureOutlined />
+                                        <Text type="secondary">未生成图片</Text>
+                                    </div>
+                                )}
+                                <div className="sancai-visual-asset-image-actions">
+                                    <Text type="secondary">生成图</Text>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    {visualAssetsForSelectedSource.length > 0 ? (
-                        <KuzhambuTable
-                            className="sancai-visual-asset-version-table"
-                            ariaLabel="三才图会视觉处理记录列表"
-                            columns={
-                                [
-                                    {
-                                        title: "处理记录",
-                                        key: "version",
-                                        width: 120,
-                                        render: (_, asset) => readVisualAssetTitle(asset)
-                                    },
-                                    {
-                                        title: "图片",
-                                        key: "preview",
-                                        width: 84,
-                                        render: (_, asset) => {
-                                            const previewUrl = resolveStorageUrl(
-                                                asset.generatedPreviewUrl ??
-                                                    asset.generatedDownloadUrl
-                                            );
-                                            const fullImageUrl = resolveStorageUrl(
-                                                asset.generatedDownloadUrl ??
-                                                    asset.generatedPreviewUrl
-                                            );
-                                            if (asset.status !== "READY" || !previewUrl) {
-                                                return <Text type="secondary">-</Text>;
-                                            }
-                                            return (
-                                                <Image
-                                                    width={56}
-                                                    height={56}
-                                                    className="sancai-visual-asset-table-preview"
-                                                    src={previewUrl}
-                                                    alt={`${readVisualAssetTitle(asset)}生成图预览`}
-                                                    preview={{ src: fullImageUrl ?? previewUrl }}
-                                                />
-                                            );
-                                        }
-                                    },
-                                    {
-                                        title: "状态",
-                                        dataIndex: "status",
-                                        key: "status",
-                                        width: 96,
-                                        render: (status?: string | null) =>
-                                            status ? (
-                                                <Tag color={readVisualAssetStatusTagColor(status)}>
-                                                    {readVisualAssetStatusLabel(status)}
-                                                </Tag>
-                                            ) : (
-                                                <Text type="secondary">-</Text>
-                                            )
-                                    },
-                                    {
-                                        title: "当前",
-                                        dataIndex: "currentUsed",
-                                        key: "currentUsed",
-                                        width: 72,
-                                        render: (currentUsed?: boolean | null) =>
-                                            currentUsed ? (
-                                                <CheckOutlined
-                                                    aria-label="当前使用"
-                                                    className="sancai-image-current-icon"
-                                                />
-                                            ) : (
-                                                <Text type="secondary">-</Text>
-                                            )
-                                    },
-                                    {
-                                        inlineLimit: 2,
-                                        key: "actions",
-                                        options: (asset) => {
-                                            const assetId = readVisualAssetId(asset);
-                                            const selectedAssetId = selectedVisualAsset
-                                                ? readVisualAssetId(selectedVisualAsset)
-                                                : 0;
-                                            const isSelected =
-                                                assetId > 0 && assetId === selectedAssetId;
-                                            return [
-                                                {
-                                                    key: "select",
-                                                    text: "选择",
-                                                    ariaLabel: `选择${readVisualAssetTitle(asset)}`,
-                                                    testId: `sancai-visual-asset-${assetId}-select-button`,
-                                                    disabled:
-                                                        !selectedSourceStorageObjectId ||
-                                                        isSelected,
-                                                    onClick: (record) => selectVisualAsset(record)
-                                                },
-                                                {
-                                                    key: "use",
-                                                    text: "当前",
-                                                    ariaLabel: `设为当前视觉处理 ${readVisualAssetTitle(asset)}`,
-                                                    testId: `sancai-visual-asset-${assetId}-use-button`,
-                                                    disabled:
-                                                        !selectedSourceStorageObjectId ||
-                                                        Boolean(asset.currentUsed),
-                                                    onClick: (record) => onUseVisualAsset?.(record)
+                        {visualAssetsForSelectedSource.length > 0 ? (
+                            <KuzhambuTable
+                                className="sancai-visual-asset-version-table"
+                                ariaLabel="三才图会视觉处理记录列表"
+                                columns={
+                                    [
+                                        {
+                                            title: "处理记录",
+                                            key: "version",
+                                            width: 120,
+                                            render: (_, asset) => readVisualAssetTitle(asset)
+                                        },
+                                        {
+                                            title: "图片",
+                                            key: "preview",
+                                            width: 84,
+                                            render: (_, asset) => {
+                                                const previewUrl = resolveStorageUrl(
+                                                    asset.generatedPreviewUrl ??
+                                                        asset.generatedDownloadUrl
+                                                );
+                                                const fullImageUrl = resolveStorageUrl(
+                                                    asset.generatedDownloadUrl ??
+                                                        asset.generatedPreviewUrl
+                                                );
+                                                if (asset.status !== "READY" || !previewUrl) {
+                                                    return <Text type="secondary">-</Text>;
                                                 }
-                                            ];
+                                                return (
+                                                    <Image
+                                                        width={56}
+                                                        height={56}
+                                                        className="sancai-visual-asset-table-preview"
+                                                        src={previewUrl}
+                                                        alt={`${readVisualAssetTitle(asset)}生成图预览`}
+                                                        preview={{
+                                                            src: fullImageUrl ?? previewUrl
+                                                        }}
+                                                    />
+                                                );
+                                            }
+                                        },
+                                        {
+                                            title: "状态",
+                                            dataIndex: "status",
+                                            key: "status",
+                                            width: 96,
+                                            render: (status?: string | null) =>
+                                                status ? (
+                                                    <Tag
+                                                        color={readVisualAssetStatusTagColor(
+                                                            status
+                                                        )}
+                                                    >
+                                                        {readVisualAssetStatusLabel(status)}
+                                                    </Tag>
+                                                ) : (
+                                                    <Text type="secondary">-</Text>
+                                                )
+                                        },
+                                        {
+                                            title: "当前",
+                                            dataIndex: "currentUsed",
+                                            key: "currentUsed",
+                                            width: 72,
+                                            render: (currentUsed?: boolean | null) =>
+                                                currentUsed ? (
+                                                    <CheckOutlined
+                                                        aria-label="当前使用"
+                                                        className="sancai-image-current-icon"
+                                                    />
+                                                ) : (
+                                                    <Text type="secondary">-</Text>
+                                                )
+                                        },
+                                        {
+                                            inlineLimit: 2,
+                                            key: "actions",
+                                            options: (asset) => {
+                                                const assetId = readVisualAssetId(asset);
+                                                const selectedAssetId = selectedVisualAsset
+                                                    ? readVisualAssetId(selectedVisualAsset)
+                                                    : 0;
+                                                const isSelected =
+                                                    assetId > 0 && assetId === selectedAssetId;
+                                                return [
+                                                    {
+                                                        key: "select",
+                                                        text: "选择",
+                                                        ariaLabel: `选择${readVisualAssetTitle(asset)}`,
+                                                        testId: `sancai-visual-asset-${assetId}-select-button`,
+                                                        disabled:
+                                                            !selectedSourceStorageObjectId ||
+                                                            isSelected,
+                                                        onClick: (record) =>
+                                                            selectVisualAsset(record)
+                                                    },
+                                                    {
+                                                        key: "use",
+                                                        text: "当前",
+                                                        ariaLabel: `设为当前视觉处理 ${readVisualAssetTitle(asset)}`,
+                                                        testId: `sancai-visual-asset-${assetId}-use-button`,
+                                                        disabled:
+                                                            !selectedSourceStorageObjectId ||
+                                                            Boolean(asset.currentUsed),
+                                                        onClick: (record) =>
+                                                            onUseVisualAsset?.(record)
+                                                    }
+                                                ];
+                                            }
                                         }
-                                    }
-                                ] satisfies KuzhambuTableProps<SancaiVisualAssetRecord>["columns"]
-                            }
-                            dataSource={visualAssetsForSelectedSource}
-                            pagination={false}
-                            rowKey={(asset) => readVisualAssetId(asset)}
-                            size="small"
-                        />
-                    ) : (
-                        <div className="sancai-visual-asset-empty-records">
-                            <Text type="secondary">
-                                {selectedSourceStorageObjectId
-                                    ? "当前来源图片暂无处理记录"
-                                    : "请先选择来源图片"}
-                            </Text>
-                        </div>
-                    )}
-                    <div className="sancai-visual-asset-toolbar">
-                        <div className="sancai-visual-workflow" aria-label="图文生图工作流">
+                                    ] satisfies KuzhambuTableProps<SancaiVisualAssetRecord>["columns"]
+                                }
+                                dataSource={visualAssetsForSelectedSource}
+                                pagination={false}
+                                rowKey={(asset) => readVisualAssetId(asset)}
+                                size="small"
+                            />
+                        ) : (
+                            <div className="sancai-visual-asset-empty-records">
+                                <Text type="secondary">
+                                    {selectedSourceStorageObjectId
+                                        ? "当前来源图片暂无处理记录"
+                                        : "请先选择来源图片"}
+                                </Text>
+                            </div>
+                        )}
+                        <div className="sancai-visual-asset-toolbar">
+                            <div className="sancai-visual-workflow" aria-label="图文生图工作流">
+                                <KuzhambuSpace wrap>
+                                    <KuzhambuButton
+                                        testId="classics-sancai-sancai-entry-action-button-3"
+                                        icon={<FileSearchOutlined />}
+                                        loading={creatingVisualAssetCapability === "image_analysis"}
+                                        onClick={() => {
+                                            createVisualAssetTask("image_analysis");
+                                        }}
+                                    >
+                                        图片理解
+                                    </KuzhambuButton>
+                                    <span className="sancai-visual-workflow-arrow">›</span>
+                                    <KuzhambuButton
+                                        testId="classics-sancai-sancai-entry-action-button-4"
+                                        icon={<BranchesOutlined />}
+                                        loading={creatingVisualAssetCapability === "fusion"}
+                                        onClick={() => {
+                                            createVisualAssetTask("fusion");
+                                        }}
+                                    >
+                                        信息融合
+                                    </KuzhambuButton>
+                                    <span className="sancai-visual-workflow-arrow">›</span>
+                                    <KuzhambuButton
+                                        testId="classics-sancai-sancai-entry-action-button-5"
+                                        icon={<FileTextOutlined />}
+                                        loading={creatingVisualAssetCapability === "visual"}
+                                        onClick={() => {
+                                            createVisualAssetTask("visual");
+                                        }}
+                                    >
+                                        视觉描述
+                                    </KuzhambuButton>
+                                    <span className="sancai-visual-workflow-arrow">›</span>
+                                    <KuzhambuButton
+                                        testId="classics-sancai-sancai-entry-action-button-6"
+                                        icon={<PictureOutlined />}
+                                        loading={creatingVisualAssetCapability === "image_gen"}
+                                        onClick={() => {
+                                            createVisualAssetTask("image_gen");
+                                        }}
+                                    >
+                                        生图
+                                    </KuzhambuButton>
+                                </KuzhambuSpace>
+                            </div>
                             <KuzhambuSpace wrap>
                                 <KuzhambuButton
-                                    testId="classics-sancai-sancai-entry-action-button-3"
-                                    icon={<FileSearchOutlined />}
-                                    loading={creatingVisualAssetCapability === "image_analysis"}
-                                    onClick={() => {
-                                        createVisualAssetTask("image_analysis");
-                                    }}
+                                    testId="classics-sancai-sancai-entry-action-button-7"
+                                    icon={<CheckOutlined />}
+                                    type="primary"
+                                    loading={isUpdatingVisualAsset}
+                                    onClick={saveVisualAsset}
                                 >
-                                    图片理解
-                                </KuzhambuButton>
-                                <span className="sancai-visual-workflow-arrow">›</span>
-                                <KuzhambuButton
-                                    testId="classics-sancai-sancai-entry-action-button-4"
-                                    icon={<BranchesOutlined />}
-                                    loading={creatingVisualAssetCapability === "fusion"}
-                                    onClick={() => {
-                                        createVisualAssetTask("fusion");
-                                    }}
-                                >
-                                    信息融合
-                                </KuzhambuButton>
-                                <span className="sancai-visual-workflow-arrow">›</span>
-                                <KuzhambuButton
-                                    testId="classics-sancai-sancai-entry-action-button-5"
-                                    icon={<FileTextOutlined />}
-                                    loading={creatingVisualAssetCapability === "visual"}
-                                    onClick={() => {
-                                        createVisualAssetTask("visual");
-                                    }}
-                                >
-                                    视觉描述
-                                </KuzhambuButton>
-                                <span className="sancai-visual-workflow-arrow">›</span>
-                                <KuzhambuButton
-                                    testId="classics-sancai-sancai-entry-action-button-6"
-                                    icon={<PictureOutlined />}
-                                    loading={creatingVisualAssetCapability === "image_gen"}
-                                    onClick={() => {
-                                        createVisualAssetTask("image_gen");
-                                    }}
-                                >
-                                    生图
+                                    采纳
                                 </KuzhambuButton>
                             </KuzhambuSpace>
                         </div>
-                        <KuzhambuSpace wrap>
-                            <KuzhambuButton
-                                testId="classics-sancai-sancai-entry-action-button-7"
-                                icon={<CheckOutlined />}
-                                type="primary"
-                                loading={isUpdatingVisualAsset}
-                                onClick={saveVisualAsset}
-                            >
-                                采纳
-                            </KuzhambuButton>
-                        </KuzhambuSpace>
-                    </div>
-                    <KuzhambuForm
-                        className="sancai-entry-edit-drawer-form"
-                        colon={false}
-                        component="div"
-                    >
-                        <KuzhambuFormItem label="文本权重" layoutSize="middle">
-                            <Input
-                                aria-label="三才图会视觉处理文本权重"
-                                value={visualAssetFormValue?.textWeight ?? ""}
-                                onChange={(event) =>
-                                    updateVisualAssetForm({
-                                        textWeight: event.target.value
-                                            ? Number(event.target.value)
-                                            : null
-                                    })
-                                }
-                            />
+                        <KuzhambuFormItem name="textWeight" label="文本权重" layoutSize="middle">
+                            <Input aria-label="三才图会视觉处理文本权重" />
                         </KuzhambuFormItem>
-                        <KuzhambuFormItem label="图片权重" layoutSize="middle">
-                            <Input
-                                aria-label="三才图会视觉处理图片权重"
-                                value={visualAssetFormValue?.imageWeight ?? ""}
-                                onChange={(event) =>
-                                    updateVisualAssetForm({
-                                        imageWeight: event.target.value
-                                            ? Number(event.target.value)
-                                            : null
-                                    })
-                                }
-                            />
+                        <KuzhambuFormItem name="imageWeight" label="图片权重" layoutSize="middle">
+                            <Input aria-label="三才图会视觉处理图片权重" />
                         </KuzhambuFormItem>
                         <KuzhambuFormItem
+                            name="imageAnalysisMarkdown"
                             label="图片理解"
                             layoutSize="large"
                             className="sancai-entry-edit-drawer-form-item-top"
                         >
                             <Input.TextArea
                                 aria-label="三才图会视觉处理图片理解"
-                                value={visualAssetFormValue?.imageAnalysisMarkdown ?? ""}
                                 autoSize={resolveTextAreaAutoSize({
                                     minRows: 3,
                                     maxRows: 6
                                 })}
-                                onChange={(event) =>
-                                    updateVisualAssetForm({
-                                        imageAnalysisMarkdown: event.target.value
-                                    })
-                                }
                             />
                         </KuzhambuFormItem>
                         <KuzhambuFormItem
+                            name="fusionDescription"
                             label="融合描述"
                             layoutSize="large"
                             className="sancai-entry-edit-drawer-form-item-top"
                         >
                             <Input.TextArea
                                 aria-label="三才图会视觉处理融合描述"
-                                value={visualAssetFormValue?.fusionDescription ?? ""}
                                 autoSize={resolveTextAreaAutoSize({
                                     minRows: 2,
                                     maxRows: 5
                                 })}
-                                onChange={(event) =>
-                                    updateVisualAssetForm({
-                                        fusionDescription: event.target.value
-                                    })
-                                }
                             />
                         </KuzhambuFormItem>
                         <KuzhambuFormItem
+                            name="visualDescription"
                             label="视觉描述"
                             layoutSize="large"
                             className="sancai-entry-edit-drawer-form-item-top"
                         >
                             <Input.TextArea
                                 aria-label="三才图会视觉处理视觉描述"
-                                value={visualAssetFormValue?.visualDescription ?? ""}
                                 autoSize={resolveTextAreaAutoSize({
                                     minRows: 2,
                                     maxRows: 5
                                 })}
-                                onChange={(event) =>
-                                    updateVisualAssetForm({
-                                        visualDescription: event.target.value
-                                    })
-                                }
                             />
                         </KuzhambuFormItem>
                         <KuzhambuFormItem
+                            name="generationParamsJson"
                             label="生成参数"
                             layoutSize="large"
                             className="sancai-entry-edit-drawer-form-item-top"
                         >
                             <Input.TextArea
                                 aria-label="三才图会视觉处理生成参数"
-                                value={visualAssetFormValue?.generationParamsJson ?? ""}
                                 autoSize={resolveTextAreaAutoSize({
                                     minRows: 2,
                                     maxRows: 5
                                 })}
-                                onChange={(event) =>
-                                    updateVisualAssetForm({
-                                        generationParamsJson: event.target.value
-                                    })
-                                }
                             />
                         </KuzhambuFormItem>
                     </KuzhambuForm>
