@@ -1,6 +1,6 @@
 import { UploadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Badge, Card, Empty, Image, Typography, Upload } from "antd";
+import { App, Badge, Empty, Image, Typography, Upload } from "antd";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
@@ -18,8 +18,6 @@ import * as exportService from "@/pages/classics/common/classics-export-service"
 import * as shareService from "@/pages/classics/common/classics-share-service";
 import * as currentUserService from "@/service/current-user-service";
 import type { ClassicsExportJobRecord } from "@/pages/classics/common/classics-export-types";
-import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidate-panel";
-import { AiRefinementStreamPanel } from "@/pages/classics/common/components/ai-refinement-stream-panel";
 import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
 import { ClassicsContentTagPanel } from "@/pages/classics/common/components/classics-content-tag-panel";
 import { AiCandidateBatchDrawer } from "@/pages/classics/common/components/ai-candidate-batch-drawer";
@@ -130,7 +128,6 @@ export const SancaiEntryPanel = ({
     );
     const [batchCandidateDrawerOpen, setBatchCandidateDrawerOpen] = useState(false);
     const [internalExportJobsDrawerOpen, setInternalExportJobsDrawerOpen] = useState(false);
-    const candidatePanelRef = useRef<HTMLDivElement | null>(null);
     const tagPanelRef = useRef<HTMLDivElement | null>(null);
     const categoryOptions = useMemo(
         () =>
@@ -318,21 +315,10 @@ export const SancaiEntryPanel = ({
         });
     };
     const {
-        setSelectedVisualAsset,
-        selectedVisualAssetId,
-        streamingRefinementTask,
-        streamEvents,
-        isStreamingRefinementTask,
-        streamErrorText,
         creatingRefinementCapability,
-        retryingRefinementTaskId,
         invalidateSancaiContentGovernance,
-        invalidateSancaiContentCandidates,
         refreshSancaiEntryDetail,
         createRefinementTask,
-        retryRefinementTask,
-        closeStreamingRefinementTask,
-        refreshAfterVisualAssetCandidateHandled,
         resetHandledSucceededTaskIds
     } = useSancaiEntryPanelState({
         queryClient,
@@ -362,7 +348,9 @@ export const SancaiEntryPanel = ({
         await Promise.all([
             queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "entries"] }),
             refreshSancaiEntryDetail(),
-            invalidateSancaiContentCandidates(selectedVisualAssetId),
+            queryClient.invalidateQueries({
+                queryKey: ["ai", "candidates", "SANCAI_ENTRY", selectedEntryId]
+            }),
             queryClient.invalidateQueries({
                 queryKey: ["classics", "content", "qa-pairs", "SANCAI_ENTRY"]
             }),
@@ -370,13 +358,7 @@ export const SancaiEntryPanel = ({
                 queryKey: ["classics", "content", "tags", "SANCAI_ENTRY", selectedEntryId]
             })
         ]);
-    }, [
-        queryClient,
-        refreshSancaiEntryDetail,
-        invalidateSancaiContentCandidates,
-        selectedVisualAssetId,
-        selectedEntryId
-    ]);
+    }, [queryClient, refreshSancaiEntryDetail, selectedEntryId]);
 
     const openBatchCandidateDrawer = (selectedEntries: SancaiEntryRecord[]) => {
         if (!selectedEntries.length) {
@@ -581,16 +563,13 @@ export const SancaiEntryPanel = ({
 
     const selectEntry = (entry: SancaiEntryRecord) => {
         setIsCreating(false);
-        setSelectedVisualAsset(null);
         setEditingEntry(entry);
         setSelectedVersionId(null);
         setIsModelOpen(true);
     };
 
     const closeModel = () => {
-        closeStreamingRefinementTask();
         setIsCreating(false);
-        setSelectedVisualAsset(null);
         setEditingEntry(null);
         setSelectedVersionId(null);
         resetHandledSucceededTaskIds();
@@ -922,13 +901,17 @@ export const SancaiEntryPanel = ({
                 mode={isCreating ? "create" : "edit"}
                 open={isModelOpen && !isLoading}
                 volumes={volumes}
+                currentUserId={currentUserQuery.data?.id}
                 onCancel={closeModel}
                 onSubmit={submitEntry}
                 onUseVisualAsset={switchVisualAsset}
                 onUpdateVisualAsset={updateVisualAsset}
-                onSelectedVisualAssetChange={setSelectedVisualAsset}
-                onCreateVisualAssetTask={(capability, asset) => {
-                    createRefinementTask(capability, asset);
+                onVisualRefinementChanged={async () => {
+                    await Promise.all([
+                        invalidateEntries(),
+                        refreshSancaiEntryDetail(),
+                        invalidateSancaiContentGovernance()
+                    ]);
                 }}
                 onCreateTranslationTask={(draft) => createRefinementTask("translate", null, draft)}
                 onCreateSummaryTask={(draft) => createRefinementTask("summary", null, draft)}
@@ -944,14 +927,6 @@ export const SancaiEntryPanel = ({
                         aiRefinementTaskService.getNormalizedTaskCapability(task.capability) ===
                         "summary"
                 )}
-                creatingVisualAssetCapability={
-                    creatingRefinementCapability === "image_analysis" ||
-                    creatingRefinementCapability === "fusion" ||
-                    creatingRefinementCapability === "visual" ||
-                    creatingRefinementCapability === "image_gen"
-                        ? creatingRefinementCapability
-                        : null
-                }
                 qaContent={
                     !isCreating && selectedEntry ? (
                         <ClassicsContentQaPanel
@@ -1090,140 +1065,6 @@ export const SancaiEntryPanel = ({
                                 />
                             )}
                         </div>
-                    ) : null
-                }
-                visualRefinementContent={
-                    !isCreating && selectedEntry ? (
-                        <>
-                            <Card size="small" title="AI 精修任务">
-                                <div style={{ display: "grid", gap: 8 }}>
-                                    {refinementTasks
-                                        .filter((task) => {
-                                            const capability =
-                                                aiRefinementTaskService.getNormalizedTaskCapability(
-                                                    task.capability
-                                                );
-                                            return (
-                                                capability === "translate" ||
-                                                capability === "summary" ||
-                                                capability === "image_analysis" ||
-                                                capability === "visual" ||
-                                                capability === "fusion" ||
-                                                capability === "image_gen"
-                                            );
-                                        })
-                                        .slice(0, 6)
-                                        .map((task) => {
-                                            const failureText =
-                                                aiRefinementTaskService.getTaskFailureText(
-                                                    task.failureStage,
-                                                    task.errorType,
-                                                    task.errorMessage
-                                                );
-                                            return (
-                                                <Card
-                                                    key={task.taskId}
-                                                    size="small"
-                                                    bodyStyle={{ padding: 12 }}
-                                                >
-                                                    <div
-                                                        style={{
-                                                            display: "flex",
-                                                            justifyContent: "space-between",
-                                                            gap: 12,
-                                                            alignItems: "center",
-                                                            flexWrap: "wrap"
-                                                        }}
-                                                    >
-                                                        <div>
-                                                            {aiRefinementTaskService.getTaskCapabilityLabel(
-                                                                task.capability
-                                                            )}
-                                                            ：{task.status}
-                                                            {task.resultPreview
-                                                                ? ` / ${task.resultPreview}`
-                                                                : ""}
-                                                        </div>
-                                                        {aiRefinementTaskService.getTaskRetryable(
-                                                            task.status,
-                                                            task.capability
-                                                        ) ? (
-                                                            <KuzhambuButton
-                                                                testId="classics-sancai-sancai-entry-retry-button"
-                                                                size="small"
-                                                                loading={
-                                                                    retryingRefinementTaskId ===
-                                                                    task.taskId
-                                                                }
-                                                                onClick={() =>
-                                                                    retryRefinementTask(task)
-                                                                }
-                                                            >
-                                                                重试
-                                                            </KuzhambuButton>
-                                                        ) : null}
-                                                    </div>
-                                                    {failureText ? (
-                                                        <KuzhambuAlert
-                                                            showIcon
-                                                            type="error"
-                                                            style={{ marginTop: 8 }}
-                                                            title="失败原因"
-                                                            description={failureText}
-                                                        />
-                                                    ) : null}
-                                                </Card>
-                                            );
-                                        })}
-                                </div>
-                            </Card>
-                            {streamingRefinementTask ? (
-                                <AiRefinementStreamPanel
-                                    events={streamEvents}
-                                    isStreaming={isStreamingRefinementTask}
-                                    streamErrorText={streamErrorText}
-                                    task={streamingRefinementTask}
-                                    onClose={closeStreamingRefinementTask}
-                                    onRetry={() => retryRefinementTask(streamingRefinementTask)}
-                                    onViewCandidate={() => {
-                                        void invalidateSancaiContentCandidates(
-                                            streamingRefinementTask.objectId ??
-                                                selectedVisualAssetId
-                                        );
-                                        candidatePanelRef.current?.scrollIntoView({
-                                            block: "start",
-                                            behavior: "smooth"
-                                        });
-                                        candidatePanelRef.current?.focus();
-                                    }}
-                                />
-                            ) : null}
-                            {selectedVisualAssetId ? (
-                                <div
-                                    ref={candidatePanelRef}
-                                    className="sancai-candidate-panel-anchor"
-                                    tabIndex={-1}
-                                >
-                                    <AiCandidatePanel
-                                        capabilities={[
-                                            "image_analysis",
-                                            "visual",
-                                            "fusion",
-                                            "image_gen"
-                                        ]}
-                                        contentId={selectedEntry.id}
-                                        contentType="SANCAI_ENTRY"
-                                        objectId={selectedVisualAssetId}
-                                        onApplied={async () => {
-                                            await refreshAfterVisualAssetCandidateHandled();
-                                        }}
-                                        onRejected={async () => {
-                                            await refreshAfterVisualAssetCandidateHandled();
-                                        }}
-                                    />
-                                </div>
-                            ) : null}
-                        </>
                     ) : null
                 }
                 tagContent={

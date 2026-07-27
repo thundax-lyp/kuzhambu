@@ -5,7 +5,9 @@ import {
     FileTextOutlined,
     PictureOutlined
 } from "@ant-design/icons";
+import { useQuery } from "@tanstack/react-query";
 import { Empty, Image, Input, Tag, Typography } from "antd";
+import { useEffect, useMemo, useState } from "react";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import {
@@ -18,11 +20,15 @@ import {
     KuzhambuSelect
 } from "@/components";
 
-import type { SancaiVisualAssetRefinementCapability } from "@/pages/classics/sancai/sancai-entry-service";
 import type {
+    SancaiEntryImageContentMode,
     SancaiEntryImageRecord,
+    SancaiEntryRecord,
     SancaiVisualAssetRecord
 } from "@/pages/classics/sancai/sancai-types";
+import * as entryService from "@/pages/classics/sancai/sancai-entry-service";
+import { useSancaiEntryVisualRefinement } from "./hooks/use-sancai-entry-visual-refinement";
+import { SancaiEntryVisualRefinementSection } from "./sancai-entry-visual-refinement-section";
 import "./sancai-entry-visual-section.css";
 
 const { Text } = Typography;
@@ -36,6 +42,36 @@ const readVisualAssetTitle = (asset: SancaiVisualAssetRecord | undefined | null)
 
 const readVisualAssetId = (asset: SancaiVisualAssetRecord) => {
     return asset.visualAssetId ?? asset.id ?? 0;
+};
+
+const selectCurrentVisualAsset = (assets: SancaiVisualAssetRecord[]) => {
+    return [...assets]
+        .filter((asset) => asset.currentUsed !== false)
+        .sort((left, right) => (right.versionNo ?? 0) - (left.versionNo ?? 0))[0];
+};
+
+const resolveImageUrl = (
+    entryId: number | undefined,
+    image: SancaiEntryImageRecord | undefined,
+    mode: SancaiEntryImageContentMode
+) => {
+    if (!entryId || !image?.id) {
+        return undefined;
+    }
+    return toAuthenticatedResourceUrl(
+        entryService.getImageContentUrl({
+            entryId,
+            imageId: image.id,
+            mode
+        })
+    );
+};
+
+const isSameStorageObjectId = (
+    left: number | string | null | undefined,
+    right: number | string | null | undefined
+) => {
+    return left != null && right != null && String(left) === String(right);
 };
 
 const readVisualAssetStatusLabel = (status?: string | null) => {
@@ -89,47 +125,238 @@ const resolveStorageUrl = (url?: string | null) => {
 };
 
 interface SancaiEntryVisualSectionProps {
-    creatingVisualAssetCapability: SancaiVisualAssetRefinementCapability | null;
-    currentVisualAsset: SancaiVisualAssetRecord | null | undefined;
-    defaultSourceImage?: SancaiEntryImageRecord;
-    entryImages: SancaiEntryImageRecord[];
-    generatedPreviewUrl?: string;
+    currentUserId?: number | string | null;
+    entry: SancaiEntryRecord;
     isUpdatingVisualAsset: boolean;
-    selectedSourceImage?: SancaiEntryImageRecord;
-    selectedSourceStorageObjectId: number | string | null;
-    selectedVisualAsset: SancaiVisualAssetRecord | null | undefined;
-    sourcePreviewUrl?: string;
-    visualAssetFormValue: SancaiVisualAssetRecord | null;
-    visualAssetsForSelectedSource: SancaiVisualAssetRecord[];
-    onCreateVisualAssetTask?: (capability: SancaiVisualAssetRefinementCapability) => void;
-    onSaveVisualAsset: () => void;
-    onSelectVisualAsset: (asset: SancaiVisualAssetRecord) => void;
-    onSelectVisualSourceImageBySelectValue: (selectValue: string) => void;
-    onUpdateVisualAssetForm: (patch: Partial<SancaiVisualAssetRecord>) => void;
+    onRefinementChanged: () => Promise<void> | void;
+    onPreviewStateChange: (state: SancaiEntryVisualPreviewState) => void;
+    onUpdateVisualAsset?: (asset: SancaiVisualAssetRecord) => void;
     onUseVisualAsset?: (asset: SancaiVisualAssetRecord) => void;
 }
 
+export interface SancaiEntryVisualPreviewState {
+    currentVisualAsset: SancaiVisualAssetRecord | null;
+    generatedPreviewUrl?: string;
+    visualDescription?: string | null;
+}
+
 export const SancaiEntryVisualSection = ({
-    creatingVisualAssetCapability,
-    currentVisualAsset,
-    defaultSourceImage,
-    entryImages,
-    generatedPreviewUrl,
+    currentUserId,
+    entry,
     isUpdatingVisualAsset,
-    selectedSourceImage,
-    selectedSourceStorageObjectId,
-    selectedVisualAsset,
-    sourcePreviewUrl,
-    visualAssetFormValue,
-    visualAssetsForSelectedSource,
-    onCreateVisualAssetTask,
-    onSaveVisualAsset,
-    onSelectVisualAsset,
-    onSelectVisualSourceImageBySelectValue,
-    onUpdateVisualAssetForm,
+    onRefinementChanged,
+    onPreviewStateChange,
+    onUpdateVisualAsset,
     onUseVisualAsset
 }: SancaiEntryVisualSectionProps) => {
+    const entryId = entry.id;
+    const imagesQuery = useQuery({
+        queryKey: ["classics", "sancai", "entries", "images", entryId],
+        queryFn: () => entryService.listImages(entryId),
+        enabled: Boolean(entryId),
+        refetchOnMount: false,
+        retry: false
+    });
+    const entryImages = useMemo(
+        () =>
+            [...(imagesQuery.data || [])].sort((left, right) => {
+                if ((left.priority ?? 0) !== (right.priority ?? 0)) {
+                    return (left.priority ?? 0) - (right.priority ?? 0);
+                }
+                return left.id - right.id;
+            }),
+        [imagesQuery.data]
+    );
+    const visualAssetsQuery = useQuery({
+        queryKey: ["classics", "sancai", "entries", "visual-assets", entryId],
+        queryFn: () => entryService.listVisualAssets(entryId),
+        enabled: Boolean(entryId),
+        retry: false
+    });
+    const visualAssets = useMemo(() => visualAssetsQuery.data || [], [visualAssetsQuery.data]);
+    const orderedVisualAssets = useMemo(
+        () =>
+            [...visualAssets].sort((left, right) => {
+                if ((left.versionNo ?? 0) !== (right.versionNo ?? 0)) {
+                    return (right.versionNo ?? 0) - (left.versionNo ?? 0);
+                }
+                return (
+                    (right.visualAssetId ?? right.id ?? 0) - (left.visualAssetId ?? left.id ?? 0)
+                );
+            }),
+        [visualAssets]
+    );
+    const currentVisualAsset = useMemo(
+        () => selectCurrentVisualAsset(visualAssets),
+        [visualAssets]
+    );
+    const [selectedVisualAssetId, setSelectedVisualAssetId] = useState<number | null>(null);
+    const [visualAssetForm, setVisualAssetForm] = useState<SancaiVisualAssetRecord | null>(null);
+    const activeVisualAssetId =
+        selectedVisualAssetId ??
+        currentVisualAsset?.visualAssetId ??
+        currentVisualAsset?.id ??
+        null;
+    const selectedVisualAsset =
+        visualAssets.find(
+            (asset) => (asset.visualAssetId ?? asset.id ?? null) === activeVisualAssetId
+        ) ||
+        currentVisualAsset ||
+        null;
+    const defaultSourceImage = entryImages.find((image) => image.storageObjectId);
+    const visualAssetFormValue = useMemo(() => {
+        if (!selectedVisualAsset) {
+            return null;
+        }
+        const selectedId = selectedVisualAsset.visualAssetId ?? selectedVisualAsset.id ?? null;
+        const formId = visualAssetForm?.visualAssetId ?? visualAssetForm?.id ?? null;
+        const baseForm = formId === selectedId ? visualAssetForm : { ...selectedVisualAsset };
+        if (!baseForm) {
+            return null;
+        }
+        if (baseForm.sourceImageStorageObjectId || !defaultSourceImage?.storageObjectId) {
+            return baseForm;
+        }
+        return {
+            ...baseForm,
+            sourceImageStorageObjectId: defaultSourceImage.storageObjectId,
+            sourcePreviewUrl: resolveImageUrl(entryId, defaultSourceImage, "preview"),
+            sourceDownloadUrl: resolveImageUrl(entryId, defaultSourceImage, "download")
+        };
+    }, [defaultSourceImage, entryId, selectedVisualAsset, visualAssetForm]);
+    const selectedVisualAssetResourceId = selectedVisualAsset
+        ? readVisualAssetId(selectedVisualAsset)
+        : null;
+    const selectedSourceStorageObjectId =
+        visualAssetFormValue?.sourceImageStorageObjectId ??
+        defaultSourceImage?.storageObjectId ??
+        null;
+    const visualAssetsForSelectedSource = useMemo(
+        () =>
+            selectedSourceStorageObjectId == null
+                ? []
+                : orderedVisualAssets.filter(
+                      (asset) => asset.sourceImageStorageObjectId === selectedSourceStorageObjectId
+                  ),
+        [orderedVisualAssets, selectedSourceStorageObjectId]
+    );
+    const selectedSourceImage = entryImages.find(
+        (image) =>
+            image.storageObjectId != null &&
+            isSameStorageObjectId(image.storageObjectId, selectedSourceStorageObjectId)
+    );
+    const selectedSourcePreviewUrl = selectedSourceImage
+        ? resolveImageUrl(entryId, selectedSourceImage, "preview")
+        : undefined;
+    const hasSourceVisualImage = Boolean(
+        selectedSourceImage ||
+        visualAssetFormValue?.sourceImageStorageObjectId ||
+        selectedVisualAsset?.sourceImageStorageObjectId
+    );
+    const hasGeneratedVisualImage = Boolean(
+        visualAssetFormValue?.generatedImageStorageObjectId ||
+        selectedVisualAsset?.generatedImageStorageObjectId
+    );
+    const sourcePreviewUrl =
+        selectedSourcePreviewUrl ??
+        resolveStorageUrl(
+            hasSourceVisualImage
+                ? (visualAssetFormValue?.sourcePreviewUrl ??
+                      selectedVisualAsset?.sourcePreviewUrl ??
+                      (selectedVisualAssetResourceId
+                          ? entryService.getVisualAssetContentUrl({
+                                entryId,
+                                visualAssetId: selectedVisualAssetResourceId,
+                                variant: "source"
+                            })
+                          : undefined))
+                : undefined
+        );
+    const generatedPreviewUrl = resolveStorageUrl(
+        hasGeneratedVisualImage
+            ? (visualAssetFormValue?.generatedPreviewUrl ??
+                  selectedVisualAsset?.generatedPreviewUrl ??
+                  (selectedVisualAssetResourceId
+                      ? entryService.getVisualAssetContentUrl({
+                            entryId,
+                            visualAssetId: selectedVisualAssetResourceId,
+                            variant: "generated"
+                        })
+                      : undefined))
+            : undefined
+    );
+    const saveVisualAsset = () => {
+        if (!visualAssetFormValue || !onUpdateVisualAsset) {
+            return;
+        }
+        onUpdateVisualAsset(visualAssetFormValue);
+    };
+    const selectVisualAsset = (asset: SancaiVisualAssetRecord) => {
+        const assetId = asset.visualAssetId ?? asset.id ?? null;
+        setSelectedVisualAssetId(assetId);
+        setVisualAssetForm({ ...asset });
+    };
+    const updateVisualAssetForm = (patch: Partial<SancaiVisualAssetRecord>) => {
+        setVisualAssetForm((currentForm) => {
+            const baseForm = currentForm ?? visualAssetFormValue;
+            return baseForm
+                ? {
+                      ...baseForm,
+                      ...patch
+                  }
+                : currentForm;
+        });
+    };
+    const selectVisualSourceImage = (image: SancaiEntryImageRecord) => {
+        if (!image.storageObjectId) {
+            return;
+        }
+        updateVisualAssetForm({
+            sourceImageStorageObjectId: image.storageObjectId,
+            sourcePreviewUrl: resolveImageUrl(entryId, image, "preview"),
+            sourceDownloadUrl: resolveImageUrl(entryId, image, "download")
+        });
+    };
+    const selectVisualSourceImageBySelectValue = (selectValue: string) => {
+        const storageObjectId = selectValue.startsWith("storage:")
+            ? selectValue.slice("storage:".length)
+            : selectValue;
+        const image = entryImages.find((entryImage) =>
+            isSameStorageObjectId(entryImage.storageObjectId, storageObjectId)
+        );
+        if (image) {
+            selectVisualSourceImage(image);
+        }
+    };
     const selectedSourceImageSelectValue = readVisualSourceImageSelectValue(selectedSourceImage);
+    const {
+        closeStreamingRefinementTask,
+        createVisualAssetTask,
+        creatingVisualAssetCapability,
+        isStreamingRefinementTask,
+        refinementTasks,
+        refreshAfterVisualAssetCandidateHandled,
+        refreshVisualAssetCandidates,
+        retryingRefinementTaskId,
+        retryRefinementTask,
+        streamErrorText,
+        streamEvents,
+        streamingRefinementTask
+    } = useSancaiEntryVisualRefinement({
+        currentUserId,
+        entry,
+        selectedVisualAsset,
+        selectedVisualAssetId: selectedVisualAssetResourceId,
+        visualAssetFormValue,
+        onRefinementChanged
+    });
+    useEffect(() => {
+        onPreviewStateChange({
+            currentVisualAsset: currentVisualAsset ?? null,
+            generatedPreviewUrl,
+            visualDescription: visualAssetFormValue?.visualDescription
+        });
+    }, [currentVisualAsset, generatedPreviewUrl, onPreviewStateChange, visualAssetFormValue]);
 
     return (
         <section
@@ -168,7 +395,7 @@ export const SancaiEntryVisualSection = ({
                                         readVisualSourceImageSelectValue(image) ??
                                         `image:${image.id}`
                                 }))}
-                                onChange={(value) => onSelectVisualSourceImageBySelectValue(value)}
+                                onChange={(value) => selectVisualSourceImageBySelectValue(value)}
                             />
                         </KuzhambuFormItem>
                     </KuzhambuForm>
@@ -300,7 +527,7 @@ export const SancaiEntryVisualSection = ({
                                                     disabled:
                                                         !selectedSourceStorageObjectId ||
                                                         isSelected,
-                                                    onClick: (record) => onSelectVisualAsset(record)
+                                                    onClick: (record) => selectVisualAsset(record)
                                                 },
                                                 {
                                                     key: "use",
@@ -332,62 +559,60 @@ export const SancaiEntryVisualSection = ({
                         </div>
                     )}
                     <div className="sancai-visual-asset-toolbar">
-                        {onCreateVisualAssetTask ? (
-                            <div className="sancai-visual-workflow" aria-label="图文生图工作流">
-                                <KuzhambuSpace wrap>
-                                    <KuzhambuButton
-                                        testId="classics-sancai-sancai-entry-action-button-3"
-                                        icon={<FileSearchOutlined />}
-                                        loading={creatingVisualAssetCapability === "image_analysis"}
-                                        onClick={() => {
-                                            onCreateVisualAssetTask("image_analysis");
-                                        }}
-                                    >
-                                        图片理解
-                                    </KuzhambuButton>
-                                    <span className="sancai-visual-workflow-arrow">›</span>
-                                    <KuzhambuButton
-                                        testId="classics-sancai-sancai-entry-action-button-4"
-                                        icon={<BranchesOutlined />}
-                                        loading={creatingVisualAssetCapability === "fusion"}
-                                        onClick={() => {
-                                            onCreateVisualAssetTask("fusion");
-                                        }}
-                                    >
-                                        信息融合
-                                    </KuzhambuButton>
-                                    <span className="sancai-visual-workflow-arrow">›</span>
-                                    <KuzhambuButton
-                                        testId="classics-sancai-sancai-entry-action-button-5"
-                                        icon={<FileTextOutlined />}
-                                        loading={creatingVisualAssetCapability === "visual"}
-                                        onClick={() => {
-                                            onCreateVisualAssetTask("visual");
-                                        }}
-                                    >
-                                        视觉描述
-                                    </KuzhambuButton>
-                                    <span className="sancai-visual-workflow-arrow">›</span>
-                                    <KuzhambuButton
-                                        testId="classics-sancai-sancai-entry-action-button-6"
-                                        icon={<PictureOutlined />}
-                                        loading={creatingVisualAssetCapability === "image_gen"}
-                                        onClick={() => {
-                                            onCreateVisualAssetTask("image_gen");
-                                        }}
-                                    >
-                                        生图
-                                    </KuzhambuButton>
-                                </KuzhambuSpace>
-                            </div>
-                        ) : null}
+                        <div className="sancai-visual-workflow" aria-label="图文生图工作流">
+                            <KuzhambuSpace wrap>
+                                <KuzhambuButton
+                                    testId="classics-sancai-sancai-entry-action-button-3"
+                                    icon={<FileSearchOutlined />}
+                                    loading={creatingVisualAssetCapability === "image_analysis"}
+                                    onClick={() => {
+                                        createVisualAssetTask("image_analysis");
+                                    }}
+                                >
+                                    图片理解
+                                </KuzhambuButton>
+                                <span className="sancai-visual-workflow-arrow">›</span>
+                                <KuzhambuButton
+                                    testId="classics-sancai-sancai-entry-action-button-4"
+                                    icon={<BranchesOutlined />}
+                                    loading={creatingVisualAssetCapability === "fusion"}
+                                    onClick={() => {
+                                        createVisualAssetTask("fusion");
+                                    }}
+                                >
+                                    信息融合
+                                </KuzhambuButton>
+                                <span className="sancai-visual-workflow-arrow">›</span>
+                                <KuzhambuButton
+                                    testId="classics-sancai-sancai-entry-action-button-5"
+                                    icon={<FileTextOutlined />}
+                                    loading={creatingVisualAssetCapability === "visual"}
+                                    onClick={() => {
+                                        createVisualAssetTask("visual");
+                                    }}
+                                >
+                                    视觉描述
+                                </KuzhambuButton>
+                                <span className="sancai-visual-workflow-arrow">›</span>
+                                <KuzhambuButton
+                                    testId="classics-sancai-sancai-entry-action-button-6"
+                                    icon={<PictureOutlined />}
+                                    loading={creatingVisualAssetCapability === "image_gen"}
+                                    onClick={() => {
+                                        createVisualAssetTask("image_gen");
+                                    }}
+                                >
+                                    生图
+                                </KuzhambuButton>
+                            </KuzhambuSpace>
+                        </div>
                         <KuzhambuSpace wrap>
                             <KuzhambuButton
                                 testId="classics-sancai-sancai-entry-action-button-7"
                                 icon={<CheckOutlined />}
                                 type="primary"
                                 loading={isUpdatingVisualAsset}
-                                onClick={onSaveVisualAsset}
+                                onClick={saveVisualAsset}
                             >
                                 采纳
                             </KuzhambuButton>
@@ -403,7 +628,7 @@ export const SancaiEntryVisualSection = ({
                                 aria-label="三才图会视觉处理文本权重"
                                 value={visualAssetFormValue?.textWeight ?? ""}
                                 onChange={(event) =>
-                                    onUpdateVisualAssetForm({
+                                    updateVisualAssetForm({
                                         textWeight: event.target.value
                                             ? Number(event.target.value)
                                             : null
@@ -416,7 +641,7 @@ export const SancaiEntryVisualSection = ({
                                 aria-label="三才图会视觉处理图片权重"
                                 value={visualAssetFormValue?.imageWeight ?? ""}
                                 onChange={(event) =>
-                                    onUpdateVisualAssetForm({
+                                    updateVisualAssetForm({
                                         imageWeight: event.target.value
                                             ? Number(event.target.value)
                                             : null
@@ -437,7 +662,7 @@ export const SancaiEntryVisualSection = ({
                                     maxRows: 6
                                 })}
                                 onChange={(event) =>
-                                    onUpdateVisualAssetForm({
+                                    updateVisualAssetForm({
                                         imageAnalysisMarkdown: event.target.value
                                     })
                                 }
@@ -456,7 +681,7 @@ export const SancaiEntryVisualSection = ({
                                     maxRows: 5
                                 })}
                                 onChange={(event) =>
-                                    onUpdateVisualAssetForm({
+                                    updateVisualAssetForm({
                                         fusionDescription: event.target.value
                                     })
                                 }
@@ -475,7 +700,7 @@ export const SancaiEntryVisualSection = ({
                                     maxRows: 5
                                 })}
                                 onChange={(event) =>
-                                    onUpdateVisualAssetForm({
+                                    updateVisualAssetForm({
                                         visualDescription: event.target.value
                                     })
                                 }
@@ -494,7 +719,7 @@ export const SancaiEntryVisualSection = ({
                                     maxRows: 5
                                 })}
                                 onChange={(event) =>
-                                    onUpdateVisualAssetForm({
+                                    updateVisualAssetForm({
                                         generationParamsJson: event.target.value
                                     })
                                 }
@@ -505,6 +730,20 @@ export const SancaiEntryVisualSection = ({
             ) : (
                 <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无视觉处理记录" />
             )}
+            <SancaiEntryVisualRefinementSection
+                entryId={entry.id}
+                isStreamingRefinementTask={isStreamingRefinementTask}
+                refinementTasks={refinementTasks}
+                retryingRefinementTaskId={retryingRefinementTaskId}
+                selectedVisualAssetId={selectedVisualAssetResourceId}
+                streamErrorText={streamErrorText}
+                streamEvents={streamEvents}
+                streamingRefinementTask={streamingRefinementTask}
+                onCloseStreamingRefinementTask={closeStreamingRefinementTask}
+                onRefreshVisualAssetCandidates={refreshVisualAssetCandidates}
+                onRetryRefinementTask={retryRefinementTask}
+                onVisualAssetCandidateChanged={refreshAfterVisualAssetCandidateHandled}
+            />
         </section>
     );
 };
