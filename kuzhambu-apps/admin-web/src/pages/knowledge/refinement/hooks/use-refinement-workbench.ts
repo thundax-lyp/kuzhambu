@@ -9,6 +9,9 @@ import type {
     RefinementRelationRecord
 } from "../refinement-types";
 
+export type RefinementWorkbenchSection =
+    "entities" | "relations" | "lineageNodes" | "lineageRelations" | "annotations" | "followUp";
+
 export const readRefinementDetailTaskId = (detail: RefinementDetailRecord | null) =>
     detail?.refinementTaskId ?? 0;
 
@@ -26,15 +29,17 @@ export const useRefinementWorkbench = () => {
     const [deletingRelation, setDeletingRelation] = useState<RefinementRelationRecord | null>(null);
     const [annotationTarget, setAnnotationTarget] = useState<QualityAnnotationTarget | null>(null);
     const [applyFollowUp, setApplyFollowUp] = useState<RefinementApplyRecord | null>(null);
+    const [activeSection, setActiveSection] = useState<RefinementWorkbenchSection>("entities");
 
     const detailEyebrow = useMemo(() => {
         if (!detail) {
-            return "先从左侧任务列表打开一条精修任务";
+            return "先从任务列表打开一条精修任务";
         }
         return `${detail.taskType || "GRAPH"} / ${detail.sourceCategoryName || detail.sourceCategoryCode || "-"}`;
     }, [detail]);
 
     return {
+        activeSection,
         annotationTarget,
         applyFollowUp,
         deletingEntity,
@@ -47,6 +52,7 @@ export const useRefinementWorkbench = () => {
         entityEditModalOpen,
         relationEditModalOpen,
         setAnnotationTarget,
+        setActiveSection,
         setApplyFollowUp,
         setDeletingEntity,
         setDeletingRelation,

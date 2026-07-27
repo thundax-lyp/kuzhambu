@@ -1,22 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Card, Col, Empty, Row, Typography } from "antd";
-import { useMemo } from "react";
+import { App, Card, Typography } from "antd";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuSpace, KuzhambuPage } from "@/components";
 
-import { RefinementApplyResultPanel } from "./components/refinement-apply-result-panel";
 import { RefinementEntityDeleteModal } from "./components/refinement-entity-delete-modal";
 import { RefinementEntityEditModal } from "./components/refinement-entity-edit-modal";
-import { RefinementEntityTable } from "./components/refinement-entity-table";
 import { RefinementFilterForm } from "./components/refinement-filter-form";
-import { RefinementLineageNodeTable } from "./components/refinement-lineage-node-table";
-import { RefinementLineageRelationTable } from "./components/refinement-lineage-relation-table";
-import { RefinementProgressSummaryPanel } from "./components/refinement-progress-summary";
 import { RefinementQualityAnnotationDrawer } from "./components/refinement-quality-annotation-drawer";
-import { RefinementQualityAnnotationTable } from "./components/refinement-quality-annotation-table";
 import { RefinementRelationDeleteModal } from "./components/refinement-relation-delete-modal";
 import { RefinementRelationEditModal } from "./components/refinement-relation-edit-modal";
-import { RefinementRelationTable } from "./components/refinement-relation-table";
+import { RefinementTaskDrawer } from "./components/refinement-task-drawer";
 import { RefinementWorkbenchTable } from "./components/refinement-workbench-table";
 import * as service from "./refinement-service";
 import type {
@@ -33,11 +27,20 @@ import "./refinement-page.css";
 
 const { Text, Title } = Typography;
 
+const readInitialGraphVersionId = () => {
+    const graphVersionId = Number(
+        new URLSearchParams(window.location.search).get("graphVersionId")
+    );
+    return Number.isFinite(graphVersionId) && graphVersionId > 0 ? graphVersionId : null;
+};
+
 export const RefinementPage = () => {
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
     const canView = hasPermission("knowledge:refinement:view");
     const canEdit = hasPermission("knowledge:refinement:edit");
+    const [initialGraphVersionId] = useState(readInitialGraphVersionId);
+    const hasOpenedInitialGraphVersion = useRef(false);
     const {
         annotationTarget,
         applyFollowUp,
@@ -45,12 +48,13 @@ export const RefinementPage = () => {
         deletingRelation,
         detail,
         detailEyebrow,
-        detailReady,
         editingEntity,
         editingRelation,
         entityEditModalOpen,
         relationEditModalOpen,
+        activeSection,
         setAnnotationTarget,
+        setActiveSection,
         setApplyFollowUp,
         setDeletingEntity,
         setDeletingRelation,
@@ -116,6 +120,7 @@ export const RefinementPage = () => {
         mutationFn: service.getTaskDraft,
         onSuccess: async (nextDetail) => {
             setDetail(nextDetail);
+            setActiveSection("entities");
             setApplyFollowUp(null);
             await queryClient.invalidateQueries({
                 queryKey: ["knowledge", "refinement", "tasks"]
@@ -130,6 +135,7 @@ export const RefinementPage = () => {
         mutationFn: service.applyTask,
         onSuccess: async (applyResult) => {
             setApplyFollowUp(applyResult);
+            setActiveSection("followUp");
             setDetail((current) =>
                 current && current.refinementTaskId === applyResult.refinementTaskId
                     ? {
@@ -148,6 +154,17 @@ export const RefinementPage = () => {
             messageApi.error(error instanceof Error ? error.message : "应用精修任务失败");
         }
     });
+
+    useEffect(() => {
+        if (!initialGraphVersionId || hasOpenedInitialGraphVersion.current) {
+            return;
+        }
+        hasOpenedInitialGraphVersion.current = true;
+        openTaskMutation.mutate({
+            graphVersionId: initialGraphVersionId,
+            openedBy: 1
+        });
+    }, [initialGraphVersionId, openTaskMutation]);
 
     const entityMutation = useMutation({
         mutationFn: async (request: RefinementEntityRecord) => {
@@ -306,7 +323,6 @@ export const RefinementPage = () => {
         }
     });
 
-    const progressSummary = detail?.progressSummary ?? null;
     const qualitySummary = qualitySummaryQuery.data;
     const qualityAnnotations = useMemo(
         () => qualityAnnotationQuery.data?.records || [],
@@ -382,183 +398,62 @@ export const RefinementPage = () => {
                         </KuzhambuSpace>
                     </Card>
                 </section>
-
-                <section aria-labelledby="knowledge-refinement-detail-section">
-                    <div className="knowledge-refinement-section-header">
-                        <Title id="knowledge-refinement-detail-section" level={4}>
-                            任务详情
-                        </Title>
-                        <Text type="secondary">{detailEyebrow}</Text>
-                    </div>
-                    {detailReady ? (
-                        <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
-                            {applyFollowUp ? (
-                                <RefinementApplyResultPanel applyResult={applyFollowUp} />
-                            ) : null}
-                            <RefinementProgressSummaryPanel summary={progressSummary} />
-                            <Row gutter={[16, 16]}>
-                                <Col xs={24} lg={16}>
-                                    <Card
-                                        className="knowledge-refinement-card"
-                                        title="实体草稿"
-                                        extra={
-                                            <a
-                                                onClick={() =>
-                                                    applyTaskMutation.mutate({
-                                                        refinementTaskId:
-                                                            readRefinementDetailTaskId(detail),
-                                                        appliedBy: 1
-                                                    })
-                                                }
-                                            >
-                                                应用任务
-                                            </a>
-                                        }
-                                    >
-                                        <RefinementEntityTable
-                                            canEdit={canEdit}
-                                            entities={detail?.entities || []}
-                                            onAdd={() => {
-                                                setEditingEntity(null);
-                                                setEntityEditModalOpen(true);
-                                            }}
-                                            onAnnotate={(entity) =>
-                                                openAnnotation({
-                                                    objectType: "ENTITY",
-                                                    objectKey: entity.entityKey || "",
-                                                    sourceContentType: detail?.sourceContentType,
-                                                    sourceContentId: detail?.sourceContentId
-                                                })
-                                            }
-                                            onConfirm={(entity) =>
-                                                entityMutation.mutate({
-                                                    ...entity,
-                                                    confirmationStatus: "MANUAL_CONFIRMED"
-                                                })
-                                            }
-                                            onDelete={setDeletingEntity}
-                                            onEdit={(entity) => {
-                                                setEditingEntity(entity);
-                                                setEntityEditModalOpen(true);
-                                            }}
-                                        />
-                                    </Card>
-                                </Col>
-                                <Col xs={24} lg={8}>
-                                    <Card className="knowledge-refinement-card" title="质量汇总">
-                                        <dl className="knowledge-refinement-quality-list">
-                                            <div>
-                                                <dt>实体覆盖率</dt>
-                                                <dd>
-                                                    {(
-                                                        (qualitySummary?.entityCoverageRate || 0) *
-                                                        100
-                                                    ).toFixed(0)}
-                                                    %
-                                                </dd>
-                                            </div>
-                                            <div>
-                                                <dt>关系准确率</dt>
-                                                <dd>
-                                                    {(
-                                                        (qualitySummary?.relationAccuracyRate ||
-                                                            0) * 100
-                                                    ).toFixed(0)}
-                                                    %
-                                                </dd>
-                                            </div>
-                                            <div>
-                                                <dt>完整度</dt>
-                                                <dd>
-                                                    {(
-                                                        (qualitySummary?.completenessRate || 0) *
-                                                        100
-                                                    ).toFixed(0)}
-                                                    %
-                                                </dd>
-                                            </div>
-                                        </dl>
-                                    </Card>
-                                </Col>
-                            </Row>
-                            <Card className="knowledge-refinement-card" title="关系草稿">
-                                <RefinementRelationTable
-                                    canEdit={canEdit}
-                                    onAdd={() => {
-                                        setEditingRelation(null);
-                                        setRelationEditModalOpen(true);
-                                    }}
-                                    onAnnotate={(relation) =>
-                                        openAnnotation({
-                                            objectType: "RELATION",
-                                            objectKey: relation.relationKey || "",
-                                            sourceContentType: detail?.sourceContentType,
-                                            sourceContentId: detail?.sourceContentId
-                                        })
-                                    }
-                                    onConfirm={(relation) =>
-                                        relationMutation.mutate({
-                                            ...relation,
-                                            confirmationStatus: "MANUAL_CONFIRMED"
-                                        })
-                                    }
-                                    onDelete={setDeletingRelation}
-                                    onEdit={(relation) => {
-                                        setEditingRelation(relation);
-                                        setRelationEditModalOpen(true);
-                                    }}
-                                    relations={detail?.relations || []}
-                                />
-                            </Card>
-                            <Row gutter={[16, 16]}>
-                                <Col xs={24} lg={12}>
-                                    <Card
-                                        className="knowledge-refinement-card"
-                                        title="世系节点草稿"
-                                    >
-                                        <RefinementLineageNodeTable
-                                            canEdit={canEdit}
-                                            nodes={detail?.lineageNodes || []}
-                                            sourceContentId={detail?.sourceContentId}
-                                            sourceContentType={detail?.sourceContentType}
-                                            onAnnotate={openAnnotation}
-                                        />
-                                    </Card>
-                                </Col>
-                                <Col xs={24} lg={12}>
-                                    <Card
-                                        className="knowledge-refinement-card"
-                                        title="世系关系草稿"
-                                    >
-                                        <RefinementLineageRelationTable
-                                            canEdit={canEdit}
-                                            relations={detail?.lineageRelations || []}
-                                            sourceContentId={detail?.sourceContentId}
-                                            sourceContentType={detail?.sourceContentType}
-                                            onAnnotate={openAnnotation}
-                                        />
-                                    </Card>
-                                </Col>
-                            </Row>
-                            <Card className="knowledge-refinement-card" title="质量标注">
-                                <RefinementQualityAnnotationTable
-                                    annotations={qualityAnnotations}
-                                    loading={qualityAnnotationQuery.isLoading}
-                                    onEdit={openAnnotationFromRecord}
-                                />
-                            </Card>
-                        </KuzhambuSpace>
-                    ) : (
-                        <Card className="knowledge-refinement-card" variant="borderless">
-                            <Empty
-                                description="请先从上方任务列表打开一条精修任务。"
-                                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                            />
-                        </Card>
-                    )}
-                </section>
             </KuzhambuSpace>
 
+            <RefinementTaskDrawer
+                activeSection={activeSection}
+                applying={applyTaskMutation.isPending}
+                applyFollowUp={applyFollowUp}
+                canEdit={canEdit}
+                detail={detail}
+                detailEyebrow={detailEyebrow}
+                qualityAnnotations={qualityAnnotations}
+                qualityAnnotationsLoading={qualityAnnotationQuery.isLoading}
+                qualitySummary={qualitySummary}
+                onAddEntity={() => {
+                    setEditingEntity(null);
+                    setEntityEditModalOpen(true);
+                }}
+                onAddRelation={() => {
+                    setEditingRelation(null);
+                    setRelationEditModalOpen(true);
+                }}
+                onAnnotate={openAnnotation}
+                onApplyTask={() =>
+                    applyTaskMutation.mutate({
+                        refinementTaskId: readRefinementDetailTaskId(detail),
+                        appliedBy: 1
+                    })
+                }
+                onClose={() => {
+                    setDetail(null);
+                    setApplyFollowUp(null);
+                }}
+                onConfirmEntity={(entity) =>
+                    entityMutation.mutate({
+                        ...entity,
+                        confirmationStatus: "MANUAL_CONFIRMED"
+                    })
+                }
+                onConfirmRelation={(relation) =>
+                    relationMutation.mutate({
+                        ...relation,
+                        confirmationStatus: "MANUAL_CONFIRMED"
+                    })
+                }
+                onDeleteEntity={setDeletingEntity}
+                onDeleteRelation={setDeletingRelation}
+                onEditAnnotation={openAnnotationFromRecord}
+                onEditEntity={(entity) => {
+                    setEditingEntity(entity);
+                    setEntityEditModalOpen(true);
+                }}
+                onEditRelation={(relation) => {
+                    setEditingRelation(relation);
+                    setRelationEditModalOpen(true);
+                }}
+                onSectionChange={setActiveSection}
+            />
             <RefinementEntityEditModal
                 entity={editingEntity}
                 open={entityEditModalOpen}
