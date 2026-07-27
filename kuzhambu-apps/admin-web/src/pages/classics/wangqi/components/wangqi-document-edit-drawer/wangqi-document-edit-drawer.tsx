@@ -609,12 +609,9 @@ export const WangqiDocumentEditDrawer = ({
                 renderBody={({ creating, resultLoading, tracking }) => (
                     <>
                         <div className="wangqi-summary-modal-compare-grid">
-                            <Form
-                                className="wangqi-summary-modal-card"
-                                colon={false}
-                                layout="vertical"
-                            >
-                                <Form.Item label="当前摘要">
+                            <div className="wangqi-summary-modal-card">
+                                <div className="wangqi-summary-modal-field">
+                                    <label className="wangqi-summary-modal-label">当前摘要</label>
                                     <TextArea
                                         aria-label="AI摘要当前摘要"
                                         value={form.getFieldValue("summary") || ""}
@@ -624,14 +621,11 @@ export const WangqiDocumentEditDrawer = ({
                                             maxRows: 14
                                         })}
                                     />
-                                </Form.Item>
-                            </Form>
-                            <Form
-                                className="wangqi-summary-modal-card"
-                                colon={false}
-                                layout="vertical"
-                            >
-                                <Form.Item label="AI 摘要">
+                                </div>
+                            </div>
+                            <div className="wangqi-summary-modal-card">
+                                <div className="wangqi-summary-modal-field">
+                                    <label className="wangqi-summary-modal-label">AI 摘要</label>
                                     <TextArea
                                         aria-label="AI摘要候选摘要"
                                         disabled={creating || tracking || resultLoading}
@@ -647,23 +641,20 @@ export const WangqiDocumentEditDrawer = ({
                                         })}
                                         onChange={(event) => setSummaryDraft(event.target.value)}
                                     />
-                                </Form.Item>
-                            </Form>
+                                </div>
+                            </div>
                         </div>
-                        <Form
-                            className="wangqi-summary-modal-card wangqi-summary-modal-content-card"
-                            colon={false}
-                            layout="vertical"
-                        >
-                            <Form.Item label="正文">
+                        <div className="wangqi-summary-modal-card wangqi-summary-modal-content-card">
+                            <div className="wangqi-summary-modal-field">
+                                <label className="wangqi-summary-modal-label">正文</label>
                                 <TextArea
                                     aria-label="AI摘要参考正文"
                                     value={form.getFieldValue("content") || ""}
                                     readOnly
                                     autoSize={resolveTextAreaAutoSize({ minRows: 8, maxRows: 14 })}
                                 />
-                            </Form.Item>
-                        </Form>
+                            </div>
+                        </div>
                     </>
                 )}
             />

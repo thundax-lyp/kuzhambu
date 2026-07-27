@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `src/pages/classics/wangqi/components/wangqi-document-edit-drawer/wangqi-document-edit-drawer.tsx`：清理王圻摘要弹窗 direct Form.Item
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-FORM-USEFORM-MIGRATION.md`
-    - 范围对象：`src/pages/classics/wangqi/components/wangqi-document-edit-drawer/wangqi-document-edit-drawer.tsx`
-    - 处理动作：将摘要弹窗中的 AntD `Form` / `Form.Item` 展示外壳改为普通布局。
-    - 验收点：文件中不再出现 direct AntD `Form.Item`，当前摘要、AI 摘要和正文展示/编辑行为保持不变。
-    - 重要度：7/10
-
 - [ ] `src/pages/classics/sancai/components/sancai-entry-edit-drawer/sancai-entry-visual-section/sancai-entry-visual-section.tsx`：迁移三才视觉资产表单
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-FORM-USEFORM-MIGRATION.md`

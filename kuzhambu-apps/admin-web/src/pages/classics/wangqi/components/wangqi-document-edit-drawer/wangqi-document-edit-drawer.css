@@ -95,6 +95,17 @@
     border-radius: 8px;
 }
 
+.wangqi-summary-modal-field {
+    display: grid;
+    gap: 8px;
+}
+
+.wangqi-summary-modal-label {
+    color: color-mix(in srgb, var(--text-primary) 84%, var(--wangqi-accent-color) 16%);
+    font-weight: 700;
+    line-height: 1.45;
+}
+
 .wangqi-summary-modal-content-card {
     margin-top: 14px;
 }
