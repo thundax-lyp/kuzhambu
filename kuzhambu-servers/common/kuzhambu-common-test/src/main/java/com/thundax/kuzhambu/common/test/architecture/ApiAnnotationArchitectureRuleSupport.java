@@ -48,6 +48,7 @@ public final class ApiAnnotationArchitectureRuleSupport {
             "search",
             "click",
             "rebuild",
+            "extract",
             "regenerate");
 
     private static final Pattern REST_CONTROLLER_CLASS_PATTERN = Pattern.compile(

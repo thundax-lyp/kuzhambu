@@ -110,7 +110,7 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 - `SERVERS_ANNOTATION_REST_CLASS_SYS_LOGGER_REQUIRED`：后台 REST API 入口类必须声明 `@SysLogger` 或显式 `@IgnoreSysLogger`。
 - `SERVERS_ANNOTATION_REST_CLASS_TAG_BUSINESS_NAME`：`@Tag` 必须使用稳定业务分组名，不得使用数字排序前缀。
 - `SERVERS_ANNOTATION_REST_METHOD_MAPPING_REQUIRED`：REST API 入口类中的公开 HTTP 方法必须且只能声明一个方法级 HTTP 映射；JSON 请求必须使用 `@PostMapping`，非 JSON 读取必须使用 `@GetMapping`；不得使用方法级 `@RequestMapping`、`@PutMapping`、`@DeleteMapping` 或 `@PatchMapping`。
-- `SERVERS_ANNOTATION_REST_ACTION_VERB_WHITELIST`：REST API 入口类中的公开 HTTP 方法名必须以共享动作白名单开头；`@PostMapping` 方法级路径的最后一个非路径变量片段也必须来自同一白名单。白名单与 admin-web service method ESLint 白名单一一对应；禁用模糊 `save`，新增和更新必须明确使用 `add` / `update`。当前共享动作白名单已包含 `regenerate`，因此重生成类后端动作必须显式使用 `regenerate*` 与 `/regenerate`，不得绕回 `update`、`change` 或其他别名。
+- `SERVERS_ANNOTATION_REST_ACTION_VERB_WHITELIST`：REST API 入口类中的公开 HTTP 方法名必须以共享动作白名单开头；`@PostMapping` 方法级路径的最后一个非路径变量片段也必须来自同一白名单。白名单与 admin-web service method ESLint 白名单一一对应；禁用模糊 `save`，新增和更新必须明确使用 `add` / `update`。当前共享动作白名单已包含 `extract` 和 `regenerate`，因此抽取和重生成类后端动作必须显式使用 `extract*` / `regenerate*` 与 `/extract` / `/regenerate`，不得绕回 `update`、`change` 或其他别名。
 - `SERVERS_ANNOTATION_REST_METHOD_OPERATION_REQUIRED`：REST API 入口类中的公开 HTTP 方法必须声明 OpenAPI 3 `@Operation`；认证公开入口和文件流入口也必须声明。
 - `SERVERS_ANNOTATION_REST_METHOD_ACCESS_MARK_REQUIRED`：声明 `@Operation` 的 REST API 方法必须由方法级或类级 `@HasPermission` / `@PublicApi` 表达访问口径；公开认证入口必须使用 `@PublicApi`。
 - `SERVERS_ANNOTATION_REST_METHOD_DOC_AND_LOG_REQUIRED`：后台 REST API 方法必须声明 `@ApiImplicitParams`，并声明 `@SysLogger` 或显式 `@IgnoreSysLogger`。
