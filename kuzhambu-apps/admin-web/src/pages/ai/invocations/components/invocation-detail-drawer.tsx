@@ -1,6 +1,6 @@
 import { Descriptions } from "antd";
 import { KuzhambuDrawer } from "@/components";
-import type { AiCallRecord } from "../invocations-types";
+import type { AiInvocationLogRecord } from "../invocations-types";
 
 const formatWarnings = (value?: string | null) => {
     if (!value) {
@@ -14,7 +14,7 @@ const formatWarnings = (value?: string | null) => {
 };
 
 interface InvocationDetailDrawerProps {
-    call?: AiCallRecord | null;
+    call?: AiInvocationLogRecord | null;
     open: boolean;
     onClose: () => void;
 }

@@ -11,14 +11,14 @@ import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { InvocationDetailDrawer } from "./components/invocation-detail-drawer";
 import {
     InvocationFilterPanel,
-    type InvocationCallsFilterValues,
+    type InvocationLogFilterValues,
     type InvocationDateRangeValue,
     type InvocationSummaryFilterValues
 } from "./components/invocation-filter-panel";
 import { InvocationTable } from "./components/invocation-table";
 import * as service from "./invocations-service";
-import type { AiCallRecordPageQuery, AiInvocationSummaryQuery } from "./invocations-service";
-import type { AiCallRecord } from "./invocations-types";
+import type { AiInvocationLogPageQuery, AiInvocationSummaryQuery } from "./invocations-service";
+import type { AiInvocationLogRecord } from "./invocations-types";
 
 import "./invocations-page.css";
 
@@ -56,11 +56,11 @@ const buildSummaryQuery = (values: InvocationSummaryFilterValues): AiInvocationS
     };
 };
 
-const buildCallsQuery = (
-    values: InvocationCallsFilterValues,
+const buildInvocationLogQuery = (
+    values: InvocationLogFilterValues,
     pageNo: number,
     pageSize: number
-): AiCallRecordPageQuery => {
+): AiInvocationLogPageQuery => {
     const range = rangeToIso(values.requestedAt);
     return {
         status: values.status || null,
@@ -74,13 +74,15 @@ const buildCallsQuery = (
 export const InvocationsPage = () => {
     const { message } = App.useApp();
     const [summaryForm] = Form.useForm<InvocationSummaryFilterValues>();
-    const [callsForm] = Form.useForm<InvocationCallsFilterValues>();
+    const [callsForm] = Form.useForm<InvocationLogFilterValues>();
     const canViewInvocation = hasPermission("ai:invocation:view");
-    const [detailCall, setDetailCall] = useState<AiCallRecord | null>(null);
+    const [detailInvocationLog, setDetailInvocationLog] = useState<AiInvocationLogRecord | null>(
+        null
+    );
     const [summaryQuery, setSummaryQuery] = useState<AiInvocationSummaryQuery>(() =>
         buildSummaryQuery({ period: defaultPeriod, bucketType: "DAY" })
     );
-    const [callsQuery, setCallsQuery] = useState<AiCallRecordPageQuery>({
+    const [invocationLogQuery, setInvocationLogQuery] = useState<AiInvocationLogPageQuery>({
         pageNo: DEFAULT_PAGE_NO,
         pageSize: DEFAULT_PAGE_SIZE
     });
@@ -99,9 +101,9 @@ export const InvocationsPage = () => {
         retry: false
     });
 
-    const invocationCallPageQuery = useQuery({
-        queryKey: ["ai", "invocations", "calls", callsQuery],
-        queryFn: () => service.pageInvocationCalls(callsQuery),
+    const invocationLogPageQuery = useQuery({
+        queryKey: ["ai", "invocations", "calls", invocationLogQuery],
+        queryFn: () => service.pageInvocationLogs(invocationLogQuery),
         enabled: canViewInvocation,
         retry: false
     });
@@ -139,11 +141,11 @@ export const InvocationsPage = () => {
     }, [message, invocationSummaryQuery.error, invocationSummaryQuery.isError]);
 
     useEffect(() => {
-        if (invocationCallPageQuery.isError) {
-            const error = invocationCallPageQuery.error;
+        if (invocationLogPageQuery.isError) {
+            const error = invocationLogPageQuery.error;
             message.error(error instanceof Error ? error.message : "调用记录加载失败");
         }
-    }, [invocationCallPageQuery.error, invocationCallPageQuery.isError, message]);
+    }, [invocationLogPageQuery.error, invocationLogPageQuery.isError, message]);
 
     const refreshSummary = async () => {
         const values = await summaryForm.validateFields();
@@ -152,15 +154,15 @@ export const InvocationsPage = () => {
 
     const searchCalls = async (
         pageNo = DEFAULT_PAGE_NO,
-        pageSize = callsQuery.pageSize || DEFAULT_PAGE_SIZE
+        pageSize = invocationLogQuery.pageSize || DEFAULT_PAGE_SIZE
     ) => {
         const values = await callsForm.validateFields();
-        setCallsQuery(buildCallsQuery(values, pageNo, pageSize));
+        setInvocationLogQuery(buildInvocationLogQuery(values, pageNo, pageSize));
     };
 
     const resetCalls = () => {
         callsForm.resetFields();
-        setCallsQuery({ pageNo: DEFAULT_PAGE_NO, pageSize: DEFAULT_PAGE_SIZE });
+        setInvocationLogQuery({ pageNo: DEFAULT_PAGE_NO, pageSize: DEFAULT_PAGE_SIZE });
     };
 
     const handleTableChange = (pagination: TablePaginationConfig) => {
@@ -170,7 +172,7 @@ export const InvocationsPage = () => {
     };
 
     const summary = invocationSummaryQuery.data;
-    const callPage = invocationCallPageQuery.data;
+    const invocationLogPage = invocationLogPageQuery.data;
 
     const topCapabilities = summary?.topCapabilities || [];
     const topCapabilityMaxCount = Math.max(
@@ -195,11 +197,11 @@ export const InvocationsPage = () => {
                             icon={<ReloadOutlined />}
                             loading={
                                 invocationSummaryQuery.isFetching ||
-                                invocationCallPageQuery.isFetching
+                                invocationLogPageQuery.isFetching
                             }
                             onClick={() => {
                                 void invocationSummaryQuery.refetch();
-                                void invocationCallPageQuery.refetch();
+                                void invocationLogPageQuery.refetch();
                             }}
                         />
                     </Tooltip>
@@ -313,13 +315,15 @@ export const InvocationsPage = () => {
                                     />
 
                                     <InvocationTable
-                                        callPage={callPage}
-                                        currentPageNo={callsQuery.pageNo || DEFAULT_PAGE_NO}
-                                        currentPageSize={callsQuery.pageSize || DEFAULT_PAGE_SIZE}
+                                        invocationLogPage={invocationLogPage}
+                                        currentPageNo={invocationLogQuery.pageNo || DEFAULT_PAGE_NO}
+                                        currentPageSize={
+                                            invocationLogQuery.pageSize || DEFAULT_PAGE_SIZE
+                                        }
                                         formatCapability={formatCapability}
-                                        loading={invocationCallPageQuery.isFetching}
+                                        loading={invocationLogPageQuery.isFetching}
                                         onChange={handleTableChange}
-                                        onOpenDetail={setDetailCall}
+                                        onOpenDetail={setDetailInvocationLog}
                                     />
                                 </KuzhambuCard>
                             )
@@ -328,9 +332,9 @@ export const InvocationsPage = () => {
                 />
             </KuzhambuPage>
             <InvocationDetailDrawer
-                call={detailCall}
-                open={Boolean(detailCall)}
-                onClose={() => setDetailCall(null)}
+                call={detailInvocationLog}
+                open={Boolean(detailInvocationLog)}
+                onClose={() => setDetailInvocationLog(null)}
             />
         </>
     );

@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.ai.application.batch.command;
 
 import com.thundax.kuzhambu.ai.domain.batch.model.entity.AiBatchJob;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,7 +23,7 @@ public class AiBatchJobCreateCommand {
     public AiBatchJob toEntity() {
         AiBatchJob job = new AiBatchJob();
         job.setScope(scope);
-        job.setCapability(capability);
+        job.setCapability(AiBusinessCapability.fromAlias(capability));
         job.setContentType(contentType);
         job.setTotalCount(totalCount);
         job.setFailureSummaryJson(failureSummaryJson);

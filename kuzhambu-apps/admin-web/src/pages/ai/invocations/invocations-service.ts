@@ -1,8 +1,8 @@
 import { postJson } from "@/api/http";
 import type { Page } from "@/types/page";
 import type {
-    AiCallRecord,
-    AiCallSummaryRecord,
+    AiInvocationLogRecord,
+    AiInvocationSummaryRecord,
     AiInvocationCapabilityRecord
 } from "./invocations-types";
 
@@ -13,7 +13,7 @@ export interface AiInvocationSummaryQuery {
     capability?: string | null;
 }
 
-export interface AiCallRecordPageQuery {
+export interface AiInvocationLogPageQuery {
     status?: string | null;
     requestedAtStart?: string | null;
     requestedAtEnd?: string | null;
@@ -31,13 +31,19 @@ export const listInvocationCapabilities = () => {
 };
 
 export const getInvocationSummary = (query: AiInvocationSummaryQuery = {}) => {
-    return postJson<AiCallSummaryRecord, AiInvocationSummaryQuery>("/ai/invocation/call/summary", {
-        body: query
-    });
+    return postJson<AiInvocationSummaryRecord, AiInvocationSummaryQuery>(
+        "/ai/invocation/invocation-log/summary",
+        {
+            body: query
+        }
+    );
 };
 
-export const pageInvocationCalls = (query: AiCallRecordPageQuery = {}) => {
-    return postJson<Page<AiCallRecord>, AiCallRecordPageQuery>("/ai/invocation/call/page", {
-        body: query
-    });
+export const pageInvocationLogs = (query: AiInvocationLogPageQuery = {}) => {
+    return postJson<Page<AiInvocationLogRecord>, AiInvocationLogPageQuery>(
+        "/ai/invocation/invocation-log/page",
+        {
+            body: query
+        }
+    );
 };

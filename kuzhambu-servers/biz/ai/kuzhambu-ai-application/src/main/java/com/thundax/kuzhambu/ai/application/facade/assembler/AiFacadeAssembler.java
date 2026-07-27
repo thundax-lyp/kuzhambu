@@ -1,18 +1,27 @@
 package com.thundax.kuzhambu.ai.application.facade.assembler;
 
 import com.thundax.kuzhambu.ai.application.batch.result.AiBatchJobResult;
+import com.thundax.kuzhambu.ai.application.discovery.command.DiscoveryAiCommand;
+import com.thundax.kuzhambu.ai.application.discovery.result.DiscoveryAiInvokeResult;
 import com.thundax.kuzhambu.ai.application.report.result.AiReportSummaryResult;
 import com.thundax.kuzhambu.ai.application.report.result.AiReportSummaryResult.TopCapabilityResult;
-import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiRequest;
-import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiResult;
-import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
+import com.thundax.kuzhambu.ai.domain.batch.codec.AiBatchJobIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiPromptVersionIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateApplyCheck;
-import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionRequest;
-import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionResult;
-import com.thundax.kuzhambu.ai.facade.dto.AiCallRecordFacadeDto;
+import com.thundax.kuzhambu.ai.domain.knowledge.model.entity.KnowledgeAiExtractionRecord;
+import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionInput;
 import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
+import com.thundax.kuzhambu.ai.facade.dto.AiInvocationLogFacadeDto;
 import com.thundax.kuzhambu.ai.facade.dto.AiTopCapabilityFacadeDto;
 import com.thundax.kuzhambu.ai.facade.dto.AiUsageSnapshotFacadeDto;
 import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
@@ -31,35 +40,41 @@ import org.springframework.stereotype.Component;
 @Component
 public class AiFacadeAssembler {
 
-    public AiCallRecordFacadeDto toFacadeDto(AiCallRecord record) {
-        if (record == null) {
+    public AiInvocationLogFacadeDto toFacadeDto(AiInvocationLog invocationLog) {
+        if (invocationLog == null) {
             return null;
         }
-        return AiCallRecordFacadeDto.builder()
-                .callId(record.getCallId())
-                .batchId(record.getBatchId())
-                .scope(record.getScope())
-                .capability(record.getCapability())
-                .contentType(record.getContentType())
-                .contentId(record.getContentId())
-                .objectId(record.getObjectId())
-                .serviceId(record.getServiceId())
-                .serviceRole(record.getServiceRole())
-                .modelId(record.getModelId())
-                .modelName(record.getModelName())
-                .promptVersionId(record.getPromptVersionId())
-                .requestId(record.getRequestId())
-                .traceId(record.getTraceId())
-                .status(record.getStatus())
-                .streamUsed(record.isStreamUsed())
-                .streamCompleted(record.isStreamCompleted())
-                .fallbackUsed(record.isFallbackUsed())
-                .errorType(record.getErrorType())
-                .errorMessage(record.getErrorMessage())
-                .warningsJson(record.getWarningsJson())
-                .requestedAt(record.getRequestedAt())
-                .completedAt(record.getCompletedAt())
-                .usage(toFacadeDto(record.getUsage()))
+        return AiInvocationLogFacadeDto.builder()
+                .callId(AiCallIdCodec.toValue(invocationLog.getCallId()))
+                .batchId(AiBatchJobIdCodec.toValue(invocationLog.getBatchId()))
+                .scope(invocationLog.getScope())
+                .capability(
+                        invocationLog.getCapability() == null
+                                ? null
+                                : invocationLog.getCapability().value())
+                .contentType(AiContentRefCodec.toContentType(invocationLog.getContentRef()))
+                .contentId(AiContentRefCodec.toContentId(invocationLog.getContentRef()))
+                .objectId(AiTargetObjectIdCodec.toValue(invocationLog.getTargetObjectId()))
+                .serviceId(invocationLog.getServiceId())
+                .serviceRole(invocationLog.getServiceRole())
+                .modelId(AiModelIdCodec.toValue(invocationLog.getModelId()))
+                .modelName(AiModelNameCodec.toValue(invocationLog.getModelName()))
+                .promptVersionId(PromptVersionIdCodec.toValue(invocationLog.getPromptVersionId()))
+                .requestId(invocationLog.getRequestId())
+                .traceId(invocationLog.getTraceId())
+                .status(
+                        invocationLog.getStatus() == null
+                                ? null
+                                : invocationLog.getStatus().name())
+                .streamUsed(invocationLog.isStreamUsed())
+                .streamCompleted(invocationLog.isStreamCompleted())
+                .fallbackUsed(invocationLog.isFallbackUsed())
+                .errorType(invocationLog.getErrorType())
+                .errorMessage(invocationLog.getErrorMessage())
+                .warningsJson(invocationLog.getWarningsJson())
+                .requestedAt(invocationLog.getRequestedAt())
+                .completedAt(invocationLog.getCompletedAt())
+                .usage(toFacadeDto(invocationLog.getUsage()))
                 .build();
     }
 
@@ -68,18 +83,24 @@ public class AiFacadeAssembler {
             return null;
         }
         return AiCandidateFacadeDto.builder()
-                .candidateId(candidate.getCandidateId())
-                .callId(candidate.getCallId())
-                .batchId(candidate.getBatchId())
-                .capability(candidate.getCapability())
-                .contentType(candidate.getContentType())
-                .contentId(candidate.getContentId())
-                .objectId(candidate.getObjectId())
+                .candidateId(AiCandidateIdCodec.toValue(candidate.getId()))
+                .callId(AiCallIdCodec.toValue(candidate.getCallId()))
+                .batchId(AiBatchJobIdCodec.toValue(candidate.getBatchId()))
+                .capability(
+                        candidate.getCapability() == null
+                                ? null
+                                : candidate.getCapability().value())
+                .contentType(AiContentRefCodec.toContentType(candidate.getContentRef()))
+                .contentId(AiContentRefCodec.toContentId(candidate.getContentRef()))
+                .objectId(AiTargetObjectIdCodec.toValue(candidate.getTargetObjectId()))
                 .resultFormat(candidate.getResultFormat())
                 .resultPayload(candidate.getResultPayload())
-                .status(candidate.getStatus())
-                .promptVersionId(candidate.getPromptVersionId())
-                .modelName(candidate.getModelName())
+                .status(
+                        candidate.getStatus() == null
+                                ? null
+                                : candidate.getStatus().name())
+                .promptVersionId(AiPromptVersionIdCodec.toValue(candidate.getPromptVersionId()))
+                .modelName(AiModelNameCodec.toValue(candidate.getModelName()))
                 .failureStage(candidate.getFailureStage())
                 .artifactReferenceJson(candidate.getArtifactReferenceJson())
                 .errorType(candidate.getErrorType())
@@ -122,11 +143,11 @@ public class AiFacadeAssembler {
                 .build();
     }
 
-    public DiscoveryAiRequest toDomainRequest(DiscoveryAiFacadeRequest request) {
+    public DiscoveryAiCommand toDiscoveryAiCommand(DiscoveryAiFacadeRequest request) {
         if (request == null) {
             return null;
         }
-        return new DiscoveryAiRequest(
+        return new DiscoveryAiCommand(
                 request.getServiceId(),
                 request.getServiceRole(),
                 request.getModelId(),
@@ -144,7 +165,7 @@ public class AiFacadeAssembler {
                 request.getLocale());
     }
 
-    public DiscoveryAiFacadeResponse toFacadeResponse(DiscoveryAiResult result) {
+    public DiscoveryAiFacadeResponse toFacadeResponse(DiscoveryAiInvokeResult result) {
         if (result == null) {
             return null;
         }
@@ -160,11 +181,11 @@ public class AiFacadeAssembler {
                 .build();
     }
 
-    public KnowledgeAiExtractionRequest toDomainRequest(KnowledgeAiExtractionFacadeRequest request) {
+    public KnowledgeAiExtractionInput toDomainInput(KnowledgeAiExtractionFacadeRequest request) {
         if (request == null) {
             return null;
         }
-        return new KnowledgeAiExtractionRequest(
+        return new KnowledgeAiExtractionInput(
                 request.getTaskType(),
                 request.getScopeType(),
                 request.getScopeJson(),
@@ -187,19 +208,19 @@ public class AiFacadeAssembler {
                 request.getLocale());
     }
 
-    public KnowledgeAiExtractionFacadeResponse toFacadeResponse(KnowledgeAiExtractionResult result) {
-        if (result == null) {
+    public KnowledgeAiExtractionFacadeResponse toFacadeResponse(KnowledgeAiExtractionRecord record) {
+        if (record == null) {
             return null;
         }
         return KnowledgeAiExtractionFacadeResponse.builder()
-                .callId(result.getCallId())
-                .candidateId(result.getCandidateId())
-                .status(result.getStatus())
-                .capability(result.getCapability())
-                .resultFormat(result.getResultFormat())
-                .resultPayload(result.getResultPayload())
-                .errorType(result.getErrorType())
-                .errorMessage(result.getErrorMessage())
+                .callId(record.getCallId())
+                .candidateId(record.getCandidateId())
+                .status(record.getStatus())
+                .capability(record.getCapability())
+                .resultFormat(record.getResultFormat())
+                .resultPayload(record.getResultPayload())
+                .errorType(record.getErrorType())
+                .errorMessage(record.getErrorMessage())
                 .build();
     }
 

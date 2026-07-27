@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.ai.interfaces.admin.config.assembler;
 
 import com.thundax.kuzhambu.ai.domain.config.codec.AiBusinessConfigIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptTemplateIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiBusinessConfig;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
@@ -24,7 +25,7 @@ public final class AiConfigInterfaceAssembler {
         model.setApiSource(AiApiSource.from(request.getApiSource()));
         model.setBaseUrl(request.getBaseUrl());
         model.setEncryptedApiKey(request.getApiKey());
-        model.setModelName(request.getModelName());
+        model.setModelName(AiModelNameCodec.toDomain(request.getModelName()));
         model.setDisplayName(request.getDisplayName());
         model.setCapabilities(toModelCapabilities(request.getCapabilities()));
         model.setDefaultParamsJson(request.getDefaultParamsJson());
@@ -58,7 +59,7 @@ public final class AiConfigInterfaceAssembler {
                                 : model.getApiSource().value())
                 .baseUrl(model.getBaseUrl())
                 .apiKeyConfigured(!isBlank(model.getEncryptedApiKey()))
-                .modelName(model.getModelName())
+                .modelName(AiModelNameCodec.toValue(model.getModelName()))
                 .displayName(model.getDisplayName())
                 .capabilities(toModelCapabilityValues(model.getCapabilities()))
                 .defaultParamsJson(model.getDefaultParamsJson())

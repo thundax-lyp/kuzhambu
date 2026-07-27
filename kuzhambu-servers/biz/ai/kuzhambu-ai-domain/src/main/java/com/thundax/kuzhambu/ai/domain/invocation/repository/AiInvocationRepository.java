@@ -1,22 +1,22 @@
 package com.thundax.kuzhambu.ai.domain.invocation.repository;
 
-import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.time.Instant;
 import java.util.List;
 
 public interface AiInvocationRepository {
 
-    AiCallRecord getCallRecord(Long callId);
+    AiInvocationLog getInvocationLog(Long callId);
 
-    Long insertCallRecord(AiCallRecord callRecord);
+    Long insertInvocationLog(AiInvocationLog invocationLog);
 
-    int updateCallRecord(AiCallRecord callRecord);
+    int updateInvocationLog(AiInvocationLog invocationLog);
 
-    List<AiCallRecord> listCallRecords(Instant requestedAtStart, Instant requestedAtEnd);
+    List<AiInvocationLog> listInvocationLogs(Instant requestedAtStart, Instant requestedAtEnd);
 
-    PageResult<AiCallRecord> pageCallRecords(
+    PageResult<AiInvocationLog> pageInvocationLogs(
             String scope,
             String capability,
             String contentType,
@@ -30,7 +30,7 @@ public interface AiInvocationRepository {
             int pageNo,
             int pageSize);
 
-    List<AiCallRecord> listCallRecords(
+    List<AiInvocationLog> listInvocationLogs(
             String scope, String capability, String serviceRole, Instant requestedAtStart, Instant requestedAtEnd);
 
     AiCandidate getCandidate(Long candidateId);

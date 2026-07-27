@@ -14,6 +14,7 @@ import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiApiSource;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiModelCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
 import com.thundax.kuzhambu.ai.infra.config.persistence.dataobject.AiModelDO;
 import com.thundax.kuzhambu.ai.infra.config.persistence.mapper.AiModelMapper;
 import java.io.IOException;
@@ -49,7 +50,7 @@ class AiModelRepositoryIT {
                 AiApiSource.OPENAI,
                 "https://api.example",
                 "encrypted",
-                "gpt-test",
+                AiModelName.of("gpt-test"),
                 "GPT Test",
                 List.of(AiModelCapability.TEXT2TEXT, AiModelCapability.IMAGE2TEXT),
                 "{\"temperature\":0.2}",
@@ -74,6 +75,7 @@ class AiModelRepositoryIT {
 
         assertNotNull(loadedModel);
         assertEquals(List.of(AiModelCapability.TEXT2TEXT, AiModelCapability.IMAGE2TEXT), loadedModel.getCapabilities());
+        assertEquals("gpt-test", loadedModel.getModelName().value());
         assertEquals("GPT Test", loadedModel.getDisplayName());
     }
 

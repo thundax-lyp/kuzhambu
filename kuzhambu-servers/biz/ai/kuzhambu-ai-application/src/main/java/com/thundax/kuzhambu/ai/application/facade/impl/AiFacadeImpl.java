@@ -4,21 +4,20 @@ import com.thundax.kuzhambu.ai.application.batch.command.AiBatchJobCreateCommand
 import com.thundax.kuzhambu.ai.application.batch.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.discovery.service.DiscoveryAiApplicationService;
 import com.thundax.kuzhambu.ai.application.facade.assembler.AiFacadeAssembler;
-import com.thundax.kuzhambu.ai.application.knowledge.service.impl.KnowledgeAiExtractionApplicationServiceImpl;
+import com.thundax.kuzhambu.ai.application.knowledge.service.KnowledgeAiExtractionApplicationService;
 import com.thundax.kuzhambu.ai.application.report.service.AiReportApplicationService;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainService;
-import com.thundax.kuzhambu.ai.domain.knowledge.service.KnowledgeAiExtractionDomainService;
 import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.DiscoveryAiStreamHandler;
-import com.thundax.kuzhambu.ai.facade.dto.AiCallRecordFacadeDto;
 import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
+import com.thundax.kuzhambu.ai.facade.dto.AiInvocationLogFacadeDto;
 import com.thundax.kuzhambu.ai.facade.request.AiBatchJobFailureFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.AiReportSummaryFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.CreateAiBatchJobFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
-import com.thundax.kuzhambu.ai.facade.request.GetAiCallRecordFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.GetAiCandidateFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.GetAiInvocationLogFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.KnowledgeAiExtractionFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RejectAiCandidateFacadeRequest;
@@ -38,7 +37,7 @@ public class AiFacadeImpl implements AiFacade {
     private final AiReportApplicationService aiReportApplicationService;
     private final AiBatchJobApplicationService aiBatchJobApplicationService;
     private final DiscoveryAiApplicationService discoveryAiApplicationService;
-    private final KnowledgeAiExtractionDomainService knowledgeAiExtractionDomainService;
+    private final KnowledgeAiExtractionApplicationService knowledgeAiExtractionApplicationService;
     private final AiInvocationRepository aiInvocationRepository;
     private final AiCandidateDomainService aiCandidateDomainService;
     private final AiFacadeAssembler aiFacadeAssembler;
@@ -47,14 +46,14 @@ public class AiFacadeImpl implements AiFacade {
             AiReportApplicationService aiReportApplicationService,
             AiBatchJobApplicationService aiBatchJobApplicationService,
             DiscoveryAiApplicationService discoveryAiApplicationService,
-            KnowledgeAiExtractionApplicationServiceImpl knowledgeAiExtractionApplicationService,
+            KnowledgeAiExtractionApplicationService knowledgeAiExtractionApplicationService,
             AiInvocationRepository aiInvocationRepository,
             AiCandidateDomainService aiCandidateDomainService,
             AiFacadeAssembler aiFacadeAssembler) {
         this.aiReportApplicationService = aiReportApplicationService;
         this.aiBatchJobApplicationService = aiBatchJobApplicationService;
         this.discoveryAiApplicationService = discoveryAiApplicationService;
-        this.knowledgeAiExtractionDomainService = knowledgeAiExtractionApplicationService;
+        this.knowledgeAiExtractionApplicationService = knowledgeAiExtractionApplicationService;
         this.aiInvocationRepository = aiInvocationRepository;
         this.aiCandidateDomainService = aiCandidateDomainService;
         this.aiFacadeAssembler = aiFacadeAssembler;
@@ -73,20 +72,20 @@ public class AiFacadeImpl implements AiFacade {
     @Override
     public DiscoveryAiFacadeResponse understandDiscoveryQuery(DiscoveryAiFacadeRequest request) {
         return aiFacadeAssembler.toFacadeResponse(
-                discoveryAiApplicationService.understandQuery(aiFacadeAssembler.toDomainRequest(request)));
+                discoveryAiApplicationService.understandQuery(aiFacadeAssembler.toDiscoveryAiCommand(request)));
     }
 
     @Override
     public DiscoveryAiFacadeResponse generateDiscoveryAnswer(DiscoveryAiFacadeRequest request) {
         return aiFacadeAssembler.toFacadeResponse(
-                discoveryAiApplicationService.generateAnswer(aiFacadeAssembler.toDomainRequest(request)));
+                discoveryAiApplicationService.generateAnswer(aiFacadeAssembler.toDiscoveryAiCommand(request)));
     }
 
     @Override
     public DiscoveryAiFacadeResponse streamDiscoveryAnswer(
             DiscoveryAiFacadeRequest request, DiscoveryAiStreamHandler streamHandler) {
         return aiFacadeAssembler.toFacadeResponse(
-                discoveryAiApplicationService.streamAnswer(aiFacadeAssembler.toDomainRequest(request), event -> {
+                discoveryAiApplicationService.streamAnswer(aiFacadeAssembler.toDiscoveryAiCommand(request), event -> {
                     if (event != null && StringUtils.hasText(event.getDeltaText()) && streamHandler != null) {
                         streamHandler.onDelta(event.getDeltaText());
                     }
@@ -96,25 +95,25 @@ public class AiFacadeImpl implements AiFacade {
     @Override
     public KnowledgeAiExtractionFacadeResponse extractKnowledgeRelations(KnowledgeAiExtractionFacadeRequest request) {
         return aiFacadeAssembler.toFacadeResponse(
-                knowledgeAiExtractionDomainService.extractRelations(aiFacadeAssembler.toDomainRequest(request)));
+                knowledgeAiExtractionApplicationService.extractRelations(aiFacadeAssembler.toDomainInput(request)));
     }
 
     @Override
     public KnowledgeAiExtractionFacadeResponse extractKnowledgeGraph(KnowledgeAiExtractionFacadeRequest request) {
         return aiFacadeAssembler.toFacadeResponse(
-                knowledgeAiExtractionDomainService.extractGraph(aiFacadeAssembler.toDomainRequest(request)));
+                knowledgeAiExtractionApplicationService.extractGraph(aiFacadeAssembler.toDomainInput(request)));
     }
 
     @Override
     public KnowledgeAiExtractionFacadeResponse extractKnowledgeLineage(KnowledgeAiExtractionFacadeRequest request) {
         return aiFacadeAssembler.toFacadeResponse(
-                knowledgeAiExtractionDomainService.extractLineage(aiFacadeAssembler.toDomainRequest(request)));
+                knowledgeAiExtractionApplicationService.extractLineage(aiFacadeAssembler.toDomainInput(request)));
     }
 
     @Override
     public KnowledgeAiExtractionFacadeResponse extractKnowledgeTags(KnowledgeAiExtractionFacadeRequest request) {
         return aiFacadeAssembler.toFacadeResponse(
-                knowledgeAiExtractionDomainService.extractTags(aiFacadeAssembler.toDomainRequest(request)));
+                knowledgeAiExtractionApplicationService.extractTags(aiFacadeAssembler.toDomainInput(request)));
     }
 
     @Override
@@ -168,11 +167,11 @@ public class AiFacadeImpl implements AiFacade {
 
     @Override
     @Transactional(readOnly = true)
-    public AiCallRecordFacadeDto getCallRecord(GetAiCallRecordFacadeRequest request) {
+    public AiInvocationLogFacadeDto getInvocationLog(GetAiInvocationLogFacadeRequest request) {
         if (request == null) {
             return null;
         }
-        return aiFacadeAssembler.toFacadeDto(aiInvocationRepository.getCallRecord(request.getCallId()));
+        return aiFacadeAssembler.toFacadeDto(aiInvocationRepository.getInvocationLog(request.getCallId()));
     }
 
     @Override

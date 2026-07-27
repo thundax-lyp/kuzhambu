@@ -1,6 +1,9 @@
 package com.thundax.kuzhambu.ai.infra.batch.persistence.assembler;
 
+import com.thundax.kuzhambu.ai.domain.batch.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.batch.model.entity.AiBatchJob;
+import com.thundax.kuzhambu.ai.domain.batch.model.enums.AiBatchJobStatus;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.infra.batch.persistence.dataobject.AiBatchJobDO;
 
 public final class AiBatchJobPersistenceAssembler {
@@ -12,12 +15,12 @@ public final class AiBatchJobPersistenceAssembler {
             return null;
         }
         AiBatchJobDO dataObject = new AiBatchJobDO();
-        dataObject.setId(job.getId());
-        dataObject.setBatchId(job.getBatchId());
+        dataObject.setId(AiBatchJobIdCodec.toValue(job.getId()));
         dataObject.setScope(job.getScope());
-        dataObject.setCapability(job.getCapability());
+        dataObject.setCapability(
+                job.getCapability() == null ? null : job.getCapability().value());
         dataObject.setContentType(job.getContentType());
-        dataObject.setStatus(job.getStatus());
+        dataObject.setStatus(job.getStatus() == null ? null : job.getStatus().name());
         dataObject.setTotalCount(job.getTotalCount());
         dataObject.setSuccessCount(job.getSuccessCount());
         dataObject.setFailedCount(job.getFailedCount());
@@ -34,12 +37,11 @@ public final class AiBatchJobPersistenceAssembler {
             return null;
         }
         return new AiBatchJob(
-                dataObject.getId(),
-                dataObject.getBatchId(),
+                AiBatchJobIdCodec.toDomain(dataObject.getId()),
                 dataObject.getScope(),
-                dataObject.getCapability(),
+                dataObject.getCapability() == null ? null : AiBusinessCapability.from(dataObject.getCapability()),
                 dataObject.getContentType(),
-                dataObject.getStatus(),
+                dataObject.getStatus() == null ? null : AiBatchJobStatus.from(dataObject.getStatus()),
                 dataObject.getTotalCount() == null ? 0 : dataObject.getTotalCount(),
                 dataObject.getSuccessCount() == null ? 0 : dataObject.getSuccessCount(),
                 dataObject.getFailedCount() == null ? 0 : dataObject.getFailedCount(),

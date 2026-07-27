@@ -30,21 +30,21 @@ public class AiBatchJobRepositoryImpl implements AiBatchJobRepository {
 
     @Override
     public AiBatchJob get(Long batchId) {
-        return AiBatchJobPersistenceAssembler.toDomain(aiBatchJobMapper.selectOne(
-                new LambdaQueryWrapper<AiBatchJobDO>().eq(AiBatchJobDO::getBatchId, batchId)));
+        return AiBatchJobPersistenceAssembler.toDomain(
+                aiBatchJobMapper.selectOne(new LambdaQueryWrapper<AiBatchJobDO>().eq(AiBatchJobDO::getId, batchId)));
     }
 
     @Override
     public Long insert(AiBatchJob batchJob) {
         AiBatchJobDO dataObject = AiBatchJobPersistenceAssembler.toObject(batchJob);
-        if (dataObject.getBatchId() == null) {
-            dataObject.setBatchId(nextId());
+        if (dataObject.getId() == null) {
+            dataObject.setId(nextId());
         }
         if (dataObject.getRequestedAt() == null) {
             dataObject.setRequestedAt(Instant.now());
         }
         aiBatchJobMapper.insert(dataObject);
-        return dataObject.getBatchId();
+        return dataObject.getId();
     }
 
     @Override
@@ -53,7 +53,7 @@ public class AiBatchJobRepositoryImpl implements AiBatchJobRepository {
         return aiBatchJobMapper.update(
                 null,
                 new LambdaUpdateWrapper<AiBatchJobDO>()
-                        .eq(AiBatchJobDO::getBatchId, dataObject.getBatchId())
+                        .eq(AiBatchJobDO::getId, dataObject.getId())
                         .set(AiBatchJobDO::getStatus, dataObject.getStatus())
                         .set(AiBatchJobDO::getSuccessCount, dataObject.getSuccessCount())
                         .set(AiBatchJobDO::getFailedCount, dataObject.getFailedCount())

@@ -9,8 +9,9 @@ import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService.ArtifactDownloadException;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService.DownloadedArtifact;
-import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
@@ -51,9 +52,9 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
     public AiInvokeResult invoke(AiInvokeCommand command) {
         validateCommand(command);
         command.setStream(false);
-        AiCallRecord callRecord = command.toRunningCallRecord();
-        Long callId = aiInvocationRepository.insertCallRecord(callRecord);
-        callRecord.setCallId(callId);
+        AiInvocationLog invocationLog = command.toRunningInvocationLog();
+        Long callId = aiInvocationRepository.insertInvocationLog(invocationLog);
+        invocationLog.setCallId(AiCallIdCodec.toDomain(callId));
         AiInvokeResult result;
         try {
             result = workerAiClient.invoke(command);
@@ -65,16 +66,16 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
                     ex.getMessage(),
                     "WORKER_REQUEST");
         }
-        return completeCall(command, callRecord, normalizeResult(command, result));
+        return completeCall(command, invocationLog, normalizeResult(command, result));
     }
 
     @Override
     public AiInvokeResult stream(AiInvokeCommand command, Consumer<AiStreamEventResult> eventConsumer) {
         validateCommand(command);
         command.setStream(true);
-        AiCallRecord callRecord = command.toRunningCallRecord();
-        Long callId = aiInvocationRepository.insertCallRecord(callRecord);
-        callRecord.setCallId(callId);
+        AiInvocationLog invocationLog = command.toRunningInvocationLog();
+        Long callId = aiInvocationRepository.insertInvocationLog(invocationLog);
+        invocationLog.setCallId(AiCallIdCodec.toDomain(callId));
         AtomicReference<AiInvokeResult> completedResult = new AtomicReference<>();
         try {
             workerAiClient.stream(command, event -> handleStreamEvent(eventConsumer, completedResult, event));
@@ -97,7 +98,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
                     "Worker stream ended without completed event",
                     "WORKER_STREAM");
         }
-        return completeCall(command, callRecord, normalizeResult(command, result));
+        return completeCall(command, invocationLog, normalizeResult(command, result));
     }
 
     private void handleStreamEvent(
@@ -122,34 +123,34 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
         }
     }
 
-    private AiInvokeResult completeCall(AiInvokeCommand command, AiCallRecord callRecord, AiInvokeResult result) {
+    private AiInvokeResult completeCall(AiInvokeCommand command, AiInvocationLog invocationLog, AiInvokeResult result) {
         Instant completedAt = Instant.now();
-        callRecord.recordResult(
+        invocationLog.recordResult(
                 result.getResultFormat(),
                 result.getResultPayload(),
                 result.getArtifactReferenceJson(),
                 result.getWarningsJson());
         if (result.isSucceeded()) {
-            callRecord.markSucceeded(result.getUsage(), completedAt);
-            aiInvocationRepository.updateCallRecord(callRecord);
+            invocationLog.markSucceeded(result.getUsage(), completedAt);
+            aiInvocationRepository.updateInvocationLog(invocationLog);
             if (command.isCreateCandidate()) {
                 Long candidateId =
-                        aiInvocationRepository.insertCandidate(result.toCandidate(command, callRecord.getCallId()));
+                        aiInvocationRepository.insertCandidate(result.toCandidate(command, invocationLog.getCallId()));
                 result.setCandidateId(candidateId);
             }
         } else {
-            callRecord.recordFailureStage(result.getFailureStage());
-            callRecord.markFailed(result.getErrorType(), result.getErrorMessage(), result.getUsage(), completedAt);
+            invocationLog.recordFailureStage(result.getFailureStage());
+            invocationLog.markFailed(result.getErrorType(), result.getErrorMessage(), result.getUsage(), completedAt);
             if (command.isCreateCandidate() && !command.isStream()) {
-                AiCandidate candidate = result.toCandidate(command, callRecord.getCallId());
+                AiCandidate candidate = result.toCandidate(command, invocationLog.getCallId());
                 candidate.reject(
                         result.getErrorType(), result.getErrorMessage(), result.getFailureStage(), completedAt);
                 Long candidateId = aiInvocationRepository.insertCandidate(candidate);
                 result.setCandidateId(candidateId);
             }
-            aiInvocationRepository.updateCallRecord(callRecord);
+            aiInvocationRepository.updateInvocationLog(invocationLog);
         }
-        result.setCallId(callRecord.getCallId());
+        result.setCallId(AiCallIdCodec.toValue(invocationLog.getCallId()));
         return result;
     }
 

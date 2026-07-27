@@ -10,10 +10,10 @@ WHERE `task_id` BETWEEN 990000000001 AND 990000000099
     OR `candidate_id` BETWEEN 990000000001 AND 990000000099;
 
 DELETE FROM `ai_candidate`
-WHERE `candidate_id` BETWEEN 990000000001 AND 990000000099
+WHERE `id` BETWEEN 990000000001 AND 990000000099
     OR `call_id` BETWEEN 990000000001 AND 990000000099;
 
-DELETE FROM `ai_call_record`
+DELETE FROM `ai_invocation_log`
 WHERE `call_id` BETWEEN 990000000001 AND 990000000099;
 
 DELETE FROM `classics_content_tag`
@@ -136,7 +136,7 @@ ON DUPLICATE KEY UPDATE
     `source` = VALUES(`source`),
     `priority` = VALUES(`priority`);
 
-INSERT INTO `ai_call_record` (
+INSERT INTO `ai_invocation_log` (
     `id`, `call_id`, `batch_id`, `scope`, `capability`, `content_type`, `content_id`, `object_id`,
     `service_id`, `service_role`, `model_id`, `model_name`, `prompt_version_id`, `request_id`, `trace_id`,
     `status`, `stream_used`, `stream_completed`, `fallback_used`, `latency_ms`, `input_tokens`, `output_tokens`,
@@ -144,21 +144,21 @@ INSERT INTO `ai_call_record` (
     `error_type`, `error_message`, `warnings_json`, `requested_at`, `completed_at`
 ) VALUES
     (
-        990000000001, 990000000001, NULL, 'classics', 'summary', 'WANGQI_DOCUMENT', 990000000001, NULL,
+        990000000001, 990000000001, NULL, 'classics', 'classics_summary', 'WANGQI_DOCUMENT', 990000000001, NULL,
         NULL, 'PRIMARY', 900102, 'CTYUN-bot-DeepSeek-V3.2-pro', 940101, 'test-wangqi-summary-request', 'test-wangqi-summary-trace',
         'SUCCEEDED', 0, 0, 0, 860, 620, 128,
         0.000000, NULL, 'TEXT', '王圻归里后整理文献，关注梅花源水利、乡里治理和文献编纂之间的关联。', NULL,
         NULL, NULL, NULL, '2026-07-20 12:01:00.000', '2026-07-20 12:01:01.000'
     ),
     (
-        990000000002, 990000000002, NULL, 'classics', 'tags', 'WANGQI_DOCUMENT', 990000000001, NULL,
+        990000000002, 990000000002, NULL, 'classics', 'classics_tags', 'WANGQI_DOCUMENT', 990000000001, NULL,
         NULL, 'PRIMARY', 900102, 'CTYUN-bot-DeepSeek-V3.2-pro', 940102, 'test-wangqi-tags-request', 'test-wangqi-tags-trace',
         'SUCCEEDED', 0, 0, 0, 920, 680, 96,
         0.000000, NULL, 'STRUCTURED', '{"tags":["地方水利","梅花源","文献编纂"]}', NULL,
         NULL, NULL, NULL, '2026-07-20 12:02:00.000', '2026-07-20 12:02:01.000'
     ),
     (
-        990000000003, 990000000003, NULL, 'classics', 'qa', 'WANGQI_DOCUMENT', 990000000001, NULL,
+        990000000003, 990000000003, NULL, 'classics', 'classics_qa', 'WANGQI_DOCUMENT', 990000000001, NULL,
         NULL, 'PRIMARY', 900102, 'CTYUN-bot-DeepSeek-V3.2-pro', 940103, 'test-wangqi-qa-request', 'test-wangqi-qa-trace',
         'SUCCEEDED', 0, 0, 0, 980, 720, 156,
         0.000000, NULL, 'STRUCTURED', '{"qaPairs":[{"question":"梅花源在样例文档中有什么意义？","answer":"梅花源既关乎农田灌溉，也作为王圻晚年生活与著述的空间线索。"}]}', NULL,
@@ -174,22 +174,22 @@ ON DUPLICATE KEY UPDATE
     `completed_at` = VALUES(`completed_at`);
 
 INSERT INTO `ai_candidate` (
-    `id`, `candidate_id`, `call_id`, `batch_id`, `capability`, `content_type`, `content_id`, `object_id`,
+    `id`, `call_id`, `batch_id`, `capability`, `content_type`, `content_id`, `object_id`,
     `result_format`, `result_payload`, `status`, `artifact_reference_json`, `failure_stage`,
     `prompt_version_id`, `model_name`, `error_type`, `error_message`, `requested_at`, `applied_at`, `rejected_at`
 ) VALUES
     (
-        990000000001, 990000000001, 990000000001, NULL, 'summary', 'WANGQI_DOCUMENT', 990000000001, NULL,
+        990000000001, 990000000001, NULL, 'classics_summary', 'WANGQI_DOCUMENT', 990000000001, NULL,
         'TEXT', '王圻归里后整理文献，关注梅花源水利、乡里治理和文献编纂之间的关联。', 'PENDING', NULL, NULL,
         940101, 'CTYUN-bot-DeepSeek-V3.2-pro', NULL, NULL, '2026-07-20 12:01:01.000', NULL, NULL
     ),
     (
-        990000000002, 990000000002, 990000000002, NULL, 'tags', 'WANGQI_DOCUMENT', 990000000001, NULL,
+        990000000002, 990000000002, NULL, 'classics_tags', 'WANGQI_DOCUMENT', 990000000001, NULL,
         'STRUCTURED', '{"tags":["地方水利","梅花源","文献编纂"]}', 'PENDING', NULL, NULL,
         940102, 'CTYUN-bot-DeepSeek-V3.2-pro', NULL, NULL, '2026-07-20 12:02:01.000', NULL, NULL
     ),
     (
-        990000000003, 990000000003, 990000000003, NULL, 'qa', 'WANGQI_DOCUMENT', 990000000001, NULL,
+        990000000003, 990000000003, NULL, 'classics_qa', 'WANGQI_DOCUMENT', 990000000001, NULL,
         'STRUCTURED', '{"qaPairs":[{"question":"梅花源在样例文档中有什么意义？","answer":"梅花源既关乎农田灌溉，也作为王圻晚年生活与著述的空间线索。"}]}', 'PENDING', NULL, NULL,
         940103, 'CTYUN-bot-DeepSeek-V3.2-pro', NULL, NULL, '2026-07-20 12:03:01.000', NULL, NULL
     )
@@ -211,19 +211,19 @@ INSERT INTO `ai_refinement_task` (
     `error_message`, `stream_enabled`, `requested_at`, `started_at`, `completed_at`, `cancelled_at`
 ) VALUES
     (
-        990000000001, 990000000001, 'classics', 'summary', 'WANGQI_DOCUMENT', 990000000001, NULL, 2,
+        990000000001, 990000000001, 'classics', 'classics_summary', 'WANGQI_DOCUMENT', 990000000001, NULL, 2,
         'test-wangqi-summary-request', 'test-wangqi-summary-trace', 'SUCCEEDED', 'PRIMARY', 900102, 'CTYUN-bot-DeepSeek-V3.2-pro', 940101,
         990000000001, 990000000001, 'TEXT', '王圻归里后整理文献，关注梅花源水利、乡里治理和文献编纂之间的关联。', NULL, NULL,
         NULL, 0, '2026-07-20 12:01:00.000', '2026-07-20 12:01:00.000', '2026-07-20 12:01:01.000', NULL
     ),
     (
-        990000000002, 990000000002, 'classics', 'tags', 'WANGQI_DOCUMENT', 990000000001, NULL, 2,
+        990000000002, 990000000002, 'classics', 'classics_tags', 'WANGQI_DOCUMENT', 990000000001, NULL, 2,
         'test-wangqi-tags-request', 'test-wangqi-tags-trace', 'SUCCEEDED', 'PRIMARY', 900102, 'CTYUN-bot-DeepSeek-V3.2-pro', 940102,
         990000000002, 990000000002, 'STRUCTURED', '地方水利、梅花源、文献编纂', NULL, NULL,
         NULL, 0, '2026-07-20 12:02:00.000', '2026-07-20 12:02:00.000', '2026-07-20 12:02:01.000', NULL
     ),
     (
-        990000000003, 990000000003, 'classics', 'qa', 'WANGQI_DOCUMENT', 990000000001, NULL, 2,
+        990000000003, 990000000003, 'classics', 'classics_qa', 'WANGQI_DOCUMENT', 990000000001, NULL, 2,
         'test-wangqi-qa-request', 'test-wangqi-qa-trace', 'SUCCEEDED', 'PRIMARY', 900102, 'CTYUN-bot-DeepSeek-V3.2-pro', 940103,
         990000000003, 990000000003, 'STRUCTURED', '梅花源既关乎农田灌溉，也作为王圻晚年生活与著述的空间线索。', NULL, NULL,
         NULL, 0, '2026-07-20 12:03:00.000', '2026-07-20 12:03:00.000', '2026-07-20 12:03:01.000', NULL
@@ -241,6 +241,5 @@ ALTER TABLE `classics_wangqi_document_event` AUTO_INCREMENT = 990000000100;
 ALTER TABLE `classics_content_version` AUTO_INCREMENT = 990000000100;
 ALTER TABLE `classics_content_tag` AUTO_INCREMENT = 990000000100;
 ALTER TABLE `classics_content_qa_pair` AUTO_INCREMENT = 990000000100;
-ALTER TABLE `ai_call_record` AUTO_INCREMENT = 990000000100;
-ALTER TABLE `ai_candidate` AUTO_INCREMENT = 990000000100;
+ALTER TABLE `ai_invocation_log` AUTO_INCREMENT = 990000000100;
 ALTER TABLE `ai_refinement_task` AUTO_INCREMENT = 990000000100;

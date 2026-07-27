@@ -3,12 +3,12 @@ package com.thundax.kuzhambu.knowledge.application.graph.service.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.ai.facade.AiFacade;
-import com.thundax.kuzhambu.ai.facade.dto.AiCallRecordFacadeDto;
 import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
+import com.thundax.kuzhambu.ai.facade.dto.AiInvocationLogFacadeDto;
 import com.thundax.kuzhambu.ai.facade.request.AiBatchJobFailureFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.CreateAiBatchJobFacadeRequest;
-import com.thundax.kuzhambu.ai.facade.request.GetAiCallRecordFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.GetAiCandidateFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.GetAiInvocationLogFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.KnowledgeAiExtractionFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
@@ -991,9 +991,9 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         if (result == null || aiFacade == null) {
             return result;
         }
-        AiCallRecordFacadeDto callRecord = task == null || task.getAiCallId() == null
+        AiInvocationLogFacadeDto invocationLog = task == null || task.getAiCallId() == null
                 ? null
-                : aiFacade.getCallRecord(GetAiCallRecordFacadeRequest.builder()
+                : aiFacade.getInvocationLog(GetAiInvocationLogFacadeRequest.builder()
                         .callId(task.getAiCallId())
                         .build());
         AiCandidateFacadeDto candidate = task == null || task.getAiCandidateId() == null
@@ -1001,16 +1001,17 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                 : aiFacade.getCandidate(GetAiCandidateFacadeRequest.builder()
                         .candidateId(task.getAiCandidateId())
                         .build());
-        if (callRecord != null) {
-            result.setAiCallId(callRecord.getCallId());
-            if (result.getCompletedAt() == null && callRecord.getCompletedAt() != null) {
-                result.setCompletedAt(callRecord.getCompletedAt().toEpochMilli());
+        if (invocationLog != null) {
+            result.setAiCallId(invocationLog.getCallId());
+            if (result.getCompletedAt() == null && invocationLog.getCompletedAt() != null) {
+                result.setCompletedAt(invocationLog.getCompletedAt().toEpochMilli());
             }
-            if (STATUS_FAILED.equals(callRecord.getStatus())) {
+            if (STATUS_FAILED.equals(invocationLog.getStatus())) {
                 result.setStatus(STATUS_FAILED);
-                result.setErrorType(callRecord.getErrorType());
-                result.setErrorMessage(callRecord.getErrorMessage());
-            } else if (STATUS_REQUESTED.equals(result.getStatus()) && STATUS_SUCCEEDED.equals(callRecord.getStatus())) {
+                result.setErrorType(invocationLog.getErrorType());
+                result.setErrorMessage(invocationLog.getErrorMessage());
+            } else if (STATUS_REQUESTED.equals(result.getStatus())
+                    && STATUS_SUCCEEDED.equals(invocationLog.getStatus())) {
                 result.setStatus(STATUS_SUCCEEDED);
             }
         }

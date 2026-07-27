@@ -55,4 +55,28 @@ public enum AiBusinessCapability {
                 .orElseThrow(() -> new DomainException(
                         "AI-10001", "ai.business-capability.invalid", "Unknown AI business capability: " + value));
     }
+
+    public static AiBusinessCapability fromAlias(String value) {
+        return from(normalizeAlias(value));
+    }
+
+    private static String normalizeAlias(String value) {
+        if (value == null) {
+            return null;
+        }
+        return switch (value) {
+            case "translate" -> CLASSICS_TRANSLATE.value();
+            case "summary" -> CLASSICS_SUMMARY.value();
+            case "tags" -> CLASSICS_TAG_EXTRACT.value();
+            case "qa" -> CLASSICS_QA.value();
+            case "image_analysis" -> CLASSICS_IMAGE_DESCRIBE.value();
+            case "visual" -> CLASSICS_VISUAL_DESCRIBE.value();
+            case "image_gen" -> CLASSICS_IMAGE_GENERATE.value();
+            case "split" -> CLASSICS_SPLIT.value();
+            case "relation_extraction" -> KNOWLEDGE_RELATION_EXTRACT.value();
+            case "knowledge_graph" -> KNOWLEDGE_GRAPH_EXTRACT.value();
+            case "lineage_extraction" -> KNOWLEDGE_LINEAGE_EXTRACT.value();
+            default -> value;
+        };
+    }
 }

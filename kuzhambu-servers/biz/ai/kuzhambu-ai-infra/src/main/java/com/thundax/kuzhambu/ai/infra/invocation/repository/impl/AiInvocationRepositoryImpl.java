@@ -2,12 +2,25 @@ package com.thundax.kuzhambu.ai.infra.invocation.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
+import com.thundax.kuzhambu.ai.domain.batch.codec.AiBatchJobIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiInvocationLogIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiPromptVersionIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiCandidateStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
-import com.thundax.kuzhambu.ai.infra.invocation.persistence.dataobject.AiCallRecordDO;
 import com.thundax.kuzhambu.ai.infra.invocation.persistence.dataobject.AiCandidateDO;
+import com.thundax.kuzhambu.ai.infra.invocation.persistence.dataobject.AiInvocationLogDO;
 import com.thundax.kuzhambu.ai.infra.invocation.persistence.mapper.AiInvocationMapper;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
@@ -29,14 +42,14 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
     }
 
     @Override
-    public AiCallRecord getCallRecord(Long callId) {
-        return toCallDomain(aiInvocationMapper.selectOne(
-                new LambdaQueryWrapper<AiCallRecordDO>().eq(AiCallRecordDO::getCallId, callId)));
+    public AiInvocationLog getInvocationLog(Long callId) {
+        return toInvocationLogDomain(aiInvocationMapper.selectOne(
+                new LambdaQueryWrapper<AiInvocationLogDO>().eq(AiInvocationLogDO::getCallId, callId)));
     }
 
     @Override
-    public Long insertCallRecord(AiCallRecord callRecord) {
-        AiCallRecordDO dataObject = toCallObject(callRecord);
+    public Long insertInvocationLog(AiInvocationLog invocationLog) {
+        AiInvocationLogDO dataObject = toInvocationLogObject(invocationLog);
         if (dataObject.getCallId() == null) {
             dataObject.setCallId(nextId());
         }
@@ -48,36 +61,36 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
     }
 
     @Override
-    public int updateCallRecord(AiCallRecord callRecord) {
-        AiCallRecordDO dataObject = toCallObject(callRecord);
+    public int updateInvocationLog(AiInvocationLog invocationLog) {
+        AiInvocationLogDO dataObject = toInvocationLogObject(invocationLog);
         return aiInvocationMapper.update(
                 null,
-                new LambdaUpdateWrapper<AiCallRecordDO>()
-                        .eq(AiCallRecordDO::getCallId, dataObject.getCallId())
-                        .set(AiCallRecordDO::getStatus, dataObject.getStatus())
-                        .set(AiCallRecordDO::getStreamCompleted, dataObject.getStreamCompleted())
-                        .set(AiCallRecordDO::getFallbackUsed, dataObject.getFallbackUsed())
-                        .set(AiCallRecordDO::getLatencyMs, dataObject.getLatencyMs())
-                        .set(AiCallRecordDO::getInputTokens, dataObject.getInputTokens())
-                        .set(AiCallRecordDO::getOutputTokens, dataObject.getOutputTokens())
-                        .set(AiCallRecordDO::getCostAmount, dataObject.getCostAmount())
-                        .set(AiCallRecordDO::getFailureStage, dataObject.getFailureStage())
-                        .set(AiCallRecordDO::getResultFormat, dataObject.getResultFormat())
-                        .set(AiCallRecordDO::getResultPayload, dataObject.getResultPayload())
-                        .set(AiCallRecordDO::getArtifactReferenceJson, dataObject.getArtifactReferenceJson())
-                        .set(AiCallRecordDO::getErrorType, dataObject.getErrorType())
-                        .set(AiCallRecordDO::getErrorMessage, dataObject.getErrorMessage())
-                        .set(AiCallRecordDO::getWarningsJson, dataObject.getWarningsJson())
-                        .set(AiCallRecordDO::getCompletedAt, dataObject.getCompletedAt()));
+                new LambdaUpdateWrapper<AiInvocationLogDO>()
+                        .eq(AiInvocationLogDO::getCallId, dataObject.getCallId())
+                        .set(AiInvocationLogDO::getStatus, dataObject.getStatus())
+                        .set(AiInvocationLogDO::getStreamCompleted, dataObject.getStreamCompleted())
+                        .set(AiInvocationLogDO::getFallbackUsed, dataObject.getFallbackUsed())
+                        .set(AiInvocationLogDO::getLatencyMs, dataObject.getLatencyMs())
+                        .set(AiInvocationLogDO::getInputTokens, dataObject.getInputTokens())
+                        .set(AiInvocationLogDO::getOutputTokens, dataObject.getOutputTokens())
+                        .set(AiInvocationLogDO::getCostAmount, dataObject.getCostAmount())
+                        .set(AiInvocationLogDO::getFailureStage, dataObject.getFailureStage())
+                        .set(AiInvocationLogDO::getResultFormat, dataObject.getResultFormat())
+                        .set(AiInvocationLogDO::getResultPayload, dataObject.getResultPayload())
+                        .set(AiInvocationLogDO::getArtifactReferenceJson, dataObject.getArtifactReferenceJson())
+                        .set(AiInvocationLogDO::getErrorType, dataObject.getErrorType())
+                        .set(AiInvocationLogDO::getErrorMessage, dataObject.getErrorMessage())
+                        .set(AiInvocationLogDO::getWarningsJson, dataObject.getWarningsJson())
+                        .set(AiInvocationLogDO::getCompletedAt, dataObject.getCompletedAt()));
     }
 
     @Override
-    public List<AiCallRecord> listCallRecords(Instant requestedAtStart, Instant requestedAtEnd) {
-        return toCallDomainList(aiInvocationMapper.selectCallRecords(requestedAtStart, requestedAtEnd));
+    public List<AiInvocationLog> listInvocationLogs(Instant requestedAtStart, Instant requestedAtEnd) {
+        return toInvocationLogDomainList(aiInvocationMapper.selectInvocationLogs(requestedAtStart, requestedAtEnd));
     }
 
     @Override
-    public PageResult<AiCallRecord> pageCallRecords(
+    public PageResult<AiInvocationLog> pageInvocationLogs(
             String scope,
             String capability,
             String contentType,
@@ -92,7 +105,7 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
             int pageSize) {
         PageQuery pageQuery = new PageQuery(pageNo, pageSize);
         int offset = (pageQuery.getPageNo() - 1) * pageQuery.getPageSize();
-        long total = aiInvocationMapper.countCallRecords(
+        long total = aiInvocationMapper.countInvocationLogs(
                 scope,
                 capability,
                 contentType,
@@ -103,7 +116,7 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
                 fallbackUsed,
                 requestedAtStart,
                 requestedAtEnd);
-        List<AiCallRecordDO> records = aiInvocationMapper.selectCallRecordsPage(
+        List<AiInvocationLogDO> records = aiInvocationMapper.selectInvocationLogsPage(
                 scope,
                 capability,
                 contentType,
@@ -116,13 +129,13 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
                 requestedAtEnd,
                 offset,
                 pageQuery.getPageSize());
-        return PageResult.of(pageQuery.getPageNo(), pageQuery.getPageSize(), total, toCallDomainList(records));
+        return PageResult.of(pageQuery.getPageNo(), pageQuery.getPageSize(), total, toInvocationLogDomainList(records));
     }
 
     @Override
-    public List<AiCallRecord> listCallRecords(
+    public List<AiInvocationLog> listInvocationLogs(
             String scope, String capability, String serviceRole, Instant requestedAtStart, Instant requestedAtEnd) {
-        return toCallDomainList(aiInvocationMapper.selectCallRecordsForSummary(
+        return toInvocationLogDomainList(aiInvocationMapper.selectInvocationLogsForSummary(
                 scope, capability, serviceRole, requestedAtStart, requestedAtEnd));
     }
 
@@ -134,14 +147,14 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
     @Override
     public Long insertCandidate(AiCandidate candidate) {
         AiCandidateDO dataObject = toCandidateObject(candidate);
-        if (dataObject.getCandidateId() == null) {
-            dataObject.setCandidateId(nextId());
+        if (dataObject.getId() == null) {
+            dataObject.setId(nextId());
         }
         if (dataObject.getRequestedAt() == null) {
             dataObject.setRequestedAt(Instant.now());
         }
         aiInvocationMapper.insertCandidate(dataObject);
-        return dataObject.getCandidateId();
+        return dataObject.getId();
     }
 
     @Override
@@ -157,86 +170,93 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
                 aiInvocationMapper.selectCandidates(contentType, contentId, objectId, capability, status));
     }
 
-    private AiCallRecordDO toCallObject(AiCallRecord record) {
-        if (record == null) {
+    private AiInvocationLogDO toInvocationLogObject(AiInvocationLog invocationLog) {
+        if (invocationLog == null) {
             return null;
         }
-        AiUsageSnapshot usage = AiUsageSnapshot.orEmpty(record.getUsage());
-        AiCallRecordDO dataObject = new AiCallRecordDO();
-        dataObject.setId(record.getId());
-        dataObject.setCallId(record.getCallId());
-        dataObject.setBatchId(record.getBatchId());
-        dataObject.setScope(record.getScope());
-        dataObject.setCapability(record.getCapability());
-        dataObject.setContentType(record.getContentType());
-        dataObject.setContentId(record.getContentId());
-        dataObject.setObjectId(record.getObjectId());
-        dataObject.setServiceId(record.getServiceId());
-        dataObject.setServiceRole(record.getServiceRole());
-        dataObject.setModelId(record.getModelId());
-        dataObject.setModelName(record.getModelName());
-        dataObject.setPromptVersionId(record.getPromptVersionId());
-        dataObject.setRequestId(record.getRequestId());
-        dataObject.setTraceId(record.getTraceId());
-        dataObject.setStatus(record.getStatus());
-        dataObject.setStreamUsed(record.isStreamUsed());
-        dataObject.setStreamCompleted(record.isStreamCompleted());
-        dataObject.setFallbackUsed(record.isFallbackUsed());
+        AiUsageSnapshot usage = AiUsageSnapshot.orEmpty(invocationLog.getUsage());
+        AiInvocationLogDO dataObject = new AiInvocationLogDO();
+        dataObject.setId(AiInvocationLogIdCodec.toValue(invocationLog.getId()));
+        dataObject.setCallId(AiCallIdCodec.toValue(invocationLog.getCallId()));
+        dataObject.setBatchId(AiBatchJobIdCodec.toValue(invocationLog.getBatchId()));
+        dataObject.setScope(invocationLog.getScope());
+        dataObject.setCapability(
+                invocationLog.getCapability() == null
+                        ? null
+                        : invocationLog.getCapability().value());
+        dataObject.setContentType(AiContentRefCodec.toContentType(invocationLog.getContentRef()));
+        dataObject.setContentId(AiContentRefCodec.toContentId(invocationLog.getContentRef()));
+        dataObject.setObjectId(AiTargetObjectIdCodec.toValue(invocationLog.getTargetObjectId()));
+        dataObject.setServiceId(invocationLog.getServiceId());
+        dataObject.setServiceRole(invocationLog.getServiceRole());
+        dataObject.setModelId(AiModelIdCodec.toValue(invocationLog.getModelId()));
+        dataObject.setModelName(AiModelNameCodec.toValue(invocationLog.getModelName()));
+        dataObject.setPromptVersionId(PromptVersionIdCodec.toValue(invocationLog.getPromptVersionId()));
+        dataObject.setRequestId(invocationLog.getRequestId());
+        dataObject.setTraceId(invocationLog.getTraceId());
+        dataObject.setStatus(
+                invocationLog.getStatus() == null
+                        ? null
+                        : invocationLog.getStatus().name());
+        dataObject.setStreamUsed(invocationLog.isStreamUsed());
+        dataObject.setStreamCompleted(invocationLog.isStreamCompleted());
+        dataObject.setFallbackUsed(invocationLog.isFallbackUsed());
         dataObject.setLatencyMs(usage.getLatencyMs());
         dataObject.setInputTokens(usage.getInputTokens());
         dataObject.setOutputTokens(usage.getOutputTokens());
         dataObject.setCostAmount(usage.getCostAmount());
-        dataObject.setFailureStage(record.getFailureStage());
-        dataObject.setResultFormat(record.getResultFormat());
-        dataObject.setResultPayload(record.getResultPayload());
-        dataObject.setArtifactReferenceJson(record.getArtifactReferenceJson());
-        dataObject.setErrorType(record.getErrorType());
-        dataObject.setErrorMessage(record.getErrorMessage());
-        dataObject.setWarningsJson(record.getWarningsJson());
-        dataObject.setRequestedAt(record.getRequestedAt());
-        dataObject.setCompletedAt(record.getCompletedAt());
+        dataObject.setFailureStage(invocationLog.getFailureStage());
+        dataObject.setResultFormat(invocationLog.getResultFormat());
+        dataObject.setResultPayload(invocationLog.getResultPayload());
+        dataObject.setArtifactReferenceJson(invocationLog.getArtifactReferenceJson());
+        dataObject.setErrorType(invocationLog.getErrorType());
+        dataObject.setErrorMessage(invocationLog.getErrorMessage());
+        dataObject.setWarningsJson(invocationLog.getWarningsJson());
+        dataObject.setRequestedAt(invocationLog.getRequestedAt());
+        dataObject.setCompletedAt(invocationLog.getCompletedAt());
         return dataObject;
     }
 
-    private AiCallRecord toCallDomain(AiCallRecordDO dataObject) {
+    private AiInvocationLog toInvocationLogDomain(AiInvocationLogDO dataObject) {
         if (dataObject == null) {
             return null;
         }
-        AiCallRecord record = new AiCallRecord();
-        record.setId(dataObject.getId());
-        record.setCallId(dataObject.getCallId());
-        record.setBatchId(dataObject.getBatchId());
-        record.setScope(dataObject.getScope());
-        record.setCapability(dataObject.getCapability());
-        record.setContentType(dataObject.getContentType());
-        record.setContentId(dataObject.getContentId());
-        record.setObjectId(dataObject.getObjectId());
-        record.setServiceId(dataObject.getServiceId());
-        record.setServiceRole(dataObject.getServiceRole());
-        record.setModelId(dataObject.getModelId());
-        record.setModelName(dataObject.getModelName());
-        record.setPromptVersionId(dataObject.getPromptVersionId());
-        record.setRequestId(dataObject.getRequestId());
-        record.setTraceId(dataObject.getTraceId());
-        record.setStatus(dataObject.getStatus());
-        record.setStreamUsed(Boolean.TRUE.equals(dataObject.getStreamUsed()));
-        record.setStreamCompleted(Boolean.TRUE.equals(dataObject.getStreamCompleted()));
-        record.setFallbackUsed(Boolean.TRUE.equals(dataObject.getFallbackUsed()));
-        record.setUsage(new AiUsageSnapshot(
+        AiInvocationLog invocationLog = new AiInvocationLog();
+        invocationLog.setId(AiInvocationLogIdCodec.toDomain(dataObject.getId()));
+        invocationLog.setCallId(AiCallIdCodec.toDomain(dataObject.getCallId()));
+        invocationLog.setBatchId(AiBatchJobIdCodec.toDomain(dataObject.getBatchId()));
+        invocationLog.setScope(dataObject.getScope());
+        invocationLog.setCapability(
+                dataObject.getCapability() == null ? null : AiBusinessCapability.from(dataObject.getCapability()));
+        invocationLog.setContentRef(AiContentRefCodec.toDomain(dataObject.getContentType(), dataObject.getContentId()));
+        invocationLog.setTargetObjectId(AiTargetObjectIdCodec.toDomain(dataObject.getObjectId()));
+        invocationLog.setServiceId(dataObject.getServiceId());
+        invocationLog.setServiceRole(dataObject.getServiceRole());
+        invocationLog.setModelId(AiModelIdCodec.toDomain(dataObject.getModelId()));
+        invocationLog.setModelName(AiModelNameCodec.toDomain(dataObject.getModelName()));
+        invocationLog.setPromptVersionId(PromptVersionIdCodec.toDomain(dataObject.getPromptVersionId()));
+        invocationLog.setRequestId(dataObject.getRequestId());
+        invocationLog.setTraceId(dataObject.getTraceId());
+        invocationLog.setStatus(
+                dataObject.getStatus() == null ? null : AiInvocationStatus.from(dataObject.getStatus()));
+        invocationLog.setStreamUsed(Boolean.TRUE.equals(dataObject.getStreamUsed()));
+        invocationLog.setStreamCompleted(Boolean.TRUE.equals(dataObject.getStreamCompleted()));
+        invocationLog.setFallbackUsed(Boolean.TRUE.equals(dataObject.getFallbackUsed()));
+        invocationLog.setUsage(new AiUsageSnapshot(
                 dataObject.getLatencyMs(),
                 dataObject.getInputTokens() == null ? 0 : dataObject.getInputTokens(),
                 dataObject.getOutputTokens() == null ? 0 : dataObject.getOutputTokens(),
                 dataObject.getCostAmount() == null ? BigDecimal.ZERO : dataObject.getCostAmount()));
-        record.setFailureStage(dataObject.getFailureStage());
-        record.setResultFormat(dataObject.getResultFormat());
-        record.setResultPayload(dataObject.getResultPayload());
-        record.setArtifactReferenceJson(dataObject.getArtifactReferenceJson());
-        record.setErrorType(dataObject.getErrorType());
-        record.setErrorMessage(dataObject.getErrorMessage());
-        record.setWarningsJson(dataObject.getWarningsJson());
-        record.setRequestedAt(dataObject.getRequestedAt());
-        record.setCompletedAt(dataObject.getCompletedAt());
-        return record;
+        invocationLog.setFailureStage(dataObject.getFailureStage());
+        invocationLog.setResultFormat(dataObject.getResultFormat());
+        invocationLog.setResultPayload(dataObject.getResultPayload());
+        invocationLog.setArtifactReferenceJson(dataObject.getArtifactReferenceJson());
+        invocationLog.setErrorType(dataObject.getErrorType());
+        invocationLog.setErrorMessage(dataObject.getErrorMessage());
+        invocationLog.setWarningsJson(dataObject.getWarningsJson());
+        invocationLog.setRequestedAt(dataObject.getRequestedAt());
+        invocationLog.setCompletedAt(dataObject.getCompletedAt());
+        return invocationLog;
     }
 
     private AiCandidateDO toCandidateObject(AiCandidate candidate) {
@@ -244,20 +264,23 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
             return null;
         }
         AiCandidateDO dataObject = new AiCandidateDO();
-        dataObject.setId(candidate.getId());
-        dataObject.setCandidateId(candidate.getCandidateId());
-        dataObject.setCallId(candidate.getCallId());
-        dataObject.setBatchId(candidate.getBatchId());
-        dataObject.setCapability(candidate.getCapability());
-        dataObject.setContentType(candidate.getContentType());
-        dataObject.setContentId(candidate.getContentId());
-        dataObject.setObjectId(candidate.getObjectId());
+        dataObject.setId(AiCandidateIdCodec.toValue(candidate.getId()));
+        dataObject.setCallId(AiCallIdCodec.toValue(candidate.getCallId()));
+        dataObject.setBatchId(AiBatchJobIdCodec.toValue(candidate.getBatchId()));
+        dataObject.setCapability(
+                candidate.getCapability() == null
+                        ? null
+                        : candidate.getCapability().value());
+        dataObject.setContentType(AiContentRefCodec.toContentType(candidate.getContentRef()));
+        dataObject.setContentId(AiContentRefCodec.toContentId(candidate.getContentRef()));
+        dataObject.setObjectId(AiTargetObjectIdCodec.toValue(candidate.getTargetObjectId()));
         dataObject.setArtifactReferenceJson(candidate.getArtifactReferenceJson());
         dataObject.setResultFormat(candidate.getResultFormat());
         dataObject.setResultPayload(candidate.getResultPayload());
-        dataObject.setStatus(candidate.getStatus());
-        dataObject.setPromptVersionId(candidate.getPromptVersionId());
-        dataObject.setModelName(candidate.getModelName());
+        dataObject.setStatus(
+                candidate.getStatus() == null ? null : candidate.getStatus().name());
+        dataObject.setPromptVersionId(AiPromptVersionIdCodec.toValue(candidate.getPromptVersionId()));
+        dataObject.setModelName(AiModelNameCodec.toValue(candidate.getModelName()));
         dataObject.setFailureStage(candidate.getFailureStage());
         dataObject.setErrorType(candidate.getErrorType());
         dataObject.setErrorMessage(candidate.getErrorMessage());
@@ -272,20 +295,19 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
             return null;
         }
         AiCandidate candidate = new AiCandidate();
-        candidate.setId(dataObject.getId());
-        candidate.setCandidateId(dataObject.getCandidateId());
-        candidate.setCallId(dataObject.getCallId());
-        candidate.setBatchId(dataObject.getBatchId());
-        candidate.setCapability(dataObject.getCapability());
-        candidate.setContentType(dataObject.getContentType());
-        candidate.setContentId(dataObject.getContentId());
-        candidate.setObjectId(dataObject.getObjectId());
+        candidate.setId(AiCandidateIdCodec.toDomain(dataObject.getId()));
+        candidate.setCallId(AiCallIdCodec.toDomain(dataObject.getCallId()));
+        candidate.setBatchId(AiBatchJobIdCodec.toDomain(dataObject.getBatchId()));
+        candidate.setCapability(
+                dataObject.getCapability() == null ? null : AiBusinessCapability.from(dataObject.getCapability()));
+        candidate.setContentRef(AiContentRefCodec.toDomain(dataObject.getContentType(), dataObject.getContentId()));
+        candidate.setTargetObjectId(AiTargetObjectIdCodec.toDomain(dataObject.getObjectId()));
         candidate.setArtifactReferenceJson(dataObject.getArtifactReferenceJson());
         candidate.setResultFormat(dataObject.getResultFormat());
         candidate.setResultPayload(dataObject.getResultPayload());
-        candidate.setStatus(dataObject.getStatus());
-        candidate.setPromptVersionId(dataObject.getPromptVersionId());
-        candidate.setModelName(dataObject.getModelName());
+        candidate.setStatus(dataObject.getStatus() == null ? null : AiCandidateStatus.from(dataObject.getStatus()));
+        candidate.setPromptVersionId(AiPromptVersionIdCodec.toDomain(dataObject.getPromptVersionId()));
+        candidate.setModelName(AiModelNameCodec.toDomain(dataObject.getModelName()));
         candidate.setFailureStage(dataObject.getFailureStage());
         candidate.setErrorType(dataObject.getErrorType());
         candidate.setErrorMessage(dataObject.getErrorMessage());
@@ -295,13 +317,13 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
         return candidate;
     }
 
-    private List<AiCallRecord> toCallDomainList(List<AiCallRecordDO> dataObjects) {
-        List<AiCallRecord> records = new ArrayList<>();
+    private List<AiInvocationLog> toInvocationLogDomainList(List<AiInvocationLogDO> dataObjects) {
+        List<AiInvocationLog> records = new ArrayList<>();
         if (dataObjects == null) {
             return records;
         }
-        for (AiCallRecordDO dataObject : dataObjects) {
-            records.add(toCallDomain(dataObject));
+        for (AiInvocationLogDO dataObject : dataObjects) {
+            records.add(toInvocationLogDomain(dataObject));
         }
         return records;
     }

@@ -13,6 +13,7 @@ import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiModelCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiBusinessConfigId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptTemplateId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
 import com.thundax.kuzhambu.ai.domain.config.repository.AiBusinessConfigRepository;
@@ -166,7 +167,7 @@ class AiBusinessConfigApplicationServiceImplTest {
                     AiApiSource.OPENAI,
                     "https://example.com",
                     "encrypted",
-                    "gpt-test",
+                    AiModelName.of("gpt-test"),
                     "测试模型",
                     List.of(AiModelCapability.TEXT2TEXT),
                     "{}",

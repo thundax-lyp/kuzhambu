@@ -114,7 +114,7 @@ Portal 入口：
 ## Infrastructure Layer
 
 - Repository 持久化 `knowledge_*` 表。
-- AI 提取通过 `KnowledgeAiExtractionDomainService` 协作语义触发。
+- AI 提取通过 AI application 的 `KnowledgeAiExtractionApplicationService` 协作语义触发。
 - `KnowledgeGraphCandidateApplySupport` 负责把候选 payload 应用到 `knowledge_entity`、`knowledge_relation`、`knowledge_graph_version`、`knowledge_lineage_node` 和 `knowledge_lineage_relation`。
 - 精修仓储持久化 `knowledge_refinement_*` 草稿表和人工质量标注表。
 - 世系画布读取只消费正式 `knowledge_lineage_node`、`knowledge_lineage_relation` 和 `knowledge_graph_version`，不写入知识事实表，不触发 AI 或 workers。

@@ -9,10 +9,10 @@ import * as service from "./invocations-service";
 vi.mock("./invocations-service", () => ({
     getInvocationSummary: vi.fn(),
     listInvocationCapabilities: vi.fn(),
-    pageInvocationCalls: vi.fn()
+    pageInvocationLogs: vi.fn()
 }));
 
-const callRecord = {
+const invocationLog = {
     callId: 9001,
     batchId: null,
     scope: "classics",
@@ -76,13 +76,13 @@ describe("InvocationsPage", () => {
             totalCostAmount: "0.32",
             topCapabilities: [{ capability: "summary", invocationCount: 12 }]
         });
-        vi.mocked(service.pageInvocationCalls).mockResolvedValue({
+        vi.mocked(service.pageInvocationLogs).mockResolvedValue({
             pageNo: 1,
             pageSize: 20,
             totalPage: 1,
             count: 1,
             totalCount: 1,
-            records: [callRecord]
+            records: [invocationLog]
         });
     });
 

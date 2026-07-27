@@ -8,7 +8,7 @@ import lombok.Getter;
 @Getter
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class GetAiCallRecordFacadeRequest {
+public class GetAiInvocationLogFacadeRequest {
 
     private final Long callId;
 }

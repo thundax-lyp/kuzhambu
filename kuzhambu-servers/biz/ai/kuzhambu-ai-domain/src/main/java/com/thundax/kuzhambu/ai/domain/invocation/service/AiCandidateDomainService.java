@@ -1,6 +1,9 @@
 package com.thundax.kuzhambu.ai.domain.invocation.service;
 
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjectId;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.common.core.exception.DomainException;
 import java.time.Instant;
@@ -26,9 +29,9 @@ public class AiCandidateDomainService {
                     "ai.candidate.not-pending",
                     "AI candidate is not pending: " + check.getCandidateId());
         }
-        if (!check.getContentType().equals(candidate.getContentType())
-                || !check.getContentId().equals(candidate.getContentId())
-                || !check.getCapability().equals(candidate.getCapability())) {
+        AiBusinessCapability capability = AiBusinessCapability.fromAlias(check.getCapability());
+        AiContentRef contentRef = AiContentRef.ofNullable(check.getContentType(), check.getContentId());
+        if (!Objects.equals(contentRef, candidate.getContentRef()) || capability != candidate.getCapability()) {
             throw new DomainException(
                     "AI-INVOCATION-409", "ai.candidate.target-mismatch", "AI candidate target mismatch");
         }
@@ -37,7 +40,8 @@ public class AiCandidateDomainService {
 
     public AiCandidate requirePendingForApply(AiCandidateApplyCheck check, Long objectId) {
         AiCandidate candidate = requirePendingForApply(check);
-        if (!Objects.equals(objectId, candidate.getObjectId())) {
+        AiTargetObjectId targetObjectId = AiTargetObjectId.ofNullable(objectId);
+        if (!Objects.equals(targetObjectId, candidate.getTargetObjectId())) {
             throw new DomainException(
                     "AI-INVOCATION-409", "ai.candidate.target-mismatch", "AI candidate target mismatch");
         }

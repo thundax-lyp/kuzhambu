@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject;
+package com.thundax.kuzhambu.ai.application.discovery.result;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class KnowledgeAiExtractionResult {
+public class DiscoveryAiInvokeResult {
     private Long callId;
     private Long candidateId;
     private String status;

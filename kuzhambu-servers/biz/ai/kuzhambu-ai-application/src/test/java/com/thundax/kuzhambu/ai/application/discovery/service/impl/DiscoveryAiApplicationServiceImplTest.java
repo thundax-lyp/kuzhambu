@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.thundax.kuzhambu.ai.application.discovery.command.DiscoveryAiCommand;
+import com.thundax.kuzhambu.ai.application.discovery.result.DiscoveryAiInvokeResult;
 import com.thundax.kuzhambu.ai.application.discovery.support.DiscoveryAiWorkerUsecaseResolver;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
@@ -13,8 +15,6 @@ import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.support.AiBusinessInvokeConfigResolver;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
-import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiRequest;
-import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiResult;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -30,7 +30,7 @@ class DiscoveryAiApplicationServiceImplTest {
         DiscoveryAiApplicationServiceImpl service =
                 new DiscoveryAiApplicationServiceImpl(invocationService, resolver, null);
 
-        DiscoveryAiResult result = service.understandQuery(request(false));
+        DiscoveryAiInvokeResult result = service.understandQuery(command(false));
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertNotNull(result);
@@ -53,7 +53,8 @@ class DiscoveryAiApplicationServiceImplTest {
                 new DiscoveryAiApplicationServiceImpl(invocationService, resolver, null);
         List<String> deltas = new ArrayList<>();
 
-        DiscoveryAiResult result = service.streamAnswer(request(false), event -> deltas.add(event.getDeltaText()));
+        DiscoveryAiInvokeResult result =
+                service.streamAnswer(command(false), event -> deltas.add(event.getDeltaText()));
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertNotNull(result);
@@ -75,7 +76,7 @@ class DiscoveryAiApplicationServiceImplTest {
         DiscoveryAiApplicationServiceImpl service =
                 new DiscoveryAiApplicationServiceImpl(invocationService, resolver, null);
 
-        DiscoveryAiResult result = service.generateAnswer(request(false));
+        DiscoveryAiInvokeResult result = service.generateAnswer(command(false));
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertNotNull(result);
@@ -97,7 +98,7 @@ class DiscoveryAiApplicationServiceImplTest {
         DiscoveryAiApplicationServiceImpl service =
                 new DiscoveryAiApplicationServiceImpl(invocationService, resolver, null);
 
-        DiscoveryAiResult result = service.generateAnswer(request(false));
+        DiscoveryAiInvokeResult result = service.generateAnswer(command(false));
 
         assertNotNull(result);
         assertEquals(101L, result.getCallId());
@@ -112,15 +113,15 @@ class DiscoveryAiApplicationServiceImplTest {
         CapturingBusinessInvokeConfigResolver businessResolver = new CapturingBusinessInvokeConfigResolver();
         DiscoveryAiApplicationServiceImpl service =
                 new DiscoveryAiApplicationServiceImpl(invocationService, resolver, businessResolver);
-        DiscoveryAiRequest request = request(false);
-        request.setServiceId(null);
-        request.setServiceRole(null);
-        request.setModelId(null);
-        request.setModelName(null);
-        request.setPromptVersionId(null);
-        request.setPromptMessagesJson(null);
+        DiscoveryAiCommand command = command(false);
+        command.setServiceId(null);
+        command.setServiceRole(null);
+        command.setModelId(null);
+        command.setModelName(null);
+        command.setPromptVersionId(null);
+        command.setPromptMessagesJson(null);
 
-        service.understandQuery(request);
+        service.understandQuery(command);
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertEquals(capturedCommand, businessResolver.capturedCommand());
@@ -130,8 +131,8 @@ class DiscoveryAiApplicationServiceImplTest {
         assertEquals("[{\"role\":\"user\",\"content\":\"rendered\"}]", capturedCommand.getPromptMessagesJson());
     }
 
-    private DiscoveryAiRequest request(boolean stream) {
-        return new DiscoveryAiRequest(
+    private DiscoveryAiCommand command(boolean stream) {
+        return new DiscoveryAiCommand(
                 3L,
                 "discovery-portal",
                 10L,

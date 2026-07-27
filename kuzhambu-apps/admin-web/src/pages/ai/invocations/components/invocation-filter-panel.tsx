@@ -10,7 +10,7 @@ import {
     KuzhambuCard
 } from "@/components";
 
-import type { AiCallRecordPageQuery, AiInvocationSummaryQuery } from "../invocations-service";
+import type { AiInvocationLogPageQuery, AiInvocationSummaryQuery } from "../invocations-service";
 
 const { RangePicker } = DatePicker;
 const DATE_TIME_FORMAT = "YYYYMMDD HH:mm";
@@ -19,7 +19,7 @@ export type InvocationDateRangeValue = [Dayjs | null, Dayjs | null] | null;
 export type InvocationSummaryFilterValues = AiInvocationSummaryQuery & {
     period?: InvocationDateRangeValue;
 };
-export type InvocationCallsFilterValues = AiCallRecordPageQuery & {
+export type InvocationLogFilterValues = AiInvocationLogPageQuery & {
     requestedAt?: InvocationDateRangeValue;
 };
 
@@ -31,7 +31,7 @@ const STATUS_OPTIONS = [
 ];
 
 interface InvocationFilterPanelProps {
-    callsForm: FormInstance<InvocationCallsFilterValues>;
+    callsForm: FormInstance<InvocationLogFilterValues>;
     capabilityOptions: Array<{ label: string; value: string }>;
     summaryForm: FormInstance<InvocationSummaryFilterValues>;
     summaryInitialValues: InvocationSummaryFilterValues;

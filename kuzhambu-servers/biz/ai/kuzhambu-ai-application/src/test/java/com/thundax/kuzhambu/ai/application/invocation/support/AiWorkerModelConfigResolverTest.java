@@ -14,6 +14,7 @@ import com.thundax.kuzhambu.ai.domain.config.model.enums.AiApiSource;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiModelCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -132,7 +133,7 @@ class AiWorkerModelConfigResolverTest {
                 AiApiSource.OPENAI,
                 "https://api.example",
                 "encrypted",
-                "gpt-4o",
+                AiModelName.of("gpt-4o"),
                 "GPT 4o",
                 List.of(AiModelCapability.TEXT2TEXT),
                 "{}",

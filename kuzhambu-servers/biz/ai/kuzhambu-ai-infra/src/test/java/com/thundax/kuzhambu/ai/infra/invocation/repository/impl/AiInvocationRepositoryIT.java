@@ -7,11 +7,23 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCallRecord;
+import com.thundax.kuzhambu.ai.domain.batch.model.valueobject.AiBatchJobId;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiCandidateStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiPromptVersionId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjectId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
-import com.thundax.kuzhambu.ai.infra.invocation.persistence.dataobject.AiCallRecordDO;
 import com.thundax.kuzhambu.ai.infra.invocation.persistence.dataobject.AiCandidateDO;
+import com.thundax.kuzhambu.ai.infra.invocation.persistence.dataobject.AiInvocationLogDO;
 import com.thundax.kuzhambu.ai.infra.invocation.persistence.mapper.AiInvocationMapper;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.io.IOException;
@@ -29,56 +41,55 @@ class AiInvocationRepositoryIT {
     void schemaSqlShouldDeclareInvocationPersistenceObjects() throws IOException {
         String schemaSql = readRequiredSql("db/schema/ai.sql");
 
-        assertTrue(schemaSql.contains("CREATE TABLE IF NOT EXISTS `ai_call_record`"));
+        assertTrue(schemaSql.contains("CREATE TABLE IF NOT EXISTS `ai_invocation_log`"));
         assertTrue(schemaSql.contains("CREATE TABLE IF NOT EXISTS `ai_candidate`"));
-        assertTrue(schemaSql.contains("UNIQUE KEY `uk_ai_call_record_id`"));
+        assertTrue(schemaSql.contains("UNIQUE KEY `uk_ai_invocation_log_id`"));
         assertTrue(schemaSql.contains("`failure_stage`"));
         assertTrue(schemaSql.contains("`result_format`"));
         assertTrue(schemaSql.contains("`result_payload`"));
         assertTrue(schemaSql.contains("`artifact_reference_json`"));
         assertTrue(schemaSql.contains("`rejected_at`"));
-        assertTrue(schemaSql.contains("KEY `idx_ai_call_record_trace`"));
+        assertTrue(schemaSql.contains("KEY `idx_ai_invocation_log_trace`"));
         assertTrue(schemaSql.contains("KEY `idx_ai_candidate_target`"));
     }
 
     @Test
-    void repositoryShouldMapCallRecordWritesAndReads() {
+    void repositoryShouldMapInvocationLogWritesAndReads() {
         AiInvocationMapper mapper = mock(AiInvocationMapper.class);
         AiInvocationRepositoryImpl repository = new AiInvocationRepositoryImpl(mapper);
         Instant requestedAt = Instant.parse("2026-01-05T00:00:00Z");
-        AiCallRecord record = new AiCallRecord();
-        record.setCallId(7001L);
-        record.setBatchId(8001L);
-        record.setScope("classics");
-        record.setCapability("translate");
-        record.setContentType("ENTRY");
-        record.setContentId(9001L);
-        record.setObjectId(9101L);
-        record.setServiceId(1001L);
-        record.setServiceRole("PRIMARY");
-        record.setModelId(2001L);
-        record.setModelName("gpt-test");
-        record.setPromptVersionId(5001L);
-        record.setRequestId("req-1");
-        record.setTraceId("trace-1");
-        record.setStatus("SUCCEEDED");
-        record.setStreamUsed(true);
-        record.setStreamCompleted(true);
-        record.setFallbackUsed(false);
-        record.setFailureStage("WORKER_RESULT");
-        record.setResultFormat("TEXT");
-        record.setResultPayload("译文内容");
-        record.setArtifactReferenceJson("{\"artifact\":\"s3://ai/call/7001.json\"}");
-        record.setUsage(new AiUsageSnapshot(120, 10, 20, new BigDecimal("0.01")));
-        record.setWarningsJson("[]");
-        record.setRequestedAt(requestedAt);
-        record.setCompletedAt(requestedAt);
+        AiInvocationLog invocationLog = new AiInvocationLog();
+        invocationLog.setCallId(AiCallId.of(7001L));
+        invocationLog.setBatchId(AiBatchJobId.of(8001L));
+        invocationLog.setScope("classics");
+        invocationLog.setCapability(AiBusinessCapability.CLASSICS_TRANSLATE);
+        invocationLog.setContentRef(AiContentRef.of("ENTRY", 9001L));
+        invocationLog.setTargetObjectId(AiTargetObjectId.of(9101L));
+        invocationLog.setServiceId(1001L);
+        invocationLog.setServiceRole("PRIMARY");
+        invocationLog.setModelId(new AiModelId(2001L));
+        invocationLog.setModelName(AiModelName.of("gpt-test"));
+        invocationLog.setPromptVersionId(new PromptVersionId(5001L));
+        invocationLog.setRequestId("req-1");
+        invocationLog.setTraceId("trace-1");
+        invocationLog.setStatus(AiInvocationStatus.SUCCEEDED);
+        invocationLog.setStreamUsed(true);
+        invocationLog.setStreamCompleted(true);
+        invocationLog.setFallbackUsed(false);
+        invocationLog.setFailureStage("WORKER_RESULT");
+        invocationLog.setResultFormat("TEXT");
+        invocationLog.setResultPayload("译文内容");
+        invocationLog.setArtifactReferenceJson("{\"artifact\":\"s3://ai/call/7001.json\"}");
+        invocationLog.setUsage(new AiUsageSnapshot(120, 10, 20, new BigDecimal("0.01")));
+        invocationLog.setWarningsJson("[]");
+        invocationLog.setRequestedAt(requestedAt);
+        invocationLog.setCompletedAt(requestedAt);
 
-        Long callId = repository.insertCallRecord(record);
+        Long callId = repository.insertInvocationLog(invocationLog);
 
-        ArgumentCaptor<AiCallRecordDO> callCaptor = ArgumentCaptor.forClass(AiCallRecordDO.class);
+        ArgumentCaptor<AiInvocationLogDO> callCaptor = ArgumentCaptor.forClass(AiInvocationLogDO.class);
         verify(mapper).insert(callCaptor.capture());
-        AiCallRecordDO savedCall = callCaptor.getValue();
+        AiInvocationLogDO savedCall = callCaptor.getValue();
         assertEquals(7001L, callId);
         assertEquals("classics", savedCall.getScope());
         assertEquals(10, savedCall.getInputTokens());
@@ -89,7 +100,7 @@ class AiInvocationRepositoryIT {
         assertEquals("{\"artifact\":\"s3://ai/call/7001.json\"}", savedCall.getArtifactReferenceJson());
 
         when(mapper.selectOne(any())).thenReturn(savedCall);
-        AiCallRecord loadedRecord = repository.getCallRecord(7001L);
+        AiInvocationLog loadedRecord = repository.getInvocationLog(7001L);
 
         assertEquals("trace-1", loadedRecord.getTraceId());
         assertEquals(20, loadedRecord.getUsage().getOutputTokens());
@@ -103,22 +114,21 @@ class AiInvocationRepositoryIT {
         AiInvocationRepositoryImpl repository = new AiInvocationRepositoryImpl(mapper);
         Instant requestedAt = Instant.parse("2026-01-06T00:00:00Z");
         AiCandidate candidate = new AiCandidate();
-        candidate.setCandidateId(7101L);
-        candidate.setCallId(7001L);
-        candidate.setBatchId(8001L);
-        candidate.setCapability("translate");
-        candidate.setContentType("ENTRY");
-        candidate.setContentId(9001L);
-        candidate.setObjectId(9101L);
+        candidate.setId(AiCandidateId.of(7101L));
+        candidate.setCallId(AiCallId.of(7001L));
+        candidate.setBatchId(AiBatchJobId.of(8001L));
+        candidate.setCapability(AiBusinessCapability.CLASSICS_TRANSLATE);
+        candidate.setContentRef(AiContentRef.of("ENTRY", 9001L));
+        candidate.setTargetObjectId(AiTargetObjectId.of(9101L));
         candidate.setArtifactReferenceJson("{\"artifact\":\"s3://ai/candidate/7101.json\"}");
         candidate.setResultFormat("json");
         candidate.setResultPayload("{\"title\":\"ok\"}");
         candidate.setFailureStage("SCHEMA_CHECK");
         candidate.setErrorType("WARN");
         candidate.setErrorMessage("临时校验警告");
-        candidate.setStatus("REJECTED");
-        candidate.setPromptVersionId(5001L);
-        candidate.setModelName("gpt-test");
+        candidate.setStatus(AiCandidateStatus.REJECTED);
+        candidate.setPromptVersionId(AiPromptVersionId.of(5001L));
+        candidate.setModelName(AiModelName.of("gpt-test"));
         candidate.setRequestedAt(requestedAt);
         candidate.setRejectedAt(requestedAt);
 
@@ -128,6 +138,7 @@ class AiInvocationRepositoryIT {
         verify(mapper).insertCandidate(candidateCaptor.capture());
         AiCandidateDO savedCandidate = candidateCaptor.getValue();
         assertEquals(7101L, candidateId);
+        assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE.value(), savedCandidate.getCapability());
         assertEquals("{\"artifact\":\"s3://ai/candidate/7101.json\"}", savedCandidate.getArtifactReferenceJson());
         assertEquals("json", savedCandidate.getResultFormat());
         assertEquals("REJECTED", savedCandidate.getStatus());
@@ -136,28 +147,29 @@ class AiInvocationRepositoryIT {
         assertEquals(requestedAt, savedCandidate.getRejectedAt());
 
         when(mapper.selectCandidate(7101L)).thenReturn(savedCandidate);
-        when(mapper.selectCandidates("ENTRY", 9001L, null, "translate", "REJECTED"))
+        when(mapper.selectCandidates("ENTRY", 9001L, null, AiBusinessCapability.CLASSICS_TRANSLATE.value(), "REJECTED"))
                 .thenReturn(List.of(savedCandidate));
         AiCandidate loadedCandidate = repository.getCandidate(7101L);
-        List<AiCandidate> loadedCandidates = repository.listCandidates("ENTRY", 9001L, null, "translate", "REJECTED");
+        List<AiCandidate> loadedCandidates = repository.listCandidates(
+                "ENTRY", 9001L, null, AiBusinessCapability.CLASSICS_TRANSLATE.value(), "REJECTED");
 
         assertEquals("{\"title\":\"ok\"}", loadedCandidate.getResultPayload());
         assertEquals("SCHEMA_CHECK", loadedCandidate.getFailureStage());
-        assertEquals("REJECTED", loadedCandidate.getStatus());
+        assertEquals(AiCandidateStatus.REJECTED, loadedCandidate.getStatus());
         assertEquals(1, loadedCandidates.size());
-        assertEquals(7101L, loadedCandidates.get(0).getCandidateId());
+        assertEquals(7101L, loadedCandidates.get(0).getId().value());
     }
 
     @Test
-    void repositoryShouldPageCallRecordsWithFilters() {
+    void repositoryShouldPageInvocationLogsWithFilters() {
         AiInvocationMapper mapper = mock(AiInvocationMapper.class);
         AiInvocationRepositoryImpl repository = new AiInvocationRepositoryImpl(mapper);
         Instant start = Instant.parse("2026-01-01T00:00:00Z");
         Instant end = Instant.parse("2026-01-02T00:00:00Z");
-        AiCallRecordDO dataObject = new AiCallRecordDO();
+        AiInvocationLogDO dataObject = new AiInvocationLogDO();
         dataObject.setCallId(7002L);
         dataObject.setScope("classics");
-        dataObject.setCapability("summary");
+        dataObject.setCapability(AiBusinessCapability.CLASSICS_SUMMARY.value());
         dataObject.setContentType("SANCAI_ENTRY");
         dataObject.setContentId(9002L);
         dataObject.setStatus("SUCCEEDED");
@@ -166,10 +178,10 @@ class AiInvocationRepositoryIT {
         dataObject.setFallbackUsed(false);
         dataObject.setRequestedAt(start);
 
-        when(mapper.countCallRecords(
+        when(mapper.countInvocationLogs(
                         "classics", "summary", "SANCAI_ENTRY", 9002L, "SUCCEEDED", "PRIMARY", "gpt", false, start, end))
                 .thenReturn(1L);
-        when(mapper.selectCallRecordsPage(
+        when(mapper.selectInvocationLogsPage(
                         "classics",
                         "summary",
                         "SANCAI_ENTRY",
@@ -184,34 +196,34 @@ class AiInvocationRepositoryIT {
                         20))
                 .thenReturn(List.of(dataObject));
 
-        PageResult<AiCallRecord> page = repository.pageCallRecords(
+        PageResult<AiInvocationLog> page = repository.pageInvocationLogs(
                 "classics", "summary", "SANCAI_ENTRY", 9002L, "SUCCEEDED", "PRIMARY", "gpt", false, start, end, 2, 20);
 
         assertEquals(2, page.getPageNo());
         assertEquals(20, page.getPageSize());
         assertEquals(1L, page.getTotalCount());
         assertEquals(1, page.getRecords().size());
-        assertEquals(7002L, page.getRecords().get(0).getCallId());
+        assertEquals(7002L, page.getRecords().get(0).getCallId().value());
     }
 
     @Test
-    void repositoryShouldListCallRecordsForSummaryWithFilters() {
+    void repositoryShouldListInvocationLogsForSummaryWithFilters() {
         AiInvocationMapper mapper = mock(AiInvocationMapper.class);
         AiInvocationRepositoryImpl repository = new AiInvocationRepositoryImpl(mapper);
         Instant start = Instant.parse("2026-01-01T00:00:00Z");
         Instant end = Instant.parse("2026-01-02T00:00:00Z");
-        AiCallRecordDO dataObject = new AiCallRecordDO();
+        AiInvocationLogDO dataObject = new AiInvocationLogDO();
         dataObject.setCallId(7003L);
-        dataObject.setCapability("tags");
+        dataObject.setCapability(AiBusinessCapability.CLASSICS_TAG_EXTRACT.value());
 
-        when(mapper.selectCallRecordsForSummary("classics", "tags", "BACKUP", start, end))
+        when(mapper.selectInvocationLogsForSummary("classics", "tags", "BACKUP", start, end))
                 .thenReturn(List.of(dataObject));
 
-        List<AiCallRecord> records = repository.listCallRecords("classics", "tags", "BACKUP", start, end);
+        List<AiInvocationLog> records = repository.listInvocationLogs("classics", "tags", "BACKUP", start, end);
 
         assertEquals(1, records.size());
-        assertEquals(7003L, records.get(0).getCallId());
-        assertEquals("tags", records.get(0).getCapability());
+        assertEquals(7003L, records.get(0).getCallId().value());
+        assertEquals(AiBusinessCapability.CLASSICS_TAG_EXTRACT, records.get(0).getCapability());
     }
 
     private static String readRequiredSql(String path) throws IOException {

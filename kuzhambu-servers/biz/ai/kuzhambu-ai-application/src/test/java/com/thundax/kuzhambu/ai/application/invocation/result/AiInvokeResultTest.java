@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjectId;
 import org.junit.jupiter.api.Test;
 
 class AiInvokeResultTest {
@@ -30,22 +33,21 @@ class AiInvokeResultTest {
         result.setErrorMessage("bad");
         result.setStreamCompleted(true);
 
-        AiCandidate candidate = result.toCandidate(command, 100L);
+        AiCandidate candidate = result.toCandidate(command, AiCallId.of(100L));
 
-        assertEquals(100L, candidate.getCallId());
-        assertEquals(1L, candidate.getBatchId());
-        assertEquals(AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE.value(), candidate.getCapability());
-        assertEquals("SANCAI_ENTRY", candidate.getContentType());
-        assertEquals(10L, candidate.getContentId());
-        assertEquals(20L, candidate.getObjectId());
+        assertEquals(100L, candidate.getCallId().value());
+        assertEquals(1L, candidate.getBatchId().value());
+        assertEquals(AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE, candidate.getCapability());
+        assertEquals(AiContentRef.of("SANCAI_ENTRY", 10L), candidate.getContentRef());
+        assertEquals(AiTargetObjectId.of(20L), candidate.getTargetObjectId());
         assertEquals("MARKDOWN", candidate.getResultFormat());
         assertEquals("image-analysis-body", candidate.getResultPayload());
         assertEquals("{\"downloadPath\":\"artifact-1\"}", candidate.getArtifactReferenceJson());
         assertEquals("WORKER_PROTOCOL_FAILURE", candidate.getFailureStage());
         assertEquals("ERR", candidate.getErrorType());
         assertEquals("bad", candidate.getErrorMessage());
-        assertEquals(30L, candidate.getPromptVersionId());
-        assertEquals("model-a", candidate.getModelName());
+        assertEquals(30L, candidate.getPromptVersionId().value());
+        assertEquals("model-a", candidate.getModelName().value());
     }
 
     @Test
@@ -65,7 +67,7 @@ class AiInvokeResultTest {
         result.setResultFormat("TEXT");
         result.setResultPayload("bad-payload");
 
-        AiCandidate candidate = result.toCandidate(command, 100L);
+        AiCandidate candidate = result.toCandidate(command, AiCallId.of(100L));
 
         assertEquals("WORKER_RESULT", candidate.getFailureStage());
         assertEquals("WORKER_PROTOCOL_FAILURE", candidate.getErrorType());

@@ -169,7 +169,7 @@ class AiRefinementApplicationServiceImplTest {
         assertEquals(CAPABILITY_IMAGE_ANALYSIS, capturedCommand.getCapability());
         assertEquals(true, capturedCommand.isStream());
         assertEquals(true, capturedCommand.isCreateCandidate());
-        assertEquals(true, capturedCommand.toRunningCallRecord().isStreamUsed());
+        assertEquals(true, capturedCommand.toRunningInvocationLog().isStreamUsed());
         assertEquals(true, invocationService.streamInvoked());
     }
 

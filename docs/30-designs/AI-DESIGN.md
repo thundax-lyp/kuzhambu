@@ -32,7 +32,7 @@ Workers 不拥有 AI 配置、提示词、调用记录或候选结果。Classics
 - `PromptVersion`
 - `PromptVariable`
 - `AiActionStatus`
-- `AiCallRecord`
+- `AiInvocationLog`
 - `AiCandidate`
 - `AiBatchJob`
 - `ImageUnderstandingResult`
@@ -55,7 +55,7 @@ Workers 不拥有 AI 配置、提示词、调用记录或候选结果。Classics
 - `ai_prompt_version`
 - `ai_prompt_variable`
 - `ai_action_status`
-- `ai_call_record`
+- `ai_invocation_log`
 - `ai_candidate`
 - `ai_batch_job`
 - `ai_image_understanding`
@@ -89,7 +89,7 @@ AI 候选记录固定补充以下字段口径：
 排序字段规则：
 
 - `ai_prompt_variable.priority` 和 `ai_entry_split_candidate.priority` 表达 AI 域内可信的后端内部全局排序权重，不表示父级对象内的第几个位置。
-- 该值必须全局唯一；不同 `template_id` 或不同 `candidate_id` 下也不得复用同一个 `priority`。
+- 该值必须全局唯一；不同 `template_id` 或不同候选结果 ID 下也不得复用同一个 `priority`。
 - 查询仍可按父级过滤后使用 `priority asc` 展示局部列表，但排序权重的分配、去重和冲突处理以全局唯一为准。
 - 前端协议不得读写 `priority`；排序时只提交对象 ID 顺序，由后端在事务内交换或重算内部排序权重。
 
@@ -107,8 +107,8 @@ Application 层负责模型能力校验、提示词变量校验、主备切换�
 
 Knowledge 抽取协作语义：
 
-- `KnowledgeAiExtractionDomainService` 提供 `extractRelations`、`extractGraph`、`extractLineage` 三个明确业务动作。
-- AI application 把 Knowledge 业务动作解析为稳定的 `operation + capability + workerPath`，并统一写入 `ai_call_record` 与 `ai_candidate`。
+- `KnowledgeAiExtractionApplicationService` 提供 `extractRelations`、`extractGraph`、`extractLineage`、`extractTags` 四个明确业务动作。
+- AI application 把 Knowledge 业务动作解析为稳定的 `operation + capability + workerPath`，并统一写入 `ai_invocation_log` 与 `ai_candidate`。
 - `ai_candidate.result_payload` 是 Knowledge 抽取候选快照真相源；正式知识事实仍由 Knowledge 应用后写入。
 
 调用流程：
@@ -175,7 +175,7 @@ Admin Web 交互流程：
 7. AI application 保留业务 `capability` 作为业务配置、调用记录和候选归档字段，同时把本次调用映射为 workers canonical `workerCapability`，例如 `classics_summary -> summary`、`knowledge_graph_extract -> knowledge_graph`。
 8. AI application 把任务状态更新为 `RUNNING`，并以解析后的模型、提示词、参数和 `workerCapability` 开始本次 worker 调用。
 9. 对同步 capability，AI application 等待 worker JSON 完成，再统一写入：
-   - `ai_call_record`
+   - `ai_invocation_log`
    - `ai_candidate`
    - `ai_refinement_task.callId`
    - `ai_refinement_task.candidateId`
@@ -197,7 +197,7 @@ Admin Web 交互流程：
 
 1. 清理范围只包含 `ai_refinement_task`。
 2. 不清理：
-   - `ai_call_record`
+   - `ai_invocation_log`
    - `ai_candidate`
    - `ai_batch_job`
 3. 清理由 Java servers 计划任务执行，建议频率为每 `1` 小时一次。
@@ -213,7 +213,7 @@ Admin Web 交互流程：
    - 优先 `completedAt`
    - 若为空则取 `cancelledAt`
    - 若仍为空则回退 `requestedAt`
-8. 删除 `ai_refinement_task` 不得级联删除 `ai_call_record` 或 `ai_candidate`；调用记录和候选快照继续作为追踪真相源保留。
+8. 删除 `ai_refinement_task` 不得级联删除 `ai_invocation_log` 或 `ai_candidate`；调用记录和候选快照继续作为追踪真相源保留。
 9. Admin Web 轮询到已被清理的 `taskId` 时，Java 应返回稳定业务提示，例如“任务不存在或已过期清理”，而不是前端无限重试。
 
 前端 SSE 的适用边界：

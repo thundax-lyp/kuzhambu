@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.ai.application.batch.command.AiBatchJobCreateCommand
 import com.thundax.kuzhambu.ai.application.batch.result.AiBatchJobResult;
 import com.thundax.kuzhambu.ai.application.batch.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.domain.batch.model.entity.AiBatchJob;
+import com.thundax.kuzhambu.ai.domain.batch.model.enums.AiBatchJobStatus;
 import com.thundax.kuzhambu.ai.domain.batch.repository.AiBatchJobRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
@@ -15,8 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 @BizExceptionBoundary
 public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationService {
-
-    private static final String STATUS_CANCELLED = "CANCELLED";
 
     private final AiBatchJobRepository aiBatchJobRepository;
 
@@ -39,7 +38,7 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
     @Override
     public boolean canDispatchNextUnit(Long batchId) {
         AiBatchJob job = getRequired(batchId);
-        return !STATUS_CANCELLED.equals(job.getStatus())
+        return AiBatchJobStatus.CANCELLED != job.getStatus()
                 && job.getSuccessCount() + job.getFailedCount() + job.getCancelledCount() < job.getTotalCount();
     }
 
@@ -47,7 +46,7 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
     @Transactional(rollbackFor = Exception.class)
     public AiBatchJobResult recordSuccess(Long batchId) {
         AiBatchJob job = getRequired(batchId);
-        if (STATUS_CANCELLED.equals(job.getStatus())) {
+        if (AiBatchJobStatus.CANCELLED == job.getStatus()) {
             consumeCancelledSlot(job);
             if (job.getSuccessCount() + job.getFailedCount() < job.getTotalCount()) {
                 job.setSuccessCount(job.getSuccessCount() + 1);
@@ -64,7 +63,7 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
     public AiBatchJobResult recordFailure(Long batchId, String failureSummaryJson) {
         AiBatchJob job = getRequired(batchId);
         job.setFailureSummaryJson(failureSummaryJson);
-        if (STATUS_CANCELLED.equals(job.getStatus())) {
+        if (AiBatchJobStatus.CANCELLED == job.getStatus()) {
             consumeCancelledSlot(job);
             if (job.getSuccessCount() + job.getFailedCount() < job.getTotalCount()) {
                 job.setFailedCount(job.getFailedCount() + 1);

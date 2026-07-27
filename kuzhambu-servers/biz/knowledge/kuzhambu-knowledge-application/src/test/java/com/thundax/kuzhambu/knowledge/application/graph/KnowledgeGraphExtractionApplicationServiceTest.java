@@ -6,14 +6,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.DiscoveryAiStreamHandler;
-import com.thundax.kuzhambu.ai.facade.dto.AiCallRecordFacadeDto;
 import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
+import com.thundax.kuzhambu.ai.facade.dto.AiInvocationLogFacadeDto;
 import com.thundax.kuzhambu.ai.facade.request.AiBatchJobFailureFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.AiReportSummaryFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.CreateAiBatchJobFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
-import com.thundax.kuzhambu.ai.facade.request.GetAiCallRecordFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.GetAiCandidateFacadeRequest;
+import com.thundax.kuzhambu.ai.facade.request.GetAiInvocationLogFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.KnowledgeAiExtractionFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RejectAiCandidateFacadeRequest;
@@ -76,7 +76,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
             KnowledgeLineageRelationRepository knowledgeLineageRelationRepository,
             AiInvocationRepository aiInvocationRepository,
             AiBatchJobApplicationService aiBatchJobApplicationService,
-            KnowledgeAiExtractionDomainService knowledgeAiExtractionDomainService,
+            KnowledgeAiExtractionRepository knowledgeAiExtractionRepository,
             AiCandidateDomainService aiCandidateDomainService,
             KnowledgeGraphCandidateApplySupport candidateApplySupport) {
         return service(
@@ -89,7 +89,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 null,
                 aiInvocationRepository,
                 aiBatchJobApplicationService,
-                knowledgeAiExtractionDomainService,
+                knowledgeAiExtractionRepository,
                 aiCandidateDomainService,
                 candidateApplySupport);
     }
@@ -104,7 +104,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
             RefinementTaskRepository refinementTaskRepository,
             AiInvocationRepository aiInvocationRepository,
             AiBatchJobApplicationService aiBatchJobApplicationService,
-            KnowledgeAiExtractionDomainService knowledgeAiExtractionDomainService,
+            KnowledgeAiExtractionRepository knowledgeAiExtractionRepository,
             AiCandidateDomainService aiCandidateDomainService,
             KnowledgeGraphCandidateApplySupport candidateApplySupport) {
         return new KnowledgeGraphExtractionApplicationServiceImpl(
@@ -118,7 +118,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeAiFacade(
                         aiInvocationRepository,
                         aiBatchJobApplicationService,
-                        knowledgeAiExtractionDomainService,
+                        knowledgeAiExtractionRepository,
                         aiCandidateDomainService),
                 candidateApplySupport);
     }
@@ -126,7 +126,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     @Test
     void requestRelationExtractionShouldPersistTaskAndSyncAiResult() {
         FakeRepository repository = new FakeRepository();
-        FakeKnowledgeAiExtractionDomainService aiService = new FakeKnowledgeAiExtractionDomainService();
+        FakeKnowledgeAiExtractionRepository aiService = new FakeKnowledgeAiExtractionRepository();
         KnowledgeGraphExtractionApplicationServiceImpl service = service(
                 repository,
                 new FakeGraphVersionRepository(),
@@ -154,7 +154,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     @Test
     void requestRelationExtractionShouldCreateBatchTasksWhenSelectionScopeContainsManyTargets() {
         FakeRepository repository = new FakeRepository();
-        FakeKnowledgeAiExtractionDomainService aiService = new FakeKnowledgeAiExtractionDomainService();
+        FakeKnowledgeAiExtractionRepository aiService = new FakeKnowledgeAiExtractionRepository();
         FakeAiBatchJobApplicationService batchService = new FakeAiBatchJobApplicationService();
         KnowledgeGraphExtractionApplicationServiceImpl service = service(
                 repository,
@@ -207,7 +207,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
                 new FakeAiBatchJobApplicationService(),
-                new FakeKnowledgeAiExtractionDomainService(),
+                new FakeKnowledgeAiExtractionRepository(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
         RequestRelationExtractionCommand command = relationCommand();
@@ -221,7 +221,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     @Test
     void requestGraphExtractionShouldAllowMissingModelBeforeAiResolverFillsIt() {
         FakeRepository repository = new FakeRepository();
-        FakeKnowledgeAiExtractionDomainService aiService = new FakeKnowledgeAiExtractionDomainService();
+        FakeKnowledgeAiExtractionRepository aiService = new FakeKnowledgeAiExtractionRepository();
         KnowledgeGraphExtractionApplicationServiceImpl service = service(
                 repository,
                 new FakeGraphVersionRepository(),
@@ -284,7 +284,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
                 batchService,
-                new FakeKnowledgeAiExtractionDomainService(),
+                new FakeKnowledgeAiExtractionRepository(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
@@ -326,7 +326,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         sourceTask.setForceJson(Boolean.TRUE);
         sourceTask.setLocale("zh-CN");
         repository.tasks.add(sourceTask);
-        FakeKnowledgeAiExtractionDomainService aiService = new FakeKnowledgeAiExtractionDomainService();
+        FakeKnowledgeAiExtractionRepository aiService = new FakeKnowledgeAiExtractionRepository();
         FakeAiBatchJobApplicationService batchService = new FakeAiBatchJobApplicationService();
         KnowledgeGraphExtractionApplicationServiceImpl service = service(
                 repository,
@@ -391,7 +391,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
                 new FakeAiBatchJobApplicationService(),
-                new FakeKnowledgeAiExtractionDomainService(),
+                new FakeKnowledgeAiExtractionRepository(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
@@ -429,7 +429,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
                 null,
-                new FakeKnowledgeAiExtractionDomainService(),
+                new FakeKnowledgeAiExtractionRepository(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
@@ -454,9 +454,9 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         task.setAiCandidateId(902L);
         repository.tasks.add(task);
         FakeAiInvocationRepository aiInvocationRepository = new FakeAiInvocationRepository();
-        aiInvocationRepository.callRecord.setCallId(901L);
-        aiInvocationRepository.callRecord.setStatus("SUCCEEDED");
-        aiInvocationRepository.callRecord.setCompletedAt(Instant.parse("2026-06-23T00:00:00Z"));
+        aiInvocationRepository.invocationLog.setCallId(901L);
+        aiInvocationRepository.invocationLog.setStatus("SUCCEEDED");
+        aiInvocationRepository.invocationLog.setCompletedAt(Instant.parse("2026-06-23T00:00:00Z"));
         aiInvocationRepository.candidate.setCandidateId(902L);
         aiInvocationRepository.candidate.setAppliedAt(Instant.parse("2026-06-23T00:01:00Z"));
         KnowledgeGraphExtractionApplicationServiceImpl service = service(
@@ -468,7 +468,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageRelationRepository(),
                 aiInvocationRepository,
                 null,
-                new FakeKnowledgeAiExtractionDomainService(),
+                new FakeKnowledgeAiExtractionRepository(),
                 new AiCandidateDomainService(aiInvocationRepository),
                 null);
 
@@ -502,7 +502,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
                 null,
-                new FakeKnowledgeAiExtractionDomainService(),
+                new FakeKnowledgeAiExtractionRepository(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
@@ -537,7 +537,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
                 null,
-                new FakeKnowledgeAiExtractionDomainService(),
+                new FakeKnowledgeAiExtractionRepository(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
@@ -592,7 +592,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 refinementTaskRepository,
                 new FakeAiInvocationRepository(),
                 null,
-                new FakeKnowledgeAiExtractionDomainService(),
+                new FakeKnowledgeAiExtractionRepository(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
@@ -628,7 +628,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
                 null,
-                new FakeKnowledgeAiExtractionDomainService(),
+                new FakeKnowledgeAiExtractionRepository(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
@@ -662,7 +662,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
                 null,
-                new FakeKnowledgeAiExtractionDomainService(),
+                new FakeKnowledgeAiExtractionRepository(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
@@ -696,7 +696,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
                 null,
-                new FakeKnowledgeAiExtractionDomainService(),
+                new FakeKnowledgeAiExtractionRepository(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
@@ -730,7 +730,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
                 null,
-                new FakeKnowledgeAiExtractionDomainService(),
+                new FakeKnowledgeAiExtractionRepository(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
@@ -764,7 +764,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
                 null,
-                new FakeKnowledgeAiExtractionDomainService(),
+                new FakeKnowledgeAiExtractionRepository(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
@@ -798,7 +798,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageRelationRepository(),
                 new FakeAiInvocationRepository(),
                 null,
-                new FakeKnowledgeAiExtractionDomainService(),
+                new FakeKnowledgeAiExtractionRepository(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
@@ -833,7 +833,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 knowledgeLineageRelationRepository,
                 new FakeAiInvocationRepository(),
                 null,
-                new FakeKnowledgeAiExtractionDomainService(),
+                new FakeKnowledgeAiExtractionRepository(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
@@ -869,7 +869,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 knowledgeLineageRelationRepository,
                 new FakeAiInvocationRepository(),
                 null,
-                new FakeKnowledgeAiExtractionDomainService(),
+                new FakeKnowledgeAiExtractionRepository(),
                 new AiCandidateDomainService(new FakeAiInvocationRepository()),
                 null);
 
@@ -908,7 +908,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                 new FakeKnowledgeLineageRelationRepository(),
                 aiInvocationRepository,
                 null,
-                new FakeKnowledgeAiExtractionDomainService(),
+                new FakeKnowledgeAiExtractionRepository(),
                 new AiCandidateDomainService(aiInvocationRepository),
                 candidateApplySupport);
 
@@ -1010,7 +1010,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     @Setter
     @NoArgsConstructor
     @AllArgsConstructor
-    private static final class AiCallRecord {
+    private static final class AiInvocationLog {
         private Long callId;
         private Long batchId;
         private String scope;
@@ -1060,13 +1060,13 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     }
 
     private interface AiInvocationRepository {
-        AiCallRecord getCallRecord(Long callId);
+        AiInvocationLog getInvocationLog(Long callId);
 
-        Long saveCallRecord(AiCallRecord callRecord);
+        Long saveInvocationLog(AiInvocationLog invocationLog);
 
-        int updateCallRecord(AiCallRecord callRecord);
+        int updateInvocationLog(AiInvocationLog invocationLog);
 
-        List<AiCallRecord> listCallRecords(Instant requestedAtStart, Instant requestedAtEnd);
+        List<AiInvocationLog> listInvocationLogs(Instant requestedAtStart, Instant requestedAtEnd);
 
         AiCandidate getCandidate(Long candidateId);
 
@@ -1176,7 +1176,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         private final String errorMessage;
     }
 
-    private interface KnowledgeAiExtractionDomainService {
+    private interface KnowledgeAiExtractionRepository {
         KnowledgeAiExtractionResult extractRelations(KnowledgeAiExtractionRequest request);
 
         KnowledgeAiExtractionResult extractGraph(KnowledgeAiExtractionRequest request);
@@ -1186,7 +1186,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         KnowledgeAiExtractionResult extractTags(KnowledgeAiExtractionRequest request);
     }
 
-    private static final class FakeKnowledgeAiExtractionDomainService implements KnowledgeAiExtractionDomainService {
+    private static final class FakeKnowledgeAiExtractionRepository implements KnowledgeAiExtractionRepository {
         private KnowledgeAiExtractionRequest lastRequest;
         private String lastTaskType;
 
@@ -1226,17 +1226,17 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     private static final class FakeAiFacade implements AiFacade {
         private final AiInvocationRepository aiInvocationRepository;
         private final AiBatchJobApplicationService aiBatchJobApplicationService;
-        private final KnowledgeAiExtractionDomainService knowledgeAiExtractionDomainService;
+        private final KnowledgeAiExtractionRepository knowledgeAiExtractionRepository;
         private final AiCandidateDomainService aiCandidateDomainService;
 
         private FakeAiFacade(
                 AiInvocationRepository aiInvocationRepository,
                 AiBatchJobApplicationService aiBatchJobApplicationService,
-                KnowledgeAiExtractionDomainService knowledgeAiExtractionDomainService,
+                KnowledgeAiExtractionRepository knowledgeAiExtractionRepository,
                 AiCandidateDomainService aiCandidateDomainService) {
             this.aiInvocationRepository = aiInvocationRepository;
             this.aiBatchJobApplicationService = aiBatchJobApplicationService;
-            this.knowledgeAiExtractionDomainService = knowledgeAiExtractionDomainService;
+            this.knowledgeAiExtractionRepository = knowledgeAiExtractionRepository;
             this.aiCandidateDomainService = aiCandidateDomainService;
         }
 
@@ -1265,33 +1265,33 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         public KnowledgeAiExtractionFacadeResponse extractKnowledgeRelations(
                 KnowledgeAiExtractionFacadeRequest request) {
             return toFacadeResponse(
-                    knowledgeAiExtractionDomainService == null
+                    knowledgeAiExtractionRepository == null
                             ? null
-                            : knowledgeAiExtractionDomainService.extractRelations(toLegacyRequest(request)));
+                            : knowledgeAiExtractionRepository.extractRelations(toLegacyRequest(request)));
         }
 
         @Override
         public KnowledgeAiExtractionFacadeResponse extractKnowledgeGraph(KnowledgeAiExtractionFacadeRequest request) {
             return toFacadeResponse(
-                    knowledgeAiExtractionDomainService == null
+                    knowledgeAiExtractionRepository == null
                             ? null
-                            : knowledgeAiExtractionDomainService.extractGraph(toLegacyRequest(request)));
+                            : knowledgeAiExtractionRepository.extractGraph(toLegacyRequest(request)));
         }
 
         @Override
         public KnowledgeAiExtractionFacadeResponse extractKnowledgeLineage(KnowledgeAiExtractionFacadeRequest request) {
             return toFacadeResponse(
-                    knowledgeAiExtractionDomainService == null
+                    knowledgeAiExtractionRepository == null
                             ? null
-                            : knowledgeAiExtractionDomainService.extractLineage(toLegacyRequest(request)));
+                            : knowledgeAiExtractionRepository.extractLineage(toLegacyRequest(request)));
         }
 
         @Override
         public KnowledgeAiExtractionFacadeResponse extractKnowledgeTags(KnowledgeAiExtractionFacadeRequest request) {
             return toFacadeResponse(
-                    knowledgeAiExtractionDomainService == null
+                    knowledgeAiExtractionRepository == null
                             ? null
-                            : knowledgeAiExtractionDomainService.extractTags(toLegacyRequest(request)));
+                            : knowledgeAiExtractionRepository.extractTags(toLegacyRequest(request)));
         }
 
         @Override
@@ -1340,9 +1340,11 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         }
 
         @Override
-        public AiCallRecordFacadeDto getCallRecord(GetAiCallRecordFacadeRequest request) {
-            return toCallRecordFacadeDto(
-                    aiInvocationRepository == null ? null : aiInvocationRepository.getCallRecord(request.getCallId()));
+        public AiInvocationLogFacadeDto getInvocationLog(GetAiInvocationLogFacadeRequest request) {
+            return toInvocationLogFacadeDto(
+                    aiInvocationRepository == null
+                            ? null
+                            : aiInvocationRepository.getInvocationLog(request.getCallId()));
         }
 
         @Override
@@ -1451,34 +1453,34 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                     .build();
         }
 
-        private AiCallRecordFacadeDto toCallRecordFacadeDto(AiCallRecord record) {
-            if (record == null) {
+        private AiInvocationLogFacadeDto toInvocationLogFacadeDto(AiInvocationLog invocationLog) {
+            if (invocationLog == null) {
                 return null;
             }
-            return AiCallRecordFacadeDto.builder()
-                    .callId(record.getCallId())
-                    .batchId(record.getBatchId())
-                    .scope(record.getScope())
-                    .capability(record.getCapability())
-                    .contentType(record.getContentType())
-                    .contentId(record.getContentId())
-                    .objectId(record.getObjectId())
-                    .serviceId(record.getServiceId())
-                    .serviceRole(record.getServiceRole())
-                    .modelId(record.getModelId())
-                    .modelName(record.getModelName())
-                    .promptVersionId(record.getPromptVersionId())
-                    .requestId(record.getRequestId())
-                    .traceId(record.getTraceId())
-                    .status(record.getStatus())
-                    .streamUsed(record.isStreamUsed())
-                    .streamCompleted(record.isStreamCompleted())
-                    .fallbackUsed(record.isFallbackUsed())
-                    .errorType(record.getErrorType())
-                    .errorMessage(record.getErrorMessage())
-                    .warningsJson(record.getWarningsJson())
-                    .requestedAt(record.getRequestedAt())
-                    .completedAt(record.getCompletedAt())
+            return AiInvocationLogFacadeDto.builder()
+                    .callId(invocationLog.getCallId())
+                    .batchId(invocationLog.getBatchId())
+                    .scope(invocationLog.getScope())
+                    .capability(invocationLog.getCapability())
+                    .contentType(invocationLog.getContentType())
+                    .contentId(invocationLog.getContentId())
+                    .objectId(invocationLog.getObjectId())
+                    .serviceId(invocationLog.getServiceId())
+                    .serviceRole(invocationLog.getServiceRole())
+                    .modelId(invocationLog.getModelId())
+                    .modelName(invocationLog.getModelName())
+                    .promptVersionId(invocationLog.getPromptVersionId())
+                    .requestId(invocationLog.getRequestId())
+                    .traceId(invocationLog.getTraceId())
+                    .status(invocationLog.getStatus())
+                    .streamUsed(invocationLog.isStreamUsed())
+                    .streamCompleted(invocationLog.isStreamCompleted())
+                    .fallbackUsed(invocationLog.isFallbackUsed())
+                    .errorType(invocationLog.getErrorType())
+                    .errorMessage(invocationLog.getErrorMessage())
+                    .warningsJson(invocationLog.getWarningsJson())
+                    .requestedAt(invocationLog.getRequestedAt())
+                    .completedAt(invocationLog.getCompletedAt())
                     .build();
         }
 
@@ -1988,26 +1990,29 @@ class KnowledgeGraphExtractionApplicationServiceTest {
     }
 
     private static final class FakeAiInvocationRepository implements AiInvocationRepository {
-        private final AiCallRecord callRecord = new AiCallRecord();
+        private final AiInvocationLog invocationLog = new AiInvocationLog();
         private final AiCandidate candidate = new AiCandidate();
 
         @Override
-        public AiCallRecord getCallRecord(Long callId) {
-            return callRecord.getCallId() != null && callRecord.getCallId().equals(callId) ? callRecord : null;
+        public AiInvocationLog getInvocationLog(Long callId) {
+            return invocationLog.getCallId() != null
+                            && invocationLog.getCallId().equals(callId)
+                    ? invocationLog
+                    : null;
         }
 
         @Override
-        public Long saveCallRecord(AiCallRecord callRecord) {
+        public Long saveInvocationLog(AiInvocationLog invocationLog) {
             return null;
         }
 
         @Override
-        public int updateCallRecord(AiCallRecord callRecord) {
+        public int updateInvocationLog(AiInvocationLog invocationLog) {
             return 0;
         }
 
         @Override
-        public List<AiCallRecord> listCallRecords(Instant requestedAtStart, Instant requestedAtEnd) {
+        public List<AiInvocationLog> listInvocationLogs(Instant requestedAtStart, Instant requestedAtEnd) {
             return List.of();
         }
 

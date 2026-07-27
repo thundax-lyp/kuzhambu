@@ -28,10 +28,10 @@ public final class AiInvocationResponses {
 
     @Getter
     @Builder
-    @Schema(name = "AiCallRecordResponse", description = "AI调用记录响应")
+    @Schema(name = "AiInvocationLogResponse", description = "AI调用记录响应")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class CallRecordResponse implements Serializable {
+    public static class InvocationLogResponse implements Serializable {
 
         @JsonProperty(value = "callId")
         private Long callId;
@@ -123,10 +123,10 @@ public final class AiInvocationResponses {
 
     @Getter
     @Builder
-    @Schema(name = "AiCallSummaryResponse", description = "AI调用统计响应")
+    @Schema(name = "AiInvocationSummaryResponse", description = "AI调用统计响应")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class CallSummaryResponse implements Serializable {
+    public static class InvocationSummaryResponse implements Serializable {
 
         @JsonProperty(value = "periodStart")
         private Instant periodStart;

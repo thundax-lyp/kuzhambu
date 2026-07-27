@@ -43,7 +43,7 @@ AI 运行时协议只接收业务调用意图和业务参数快照。模型选�
 
 - 查找第一个启用的 `ai_business_config`。
 - 选择当前 prompt template/version。
-- 写入 `ai_call_record.capability`。
+- 写入 `ai_invocation_log.capability`。
 - 写入 `ai_candidate.capability`。
 - 对前端、facade 和任务查询返回。
 

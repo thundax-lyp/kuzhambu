@@ -7,10 +7,10 @@ import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainServic
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.assembler.AiInvocationInterfaceAssembler;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.AiInvocationResponses.BatchJobResponse;
-import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.AiInvocationResponses.CallRecordResponse;
-import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.AiInvocationResponses.CallSummaryResponse;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.AiInvocationResponses.CandidateResponse;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.AiInvocationResponses.IdResponse;
+import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.AiInvocationResponses.InvocationLogResponse;
+import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.AiInvocationResponses.InvocationSummaryResponse;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
@@ -60,9 +60,9 @@ public class AiInvocationController {
     })
     @HasPermission(value = "ai:invocation:view")
     @SysLogger(value = "调用读取")
-    @PostMapping(value = "call/get")
-    public CallRecordResponse getCallRecord(@Valid @RequestBody AiInvocationRequests.CallIdRequest request) {
-        return AiInvocationInterfaceAssembler.toResponse(invocationRepository.getCallRecord(request.getCallId()));
+    @PostMapping(value = "invocation-log/get")
+    public InvocationLogResponse getInvocationLog(@Valid @RequestBody AiInvocationRequests.CallIdRequest request) {
+        return AiInvocationInterfaceAssembler.toResponse(invocationRepository.getInvocationLog(request.getCallId()));
     }
 
     @Operation(summary = "分页查询AI调用记录", description = "ai:invocation:view")
@@ -75,12 +75,12 @@ public class AiInvocationController {
     })
     @HasPermission(value = "ai:invocation:view")
     @SysLogger(value = "调用分页")
-    @PostMapping(value = "call/page")
-    public PageResponse<CallRecordResponse> pageCallRecords(
-            @Valid @RequestBody AiInvocationRequests.CallRecordPageRequest request) {
+    @PostMapping(value = "invocation-log/page")
+    public PageResponse<InvocationLogResponse> pageInvocationLogs(
+            @Valid @RequestBody AiInvocationRequests.InvocationLogPageRequest request) {
         PageQuery pageQuery = PageInterfaceAssembler.toPageQuery(request);
         return PageResponseHelper.fromPageResult(
-                invocationRepository.pageCallRecords(
+                invocationRepository.pageInvocationLogs(
                         request.getScope(),
                         request.getCapability(),
                         request.getContentType(),
@@ -106,13 +106,13 @@ public class AiInvocationController {
     })
     @HasPermission(value = "ai:invocation:view")
     @SysLogger(value = "调用统计")
-    @PostMapping(value = "call/summary")
-    public CallSummaryResponse summarizeCallRecords(
-            @Valid @RequestBody AiInvocationRequests.CallSummaryRequest request) {
+    @PostMapping(value = "invocation-log/summary")
+    public InvocationSummaryResponse summarizeInvocationLogs(
+            @Valid @RequestBody AiInvocationRequests.InvocationSummaryRequest request) {
         return AiInvocationInterfaceAssembler.toSummaryResponse(
                 request.getPeriodStart(),
                 request.getPeriodEnd(),
-                invocationRepository.listCallRecords(
+                invocationRepository.listInvocationLogs(
                         request.getScope(),
                         request.getCapability(),
                         request.getServiceRole(),

@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject;
+package com.thundax.kuzhambu.ai.application.discovery.command;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,13 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class KnowledgeAiExtractionRequest {
-    private String taskType;
-    private String scopeType;
-    private String scopeJson;
-    private String sourceContentType;
-    private Long sourceContentId;
-    private Long requestedBy;
+public class DiscoveryAiCommand {
     private Long serviceId;
     private String serviceRole;
     private Long modelId;
@@ -28,6 +22,7 @@ public class KnowledgeAiExtractionRequest {
     private String promptHash;
     private String inputPayloadJson;
     private String outputSchemaJson;
+    private boolean stream;
     private boolean forceJson;
     private String locale;
 }
