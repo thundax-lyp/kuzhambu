@@ -1,19 +1,19 @@
 package com.thundax.kuzhambu.ai.application.discovery.service;
 
+import com.thundax.kuzhambu.ai.application.discovery.command.DiscoveryAiCommand;
+import com.thundax.kuzhambu.ai.application.discovery.result.DiscoveryAiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
-import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiRequest;
-import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiResult;
 import java.util.function.Consumer;
 
 public interface DiscoveryAiApplicationService {
 
-    DiscoveryAiResult understandQuery(DiscoveryAiRequest request);
+    DiscoveryAiInvokeResult understandQuery(DiscoveryAiCommand command);
 
-    DiscoveryAiResult rewriteQuery(DiscoveryAiRequest request);
+    DiscoveryAiInvokeResult rewriteQuery(DiscoveryAiCommand command);
 
-    DiscoveryAiResult generateAnswer(DiscoveryAiRequest request);
+    DiscoveryAiInvokeResult generateAnswer(DiscoveryAiCommand command);
 
-    DiscoveryAiResult streamAnswer(DiscoveryAiRequest request);
+    DiscoveryAiInvokeResult streamAnswer(DiscoveryAiCommand command);
 
-    DiscoveryAiResult streamAnswer(DiscoveryAiRequest request, Consumer<AiStreamEventResult> eventConsumer);
+    DiscoveryAiInvokeResult streamAnswer(DiscoveryAiCommand command, Consumer<AiStreamEventResult> eventConsumer);
 }

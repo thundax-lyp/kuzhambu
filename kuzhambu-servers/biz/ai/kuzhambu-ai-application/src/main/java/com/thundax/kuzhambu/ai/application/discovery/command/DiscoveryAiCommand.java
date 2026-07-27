@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.ai.domain.discovery.model.valueobject;
+package com.thundax.kuzhambu.ai.application.discovery.command;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class DiscoveryAiRequest {
+public class DiscoveryAiCommand {
     private Long serviceId;
     private String serviceRole;
     private Long modelId;

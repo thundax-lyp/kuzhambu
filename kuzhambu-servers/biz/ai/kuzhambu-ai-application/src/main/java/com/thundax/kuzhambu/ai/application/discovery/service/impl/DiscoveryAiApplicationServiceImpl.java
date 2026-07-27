@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.ai.application.discovery.service.impl;
 
+import com.thundax.kuzhambu.ai.application.discovery.command.DiscoveryAiCommand;
+import com.thundax.kuzhambu.ai.application.discovery.result.DiscoveryAiInvokeResult;
 import com.thundax.kuzhambu.ai.application.discovery.service.DiscoveryAiApplicationService;
 import com.thundax.kuzhambu.ai.application.discovery.support.DiscoveryAiWorkerUsecaseResolver;
 import com.thundax.kuzhambu.ai.application.discovery.support.DiscoveryAiWorkerUsecaseSpec;
@@ -8,9 +10,6 @@ import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.support.AiBusinessInvokeConfigResolver;
-import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiRequest;
-import com.thundax.kuzhambu.ai.domain.discovery.model.valueobject.DiscoveryAiResult;
-import com.thundax.kuzhambu.ai.domain.discovery.service.DiscoveryAiDomainService;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import java.util.function.Consumer;
@@ -19,7 +18,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @BizExceptionBoundary
-public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplicationService, DiscoveryAiDomainService {
+public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplicationService {
 
     private static final String SCOPE_DISCOVERY = "discovery";
     private static final String CONTENT_TYPE_DISCOVERY_QUERY = "DISCOVERY_QUERY";
@@ -39,67 +38,69 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
     }
 
     @Override
-    public DiscoveryAiResult understandQuery(DiscoveryAiRequest request) {
-        return invoke(request, "DISCOVERY_QUERY_UNDERSTANDING", null);
+    public DiscoveryAiInvokeResult understandQuery(DiscoveryAiCommand command) {
+        return invoke(command, "DISCOVERY_QUERY_UNDERSTANDING", null);
     }
 
     @Override
-    public DiscoveryAiResult rewriteQuery(DiscoveryAiRequest request) {
-        return invoke(request, "DISCOVERY_QUERY_REWRITE", null);
+    public DiscoveryAiInvokeResult rewriteQuery(DiscoveryAiCommand command) {
+        return invoke(command, "DISCOVERY_QUERY_REWRITE", null);
     }
 
     @Override
-    public DiscoveryAiResult generateAnswer(DiscoveryAiRequest request) {
-        return invoke(request, "DISCOVERY_ANSWER_GENERATION", null);
+    public DiscoveryAiInvokeResult generateAnswer(DiscoveryAiCommand command) {
+        return invoke(command, "DISCOVERY_ANSWER_GENERATION", null);
     }
 
     @Override
-    public DiscoveryAiResult streamAnswer(DiscoveryAiRequest request) {
-        return streamAnswer(request, event -> {});
+    public DiscoveryAiInvokeResult streamAnswer(DiscoveryAiCommand command) {
+        return streamAnswer(command, event -> {});
     }
 
     @Override
-    public DiscoveryAiResult streamAnswer(DiscoveryAiRequest request, Consumer<AiStreamEventResult> eventConsumer) {
-        return invoke(request, "DISCOVERY_ANSWER_GENERATION_STREAM", eventConsumer);
+    public DiscoveryAiInvokeResult streamAnswer(
+            DiscoveryAiCommand command, Consumer<AiStreamEventResult> eventConsumer) {
+        return invoke(command, "DISCOVERY_ANSWER_GENERATION_STREAM", eventConsumer);
     }
 
-    private DiscoveryAiResult invoke(
-            DiscoveryAiRequest request, String usecase, Consumer<AiStreamEventResult> eventConsumer) {
-        validateRequest(request);
+    private DiscoveryAiInvokeResult invoke(
+            DiscoveryAiCommand command, String usecase, Consumer<AiStreamEventResult> eventConsumer) {
+        validateCommand(command);
         DiscoveryAiWorkerUsecaseSpec spec = resolver.resolve(usecase);
-        AiInvokeCommand command = toInvokeCommand(request, spec);
-        enrichBusinessInvokeConfig(command);
+        AiInvokeCommand invokeCommand = toInvokeCommand(command, spec);
+        enrichBusinessInvokeConfig(invokeCommand);
         AiInvokeResult result = spec.stream()
-                ? invocationApplicationService.stream(command, eventConsumer == null ? event -> {} : eventConsumer)
-                : invocationApplicationService.invoke(command);
-        return toDiscoveryResult(result);
+                ? invocationApplicationService.stream(
+                        invokeCommand, eventConsumer == null ? event -> {} : eventConsumer)
+                : invocationApplicationService.invoke(invokeCommand);
+        return toDiscoveryInvokeResult(result);
     }
 
-    private AiInvokeCommand toInvokeCommand(DiscoveryAiRequest request, DiscoveryAiWorkerUsecaseSpec spec) {
-        AiInvokeCommand command = new AiInvokeCommand();
-        command.setScope(SCOPE_DISCOVERY);
-        command.setCapability(spec.capability());
-        command.setWorkerCapability(spec.workerCapability());
-        command.setOperation(spec.operation());
-        command.setWorkerPath(spec.workerPath());
-        command.setContentType(CONTENT_TYPE_DISCOVERY_QUERY);
-        command.setServiceId(request.getServiceId());
-        command.setServiceRole(request.getServiceRole());
-        command.setModelId(request.getModelId());
-        command.setModelName(request.getModelName());
-        command.setPromptVersionId(request.getPromptVersionId());
-        command.setRequestId(request.getRequestId());
-        command.setTraceId(request.getTraceId());
-        command.setPromptMessagesJson(request.getPromptMessagesJson());
-        command.setPromptVariablesJson(request.getPromptVariablesJson());
-        command.setPromptHash(request.getPromptHash());
-        command.setInputPayloadJson(request.getInputPayloadJson());
-        command.setOutputSchemaJson(request.getOutputSchemaJson());
-        command.setStream(spec.stream() || request.isStream());
-        command.setForceJson(request.isForceJson());
-        command.setLocale(request.getLocale());
-        command.setCreateCandidate(false);
-        return command;
+    private AiInvokeCommand toInvokeCommand(DiscoveryAiCommand command, DiscoveryAiWorkerUsecaseSpec spec) {
+        AiInvokeCommand invokeCommand = new AiInvokeCommand();
+        invokeCommand.setScope(SCOPE_DISCOVERY);
+        invokeCommand.setCapability(spec.capability());
+        invokeCommand.setWorkerCapability(spec.workerCapability());
+        invokeCommand.setOperation(spec.operation());
+        invokeCommand.setWorkerPath(spec.workerPath());
+        invokeCommand.setContentType(CONTENT_TYPE_DISCOVERY_QUERY);
+        invokeCommand.setServiceId(command.getServiceId());
+        invokeCommand.setServiceRole(command.getServiceRole());
+        invokeCommand.setModelId(command.getModelId());
+        invokeCommand.setModelName(command.getModelName());
+        invokeCommand.setPromptVersionId(command.getPromptVersionId());
+        invokeCommand.setRequestId(command.getRequestId());
+        invokeCommand.setTraceId(command.getTraceId());
+        invokeCommand.setPromptMessagesJson(command.getPromptMessagesJson());
+        invokeCommand.setPromptVariablesJson(command.getPromptVariablesJson());
+        invokeCommand.setPromptHash(command.getPromptHash());
+        invokeCommand.setInputPayloadJson(command.getInputPayloadJson());
+        invokeCommand.setOutputSchemaJson(command.getOutputSchemaJson());
+        invokeCommand.setStream(spec.stream() || command.isStream());
+        invokeCommand.setForceJson(command.isForceJson());
+        invokeCommand.setLocale(command.getLocale());
+        invokeCommand.setCreateCandidate(false);
+        return invokeCommand;
     }
 
     private void enrichBusinessInvokeConfig(AiInvokeCommand command) {
@@ -109,12 +110,12 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
         businessInvokeConfigResolver.resolve(command);
     }
 
-    private void validateRequest(DiscoveryAiRequest request) {
-        if (request == null
-                || isBlank(request.getRequestId())
-                || isBlank(request.getTraceId())
-                || isBlank(request.getInputPayloadJson())) {
-            throw new BizException("Discovery AI request is incomplete");
+    private void validateCommand(DiscoveryAiCommand command) {
+        if (command == null
+                || isBlank(command.getRequestId())
+                || isBlank(command.getTraceId())
+                || isBlank(command.getInputPayloadJson())) {
+            throw new BizException("Discovery AI command is incomplete");
         }
     }
 
@@ -122,9 +123,9 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
         return value == null || value.trim().isEmpty();
     }
 
-    private DiscoveryAiResult toDiscoveryResult(AiInvokeResult result) {
+    private DiscoveryAiInvokeResult toDiscoveryInvokeResult(AiInvokeResult result) {
         if (result == null) {
-            return new DiscoveryAiResult(
+            return new DiscoveryAiInvokeResult(
                     null,
                     null,
                     "FAILED",
@@ -134,7 +135,7 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
                     "DISCOVERY_AI_RESULT_MISSING",
                     "Discovery AI result is missing");
         }
-        return new DiscoveryAiResult(
+        return new DiscoveryAiInvokeResult(
                 result.getCallId(),
                 result.getCandidateId(),
                 result.getStatus(),
