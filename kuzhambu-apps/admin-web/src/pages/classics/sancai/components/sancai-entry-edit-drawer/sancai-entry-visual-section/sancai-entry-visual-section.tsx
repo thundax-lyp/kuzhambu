@@ -7,7 +7,7 @@ import {
 } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
 import { Empty, Form, Image, Input, Tag, Typography } from "antd";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import {
@@ -128,6 +128,21 @@ const normalizeNumberField = (value: unknown) => {
     return Number.isFinite(numericValue) ? numericValue : null;
 };
 
+const VISUAL_ASSET_FORM_FIELD_NAMES: Array<keyof SancaiVisualAssetRecord> = [
+    "sourceImageStorageObjectId",
+    "sourcePreviewUrl",
+    "sourceDownloadUrl",
+    "generatedImageStorageObjectId",
+    "generatedPreviewUrl",
+    "generatedDownloadUrl",
+    "textWeight",
+    "imageWeight",
+    "imageAnalysisMarkdown",
+    "fusionDescription",
+    "visualDescription",
+    "generationParamsJson"
+];
+
 const toVisualAssetFormValue = (
     asset: SancaiVisualAssetRecord | null,
     defaultSourceImage: SancaiEntryImageRecord | undefined,
@@ -214,6 +229,7 @@ export const SancaiEntryVisualSection = ({
     );
     const [selectedVisualAssetId, setSelectedVisualAssetId] = useState<number | null>(null);
     const [visualAssetForm] = Form.useForm<SancaiVisualAssetRecord>();
+    const loadedVisualAssetIdRef = useRef<number | null>(null);
     const activeVisualAssetId =
         selectedVisualAssetId ??
         currentVisualAsset?.visualAssetId ??
@@ -231,9 +247,30 @@ export const SancaiEntryVisualSection = ({
         [defaultSourceImage, entryId, selectedVisualAsset]
     );
     useEffect(() => {
-        visualAssetForm.resetFields();
-        if (initialVisualAssetFormValue) {
+        const nextVisualAssetId = initialVisualAssetFormValue
+            ? readVisualAssetId(initialVisualAssetFormValue)
+            : null;
+        if (!initialVisualAssetFormValue) {
+            loadedVisualAssetIdRef.current = null;
+            visualAssetForm.resetFields();
+            return;
+        }
+        if (loadedVisualAssetIdRef.current !== nextVisualAssetId) {
+            loadedVisualAssetIdRef.current = nextVisualAssetId;
+            visualAssetForm.resetFields();
             visualAssetForm.setFieldsValue(initialVisualAssetFormValue);
+            return;
+        }
+        const untouchedServerValues = VISUAL_ASSET_FORM_FIELD_NAMES.reduce<
+            Partial<SancaiVisualAssetRecord>
+        >((values, fieldName) => {
+            if (!visualAssetForm.isFieldTouched(fieldName)) {
+                values[fieldName] = initialVisualAssetFormValue[fieldName] as never;
+            }
+            return values;
+        }, {});
+        if (Object.keys(untouchedServerValues).length > 0) {
+            visualAssetForm.setFieldsValue(untouchedServerValues);
         }
     }, [initialVisualAssetFormValue, visualAssetForm]);
     const sourceImageStorageObjectId = Form.useWatch("sourceImageStorageObjectId", visualAssetForm);

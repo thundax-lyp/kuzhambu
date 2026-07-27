@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App } from "antd";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import type {
     AiRefinementStreamEventRecord,
@@ -12,9 +12,15 @@ import type {
     SancaiVisualAssetRecord
 } from "@/pages/classics/sancai/sancai-types";
 
+const TASK_POLL_INTERVAL_MS = 3000;
+
 const isStreamRefinementCapability = (capability: string) => {
     const normalizedCapability = aiRefinementTaskService.getNormalizedTaskCapability(capability);
     return normalizedCapability === "image_analysis" || normalizedCapability === "image_gen";
+};
+
+const isActiveRefinementTask = (task: AiRefinementTaskRecord) => {
+    return task.status === "PENDING" || task.status === "RUNNING";
 };
 
 const createEventId = (prefix: string) => {
@@ -160,6 +166,8 @@ export const useSancaiEntryVisualRefinement = ({
     const [isStreamingRefinementTask, setIsStreamingRefinementTask] = useState(false);
     const [streamErrorText, setStreamErrorText] = useState<string | null>(null);
     const streamAbortControllerRef = useRef<AbortController | null>(null);
+    const dismissedStreamingTaskIdsRef = useRef<Set<number>>(new Set());
+    const streamingRefinementTaskId = streamingRefinementTask?.taskId ?? null;
 
     const refinementTasksQuery = useQuery({
         queryKey: ["classics", "sancai", "refinement", "tasks", entry.id],
@@ -171,10 +179,16 @@ export const useSancaiEntryVisualRefinement = ({
                 pageSize: 20
             }),
         enabled: Boolean(entry.id),
-        refetchInterval: 3000,
+        refetchInterval: (query) => {
+            const tasks = query.state.data?.items || [];
+            return tasks.some(isActiveRefinementTask) ? TASK_POLL_INTERVAL_MS : false;
+        },
         retry: false
     });
-    const refinementTasks = refinementTasksQuery.data?.items || [];
+    const refinementTasks = useMemo(
+        () => refinementTasksQuery.data?.items || [],
+        [refinementTasksQuery.data?.items]
+    );
 
     const invalidateRefinementTasks = useCallback(async () => {
         await queryClient.invalidateQueries({
@@ -197,13 +211,16 @@ export const useSancaiEntryVisualRefinement = ({
     );
 
     const closeStreamingRefinementTask = useCallback(() => {
+        if (streamingRefinementTaskId) {
+            dismissedStreamingTaskIdsRef.current.add(streamingRefinementTaskId);
+        }
         streamAbortControllerRef.current?.abort();
         streamAbortControllerRef.current = null;
         setStreamingRefinementTask(null);
         setStreamEvents([]);
         setStreamErrorText(null);
         setIsStreamingRefinementTask(false);
-    }, []);
+    }, [streamingRefinementTaskId]);
 
     const refreshStreamingTaskDetail = useCallback(
         async (taskId: number) => {
@@ -228,11 +245,29 @@ export const useSancaiEntryVisualRefinement = ({
 
     const openStreamingRefinementTask = useCallback((task: AiRefinementTaskRecord) => {
         streamAbortControllerRef.current?.abort();
+        if (task.taskId) {
+            dismissedStreamingTaskIdsRef.current.delete(task.taskId);
+        }
         setStreamingRefinementTask(task);
         setStreamEvents([]);
         setStreamErrorText(null);
         setIsStreamingRefinementTask(true);
     }, []);
+
+    useEffect(() => {
+        const resumableTask = refinementTasks.find(
+            (task) =>
+                task.taskId &&
+                task.streamEnabled === true &&
+                isActiveRefinementTask(task) &&
+                isStreamRefinementCapability(task.capability) &&
+                !dismissedStreamingTaskIdsRef.current.has(task.taskId)
+        );
+        if (!resumableTask || streamingRefinementTaskId === resumableTask.taskId) {
+            return;
+        }
+        openStreamingRefinementTask(resumableTask);
+    }, [openStreamingRefinementTask, refinementTasks, streamingRefinementTaskId]);
 
     const createRefinementTaskMutation = useMutation({
         mutationFn: aiRefinementTaskService.createTask,
