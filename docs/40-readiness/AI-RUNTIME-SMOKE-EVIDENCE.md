@@ -187,7 +187,7 @@ UI acceptance covered:
 | `/ai/prompts` | template query, version display, variable validation success and required-variable failure |
 | `/ai/action-status` | scope/capability filter, refresh action, `available=true` readback |
 | `/classics/sancai` | tree selection for volume, entry panel, summary refinement action, task drawer, `SUCCEEDED` status |
-| `/ai/invocations` | summary metrics, capability ranking, call table, exact `callIdText`, detail action |
+| `/ai/invocations` | summary metrics, capability ranking, invocation log table, exact `callIdText`, detail action |
 
 Known UI observation during the Sancai page check: `GET /classics/sancai/entries/300000000001` returned `500`, while the entry list, refinement task page, and versions list returned `200`; the summary task drawer and task status still rendered and completed. This is recorded as observation only and was not expanded beyond the AI runtime acceptance scope.
 
@@ -201,7 +201,7 @@ The AI governance runtime acceptance loop is evidenced end to end:
 - Action status refresh reports the capability available.
 - Prompt variables pass complete validation and fail missing-required validation.
 - A real Sancai summary refinement task completes through Java `WorkerAiClient` to workers.
-- Task, call record, candidate, invocation summary, and Admin UI can be correlated by `requestId`, `traceId`, `taskId`, `callId`, and `candidateId`.
+- Task, invocation log, candidate, invocation summary, and Admin UI can be correlated by `requestId`, `traceId`, `taskId`, `callId`, and `candidateId`.
 
 ## Verification
 
