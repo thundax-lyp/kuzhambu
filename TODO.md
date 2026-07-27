@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `src/pages/classics/sancai/components/sancai-category-panel/sancai-category-edit-modal.tsx`：迁移三才门类编辑弹窗表单
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-FORM-USEFORM-MIGRATION.md`
-    - 范围对象：`src/pages/classics/sancai/components/sancai-category-panel/sancai-category-edit-modal.tsx`
-    - 处理动作：将门类标题和门类类型改为 `Form.useForm` + `KuzhambuFormItem name` 托管。
-    - 验收点：保存读取 `form.validateFields()` 结果，文件内不再用整表 `useState` 管字段值。
-    - 重要度：8/10
-
 - [ ] `src/pages/classics/sancai/components/sancai-volume-panel/sancai-volume-edit-modal.tsx`：迁移三才卷目编辑弹窗表单
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-FORM-USEFORM-MIGRATION.md`
