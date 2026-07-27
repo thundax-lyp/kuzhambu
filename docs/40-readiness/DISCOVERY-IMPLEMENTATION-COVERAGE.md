@@ -29,6 +29,7 @@
 - Search / QA runtime、索引同步、搜索高亮、检索统计、Portal 搜索状态、王圻单文档问答上下文已完成阶段性验证。
 - Playwright 冒烟与 Knowledge 方向查询证据见 `docs/40-readiness/KNOWLEDGE-RUNTIME-SMOKE-EVIDENCE.md`。
 - Discovery QA dev 冒烟证据归档于 `/tmp/discovery-quality-qa-20260709153738/`。
+- 2026-07-27：根据 2026-07-20 至 2026-07-24 提交记录完成代码反查；`ElasticsearchSearchIndexGateway` 确认索引写入、查询和预览均限制 PUBLIC 内容，`search-statistics-service.ts` 确认 Admin 搜索统计事件与 summary 接口，`qa-console-service.ts` 和 `qa-diagnostics-panel.tsx` 确认会话分页/删除/导出与 FastGPT 诊断跳转。
 
 ## Requirement Coverage Matrix
 
