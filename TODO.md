@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `GraphExtractionManuscriptTree`：新增统一稿件树组件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-FRONTEND-FLOW.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/components/graph-extraction-manuscript-tree.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/graph-extraction-page.css`
-    - 处理动作：渲染三类来源统一稿件树、懒加载子节点并展示图谱状态。
-    - 验收点：点击 `MANUSCRIPT` 节点能向页面容器提交稿件上下文。
-    - 重要度：9/10
-
 - [ ] `GraphExtractionManuscriptDetail`：新增稿件图谱详情组件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-FRONTEND-FLOW.md`

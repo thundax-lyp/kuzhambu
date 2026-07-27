@@ -35,6 +35,23 @@
     margin-block: 24px 12px;
 }
 
+.graph-extraction-manuscript-tree-card {
+    min-height: 520px;
+}
+
+.graph-extraction-manuscript-tree-node {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-width: 0;
+    gap: 8px;
+}
+
+.graph-extraction-manuscript-tree-title {
+    min-width: 0;
+}
+
 @media (max-width: 768px) {
     .knowledge-graph-extraction-page {
         padding: 12px;
