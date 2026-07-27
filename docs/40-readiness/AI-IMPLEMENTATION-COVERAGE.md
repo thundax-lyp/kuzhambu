@@ -15,7 +15,8 @@
 - Classics 已接入文本精修、标签、问答、三才视觉资产、批量视觉处理和流式过程展示。
 - Knowledge 已接入标签抽取、关系抽取、知识图谱抽取和世系抽取。
 - Discovery 已接入查询理解、查询改写、回答生成和流式回答，并在 QA trace 展示 AI 调用状态。
-- Admin Web 已完成 6 个 AI 治理页面：服务配置、模型配置、能力映射、提示词、调用统计、动作状态。
+- Admin Web 已完成 7 个 AI 治理页面：服务配置、模型配置、能力映射、提示词、业务配置、调用统计、动作状态。
+- Java AI 调用入口已改为按业务配置解析提示词模板、当前版本和模型配置，再调用 Workers 统一 AI 执行入口。
 
 ## Open Items
 
@@ -28,6 +29,7 @@
 - 2026-07-09：`cd kuzhambu-servers && mvn spotless:check checkstyle:check test` 通过。
 - 2026-07-09：`cd kuzhambu-apps && pnpm run format:check && pnpm run lint && pnpm run build && pnpm run test` 通过。
 - 2026-07-09：`cd kuzhambu-workers && .venv/bin/python -m ruff format --check . && .venv/bin/python -m ruff check . && .venv/bin/python -m pytest -p no:capture` 通过。
+- 2026-07-27：根据 2026-07-20 至 2026-07-24 提交记录完成代码反查；`kuzhambu-apps/admin-web/src/router/index.tsx` 和 `kuzhambu-apps/admin-web/src/pages/ai/business-configs/business-configs-page.tsx` 确认业务配置页面已接入，`AiBusinessInvokeConfigResolver` 确认运行时按业务配置渲染提示词并解析模型。
 - 运行时证据：`docs/40-readiness/AI-RUNTIME-SMOKE-EVIDENCE.md`。
 
 ## Admin Management Matrix
@@ -38,6 +40,7 @@
 | 模型配置 | `/ai/models` | 已完成 |
 | 能力映射 | `/ai/capability-mappings` | 已完成 |
 | 提示词 | `/ai/prompts` | 已完成 |
+| 业务配置 | `/ai/business-configs` | 已完成 |
 | 调用统计 | `/ai/invocations` | 已完成 |
 | 动作状态 | `/ai/action-status` | 已完成 |
 
