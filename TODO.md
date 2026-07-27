@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `src/pages/ai/capability-mappings/capability-mappings-page.tsx`：迁移能力映射筛选表单
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-FORM-USEFORM-MIGRATION.md`
-    - 范围对象：`src/pages/ai/capability-mappings/capability-mappings-page.tsx`
-    - 处理动作：将筛选区改为 `Form.useForm` + `KuzhambuFormItem name` 驱动查询状态。
-    - 验收点：scope、capability、enabled 筛选行为保持不变，筛选区 `KuzhambuForm` 不再缺少 `form`。
-    - 重要度：6/10
-
 - [ ] `kuzhambu-apps/admin-web`：复扫表单规则并补齐验证
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-FORM-USEFORM-MIGRATION.md`
