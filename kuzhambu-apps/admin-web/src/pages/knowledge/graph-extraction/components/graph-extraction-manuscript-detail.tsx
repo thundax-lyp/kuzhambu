@@ -1,22 +1,22 @@
 import { Card, Descriptions, Empty, Tag, Typography } from "antd";
 import { KuzhambuButton, KuzhambuSpace } from "@/components";
 
-import type { GraphExtractionTaskType } from "../graph-extraction-types";
 import type {
-    GraphWorkbenchCandidateSummary,
-    GraphWorkbenchManuscriptDetail,
-    GraphWorkbenchManuscriptTreeNode,
+    GraphExtractionTaskType,
+    GraphWorkbenchCandidateRecord,
+    GraphWorkbenchManuscriptNode,
+    GraphWorkbenchManuscriptRecord,
     GraphWorkbenchStatus
-} from "../graph-workbench-types";
+} from "../graph-extraction-types";
 import { GraphExtractionCandidatePreview } from "./graph-extraction-candidate-preview";
 
 interface GraphExtractionManuscriptDetailProps {
     applying?: boolean;
-    candidate?: GraphWorkbenchCandidateSummary | null;
+    candidate?: GraphWorkbenchCandidateRecord | null;
     candidateLoading?: boolean;
-    detail?: GraphWorkbenchManuscriptDetail | null;
+    detail?: GraphWorkbenchManuscriptRecord | null;
     extracting?: boolean;
-    selectedNode?: GraphWorkbenchManuscriptTreeNode | null;
+    selectedNode?: GraphWorkbenchManuscriptNode | null;
     onApplyCandidate: (taskId: number) => void;
     onExtract: (taskType: GraphExtractionTaskType) => void;
 }
@@ -51,7 +51,7 @@ const statusLabel = (status?: GraphWorkbenchStatus | null) =>
 const statusColor = (status?: GraphWorkbenchStatus | null) =>
     STATUS_COLORS.get(status || "") || "default";
 
-const hasCandidate = (candidate?: GraphWorkbenchCandidateSummary | null) =>
+const hasCandidate = (candidate?: GraphWorkbenchCandidateRecord | null) =>
     Boolean(candidate?.taskId && candidate.aiCandidateId);
 
 export const GraphExtractionManuscriptDetail = ({

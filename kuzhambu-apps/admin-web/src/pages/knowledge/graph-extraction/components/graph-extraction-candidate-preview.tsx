@@ -1,9 +1,9 @@
 import { Card, Descriptions, Empty, Typography } from "antd";
 
-import type { GraphWorkbenchCandidateSummary } from "../graph-workbench-types";
+import type { GraphWorkbenchCandidateRecord } from "../graph-extraction-types";
 
 interface GraphExtractionCandidatePreviewProps {
-    candidate?: GraphWorkbenchCandidateSummary | null;
+    candidate?: GraphWorkbenchCandidateRecord | null;
     loading?: boolean;
 }
 

@@ -2,19 +2,16 @@ import { Card, Input, Tag, Tree, Typography } from "antd";
 import type { DataNode } from "antd/es/tree";
 import { KuzhambuSpace } from "@/components";
 
-import type {
-    GraphWorkbenchManuscriptTreeNode,
-    GraphWorkbenchStatus
-} from "../graph-workbench-types";
+import type { GraphWorkbenchManuscriptNode, GraphWorkbenchStatus } from "../graph-extraction-types";
 
 interface GraphExtractionManuscriptTreeProps {
     loading?: boolean;
-    nodes: GraphWorkbenchManuscriptTreeNode[];
+    nodes: GraphWorkbenchManuscriptNode[];
     searchText?: string;
     selectedNodeKey?: string | null;
     onLoadChildren: (nodeKey: string) => Promise<void>;
     onSearchChange: (value: string) => void;
-    onSelectManuscript: (node: GraphWorkbenchManuscriptTreeNode) => void;
+    onSelectManuscript: (node: GraphWorkbenchManuscriptNode) => void;
 }
 
 const { Text } = Typography;
@@ -41,7 +38,7 @@ const STATUS_COLORS = new Map<GraphWorkbenchStatus, string>([
     ["QUALITY_ISSUE", "error"]
 ]);
 
-const isManuscriptNode = (node: GraphWorkbenchManuscriptTreeNode) =>
+const isManuscriptNode = (node: GraphWorkbenchManuscriptNode) =>
     node.nodeType === "MANUSCRIPT" && node.sourceContentType && node.sourceContentId;
 
 const statusLabel = (status?: GraphWorkbenchStatus | null) =>
@@ -50,7 +47,7 @@ const statusLabel = (status?: GraphWorkbenchStatus | null) =>
 const statusColor = (status?: GraphWorkbenchStatus | null) =>
     STATUS_COLORS.get(status || "") || "default";
 
-const renderTitle = (node: GraphWorkbenchManuscriptTreeNode) => (
+const renderTitle = (node: GraphWorkbenchManuscriptNode) => (
     <span className="graph-extraction-manuscript-tree-node">
         <Text ellipsis className="graph-extraction-manuscript-tree-title">
             {node.title || node.nodeKey}
@@ -61,7 +58,7 @@ const renderTitle = (node: GraphWorkbenchManuscriptTreeNode) => (
     </span>
 );
 
-const toTreeData = (nodes: GraphWorkbenchManuscriptTreeNode[]): DataNode[] =>
+const toTreeData = (nodes: GraphWorkbenchManuscriptNode[]): DataNode[] =>
     nodes.map((node) => ({
         key: node.nodeKey,
         title: renderTitle(node),
@@ -70,9 +67,9 @@ const toTreeData = (nodes: GraphWorkbenchManuscriptTreeNode[]): DataNode[] =>
     }));
 
 const findNode = (
-    nodes: GraphWorkbenchManuscriptTreeNode[],
+    nodes: GraphWorkbenchManuscriptNode[],
     nodeKey?: string
-): GraphWorkbenchManuscriptTreeNode | null => {
+): GraphWorkbenchManuscriptNode | null => {
     if (!nodeKey) {
         return null;
     }
