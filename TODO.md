@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `GraphExtractionManuscriptDetail`：新增稿件图谱详情组件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-FRONTEND-FLOW.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/components/graph-extraction-manuscript-detail.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/components/graph-extraction-candidate-preview.tsx`
-    - 处理动作：展示稿件图谱状态、最近任务、最新版本、质量摘要和候选预览。
-    - 验收点：详情区提供抽取、应用候选、查看结果和进入精修动作。
-    - 重要度：10/10
-
 - [ ] `graph-extraction-page.tsx`：改造图谱抽取页面编排
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-FRONTEND-FLOW.md`
