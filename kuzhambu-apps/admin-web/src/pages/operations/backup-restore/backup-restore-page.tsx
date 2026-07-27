@@ -6,7 +6,7 @@ import {
     SafetyCertificateOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Card, Descriptions, Statistic, Typography } from "antd";
+import { App, Descriptions, Statistic, Typography } from "antd";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
@@ -26,7 +26,8 @@ import {
     KuzhambuButton,
     KuzhambuDrawer,
     KuzhambuSelect,
-    KuzhambuTag
+    KuzhambuTag,
+    KuzhambuCard
 } from "@/components";
 
 import "./backup-restore-page.css";
@@ -291,7 +292,7 @@ export const BackupRestorePage = () => {
                 </header>
 
                 <div className="backup-restore-page-summary">
-                    <Card className="backup-restore-page-summary-card">
+                    <KuzhambuCard className="backup-restore-page-summary-card">
                         <Statistic
                             prefix={<DatabaseOutlined />}
                             title="最近一次成功备份"
@@ -302,8 +303,8 @@ export const BackupRestorePage = () => {
                                 ? `完成于 ${formatDateTime(latestBackup.completedAt)}`
                                 : "当前还没有可用备份记录。"}
                         </Text>
-                    </Card>
-                    <Card className="backup-restore-page-summary-card">
+                    </KuzhambuCard>
+                    <KuzhambuCard className="backup-restore-page-summary-card">
                         <Statistic
                             prefix={<HistoryOutlined />}
                             title="恢复记录总数"
@@ -313,8 +314,8 @@ export const BackupRestorePage = () => {
                             成功 {countByStatus(restoreRecords, "SUCCEEDED")} 次，失败{" "}
                             {countByStatus(restoreRecords, "FAILED")} 次。
                         </Text>
-                    </Card>
-                    <Card className="backup-restore-page-summary-card">
+                    </KuzhambuCard>
+                    <KuzhambuCard className="backup-restore-page-summary-card">
                         <Statistic
                             prefix={<SafetyCertificateOutlined />}
                             title="恢复演练"
@@ -324,7 +325,7 @@ export const BackupRestorePage = () => {
                             成功 {countRestoreDrillsByStatus(restoreRecords, "SUCCEEDED")} 次，失败{" "}
                             {countRestoreDrillsByStatus(restoreRecords, "FAILED")} 次。
                         </Text>
-                    </Card>
+                    </KuzhambuCard>
                 </div>
 
                 <div className="backup-restore-page-toolbar">
@@ -417,7 +418,7 @@ export const BackupRestorePage = () => {
                 </div>
 
                 <div className="backup-restore-page-ledgers">
-                    <Card className="backup-restore-page-card">
+                    <KuzhambuCard className="backup-restore-page-card">
                         <div className="backup-restore-page-card-head">
                             <div className="backup-restore-page-card-title">
                                 <Title level={4}>备份台账</Title>
@@ -464,9 +465,9 @@ export const BackupRestorePage = () => {
                             }
                             onView={(record) => setBackupDetailId(record.backupId)}
                         />
-                    </Card>
+                    </KuzhambuCard>
 
-                    <Card className="backup-restore-page-card">
+                    <KuzhambuCard className="backup-restore-page-card">
                         <div className="backup-restore-page-card-head">
                             <div className="backup-restore-page-card-title">
                                 <Title level={4}>恢复台账</Title>
@@ -484,7 +485,7 @@ export const BackupRestorePage = () => {
                             onPageChange={setRestorePageNo}
                             onView={(record) => setRestoreDetailId(record.restoreId)}
                         />
-                    </Card>
+                    </KuzhambuCard>
                 </div>
             </section>
 

@@ -5,7 +5,7 @@ import {
     ReloadOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Card, Descriptions, Statistic, Typography } from "antd";
+import { App, Descriptions, Statistic, Typography } from "antd";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
@@ -17,7 +17,8 @@ import {
     KuzhambuPage,
     KuzhambuSelect,
     KuzhambuSpace,
-    KuzhambuTag
+    KuzhambuTag,
+    KuzhambuCard
 } from "@/components";
 import * as service from "./cleanup-service";
 import type { CleanupExecuteCommand, CleanupPageQuery } from "./cleanup-service";
@@ -191,7 +192,7 @@ export const CleanupPage = () => {
         >
             <section>
                 <div className="operations-cleanup-summary">
-                    <Card className="operations-cleanup-summary-card">
+                    <KuzhambuCard className="operations-cleanup-summary-card">
                         <Statistic
                             title="清理任务总数"
                             prefix={<ReloadOutlined />}
@@ -200,8 +201,8 @@ export const CleanupPage = () => {
                         <Text className="operations-cleanup-description" type="secondary">
                             当前查询页共 {totalCount} 条清理记录。
                         </Text>
-                    </Card>
-                    <Card className="operations-cleanup-summary-card">
+                    </KuzhambuCard>
+                    <KuzhambuCard className="operations-cleanup-summary-card">
                         <Statistic
                             title="进行中/失败"
                             value={`${countByStatus(cleanupRecords, "RUNNING")} / ${countByStatus(
@@ -213,8 +214,8 @@ export const CleanupPage = () => {
                             成功 {countByStatus(cleanupRecords, "SUCCEEDED")} 次，失败{" "}
                             {countByStatus(cleanupRecords, "FAILED")} 次（当前页）。
                         </Text>
-                    </Card>
-                    <Card className="operations-cleanup-summary-card">
+                    </KuzhambuCard>
+                    <KuzhambuCard className="operations-cleanup-summary-card">
                         <Statistic
                             title="最近一次任务"
                             value={latestRecord?.cleanupId || "-"}
@@ -226,12 +227,16 @@ export const CleanupPage = () => {
                                 {latestRecord?.cleanupStatus || "UNKNOWN"}
                             </KuzhambuTag>
                         </Text>
-                    </Card>
+                    </KuzhambuCard>
                 </div>
             </section>
 
             <section>
-                <Card className="operations-cleanup-section-card" title="清理任务查询" size="small">
+                <KuzhambuCard
+                    className="operations-cleanup-section-card"
+                    title="清理任务查询"
+                    size="small"
+                >
                     <KuzhambuSpace className="operations-cleanup-filters" size={12} wrap>
                         <label className="operations-cleanup-filter">
                             <Text type="secondary">清理类型</Text>
@@ -408,7 +413,7 @@ export const CleanupPage = () => {
                             下一页
                         </KuzhambuButton>
                     </div>
-                </Card>
+                </KuzhambuCard>
             </section>
 
             <KuzhambuDrawer

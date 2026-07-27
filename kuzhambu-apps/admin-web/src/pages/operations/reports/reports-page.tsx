@@ -5,7 +5,7 @@ import {
     ReloadOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Card, DatePicker, Descriptions, InputNumber, Spin, Typography } from "antd";
+import { DatePicker, Descriptions, InputNumber, Spin, Typography } from "antd";
 import type { Dayjs } from "dayjs";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
@@ -17,7 +17,8 @@ import {
     KuzhambuPage,
     KuzhambuSelect,
     KuzhambuSpace,
-    KuzhambuTag
+    KuzhambuTag,
+    KuzhambuCard
 } from "@/components";
 import type { Page } from "@/types/page";
 import * as service from "./reports-service";
@@ -218,7 +219,7 @@ export const OperationsReportsPage = () => {
             ) : null}
 
             <section className="operations-reports-section">
-                <Card title="筛选记录" size="small">
+                <KuzhambuCard title="筛选记录" size="small">
                     <KuzhambuSpace className="operations-reports-controls" size={12} wrap>
                         <label className="operations-reports-field">
                             <Text type="secondary">报表类型</Text>
@@ -274,11 +275,11 @@ export const OperationsReportsPage = () => {
                             查询
                         </KuzhambuButton>
                     </KuzhambuSpace>
-                </Card>
+                </KuzhambuCard>
             </section>
 
             <section className="operations-reports-section">
-                <Card title="生成报表" size="small">
+                <KuzhambuCard title="生成报表" size="small">
                     <KuzhambuSpace className="operations-reports-controls" size={12} wrap>
                         <label className="operations-reports-field">
                             <Text type="secondary">生成类型</Text>
@@ -340,11 +341,11 @@ export const OperationsReportsPage = () => {
                             提交生成
                         </KuzhambuButton>
                     </KuzhambuSpace>
-                </Card>
+                </KuzhambuCard>
             </section>
 
             <section className="operations-reports-section">
-                <Card title="记录列表" size="small">
+                <KuzhambuCard title="记录列表" size="small">
                     <div className="operations-reports-list-meta">
                         <Text type="secondary">共 {totalCount} 条记录</Text>
                         {reportPageQuery.isFetching ? <Spin size="small" /> : null}
@@ -440,7 +441,7 @@ export const OperationsReportsPage = () => {
                             下一页
                         </KuzhambuButton>
                     </KuzhambuSpace>
-                </Card>
+                </KuzhambuCard>
             </section>
 
             <KuzhambuDrawer
