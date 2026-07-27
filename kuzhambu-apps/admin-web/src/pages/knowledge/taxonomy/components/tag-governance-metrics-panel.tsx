@@ -1,5 +1,11 @@
-import { Card, Empty, Typography } from "antd";
-import { KuzhambuList, KuzhambuListItem, KuzhambuSpace, KuzhambuButton } from "@/components";
+import { Empty, Typography } from "antd";
+import {
+    KuzhambuList,
+    KuzhambuListItem,
+    KuzhambuSpace,
+    KuzhambuButton,
+    KuzhambuCard
+} from "@/components";
 
 import type { TagGovernanceMetricsRecord } from "../taxonomy-types";
 
@@ -32,7 +38,7 @@ export const TagGovernanceMetricsPanel = ({
     onRefresh
 }: TagGovernanceMetricsPanelProps) => {
     return (
-        <Card
+        <KuzhambuCard
             className="knowledge-taxonomy-metrics-panel"
             title="标签治理统计"
             extra={
@@ -52,7 +58,7 @@ export const TagGovernanceMetricsPanel = ({
                 </Paragraph>
 
                 <div className="knowledge-taxonomy-metrics-grid">
-                    <Card size="small" title="标签使用排行">
+                    <KuzhambuCard size="small" title="标签使用排行">
                         {metrics?.topTags?.length ? (
                             <KuzhambuList
                                 dataSource={metrics.topTags}
@@ -71,9 +77,9 @@ export const TagGovernanceMetricsPanel = ({
                         ) : (
                             renderEmpty("暂无标签使用排行")
                         )}
-                    </Card>
+                    </KuzhambuCard>
 
-                    <Card size="small" title="知识库分布">
+                    <KuzhambuCard size="small" title="知识库分布">
                         {metrics?.categoryDistributions?.length ? (
                             <KuzhambuList
                                 dataSource={metrics.categoryDistributions}
@@ -92,9 +98,9 @@ export const TagGovernanceMetricsPanel = ({
                         ) : (
                             renderEmpty("暂无知识库分布")
                         )}
-                    </Card>
+                    </KuzhambuCard>
 
-                    <Card size="small" title="来源占比">
+                    <KuzhambuCard size="small" title="来源占比">
                         {metrics?.sourceRatios?.length ? (
                             <KuzhambuList
                                 dataSource={metrics.sourceRatios}
@@ -113,9 +119,9 @@ export const TagGovernanceMetricsPanel = ({
                         ) : (
                             renderEmpty("暂无来源占比")
                         )}
-                    </Card>
+                    </KuzhambuCard>
 
-                    <Card size="small" title="月度新增趋势">
+                    <KuzhambuCard size="small" title="月度新增趋势">
                         {metrics?.monthlyNewTags?.length ? (
                             <KuzhambuList
                                 dataSource={metrics.monthlyNewTags}
@@ -134,9 +140,9 @@ export const TagGovernanceMetricsPanel = ({
                         ) : (
                             renderEmpty("暂无月度新增趋势")
                         )}
-                    </Card>
+                    </KuzhambuCard>
                 </div>
             </KuzhambuSpace>
-        </Card>
+        </KuzhambuCard>
     );
 };
