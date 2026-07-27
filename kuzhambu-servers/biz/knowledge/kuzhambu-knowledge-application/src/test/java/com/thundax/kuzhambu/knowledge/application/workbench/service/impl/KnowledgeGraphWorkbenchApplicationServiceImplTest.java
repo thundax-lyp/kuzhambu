@@ -59,6 +59,19 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
     }
 
     @Test
+    void listManuscriptTreeShouldSearchManuscriptsFromRoot() {
+        Fixtures fixtures = new Fixtures();
+
+        var nodes = fixtures.service.listManuscriptTree(null, null, "王圻", null);
+
+        assertEquals(1, nodes.size());
+        assertEquals("MANUSCRIPT", nodes.get(0).getNodeType());
+        assertEquals("王圻稿件", nodes.get(0).getTitle());
+        assertEquals("WANGQI_DOCUMENT", nodes.get(0).getSourceContentType());
+        assertEquals(2001L, nodes.get(0).getSourceContentId());
+    }
+
+    @Test
     void extractManuscriptShouldBuildGraphCommandWithAutomaticPayload() {
         Fixtures fixtures = new Fixtures();
         when(fixtures.payloadBuilder.build("SANCAI_ENTRY", 1001L, "GRAPH"))

@@ -39,6 +39,10 @@ public class KnowledgeGraphManuscriptTreeAssembler {
         String normalizedParentKey = normalize(parentKey);
         List<ClassicsPublicContentFacadeDto> effectiveContents = contents == null ? List.of() : contents;
         if (normalizedParentKey == null) {
+            if (normalize(keyword) != null || normalize(graphStatus) != null) {
+                return manuscriptMatches(
+                        effectiveContents, sourceContentType, keyword, graphStatus, graphSnapshotResolver);
+            }
             return sourceRoots(sourceContentType);
         }
         NodeKey nodeKey = NodeKey.parse(normalizedParentKey);
