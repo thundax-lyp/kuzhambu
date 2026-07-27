@@ -1,6 +1,6 @@
 import { LockOutlined, ReloadOutlined, UserOutlined } from "@ant-design/icons";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { App, Card, Form, Input, Typography } from "antd";
+import { App, Form, Input, Typography } from "antd";
 import { sm2 } from "sm-crypto";
 import { useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
@@ -14,7 +14,8 @@ import {
     KuzhambuForm,
     KuzhambuFormItem,
     KuzhambuSpace,
-    KuzhambuSpaceCompact
+    KuzhambuSpaceCompact,
+    KuzhambuCard
 } from "@/components";
 
 import "./login-page.css";
@@ -104,7 +105,7 @@ export const LoginPage = () => {
                     <Paragraph>使用后台账号和验证码进入工作区。</Paragraph>
                 </section>
 
-                <Card className="login-card">
+                <KuzhambuCard className="login-card">
                     <KuzhambuSpace orientation="vertical" size={24} className="login-card-content">
                         <div>
                             <Title level={2}>登录</Title>
@@ -199,7 +200,7 @@ export const LoginPage = () => {
                             </KuzhambuButton>
                         </KuzhambuForm>
                     </KuzhambuSpace>
-                </Card>
+                </KuzhambuCard>
             </main>
         </>
     );

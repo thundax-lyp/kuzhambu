@@ -1,4 +1,4 @@
-import { Card, DatePicker } from "antd";
+import { DatePicker } from "antd";
 import type { FormInstance } from "antd";
 import type { Dayjs } from "dayjs";
 import {
@@ -6,7 +6,8 @@ import {
     KuzhambuForm,
     KuzhambuFormItem,
     KuzhambuSpace,
-    KuzhambuSelect
+    KuzhambuSelect,
+    KuzhambuCard
 } from "@/components";
 
 import type { AiCallRecordPageQuery, AiInvocationSummaryQuery } from "../invocations-service";
@@ -52,7 +53,7 @@ export const InvocationFilterPanel = ({
 }: InvocationFilterPanelProps) => {
     if (type === "summary") {
         return (
-            <Card className="invocations-filter-card">
+            <KuzhambuCard className="invocations-filter-card">
                 <KuzhambuForm
                     form={summaryForm}
                     className="invocations-filter-form"
@@ -90,7 +91,7 @@ export const InvocationFilterPanel = ({
                 >
                     刷新
                 </KuzhambuButton>
-            </Card>
+            </KuzhambuCard>
         );
     }
 

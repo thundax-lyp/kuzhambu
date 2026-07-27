@@ -1,6 +1,6 @@
 import { ReloadOutlined, SyncOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Card, Form, Table, Tag, Tooltip, Typography } from "antd";
+import { App, Form, Table, Tag, Tooltip, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useEffect, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
@@ -10,7 +10,8 @@ import {
     KuzhambuButton,
     KuzhambuForm,
     KuzhambuFormItem,
-    KuzhambuSelect
+    KuzhambuSelect,
+    KuzhambuCard
 } from "@/components";
 
 import * as service from "./action-status-service";
@@ -209,7 +210,7 @@ export const ActionStatusPage = () => {
                 </Tooltip>
             }
         >
-            <Card className="action-status-filter-card">
+            <KuzhambuCard className="action-status-filter-card">
                 <KuzhambuForm form={form} className="action-status-filter-form">
                     <KuzhambuFormItem label="scope" name="scope" layoutSize="small">
                         <KuzhambuSelect
@@ -263,7 +264,7 @@ export const ActionStatusPage = () => {
                         刷新全部
                     </KuzhambuButton>
                 </KuzhambuSpace>
-            </Card>
+            </KuzhambuCard>
 
             <Table<AiActionStatusRecord>
                 aria-label="AI 动作状态列表"

@@ -1,6 +1,6 @@
 import { PlusOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Card, Form, Tooltip } from "antd";
+import { App, Form, Tooltip } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import {
@@ -9,7 +9,8 @@ import {
     KuzhambuFormItem,
     KuzhambuPage,
     KuzhambuSpace,
-    KuzhambuSelect
+    KuzhambuSelect,
+    KuzhambuCard
 } from "@/components";
 
 import { CapabilityMappingDrawer } from "./components/capability-mapping-drawer";
@@ -260,7 +261,7 @@ export const CapabilityMappingsPage = () => {
                 </KuzhambuSpace>
             }
         >
-            <Card className="capability-mappings-filter-card">
+            <KuzhambuCard className="capability-mappings-filter-card">
                 <KuzhambuForm<CapabilityMappingFilterValues>
                     form={filterForm}
                     className="capability-mappings-filter-form"
@@ -297,7 +298,7 @@ export const CapabilityMappingsPage = () => {
                 >
                     重置
                 </KuzhambuButton>
-            </Card>
+            </KuzhambuCard>
 
             <CapabilityMappingTable
                 canEditConfig={canEditConfig}
