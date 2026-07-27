@@ -11,6 +11,7 @@ import {
     SancaiEntryVisualSection,
     type SancaiEntryVisualPreviewState
 } from "./sancai-entry-visual-section";
+import { useSancaiEntryVisualPreviewState } from "./sancai-entry-visual-section/hooks/use-sancai-entry-visual-preview-state";
 import { toEntryFormValues, type SancaiEntryFormValues } from "./sancai-entry-form-values";
 import type {
     SancaiEntryRecord,
@@ -87,6 +88,15 @@ export const SancaiEntryEditDrawer = ({
         currentVisualAsset: null
     });
     const entryId = mode === "edit" ? entry?.id : undefined;
+    const fallbackVisualPreviewState = useSancaiEntryVisualPreviewState(entryId);
+    const [hasVisualSectionPreviewState, setHasVisualSectionPreviewState] = useState(false);
+    const effectiveVisualPreviewState = hasVisualSectionPreviewState
+        ? visualPreviewState
+        : fallbackVisualPreviewState;
+    const updateVisualPreviewState = (state: SancaiEntryVisualPreviewState) => {
+        setHasVisualSectionPreviewState(true);
+        setVisualPreviewState(state);
+    };
 
     const submitForm = () => {
         if (!entryDraft.volumeId) {
@@ -125,7 +135,7 @@ export const SancaiEntryEditDrawer = ({
                 entry={entry}
                 isUpdatingVisualAsset={isUpdatingVisualAsset}
                 onRefinementChanged={onVisualRefinementChanged}
-                onPreviewStateChange={setVisualPreviewState}
+                onPreviewStateChange={updateVisualPreviewState}
                 onUpdateVisualAsset={onUpdateVisualAsset}
                 onUseVisualAsset={onUseVisualAsset}
             />
@@ -133,11 +143,11 @@ export const SancaiEntryEditDrawer = ({
 
     const openPreviewWindow = () => {
         openSancaiEntryPreviewWindow({
-            currentVisualAsset: visualPreviewState.currentVisualAsset,
+            currentVisualAsset: effectiveVisualPreviewState.currentVisualAsset,
             form: entryDraft,
             imageUrl: basicPreviewState.imageUrl,
-            visualDescription: visualPreviewState.visualDescription,
-            visualUrl: visualPreviewState.generatedPreviewUrl
+            visualDescription: effectiveVisualPreviewState.visualDescription,
+            visualUrl: effectiveVisualPreviewState.generatedPreviewUrl
         });
     };
 

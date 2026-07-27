@@ -1937,6 +1937,65 @@ describe("SancaiEntryPanel sharing", () => {
         );
     });
 
+    it("previews current visual asset without opening the visual section", async () => {
+        const user = userEvent.setup();
+        const createObjectURL = vi.fn(() => "blob:sancai-entry-preview");
+        const revokeObjectURL = vi.fn();
+        const openWindow = vi.spyOn(window, "open").mockImplementation(() => null);
+        const originalCreateObjectURL = URL.createObjectURL;
+        const originalRevokeObjectURL = URL.revokeObjectURL;
+        Object.defineProperty(URL, "createObjectURL", {
+            configurable: true,
+            value: createObjectURL
+        });
+        Object.defineProperty(URL, "revokeObjectURL", {
+            configurable: true,
+            value: revokeObjectURL
+        });
+
+        try {
+            renderEntryPanel();
+
+            const entryTable = await screen.findByLabelText("三才图会条目表格");
+            await user.click(
+                await within(entryTable).findByTestId("sancai-entry-3001-view-button")
+            );
+            await waitFor(() => {
+                expect(entryService.listVisualAssets).toHaveBeenCalled();
+            });
+            await user.click(
+                await screen.findByTestId(
+                    "classics-sancai-sancai-entry-preview-sancai-entry-button"
+                )
+            );
+
+            await waitFor(() => {
+                expect(createObjectURL).toHaveBeenCalled();
+            });
+            const previewBlob = createObjectURL.mock.calls[0]?.[0] as Blob;
+            await expect(previewBlob.text()).resolves.toContain("处理记录 2");
+            await expect(previewBlob.text()).resolves.toContain("当前版本视觉描述");
+            await expect(previewBlob.text()).resolves.toContain(
+                "/api/classics/sancai/assets/visual-assets/3001/5002/generated-content"
+            );
+            expect(openWindow).toHaveBeenCalledWith(
+                "blob:sancai-entry-preview",
+                "_blank",
+                "noopener,noreferrer"
+            );
+        } finally {
+            Object.defineProperty(URL, "createObjectURL", {
+                configurable: true,
+                value: originalCreateObjectURL
+            });
+            Object.defineProperty(URL, "revokeObjectURL", {
+                configurable: true,
+                value: originalRevokeObjectURL
+            });
+            openWindow.mockRestore();
+        }
+    });
+
     it("saves visual asset editable fields through the formal service contract", async () => {
         const user = userEvent.setup();
         renderEntryPanel();
