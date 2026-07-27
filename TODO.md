@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `db/data-source/system.json`：补齐知识图谱抽取菜单种子
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-FRONTEND-FLOW.md`
-    - 范围对象：`db/data-source/system.json`、`db/data/system.sql`
-    - 处理动作：新增 `知识治理/知识图谱/知识抽取任务` 菜单并同步 knowledge 权限组。
-    - 验收点：系统菜单种子包含 `/knowledge/graph-extraction` 且权限为 `knowledge:graph:view/edit/apply`。
-    - 重要度：9/10
-
 - [ ] `KnowledgeGraphWorkbenchResponses`：定义统一稿件树接口契约
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-FRONTEND-FLOW.md`
