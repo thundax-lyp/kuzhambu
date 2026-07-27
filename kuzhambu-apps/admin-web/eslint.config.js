@@ -514,6 +514,10 @@ const localRules = {
         },
         "no-antd-card-direct-in-pages": {
             create(context) {
+                const antdNamespaceLocalNames = new Set();
+                const errorMessage =
+                    "ADMIN_WEB_UI_NO_ANTD_CARD_DIRECT_IN_PAGES: pages/**/*.{ts,tsx} must use KuzhambuCard from src/components/kuzhambu-card/ instead of importing Card from antd.";
+
                 const readNormalizedFilePath = () => {
                     return context.physicalFilename.split(path.sep).join("/");
                 };
@@ -525,6 +529,30 @@ const localRules = {
                     );
                 };
 
+                const readJsxName = (nameNode) => {
+                    if (nameNode.type === "JSXIdentifier") {
+                        return nameNode.name;
+                    }
+                    if (nameNode.type === "JSXMemberExpression") {
+                        return `${readJsxName(nameNode.object)}.${readJsxName(nameNode.property)}`;
+                    }
+                    return "";
+                };
+
+                const isAntdCardMemberName = (nameNode) => {
+                    if (nameNode.type !== "JSXMemberExpression") {
+                        return false;
+                    }
+
+                    const componentName = readJsxName(nameNode);
+                    return Array.from(antdNamespaceLocalNames).some((namespaceName) => {
+                        return (
+                            componentName === `${namespaceName}.Card` ||
+                            componentName.startsWith(`${namespaceName}.Card.`)
+                        );
+                    });
+                };
+
                 return {
                     ImportDeclaration(node) {
                         if (node.source.value !== "antd" || !isPageFile(readNormalizedFilePath())) {
@@ -532,6 +560,13 @@ const localRules = {
                         }
 
                         node.specifiers.forEach((specifier) => {
+                            if (
+                                specifier.type === "ImportNamespaceSpecifier" &&
+                                specifier.local.name
+                            ) {
+                                antdNamespaceLocalNames.add(specifier.local.name);
+                            }
+
                             if (
                                 specifier.type !== "ImportSpecifier" ||
                                 specifier.imported.name !== "Card"
@@ -541,9 +576,21 @@ const localRules = {
 
                             context.report({
                                 node: specifier,
-                                message:
-                                    "ADMIN_WEB_UI_NO_ANTD_CARD_DIRECT_IN_PAGES: pages/**/*.{ts,tsx} must use KuzhambuCard from src/components/kuzhambu-card/ instead of importing Card from antd."
+                                message: errorMessage
                             });
+                        });
+                    },
+                    JSXOpeningElement(node) {
+                        if (
+                            !isPageFile(readNormalizedFilePath()) ||
+                            !isAntdCardMemberName(node.name)
+                        ) {
+                            return;
+                        }
+
+                        context.report({
+                            node,
+                            message: errorMessage
                         });
                     }
                 };
