@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `src/pages/ai/prompts/components/prompt-edit-drawer.tsx`：清理提示词能力字段 direct Form.Item
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-FORM-USEFORM-MIGRATION.md`
-    - 范围对象：`src/pages/ai/prompts/components/prompt-edit-drawer.tsx`
-    - 处理动作：将能力字段的 `name` 和校验规则提升到外层 `KuzhambuFormItem`。
-    - 验收点：文件中不再出现 direct AntD `Form.Item`，能力选择仍由表单字段 `capability` 托管。
-    - 重要度：7/10
-
 - [ ] `src/pages/auth/login/login-page.tsx`：迁移登录页表单组件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-FORM-USEFORM-MIGRATION.md`
