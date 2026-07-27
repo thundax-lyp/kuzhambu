@@ -196,6 +196,13 @@ describe("RefinementPage", () => {
         fireEvent.click(await screen.findByText("应用任务"));
 
         await waitFor(() => {
+            expect(service.applyTask).toHaveBeenCalled();
+        });
+        expect(vi.mocked(service.applyTask).mock.calls[0]?.[0]).toEqual({
+            refinementTaskId: 31,
+            appliedBy: 99
+        });
+        await waitFor(() => {
             expect(screen.getByRole("link", { name: "查看图谱结果" })).toHaveAttribute(
                 "href",
                 "/knowledge/graph-results?graphVersionId=71"

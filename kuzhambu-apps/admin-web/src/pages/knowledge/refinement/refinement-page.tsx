@@ -184,11 +184,27 @@ export const RefinementPage = () => {
             openedBy: currentUserId
         });
     };
+    const requireCurrentUserId = () => {
+        if (!currentUserId) {
+            throw new Error("当前用户信息未加载完成，请稍后重试");
+        }
+        return currentUserId;
+    };
+    const applyRefinementTask = () => {
+        if (!currentUserId) {
+            messageApi.warning("当前用户信息未加载完成，请稍后重试");
+            return;
+        }
+        applyTaskMutation.mutate({
+            refinementTaskId: readRefinementDetailTaskId(detail),
+            appliedBy: currentUserId
+        });
+    };
 
     const entityMutation = useMutation({
         mutationFn: async (request: RefinementEntityRecord) => {
             const refinementTaskId = readRefinementDetailTaskId(detail);
-            const operatorId = 1;
+            const operatorId = requireCurrentUserId();
             if (request.entityKey && request.confirmationStatus === "MANUAL_CONFIRMED") {
                 return service.confirmEntity({
                     refinementTaskId,
@@ -225,7 +241,7 @@ export const RefinementPage = () => {
             service.deleteEntity({
                 refinementTaskId: readRefinementDetailTaskId(detail),
                 entityKey: record.entityKey || "",
-                operatorId: 1
+                operatorId: requireCurrentUserId()
             }),
         onSuccess: async () => {
             await refreshDetail(readRefinementDetailTaskId(detail));
@@ -240,7 +256,7 @@ export const RefinementPage = () => {
     const relationMutation = useMutation({
         mutationFn: async (request: RefinementRelationRecord) => {
             const refinementTaskId = readRefinementDetailTaskId(detail);
-            const operatorId = 1;
+            const operatorId = requireCurrentUserId();
             if (request.relationKey && request.confirmationStatus === "MANUAL_CONFIRMED") {
                 return service.confirmRelation({
                     refinementTaskId,
@@ -282,7 +298,7 @@ export const RefinementPage = () => {
             service.deleteRelation({
                 refinementTaskId: readRefinementDetailTaskId(detail),
                 relationKey: record.relationKey || "",
-                operatorId: 1
+                operatorId: requireCurrentUserId()
             }),
         onSuccess: async () => {
             await refreshDetail(readRefinementDetailTaskId(detail));
@@ -313,7 +329,7 @@ export const RefinementPage = () => {
                 annotationId: existingAnnotation?.annotationId,
                 ...annotationTarget,
                 ...request,
-                operatorId: 1
+                operatorId: requireCurrentUserId()
             });
         },
         onSuccess: async () => {
@@ -330,7 +346,7 @@ export const RefinementPage = () => {
         mutationFn: async (annotation: QualityAnnotationRecord) =>
             service.deleteAnnotation({
                 annotationId: annotation.annotationId,
-                operatorId: 1
+                operatorId: requireCurrentUserId()
             }),
         onSuccess: async () => {
             await refreshDetail(readRefinementDetailTaskId(detail));
@@ -433,12 +449,7 @@ export const RefinementPage = () => {
                     setRelationEditModalOpen(true);
                 }}
                 onAnnotate={openAnnotation}
-                onApplyTask={() =>
-                    applyTaskMutation.mutate({
-                        refinementTaskId: readRefinementDetailTaskId(detail),
-                        appliedBy: 1
-                    })
-                }
+                onApplyTask={applyRefinementTask}
                 onClose={() => {
                     setDetail(null);
                     setApplyFollowUp(null);
