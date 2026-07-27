@@ -1,9 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Card, Empty, Tabs, Typography } from "antd";
+import { App, Empty, Tabs, Typography } from "antd";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
-import { KuzhambuPage, KuzhambuSpace, KuzhambuButton, KuzhambuAlert } from "@/components";
+import {
+    KuzhambuPage,
+    KuzhambuSpace,
+    KuzhambuButton,
+    KuzhambuAlert,
+    KuzhambuCard
+} from "@/components";
 
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { QualityReportGenerateForm } from "./components/quality-report-generate-form";
@@ -181,7 +187,7 @@ export const QualityReportPage = () => {
                     type="info"
                 />
 
-                <Card className="knowledge-quality-report-card" title="生成报告">
+                <KuzhambuCard className="knowledge-quality-report-card" title="生成报告">
                     <QualityReportGenerateForm
                         disabled={!canGenerate}
                         graphVersionId={graphVersionId}
@@ -190,7 +196,7 @@ export const QualityReportPage = () => {
                         onChange={setGraphVersionId}
                         onGenerate={() => generateMutation.mutate(graphVersionId || 0)}
                     />
-                </Card>
+                </KuzhambuCard>
 
                 {currentReport ? (
                     <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
@@ -256,7 +262,7 @@ export const QualityReportPage = () => {
                                 type="success"
                             />
                         ) : null}
-                        <Card className="knowledge-quality-report-card" title="报告详情">
+                        <KuzhambuCard className="knowledge-quality-report-card" title="报告详情">
                             <Tabs
                                 items={[
                                     {
@@ -298,16 +304,16 @@ export const QualityReportPage = () => {
                                     }
                                 ]}
                             />
-                        </Card>
+                        </KuzhambuCard>
                     </KuzhambuSpace>
                 ) : (
-                    <Card className="knowledge-quality-report-card">
+                    <KuzhambuCard className="knowledge-quality-report-card">
                         <Empty
                             className="knowledge-quality-report-empty"
                             description="尚未生成质量报告"
                             image={Empty.PRESENTED_IMAGE_SIMPLE}
                         />
-                    </Card>
+                    </KuzhambuCard>
                 )}
 
                 <section aria-labelledby="knowledge-quality-report-history">
@@ -317,13 +323,13 @@ export const QualityReportPage = () => {
                         </Title>
                         <Text type="secondary">查看已发布报告并切换摘要上下文。</Text>
                     </div>
-                    <Card className="knowledge-quality-report-card" variant="borderless">
+                    <KuzhambuCard className="knowledge-quality-report-card" variant="borderless">
                         <QualityReportHistoryTable
                             loading={reportPageQuery.isLoading || reportDetailMutation.isPending}
                             reports={reportItems}
                             onView={(report) => reportDetailMutation.mutate(report)}
                         />
-                    </Card>
+                    </KuzhambuCard>
                 </section>
             </KuzhambuSpace>
         </KuzhambuPage>

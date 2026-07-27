@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Card, Typography } from "antd";
+import { App, Typography } from "antd";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
-import { KuzhambuSpace, KuzhambuPage } from "@/components";
+import { KuzhambuSpace, KuzhambuPage, KuzhambuCard } from "@/components";
 import * as currentUserService from "@/service/current-user-service";
 
 import { RefinementEntityDeleteModal } from "./components/refinement-entity-delete-modal";
@@ -413,7 +413,7 @@ export const RefinementPage = () => {
                         </Title>
                         <Text type="secondary">按门类、来源和状态筛选后打开任务进入精修。</Text>
                     </div>
-                    <Card className="knowledge-refinement-card" variant="borderless">
+                    <KuzhambuCard className="knowledge-refinement-card" variant="borderless">
                         <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
                             <RefinementFilterForm
                                 loading={taskPageQuery.isLoading}
@@ -426,7 +426,7 @@ export const RefinementPage = () => {
                                 onOpenTask={(item) => openRefinementTask(item.graphVersionId || 0)}
                             />
                         </KuzhambuSpace>
-                    </Card>
+                    </KuzhambuCard>
                 </section>
             </KuzhambuSpace>
 

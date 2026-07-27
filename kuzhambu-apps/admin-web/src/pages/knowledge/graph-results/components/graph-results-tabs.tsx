@@ -1,5 +1,5 @@
-import { Card, Empty, Tabs, Typography } from "antd";
-import { KuzhambuAlert, KuzhambuSpace } from "@/components";
+import { Empty, Tabs, Typography } from "antd";
+import { KuzhambuAlert, KuzhambuSpace, KuzhambuCard } from "@/components";
 
 import { GraphEntityDetail } from "./graph-entity-detail";
 import { GraphEntityTable } from "./graph-entity-table";
@@ -127,7 +127,7 @@ export const GraphResultsTabs = ({
     };
 
     return (
-        <Card className="knowledge-graph-results-shell" variant="borderless">
+        <KuzhambuCard className="knowledge-graph-results-shell" variant="borderless">
             <Tabs
                 activeKey={activeTab}
                 onChange={(value) => onActiveTabChange(value as GraphResultsTabKey)}
@@ -335,6 +335,6 @@ export const GraphResultsTabs = ({
                     }
                 ]}
             />
-        </Card>
+        </KuzhambuCard>
     );
 };

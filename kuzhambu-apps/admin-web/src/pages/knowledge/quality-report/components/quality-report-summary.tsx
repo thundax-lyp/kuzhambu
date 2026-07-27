@@ -1,5 +1,6 @@
-import { Card, Col, Row, Statistic } from "antd";
+import { Col, Row, Statistic } from "antd";
 import type { QualityReportRecord } from "../quality-report-types";
+import { KuzhambuCard } from "@/components";
 
 interface QualityReportSummaryProps {
     report?: QualityReportRecord | null;
@@ -11,27 +12,27 @@ export const QualityReportSummary = ({ report = null }: QualityReportSummaryProp
     return (
         <Row gutter={[16, 16]}>
             <Col xs={24} sm={12} lg={6}>
-                <Card className="knowledge-quality-report-stat-card">
+                <KuzhambuCard className="knowledge-quality-report-stat-card">
                     <Statistic title="实体覆盖率" value={formatRate(report?.entityCoverageRate)} />
-                </Card>
+                </KuzhambuCard>
             </Col>
             <Col xs={24} sm={12} lg={6}>
-                <Card className="knowledge-quality-report-stat-card">
+                <KuzhambuCard className="knowledge-quality-report-stat-card">
                     <Statistic
                         title="关系准确率"
                         value={formatRate(report?.relationAccuracyRate)}
                     />
-                </Card>
+                </KuzhambuCard>
             </Col>
             <Col xs={24} sm={12} lg={6}>
-                <Card className="knowledge-quality-report-stat-card">
+                <KuzhambuCard className="knowledge-quality-report-stat-card">
                     <Statistic title="世系覆盖率" value={formatRate(report?.lineageCoverageRate)} />
-                </Card>
+                </KuzhambuCard>
             </Col>
             <Col xs={24} sm={12} lg={6}>
-                <Card className="knowledge-quality-report-stat-card">
+                <KuzhambuCard className="knowledge-quality-report-stat-card">
                     <Statistic title="完整度" value={formatRate(report?.completenessRate)} />
-                </Card>
+                </KuzhambuCard>
             </Col>
         </Row>
     );
