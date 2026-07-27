@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { readKuzhambuFormLayoutTier, type KuzhambuFormLayoutTier } from "../kuzhambu-form-layout";
 
-export const useContainerLayoutTier = () => {
+export const useKuzhambuFormLayoutTier = () => {
     const containerRef = useRef<HTMLDivElement | null>(null);
     const [layoutTier, setLayoutTier] = useState<KuzhambuFormLayoutTier>("lg");
 
