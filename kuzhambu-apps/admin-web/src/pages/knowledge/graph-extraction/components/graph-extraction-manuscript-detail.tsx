@@ -1,5 +1,5 @@
-import { Card, Descriptions, Empty, Tag, Typography } from "antd";
-import { KuzhambuButton, KuzhambuSpace } from "@/components";
+import { Descriptions, Empty, Tag, Typography } from "antd";
+import { KuzhambuButton, KuzhambuSpace, KuzhambuCard } from "@/components";
 
 import type {
     GraphExtractionTaskType,
@@ -72,12 +72,12 @@ export const GraphExtractionManuscriptDetail = ({
 }: GraphExtractionManuscriptDetailProps) => {
     if (!selectedNode) {
         return (
-            <Card className="graph-extraction-create-card" variant="borderless">
+            <KuzhambuCard className="graph-extraction-create-card" variant="borderless">
                 <Empty
                     description="请选择一篇稿件查看图谱状态"
                     image={Empty.PRESENTED_IMAGE_SIMPLE}
                 />
-            </Card>
+            </KuzhambuCard>
         );
     }
 
@@ -90,7 +90,7 @@ export const GraphExtractionManuscriptDetail = ({
 
     return (
         <KuzhambuSpace orientation="vertical" size={16} style={{ width: "100%" }}>
-            <Card
+            <KuzhambuCard
                 className="graph-extraction-create-card"
                 title={detail?.title || selectedNode.title || "稿件图谱详情"}
                 variant="borderless"
@@ -170,7 +170,7 @@ export const GraphExtractionManuscriptDetail = ({
                         ) : null}
                     </KuzhambuSpace>
                 </KuzhambuSpace>
-            </Card>
+            </KuzhambuCard>
             <GraphExtractionCandidatePreview candidate={candidate} loading={candidateLoading} />
         </KuzhambuSpace>
     );

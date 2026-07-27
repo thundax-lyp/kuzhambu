@@ -1,6 +1,7 @@
-import { Card, Descriptions, Empty, Typography } from "antd";
+import { Descriptions, Empty, Typography } from "antd";
 
 import type { GraphWorkbenchCandidateRecord } from "../graph-extraction-types";
+import { KuzhambuCard } from "@/components";
 
 interface GraphExtractionCandidatePreviewProps {
     candidate?: GraphWorkbenchCandidateRecord | null;
@@ -15,14 +16,18 @@ export const GraphExtractionCandidatePreview = ({
 }: GraphExtractionCandidatePreviewProps) => {
     if (!candidate && !loading) {
         return (
-            <Card className="graph-extraction-create-card" title="AI 候选" variant="borderless">
+            <KuzhambuCard
+                className="graph-extraction-create-card"
+                title="AI 候选"
+                variant="borderless"
+            >
                 <Empty description="暂无 AI 候选" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-            </Card>
+            </KuzhambuCard>
         );
     }
 
     return (
-        <Card
+        <KuzhambuCard
             className="graph-extraction-create-card"
             loading={loading}
             title="AI 候选"
@@ -41,6 +46,6 @@ export const GraphExtractionCandidatePreview = ({
                     {candidate.candidatePayloadJson}
                 </Paragraph>
             ) : null}
-        </Card>
+        </KuzhambuCard>
     );
 };
