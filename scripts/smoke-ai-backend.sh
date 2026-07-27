@@ -302,15 +302,15 @@ read_smoke() {
         log_skip "ai.refinement.task.stream" "task/page returned no rows"
     fi
 
-    api_post "ai.invocation.call.page" "/api/ai/invocation/call/page" '{"pageNo":1,"pageSize":1}' || true
+    api_post "ai.invocation.invocation-log.page" "/api/ai/invocation/invocation-log/page" '{"pageNo":1,"pageSize":1}' || true
     local call_id
     call_id="$(jq -r '.data.records[0].callId // empty' "${LAST_RESPONSE_FILE}" 2>/dev/null || true)"
     if [[ -n "${call_id}" ]]; then
-        api_post "ai.invocation.call.get" "/api/ai/invocation/call/get" "{\"callId\":${call_id}}" || true
+        api_post "ai.invocation.invocation-log.get" "/api/ai/invocation/invocation-log/get" "{\"callId\":${call_id}}" || true
     else
-        log_skip "ai.invocation.call.get" "call/page returned no rows"
+        log_skip "ai.invocation.invocation-log.get" "invocation-log/page returned no rows"
     fi
-    api_post "ai.invocation.call.summary" "/api/ai/invocation/call/summary" '{}' || true
+    api_post "ai.invocation.invocation-log.summary" "/api/ai/invocation/invocation-log/summary" '{}' || true
 
     api_post "ai.invocation.candidate.list" "/api/ai/invocation/candidate/list" '{}' || true
     local candidate_id
