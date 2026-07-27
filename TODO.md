@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `KnowledgeGraphWorkbenchResponses`：定义统一稿件树接口契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-FRONTEND-FLOW.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/workbench/controller/request/KnowledgeGraphWorkbenchRequests.java`、`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/workbench/controller/response/KnowledgeGraphWorkbenchResponses.java`
-    - 处理动作：定义统一树节点、稿件详情、候选摘要和应用结果 request/response。
-    - 验收点：接口契约不暴露 `SancaiDTO`、`WangqiDTO` 或 `MingCustomsDTO`。
-    - 重要度：10/10
-
 - [ ] `KnowledgeGraphWorkbenchController`：新增 knowledge 图谱工作台接口入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-FRONTEND-FLOW.md`
