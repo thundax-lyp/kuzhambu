@@ -17,6 +17,7 @@ import com.thundax.kuzhambu.ai.application.discovery.result.DiscoveryAiInvokeRes
 import com.thundax.kuzhambu.ai.application.discovery.service.DiscoveryAiApplicationService;
 import com.thundax.kuzhambu.ai.application.facade.assembler.AiFacadeAssembler;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
+import com.thundax.kuzhambu.ai.application.knowledge.service.KnowledgeAiExtractionApplicationService;
 import com.thundax.kuzhambu.ai.application.report.result.AiReportSummaryResult;
 import com.thundax.kuzhambu.ai.application.report.result.AiReportSummaryResult.TopCapabilityResult;
 import com.thundax.kuzhambu.ai.application.report.service.AiReportApplicationService;
@@ -40,7 +41,6 @@ import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateApplyCheck;
 import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainService;
 import com.thundax.kuzhambu.ai.domain.knowledge.model.entity.KnowledgeAiExtractionRecord;
 import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionInput;
-import com.thundax.kuzhambu.ai.domain.knowledge.repository.KnowledgeAiExtractionRepository;
 import com.thundax.kuzhambu.ai.facade.request.AiReportSummaryFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.CreateAiBatchJobFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
@@ -76,7 +76,7 @@ class AiFacadeImplTest {
                 aiReportApplicationService,
                 mock(AiBatchJobApplicationService.class),
                 mock(DiscoveryAiApplicationService.class),
-                mock(KnowledgeAiExtractionRepository.class),
+                mock(KnowledgeAiExtractionApplicationService.class),
                 mock(AiInvocationRepository.class),
                 mock(AiCandidateDomainService.class));
 
@@ -106,7 +106,7 @@ class AiFacadeImplTest {
                 mock(AiReportApplicationService.class),
                 aiBatchJobApplicationService,
                 mock(DiscoveryAiApplicationService.class),
-                mock(KnowledgeAiExtractionRepository.class),
+                mock(KnowledgeAiExtractionApplicationService.class),
                 mock(AiInvocationRepository.class),
                 mock(AiCandidateDomainService.class));
         CreateAiBatchJobFacadeRequest request = CreateAiBatchJobFacadeRequest.builder()
@@ -164,7 +164,7 @@ class AiFacadeImplTest {
                 mock(AiReportApplicationService.class),
                 mock(AiBatchJobApplicationService.class),
                 discoveryAiApplicationService,
-                mock(KnowledgeAiExtractionRepository.class),
+                mock(KnowledgeAiExtractionApplicationService.class),
                 mock(AiInvocationRepository.class),
                 mock(AiCandidateDomainService.class));
 
@@ -230,7 +230,7 @@ class AiFacadeImplTest {
                 mock(AiReportApplicationService.class),
                 mock(AiBatchJobApplicationService.class),
                 discoveryAiApplicationService,
-                mock(KnowledgeAiExtractionRepository.class),
+                mock(KnowledgeAiExtractionApplicationService.class),
                 mock(AiInvocationRepository.class),
                 mock(AiCandidateDomainService.class));
 
@@ -287,7 +287,7 @@ class AiFacadeImplTest {
                 mock(AiReportApplicationService.class),
                 mock(AiBatchJobApplicationService.class),
                 discoveryAiApplicationService,
-                mock(KnowledgeAiExtractionRepository.class),
+                mock(KnowledgeAiExtractionApplicationService.class),
                 mock(AiInvocationRepository.class),
                 mock(AiCandidateDomainService.class));
         List<String> deltas = new java.util.ArrayList<>();
@@ -317,8 +317,9 @@ class AiFacadeImplTest {
 
     @Test
     void extractKnowledgeGraphShouldMapRequestAndResponse() {
-        KnowledgeAiExtractionRepository knowledgeAiExtractionRepository = mock(KnowledgeAiExtractionRepository.class);
-        when(knowledgeAiExtractionRepository.extractGraph(any())).thenAnswer(invocation -> {
+        KnowledgeAiExtractionApplicationService knowledgeAiExtractionApplicationService =
+                mock(KnowledgeAiExtractionApplicationService.class);
+        when(knowledgeAiExtractionApplicationService.extractGraph(any())).thenAnswer(invocation -> {
             KnowledgeAiExtractionInput input = invocation.getArgument(0);
             assertEquals("GRAPH", input.getTaskType());
             assertEquals("ENTRY", input.getScopeType());
@@ -354,7 +355,7 @@ class AiFacadeImplTest {
                 mock(AiReportApplicationService.class),
                 mock(AiBatchJobApplicationService.class),
                 mock(DiscoveryAiApplicationService.class),
-                knowledgeAiExtractionRepository,
+                knowledgeAiExtractionApplicationService,
                 mock(AiInvocationRepository.class),
                 mock(AiCandidateDomainService.class));
 
@@ -391,8 +392,9 @@ class AiFacadeImplTest {
 
     @Test
     void extractKnowledgeTagsShouldMapRequestAndResponse() {
-        KnowledgeAiExtractionRepository knowledgeAiExtractionRepository = mock(KnowledgeAiExtractionRepository.class);
-        when(knowledgeAiExtractionRepository.extractTags(any())).thenAnswer(invocation -> {
+        KnowledgeAiExtractionApplicationService knowledgeAiExtractionApplicationService =
+                mock(KnowledgeAiExtractionApplicationService.class);
+        when(knowledgeAiExtractionApplicationService.extractTags(any())).thenAnswer(invocation -> {
             KnowledgeAiExtractionInput input = invocation.getArgument(0);
             assertEquals("TAG", input.getTaskType());
             assertEquals("CONTENT", input.getScopeType());
@@ -421,7 +423,7 @@ class AiFacadeImplTest {
                 mock(AiReportApplicationService.class),
                 mock(AiBatchJobApplicationService.class),
                 mock(DiscoveryAiApplicationService.class),
-                knowledgeAiExtractionRepository,
+                knowledgeAiExtractionApplicationService,
                 mock(AiInvocationRepository.class),
                 mock(AiCandidateDomainService.class));
 
@@ -466,7 +468,7 @@ class AiFacadeImplTest {
                 mock(AiReportApplicationService.class),
                 mock(AiBatchJobApplicationService.class),
                 mock(DiscoveryAiApplicationService.class),
-                mock(KnowledgeAiExtractionRepository.class),
+                mock(KnowledgeAiExtractionApplicationService.class),
                 aiInvocationRepository,
                 mock(AiCandidateDomainService.class));
 
@@ -504,7 +506,7 @@ class AiFacadeImplTest {
                 mock(AiReportApplicationService.class),
                 mock(AiBatchJobApplicationService.class),
                 mock(DiscoveryAiApplicationService.class),
-                mock(KnowledgeAiExtractionRepository.class),
+                mock(KnowledgeAiExtractionApplicationService.class),
                 mock(AiInvocationRepository.class),
                 aiCandidateDomainService);
 
@@ -540,7 +542,7 @@ class AiFacadeImplTest {
                 mock(AiReportApplicationService.class),
                 mock(AiBatchJobApplicationService.class),
                 mock(DiscoveryAiApplicationService.class),
-                mock(KnowledgeAiExtractionRepository.class),
+                mock(KnowledgeAiExtractionApplicationService.class),
                 mock(AiInvocationRepository.class),
                 aiCandidateDomainService);
 
@@ -558,14 +560,14 @@ class AiFacadeImplTest {
             AiReportApplicationService aiReportApplicationService,
             AiBatchJobApplicationService aiBatchJobApplicationService,
             DiscoveryAiApplicationService discoveryAiApplicationService,
-            KnowledgeAiExtractionRepository knowledgeAiExtractionRepository,
+            KnowledgeAiExtractionApplicationService knowledgeAiExtractionApplicationService,
             AiInvocationRepository aiInvocationRepository,
             AiCandidateDomainService aiCandidateDomainService) {
         return new AiFacadeImpl(
                 aiReportApplicationService,
                 aiBatchJobApplicationService,
                 discoveryAiApplicationService,
-                knowledgeAiExtractionRepository,
+                knowledgeAiExtractionApplicationService,
                 aiInvocationRepository,
                 aiCandidateDomainService,
                 new AiFacadeAssembler());

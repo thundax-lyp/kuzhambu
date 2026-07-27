@@ -4,10 +4,10 @@ import com.thundax.kuzhambu.ai.application.batch.command.AiBatchJobCreateCommand
 import com.thundax.kuzhambu.ai.application.batch.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.discovery.service.DiscoveryAiApplicationService;
 import com.thundax.kuzhambu.ai.application.facade.assembler.AiFacadeAssembler;
+import com.thundax.kuzhambu.ai.application.knowledge.service.KnowledgeAiExtractionApplicationService;
 import com.thundax.kuzhambu.ai.application.report.service.AiReportApplicationService;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainService;
-import com.thundax.kuzhambu.ai.domain.knowledge.repository.KnowledgeAiExtractionRepository;
 import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.DiscoveryAiStreamHandler;
 import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
@@ -37,7 +37,7 @@ public class AiFacadeImpl implements AiFacade {
     private final AiReportApplicationService aiReportApplicationService;
     private final AiBatchJobApplicationService aiBatchJobApplicationService;
     private final DiscoveryAiApplicationService discoveryAiApplicationService;
-    private final KnowledgeAiExtractionRepository knowledgeAiExtractionRepository;
+    private final KnowledgeAiExtractionApplicationService knowledgeAiExtractionApplicationService;
     private final AiInvocationRepository aiInvocationRepository;
     private final AiCandidateDomainService aiCandidateDomainService;
     private final AiFacadeAssembler aiFacadeAssembler;
@@ -46,14 +46,14 @@ public class AiFacadeImpl implements AiFacade {
             AiReportApplicationService aiReportApplicationService,
             AiBatchJobApplicationService aiBatchJobApplicationService,
             DiscoveryAiApplicationService discoveryAiApplicationService,
-            KnowledgeAiExtractionRepository knowledgeAiExtractionRepository,
+            KnowledgeAiExtractionApplicationService knowledgeAiExtractionApplicationService,
             AiInvocationRepository aiInvocationRepository,
             AiCandidateDomainService aiCandidateDomainService,
             AiFacadeAssembler aiFacadeAssembler) {
         this.aiReportApplicationService = aiReportApplicationService;
         this.aiBatchJobApplicationService = aiBatchJobApplicationService;
         this.discoveryAiApplicationService = discoveryAiApplicationService;
-        this.knowledgeAiExtractionRepository = knowledgeAiExtractionRepository;
+        this.knowledgeAiExtractionApplicationService = knowledgeAiExtractionApplicationService;
         this.aiInvocationRepository = aiInvocationRepository;
         this.aiCandidateDomainService = aiCandidateDomainService;
         this.aiFacadeAssembler = aiFacadeAssembler;
@@ -95,25 +95,25 @@ public class AiFacadeImpl implements AiFacade {
     @Override
     public KnowledgeAiExtractionFacadeResponse extractKnowledgeRelations(KnowledgeAiExtractionFacadeRequest request) {
         return aiFacadeAssembler.toFacadeResponse(
-                knowledgeAiExtractionRepository.extractRelations(aiFacadeAssembler.toDomainInput(request)));
+                knowledgeAiExtractionApplicationService.extractRelations(aiFacadeAssembler.toDomainInput(request)));
     }
 
     @Override
     public KnowledgeAiExtractionFacadeResponse extractKnowledgeGraph(KnowledgeAiExtractionFacadeRequest request) {
         return aiFacadeAssembler.toFacadeResponse(
-                knowledgeAiExtractionRepository.extractGraph(aiFacadeAssembler.toDomainInput(request)));
+                knowledgeAiExtractionApplicationService.extractGraph(aiFacadeAssembler.toDomainInput(request)));
     }
 
     @Override
     public KnowledgeAiExtractionFacadeResponse extractKnowledgeLineage(KnowledgeAiExtractionFacadeRequest request) {
         return aiFacadeAssembler.toFacadeResponse(
-                knowledgeAiExtractionRepository.extractLineage(aiFacadeAssembler.toDomainInput(request)));
+                knowledgeAiExtractionApplicationService.extractLineage(aiFacadeAssembler.toDomainInput(request)));
     }
 
     @Override
     public KnowledgeAiExtractionFacadeResponse extractKnowledgeTags(KnowledgeAiExtractionFacadeRequest request) {
         return aiFacadeAssembler.toFacadeResponse(
-                knowledgeAiExtractionRepository.extractTags(aiFacadeAssembler.toDomainInput(request)));
+                knowledgeAiExtractionApplicationService.extractTags(aiFacadeAssembler.toDomainInput(request)));
     }
 
     @Override
