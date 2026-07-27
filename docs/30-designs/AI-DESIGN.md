@@ -107,7 +107,7 @@ Application 层负责模型能力校验、提示词变量校验、主备切换�
 
 Knowledge 抽取协作语义：
 
-- `KnowledgeAiExtractionDomainService` 提供 `extractRelations`、`extractGraph`、`extractLineage` 三个明确业务动作。
+- `KnowledgeAiExtractionApplicationService` 提供 `extractRelations`、`extractGraph`、`extractLineage`、`extractTags` 四个明确业务动作。
 - AI application 把 Knowledge 业务动作解析为稳定的 `operation + capability + workerPath`，并统一写入 `ai_invocation_log` 与 `ai_candidate`。
 - `ai_candidate.result_payload` 是 Knowledge 抽取候选快照真相源；正式知识事实仍由 Knowledge 应用后写入。
 
