@@ -37,9 +37,10 @@ export const RefinementEntityEditModal = ({
     return (
         <KuzhambuModal
             testId="knowledge-refinement-entity-edit-modal"
-            title={entity?.draftId ? "编辑实体草稿" : "新增实体草稿"}
-            open={open}
             confirmLoading={saving}
+            forceRender
+            open={open}
+            title={entity?.draftId ? "编辑实体草稿" : "新增实体草稿"}
             onCancel={onCancel}
             onOk={() => form.submit()}
         >
