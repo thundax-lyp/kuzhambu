@@ -1,13 +1,14 @@
+import { UnorderedListOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Col, Empty, Row, Typography } from "antd";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { App, Empty, Splitter } from "antd";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import {
     KuzhambuSpace,
     KuzhambuPage,
     KuzhambuButton,
     KuzhambuAlert,
-    KuzhambuCard
+    KuzhambuDrawer
 } from "@/components";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 
@@ -30,10 +31,17 @@ import type { GraphWorkbenchSourceContentType } from "./graph-extraction-types";
 
 import "./graph-extraction-page.css";
 
-const { Text, Title } = Typography;
-
 const REGENERATE_TRIGGER_SOURCE: GraphExtractionTriggerSource = "REGENERATE";
 const REFINEMENT_APPLIED_TRIGGER_SOURCE: GraphExtractionTriggerSource = "REFINEMENT_APPLIED";
+const WORK_AREA_COMPACT_MEDIA_QUERY = "(max-width: 768px)";
+const DEFAULT_TREE_PANEL_SIZE = 320;
+const COLLAPSED_TREE_PANEL_SIZE = 0;
+
+const isCompactWorkArea = () =>
+    typeof window !== "undefined" && window.matchMedia(WORK_AREA_COMPACT_MEDIA_QUERY).matches;
+
+const getInitialTreePanelSize = () =>
+    isCompactWorkArea() ? COLLAPSED_TREE_PANEL_SIZE : DEFAULT_TREE_PANEL_SIZE;
 
 const readBooleanSearchParam = (value: string | null, fallback: boolean) => {
     if (value === null) {
@@ -91,21 +99,37 @@ export const GraphExtractionPage = () => {
     });
     const [detailTaskId, setDetailTaskId] = useState<number | null>(null);
     const [taskDetailDrawerOpen, setTaskDetailDrawerOpen] = useState(false);
+    const [taskListDrawerOpen, setTaskListDrawerOpen] = useState(false);
     const [manuscriptChildrenByNodeKey, setManuscriptChildrenByNodeKey] = useState<
         Record<string, GraphWorkbenchManuscriptNode[]>
     >({});
-    const [manuscriptSearchText, setManuscriptSearchText] = useState("");
-    const [effectiveManuscriptSearchText, setEffectiveManuscriptSearchText] = useState("");
     const [selectedManuscript, setSelectedManuscript] =
         useState<GraphWorkbenchManuscriptNode | null>(null);
-    const normalizedEffectiveManuscriptSearchText = effectiveManuscriptSearchText.trim();
+    const [treePanelSize, setTreePanelSize] = useState<number>(getInitialTreePanelSize);
+    const [compactWorkArea, setCompactWorkArea] = useState(isCompactWorkArea);
+    const loadedManuscriptNodeKeysRef = useRef<Set<string>>(new Set());
+    const loadingManuscriptNodeKeysRef = useRef<Set<string>>(new Set());
 
     useEffect(() => {
-        const timer = window.setTimeout(() => {
-            setEffectiveManuscriptSearchText(manuscriptSearchText);
-        }, 300);
-        return () => window.clearTimeout(timer);
-    }, [manuscriptSearchText]);
+        if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+            return undefined;
+        }
+
+        const mediaQueryList = window.matchMedia(WORK_AREA_COMPACT_MEDIA_QUERY);
+        const syncTreePanelSize = (compact: boolean) => {
+            setCompactWorkArea(compact);
+            setTreePanelSize(compact ? COLLAPSED_TREE_PANEL_SIZE : DEFAULT_TREE_PANEL_SIZE);
+        };
+        const handleMediaChange = (event: MediaQueryListEvent) => {
+            syncTreePanelSize(event.matches);
+        };
+
+        syncTreePanelSize(mediaQueryList.matches);
+        mediaQueryList.addEventListener("change", handleMediaChange);
+        return () => {
+            mediaQueryList.removeEventListener("change", handleMediaChange);
+        };
+    }, []);
 
     const taskPageQuery = useQuery({
         queryKey: ["knowledge", "graph-extraction", "tasks", taskQuery],
@@ -120,17 +144,8 @@ export const GraphExtractionPage = () => {
         retry: false
     });
     const manuscriptTreeQuery = useQuery({
-        queryKey: [
-            "knowledge",
-            "graph-workbench",
-            "manuscript-tree",
-            "roots",
-            normalizedEffectiveManuscriptSearchText
-        ],
-        queryFn: () =>
-            workbenchService.listManuscriptTree({
-                keyword: normalizedEffectiveManuscriptSearchText || undefined
-            }),
+        queryKey: ["knowledge", "graph-workbench", "manuscript-tree", "roots"],
+        queryFn: () => workbenchService.listManuscriptTree({}),
         enabled: canViewGraph,
         retry: false
     });
@@ -179,31 +194,31 @@ export const GraphExtractionPage = () => {
         [manuscriptChildrenByNodeKey, manuscriptTreeQuery.data]
     );
 
-    const loadManuscriptChildren = useCallback(
-        async (nodeKey: string) => {
+    const loadManuscriptChildren = useCallback(async (nodeKey: string) => {
+        if (
+            loadedManuscriptNodeKeysRef.current.has(nodeKey) ||
+            loadingManuscriptNodeKeysRef.current.has(nodeKey)
+        ) {
+            return;
+        }
+        loadingManuscriptNodeKeysRef.current.add(nodeKey);
+        try {
             const children = await workbenchService.listManuscriptTree({
-                parentKey: nodeKey,
-                keyword: normalizedEffectiveManuscriptSearchText || undefined
+                parentKey: nodeKey
             });
-            setManuscriptChildrenByNodeKey((current) => ({
-                ...current,
-                [nodeKey]: children
-            }));
-        },
-        [normalizedEffectiveManuscriptSearchText]
-    );
-
-    const changeManuscriptSearchText = useCallback((value: string) => {
-        setManuscriptSearchText(value);
-        setManuscriptChildrenByNodeKey({});
-        setSelectedManuscript(null);
-    }, []);
-
-    const submitManuscriptSearchText = useCallback((value: string) => {
-        setManuscriptSearchText(value);
-        setEffectiveManuscriptSearchText(value);
-        setManuscriptChildrenByNodeKey({});
-        setSelectedManuscript(null);
+            loadedManuscriptNodeKeysRef.current.add(nodeKey);
+            setManuscriptChildrenByNodeKey((current) => {
+                if (current[nodeKey]) {
+                    return current;
+                }
+                return {
+                    ...current,
+                    [nodeKey]: children
+                };
+            });
+        } finally {
+            loadingManuscriptNodeKeysRef.current.delete(nodeKey);
+        }
     }, []);
 
     const extractManuscriptMutation = useMutation({
@@ -216,6 +231,8 @@ export const GraphExtractionPage = () => {
             });
         },
         onSuccess: async () => {
+            loadedManuscriptNodeKeysRef.current.clear();
+            loadingManuscriptNodeKeysRef.current.clear();
             setManuscriptChildrenByNodeKey({});
             await Promise.all([
                 queryClient.invalidateQueries({
@@ -234,6 +251,8 @@ export const GraphExtractionPage = () => {
     const applyWorkbenchCandidateMutation = useMutation({
         mutationFn: (taskId: number) => workbenchService.applyCandidate({ taskId }),
         onSuccess: async () => {
+            loadedManuscriptNodeKeysRef.current.clear();
+            loadingManuscriptNodeKeysRef.current.clear();
             setManuscriptChildrenByNodeKey({});
             await Promise.all([
                 queryClient.invalidateQueries({
@@ -301,6 +320,7 @@ export const GraphExtractionPage = () => {
     });
 
     const tasks = taskPageQuery.data?.records || [];
+    const taskTotalCount = taskPageQuery.data?.totalCount || 0;
     const selectedNodeKey = selectedManuscript?.nodeKey || null;
 
     const openTaskDetailDrawer = (task: GraphExtractionTaskRecord) => {
@@ -342,24 +362,32 @@ export const GraphExtractionPage = () => {
         cancelBatchTaskMutation.mutate(task);
     };
 
+    const resizeWorkArea = useCallback((sizes: number[]) => {
+        setTreePanelSize(sizes[0] ?? DEFAULT_TREE_PANEL_SIZE);
+    }, []);
+
     return (
         <KuzhambuPage
+            actions={
+                <KuzhambuButton
+                    ariaLabel={`任务列表(${taskTotalCount})`}
+                    testId="knowledge-graph-extraction-task-list-button"
+                    icon={<UnorderedListOutlined />}
+                    type="primary"
+                    onClick={() => setTaskListDrawerOpen(true)}
+                >
+                    任务列表({taskTotalCount})
+                </KuzhambuButton>
+            }
             className="graph-extraction-page knowledge-graph-extraction-page"
             description="统一管理 Knowledge 抽取任务、候选结果和正式应用动作。"
-            title="知识抽取任务"
+            title="知识抽取"
         >
             <KuzhambuSpace
                 orientation="vertical"
                 size={16}
                 className="knowledge-graph-extraction-layout"
             >
-                <KuzhambuAlert
-                    banner
-                    className="knowledge-graph-extraction-banner"
-                    title="从稿件树选择三才、王圻或明俗稿件，系统会在后台自动创建图谱抽取任务。"
-                    type="info"
-                />
-
                 {handoffRegenerateCommand ? (
                     <KuzhambuAlert
                         showIcon
@@ -381,29 +409,28 @@ export const GraphExtractionPage = () => {
                     />
                 ) : null}
 
-                <section aria-labelledby="graph-extraction-workbench-section">
-                    <div className="knowledge-graph-extraction-section-header">
-                        <Title id="graph-extraction-workbench-section" level={4}>
-                            稿件图谱工作台
-                        </Title>
-                        <Text type="secondary">
-                            稿件树是业务主入口，任务台账用于排查失败、重生成和审计。
-                        </Text>
-                    </div>
-                    <Row gutter={[16, 16]}>
-                        <Col xs={24} lg={8}>
+                <section>
+                    <Splitter
+                        className="knowledge-graph-extraction-work-area"
+                        collapsible={{ motion: true }}
+                        onResize={resizeWorkArea}
+                    >
+                        <Splitter.Panel
+                            className="knowledge-graph-extraction-tree-panel"
+                            size={treePanelSize}
+                            min={compactWorkArea ? COLLAPSED_TREE_PANEL_SIZE : 260}
+                            max={520}
+                            collapsible
+                        >
                             <GraphExtractionManuscriptTree
                                 loading={manuscriptTreeQuery.isLoading}
                                 nodes={visibleManuscriptTreeNodes}
-                                searchText={manuscriptSearchText}
                                 selectedNodeKey={selectedNodeKey}
                                 onLoadChildren={loadManuscriptChildren}
-                                onSearchChange={changeManuscriptSearchText}
-                                onSearchSubmit={submitManuscriptSearchText}
                                 onSelectManuscript={setSelectedManuscript}
                             />
-                        </Col>
-                        <Col xs={24} lg={16}>
+                        </Splitter.Panel>
+                        <Splitter.Panel className="knowledge-graph-extraction-detail-panel">
                             <GraphExtractionManuscriptDetail
                                 applying={applyWorkbenchCandidateMutation.isPending}
                                 canApply={canApplyGraph}
@@ -417,23 +444,18 @@ export const GraphExtractionPage = () => {
                                 onApplyCandidate={applyWorkbenchCandidateMutation.mutate}
                                 onExtract={extractManuscriptMutation.mutate}
                             />
-                        </Col>
-                    </Row>
+                        </Splitter.Panel>
+                    </Splitter>
                 </section>
 
-                <section aria-labelledby="graph-extraction-task-section">
-                    <div className="knowledge-graph-extraction-section-header">
-                        <Title id="graph-extraction-task-section" level={4}>
-                            任务列表
-                        </Title>
-                        <Text type="secondary">
-                            将展示任务状态、AI 候选关联、失败原因和应用时间线。
-                        </Text>
-                    </div>
-                    <KuzhambuCard
-                        className="knowledge-graph-extraction-placeholder"
-                        variant="borderless"
-                    >
+                <KuzhambuDrawer
+                    testId="knowledge-graph-extraction-task-list-drawer"
+                    title="任务列表"
+                    open={taskListDrawerOpen}
+                    size="large"
+                    onClose={() => setTaskListDrawerOpen(false)}
+                >
+                    <div className="knowledge-graph-extraction-task-list">
                         {tasks.length > 0 ? (
                             <GraphExtractionTaskTable
                                 applyingTaskId={applyTaskMutation.variables?.toString() || null}
@@ -459,21 +481,21 @@ export const GraphExtractionPage = () => {
                                 image={Empty.PRESENTED_IMAGE_SIMPLE}
                             />
                         )}
-                    </KuzhambuCard>
-                    <GraphExtractionTaskDetail
-                        applying={applyTaskMutation.isPending}
-                        canApply={canApplyGraph}
-                        loading={taskDetailQuery.isLoading}
-                        open={taskDetailDrawerOpen}
-                        task={taskDetailQuery.data || null}
-                        onApply={() => {
-                            if (detailTaskId !== null) {
-                                applyTaskMutation.mutate(detailTaskId);
-                            }
-                        }}
-                        onClose={() => setTaskDetailDrawerOpen(false)}
-                    />
-                </section>
+                    </div>
+                </KuzhambuDrawer>
+                <GraphExtractionTaskDetail
+                    applying={applyTaskMutation.isPending}
+                    canApply={canApplyGraph}
+                    loading={taskDetailQuery.isLoading}
+                    open={taskDetailDrawerOpen}
+                    task={taskDetailQuery.data || null}
+                    onApply={() => {
+                        if (detailTaskId !== null) {
+                            applyTaskMutation.mutate(detailTaskId);
+                        }
+                    }}
+                    onClose={() => setTaskDetailDrawerOpen(false)}
+                />
             </KuzhambuSpace>
         </KuzhambuPage>
     );

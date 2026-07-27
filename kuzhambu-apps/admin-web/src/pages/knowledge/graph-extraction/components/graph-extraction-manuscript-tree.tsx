@@ -1,5 +1,7 @@
-import { Input, Tag, Tree, Typography } from "antd";
+import { Tag, Tree, Typography } from "antd";
 import type { DataNode } from "antd/es/tree";
+import { useMemo, useState } from "react";
+import type { Key } from "react";
 import { KuzhambuSpace, KuzhambuCard } from "@/components";
 
 import type { GraphWorkbenchManuscriptNode, GraphWorkbenchStatus } from "../graph-extraction-types";
@@ -7,11 +9,8 @@ import type { GraphWorkbenchManuscriptNode, GraphWorkbenchStatus } from "../grap
 interface GraphExtractionManuscriptTreeProps {
     loading?: boolean;
     nodes: GraphWorkbenchManuscriptNode[];
-    searchText?: string;
     selectedNodeKey?: string | null;
     onLoadChildren: (nodeKey: string) => Promise<void>;
-    onSearchChange: (value: string) => void;
-    onSearchSubmit: (value: string) => void;
     onSelectManuscript: (node: GraphWorkbenchManuscriptNode) => void;
 }
 
@@ -89,34 +88,28 @@ const findNode = (
 export const GraphExtractionManuscriptTree = ({
     loading = false,
     nodes,
-    searchText = "",
     selectedNodeKey,
     onLoadChildren,
-    onSearchChange,
-    onSearchSubmit,
     onSelectManuscript
 }: GraphExtractionManuscriptTreeProps) => {
+    const rootNodeKeys = useMemo(() => nodes.map((node) => node.nodeKey), [nodes]);
+    const [expandedKeys, setExpandedKeys] = useState<Key[] | null>(null);
+    const mergedExpandedKeys = expandedKeys ?? rootNodeKeys;
+
     return (
         <KuzhambuCard
             className="graph-extraction-create-card graph-extraction-manuscript-tree-card"
             loading={loading && nodes.length === 0}
-            title="稿件树"
             variant="borderless"
         >
             <KuzhambuSpace orientation="vertical" size={12} style={{ width: "100%" }}>
-                <Input.Search
-                    aria-label="搜索稿件"
-                    allowClear
-                    placeholder="搜索稿件标题、摘要或分类"
-                    value={searchText}
-                    onChange={(event) => onSearchChange(event.target.value)}
-                    onSearch={onSearchSubmit}
-                />
                 <Tree
                     blockNode
+                    expandedKeys={mergedExpandedKeys}
                     loadData={(treeNode) => onLoadChildren(String(treeNode.key))}
                     selectedKeys={selectedNodeKey ? [selectedNodeKey] : []}
                     treeData={toTreeData(nodes)}
+                    onExpand={(keys) => setExpandedKeys(keys)}
                     onSelect={(keys) => {
                         const node = findNode(nodes, String(keys[0] || ""));
                         if (node && isManuscriptNode(node)) {
