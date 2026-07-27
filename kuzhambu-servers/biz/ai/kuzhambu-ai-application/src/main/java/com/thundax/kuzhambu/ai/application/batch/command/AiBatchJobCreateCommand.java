@@ -23,11 +23,28 @@ public class AiBatchJobCreateCommand {
     public AiBatchJob toEntity() {
         AiBatchJob job = new AiBatchJob();
         job.setScope(scope);
-        job.setCapability(AiBusinessCapability.from(capability));
+        job.setCapability(AiBusinessCapability.from(normalizeCapability(capability)));
         job.setContentType(contentType);
         job.setTotalCount(totalCount);
         job.setFailureSummaryJson(failureSummaryJson);
         job.setRequestedAt(Instant.now());
         return job;
+    }
+
+    private String normalizeCapability(String value) {
+        if (value == null) {
+            return null;
+        }
+        return switch (value) {
+            case "translate" -> "classics_translate";
+            case "summary" -> "classics_summary";
+            case "tags" -> "classics_tags";
+            case "qa" -> "classics_qa";
+            case "image_analysis" -> "classics_image_describe";
+            case "visual" -> "classics_visual_describe";
+            case "image_gen" -> "classics_image_generate";
+            case "split" -> "classics_split";
+            default -> value;
+        };
     }
 }

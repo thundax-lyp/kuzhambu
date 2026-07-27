@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.ai.application.batch.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.thundax.kuzhambu.ai.application.batch.command.AiBatchJobCreateCommand;
 import com.thundax.kuzhambu.ai.application.batch.result.AiBatchJobResult;
 import com.thundax.kuzhambu.ai.domain.batch.model.entity.AiBatchJob;
 import com.thundax.kuzhambu.ai.domain.batch.model.enums.AiBatchJobStatus;
@@ -15,6 +16,26 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 public class AiBatchJobApplicationServiceImplTest {
+
+    @Test
+    public void createShouldNormalizeLegacyImageAnalysisCapability() {
+        FakeRepository repository = new FakeRepository(null);
+        AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(repository);
+
+        service.create(new AiBatchJobCreateCommand("classics", "image_analysis", "SANCAI_ENTRY", 1, null));
+
+        assertEquals(AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE, repository.inserted.getCapability());
+    }
+
+    @Test
+    public void createShouldNormalizeLegacyVisualCapability() {
+        FakeRepository repository = new FakeRepository(null);
+        AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(repository);
+
+        service.create(new AiBatchJobCreateCommand("classics", "visual", "SANCAI_ENTRY", 1, null));
+
+        assertEquals(AiBusinessCapability.CLASSICS_VISUAL_DESCRIBE, repository.inserted.getCapability());
+    }
 
     @Test
     public void recordSuccessAfterCancelShouldConsumeCancelledSlot() {
@@ -76,6 +97,7 @@ public class AiBatchJobApplicationServiceImplTest {
     private static class FakeRepository implements AiBatchJobRepository {
 
         private final AiBatchJob job;
+        private AiBatchJob inserted;
 
         FakeRepository(AiBatchJob job) {
             this.job = job;
@@ -83,12 +105,13 @@ public class AiBatchJobApplicationServiceImplTest {
 
         @Override
         public AiBatchJob get(Long batchId) {
-            return batchId.equals(job.getId().value()) ? job : null;
+            return job != null && batchId.equals(job.getId().value()) ? job : null;
         }
 
         @Override
         public Long insert(AiBatchJob batchJob) {
-            return batchJob.getId().value();
+            inserted = batchJob;
+            return 1L;
         }
 
         @Override
