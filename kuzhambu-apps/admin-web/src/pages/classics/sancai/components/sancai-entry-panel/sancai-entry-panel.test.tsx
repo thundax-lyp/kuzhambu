@@ -645,6 +645,7 @@ describe("SancaiEntryPanel sharing", () => {
         vi.clearAllMocks();
         confirmDangerMock.mockClear();
         entryState.restored = false;
+        localStorage.removeItem("kuzhambu.admin.accessToken");
         clearPermissions();
     });
 
@@ -1836,6 +1837,8 @@ describe("SancaiEntryPanel sharing", () => {
     });
 
     it("renders image preview group thumbnails", async () => {
+        localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
+        const openSpy = vi.spyOn(window, "open").mockImplementation(() => null);
         const user = userEvent.setup();
         renderEntryPanel();
 
@@ -1846,11 +1849,17 @@ describe("SancaiEntryPanel sharing", () => {
         const imagePanel = await screen.findByLabelText("三才图会图片管理");
         expect(within(imagePanel).getByAltText("生成图")).toHaveAttribute(
             "src",
-            "/kuzhambu-admin-api/api/classics/sancai/assets/images/3001/8002/content"
+            "/kuzhambu-admin-api/api/classics/sancai/assets/images/3001/8002/content?token=test-token"
         );
         expect(within(imagePanel).getByAltText("sancai.png")).toHaveAttribute(
             "src",
-            "/kuzhambu-admin-api/api/classics/sancai/assets/images/3001/8001/content"
+            "/kuzhambu-admin-api/api/classics/sancai/assets/images/3001/8001/content?token=test-token"
+        );
+        await user.click(within(imagePanel).getByLabelText("下载 sancai.png"));
+        expect(openSpy).toHaveBeenCalledWith(
+            "/kuzhambu-admin-api/api/classics/sancai/assets/images/3001/8001/content?download=true&token=test-token",
+            "_blank",
+            "noopener,noreferrer"
         );
     });
 

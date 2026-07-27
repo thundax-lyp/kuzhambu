@@ -183,18 +183,11 @@ export const SancaiEntryBasicSection = ({
     });
 
     const downloadImage = (image: SancaiEntryImageRecord) => {
-        if (!entryId) {
+        const downloadUrl = resolveImageUrl(entryId, image, "download");
+        if (!downloadUrl) {
             return;
         }
-        window.open(
-            entryService.getImageContentUrl({
-                entryId,
-                imageId: image.id,
-                mode: "download"
-            }),
-            "_blank",
-            "noopener,noreferrer"
-        );
+        window.open(downloadUrl, "_blank", "noopener,noreferrer");
     };
     const changeCurrentImage = (image: SancaiEntryImageRecord) => {
         if (!entryId || image.currentUsed) {

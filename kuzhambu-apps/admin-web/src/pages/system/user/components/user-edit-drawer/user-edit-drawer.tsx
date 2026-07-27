@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Form, Input, Switch, TreeSelect } from "antd";
 import type { TreeSelectProps } from "antd";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import type {
     UserDepartmentNode,
     UserRecord,
@@ -183,13 +183,17 @@ export const UserEditDrawer = ({
         () => readInitialFormValues(user, editing, editableMaxRank),
         [editableMaxRank, editing, user]
     );
+    const initialValuesRef = useRef(initialValues);
+    useEffect(() => {
+        initialValuesRef.current = initialValues;
+    }, [initialValues]);
     useEffect(() => {
         if (visible) {
-            form.setFieldsValue(initialValues);
+            form.setFieldsValue(initialValuesRef.current);
         } else {
             form.resetFields();
         }
-    }, [form, formResetKey, initialValues, visible]);
+    }, [form, formResetKey, visible]);
     const userRoleQuery = useQuery({
         queryKey: ["user", "role", "list"],
         queryFn: () => service.listRoles(),
