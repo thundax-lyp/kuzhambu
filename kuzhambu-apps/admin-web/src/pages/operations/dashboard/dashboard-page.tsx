@@ -11,7 +11,7 @@ import {
     WarningOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { App, Card, Empty, Segmented, Spin, Typography } from "antd";
+import { App, Empty, Segmented, Spin, Typography } from "antd";
 import { type ReactNode, useState } from "react";
 import { Link } from "react-router-dom";
 import { hasPermission } from "@/auth/permission-storage";
@@ -30,7 +30,8 @@ import {
     KuzhambuDrawer,
     KuzhambuPage,
     KuzhambuSpace,
-    KuzhambuTag
+    KuzhambuTag,
+    KuzhambuCard
 } from "@/components";
 
 import "./dashboard-page.css";
@@ -188,7 +189,7 @@ const TrendPanel = ({ items, title }: TrendPanelProps) => {
     const maxValue = Math.max(...records.map((record) => normalizeNumber(record.count)), 0);
 
     return (
-        <Card className="operations-dashboard-section-card" size="small" title={title}>
+        <KuzhambuCard className="operations-dashboard-section-card" size="small" title={title}>
             {records.length ? (
                 <div className="operations-dashboard-trend-bars">
                     {records.map((record, index) => {
@@ -213,7 +214,7 @@ const TrendPanel = ({ items, title }: TrendPanelProps) => {
             ) : (
                 <Empty description="暂无趋势数据" image={Empty.PRESENTED_IMAGE_SIMPLE} />
             )}
-        </Card>
+        </KuzhambuCard>
     );
 };
 
@@ -225,7 +226,7 @@ interface RankingListProps {
 
 const RankingList = ({ emptyText, items, title }: RankingListProps) => {
     return (
-        <Card className="operations-dashboard-section-card" size="small" title={title}>
+        <KuzhambuCard className="operations-dashboard-section-card" size="small" title={title}>
             {items.length ? (
                 <ol className="operations-dashboard-ranking-list">
                     {items.map((item) => (
@@ -241,7 +242,7 @@ const RankingList = ({ emptyText, items, title }: RankingListProps) => {
             ) : (
                 <Empty description={emptyText} image={Empty.PRESENTED_IMAGE_SIMPLE} />
             )}
-        </Card>
+        </KuzhambuCard>
     );
 };
 
@@ -602,7 +603,7 @@ export const OperationsDashboardPage = () => {
                             {shouldRenderHealthSection ? (
                                 <section className="operations-dashboard-grid operations-dashboard-grid-two">
                                     {canViewHealthPage ? (
-                                        <Card
+                                        <KuzhambuCard
                                             className="operations-dashboard-section-card"
                                             extra={
                                                 canViewHealthPage ? (
@@ -667,10 +668,10 @@ export const OperationsDashboardPage = () => {
                                                     image={Empty.PRESENTED_IMAGE_SIMPLE}
                                                 />
                                             )}
-                                        </Card>
+                                        </KuzhambuCard>
                                     ) : null}
                                     {canViewHealthPage ? (
-                                        <Card
+                                        <KuzhambuCard
                                             className="operations-dashboard-section-card"
                                             size="small"
                                             title="健康趋势"
@@ -711,7 +712,7 @@ export const OperationsDashboardPage = () => {
                                                     image={Empty.PRESENTED_IMAGE_SIMPLE}
                                                 />
                                             )}
-                                        </Card>
+                                        </KuzhambuCard>
                                     ) : null}
                                 </section>
                             ) : null}
@@ -767,13 +768,13 @@ export const OperationsDashboardPage = () => {
                                         key={entry.to}
                                         to={entry.to}
                                     >
-                                        <Card size="small">
+                                        <KuzhambuCard size="small">
                                             <KuzhambuSpace size={8}>
                                                 {entry.icon}
                                                 <Text strong>{entry.title}</Text>
                                             </KuzhambuSpace>
                                             <Text type="secondary">{entry.description}</Text>
-                                        </Card>
+                                        </KuzhambuCard>
                                     </Link>
                                 ))
                             ) : (

@@ -4,8 +4,8 @@ import {
     CloudServerOutlined,
     TeamOutlined
 } from "@ant-design/icons";
-import { Card, Typography } from "antd";
-import { KuzhambuPage } from "@/components";
+import { Typography } from "antd";
+import { KuzhambuPage, KuzhambuCard } from "@/components";
 import "./dashboard-page.css";
 
 const { Title, Text } = Typography;
@@ -75,7 +75,7 @@ export const DashboardPage = () => {
             <div className="dashboard-content">
                 <section className="dashboard-metrics" aria-label="核心指标">
                     {metricItems.map((metric) => (
-                        <Card
+                        <KuzhambuCard
                             className={`dashboard-metric-card dashboard-metric-card-${metric.tone}`}
                             key={metric.label}
                         >
@@ -101,7 +101,7 @@ export const DashboardPage = () => {
                                     <path className="dashboard-metric-chart-line" d={metric.line} />
                                 </svg>
                             </div>
-                        </Card>
+                        </KuzhambuCard>
                     ))}
                 </section>
 
