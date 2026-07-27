@@ -1,5 +1,5 @@
 import { FileTextOutlined } from "@ant-design/icons";
-import { Form, Input } from "antd";
+import { Input } from "antd";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuAlert, KuzhambuSyncTaskModal, type KuzhambuSyncTaskAdapter } from "@/components";
 
@@ -142,44 +142,32 @@ export const SancaiEntrySummaryModal = ({
             }
             renderBody={() => (
                 <>
-                    <Form
-                        className="sancai-detail-card sancai-entry-edit-drawer-form sancai-ai-text-modal-original"
-                        colon={false}
-                        component="div"
-                        layout="vertical"
-                    >
-                        <Form.Item label="原文">
+                    <div className="sancai-detail-card sancai-entry-edit-drawer-form sancai-ai-text-modal-original">
+                        <div className="sancai-ai-text-modal-field">
+                            <label className="sancai-ai-text-modal-label">原文</label>
                             <Input.TextArea
                                 aria-label={`${MODAL_TITLE}原文`}
                                 value={form.originalText}
                                 readOnly
                                 autoSize={resolveTextAreaAutoSize({ minRows: 5, maxRows: 8 })}
                             />
-                        </Form.Item>
-                    </Form>
+                        </div>
+                    </div>
                     <div className="sancai-ai-text-modal-compare-grid">
-                        <Form
-                            className="sancai-detail-card sancai-entry-edit-drawer-form"
-                            colon={false}
-                            component="div"
-                            layout="vertical"
-                        >
-                            <Form.Item label="当前摘要">
+                        <div className="sancai-detail-card sancai-entry-edit-drawer-form">
+                            <div className="sancai-ai-text-modal-field">
+                                <label className="sancai-ai-text-modal-label">当前摘要</label>
                                 <Input.TextArea
                                     aria-label={`${MODAL_TITLE}当前摘要`}
                                     value={form.summary}
                                     readOnly
                                     autoSize={resolveTextAreaAutoSize({ minRows: 10, maxRows: 16 })}
                                 />
-                            </Form.Item>
-                        </Form>
-                        <Form
-                            className="sancai-detail-card sancai-entry-edit-drawer-form"
-                            colon={false}
-                            component="div"
-                            layout="vertical"
-                        >
-                            <Form.Item label="AI摘要">
+                            </div>
+                        </div>
+                        <div className="sancai-detail-card sancai-entry-edit-drawer-form">
+                            <div className="sancai-ai-text-modal-field">
+                                <label className="sancai-ai-text-modal-label">AI摘要</label>
                                 <Input.TextArea
                                     aria-label={`${MODAL_TITLE}AI摘要`}
                                     value={aiTextDraft}
@@ -196,7 +184,7 @@ export const SancaiEntrySummaryModal = ({
                                     autoSize={resolveTextAreaAutoSize({ minRows: 10, maxRows: 16 })}
                                     onChange={(event) => onTextDraftChange(event.target.value)}
                                 />
-                            </Form.Item>
+                            </div>
                             {isAiTextCandidateLoadError ? (
                                 <KuzhambuAlert
                                     showIcon
@@ -205,7 +193,7 @@ export const SancaiEntrySummaryModal = ({
                                     description="AI 任务可能仍在执行，请稍后重新打开。"
                                 />
                             ) : null}
-                        </Form>
+                        </div>
                     </div>
                 </>
             )}

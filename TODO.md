@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `src/pages/classics/sancai/components/sancai-entry-edit-drawer/sancai-entry-basic-section`：清理三才 AI 文本弹窗 direct Form.Item
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-FORM-USEFORM-MIGRATION.md`
-    - 范围对象：`src/pages/classics/sancai/components/sancai-entry-edit-drawer/sancai-entry-basic-section/sancai-entry-summary-text-field/sancai-entry-summary-modal.tsx`、`src/pages/classics/sancai/components/sancai-entry-edit-drawer/sancai-entry-basic-section/sancai-entry-translation-text-field/sancai-entry-translation-modal.tsx`
-    - 处理动作：将摘要和译文弹窗中的 AntD `Form` / `Form.Item` 展示外壳改为普通布局。
-    - 验收点：两个弹窗文件中不再出现 direct AntD `Form.Item`，原文、当前文本和 AI 候选文本展示/编辑行为保持不变。
-    - 重要度：7/10
-
 - [ ] `src/pages/classics/wangqi/components/wangqi-document-edit-drawer/wangqi-document-edit-drawer.tsx`：清理王圻摘要弹窗 direct Form.Item
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-FORM-USEFORM-MIGRATION.md`
