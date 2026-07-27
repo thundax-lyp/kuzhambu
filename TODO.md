@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `src/pages/auth/login/login-page.tsx`：迁移登录页表单组件
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-FORM-USEFORM-MIGRATION.md`
-    - 范围对象：`src/pages/auth/login/login-page.tsx`
-    - 处理动作：将登录页 AntD `Form` / `Form.Item` 改为 `Form.useForm` + `KuzhambuForm` / `KuzhambuFormItem`。
-    - 验收点：账号、密码、验证码校验和 `onFinish` 登录提交行为保持不变，文件中不再出现 direct AntD `Form.Item`。
-    - 重要度：7/10
-
 - [ ] `src/pages/knowledge/taxonomy/components/tag-alias-create-field`：迁移标签别名新增为独立表单
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-FORM-USEFORM-MIGRATION.md`
