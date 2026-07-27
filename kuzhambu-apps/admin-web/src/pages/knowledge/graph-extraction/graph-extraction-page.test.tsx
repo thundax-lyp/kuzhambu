@@ -84,16 +84,30 @@ const workbenchServiceMocks = vi.hoisted(() => ({
             graphStatus: "APPLIED"
         }
     })),
-    listManuscriptTree: vi.fn(async () => [
-        {
-            nodeKey: "MANUSCRIPT:SANCAI_ENTRY:1001",
-            nodeType: "MANUSCRIPT",
-            title: "三才稿件",
-            sourceContentType: "SANCAI_ENTRY",
-            sourceContentId: 1001,
-            graphStatus: "CANDIDATE_READY"
+    listManuscriptTree: vi.fn(async (request?: { parentKey?: string | null }) => {
+        switch (request?.parentKey) {
+            case "SOURCE_ROOT:SANCAI_ENTRY":
+                return [
+                    {
+                        nodeKey: "MANUSCRIPT:SANCAI_ENTRY:1001",
+                        parentKey: "SOURCE_ROOT:SANCAI_ENTRY",
+                        nodeType: "MANUSCRIPT",
+                        title: "三才稿件",
+                        sourceContentType: "SANCAI_ENTRY",
+                        sourceContentId: 1001,
+                        graphStatus: "CANDIDATE_READY"
+                    }
+                ];
+            default:
+                return [
+                    {
+                        nodeKey: "SOURCE_ROOT:SANCAI_ENTRY",
+                        nodeType: "SOURCE_ROOT",
+                        title: "三才"
+                    }
+                ];
         }
-    ])
+    })
 }));
 
 vi.mock("./graph-extraction-service", () => ({
@@ -128,10 +142,11 @@ const selectManuscriptTreeNode = async (title: string) => {
     const titleElements = await screen.findAllByText(title);
     const treeTitleElement = titleElements.find((element) => element.closest(".ant-tree"));
     expect(treeTitleElement).toBeDefined();
+    if (!treeTitleElement) {
+        return;
+    }
 
-    fireEvent.click(
-        treeTitleElement?.closest(".ant-tree-node-content-wrapper") || treeTitleElement
-    );
+    fireEvent.click(treeTitleElement.closest(".ant-tree-node-content-wrapper") || treeTitleElement);
 };
 
 describe("GraphExtractionPage", () => {
@@ -155,7 +170,7 @@ describe("GraphExtractionPage", () => {
     it("renders page shell", async () => {
         renderPage();
 
-        expect(await screen.findByRole("heading", { name: "知识抽取任务" })).toBeInTheDocument();
+        expect(await screen.findByRole("heading", { name: "知识抽取" })).toBeInTheDocument();
         await waitFor(() => {
             expect(serviceMocks.pageTasks).toHaveBeenCalledWith({
                 pageNo: 1,
@@ -163,13 +178,15 @@ describe("GraphExtractionPage", () => {
             });
         });
         await waitFor(() => {
-            expect(workbenchServiceMocks.listManuscriptTree).toHaveBeenCalledWith({
-                keyword: undefined
-            });
+            expect(workbenchServiceMocks.listManuscriptTree).toHaveBeenCalledWith({});
         });
-        expect(await screen.findByText("8008")).toBeInTheDocument();
         expect(await screen.findByText("三才稿件")).toBeInTheDocument();
-        expect(screen.getAllByText("1001").length).toBeGreaterThan(0);
+        expect(screen.queryByText("王圻")).not.toBeInTheDocument();
+        expect(screen.queryByText("明俗")).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole("button", { name: "任务列表(1)" }));
+
+        expect(await screen.findByText("8008")).toBeInTheDocument();
         expect(screen.getByText("QUALITY_REPORT")).toBeInTheDocument();
 
         fireEvent.click(screen.getByRole("button", { name: /查\s*看/u }));
@@ -223,23 +240,6 @@ describe("GraphExtractionPage", () => {
             "href",
             "/knowledge/refinement?graphVersionId=8001"
         );
-    });
-
-    it("debounces manuscript tree search by keyword", async () => {
-        renderPage();
-
-        fireEvent.change(await screen.findByLabelText("搜索稿件"), {
-            target: {
-                value: "黄帝"
-            }
-        });
-
-        expect(workbenchServiceMocks.listManuscriptTree).toHaveBeenCalledTimes(1);
-        await waitFor(() => {
-            expect(workbenchServiceMocks.listManuscriptTree).toHaveBeenCalledWith({
-                keyword: "黄帝"
-            });
-        }, 1000);
     });
 
     it("disables workbench write actions without edit and apply permissions", async () => {

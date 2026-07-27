@@ -130,7 +130,7 @@ export const GraphExtractionTaskTable = ({
 
     return (
         <Table<GraphExtractionTaskRecord>
-            aria-label="知识抽取任务表格"
+            aria-label="知识抽取表格"
             columns={columns}
             dataSource={tasks}
             loading={loading}

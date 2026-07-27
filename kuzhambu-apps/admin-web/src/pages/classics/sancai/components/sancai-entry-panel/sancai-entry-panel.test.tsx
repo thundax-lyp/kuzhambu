@@ -2067,7 +2067,10 @@ describe("SancaiEntryPanel sharing", () => {
 
     it("previews current visual asset without opening the visual section", async () => {
         const user = userEvent.setup();
-        const createObjectURL = vi.fn(() => "blob:sancai-entry-preview");
+        const createObjectURL = vi.fn((object: Blob | MediaSource) => {
+            void object;
+            return "blob:sancai-entry-preview";
+        });
         const revokeObjectURL = vi.fn();
         const openWindow = vi.spyOn(window, "open").mockImplementation(() => null);
         const originalCreateObjectURL = URL.createObjectURL;
@@ -2100,7 +2103,10 @@ describe("SancaiEntryPanel sharing", () => {
             await waitFor(() => {
                 expect(createObjectURL).toHaveBeenCalled();
             });
-            const previewBlob = createObjectURL.mock.calls[0]?.[0] as Blob;
+            const previewBlob = createObjectURL.mock.calls[0]?.[0];
+            if (!(previewBlob instanceof Blob)) {
+                throw new Error("Expected preview object URL payload to be a Blob");
+            }
             await expect(previewBlob.text()).resolves.toContain("处理记录 2");
             await expect(previewBlob.text()).resolves.toContain("当前版本视觉描述");
             await expect(previewBlob.text()).resolves.toContain(

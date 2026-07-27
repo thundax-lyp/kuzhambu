@@ -52,7 +52,7 @@ const mockShellApis = async (page: Page) => {
             {
                 id: "graph-extraction",
                 parentId: "knowledge",
-                name: "知识抽取任务",
+                name: "知识抽取",
                 url: "/knowledge/graph-extraction",
                 displayParams: '{"icon":"submissions"}'
             }
@@ -67,12 +67,43 @@ const mockShellApis = async (page: Page) => {
     });
 };
 
+const manuscriptTreeResponse = (requestBody: ApiPayload) => {
+    if (requestBody.parentKey === "SOURCE_ROOT:SANCAI_ENTRY") {
+        return [
+            {
+                nodeKey: "MANUSCRIPT:SANCAI_ENTRY:1001",
+                parentKey: "SOURCE_ROOT:SANCAI_ENTRY",
+                nodeType: "MANUSCRIPT",
+                title: "三才稿件",
+                sourceContentType: "SANCAI_ENTRY",
+                sourceContentId: 1001,
+                graphStatus: "CANDIDATE_READY"
+            }
+        ];
+    }
+
+    if (requestBody.parentKey) {
+        return [];
+    }
+
+    return [
+        {
+            nodeKey: "SOURCE_ROOT:SANCAI_ENTRY",
+            nodeType: "SOURCE_ROOT",
+            title: "三才"
+        }
+    ];
+};
+
 const createGraphExtractionMockHandlers = async (page: Page) => {
     let createPayload: ApiPayload | null = null;
     let detailPayload: ApiPayload | null = null;
     let applyPayload: ApiPayload | null = null;
     let cancelPayload: ApiPayload | null = null;
     let regeneratePayload: ApiPayload | null = null;
+    let extractPayload: ApiPayload | null = null;
+    let workbenchApplyPayload: ApiPayload | null = null;
+    const treePayloads: ApiPayload[] = [];
 
     const task = {
         taskId: "8008",
@@ -158,13 +189,83 @@ const createGraphExtractionMockHandlers = async (page: Page) => {
             });
         }
     );
+    await page.route(
+        "**/kuzhambu-admin-api/api/knowledge/graph-workbench/manuscript-tree",
+        async (route) => {
+            const requestBody = readRequestBody(route.request().postData());
+            treePayloads.push(requestBody);
+            await fulfillSuccess(route, manuscriptTreeResponse(requestBody));
+        }
+    );
+    await page.route(
+        "**/kuzhambu-admin-api/api/knowledge/graph-workbench/manuscript/get",
+        async (route) => {
+            await fulfillSuccess(route, {
+                sourceContentType: "SANCAI_ENTRY",
+                sourceContentId: 1001,
+                title: "三才稿件",
+                summary: "三才稿件摘要",
+                sourcePath: "人物 / 三才稿件",
+                currentVersionNo: 2,
+                graphStatus: "CANDIDATE_READY",
+                latestExtractionTask: {
+                    ...task,
+                    taskId: "9001"
+                },
+                latestGraphVersion: {
+                    versionId: 8001,
+                    taskId: "9001",
+                    graphStatus: "APPLIED"
+                }
+            });
+        }
+    );
+    await page.route(
+        "**/kuzhambu-admin-api/api/knowledge/graph-workbench/candidate/get",
+        async (route) => {
+            await fulfillSuccess(route, {
+                taskId: 9001,
+                aiCandidateId: 7001,
+                taskType: "GRAPH",
+                status: "SUCCEEDED",
+                sourceContentType: "SANCAI_ENTRY",
+                sourceContentId: 1001,
+                candidatePayloadJson: '{"entities":[{"name":"黄帝"}]}'
+            });
+        }
+    );
+    await page.route(
+        "**/kuzhambu-admin-api/api/knowledge/graph-workbench/manuscript/extract",
+        async (route) => {
+            extractPayload = readRequestBody(route.request().postData());
+            await fulfillSuccess(route, {
+                ...task,
+                taskId: "9001",
+                status: "PENDING"
+            });
+        }
+    );
+    await page.route(
+        "**/kuzhambu-admin-api/api/knowledge/graph-workbench/candidate/apply",
+        async (route) => {
+            workbenchApplyPayload = readRequestBody(route.request().postData());
+            await fulfillSuccess(route, {
+                taskId: 9001,
+                graphVersionId: 8001,
+                graphStatus: "APPLIED"
+            });
+        }
+    );
 
     return {
         getCreatePayload: () => createPayload,
         getDetailPayload: () => detailPayload,
         getApplyPayload: () => applyPayload,
         getCancelPayload: () => cancelPayload,
-        getRegeneratePayload: () => regeneratePayload
+        getRegeneratePayload: () => regeneratePayload,
+        getExtractPayload: () => extractPayload,
+        getTreePayloads: () => treePayloads,
+        getWorkbenchApplyPayload: () => workbenchApplyPayload
     };
 };
 
@@ -190,54 +291,42 @@ test.describe("admin graph extraction smoke", () => {
 
         await page.goto("/knowledge/graph-extraction");
 
-        await expect(page.getByRole("heading", { name: "知识抽取任务" })).toBeVisible();
+        await expect(page.getByRole("heading", { name: "知识抽取" })).toBeVisible();
+        await expect(page.getByRole("textbox", { name: "搜索稿件" })).toHaveCount(0);
+        await expect(page.getByText("三才稿件")).toBeVisible();
+        await expect(page.getByText("王圻稿件")).toHaveCount(0);
+        await expect(page.getByText("明俗稿件")).toHaveCount(0);
+        await expect(
+            page.locator(".knowledge-graph-extraction-work-area .ant-splitter-bar")
+        ).toHaveCount(1);
+        await expect(page.getByRole("button", { name: "Toggle start panel" })).toBeVisible();
+        await expect.poll(() => mocks.getTreePayloads()[0]).toEqual({});
+        await expect
+            .poll(() => mocks.getTreePayloads().map((payload) => payload.parentKey))
+            .toEqual([undefined, "SOURCE_ROOT:SANCAI_ENTRY"]);
+
+        await page.getByText("三才稿件").click();
+        await expect(page.getByText("三才稿件摘要")).toBeVisible();
+        await page.getByRole("button", { name: "抽取图谱" }).click();
+        await expect
+            .poll(() => mocks.getExtractPayload())
+            .toEqual({
+                sourceContentType: "SANCAI_ENTRY",
+                sourceContentId: 1001,
+                taskType: "GRAPH"
+            });
+        await page.getByRole("button", { name: "应用候选" }).click();
+        await expect.poll(() => mocks.getWorkbenchApplyPayload()).toEqual({ taskId: 9001 });
+
+        await page.getByRole("button", { name: "任务列表(1)" }).click();
         await expect(page.getByText("8008")).toBeVisible();
         await expect(page.getByRole("cell", { name: "QUALITY_REPORT" })).toBeVisible();
 
-        await page.getByRole("textbox", { name: "来源内容类型" }).fill("SANCAI_ENTRY");
-        await page.getByRole("spinbutton", { name: "来源内容 ID" }).fill("1001");
-        await page.getByRole("textbox", { name: "作用域类型" }).fill("CLASSICS_ENTRY");
-        await page.getByRole("textbox", { name: "语言" }).fill("zh-CN");
-        await page.getByRole("spinbutton", { name: "模型 ID" }).fill("1");
-        await page.getByRole("textbox", { name: "模型名" }).fill("gpt-5.5");
-        await page.getByRole("textbox", { name: "作用域 JSON" }).fill('{"entryId":1001}');
         await page
-            .getByRole("textbox", { name: "批量范围 JSON" })
-            .fill('{"sourceContentIds":[1001,1002]}');
-        await page.getByRole("checkbox", { name: "仅替换未人工确认结果" }).check();
-        await page
-            .getByRole("textbox", { name: "Prompt Messages JSON" })
-            .fill('[{"role":"system","content":"extract"}]');
-        await page
-            .getByRole("textbox", { name: "输入 Payload JSON" })
-            .fill('{"content":"待抽取正文"}');
-        await page.getByRole("button", { name: "创建图谱抽取任务" }).click();
-
-        await expect
-            .poll(() => mocks.getCreatePayload())
-            .toMatchObject({
-                taskType: "GRAPH",
-                triggerSource: "MANUAL",
-                sourceContentType: "SANCAI_ENTRY",
-                sourceContentId: 1001,
-                scopeType: "CLASSICS_ENTRY",
-                scopeJson: '{"entryId":1001}',
-                selectionScopeJson: '{"sourceContentIds":[1001,1002]}',
-                replaceUnconfirmedOnly: true,
-                modelId: 1,
-                modelName: "gpt-5.5",
-                promptMessagesJson: '[{"role":"system","content":"extract"}]',
-                inputPayloadJson: '{"content":"待抽取正文"}',
-                locale: "zh-CN"
+            .getByTestId("knowledge-graph-extraction-graph-extraction-task-view-button")
+            .evaluate((element) => {
+                (element as HTMLButtonElement).click();
             });
-        await expect(page.getByText("最近创建任务")).toBeVisible();
-
-        await page
-            .getByLabel("知识抽取任务表格")
-            .locator("button")
-            .filter({ hasText: /查\s*看/ })
-            .first()
-            .click({ force: true });
         await expect.poll(() => mocks.getDetailPayload()).toEqual({ taskId: 8008 });
         await expect(page.getByLabel("抽取任务详情")).toContainText(
             '{"sourceContentIds":[1001,1002]}'
@@ -249,7 +338,11 @@ test.describe("admin graph extraction smoke", () => {
         await expect.poll(() => mocks.getApplyPayload()).toEqual({ taskId: 8008 });
 
         await page.keyboard.press("Escape");
-        await page.getByRole("button", { name: "取消批任务" }).first().click();
+        await page
+            .getByTestId("knowledge-graph-extraction-graph-extraction-task-action-button-2")
+            .evaluate((element) => {
+                (element as HTMLButtonElement).click();
+            });
         await expect
             .poll(() => mocks.getCancelPayload())
             .toEqual({
@@ -257,11 +350,21 @@ test.describe("admin graph extraction smoke", () => {
                 requestedBy: 99
             });
 
+        await page.keyboard.press("Escape");
+        await page.setViewportSize({ width: 560, height: 820 });
+        await expect
+            .poll(async () =>
+                page.locator(".knowledge-graph-extraction-tree-panel").evaluate((element) => {
+                    return Math.round(element.getBoundingClientRect().width);
+                })
+            )
+            .toBeLessThanOrEqual(1);
+
         await page.goto(
             "/knowledge/graph-extraction?regenerate=1&taskType=GRAPH&sourceTaskId=88&triggerSource=REFINEMENT_APPLIED&replaceUnconfirmedOnly=true&selectionScopeJson=%7B%22sourceContentIds%22%3A%5B1001%5D%7D"
         );
         await expect(page.getByText("精修应用后的图谱重生成参数已载入")).toBeVisible();
-        await page.getByRole("button", { name: "提交精修重生成" }).click();
+        await page.getByRole("button", { name: "提交重生成" }).click();
         await expect
             .poll(() => mocks.getRegeneratePayload())
             .toEqual({

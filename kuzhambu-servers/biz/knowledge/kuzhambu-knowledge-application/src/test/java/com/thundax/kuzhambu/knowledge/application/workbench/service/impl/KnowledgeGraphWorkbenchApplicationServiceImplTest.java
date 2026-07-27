@@ -71,19 +71,6 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
     }
 
     @Test
-    void listManuscriptTreeShouldSearchOnlySancaiManuscriptsFromRoot() {
-        Fixtures fixtures = new Fixtures();
-
-        var nodes = fixtures.service.listManuscriptTree(null, null, "三才", null);
-
-        assertEquals(2, nodes.size());
-        assertEquals("MANUSCRIPT", nodes.get(0).getNodeType());
-        assertEquals("三才稿件", nodes.get(0).getTitle());
-        assertEquals("SANCAI_ENTRY", nodes.get(0).getSourceContentType());
-        assertEquals(1001L, nodes.get(0).getSourceContentId());
-    }
-
-    @Test
     void listManuscriptTreeShouldIgnoreUnsupportedGraphSources() {
         Fixtures fixtures = new Fixtures();
 
