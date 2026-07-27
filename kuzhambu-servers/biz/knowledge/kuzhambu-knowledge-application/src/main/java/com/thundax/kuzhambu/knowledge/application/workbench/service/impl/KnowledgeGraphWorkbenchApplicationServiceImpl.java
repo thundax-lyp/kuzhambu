@@ -31,7 +31,11 @@ import com.thundax.kuzhambu.knowledge.application.workbench.support.KnowledgeGra
 import com.thundax.kuzhambu.knowledge.application.workbench.support.KnowledgeGraphManuscriptTreeAssembler.ManuscriptGraphSnapshot;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +45,8 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
     private static final String TASK_TYPE_RELATION = "RELATION";
     private static final String TASK_TYPE_GRAPH = "GRAPH";
     private static final String TASK_TYPE_LINEAGE = "LINEAGE";
+    private static final String SOURCE_TYPE_SANCAI_ENTRY =
+            KnowledgeGraphManuscriptTreeAssembler.SOURCE_TYPE_SANCAI_ENTRY;
     private static final String STATUS_REQUESTED = "REQUESTED";
     private static final String STATUS_SUCCEEDED = "SUCCEEDED";
     private static final String STATUS_FAILED = "FAILED";
@@ -52,6 +58,7 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
     private static final String GRAPH_STATUS_APPLIED = "APPLIED";
     private static final String GRAPH_STATUS_REFINED = "REFINED";
     private static final String TRIGGER_SOURCE_MANUAL = "MANUAL";
+    private static final int SNAPSHOT_PAGE_SIZE = 100;
 
     private final ClassicsFacade classicsFacade;
     private final KnowledgeGraphExtractionApplicationService graphExtractionApplicationService;
@@ -79,13 +86,18 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
     @Transactional(readOnly = true)
     public List<ManuscriptTreeNodeResult> listManuscriptTree(
             String sourceContentType, String parentKey, String keyword, String graphStatus) {
+        List<ClassicsPublicContentFacadeDto> contents =
+                isBlank(parentKey) && isBlank(keyword) && isBlank(graphStatus) ? List.of() : listPublicContents();
+        Map<String, ManuscriptGraphSnapshot> snapshotsBySource = latestSnapshots(contents);
         return treeAssembler.toTree(
-                listPublicContents(),
+                contents,
                 sourceContentType,
                 parentKey,
                 keyword,
                 graphStatus,
-                content -> latestSnapshot(content.getContentType(), parseContentId(content.getContentId())));
+                content -> snapshotsBySource.getOrDefault(
+                        snapshotKey(content.getContentType(), parseContentId(content.getContentId())),
+                        ManuscriptGraphSnapshot.empty()));
     }
 
     @Override
@@ -93,8 +105,8 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
     public ManuscriptDetailResult getManuscript(String sourceContentType, Long sourceContentId) {
         validateManuscript(sourceContentType, sourceContentId);
         ClassicsPublicContentFacadeDto manuscript = loadPublicContent(sourceContentType, sourceContentId);
-        GraphExtractionTaskResult latestTask = latestTask(null, sourceContentType, sourceContentId);
-        GraphVersionResult latestVersion = latestVersion(null, sourceContentType, sourceContentId);
+        GraphExtractionTaskResult latestTask = latestTask(TASK_TYPE_GRAPH, sourceContentType, sourceContentId);
+        GraphVersionResult latestVersion = latestVersion(TASK_TYPE_GRAPH, sourceContentType, sourceContentId);
         return ManuscriptDetailResult.builder()
                 .sourceContentType(sourceContentType)
                 .sourceContentId(sourceContentId)
@@ -113,6 +125,7 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
     @Transactional(rollbackFor = Exception.class)
     public GraphExtractionTaskResult extractManuscript(
             String sourceContentType, Long sourceContentId, String taskType, Long requestedBy) {
+        ensureSancaiSource(sourceContentType);
         String resolvedTaskType = normalizeTaskType(taskType);
         ManuscriptExtractionPayload payload =
                 payloadBuilder.build(sourceContentType, sourceContentId, resolvedTaskType);
@@ -149,6 +162,9 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
         if (taskId == null) {
             throw new BizException("Knowledge graph candidate taskId is required");
         }
+        GraphExtractionTaskResult detail =
+                graphExtractionApplicationService.getTaskDetail(GraphExtractionTaskId.ofNullable(taskId));
+        ensureSancaiSource(detail == null ? null : detail.getSourceContentType());
         GraphExtractionTaskResult task =
                 graphExtractionApplicationService.applyTaskCandidate(GraphExtractionTaskId.ofNullable(taskId));
         GraphVersionResult version =
@@ -260,11 +276,104 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
         return content;
     }
 
-    private ManuscriptGraphSnapshot latestSnapshot(String sourceContentType, Long sourceContentId) {
-        GraphExtractionTaskResult task = latestTask(null, sourceContentType, sourceContentId);
-        GraphVersionResult version = latestVersion(null, sourceContentType, sourceContentId);
-        return new ManuscriptGraphSnapshot(
-                resolveGraphStatus(task, version), parseTaskId(task), version == null ? null : version.getVersionId());
+    private Map<String, ManuscriptGraphSnapshot> latestSnapshots(List<ClassicsPublicContentFacadeDto> contents) {
+        Map<String, Set<Long>> contentIdsBySource = contentIdsBySource(contents);
+        Map<String, ManuscriptGraphSnapshot> snapshots = new HashMap<>();
+        for (Map.Entry<String, Set<Long>> entry : contentIdsBySource.entrySet()) {
+            Map<Long, GraphExtractionTaskResult> tasks = latestTasksByContentId(entry.getKey(), entry.getValue());
+            Map<Long, GraphVersionResult> versions = latestVersionsByContentId(entry.getKey(), entry.getValue());
+            for (Long contentId : entry.getValue()) {
+                GraphExtractionTaskResult task = tasks.get(contentId);
+                GraphVersionResult version = versions.get(contentId);
+                snapshots.put(
+                        snapshotKey(entry.getKey(), contentId),
+                        new ManuscriptGraphSnapshot(
+                                resolveGraphStatus(task, version),
+                                parseTaskId(task),
+                                version == null ? null : version.getVersionId()));
+            }
+        }
+        return snapshots;
+    }
+
+    private Map<String, Set<Long>> contentIdsBySource(List<ClassicsPublicContentFacadeDto> contents) {
+        Map<String, Set<Long>> contentIdsBySource = new HashMap<>();
+        if (contents == null) {
+            return contentIdsBySource;
+        }
+        for (ClassicsPublicContentFacadeDto content : contents) {
+            if (content == null || !SOURCE_TYPE_SANCAI_ENTRY.equals(content.getContentType())) {
+                continue;
+            }
+            Long contentId = parseContentId(content.getContentId());
+            if (contentId != null) {
+                contentIdsBySource
+                        .computeIfAbsent(content.getContentType(), ignored -> new LinkedHashSet<>())
+                        .add(contentId);
+            }
+        }
+        return contentIdsBySource;
+    }
+
+    private Map<Long, GraphExtractionTaskResult> latestTasksByContentId(
+            String sourceContentType, Set<Long> contentIds) {
+        Map<Long, GraphExtractionTaskResult> tasks = new HashMap<>();
+        if (isBlank(sourceContentType) || contentIds == null || contentIds.isEmpty()) {
+            return tasks;
+        }
+        int pageNo = 1;
+        while (tasks.size() < contentIds.size()) {
+            PageResult<GraphExtractionTaskResult> page = graphExtractionApplicationService.pageTasks(
+                    TASK_TYPE_GRAPH,
+                    null,
+                    null,
+                    null,
+                    sourceContentType,
+                    null,
+                    new PageQuery(pageNo, SNAPSHOT_PAGE_SIZE));
+            List<GraphExtractionTaskResult> records = page == null ? List.of() : page.getRecords();
+            if (records == null || records.isEmpty()) {
+                break;
+            }
+            for (GraphExtractionTaskResult task : records) {
+                if (task == null || !contentIds.contains(task.getSourceContentId())) {
+                    continue;
+                }
+                tasks.merge(task.getSourceContentId(), task, this::newerTask);
+            }
+            if (page == null || pageNo >= page.getTotalPage()) {
+                break;
+            }
+            pageNo++;
+        }
+        return tasks;
+    }
+
+    private Map<Long, GraphVersionResult> latestVersionsByContentId(String sourceContentType, Set<Long> contentIds) {
+        Map<Long, GraphVersionResult> versions = new HashMap<>();
+        if (isBlank(sourceContentType) || contentIds == null || contentIds.isEmpty()) {
+            return versions;
+        }
+        int pageNo = 1;
+        while (versions.size() < contentIds.size()) {
+            PageResult<GraphVersionResult> page = graphExtractionApplicationService.pageVersions(
+                    TASK_TYPE_GRAPH, null, sourceContentType, null, new PageQuery(pageNo, SNAPSHOT_PAGE_SIZE));
+            List<GraphVersionResult> records = page == null ? List.of() : page.getRecords();
+            if (records == null || records.isEmpty()) {
+                break;
+            }
+            for (GraphVersionResult version : records) {
+                if (version == null || !contentIds.contains(version.getSourceContentId())) {
+                    continue;
+                }
+                versions.merge(version.getSourceContentId(), version, this::newerVersion);
+            }
+            if (page == null || pageNo >= page.getTotalPage()) {
+                break;
+            }
+            pageNo++;
+        }
+        return versions;
     }
 
     private GraphExtractionTaskResult latestTask(String taskType, String sourceContentType, Long sourceContentId) {
@@ -311,22 +420,89 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
     }
 
     private String resolveGraphStatus(GraphExtractionTaskResult task, GraphVersionResult version) {
-        if (version != null && Boolean.TRUE.equals(version.getRefinementApplied())) {
-            return GRAPH_STATUS_REFINED;
-        }
-        if (version != null) {
-            return GRAPH_STATUS_APPLIED;
-        }
         if (task == null) {
+            if (version != null && Boolean.TRUE.equals(version.getRefinementApplied())) {
+                return GRAPH_STATUS_REFINED;
+            }
+            if (version != null) {
+                return GRAPH_STATUS_APPLIED;
+            }
             return GRAPH_STATUS_NOT_EXTRACTED;
         }
-        return switch (normalize(task.getStatus())) {
+        if (versionMatchesTask(task, version) && Boolean.TRUE.equals(version.getRefinementApplied())) {
+            return GRAPH_STATUS_REFINED;
+        }
+        if (versionMatchesTask(task, version)) {
+            return GRAPH_STATUS_APPLIED;
+        }
+        String taskStatus = normalize(task.getStatus());
+        if (STATUS_APPLIED.equals(taskStatus)
+                && version != null
+                && Boolean.TRUE.equals(version.getRefinementApplied())) {
+            return GRAPH_STATUS_REFINED;
+        }
+        if (STATUS_APPLIED.equals(taskStatus) && version != null) {
+            return GRAPH_STATUS_APPLIED;
+        }
+        if (taskStatus == null) {
+            return GRAPH_STATUS_NOT_EXTRACTED;
+        }
+        return switch (taskStatus) {
             case STATUS_REQUESTED -> GRAPH_STATUS_EXTRACTING;
             case STATUS_FAILED -> GRAPH_STATUS_EXTRACTION_FAILED;
             case STATUS_SUCCEEDED -> GRAPH_STATUS_CANDIDATE_READY;
             case STATUS_APPLIED -> GRAPH_STATUS_APPLIED;
             default -> GRAPH_STATUS_NOT_EXTRACTED;
         };
+    }
+
+    private boolean versionMatchesTask(GraphExtractionTaskResult task, GraphVersionResult version) {
+        if (task == null || version == null) {
+            return false;
+        }
+        return normalize(task.getTaskId()) != null
+                && normalize(task.getTaskId()).equals(normalize(version.getTaskId()));
+    }
+
+    private GraphExtractionTaskResult newerTask(GraphExtractionTaskResult left, GraphExtractionTaskResult right) {
+        Long leftActivityAt = firstPresent(left.getAppliedAt(), left.getCompletedAt(), left.getRequestedAt());
+        Long rightActivityAt = firstPresent(right.getAppliedAt(), right.getCompletedAt(), right.getRequestedAt());
+        if (leftActivityAt == null) {
+            return right;
+        }
+        if (rightActivityAt == null) {
+            return left;
+        }
+        return leftActivityAt >= rightActivityAt ? left : right;
+    }
+
+    private GraphVersionResult newerVersion(GraphVersionResult left, GraphVersionResult right) {
+        Long leftAppliedAt = left.getAppliedAt();
+        Long rightAppliedAt = right.getAppliedAt();
+        if (leftAppliedAt == null && rightAppliedAt == null) {
+            return Long.compare(
+                                    left.getVersionId() == null ? 0L : left.getVersionId(),
+                                    right.getVersionId() == null ? 0L : right.getVersionId())
+                            >= 0
+                    ? left
+                    : right;
+        }
+        if (leftAppliedAt == null) {
+            return right;
+        }
+        if (rightAppliedAt == null) {
+            return left;
+        }
+        return leftAppliedAt >= rightAppliedAt ? left : right;
+    }
+
+    private Long firstPresent(Long... values) {
+        for (Long value : values) {
+            if (value != null) {
+                return value;
+            }
+        }
+        return null;
     }
 
     private String sourcePath(ClassicsPublicContentFacadeDto manuscript) {
@@ -357,6 +533,16 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
         if (isBlank(sourceContentType) || sourceContentId == null) {
             throw new BizException("Knowledge graph manuscript is required");
         }
+    }
+
+    private void ensureSancaiSource(String sourceContentType) {
+        if (!SOURCE_TYPE_SANCAI_ENTRY.equals(normalize(sourceContentType))) {
+            throw new BizException("Knowledge graph workbench only supports Sancai manuscripts");
+        }
+    }
+
+    private String snapshotKey(String sourceContentType, Long sourceContentId) {
+        return normalize(sourceContentType) + "#" + sourceContentId;
     }
 
     private String normalizeTaskType(String taskType) {

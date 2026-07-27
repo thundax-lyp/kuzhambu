@@ -66,10 +66,6 @@ public final class KnowledgeGraphWorkbenchRequests {
         @Schema(name = "taskType", description = "抽取任务类型")
         @JsonProperty("taskType")
         private String taskType;
-
-        @Schema(name = "requestedBy", description = "请求用户ID")
-        @JsonProperty("requestedBy")
-        private Long requestedBy;
     }
 
     @Getter

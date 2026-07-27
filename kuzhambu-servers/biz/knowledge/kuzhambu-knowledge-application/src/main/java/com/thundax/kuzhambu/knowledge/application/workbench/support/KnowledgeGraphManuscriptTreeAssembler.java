@@ -22,10 +22,7 @@ public class KnowledgeGraphManuscriptTreeAssembler {
     public static final String SOURCE_TYPE_MING_CUSTOMS = "MING_CUSTOMS";
     public static final String STATUS_NOT_EXTRACTED = "NOT_EXTRACTED";
 
-    private static final List<SourceSpec> SOURCE_SPECS = List.of(
-            new SourceSpec(SOURCE_TYPE_SANCAI_ENTRY, "三才图会"),
-            new SourceSpec(SOURCE_TYPE_WANGQI_DOCUMENT, "王圻文档"),
-            new SourceSpec(SOURCE_TYPE_MING_CUSTOMS, "明代民俗"));
+    private static final List<SourceSpec> SOURCE_SPECS = List.of(new SourceSpec(SOURCE_TYPE_SANCAI_ENTRY, "三才图会"));
     private static final String NODE_KEY_SEPARATOR = ":";
     private static final String CATEGORY_FALLBACK = "未分类";
 
@@ -168,6 +165,7 @@ public class KnowledgeGraphManuscriptTreeAssembler {
         String normalizedGraphStatus = normalize(graphStatus);
         return contents.stream()
                 .filter(Objects::nonNull)
+                .filter(content -> supportedSourceType(content.getContentType()))
                 .filter(content -> normalizedType == null || normalizedType.equals(content.getContentType()))
                 .filter(content ->
                         normalizedCategoryCode == null || normalizedCategoryCode.equals(categoryCode(content)))
@@ -197,6 +195,10 @@ public class KnowledgeGraphManuscriptTreeAssembler {
 
     private boolean contains(String value, String keyword) {
         return value != null && value.toLowerCase(Locale.ROOT).contains(keyword);
+    }
+
+    private boolean supportedSourceType(String sourceContentType) {
+        return SOURCE_SPECS.stream().anyMatch(spec -> spec.sourceContentType().equals(sourceContentType));
     }
 
     private String categoryCode(ClassicsPublicContentFacadeDto content) {

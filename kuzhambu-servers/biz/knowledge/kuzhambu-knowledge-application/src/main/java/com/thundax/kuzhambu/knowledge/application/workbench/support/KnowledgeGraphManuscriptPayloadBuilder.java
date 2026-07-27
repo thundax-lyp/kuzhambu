@@ -15,8 +15,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class KnowledgeGraphManuscriptPayloadBuilder {
 
-    private static final Long DEFAULT_MODEL_ID = 1L;
-    private static final String DEFAULT_MODEL_NAME = "gpt-5.5";
     private static final String DEFAULT_LOCALE = "zh-CN";
     private static final String DEFAULT_SCOPE_TYPE = "CLASSICS_MANUSCRIPT";
 
@@ -44,13 +42,13 @@ public class KnowledgeGraphManuscriptPayloadBuilder {
                         nullToBlank(manuscript.getSourcePath()))),
                 sourceContentType,
                 sourceContentId,
-                DEFAULT_MODEL_ID,
-                DEFAULT_MODEL_NAME,
+                null,
+                null,
                 nextEventId("graph-workbench"),
                 nextEventId("graph-trace"),
                 writePromptMessages(taskType),
                 writeInputPayload(manuscript, taskType),
-                writeOutputSchema(taskType),
+                null,
                 true,
                 DEFAULT_LOCALE);
     }
@@ -79,6 +77,22 @@ public class KnowledgeGraphManuscriptPayloadBuilder {
         return writeJson(Map.of(
                 "taskType",
                 taskType,
+                "sourceTitle",
+                nullToBlank(manuscript.getTitle()),
+                "sourceText",
+                sourceText(manuscript),
+                "entryRefs",
+                List.of(Map.of(
+                        "contentType",
+                        nullToBlank(manuscript.getContentType()),
+                        "contentId",
+                        nullToBlank(manuscript.getContentId()),
+                        "title",
+                        nullToBlank(manuscript.getTitle()))),
+                "knownEntities",
+                List.of(),
+                "lineageHint",
+                nullToBlank(manuscript.getCategoryPath()),
                 "source",
                 Map.of(
                         "sourceId",
@@ -109,14 +123,16 @@ public class KnowledgeGraphManuscriptPayloadBuilder {
                 manuscript.getQaPairs() == null ? List.of() : manuscript.getQaPairs()));
     }
 
-    private String writeOutputSchema(String taskType) {
-        return writeJson(Map.of(
-                "taskType",
-                taskType,
-                "format",
-                "knowledge_graph_candidate",
-                "required",
-                List.of("entities", "relations", "lineageNodes", "lineageRelations")));
+    private String sourceText(ClassicsQaKnowledgeFacadeDto manuscript) {
+        return List.of(
+                        nullToBlank(manuscript.getBody()),
+                        nullToBlank(manuscript.getOriginalText()),
+                        nullToBlank(manuscript.getTranslationText()),
+                        nullToBlank(manuscript.getOriginalExcerpts()))
+                .stream()
+                .filter(value -> !isBlank(value))
+                .reduce((left, right) -> left + "\n\n" + right)
+                .orElse(nullToBlank(manuscript.getSummary()));
     }
 
     private String writeJson(Object value) {

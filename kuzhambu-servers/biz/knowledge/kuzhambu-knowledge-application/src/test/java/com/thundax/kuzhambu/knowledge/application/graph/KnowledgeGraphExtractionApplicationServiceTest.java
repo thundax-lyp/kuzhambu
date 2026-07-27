@@ -27,6 +27,7 @@ import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RegenerateGraphExtractionCommand;
+import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestRelationExtractionCommand;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionBatchCancelResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
@@ -215,6 +216,37 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         BizException exception = assertThrows(BizException.class, () -> service.requestRelationExtraction(command));
 
         assertEquals("Knowledge graph selectionScopeJson is invalid", exception.getMessage());
+    }
+
+    @Test
+    void requestGraphExtractionShouldAllowMissingModelBeforeAiResolverFillsIt() {
+        FakeRepository repository = new FakeRepository();
+        FakeKnowledgeAiExtractionDomainService aiService = new FakeKnowledgeAiExtractionDomainService();
+        KnowledgeGraphExtractionApplicationServiceImpl service = service(
+                repository,
+                new FakeGraphVersionRepository(),
+                new FakeKnowledgeEntityRepository(),
+                new FakeKnowledgeRelationRepository(),
+                new FakeKnowledgeLineageNodeRepository(),
+                new FakeKnowledgeLineageRelationRepository(),
+                new FakeAiInvocationRepository(),
+                null,
+                aiService,
+                new AiCandidateDomainService(new FakeAiInvocationRepository()),
+                null);
+        RequestGraphExtractionCommand command = graphCommand();
+        command.setModelId(null);
+        command.setModelName(null);
+
+        GraphExtractionTaskResult result = service.requestGraphExtraction(command);
+
+        assertNotNull(result);
+        assertEquals("GRAPH", result.getTaskType());
+        assertEquals("SUCCEEDED", result.getStatus());
+        assertEquals("GRAPH", aiService.lastTaskType);
+        assertEquals("SANCAI_ENTRY", aiService.lastRequest.getSourceContentType());
+        assertEquals(null, aiService.lastRequest.getModelId());
+        assertEquals(null, aiService.lastRequest.getModelName());
     }
 
     @Test
@@ -888,6 +920,29 @@ class KnowledgeGraphExtractionApplicationServiceTest {
 
     private RequestRelationExtractionCommand relationCommand() {
         return new RequestRelationExtractionCommand(
+                "ENTRY",
+                "{\"entryIds\":[1]}",
+                "SANCAI_ENTRY",
+                1L,
+                2L,
+                3L,
+                "knowledge-admin",
+                10L,
+                "model-a",
+                20L,
+                "req-1",
+                "trace-1",
+                "[{\"role\":\"user\",\"content\":\"hello\"}]",
+                null,
+                null,
+                "{\"text\":\"hello\"}",
+                "{\"type\":\"object\"}",
+                true,
+                "zh-CN");
+    }
+
+    private RequestGraphExtractionCommand graphCommand() {
+        return new RequestGraphExtractionCommand(
                 "ENTRY",
                 "{\"entryIds\":[1]}",
                 "SANCAI_ENTRY",

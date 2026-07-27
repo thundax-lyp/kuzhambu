@@ -9,6 +9,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
+import com.thundax.kuzhambu.common.security.context.KuzhambuSubject;
+import com.thundax.kuzhambu.common.security.context.KuzhambuSubjectType;
 import com.thundax.kuzhambu.knowledge.application.graph.result.GraphExtractionTaskResult;
 import com.thundax.kuzhambu.knowledge.application.workbench.result.KnowledgeGraphWorkbenchResults.CandidateApplyResult;
 import com.thundax.kuzhambu.knowledge.application.workbench.result.KnowledgeGraphWorkbenchResults.CandidateSummaryResult;
@@ -18,29 +21,30 @@ import com.thundax.kuzhambu.knowledge.application.workbench.service.KnowledgeGra
 import com.thundax.kuzhambu.knowledge.interfaces.admin.workbench.controller.request.KnowledgeGraphWorkbenchRequests;
 import java.lang.reflect.Method;
 import java.util.List;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 class KnowledgeGraphWorkbenchControllerTest {
 
+    @AfterEach
+    void tearDown() {
+        KuzhambuContextHolder.clear();
+    }
+
     @Test
-    void listManuscriptTreeShouldMapThreeSourceRoots() {
+    void listManuscriptTreeShouldMapSancaiSourceRoot() {
         KnowledgeGraphWorkbenchApplicationService service = mock(KnowledgeGraphWorkbenchApplicationService.class);
         KnowledgeGraphWorkbenchController controller = new KnowledgeGraphWorkbenchController(service);
         KnowledgeGraphWorkbenchRequests.ManuscriptTreeRequest request =
                 new KnowledgeGraphWorkbenchRequests.ManuscriptTreeRequest();
         when(service.listManuscriptTree(null, null, null, null))
-                .thenReturn(List.of(
-                        sourceRoot("SOURCE_ROOT:SANCAI_ENTRY", "三才图会", "SANCAI_ENTRY"),
-                        sourceRoot("SOURCE_ROOT:WANGQI_DOCUMENT", "王圻文档", "WANGQI_DOCUMENT"),
-                        sourceRoot("SOURCE_ROOT:MING_CUSTOMS", "明代民俗", "MING_CUSTOMS")));
+                .thenReturn(List.of(sourceRoot("SOURCE_ROOT:SANCAI_ENTRY", "三才图会", "SANCAI_ENTRY")));
 
         var response = controller.listManuscriptTree(request);
 
         verify(service).listManuscriptTree(null, null, null, null);
-        assertEquals(3, response.size());
+        assertEquals(1, response.size());
         assertEquals("SANCAI_ENTRY", response.get(0).getSourceContentType());
-        assertEquals("WANGQI_DOCUMENT", response.get(1).getSourceContentType());
-        assertEquals("MING_CUSTOMS", response.get(2).getSourceContentType());
     }
 
     @Test
@@ -72,18 +76,19 @@ class KnowledgeGraphWorkbenchControllerTest {
     void extractManuscriptShouldMapTaskResponse() {
         KnowledgeGraphWorkbenchApplicationService service = mock(KnowledgeGraphWorkbenchApplicationService.class);
         KnowledgeGraphWorkbenchController controller = new KnowledgeGraphWorkbenchController(service);
+        KuzhambuContextHolder.setSubject(
+                new KuzhambuSubject("99", KuzhambuSubjectType.ADMIN_USER, "Admin", "token-1", List.of()));
         KnowledgeGraphWorkbenchRequests.ManuscriptExtractRequest request =
                 new KnowledgeGraphWorkbenchRequests.ManuscriptExtractRequest();
-        request.setSourceContentType("WANGQI_DOCUMENT");
-        request.setSourceContentId(2001L);
+        request.setSourceContentType("SANCAI_ENTRY");
+        request.setSourceContentId(1001L);
         request.setTaskType("GRAPH");
-        request.setRequestedBy(99L);
-        when(service.extractManuscript("WANGQI_DOCUMENT", 2001L, "GRAPH", 99L))
+        when(service.extractManuscript("SANCAI_ENTRY", 1001L, "GRAPH", 99L))
                 .thenReturn(taskResult("9002", "GRAPH", "REQUESTED"));
 
         var response = controller.extractManuscript(request);
 
-        verify(service).extractManuscript(eq("WANGQI_DOCUMENT"), eq(2001L), eq("GRAPH"), eq(99L));
+        verify(service).extractManuscript(eq("SANCAI_ENTRY"), eq(1001L), eq("GRAPH"), eq(99L));
         assertEquals("9002", response.getTaskId());
         assertEquals("GRAPH", response.getTaskType());
         assertEquals("REQUESTED", response.getStatus());

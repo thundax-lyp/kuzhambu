@@ -2,18 +2,27 @@ package com.thundax.kuzhambu.knowledge.application.workbench.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
 import com.thundax.kuzhambu.ai.facade.request.GetAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.classics.facade.ClassicsFacade;
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsPublicContentFacadeDto;
+import com.thundax.kuzhambu.classics.facade.dto.ClassicsQaKnowledgeFacadeDto;
+import com.thundax.kuzhambu.classics.facade.response.ClassicsPublicContentFacadeResponse;
 import com.thundax.kuzhambu.classics.facade.response.ClassicsPublicContentsFacadeResponse;
+import com.thundax.kuzhambu.classics.facade.response.ClassicsQaKnowledgeFacadeResponse;
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.command.RequestGraphExtractionCommand;
@@ -31,44 +40,56 @@ import org.mockito.ArgumentCaptor;
 
 class KnowledgeGraphWorkbenchApplicationServiceImplTest {
 
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     @Test
-    void listManuscriptTreeShouldExposeAllSupportedSources() {
+    void listManuscriptTreeShouldExposeSancaiSourceRoot() {
         Fixtures fixtures = new Fixtures();
 
         var roots = fixtures.service.listManuscriptTree(null, null, null, null);
 
-        assertEquals(3, roots.size());
+        assertEquals(1, roots.size());
         assertEquals("SANCAI_ENTRY", roots.get(0).getSourceContentType());
-        assertEquals("WANGQI_DOCUMENT", roots.get(1).getSourceContentType());
-        assertEquals("MING_CUSTOMS", roots.get(2).getSourceContentType());
+        verify(fixtures.classicsFacade, never()).listPublicContents();
     }
 
     @Test
-    void listManuscriptTreeShouldLoadManuscriptsForEachSourceType() {
+    void listManuscriptTreeShouldBatchGraphStatusLookups() {
         Fixtures fixtures = new Fixtures();
 
         var sancaiNodes =
                 fixtures.service.listManuscriptTree("SANCAI_ENTRY", "CATEGORY:SANCAI_ENTRY:sancai", null, null);
-        var wangqiNodes =
-                fixtures.service.listManuscriptTree("WANGQI_DOCUMENT", "CATEGORY:WANGQI_DOCUMENT:wangqi", null, null);
-        var mingNodes = fixtures.service.listManuscriptTree("MING_CUSTOMS", "CATEGORY:MING_CUSTOMS:ming", null, null);
 
+        assertEquals(2, sancaiNodes.size());
         assertEquals("三才稿件", sancaiNodes.get(0).getTitle());
-        assertEquals("王圻稿件", wangqiNodes.get(0).getTitle());
-        assertEquals("明俗稿件", mingNodes.get(0).getTitle());
+        assertEquals("三才稿件二", sancaiNodes.get(1).getTitle());
+        verify(fixtures.graphExtractionApplicationService, times(1))
+                .pageTasks(
+                        eq("GRAPH"), eq(null), eq(null), eq(null), eq("SANCAI_ENTRY"), eq(null), any(PageQuery.class));
+        verify(fixtures.graphExtractionApplicationService, times(1))
+                .pageVersions(eq("GRAPH"), eq(null), eq("SANCAI_ENTRY"), eq(null), any(PageQuery.class));
     }
 
     @Test
-    void listManuscriptTreeShouldSearchManuscriptsFromRoot() {
+    void listManuscriptTreeShouldSearchOnlySancaiManuscriptsFromRoot() {
+        Fixtures fixtures = new Fixtures();
+
+        var nodes = fixtures.service.listManuscriptTree(null, null, "三才", null);
+
+        assertEquals(2, nodes.size());
+        assertEquals("MANUSCRIPT", nodes.get(0).getNodeType());
+        assertEquals("三才稿件", nodes.get(0).getTitle());
+        assertEquals("SANCAI_ENTRY", nodes.get(0).getSourceContentType());
+        assertEquals(1001L, nodes.get(0).getSourceContentId());
+    }
+
+    @Test
+    void listManuscriptTreeShouldIgnoreUnsupportedGraphSources() {
         Fixtures fixtures = new Fixtures();
 
         var nodes = fixtures.service.listManuscriptTree(null, null, "王圻", null);
 
-        assertEquals(1, nodes.size());
-        assertEquals("MANUSCRIPT", nodes.get(0).getNodeType());
-        assertEquals("王圻稿件", nodes.get(0).getTitle());
-        assertEquals("WANGQI_DOCUMENT", nodes.get(0).getSourceContentType());
-        assertEquals(2001L, nodes.get(0).getSourceContentId());
+        assertEquals(0, nodes.size());
     }
 
     @Test
@@ -95,6 +116,52 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
         assertEquals(99L, command.getRequestedBy());
         assertEquals("[{\"role\":\"system\",\"content\":\"extract\"}]", command.getPromptMessagesJson());
         assertEquals("{\"content\":\"三才稿件\"}", command.getInputPayloadJson());
+    }
+
+    @Test
+    void extractManuscriptShouldRejectUnsupportedSourceType() {
+        Fixtures fixtures = new Fixtures();
+
+        assertThrows(
+                BizException.class, () -> fixtures.service.extractManuscript("WANGQI_DOCUMENT", 2001L, "GRAPH", 99L));
+
+        verify(fixtures.payloadBuilder, never()).build(any(), any(), any());
+        verify(fixtures.graphExtractionApplicationService, never()).requestGraphExtraction(any());
+    }
+
+    @Test
+    void payloadBuilderShouldExposePromptVariablesAndUseConfiguredOutputSchema() throws Exception {
+        ClassicsFacade classicsFacade = mock(ClassicsFacade.class);
+        when(classicsFacade.getQaKnowledge(any()))
+                .thenReturn(ClassicsQaKnowledgeFacadeResponse.builder()
+                        .knowledge(ClassicsQaKnowledgeFacadeDto.builder()
+                                .sourceId("SANCAI_ENTRY:1001")
+                                .contentType("SANCAI_ENTRY")
+                                .contentId("1001")
+                                .title("三才稿件")
+                                .categoryPath("人物 / 三才")
+                                .summary("摘要")
+                                .body("正文")
+                                .originalText("原文")
+                                .translationText("译文")
+                                .originalExcerpts("摘录")
+                                .build())
+                        .build());
+        KnowledgeGraphManuscriptPayloadBuilder builder =
+                new KnowledgeGraphManuscriptPayloadBuilder(classicsFacade, OBJECT_MAPPER);
+
+        ManuscriptExtractionPayload payload = builder.build("SANCAI_ENTRY", 1001L, "GRAPH");
+
+        JsonNode inputPayload = OBJECT_MAPPER.readTree(payload.inputPayloadJson());
+        assertEquals("三才稿件", inputPayload.get("sourceTitle").asText());
+        assertEquals("正文\n\n原文\n\n译文\n\n摘录", inputPayload.get("sourceText").asText());
+        assertEquals(
+                "SANCAI_ENTRY",
+                inputPayload.get("entryRefs").get(0).get("contentType").asText());
+        assertEquals("人物 / 三才", inputPayload.get("lineageHint").asText());
+        assertNull(payload.modelId());
+        assertNull(payload.modelName());
+        assertNull(payload.outputSchemaJson());
     }
 
     @Test
@@ -143,8 +210,115 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
     }
 
     @Test
+    void getManuscriptShouldPreferNewerExtractionTaskStatusOverExistingVersion() {
+        Fixtures fixtures = new Fixtures();
+        when(fixtures.classicsFacade.getPublicContent(any()))
+                .thenReturn(ClassicsPublicContentFacadeResponse.builder()
+                        .content(Fixtures.content("SANCAI_ENTRY", "1001", "sancai", "三才分类", "三才稿件"))
+                        .build());
+        when(fixtures.graphExtractionApplicationService.pageTasks(
+                        eq("GRAPH"), eq(null), eq(null), eq(null), eq("SANCAI_ENTRY"), eq(1001L), any(PageQuery.class)))
+                .thenReturn(PageResult.of(
+                        1, 1, 1, java.util.List.of(taskResult("9002", "GRAPH", "REQUESTED", 1_720_000_000_000L))));
+        when(fixtures.graphExtractionApplicationService.pageVersions(
+                        eq("GRAPH"), eq(null), eq("SANCAI_ENTRY"), eq(1001L), any(PageQuery.class)))
+                .thenReturn(PageResult.of(
+                        1,
+                        1,
+                        1,
+                        java.util.List.of(new GraphVersionResult(
+                                8001L,
+                                "9001",
+                                null,
+                                "GRAPH",
+                                "SANCAI_ENTRY",
+                                1001L,
+                                1,
+                                "APPLIED",
+                                1_710_000_000_000L))));
+
+        var result = fixtures.service.getManuscript("SANCAI_ENTRY", 1001L);
+
+        assertEquals("EXTRACTING", result.getGraphStatus());
+        assertEquals("9002", result.getLatestExtractionTask().getTaskId());
+        assertEquals(8001L, result.getLatestGraphVersion().getVersionId());
+    }
+
+    @Test
+    void getManuscriptShouldPreferLatestTaskLineageOverAppliedVersionTimestamp() {
+        Fixtures fixtures = new Fixtures();
+        when(fixtures.classicsFacade.getPublicContent(any()))
+                .thenReturn(ClassicsPublicContentFacadeResponse.builder()
+                        .content(Fixtures.content("SANCAI_ENTRY", "1001", "sancai", "三才分类", "三才稿件"))
+                        .build());
+        when(fixtures.graphExtractionApplicationService.pageTasks(
+                        eq("GRAPH"), eq(null), eq(null), eq(null), eq("SANCAI_ENTRY"), eq(1001L), any(PageQuery.class)))
+                .thenReturn(PageResult.of(
+                        1, 1, 1, java.util.List.of(taskResult("9002", "GRAPH", "REQUESTED", 1_710_000_000_000L))));
+        when(fixtures.graphExtractionApplicationService.pageVersions(
+                        eq("GRAPH"), eq(null), eq("SANCAI_ENTRY"), eq(1001L), any(PageQuery.class)))
+                .thenReturn(PageResult.of(
+                        1,
+                        1,
+                        1,
+                        java.util.List.of(new GraphVersionResult(
+                                8001L,
+                                "9001",
+                                null,
+                                "GRAPH",
+                                "SANCAI_ENTRY",
+                                1001L,
+                                1,
+                                "APPLIED",
+                                1_720_000_000_000L))));
+
+        var result = fixtures.service.getManuscript("SANCAI_ENTRY", 1001L);
+
+        assertEquals("EXTRACTING", result.getGraphStatus());
+        assertEquals("9002", result.getLatestExtractionTask().getTaskId());
+        assertEquals(8001L, result.getLatestGraphVersion().getVersionId());
+    }
+
+    @Test
+    void getManuscriptShouldIgnoreNewerNonGraphTaskWhenResolvingGraphStatus() {
+        Fixtures fixtures = new Fixtures();
+        when(fixtures.classicsFacade.getPublicContent(any()))
+                .thenReturn(ClassicsPublicContentFacadeResponse.builder()
+                        .content(Fixtures.content("SANCAI_ENTRY", "1001", "sancai", "三才分类", "三才稿件"))
+                        .build());
+        when(fixtures.graphExtractionApplicationService.pageTasks(
+                        eq("GRAPH"), eq(null), eq(null), eq(null), eq("SANCAI_ENTRY"), eq(1001L), any(PageQuery.class)))
+                .thenReturn(PageResult.of(
+                        1, 1, 1, java.util.List.of(taskResult("9001", "GRAPH", "SUCCEEDED", 1_710_000_000_000L))));
+        when(fixtures.graphExtractionApplicationService.pageVersions(
+                        eq("GRAPH"), eq(null), eq("SANCAI_ENTRY"), eq(1001L), any(PageQuery.class)))
+                .thenReturn(PageResult.of(
+                        1,
+                        1,
+                        1,
+                        java.util.List.of(new GraphVersionResult(
+                                8001L,
+                                "9001",
+                                null,
+                                "GRAPH",
+                                "SANCAI_ENTRY",
+                                1001L,
+                                1,
+                                "APPLIED",
+                                1_720_000_000_000L))));
+
+        var result = fixtures.service.getManuscript("SANCAI_ENTRY", 1001L);
+
+        assertEquals("APPLIED", result.getGraphStatus());
+        assertEquals("9001", result.getLatestExtractionTask().getTaskId());
+        assertEquals(8001L, result.getLatestGraphVersion().getVersionId());
+    }
+
+    @Test
     void applyCandidateShouldReturnAppliedGraphStatus() {
         Fixtures fixtures = new Fixtures();
+        when(fixtures.graphExtractionApplicationService.getTaskDetail(any()))
+                .thenReturn(taskResult("9001", "GRAPH", "SUCCEEDED"));
         when(fixtures.graphExtractionApplicationService.applyTaskCandidate(any()))
                 .thenReturn(taskResult("9001", "GRAPH", "APPLIED"));
         when(fixtures.graphExtractionApplicationService.pageVersions(
@@ -163,26 +337,52 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
         assertEquals("APPLIED", result.getGraphStatus());
     }
 
+    @Test
+    void applyCandidateShouldRejectUnsupportedSourceTypeBeforeApplying() {
+        Fixtures fixtures = new Fixtures();
+        when(fixtures.graphExtractionApplicationService.getTaskDetail(any()))
+                .thenReturn(taskResult("9004", "GRAPH", "SUCCEEDED", "WANGQI_DOCUMENT", 2001L, 1_710_000_000_000L));
+
+        assertThrows(BizException.class, () -> fixtures.service.applyCandidate(9004L));
+
+        verify(fixtures.graphExtractionApplicationService, never()).applyTaskCandidate(any());
+    }
+
     private static GraphExtractionTaskResult taskResult(String taskId, String taskType, String status) {
+        return taskResult(taskId, taskType, status, 1710000000000L);
+    }
+
+    private static GraphExtractionTaskResult taskResult(
+            String taskId, String taskType, String status, Long requestedAt) {
+        return taskResult(taskId, taskType, status, "SANCAI_ENTRY", 1001L, requestedAt);
+    }
+
+    private static GraphExtractionTaskResult taskResult(
+            String taskId,
+            String taskType,
+            String status,
+            String sourceContentType,
+            Long sourceContentId,
+            Long requestedAt) {
         return new GraphExtractionTaskResult(
                 taskId,
                 null,
                 taskType,
                 "CLASSICS_MANUSCRIPT",
-                "{\"sourceContentType\":\"SANCAI_ENTRY\",\"sourceContentId\":1001}",
+                "{\"sourceContentType\":\"" + sourceContentType + "\",\"sourceContentId\":" + sourceContentId + "}",
                 "MANUAL",
                 null,
                 Boolean.TRUE,
                 null,
-                "SANCAI_ENTRY",
-                1001L,
+                sourceContentType,
+                sourceContentId,
                 301L,
                 302L,
                 status,
                 null,
                 null,
                 99L,
-                1710000000000L,
+                requestedAt,
                 null,
                 null);
     }
@@ -228,6 +428,7 @@ class KnowledgeGraphWorkbenchApplicationServiceImplTest {
                     .thenReturn(ClassicsPublicContentsFacadeResponse.builder()
                             .contents(java.util.List.of(
                                     content("SANCAI_ENTRY", "1001", "sancai", "三才分类", "三才稿件"),
+                                    content("SANCAI_ENTRY", "1002", "sancai", "三才分类", "三才稿件二"),
                                     content("WANGQI_DOCUMENT", "2001", "wangqi", "王圻分类", "王圻稿件"),
                                     content("MING_CUSTOMS", "3001", "ming", "明俗分类", "明俗稿件")))
                             .build());

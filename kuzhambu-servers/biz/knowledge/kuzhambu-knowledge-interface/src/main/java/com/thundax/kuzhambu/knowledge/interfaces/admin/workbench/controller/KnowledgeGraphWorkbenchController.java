@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.knowledge.interfaces.admin.workbench.controller;
 
+import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
+import com.thundax.kuzhambu.common.security.context.KuzhambuContextHolder;
 import com.thundax.kuzhambu.common.security.token.AccessTokenNames;
 import com.thundax.kuzhambu.common.web.annotation.SysLogger;
 import com.thundax.kuzhambu.common.web.annotation.WrappedApiController;
@@ -86,7 +88,7 @@ public class KnowledgeGraphWorkbenchController {
                 request == null ? null : request.getSourceContentType(),
                 request == null ? null : request.getSourceContentId(),
                 request == null ? null : request.getTaskType(),
-                request == null ? null : request.getRequestedBy()));
+                currentActorId()));
     }
 
     @Operation(summary = "查询稿件最新候选", description = "knowledge:graph:view")
@@ -123,5 +125,17 @@ public class KnowledgeGraphWorkbenchController {
             @Valid @RequestBody KnowledgeGraphWorkbenchRequests.CandidateApplyRequest request) {
         return KnowledgeGraphWorkbenchInterfaceAssembler.toResponse(
                 workbenchApplicationService.applyCandidate(request == null ? null : request.getTaskId()));
+    }
+
+    private Long currentActorId() {
+        String subjectId = KuzhambuContextHolder.currentSubjectId();
+        if (subjectId == null || subjectId.trim().isEmpty()) {
+            throw new BizException("Current subject is required");
+        }
+        try {
+            return Long.valueOf(subjectId);
+        } catch (NumberFormatException ex) {
+            throw new BizException("Current subject is not a numeric user id");
+        }
     }
 }
