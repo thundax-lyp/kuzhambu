@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `src/pages/knowledge/taxonomy/components/tag-alias-create-field`：迁移标签别名新增为独立表单
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-FORM-USEFORM-MIGRATION.md`
-    - 范围对象：`src/pages/knowledge/taxonomy/components/tag-alias-create-field/tag-alias-create-field.tsx`、`src/pages/knowledge/taxonomy/components/tag-edit-drawer.tsx`
-    - 处理动作：将标签别名新增改为独立 `KuzhambuForm`，父级只接收子表单提交值。
-    - 验收点：`tag-alias-create-field.tsx` 不再出现 direct AntD `Form.Item`，别名创建成功后只重置子表单字段。
-    - 重要度：7/10
-
 - [ ] `src/pages/classics/sancai/components/sancai-entry-edit-drawer/sancai-entry-basic-section`：清理三才 AI 文本弹窗 direct Form.Item
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-FORM-USEFORM-MIGRATION.md`

@@ -1,12 +1,16 @@
 import { Form, Input } from "antd";
-import { KuzhambuButton } from "@/components";
+import { KuzhambuButton, KuzhambuForm, KuzhambuFormItem } from "@/components";
 import type { TagAliasRecord } from "@/pages/knowledge/taxonomy/taxonomy-types";
 import "./tag-alias-create-field.css";
+
+export interface TagAliasCreateFormValues {
+    name: string;
+}
 
 interface TagAliasCreateFieldProps {
     aliases: TagAliasRecord[];
     saving?: boolean;
-    onSubmit: () => void;
+    onSubmit: (values: TagAliasCreateFormValues) => Promise<void> | void;
 }
 
 const normalizeText = (value?: string | null) => {
@@ -19,9 +23,21 @@ export const TagAliasCreateField = ({
     saving = false,
     onSubmit
 }: TagAliasCreateFieldProps) => {
+    const [form] = Form.useForm<TagAliasCreateFormValues>();
+
+    const submitAlias = async () => {
+        const values = await form.validateFields();
+        await onSubmit(values);
+        form.resetFields();
+    };
+
     return (
-        <>
-            <Form.Item
+        <KuzhambuForm<TagAliasCreateFormValues>
+            form={form}
+            className="tag-alias-create-field"
+            component="div"
+        >
+            <KuzhambuFormItem
                 name="name"
                 className="tag-alias-create-field-name"
                 rules={[
@@ -51,20 +67,20 @@ export const TagAliasCreateField = ({
                     placeholder="新增标签别名"
                     onPressEnter={(event) => {
                         event.preventDefault();
-                        onSubmit();
+                        void submitAlias();
                     }}
                 />
-            </Form.Item>
-            <Form.Item className="tag-alias-create-field-action">
+            </KuzhambuFormItem>
+            <KuzhambuFormItem className="tag-alias-create-field-action">
                 <KuzhambuButton
                     testId="knowledge-taxonomy-tag-alias-action-button"
                     type="primary"
                     loading={saving}
-                    onClick={onSubmit}
+                    onClick={() => void submitAlias()}
                 >
                     新增别名
                 </KuzhambuButton>
-            </Form.Item>
-        </>
+            </KuzhambuFormItem>
+        </KuzhambuForm>
     );
 };
