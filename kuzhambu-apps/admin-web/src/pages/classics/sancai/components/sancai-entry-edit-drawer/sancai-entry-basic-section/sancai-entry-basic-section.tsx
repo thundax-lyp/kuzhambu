@@ -1,59 +1,142 @@
-import { Input, Switch } from "antd";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { App, Input, Switch } from "antd";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
+import { useEffect, useMemo } from "react";
+import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
-import { KuzhambuFormItem, KuzhambuSelect } from "@/components";
+import { KuzhambuForm, KuzhambuFormItem, KuzhambuSelect } from "@/components";
 import { SancaiEntryImageField } from "./sancai-entry-image-field";
 import { SancaiEntrySummaryTextField } from "./sancai-entry-summary-text-field";
 import { SancaiEntryTranslationTextField } from "./sancai-entry-translation-text-field";
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
 import type { SancaiEntryFormValues } from "@/pages/classics/sancai/components/sancai-entry-edit-drawer/sancai-entry-form-values";
-import type { SancaiEntryImageRecord } from "@/pages/classics/sancai/sancai-types";
+import * as entryService from "@/pages/classics/sancai/sancai-entry-service";
+import type {
+    SancaiEntryImageContentMode,
+    SancaiEntryImageRecord
+} from "@/pages/classics/sancai/sancai-types";
+
+const selectCurrentImage = (images: SancaiEntryImageRecord[]) => {
+    return [...images]
+        .filter((image) => image.currentUsed !== false)
+        .sort((left, right) => (left.priority ?? 0) - (right.priority ?? 0))[0];
+};
+
+const resolveImageUrl = (
+    entryId: number | undefined,
+    image: SancaiEntryImageRecord | undefined,
+    mode: SancaiEntryImageContentMode
+) => {
+    if (!entryId || !image?.id) {
+        return undefined;
+    }
+    return toAuthenticatedResourceUrl(
+        entryService.getImageContentUrl({
+            entryId,
+            imageId: image.id,
+            mode
+        })
+    );
+};
+
+interface SancaiEntryBasicPreviewState {
+    imageUrl?: string;
+}
 
 interface SancaiEntryBasicSectionProps {
     categoryOptions: Array<{ label: string; value: number }>;
-    currentImage?: SancaiEntryImageRecord;
-    downloadUrl?: string;
     entryId?: number;
     form: SancaiEntryFormValues;
     imageContent?: ReactNode;
     isCreatingSummaryTask: boolean;
     isCreatingTranslationTask: boolean;
-    isUploadingImage: boolean;
     mode: "create" | "edit";
-    previewUrl?: string;
     setForm: Dispatch<SetStateAction<SancaiEntryFormValues>>;
     summaryTasks: AiRefinementTaskRecord[];
     translationTasks: AiRefinementTaskRecord[];
     volumeOptions: Array<{ label: string; value: number }>;
     onChangeCategory: (categoryId: number | null) => void;
+    onPreviewStateChange: (state: SancaiEntryBasicPreviewState) => void;
     onRequestSummaryTask?: (draft: SancaiEntryFormValues) => void;
     onRequestTranslationTask?: (draft: SancaiEntryFormValues) => void;
-    onUploadImage: (file: File) => void;
 }
 
 export const SancaiEntryBasicSection = ({
     categoryOptions,
-    currentImage,
-    downloadUrl,
     entryId,
     form,
     imageContent,
     isCreatingSummaryTask,
     isCreatingTranslationTask,
-    isUploadingImage,
     mode,
-    previewUrl,
     setForm,
     summaryTasks,
     translationTasks,
     volumeOptions,
     onChangeCategory,
+    onPreviewStateChange,
     onRequestSummaryTask,
-    onRequestTranslationTask,
-    onUploadImage
+    onRequestTranslationTask
 }: SancaiEntryBasicSectionProps) => {
+    const { message: messageApi } = App.useApp();
+    const queryClient = useQueryClient();
+    const imagesQuery = useQuery({
+        queryKey: ["classics", "sancai", "entries", "images", entryId],
+        queryFn: () => entryService.listImages(entryId ?? 0),
+        enabled: Boolean(entryId),
+        retry: false
+    });
+    const entryImages = useMemo(
+        () =>
+            [...(imagesQuery.data || [])].sort((left, right) => {
+                if ((left.priority ?? 0) !== (right.priority ?? 0)) {
+                    return (left.priority ?? 0) - (right.priority ?? 0);
+                }
+                return left.id - right.id;
+            }),
+        [imagesQuery.data]
+    );
+    const currentImage = selectCurrentImage(entryImages);
+    const previewUrl = resolveImageUrl(entryId, currentImage, "preview");
+    const downloadUrl = resolveImageUrl(entryId, currentImage, "download");
+    const uploadImageMutation = useMutation({
+        mutationFn: (file: File) => {
+            if (!entryId) {
+                throw new Error("请先保存条目后再上传图片");
+            }
+            return entryService.uploadImage({
+                currentUsed: true,
+                entryId,
+                file,
+                imageType: "ORIGINAL",
+                replaceImageId: currentImage?.id,
+                title: file.name
+            });
+        },
+        onSuccess: async () => {
+            await Promise.all([
+                queryClient.invalidateQueries({
+                    queryKey: ["classics", "sancai", "entries", "images", entryId]
+                }),
+                queryClient.invalidateQueries({ queryKey: ["classics", "sancai", "entries"] })
+            ]);
+            messageApi.success("三才图会图片已上传");
+        },
+        onError: (error) => {
+            messageApi.error(error instanceof Error ? error.message : "图片上传失败");
+        }
+    });
+
+    useEffect(() => {
+        onPreviewStateChange({ imageUrl: previewUrl });
+    }, [onPreviewStateChange, previewUrl]);
+
     return (
-        <>
+        <KuzhambuForm
+            className="sancai-detail-card sancai-entry-edit-drawer-form"
+            colon={false}
+            component="div"
+        >
             <KuzhambuFormItem label="门类">
                 <KuzhambuSelect
                     aria-label="三才图会条目门类"
@@ -157,12 +240,12 @@ export const SancaiEntryBasicSection = ({
                         content={imageContent}
                         currentImage={currentImage}
                         downloadUrl={downloadUrl}
-                        isUploadingImage={isUploadingImage}
+                        isUploadingImage={uploadImageMutation.isPending}
                         previewUrl={previewUrl}
-                        onUploadImage={onUploadImage}
+                        onUploadImage={(file) => uploadImageMutation.mutate(file)}
                     />
                 </KuzhambuFormItem>
             ) : null}
-        </>
+        </KuzhambuForm>
     );
 };
