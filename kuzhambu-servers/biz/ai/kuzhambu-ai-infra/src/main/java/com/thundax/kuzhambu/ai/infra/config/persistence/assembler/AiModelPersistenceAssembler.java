@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.ai.infra.config.persistence.assembler;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiApiSource;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiModelCapability;
@@ -26,7 +27,7 @@ public final class AiModelPersistenceAssembler {
                 model.getApiSource() == null ? null : model.getApiSource().value(),
                 model.getBaseUrl(),
                 model.getEncryptedApiKey(),
-                model.getModelName(),
+                AiModelNameCodec.toValue(model.getModelName()),
                 model.getDisplayName(),
                 toCapabilityJson(model.getCapabilities()),
                 model.getDefaultParamsJson(),
@@ -44,7 +45,7 @@ public final class AiModelPersistenceAssembler {
                 AiApiSource.from(dataObject.getApiSource()),
                 dataObject.getBaseUrl(),
                 dataObject.getEncryptedApiKey(),
-                dataObject.getModelName(),
+                AiModelNameCodec.toDomain(dataObject.getModelName()),
                 dataObject.getDisplayName(),
                 toCapabilities(dataObject.getCapabilitiesJson()),
                 dataObject.getDefaultParamsJson(),

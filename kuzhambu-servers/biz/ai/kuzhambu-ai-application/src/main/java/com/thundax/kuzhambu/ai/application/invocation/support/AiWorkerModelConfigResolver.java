@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.thundax.kuzhambu.ai.application.config.business.service.AiBusinessConfigApplicationService;
 import com.thundax.kuzhambu.ai.application.config.model.service.AiModelApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiBusinessConfig;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiModelCapability;
@@ -47,7 +48,8 @@ public class AiWorkerModelConfigResolver {
             throw new IllegalArgumentException("AI model baseUrl is required: " + command.getModelId());
         }
 
-        if (!isBlank(command.getModelName()) && !command.getModelName().equals(model.getModelName())) {
+        String modelName = AiModelNameCodec.toValue(model.getModelName());
+        if (!isBlank(command.getModelName()) && !command.getModelName().equals(modelName)) {
             throw new IllegalArgumentException("AI model mismatch: modelId=%s, modelName=%s"
                     .formatted(command.getModelId(), command.getModelName()));
         }
@@ -59,7 +61,7 @@ public class AiWorkerModelConfigResolver {
                 model.getApiSource() == null ? null : model.getApiSource().value(),
                 model.getBaseUrl(),
                 model.getEncryptedApiKey(),
-                model.getModelName(),
+                modelName,
                 model.getCapabilities() == null
                         ? new ArrayList<>()
                         : model.getCapabilities().stream()

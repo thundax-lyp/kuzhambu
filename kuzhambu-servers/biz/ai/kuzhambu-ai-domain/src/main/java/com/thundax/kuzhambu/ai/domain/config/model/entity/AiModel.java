@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.ai.domain.config.model.entity;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiApiSource;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiModelCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,7 @@ public class AiModel {
     private AiApiSource apiSource;
     private String baseUrl;
     private String encryptedApiKey;
-    private String modelName;
+    private AiModelName modelName;
     private String displayName;
     private List<AiModelCapability> capabilities = new ArrayList<>();
     private String defaultParamsJson;
