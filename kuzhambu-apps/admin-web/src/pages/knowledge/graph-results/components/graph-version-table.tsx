@@ -89,6 +89,14 @@ export const GraphVersionTable = ({
                     >
                         查看正式结果
                     </KuzhambuButton>
+                    <KuzhambuButton
+                        testId="knowledge-graph-results-graph-version-refinement-button"
+                        href={`/knowledge/refinement?graphVersionId=${encodeURIComponent(
+                            String(version.versionId)
+                        )}`}
+                    >
+                        进入精修
+                    </KuzhambuButton>
                 </KuzhambuSpaceCompact>
             ),
             title: "操作"
