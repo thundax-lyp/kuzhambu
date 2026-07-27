@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class KnowledgeAiExtractionRequest {
+public class KnowledgeAiExtractionInput {
     private String taskType;
     private String scopeType;
     private String scopeJson;
