@@ -14,6 +14,8 @@ import com.thundax.kuzhambu.ai.domain.vision.model.entity.ImageUnderstandingResu
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 public class AiBatchJobApplicationServiceImplTest {
 
@@ -35,6 +37,22 @@ public class AiBatchJobApplicationServiceImplTest {
         service.create(new AiBatchJobCreateCommand("classics", "visual", "SANCAI_ENTRY", 1, null));
 
         assertEquals(AiBusinessCapability.CLASSICS_VISUAL_DESCRIBE, repository.inserted.getCapability());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "relation_extraction, KNOWLEDGE_RELATION_EXTRACT",
+        "knowledge_graph, KNOWLEDGE_GRAPH_EXTRACT",
+        "lineage_extraction, KNOWLEDGE_LINEAGE_EXTRACT"
+    })
+    public void createShouldNormalizeLegacyKnowledgeCapability(
+            String legacyCapability, AiBusinessCapability expectedCapability) {
+        FakeRepository repository = new FakeRepository(null);
+        AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(repository);
+
+        service.create(new AiBatchJobCreateCommand("knowledge", legacyCapability, "SANCAI_ENTRY", 1, null));
+
+        assertEquals(expectedCapability, repository.inserted.getCapability());
     }
 
     @Test

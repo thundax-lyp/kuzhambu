@@ -44,6 +44,9 @@ public class AiBatchJobCreateCommand {
             case "visual" -> "classics_visual_describe";
             case "image_gen" -> "classics_image_generate";
             case "split" -> "classics_split";
+            case "relation_extraction" -> "knowledge_relation_extract";
+            case "knowledge_graph" -> "knowledge_graph_extract";
+            case "lineage_extraction" -> "knowledge_lineage_extract";
             default -> value;
         };
     }
