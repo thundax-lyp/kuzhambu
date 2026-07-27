@@ -1,8 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Card, Col, Empty, Row, Typography } from "antd";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuSpace, KuzhambuPage, KuzhambuButton, KuzhambuAlert } from "@/components";
+import * as currentUserService from "@/service/current-user-service";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 
 import { GraphExtractionManuscriptDetail } from "./components/graph-extraction-manuscript-detail";
@@ -15,14 +16,12 @@ import type {
     GraphExtractionTaskPageQuery
 } from "./graph-extraction-service";
 import type {
+    GraphWorkbenchManuscriptNode,
     GraphExtractionTriggerSource,
     GraphExtractionTaskRecord
 } from "./graph-extraction-types";
 import * as workbenchService from "./graph-workbench-service";
-import type {
-    GraphWorkbenchManuscriptTreeNode,
-    GraphWorkbenchSourceContentType
-} from "./graph-workbench-types";
+import type { GraphWorkbenchSourceContentType } from "./graph-extraction-types";
 
 import "./graph-extraction-page.css";
 
@@ -60,10 +59,10 @@ const readRegenerateCommandFromSearch = (): GraphExtractionRegenerateCommand | n
 };
 
 const updateNodeChildren = (
-    nodes: GraphWorkbenchManuscriptTreeNode[],
+    nodes: GraphWorkbenchManuscriptNode[],
     nodeKey: string,
-    children: GraphWorkbenchManuscriptTreeNode[]
-): GraphWorkbenchManuscriptTreeNode[] =>
+    children: GraphWorkbenchManuscriptNode[]
+): GraphWorkbenchManuscriptNode[] =>
     nodes.map((node) => {
         if (node.nodeKey === nodeKey) {
             return {
@@ -94,12 +93,12 @@ export const GraphExtractionPage = () => {
     });
     const [detailTaskId, setDetailTaskId] = useState<number | null>(null);
     const [taskDetailDrawerOpen, setTaskDetailDrawerOpen] = useState(false);
-    const [manuscriptTreeNodes, setManuscriptTreeNodes] = useState<
-        GraphWorkbenchManuscriptTreeNode[]
-    >([]);
+    const [manuscriptTreeNodes, setManuscriptTreeNodes] = useState<GraphWorkbenchManuscriptNode[]>(
+        []
+    );
     const [manuscriptSearchText, setManuscriptSearchText] = useState("");
     const [selectedManuscript, setSelectedManuscript] =
-        useState<GraphWorkbenchManuscriptTreeNode | null>(null);
+        useState<GraphWorkbenchManuscriptNode | null>(null);
 
     const taskPageQuery = useQuery({
         queryKey: ["knowledge", "graph-extraction", "tasks", taskQuery],
@@ -111,6 +110,12 @@ export const GraphExtractionPage = () => {
         queryKey: ["knowledge", "graph-extraction", "task-detail", detailTaskId],
         queryFn: () => service.getTaskDetail({ taskId: detailTaskId || 0 }),
         enabled: taskDetailDrawerOpen && detailTaskId !== null,
+        retry: false
+    });
+    const currentUserQuery = useQuery({
+        queryKey: ["sys", "current-user", "info"],
+        queryFn: currentUserService.getCurrentUserInfo,
+        enabled: canEditGraph,
         retry: false
     });
 
@@ -160,11 +165,8 @@ export const GraphExtractionPage = () => {
         retry: false
     });
 
-    useEffect(() => {
-        if (manuscriptTreeQuery.data) {
-            setManuscriptTreeNodes(manuscriptTreeQuery.data);
-        }
-    }, [manuscriptTreeQuery.data]);
+    const visibleManuscriptTreeNodes =
+        manuscriptTreeNodes.length > 0 ? manuscriptTreeNodes : manuscriptTreeQuery.data || [];
 
     const loadManuscriptChildren = useCallback(
         async (nodeKey: string) => {
@@ -172,20 +174,31 @@ export const GraphExtractionPage = () => {
                 parentKey: nodeKey,
                 keyword: manuscriptSearchText || undefined
             });
-            setManuscriptTreeNodes((current) => updateNodeChildren(current, nodeKey, children));
+            setManuscriptTreeNodes((current) =>
+                updateNodeChildren(
+                    current.length > 0 ? current : manuscriptTreeQuery.data || [],
+                    nodeKey,
+                    children
+                )
+            );
         },
-        [manuscriptSearchText]
+        [manuscriptSearchText, manuscriptTreeQuery.data]
     );
 
     const extractManuscriptMutation = useMutation({
-        mutationFn: (taskType: string) =>
-            workbenchService.extractManuscript({
+        mutationFn: (taskType: string) => {
+            const requestedBy = Number(currentUserQuery.data?.id ?? 0);
+            if (!requestedBy) {
+                throw new Error("当前用户信息未加载完成，请稍后重试");
+            }
+            return workbenchService.extractManuscript({
                 sourceContentType:
                     selectedManuscript?.sourceContentType as GraphWorkbenchSourceContentType,
                 sourceContentId: selectedManuscript?.sourceContentId || 0,
                 taskType,
-                requestedBy: 1
-            }),
+                requestedBy
+            });
+        },
         onSuccess: async () => {
             await Promise.all([
                 queryClient.invalidateQueries({
@@ -220,7 +233,7 @@ export const GraphExtractionPage = () => {
     });
     const applyTaskMutation = useMutation({
         mutationFn: (taskId: number) => service.applyTaskCandidate({ taskId }),
-        onSuccess: async (task) => {
+        onSuccess: async () => {
             await Promise.all([
                 queryClient.invalidateQueries({
                     queryKey: ["knowledge", "graph-extraction", "tasks"]
@@ -363,7 +376,7 @@ export const GraphExtractionPage = () => {
                         <Col xs={24} lg={8}>
                             <GraphExtractionManuscriptTree
                                 loading={manuscriptTreeQuery.isLoading}
-                                nodes={manuscriptTreeNodes}
+                                nodes={visibleManuscriptTreeNodes}
                                 searchText={manuscriptSearchText}
                                 selectedNodeKey={selectedNodeKey}
                                 onLoadChildren={loadManuscriptChildren}

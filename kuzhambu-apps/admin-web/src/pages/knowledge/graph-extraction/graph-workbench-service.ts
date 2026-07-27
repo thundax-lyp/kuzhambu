@@ -1,13 +1,14 @@
 import { postJson } from "@/api/http";
-import type { GraphExtractionTaskRecord, GraphExtractionTaskType } from "./graph-extraction-types";
 import type {
     GraphWorkbenchCandidateApplyRecord,
-    GraphWorkbenchCandidateSummary,
-    GraphWorkbenchManuscriptDetail,
-    GraphWorkbenchManuscriptTreeNode,
+    GraphWorkbenchCandidateRecord,
+    GraphWorkbenchManuscriptNode,
+    GraphWorkbenchManuscriptRecord,
     GraphWorkbenchSourceContentType,
+    GraphExtractionTaskRecord,
+    GraphExtractionTaskType,
     GraphWorkbenchStatus
-} from "./graph-workbench-types";
+} from "./graph-extraction-types";
 
 const API_PREFIX = "/knowledge/graph-workbench";
 
@@ -41,7 +42,7 @@ export interface GraphWorkbenchCandidateApplyCommand {
 }
 
 export const listManuscriptTree = (request: GraphWorkbenchManuscriptTreeQuery = {}) => {
-    return postJson<GraphWorkbenchManuscriptTreeNode[], GraphWorkbenchManuscriptTreeQuery>(
+    return postJson<GraphWorkbenchManuscriptNode[], GraphWorkbenchManuscriptTreeQuery>(
         `${API_PREFIX}/manuscript-tree`,
         {
             body: request
@@ -50,7 +51,7 @@ export const listManuscriptTree = (request: GraphWorkbenchManuscriptTreeQuery = 
 };
 
 export const getManuscript = (request: GraphWorkbenchManuscriptQuery) => {
-    return postJson<GraphWorkbenchManuscriptDetail, GraphWorkbenchManuscriptQuery>(
+    return postJson<GraphWorkbenchManuscriptRecord, GraphWorkbenchManuscriptQuery>(
         `${API_PREFIX}/manuscript/get`,
         {
             body: request
@@ -68,7 +69,7 @@ export const extractManuscript = (request: GraphWorkbenchExtractCommand) => {
 };
 
 export const getLatestCandidate = (request: GraphWorkbenchCandidateQuery) => {
-    return postJson<GraphWorkbenchCandidateSummary, GraphWorkbenchCandidateQuery>(
+    return postJson<GraphWorkbenchCandidateRecord, GraphWorkbenchCandidateQuery>(
         `${API_PREFIX}/candidate/get`,
         {
             body: request
