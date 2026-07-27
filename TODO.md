@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `graph-workbench-service.ts`：新增前端稿件工作台 service/types
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-FRONTEND-FLOW.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/graph-workbench-service.ts`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/graph-workbench-types.ts`
-    - 处理动作：对接 `graph-workbench` 接口并定义统一稿件树、详情、候选和应用类型。
-    - 验收点：前端 service 请求不包含手填 JSON、prompt 或模型字段。
-    - 重要度：9/10
-
 - [ ] `GraphExtractionManuscriptTree`：新增统一稿件树组件
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-FRONTEND-FLOW.md`
