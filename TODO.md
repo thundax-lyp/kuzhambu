@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `graph-extraction-page.tsx`：改造图谱抽取页面编排
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-FRONTEND-FLOW.md`
-    - 范围对象：`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/graph-extraction-page.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/components/graph-extraction-create.tsx`、`kuzhambu-apps/admin-web/src/pages/knowledge/graph-extraction/components/graph-extraction-task-table.tsx`
-    - 处理动作：用稿件树和稿件详情替换手填 JSON 创建入口并保留任务台账视角。
-    - 验收点：页面主流程为选择稿件、抽取图谱、查看候选、应用候选和进入精修。
-    - 重要度：10/10
-
 - [ ] `KnowledgeGraphWorkbenchControllerTest`：补齐新增接口冒烟和前端契约测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-FRONTEND-FLOW.md`
