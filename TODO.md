@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `src/pages/ai/ai-models/components/ai-model-edit-drawer.tsx`：迁移 AI 模型编辑抽屉表单
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-FORM-USEFORM-MIGRATION.md`
-    - 范围对象：`src/pages/ai/ai-models/components/ai-model-edit-drawer.tsx`
-    - 处理动作：将模型字段改为 `Form.useForm` + `KuzhambuFormItem name` 托管。
-    - 验收点：保存仍保留必填校验、JSON 校验、trim、`normalizeJsonText` 和编辑态空 API key 不更新语义。
-    - 重要度：8/10
-
 - [ ] `src/pages/system/user/components/user-edit-drawer/user-edit-drawer.tsx`：迁移用户编辑抽屉表单
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-FORM-USEFORM-MIGRATION.md`

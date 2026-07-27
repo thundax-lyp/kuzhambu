@@ -1,5 +1,4 @@
-import { App, Input } from "antd";
-import { useState } from "react";
+import { App, Form, Input } from "antd";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import {
     KuzhambuDrawer,
@@ -104,43 +103,46 @@ const AiModelEditDrawerForm = ({
     onSave
 }: AiModelEditDrawerProps) => {
     const { message: messageApi } = App.useApp();
-    const [form, setForm] = useState<AiModelFormValues>(() => toFormValues(model));
+    const [form] = Form.useForm<AiModelFormValues>();
+    const initialValues = toFormValues(model);
 
     const submitForm = () => {
-        if (!form.displayName?.trim()) {
-            messageApi.warning("请输入模型名称");
-            return;
-        }
-        if (!form.modelName.trim()) {
-            messageApi.warning("请输入模型标识");
-            return;
-        }
-        if (!form.apiSource) {
-            messageApi.warning("请选择供应商");
-            return;
-        }
-        if (!form.baseUrl.trim()) {
-            messageApi.warning("请输入服务地址");
-            return;
-        }
-        try {
-            JSON.parse(normalizeJsonText(form.defaultParamsJson));
-        } catch {
-            messageApi.warning("请输入合法 JSON");
-            return;
-        }
+        form.validateFields().then((values) => {
+            if (!values.displayName?.trim()) {
+                messageApi.warning("请输入模型名称");
+                return;
+            }
+            if (!values.modelName.trim()) {
+                messageApi.warning("请输入模型标识");
+                return;
+            }
+            if (!values.apiSource) {
+                messageApi.warning("请选择供应商");
+                return;
+            }
+            if (!values.baseUrl.trim()) {
+                messageApi.warning("请输入服务地址");
+                return;
+            }
+            try {
+                JSON.parse(normalizeJsonText(values.defaultParamsJson));
+            } catch {
+                messageApi.warning("请输入合法 JSON");
+                return;
+            }
 
-        const command = {
-            ...form,
-            id: model?.id || form.id || null,
-            baseUrl: form.baseUrl.trim(),
-            modelName: form.modelName.trim(),
-            defaultParamsJson: normalizeJsonText(form.defaultParamsJson),
-            displayName: form.displayName?.trim() || null,
-            description: form.description?.trim() || null,
-            capabilities: form.capabilities || []
-        };
-        onSave(model ? omitBlankApiKey(command) : command);
+            const command = {
+                ...values,
+                id: model?.id || values.id || null,
+                baseUrl: values.baseUrl.trim(),
+                modelName: values.modelName.trim(),
+                defaultParamsJson: normalizeJsonText(values.defaultParamsJson),
+                displayName: values.displayName?.trim() || null,
+                description: values.description?.trim() || null,
+                capabilities: values.capabilities || []
+            };
+            onSave(model ? omitBlankApiKey(command) : command);
+        });
     };
 
     const formProps = {
@@ -168,76 +170,36 @@ const AiModelEditDrawerForm = ({
                 }
             ]}
         >
-            <KuzhambuForm {...formProps}>
-                <KuzhambuFormItem label="模型名称">
-                    <Input
-                        aria-label="AI模型名称"
-                        placeholder="对后台用户展示的名称"
-                        value={form.displayName ?? ""}
-                        onChange={(event) =>
-                            setForm((currentForm) => ({
-                                ...currentForm,
-                                displayName: event.target.value
-                            }))
-                        }
-                    />
+            <KuzhambuForm<AiModelFormValues>
+                {...formProps}
+                form={form}
+                initialValues={initialValues}
+            >
+                <KuzhambuFormItem name="displayName" label="模型名称">
+                    <Input aria-label="AI模型名称" placeholder="对后台用户展示的名称" />
                 </KuzhambuFormItem>
-                <KuzhambuFormItem label="供应商">
+                <KuzhambuFormItem name="apiSource" label="供应商">
                     <KuzhambuSelect
                         aria-label="AI模型供应商"
                         options={API_SOURCE_OPTIONS.map((value) => ({
                             label: readApiSourceMeta(value).label,
                             value
                         }))}
-                        value={form.apiSource}
-                        onChange={(value) =>
-                            setForm((currentForm) => ({
-                                ...currentForm,
-                                apiSource: value
-                            }))
-                        }
                     />
                 </KuzhambuFormItem>
-                <KuzhambuFormItem label="服务地址" layoutSize="large">
-                    <Input
-                        aria-label="AI模型服务地址"
-                        placeholder="https://api.example.com/v1"
-                        value={form.baseUrl}
-                        onChange={(event) =>
-                            setForm((currentForm) => ({
-                                ...currentForm,
-                                baseUrl: event.target.value
-                            }))
-                        }
-                    />
+                <KuzhambuFormItem name="baseUrl" label="服务地址" layoutSize="large">
+                    <Input aria-label="AI模型服务地址" placeholder="https://api.example.com/v1" />
                 </KuzhambuFormItem>
-                <KuzhambuFormItem label="API 密钥" layoutSize="large">
+                <KuzhambuFormItem name="apiKey" label="API 密钥" layoutSize="large">
                     <Input.Password
                         aria-label="AI模型API密钥"
                         placeholder={model?.apiKeyConfigured ? "已配置，留空则不更新" : ""}
-                        value={form.apiKey ?? ""}
-                        onChange={(event) =>
-                            setForm((currentForm) => ({
-                                ...currentForm,
-                                apiKey: event.target.value
-                            }))
-                        }
                     />
                 </KuzhambuFormItem>
-                <KuzhambuFormItem label="模型标识" layoutSize="large">
-                    <Input
-                        aria-label="AI模型标识"
-                        placeholder="gpt-4o"
-                        value={form.modelName}
-                        onChange={(event) =>
-                            setForm((currentForm) => ({
-                                ...currentForm,
-                                modelName: event.target.value
-                            }))
-                        }
-                    />
+                <KuzhambuFormItem name="modelName" label="模型标识" layoutSize="large">
+                    <Input aria-label="AI模型标识" placeholder="gpt-4o" />
                 </KuzhambuFormItem>
-                <KuzhambuFormItem label="能力" layoutSize="middle">
+                <KuzhambuFormItem name="capabilities" label="能力" layoutSize="middle">
                     <KuzhambuSelect
                         aria-label="AI模型能力"
                         mode="multiple"
@@ -245,53 +207,30 @@ const AiModelEditDrawerForm = ({
                             label: readCapabilityMeta(value).label,
                             value
                         }))}
-                        value={form.capabilities}
-                        onChange={(value) =>
-                            setForm((currentForm) => ({
-                                ...currentForm,
-                                capabilities: value
-                            }))
-                        }
                     />
                 </KuzhambuFormItem>
-                <KuzhambuFormItem label="状态" layoutSize="middle">
+                <KuzhambuFormItem
+                    name="enabled"
+                    label="状态"
+                    layoutSize="middle"
+                    valuePropName="checked"
+                >
                     <KuzhambuSwitch
                         aria-label="AI模型状态"
-                        checked={form.enabled}
                         checkedChildren="启用"
                         unCheckedChildren="禁用"
-                        onChange={(checked) =>
-                            setForm((currentForm) => ({
-                                ...currentForm,
-                                enabled: checked
-                            }))
-                        }
                     />
                 </KuzhambuFormItem>
-                <KuzhambuFormItem label="默认参数 JSON" layoutSize="large">
+                <KuzhambuFormItem name="defaultParamsJson" label="默认参数 JSON" layoutSize="large">
                     <Input.TextArea
                         aria-label="AI模型默认参数JSON"
-                        value={form.defaultParamsJson ?? ""}
                         autoSize={resolveTextAreaAutoSize({ minRows: 6, maxRows: 10 })}
-                        onChange={(event) =>
-                            setForm((currentForm) => ({
-                                ...currentForm,
-                                defaultParamsJson: event.target.value
-                            }))
-                        }
                     />
                 </KuzhambuFormItem>
-                <KuzhambuFormItem label="说明" layoutSize="large">
+                <KuzhambuFormItem name="description" label="说明" layoutSize="large">
                     <Input.TextArea
                         aria-label="AI模型说明"
-                        value={form.description ?? ""}
                         autoSize={resolveTextAreaAutoSize({ minRows: 3, maxRows: 6 })}
-                        onChange={(event) =>
-                            setForm((currentForm) => ({
-                                ...currentForm,
-                                description: event.target.value
-                            }))
-                        }
                     />
                 </KuzhambuFormItem>
             </KuzhambuForm>
