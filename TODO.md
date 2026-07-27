@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `src/pages/classics/sancai/components/sancai-volume-panel/sancai-volume-edit-modal.tsx`：迁移三才卷目编辑弹窗表单
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-FORM-USEFORM-MIGRATION.md`
-    - 范围对象：`src/pages/classics/sancai/components/sancai-volume-panel/sancai-volume-edit-modal.tsx`
-    - 处理动作：将卷目标题、所属门类和卷目类型改为 `Form.useForm` + `KuzhambuFormItem name` 托管。
-    - 验收点：保存读取 `form.validateFields()` 结果，`fallbackCategoryId` 只参与初始值回填。
-    - 重要度：8/10
-
 - [ ] `src/pages/ai/ai-models/components/ai-model-edit-drawer.tsx`：迁移 AI 模型编辑抽屉表单
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-FORM-USEFORM-MIGRATION.md`

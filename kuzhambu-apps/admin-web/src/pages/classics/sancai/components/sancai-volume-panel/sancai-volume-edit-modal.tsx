@@ -1,5 +1,5 @@
-import { Input } from "antd";
-import { useState } from "react";
+import { Form, Input } from "antd";
+import type { FormInstance } from "antd";
 import {
     KuzhambuForm,
     KuzhambuFormItem,
@@ -38,9 +38,14 @@ export const SancaiVolumeEditModal = ({
     volume,
     volumeTypeOptions
 }: SancaiVolumeEditModalProps) => {
-    const [form, setForm] = useState<SancaiVolumeFormValues>(() =>
-        toVolumeFormValues(volume ?? undefined, fallbackCategoryId)
-    );
+    const [form] = Form.useForm<SancaiVolumeFormValues>();
+    const initialValues = toVolumeFormValues(volume ?? undefined, fallbackCategoryId);
+
+    const submitForm = () => {
+        form.validateFields().then((values) => {
+            onSubmit(values);
+        });
+    };
 
     return (
         <KuzhambuModal
@@ -59,7 +64,7 @@ export const SancaiVolumeEditModal = ({
                         testId="classics-sancai-sancai-volume-action-button"
                         loading={isSubmitting}
                         type="primary"
-                        onClick={() => onSubmit(form)}
+                        onClick={submitForm}
                     >
                         保存
                     </KuzhambuButton>
@@ -72,13 +77,8 @@ export const SancaiVolumeEditModal = ({
                 volume={volume}
                 categories={categories}
                 form={form}
+                initialValues={initialValues}
                 volumeTypeItems={volumeTypeOptions}
-                onChange={(values) =>
-                    setForm((currentForm) => ({
-                        ...currentForm,
-                        ...values
-                    }))
-                }
             />
         </KuzhambuModal>
     );
@@ -87,49 +87,39 @@ export const SancaiVolumeEditModal = ({
 const SancaiVolumeForm = ({
     categories,
     form,
-    onChange,
+    initialValues,
     volume,
     volumeTypeItems
 }: {
     categories: SancaiCategoryRecord[];
-    form: SancaiVolumeFormValues;
-    onChange: (values: Partial<SancaiVolumeFormValues>) => void;
+    form: FormInstance<SancaiVolumeFormValues>;
+    initialValues: SancaiVolumeFormValues;
     volume: SancaiVolumeRecord | null;
     volumeTypeItems: DictItem[];
 }) => {
     return (
         <KuzhambuForm
+            form={form}
             aria-label={volume ? "编辑卷目" : "新增卷目"}
             className="sancai-category-edit-modal sancai-editor-form"
             component="div"
+            initialValues={initialValues}
         >
-            <KuzhambuFormItem label="卷目标题" layoutSize="large">
-                <Input
-                    aria-label="三才图会卷目标题"
-                    placeholder="卷目标题"
-                    value={form.title}
-                    onChange={(event) => onChange({ title: event.target.value })}
-                />
+            <KuzhambuFormItem name="title" label="卷目标题" layoutSize="large">
+                <Input aria-label="三才图会卷目标题" placeholder="卷目标题" />
             </KuzhambuFormItem>
-            <KuzhambuFormItem label="所属门类" layoutSize="large">
+            <KuzhambuFormItem name="categoryId" label="所属门类" layoutSize="large">
                 <KuzhambuSelect
                     aria-label="三才图会卷目所属门类"
                     placeholder="所属门类"
-                    value={form.categoryId}
                     options={categories.map((category) => ({
                         label: readTitle(category, "门类"),
                         value: category.id
                     }))}
-                    onChange={(categoryId) => onChange({ categoryId })}
                 />
             </KuzhambuFormItem>
-            <KuzhambuFormItem label="卷目类型" layoutSize="large">
-                <KuzhambuSelect
-                    aria-label="三才图会卷目类型"
-                    value={form.volumeType}
-                    options={volumeTypeItems}
-                    onChange={(volumeType) => onChange({ volumeType })}
-                />
+            <KuzhambuFormItem name="volumeType" label="卷目类型" layoutSize="large">
+                <KuzhambuSelect aria-label="三才图会卷目类型" options={volumeTypeItems} />
             </KuzhambuFormItem>
         </KuzhambuForm>
     );
