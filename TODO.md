@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `KnowledgeGraphWorkbenchController`：新增 knowledge 图谱工作台接口入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-FRONTEND-FLOW.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-interface/src/main/java/com/thundax/kuzhambu/knowledge/interfaces/admin/workbench/controller/KnowledgeGraphWorkbenchController.java`
-    - 处理动作：新增 `manuscript-tree`、`manuscript/get`、`manuscript/extract`、`candidate/get`、`candidate/apply` 接口。
-    - 验收点：所有接口挂载 knowledge 权限组并调用 application service。
-    - 重要度：10/10
-
 - [ ] `KnowledgeGraphManuscriptTreeAssembler`：统一三类稿件树节点转换
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-FRONTEND-FLOW.md`
