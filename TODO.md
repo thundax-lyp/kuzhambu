@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `KnowledgeGraphManuscriptTreeAssembler`：统一三类稿件树节点转换
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-FRONTEND-FLOW.md`
-    - 范围对象：`kuzhambu-servers/biz/knowledge/kuzhambu-knowledge-application/src/main/java/com/thundax/kuzhambu/knowledge/application/workbench/support/KnowledgeGraphManuscriptTreeAssembler.java`
-    - 处理动作：把 `SANCAI_ENTRY`、`WANGQI_DOCUMENT`、`MING_CUSTOMS` 转成统一 `SOURCE_ROOT/CATEGORY/VOLUME/MANUSCRIPT` 节点。
-    - 验收点：三类来源返回相同节点结构并支持按 `parentKey` 懒加载。
-    - 重要度：9/10
-
 - [ ] `KnowledgeGraphWorkbenchApplicationServiceImpl`：聚合稿件图谱详情
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-KNOWLEDGE-GRAPH-FRONTEND-FLOW.md`
