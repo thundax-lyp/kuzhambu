@@ -9,14 +9,6 @@
 
 ## 当前任务项
 
-- [ ] `src/pages/system/user/components/user-edit-drawer/user-edit-drawer.tsx`：迁移用户编辑抽屉表单
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-FORM-USEFORM-MIGRATION.md`
-    - 范围对象：`src/pages/system/user/components/user-edit-drawer/user-edit-drawer.tsx`
-    - 处理动作：将用户字段改为 `Form.useForm` + `KuzhambuFormItem name` 托管。
-    - 验收点：创建/编辑/关闭重开的回填语义正确，头像上传、角色查询、部门树和选项派生状态不进入表单。
-    - 重要度：8/10
-
 - [ ] `src/pages/classics/wangqi/components/wangqi-document-edit-drawer`：收敛王圻文档基础表单边界
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-ADMIN-WEB-FORM-USEFORM-MIGRATION.md`
