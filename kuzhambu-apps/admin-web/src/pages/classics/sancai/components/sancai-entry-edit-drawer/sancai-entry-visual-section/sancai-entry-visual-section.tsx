@@ -192,6 +192,7 @@ export const SancaiEntryVisualSection = ({
         queryKey: ["classics", "sancai", "entries", "visual-assets", entryId],
         queryFn: () => entryService.listVisualAssets(entryId),
         enabled: Boolean(entryId),
+        refetchOnMount: false,
         retry: false
     });
     const visualAssets = useMemo(() => visualAssetsQuery.data || [], [visualAssetsQuery.data]);
@@ -230,10 +231,9 @@ export const SancaiEntryVisualSection = ({
         [defaultSourceImage, entryId, selectedVisualAsset]
     );
     useEffect(() => {
+        visualAssetForm.resetFields();
         if (initialVisualAssetFormValue) {
             visualAssetForm.setFieldsValue(initialVisualAssetFormValue);
-        } else {
-            visualAssetForm.resetFields();
         }
     }, [initialVisualAssetFormValue, visualAssetForm]);
     const sourceImageStorageObjectId = Form.useWatch("sourceImageStorageObjectId", visualAssetForm);
@@ -264,8 +264,8 @@ export const SancaiEntryVisualSection = ({
                 generatedImageStorageObjectId ?? selectedVisualAsset.generatedImageStorageObjectId,
             generatedPreviewUrl:
                 generatedPreviewUrlField ?? selectedVisualAsset.generatedPreviewUrl,
-            textWeight: textWeight ?? selectedVisualAsset.textWeight,
-            imageWeight: imageWeight ?? selectedVisualAsset.imageWeight,
+            textWeight: normalizeNumberField(textWeight ?? selectedVisualAsset.textWeight),
+            imageWeight: normalizeNumberField(imageWeight ?? selectedVisualAsset.imageWeight),
             imageAnalysisMarkdown:
                 imageAnalysisMarkdown ?? selectedVisualAsset.imageAnalysisMarkdown,
             fusionDescription: fusionDescription ?? selectedVisualAsset.fusionDescription,
@@ -363,6 +363,7 @@ export const SancaiEntryVisualSection = ({
         const assetId = asset.visualAssetId ?? asset.id ?? null;
         setSelectedVisualAssetId(assetId);
         const nextFormValue = toVisualAssetFormValue(asset, defaultSourceImage, entryId);
+        visualAssetForm.resetFields();
         if (nextFormValue) {
             visualAssetForm.setFieldsValue(nextFormValue);
         }

@@ -1,5 +1,5 @@
 import { App, Empty } from "antd";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import type { ReactNode } from "react";
 import { KuzhambuSegmentedDrawer, KuzhambuButton } from "@/components";
 
@@ -90,13 +90,15 @@ export const SancaiEntryEditDrawer = ({
     const entryId = mode === "edit" ? entry?.id : undefined;
     const fallbackVisualPreviewState = useSancaiEntryVisualPreviewState(entryId);
     const [hasVisualSectionPreviewState, setHasVisualSectionPreviewState] = useState(false);
-    const effectiveVisualPreviewState = hasVisualSectionPreviewState
+    const shouldUseVisualSectionPreviewState =
+        activeSection === "visual" && hasVisualSectionPreviewState;
+    const effectiveVisualPreviewState = shouldUseVisualSectionPreviewState
         ? visualPreviewState
         : fallbackVisualPreviewState;
-    const updateVisualPreviewState = (state: SancaiEntryVisualPreviewState) => {
+    const updateVisualPreviewState = useCallback((state: SancaiEntryVisualPreviewState) => {
         setHasVisualSectionPreviewState(true);
         setVisualPreviewState(state);
-    };
+    }, []);
 
     const submitForm = () => {
         if (!entryDraft.volumeId) {

@@ -9,13 +9,17 @@ import { Markdown } from "@tiptap/markdown";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { App, DatePicker, Form, Input, Switch, Typography } from "antd";
+import type { DatePickerProps, SwitchProps } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import {
     KuzhambuAlert,
+    KuzhambuButton,
     KuzhambuForm,
     KuzhambuFormItem,
+    KuzhambuSelect,
+    type KuzhambuSelectProps,
     KuzhambuSegmentedDrawer,
     KuzhambuSyncTaskModal,
     type KuzhambuSyncTaskAdapter,
@@ -268,9 +272,10 @@ const WangqiRichTextEditor = ({ value, onChange }: WangqiRichTextEditorProps) =>
     );
 };
 
-const WangqiDocumentContentFormatSelect = () => {
+const WangqiDocumentContentFormatSelect = (props: KuzhambuSelectProps<string>) => {
     return (
         <KuzhambuSelect
+            {...props}
             aria-label="王圻文档正文格式"
             options={[
                 { label: "Markdown", value: "MARKDOWN" },
@@ -280,9 +285,10 @@ const WangqiDocumentContentFormatSelect = () => {
     );
 };
 
-const WangqiDocumentTimePicker = () => {
+const WangqiDocumentTimePicker = (props: DatePickerProps) => {
     return (
         <DatePicker
+            {...props}
             aria-label="王圻文档时间"
             picker="month"
             format="YYYY-MM"
@@ -291,8 +297,15 @@ const WangqiDocumentTimePicker = () => {
     );
 };
 
-const WangqiDocumentPublicSwitch = () => {
-    return <Switch aria-label="王圻文档公开状态" checkedChildren="公开" unCheckedChildren="私有" />;
+const WangqiDocumentPublicSwitch = (props: SwitchProps) => {
+    return (
+        <Switch
+            {...props}
+            aria-label="王圻文档公开状态"
+            checkedChildren="公开"
+            unCheckedChildren="私有"
+        />
+    );
 };
 
 const renderSummaryTaskStatus = ({
