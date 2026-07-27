@@ -49,22 +49,22 @@ const isRunningRefinementTask = (task?: AiRefinementTaskRecord | null) => {
 
 interface SancaiEntryTranslationTextFieldProps {
     entryId?: number;
-    form: SancaiEntryFormValues;
+    getFormValues: () => SancaiEntryFormValues;
     isCreatingTranslationTask?: boolean;
     mode: "create" | "edit";
     translationTasks?: AiRefinementTaskRecord[];
-    value: string;
-    onChange: (value: string) => void;
+    value?: string;
+    onChange?: (value: string) => void;
     onRequestTranslationTask?: (draft: SancaiEntryFormValues) => void;
 }
 
 export const SancaiEntryTranslationTextField = ({
     entryId,
-    form,
+    getFormValues,
     isCreatingTranslationTask = false,
     mode,
     translationTasks = [],
-    value,
+    value = "",
     onChange,
     onRequestTranslationTask
 }: SancaiEntryTranslationTextFieldProps) => {
@@ -151,7 +151,7 @@ export const SancaiEntryTranslationTextField = ({
                     queryKey: ["classics", "sancai", "refinement", "tasks", entryId]
                 })
             ]);
-            onChange(command.resultPayload);
+            onChange?.(command.resultPayload);
             setTranslationModalOpen(false);
             messageApi.success("译文已写入基础信息");
         },
@@ -229,11 +229,12 @@ export const SancaiEntryTranslationTextField = ({
             messageApi.warning("请先保存条目后再使用 AI翻译");
             return false;
         }
-        if (!form.originalText?.trim()) {
+        const formValues = getFormValues();
+        if (!formValues.originalText?.trim()) {
             messageApi.warning("请先填写原文");
             return false;
         }
-        onRequestTranslationTask(form);
+        onRequestTranslationTask(formValues);
         return true;
     };
     const applyTranslationDraft = () => {
@@ -254,10 +255,12 @@ export const SancaiEntryTranslationTextField = ({
             });
             return;
         }
-        onChange(resultPayload);
+        onChange?.(resultPayload);
         setTranslationModalOpen(false);
         messageApi.success("译文已写入基础信息");
     };
+
+    const formValues = getFormValues();
 
     return (
         <div className="sancai-entry-translation-text-field">
@@ -265,7 +268,7 @@ export const SancaiEntryTranslationTextField = ({
                 aria-label="三才图会译文"
                 value={value}
                 autoSize={resolveTextAreaAutoSize({ minRows: 4, maxRows: 8 })}
-                onChange={(event) => onChange(event.target.value)}
+                onChange={(event) => onChange?.(event.target.value)}
             />
             {mode === "edit" ? (
                 <KuzhambuSpace wrap>
@@ -281,7 +284,7 @@ export const SancaiEntryTranslationTextField = ({
             ) : null}
             <SancaiEntryTranslationModal
                 aiTextDraft={translationDraft}
-                form={form}
+                form={formValues}
                 hasRunningAiTextTask={hasRunningTranslationTask}
                 isAiTextApplyDisabled={isTranslationApplyDisabled}
                 isAiTextCandidateFetching={translationCandidatesQuery.isFetching}

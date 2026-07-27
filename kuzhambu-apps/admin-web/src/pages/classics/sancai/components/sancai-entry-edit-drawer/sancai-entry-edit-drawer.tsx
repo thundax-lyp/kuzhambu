@@ -1,5 +1,5 @@
 import { App, Empty } from "antd";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import type { ReactNode } from "react";
 import { KuzhambuSegmentedDrawer, KuzhambuButton } from "@/components";
 
@@ -25,7 +25,6 @@ interface SancaiEntryBasicPreviewState {
 }
 
 interface SancaiEntryEditDrawerProps {
-    imageContent?: ReactNode;
     qaContent?: ReactNode;
     tagContent?: ReactNode;
     versionContent?: ReactNode;
@@ -53,7 +52,6 @@ interface SancaiEntryEditDrawerProps {
 }
 
 export const SancaiEntryEditDrawer = ({
-    imageContent,
     qaContent,
     tagContent,
     versionContent,
@@ -89,27 +87,7 @@ export const SancaiEntryEditDrawer = ({
         currentVisualAsset: null
     });
     const entryId = mode === "edit" ? entry?.id : undefined;
-    const volumeOptions = useMemo(
-        () =>
-            volumes
-                .filter((volume) => volume.categoryId === entryDraft.categoryId)
-                .map((volume) => ({
-                    label: volume.title?.trim() || `卷 ${volume.id}`,
-                    value: volume.id
-                })),
-        [entryDraft.categoryId, volumes]
-    );
-    const changeCategory = (categoryId: number | null) => {
-        setEntryDraft((currentForm) => {
-            const currentVolume = volumes.find((volume) => volume.id === currentForm.volumeId);
-            const volumeStillMatches = currentVolume?.categoryId === categoryId;
-            return {
-                ...currentForm,
-                categoryId,
-                volumeId: volumeStillMatches ? currentForm.volumeId : null
-            };
-        });
-    };
+
     const submitForm = () => {
         if (!entryDraft.volumeId) {
             messageApi.warning("请选择卷");
@@ -126,16 +104,14 @@ export const SancaiEntryEditDrawer = ({
         <SancaiEntryBasicSection
             categoryOptions={categoryOptions}
             entryId={entryId}
-            form={entryDraft}
-            imageContent={imageContent}
             isCreatingSummaryTask={isCreatingSummaryTask}
             isCreatingTranslationTask={isCreatingTranslationTask}
             mode={mode}
-            setForm={setEntryDraft}
             summaryTasks={summaryTasks}
             translationTasks={translationTasks}
-            volumeOptions={volumeOptions}
-            onChangeCategory={changeCategory}
+            value={entryDraft}
+            volumes={volumes}
+            onChange={setEntryDraft}
             onPreviewStateChange={setBasicPreviewState}
             onRequestSummaryTask={onCreateSummaryTask}
             onRequestTranslationTask={onCreateTranslationTask}

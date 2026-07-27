@@ -49,22 +49,22 @@ const isRunningRefinementTask = (task?: AiRefinementTaskRecord | null) => {
 
 interface SancaiEntrySummaryTextFieldProps {
     entryId?: number;
-    form: SancaiEntryFormValues;
+    getFormValues: () => SancaiEntryFormValues;
     isCreatingSummaryTask?: boolean;
     mode: "create" | "edit";
     summaryTasks?: AiRefinementTaskRecord[];
-    value: string;
-    onChange: (value: string) => void;
+    value?: string;
+    onChange?: (value: string) => void;
     onRequestSummaryTask?: (draft: SancaiEntryFormValues) => void;
 }
 
 export const SancaiEntrySummaryTextField = ({
     entryId,
-    form,
+    getFormValues,
     isCreatingSummaryTask = false,
     mode,
     summaryTasks = [],
-    value,
+    value = "",
     onChange,
     onRequestSummaryTask
 }: SancaiEntrySummaryTextFieldProps) => {
@@ -149,7 +149,7 @@ export const SancaiEntrySummaryTextField = ({
                     queryKey: ["classics", "sancai", "refinement", "tasks", entryId]
                 })
             ]);
-            onChange(command.resultPayload);
+            onChange?.(command.resultPayload);
             setSummaryModalOpen(false);
             messageApi.success("摘要已写入基础信息");
         },
@@ -224,11 +224,12 @@ export const SancaiEntrySummaryTextField = ({
             messageApi.warning("请先保存条目后再使用 AI摘要");
             return false;
         }
-        if (!form.originalText?.trim()) {
+        const formValues = getFormValues();
+        if (!formValues.originalText?.trim()) {
             messageApi.warning("请先填写原文");
             return false;
         }
-        onRequestSummaryTask(form);
+        onRequestSummaryTask(formValues);
         return true;
     };
     const applySummaryDraft = () => {
@@ -249,10 +250,12 @@ export const SancaiEntrySummaryTextField = ({
             });
             return;
         }
-        onChange(resultPayload);
+        onChange?.(resultPayload);
         setSummaryModalOpen(false);
         messageApi.success("摘要已写入基础信息");
     };
+
+    const formValues = getFormValues();
 
     return (
         <div className="sancai-entry-summary-text-field">
@@ -260,7 +263,7 @@ export const SancaiEntrySummaryTextField = ({
                 aria-label="三才图会摘要"
                 value={value}
                 autoSize={resolveTextAreaAutoSize({ minRows: 3, maxRows: 6 })}
-                onChange={(event) => onChange(event.target.value)}
+                onChange={(event) => onChange?.(event.target.value)}
             />
             {mode === "edit" ? (
                 <KuzhambuSpace wrap>
@@ -276,7 +279,7 @@ export const SancaiEntrySummaryTextField = ({
             ) : null}
             <SancaiEntrySummaryModal
                 aiTextDraft={summaryDraft}
-                form={form}
+                form={formValues}
                 hasRunningAiTextTask={hasRunningSummaryTask}
                 isAiTextApplyDisabled={isSummaryApplyDisabled}
                 isAiTextCandidateFetching={summaryCandidatesQuery.isFetching}
