@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Card, Col, Empty, Row, Typography } from "antd";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuSpace, KuzhambuPage, KuzhambuButton, KuzhambuAlert } from "@/components";
 import * as currentUserService from "@/service/current-user-service";
@@ -58,23 +58,15 @@ const readRegenerateCommandFromSearch = (): GraphExtractionRegenerateCommand | n
     };
 };
 
-const updateNodeChildren = (
+const mergeLoadedNodeChildren = (
     nodes: GraphWorkbenchManuscriptNode[],
-    nodeKey: string,
-    children: GraphWorkbenchManuscriptNode[]
+    childrenByNodeKey: Record<string, GraphWorkbenchManuscriptNode[]>
 ): GraphWorkbenchManuscriptNode[] =>
     nodes.map((node) => {
-        if (node.nodeKey === nodeKey) {
-            return {
-                ...node,
-                children
-            };
-        }
+        const children = childrenByNodeKey[node.nodeKey] || node.children;
         return {
             ...node,
-            children: node.children
-                ? updateNodeChildren(node.children, nodeKey, children)
-                : node.children
+            children: children ? mergeLoadedNodeChildren(children, childrenByNodeKey) : children
         };
     });
 
@@ -93,12 +85,13 @@ export const GraphExtractionPage = () => {
     });
     const [detailTaskId, setDetailTaskId] = useState<number | null>(null);
     const [taskDetailDrawerOpen, setTaskDetailDrawerOpen] = useState(false);
-    const [manuscriptTreeNodes, setManuscriptTreeNodes] = useState<GraphWorkbenchManuscriptNode[]>(
-        []
-    );
+    const [manuscriptChildrenByNodeKey, setManuscriptChildrenByNodeKey] = useState<
+        Record<string, GraphWorkbenchManuscriptNode[]>
+    >({});
     const [manuscriptSearchText, setManuscriptSearchText] = useState("");
     const [selectedManuscript, setSelectedManuscript] =
         useState<GraphWorkbenchManuscriptNode | null>(null);
+    const normalizedManuscriptSearchText = manuscriptSearchText.trim();
 
     const taskPageQuery = useQuery({
         queryKey: ["knowledge", "graph-extraction", "tasks", taskQuery],
@@ -120,8 +113,17 @@ export const GraphExtractionPage = () => {
     });
 
     const manuscriptTreeQuery = useQuery({
-        queryKey: ["knowledge", "graph-workbench", "manuscript-tree", "roots"],
-        queryFn: () => workbenchService.listManuscriptTree(),
+        queryKey: [
+            "knowledge",
+            "graph-workbench",
+            "manuscript-tree",
+            "roots",
+            normalizedManuscriptSearchText
+        ],
+        queryFn: () =>
+            workbenchService.listManuscriptTree({
+                keyword: normalizedManuscriptSearchText || undefined
+            }),
         enabled: canViewGraph,
         retry: false
     });
@@ -165,25 +167,30 @@ export const GraphExtractionPage = () => {
         retry: false
     });
 
-    const visibleManuscriptTreeNodes =
-        manuscriptTreeNodes.length > 0 ? manuscriptTreeNodes : manuscriptTreeQuery.data || [];
+    const visibleManuscriptTreeNodes = useMemo(
+        () => mergeLoadedNodeChildren(manuscriptTreeQuery.data || [], manuscriptChildrenByNodeKey),
+        [manuscriptChildrenByNodeKey, manuscriptTreeQuery.data]
+    );
 
     const loadManuscriptChildren = useCallback(
         async (nodeKey: string) => {
             const children = await workbenchService.listManuscriptTree({
                 parentKey: nodeKey,
-                keyword: manuscriptSearchText || undefined
+                keyword: normalizedManuscriptSearchText || undefined
             });
-            setManuscriptTreeNodes((current) =>
-                updateNodeChildren(
-                    current.length > 0 ? current : manuscriptTreeQuery.data || [],
-                    nodeKey,
-                    children
-                )
-            );
+            setManuscriptChildrenByNodeKey((current) => ({
+                ...current,
+                [nodeKey]: children
+            }));
         },
-        [manuscriptSearchText, manuscriptTreeQuery.data]
+        [normalizedManuscriptSearchText]
     );
+
+    const changeManuscriptSearchText = useCallback((value: string) => {
+        setManuscriptSearchText(value);
+        setManuscriptChildrenByNodeKey({});
+        setSelectedManuscript(null);
+    }, []);
 
     const extractManuscriptMutation = useMutation({
         mutationFn: (taskType: string) => {
@@ -200,6 +207,7 @@ export const GraphExtractionPage = () => {
             });
         },
         onSuccess: async () => {
+            setManuscriptChildrenByNodeKey({});
             await Promise.all([
                 queryClient.invalidateQueries({
                     queryKey: ["knowledge", "graph-extraction", "tasks"]
@@ -217,6 +225,7 @@ export const GraphExtractionPage = () => {
     const applyWorkbenchCandidateMutation = useMutation({
         mutationFn: (taskId: number) => workbenchService.applyCandidate({ taskId }),
         onSuccess: async () => {
+            setManuscriptChildrenByNodeKey({});
             await Promise.all([
                 queryClient.invalidateQueries({
                     queryKey: ["knowledge", "graph-extraction", "tasks"]
@@ -380,13 +389,15 @@ export const GraphExtractionPage = () => {
                                 searchText={manuscriptSearchText}
                                 selectedNodeKey={selectedNodeKey}
                                 onLoadChildren={loadManuscriptChildren}
-                                onSearchChange={setManuscriptSearchText}
+                                onSearchChange={changeManuscriptSearchText}
                                 onSelectManuscript={setSelectedManuscript}
                             />
                         </Col>
                         <Col xs={24} lg={16}>
                             <GraphExtractionManuscriptDetail
                                 applying={applyWorkbenchCandidateMutation.isPending}
+                                canApply={canApplyGraph}
+                                canEdit={canEditGraph}
                                 candidate={candidateQuery.data || null}
                                 candidateLoading={candidateQuery.isLoading}
                                 detail={manuscriptDetailQuery.data || null}

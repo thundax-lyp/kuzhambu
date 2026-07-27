@@ -12,6 +12,8 @@ import { GraphExtractionCandidatePreview } from "./graph-extraction-candidate-pr
 
 interface GraphExtractionManuscriptDetailProps {
     applying?: boolean;
+    canApply?: boolean;
+    canEdit?: boolean;
     candidate?: GraphWorkbenchCandidateRecord | null;
     candidateLoading?: boolean;
     detail?: GraphWorkbenchManuscriptRecord | null;
@@ -56,6 +58,8 @@ const hasCandidate = (candidate?: GraphWorkbenchCandidateRecord | null) =>
 
 export const GraphExtractionManuscriptDetail = ({
     applying = false,
+    canApply = false,
+    canEdit = false,
     candidate,
     candidateLoading = false,
     detail,
@@ -119,6 +123,7 @@ export const GraphExtractionManuscriptDetail = ({
                     <KuzhambuSpace wrap>
                         <KuzhambuButton
                             testId="knowledge-graph-extraction-manuscript-extract-button"
+                            disabled={!canEdit}
                             type="primary"
                             loading={extracting}
                             onClick={() => onExtract("GRAPH")}
@@ -127,7 +132,7 @@ export const GraphExtractionManuscriptDetail = ({
                         </KuzhambuButton>
                         <KuzhambuButton
                             testId="knowledge-graph-extraction-manuscript-apply-candidate-button"
-                            disabled={!canApplyCandidate || !hasCandidate(candidate)}
+                            disabled={!canApply || !canApplyCandidate || !hasCandidate(candidate)}
                             loading={applying}
                             onClick={() => onApplyCandidate(numericCandidateTaskId)}
                         >

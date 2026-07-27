@@ -174,7 +174,9 @@ describe("GraphExtractionPage", () => {
             });
         });
         await waitFor(() => {
-            expect(workbenchServiceMocks.listManuscriptTree).toHaveBeenCalledWith();
+            expect(workbenchServiceMocks.listManuscriptTree).toHaveBeenCalledWith({
+                keyword: undefined
+            });
         });
         expect(await screen.findByText("8008")).toBeInTheDocument();
         expect(await screen.findByText("三才稿件")).toBeInTheDocument();
@@ -225,6 +227,41 @@ describe("GraphExtractionPage", () => {
         await waitFor(() => {
             expect(workbenchServiceMocks.applyCandidate).toHaveBeenCalledWith({ taskId: 9001 });
         });
+    });
+
+    it("searches manuscript tree with keyword", async () => {
+        renderPage();
+
+        fireEvent.change(await screen.findByLabelText("搜索稿件"), {
+            target: {
+                value: "黄帝"
+            }
+        });
+
+        await waitFor(() => {
+            expect(workbenchServiceMocks.listManuscriptTree).toHaveBeenCalledWith({
+                keyword: "黄帝"
+            });
+        });
+    });
+
+    it("disables workbench write actions without edit and apply permissions", async () => {
+        replacePermissions(["knowledge:graph:view"]);
+
+        renderPage();
+
+        fireEvent.click(await screen.findByText("三才稿件"));
+
+        const extractButton = await screen.findByRole("button", { name: "抽取图谱" });
+        const applyButton = await screen.findByRole("button", { name: "应用候选" });
+        expect(extractButton).toBeDisabled();
+        expect(applyButton).toBeDisabled();
+
+        fireEvent.click(extractButton);
+        fireEvent.click(applyButton);
+
+        expect(workbenchServiceMocks.extractManuscript).not.toHaveBeenCalled();
+        expect(workbenchServiceMocks.applyCandidate).not.toHaveBeenCalled();
     });
 
     it("does not load workbench data without graph view permission", async () => {
