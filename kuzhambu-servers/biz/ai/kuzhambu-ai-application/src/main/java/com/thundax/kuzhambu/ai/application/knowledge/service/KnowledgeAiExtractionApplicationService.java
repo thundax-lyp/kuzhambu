@@ -1,9 +1,9 @@
-package com.thundax.kuzhambu.ai.domain.knowledge.repository;
+package com.thundax.kuzhambu.ai.application.knowledge.service;
 
 import com.thundax.kuzhambu.ai.domain.knowledge.model.entity.KnowledgeAiExtractionRecord;
 import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionInput;
 
-public interface KnowledgeAiExtractionRepository {
+public interface KnowledgeAiExtractionApplicationService {
 
     KnowledgeAiExtractionRecord extractRelations(KnowledgeAiExtractionInput input);
 

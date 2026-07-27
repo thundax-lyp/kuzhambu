@@ -1,14 +1,14 @@
-package com.thundax.kuzhambu.ai.infra.knowledge.repository.impl;
+package com.thundax.kuzhambu.ai.application.knowledge.service.impl;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.support.AiBusinessInvokeConfigResolver;
+import com.thundax.kuzhambu.ai.application.knowledge.service.KnowledgeAiExtractionApplicationService;
 import com.thundax.kuzhambu.ai.application.knowledge.support.KnowledgeAiWorkerUsecaseResolver;
 import com.thundax.kuzhambu.ai.application.knowledge.support.KnowledgeAiWorkerUsecaseSpec;
 import com.thundax.kuzhambu.ai.domain.knowledge.model.entity.KnowledgeAiExtractionRecord;
 import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionInput;
-import com.thundax.kuzhambu.ai.domain.knowledge.repository.KnowledgeAiExtractionRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,14 +16,14 @@ import org.springframework.stereotype.Service;
 
 @Service
 @BizExceptionBoundary
-public class KnowledgeAiExtractionRepositoryImpl implements KnowledgeAiExtractionRepository {
+public class KnowledgeAiExtractionApplicationServiceImpl implements KnowledgeAiExtractionApplicationService {
 
     private final AiWorkerInvocationApplicationService invocationApplicationService;
     private final KnowledgeAiWorkerUsecaseResolver resolver;
     private final AiBusinessInvokeConfigResolver businessInvokeConfigResolver;
 
     @Autowired
-    public KnowledgeAiExtractionRepositoryImpl(
+    public KnowledgeAiExtractionApplicationServiceImpl(
             AiWorkerInvocationApplicationService invocationApplicationService,
             KnowledgeAiWorkerUsecaseResolver resolver,
             AiBusinessInvokeConfigResolver businessInvokeConfigResolver) {
