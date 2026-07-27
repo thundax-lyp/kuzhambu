@@ -535,8 +535,8 @@ export const TaxonomyPage = () => {
         setTagExtractionResult(null);
     };
 
-    const createAlias = (request: TagAliasCreateCommand) => {
-        return createAliasMutation.mutateAsync(request);
+    const createAlias = async (request: TagAliasCreateCommand) => {
+        await createAliasMutation.mutateAsync(request);
     };
 
     const removeAlias = (request: TagAliasRemoveCommand) => {
