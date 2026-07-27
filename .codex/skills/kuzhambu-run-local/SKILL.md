@@ -3,7 +3,7 @@ name: kuzhambu-run-local
 description: "Kuzhambu project-local slash-command workflow for starting the local test environment. Direct invocation only; requires at least one explicit target parameter: admin, portal, or both. Guides the agent through env loading, port conflict handling, backend/frontend proxy alignment, service startup, readiness checks, and URL reporting without using a bundled launcher script."
 ---
 
-# Run Local
+# Kuzhambu Run Local
 
 启动 Kuzhambu 本地测试环境，并在完成后输出可访问 URL。
 

@@ -1,5 +1,5 @@
 interface:
-  display_name: "Run Local"
+  display_name: "Kuzhambu Run Local"
   short_description: "Start selected Kuzhambu local test targets."
   default_prompt: "Use $kuzhambu-run-local with admin portal to start the local test environment."
 
