@@ -328,6 +328,9 @@ public class WorkerAiHttpClient implements WorkerAiClient {
         if (response.getError() != null) {
             result.setErrorType(response.getError().getType());
             result.setErrorMessage(response.getError().getMessage());
+        } else {
+            result.setErrorType(response.getErrorType());
+            result.setErrorMessage(response.getErrorMessage());
         }
         return result;
     }
@@ -418,6 +421,9 @@ public class WorkerAiHttpClient implements WorkerAiClient {
                 && !isBlank(response.getError().getType())) {
             return failure(
                     command, response.getError().getType(), response.getError().getMessage());
+        }
+        if (response != null && !isBlank(response.getErrorType())) {
+            return failure(command, response.getErrorType(), response.getErrorMessage());
         }
         return failure(command, httpErrorType(statusCode), "Worker returned HTTP " + statusCode);
     }
