@@ -33,7 +33,7 @@ public final class NamingArchitectureRuleSupport {
     private static final Pattern SERVICE_QUERY_SETTER_DECLARATION_PATTERN =
             Pattern.compile("\\bpublic\\s+void\\s+set[A-Z][A-Za-z0-9_]*\\s*\\(");
     private static final Pattern STATIC_METHOD_DECLARATION_PATTERN = Pattern.compile(
-            "\\b(?:public|protected|private)?\\s+static\\s+(?:<[^>]+>\\s+)?[\\w<>?,.\\[\\]\\s]+\\s+\\w+\\s*\\(");
+            "\\b(?:(?:public|protected|private)\\s+)?static\\s+(?:<[^>]+>\\s+)?[\\w<>?,.\\[\\]\\s]+\\s+\\w+\\s*\\(");
     private static final Set<String> SERVICE_QUERY_REQUIRED_ANNOTATIONS =
             new LinkedHashSet<String>(Arrays.asList("Getter", "Setter", "NoArgsConstructor", "AllArgsConstructor"));
     private static final Set<String> ENTITY_REQUIRED_ANNOTATIONS =
