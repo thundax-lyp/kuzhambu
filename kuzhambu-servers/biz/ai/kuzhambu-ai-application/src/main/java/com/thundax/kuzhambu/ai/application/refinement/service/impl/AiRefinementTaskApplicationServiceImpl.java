@@ -16,6 +16,7 @@ import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
@@ -24,6 +25,7 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -104,9 +106,15 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
             String capability, String status, String contentType, Long contentId, PageQuery pageQuery) {
         PageResult<AiBatchJobResult> page = batchJobApplicationService.page(
                 null, normalizeCapability(capability), status, contentType, contentId, pageQuery);
+        AiContentRef contentRef = AiContentRef.ofNullable(contentType, contentId);
+        Map<Long, AiInvocationLog> invocationLogsByBatch = latestInvocationLogsByBatch(page.getRecords(), contentRef);
+        Map<Long, AiCandidate> candidatesByBatch = latestCandidatesByBatch(page.getRecords(), contentRef);
         List<AiRefinementTaskResult> records = new ArrayList<>();
         for (AiBatchJobResult record : page.getRecords()) {
-            records.add(toTaskResult(record));
+            records.add(toTaskResult(
+                    record,
+                    invocationLogsByBatch.get(record.getBatchId()),
+                    candidatesByBatch.get(record.getBatchId())));
         }
         return PageResult.of(page.getPageNo(), page.getPageSize(), page.getTotalCount(), records);
     }
@@ -440,6 +448,11 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         AiBatchJobId batchId = AiBatchJobIdCodec.toDomain(job.getBatchId());
         AiInvocationLog invocationLog = latestInvocationLog(aiInvocationRepository.listInvocationLogsByBatch(batchId));
         AiCandidate candidate = latestCandidate(aiInvocationRepository.listCandidatesByBatch(batchId));
+        return toTaskResult(job, invocationLog, candidate);
+    }
+
+    private AiRefinementTaskResult toTaskResult(
+            AiBatchJobResult job, AiInvocationLog invocationLog, AiCandidate candidate) {
         AiRefinementTaskResult task = AiRefinementTaskResult.fromBatchJob(job, invocationLog, candidate);
         return new AiRefinementTaskResult(
                 task.getTaskId(),
@@ -467,6 +480,52 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
                 task.getStartedAt(),
                 task.getCompletedAt(),
                 task.getCancelledAt());
+    }
+
+    private Map<Long, AiInvocationLog> latestInvocationLogsByBatch(
+            List<AiBatchJobResult> jobs, AiContentRef contentRef) {
+        List<AiBatchJobId> batchIds = batchIds(jobs);
+        Map<Long, AiInvocationLog> records = new LinkedHashMap<>();
+        if (batchIds.isEmpty()) {
+            return records;
+        }
+        List<AiInvocationLog> invocationLogs = contentRef == null
+                ? aiInvocationRepository.listInvocationLogsByBatches(batchIds)
+                : aiInvocationRepository.listInvocationLogsByBatchesAndContent(batchIds, contentRef);
+        for (AiInvocationLog record : invocationLogs) {
+            Long batchId = AiBatchJobIdCodec.toValue(record.getBatchId());
+            records.putIfAbsent(batchId, record);
+        }
+        return records;
+    }
+
+    private Map<Long, AiCandidate> latestCandidatesByBatch(List<AiBatchJobResult> jobs, AiContentRef contentRef) {
+        List<AiBatchJobId> batchIds = batchIds(jobs);
+        Map<Long, AiCandidate> records = new LinkedHashMap<>();
+        if (batchIds.isEmpty()) {
+            return records;
+        }
+        List<AiCandidate> candidates = contentRef == null
+                ? aiInvocationRepository.listCandidatesByBatches(batchIds)
+                : aiInvocationRepository.listCandidatesByBatchesAndContent(batchIds, contentRef);
+        for (AiCandidate record : candidates) {
+            Long batchId = AiBatchJobIdCodec.toValue(record.getBatchId());
+            records.putIfAbsent(batchId, record);
+        }
+        return records;
+    }
+
+    private List<AiBatchJobId> batchIds(List<AiBatchJobResult> jobs) {
+        List<AiBatchJobId> ids = new ArrayList<>();
+        if (jobs == null) {
+            return ids;
+        }
+        for (AiBatchJobResult job : jobs) {
+            if (job != null && job.getBatchId() != null) {
+                ids.add(AiBatchJobIdCodec.toDomain(job.getBatchId()));
+            }
+        }
+        return ids;
     }
 
     private AiInvocationLog latestInvocationLog(List<AiInvocationLog> records) {

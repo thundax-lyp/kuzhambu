@@ -104,6 +104,26 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
     }
 
     @Override
+    public List<AiInvocationLog> listInvocationLogsByBatches(List<AiBatchJobId> batchIds) {
+        List<Long> values = batchIdValues(batchIds);
+        if (values.isEmpty()) {
+            return List.of();
+        }
+        return toInvocationLogDomainList(aiInvocationMapper.selectInvocationLogsByBatches(values));
+    }
+
+    @Override
+    public List<AiInvocationLog> listInvocationLogsByBatchesAndContent(
+            List<AiBatchJobId> batchIds, AiContentRef contentRef) {
+        List<Long> values = batchIdValues(batchIds);
+        if (values.isEmpty()) {
+            return List.of();
+        }
+        return toInvocationLogDomainList(aiInvocationMapper.selectInvocationLogsByBatchesAndContent(
+                values, AiContentRefCodec.toContentType(contentRef), AiContentRefCodec.toContentId(contentRef)));
+    }
+
+    @Override
     public PageResult<AiInvocationLog> pageInvocationLogs(
             String scope,
             AiBusinessCapability capability,
@@ -197,6 +217,39 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
     @Override
     public List<AiCandidate> listCandidatesByBatch(AiBatchJobId batchId) {
         return toCandidateDomainList(aiInvocationMapper.selectCandidatesByBatch(AiBatchJobIdCodec.toValue(batchId)));
+    }
+
+    @Override
+    public List<AiCandidate> listCandidatesByBatches(List<AiBatchJobId> batchIds) {
+        List<Long> values = batchIdValues(batchIds);
+        if (values.isEmpty()) {
+            return List.of();
+        }
+        return toCandidateDomainList(aiInvocationMapper.selectCandidatesByBatches(values));
+    }
+
+    @Override
+    public List<AiCandidate> listCandidatesByBatchesAndContent(List<AiBatchJobId> batchIds, AiContentRef contentRef) {
+        List<Long> values = batchIdValues(batchIds);
+        if (values.isEmpty()) {
+            return List.of();
+        }
+        return toCandidateDomainList(aiInvocationMapper.selectCandidatesByBatchesAndContent(
+                values, AiContentRefCodec.toContentType(contentRef), AiContentRefCodec.toContentId(contentRef)));
+    }
+
+    private List<Long> batchIdValues(List<AiBatchJobId> batchIds) {
+        List<Long> values = new ArrayList<>();
+        if (batchIds == null) {
+            return values;
+        }
+        for (AiBatchJobId batchId : batchIds) {
+            Long value = AiBatchJobIdCodec.toValue(batchId);
+            if (value != null) {
+                values.add(value);
+            }
+        }
+        return values;
     }
 
     private AiInvocationLogDO toInvocationLogObject(AiInvocationLog invocationLog) {

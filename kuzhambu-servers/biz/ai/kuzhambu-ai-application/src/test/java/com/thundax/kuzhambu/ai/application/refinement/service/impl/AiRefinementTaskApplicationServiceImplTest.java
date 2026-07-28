@@ -11,6 +11,20 @@ import com.thundax.kuzhambu.ai.application.refinement.result.AiCandidateResult;
 import com.thundax.kuzhambu.ai.application.refinement.result.AiRefinementTaskResult;
 import com.thundax.kuzhambu.ai.application.refinement.service.AiRefinementApplicationService;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiCandidateStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjectId;
+import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.time.Instant;
@@ -152,6 +166,50 @@ class AiRefinementTaskApplicationServiceImplTest {
         assertEquals("FAILED", completed.getStatus());
         assertEquals(1, completed.getFailedCount());
         assertTrue(completed.getFailureSummaryJson().contains("WORKER_PROTOCOL_FAILURE"));
+    }
+
+    @Test
+    void pageTasksShouldLoadInvocationAndCandidateByBatchIdsInBulk() {
+        RecordingBatchJobService batchJobService = new RecordingBatchJobService();
+        Long firstBatchId = batchJobService.create(
+                new AiBatchJobCreateCommand("classics", "classics_summary", "SANCAI_ENTRY", 10L, 1, null));
+        Long secondBatchId = batchJobService.create(
+                new AiBatchJobCreateCommand("classics", "classics_tags", "SANCAI_ENTRY", 10L, 1, null));
+        RecordingInvocationRepository invocationRepository =
+                new RecordingInvocationRepository(firstBatchId, secondBatchId);
+        AiRefinementTaskApplicationServiceImpl service = new AiRefinementTaskApplicationServiceImpl(
+                batchJobService, new StubRefinementApplicationService(null), invocationRepository, DIRECT_EXECUTOR);
+
+        PageResult<AiRefinementTaskResult> page = service.pageTasks(null, null, "SANCAI_ENTRY", 10L, new PageQuery());
+
+        assertEquals(2, page.getRecords().size());
+        assertEquals(1, invocationRepository.contentInvocationQueryCount);
+        assertEquals(1, invocationRepository.contentCandidateQueryCount);
+        assertEquals(301L, page.getRecords().get(0).getCandidateId());
+        assertEquals(302L, page.getRecords().get(1).getCandidateId());
+    }
+
+    @Test
+    void pageTasksShouldKeepCandidateScopedToRequestedContentInMultiContentBatch() {
+        RecordingBatchJobService batchJobService = new RecordingBatchJobService();
+        Long batchId = batchJobService.create(
+                new AiBatchJobCreateCommand("classics", "classics_summary", "SANCAI_ENTRY", null, 2, null));
+        RecordingInvocationRepository invocationRepository = new RecordingInvocationRepository(
+                List.of(
+                        RecordingInvocationRepository.invocationLog(batchId, 202L, 20L, "2026-01-01T00:03:00Z"),
+                        RecordingInvocationRepository.invocationLog(batchId, 201L, 10L, "2026-01-01T00:01:00Z")),
+                List.of(
+                        RecordingInvocationRepository.candidate(batchId, 302L, 202L, 20L, "2026-01-01T00:04:00Z"),
+                        RecordingInvocationRepository.candidate(batchId, 301L, 201L, 10L, "2026-01-01T00:02:00Z")));
+        AiRefinementTaskApplicationServiceImpl service = new AiRefinementTaskApplicationServiceImpl(
+                batchJobService, new StubRefinementApplicationService(null), invocationRepository, DIRECT_EXECUTOR);
+
+        PageResult<AiRefinementTaskResult> page = service.pageTasks(null, null, "SANCAI_ENTRY", 10L, new PageQuery());
+
+        assertEquals(1, page.getRecords().size());
+        assertEquals(10L, page.getRecords().get(0).getContentId());
+        assertEquals(301L, page.getRecords().get(0).getCandidateId());
+        assertEquals(201L, page.getRecords().get(0).getCallId());
     }
 
     private AiRefinementRequestCommand command(String capability) {
@@ -342,6 +400,187 @@ class AiRefinementTaskApplicationServiceImplTest {
         public AiCandidateResult splitEntry(AiRefinementRequestCommand command) {
             lastCommand = command;
             return result;
+        }
+    }
+
+    private static final class RecordingInvocationRepository implements AiInvocationRepository {
+
+        private final List<AiInvocationLog> invocationLogs;
+        private final List<AiCandidate> candidates;
+        private int batchInvocationQueryCount;
+        private int batchCandidateQueryCount;
+        private int contentInvocationQueryCount;
+        private int contentCandidateQueryCount;
+
+        RecordingInvocationRepository(Long firstBatchId, Long secondBatchId) {
+            invocationLogs = List.of(invocationLog(firstBatchId, 201L), invocationLog(secondBatchId, 202L));
+            candidates = List.of(candidate(firstBatchId, 301L, 201L), candidate(secondBatchId, 302L, 202L));
+        }
+
+        RecordingInvocationRepository(List<AiInvocationLog> invocationLogs, List<AiCandidate> candidates) {
+            this.invocationLogs = invocationLogs;
+            this.candidates = candidates;
+        }
+
+        @Override
+        public AiInvocationLog getInvocationLog(AiCallId callId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public AiCallId insertInvocationLog(AiInvocationLog invocationLog) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int updateInvocationLog(AiInvocationLog invocationLog) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<AiInvocationLog> listInvocationLogs(Instant requestedAtStart, Instant requestedAtEnd) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<AiInvocationLog> listInvocationLogsByBatch(AiBatchJobId batchId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<AiInvocationLog> listInvocationLogsByBatches(List<AiBatchJobId> batchIds) {
+            batchInvocationQueryCount++;
+            return invocationLogs;
+        }
+
+        @Override
+        public List<AiInvocationLog> listInvocationLogsByBatchesAndContent(
+                List<AiBatchJobId> batchIds, AiContentRef contentRef) {
+            contentInvocationQueryCount++;
+            List<AiInvocationLog> records = new ArrayList<>();
+            for (AiInvocationLog record : invocationLogs) {
+                if (matchesContentRef(record.getContentRef(), contentRef)) {
+                    records.add(record);
+                }
+            }
+            return records;
+        }
+
+        @Override
+        public PageResult<AiInvocationLog> pageInvocationLogs(
+                String scope,
+                AiBusinessCapability capability,
+                AiContentRef contentRef,
+                AiInvocationStatus status,
+                String serviceRole,
+                AiModelName modelName,
+                Boolean fallbackUsed,
+                Instant requestedAtStart,
+                Instant requestedAtEnd,
+                int pageNo,
+                int pageSize) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<AiInvocationLog> listInvocationLogs(
+                String scope,
+                AiBusinessCapability capability,
+                String serviceRole,
+                Instant requestedAtStart,
+                Instant requestedAtEnd) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public AiCandidate getCandidate(AiCandidateId candidateId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public AiCandidateId insertCandidate(AiCandidate candidate) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int updateCandidate(AiCandidate candidate) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<AiCandidate> listCandidates(
+                AiContentRef contentRef,
+                AiTargetObjectId targetObjectId,
+                AiBusinessCapability capability,
+                AiCandidateStatus status) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<AiCandidate> listCandidatesByBatch(AiBatchJobId batchId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<AiCandidate> listCandidatesByBatches(List<AiBatchJobId> batchIds) {
+            batchCandidateQueryCount++;
+            return candidates;
+        }
+
+        @Override
+        public List<AiCandidate> listCandidatesByBatchesAndContent(
+                List<AiBatchJobId> batchIds, AiContentRef contentRef) {
+            contentCandidateQueryCount++;
+            List<AiCandidate> records = new ArrayList<>();
+            for (AiCandidate record : candidates) {
+                if (matchesContentRef(record.getContentRef(), contentRef)) {
+                    records.add(record);
+                }
+            }
+            return records;
+        }
+
+        private static AiInvocationLog invocationLog(Long batchId, Long callId) {
+            return invocationLog(batchId, callId, 10L, "2026-01-01T00:01:00Z");
+        }
+
+        private static AiInvocationLog invocationLog(Long batchId, Long callId, Long contentId, String requestedAt) {
+            AiInvocationLog invocationLog = new AiInvocationLog();
+            invocationLog.setBatchId(AiBatchJobIdCodec.toDomain(batchId));
+            invocationLog.setCallId(AiCallIdCodec.toDomain(callId));
+            invocationLog.setCapability(AiBusinessCapability.CLASSICS_SUMMARY);
+            invocationLog.setContentRef(AiContentRef.ofNullable("SANCAI_ENTRY", contentId));
+            invocationLog.setStatus(AiInvocationStatus.SUCCEEDED);
+            invocationLog.setRequestedAt(Instant.parse(requestedAt));
+            return invocationLog;
+        }
+
+        private static AiCandidate candidate(Long batchId, Long candidateId, Long callId) {
+            return candidate(batchId, candidateId, callId, 10L, "2026-01-01T00:02:00Z");
+        }
+
+        private static AiCandidate candidate(
+                Long batchId, Long candidateId, Long callId, Long contentId, String requestedAt) {
+            AiCandidate candidate = new AiCandidate();
+            candidate.setId(AiCandidateIdCodec.toDomain(candidateId));
+            candidate.setBatchId(AiBatchJobIdCodec.toDomain(batchId));
+            candidate.setCallId(AiCallIdCodec.toDomain(callId));
+            candidate.setCapability(AiBusinessCapability.CLASSICS_SUMMARY);
+            candidate.setContentRef(AiContentRef.ofNullable("SANCAI_ENTRY", contentId));
+            candidate.setResultFormat("TEXT");
+            candidate.setResultPayload("result-" + candidateId);
+            candidate.setStatus(AiCandidateStatus.PENDING);
+            candidate.setRequestedAt(Instant.parse(requestedAt));
+            return candidate;
+        }
+
+        private static boolean matchesContentRef(AiContentRef actual, AiContentRef expected) {
+            if (expected == null) {
+                return true;
+            }
+            return actual != null
+                    && (expected.contentType() == null || expected.contentType().equals(actual.contentType()))
+                    && (expected.contentId() == null || expected.contentId().equals(actual.contentId()));
         }
     }
 }

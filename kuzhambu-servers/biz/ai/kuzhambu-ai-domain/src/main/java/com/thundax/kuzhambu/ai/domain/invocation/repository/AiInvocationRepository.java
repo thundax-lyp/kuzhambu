@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.ai.domain.invocation.repository;
 
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiCandidateStatus;
@@ -26,6 +27,28 @@ public interface AiInvocationRepository {
     List<AiInvocationLog> listInvocationLogs(Instant requestedAtStart, Instant requestedAtEnd);
 
     List<AiInvocationLog> listInvocationLogsByBatch(AiBatchJobId batchId);
+
+    default List<AiInvocationLog> listInvocationLogsByBatches(List<AiBatchJobId> batchIds) {
+        List<AiInvocationLog> records = new java.util.ArrayList<>();
+        if (batchIds == null) {
+            return records;
+        }
+        for (AiBatchJobId batchId : batchIds) {
+            records.addAll(listInvocationLogsByBatch(batchId));
+        }
+        return records;
+    }
+
+    default List<AiInvocationLog> listInvocationLogsByBatchesAndContent(
+            List<AiBatchJobId> batchIds, AiContentRef contentRef) {
+        List<AiInvocationLog> records = new java.util.ArrayList<>();
+        for (AiInvocationLog record : listInvocationLogsByBatches(batchIds)) {
+            if (matchesContentRef(record == null ? null : record.getContentRef(), contentRef)) {
+                records.add(record);
+            }
+        }
+        return records;
+    }
 
     PageResult<AiInvocationLog> pageInvocationLogs(
             String scope,
@@ -60,4 +83,40 @@ public interface AiInvocationRepository {
             AiCandidateStatus status);
 
     List<AiCandidate> listCandidatesByBatch(AiBatchJobId batchId);
+
+    default List<AiCandidate> listCandidatesByBatches(List<AiBatchJobId> batchIds) {
+        List<AiCandidate> records = new java.util.ArrayList<>();
+        if (batchIds == null) {
+            return records;
+        }
+        for (AiBatchJobId batchId : batchIds) {
+            records.addAll(listCandidatesByBatch(batchId));
+        }
+        return records;
+    }
+
+    default List<AiCandidate> listCandidatesByBatchesAndContent(List<AiBatchJobId> batchIds, AiContentRef contentRef) {
+        List<AiCandidate> records = new java.util.ArrayList<>();
+        for (AiCandidate record : listCandidatesByBatches(batchIds)) {
+            if (matchesContentRef(record == null ? null : record.getContentRef(), contentRef)) {
+                records.add(record);
+            }
+        }
+        return records;
+    }
+
+    private static boolean matchesContentRef(AiContentRef actual, AiContentRef expected) {
+        String expectedType = AiContentRefCodec.toContentType(expected);
+        Long expectedId = AiContentRefCodec.toContentId(expected);
+        if (expectedType == null && expectedId == null) {
+            return true;
+        }
+        if (actual == null) {
+            return false;
+        }
+        String actualType = AiContentRefCodec.toContentType(actual);
+        Long actualId = AiContentRefCodec.toContentId(actual);
+        return (expectedType == null || expectedType.equals(actualType))
+                && (expectedId == null || expectedId.equals(actualId));
+    }
 }

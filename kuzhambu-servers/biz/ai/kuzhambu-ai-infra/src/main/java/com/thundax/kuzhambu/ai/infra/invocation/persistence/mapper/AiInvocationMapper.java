@@ -34,6 +34,37 @@ public interface AiInvocationMapper extends BaseMapper<AiInvocationLogDO> {
 
     @Select(
             """
+            <script>
+            select * from ai_invocation_log
+            where batch_id in
+            <foreach collection="batchIds" item="batchId" open="(" separator="," close=")">
+                #{batchId}
+            </foreach>
+            order by batch_id asc, requested_at desc
+            </script>
+            """)
+    List<AiInvocationLogDO> selectInvocationLogsByBatches(@Param("batchIds") List<Long> batchIds);
+
+    @Select(
+            """
+            <script>
+            select * from ai_invocation_log
+            where batch_id in
+            <foreach collection="batchIds" item="batchId" open="(" separator="," close=")">
+                #{batchId}
+            </foreach>
+              and (#{contentType} is null or content_type = #{contentType})
+              and (#{contentId} is null or content_id = #{contentId})
+            order by batch_id asc, requested_at desc
+            </script>
+            """)
+    List<AiInvocationLogDO> selectInvocationLogsByBatchesAndContent(
+            @Param("batchIds") List<Long> batchIds,
+            @Param("contentType") String contentType,
+            @Param("contentId") Long contentId);
+
+    @Select(
+            """
             select * from ai_invocation_log
             where (#{scope} is null or scope = #{scope})
               and (#{capability} is null or capability = #{capability})
@@ -132,6 +163,37 @@ public interface AiInvocationMapper extends BaseMapper<AiInvocationLogDO> {
             order by requested_at desc
             """)
     List<AiCandidateDO> selectCandidatesByBatch(@Param("batchId") Long batchId);
+
+    @Select(
+            """
+            <script>
+            select * from ai_candidate
+            where batch_id in
+            <foreach collection="batchIds" item="batchId" open="(" separator="," close=")">
+                #{batchId}
+            </foreach>
+            order by batch_id asc, requested_at desc
+            </script>
+            """)
+    List<AiCandidateDO> selectCandidatesByBatches(@Param("batchIds") List<Long> batchIds);
+
+    @Select(
+            """
+            <script>
+            select * from ai_candidate
+            where batch_id in
+            <foreach collection="batchIds" item="batchId" open="(" separator="," close=")">
+                #{batchId}
+            </foreach>
+              and (#{contentType} is null or content_type = #{contentType})
+              and (#{contentId} is null or content_id = #{contentId})
+            order by batch_id asc, requested_at desc
+            </script>
+            """)
+    List<AiCandidateDO> selectCandidatesByBatchesAndContent(
+            @Param("batchIds") List<Long> batchIds,
+            @Param("contentType") String contentType,
+            @Param("contentId") Long contentId);
 
     @Insert(
             """
