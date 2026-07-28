@@ -1,13 +1,15 @@
 package com.thundax.kuzhambu.ai.application.facade.impl;
 
-import com.thundax.kuzhambu.ai.application.batch.command.AiBatchJobCreateCommand;
-import com.thundax.kuzhambu.ai.application.batch.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.discovery.service.DiscoveryAiApplicationService;
 import com.thundax.kuzhambu.ai.application.facade.assembler.AiFacadeAssembler;
+import com.thundax.kuzhambu.ai.application.invocation.batch.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.batch.service.AiBatchJobApplicationService;
+import com.thundax.kuzhambu.ai.application.invocation.service.AiCandidateApplicationService;
 import com.thundax.kuzhambu.ai.application.knowledge.service.KnowledgeAiExtractionApplicationService;
 import com.thundax.kuzhambu.ai.application.report.service.AiReportApplicationService;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
-import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainService;
 import com.thundax.kuzhambu.ai.facade.AiFacade;
 import com.thundax.kuzhambu.ai.facade.DiscoveryAiStreamHandler;
 import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
@@ -38,8 +40,8 @@ public class AiFacadeImpl implements AiFacade {
     private final AiBatchJobApplicationService aiBatchJobApplicationService;
     private final DiscoveryAiApplicationService discoveryAiApplicationService;
     private final KnowledgeAiExtractionApplicationService knowledgeAiExtractionApplicationService;
+    private final AiCandidateApplicationService aiCandidateApplicationService;
     private final AiInvocationRepository aiInvocationRepository;
-    private final AiCandidateDomainService aiCandidateDomainService;
     private final AiFacadeAssembler aiFacadeAssembler;
 
     public AiFacadeImpl(
@@ -47,15 +49,15 @@ public class AiFacadeImpl implements AiFacade {
             AiBatchJobApplicationService aiBatchJobApplicationService,
             DiscoveryAiApplicationService discoveryAiApplicationService,
             KnowledgeAiExtractionApplicationService knowledgeAiExtractionApplicationService,
+            AiCandidateApplicationService aiCandidateApplicationService,
             AiInvocationRepository aiInvocationRepository,
-            AiCandidateDomainService aiCandidateDomainService,
             AiFacadeAssembler aiFacadeAssembler) {
         this.aiReportApplicationService = aiReportApplicationService;
         this.aiBatchJobApplicationService = aiBatchJobApplicationService;
         this.discoveryAiApplicationService = discoveryAiApplicationService;
         this.knowledgeAiExtractionApplicationService = knowledgeAiExtractionApplicationService;
+        this.aiCandidateApplicationService = aiCandidateApplicationService;
         this.aiInvocationRepository = aiInvocationRepository;
-        this.aiCandidateDomainService = aiCandidateDomainService;
         this.aiFacadeAssembler = aiFacadeAssembler;
     }
 
@@ -94,26 +96,26 @@ public class AiFacadeImpl implements AiFacade {
 
     @Override
     public KnowledgeAiExtractionFacadeResponse extractKnowledgeRelations(KnowledgeAiExtractionFacadeRequest request) {
-        return aiFacadeAssembler.toFacadeResponse(
-                knowledgeAiExtractionApplicationService.extractRelations(aiFacadeAssembler.toDomainInput(request)));
+        return aiFacadeAssembler.toFacadeResponse(knowledgeAiExtractionApplicationService.extractRelations(
+                aiFacadeAssembler.toKnowledgeAiExtractionCommand(request)));
     }
 
     @Override
     public KnowledgeAiExtractionFacadeResponse extractKnowledgeGraph(KnowledgeAiExtractionFacadeRequest request) {
-        return aiFacadeAssembler.toFacadeResponse(
-                knowledgeAiExtractionApplicationService.extractGraph(aiFacadeAssembler.toDomainInput(request)));
+        return aiFacadeAssembler.toFacadeResponse(knowledgeAiExtractionApplicationService.extractGraph(
+                aiFacadeAssembler.toKnowledgeAiExtractionCommand(request)));
     }
 
     @Override
     public KnowledgeAiExtractionFacadeResponse extractKnowledgeLineage(KnowledgeAiExtractionFacadeRequest request) {
-        return aiFacadeAssembler.toFacadeResponse(
-                knowledgeAiExtractionApplicationService.extractLineage(aiFacadeAssembler.toDomainInput(request)));
+        return aiFacadeAssembler.toFacadeResponse(knowledgeAiExtractionApplicationService.extractLineage(
+                aiFacadeAssembler.toKnowledgeAiExtractionCommand(request)));
     }
 
     @Override
     public KnowledgeAiExtractionFacadeResponse extractKnowledgeTags(KnowledgeAiExtractionFacadeRequest request) {
-        return aiFacadeAssembler.toFacadeResponse(
-                knowledgeAiExtractionApplicationService.extractTags(aiFacadeAssembler.toDomainInput(request)));
+        return aiFacadeAssembler.toFacadeResponse(knowledgeAiExtractionApplicationService.extractTags(
+                aiFacadeAssembler.toKnowledgeAiExtractionCommand(request)));
     }
 
     @Override
@@ -132,6 +134,7 @@ public class AiFacadeImpl implements AiFacade {
                 request.getScope(),
                 request.getCapability(),
                 request.getContentType(),
+                null,
                 request.getTotalCount(),
                 request.getFailureSummaryJson()));
         return aiFacadeAssembler.toActionResponse(batchId);
@@ -171,7 +174,8 @@ public class AiFacadeImpl implements AiFacade {
         if (request == null) {
             return null;
         }
-        return aiFacadeAssembler.toFacadeDto(aiInvocationRepository.getInvocationLog(request.getCallId()));
+        return aiFacadeAssembler.toFacadeDto(
+                aiInvocationRepository.getInvocationLog(AiCallIdCodec.toDomain(request.getCallId())));
     }
 
     @Override
@@ -180,7 +184,8 @@ public class AiFacadeImpl implements AiFacade {
         if (request == null) {
             return null;
         }
-        return aiFacadeAssembler.toFacadeDto(aiInvocationRepository.getCandidate(request.getCandidateId()));
+        return aiFacadeAssembler.toFacadeDto(
+                aiInvocationRepository.getCandidate(AiCandidateIdCodec.toDomain(request.getCandidateId())));
     }
 
     @Override
@@ -189,11 +194,12 @@ public class AiFacadeImpl implements AiFacade {
         if (request == null) {
             return null;
         }
-        return aiFacadeAssembler.toFacadeDto(
-                request.getObjectId() == null
-                        ? aiCandidateDomainService.requirePendingForApply(aiFacadeAssembler.toDomainCheck(request))
-                        : aiCandidateDomainService.requirePendingForApply(
-                                aiFacadeAssembler.toDomainCheck(request), request.getObjectId()));
+        return aiFacadeAssembler.toFacadeDto(aiCandidateApplicationService.requirePendingForApply(
+                request.getCandidateId(),
+                request.getContentType(),
+                request.getContentId(),
+                request.getCapability(),
+                request.getObjectId()));
     }
 
     @Override
@@ -202,8 +208,8 @@ public class AiFacadeImpl implements AiFacade {
         if (request == null) {
             return null;
         }
-        return aiFacadeAssembler.toFacadeDto(aiCandidateDomainService.markApplied(
-                aiFacadeAssembler.toCandidateId(request),
+        return aiFacadeAssembler.toFacadeDto(aiCandidateApplicationService.markApplied(
+                request.getCandidateId(),
                 request.getResultFormat(),
                 request.getResultPayload(),
                 request.getAppliedAt()));
@@ -215,7 +221,7 @@ public class AiFacadeImpl implements AiFacade {
         if (request == null) {
             return null;
         }
-        return aiFacadeAssembler.toFacadeDto(aiCandidateDomainService.reject(
+        return aiFacadeAssembler.toFacadeDto(aiCandidateApplicationService.reject(
                 request.getCandidateId(), request.getErrorType(), request.getErrorMessage()));
     }
 
