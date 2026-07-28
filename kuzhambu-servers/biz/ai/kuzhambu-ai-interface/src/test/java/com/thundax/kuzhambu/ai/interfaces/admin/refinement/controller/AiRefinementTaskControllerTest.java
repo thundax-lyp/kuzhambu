@@ -3,13 +3,13 @@ package com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import com.thundax.kuzhambu.ai.application.batch.command.AiBatchJobCreateCommand;
-import com.thundax.kuzhambu.ai.application.batch.result.AiBatchJobResult;
-import com.thundax.kuzhambu.ai.application.batch.service.AiBatchJobApplicationService;
+import com.thundax.kuzhambu.ai.application.invocation.batch.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.batch.result.AiBatchJobResult;
+import com.thundax.kuzhambu.ai.application.invocation.batch.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.refinement.command.AiRefinementRequestCommand;
+import com.thundax.kuzhambu.ai.application.refinement.result.AiRefinementTaskResult;
 import com.thundax.kuzhambu.ai.application.refinement.service.AiRefinementTaskApplicationService;
-import com.thundax.kuzhambu.ai.domain.refinement.model.entity.AiRefinementTask;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.request.AiRefinementRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.response.AiRefinementResponses;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
@@ -88,7 +88,6 @@ class AiRefinementTaskControllerTest {
         addRequest.setScope("classics");
         addRequest.setContentType("SANCAI_ENTRY");
         addRequest.setContentId(101L);
-        addRequest.setRequestedBy(88L);
         addRequest.setModelId(201L);
         addRequest.setModelName("gpt-test");
         addRequest.setPromptVersionId(301L);
@@ -111,7 +110,6 @@ class AiRefinementTaskControllerTest {
 
         AiRefinementRequests.TaskCancelRequest cancelRequest = new AiRefinementRequests.TaskCancelRequest();
         cancelRequest.setTaskId(7001L);
-        cancelRequest.setRequestedBy(88L);
         AiRefinementResponses.TaskCancelResponse cancelled = controller.cancelTask(cancelRequest);
 
         assertEquals(7001L, accepted.getTaskId());
@@ -168,6 +166,17 @@ class AiRefinementTaskControllerTest {
         }
 
         @Override
+        public PageResult<AiBatchJobResult> page(
+                String scope,
+                String capability,
+                String status,
+                String contentType,
+                Long contentId,
+                PageQuery pageQuery) {
+            return PageResult.of(1, 10, 0, List.of());
+        }
+
+        @Override
         public Long create(AiBatchJobCreateCommand command) {
             return null;
         }
@@ -196,35 +205,18 @@ class AiRefinementTaskControllerTest {
     private static final class FakeTaskApplicationService implements AiRefinementTaskApplicationService {
 
         @Override
-        public AiRefinementTask addTask(AiRefinementRequestCommand command) {
-            AiRefinementTask task = baseTask();
-            task.setStatus("PENDING");
-            task.setCapability(command.getCapability());
-            task.setRequestedBy(command.getRequestedBy());
-            return task;
+        public AiRefinementTaskResult addTask(AiRefinementRequestCommand command) {
+            return task("PENDING", command.getCapability(), null, null);
         }
 
         @Override
-        public AiRefinementTask getTask(Long taskId) {
-            AiRefinementTask task = baseTask();
-            task.setTaskId(taskId);
-            task.setStatus("SUCCEEDED");
-            task.setCallId(9001L);
-            task.setCandidateId(9002L);
-            task.setResultFormat("TEXT");
-            task.setResultPreview("摘要");
-            task.setCompletedAt(Instant.parse("2026-01-01T00:02:00Z"));
-            return task;
+        public AiRefinementTaskResult getTask(Long taskId) {
+            return task("SUCCEEDED", "summary", 9001L, 9002L);
         }
 
         @Override
-        public PageResult<AiRefinementTask> pageTasks(
-                String capability,
-                String status,
-                String contentType,
-                Long contentId,
-                Long requestedBy,
-                PageQuery pageQuery) {
+        public PageResult<AiRefinementTaskResult> pageTasks(
+                String capability, String status, String contentType, Long contentId, PageQuery pageQuery) {
             return PageResult.of(1, 10, 1, List.of(getTask(7001L)));
         }
 
@@ -240,31 +232,37 @@ class AiRefinementTaskControllerTest {
         }
 
         @Override
-        public AiRefinementTask cancelTask(Long taskId, Long requestedBy) {
-            AiRefinementTask task = baseTask();
-            task.setTaskId(taskId);
-            task.setRequestedBy(requestedBy);
-            task.setStatus("CANCELLED");
-            task.setCancelledAt(Instant.parse("2026-01-01T00:03:00Z"));
-            return task;
+        public AiRefinementTaskResult cancelTask(Long taskId) {
+            return task("CANCELLED", "summary", null, null);
         }
 
-        private AiRefinementTask baseTask() {
-            AiRefinementTask task = new AiRefinementTask();
-            task.setTaskId(7001L);
-            task.setScope("classics");
-            task.setCapability("summary");
-            task.setContentType("SANCAI_ENTRY");
-            task.setContentId(101L);
-            task.setRequestedAt(Instant.parse("2026-01-01T00:00:00Z"));
-            task.setStartedAt(Instant.parse("2026-01-01T00:01:00Z"));
-            task.setRequestId("req-1");
-            task.setTraceId("trace-1");
-            task.setModelId(201L);
-            task.setModelName("gpt-test");
-            task.setPromptVersionId(301L);
-            task.setStreamEnabled(true);
-            return task;
+        private AiRefinementTaskResult task(String status, String capability, Long callId, Long candidateId) {
+            return new AiRefinementTaskResult(
+                    7001L,
+                    "classics",
+                    capability,
+                    "SANCAI_ENTRY",
+                    101L,
+                    null,
+                    "req-1",
+                    "trace-1",
+                    status,
+                    null,
+                    201L,
+                    "gpt-test",
+                    301L,
+                    callId,
+                    candidateId,
+                    "TEXT",
+                    "摘要",
+                    null,
+                    null,
+                    null,
+                    true,
+                    Instant.parse("2026-01-01T00:00:00Z"),
+                    Instant.parse("2026-01-01T00:01:00Z"),
+                    Instant.parse("2026-01-01T00:02:00Z"),
+                    "CANCELLED".equals(status) ? Instant.parse("2026-01-01T00:03:00Z") : null);
         }
     }
 }

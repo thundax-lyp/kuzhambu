@@ -70,6 +70,7 @@ public enum AiBusinessCapability {
             case "tags" -> CLASSICS_TAG_EXTRACT.value();
             case "qa" -> CLASSICS_QA.value();
             case "image_analysis" -> CLASSICS_IMAGE_DESCRIBE.value();
+            case "fusion" -> CLASSICS_IMAGE_PROMPT_FUSION.value();
             case "visual" -> CLASSICS_VISUAL_DESCRIBE.value();
             case "image_gen" -> CLASSICS_IMAGE_GENERATE.value();
             case "split" -> CLASSICS_SPLIT.value();

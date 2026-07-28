@@ -52,9 +52,6 @@ public final class AiRefinementRequests {
         @JsonProperty(value = "objectId")
         private Long objectId;
 
-        @JsonProperty(value = "requestedBy")
-        private Long requestedBy;
-
         @JsonProperty(value = "serviceId")
         private Long serviceId;
 
@@ -131,10 +128,6 @@ public final class AiRefinementRequests {
         @NotNull
         @JsonProperty(value = "taskId")
         private Long taskId;
-
-        @NotNull
-        @JsonProperty(value = "requestedBy")
-        private Long requestedBy;
     }
 
     @Getter
@@ -158,9 +151,6 @@ public final class AiRefinementRequests {
 
         @JsonProperty(value = "contentId")
         private Long contentId;
-
-        @JsonProperty(value = "requestedBy")
-        private Long requestedBy;
     }
 
     @Getter

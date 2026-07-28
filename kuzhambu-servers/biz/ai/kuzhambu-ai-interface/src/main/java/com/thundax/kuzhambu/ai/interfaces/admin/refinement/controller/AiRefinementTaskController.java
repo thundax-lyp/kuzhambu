@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller;
 
-import com.thundax.kuzhambu.ai.application.batch.command.AiBatchJobCreateCommand;
-import com.thundax.kuzhambu.ai.application.batch.service.AiBatchJobApplicationService;
+import com.thundax.kuzhambu.ai.application.invocation.batch.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.batch.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.refinement.configuration.AiRefinementExecutorConfiguration;
 import com.thundax.kuzhambu.ai.application.refinement.service.AiRefinementTaskApplicationService;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.assembler.AiRefinementInterfaceAssembler;
@@ -126,7 +126,6 @@ public class AiRefinementTaskController {
                 request.getStatus(),
                 request.getContentType(),
                 request.getContentId(),
-                request.getRequestedBy(),
                 PageInterfaceAssembler.toPageQuery(request));
         return AiRefinementInterfaceAssembler.toTaskPageResponse(
                 page.getPageNo(), page.getPageSize(), page.getTotalCount(), page.getRecords());
@@ -146,7 +145,7 @@ public class AiRefinementTaskController {
     public AiRefinementResponses.TaskCancelResponse cancelTask(
             @Valid @RequestBody AiRefinementRequests.TaskCancelRequest request) {
         return AiRefinementInterfaceAssembler.toTaskCancelResponse(
-                taskApplicationService.cancelTask(request.getTaskId(), request.getRequestedBy()));
+                taskApplicationService.cancelTask(request.getTaskId()));
     }
 
     @Operation(summary = "创建AI精修批量任务", description = "ai:refinement:edit")
@@ -205,7 +204,7 @@ public class AiRefinementTaskController {
     }
 
     private static AiRefinementResponses.BatchJobResponse toBatchResponse(
-            com.thundax.kuzhambu.ai.application.batch.result.AiBatchJobResult result) {
+            com.thundax.kuzhambu.ai.application.invocation.batch.result.AiBatchJobResult result) {
         if (result == null) {
             return AiRefinementResponses.BatchJobResponse.builder().build();
         }
@@ -214,6 +213,7 @@ public class AiRefinementTaskController {
                 .scope(result.getScope())
                 .capability(result.getCapability())
                 .contentType(result.getContentType())
+                .contentId(result.getContentId())
                 .status(result.getStatus())
                 .totalCount(result.getTotalCount())
                 .successCount(result.getSuccessCount())

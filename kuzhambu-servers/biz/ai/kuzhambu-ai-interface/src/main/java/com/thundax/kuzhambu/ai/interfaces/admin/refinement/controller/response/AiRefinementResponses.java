@@ -121,9 +121,6 @@ public final class AiRefinementResponses {
         @JsonProperty(value = "objectId")
         private Long objectId;
 
-        @JsonProperty(value = "requestedBy")
-        private Long requestedBy;
-
         @JsonProperty(value = "serviceRole")
         private String serviceRole;
 
@@ -250,6 +247,9 @@ public final class AiRefinementResponses {
 
         @JsonProperty(value = "contentType")
         private String contentType;
+
+        @JsonProperty(value = "contentId")
+        private Long contentId;
 
         @JsonProperty(value = "status")
         private String status;
