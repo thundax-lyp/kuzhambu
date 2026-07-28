@@ -14,8 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class AiCapabilityCatalogApplicationServiceImpl implements AiCapabilityCatalogApplicationService {
 
     @Override
-    public AiBusinessCapability getCapability(String capability) {
-        return isBlank(capability) ? null : AiBusinessCapability.from(capability);
+    public AiBusinessCapability getCapability(AiBusinessCapability capability) {
+        return capability;
     }
 
     @Override
@@ -24,9 +24,5 @@ public class AiCapabilityCatalogApplicationServiceImpl implements AiCapabilityCa
             return List.of();
         }
         return Arrays.asList(AiBusinessCapability.values());
-    }
-
-    private boolean isBlank(String value) {
-        return value == null || value.trim().isEmpty();
     }
 }

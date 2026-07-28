@@ -8,6 +8,14 @@ import org.junit.jupiter.api.Test;
 class AiCapabilityCatalogApplicationServiceImplTest {
 
     @Test
+    void getCapabilityShouldPreserveBusinessCapabilityType() {
+        AiCapabilityCatalogApplicationServiceImpl service = new AiCapabilityCatalogApplicationServiceImpl();
+
+        assertThat(service.getCapability(AiBusinessCapability.CLASSICS_TRANSLATE))
+                .isEqualTo(AiBusinessCapability.CLASSICS_TRANSLATE);
+    }
+
+    @Test
     void listCapabilitiesShouldReturnBusinessCapabilitiesWhenEnabled() {
         AiCapabilityCatalogApplicationServiceImpl service = new AiCapabilityCatalogApplicationServiceImpl();
 
