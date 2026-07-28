@@ -5,6 +5,7 @@ import com.thundax.kuzhambu.ai.application.config.query.PromptVersionCompareQuer
 import com.thundax.kuzhambu.ai.application.config.result.PromptVersionResult;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptTemplateIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptVariableIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVariable;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
@@ -34,7 +35,7 @@ public final class PromptInterfaceAssembler {
 
     public static PromptVersionCompareQuery toCompareQuery(PromptRequests.VersionCompareRequest request) {
         PromptVersionCompareQuery query = new PromptVersionCompareQuery();
-        query.setTemplateId(request.getId());
+        query.setTemplateId(PromptTemplateIdCodec.toDomain(request.getId()));
         query.setLeftVersionNo(request.getLeftVersionNo());
         query.setRightVersionNo(request.getRightVersionNo());
         return query;
@@ -63,8 +64,8 @@ public final class PromptInterfaceAssembler {
             return PromptResponses.VersionResponse.builder().build();
         }
         return PromptResponses.VersionResponse.builder()
-                .id(result.getId())
-                .templateId(result.getTemplateId())
+                .id(PromptVersionIdCodec.toValue(result.getId()))
+                .templateId(PromptTemplateIdCodec.toValue(result.getTemplateId()))
                 .versionNo(result.getVersionNo())
                 .messageTemplatesJson(result.getMessageTemplatesJson())
                 .variablesSnapshotJson(result.getVariablesSnapshotJson())

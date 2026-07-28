@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.ai.application.config.query;
 
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptTemplateId;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class PromptVersionCompareQuery {
 
-    private Long templateId;
+    private PromptTemplateId templateId;
     private int leftVersionNo;
     private int rightVersionNo;
 }

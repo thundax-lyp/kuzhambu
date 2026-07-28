@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.ai.application.config.result;
 
-import com.thundax.kuzhambu.ai.domain.config.codec.PromptTemplateIdCodec;
-import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVersion;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptTemplateId;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,8 +11,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public class PromptVersionResult {
 
-    private final Long id;
-    private final Long templateId;
+    private final PromptVersionId id;
+    private final PromptTemplateId templateId;
     private final int versionNo;
     private final String messageTemplatesJson;
     private final String variablesSnapshotJson;
@@ -25,8 +25,8 @@ public class PromptVersionResult {
             return null;
         }
         return new PromptVersionResult(
-                PromptVersionIdCodec.toValue(version.getId()),
-                PromptTemplateIdCodec.toValue(version.getTemplateId()),
+                version.getId(),
+                version.getTemplateId(),
                 version.getVersionNo(),
                 version.getMessageTemplatesJson(),
                 version.getVariablesSnapshotJson(),

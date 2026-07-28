@@ -240,15 +240,19 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
     }
 
     private PromptVersion findVersion(Long templateId, int versionNo) {
+        return findVersion(PromptTemplateIdCodec.toDomain(templateId), versionNo);
+    }
+
+    private PromptVersion findVersion(PromptTemplateId templateId, int versionNo) {
         if (templateId == null || versionNo <= 0) {
             throw new BizException("Prompt templateId and versionNo are required");
         }
-        for (PromptVersion version : promptRepository.listVersions(PromptTemplateIdCodec.toDomain(templateId))) {
+        for (PromptVersion version : promptRepository.listVersions(templateId)) {
             if (version.getVersionNo() == versionNo) {
                 return version;
             }
         }
-        throw new BizException("Prompt version not found: " + templateId + "#" + versionNo);
+        throw new BizException("Prompt version not found: " + templateId.value() + "#" + versionNo);
     }
 
     private void validateCommand(PromptTemplateSaveCommand command) {
