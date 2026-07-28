@@ -407,6 +407,32 @@ describe("MingCustomsPage", () => {
         expect(await screen.findByText("岁时礼仪：元旦朝贺")).toBeInTheDocument();
     }, 30000);
 
+    it("opens export jobs from a large drawer action", async () => {
+        const user = userEvent.setup();
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <MingCustomsPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await screen.findByText("岁时礼仪：元旦朝贺");
+        expect(
+            screen.queryByTestId("classics-ming-customs-ming-customs-export-jobs-drawer")
+        ).not.toBeInTheDocument();
+
+        await user.click(screen.getByRole("button", { name: "打开明代习俗导出任务" }));
+
+        const drawer = await screen.findByTestId(
+            "classics-ming-customs-ming-customs-export-jobs-drawer"
+        );
+        expect(drawer).toBeInTheDocument();
+        expect(document.querySelector(".kuzhambu-drawer-large")).toBeTruthy();
+        expect(document.querySelector('[aria-label="明代习俗导出任务"]')).toBeTruthy();
+    }, 30000);
+
     it("filters list by tag cloud selection and clears selected tag filter", async () => {
         const user = userEvent.setup();
 
@@ -550,10 +576,14 @@ describe("MingCustomsPage", () => {
 
         const table = await screen.findByLabelText("明代习俗表格");
         await waitForSelectableRow(table);
-        const batchShareButton = screen.getByRole("button", { name: "批量分享" });
+        expect(screen.getByText("当前页已选 0 条")).toBeInTheDocument();
+        const batchShareButton = screen.getByTestId(
+            "classics-ming-customs-ming-customs-batch-share-button"
+        );
         selectFirstRow(table);
         await waitFor(() => {
             expect(batchShareButton).not.toBeDisabled();
+            expect(screen.getByText("当前页已选 1 条")).toBeInTheDocument();
         });
         await user.click(batchShareButton);
 
@@ -576,7 +606,9 @@ describe("MingCustomsPage", () => {
 
         const table = await screen.findByLabelText("明代习俗表格");
         await waitForSelectableRow(table);
-        const batchPublicButton = screen.getByRole("button", { name: "批量公开" });
+        const batchPublicButton = screen.getByTestId(
+            "classics-ming-customs-ming-customs-batch-public-button"
+        );
         selectFirstRow(table);
         await waitFor(() => {
             expect(batchPublicButton).not.toBeDisabled();
@@ -611,7 +643,7 @@ describe("MingCustomsPage", () => {
 
         const table = await screen.findByLabelText("明代习俗表格");
         await waitForSelectableRow(table);
-        const batchCandidateButton = screen.getByRole("button", { name: "批量候选治理" });
+        const batchCandidateButton = screen.getByRole("button", { name: "候选治理" });
 
         expect(batchCandidateButton).toBeDisabled();
         selectFirstRow(table);

@@ -149,7 +149,13 @@ export const MingCustomsPage = () => {
     );
     const [mingCustomsEditDrawerOpen, setMingCustomsEditDrawerOpen] = useState(false);
     const [editingEntry, setEditingEntry] = useState<MingCustomsRecord | null>(null);
-    const [selectedEntryIds, setSelectedEntryIds] = useState<string[]>([]);
+    const [selectedEntryRowsState, setSelectedEntryRowsState] = useState<{
+        keys: string[];
+        scopeKey: string;
+    }>({
+        keys: [],
+        scopeKey: ""
+    });
     const [batchCandidateEntryIds, setBatchCandidateEntryIds] = useState<string[]>([]);
     const [batchCandidateTitleById, setBatchCandidateTitleById] = useState<Record<string, string>>(
         {}
@@ -160,6 +166,7 @@ export const MingCustomsPage = () => {
     );
     const [batchVisibilityResult, setBatchVisibilityResult] =
         useState<ClassicsBatchOperationRecord | null>(null);
+    const [exportJobsDrawerOpen, setExportJobsDrawerOpen] = useState(false);
     const [creatingRefinementCapability, setCreatingRefinementCapability] =
         useState<AiRefinementTaskCapability | null>(null);
     const [selectedVersionId, setSelectedVersionId] = useState<string | null>(null);
@@ -257,6 +264,17 @@ export const MingCustomsPage = () => {
     const currentPageSize = pageResult?.pageSize || query.pageSize || DEFAULT_PAGE_SIZE;
     const editingEntryDetail = mingCustomsDetailQuery.data || editingEntry;
     const exportJobs = exportJobsQuery.data?.records || [];
+    const currentPageSelectionScopeKey = useMemo(
+        () => records.map((record) => String(record.id ?? "")).join("|"),
+        [records]
+    );
+    const selectedEntryIds = useMemo(
+        () =>
+            selectedEntryRowsState.scopeKey === currentPageSelectionScopeKey
+                ? selectedEntryRowsState.keys
+                : [],
+        [currentPageSelectionScopeKey, selectedEntryRowsState.keys, selectedEntryRowsState.scopeKey]
+    );
     const selectedEntries = useMemo(
         () =>
             records.filter(
@@ -388,7 +406,7 @@ export const MingCustomsPage = () => {
             }),
         onSuccess: async () => {
             await invalidateExportJobs();
-            messageApi.success("导出任务已提交，请到下方任务列表查看进度。");
+            messageApi.success("导出任务已提交，请到任务抽屉查看进度。");
         },
         onError: (error) => {
             messageApi.error(error instanceof Error ? error.message : "导出提交失败");
@@ -583,7 +601,7 @@ export const MingCustomsPage = () => {
             return;
         }
         if (!selectedEntries.length) {
-            messageApi.warning("请先选择要批量分享的明代习俗");
+            messageApi.warning("请先选择当前页要批量分享的明代习俗");
             return;
         }
         batchShareMutation.mutate({
@@ -604,7 +622,7 @@ export const MingCustomsPage = () => {
             return;
         }
         if (!selectedEntries.length) {
-            messageApi.warning("请先选择要批量修改可见性的明代习俗");
+            messageApi.warning("请先选择当前页要批量修改可见性的明代习俗");
             return;
         }
         batchVisibilityMutation.mutate({
@@ -692,7 +710,7 @@ export const MingCustomsPage = () => {
             return;
         }
         if (!selectedEntries.length) {
-            messageApi.warning("请先选择要批量治理的明代习俗");
+            messageApi.warning("请先选择当前页要批量治理的明代习俗");
             return;
         }
         setBatchCandidateEntryIds(selectedEntries.map((entry) => entry.id));
@@ -713,6 +731,7 @@ export const MingCustomsPage = () => {
                 onAdd={openCreateMingCustomsDrawer}
                 onClearTagFilter={clearTagFilter}
                 onFiltersChange={setFilters}
+                onOpenExportJobs={() => setExportJobsDrawerOpen(true)}
                 onSearchChange={searchMingCustoms}
                 onSelectTag={selectTag}
                 query={query}
@@ -721,11 +740,7 @@ export const MingCustomsPage = () => {
                 content={
                     <>
                         <MingCustomsExportActions
-                            batchShareResult={batchShareResult}
-                            batchVisibilityResult={batchVisibilityResult}
-                            canChangeEntryVisibility={canChangeEntryVisibility}
                             canExportEntries={canExportEntries}
-                            canShareEntries={canShareEntries}
                             exportJobs={exportJobs}
                             hasExportJobsError={exportJobsQuery.isError}
                             loading={
@@ -733,29 +748,36 @@ export const MingCustomsPage = () => {
                                 exportMutation.isPending ||
                                 deleteExportMutation.isPending
                             }
-                            onBatchCandidate={openBatchCandidateDrawer}
                             onBatchDeleteExportJobs={deleteExportJobs}
-                            onChangeSelectedVisibility={changeSelectedVisibility}
+                            onCloseExportJobs={() => setExportJobsDrawerOpen(false)}
                             onDeleteExportJob={deleteExportJob}
                             onRefreshExportJobs={() => {
                                 void invalidateExportJobs();
                             }}
-                            onShareSelectedEntries={shareSelectedEntries}
-                            selectedEntriesCount={selectedEntries.length}
-                            sharing={batchShareMutation.isPending}
-                            visibilityChanging={batchVisibilityMutation.isPending}
+                            openExportJobs={exportJobsDrawerOpen}
                         />
                         <MingCustomsTable
+                            batchShareResult={batchShareResult}
+                            batchVisibilityResult={batchVisibilityResult}
+                            canChangeEntryVisibility={canChangeEntryVisibility}
                             canExport={canExportEntries}
                             canShare={canShareEntries}
                             categoryLabels={categoryLabels}
                             loading={mingCustomsQuery.isLoading}
                             dataSource={records}
+                            onBatchCandidate={openBatchCandidateDrawer}
                             onDelete={deleteEntry}
                             onExport={exportEntry}
+                            onChangeSelectedVisibility={changeSelectedVisibility}
                             onOpenEdit={openEditMingCustomsDrawer}
-                            onSelectedEntryIdsChange={setSelectedEntryIds}
+                            onSelectedEntryIdsChange={(ids) =>
+                                setSelectedEntryRowsState({
+                                    keys: ids,
+                                    scopeKey: currentPageSelectionScopeKey
+                                })
+                            }
                             onShare={shareEntry}
+                            onShareSelectedEntries={shareSelectedEntries}
                             pagination={{
                                 current: currentPageNo,
                                 pageSize: currentPageSize,
@@ -768,6 +790,8 @@ export const MingCustomsPage = () => {
                                     }))
                             }}
                             selectedEntryIds={selectedEntryIds}
+                            sharing={batchShareMutation.isPending}
+                            visibilityChanging={batchVisibilityMutation.isPending}
                         />
                         <AiCandidateBatchDrawer
                             open={batchCandidateDrawerOpen}
