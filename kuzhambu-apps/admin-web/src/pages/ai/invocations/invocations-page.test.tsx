@@ -13,17 +13,17 @@ vi.mock("./invocations-service", () => ({
 }));
 
 const invocationLog = {
-    callId: 9001,
+    callId: "9001",
     batchId: null,
     scope: "classics",
     capability: "summary",
     contentType: "entry",
-    contentId: 101,
-    objectId: 102,
+    contentId: "101",
+    objectId: "102",
     serviceRole: "PRIMARY",
-    modelId: 2001,
+    modelId: "2001",
     modelName: "gpt-4o",
-    promptVersionId: 3001,
+    promptVersionId: "3001",
     requestId: "req-1",
     traceId: "trace-1",
     status: "SUCCEEDED",

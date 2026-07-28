@@ -8,17 +8,17 @@ export interface AiCapabilityRecord {
 }
 
 export interface AiCapabilityMappingRecord {
-    mappingId?: number | null;
+    mappingId?: string | null;
     scope: string;
     capability: string;
-    modelId: number;
+    modelId: string;
     enabled: boolean;
     configuredAt?: string | null;
 }
 
 export interface AiCapabilityModelRecord {
-    modelId: number;
-    serviceId: number;
+    modelId: string;
+    serviceId: string;
     modelName: string;
     displayName?: string | null;
     capabilityTags: string[];

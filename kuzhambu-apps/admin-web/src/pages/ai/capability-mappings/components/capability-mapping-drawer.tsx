@@ -14,7 +14,7 @@ interface CapabilityMappingDrawerProps {
     capabilityOptions: Array<{ label: string; value: string }>;
     editingMapping: AiCapabilityMappingRecord | null;
     form: FormInstance<MappingFormValues>;
-    modelOptions: Array<{ label: string; value: number }>;
+    modelOptions: Array<{ label: string; value: string }>;
     onClose: () => void;
     onSubmit: () => void;
     open: boolean;

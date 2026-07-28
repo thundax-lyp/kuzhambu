@@ -1,4 +1,5 @@
 import { postJson } from "@/api/http";
+import { normalizeId } from "@/types/id";
 import type {
     AiCapabilityMappingRecord,
     AiCapabilityModelRecord,
@@ -12,10 +13,10 @@ export interface AiCapabilityQuery {
 }
 
 export interface AiCapabilityMappingChangeCommand {
-    mappingId?: number | null;
+    mappingId?: string | null;
     scope: string;
     capability: string;
-    modelId: number;
+    modelId: string;
     enabled: boolean;
 }
 
@@ -35,20 +36,36 @@ export const listCapabilityMappings = (query: AiCapabilityQuery = {}) => {
         {
             body: query
         }
-    );
+    ).then((mappings) => (mappings || []).map(normalizeCapabilityMappingRecord));
 };
 
 export const changeCapabilityMapping = (command: AiCapabilityMappingChangeCommand) => {
-    return postJson<{ id: number }, AiCapabilityMappingChangeCommand>(
+    return postJson<{ id: string }, AiCapabilityMappingChangeCommand>(
         "/ai/config/capability/mapping/save",
         {
             body: command
         }
-    );
+    ).then((result) => ({ ...result, id: normalizeId(result?.id) }));
 };
 
 export const listEnabledModels = (query: AiCapabilityModelQuery = { enabled: true }) => {
     return postJson<AiCapabilityModelRecord[], AiCapabilityModelQuery>("/ai/config/model/list", {
         body: query
-    });
+    }).then((models) => (models || []).map(normalizeCapabilityModelRecord));
 };
+
+const normalizeCapabilityMappingRecord = (
+    mapping: AiCapabilityMappingRecord
+): AiCapabilityMappingRecord => ({
+    ...mapping,
+    mappingId: normalizeId(mapping?.mappingId),
+    modelId: normalizeId(mapping?.modelId)
+});
+
+const normalizeCapabilityModelRecord = (
+    model: AiCapabilityModelRecord
+): AiCapabilityModelRecord => ({
+    ...model,
+    modelId: normalizeId(model?.modelId),
+    serviceId: normalizeId(model?.serviceId)
+});

@@ -1,5 +1,5 @@
 export interface AiModelRecord {
-    id: number;
+    id: string;
     apiSource: string;
     baseUrl: string;
     apiKeyConfigured?: boolean | null;
