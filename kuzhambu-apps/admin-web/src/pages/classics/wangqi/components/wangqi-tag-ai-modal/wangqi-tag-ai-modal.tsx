@@ -365,7 +365,7 @@ export const WangqiTagAiModal = ({
             return;
         }
         applyMutation.mutate({
-            candidateId: candidate.candidateId,
+            candidateId: candidate.candidateIdText || String(candidate.candidateId),
             contentId: document.id,
             contentType: "WANGQI_DOCUMENT",
             capability: "tags",

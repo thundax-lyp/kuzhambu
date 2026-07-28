@@ -255,7 +255,7 @@ export const AiCandidateBatchDrawer = ({
             items: selectedCandidates.map((candidate) => {
                 const payload = effectivePayloads[candidate.candidateId] ?? "";
                 const command: AiCandidateApplyCommand = {
-                    candidateId: candidate.candidateId,
+                    candidateId: candidate.candidateIdText || String(candidate.candidateId),
                     contentType: candidate.contentType,
                     contentId: candidate.contentId,
                     capability: candidate.capability,
@@ -292,7 +292,7 @@ export const AiCandidateBatchDrawer = ({
                     errorType: REJECT_ERROR_TYPE,
                     errorMessage: REJECT_ERROR_MESSAGE,
                     items: selectedCandidates.map((candidate) => ({
-                        candidateId: candidate.candidateId,
+                        candidateId: candidate.candidateIdText || String(candidate.candidateId),
                         contentType: candidate.contentType,
                         contentId: candidate.contentId,
                         capability: candidate.capability,

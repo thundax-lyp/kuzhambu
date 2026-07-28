@@ -363,7 +363,7 @@ export const WangqiQaAiModal = ({
             return;
         }
         applyMutation.mutate({
-            candidateId: candidate.candidateId,
+            candidateId: candidate.candidateIdText || String(candidate.candidateId),
             contentId: document.id,
             contentType: "WANGQI_DOCUMENT",
             capability: "qa",

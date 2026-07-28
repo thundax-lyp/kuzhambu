@@ -172,7 +172,8 @@ export const SancaiEntryTranslationTextField = ({
     const refetchTranslationCandidates = translationCandidatesQuery.refetch;
     const loadTranslationCandidate = useCallback(
         async (task: AiRefinementTaskRecord | null) => {
-            const candidateId = task?.candidateIdText || task?.candidateId;
+            const candidateId =
+                task?.candidateIdText || (task?.candidateId ? String(task.candidateId) : null);
             if (candidateId) {
                 const candidate = await aiCandidateService.get({ candidateId });
                 return isUsableTranslationCandidate(candidate) ? candidate : null;
@@ -244,7 +245,7 @@ export const SancaiEntryTranslationTextField = ({
         const resultPayload = translationDraft;
         if (loadedTranslationCandidate) {
             applyTranslationCandidateMutation.mutate({
-                candidateId: loadedTranslationCandidate.candidateId,
+                candidateId: getCandidateStableId(loadedTranslationCandidate),
                 contentId: entryId,
                 contentType: "SANCAI_ENTRY",
                 capability: "translate",

@@ -165,7 +165,8 @@ export const SancaiEntrySummaryTextField = ({
     const refetchSummaryCandidates = summaryCandidatesQuery.refetch;
     const loadSummaryCandidate = useCallback(
         async (task: AiRefinementTaskRecord | null) => {
-            const candidateId = task?.candidateIdText || task?.candidateId;
+            const candidateId =
+                task?.candidateIdText || (task?.candidateId ? String(task.candidateId) : null);
             if (candidateId) {
                 const candidate = await aiCandidateService.get({ candidateId });
                 return isUsableSummaryCandidate(candidate) ? candidate : null;
@@ -253,7 +254,7 @@ export const SancaiEntrySummaryTextField = ({
         const resultPayload = summaryDraft;
         if (loadedSummaryCandidate) {
             applySummaryCandidateMutation.mutate({
-                candidateId: loadedSummaryCandidate.candidateId,
+                candidateId: getCandidateStableId(loadedSummaryCandidate),
                 contentId: entryId,
                 contentType: "SANCAI_ENTRY",
                 capability: "summary",
