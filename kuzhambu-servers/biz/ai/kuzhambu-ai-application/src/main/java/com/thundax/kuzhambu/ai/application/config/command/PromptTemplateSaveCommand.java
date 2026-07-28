@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.ai.application.config.command;
 
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptTemplateId;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -13,8 +15,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class PromptTemplateSaveCommand {
 
-    private Long id;
-    private String capability;
+    private PromptTemplateId id;
+    private AiBusinessCapability capability;
     private String name;
     private String description;
     private boolean enabled = true;

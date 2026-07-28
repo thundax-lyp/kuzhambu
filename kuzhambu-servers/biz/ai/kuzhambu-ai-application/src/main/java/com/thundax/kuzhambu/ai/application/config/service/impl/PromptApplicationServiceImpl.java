@@ -149,8 +149,8 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
 
     private PromptTemplate toTemplate(PromptTemplateSaveCommand command) {
         PromptTemplate template = new PromptTemplate();
-        template.setId(PromptTemplateIdCodec.toDomain(command.getId()));
-        template.setCapability(AiBusinessCapability.from(command.getCapability()));
+        template.setId(command.getId());
+        template.setCapability(command.getCapability());
         template.setName(command.getName());
         template.setDescription(command.getDescription());
         template.setEnabled(command.isEnabled());
@@ -253,7 +253,7 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
 
     private void validateCommand(PromptTemplateSaveCommand command) {
         if (command == null
-                || isBlank(command.getCapability())
+                || command.getCapability() == null
                 || isBlank(command.getName())
                 || isBlank(command.getMessageTemplatesJson())) {
             throw new BizException("Prompt capability, name and message templates are required");

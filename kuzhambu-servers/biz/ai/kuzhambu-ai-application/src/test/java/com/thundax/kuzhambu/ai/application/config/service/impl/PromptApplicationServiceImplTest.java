@@ -33,7 +33,7 @@ class PromptApplicationServiceImplTest {
     void saveTemplateShouldRejectCapabilityChange() {
         PromptApplicationServiceImpl service = new PromptApplicationServiceImpl(new ConflictPromptRepository());
         PromptTemplateSaveCommand command = saveCommand();
-        command.setCapability("classics_translate");
+        command.setCapability(AiBusinessCapability.CLASSICS_TRANSLATE);
 
         assertThatThrownBy(() -> service.saveTemplate(command))
                 .isInstanceOf(BizException.class)
@@ -66,8 +66,8 @@ class PromptApplicationServiceImplTest {
 
     private PromptTemplateSaveCommand saveCommand() {
         PromptTemplateSaveCommand command = new PromptTemplateSaveCommand();
-        command.setId(1001L);
-        command.setCapability("classics_summary");
+        command.setId(PromptTemplateIdCodec.toDomain(1001L));
+        command.setCapability(AiBusinessCapability.CLASSICS_SUMMARY);
         command.setName("summary prompt");
         command.setEnabled(true);
         command.setMessageTemplatesJson("[{\"role\":\"user\",\"content\":\"请摘要\"}]");
