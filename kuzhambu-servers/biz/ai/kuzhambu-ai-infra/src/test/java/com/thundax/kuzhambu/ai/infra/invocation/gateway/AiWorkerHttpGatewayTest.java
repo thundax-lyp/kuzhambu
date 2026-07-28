@@ -15,6 +15,8 @@ import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
 import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -373,11 +375,11 @@ class AiWorkerHttpGatewayTest {
         command.setContentRef(
                 com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable("entry", 10L));
         command.setServiceRole("default");
-        command.setModelId(20L);
-        command.setModelName("model-a");
-        command.setPromptVersionId(30L);
-        command.setRequestId("req-1");
-        command.setTraceId("trace-1");
+        command.setModelId(new com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId(20L));
+        command.setModelName(com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName.of("model-a"));
+        command.setPromptVersionId(new com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId(30L));
+        command.setRequestId(new RequestId("req-1"));
+        command.setTraceId(new TraceId("trace-1"));
         command.setPromptMessagesJson("[{\"role\":\"user\",\"content\":\"hello\"}]");
         command.setPromptVariablesJson("{}");
         command.setInputPayloadJson("{\"text\":\"hello\"}");

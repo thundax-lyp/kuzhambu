@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.ai.application.invocation.gateway.AiWorkerGateway.Do
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.support.AiWorkerModelConfigResolver;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
@@ -71,7 +72,11 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
         try {
             String body = objectMapper.writeValueAsString(toRequest(command, false));
             String invokePath = resolveInvokePath(command);
-            HttpRequest request = buildPostRequest(invokePath, command.getRequestId(), command.getTraceId(), body);
+            HttpRequest request = buildPostRequest(
+                    invokePath,
+                    RequestIdCodec.toValue(command.getRequestId()),
+                    TraceIdCodec.toValue(command.getTraceId()),
+                    body);
             HttpResponse<String> response =
                     httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             if (!isSuccessful(response.statusCode())) {
@@ -98,7 +103,11 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
         try {
             String body = objectMapper.writeValueAsString(toRequest(command, true));
             String streamPath = resolveStreamPath(command);
-            HttpRequest request = buildPostRequest(streamPath, command.getRequestId(), command.getTraceId(), body);
+            HttpRequest request = buildPostRequest(
+                    streamPath,
+                    RequestIdCodec.toValue(command.getRequestId()),
+                    TraceIdCodec.toValue(command.getTraceId()),
+                    body);
             HttpResponse<InputStream> response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
             if (!isSuccessful(response.statusCode())) {
                 emitError(
@@ -197,8 +206,8 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
 
     private AiWorkerHttpPayloads.InvokeRequest toRequest(AiInvokeCommand command, boolean stream) {
         AiWorkerHttpPayloads.InvokeRequest request = new AiWorkerHttpPayloads.InvokeRequest();
-        request.setRequestId(command.getRequestId());
-        request.setTraceId(command.getTraceId());
+        request.setRequestId(RequestIdCodec.toValue(command.getRequestId()));
+        request.setTraceId(TraceIdCodec.toValue(command.getTraceId()));
         request.setCallerDomain(CALLER_DOMAIN);
         request.setOperation(command.getOperation());
         request.setCapability(defaultString(
@@ -223,7 +232,7 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
                 modelConfig.setApiSource(resolved.apiSource());
                 modelConfig.setBaseUrl(resolved.baseUrl());
                 modelConfig.setApiKey(resolved.apiKey());
-                modelConfig.setModelName(resolved.modelName());
+                modelConfig.setModelName(AiModelNameCodec.toValue(resolved.modelName()));
                 modelConfig.setCapabilityTags(
                         resolved.capabilityTags() == null ? Collections.emptyList() : resolved.capabilityTags());
                 modelConfig.setParameters(resolved.parameters());
@@ -233,7 +242,7 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
             }
         }
         modelConfig.setServiceRole(command.getServiceRole());
-        modelConfig.setModelName(command.getModelName());
+        modelConfig.setModelName(AiModelNameCodec.toValue(command.getModelName()));
         modelConfig.setCapabilityTags(Collections.emptyList());
         modelConfig.setParameters(objectMapper.createObjectNode());
         modelConfig.setTimeoutMs(properties.getTimeoutMs());
@@ -243,7 +252,8 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
     private AiWorkerHttpPayloads.Prompt prompt(AiInvokeCommand command) {
         AiWorkerHttpPayloads.Prompt prompt = new AiWorkerHttpPayloads.Prompt();
         if (command.getPromptVersionId() != null) {
-            prompt.setPromptVersionId(String.valueOf(command.getPromptVersionId()));
+            prompt.setPromptVersionId(
+                    String.valueOf(command.getPromptVersionId().value()));
         }
         prompt.setMessages(jsonOrDefault(command.getPromptMessagesJson(), objectMapper.createArrayNode()));
         prompt.setVariables(jsonOrDefault(command.getPromptVariablesJson(), objectMapper.createObjectNode()));
@@ -317,8 +327,10 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
             return failure(command, ERROR_WORKER_PROTOCOL_FAILURE, "Worker returned invalid response");
         }
         AiInvokeResult result = new AiInvokeResult();
-        result.setRequestId(RequestIdCodec.toDomain(defaultString(response.getRequestId(), command.getRequestId())));
-        result.setTraceId(TraceIdCodec.toDomain(defaultString(response.getTraceId(), command.getTraceId())));
+        result.setRequestId(RequestIdCodec.toDomain(
+                defaultString(response.getRequestId(), RequestIdCodec.toValue(command.getRequestId()))));
+        result.setTraceId(TraceIdCodec.toDomain(
+                defaultString(response.getTraceId(), TraceIdCodec.toValue(command.getTraceId()))));
         result.setStatus(AiInvocationStatus.from(response.getStatus()));
         String capability = defaultString(
                 response.getCapability(),
@@ -395,8 +407,10 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
         AiStreamEventResult event = new AiStreamEventResult();
         event.setEventType(defaultString(eventType, text(node, "eventType")));
         event.setEventId(text(node, "eventId"));
-        event.setRequestId(RequestIdCodec.toDomain(defaultString(text(node, "requestId"), command.getRequestId())));
-        event.setTraceId(TraceIdCodec.toDomain(defaultString(text(node, "traceId"), command.getTraceId())));
+        event.setRequestId(RequestIdCodec.toDomain(
+                defaultString(text(node, "requestId"), RequestIdCodec.toValue(command.getRequestId()))));
+        event.setTraceId(TraceIdCodec.toDomain(
+                defaultString(text(node, "traceId"), TraceIdCodec.toValue(command.getTraceId()))));
         event.setStage(text(node, "stage"));
         event.setTimestamp(toInstant(text(node, "timestamp")));
         event.setDeltaText(defaultString(
@@ -470,8 +484,8 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
         }
         AiStreamEventResult event = new AiStreamEventResult();
         event.setEventType(EVENT_ERROR);
-        event.setRequestId(RequestIdCodec.toDomain(command.getRequestId()));
-        event.setTraceId(TraceIdCodec.toDomain(command.getTraceId()));
+        event.setRequestId(command.getRequestId());
+        event.setTraceId(command.getTraceId());
         event.setStage(EVENT_ERROR);
         event.setTimestamp(Instant.now());
         event.setStatus(AiInvocationStatus.FAILED);
@@ -481,12 +495,8 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
     }
 
     private AiInvokeResult failure(AiInvokeCommand command, String errorType, String errorMessage) {
-        AiInvokeResult result = AiInvokeResult.failed(
-                RequestIdCodec.toDomain(command.getRequestId()),
-                TraceIdCodec.toDomain(command.getTraceId()),
-                errorType,
-                errorMessage,
-                null);
+        AiInvokeResult result =
+                AiInvokeResult.failed(command.getRequestId(), command.getTraceId(), errorType, errorMessage, null);
         result.setCapability(command.getCapability());
         return result;
     }
