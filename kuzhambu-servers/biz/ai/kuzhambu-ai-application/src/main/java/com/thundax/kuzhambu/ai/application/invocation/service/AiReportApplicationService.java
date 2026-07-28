@@ -1,6 +1,6 @@
-package com.thundax.kuzhambu.ai.application.report.service;
+package com.thundax.kuzhambu.ai.application.invocation.service;
 
-import com.thundax.kuzhambu.ai.application.report.result.AiReportSummaryResult;
+import com.thundax.kuzhambu.ai.application.invocation.result.AiReportSummaryResult;
 import com.thundax.kuzhambu.common.core.arch.LayerPublicApi;
 import java.util.Date;
 

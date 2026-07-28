@@ -1,11 +1,11 @@
-package com.thundax.kuzhambu.ai.application.report.service.impl;
+package com.thundax.kuzhambu.ai.application.invocation.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.thundax.kuzhambu.ai.application.report.result.AiReportSummaryResult;
+import com.thundax.kuzhambu.ai.application.invocation.result.AiReportSummaryResult;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;

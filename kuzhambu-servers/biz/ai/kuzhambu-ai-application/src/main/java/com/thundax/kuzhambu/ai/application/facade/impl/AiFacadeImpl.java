@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.ai.application.facade.assembler.AiFacadeAssembler;
 import com.thundax.kuzhambu.ai.application.invocation.batch.command.AiBatchJobCreateCommand;
 import com.thundax.kuzhambu.ai.application.invocation.batch.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiCandidateApplicationService;
-import com.thundax.kuzhambu.ai.application.report.service.AiReportApplicationService;
+import com.thundax.kuzhambu.ai.application.invocation.service.AiReportApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.service.DiscoveryAiApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.service.KnowledgeAiExtractionApplicationService;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;

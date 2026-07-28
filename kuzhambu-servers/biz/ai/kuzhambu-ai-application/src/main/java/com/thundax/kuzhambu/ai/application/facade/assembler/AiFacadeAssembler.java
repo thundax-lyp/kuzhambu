@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.ai.application.facade.assembler;
 
 import com.thundax.kuzhambu.ai.application.invocation.batch.result.AiBatchJobResult;
-import com.thundax.kuzhambu.ai.application.report.result.AiReportSummaryResult;
-import com.thundax.kuzhambu.ai.application.report.result.AiReportSummaryResult.TopCapabilityResult;
+import com.thundax.kuzhambu.ai.application.invocation.result.AiReportSummaryResult;
+import com.thundax.kuzhambu.ai.application.invocation.result.AiReportSummaryResult.TopCapabilityResult;
 import com.thundax.kuzhambu.ai.application.scenario.command.DiscoveryAiCommand;
 import com.thundax.kuzhambu.ai.application.scenario.command.KnowledgeAiExtractionCommand;
 import com.thundax.kuzhambu.ai.application.scenario.result.DiscoveryAiInvokeResult;

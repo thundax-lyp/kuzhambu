@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.ai.application.report.result;
+package com.thundax.kuzhambu.ai.application.invocation.result;
 
 import java.math.BigDecimal;
 import java.util.Date;

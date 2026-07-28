@@ -1,8 +1,8 @@
-package com.thundax.kuzhambu.ai.application.report.service.impl;
+package com.thundax.kuzhambu.ai.application.invocation.service.impl;
 
-import com.thundax.kuzhambu.ai.application.report.result.AiReportSummaryResult;
-import com.thundax.kuzhambu.ai.application.report.result.AiReportSummaryResult.TopCapabilityResult;
-import com.thundax.kuzhambu.ai.application.report.service.AiReportApplicationService;
+import com.thundax.kuzhambu.ai.application.invocation.result.AiReportSummaryResult;
+import com.thundax.kuzhambu.ai.application.invocation.result.AiReportSummaryResult.TopCapabilityResult;
+import com.thundax.kuzhambu.ai.application.invocation.service.AiReportApplicationService;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
