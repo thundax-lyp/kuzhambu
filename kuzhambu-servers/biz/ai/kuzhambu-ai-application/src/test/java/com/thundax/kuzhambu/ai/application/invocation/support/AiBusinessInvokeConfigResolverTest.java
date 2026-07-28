@@ -295,7 +295,7 @@ class AiBusinessInvokeConfigResolverTest {
     private static class FakeModelApplicationService implements AiModelApplicationService {
 
         @Override
-        public AiModel get(Long id) {
+        public AiModel get(AiModelId id) {
             return new AiModel(
                     new AiModelId(2001L),
                     AiApiSource.OPENAI,
@@ -311,12 +311,12 @@ class AiBusinessInvokeConfigResolverTest {
         }
 
         @Override
-        public List<AiModel> list(String apiSource, Boolean enabled) {
-            return List.of(get(2001L));
+        public List<AiModel> list(AiApiSource apiSource, Boolean enabled) {
+            return List.of(get(new AiModelId(2001L)));
         }
 
         @Override
-        public Long save(AiModel model) {
+        public AiModelId save(AiModel model) {
             return null;
         }
 
@@ -326,7 +326,7 @@ class AiBusinessInvokeConfigResolverTest {
         }
 
         @Override
-        public int delete(Long id) {
+        public int delete(AiModelId id) {
             return 0;
         }
     }

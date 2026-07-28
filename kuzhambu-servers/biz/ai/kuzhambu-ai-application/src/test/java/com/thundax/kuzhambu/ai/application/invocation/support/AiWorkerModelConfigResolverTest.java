@@ -143,17 +143,17 @@ class AiWorkerModelConfigResolverTest {
                 null);
 
         @Override
-        public AiModel get(Long modelId) {
+        public AiModel get(AiModelId modelId) {
             return model;
         }
 
         @Override
-        public List<AiModel> list(String apiSource, Boolean enabled) {
+        public List<AiModel> list(AiApiSource apiSource, Boolean enabled) {
             return List.of(model);
         }
 
         @Override
-        public Long save(AiModel model) {
+        public AiModelId save(AiModel model) {
             return null;
         }
 
@@ -163,7 +163,7 @@ class AiWorkerModelConfigResolverTest {
         }
 
         @Override
-        public int delete(Long modelId) {
+        public int delete(AiModelId modelId) {
             return 0;
         }
     }

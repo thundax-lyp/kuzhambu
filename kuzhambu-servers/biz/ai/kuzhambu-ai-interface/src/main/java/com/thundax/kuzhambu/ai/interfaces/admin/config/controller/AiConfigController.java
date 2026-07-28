@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.ai.application.config.service.AiBusinessConfigApplic
 import com.thundax.kuzhambu.ai.application.config.service.AiCapabilityCatalogApplicationService;
 import com.thundax.kuzhambu.ai.application.config.service.AiModelApplicationService;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiBusinessConfigId;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.assembler.AiConfigInterfaceAssembler;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.request.AiConfigRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.response.AiConfigResponses.BusinessConfigResponse;
@@ -55,7 +56,8 @@ public class AiConfigController {
     @SysLogger(value = "模型读取")
     @PostMapping(value = "model/get")
     public ModelResponse getModel(@Valid @RequestBody AiConfigRequests.ModelIdRequest request) {
-        return AiConfigInterfaceAssembler.toResponse(modelService.get(request.getId()));
+        return AiConfigInterfaceAssembler.toResponse(
+                modelService.get(AiConfigInterfaceAssembler.toModelId(request.getId())));
     }
 
     @Operation(summary = "获取AI模型列表", description = "ai:config:view")
@@ -70,7 +72,9 @@ public class AiConfigController {
     @SysLogger(value = "模型列表")
     @PostMapping(value = "model/list")
     public List<ModelResponse> listModels(@Valid @RequestBody AiConfigRequests.ModelListRequest request) {
-        return modelService.list(request.getApiSource(), request.getEnabled()).stream()
+        return modelService
+                .list(AiConfigInterfaceAssembler.toApiSource(request.getApiSource()), request.getEnabled())
+                .stream()
                 .map(AiConfigInterfaceAssembler::toResponse)
                 .collect(Collectors.toList());
     }
@@ -87,7 +91,7 @@ public class AiConfigController {
     @SysLogger(value = "模型新增")
     @PostMapping(value = "model/create")
     public ModelResponse createModel(@Valid @RequestBody AiConfigRequests.ModelSaveRequest request) {
-        Long id = modelService.save(AiConfigInterfaceAssembler.toModel(request));
+        AiModelId id = modelService.save(AiConfigInterfaceAssembler.toModel(request));
         return AiConfigInterfaceAssembler.toResponse(modelService.get(id));
     }
 
@@ -104,7 +108,8 @@ public class AiConfigController {
     @PostMapping(value = "model/update")
     public ModelResponse updateModel(@Valid @RequestBody AiConfigRequests.ModelSaveRequest request) {
         modelService.update(AiConfigInterfaceAssembler.toModel(request));
-        return AiConfigInterfaceAssembler.toResponse(modelService.get(request.getId()));
+        return AiConfigInterfaceAssembler.toResponse(
+                modelService.get(AiConfigInterfaceAssembler.toModelId(request.getId())));
     }
 
     @Operation(summary = "删除AI模型", description = "ai:config:edit")
@@ -119,7 +124,7 @@ public class AiConfigController {
     @SysLogger(value = "模型删除")
     @PostMapping(value = "model/delete")
     public Boolean deleteModel(@Valid @RequestBody AiConfigRequests.ModelIdRequest request) {
-        modelService.delete(request.getId());
+        modelService.delete(AiConfigInterfaceAssembler.toModelId(request.getId()));
         return true;
     }
 

@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.ai.domain.config.model.enums.AiApiSource;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiModelCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiBusinessConfigId;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.request.AiConfigRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.response.AiConfigResponses;
 import java.time.Instant;
@@ -34,6 +35,14 @@ public final class AiConfigInterfaceAssembler {
         model.setEnabled(request.getEnabled() == null || request.getEnabled());
         model.setRegisteredAt(Instant.now());
         return model;
+    }
+
+    public static AiModelId toModelId(Long value) {
+        return AiModelIdCodec.toDomain(value);
+    }
+
+    public static AiApiSource toApiSource(String value) {
+        return isBlank(value) ? null : AiApiSource.from(value);
     }
 
     public static AiBusinessConfig toBusinessConfig(AiConfigRequests.BusinessConfigSaveRequest request) {

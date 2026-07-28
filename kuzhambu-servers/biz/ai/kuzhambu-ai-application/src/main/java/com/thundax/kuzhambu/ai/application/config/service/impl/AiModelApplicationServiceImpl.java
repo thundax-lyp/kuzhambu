@@ -1,9 +1,9 @@
 package com.thundax.kuzhambu.ai.application.config.service.impl;
 
 import com.thundax.kuzhambu.ai.application.config.service.AiModelApplicationService;
-import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiBusinessConfig;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiApiSource;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.domain.config.repository.AiBusinessConfigRepository;
 import com.thundax.kuzhambu.ai.domain.config.repository.AiModelRepository;
@@ -28,23 +28,22 @@ public class AiModelApplicationServiceImpl implements AiModelApplicationService 
     }
 
     @Override
-    public AiModel get(Long id) {
-        return aiModelRepository.get(AiModelIdCodec.toDomain(id));
+    public AiModel get(AiModelId id) {
+        return aiModelRepository.get(id);
     }
 
     @Override
-    public List<AiModel> list(String apiSource, Boolean enabled) {
-        return aiModelRepository.list(apiSource, enabled);
+    public List<AiModel> list(AiApiSource apiSource, Boolean enabled) {
+        return aiModelRepository.list(apiSource == null ? null : apiSource.value(), enabled);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Long save(AiModel model) {
+    public AiModelId save(AiModel model) {
         if (model == null) {
             return null;
         }
-        AiModelId id = aiModelRepository.insert(model);
-        return AiModelIdCodec.toValue(id);
+        return aiModelRepository.insert(model);
     }
 
     @Override
@@ -58,13 +57,12 @@ public class AiModelApplicationServiceImpl implements AiModelApplicationService 
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public int delete(Long id) {
+    public int delete(AiModelId id) {
         if (id == null) {
             return 0;
         }
-        AiModelId modelId = AiModelIdCodec.toDomain(id);
-        assertModelCanBeDeleted(modelId);
-        return aiModelRepository.delete(modelId);
+        assertModelCanBeDeleted(id);
+        return aiModelRepository.delete(id);
     }
 
     private void assertModelCanBeDeleted(AiModelId modelId) {
