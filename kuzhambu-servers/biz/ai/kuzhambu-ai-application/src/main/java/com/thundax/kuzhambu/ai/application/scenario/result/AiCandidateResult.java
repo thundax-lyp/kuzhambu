@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.ai.application.scenario.result;
 
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -23,10 +25,10 @@ public class AiCandidateResult {
             return null;
         }
         return new AiCandidateResult(
-                result.getCallId(),
-                result.getCandidateId(),
-                result.getStatus(),
-                result.getCapability(),
+                AiCallIdCodec.toValue(result.getCallId()),
+                AiCandidateIdCodec.toValue(result.getCandidateId()),
+                result.getStatus() == null ? null : result.getStatus().name(),
+                result.getCapability() == null ? null : result.getCapability().value(),
                 result.getFailureStage(),
                 result.getResultFormat(),
                 result.getResultPayload(),
