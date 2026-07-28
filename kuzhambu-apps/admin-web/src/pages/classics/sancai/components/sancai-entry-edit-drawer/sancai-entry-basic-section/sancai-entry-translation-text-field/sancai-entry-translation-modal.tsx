@@ -1,8 +1,13 @@
 import { TranslationOutlined } from "@ant-design/icons";
-import { Input } from "antd";
+import { App, Input } from "antd";
 import { useMemo } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
-import { KuzhambuAlert, KuzhambuSyncTaskModal, type KuzhambuSyncTaskAdapter } from "@/components";
+import {
+    KuzhambuAlert,
+    KuzhambuSyncTaskModal,
+    KuzhambuTextCompare,
+    type KuzhambuSyncTaskAdapter
+} from "@/components";
 
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
@@ -87,6 +92,7 @@ const translationTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = 
 
 interface SancaiEntryTranslationModalProps {
     aiTextDraft: string;
+    entryId?: number;
     form: SancaiEntryFormValues;
     isAiTextApplyDisabled: boolean;
     isAiTextCandidateFetching: boolean;
@@ -97,7 +103,7 @@ interface SancaiEntryTranslationModalProps {
     onFetchTask: (taskId: number | string) => Promise<AiRefinementTaskRecord>;
     onApply: () => void;
     onCancel: () => void;
-    onRequestTask: () => void;
+    onRequestTranslationTask?: (draft: SancaiEntryFormValues) => void;
     onTaskChange?: (task: AiRefinementTaskRecord | null) => void;
     onTextDraftChange: (draft: string) => void;
     open: boolean;
@@ -105,6 +111,7 @@ interface SancaiEntryTranslationModalProps {
 
 export const SancaiEntryTranslationModal = ({
     aiTextDraft,
+    entryId,
     form,
     isAiTextApplyDisabled,
     isAiTextCandidateFetching,
@@ -115,11 +122,12 @@ export const SancaiEntryTranslationModal = ({
     onFetchTask,
     onApply,
     onCancel,
-    onRequestTask,
+    onRequestTranslationTask,
     onTaskChange,
     onTextDraftChange,
     open
 }: SancaiEntryTranslationModalProps) => {
+    const { message: messageApi } = App.useApp();
     const latestAiTextTask = useMemo(
         () =>
             [...translationTasks]
@@ -131,6 +139,20 @@ export const SancaiEntryTranslationModal = ({
                 .sort(sortRefinementTasksByNewest)[0] ?? null,
         [translationTasks]
     );
+    const requestTranslationTask = () => {
+        if (!entryId) {
+            return;
+        }
+        if (!onRequestTranslationTask) {
+            messageApi.warning("请先保存条目后再使用 AI翻译");
+            return;
+        }
+        if (!form.originalText?.trim()) {
+            messageApi.warning("请先填写原文");
+            return;
+        }
+        onRequestTranslationTask(form);
+    };
 
     return (
         <KuzhambuSyncTaskModal<AiRefinementTaskRecord, null>
@@ -155,7 +177,7 @@ export const SancaiEntryTranslationModal = ({
             workflow={{
                 ...translationTaskAdapter,
                 task: latestAiTextTask,
-                createTask: onRequestTask,
+                createTask: requestTranslationTask,
                 fetchTask: onFetchTask,
                 applyResult: onApply,
                 onTaskChange,
@@ -242,6 +264,14 @@ export const SancaiEntryTranslationModal = ({
                                 ) : null}
                             </div>
                         </div>
+                        <KuzhambuTextCompare
+                            baseline={form.translationText}
+                            candidate={aiTextDraft}
+                            className="sancai-ai-text-modal-diff"
+                            emptyText="当前译文与 AI 译文暂无差异"
+                            testId="classics-sancai-sancai-entry-ai-translation-compare"
+                            title="译文差异"
+                        />
                     </>
                 );
             }}

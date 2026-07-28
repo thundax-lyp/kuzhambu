@@ -181,22 +181,6 @@ export const SancaiEntryTranslationTextField = ({
     const closeTranslationModal = () => {
         setTranslationModalOpen(false);
     };
-    const requestTranslationTask = () => {
-        if (!entryId) {
-            return false;
-        }
-        if (!onRequestTranslationTask) {
-            messageApi.warning("请先保存条目后再使用 AI翻译");
-            return false;
-        }
-        const formValues = getFormValues();
-        if (!formValues.originalText?.trim()) {
-            messageApi.warning("请先填写原文");
-            return false;
-        }
-        onRequestTranslationTask(formValues);
-        return true;
-    };
     const applyTranslationDraft = () => {
         if (!entryId) {
             return;
@@ -244,6 +228,7 @@ export const SancaiEntryTranslationTextField = ({
             ) : null}
             <SancaiEntryTranslationModal
                 aiTextDraft={translationDraft}
+                entryId={entryId}
                 form={formValues}
                 isAiTextApplyDisabled={isTranslationApplyDisabled}
                 isAiTextCandidateFetching={translationCandidatesQuery.isFetching}
@@ -254,7 +239,7 @@ export const SancaiEntryTranslationTextField = ({
                 onApply={applyTranslationDraft}
                 onCancel={closeTranslationModal}
                 onFetchTask={(taskId) => aiRefinementTaskService.getTask({ taskId })}
-                onRequestTask={requestTranslationTask}
+                onRequestTranslationTask={onRequestTranslationTask}
                 onTaskChange={handleTranslationTaskChange}
                 onTextDraftChange={setTranslationDraft}
                 translationTasks={translationTasks}
