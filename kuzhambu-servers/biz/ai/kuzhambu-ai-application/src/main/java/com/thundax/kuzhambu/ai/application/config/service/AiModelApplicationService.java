@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.ai.application.config.model.service;
+package com.thundax.kuzhambu.ai.application.config.service;
 
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
 import java.util.List;

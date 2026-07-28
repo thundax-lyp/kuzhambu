@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.controller;
 
-import com.thundax.kuzhambu.ai.application.config.prompt.service.PromptApplicationService;
+import com.thundax.kuzhambu.ai.application.config.service.PromptApplicationService;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.assembler.PromptInterfaceAssembler;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.controller.request.PromptRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.controller.response.PromptResponses.TemplateResponse;

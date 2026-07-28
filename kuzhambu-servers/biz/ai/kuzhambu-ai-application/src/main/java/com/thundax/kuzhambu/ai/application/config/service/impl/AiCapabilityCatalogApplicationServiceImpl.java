@@ -1,6 +1,6 @@
-package com.thundax.kuzhambu.ai.application.capability.service.impl;
+package com.thundax.kuzhambu.ai.application.config.service.impl;
 
-import com.thundax.kuzhambu.ai.application.capability.service.AiCapabilityApplicationService;
+import com.thundax.kuzhambu.ai.application.config.service.AiCapabilityCatalogApplicationService;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import java.util.Arrays;
@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 @BizExceptionBoundary
-public class AiCapabilityApplicationServiceImpl implements AiCapabilityApplicationService {
+public class AiCapabilityCatalogApplicationServiceImpl implements AiCapabilityCatalogApplicationService {
 
     @Override
     public AiBusinessCapability getCapability(String capability) {

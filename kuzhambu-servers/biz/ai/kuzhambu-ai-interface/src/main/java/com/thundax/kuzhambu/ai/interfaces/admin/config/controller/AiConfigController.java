@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.config.controller;
 
-import com.thundax.kuzhambu.ai.application.capability.service.AiCapabilityApplicationService;
-import com.thundax.kuzhambu.ai.application.config.business.service.AiBusinessConfigApplicationService;
-import com.thundax.kuzhambu.ai.application.config.model.service.AiModelApplicationService;
+import com.thundax.kuzhambu.ai.application.config.service.AiBusinessConfigApplicationService;
+import com.thundax.kuzhambu.ai.application.config.service.AiCapabilityCatalogApplicationService;
+import com.thundax.kuzhambu.ai.application.config.service.AiModelApplicationService;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.assembler.AiConfigInterfaceAssembler;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.request.AiConfigRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.response.AiConfigResponses.BusinessConfigResponse;
@@ -30,15 +30,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class AiConfigController {
 
     private final AiModelApplicationService modelService;
-    private final AiCapabilityApplicationService capabilityService;
+    private final AiCapabilityCatalogApplicationService capabilityCatalogService;
     private final AiBusinessConfigApplicationService businessConfigService;
 
     public AiConfigController(
             AiModelApplicationService modelService,
-            AiCapabilityApplicationService capabilityService,
+            AiCapabilityCatalogApplicationService capabilityCatalogService,
             AiBusinessConfigApplicationService businessConfigService) {
         this.modelService = modelService;
-        this.capabilityService = capabilityService;
+        this.capabilityCatalogService = capabilityCatalogService;
         this.businessConfigService = businessConfigService;
     }
 
@@ -135,7 +135,7 @@ public class AiConfigController {
     @PostMapping(value = "capability/list")
     public List<CapabilityResponse> listCapabilities(
             @Valid @RequestBody AiConfigRequests.CapabilityQueryRequest request) {
-        return capabilityService.listCapabilities(request.getEnabled()).stream()
+        return capabilityCatalogService.listCapabilities(request.getEnabled()).stream()
                 .map(AiConfigInterfaceAssembler::toResponse)
                 .collect(Collectors.toList());
     }
@@ -152,7 +152,7 @@ public class AiConfigController {
     @SysLogger(value = "能力读取")
     @PostMapping(value = "capability/get")
     public CapabilityResponse getCapability(@Valid @RequestBody AiConfigRequests.CapabilityQueryRequest request) {
-        return AiConfigInterfaceAssembler.toResponse(capabilityService.getCapability(request.getCapability()));
+        return AiConfigInterfaceAssembler.toResponse(capabilityCatalogService.getCapability(request.getCapability()));
     }
 
     @Operation(summary = "获取AI业务配置", description = "ai:config:view")

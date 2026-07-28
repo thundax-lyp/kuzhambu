@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.ai.application.config.business.service.impl;
+package com.thundax.kuzhambu.ai.application.config.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;

@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.ai.application.config.prompt.service.impl;
+package com.thundax.kuzhambu.ai.application.config.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

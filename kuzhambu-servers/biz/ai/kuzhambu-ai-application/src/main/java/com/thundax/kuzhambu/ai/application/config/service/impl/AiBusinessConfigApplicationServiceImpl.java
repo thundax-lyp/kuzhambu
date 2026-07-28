@@ -1,6 +1,6 @@
-package com.thundax.kuzhambu.ai.application.config.business.service.impl;
+package com.thundax.kuzhambu.ai.application.config.service.impl;
 
-import com.thundax.kuzhambu.ai.application.config.business.service.AiBusinessConfigApplicationService;
+import com.thundax.kuzhambu.ai.application.config.service.AiBusinessConfigApplicationService;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiBusinessConfigIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiBusinessConfig;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;

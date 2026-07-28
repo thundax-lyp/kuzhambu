@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.ai.application.config.prompt.service;
+package com.thundax.kuzhambu.ai.application.config.service;
 
 import com.thundax.kuzhambu.ai.application.config.prompt.command.PromptTemplateSaveCommand;
 import com.thundax.kuzhambu.ai.application.config.prompt.query.PromptVersionCompareQuery;
