@@ -8,8 +8,11 @@ import com.thundax.kuzhambu.ai.application.invocation.service.AiReportApplicatio
 import com.thundax.kuzhambu.ai.application.scenario.service.DiscoveryAiApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.service.KnowledgeAiExtractionApplicationService;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiReportBucketType;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.ai.facade.AiFacade;
@@ -70,7 +73,11 @@ public class AiFacadeImpl implements AiFacade {
             return null;
         }
         return aiFacadeAssembler.toFacadeResponse(aiReportApplicationService.summary(
-                request.getPeriodStart(), request.getPeriodEnd(), request.getBucketType()));
+                request.getPeriodStart() == null
+                        ? null
+                        : request.getPeriodStart().toInstant(),
+                request.getPeriodEnd() == null ? null : request.getPeriodEnd().toInstant(),
+                request.getBucketType() == null ? null : AiReportBucketType.from(request.getBucketType())));
     }
 
     @Override
@@ -123,7 +130,8 @@ public class AiFacadeImpl implements AiFacade {
     @Override
     @Transactional(readOnly = true)
     public AiBatchJobFacadeResponse getBatchJob(Long batchId) {
-        return aiFacadeAssembler.toFacadeResponse(aiBatchJobApplicationService.get(batchId));
+        return aiFacadeAssembler.toFacadeResponse(
+                aiBatchJobApplicationService.get(AiBatchJobIdCodec.toDomain(batchId)));
     }
 
     @Override
@@ -132,25 +140,26 @@ public class AiFacadeImpl implements AiFacade {
         if (request == null) {
             return null;
         }
-        Long batchId = aiBatchJobApplicationService.create(new AiBatchJobCreateCommand(
+        Long batchId = AiBatchJobIdCodec.toValue(aiBatchJobApplicationService.create(new AiBatchJobCreateCommand(
                 request.getScope(),
                 AiBusinessCapability.fromAlias(request.getCapability()),
                 AiContentRef.ofNullable(request.getContentType(), null),
                 request.getTotalCount(),
-                request.getFailureSummaryJson()));
+                request.getFailureSummaryJson())));
         return aiFacadeAssembler.toActionResponse(batchId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public boolean canDispatchNextBatchUnit(Long batchId) {
-        return aiBatchJobApplicationService.canDispatchNextUnit(batchId);
+        return aiBatchJobApplicationService.canDispatchNextUnit(AiBatchJobIdCodec.toDomain(batchId));
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AiBatchJobFacadeResponse recordBatchSuccess(Long batchId) {
-        return aiFacadeAssembler.toFacadeResponse(aiBatchJobApplicationService.recordSuccess(batchId));
+        return aiFacadeAssembler.toFacadeResponse(
+                aiBatchJobApplicationService.recordSuccess(AiBatchJobIdCodec.toDomain(batchId)));
     }
 
     @Override
@@ -159,14 +168,15 @@ public class AiFacadeImpl implements AiFacade {
         if (request == null) {
             return null;
         }
-        return aiFacadeAssembler.toFacadeResponse(
-                aiBatchJobApplicationService.recordFailure(request.getBatchId(), request.getFailureSummaryJson()));
+        return aiFacadeAssembler.toFacadeResponse(aiBatchJobApplicationService.recordFailure(
+                AiBatchJobIdCodec.toDomain(request.getBatchId()), request.getFailureSummaryJson()));
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AiBatchJobFacadeResponse cancelBatchJob(Long batchId) {
-        return aiFacadeAssembler.toFacadeResponse(aiBatchJobApplicationService.cancel(batchId));
+        return aiFacadeAssembler.toFacadeResponse(
+                aiBatchJobApplicationService.cancel(AiBatchJobIdCodec.toDomain(batchId)));
     }
 
     @Override
@@ -196,11 +206,10 @@ public class AiFacadeImpl implements AiFacade {
             return null;
         }
         return aiFacadeAssembler.toFacadeDto(aiCandidateApplicationService.requirePendingForApply(
-                request.getCandidateId(),
-                request.getContentType(),
-                request.getContentId(),
-                request.getCapability(),
-                request.getObjectId()));
+                AiCandidateIdCodec.toDomain(request.getCandidateId()),
+                AiContentRef.ofNullable(request.getContentType(), request.getContentId()),
+                AiBusinessCapability.fromAlias(request.getCapability()),
+                AiTargetObjectIdCodec.toDomain(request.getObjectId())));
     }
 
     @Override
@@ -210,7 +219,7 @@ public class AiFacadeImpl implements AiFacade {
             return null;
         }
         return aiFacadeAssembler.toFacadeDto(aiCandidateApplicationService.markApplied(
-                request.getCandidateId(),
+                AiCandidateIdCodec.toDomain(request.getCandidateId()),
                 request.getResultFormat(),
                 request.getResultPayload(),
                 request.getAppliedAt()));
@@ -223,7 +232,9 @@ public class AiFacadeImpl implements AiFacade {
             return null;
         }
         return aiFacadeAssembler.toFacadeDto(aiCandidateApplicationService.reject(
-                request.getCandidateId(), request.getErrorType(), request.getErrorMessage()));
+                AiCandidateIdCodec.toDomain(request.getCandidateId()),
+                request.getErrorType(),
+                request.getErrorMessage()));
     }
 
     private UnsupportedOperationException unsupported() {
