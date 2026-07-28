@@ -47,7 +47,8 @@ class AiWorkerModelConfigResolverTest {
     void resolveShouldRejectMissingModelId() {
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope("classics");
-        command.setCapability("translate");
+        command.setCapability(
+                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias("translate"));
 
         AiWorkerModelConfigResolver resolver = newResolver(new FakeModelApplicationService());
 
@@ -65,7 +66,8 @@ class AiWorkerModelConfigResolverTest {
 
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope("classics");
-        command.setCapability("classics_translate");
+        command.setCapability(
+                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias("classics_translate"));
 
         AiWorkerModelConfigResolver.ResolvedModelConfig resolved = resolver.resolve(command);
 
@@ -83,7 +85,8 @@ class AiWorkerModelConfigResolverTest {
 
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope("classics");
-        command.setCapability("classics_translate");
+        command.setCapability(
+                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias("classics_translate"));
 
         AiWorkerModelConfigResolver.ResolvedModelConfig resolved = resolver.resolve(command);
 
@@ -101,7 +104,8 @@ class AiWorkerModelConfigResolverTest {
 
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope("classics");
-        command.setCapability("classics_translate");
+        command.setCapability(
+                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias("classics_translate"));
 
         resolver.resolve(command);
         AiWorkerModelConfigResolver.ResolvedModelConfig resolvedAgain = resolver.resolve(command);

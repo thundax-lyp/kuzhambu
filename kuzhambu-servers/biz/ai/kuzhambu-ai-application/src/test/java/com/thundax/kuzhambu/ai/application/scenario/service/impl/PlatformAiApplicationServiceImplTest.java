@@ -34,7 +34,7 @@ class PlatformAiApplicationServiceImplTest {
         assertEquals("platform", capturedCommand.getScope());
         assertEquals("PLATFORM_PROMPT_SUGGESTION", capturedCommand.getOperation());
         assertNull(capturedCommand.getWorkerPath());
-        assertEquals(AiBusinessCapability.PROMPT_SUGGEST.value(), capturedCommand.getCapability());
+        assertEquals(AiBusinessCapability.PROMPT_SUGGEST, capturedCommand.getCapability());
         assertEquals("prompt_suggestion", capturedCommand.getWorkerCapability());
         assertFalse(capturedCommand.isStream());
         assertTrue(capturedCommand.isCreateCandidate());
@@ -53,7 +53,7 @@ class PlatformAiApplicationServiceImplTest {
         assertNotNull(result);
         assertEquals("PLATFORM_VERSION_SUMMARY", capturedCommand.getOperation());
         assertNull(capturedCommand.getWorkerPath());
-        assertEquals(AiBusinessCapability.PLATFORM_VERSION_SUMMARY.value(), capturedCommand.getCapability());
+        assertEquals(AiBusinessCapability.PLATFORM_VERSION_SUMMARY, capturedCommand.getCapability());
         assertEquals("version_summary", capturedCommand.getWorkerCapability());
         assertFalse(capturedCommand.isStream());
         assertFalse(capturedCommand.isCreateCandidate());
@@ -128,7 +128,7 @@ class PlatformAiApplicationServiceImplTest {
             result.setRequestId(command.getRequestId());
             result.setTraceId(command.getTraceId());
             result.setStatus("SUCCEEDED");
-            result.setCapability(command.getCapability());
+            result.setCapability(command.getCapability().value());
             result.setResultFormat("TEXT");
             result.setResultPayload("ok");
             return result;

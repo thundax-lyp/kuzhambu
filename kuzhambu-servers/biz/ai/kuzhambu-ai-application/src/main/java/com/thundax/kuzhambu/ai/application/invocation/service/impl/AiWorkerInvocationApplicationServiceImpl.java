@@ -13,7 +13,6 @@ import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocation
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
-import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
@@ -120,8 +119,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
         AiInvocationLog invocationLog = new AiInvocationLog();
         invocationLog.setBatchId(AiBatchJobIdCodec.toDomain(command.getBatchId()));
         invocationLog.setScope(command.getScope());
-        invocationLog.setCapability(
-                command.getCapability() == null ? null : AiBusinessCapability.from(command.getCapability()));
+        invocationLog.setCapability(command.getCapability());
         invocationLog.setContentRef(AiContentRefCodec.toDomain(command.getContentType(), command.getContentId()));
         invocationLog.setTargetObjectId(AiTargetObjectIdCodec.toDomain(command.getObjectId()));
         invocationLog.setServiceId(command.getServiceId());
@@ -204,8 +202,8 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
         if (result.getTraceId() == null) {
             result.setTraceId(command.getTraceId());
         }
-        if (!isBlank(command.getCapability())) {
-            result.setCapability(command.getCapability());
+        if (command.getCapability() != null) {
+            result.setCapability(command.getCapability().value());
         }
         if (isBlank(result.getResultFormat())) {
             result.setResultFormat(defaultResultFormat(command, result));
@@ -219,7 +217,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
     private void validateCommand(AiInvokeCommand command) {
         if (command == null
                 || isBlank(command.getScope())
-                || isBlank(command.getCapability())
+                || command.getCapability() == null
                 || isBlank(command.getRequestId())
                 || isBlank(command.getTraceId())
                 || isBlank(command.getPromptMessagesJson())

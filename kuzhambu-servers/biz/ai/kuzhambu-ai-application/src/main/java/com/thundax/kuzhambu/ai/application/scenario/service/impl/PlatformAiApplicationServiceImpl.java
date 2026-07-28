@@ -50,7 +50,8 @@ public class PlatformAiApplicationServiceImpl implements PlatformAiApplicationSe
     private AiInvokeCommand toInvokeCommand(PlatformAiInvokeCommand source, PlatformAiWorkerUsecaseSpec spec) {
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope("platform");
-        command.setCapability(spec.capability());
+        command.setCapability(
+                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias(spec.capability()));
         command.setWorkerCapability(spec.workerCapability());
         command.setOperation(spec.operation());
         command.setWorkerPath(spec.workerPath());

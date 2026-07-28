@@ -10,7 +10,6 @@ import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiBusinessConfig;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
-import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiModelCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import java.util.ArrayList;
@@ -97,11 +96,10 @@ public class AiWorkerModelConfigResolver {
     }
 
     private AiBusinessConfig resolveBusinessConfig(AiInvokeCommand command) {
-        if (isBlank(command.getCapability())) {
+        if (command.getCapability() == null) {
             return null;
         }
-        List<AiBusinessConfig> configs =
-                businessConfigService.list(AiBusinessCapability.fromAlias(command.getCapability()), true);
+        List<AiBusinessConfig> configs = businessConfigService.list(command.getCapability(), true);
         return configs.isEmpty() ? null : configs.get(0);
     }
 

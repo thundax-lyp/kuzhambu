@@ -49,7 +49,7 @@ public class AiBusinessInvokeConfigResolver {
     }
 
     public void resolve(AiInvokeCommand command) {
-        if (command == null || isBlank(command.getCapability())) {
+        if (command == null || command.getCapability() == null) {
             throw new BizException("AI business capability is required");
         }
         AiBusinessConfig config = resolveBusinessConfig(command.getCapability());
@@ -74,7 +74,7 @@ public class AiBusinessInvokeConfigResolver {
     }
 
     public void validatePromptVersionEnabled(AiInvokeCommand command) {
-        if (command == null || isBlank(command.getCapability()) || command.getPromptVersionId() == null) {
+        if (command == null || command.getCapability() == null || command.getPromptVersionId() == null) {
             throw new BizException("AI prompt version is required");
         }
         PromptVersion promptVersion =
@@ -83,15 +83,15 @@ public class AiBusinessInvokeConfigResolver {
             throw new BizException("AI prompt version is not configured: " + command.getPromptVersionId());
         }
         PromptTemplate promptTemplate = promptRepository.get(promptVersion.getTemplateId());
-        AiBusinessCapability capability = AiBusinessCapability.from(command.getCapability());
+        AiBusinessCapability capability = command.getCapability();
         if (promptTemplate == null || !promptTemplate.isEnabled() || promptTemplate.getCapability() != capability) {
             throw new BizException("AI business config prompt template is disabled or mismatched: "
                     + PromptTemplateIdCodec.toValue(promptVersion.getTemplateId()));
         }
     }
 
-    private AiBusinessConfig resolveBusinessConfig(String capability) {
-        List<AiBusinessConfig> configs = businessConfigService.list(AiBusinessCapability.from(capability), true);
+    private AiBusinessConfig resolveBusinessConfig(AiBusinessCapability capability) {
+        List<AiBusinessConfig> configs = businessConfigService.list(capability, true);
         if (configs == null || configs.isEmpty()) {
             throw new BizException("AI business config is not configured: " + capability);
         }
@@ -200,7 +200,7 @@ public class AiBusinessInvokeConfigResolver {
     private ObjectNode withCommandMetadata(ObjectNode inputPayload, AiInvokeCommand command) {
         ObjectNode payload = inputPayload.deepCopy();
         putIfAbsent(payload, "scope", command.getScope());
-        putIfAbsent(payload, "capability", command.getCapability());
+        putIfAbsent(payload, "capability", command.getCapability().value());
         putIfAbsent(payload, "contentType", command.getContentType());
         putIfAbsent(payload, "contentId", command.getContentId());
         putIfAbsent(payload, "objectId", command.getObjectId());

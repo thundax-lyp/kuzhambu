@@ -144,7 +144,8 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
         AiInvokeCommand command = new AiInvokeCommand();
         command.setBatchId(source.getBatchId());
         command.setScope(source.getScope());
-        command.setCapability(capability);
+        command.setCapability(
+                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias(capability));
         command.setOperation(source.getOperation());
         command.setContentType(source.getContentType());
         command.setContentId(source.getContentId());

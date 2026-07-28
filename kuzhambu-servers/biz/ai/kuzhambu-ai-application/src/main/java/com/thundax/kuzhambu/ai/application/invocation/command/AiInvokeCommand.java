@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.ai.application.invocation.command;
 
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +14,7 @@ public class AiInvokeCommand {
 
     private Long batchId;
     private String scope;
-    private String capability;
+    private AiBusinessCapability capability;
     private String workerCapability;
     private String operation;
     private String workerPath;

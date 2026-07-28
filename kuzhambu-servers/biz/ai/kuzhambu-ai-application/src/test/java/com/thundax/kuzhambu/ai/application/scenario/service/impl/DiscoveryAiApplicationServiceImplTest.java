@@ -37,7 +37,7 @@ class DiscoveryAiApplicationServiceImplTest {
         assertEquals("discovery", capturedCommand.getScope());
         assertEquals("DISCOVERY_QUERY_UNDERSTANDING", capturedCommand.getOperation());
         assertNull(capturedCommand.getWorkerPath());
-        assertEquals(AiBusinessCapability.DISCOVERY_QUERY_UNDERSTANDING.value(), capturedCommand.getCapability());
+        assertEquals(AiBusinessCapability.DISCOVERY_QUERY_UNDERSTANDING, capturedCommand.getCapability());
         assertEquals("query_understanding", capturedCommand.getWorkerCapability());
         assertEquals("DISCOVERY_QUERY", capturedCommand.getContentType());
         assertFalse(capturedCommand.isStream());
@@ -62,7 +62,7 @@ class DiscoveryAiApplicationServiceImplTest {
         assertEquals(List.of("王圻", "文档答案"), deltas);
         assertEquals("DISCOVERY_ANSWER_GENERATION_STREAM", capturedCommand.getOperation());
         assertNull(capturedCommand.getWorkerPath());
-        assertEquals(AiBusinessCapability.DISCOVERY_ANSWER_GENERATION.value(), capturedCommand.getCapability());
+        assertEquals(AiBusinessCapability.DISCOVERY_ANSWER_GENERATION, capturedCommand.getCapability());
         assertEquals("answer_generation", capturedCommand.getWorkerCapability());
         assertTrue(capturedCommand.isStream());
         assertFalse(capturedCommand.isCreateCandidate());
@@ -82,7 +82,7 @@ class DiscoveryAiApplicationServiceImplTest {
         assertNotNull(result);
         assertEquals("DISCOVERY_ANSWER_GENERATION", capturedCommand.getOperation());
         assertNull(capturedCommand.getWorkerPath());
-        assertEquals(AiBusinessCapability.DISCOVERY_ANSWER_GENERATION.value(), capturedCommand.getCapability());
+        assertEquals(AiBusinessCapability.DISCOVERY_ANSWER_GENERATION, capturedCommand.getCapability());
         assertFalse(capturedCommand.isStream());
         assertFalse(capturedCommand.isCreateCandidate());
         assertEquals(101L, result.getCallId());
@@ -165,7 +165,7 @@ class DiscoveryAiApplicationServiceImplTest {
             result.setRequestId(command.getRequestId());
             result.setTraceId(command.getTraceId());
             result.setStatus(failed ? "FAILED" : "SUCCEEDED");
-            result.setCapability(command.getCapability());
+            result.setCapability(command.getCapability().value());
             result.setResultFormat("STRUCTURED");
             result.setResultPayload(failed ? null : "{\"intent\":\"search\"}");
             result.setErrorType(failed ? "WORKER_STREAM" : null);
@@ -185,7 +185,7 @@ class DiscoveryAiApplicationServiceImplTest {
             result.setRequestId(command.getRequestId());
             result.setTraceId(command.getTraceId());
             result.setStatus("STREAM_SUCCEEDED");
-            result.setCapability(command.getCapability());
+            result.setCapability(command.getCapability().value());
             result.setResultFormat("TEXT");
             result.setResultPayload("answer");
             return result;

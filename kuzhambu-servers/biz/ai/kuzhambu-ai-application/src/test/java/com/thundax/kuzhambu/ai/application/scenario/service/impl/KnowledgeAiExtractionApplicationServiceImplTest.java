@@ -32,7 +32,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         assertNotNull(result);
         assertEquals("KNOWLEDGE_GRAPH_EXTRACTION", capturedCommand.getOperation());
         assertNull(capturedCommand.getWorkerPath());
-        assertEquals(AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT.value(), capturedCommand.getCapability());
+        assertEquals(AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT, capturedCommand.getCapability());
         assertEquals("knowledge_graph", capturedCommand.getWorkerCapability());
     }
 
@@ -46,7 +46,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertEquals("KNOWLEDGE_RELATION_EXTRACTION", capturedCommand.getOperation());
-        assertEquals(AiBusinessCapability.KNOWLEDGE_RELATION_EXTRACT.value(), capturedCommand.getCapability());
+        assertEquals(AiBusinessCapability.KNOWLEDGE_RELATION_EXTRACT, capturedCommand.getCapability());
     }
 
     @Test
@@ -60,7 +60,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
 
         assertEquals("KNOWLEDGE_LINEAGE_EXTRACTION", capturedCommand.getOperation());
         assertNull(capturedCommand.getWorkerPath());
-        assertEquals(AiBusinessCapability.KNOWLEDGE_LINEAGE_EXTRACT.value(), capturedCommand.getCapability());
+        assertEquals(AiBusinessCapability.KNOWLEDGE_LINEAGE_EXTRACT, capturedCommand.getCapability());
     }
 
     @Test
@@ -75,7 +75,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         assertEquals("knowledge", capturedCommand.getScope());
         assertEquals("KNOWLEDGE_TAG_EXTRACTION", capturedCommand.getOperation());
         assertNull(capturedCommand.getWorkerPath());
-        assertEquals(AiBusinessCapability.KNOWLEDGE_TAG_EXTRACT.value(), capturedCommand.getCapability());
+        assertEquals(AiBusinessCapability.KNOWLEDGE_TAG_EXTRACT, capturedCommand.getCapability());
         assertEquals("tags", capturedCommand.getWorkerCapability());
         assertEquals(true, capturedCommand.isForceJson());
         assertEquals(true, capturedCommand.isCreateCandidate());
@@ -171,7 +171,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
             result.setRequestId(command.getRequestId());
             result.setTraceId(command.getTraceId());
             result.setStatus("SUCCEEDED");
-            result.setCapability(command.getCapability());
+            result.setCapability(command.getCapability().value());
             result.setResultFormat("STRUCTURED");
             result.setResultPayload("{\"nodes\":[]}");
             return result;

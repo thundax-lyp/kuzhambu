@@ -57,7 +57,8 @@ public class KnowledgeAiExtractionApplicationServiceImpl implements KnowledgeAiE
         KnowledgeAiWorkerUsecaseSpec spec = resolver.resolve(taskType);
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope("knowledge");
-        command.setCapability(spec.capability());
+        command.setCapability(
+                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias(spec.capability()));
         command.setWorkerCapability(spec.workerCapability());
         command.setOperation(spec.operation());
         command.setWorkerPath(spec.workerPath());

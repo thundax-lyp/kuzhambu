@@ -137,7 +137,7 @@ class AiBusinessInvokeConfigResolverTest {
     private static AiInvokeCommand command() {
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope("classics");
-        command.setCapability(AiBusinessCapability.CLASSICS_SUMMARY.value());
+        command.setCapability(AiBusinessCapability.CLASSICS_SUMMARY);
         command.setContentType("SANCAI_ENTRY");
         command.setContentId(300000000001L);
         command.setInputPayloadJson("{\"sourceText\":\"天地玄黄\"}");

@@ -16,7 +16,7 @@ class AiInvokeResultTest {
     void toCandidateShouldKeepMarkdownResultPayloadForImageAnalysis() {
         AiInvokeCommand command = new AiInvokeCommand();
         command.setBatchId(1L);
-        command.setCapability(AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE.value());
+        command.setCapability(AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE);
         command.setContentType("SANCAI_ENTRY");
         command.setContentId(10L);
         command.setObjectId(20L);
@@ -54,7 +54,7 @@ class AiInvokeResultTest {
     void toCandidateShouldKeepFailureSnapshot() {
         AiInvokeCommand command = new AiInvokeCommand();
         command.setBatchId(1L);
-        command.setCapability(AiBusinessCapability.CLASSICS_TRANSLATE.value());
+        command.setCapability(AiBusinessCapability.CLASSICS_TRANSLATE);
         command.setContentType("ENTRY");
         command.setContentId(10L);
         command.setModelName("model-a");

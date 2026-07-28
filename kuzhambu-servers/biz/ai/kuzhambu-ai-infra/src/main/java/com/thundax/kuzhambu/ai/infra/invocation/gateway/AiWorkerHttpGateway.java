@@ -194,7 +194,9 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
         request.setTraceId(command.getTraceId());
         request.setCallerDomain(CALLER_DOMAIN);
         request.setOperation(command.getOperation());
-        request.setCapability(defaultString(command.getWorkerCapability(), command.getCapability()));
+        request.setCapability(defaultString(
+                command.getWorkerCapability(),
+                command.getCapability() == null ? null : command.getCapability().value()));
         request.setScope(command.getScope());
         request.setModelConfig(modelConfig(command));
         request.setPrompt(prompt(command));
@@ -310,7 +312,9 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
         result.setRequestId(defaultString(response.getRequestId(), command.getRequestId()));
         result.setTraceId(defaultString(response.getTraceId(), command.getTraceId()));
         result.setStatus(response.getStatus());
-        result.setCapability(defaultString(response.getCapability(), command.getCapability()));
+        result.setCapability(defaultString(
+                response.getCapability(),
+                command.getCapability() == null ? null : command.getCapability().value()));
         result.setFailureStage(response.getFailureStage());
         result.setFallbackUsed(Boolean.TRUE.equals(response.getFallbackUsed()));
         if (response.getResult() != null) {
@@ -469,7 +473,8 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
     private AiInvokeResult failure(AiInvokeCommand command, String errorType, String errorMessage) {
         AiInvokeResult result =
                 AiInvokeResult.failed(command.getRequestId(), command.getTraceId(), errorType, errorMessage, null);
-        result.setCapability(command.getCapability());
+        result.setCapability(
+                command.getCapability() == null ? null : command.getCapability().value());
         return result;
     }
 
