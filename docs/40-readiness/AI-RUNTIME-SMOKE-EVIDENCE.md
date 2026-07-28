@@ -117,7 +117,6 @@ The accepted `classics + summary` task used a current `SANCAI_ENTRY` item and co
 | `capability` | `summary` |
 | `contentType` | `SANCAI_ENTRY` |
 | `contentId` | `300000000001` |
-| `requestedBy` | `2` |
 | `requestId` / `traceId` | `ai-runtime-todo05-20260709165135` |
 | `status` | `SUCCEEDED` |
 | `serviceRole` | `PRIMARY` |

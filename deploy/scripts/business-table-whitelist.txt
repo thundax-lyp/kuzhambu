@@ -6,8 +6,6 @@ ai_invocation_log
 ai_candidate
 ai_capability
 ai_capability_mapping
-ai_entry_split_candidate
-ai_image_understanding
 ai_model
 ai_model_check_record
 ai_prompt_template
