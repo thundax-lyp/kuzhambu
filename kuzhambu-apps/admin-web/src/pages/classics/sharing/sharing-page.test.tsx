@@ -58,7 +58,7 @@ const installFetchMock = () => {
                 totalPage: 1,
                 records: [
                     {
-                        id: 900000000001,
+                        id: "900000000001",
                         title: "王圻批量分享 - 王圻文档",
                         shareToken: "token-abc",
                         shareUrl: "/classics/share/token-abc",
@@ -69,8 +69,8 @@ const installFetchMock = () => {
                         expiresAt: "2026-12-31T00:00:00.000+00:00",
                         targets: [
                             {
-                                id: 800000000001,
-                                contentId: 400000000001,
+                                id: "800000000001",
+                                contentId: "400000000001",
                                 contentType: "WANGQI_DOCUMENT",
                                 targetStatus: "AVAILABLE",
                                 titleSnapshot: "王圻文档"
@@ -78,7 +78,7 @@ const installFetchMock = () => {
                         ]
                     },
                     {
-                        id: 900000000002,
+                        id: "900000000002",
                         title: "三才批量分享 - 天地",
                         shareToken: "token-expired",
                         shareUrl: "/classics/share/token-expired",
@@ -88,8 +88,8 @@ const installFetchMock = () => {
                         issuedAt: "2026-01-01T00:00:00.000+00:00",
                         targets: [
                             {
-                                id: 800000000002,
-                                contentId: 3001,
+                                id: "800000000002",
+                                contentId: "3001",
                                 contentType: "SANCAI_ENTRY",
                                 targetStatus: "AVAILABLE",
                                 titleSnapshot: "天地"
@@ -97,7 +97,7 @@ const installFetchMock = () => {
                         ]
                     },
                     {
-                        id: 900000000003,
+                        id: "900000000003",
                         title: "明代习俗批量分享 - 元旦朝贺",
                         shareToken: "token-revoked",
                         shareUrl: "/classics/share/token-revoked",
@@ -107,8 +107,8 @@ const installFetchMock = () => {
                         issuedAt: "2026-01-01T00:00:00.000+00:00",
                         targets: [
                             {
-                                id: 800000000003,
-                                contentId: 500000000001,
+                                id: "800000000003",
+                                contentId: "500000000001",
                                 contentType: "MING_CUSTOMS",
                                 targetStatus: "AVAILABLE",
                                 titleSnapshot: "岁时礼仪：元旦朝贺"
@@ -130,8 +130,8 @@ const installFetchMock = () => {
                 totalPage: 1,
                 records: [
                     {
-                        id: 700000000001,
-                        shareLinkId: 900000000001,
+                        id: "700000000001",
+                        shareLinkId: "900000000001",
                         shareTargetId: null,
                         accessedAt: "2026-01-02T00:00:00.000+00:00",
                         accessResult: "ALLOWED",
@@ -141,15 +141,15 @@ const installFetchMock = () => {
                         })
                     },
                     {
-                        id: 700000000002,
-                        shareLinkId: 900000000001,
-                        shareTargetId: 800000000001,
+                        id: "700000000002",
+                        shareLinkId: "900000000001",
+                        shareTargetId: "800000000001",
                         accessedAt: "2026-01-02T01:00:00.000+00:00",
                         accessResult: "ALLOWED",
                         clientSnapshot: JSON.stringify({
                             accessType: "RESOURCE_READ",
                             privateAccess: false,
-                            storageObjectId: 600000000001,
+                            storageObjectId: "600000000001",
                             download: true
                         })
                     }
@@ -158,7 +158,7 @@ const installFetchMock = () => {
         }
         if (path.endsWith("/classics/shares/get")) {
             return apiResponse({
-                id: 900000000001,
+                id: "900000000001",
                 title: "王圻批量分享 - 王圻文档",
                 shareToken: "token-abc",
                 shareUrl: "/classics/share/token-abc",
@@ -169,15 +169,15 @@ const installFetchMock = () => {
                 expiresAt: "2026-12-31T00:00:00.000+00:00",
                 targets: [
                     {
-                        id: 800000000001,
-                        contentId: 400000000001,
+                        id: "800000000001",
+                        contentId: "400000000001",
                         contentType: "WANGQI_DOCUMENT",
                         targetStatus: "AVAILABLE",
                         titleSnapshot: "王圻文档"
                     },
                     {
-                        id: 800000000004,
-                        contentId: 400000000099,
+                        id: "800000000004",
+                        contentId: "400000000099",
                         contentType: "WANGQI_DOCUMENT",
                         targetStatus: "CONTENT_DELETED",
                         titleSnapshot: "已删除王圻文档"
@@ -256,11 +256,11 @@ describe("SharingPage", () => {
             expect(statusCalls).toHaveLength(2);
             expect(statusCalls.map((call) => call.body)).toEqual([
                 {
-                    id: 900000000001,
+                    id: "900000000001",
                     status: "REVOKED"
                 },
                 {
-                    id: 900000000003,
+                    id: "900000000003",
                     status: "ACTIVE"
                 }
             ]);

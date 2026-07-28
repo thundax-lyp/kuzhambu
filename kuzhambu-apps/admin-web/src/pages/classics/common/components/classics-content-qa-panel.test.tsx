@@ -105,13 +105,13 @@ const installFetchMock = () => {
         ) {
             return apiResponse([
                 {
-                    id: 10001,
+                    id: "10001",
                     question: "已有问题",
                     answer: "已有答案",
                     source: "MANUAL"
                 },
                 {
-                    id: 10002,
+                    id: "10002",
                     question: "已有问题2",
                     answer: "已有答案2",
                     source: "MANUAL"
@@ -121,7 +121,7 @@ const installFetchMock = () => {
 
         if (path.endsWith("/classics/content/qa-pairs/add")) {
             return apiResponse({
-                id: 10002,
+                id: "10002",
                 ...((body as Record<string, unknown>) ?? {})
             });
         }
@@ -129,7 +129,7 @@ const installFetchMock = () => {
         if (path.endsWith("/classics/content/qa-pairs/update")) {
             return apiResponse({
                 ...((body as Record<string, unknown>) ?? {}),
-                id: 10001
+                id: "10001"
             });
         }
 
@@ -179,7 +179,7 @@ describe("ClassicsContentQaPanel", () => {
             <QueryClientProvider client={queryClient}>
                 <AntdApp>
                     <ClassicsContentQaPanel
-                        contentId={4001}
+                        contentId="4001"
                         contentType="WANGQI_DOCUMENT"
                         onChanged={vi.fn()}
                     />
@@ -204,7 +204,7 @@ describe("ClassicsContentQaPanel", () => {
                     path: "/classics/content/qa-pairs/add",
                     body: expect.objectContaining({
                         contentType: "WANGQI_DOCUMENT",
-                        contentId: 4001,
+                        contentId: "4001",
                         question: "新问题",
                         answer: "新答案",
                         source: "MANUAL"
@@ -222,7 +222,7 @@ describe("ClassicsContentQaPanel", () => {
             <QueryClientProvider client={queryClient}>
                 <AntdApp>
                     <ClassicsContentQaPanel
-                        contentId={4001}
+                        contentId="4001"
                         contentType="WANGQI_DOCUMENT"
                         onChanged={vi.fn()}
                     />
@@ -246,7 +246,7 @@ describe("ClassicsContentQaPanel", () => {
                     method: "POST",
                     path: "/classics/content/qa-pairs/update",
                     body: expect.objectContaining({
-                        id: 10001,
+                        id: "10001",
                         answer: "已修订答案"
                     })
                 })
@@ -262,7 +262,7 @@ describe("ClassicsContentQaPanel", () => {
             <QueryClientProvider client={queryClient}>
                 <AntdApp>
                     <ClassicsContentQaPanel
-                        contentId={4001}
+                        contentId="4001"
                         contentType="WANGQI_DOCUMENT"
                         onChanged={vi.fn()}
                     />
@@ -277,7 +277,7 @@ describe("ClassicsContentQaPanel", () => {
 
         await waitFor(() => {
             expect(capturedCalls).toContainEqual({
-                body: { id: 10001 },
+                body: { id: "10001" },
                 method: "POST",
                 path: "/classics/content/qa-pairs/delete"
             });
@@ -293,7 +293,7 @@ describe("ClassicsContentQaPanel", () => {
             <QueryClientProvider client={queryClient}>
                 <AntdApp>
                     <ClassicsContentQaPanel
-                        contentId={4001}
+                        contentId="4001"
                         contentType="WANGQI_DOCUMENT"
                         onChanged={onChanged}
                     />
@@ -309,7 +309,7 @@ describe("ClassicsContentQaPanel", () => {
                     method: "POST",
                     path: "/classics/content/qa-pairs/sort",
                     body: {
-                        orderedIds: [10002, 10001],
+                        orderedIds: ["10002", "10001"],
                         sortDirection: "ASC"
                     }
                 })

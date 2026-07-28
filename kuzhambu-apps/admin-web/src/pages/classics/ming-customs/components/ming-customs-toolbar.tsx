@@ -17,7 +17,7 @@ export interface MingCustomsFilters {
 
 export interface MingCustomsSelectedTagFilter {
     count?: number | null;
-    tagId?: number | null;
+    tagId?: string | null;
     tagNameSnapshot: string;
 }
 

@@ -65,10 +65,10 @@ interface WangqiDocumentTableProps {
     onOpenBatchCandidateDrawer: () => void;
     onShare: (record: WangqiDocumentRecord) => void;
     onShareSelectedDocuments: () => void;
-    onSelectedDocumentIdsChange: (ids: number[]) => void;
+    onSelectedDocumentIdsChange: (ids: string[]) => void;
     onSortDirectionChange: (sortDirection: "ASC" | "DESC") => void;
     pagination: KuzhambuTableProps<WangqiDocumentRecord>["pagination"];
-    selectedDocumentIds: number[];
+    selectedDocumentIds: string[];
     sortDirection: "ASC" | "DESC";
 }
 
@@ -188,7 +188,7 @@ export const WangqiDocumentTable = ({
     return (
         <KuzhambuTable<WangqiDocumentRecord>
             ariaLabel="王圻文档表格"
-            rowKey="id"
+            rowKey={(record) => String(record.id ?? "")}
             loading={loading}
             dataSource={dataSource}
             columns={columns}
@@ -238,7 +238,7 @@ export const WangqiDocumentTable = ({
             pagination={pagination}
             rowSelection={{
                 selectedRowKeys: selectedDocumentIds,
-                onChange: (keys) => onSelectedDocumentIdsChange(keys.map((key) => Number(key)))
+                onChange: (keys) => onSelectedDocumentIdsChange(keys.map(String))
             }}
         />
     );

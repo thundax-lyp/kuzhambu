@@ -1,5 +1,5 @@
 export interface MingCustomsRecord {
-    id: number;
+    id: string;
     title?: string | null;
     category?: string | null;
     chapter?: string | null;
@@ -19,7 +19,7 @@ export interface MingCustomsKeywordCloudItem {
 export type MingCustomsKeywordCloudRecord = MingCustomsKeywordCloudItem;
 
 export interface MingCustomsTagCloudItem {
-    tagId?: number | null;
+    tagId?: string | null;
     tagNameSnapshot: string;
     count: number;
 }
@@ -27,9 +27,9 @@ export interface MingCustomsTagCloudItem {
 export type MingCustomsTagCloudRecord = MingCustomsTagCloudItem;
 
 export interface MingCustomsContentVersionRecord {
-    id: number;
+    id: string;
     contentType?: string | null;
-    contentId?: number | null;
+    contentId?: string | null;
     versionNo?: number | null;
     versionedAt?: string | null;
     snapshotJson?: string | null;
@@ -38,20 +38,20 @@ export interface MingCustomsContentVersionRecord {
 }
 
 export interface MingCustomsTagSnapshotRecord {
-    id?: number | null;
-    tagId?: number | null;
+    id?: string | null;
+    tagId?: string | null;
     tagNameSnapshot?: string | null;
 }
 
 export interface MingCustomsQaPairSnapshotRecord {
-    id?: number | null;
+    id?: string | null;
     question?: string | null;
     answer?: string | null;
 }
 
 export interface MingCustomsVersionSnapshot {
     contentType?: string | null;
-    contentId?: number | null;
+    contentId?: string | null;
     contentUpdatedAt?: string | null;
     title?: string | null;
     category?: string | null;

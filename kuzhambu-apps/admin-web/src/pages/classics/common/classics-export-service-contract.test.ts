@@ -86,13 +86,13 @@ describe("classics export service request contracts", () => {
             scopeType: "SELECTED_ITEMS",
             items: [
                 {
-                    id: 400000000001,
+                    id: "400000000001",
                     title: "王圻文档",
                     text: "## 王圻",
                     summary: "记录王圻古籍条目。",
                     visibility: "PUBLIC",
                     documentTime: "2026-01-01T00:00:00.000+00:00",
-                    sourceFileStorageObjectId: 7001
+                    sourceFileStorageObjectId: "7001"
                 }
             ]
         };
@@ -122,19 +122,19 @@ describe("classics export service request contracts", () => {
             status: "COMPLETED"
         });
 
-        await exportService.deleteById(9001);
+        await exportService.deleteById("9001");
         expectLastCall("POST", "/classics/content/exports/delete", {
-            id: 9001
+            id: "9001"
         });
 
         expect(
             exportService.getContentUrl({
-                jobId: 9001
+                jobId: "9001"
             })
         ).toBe(`${DEV_PROXY_PREFIX}/classics/content/exports/9001/content`);
         expect(
             exportService.getContentUrl({
-                jobId: 9001,
+                jobId: "9001",
                 mode: "download"
             })
         ).toBe(`${DEV_PROXY_PREFIX}/classics/content/exports/9001/content?download=true`);

@@ -7,6 +7,7 @@ import {
     type KuzhambuTableRowActionOption,
     KuzhambuSelect
 } from "@/components";
+import { normalizeNullableId } from "@/types/id";
 
 import "./classics-export-job-section.css";
 import type { ClassicsExportJobRecord } from "../classics-export-types";
@@ -116,7 +117,7 @@ export const ClassicsExportJobSection = ({
     const [keyword, setKeyword] = useState("");
     const [status, setStatus] = useState<string>("ALL");
     const [expiredOnly, setExpiredOnly] = useState(false);
-    const [selectedIds, setSelectedIds] = useState<number[]>([]);
+    const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const visibleItems = useMemo(
         () =>
             items.filter((job) => {
@@ -133,9 +134,10 @@ export const ClassicsExportJobSection = ({
             }),
         [expiredOnly, items, keyword, status]
     );
-    const selectedJobs = visibleItems.filter(
-        (job) => job.id != null && selectedIds.includes(job.id)
-    );
+    const selectedJobs = visibleItems.filter((job) => {
+        const jobId = normalizeNullableId(job.id);
+        return jobId != null && selectedIds.includes(jobId);
+    });
     const columns = useMemo<KuzhambuTableColumn<ClassicsExportJobRecord>[]>(
         () => [
             {
@@ -143,7 +145,7 @@ export const ClassicsExportJobSection = ({
                 dataIndex: "id",
                 key: "id",
                 width: 104,
-                render: (id?: number | null) => `#${id ?? "草稿"}`
+                render: (id?: string | null) => `#${id ?? "草稿"}`
             },
             {
                 title: "状态",
@@ -260,7 +262,10 @@ export const ClassicsExportJobSection = ({
             </KuzhambuSpace>
             <KuzhambuTable<ClassicsExportJobRecord>
                 ariaLabel={`${sectionTitle}表格`}
-                rowKey={(job) => job.id ?? `classics-export-job-${job.requestedAt ?? "draft"}`}
+                rowKey={(job) =>
+                    normalizeNullableId(job.id) ??
+                    `classics-export-job-${job.requestedAt ?? "draft"}`
+                }
                 className="classics-export-job-section-table"
                 columns={columns}
                 dataSource={visibleItems}
@@ -307,7 +312,7 @@ export const ClassicsExportJobSection = ({
                     onBatchDelete
                         ? {
                               selectedRowKeys: selectedIds,
-                              onChange: (keys) => setSelectedIds(keys.map((key) => Number(key))),
+                              onChange: (keys) => setSelectedIds(keys.map(String)),
                               getCheckboxProps: (job) => ({
                                   disabled: job.id == null
                               })

@@ -18,9 +18,9 @@ type CandidateContentType = "SANCAI_ENTRY" | "WANGQI_DOCUMENT" | "MING_CUSTOMS";
 
 interface AiCandidatePanelProps {
     capabilities: AiCandidateCapability[];
-    contentId: number;
+    contentId: string;
     contentType: CandidateContentType;
-    objectId?: number | null;
+    objectId?: string | null;
     onApplied?: () => void;
     onRejected?: () => void;
 }
@@ -83,8 +83,8 @@ export const AiCandidatePanel = ({
 }: AiCandidatePanelProps) => {
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
-    const [payloads, setPayloads] = useState<Record<number, string>>({});
-    const [submitEnabled, setSubmitEnabled] = useState<Record<number, boolean>>({});
+    const [payloads, setPayloads] = useState<Record<string, string>>({});
+    const [submitEnabled, setSubmitEnabled] = useState<Record<string, boolean>>({});
     const [applyingCandidateId, setApplyingCandidateId] = useState<string | null>(null);
     const [rejectingCandidateId, setRejectingCandidateId] = useState<string | null>(null);
 
@@ -199,7 +199,7 @@ export const AiCandidatePanel = ({
         });
     };
 
-    const updateCandidateSubmitEnabled = useCallback((candidateId: number, canSubmit: boolean) => {
+    const updateCandidateSubmitEnabled = useCallback((candidateId: string, canSubmit: boolean) => {
         setSubmitEnabled((currentSubmitEnabled) => {
             if ((currentSubmitEnabled[candidateId] ?? false) === canSubmit) {
                 return currentSubmitEnabled;
@@ -211,7 +211,7 @@ export const AiCandidatePanel = ({
         });
     }, []);
 
-    const updateCandidatePayload = useCallback((candidateId: number, payload: string) => {
+    const updateCandidatePayload = useCallback((candidateId: string, payload: string) => {
         setPayloads((currentPayloads) => {
             if (currentPayloads[candidateId] === payload) {
                 return currentPayloads;

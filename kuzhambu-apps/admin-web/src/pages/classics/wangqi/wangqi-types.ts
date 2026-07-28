@@ -1,6 +1,6 @@
 export interface WangqiDocumentEventRecord {
-    id?: number | null;
-    documentId?: number | null;
+    id?: string | null;
+    documentId?: string | null;
     title?: string | null;
     occurredAt?: string | null;
     occurredLabel?: string | null;
@@ -9,15 +9,15 @@ export interface WangqiDocumentEventRecord {
 }
 
 export interface WangqiDocumentRecord {
-    id: number;
+    id: string;
     title?: string | null;
     summary?: string | null;
     contentFormat?: string | null;
     content?: string | null;
     documentTime?: string | null;
-    storageObjectId?: number | null;
+    storageObjectId?: string | null;
     visibility?: string | null;
-    currentVersionId?: number | null;
+    currentVersionId?: string | null;
     currentVersionNo?: number | null;
     currentVersionedAt?: string | null;
     contentUpdatedAt?: string | null;
@@ -26,8 +26,8 @@ export interface WangqiDocumentRecord {
 }
 
 export interface WangqiSourceFileRecord {
-    documentId: number;
-    storageObjectId?: number | null;
+    documentId: string;
+    storageObjectId?: string | null;
     originalFilename?: string | null;
     contentType?: string | null;
     size?: number | null;
@@ -37,9 +37,9 @@ export interface WangqiSourceFileRecord {
 export type WangqiSourceFileContentMode = "preview" | "download";
 
 export interface WangqiContentVersionRecord {
-    id: number;
+    id: string;
     contentType?: string | null;
-    contentId?: number | null;
+    contentId?: string | null;
     versionNo?: number | null;
     versionedAt?: string | null;
     snapshotJson?: string | null;
@@ -48,27 +48,27 @@ export interface WangqiContentVersionRecord {
 }
 
 export interface WangqiTagSnapshotRecord {
-    id?: number | null;
-    tagId?: number | null;
+    id?: string | null;
+    tagId?: string | null;
     tagNameSnapshot?: string | null;
 }
 
 export interface WangqiQaPairSnapshotRecord {
-    id?: number | null;
+    id?: string | null;
     question?: string | null;
     answer?: string | null;
 }
 
 export interface WangqiVersionSnapshot {
     contentType?: string | null;
-    contentId?: number | null;
+    contentId?: string | null;
     contentUpdatedAt?: string | null;
     title?: string | null;
     summary?: string | null;
     contentFormat?: string | null;
     content?: string | null;
     documentTime?: string | null;
-    storageObjectId?: number | null;
+    storageObjectId?: string | null;
     visibility?: string | null;
     tags?: WangqiTagSnapshotRecord[];
     qaPairs?: WangqiQaPairSnapshotRecord[];

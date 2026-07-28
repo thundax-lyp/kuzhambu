@@ -71,11 +71,11 @@ const installFetchRecorder = () => {
                 code: "COMMON-00000",
                 message: "success",
                 data: {
-                    taskId: 7001,
+                    taskId: "7001",
                     status: "PENDING",
                     capability: "summary",
                     contentType: "SANCAI_ENTRY",
-                    contentId: 3001,
+                    contentId: "3001",
                     requestedAt: "2026-07-01T12:00:00Z",
                     items: [],
                     total: 0,
@@ -114,13 +114,13 @@ describe("AI refinement task service request contracts", () => {
             capability: "summary",
             scope: "classics",
             contentType: "SANCAI_ENTRY",
-            contentId: 3001,
+            contentId: "3001",
             objectId: null,
-            requestedBy: 99,
+            requestedBy: "99",
             serviceRole: "PRIMARY",
-            modelId: 11,
+            modelId: "11",
             modelName: "gpt-test",
-            promptVersionId: 22,
+            promptVersionId: "22",
             requestId: "req-1",
             traceId: "trace-1",
             promptMessagesJson: '[{"role":"user","content":"hello"}]',
@@ -153,8 +153,24 @@ describe("AI refinement task service request contracts", () => {
 
     it("prefers text task ids to avoid precision loss for backend long ids", () => {
         expect(
-            aiRefinementTaskService.getTaskStableId(869888422381092900, "869888422381092864")
+            aiRefinementTaskService.getTaskStableId("869888422381092900", "869888422381092864")
         ).toBe("869888422381092864");
+    });
+
+    it("sorts equal-time decimal ids by numeric order", () => {
+        const records = [
+            { id: "9", requestedAt: "2026-07-28T01:00:00Z" },
+            { id: "10", requestedAt: "2026-07-28T01:00:00Z" }
+        ];
+
+        expect(
+            records.sort((left, right) =>
+                aiRefinementTaskService.sortNewestByRequestedAtThenId({ left, right })
+            )
+        ).toEqual([
+            { id: "10", requestedAt: "2026-07-28T01:00:00Z" },
+            { id: "9", requestedAt: "2026-07-28T01:00:00Z" }
+        ]);
     });
 
     it("explains task failures with user-facing categories and diagnostic codes", () => {
@@ -212,11 +228,11 @@ describe("AI refinement task service request contracts", () => {
     });
 
     it("gets task by id", async () => {
-        await aiRefinementTaskService.getTask({ taskId: 7001 });
+        await aiRefinementTaskService.getTask({ taskId: "7001" });
 
         expect(capturedCalls.at(-1)).toEqual({
             body: {
-                taskId: 7001
+                taskId: "7001"
             },
             headers: {
                 "Access-Token": "test-token",
@@ -232,8 +248,8 @@ describe("AI refinement task service request contracts", () => {
             capability: "summary",
             status: "RUNNING",
             contentType: "SANCAI_ENTRY",
-            contentId: 3001,
-            requestedBy: 99,
+            contentId: "3001",
+            requestedBy: "99",
             pageNo: 1,
             pageSize: 20
         });
@@ -243,8 +259,8 @@ describe("AI refinement task service request contracts", () => {
                 capability: "summary",
                 status: "RUNNING",
                 contentType: "SANCAI_ENTRY",
-                contentId: 3001,
-                requestedBy: 99,
+                contentId: "3001",
+                requestedBy: "99",
                 pageNo: 1,
                 pageSize: 20
             },
@@ -259,8 +275,8 @@ describe("AI refinement task service request contracts", () => {
 
     it("cancels task with requester id", async () => {
         const command: AiRefinementTaskCancelCommand = {
-            taskId: 7001,
-            requestedBy: 99
+            taskId: "7001",
+            requestedBy: "99"
         };
 
         await aiRefinementTaskService.cancelTask(command);
@@ -280,7 +296,7 @@ describe("AI refinement task service request contracts", () => {
         const events: unknown[] = [];
 
         await aiRefinementTaskService.requestTaskStream({
-            taskId: 7001,
+            taskId: "7001",
             onEvent: (event) => events.push(event)
         });
 

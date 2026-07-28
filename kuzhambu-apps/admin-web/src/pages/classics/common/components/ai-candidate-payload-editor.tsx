@@ -17,12 +17,12 @@ const TEXT_CAPABILITY_ARIA_LABEL: Record<
 };
 
 interface AiCandidatePayloadEditorProps {
-    candidateId: number;
+    candidateId: string;
     capability: AiCandidateCapability;
     disabled?: boolean;
     initialPayload?: string | null;
-    onPayloadChange: (candidateId: number, payload: string) => void;
-    onSubmitEnabledChange: (candidateId: number, canSubmit: boolean) => void;
+    onPayloadChange: (candidateId: string, payload: string) => void;
+    onSubmitEnabledChange: (candidateId: string, canSubmit: boolean) => void;
 }
 
 interface AiCandidateQaPair {

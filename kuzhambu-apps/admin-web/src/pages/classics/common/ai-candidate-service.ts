@@ -7,8 +7,8 @@ import type {
 
 export interface AiCandidateListQuery {
     contentType?: string | null;
-    contentId?: number | null;
-    objectId?: number | null;
+    contentId?: string | null;
+    objectId?: string | null;
     capability?: string | null;
     status?: "PENDING" | "APPLIED" | "REJECTED" | string | null;
 }

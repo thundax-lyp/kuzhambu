@@ -39,13 +39,13 @@ export interface ClassicsShareQuery {
 }
 
 export interface ClassicsShareStatusUpdateCommand {
-    id: number;
+    id: string;
     status: ClassicsShareLinkStatus | string;
 }
 
 export interface ClassicsShareAccessRecordQuery {
-    shareLinkId: number;
-    shareTargetId?: number | null;
+    shareLinkId: string;
+    shareTargetId?: string | null;
     pageNo?: number;
     pageSize?: number;
 }
@@ -73,8 +73,8 @@ export const page = (request: ClassicsShareQuery = {}) => {
     });
 };
 
-export const get = (id: number) => {
-    return postJson<ClassicsShareRecord, { id: number }>(`${SHARE_PATH}/get`, {
+export const get = (id: string) => {
+    return postJson<ClassicsShareRecord, { id: string }>(`${SHARE_PATH}/get`, {
         body: { id }
     });
 };
