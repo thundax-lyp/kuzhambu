@@ -189,6 +189,8 @@ com/thundax/kuzhambu/<domain>/interfaces/portal/
 - `application/<subdomain>/service/impl/`：应用用例入口实现，命名为 `*ApplicationServiceImpl`。
 - `application/<subdomain>/command/`：写入用例输入模型。
 - `application/<subdomain>/query/`：读取用例输入模型。
+- `application/<subdomain>/result/`：用例输出模型。
+- 业务域 `*-application` 模块中的 `*Command`、`*Query`、`*Result` 必须分别位于上述 `command/`、`query/`、`result/` 包；该路径约束不扫描其他模块中的同名类型。
 - `application/<subdomain>/assembler/`：application 内部模型装配，不处理 HTTP 或持久化细节。
 - `domain/<subdomain>/codec/`：基础类型和值对象互转，`<subdomain>` 使用业务子域名，例如 `core`、`auth`、`audit`、`object`。
 - `application/<subdomain>/support/`：仅服务本业务域 application 层的辅助实现。
