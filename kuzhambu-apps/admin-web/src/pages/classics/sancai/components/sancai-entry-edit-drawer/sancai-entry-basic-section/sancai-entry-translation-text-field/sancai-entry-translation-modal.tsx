@@ -10,6 +10,7 @@ import {
 } from "@/components";
 
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
+import type { AiCandidateRecord } from "@/pages/classics/common/ai-candidate-types";
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
 import type { SancaiEntryFormValues } from "@/pages/classics/sancai/components/sancai-entry-edit-drawer/sancai-entry-form-values";
 
@@ -100,10 +101,12 @@ interface SancaiEntryTranslationModalProps {
     isApplyingAiText: boolean;
     isCreatingAiTextTask: boolean;
     translationTasks: AiRefinementTaskRecord[];
+    onFetchResult: (task: AiRefinementTaskRecord | null) => Promise<AiCandidateRecord | null>;
     onFetchTask: (taskId: number | string) => Promise<AiRefinementTaskRecord>;
     onApply: () => void;
     onCancel: () => void;
     onRequestTranslationTask?: (draft: SancaiEntryFormValues) => void;
+    onResultChange?: (candidate: AiCandidateRecord | null) => void;
     onTaskChange?: (task: AiRefinementTaskRecord | null) => void;
     onTextDraftChange: (draft: string) => void;
     open: boolean;
@@ -119,10 +122,12 @@ export const SancaiEntryTranslationModal = ({
     isApplyingAiText,
     isCreatingAiTextTask,
     translationTasks,
+    onFetchResult,
     onFetchTask,
     onApply,
     onCancel,
     onRequestTranslationTask,
+    onResultChange,
     onTaskChange,
     onTextDraftChange,
     open
@@ -155,7 +160,7 @@ export const SancaiEntryTranslationModal = ({
     };
 
     return (
-        <KuzhambuSyncTaskModal<AiRefinementTaskRecord, null>
+        <KuzhambuSyncTaskModal<AiRefinementTaskRecord, AiCandidateRecord>
             testId="classics-sancai-sancai-entry-ai-text-modal"
             title={MODAL_TITLE}
             open={open}
@@ -178,9 +183,13 @@ export const SancaiEntryTranslationModal = ({
                 ...translationTaskAdapter,
                 task: latestAiTextTask,
                 createTask: requestTranslationTask,
+                fetchResult: onFetchResult,
                 fetchTask: onFetchTask,
                 applyResult: onApply,
+                onResultChange,
                 onTaskChange,
+                pollIntervalMs: 3000,
+                resultQueryKey: ["SANCAI_ENTRY", latestAiTextTask?.contentId ?? null, "translate"],
                 trackTask: Boolean(latestAiTextTask?.taskId)
             }}
             renderStatus={({ creating, task, tracking }) =>

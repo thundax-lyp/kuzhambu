@@ -15,21 +15,26 @@ import "./sancai-entry-translation-text-field.css";
 
 const AI_TEXT_CANDIDATE_POLL_INTERVAL_MS = 3000;
 
+const getCandidateStableId = (candidate: AiCandidateRecord) => {
+    return candidate.candidateIdText || String(candidate.candidateId);
+};
+
+const isUsableTranslationCandidate = (candidate?: AiCandidateRecord | null) => {
+    return (
+        candidate?.capability === "translate" &&
+        candidate.status === "PENDING" &&
+        typeof candidate.resultPayload === "string" &&
+        candidate.resultPayload.trim().length > 0
+    );
+};
+
 const selectLatestTranslationCandidate = (candidates: AiCandidateRecord[] | undefined) => {
-    return [...(candidates || [])]
-        .filter(
-            (candidate) =>
-                candidate.capability === "translate" &&
-                candidate.status === "PENDING" &&
-                typeof candidate.resultPayload === "string" &&
-                candidate.resultPayload.trim().length > 0
-        )
-        .sort((left, right) => {
-            if (left.requestedAt && right.requestedAt && left.requestedAt !== right.requestedAt) {
-                return right.requestedAt.localeCompare(left.requestedAt);
-            }
-            return right.candidateId - left.candidateId;
-        })[0];
+    return [...(candidates || [])].filter(isUsableTranslationCandidate).sort((left, right) => {
+        if (left.requestedAt && right.requestedAt && left.requestedAt !== right.requestedAt) {
+            return right.requestedAt.localeCompare(left.requestedAt);
+        }
+        return right.candidateId - left.candidateId;
+    })[0];
 };
 
 interface SancaiEntryTranslationTextFieldProps {
@@ -57,7 +62,7 @@ export const SancaiEntryTranslationTextField = ({
     const queryClient = useQueryClient();
     const [translationModalOpen, setTranslationModalOpen] = useState(false);
     const [translationDraft, setTranslationDraft] = useState("");
-    const [loadedTranslationCandidateId, setLoadedTranslationCandidateId] = useState<number | null>(
+    const [loadedTranslationCandidateId, setLoadedTranslationCandidateId] = useState<string | null>(
         null
     );
     const syncTranslationTask = useCallback(
@@ -141,13 +146,44 @@ export const SancaiEntryTranslationTextField = ({
         return (
             (translationCandidatesQuery.data || []).find(
                 (candidate) =>
-                    candidate.candidateId === loadedTranslationCandidateId &&
+                    getCandidateStableId(candidate) === loadedTranslationCandidateId &&
                     candidate.capability === "translate"
             ) ?? null
         );
     }, [translationCandidatesQuery.data, loadedTranslationCandidateId]);
     const isTranslationApplyDisabled = !translationDraft.trim() || isCreatingTranslationTask;
     const refetchTranslationCandidates = translationCandidatesQuery.refetch;
+    const loadTranslationCandidate = useCallback(
+        async (task: AiRefinementTaskRecord | null) => {
+            const candidateId = task?.candidateIdText || task?.candidateId;
+            if (candidateId) {
+                const candidate = await aiCandidateService.get({ candidateId });
+                return isUsableTranslationCandidate(candidate) ? candidate : null;
+            }
+            const candidates = await aiCandidateService.list({
+                contentId: entryId,
+                contentType: "SANCAI_ENTRY",
+                capability: "translate",
+                status: "PENDING"
+            });
+            return selectLatestTranslationCandidate(candidates) ?? null;
+        },
+        [entryId]
+    );
+    const updateTranslationDraftFromCandidate = useCallback(
+        (candidate: AiCandidateRecord | null) => {
+            if (!candidate || !isUsableTranslationCandidate(candidate)) {
+                return;
+            }
+            const candidateId = getCandidateStableId(candidate);
+            if (candidateId === loadedTranslationCandidateId) {
+                return;
+            }
+            setLoadedTranslationCandidateId(candidateId);
+            setTranslationDraft(candidate.resultPayload?.trim() || "");
+        },
+        [loadedTranslationCandidateId]
+    );
 
     const handleTranslationTaskChange = useCallback(
         (task: AiRefinementTaskRecord | null) => {
@@ -163,11 +199,11 @@ export const SancaiEntryTranslationTextField = ({
         if (!translationModalOpen || !latestTranslationCandidate) {
             return;
         }
-        if (latestTranslationCandidate.candidateId === loadedTranslationCandidateId) {
+        if (getCandidateStableId(latestTranslationCandidate) === loadedTranslationCandidateId) {
             return;
         }
         const timer = window.setTimeout(() => {
-            setLoadedTranslationCandidateId(latestTranslationCandidate.candidateId);
+            setLoadedTranslationCandidateId(getCandidateStableId(latestTranslationCandidate));
             setTranslationDraft(latestTranslationCandidate.resultPayload?.trim() || "");
         }, 0);
         return () => window.clearTimeout(timer);
@@ -238,7 +274,9 @@ export const SancaiEntryTranslationTextField = ({
                 open={translationModalOpen}
                 onApply={applyTranslationDraft}
                 onCancel={closeTranslationModal}
+                onFetchResult={loadTranslationCandidate}
                 onFetchTask={(taskId) => aiRefinementTaskService.getTask({ taskId })}
+                onResultChange={updateTranslationDraftFromCandidate}
                 onRequestTranslationTask={onRequestTranslationTask}
                 onTaskChange={handleTranslationTaskChange}
                 onTextDraftChange={setTranslationDraft}
