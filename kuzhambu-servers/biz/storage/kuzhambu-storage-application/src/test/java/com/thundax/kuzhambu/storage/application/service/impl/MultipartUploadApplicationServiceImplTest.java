@@ -12,10 +12,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.thundax.kuzhambu.storage.application.command.CompleteMultipartUploadCommand;
+import com.thundax.kuzhambu.storage.application.command.InitMultipartUploadCommand;
+import com.thundax.kuzhambu.storage.application.command.UploadMultipartPartCommand;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
-import com.thundax.kuzhambu.storage.application.service.command.CompleteMultipartUploadCommand;
-import com.thundax.kuzhambu.storage.application.service.command.InitMultipartUploadCommand;
-import com.thundax.kuzhambu.storage.application.service.command.UploadMultipartPartCommand;
 import com.thundax.kuzhambu.storage.domain.object.codec.MultipartUploadIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;

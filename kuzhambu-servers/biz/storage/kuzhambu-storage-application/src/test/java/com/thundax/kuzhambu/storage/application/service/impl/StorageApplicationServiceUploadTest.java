@@ -13,11 +13,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.thundax.kuzhambu.storage.application.service.command.AddStorageReferencesCommand;
-import com.thundax.kuzhambu.storage.application.service.command.RemoveStorageReferencesCommand;
-import com.thundax.kuzhambu.storage.application.service.command.UploadStorageObjectCommand;
-import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
-import com.thundax.kuzhambu.storage.application.service.result.StorageUploadResult;
+import com.thundax.kuzhambu.storage.application.command.AddStorageReferencesCommand;
+import com.thundax.kuzhambu.storage.application.command.RemoveStorageReferencesCommand;
+import com.thundax.kuzhambu.storage.application.command.UploadStorageObjectCommand;
+import com.thundax.kuzhambu.storage.application.query.StorageQuery;
+import com.thundax.kuzhambu.storage.application.result.StorageUploadResult;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;

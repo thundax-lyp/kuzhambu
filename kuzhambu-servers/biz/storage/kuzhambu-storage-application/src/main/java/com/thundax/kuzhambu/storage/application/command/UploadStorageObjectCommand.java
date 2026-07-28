@@ -1,10 +1,9 @@
-package com.thundax.kuzhambu.storage.application.service.query;
+package com.thundax.kuzhambu.storage.application.command;
 
-import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
-import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
+import java.io.InputStream;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,17 +14,15 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class StorageQuery {
-    private StoredObjectId id;
-    private List<StoredObjectId> ids;
+public class UploadStorageObjectCommand {
+    private InputStream inputStream;
+    private String originalFilename;
     private String contentType;
-    private String referenceOwnerId;
-    private String referenceOwnerType;
-    private String ownerId;
+    private long size;
+    private List<String> allowedSuffixes;
     private StorageOwnerType ownerType;
+    private String ownerId;
     private StoredObjectStatus objectStatus;
     private StoredObjectReferenceStatus referenceStatus;
-    private String originalFilename;
     private String remarks;
-    private SortDirection sortDirection = SortDirection.ASC;
 }

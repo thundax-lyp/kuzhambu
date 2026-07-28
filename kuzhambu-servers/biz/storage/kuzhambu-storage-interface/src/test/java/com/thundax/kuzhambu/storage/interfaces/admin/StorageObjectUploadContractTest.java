@@ -5,17 +5,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.storage.application.command.AddStorageReferencesCommand;
+import com.thundax.kuzhambu.storage.application.command.ChangeStorageCommand;
+import com.thundax.kuzhambu.storage.application.command.ChangeStorageObjectStatusCommand;
+import com.thundax.kuzhambu.storage.application.command.ChangeStorageReferenceStatusCommand;
+import com.thundax.kuzhambu.storage.application.command.RemoveStorageReferencesCommand;
+import com.thundax.kuzhambu.storage.application.command.StorageSortCommand;
+import com.thundax.kuzhambu.storage.application.command.UploadStorageObjectCommand;
+import com.thundax.kuzhambu.storage.application.query.StorageQuery;
+import com.thundax.kuzhambu.storage.application.result.StorageUploadResult;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
-import com.thundax.kuzhambu.storage.application.service.command.AddStorageReferencesCommand;
-import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageCommand;
-import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageObjectStatusCommand;
-import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageReferenceStatusCommand;
-import com.thundax.kuzhambu.storage.application.service.command.RemoveStorageReferencesCommand;
-import com.thundax.kuzhambu.storage.application.service.command.StorageSortCommand;
-import com.thundax.kuzhambu.storage.application.service.command.UploadStorageObjectCommand;
 import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
-import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
-import com.thundax.kuzhambu.storage.application.service.result.StorageUploadResult;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
@@ -177,8 +177,7 @@ class StorageObjectUploadContractTest {
         }
 
         @Override
-        public StoredObjectId create(
-                com.thundax.kuzhambu.storage.application.service.command.CreateStorageCommand command) {
+        public StoredObjectId create(com.thundax.kuzhambu.storage.application.command.CreateStorageCommand command) {
             throw new UnsupportedOperationException("create");
         }
 

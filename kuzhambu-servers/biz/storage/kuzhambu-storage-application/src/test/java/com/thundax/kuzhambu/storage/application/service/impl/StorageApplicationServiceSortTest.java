@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
-import com.thundax.kuzhambu.storage.application.service.command.StorageSortCommand;
+import com.thundax.kuzhambu.storage.application.command.StorageSortCommand;
 import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContentRepository;

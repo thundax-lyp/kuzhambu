@@ -1,9 +1,9 @@
 package com.thundax.kuzhambu.storage.application.facade.assembler;
 
-import com.thundax.kuzhambu.storage.application.service.command.AbortMultipartUploadCommand;
-import com.thundax.kuzhambu.storage.application.service.command.CompleteMultipartUploadCommand;
-import com.thundax.kuzhambu.storage.application.service.command.InitMultipartUploadCommand;
-import com.thundax.kuzhambu.storage.application.service.command.UploadMultipartPartCommand;
+import com.thundax.kuzhambu.storage.application.command.AbortMultipartUploadCommand;
+import com.thundax.kuzhambu.storage.application.command.CompleteMultipartUploadCommand;
+import com.thundax.kuzhambu.storage.application.command.InitMultipartUploadCommand;
+import com.thundax.kuzhambu.storage.application.command.UploadMultipartPartCommand;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.MultipartUploadStatus;
