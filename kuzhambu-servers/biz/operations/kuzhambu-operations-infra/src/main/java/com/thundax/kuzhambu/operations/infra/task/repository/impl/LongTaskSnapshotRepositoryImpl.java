@@ -6,9 +6,9 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.operations.domain.task.codec.LongTaskSnapshotIdCodec;
 import com.thundax.kuzhambu.operations.domain.task.model.entity.LongTaskSnapshot;
 import com.thundax.kuzhambu.operations.domain.task.model.valueobject.LongTaskSnapshotId;
-import com.thundax.kuzhambu.operations.domain.task.model.valueobject.LongTaskSnapshotIdCodec;
 import com.thundax.kuzhambu.operations.domain.task.repository.LongTaskSnapshotRepository;
 import com.thundax.kuzhambu.operations.infra.task.persistence.assembler.LongTaskSnapshotPersistenceAssembler;
 import com.thundax.kuzhambu.operations.infra.task.persistence.dataobject.LongTaskSnapshotDO;
@@ -93,7 +93,7 @@ public class LongTaskSnapshotRepositoryImpl implements LongTaskSnapshotRepositor
                         .last("LIMIT " + limit))
                 .stream()
                 .map(LongTaskSnapshotRepositoryImpl::longValue)
-                .map(LongTaskSnapshotId::of)
+                .map(LongTaskSnapshotIdCodec::toDomain)
                 .toList();
     }
 

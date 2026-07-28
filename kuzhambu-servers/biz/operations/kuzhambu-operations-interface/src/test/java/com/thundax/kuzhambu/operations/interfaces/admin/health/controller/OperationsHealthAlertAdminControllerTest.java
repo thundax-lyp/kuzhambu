@@ -13,8 +13,8 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.operations.application.health.result.OperationsHealthAlertPageResult;
 import com.thundax.kuzhambu.operations.application.health.service.HealthAlertApplicationService;
-import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthAlertId;
-import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthCheckId;
+import com.thundax.kuzhambu.operations.domain.health.codec.HealthAlertIdCodec;
+import com.thundax.kuzhambu.operations.domain.health.codec.HealthCheckIdCodec;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthAlertAckRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthAlertPageRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthAlertRecoverRequest;
@@ -63,14 +63,14 @@ class OperationsHealthAlertAdminControllerTest {
                         10,
                         1L,
                         List.of(new OperationsHealthAlertPageResult(
-                                HealthAlertId.of(9201L),
+                                HealthAlertIdCodec.toDomain(9201L),
                                 "database",
                                 "HEALTH_DOWN",
                                 "CRITICAL",
                                 "ACTIVE",
                                 "HEALTH",
                                 null,
-                                HealthCheckId.of(9101L),
+                                HealthCheckIdCodec.toDomain(9101L),
                                 "database down",
                                 "check database",
                                 "OPEN_HEALTH_DETAIL",

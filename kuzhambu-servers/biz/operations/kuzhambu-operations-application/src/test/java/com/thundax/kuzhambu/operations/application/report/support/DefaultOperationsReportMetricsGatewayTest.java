@@ -14,9 +14,9 @@ import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsD
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryGateway;
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryModels.OperationsCrossDomainSummary;
 import com.thundax.kuzhambu.operations.application.report.support.OperationsReportSupportModels.OperationsReportSection;
+import com.thundax.kuzhambu.operations.domain.report.codec.ReportIdCodec;
 import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
 import com.thundax.kuzhambu.operations.domain.report.model.enums.ReportStatus;
-import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Date;
@@ -91,7 +91,7 @@ class DefaultOperationsReportMetricsGatewayTest {
 
     private static ReportRecord monthlyRecord() {
         return new ReportRecord(
-                ReportId.of(7001L),
+                ReportIdCodec.toDomain(7001L),
                 "MONTHLY",
                 "PDF",
                 Date.from(Instant.parse("2026-06-01T00:00:00Z")),
@@ -110,7 +110,7 @@ class DefaultOperationsReportMetricsGatewayTest {
 
     private static ReportRecord weeklyRecord() {
         return new ReportRecord(
-                ReportId.of(7002L),
+                ReportIdCodec.toDomain(7002L),
                 "WEEKLY",
                 "PDF",
                 Date.from(Instant.parse("2026-06-22T00:00:00Z")),

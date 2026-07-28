@@ -19,13 +19,16 @@ import com.thundax.kuzhambu.operations.application.restore.result.OperationsRest
 import com.thundax.kuzhambu.operations.application.restore.result.OperationsRestoreExecuteResult;
 import com.thundax.kuzhambu.operations.application.restore.result.OperationsRestorePageResult;
 import com.thundax.kuzhambu.operations.application.restore.support.OperationsRestoreWriteBlocker;
+import com.thundax.kuzhambu.operations.domain.backup.codec.BackupIdCodec;
 import com.thundax.kuzhambu.operations.domain.backup.model.entity.BackupRecord;
 import com.thundax.kuzhambu.operations.domain.backup.model.valueobject.BackupId;
 import com.thundax.kuzhambu.operations.domain.backup.repository.BackupRepository;
+import com.thundax.kuzhambu.operations.domain.restore.codec.RestoreIdCodec;
 import com.thundax.kuzhambu.operations.domain.restore.model.entity.RestoreRecord;
 import com.thundax.kuzhambu.operations.domain.restore.model.enums.RestoreMode;
 import com.thundax.kuzhambu.operations.domain.restore.model.valueobject.RestoreId;
 import com.thundax.kuzhambu.operations.domain.restore.repository.RestoreRepository;
+import com.thundax.kuzhambu.operations.domain.task.codec.LongTaskSnapshotIdCodec;
 import com.thundax.kuzhambu.operations.domain.task.model.entity.LongTaskSnapshot;
 import com.thundax.kuzhambu.operations.domain.task.model.valueobject.LongTaskSnapshotId;
 import com.thundax.kuzhambu.operations.domain.task.repository.LongTaskSnapshotRepository;
@@ -44,7 +47,7 @@ class RestoreApplicationServiceImplTest {
         backupRepository.records.put(
                 9001L,
                 new BackupRecord(
-                        BackupId.of(9001L),
+                        BackupIdCodec.toDomain(9001L),
                         "MANUAL",
                         "SUCCEEDED",
                         null,
@@ -61,7 +64,7 @@ class RestoreApplicationServiceImplTest {
         RestoreApplicationServiceImpl service = service(restoreRepository, backupRepository, scriptExecutor);
 
         OperationsRestoreExecuteResult result = service.execute(
-                new OperationsRestoreExecuteCommand(BackupId.of(9001L), RestoreMode.REAL.value(), 1001L));
+                new OperationsRestoreExecuteCommand(BackupIdCodec.toDomain(9001L), RestoreMode.REAL.value(), 1001L));
 
         assertNotNull(result.getRestoreId());
         assertEquals(RestoreMode.REAL.value(), result.getRestoreMode());
@@ -90,7 +93,7 @@ class RestoreApplicationServiceImplTest {
                 taskRepository);
 
         OperationsRestoreExecuteResult result = service.execute(
-                new OperationsRestoreExecuteCommand(BackupId.of(9001L), RestoreMode.REAL.value(), 1001L));
+                new OperationsRestoreExecuteCommand(BackupIdCodec.toDomain(9001L), RestoreMode.REAL.value(), 1001L));
 
         assertEquals(1, taskRepository.records.size());
         LongTaskSnapshot snapshot = taskRepository.records.values().iterator().next();
@@ -111,7 +114,7 @@ class RestoreApplicationServiceImplTest {
         RestoreApplicationServiceImpl service = service(restoreRepository, backupRepository, scriptExecutor);
 
         OperationsRestoreExecuteResult result = service.execute(
-                new OperationsRestoreExecuteCommand(BackupId.of(9001L), RestoreMode.DRILL.value(), 1001L));
+                new OperationsRestoreExecuteCommand(BackupIdCodec.toDomain(9001L), RestoreMode.DRILL.value(), 1001L));
 
         assertEquals(RestoreMode.DRILL.value(), result.getRestoreMode());
         assertEquals("SUCCEEDED", result.getRestoreStatus());
@@ -125,7 +128,7 @@ class RestoreApplicationServiceImplTest {
         backupRepository.records.put(
                 9001L,
                 new BackupRecord(
-                        BackupId.of(9001L),
+                        BackupIdCodec.toDomain(9001L),
                         "MANUAL",
                         "SUCCEEDED",
                         null,
@@ -148,7 +151,7 @@ class RestoreApplicationServiceImplTest {
                 alertStrategy);
 
         OperationsRestoreExecuteResult result = service.execute(
-                new OperationsRestoreExecuteCommand(BackupId.of(9001L), RestoreMode.REAL.value(), 1001L));
+                new OperationsRestoreExecuteCommand(BackupIdCodec.toDomain(9001L), RestoreMode.REAL.value(), 1001L));
 
         assertEquals("FAILED", result.getRestoreStatus());
         assertNotNull(result.getWriteBlockReleasedAt());
@@ -173,7 +176,8 @@ class RestoreApplicationServiceImplTest {
                 null,
                 taskRepository);
 
-        service.execute(new OperationsRestoreExecuteCommand(BackupId.of(9001L), RestoreMode.REAL.value(), 1001L));
+        service.execute(
+                new OperationsRestoreExecuteCommand(BackupIdCodec.toDomain(9001L), RestoreMode.REAL.value(), 1001L));
 
         LongTaskSnapshot snapshot = taskRepository.records.values().iterator().next();
         assertEquals("FAILED", snapshot.getTaskStatus());
@@ -195,7 +199,7 @@ class RestoreApplicationServiceImplTest {
                 new FailingRestoreWriteBlocker());
 
         OperationsRestoreExecuteResult result = service.execute(
-                new OperationsRestoreExecuteCommand(BackupId.of(9001L), RestoreMode.REAL.value(), 1001L));
+                new OperationsRestoreExecuteCommand(BackupIdCodec.toDomain(9001L), RestoreMode.REAL.value(), 1001L));
 
         assertEquals("FAILED", result.getRestoreStatus());
         assertEquals(0, scriptExecutor.realRestoreCount);
@@ -212,7 +216,7 @@ class RestoreApplicationServiceImplTest {
                 restoreRepository, backupRepository, scriptExecutor, guard, new OperationsRestoreWriteBlocker());
 
         OperationsRestoreExecuteResult result = service.execute(
-                new OperationsRestoreExecuteCommand(BackupId.of(9001L), RestoreMode.REAL.value(), 1001L));
+                new OperationsRestoreExecuteCommand(BackupIdCodec.toDomain(9001L), RestoreMode.REAL.value(), 1001L));
 
         assertEquals("SUCCEEDED", result.getRestoreStatus());
         assertFalse(scriptExecutor.backupEnteredDuringRestore);
@@ -227,7 +231,7 @@ class RestoreApplicationServiceImplTest {
         restoreRepository.records.put(
                 9101L,
                 new RestoreRecord(
-                        RestoreId.of(9101L),
+                        RestoreIdCodec.toDomain(9101L),
                         9001L,
                         9201L,
                         RestoreMode.DRILL.value(),
@@ -246,7 +250,7 @@ class RestoreApplicationServiceImplTest {
                 new OperationsRestorePageQuery(9001L, RestoreMode.DRILL.value(), "SUCCEEDED", 1001L),
                 new PageQuery(1, 10));
         OperationsRestoreDetailResult detailResult =
-                service.detail(new OperationsRestoreDetailQuery(RestoreId.of(9101L)));
+                service.detail(new OperationsRestoreDetailQuery(RestoreIdCodec.toDomain(9101L)));
 
         assertEquals(1, pageResult.getRecords().size());
         assertEquals(9101L, pageResult.getRecords().get(0).getRestoreId().value());
@@ -273,7 +277,7 @@ class RestoreApplicationServiceImplTest {
         backupRepository.records.put(
                 9001L,
                 new BackupRecord(
-                        BackupId.of(9001L),
+                        BackupIdCodec.toDomain(9001L),
                         "MANUAL",
                         "SUCCEEDED",
                         null,
@@ -380,7 +384,7 @@ class RestoreApplicationServiceImplTest {
 
         @Override
         public BackupId insert(BackupRecord record) {
-            BackupId id = BackupId.of(nextId++);
+            BackupId id = BackupIdCodec.toDomain(nextId++);
             record.setId(id);
             records.put(id.value(), record);
             return id;
@@ -420,7 +424,7 @@ class RestoreApplicationServiceImplTest {
 
         @Override
         public RestoreId insert(RestoreRecord record) {
-            RestoreId id = RestoreId.of(nextId++);
+            RestoreId id = RestoreIdCodec.toDomain(nextId++);
             record.setId(id);
             records.put(id.value(), record);
             return id;
@@ -455,7 +459,7 @@ class RestoreApplicationServiceImplTest {
 
         @Override
         public LongTaskSnapshotId insert(LongTaskSnapshot snapshot) {
-            LongTaskSnapshotId id = LongTaskSnapshotId.of(nextId++);
+            LongTaskSnapshotId id = LongTaskSnapshotIdCodec.toDomain(nextId++);
             snapshot.setId(id);
             records.put(id.value(), snapshot);
             return id;

@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.operations.domain.task.codec.LongTaskSnapshotIdCodec;
 import com.thundax.kuzhambu.operations.domain.task.model.entity.LongTaskSnapshot;
 import com.thundax.kuzhambu.operations.domain.task.model.valueobject.LongTaskSnapshotId;
 import com.thundax.kuzhambu.operations.infra.task.persistence.dataobject.LongTaskSnapshotDO;
@@ -28,7 +29,7 @@ class LongTaskSnapshotRepositoryImplTest {
         LongTaskSnapshotRepositoryImpl repository = new LongTaskSnapshotRepositoryImpl(mapper);
         when(mapper.selectOne(any())).thenReturn(dataObject(9001L, "catalog", "cleanup", "DONE"));
 
-        LongTaskSnapshot result = repository.getById(LongTaskSnapshotId.of(9001L));
+        LongTaskSnapshot result = repository.getById(LongTaskSnapshotIdCodec.toDomain(9001L));
 
         assertNotNull(result);
         assertEquals(9001L, result.getId().value());

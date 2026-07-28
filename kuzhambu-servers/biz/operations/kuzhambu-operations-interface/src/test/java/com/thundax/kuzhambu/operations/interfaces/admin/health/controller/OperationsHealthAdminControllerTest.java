@@ -14,7 +14,7 @@ import com.thundax.kuzhambu.operations.application.health.result.OperationsHealt
 import com.thundax.kuzhambu.operations.application.health.result.OperationsHealthSummaryResult;
 import com.thundax.kuzhambu.operations.application.health.result.OperationsHealthTrendResult;
 import com.thundax.kuzhambu.operations.application.health.service.HealthCheckApplicationService;
-import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthCheckId;
+import com.thundax.kuzhambu.operations.domain.health.codec.HealthCheckIdCodec;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthPageRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthSummaryRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthTrendRequest;
@@ -56,7 +56,7 @@ class OperationsHealthAdminControllerTest {
         OperationsHealthAdminController controller = new OperationsHealthAdminController(service);
         when(service.summary())
                 .thenReturn(List.of(new OperationsHealthSummaryResult(
-                        HealthCheckId.of(9101L),
+                        HealthCheckIdCodec.toDomain(9101L),
                         "db-master",
                         "UP",
                         16,
@@ -70,7 +70,7 @@ class OperationsHealthAdminControllerTest {
                         10,
                         1L,
                         List.of(new OperationsHealthPageResult(
-                                HealthCheckId.of(9101L),
+                                HealthCheckIdCodec.toDomain(9101L),
                                 "db-master",
                                 "UP",
                                 16,

@@ -7,7 +7,7 @@ public final class RestoreIdCodec {
     private RestoreIdCodec() {}
 
     public static RestoreId toDomain(Long value) {
-        return RestoreId.ofNullable(value);
+        return value == null ? null : new RestoreId(value);
     }
 
     public static Long toValue(RestoreId id) {

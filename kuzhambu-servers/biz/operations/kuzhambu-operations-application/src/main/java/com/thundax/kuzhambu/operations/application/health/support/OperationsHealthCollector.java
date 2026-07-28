@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.operations.application.health.configure.OperationsExternalHealthProbeProperties;
 import com.thundax.kuzhambu.operations.application.health.configure.OperationsExternalHealthProbeProperties.Target;
 import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthProbe.OperationsHealthProbeResult;
+import com.thundax.kuzhambu.operations.domain.health.codec.HealthCheckIdCodec;
 import com.thundax.kuzhambu.operations.domain.health.model.entity.HealthCheckRecord;
 import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthCheckId;
 import com.thundax.kuzhambu.operations.domain.health.repository.HealthCheckRepository;
@@ -100,7 +101,7 @@ public class OperationsHealthCollector {
     }
 
     private HealthCheckId nextHealthCheckId() {
-        return HealthCheckId.of(idGenerator.nextId().value());
+        return HealthCheckIdCodec.toDomain(idGenerator.nextId().value());
     }
 
     private static String normalizeStatus(String healthStatus) {

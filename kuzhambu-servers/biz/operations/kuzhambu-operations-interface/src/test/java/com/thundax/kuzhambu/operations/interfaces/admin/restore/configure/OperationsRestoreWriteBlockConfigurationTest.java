@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.thundax.kuzhambu.common.web.restore.RestoreWriteBlockState;
 import com.thundax.kuzhambu.operations.application.restore.support.OperationsRestoreWriteBlocker;
-import com.thundax.kuzhambu.operations.domain.restore.model.valueobject.RestoreId;
+import com.thundax.kuzhambu.operations.domain.restore.codec.RestoreIdCodec;
 import org.junit.jupiter.api.Test;
 
 class OperationsRestoreWriteBlockConfigurationTest {
@@ -16,12 +16,12 @@ class OperationsRestoreWriteBlockConfigurationTest {
         OperationsRestoreWriteBlocker blocker =
                 new OperationsRestoreWriteBlockConfiguration.WebOperationsRestoreWriteBlocker(state);
 
-        blocker.enable(RestoreId.of(9101L));
+        blocker.enable(RestoreIdCodec.toDomain(9101L));
 
         assertTrue(blocker.isEnabled());
         assertTrue(state.isBlocked());
 
-        blocker.disable(RestoreId.of(9101L));
+        blocker.disable(RestoreIdCodec.toDomain(9101L));
 
         assertFalse(blocker.isEnabled());
         assertFalse(state.isBlocked());

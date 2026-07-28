@@ -8,8 +8,8 @@ import com.thundax.kuzhambu.operations.application.restore.query.OperationsResto
 import com.thundax.kuzhambu.operations.application.restore.result.OperationsRestoreDetailResult;
 import com.thundax.kuzhambu.operations.application.restore.result.OperationsRestoreExecuteResult;
 import com.thundax.kuzhambu.operations.application.restore.result.OperationsRestorePageResult;
-import com.thundax.kuzhambu.operations.domain.backup.model.valueobject.BackupId;
-import com.thundax.kuzhambu.operations.domain.restore.model.valueobject.RestoreId;
+import com.thundax.kuzhambu.operations.domain.backup.codec.BackupIdCodec;
+import com.thundax.kuzhambu.operations.domain.restore.codec.RestoreIdCodec;
 import com.thundax.kuzhambu.operations.interfaces.admin.restore.controller.request.OperationsRestoreDetailRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.restore.controller.request.OperationsRestoreExecuteRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.restore.controller.request.OperationsRestorePageRequest;
@@ -26,7 +26,7 @@ public final class OperationsRestoreInterfaceAssembler {
             return null;
         }
         return new OperationsRestoreExecuteCommand(
-                BackupId.of(request.getBackupId()), request.getRestoreMode(), currentAdminUserId());
+                BackupIdCodec.toDomain(request.getBackupId()), request.getRestoreMode(), currentAdminUserId());
     }
 
     public static OperationsRestorePageQuery toQuery(OperationsRestorePageRequest request) {
@@ -44,7 +44,7 @@ public final class OperationsRestoreInterfaceAssembler {
         if (request == null || request.getRestoreId() == null) {
             return null;
         }
-        return new OperationsRestoreDetailQuery(RestoreId.of(request.getRestoreId()));
+        return new OperationsRestoreDetailQuery(RestoreIdCodec.toDomain(request.getRestoreId()));
     }
 
     public static OperationsRestoreExecuteResponse toResponse(OperationsRestoreExecuteResult result) {

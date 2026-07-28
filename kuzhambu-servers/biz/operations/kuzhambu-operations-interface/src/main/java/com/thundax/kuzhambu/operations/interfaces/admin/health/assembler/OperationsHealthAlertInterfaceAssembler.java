@@ -6,7 +6,7 @@ import com.thundax.kuzhambu.operations.application.health.command.OperationsHeal
 import com.thundax.kuzhambu.operations.application.health.command.OperationsHealthAlertRecoverCommand;
 import com.thundax.kuzhambu.operations.application.health.query.OperationsHealthAlertPageQuery;
 import com.thundax.kuzhambu.operations.application.health.result.OperationsHealthAlertPageResult;
-import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthAlertId;
+import com.thundax.kuzhambu.operations.domain.health.codec.HealthAlertIdCodec;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthAlertAckRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthAlertPageRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.health.controller.request.OperationsHealthAlertRecoverRequest;
@@ -33,14 +33,16 @@ public final class OperationsHealthAlertInterfaceAssembler {
         if (request == null || request.getAlertId() == null) {
             return null;
         }
-        return new OperationsHealthAlertAckCommand(HealthAlertId.of(request.getAlertId()), currentAdminUserId());
+        return new OperationsHealthAlertAckCommand(
+                HealthAlertIdCodec.toDomain(request.getAlertId()), currentAdminUserId());
     }
 
     public static OperationsHealthAlertRecoverCommand toCommand(OperationsHealthAlertRecoverRequest request) {
         if (request == null || request.getAlertId() == null) {
             return null;
         }
-        return new OperationsHealthAlertRecoverCommand(HealthAlertId.of(request.getAlertId()), currentAdminUserId());
+        return new OperationsHealthAlertRecoverCommand(
+                HealthAlertIdCodec.toDomain(request.getAlertId()), currentAdminUserId());
     }
 
     public static OperationsHealthAlertPageResponse toResponse(OperationsHealthAlertPageResult result) {

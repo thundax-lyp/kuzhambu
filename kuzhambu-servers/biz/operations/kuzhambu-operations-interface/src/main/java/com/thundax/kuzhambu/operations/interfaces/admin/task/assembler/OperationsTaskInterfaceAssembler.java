@@ -4,7 +4,7 @@ import com.thundax.kuzhambu.operations.application.task.query.OperationsTaskDeta
 import com.thundax.kuzhambu.operations.application.task.query.OperationsTaskPageQuery;
 import com.thundax.kuzhambu.operations.application.task.result.OperationsTaskDetailResult;
 import com.thundax.kuzhambu.operations.application.task.result.OperationsTaskPageResult;
-import com.thundax.kuzhambu.operations.domain.task.model.valueobject.LongTaskSnapshotId;
+import com.thundax.kuzhambu.operations.domain.task.codec.LongTaskSnapshotIdCodec;
 import com.thundax.kuzhambu.operations.interfaces.admin.task.controller.request.OperationsTaskDetailRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.task.controller.request.OperationsTaskPageRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.task.controller.response.OperationsTaskDetailResponse;
@@ -25,7 +25,7 @@ public final class OperationsTaskInterfaceAssembler {
         if (request == null || request.getSnapshotId() == null) {
             return null;
         }
-        return new OperationsTaskDetailQuery(LongTaskSnapshotId.of(request.getSnapshotId()));
+        return new OperationsTaskDetailQuery(LongTaskSnapshotIdCodec.toDomain(request.getSnapshotId()));
     }
 
     public static OperationsTaskPageResponse toResponse(OperationsTaskPageResult result) {

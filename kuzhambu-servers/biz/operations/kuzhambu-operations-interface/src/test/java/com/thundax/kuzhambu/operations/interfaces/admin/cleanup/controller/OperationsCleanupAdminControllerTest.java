@@ -13,8 +13,8 @@ import com.thundax.kuzhambu.common.security.annotation.HasPermission;
 import com.thundax.kuzhambu.operations.application.cleanup.result.OperationsCleanupDetailResult;
 import com.thundax.kuzhambu.operations.application.cleanup.result.OperationsCleanupPageResult;
 import com.thundax.kuzhambu.operations.application.cleanup.service.CleanupApplicationService;
-import com.thundax.kuzhambu.operations.domain.cleanup.model.valueobject.CleanupItemId;
-import com.thundax.kuzhambu.operations.domain.cleanup.model.valueobject.CleanupJobId;
+import com.thundax.kuzhambu.operations.domain.cleanup.codec.CleanupItemIdCodec;
+import com.thundax.kuzhambu.operations.domain.cleanup.codec.CleanupJobIdCodec;
 import com.thundax.kuzhambu.operations.interfaces.admin.cleanup.controller.request.OperationsCleanupDetailRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.cleanup.controller.request.OperationsCleanupExecuteRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.cleanup.controller.request.OperationsCleanupPageRequest;
@@ -56,7 +56,7 @@ class OperationsCleanupAdminControllerTest {
         OperationsCleanupAdminController controller = new OperationsCleanupAdminController(service);
         when(service.execute(any()))
                 .thenReturn(new OperationsCleanupDetailResult(
-                        CleanupJobId.of(9101L),
+                        CleanupJobIdCodec.toDomain(9101L),
                         "LONG_TASK",
                         "SUCCEEDED",
                         3,
@@ -73,7 +73,7 @@ class OperationsCleanupAdminControllerTest {
                         10,
                         1L,
                         List.of(new OperationsCleanupPageResult(
-                                CleanupJobId.of(9101L),
+                                CleanupJobIdCodec.toDomain(9101L),
                                 "LONG_TASK",
                                 "SUCCEEDED",
                                 3,
@@ -85,7 +85,7 @@ class OperationsCleanupAdminControllerTest {
                                 new Date(1_719_630_500_000L)))));
         when(service.detail(any()))
                 .thenReturn(new OperationsCleanupDetailResult(
-                        CleanupJobId.of(9101L),
+                        CleanupJobIdCodec.toDomain(9101L),
                         "LONG_TASK",
                         "SUCCEEDED",
                         3,
@@ -96,7 +96,7 @@ class OperationsCleanupAdminControllerTest {
                         new Date(1_719_630_400_000L),
                         new Date(1_719_630_500_000L),
                         List.of(new OperationsCleanupDetailResult.Item(
-                                CleanupItemId.of(9201L),
+                                CleanupItemIdCodec.toDomain(9201L),
                                 "share",
                                 201L,
                                 "FAILED",

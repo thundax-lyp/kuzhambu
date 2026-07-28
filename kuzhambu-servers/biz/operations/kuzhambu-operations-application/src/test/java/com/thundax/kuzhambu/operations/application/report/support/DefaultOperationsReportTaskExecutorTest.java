@@ -11,6 +11,7 @@ import com.thundax.kuzhambu.operations.application.report.support.OperationsRepo
 import com.thundax.kuzhambu.operations.application.report.support.OperationsReportSupportModels.OperationsReportSnapshot;
 import com.thundax.kuzhambu.operations.domain.report.client.OperationsWorkerRenderClient;
 import com.thundax.kuzhambu.operations.domain.report.client.dto.OperationsWorkerRenderDtos;
+import com.thundax.kuzhambu.operations.domain.report.codec.ReportIdCodec;
 import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
 import com.thundax.kuzhambu.operations.domain.report.model.enums.ReportStatus;
 import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
@@ -54,7 +55,7 @@ class DefaultOperationsReportTaskExecutorTest {
         DefaultOperationsReportTaskExecutor executor =
                 new DefaultOperationsReportTaskExecutor(repository, renderClient, snapshotAssembler, storage);
 
-        OperationsReportArtifactResult result = executor.execute(ReportId.of(9001L));
+        OperationsReportArtifactResult result = executor.execute(ReportIdCodec.toDomain(9001L));
 
         assertNotNull(result);
         assertEquals(3001L, result.getStorageObjectId());
@@ -82,7 +83,7 @@ class DefaultOperationsReportTaskExecutorTest {
         DefaultOperationsReportTaskExecutor executor = new DefaultOperationsReportTaskExecutor(
                 repository, renderClient, snapshotAssembler, storage, alertStrategy);
 
-        OperationsReportArtifactResult result = executor.execute(ReportId.of(9001L));
+        OperationsReportArtifactResult result = executor.execute(ReportIdCodec.toDomain(9001L));
 
         assertNull(result);
         assertEquals(2, repository.updatedRecords.size());
@@ -98,7 +99,7 @@ class DefaultOperationsReportTaskExecutorTest {
 
     private static ReportRecord record() {
         return new ReportRecord(
-                ReportId.of(9001L),
+                ReportIdCodec.toDomain(9001L),
                 "WEEKLY",
                 "PDF",
                 new Date(1_718_000_000_000L),

@@ -8,7 +8,7 @@ import com.thundax.kuzhambu.operations.application.backup.query.OperationsBackup
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupDetailResult;
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupExecuteResult;
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupPageResult;
-import com.thundax.kuzhambu.operations.domain.backup.model.valueobject.BackupId;
+import com.thundax.kuzhambu.operations.domain.backup.codec.BackupIdCodec;
 import com.thundax.kuzhambu.operations.interfaces.admin.backup.controller.request.OperationsBackupDetailRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.backup.controller.request.OperationsBackupExecuteRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.backup.controller.request.OperationsBackupPageRequest;
@@ -39,7 +39,7 @@ public final class OperationsBackupInterfaceAssembler {
         if (request == null || request.getBackupId() == null) {
             return null;
         }
-        return new OperationsBackupDetailQuery(BackupId.of(request.getBackupId()));
+        return new OperationsBackupDetailQuery(BackupIdCodec.toDomain(request.getBackupId()));
     }
 
     public static OperationsBackupExecuteResponse toResponse(OperationsBackupExecuteResult result) {

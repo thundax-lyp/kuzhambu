@@ -26,6 +26,8 @@ import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsD
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardPermissionSnapshot;
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryGateway;
 import com.thundax.kuzhambu.operations.application.dashboard.support.OperationsDashboardSummaryModels.OperationsCrossDomainSummary;
+import com.thundax.kuzhambu.operations.domain.health.codec.HealthAlertIdCodec;
+import com.thundax.kuzhambu.operations.domain.health.codec.HealthCheckIdCodec;
 import com.thundax.kuzhambu.operations.domain.health.model.entity.HealthAlertRecord;
 import com.thundax.kuzhambu.operations.domain.health.model.entity.HealthCheckRecord;
 import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthAlertId;
@@ -218,14 +220,14 @@ class OperationsDashboardApplicationServiceImplTest {
         healthRepository.latestRecords = List.of(healthRecord(9001L, "admin-server", "DEGRADED"));
         InMemoryHealthAlertRepository alertRepository = new InMemoryHealthAlertRepository();
         alertRepository.alertsByAll = List.of(new HealthAlertRecord(
-                HealthAlertId.of(1201L),
+                HealthAlertIdCodec.toDomain(1201L),
                 "admin-server",
                 "HEALTH",
                 "CRITICAL",
                 "ACTIVE",
                 "TASK",
                 5601L,
-                HealthCheckId.of(9001L),
+                HealthCheckIdCodec.toDomain(9001L),
                 "组件健康异常",
                 "建议重试",
                 "已重启",
@@ -378,7 +380,7 @@ class OperationsDashboardApplicationServiceImplTest {
 
     private static HealthCheckRecord healthRecord(long checkId, String component, String healthStatus) {
         return new HealthCheckRecord(
-                HealthCheckId.of(checkId),
+                HealthCheckIdCodec.toDomain(checkId),
                 component,
                 healthStatus,
                 12,
