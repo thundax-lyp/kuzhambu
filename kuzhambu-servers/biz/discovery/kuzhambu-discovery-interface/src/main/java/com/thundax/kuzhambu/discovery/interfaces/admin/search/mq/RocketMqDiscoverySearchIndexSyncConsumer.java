@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 @ConditionalOnProperty(name = "kuzhambu.discovery.search.index-sync.consumer-enabled", havingValue = "true")
 @RocketMQMessageListener(
-        topic = "${kuzhambu.discovery.search.index-sync.topic:kuzhambu.discovery.search.index-sync}",
+        topic = "${kuzhambu.discovery.search.index-sync.topic:kuzhambu-discovery-search-index-sync}",
         consumerGroup =
                 "${kuzhambu.discovery.search.index-sync.consumer-group:kuzhambu-discovery-search-index-sync-consumer}",
         selectorExpression = "*")

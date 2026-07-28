@@ -65,7 +65,7 @@ kuzhambu:
   discovery:
     search:
       index-sync:
-        topic: ${KUZHAMBU_DISCOVERY_SEARCH_INDEX_SYNC_TOPIC:kuzhambu.discovery.search.index-sync}
+        topic: ${KUZHAMBU_DISCOVERY_SEARCH_INDEX_SYNC_TOPIC:kuzhambu-discovery-search-index-sync}
         producer-tag-upsert: ${KUZHAMBU_DISCOVERY_SEARCH_INDEX_SYNC_TAG_UPSERT:UPSERT}
         producer-tag-delete: ${KUZHAMBU_DISCOVERY_SEARCH_INDEX_SYNC_TAG_DELETE:DELETE}
         consumer-enabled: ${KUZHAMBU_DISCOVERY_SEARCH_INDEX_SYNC_CONSUMER_ENABLED:false}

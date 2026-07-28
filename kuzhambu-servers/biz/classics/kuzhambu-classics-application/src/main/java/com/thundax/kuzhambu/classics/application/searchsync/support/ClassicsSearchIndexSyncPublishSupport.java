@@ -6,12 +6,16 @@ import com.thundax.kuzhambu.classics.facade.dto.ClassicsSearchIndexSyncEventFaca
 import com.thundax.kuzhambu.classics.facade.dto.ClassicsSearchIndexSyncMessageFacadeDto;
 import java.util.Date;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Component
 public class ClassicsSearchIndexSyncPublishSupport {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClassicsSearchIndexSyncPublishSupport.class);
 
     private final ClassicsSearchIndexSyncPublisher publisher;
 
@@ -34,7 +38,18 @@ public class ClassicsSearchIndexSyncPublishSupport {
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
-                publisher.publish(message);
+                try {
+                    publisher.publish(message);
+                } catch (RuntimeException ex) {
+                    LOGGER.warn(
+                            "Failed to publish classics search index sync message after commit: eventId={},"
+                                    + " eventType={}, contentType={}, contentId={}",
+                            message.getEventId(),
+                            message.getEventType(),
+                            message.getContentType(),
+                            message.getContentId(),
+                            ex);
+                }
             }
         });
     }
