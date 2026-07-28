@@ -7,7 +7,7 @@ public final class MingCustomsKeywordIdCodec {
     private MingCustomsKeywordIdCodec() {}
 
     public static MingCustomsKeywordId toDomain(Long value) {
-        return MingCustomsKeywordId.ofNullable(value);
+        return value == null ? null : new MingCustomsKeywordId(value);
     }
 
     public static Long toValue(MingCustomsKeywordId id) {

@@ -15,6 +15,7 @@ import com.thundax.kuzhambu.operations.application.report.result.OperationsRepor
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportPageResult;
 import com.thundax.kuzhambu.operations.application.report.support.OperationsReportSupportModels.OperationsReportArtifactResult;
 import com.thundax.kuzhambu.operations.application.report.support.OperationsReportTaskExecutor;
+import com.thundax.kuzhambu.operations.domain.report.codec.ReportIdCodec;
 import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
 import com.thundax.kuzhambu.operations.domain.report.model.enums.ReportStatus;
 import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
@@ -62,7 +63,7 @@ class ReportApplicationServiceImplTest {
                 20,
                 1,
                 List.of(new ReportRecord(
-                        ReportId.of(9001L),
+                        ReportIdCodec.toDomain(9001L),
                         "MONTHLY",
                         "HTML",
                         new Date(1_718_000_000_000L),
@@ -101,7 +102,7 @@ class ReportApplicationServiceImplTest {
         ReportApplicationServiceImpl service =
                 new ReportApplicationServiceImpl(new CapturingReportRepository(), new RecordingTaskExecutor());
         OperationsReportDetailQuery query = new OperationsReportDetailQuery();
-        query.setReportId(ReportId.of(9001L));
+        query.setReportId(ReportIdCodec.toDomain(9001L));
 
         OperationsReportDetailResult result = service.detail(query);
 
@@ -163,7 +164,7 @@ class ReportApplicationServiceImplTest {
         @Override
         public ReportId insert(ReportRecord record) {
             this.insertedRecord = record;
-            return ReportId.of(9001L);
+            return ReportIdCodec.toDomain(9001L);
         }
 
         @Override

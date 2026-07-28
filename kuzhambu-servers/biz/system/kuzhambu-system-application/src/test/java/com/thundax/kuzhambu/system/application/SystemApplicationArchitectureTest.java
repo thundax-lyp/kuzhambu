@@ -29,6 +29,7 @@ class SystemApplicationArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertApplicationServicesUseApplicationServiceSuffix(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertCodecPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertValueObjectPlacement(classes, BASE_PACKAGE);
+        NamingArchitectureRuleSupport.assertValueObjectIdSourcesDeclareNoStaticMethods(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertEntityPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertServiceQueryObjectsUnderServiceQueryPackage(classes);
         SortableArchitectureRuleSupport.assertSortCommandsUseOrderedIdsOnly(Path.of("src/main/java"));

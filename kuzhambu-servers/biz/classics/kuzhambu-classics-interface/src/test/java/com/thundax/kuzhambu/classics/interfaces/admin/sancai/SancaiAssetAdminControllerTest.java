@@ -9,16 +9,16 @@ import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImage
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageContent;
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageResource;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
-import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
+import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryDraftIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryImageIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVisualAssetIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryDraft;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVisualAsset;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageType;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisualAssetStatus;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryDraftId;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisualAssetId;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiAssetAdminController;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiAssetRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntryImageSortRequest;
@@ -295,13 +295,13 @@ class SancaiAssetAdminControllerTest {
                 new Class<?>[] {SancaiAssetApplicationService.class},
                 (proxy, method, args) -> {
                     if ("updateDraft".equals(method.getName())) {
-                        return SancaiEntryDraftId.of(6001L);
+                        return SancaiEntryDraftIdCodec.toDomain(6001L);
                     }
                     if ("getLatestDraft".equals(method.getName())) {
                         return new SancaiEntryDraft();
                     }
                     if ("updateImage".equals(method.getName())) {
-                        return SancaiEntryImageId.of(8001L);
+                        return SancaiEntryImageIdCodec.toDomain(8001L);
                     }
                     if ("getImage".equals(method.getName())) {
                         return image();
@@ -318,48 +318,48 @@ class SancaiAssetAdminControllerTest {
                         return imageResource();
                     }
                     if ("getImageContent".equals(method.getName())) {
-                        assertEquals(SancaiEntryId.of(3001L), args[0]);
-                        assertEquals(SancaiEntryImageId.of(8002L), args[1]);
+                        assertEquals(SancaiEntryIdCodec.toDomain(3001L), args[0]);
+                        assertEquals(SancaiEntryImageIdCodec.toDomain(8002L), args[1]);
                         return new SancaiEntryImageContent(3001L, 8002L, 7001L, storedContent());
                     }
                     if ("sortImages".equals(method.getName())) {
                         SancaiEntryImageSortCommand command = (SancaiEntryImageSortCommand) args[0];
-                        assertEquals(List.of(SancaiEntryImageId.of(8002L)), command.getOrderedIds());
+                        assertEquals(List.of(SancaiEntryImageIdCodec.toDomain(8002L)), command.getOrderedIds());
                         return null;
                     }
                     if ("deleteImage".equals(method.getName())) {
-                        assertEquals(SancaiEntryImageId.of(8002L), args[0]);
+                        assertEquals(SancaiEntryImageIdCodec.toDomain(8002L), args[0]);
                         return null;
                     }
                     if ("useImage".equals(method.getName())) {
-                        assertEquals(SancaiEntryId.of(3001L), args[0]);
-                        assertEquals(SancaiEntryImageId.of(8002L), args[1]);
+                        assertEquals(SancaiEntryIdCodec.toDomain(3001L), args[0]);
+                        assertEquals(SancaiEntryImageIdCodec.toDomain(8002L), args[1]);
                         return null;
                     }
                     if ("listImages".equals(method.getName())) {
-                        assertEquals(SancaiEntryId.of(3001L), args[0]);
+                        assertEquals(SancaiEntryIdCodec.toDomain(3001L), args[0]);
                         return List.of(image());
                     }
                     if ("updateVisualAsset".equals(method.getName())) {
-                        return SancaiVisualAssetId.of(5001L);
+                        return SancaiVisualAssetIdCodec.toDomain(5001L);
                     }
                     if ("useVisualAsset".equals(method.getName())) {
-                        assertEquals(SancaiEntryId.of(3001L), args[0]);
-                        assertEquals(SancaiVisualAssetId.of(5001L), args[1]);
+                        assertEquals(SancaiEntryIdCodec.toDomain(3001L), args[0]);
+                        assertEquals(SancaiVisualAssetIdCodec.toDomain(5001L), args[1]);
                         return null;
                     }
                     if ("listVisualAssets".equals(method.getName())) {
-                        assertEquals(SancaiEntryId.of(3001L), args[0]);
+                        assertEquals(SancaiEntryIdCodec.toDomain(3001L), args[0]);
                         return List.of(visualAsset());
                     }
                     if ("getVisualAssetSourceContent".equals(method.getName())) {
-                        assertEquals(SancaiEntryId.of(3001L), args[0]);
-                        assertEquals(SancaiVisualAssetId.of(5001L), args[1]);
+                        assertEquals(SancaiEntryIdCodec.toDomain(3001L), args[0]);
+                        assertEquals(SancaiVisualAssetIdCodec.toDomain(5001L), args[1]);
                         return storedContent();
                     }
                     if ("getVisualAssetGeneratedContent".equals(method.getName())) {
-                        assertEquals(SancaiEntryId.of(3001L), args[0]);
-                        assertEquals(SancaiVisualAssetId.of(5001L), args[1]);
+                        assertEquals(SancaiEntryIdCodec.toDomain(3001L), args[0]);
+                        assertEquals(SancaiVisualAssetIdCodec.toDomain(5001L), args[1]);
                         return generatedContent();
                     }
                     throw new UnsupportedOperationException(method.getName());
@@ -368,8 +368,8 @@ class SancaiAssetAdminControllerTest {
 
     private static SancaiEntryImage image() {
         SancaiEntryImage image = new SancaiEntryImage();
-        image.setId(SancaiEntryImageId.of(8002L));
-        image.setEntryId(SancaiEntryId.of(3001L));
+        image.setId(SancaiEntryImageIdCodec.toDomain(8002L));
+        image.setEntryId(SancaiEntryIdCodec.toDomain(3001L));
         image.setImageType(SancaiEntryImageType.ORIGINAL);
         image.setTitle("山川图");
         image.setCurrentUsed(true);
@@ -401,12 +401,12 @@ class SancaiAssetAdminControllerTest {
 
     private static SancaiVisualAsset visualAsset() {
         SancaiVisualAsset visualAsset = new SancaiVisualAsset();
-        visualAsset.setId(SancaiVisualAssetId.of(5001L));
-        visualAsset.setEntryId(SancaiEntryId.of(3001L));
+        visualAsset.setId(SancaiVisualAssetIdCodec.toDomain(5001L));
+        visualAsset.setEntryId(SancaiEntryIdCodec.toDomain(3001L));
         visualAsset.setVersionNo(2);
         visualAsset.setStatus(SancaiVisualAssetStatus.READY);
-        visualAsset.setSourceImageStorageObjectId(StorageObjectId.of(7001L));
-        visualAsset.setGeneratedImageStorageObjectId(StorageObjectId.of(7002L));
+        visualAsset.setSourceImageStorageObjectId(StorageObjectIdCodec.toDomain(7001L));
+        visualAsset.setGeneratedImageStorageObjectId(StorageObjectIdCodec.toDomain(7002L));
         visualAsset.setCurrentUsed(true);
         visualAsset.setTextWeight(60);
         visualAsset.setImageWeight(40);

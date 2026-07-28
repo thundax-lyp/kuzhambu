@@ -16,6 +16,7 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoverySynon
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoveryTagHintResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.service.KnowledgeTaxonomyReadApplicationService;
 import com.thundax.kuzhambu.knowledge.domain.service.KnowledgeTagBindingDomainService;
+import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.TagIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.Tag;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.ContentType;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagSource;
@@ -127,7 +128,7 @@ class KnowledgeFacadeImplTest {
         KnowledgeTagBindingDomainService knowledgeTagBindingDomainService =
                 mock(KnowledgeTagBindingDomainService.class);
         Tag tag = new Tag();
-        tag.setTagId(TagId.of(9L));
+        tag.setTagId(TagIdCodec.toDomain(9L));
         tag.setName("礼制");
         when(knowledgeTagBindingDomainService.resolveOrCreateManualTag("礼制")).thenReturn(tag);
         when(knowledgeTagBindingDomainService.resolveOrCreateAiTag("礼制")).thenReturn(tag);

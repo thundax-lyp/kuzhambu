@@ -1,11 +1,11 @@
 package com.thundax.kuzhambu.classics.application.cleanup.service.impl;
 
 import com.thundax.kuzhambu.classics.application.cleanup.service.ClassicsCleanupApplicationService;
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentExportJobId;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentExportJobIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryDraftId;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryDraftIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiAssetRepository;
-import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
+import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareLinkIdCodec;
 import com.thundax.kuzhambu.classics.domain.sharing.repository.ClassicsSharingRepository;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import java.util.Date;
@@ -81,11 +81,11 @@ public class ClassicsCleanupApplicationServiceImpl implements ClassicsCleanupApp
             int affectedRows =
                     switch (normalizedType) {
                         case CLEANUP_TYPE_EXPIRED_SHARE ->
-                            sharingRepository.markShareLinkExpired(ClassicsShareLinkId.ofNullable(targetId));
+                            sharingRepository.markShareLinkExpired(ClassicsShareLinkIdCodec.toDomain(targetId));
                         case CLEANUP_TYPE_EXPIRED_DRAFT ->
-                            sancaiAssetRepository.deleteDraftById(SancaiEntryDraftId.ofNullable(targetId));
+                            sancaiAssetRepository.deleteDraftById(SancaiEntryDraftIdCodec.toDomain(targetId));
                         case CLEANUP_TYPE_EXPIRED_EXPORT ->
-                            contentRepository.markExportJobExpired(ClassicsContentExportJobId.ofNullable(targetId));
+                            contentRepository.markExportJobExpired(ClassicsContentExportJobIdCodec.toDomain(targetId));
                         default -> 0;
                     };
             return affectedRows > 0

@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
 import com.thundax.kuzhambu.classics.domain.content.service.ClassicsContentVersioningService;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import java.util.Date;
@@ -26,7 +26,7 @@ class ClassicsContentVersioningServiceTest {
     @Test
     void needsVersionShouldUseContentUpdatedAtAgainstCurrentVersionedAt() {
         SancaiEntry entry = new SancaiEntry();
-        entry.setCurrentVersionId(ClassicsContentVersionId.of(1L));
+        entry.setCurrentVersionId(ClassicsContentVersionIdCodec.toDomain(1L));
         entry.setCurrentVersionedAt(new Date(2_000L));
         entry.setContentUpdatedAt(new Date(1_000L));
 
@@ -40,7 +40,7 @@ class ClassicsContentVersioningServiceTest {
     void markVersionedShouldBackfillCurrentVersionMarker() {
         SancaiEntry entry = new SancaiEntry();
         ClassicsContentVersion version = new ClassicsContentVersion();
-        version.setId(ClassicsContentVersionId.of(9L));
+        version.setId(ClassicsContentVersionIdCodec.toDomain(9L));
         version.setVersionNo(3);
         version.setVersionedAt(new Date(4_000L));
 

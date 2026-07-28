@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.system.domain.auth.model.entity;
 
+import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalClientIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalAuthenticationMethod;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalLoginEventType;
@@ -45,7 +46,7 @@ public class PrincipalLoginEvent {
     private String reason;
 
     public void setClientId(String clientId) {
-        this.clientId = PrincipalClientId.ofNullable(clientId);
+        this.clientId = PrincipalClientIdCodec.toDomain(clientId);
     }
 
     public void setClientId(PrincipalClientId clientId) {

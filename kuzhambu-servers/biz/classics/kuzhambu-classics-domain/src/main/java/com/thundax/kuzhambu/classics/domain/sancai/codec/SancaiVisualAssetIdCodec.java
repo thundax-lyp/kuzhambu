@@ -7,7 +7,7 @@ public final class SancaiVisualAssetIdCodec {
     private SancaiVisualAssetIdCodec() {}
 
     public static SancaiVisualAssetId toDomain(Long value) {
-        return SancaiVisualAssetId.ofNullable(value);
+        return value == null ? null : new SancaiVisualAssetId(value);
     }
 
     public static Long toValue(SancaiVisualAssetId id) {

@@ -9,7 +9,7 @@ public final class TagAliasIdCodec {
     private TagAliasIdCodec() {}
 
     public static TagAliasId toDomain(Long value) {
-        return TagAliasId.ofNullable(value);
+        return value == null ? null : new TagAliasId(value);
     }
 
     public static TagAliasId toDomain(String value) {

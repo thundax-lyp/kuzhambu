@@ -7,7 +7,7 @@ public final class SancaiShowcaseIdCodec {
     private SancaiShowcaseIdCodec() {}
 
     public static SancaiShowcaseId toDomain(Long value) {
-        return SancaiShowcaseId.ofNullable(value);
+        return value == null ? null : new SancaiShowcaseId(value);
     }
 
     public static Long toValue(SancaiShowcaseId id) {

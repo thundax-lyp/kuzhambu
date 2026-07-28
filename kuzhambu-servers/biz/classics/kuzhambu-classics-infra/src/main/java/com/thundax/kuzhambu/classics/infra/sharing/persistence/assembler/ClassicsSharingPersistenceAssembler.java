@@ -3,8 +3,6 @@ package com.thundax.kuzhambu.classics.infra.sharing.persistence.assembler;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareAccessRecordIdCodec;
 import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareLinkIdCodec;
@@ -108,7 +106,7 @@ public final class ClassicsSharingPersistenceAssembler {
                         dataObject.getContentType() == null
                                 ? null
                                 : ClassicsContentType.from(dataObject.getContentType()),
-                        ClassicsContentId.ofNullable(dataObject.getContentId()),
+                        ClassicsContentIdCodec.toDomain(dataObject.getContentId()),
                         ClassicsContentVersionIdCodec.toDomain(dataObject.getContentVersionId()),
                         dataObject.getContentVersionNo(),
                         dataObject.getTitleSnapshot(),
@@ -145,8 +143,8 @@ public final class ClassicsSharingPersistenceAssembler {
                         dataObject.getContentType() == null
                                 ? null
                                 : ClassicsContentType.from(dataObject.getContentType()),
-                        ClassicsContentId.ofNullable(dataObject.getContentId()),
-                        ClassicsContentVersionId.ofNullable(dataObject.getContentVersionId()),
+                        ClassicsContentIdCodec.toDomain(dataObject.getContentId()),
+                        ClassicsContentVersionIdCodec.toDomain(dataObject.getContentVersionId()),
                         dataObject.getContentVersionNo(),
                         dataObject.getTitleSnapshot(),
                         dataObject.getContentVisibilitySnapshot() == null

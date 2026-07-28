@@ -8,7 +8,7 @@ public final class PrincipalRefreshTokenIdCodec {
     private PrincipalRefreshTokenIdCodec() {}
 
     public static PrincipalRefreshTokenId toDomain(String value) {
-        return PrincipalRefreshTokenId.ofNullable(value);
+        return value == null || value.trim().isEmpty() ? null : new PrincipalRefreshTokenId(value);
     }
 
     public static String toValue(PrincipalRefreshTokenId id) {

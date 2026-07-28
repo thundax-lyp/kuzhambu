@@ -13,6 +13,7 @@ import com.thundax.kuzhambu.storage.application.service.command.AbortMultipartUp
 import com.thundax.kuzhambu.storage.application.service.command.CompleteMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.service.command.InitMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.service.command.UploadMultipartPartCommand;
+import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
@@ -20,7 +21,6 @@ import com.thundax.kuzhambu.storage.domain.object.model.enums.MultipartUploadSta
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
-import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.StorageObjectController;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.AbortMultipartUploadRequest;
 import com.thundax.kuzhambu.storage.interfaces.admin.object.controller.request.CompleteMultipartUploadRequest;
@@ -281,7 +281,7 @@ class StorageObjectMultipartUploadContractTest {
                         CompleteMultipartUploadCommand command = (CompleteMultipartUploadCommand) args[0];
                         commandRef.set(command);
                         StoredObject storage = new StoredObject();
-                        storage.setId(StoredObjectId.of(22L));
+                        storage.setId(StoredObjectIdCodec.toDomain(22L));
                         storage.setOriginalFilename("sancai.bin");
                         storage.setMimeType("application/octet-stream");
                         storage.setBucketName("bucket-b");

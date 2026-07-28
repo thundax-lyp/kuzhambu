@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.storage.application.facade.assembler;
 
 import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
 import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
+import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
@@ -39,7 +40,7 @@ public class StorageReadableContentFacadeAssembler {
         if (request == null || request.getStorageObjectId() == null) {
             return null;
         }
-        return StoredObjectId.of(request.getStorageObjectId());
+        return StoredObjectIdCodec.toDomain(request.getStorageObjectId());
     }
 
     public StorageQuery toQuery(ListStorageFacadeRequest request) {

@@ -18,6 +18,7 @@ import com.thundax.kuzhambu.storage.application.service.command.RemoveStorageRef
 import com.thundax.kuzhambu.storage.application.service.command.UploadStorageObjectCommand;
 import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
 import com.thundax.kuzhambu.storage.application.service.result.StorageUploadResult;
+import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
@@ -48,7 +49,7 @@ class StorageApplicationServiceUploadTest {
         StorageApplicationServiceImpl service =
                 new StorageApplicationServiceImpl(repository, referenceRepository, contentRepository);
         when(repository.maxPriority()).thenReturn(0);
-        when(repository.insert(any())).thenReturn(StoredObjectId.of(100L));
+        when(repository.insert(any())).thenReturn(StoredObjectIdCodec.toDomain(100L));
         when(contentRepository.save(any(), any())).thenAnswer(invocation -> {
             StoredObject storage = invocation.getArgument(0);
             storage.setBucketName("local");
@@ -80,7 +81,7 @@ class StorageApplicationServiceUploadTest {
         assertEquals("zip", result.getStorage().getExtendName());
         assertEquals(PAYLOAD.length, result.getStorage().getSize());
         assertEquals("/api/storage/object/100/content", result.getStorage().getAccessEndpoint());
-        assertEquals(StoredObjectId.of(100L), result.getStorage().getId());
+        assertEquals(StoredObjectIdCodec.toDomain(100L), result.getStorage().getId());
     }
 
     @Test
@@ -179,10 +180,14 @@ class StorageApplicationServiceUploadTest {
         });
 
         service.addReferences(new AddStorageReferencesCommand(List.of(
-                new StoredObjectReference(StoredObjectId.of(100L), "owner-1", StorageOwnerType.USER.value(), null),
-                new StoredObjectReference(StoredObjectId.of(100L), "owner-1", StorageOwnerType.USER.value(), null),
-                new StoredObjectReference(StoredObjectId.of(100L), "owner-2", StorageOwnerType.USER.value(), null),
-                new StoredObjectReference(StoredObjectId.of(101L), "owner-1", StorageOwnerType.USER.value(), null))));
+                new StoredObjectReference(
+                        StoredObjectIdCodec.toDomain(100L), "owner-1", StorageOwnerType.USER.value(), null),
+                new StoredObjectReference(
+                        StoredObjectIdCodec.toDomain(100L), "owner-1", StorageOwnerType.USER.value(), null),
+                new StoredObjectReference(
+                        StoredObjectIdCodec.toDomain(100L), "owner-2", StorageOwnerType.USER.value(), null),
+                new StoredObjectReference(
+                        StoredObjectIdCodec.toDomain(101L), "owner-1", StorageOwnerType.USER.value(), null))));
 
         verify(referenceRepository).insertReferences(argThat(references -> {
             if (!(references instanceof List)) {
@@ -218,15 +223,16 @@ class StorageApplicationServiceUploadTest {
         StorageApplicationServiceImpl service = new StorageApplicationServiceImpl(
                 storageRepository, referenceRepository, mock(StoredObjectContentRepository.class));
         when(referenceRepository.exists(any())).thenReturn(true);
-        when(referenceRepository.countByObjectId(StoredObjectId.of(100L))).thenReturn(1L);
+        when(referenceRepository.countByObjectId(StoredObjectIdCodec.toDomain(100L)))
+                .thenReturn(1L);
 
-        service.addReferences(new AddStorageReferencesCommand(List.of(
-                new StoredObjectReference(StoredObjectId.of(100L), "owner-1", StorageOwnerType.USER.value(), null))));
+        service.addReferences(new AddStorageReferencesCommand(List.of(new StoredObjectReference(
+                StoredObjectIdCodec.toDomain(100L), "owner-1", StorageOwnerType.USER.value(), null))));
 
         verify(referenceRepository, never()).insertReferences(any());
         verify(storageRepository)
                 .updateReferenceStatus(argThat(storage -> storage != null
-                        && StoredObjectId.of(100L).equals(storage.getId())
+                        && StoredObjectIdCodec.toDomain(100L).equals(storage.getId())
                         && StoredObjectReferenceStatus.REFERENCED == storage.getReferenceStatus()));
     }
 
@@ -236,14 +242,15 @@ class StorageApplicationServiceUploadTest {
         StoredObjectRepository storageRepository = mock(StoredObjectRepository.class);
         StorageApplicationServiceImpl service = new StorageApplicationServiceImpl(
                 storageRepository, referenceRepository, mock(StoredObjectContentRepository.class));
-        when(referenceRepository.countByObjectId(StoredObjectId.of(100L))).thenReturn(0L);
+        when(referenceRepository.countByObjectId(StoredObjectIdCodec.toDomain(100L)))
+                .thenReturn(0L);
 
-        service.addReferences(new AddStorageReferencesCommand(List.of(
-                new StoredObjectReference(StoredObjectId.of(100L), null, StorageOwnerType.USER.value(), null))));
+        service.addReferences(new AddStorageReferencesCommand(List.of(new StoredObjectReference(
+                StoredObjectIdCodec.toDomain(100L), null, StorageOwnerType.USER.value(), null))));
 
         verify(referenceRepository, never()).insertReferences(any());
         verify(storageRepository)
-                .updateReferenceStatus(argThat(storage -> storage.getId().equals(StoredObjectId.of(100L))
+                .updateReferenceStatus(argThat(storage -> storage.getId().equals(StoredObjectIdCodec.toDomain(100L))
                         && storage.getReferenceStatus() == StoredObjectReferenceStatus.UNREFERENCED));
     }
 
@@ -255,9 +262,11 @@ class StorageApplicationServiceUploadTest {
                 storageRepository, referenceRepository, mock(StoredObjectContentRepository.class));
         StorageOwnerRef ownerRef = StorageOwnerRef.of(StorageOwnerType.USER, "owner-1");
         when(referenceRepository.listObjectIdsByOwner(ownerRef))
-                .thenReturn(List.of(StoredObjectId.of(100L), StoredObjectId.of(101L)));
-        when(referenceRepository.countByObjectId(StoredObjectId.of(100L))).thenReturn(0L);
-        when(referenceRepository.countByObjectId(StoredObjectId.of(101L))).thenReturn(1L);
+                .thenReturn(List.of(StoredObjectIdCodec.toDomain(100L), StoredObjectIdCodec.toDomain(101L)));
+        when(referenceRepository.countByObjectId(StoredObjectIdCodec.toDomain(100L)))
+                .thenReturn(0L);
+        when(referenceRepository.countByObjectId(StoredObjectIdCodec.toDomain(101L)))
+                .thenReturn(1L);
 
         when(referenceRepository.deleteByOwner(ownerRef)).thenReturn(2);
 
@@ -265,10 +274,10 @@ class StorageApplicationServiceUploadTest {
 
         assertEquals(2, removed);
         verify(storageRepository)
-                .updateReferenceStatus(argThat(storage -> storage.getId().equals(StoredObjectId.of(100L))
+                .updateReferenceStatus(argThat(storage -> storage.getId().equals(StoredObjectIdCodec.toDomain(100L))
                         && storage.getReferenceStatus() == StoredObjectReferenceStatus.UNREFERENCED));
         verify(storageRepository)
-                .updateReferenceStatus(argThat(storage -> storage.getId().equals(StoredObjectId.of(101L))
+                .updateReferenceStatus(argThat(storage -> storage.getId().equals(StoredObjectIdCodec.toDomain(101L))
                         && storage.getReferenceStatus() == StoredObjectReferenceStatus.REFERENCED));
         verify(storageRepository, times(2)).updateReferenceStatus(any());
     }
@@ -279,13 +288,13 @@ class StorageApplicationServiceUploadTest {
         StoredObjectRepository storageRepository = mock(StoredObjectRepository.class);
         StorageApplicationServiceImpl service = new StorageApplicationServiceImpl(
                 storageRepository, referenceRepository, mock(StoredObjectContentRepository.class));
-        StoredObject storage = storage(StoredObjectId.of(100L), StoredObjectStatus.ACTIVE);
+        StoredObject storage = storage(StoredObjectIdCodec.toDomain(100L), StoredObjectStatus.ACTIVE);
         storage.setReferenceStatus(StoredObjectReferenceStatus.REFERENCED);
-        when(storageRepository.getById(StoredObjectId.of(100L))).thenReturn(storage);
+        when(storageRepository.getById(StoredObjectIdCodec.toDomain(100L))).thenReturn(storage);
         when(referenceRepository.exists(any())).thenReturn(false);
 
         StorageQuery query = new StorageQuery();
-        query.setId(StoredObjectId.of(100L));
+        query.setId(StoredObjectIdCodec.toDomain(100L));
         query.setReferenceOwnerType(StorageOwnerType.USER.value());
         query.setReferenceOwnerId("owner-2");
 
@@ -299,10 +308,10 @@ class StorageApplicationServiceUploadTest {
                 storageRepository,
                 mock(StoredObjectReferenceRepository.class),
                 mock(StoredObjectContentRepository.class));
-        StoredObject storage = storage(StoredObjectId.of(100L), StoredObjectStatus.DELETING);
-        when(storageRepository.getById(StoredObjectId.of(100L))).thenReturn(storage);
+        StoredObject storage = storage(StoredObjectIdCodec.toDomain(100L), StoredObjectStatus.DELETING);
+        when(storageRepository.getById(StoredObjectIdCodec.toDomain(100L))).thenReturn(storage);
 
-        assertThrows(RuntimeException.class, () -> service.openReadableContent(StoredObjectId.of(100L)));
+        assertThrows(RuntimeException.class, () -> service.openReadableContent(StoredObjectIdCodec.toDomain(100L)));
     }
 
     private static StoredObject storage(StoredObjectId id, StoredObjectStatus status) {

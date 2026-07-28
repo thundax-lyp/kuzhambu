@@ -29,7 +29,7 @@ import com.thundax.kuzhambu.knowledge.application.workbench.support.KnowledgeGra
 import com.thundax.kuzhambu.knowledge.application.workbench.support.KnowledgeGraphManuscriptPayloadBuilder.ManuscriptExtractionPayload;
 import com.thundax.kuzhambu.knowledge.application.workbench.support.KnowledgeGraphManuscriptTreeAssembler;
 import com.thundax.kuzhambu.knowledge.application.workbench.support.KnowledgeGraphManuscriptTreeAssembler.ManuscriptGraphSnapshot;
-import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTaskIdCodec;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -163,10 +163,10 @@ public class KnowledgeGraphWorkbenchApplicationServiceImpl implements KnowledgeG
             throw new BizException("Knowledge graph candidate taskId is required");
         }
         GraphExtractionTaskResult detail =
-                graphExtractionApplicationService.getTaskDetail(GraphExtractionTaskId.ofNullable(taskId));
+                graphExtractionApplicationService.getTaskDetail(GraphExtractionTaskIdCodec.toDomain(taskId));
         ensureSancaiSource(detail == null ? null : detail.getSourceContentType());
         GraphExtractionTaskResult task =
-                graphExtractionApplicationService.applyTaskCandidate(GraphExtractionTaskId.ofNullable(taskId));
+                graphExtractionApplicationService.applyTaskCandidate(GraphExtractionTaskIdCodec.toDomain(taskId));
         GraphVersionResult version =
                 latestVersion(task.getTaskType(), task.getSourceContentType(), task.getSourceContentId());
         return CandidateApplyResult.builder()

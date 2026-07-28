@@ -5,6 +5,7 @@ import com.alicp.jetcache.anno.CacheType;
 import com.alicp.jetcache.anno.CreateCache;
 import com.thundax.kuzhambu.common.cache.CacheDTO;
 import com.thundax.kuzhambu.common.cache.KuzhambuCacheNames;
+import com.thundax.kuzhambu.system.domain.auth.codec.PreAuthSessionIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PreAuthSession;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PreAuthSession.PreAuthSessionValue;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PreAuthSession.RefreshTokenValue;
@@ -64,7 +65,7 @@ public class PreAuthSessionRepositoryImpl implements PreAuthSessionRepository {
         if (token == null) {
             return null;
         }
-        return PreAuthSessionId.ofNullable((String) cache.get(TOKEN_PREFIX + token.asString()));
+        return PreAuthSessionIdCodec.toDomain((String) cache.get(TOKEN_PREFIX + token.asString()));
     }
 
     @Override
@@ -72,7 +73,7 @@ public class PreAuthSessionRepositoryImpl implements PreAuthSessionRepository {
         if (refreshToken == null) {
             return null;
         }
-        return PreAuthSessionId.ofNullable((String) cache.get(REFRESH_TOKEN_PREFIX + refreshToken.asString()));
+        return PreAuthSessionIdCodec.toDomain((String) cache.get(REFRESH_TOKEN_PREFIX + refreshToken.asString()));
     }
 
     @Override
@@ -154,7 +155,7 @@ public class PreAuthSessionRepositoryImpl implements PreAuthSessionRepository {
             items.put(entry.getKey(), PreAuthSessionValue.of(entry.getValue().value, entry.getValue().expiredAt));
         }
         return PreAuthSession.restore(
-                PreAuthSessionId.of(cacheDTO.id),
+                PreAuthSessionIdCodec.toDomain(cacheDTO.id),
                 PreAuthSessionToken.of(cacheDTO.token),
                 refreshTokens,
                 cacheDTO.expiredAt,

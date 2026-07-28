@@ -8,8 +8,8 @@ import static org.mockito.Mockito.when;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTaskIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
-import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphExtractionTaskDO;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.mapper.GraphExtractionTaskMapper;
 import java.util.Date;
@@ -24,7 +24,7 @@ class GraphExtractionTaskRepositoryImplTest {
         GraphExtractionTaskRepositoryImpl repository = new GraphExtractionTaskRepositoryImpl(mapper);
         when(mapper.selectOne(any())).thenReturn(dataObject(9001L));
 
-        GraphExtractionTask result = repository.getByTaskId(GraphExtractionTaskId.of(9001L));
+        GraphExtractionTask result = repository.getByTaskId(GraphExtractionTaskIdCodec.toDomain(9001L));
 
         assertNotNull(result);
         assertEquals(9001L, result.getTaskId().value());

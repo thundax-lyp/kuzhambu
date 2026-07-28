@@ -9,7 +9,7 @@ public final class RoleIdCodec {
     private RoleIdCodec() {}
 
     public static RoleId toDomain(Long value) {
-        return RoleId.ofNullable(value);
+        return value == null ? null : new RoleId(value);
     }
 
     public static RoleId toDomain(String value) {

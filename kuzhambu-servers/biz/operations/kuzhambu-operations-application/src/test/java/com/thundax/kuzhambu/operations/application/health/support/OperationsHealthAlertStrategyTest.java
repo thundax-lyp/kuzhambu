@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.operations.domain.health.codec.HealthAlertIdCodec;
+import com.thundax.kuzhambu.operations.domain.health.codec.HealthCheckIdCodec;
 import com.thundax.kuzhambu.operations.domain.health.model.entity.HealthAlertRecord;
 import com.thundax.kuzhambu.operations.domain.health.model.entity.HealthCheckRecord;
 import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthAlertId;
@@ -163,7 +165,7 @@ class OperationsHealthAlertStrategyTest {
 
     private static HealthCheckRecord healthRecord(long checkId, String component, String healthStatus, Date checkedAt) {
         return new HealthCheckRecord(
-                HealthCheckId.of(checkId),
+                HealthCheckIdCodec.toDomain(checkId),
                 component,
                 healthStatus,
                 12,
@@ -176,14 +178,14 @@ class OperationsHealthAlertStrategyTest {
 
     private static HealthAlertRecord openAlert(long alertId, String component, String alertType, String alertStatus) {
         return new HealthAlertRecord(
-                HealthAlertId.of(alertId),
+                HealthAlertIdCodec.toDomain(alertId),
                 component,
                 alertType,
                 "CRITICAL",
                 alertStatus,
                 "HEALTH_CHECK",
                 9001L,
-                HealthCheckId.of(9001L),
+                HealthCheckIdCodec.toDomain(9001L),
                 "message",
                 "suggestion",
                 "OPEN_HEALTH_DETAIL",

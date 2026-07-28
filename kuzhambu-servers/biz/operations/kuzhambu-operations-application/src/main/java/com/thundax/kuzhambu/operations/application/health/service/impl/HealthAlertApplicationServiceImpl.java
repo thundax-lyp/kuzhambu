@@ -13,7 +13,7 @@ import com.thundax.kuzhambu.operations.application.health.service.HealthAlertApp
 import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthRecoveryLinkFactory;
 import com.thundax.kuzhambu.operations.application.restore.command.OperationsRestoreExecuteCommand;
 import com.thundax.kuzhambu.operations.application.restore.service.RestoreApplicationService;
-import com.thundax.kuzhambu.operations.domain.backup.model.valueobject.BackupId;
+import com.thundax.kuzhambu.operations.domain.backup.codec.BackupIdCodec;
 import com.thundax.kuzhambu.operations.domain.health.model.entity.HealthAlertRecord;
 import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthAlertId;
 import com.thundax.kuzhambu.operations.domain.health.repository.HealthAlertRepository;
@@ -106,8 +106,8 @@ public class HealthAlertApplicationServiceImpl implements HealthAlertApplication
             if (restoreApplicationService == null) {
                 throw new IllegalStateException("Operations restore recovery action is not available.");
             }
-            restoreApplicationService.execute(
-                    new OperationsRestoreExecuteCommand(BackupId.of(backupId), command.getRecoveredByUserId()));
+            restoreApplicationService.execute(new OperationsRestoreExecuteCommand(
+                    BackupIdCodec.toDomain(backupId), command.getRecoveredByUserId()));
         }
     }
 

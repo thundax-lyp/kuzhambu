@@ -7,7 +7,7 @@ public final class ClassicsContentExportJobIdCodec {
     private ClassicsContentExportJobIdCodec() {}
 
     public static ClassicsContentExportJobId toDomain(Long value) {
-        return ClassicsContentExportJobId.ofNullable(value);
+        return value == null ? null : new ClassicsContentExportJobId(value);
     }
 
     public static Long toValue(ClassicsContentExportJobId id) {

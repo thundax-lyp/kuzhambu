@@ -134,7 +134,7 @@ public class HealthCheckRepositoryImpl implements HealthCheckRepository {
                         .last("LIMIT " + limit))
                 .stream()
                 .map(HealthCheckRepositoryImpl::longValue)
-                .map(HealthCheckId::of)
+                .map(HealthCheckIdCodec::toDomain)
                 .toList();
     }
 

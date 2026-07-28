@@ -42,13 +42,13 @@ import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionT
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphVersionRepository;
+import com.thundax.kuzhambu.knowledge.domain.refinement.codec.RefinementTaskIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.QualityAnnotation;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementEntityDraft;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementLineageNodeDraft;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementLineageRelationDraft;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementRelationDraft;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementTask;
-import com.thundax.kuzhambu.knowledge.domain.refinement.model.valueobject.RefinementTaskId;
 import com.thundax.kuzhambu.knowledge.domain.refinement.repository.QualityAnnotationRepository;
 import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementEntityDraftRepository;
 import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementLineageNodeDraftRepository;
@@ -163,7 +163,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
                 null,
                 null);
         Long taskId = refinementTaskRepository.save(task);
-        task.setRefinementTaskId(RefinementTaskId.of(taskId));
+        task.setRefinementTaskId(RefinementTaskIdCodec.toDomain(taskId));
         entityDraftRepository.saveOrUpdateBatch(
                 draftBootstrapSupport.bootstrapEntityDrafts(taskId, graphVersionId, openedBy));
         relationDraftRepository.saveOrUpdateBatch(
@@ -179,7 +179,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
     @Transactional(readOnly = true)
     public RefinementDetailResult getTaskDetail(RefinementDetailQuery query) {
         return detail(refinementTaskRepository.getByTaskId(
-                RefinementTaskId.ofNullable(query == null ? null : query.getRefinementTaskId())));
+                RefinementTaskIdCodec.toDomain(query == null ? null : query.getRefinementTaskId())));
     }
 
     @Override
@@ -390,7 +390,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
     @Transactional(readOnly = true)
     public PageResult<QualityAnnotationResult> pageAnnotations(QualityAnnotationPageQuery query) {
         RefinementTask task = refinementTaskRepository.getByTaskId(
-                RefinementTaskId.ofNullable(query == null ? null : query.getRefinementTaskId()));
+                RefinementTaskIdCodec.toDomain(query == null ? null : query.getRefinementTaskId()));
         List<QualityAnnotationResult> records = qualityAnnotationRepository
                 .listBySource(
                         query == null ? null : query.getObjectType(),
@@ -423,7 +423,7 @@ public class KnowledgeGraphRefinementApplicationServiceImpl implements Knowledge
 
     @Override
     public RefinementApplyResult applyTask(Long refinementTaskId, Long appliedBy) {
-        RefinementTask task = refinementTaskRepository.getByTaskId(RefinementTaskId.ofNullable(refinementTaskId));
+        RefinementTask task = refinementTaskRepository.getByTaskId(RefinementTaskIdCodec.toDomain(refinementTaskId));
         applySupport.applyEntities(task.getGraphVersionId(), entityDraftRepository.listByTaskId(refinementTaskId));
         applySupport.applyRelations(task.getGraphVersionId(), relationDraftRepository.listByTaskId(refinementTaskId));
         applySupport.applyLineageNodes(

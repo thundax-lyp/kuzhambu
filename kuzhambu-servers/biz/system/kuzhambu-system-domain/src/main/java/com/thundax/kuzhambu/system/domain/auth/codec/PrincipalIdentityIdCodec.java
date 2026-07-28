@@ -7,7 +7,7 @@ public final class PrincipalIdentityIdCodec {
     private PrincipalIdentityIdCodec() {}
 
     public static PrincipalIdentityId toDomain(Long value) {
-        return PrincipalIdentityId.ofNullable(value);
+        return value == null ? null : new PrincipalIdentityId(value);
     }
 
     public static Long toValue(PrincipalIdentityId id) {

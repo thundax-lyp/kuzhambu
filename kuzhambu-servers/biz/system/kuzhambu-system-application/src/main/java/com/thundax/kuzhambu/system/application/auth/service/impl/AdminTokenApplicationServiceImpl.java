@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.system.application.auth.result.AdminTokenRefreshResu
 import com.thundax.kuzhambu.system.application.auth.service.AdminTokenApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
+import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalClientIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAccessToken;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalAuthSession;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
@@ -44,7 +45,7 @@ import org.springframework.stereotype.Service;
 public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationService {
 
     private static final int SESSION_RUNTIME_SAFETY_SECONDS = 10;
-    private static final PrincipalClientId ADMIN_CLIENT_ID = PrincipalClientId.of("admin-api");
+    private static final PrincipalClientId ADMIN_CLIENT_ID = PrincipalClientIdCodec.toDomain("admin-api");
 
     private final AuthProperties properties;
     private final PrincipalAuthSessionRepository principalAuthSessionRepository;
@@ -218,7 +219,7 @@ public class AdminTokenApplicationServiceImpl implements AdminTokenApplicationSe
             throw invalidToken();
         }
         PrincipalClientId requestedClientId =
-                PrincipalClientId.of(StringUtils.defaultIfBlank(clientId, ADMIN_CLIENT_ID.value()));
+                PrincipalClientIdCodec.toDomain(StringUtils.defaultIfBlank(clientId, ADMIN_CLIENT_ID.value()));
         PrincipalRefreshToken current = refreshTokenRepository.getByToken(refreshToken);
         Date now = new Date();
         if (current == null || !current.canRefresh(now) || !requestedClientId.equals(current.getClientId())) {

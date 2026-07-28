@@ -7,7 +7,7 @@ public final class BackupIdCodec {
     private BackupIdCodec() {}
 
     public static BackupId toDomain(Long value) {
-        return BackupId.ofNullable(value);
+        return value == null ? null : new BackupId(value);
     }
 
     public static Long toValue(BackupId id) {

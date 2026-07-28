@@ -11,16 +11,16 @@ import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentRes
 import com.thundax.kuzhambu.classics.application.sharing.result.SharePortalResult;
 import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
 import com.thundax.kuzhambu.classics.application.sharing.service.impl.ClassicsSharingApplicationServiceImpl;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
+import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareLinkIdCodec;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsSharePortalListItem;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareLinkStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareTargetStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsSharedContentVisibility;
-import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
 import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.ClassicsSharingPortalController;
 import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.ClassicsSharingPrivatePortalController;
 import com.thundax.kuzhambu.classics.interfaces.portal.sharing.controller.request.ClassicsSharePortalSearchRequest;
@@ -274,8 +274,8 @@ class ClassicsSharingPortalControllerTest {
     private static ClassicsShareTarget target() {
         ClassicsShareTarget target = new ClassicsShareTarget();
         target.setContentType(ClassicsContentType.SANCAI_ENTRY);
-        target.setContentId(ClassicsContentId.of(100L));
-        target.setContentVersionId(ClassicsContentVersionId.of(30L));
+        target.setContentId(ClassicsContentIdCodec.toDomain(100L));
+        target.setContentVersionId(ClassicsContentVersionIdCodec.toDomain(30L));
         target.setContentVersionNo(3);
         target.setTitleSnapshot("正式标题");
         target.setContentSnapshotJson(sancaiSnapshotJson());
@@ -288,8 +288,8 @@ class ClassicsSharingPortalControllerTest {
     private static ClassicsShareTarget wangqiTarget() {
         ClassicsShareTarget target = new ClassicsShareTarget();
         target.setContentType(ClassicsContentType.WANGQI_DOCUMENT);
-        target.setContentId(ClassicsContentId.of(200L));
-        target.setContentVersionId(ClassicsContentVersionId.of(40L));
+        target.setContentId(ClassicsContentIdCodec.toDomain(200L));
+        target.setContentVersionId(ClassicsContentVersionIdCodec.toDomain(40L));
         target.setContentVersionNo(1);
         target.setTitleSnapshot("王圻文档");
         target.setContentSnapshotJson("{\"contentType\":\"WANGQI_DOCUMENT\",\"contentId\":200,\"storageObjectId\":7002,"
@@ -303,8 +303,8 @@ class ClassicsSharingPortalControllerTest {
     private static ClassicsShareTarget deletedTarget() {
         ClassicsShareTarget target = new ClassicsShareTarget();
         target.setContentType(ClassicsContentType.SANCAI_ENTRY);
-        target.setContentId(ClassicsContentId.of(101L));
-        target.setContentVersionId(ClassicsContentVersionId.of(31L));
+        target.setContentId(ClassicsContentIdCodec.toDomain(101L));
+        target.setContentVersionId(ClassicsContentVersionIdCodec.toDomain(31L));
         target.setContentVersionNo(1);
         target.setTitleSnapshot("已删标题");
         target.setContentSnapshotJson("{\"contentType\":\"SANCAI_ENTRY\",\"contentId\":101,"
@@ -318,14 +318,14 @@ class ClassicsSharingPortalControllerTest {
 
     private static ClassicsSharePortalListItem listItem() {
         return new ClassicsSharePortalListItem(
-                ClassicsShareLinkId.of(10L),
+                ClassicsShareLinkIdCodec.toDomain(10L),
                 "share-token",
                 "公开分享",
                 new Date(1_000L),
                 new Date(3_000L),
                 ClassicsContentType.SANCAI_ENTRY,
-                ClassicsContentId.of(100L),
-                ClassicsContentVersionId.of(30L),
+                ClassicsContentIdCodec.toDomain(100L),
+                ClassicsContentVersionIdCodec.toDomain(30L),
                 3,
                 "正式标题",
                 ClassicsSharedContentVisibility.PUBLIC,

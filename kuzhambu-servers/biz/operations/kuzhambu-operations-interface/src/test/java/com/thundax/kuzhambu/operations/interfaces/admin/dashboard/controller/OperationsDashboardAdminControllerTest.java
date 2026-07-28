@@ -13,7 +13,7 @@ import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDa
 import com.thundax.kuzhambu.operations.application.dashboard.result.OperationsDashboardOverviewResult.TaskStatusSummaryResult;
 import com.thundax.kuzhambu.operations.application.dashboard.service.OperationsDashboardApplicationService;
 import com.thundax.kuzhambu.operations.application.health.result.OperationsHealthSummaryResult;
-import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthCheckId;
+import com.thundax.kuzhambu.operations.domain.health.codec.HealthCheckIdCodec;
 import com.thundax.kuzhambu.operations.interfaces.admin.dashboard.controller.request.OperationsDashboardOverviewRequest;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -73,7 +73,7 @@ class OperationsDashboardAdminControllerTest {
                         List.of(),
                         List.of(),
                         List.of(new OperationsHealthSummaryResult(
-                                HealthCheckId.of(9101L),
+                                HealthCheckIdCodec.toDomain(9101L),
                                 "admin-server",
                                 "UP",
                                 12,

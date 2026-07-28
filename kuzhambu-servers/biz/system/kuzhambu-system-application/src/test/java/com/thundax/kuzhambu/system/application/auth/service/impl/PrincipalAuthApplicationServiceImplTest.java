@@ -16,14 +16,14 @@ import com.thundax.kuzhambu.system.application.auth.service.PrincipalCredentialA
 import com.thundax.kuzhambu.system.application.auth.service.PrincipalIdentityApplicationService;
 import com.thundax.kuzhambu.system.application.auth.service.dto.PrincipalPasswordPolicyDTO;
 import com.thundax.kuzhambu.system.application.auth.utils.PasswordHelper;
+import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalCredentialIdCodec;
+import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalIdentityIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalCredential;
 import com.thundax.kuzhambu.system.domain.auth.model.entity.PrincipalIdentity;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalCredentialStatus;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalCredentialType;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityStatus;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalIdentityType;
-import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalCredentialId;
-import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalIdentityId;
 import org.junit.jupiter.api.Test;
 
 class PrincipalAuthApplicationServiceImplTest {
@@ -37,7 +37,7 @@ class PrincipalAuthApplicationServiceImplTest {
                 new PrincipalAuthApplicationServiceImpl(principalIdentityService, principalCredentialService);
 
         PrincipalIdentity identity = new PrincipalIdentity();
-        identity.setId(PrincipalIdentityId.of(100L));
+        identity.setId(PrincipalIdentityIdCodec.toDomain(100L));
         identity.setStatus(PrincipalIdentityStatus.ENABLED);
 
         PrincipalCredential credential = activePasswordCredential(1);
@@ -63,8 +63,8 @@ class PrincipalAuthApplicationServiceImplTest {
 
     private static PrincipalCredential activePasswordCredential(int failedCount) {
         PrincipalCredential credential = new PrincipalCredential();
-        credential.setId(PrincipalCredentialId.of(200L));
-        credential.setIdentityId(PrincipalIdentityId.of(100L));
+        credential.setId(PrincipalCredentialIdCodec.toDomain(200L));
+        credential.setIdentityId(PrincipalIdentityIdCodec.toDomain(100L));
         credential.setCredentialType(PrincipalCredentialType.USER_PASSWORD);
         credential.setCredentialValue(PasswordHelper.encrypt("right-password"));
         credential.setStatus(PrincipalCredentialStatus.ACTIVE);

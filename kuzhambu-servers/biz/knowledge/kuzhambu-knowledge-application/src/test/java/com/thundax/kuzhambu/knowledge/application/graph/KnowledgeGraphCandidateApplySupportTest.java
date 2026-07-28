@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.knowledge.application.graph.support.KnowledgeGraphCandidateApplySupport;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTaskIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
@@ -37,7 +38,7 @@ class KnowledgeGraphCandidateApplySupportTest {
                 new FakeKnowledgeLineageNodeRepository(),
                 new FakeKnowledgeLineageRelationRepository());
         GraphExtractionTask task = new GraphExtractionTask();
-        task.setTaskId(GraphExtractionTaskId.of(11L));
+        task.setTaskId(GraphExtractionTaskIdCodec.toDomain(11L));
         task.setTaskType("GRAPH");
         task.setScopeType("ENTRY");
         task.setScopeJson("{\"entryIds\":[1]}");

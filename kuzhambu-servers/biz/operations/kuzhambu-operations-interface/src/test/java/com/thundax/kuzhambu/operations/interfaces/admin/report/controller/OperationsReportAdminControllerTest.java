@@ -15,7 +15,7 @@ import com.thundax.kuzhambu.operations.application.report.result.OperationsRepor
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportGenerateResult;
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportPageResult;
 import com.thundax.kuzhambu.operations.application.report.service.ReportApplicationService;
-import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
+import com.thundax.kuzhambu.operations.domain.report.codec.ReportIdCodec;
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.request.OperationsReportDetailRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.request.OperationsReportGenerateRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.request.OperationsReportPageRequest;
@@ -66,14 +66,15 @@ class OperationsReportAdminControllerTest {
     void endpointsShouldDelegateToApplicationService() throws Exception {
         ReportApplicationService service = mock(ReportApplicationService.class);
         OperationsReportAdminController controller = new OperationsReportAdminController(service);
-        when(service.generate(any())).thenReturn(new OperationsReportGenerateResult(ReportId.of(9001L), "PENDING"));
+        when(service.generate(any()))
+                .thenReturn(new OperationsReportGenerateResult(ReportIdCodec.toDomain(9001L), "PENDING"));
         when(service.page(any(), any()))
                 .thenReturn(PageResult.of(
                         1,
                         10,
                         1L,
                         List.of(new OperationsReportPageResult(
-                                ReportId.of(9001L),
+                                ReportIdCodec.toDomain(9001L),
                                 "WEEKLY",
                                 "PDF",
                                 new Date(1_718_000_000_000L),
@@ -87,7 +88,7 @@ class OperationsReportAdminControllerTest {
                                 new Date(1_718_086_600_000L)))));
         when(service.detail(any()))
                 .thenReturn(new OperationsReportDetailResult(
-                        ReportId.of(9001L),
+                        ReportIdCodec.toDomain(9001L),
                         "WEEKLY",
                         "PDF",
                         new Date(1_718_000_000_000L),
@@ -104,7 +105,7 @@ class OperationsReportAdminControllerTest {
                         new Date(1_718_086_600_000L)));
         when(service.download(any()))
                 .thenReturn(new OperationsReportDownloadResult(
-                        ReportId.of(9001L),
+                        ReportIdCodec.toDomain(9001L),
                         "PDF",
                         "weekly-report.pdf",
                         "application/pdf",

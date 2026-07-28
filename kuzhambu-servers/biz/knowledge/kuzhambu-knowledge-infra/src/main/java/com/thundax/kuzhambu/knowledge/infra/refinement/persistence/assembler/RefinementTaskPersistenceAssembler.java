@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.knowledge.infra.refinement.persistence.assembler;
 
+import com.thundax.kuzhambu.knowledge.domain.refinement.codec.RefinementTaskIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementTask;
-import com.thundax.kuzhambu.knowledge.domain.refinement.model.valueobject.RefinementTaskId;
 import com.thundax.kuzhambu.knowledge.infra.refinement.persistence.dataobject.RefinementTaskDO;
 import java.util.List;
 
@@ -15,7 +15,7 @@ public final class RefinementTaskPersistenceAssembler {
         }
         return new RefinementTask(
                 dataObject.getId(),
-                RefinementTaskId.ofNullable(dataObject.getRefinementTaskId()),
+                RefinementTaskIdCodec.toDomain(dataObject.getRefinementTaskId()),
                 dataObject.getTaskType(),
                 dataObject.getSourceContentType(),
                 dataObject.getSourceContentId(),

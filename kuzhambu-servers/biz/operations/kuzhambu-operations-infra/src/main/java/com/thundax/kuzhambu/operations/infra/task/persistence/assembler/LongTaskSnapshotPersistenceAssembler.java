@@ -1,8 +1,7 @@
 package com.thundax.kuzhambu.operations.infra.task.persistence.assembler;
 
+import com.thundax.kuzhambu.operations.domain.task.codec.LongTaskSnapshotIdCodec;
 import com.thundax.kuzhambu.operations.domain.task.model.entity.LongTaskSnapshot;
-import com.thundax.kuzhambu.operations.domain.task.model.valueobject.LongTaskSnapshotId;
-import com.thundax.kuzhambu.operations.domain.task.model.valueobject.LongTaskSnapshotIdCodec;
 import com.thundax.kuzhambu.operations.infra.task.persistence.dataobject.LongTaskSnapshotDO;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +34,7 @@ public final class LongTaskSnapshotPersistenceAssembler {
         return dataObject == null
                 ? null
                 : new LongTaskSnapshot(
-                        LongTaskSnapshotId.ofNullable(dataObject.getSnapshotId()),
+                        LongTaskSnapshotIdCodec.toDomain(dataObject.getSnapshotId()),
                         dataObject.getSourceDomain(),
                         dataObject.getTaskType(),
                         dataObject.getTaskKey(),

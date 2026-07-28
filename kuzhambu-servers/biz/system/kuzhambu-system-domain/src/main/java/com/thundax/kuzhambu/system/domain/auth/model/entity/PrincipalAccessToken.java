@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.system.domain.auth.model.entity;
 
+import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalClientIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.model.enums.PrincipalTokenStatus;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalAccessTokenCode;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalAccessTokenId;
@@ -34,7 +35,7 @@ public class PrincipalAccessToken {
     }
 
     public void setClientId(String clientId) {
-        this.clientId = PrincipalClientId.ofNullable(clientId);
+        this.clientId = PrincipalClientIdCodec.toDomain(clientId);
     }
 
     public void setClientId(PrincipalClientId clientId) {

@@ -32,13 +32,14 @@ import com.thundax.kuzhambu.system.application.core.result.UserAvatarResult;
 import com.thundax.kuzhambu.system.application.core.service.MenuApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.RoleApplicationService;
 import com.thundax.kuzhambu.system.application.core.service.UserApplicationService;
+import com.thundax.kuzhambu.system.domain.core.codec.MenuIdCodec;
+import com.thundax.kuzhambu.system.domain.core.codec.RoleIdCodec;
+import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Menu;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Role;
 import com.thundax.kuzhambu.system.domain.core.model.enums.UserPrivilege;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.AccessRank;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.MenuId;
-import com.thundax.kuzhambu.system.domain.core.model.valueobject.RoleId;
-import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -70,7 +71,7 @@ class CurrentUserApplicationServiceImplTest {
                         .inputStream(inputStream)
                         .build());
 
-        InputStream result = service.getAvatarInputStream(UserId.of(100L));
+        InputStream result = service.getAvatarInputStream(UserIdCodec.toDomain(100L));
 
         assertSame(inputStream, result);
         ArgumentCaptor<OpenStorageFacadeRequest> requestCaptor =
@@ -93,7 +94,7 @@ class CurrentUserApplicationServiceImplTest {
                         .build());
         when(storageFacade.exists(any(OpenStorageFacadeRequest.class))).thenReturn(false);
 
-        assertNull(service.getAvatarInputStream(UserId.of(100L)));
+        assertNull(service.getAvatarInputStream(UserIdCodec.toDomain(100L)));
         verify(storageFacade, never()).open(any(OpenStorageFacadeRequest.class));
     }
 
@@ -116,7 +117,7 @@ class CurrentUserApplicationServiceImplTest {
                         .build());
 
         UserAvatarResult avatar = service.changeAvatar(
-                new ChangeCurrentUserAvatarCommand(UserId.of(100L), validAvatarInputStream(), "avatar.png"));
+                new ChangeCurrentUserAvatarCommand(UserIdCodec.toDomain(100L), validAvatarInputStream(), "avatar.png"));
 
         assertEquals(9001L, avatar.getStorageObjectId());
         ArgumentCaptor<UploadStorageFacadeRequest> uploadCaptor =
@@ -142,7 +143,7 @@ class CurrentUserApplicationServiceImplTest {
         assertThrows(
                 BizException.class,
                 () -> service.changeAvatar(new ChangeCurrentUserAvatarCommand(
-                        UserId.of(100L), new ByteArrayInputStream(tooLargeBytes), "avatar.png")));
+                        UserIdCodec.toDomain(100L), new ByteArrayInputStream(tooLargeBytes), "avatar.png")));
 
         verify(storageFacade, never()).upload(any(UploadStorageFacadeRequest.class));
     }
@@ -159,7 +160,7 @@ class CurrentUserApplicationServiceImplTest {
         doNothing().when(storageFacade).remove(any(RemoveStorageFacadeRequest.class));
 
         service.removeAvatar(new com.thundax.kuzhambu.system.application.core.command.RemoveCurrentUserAvatarCommand(
-                UserId.of(100L)));
+                UserIdCodec.toDomain(100L)));
 
         ArgumentCaptor<RemoveStorageFacadeRequest> removeCaptor =
                 ArgumentCaptor.forClass(RemoveStorageFacadeRequest.class);
@@ -176,7 +177,7 @@ class CurrentUserApplicationServiceImplTest {
                 service(userService, roleService, menuService, mock(StorageFacade.class));
 
         Role role = new Role();
-        role.setId(RoleId.of(1L));
+        role.setId(RoleIdCodec.toDomain(1L));
         Menu grantedMenu = menu(10L, 3);
         Menu deniedMenu = menu(11L, 8);
         when(userService.listUserRoles(any(UserQuery.class))).thenReturn(List.of(role));
@@ -184,7 +185,7 @@ class CurrentUserApplicationServiceImplTest {
         when(menuService.list(any(MenuQuery.class))).thenReturn(List.of(grantedMenu, deniedMenu));
 
         CurrentUserQuery query = new CurrentUserQuery();
-        query.setUserId(UserId.of(100L));
+        query.setUserId(UserIdCodec.toDomain(100L));
         query.setPrivilege(UserPrivilege.NORMAL);
         query.setRank(AccessRank.of(5));
 
@@ -219,7 +220,7 @@ class CurrentUserApplicationServiceImplTest {
 
     private static Menu menu(long id, int rank) {
         Menu menu = new Menu();
-        menu.setId(MenuId.of(id));
+        menu.setId(MenuIdCodec.toDomain(id));
         menu.setRank(AccessRank.of(rank));
         return menu;
     }

@@ -7,9 +7,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
-import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.infra.cache.StorageCacheSupport;
 import com.thundax.kuzhambu.storage.infra.object.persistence.dataobject.StoredObjectDO;
 import com.thundax.kuzhambu.storage.infra.object.persistence.mapper.StoredObjectMapper;
@@ -46,7 +46,7 @@ class StoredObjectRepositoryImplTest {
         var result = repository.listExpiredActiveUnreferenced(threshold);
 
         assertEquals(1, result.size());
-        assertEquals(StoredObjectId.of(1001L), result.get(0).getId());
+        assertEquals(StoredObjectIdCodec.toDomain(1001L), result.get(0).getId());
     }
 
     @Test
@@ -57,7 +57,7 @@ class StoredObjectRepositoryImplTest {
         StoredObjectRepositoryImpl repository = new StoredObjectRepositoryImpl(mapper, referenceMapper, cacheSupport);
         when(mapper.deleteById(1001L)).thenReturn(1);
 
-        int count = repository.physicalDeleteById(StoredObjectId.of(1001L));
+        int count = repository.physicalDeleteById(StoredObjectIdCodec.toDomain(1001L));
 
         assertEquals(1, count);
         verify(referenceMapper).delete(any(Wrapper.class));
@@ -83,7 +83,7 @@ class StoredObjectRepositoryImplTest {
         StoredObjectRepositoryImpl repository = new StoredObjectRepositoryImpl(mapper, referenceMapper, cacheSupport);
         when(mapper.deleteById(1002L)).thenReturn(0);
 
-        int count = repository.physicalDeleteById(StoredObjectId.of(1002L));
+        int count = repository.physicalDeleteById(StoredObjectIdCodec.toDomain(1002L));
 
         assertEquals(0, count);
         verify(referenceMapper).delete(any(Wrapper.class));

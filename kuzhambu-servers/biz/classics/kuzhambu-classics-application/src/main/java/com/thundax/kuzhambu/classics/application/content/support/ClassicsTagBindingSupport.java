@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.classics.application.content.support;
 
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
-import com.thundax.kuzhambu.classics.domain.common.model.valueobject.KnowledgeTagId;
+import com.thundax.kuzhambu.classics.domain.common.codec.KnowledgeTagIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.Versionable;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentSource;
@@ -44,7 +44,7 @@ public class ClassicsTagBindingSupport {
         KnowledgeTagFacadeResponse knowledgeTag = aiTag
                 ? knowledgeFacade.resolveOrCreateAiTag(request)
                 : knowledgeFacade.resolveOrCreateManualTag(request);
-        tag.setTagId(KnowledgeTagId.ofNullable(knowledgeTag == null ? null : knowledgeTag.getTagId()));
+        tag.setTagId(KnowledgeTagIdCodec.toDomain(knowledgeTag == null ? null : knowledgeTag.getTagId()));
         if (priority != null) {
             tag.setPriority(priority);
         }

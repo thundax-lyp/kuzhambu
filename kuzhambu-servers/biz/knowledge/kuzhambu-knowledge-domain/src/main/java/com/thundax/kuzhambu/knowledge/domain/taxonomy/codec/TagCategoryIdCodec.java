@@ -9,7 +9,7 @@ public final class TagCategoryIdCodec {
     private TagCategoryIdCodec() {}
 
     public static TagCategoryId toDomain(Long value) {
-        return TagCategoryId.ofNullable(value);
+        return value == null ? null : new TagCategoryId(value);
     }
 
     public static TagCategoryId toDomain(String value) {

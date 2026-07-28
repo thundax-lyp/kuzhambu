@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.storage.application.service.command.UploadStorageObj
 import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
 import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
 import com.thundax.kuzhambu.storage.application.service.result.StorageUploadResult;
+import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
@@ -146,7 +147,7 @@ public class StorageFacadeImpl implements StorageFacade {
         if (request == null || request.getStorageObjectId() == null) {
             return;
         }
-        storageApplicationService.remove(StoredObjectId.of(request.getStorageObjectId()));
+        storageApplicationService.remove(StoredObjectIdCodec.toDomain(request.getStorageObjectId()));
     }
 
     @Override
@@ -193,7 +194,7 @@ public class StorageFacadeImpl implements StorageFacade {
     }
 
     private StoredObject requireStoredObject(Long storageObjectId) {
-        StoredObject storedObject = storageApplicationService.get(StoredObjectId.of(storageObjectId));
+        StoredObject storedObject = storageApplicationService.get(StoredObjectIdCodec.toDomain(storageObjectId));
         if (storedObject == null) {
             throw new BizException("Storage 对象不存在");
         }
@@ -215,7 +216,7 @@ public class StorageFacadeImpl implements StorageFacade {
     }
 
     private boolean referenceExists(Long storageObjectId, StorageOwnerType ownerType, String ownerId) {
-        return listReferences(StoredObjectId.of(storageObjectId)).stream()
+        return listReferences(StoredObjectIdCodec.toDomain(storageObjectId)).stream()
                 .anyMatch(reference -> ownerType != null
                         && ownerType.value().equals(reference.getReferenceOwnerType())
                         && ownerId != null

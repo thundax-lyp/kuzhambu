@@ -1,8 +1,10 @@
 package com.thundax.kuzhambu.common.core;
 
 import com.thundax.kuzhambu.common.test.architecture.AbstractArchitectureTest;
+import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
+import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 
 class CommonCoreArchitectureTest extends AbstractArchitectureTest {
@@ -14,5 +16,10 @@ class CommonCoreArchitectureTest extends AbstractArchitectureTest {
         JavaClasses classes = importPackages(BASE_PACKAGE);
 
         SpringBeanArchitectureRuleSupport.assertDirectSpringBeansHaveSingleConstructor(classes);
+    }
+
+    @Test
+    void valueObjectIdsShouldDeclareNoStaticMethods() throws Exception {
+        NamingArchitectureRuleSupport.assertValueObjectIdSourcesDeclareNoStaticMethods(Path.of("src/main/java"));
     }
 }

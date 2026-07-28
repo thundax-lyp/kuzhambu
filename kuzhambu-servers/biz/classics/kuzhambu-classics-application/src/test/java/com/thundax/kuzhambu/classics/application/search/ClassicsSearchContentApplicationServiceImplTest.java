@@ -13,28 +13,28 @@ import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicatio
 import com.thundax.kuzhambu.classics.application.search.service.impl.ClassicsSearchContentApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentPageQuery;
 import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentSource;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentTagStatus;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsKeywordIdCodec;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsKeyword;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
-import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
-import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordId;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiCategoryIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVolumeIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecycleStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiCategoryId;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVolumeId;
+import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
-import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.util.Date;
 import java.util.List;
@@ -56,11 +56,12 @@ class ClassicsSearchContentApplicationServiceImplTest {
                 mingCustomsApplicationService,
                 classicsContentApplicationService);
 
-        SancaiCategory category = new SancaiCategory(SancaiCategoryId.of(11L), "天文", null, 1);
-        SancaiVolume volume = new SancaiVolume(SancaiVolumeId.of(22L), SancaiCategoryId.of(11L), "卷一", null, 1);
+        SancaiCategory category = new SancaiCategory(SancaiCategoryIdCodec.toDomain(11L), "天文", null, 1);
+        SancaiVolume volume =
+                new SancaiVolume(SancaiVolumeIdCodec.toDomain(22L), SancaiCategoryIdCodec.toDomain(11L), "卷一", null, 1);
         SancaiEntry sancaiEntry = new SancaiEntry();
-        sancaiEntry.setId(SancaiEntryId.of(1001L));
-        sancaiEntry.setVolumeId(SancaiVolumeId.of(22L));
+        sancaiEntry.setId(SancaiEntryIdCodec.toDomain(1001L));
+        sancaiEntry.setVolumeId(SancaiVolumeIdCodec.toDomain(22L));
         sancaiEntry.setTitle("黄帝");
         sancaiEntry.setOriginalText("原文");
         sancaiEntry.setTranslationText("译文");
@@ -69,12 +70,13 @@ class ClassicsSearchContentApplicationServiceImplTest {
         sancaiEntry.setVisibility(SancaiEntryVisibility.PUBLIC);
         sancaiEntry.setContentUpdatedAt(new Date(1_718_000_000_000L));
         when(sancaiApplicationService.listCategories()).thenReturn(List.of(category));
-        when(sancaiApplicationService.listVolumes(SancaiCategoryId.of(11L))).thenReturn(List.of(volume));
+        when(sancaiApplicationService.listVolumes(SancaiCategoryIdCodec.toDomain(11L)))
+                .thenReturn(List.of(volume));
         when(sancaiApplicationService.listEntries(org.mockito.ArgumentMatchers.any(SancaiEntryPageQuery.class)))
                 .thenReturn(List.of(sancaiEntry));
 
         WangqiDocument wangqiDocument = new WangqiDocument();
-        wangqiDocument.setId(WangqiDocumentId.of(2001L));
+        wangqiDocument.setId(WangqiDocumentIdCodec.toDomain(2001L));
         wangqiDocument.setTitle("天工");
         wangqiDocument.setSummary("王圻摘要");
         wangqiDocument.setContent("正文");
@@ -86,7 +88,7 @@ class ClassicsSearchContentApplicationServiceImplTest {
                 .thenReturn(List.of(wangqiDocument));
 
         MingCustomsEntry mingEntry = new MingCustomsEntry();
-        mingEntry.setId(MingCustomsEntryId.of(3001L));
+        mingEntry.setId(MingCustomsEntryIdCodec.toDomain(3001L));
         mingEntry.setCategory("节令");
         mingEntry.setTitle("元旦");
         mingEntry.setSummary("节令摘要");
@@ -99,26 +101,26 @@ class ClassicsSearchContentApplicationServiceImplTest {
                         org.mockito.ArgumentMatchers.any()))
                 .thenReturn(PageResult.of(1, 200, 1, List.of(mingEntry)))
                 .thenReturn(PageResult.of(2, 200, 1, List.of()));
-        when(mingCustomsApplicationService.listKeywords(MingCustomsEntryId.of(3001L)))
-                .thenReturn(List.of(
-                        new MingCustomsKeyword(MingCustomsKeywordId.of(9001L), MingCustomsEntryId.of(3001L), "元日", 1)));
+        when(mingCustomsApplicationService.listKeywords(MingCustomsEntryIdCodec.toDomain(3001L)))
+                .thenReturn(List.of(new MingCustomsKeyword(
+                        MingCustomsKeywordIdCodec.toDomain(9001L), MingCustomsEntryIdCodec.toDomain(3001L), "元日", 1)));
         when(classicsContentApplicationService.listTags(
-                        ClassicsContentType.SANCAI_ENTRY.value(), ClassicsContentId.of(1001L)))
+                        ClassicsContentType.SANCAI_ENTRY.value(), ClassicsContentIdCodec.toDomain(1001L)))
                 .thenReturn(List.of(new ClassicsContentTag(
                         null,
                         ClassicsContentType.SANCAI_ENTRY,
-                        ClassicsContentId.of(1001L),
+                        ClassicsContentIdCodec.toDomain(1001L),
                         null,
                         "礼制",
                         ClassicsContentSource.MANUAL,
                         ClassicsContentTagStatus.ACTIVE,
                         1)));
         when(classicsContentApplicationService.listQaPairs(
-                        ClassicsContentType.SANCAI_ENTRY.value(), ClassicsContentId.of(1001L)))
+                        ClassicsContentType.SANCAI_ENTRY.value(), ClassicsContentIdCodec.toDomain(1001L)))
                 .thenReturn(List.of(new ClassicsContentQaPair(
                         null,
                         ClassicsContentType.SANCAI_ENTRY,
-                        ClassicsContentId.of(1001L),
+                        ClassicsContentIdCodec.toDomain(1001L),
                         "黄帝是谁？",
                         "黄帝是上古帝王。",
                         ClassicsContentSource.MANUAL,

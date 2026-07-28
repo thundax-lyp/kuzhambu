@@ -7,7 +7,7 @@ public final class HealthAlertIdCodec {
     private HealthAlertIdCodec() {}
 
     public static HealthAlertId toDomain(Long value) {
-        return HealthAlertId.ofNullable(value);
+        return value == null ? null : new HealthAlertId(value);
     }
 
     public static Long toValue(HealthAlertId id) {

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.thundax.kuzhambu.common.audit.runtime.AuditSnapshots;
 import com.thundax.kuzhambu.system.application.core.command.ChangeUserStatusCommand;
+import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.enums.UserStatus;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import java.lang.reflect.Method;
@@ -28,7 +29,7 @@ class AuditExpressionEvaluatorTest {
     void objectValueShouldBindCommandAliasForSingleArgument() throws NoSuchMethodException {
         Method method =
                 AuditExpressionEvaluatorTest.class.getDeclaredMethod("changeStatus", ChangeUserStatusCommand.class);
-        ChangeUserStatusCommand command = new ChangeUserStatusCommand(UserId.of(4L), UserStatus.DISABLED);
+        ChangeUserStatusCommand command = new ChangeUserStatusCommand(UserIdCodec.toDomain(4L), UserStatus.DISABLED);
 
         Object value = AuditExpressionEvaluator.objectValue("#command.id.value()", method, new Object[] {command});
 
@@ -39,7 +40,8 @@ class AuditExpressionEvaluatorTest {
     void objectValueShouldBindIdAliasForSingleIdentifierArgument() throws NoSuchMethodException {
         Method method = AuditExpressionEvaluatorTest.class.getDeclaredMethod("remove", UserId.class);
 
-        Object value = AuditExpressionEvaluator.objectValue("#id.value()", method, new Object[] {UserId.of(5L)});
+        Object value =
+                AuditExpressionEvaluator.objectValue("#id.value()", method, new Object[] {UserIdCodec.toDomain(5L)});
 
         assertEquals(5L, value);
     }

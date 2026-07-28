@@ -7,7 +7,7 @@ public final class MultipartUploadIdCodec {
     private MultipartUploadIdCodec() {}
 
     public static MultipartUploadId toDomain(String value) {
-        return MultipartUploadId.ofNullable(value);
+        return value == null || value.trim().isEmpty() ? null : new MultipartUploadId(value);
     }
 
     public static String toValue(MultipartUploadId id) {

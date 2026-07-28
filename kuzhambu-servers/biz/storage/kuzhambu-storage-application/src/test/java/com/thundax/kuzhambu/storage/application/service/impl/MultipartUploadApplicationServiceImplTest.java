@@ -16,13 +16,14 @@ import com.thundax.kuzhambu.storage.application.service.StorageApplicationServic
 import com.thundax.kuzhambu.storage.application.service.command.CompleteMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.service.command.InitMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.service.command.UploadMultipartPartCommand;
+import com.thundax.kuzhambu.storage.domain.object.codec.MultipartUploadIdCodec;
+import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.MultipartUploadStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.MultipartUploadId;
-import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.domain.object.repository.MultipartUploadRepository;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContentRepository;
 import java.io.ByteArrayInputStream;
@@ -35,7 +36,7 @@ import org.junit.jupiter.api.Test;
 class MultipartUploadApplicationServiceImplTest {
 
     private static final String UPLOAD_ID = "upload-1";
-    private static final MultipartUploadId UPLOAD_ID_REF = MultipartUploadId.of(UPLOAD_ID);
+    private static final MultipartUploadId UPLOAD_ID_REF = MultipartUploadIdCodec.toDomain(UPLOAD_ID);
     private static final String PART_PATH_1 = "multipart/upload-1/1.part";
     private static final String PART_PATH_2 = "multipart/upload-1/2.part";
     private static final String PART_PATH_3 = "multipart/upload-1/3.part";
@@ -90,12 +91,12 @@ class MultipartUploadApplicationServiceImplTest {
             storage.setAccessEndpoint("/api/storage/object/11/content");
             return storage;
         });
-        when(storageApplicationService.create(any())).thenReturn(StoredObjectId.of(11L));
+        when(storageApplicationService.create(any())).thenReturn(StoredObjectIdCodec.toDomain(11L));
 
         StoredObject storage = service.complete(new CompleteMultipartUploadCommand(UPLOAD_ID, null, null, null, null));
 
         assertNotNull(storage);
-        assertEquals(StoredObjectId.of(11L), storage.getId());
+        assertEquals(StoredObjectIdCodec.toDomain(11L), storage.getId());
         assertEquals("multipart-file.txt", storage.getOriginalFilename());
         assertEquals("/api/storage/object/11/content", storage.getAccessEndpoint());
         assertEquals(11L, storage.getSize());

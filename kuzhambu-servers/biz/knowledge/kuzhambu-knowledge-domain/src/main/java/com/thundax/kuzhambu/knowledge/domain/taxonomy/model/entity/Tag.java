@@ -7,6 +7,7 @@ import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagStatus;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagCategoryId;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagId;
 import java.util.Date;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,6 +15,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class Tag {
     private TagId id;
     private TagId tagId;
@@ -57,37 +59,6 @@ public class Tag {
                 null,
                 null,
                 null);
-    }
-
-    public Tag(
-            TagId id,
-            TagId tagId,
-            String name,
-            TagCategoryId categoryId,
-            String description,
-            TagStatus status,
-            TagSource source,
-            TagReviewStatus reviewStatus,
-            String reviewNote,
-            Date createdAt,
-            Date reviewedAt,
-            TagId mergedToTagId,
-            Date deprecatedAt,
-            Long deprecatedBy) {
-        this.id = id;
-        this.tagId = tagId;
-        this.name = name;
-        this.categoryId = categoryId;
-        this.description = description;
-        this.status = status;
-        this.source = source;
-        this.reviewStatus = reviewStatus;
-        this.reviewNote = reviewNote;
-        this.createdAt = createdAt;
-        this.reviewedAt = reviewedAt;
-        this.mergedToTagId = mergedToTagId;
-        this.deprecatedAt = deprecatedAt;
-        this.deprecatedBy = deprecatedBy;
     }
 
     public boolean isMerged() {
