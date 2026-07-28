@@ -12,6 +12,7 @@ import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
@@ -161,6 +162,15 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
                         aiInvocationRepository.insertCandidate(result.toCandidate(command, invocationLog.getCallId()));
                 result.setCandidateId(candidateId);
             }
+        } else if (result.getStatus() == AiInvocationStatus.PARTIAL) {
+            invocationLog.recordFailureStage(result.getFailureStage());
+            invocationLog.markPartial(result.getErrorType(), result.getErrorMessage(), result.getUsage(), completedAt);
+            aiInvocationRepository.updateInvocationLog(invocationLog);
+            if (command.isCreateCandidate()) {
+                AiCandidateId candidateId =
+                        aiInvocationRepository.insertCandidate(result.toCandidate(command, invocationLog.getCallId()));
+                result.setCandidateId(candidateId);
+            }
         } else {
             invocationLog.recordFailureStage(result.getFailureStage());
             invocationLog.markFailed(result.getErrorType(), result.getErrorMessage(), result.getUsage(), completedAt);
@@ -198,7 +208,8 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
         if (isBlank(result.getResultFormat())) {
             result.setResultFormat(defaultResultFormat(command, result));
         }
-        if (result.isSucceeded() && !isBlank(result.getArtifactReferenceJson())) {
+        if ((result.isSucceeded() || result.getStatus() == AiInvocationStatus.PARTIAL)
+                && !isBlank(result.getArtifactReferenceJson())) {
             return persistArtifactResult(command, result);
         }
         return result;

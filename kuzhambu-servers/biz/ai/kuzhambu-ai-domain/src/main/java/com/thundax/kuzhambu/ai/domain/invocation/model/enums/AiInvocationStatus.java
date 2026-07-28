@@ -6,7 +6,9 @@ import java.util.Arrays;
 public enum AiInvocationStatus {
     RUNNING,
     SUCCEEDED,
-    FAILED;
+    FAILED,
+    PARTIAL,
+    CANCELLED;
 
     public static AiInvocationStatus from(String value) {
         return Arrays.stream(values())

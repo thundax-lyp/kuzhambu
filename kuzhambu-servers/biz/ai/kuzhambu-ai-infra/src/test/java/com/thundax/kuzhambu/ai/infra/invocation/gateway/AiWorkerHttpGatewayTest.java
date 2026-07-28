@@ -11,6 +11,7 @@ import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.gateway.AiWorkerGateway.ArtifactDownloadException;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
@@ -55,7 +56,7 @@ class AiWorkerHttpGatewayTest {
                               "requestId":"req-1",
                               "traceId":"trace-1",
                               "status":"SUCCEEDED",
-                              "capability":"translate",
+                              "capability":"summary",
                               "result":{"format":"text","payload":"done"},
                               "usage":{"latencyMs":12,"inputTokens":3,"outputTokens":4,"costAmount":"0.01"}
                             }
@@ -157,6 +158,109 @@ class AiWorkerHttpGatewayTest {
     }
 
     @Test
+    void invokeShouldKeepBusinessCapabilityWhenWorkerEchoesWorkerCapability() throws IOException {
+        startServer(
+                "/internal/ai/invoke",
+                exchange -> respond(
+                        exchange,
+                        200,
+                        """
+                                {
+                                  "requestId":"req-1",
+                                  "traceId":"trace-1",
+                                  "status":"SUCCEEDED",
+                                  "capability":"version_summary",
+                                  "result":{"format":"text","payload":"done"}
+                                }
+                                """));
+        AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties(), new AiWorkerRequestSigner(), null);
+        AiInvokeCommand command = command();
+        command.setCapability(AiBusinessCapability.PLATFORM_VERSION_SUMMARY);
+        command.setWorkerCapability("version_summary");
+
+        AiInvokeResult result = client.invoke(command);
+
+        assertTrue(result.isSucceeded());
+        assertEquals(AiBusinessCapability.PLATFORM_VERSION_SUMMARY, result.getCapability());
+    }
+
+    @Test
+    void invokeShouldTreatUnknownStatusAsWorkerProtocolFailure() throws IOException {
+        startServer(
+                "/internal/ai/invoke",
+                exchange -> respond(
+                        exchange,
+                        200,
+                        """
+                                {
+                                  "requestId":"req-1",
+                                  "traceId":"trace-1",
+                                  "status":"UNKNOWN",
+                                  "capability":"summary"
+                                }
+                                """));
+        AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties(), new AiWorkerRequestSigner(), null);
+
+        AiInvokeResult result = client.invoke(command());
+
+        assertEquals(AiInvocationStatus.FAILED, result.getStatus());
+        assertEquals("WORKER_PROTOCOL_FAILURE", result.getErrorType());
+    }
+
+    @Test
+    void invokeShouldTreatMismatchedCapabilityAsWorkerProtocolFailure() throws IOException {
+        startServer(
+                "/internal/ai/invoke",
+                exchange -> respond(
+                        exchange,
+                        200,
+                        """
+                                {
+                                  "requestId":"req-1",
+                                  "traceId":"trace-1",
+                                  "status":"SUCCEEDED",
+                                  "capability":"translate"
+                                }
+                                """));
+        AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties(), new AiWorkerRequestSigner(), null);
+
+        AiInvokeResult result = client.invoke(command());
+
+        assertEquals(AiInvocationStatus.FAILED, result.getStatus());
+        assertEquals("WORKER_PROTOCOL_FAILURE", result.getErrorType());
+    }
+
+    @Test
+    void invokeShouldPreservePartialWorkerResponse() throws IOException {
+        startServer(
+                "/internal/ai/invoke",
+                exchange -> respond(
+                        exchange,
+                        200,
+                        """
+                                {
+                                  "requestId":"req-1",
+                                  "traceId":"trace-1",
+                                  "status":"PARTIAL",
+                                  "capability":"summary",
+                                  "failureStage":"WORKER_RESULT",
+                                  "result":{"format":"text","payload":"partial result"},
+                                  "errorType":"PARTIAL_RESULT",
+                                  "errorMessage":"部分结果可用"
+                                }
+                                """));
+        AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties(), new AiWorkerRequestSigner(), null);
+
+        AiInvokeResult result = client.invoke(command());
+
+        assertEquals(AiInvocationStatus.PARTIAL, result.getStatus());
+        assertEquals("partial result", result.getResultPayload());
+        assertEquals("WORKER_RESULT", result.getFailureStage());
+        assertEquals("PARTIAL_RESULT", result.getErrorType());
+        assertEquals("部分结果可用", result.getErrorMessage());
+    }
+
+    @Test
     void streamShouldUseUnifiedWorkerPathForInvocation() throws IOException {
         AtomicReference<HttpExchange> captured = new AtomicReference<>();
         AtomicReference<String> capturedBody = new AtomicReference<>();
@@ -239,6 +343,27 @@ class AiWorkerHttpGatewayTest {
         assertEquals("MODEL_TRANSPORT_FAILURE", capturedEvent.get().getErrorType());
         assertEquals("模型服务不可用", capturedEvent.get().getErrorMessage());
         assertEquals("WORKER_STREAM", capturedEvent.get().getFailureStage());
+    }
+
+    @Test
+    void streamShouldPreservePartialCompletedEvent() throws IOException {
+        startServer(
+                "/internal/ai/stream",
+                exchange -> respond(
+                        exchange,
+                        200,
+                        "event:completed\n"
+                                + "data: {\"eventId\":\"evt-partial\",\"requestId\":\"req-1\",\"traceId\":\"trace-1\",\"stage\":\"completed\",\"result\":{\"format\":\"TEXT\",\"payload\":\"partial result\"},\"error\":{\"type\":\"PARTIAL_RESULT\",\"message\":\"部分结果可用\"},\"extra\":{\"failureStage\":\"WORKER_RESULT\",\"status\":\"PARTIAL\"}}\n\n"));
+        AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties(), new AiWorkerRequestSigner(), null);
+        AtomicReference<AiStreamEventResult> capturedEvent = new AtomicReference<>();
+
+        client.stream(command(), capturedEvent::set);
+
+        assertEquals(AiInvocationStatus.PARTIAL, capturedEvent.get().getStatus());
+        assertEquals("partial result", capturedEvent.get().getResultPayload());
+        assertEquals("WORKER_RESULT", capturedEvent.get().getFailureStage());
+        assertEquals("PARTIAL_RESULT", capturedEvent.get().getErrorType());
+        assertEquals("部分结果可用", capturedEvent.get().getErrorMessage());
     }
 
     @Test

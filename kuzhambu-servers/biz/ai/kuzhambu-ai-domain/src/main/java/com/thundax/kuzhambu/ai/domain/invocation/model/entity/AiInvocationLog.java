@@ -80,6 +80,16 @@ public class AiInvocationLog {
         this.completedAt = completedTime;
     }
 
+    public void markPartial(
+            String failureType, String failureMessage, AiUsageSnapshot usageSnapshot, Instant completedTime) {
+        this.status = AiInvocationStatus.PARTIAL;
+        this.streamCompleted = streamUsed;
+        this.usage = AiUsageSnapshot.orEmpty(usageSnapshot);
+        this.errorType = failureType;
+        this.errorMessage = failureMessage;
+        this.completedAt = completedTime;
+    }
+
     public void recordFailureStage(String stage) {
         this.failureStage = stage;
     }

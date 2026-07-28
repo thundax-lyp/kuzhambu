@@ -11,10 +11,10 @@ import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.support.AiWorkerModelConfigResolver;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
-import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import com.thundax.kuzhambu.ai.infra.invocation.gateway.dto.AiWorkerHttpPayloads;
+import com.thundax.kuzhambu.common.core.exception.DomainException;
 import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
 import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId;
@@ -84,7 +84,7 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
             }
             return toInvokeResult(
                     command, objectMapper.readValue(response.body(), AiWorkerHttpPayloads.InvokeResponse.class));
-        } catch (JsonProcessingException | IllegalArgumentException ex) {
+        } catch (JsonProcessingException | IllegalArgumentException | DomainException ex) {
             return failure(command, ERROR_WORKER_PROTOCOL_FAILURE, ex.getMessage());
         } catch (HttpTimeoutException ex) {
             return failure(command, ERROR_WORKER_TIMEOUT, "Worker request timed out");
@@ -115,7 +115,7 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
                 return;
             }
             readSse(response.body(), eventConsumer, command);
-        } catch (JsonProcessingException | IllegalArgumentException ex) {
+        } catch (JsonProcessingException | IllegalArgumentException | DomainException ex) {
             emitError(eventConsumer, command, failure(command, ERROR_WORKER_PROTOCOL_FAILURE, ex.getMessage()));
         } catch (HttpTimeoutException ex) {
             emitError(eventConsumer, command, failure(command, ERROR_WORKER_TIMEOUT, "Worker stream timed out"));
@@ -332,10 +332,8 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
         result.setTraceId(TraceIdCodec.toDomain(
                 defaultString(response.getTraceId(), TraceIdCodec.toValue(command.getTraceId()))));
         result.setStatus(AiInvocationStatus.from(response.getStatus()));
-        String capability = defaultString(
-                response.getCapability(),
-                command.getCapability() == null ? null : command.getCapability().value());
-        result.setCapability(capability == null ? null : AiBusinessCapability.fromAlias(capability));
+        validateResponseCapability(command, response.getCapability());
+        result.setCapability(command.getCapability());
         result.setFailureStage(response.getFailureStage());
         result.setFallbackUsed(Boolean.TRUE.equals(response.getFallbackUsed()));
         if (response.getResult() != null) {
@@ -358,6 +356,19 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
             result.setErrorMessage(response.getErrorMessage());
         }
         return result;
+    }
+
+    private void validateResponseCapability(AiInvokeCommand command, String responseCapability) {
+        if (isBlank(responseCapability)) {
+            return;
+        }
+        String expectedCapability = defaultString(
+                command.getWorkerCapability(),
+                command.getCapability() == null ? null : command.getCapability().value());
+        if (!responseCapability.equals(expectedCapability)) {
+            throw new IllegalArgumentException("Worker returned mismatched capability: expected=%s, actual=%s"
+                    .formatted(expectedCapability, responseCapability));
+        }
     }
 
     private void readSse(InputStream inputStream, Consumer<AiStreamEventResult> eventConsumer, AiInvokeCommand command)

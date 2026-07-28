@@ -476,7 +476,11 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         AiStreamEventResult event = baseEvent(task);
         event.setEventType("error");
         event.setStage(task.getFailureStage());
-        event.setStatus(AiInvocationStatus.FAILED);
+        event.setStatus(AiInvocationStatus.from(task.getStatus()));
+        if (STATUS_PARTIAL.equals(task.getStatus())) {
+            event.setResultFormat(task.getResultFormat());
+            event.setResultPayload(task.getResultPreview());
+        }
         event.setFailureStage(task.getFailureStage());
         event.setErrorType(task.getErrorType());
         event.setErrorMessage(task.getErrorMessage());

@@ -201,6 +201,57 @@ class AiRefinementTaskApplicationServiceImplTest {
     }
 
     @Test
+    void streamTaskEventsShouldPreservePartialTerminalStatus() {
+        RecordingBatchJobService batchJobService = new RecordingBatchJobService();
+        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
+                101L,
+                201L,
+                "PARTIAL",
+                AiBusinessCapability.CLASSICS_IMAGE_GENERATE.value(),
+                "WORKER_RESULT",
+                "TEXT",
+                "partial",
+                "MODEL_SEMANTIC_FAILURE",
+                "partial output"));
+        AiRefinementTaskApplicationServiceImpl service = new AiRefinementTaskApplicationServiceImpl(
+                batchJobService,
+                refinementService,
+                new RecordingInvocationRepository(List.of(), List.of()),
+                DIRECT_EXECUTOR);
+        AiRefinementTaskResult accepted =
+                service.addTask(command(AiBusinessCapability.CLASSICS_IMAGE_GENERATE.value()));
+        List<com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult> events = new ArrayList<>();
+
+        service.streamTaskEvents(accepted.getTaskId(), events::add);
+
+        assertEquals(1, events.size());
+        assertEquals(AiInvocationStatus.PARTIAL, events.get(0).getStatus());
+    }
+
+    @Test
+    void streamTaskEventsShouldPreserveCancelledTerminalStatus() {
+        RecordingBatchJobService batchJobService = new RecordingBatchJobService();
+        Long taskId = batchJobService.createLong(new AiBatchJobCreateCommand(
+                "classics",
+                AiBusinessCapability.CLASSICS_IMAGE_GENERATE,
+                AiContentRef.ofNullable("SANCAI_ENTRY", 10L),
+                1,
+                null));
+        AiRefinementTaskApplicationServiceImpl service = new AiRefinementTaskApplicationServiceImpl(
+                batchJobService,
+                new StubRefinementApplicationService(null),
+                new RecordingInvocationRepository(List.of(), List.of()),
+                DIRECT_EXECUTOR);
+        service.cancelTask(taskId);
+        List<com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult> events = new ArrayList<>();
+
+        service.streamTaskEvents(taskId, events::add);
+
+        assertEquals(1, events.size());
+        assertEquals(AiInvocationStatus.CANCELLED, events.get(0).getStatus());
+    }
+
+    @Test
     void taskResultShouldParseBatchFailureSummaryWhenInvocationAndCandidateAreMissing() {
         AiBatchJobResult job = new AiBatchJobResult(
                 new AiBatchJobId(1001L),
@@ -647,7 +698,9 @@ class AiRefinementTaskApplicationServiceImplTest {
 
         @Override
         public List<AiInvocationLog> listInvocationLogsByBatch(AiBatchJobId batchId) {
-            throw new UnsupportedOperationException();
+            return invocationLogs.stream()
+                    .filter(record -> batchId.equals(record.getBatchId()))
+                    .toList();
         }
 
         @Override
@@ -721,7 +774,9 @@ class AiRefinementTaskApplicationServiceImplTest {
 
         @Override
         public List<AiCandidate> listCandidatesByBatch(AiBatchJobId batchId) {
-            throw new UnsupportedOperationException();
+            return candidates.stream()
+                    .filter(record -> batchId.equals(record.getBatchId()))
+                    .toList();
         }
 
         @Override
