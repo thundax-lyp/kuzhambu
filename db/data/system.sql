@@ -103,7 +103,7 @@ INSERT INTO `system_menu` (
     `visibility`, `display_params`, `url`, `target`, `remarks`
 ) VALUES
     (1, NULL, 1, 2, '仪表盘', 'user', 100, 'VISIBLE', '{"icon":"dashboard"}', '/dashboard', '_self', '后台工作台'),
-    (2, NULL, 3, 12, '古籍管理', 'classics', 95, 'VISIBLE', '{"icon":"dictionaries"}', '/classics', '_self', '古籍内容管理根菜单'),
+    (2, NULL, 3, 12, '古籍管理', 'classics,classics:content:view,classics:content:edit,classics:content:export', 95, 'VISIBLE', '{"icon":"dictionaries"}', '/classics', '_self', '古籍内容管理根菜单'),
     (3, 2, 4, 5, '三才图会', 'classics:sancai:view,classics:sancai:edit,classics:sancai:delete', 95, 'VISIBLE', '{"icon":"dictionaries"}', '/classics/sancai', '_self', '三才图会知识库'),
     (4, 2, 6, 7, '王圻文档', 'classics:wangqi:view,classics:wangqi:edit,classics:wangqi:delete', 90, 'VISIBLE', '{"icon":"dictionaries"}', '/classics/wangqi', '_self', '王圻文档知识库'),
     (5, 2, 8, 9, '明代习俗', 'classics:mingcustoms:view,classics:mingcustoms:edit,classics:mingcustoms:delete', 85, 'VISIBLE', '{"icon":"dictionaries"}', '/classics/ming-customs', '_self', '明代习俗知识库'),

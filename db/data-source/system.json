@@ -614,7 +614,12 @@
     },
     {
       "name": "古籍管理",
-      "perms": ["classics"],
+      "perms": [
+        "classics",
+        "classics:content:view",
+        "classics:content:edit",
+        "classics:content:export"
+      ],
       "priority": 95,
       "icon": "dictionaries",
       "url": "/classics",
