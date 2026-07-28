@@ -42,6 +42,8 @@ public final class NamingArchitectureRuleSupport {
                     + "(?:throws\\s+[^;{]+)?\\{");
     private static final Set<String> SERVICE_QUERY_REQUIRED_ANNOTATIONS =
             new LinkedHashSet<String>(Arrays.asList("Getter", "Setter", "NoArgsConstructor", "AllArgsConstructor"));
+    private static final Set<String> APPLICATION_STRUCTURAL_PACKAGES =
+            Set.of("assembler", "command", "impl", "query", "result", "service", "support");
     private static final Set<String> ENTITY_REQUIRED_ANNOTATIONS =
             new LinkedHashSet<String>(Arrays.asList("Getter", "Setter", "NoArgsConstructor", "AllArgsConstructor"));
     private static final Set<String> MAPPER_REQUIRED_ANNOTATIONS = new LinkedHashSet<String>(Arrays.asList("Mapper"));
@@ -228,7 +230,7 @@ public final class NamingArchitectureRuleSupport {
 
         assertTrue(
                 "In *-application modules, *Command/*Query/*Result sources must be placed directly under "
-                        + "application/{domain}/command, application/{domain}/query, or application/{domain}/result: "
+                        + "application/**/command, application/**/query, or application/**/result: "
                         + violations,
                 violations.isEmpty());
     }
@@ -893,7 +895,23 @@ public final class NamingArchitectureRuleSupport {
             suffix = "Result.java";
             packageName = "result";
         }
-        return value.matches(".*/application/[^/]+/" + packageName + "/[^/]*" + Pattern.quote(suffix));
+        String applicationMarker = "/application/";
+        int applicationIndex = value.indexOf(applicationMarker);
+        if (applicationIndex < 0 || !value.endsWith(suffix)) {
+            return false;
+        }
+
+        String relativePath = value.substring(applicationIndex + applicationMarker.length());
+        String[] segments = relativePath.split("/");
+        if (segments.length < 2 || !packageName.equals(segments[segments.length - 2])) {
+            return false;
+        }
+        for (int index = 0; index < segments.length - 2; index++) {
+            if (APPLICATION_STRUCTURAL_PACKAGES.contains(segments[index])) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static boolean isValueObjectIdSource(Path path) {

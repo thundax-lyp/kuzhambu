@@ -191,6 +191,21 @@ class NamingArchitectureRuleSupportTest {
     }
 
     @Test
+    void applicationContractPackageGateShouldAllowNestedSubdomainsAndApplicationLevelResults() throws Exception {
+        Path application = applicationSourceRoot().resolve("com/thundax/kuzhambu/sample/application");
+        Files.createDirectories(application.resolve("config/prompt/command"));
+        Files.createDirectories(application.resolve("result"));
+        Files.writeString(
+                application.resolve("config/prompt/command/PromptSaveCommand.java"),
+                "public class PromptSaveCommand {}");
+        Files.writeString(
+                application.resolve("result/SharedOperationResult.java"), "public class SharedOperationResult {}");
+
+        assertDoesNotThrow(() -> NamingArchitectureRuleSupport.assertApplicationContractSourcesUnderDedicatedPackages(
+                applicationSourceRoot()));
+    }
+
+    @Test
     void applicationContractPackageGateShouldIgnoreContractsOutsideApplicationModule() throws Exception {
         Path interfaceSourceRoot = tempDir.resolve("kuzhambu-sample-interface/src/main/java");
         Path source = interfaceSourceRoot.resolve("com/thundax/kuzhambu/sample/application/core");
