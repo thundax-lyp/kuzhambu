@@ -7,8 +7,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thundax.kuzhambu.knowledge.application.portal.KnowledgePortalHomeResult;
 import com.thundax.kuzhambu.knowledge.application.portal.KnowledgePortalReadApplicationService;
+import com.thundax.kuzhambu.knowledge.application.portal.result.KnowledgePortalHomeResult;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.home.controller.request.KnowledgePortalHomeQuery;
 import java.lang.reflect.Method;
 import java.util.List;
