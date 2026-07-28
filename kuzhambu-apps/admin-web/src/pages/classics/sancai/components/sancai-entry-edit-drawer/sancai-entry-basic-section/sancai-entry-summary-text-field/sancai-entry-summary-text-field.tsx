@@ -14,6 +14,7 @@ import { SancaiEntrySummaryModal } from "./sancai-entry-summary-modal";
 import "./sancai-entry-summary-text-field.css";
 
 const AI_TEXT_CANDIDATE_POLL_INTERVAL_MS = 3000;
+const SUMMARY_CANDIDATE_CAPABILITY = "classics_summary";
 
 const getCandidateStableId = (candidate: AiCandidateRecord) => {
     return candidate.candidateIdText || String(candidate.candidateId);
@@ -21,7 +22,8 @@ const getCandidateStableId = (candidate: AiCandidateRecord) => {
 
 const isUsableSummaryCandidate = (candidate?: AiCandidateRecord | null) => {
     return (
-        candidate?.capability === "summary" &&
+        candidate?.capability &&
+        aiRefinementTaskService.getNormalizedTaskCapability(candidate.capability) === "summary" &&
         candidate.status === "PENDING" &&
         typeof candidate.resultPayload === "string" &&
         candidate.resultPayload.trim().length > 0
@@ -99,7 +101,7 @@ export const SancaiEntrySummaryTextField = ({
             aiCandidateService.list({
                 contentId: entryId,
                 contentType: "SANCAI_ENTRY",
-                capability: "summary",
+                capability: SUMMARY_CANDIDATE_CAPABILITY,
                 status: "PENDING"
             }),
         enabled: summaryModalOpen && Boolean(entryId),
@@ -145,7 +147,8 @@ export const SancaiEntrySummaryTextField = ({
             (summaryCandidatesQuery.data || []).find(
                 (candidate) =>
                     getCandidateStableId(candidate) === loadedSummaryCandidateId &&
-                    candidate.capability === "summary"
+                    aiRefinementTaskService.getNormalizedTaskCapability(candidate.capability) ===
+                        "summary"
             ) ?? null
         );
     }, [summaryCandidatesQuery.data, loadedSummaryCandidateId]);
@@ -161,7 +164,7 @@ export const SancaiEntrySummaryTextField = ({
             const candidates = await aiCandidateService.list({
                 contentId: entryId,
                 contentType: "SANCAI_ENTRY",
-                capability: "summary",
+                capability: SUMMARY_CANDIDATE_CAPABILITY,
                 status: "PENDING"
             });
             return selectLatestSummaryCandidate(candidates) ?? null;

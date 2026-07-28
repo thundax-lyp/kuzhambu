@@ -14,6 +14,7 @@ import { SancaiEntryTranslationModal } from "./sancai-entry-translation-modal";
 import "./sancai-entry-translation-text-field.css";
 
 const AI_TEXT_CANDIDATE_POLL_INTERVAL_MS = 3000;
+const TRANSLATION_CANDIDATE_CAPABILITY = "classics_translate";
 
 const getCandidateStableId = (candidate: AiCandidateRecord) => {
     return candidate.candidateIdText || String(candidate.candidateId);
@@ -21,7 +22,8 @@ const getCandidateStableId = (candidate: AiCandidateRecord) => {
 
 const isUsableTranslationCandidate = (candidate?: AiCandidateRecord | null) => {
     return (
-        candidate?.capability === "translate" &&
+        candidate?.capability &&
+        aiRefinementTaskService.getNormalizedTaskCapability(candidate.capability) === "translate" &&
         candidate.status === "PENDING" &&
         typeof candidate.resultPayload === "string" &&
         candidate.resultPayload.trim().length > 0
@@ -101,7 +103,7 @@ export const SancaiEntryTranslationTextField = ({
             aiCandidateService.list({
                 contentId: entryId,
                 contentType: "SANCAI_ENTRY",
-                capability: "translate",
+                capability: TRANSLATION_CANDIDATE_CAPABILITY,
                 status: "PENDING"
             }),
         enabled: translationModalOpen && Boolean(entryId),
@@ -147,7 +149,8 @@ export const SancaiEntryTranslationTextField = ({
             (translationCandidatesQuery.data || []).find(
                 (candidate) =>
                     getCandidateStableId(candidate) === loadedTranslationCandidateId &&
-                    candidate.capability === "translate"
+                    aiRefinementTaskService.getNormalizedTaskCapability(candidate.capability) ===
+                        "translate"
             ) ?? null
         );
     }, [translationCandidatesQuery.data, loadedTranslationCandidateId]);
@@ -163,7 +166,7 @@ export const SancaiEntryTranslationTextField = ({
             const candidates = await aiCandidateService.list({
                 contentId: entryId,
                 contentType: "SANCAI_ENTRY",
-                capability: "translate",
+                capability: TRANSLATION_CANDIDATE_CAPABILITY,
                 status: "PENDING"
             });
             return selectLatestTranslationCandidate(candidates) ?? null;
