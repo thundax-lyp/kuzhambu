@@ -158,6 +158,7 @@ vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
         (failureStage?: string | null, errorType?: string | null, errorMessage?: string | null) =>
             [failureStage, errorType, errorMessage].filter(Boolean).join(" / ") || null
     ),
+    getTaskStableId: vi.fn((taskId: number, taskIdText?: string | null) => taskIdText || taskId),
     getTaskRetryable: vi.fn(
         (status: string, capability: string) =>
             ["FAILED", "PARTIAL", "CANCELLED"].includes(status) &&

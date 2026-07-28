@@ -291,7 +291,7 @@ export const useSancaiEntryPanelState = ({
     }, []);
 
     const refreshStreamingTaskDetail = useCallback(
-        async (taskId: number) => {
+        async (taskId: number | string) => {
             const task = await aiRefinementTaskService.getTask({ taskId });
             setStreamingRefinementTask(task);
             await invalidateRefinementTasks();
@@ -362,8 +362,12 @@ export const useSancaiEntryPanelState = ({
             );
             await invalidateRefinementTasks();
             if (acceptedTask?.taskId && isStreamRefinementCapability(command.capability)) {
+                const taskId = aiRefinementTaskService.getTaskStableId(
+                    acceptedTask.taskId,
+                    acceptedTask.taskIdText
+                );
                 const task = await aiRefinementTaskService.getTask({
-                    taskId: acceptedTask.taskId
+                    taskId
                 });
                 if (task.streamEnabled === true) {
                     openStreamingRefinementTask(task);
@@ -395,7 +399,10 @@ export const useSancaiEntryPanelState = ({
         if (!streamingRefinementTask?.taskId || streamingRefinementTask.streamEnabled !== true) {
             return undefined;
         }
-        const taskId = streamingRefinementTask.taskId;
+        const taskId = aiRefinementTaskService.getTaskStableId(
+            streamingRefinementTask.taskId,
+            streamingRefinementTask.taskIdText
+        );
         const controller = new AbortController();
         streamAbortControllerRef.current = controller;
         void aiRefinementTaskService
@@ -430,7 +437,8 @@ export const useSancaiEntryPanelState = ({
     }, [
         refreshStreamingTaskDetail,
         streamingRefinementTask?.streamEnabled,
-        streamingRefinementTask?.taskId
+        streamingRefinementTask?.taskId,
+        streamingRefinementTask?.taskIdText
     ]);
 
     useEffect(() => {
