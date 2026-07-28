@@ -7,11 +7,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairSortCommand;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentQaPairIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentSource;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentQaPairId;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiContentAdminController;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiContentRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiContentSortRequest;
@@ -103,7 +103,7 @@ class SancaiContentAdminControllerTest {
                 (proxy, method, args) -> {
                     if ("listQaPairs".equals(method.getName())) {
                         assertEquals("SANCAI_ENTRY", args[0]);
-                        assertEquals(ClassicsContentId.of(3001L), args[1]);
+                        assertEquals(ClassicsContentIdCodec.toDomain(3001L), args[1]);
                         return List.of(content());
                     }
                     if ("addQaPair".equals(method.getName()) || "updateQaPair".equals(method.getName())) {
@@ -114,16 +114,18 @@ class SancaiContentAdminControllerTest {
                         assertEquals("问", command.getQuestion());
                         assertEquals("答", command.getAnswer());
                         assertEquals(ClassicsContentSource.MANUAL, command.getSource());
-                        return ClassicsContentQaPairId.of(9001L);
+                        return ClassicsContentQaPairIdCodec.toDomain(9001L);
                     }
                     if ("deleteQaPair".equals(method.getName())) {
-                        assertEquals(ClassicsContentQaPairId.of(9001L), args[0]);
+                        assertEquals(ClassicsContentQaPairIdCodec.toDomain(9001L), args[0]);
                         return null;
                     }
                     if ("sortQaPairs".equals(method.getName())) {
                         ContentQaPairSortCommand command = (ContentQaPairSortCommand) args[0];
                         assertEquals(
-                                List.of(ClassicsContentQaPairId.of(9001L), ClassicsContentQaPairId.of(9002L)),
+                                List.of(
+                                        ClassicsContentQaPairIdCodec.toDomain(9001L),
+                                        ClassicsContentQaPairIdCodec.toDomain(9002L)),
                                 command.getOrderedIds());
                         return null;
                     }
@@ -133,9 +135,9 @@ class SancaiContentAdminControllerTest {
 
     private static ClassicsContentQaPair content() {
         return new ClassicsContentQaPair(
-                ClassicsContentQaPairId.of(9001L),
+                ClassicsContentQaPairIdCodec.toDomain(9001L),
                 ClassicsContentType.SANCAI_ENTRY,
-                ClassicsContentId.of(3001L),
+                ClassicsContentIdCodec.toDomain(3001L),
                 "问",
                 "答",
                 ClassicsContentSource.MANUAL,

@@ -17,12 +17,12 @@ import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicatio
 import com.thundax.kuzhambu.classics.application.search.result.ClassicsSearchSourceContent;
 import com.thundax.kuzhambu.classics.application.search.service.ClassicsSearchContentApplicationService;
 import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentSource;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentTagStatus;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
@@ -144,21 +144,21 @@ class ClassicsFacadeImplTest {
                 new Date(1_735_689_600_000L),
                 new Date(1_735_776_000_000L));
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId.of(1001L));
+        entry.setId(com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec.toDomain(1001L));
         entry.setOriginalText("原文");
         entry.setTranslationText("译文");
         when(classicsSearchContentApplicationService.getPublicContent("SANCAI_ENTRY", "1001"))
                 .thenReturn(sourceContent);
         when(sancaiApplicationService.getEntry(
-                        com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId.of(1001L)))
+                        com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec.toDomain(1001L)))
                 .thenReturn(entry);
-        when(classicsContentApplicationService.listTags("SANCAI_ENTRY", ClassicsContentId.of(1001L)))
+        when(classicsContentApplicationService.listTags("SANCAI_ENTRY", ClassicsContentIdCodec.toDomain(1001L)))
                 .thenReturn(List.of(confirmedTag("礼制"), removedTag("失效"), confirmedTag("仪制")));
-        when(classicsContentApplicationService.listQaPairs("SANCAI_ENTRY", ClassicsContentId.of(1001L)))
+        when(classicsContentApplicationService.listQaPairs("SANCAI_ENTRY", ClassicsContentIdCodec.toDomain(1001L)))
                 .thenReturn(List.of(new ClassicsContentQaPair(
                         null,
                         ClassicsContentType.SANCAI_ENTRY,
-                        ClassicsContentId.of(1001L),
+                        ClassicsContentIdCodec.toDomain(1001L),
                         "Q1",
                         "A1",
                         ClassicsContentSource.MANUAL,
@@ -176,8 +176,8 @@ class ClassicsFacadeImplTest {
         assertEquals(List.of("礼制", "仪制"), response.getKnowledge().getTags());
         assertEquals(1, response.getKnowledge().getQaPairs().size());
         assertEquals("Q1", response.getKnowledge().getQaPairs().get(0).getQuestion());
-        verify(classicsContentApplicationService).listTags("SANCAI_ENTRY", ClassicsContentId.of(1001L));
-        verify(classicsContentApplicationService).listQaPairs("SANCAI_ENTRY", ClassicsContentId.of(1001L));
+        verify(classicsContentApplicationService).listTags("SANCAI_ENTRY", ClassicsContentIdCodec.toDomain(1001L));
+        verify(classicsContentApplicationService).listQaPairs("SANCAI_ENTRY", ClassicsContentIdCodec.toDomain(1001L));
     }
 
     @Test
@@ -211,20 +211,20 @@ class ClassicsFacadeImplTest {
                 new Date(1_735_689_600_000L),
                 new Date(1_735_776_000_000L));
         WangqiDocument document = new WangqiDocument();
-        document.setId(com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId.of(2001L));
+        document.setId(com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec.toDomain(2001L));
         document.setContent("内容正文");
         when(classicsSearchContentApplicationService.getPublicContent("WANGQI_DOCUMENT", "2001"))
                 .thenReturn(sourceContent);
         when(wangqiDocumentApplicationService.get(
-                        com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId.of(2001L)))
+                        com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec.toDomain(2001L)))
                 .thenReturn(document);
-        when(classicsContentApplicationService.listTags("WANGQI_DOCUMENT", ClassicsContentId.of(2001L)))
+        when(classicsContentApplicationService.listTags("WANGQI_DOCUMENT", ClassicsContentIdCodec.toDomain(2001L)))
                 .thenReturn(List.of(confirmedTag("碑文")));
-        when(classicsContentApplicationService.listQaPairs("WANGQI_DOCUMENT", ClassicsContentId.of(2001L)))
+        when(classicsContentApplicationService.listQaPairs("WANGQI_DOCUMENT", ClassicsContentIdCodec.toDomain(2001L)))
                 .thenReturn(List.of(new ClassicsContentQaPair(
                         null,
                         ClassicsContentType.WANGQI_DOCUMENT,
-                        ClassicsContentId.of(2001L),
+                        ClassicsContentIdCodec.toDomain(2001L),
                         "Q2",
                         "A2",
                         ClassicsContentSource.AI,
@@ -240,8 +240,9 @@ class ClassicsFacadeImplTest {
         assertNull(response.getKnowledge().getTranslationText());
         assertEquals(List.of("碑文"), response.getKnowledge().getTags());
         assertEquals("A2", response.getKnowledge().getQaPairs().get(0).getAnswer());
-        verify(classicsContentApplicationService).listTags("WANGQI_DOCUMENT", ClassicsContentId.of(2001L));
-        verify(classicsContentApplicationService).listQaPairs("WANGQI_DOCUMENT", ClassicsContentId.of(2001L));
+        verify(classicsContentApplicationService).listTags("WANGQI_DOCUMENT", ClassicsContentIdCodec.toDomain(2001L));
+        verify(classicsContentApplicationService)
+                .listQaPairs("WANGQI_DOCUMENT", ClassicsContentIdCodec.toDomain(2001L));
     }
 
     @Test
@@ -274,22 +275,21 @@ class ClassicsFacadeImplTest {
                 new Date(1_735_689_600_000L),
                 new Date(1_735_776_000_000L));
         MingCustomsEntry entry = new MingCustomsEntry();
-        entry.setId(com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId.of(3001L));
+        entry.setId(com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec.toDomain(3001L));
         entry.setContent("正文");
         entry.setOriginalExcerpts("原典");
         when(classicsSearchContentApplicationService.getPublicContent("MING_CUSTOMS", "3001"))
                 .thenReturn(sourceContent);
         when(mingCustomsApplicationService.get(
-                        com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId.of(
-                                3001L)))
+                        com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec.toDomain(3001L)))
                 .thenReturn(entry);
-        when(classicsContentApplicationService.listTags("MING_CUSTOMS", ClassicsContentId.of(3001L)))
+        when(classicsContentApplicationService.listTags("MING_CUSTOMS", ClassicsContentIdCodec.toDomain(3001L)))
                 .thenReturn(List.of(confirmedTag("礼节")));
-        when(classicsContentApplicationService.listQaPairs("MING_CUSTOMS", ClassicsContentId.of(3001L)))
+        when(classicsContentApplicationService.listQaPairs("MING_CUSTOMS", ClassicsContentIdCodec.toDomain(3001L)))
                 .thenReturn(List.of(new ClassicsContentQaPair(
                         null,
                         ClassicsContentType.MING_CUSTOMS,
-                        ClassicsContentId.of(3001L),
+                        ClassicsContentIdCodec.toDomain(3001L),
                         "Q3",
                         "A3",
                         ClassicsContentSource.AI,
@@ -304,8 +304,8 @@ class ClassicsFacadeImplTest {
         assertEquals("原典", response.getKnowledge().getOriginalExcerpts());
         assertEquals(List.of("礼节"), response.getKnowledge().getTags());
         assertEquals("Q3", response.getKnowledge().getQaPairs().get(0).getQuestion());
-        verify(classicsContentApplicationService).listTags("MING_CUSTOMS", ClassicsContentId.of(3001L));
-        verify(classicsContentApplicationService).listQaPairs("MING_CUSTOMS", ClassicsContentId.of(3001L));
+        verify(classicsContentApplicationService).listTags("MING_CUSTOMS", ClassicsContentIdCodec.toDomain(3001L));
+        verify(classicsContentApplicationService).listQaPairs("MING_CUSTOMS", ClassicsContentIdCodec.toDomain(3001L));
     }
 
     @Test

@@ -6,8 +6,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.classics.application.report.result.ClassicsReportSummaryResult;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.repository.MingCustomsRepository;
@@ -140,7 +140,7 @@ class ClassicsReportApplicationServiceImplTest {
     private static ClassicsSharePortalListItem topShare(
             long contentId, String contentType, String titleSnapshot, long accessCount) {
         ClassicsSharePortalListItem item = new ClassicsSharePortalListItem();
-        item.setContentId(ClassicsContentId.of(contentId));
+        item.setContentId(ClassicsContentIdCodec.toDomain(contentId));
         item.setContentType(ClassicsContentType.valueOf(contentType));
         item.setTitleSnapshot(titleSnapshot);
         item.setAccessCount(accessCount);

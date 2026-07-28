@@ -7,7 +7,7 @@ public final class SancaiVolumeIdCodec {
     private SancaiVolumeIdCodec() {}
 
     public static SancaiVolumeId toDomain(Long value) {
-        return SancaiVolumeId.ofNullable(value);
+        return value == null ? null : new SancaiVolumeId(value);
     }
 
     public static Long toValue(SancaiVolumeId id) {

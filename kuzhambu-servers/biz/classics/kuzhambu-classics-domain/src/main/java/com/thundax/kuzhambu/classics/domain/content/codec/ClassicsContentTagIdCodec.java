@@ -7,7 +7,7 @@ public final class ClassicsContentTagIdCodec {
     private ClassicsContentTagIdCodec() {}
 
     public static ClassicsContentTagId toDomain(Long value) {
-        return ClassicsContentTagId.ofNullable(value);
+        return value == null ? null : new ClassicsContentTagId(value);
     }
 
     public static Long toValue(ClassicsContentTagId id) {

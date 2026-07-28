@@ -7,7 +7,7 @@ public final class ClassicsShareAccessRecordIdCodec {
     private ClassicsShareAccessRecordIdCodec() {}
 
     public static ClassicsShareAccessRecordId toDomain(Long value) {
-        return ClassicsShareAccessRecordId.ofNullable(value);
+        return value == null ? null : new ClassicsShareAccessRecordId(value);
     }
 
     public static Long toValue(ClassicsShareAccessRecordId id) {

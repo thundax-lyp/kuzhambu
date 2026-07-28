@@ -2,11 +2,14 @@ package com.thundax.kuzhambu.classics.application.content.support;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
+import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsContentFormat;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
-import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryImageIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVolumeIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageStatus;
@@ -16,13 +19,10 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryRefine
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTranslationStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisualAssetStatus;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVolumeId;
+import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
-import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
 import com.thundax.kuzhambu.storage.facade.dto.StorageObjectFacadeDto;
 import java.util.Date;
 import java.util.List;
@@ -34,8 +34,8 @@ class ClassicsContentSnapshotAssemblerTest {
     @Test
     void shouldAssembleSancaiEntryVersionSnapshotJson() {
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(100L));
-        entry.setVolumeId(SancaiVolumeId.of(2L));
+        entry.setId(SancaiEntryIdCodec.toDomain(100L));
+        entry.setVolumeId(SancaiVolumeIdCodec.toDomain(2L));
         entry.setTitle("三才");
         entry.setOriginalText("原文");
         entry.setTranslationText("译文");
@@ -64,8 +64,8 @@ class ClassicsContentSnapshotAssemblerTest {
     @Test
     void shouldAssembleAllSancaiImagesInPriorityOrder() {
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(100L));
-        entry.setVolumeId(SancaiVolumeId.of(2L));
+        entry.setId(SancaiEntryIdCodec.toDomain(100L));
+        entry.setVolumeId(SancaiVolumeIdCodec.toDomain(2L));
         entry.setTitle("三才");
         entry.setPriority(7);
 
@@ -99,7 +99,7 @@ class ClassicsContentSnapshotAssemblerTest {
     @Test
     void shouldAssembleSancaiImagesWithStorageMetadata() {
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(100L));
+        entry.setId(SancaiEntryIdCodec.toDomain(100L));
         entry.setTitle("三才");
         entry.setPriority(7);
         SancaiEntryImage currentImage = image(22L, 802L, "次图", true, 2);
@@ -131,13 +131,13 @@ class ClassicsContentSnapshotAssemblerTest {
     @Test
     void shouldAssembleWangqiDocumentVersionSnapshotJson() {
         WangqiDocument document = new WangqiDocument();
-        document.setId(WangqiDocumentId.of(200L));
+        document.setId(WangqiDocumentIdCodec.toDomain(200L));
         document.setTitle("王圻");
         document.setSummary("摘要");
         document.setContentFormat(WangqiContentFormat.MARKDOWN);
         document.setContent("正文");
         document.setDocumentTime(new Date(2_000L));
-        document.setStorageObjectId(StorageObjectId.of(8L));
+        document.setStorageObjectId(StorageObjectIdCodec.toDomain(8L));
         document.setVisibility(WangqiDocumentVisibility.PUBLIC);
         document.setContentUpdatedAt(new Date(1_000L));
 
@@ -155,7 +155,7 @@ class ClassicsContentSnapshotAssemblerTest {
     @Test
     void shouldAssembleMingCustomsVersionSnapshotJson() {
         MingCustomsEntry entry = new MingCustomsEntry();
-        entry.setId(MingCustomsEntryId.of(300L));
+        entry.setId(MingCustomsEntryIdCodec.toDomain(300L));
         entry.setTitle("明俗");
         entry.setCategory("岁时");
         entry.setChapter("卷一");
@@ -181,9 +181,9 @@ class ClassicsContentSnapshotAssemblerTest {
     private static SancaiEntryImage image(
             Long imageId, Long storageObjectId, String title, boolean currentUsed, int priority) {
         SancaiEntryImage image = new SancaiEntryImage();
-        image.setId(SancaiEntryImageId.of(imageId));
-        image.setEntryId(SancaiEntryId.of(100L));
-        image.setStorageObjectId(StorageObjectId.of(storageObjectId));
+        image.setId(SancaiEntryImageIdCodec.toDomain(imageId));
+        image.setEntryId(SancaiEntryIdCodec.toDomain(100L));
+        image.setStorageObjectId(StorageObjectIdCodec.toDomain(storageObjectId));
         image.setImageType(SancaiEntryImageType.ORIGINAL);
         image.setTitle(title);
         image.setCurrentUsed(currentUsed);

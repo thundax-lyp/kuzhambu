@@ -24,7 +24,11 @@ import com.thundax.kuzhambu.classics.application.content.support.ClassicsTagBind
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
-import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
+import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentQaPairIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentTagIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
@@ -39,16 +43,18 @@ import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsCo
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
-import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVisualAssetIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVisualAsset;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisualAssetId;
+import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
-import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.DomainException;
 import com.thundax.kuzhambu.common.core.page.PageResult;
@@ -68,7 +74,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     void applyAiCandidateTranslateShouldUpdateSancaiAndGenerateAiAppliedVersion() {
         FakeRepository repository = new FakeRepository();
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(11L));
+        entry.setId(SancaiEntryIdCodec.toDomain(11L));
         entry.setTranslationText("old translation");
         entry.setContentUpdatedAt(new Date(1L));
         repository.sancaiEntryForAiApply = entry;
@@ -110,7 +116,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     void applyAiCandidateSummaryShouldUpdateSancaiAndGenerateAiAppliedVersion() {
         FakeRepository repository = new FakeRepository();
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(11L));
+        entry.setId(SancaiEntryIdCodec.toDomain(11L));
         entry.setSummary("old summary");
         entry.setContentUpdatedAt(new Date(1L));
         repository.sancaiEntryForAiApply = entry;
@@ -153,15 +159,15 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     void applyAiCandidateImageAnalysisShouldUpdateTargetVisualAssetAndSkipVersion() {
         FakeRepository repository = new FakeRepository();
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(11L));
+        entry.setId(SancaiEntryIdCodec.toDomain(11L));
         entry.setContentUpdatedAt(new Date(1L));
         repository.sancaiEntryForAiApply = entry;
 
         SancaiVisualAsset visualAsset = new SancaiVisualAsset();
-        visualAsset.setId(SancaiVisualAssetId.of(111L));
+        visualAsset.setId(SancaiVisualAssetIdCodec.toDomain(111L));
 
         SancaiAssetApplicationService assetService = org.mockito.Mockito.mock(SancaiAssetApplicationService.class);
-        when(assetService.listVisualAssets(SancaiEntryId.of(11L))).thenReturn(List.of(visualAsset));
+        when(assetService.listVisualAssets(SancaiEntryIdCodec.toDomain(11L))).thenReturn(List.of(visualAsset));
 
         AiFacade aiFacade = mockAiFacade(
                 request -> {
@@ -201,18 +207,18 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     void applyAiCandidateVisualShouldUpdateTargetVisualAssetAndSkipVersion() {
         FakeRepository repository = new FakeRepository();
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(11L));
+        entry.setId(SancaiEntryIdCodec.toDomain(11L));
         entry.setContentUpdatedAt(new Date(1L));
         repository.sancaiEntryForAiApply = entry;
 
         SancaiVisualAsset visualAsset = new SancaiVisualAsset();
-        visualAsset.setId(SancaiVisualAssetId.of(111L));
+        visualAsset.setId(SancaiVisualAssetIdCodec.toDomain(111L));
         visualAsset.setImageAnalysisMarkdown("old image analysis");
         visualAsset.setFusionDescription("old fusion");
 
         SancaiAssetApplicationService assetService = org.mockito.Mockito.mock(SancaiAssetApplicationService.class);
-        when(assetService.listVisualAssets(SancaiEntryId.of(11L))).thenReturn(List.of(visualAsset));
-        when(assetService.updateVisualAsset(visualAsset)).thenReturn(SancaiVisualAssetId.of(111L));
+        when(assetService.listVisualAssets(SancaiEntryIdCodec.toDomain(11L))).thenReturn(List.of(visualAsset));
+        when(assetService.updateVisualAsset(visualAsset)).thenReturn(SancaiVisualAssetIdCodec.toDomain(111L));
 
         AiFacade aiFacade = mockAiFacade(
                 request -> {
@@ -252,18 +258,18 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     void applyAiCandidateFusionShouldUpdateTargetVisualAssetAndSkipVersion() {
         FakeRepository repository = new FakeRepository();
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(11L));
+        entry.setId(SancaiEntryIdCodec.toDomain(11L));
         entry.setContentUpdatedAt(new Date(1L));
         repository.sancaiEntryForAiApply = entry;
 
         SancaiVisualAsset visualAsset = new SancaiVisualAsset();
-        visualAsset.setId(SancaiVisualAssetId.of(111L));
+        visualAsset.setId(SancaiVisualAssetIdCodec.toDomain(111L));
         visualAsset.setImageAnalysisMarkdown("old image analysis");
         visualAsset.setVisualDescription("old visual");
 
         SancaiAssetApplicationService assetService = org.mockito.Mockito.mock(SancaiAssetApplicationService.class);
-        when(assetService.listVisualAssets(SancaiEntryId.of(11L))).thenReturn(List.of(visualAsset));
-        when(assetService.updateVisualAsset(visualAsset)).thenReturn(SancaiVisualAssetId.of(111L));
+        when(assetService.listVisualAssets(SancaiEntryIdCodec.toDomain(11L))).thenReturn(List.of(visualAsset));
+        when(assetService.updateVisualAsset(visualAsset)).thenReturn(SancaiVisualAssetIdCodec.toDomain(111L));
 
         AiFacade aiFacade = mockAiFacade(
                 request -> {
@@ -293,29 +299,33 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         assertEquals(0, repository.insertVersionCount);
         assertEquals(0, repository.updateSancaiEntryAiCount);
         verify(aiFacade).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
-        verify(assetService).applyFusionDescription(SancaiEntryId.of(11L), SancaiVisualAssetId.of(111L), "融合说明");
+        verify(assetService)
+                .applyFusionDescription(
+                        SancaiEntryIdCodec.toDomain(11L), SancaiVisualAssetIdCodec.toDomain(111L), "融合说明");
     }
 
     @Test
     void applyAiCandidateImageGenShouldCreateGeneratedVisualAssetVersion() {
         FakeRepository repository = new FakeRepository();
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(11L));
+        entry.setId(SancaiEntryIdCodec.toDomain(11L));
         repository.sancaiEntryForAiApply = entry;
 
         SancaiVisualAsset visualAsset = new SancaiVisualAsset();
-        visualAsset.setId(SancaiVisualAssetId.of(111L));
-        visualAsset.setEntryId(SancaiEntryId.of(11L));
+        visualAsset.setId(SancaiVisualAssetIdCodec.toDomain(111L));
+        visualAsset.setEntryId(SancaiEntryIdCodec.toDomain(11L));
 
         SancaiVisualAsset generatedAsset = new SancaiVisualAsset();
-        generatedAsset.setId(SancaiVisualAssetId.of(112L));
-        generatedAsset.setEntryId(SancaiEntryId.of(11L));
+        generatedAsset.setId(SancaiVisualAssetIdCodec.toDomain(112L));
+        generatedAsset.setEntryId(SancaiEntryIdCodec.toDomain(11L));
         generatedAsset.setVersionNo(3);
 
         SancaiAssetApplicationService assetService = org.mockito.Mockito.mock(SancaiAssetApplicationService.class);
-        when(assetService.listVisualAssets(SancaiEntryId.of(11L))).thenReturn(List.of(visualAsset));
+        when(assetService.listVisualAssets(SancaiEntryIdCodec.toDomain(11L))).thenReturn(List.of(visualAsset));
         when(assetService.createGeneratedVisualAssetVersion(
-                        SancaiEntryId.of(11L), SancaiVisualAssetId.of(111L), StorageObjectId.of(7101L)))
+                        SancaiEntryIdCodec.toDomain(11L),
+                        SancaiVisualAssetIdCodec.toDomain(111L),
+                        StorageObjectIdCodec.toDomain(7101L)))
                 .thenReturn(generatedAsset);
 
         AiFacade aiFacade = mockAiFacade(
@@ -352,7 +362,9 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         assertEquals(0, repository.insertVersionCount);
         verify(assetService)
                 .createGeneratedVisualAssetVersion(
-                        SancaiEntryId.of(11L), SancaiVisualAssetId.of(111L), StorageObjectId.of(7101L));
+                        SancaiEntryIdCodec.toDomain(11L),
+                        SancaiVisualAssetIdCodec.toDomain(111L),
+                        StorageObjectIdCodec.toDomain(7101L));
         verify(aiFacade).markCandidateApplied(any(MarkAiCandidateAppliedFacadeRequest.class));
     }
 
@@ -360,15 +372,15 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     void applyAiCandidateImageGenShouldFailWhenStorageObjectIdMissingInPayload() {
         FakeRepository repository = new FakeRepository();
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(11L));
+        entry.setId(SancaiEntryIdCodec.toDomain(11L));
         repository.sancaiEntryForAiApply = entry;
 
         SancaiVisualAsset visualAsset = new SancaiVisualAsset();
-        visualAsset.setId(SancaiVisualAssetId.of(111L));
-        visualAsset.setEntryId(SancaiEntryId.of(11L));
+        visualAsset.setId(SancaiVisualAssetIdCodec.toDomain(111L));
+        visualAsset.setEntryId(SancaiEntryIdCodec.toDomain(11L));
 
         SancaiAssetApplicationService assetService = org.mockito.Mockito.mock(SancaiAssetApplicationService.class);
-        when(assetService.listVisualAssets(SancaiEntryId.of(11L))).thenReturn(List.of(visualAsset));
+        when(assetService.listVisualAssets(SancaiEntryIdCodec.toDomain(11L))).thenReturn(List.of(visualAsset));
 
         AiFacade aiFacade = mockAiFacade(request -> pendingCandidate(), request -> {
             throw new IllegalStateException("markApplied should not be called");
@@ -390,7 +402,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     void applyAiCandidateImageAnalysisShouldFailWhenObjectIdMissing() {
         FakeRepository repository = new FakeRepository();
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(11L));
+        entry.setId(SancaiEntryIdCodec.toDomain(11L));
         entry.setContentUpdatedAt(new Date(1L));
         repository.sancaiEntryForAiApply = entry;
 
@@ -414,15 +426,15 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     void applyAiCandidateImageAnalysisShouldFailWhenVisualAssetNotFound() {
         FakeRepository repository = new FakeRepository();
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(11L));
+        entry.setId(SancaiEntryIdCodec.toDomain(11L));
         repository.sancaiEntryForAiApply = entry;
 
         SancaiVisualAsset visualAsset = new SancaiVisualAsset();
-        visualAsset.setId(SancaiVisualAssetId.of(111L));
+        visualAsset.setId(SancaiVisualAssetIdCodec.toDomain(111L));
 
         SancaiAssetApplicationService assetService = org.mockito.Mockito.mock(SancaiAssetApplicationService.class);
-        when(assetService.listVisualAssets(SancaiEntryId.of(11L))).thenReturn(List.of(visualAsset));
-        when(assetService.updateVisualAsset(visualAsset)).thenReturn(SancaiVisualAssetId.of(111L));
+        when(assetService.listVisualAssets(SancaiEntryIdCodec.toDomain(11L))).thenReturn(List.of(visualAsset));
+        when(assetService.updateVisualAsset(visualAsset)).thenReturn(SancaiVisualAssetIdCodec.toDomain(111L));
 
         AiFacade aiFacade = mockAiFacade(request -> pendingCandidate(), request -> {
             throw new IllegalStateException("markApplied should not be called");
@@ -445,7 +457,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     void applyAiCandidateSummaryShouldUpdateWangqiAndGenerateAiAppliedVersion() {
         FakeRepository repository = new FakeRepository();
         WangqiDocument document = new WangqiDocument(
-                WangqiDocumentId.of(22L),
+                WangqiDocumentIdCodec.toDomain(22L),
                 "title",
                 "old summary",
                 WangqiContentFormat.HTML,
@@ -492,7 +504,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     void applyAiCandidateSummaryShouldUpdateMingCustomsAndGenerateAiAppliedVersion() {
         FakeRepository repository = new FakeRepository();
         MingCustomsEntry entry = new MingCustomsEntry();
-        entry.setId(MingCustomsEntryId.of(33L));
+        entry.setId(MingCustomsEntryIdCodec.toDomain(33L));
         entry.setSummary("old summary");
         repository.mingCustomsEntryForAiApply = entry;
 
@@ -533,7 +545,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     void applyAiCandidateTagsShouldOnlyReplaceAiTagsAndCreateAiAppliedVersion() {
         FakeRepository repository = new FakeRepository();
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(11L));
+        entry.setId(SancaiEntryIdCodec.toDomain(11L));
         repository.sancaiEntryForAiApply = entry;
         repository.tags.add(manualTag(1L, 11L, "manual-tag"));
         repository.tags.add(aiTag(2L, 11L, "old-ai-tag"));
@@ -583,7 +595,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     void applyAiCandidateTagsShouldSyncKnowledgeRefsWhenBindingSupportPresent() {
         FakeRepository repository = new FakeRepository();
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(11L));
+        entry.setId(SancaiEntryIdCodec.toDomain(11L));
         repository.sancaiEntryForAiApply = entry;
         ClassicsContentTag oldAiTag = aiTag(2L, 11L, "old-ai-tag");
         repository.tags.add(manualTag(1L, 11L, "manual-tag"));
@@ -611,7 +623,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     void applyAiCandidateSummaryShouldApplySummaryTagsAndQaAndGenerateSingleVersion() {
         FakeRepository repository = new FakeRepository();
         WangqiDocument document = new WangqiDocument(
-                WangqiDocumentId.of(22L),
+                WangqiDocumentIdCodec.toDomain(22L),
                 "title",
                 "old summary",
                 WangqiContentFormat.HTML,
@@ -665,7 +677,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     void applyAiCandidateQaShouldOnlyReplaceAiQaPairsAndCreateAiAppliedVersion() {
         FakeRepository repository = new FakeRepository();
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(11L));
+        entry.setId(SancaiEntryIdCodec.toDomain(11L));
         repository.sancaiEntryForAiApply = entry;
         repository.qaPairs.add(manualQaPair(1L, 11L, "manual-q", "manual-a"));
         repository.qaPairs.add(aiQaPair(2L, 11L, "old-q", "old-a"));
@@ -714,7 +726,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     void applyAiCandidateShouldFailWhenAiCandidateNotPending() {
         FakeRepository repository = new FakeRepository();
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(11L));
+        entry.setId(SancaiEntryIdCodec.toDomain(11L));
         entry.setSummary("old summary");
         repository.sancaiEntryForAiApply = entry;
 
@@ -745,7 +757,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     void applyAiCandidatesShouldProcessPartialSuccessAndFailByPermissionAndTargetMismatch() {
         FakeRepository repository = new FakeRepository();
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(11L));
+        entry.setId(SancaiEntryIdCodec.toDomain(11L));
         entry.setTranslationText("old translation");
         entry.setContentUpdatedAt(new Date(1L));
         repository.sancaiEntryForAiApply = entry;
@@ -868,12 +880,12 @@ class ClassicsContentApplicationServiceAiCandidateTest {
     void applyAiCandidatesShouldFailObjectMismatchWhenImageAnalysisObjectDoesNotMatch() {
         FakeRepository repository = new FakeRepository();
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(11L));
+        entry.setId(SancaiEntryIdCodec.toDomain(11L));
         entry.setContentUpdatedAt(new Date(1L));
         repository.sancaiEntryForAiApply = entry;
 
         SancaiAssetApplicationService assetService = org.mockito.Mockito.mock(SancaiAssetApplicationService.class);
-        when(assetService.listVisualAssets(SancaiEntryId.of(11L))).thenReturn(List.of(visualAsset(111L)));
+        when(assetService.listVisualAssets(SancaiEntryIdCodec.toDomain(11L))).thenReturn(List.of(visualAsset(111L)));
 
         AiFacade aiFacade = mockAiFacade(
                 request -> {
@@ -928,7 +940,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
 
     private static SancaiVisualAsset visualAsset(Long objectId) {
         SancaiVisualAsset visualAsset = new SancaiVisualAsset();
-        visualAsset.setId(SancaiVisualAssetId.of(objectId));
+        visualAsset.setId(SancaiVisualAssetIdCodec.toDomain(objectId));
         return visualAsset;
     }
 
@@ -1024,9 +1036,9 @@ class ClassicsContentApplicationServiceAiCandidateTest {
 
     private static ClassicsContentTag manualTag(Long id, Long contentId, String tagName) {
         ClassicsContentTag tag = new ClassicsContentTag();
-        tag.setId(ClassicsContentTagId.of(id));
+        tag.setId(ClassicsContentTagIdCodec.toDomain(id));
         tag.setContentType(ClassicsContentType.SANCAI_ENTRY);
-        tag.setContentId(ClassicsContentId.of(contentId));
+        tag.setContentId(ClassicsContentIdCodec.toDomain(contentId));
         tag.setTagNameSnapshot(tagName);
         tag.setSource(ClassicsContentSource.MANUAL);
         tag.setStatus(ClassicsContentTagStatus.ACTIVE);
@@ -1041,9 +1053,9 @@ class ClassicsContentApplicationServiceAiCandidateTest {
 
     private static ClassicsContentQaPair manualQaPair(Long id, Long contentId, String question, String answer) {
         ClassicsContentQaPair qaPair = new ClassicsContentQaPair();
-        qaPair.setId(ClassicsContentQaPairId.of(id));
+        qaPair.setId(ClassicsContentQaPairIdCodec.toDomain(id));
         qaPair.setContentType(ClassicsContentType.SANCAI_ENTRY);
-        qaPair.setContentId(ClassicsContentId.of(contentId));
+        qaPair.setContentId(ClassicsContentIdCodec.toDomain(contentId));
         qaPair.setQuestion(question);
         qaPair.setAnswer(answer);
         qaPair.setSource(ClassicsContentSource.MANUAL);
@@ -1080,7 +1092,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
 
         @Override
         public ClassicsContentVersionId insertVersion(ClassicsContentVersion version) {
-            ClassicsContentVersionId id = ClassicsContentVersionId.of(versions.size() + 1L);
+            ClassicsContentVersionId id = ClassicsContentVersionIdCodec.toDomain(versions.size() + 1L);
             version.setId(id);
             version.setVersionNo(versions.size() + 1);
             versions.add(version);
@@ -1111,7 +1123,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         public ClassicsContentTagId insertTag(ClassicsContentTag tag) {
             tags.add(tag);
             insertTagCount++;
-            return ClassicsContentTagId.of((long) tags.size());
+            return ClassicsContentTagIdCodec.toDomain((long) tags.size());
         }
 
         @Override
@@ -1157,7 +1169,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         public ClassicsContentQaPairId insertQaPair(ClassicsContentQaPair qaPair) {
             qaPairs.add(qaPair);
             insertQaPairCount++;
-            return ClassicsContentQaPairId.of((long) qaPairs.size());
+            return ClassicsContentQaPairIdCodec.toDomain((long) qaPairs.size());
         }
 
         @Override

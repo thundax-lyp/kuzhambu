@@ -7,7 +7,7 @@ public final class WangqiDocumentEventIdCodec {
     private WangqiDocumentEventIdCodec() {}
 
     public static WangqiDocumentEventId toDomain(Long value) {
-        return WangqiDocumentEventId.ofNullable(value);
+        return value == null ? null : new WangqiDocumentEventId(value);
     }
 
     public static Long toValue(WangqiDocumentEventId id) {

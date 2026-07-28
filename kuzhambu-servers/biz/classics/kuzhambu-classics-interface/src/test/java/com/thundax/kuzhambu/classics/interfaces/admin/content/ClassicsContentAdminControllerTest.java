@@ -20,7 +20,8 @@ import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationRe
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
 import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
-import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
+import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentExportJobIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportFormat;
@@ -593,9 +594,9 @@ class ClassicsContentAdminControllerTest {
                         assertEquals(ClassicsExportScopeType.CATEGORY, command.getScopeType());
                         assertTrue(command.getOperatorPermissions() != null);
                         return new ClassicsExportJobResult(
-                                ClassicsContentExportJobId.of(9001L),
+                                ClassicsContentExportJobIdCodec.toDomain(9001L),
                                 ClassicsExportStatus.COMPLETED,
-                                StorageObjectId.of(7001L));
+                                StorageObjectIdCodec.toDomain(7001L));
                     }
                     if ("pageExportJobs".equals(method.getName())) {
                         assertEquals("SANCAI_ENTRY", args[0]);
@@ -609,19 +610,22 @@ class ClassicsContentAdminControllerTest {
                                 10,
                                 1,
                                 List.of(exportJob(
-                                        ClassicsContentExportJobId.of(9001L), ClassicsExportStatus.COMPLETED)));
+                                        ClassicsContentExportJobIdCodec.toDomain(9001L),
+                                        ClassicsExportStatus.COMPLETED)));
                     }
                     if ("getExportJob".equals(method.getName())) {
                         ClassicsContentExportJobId jobId = (ClassicsContentExportJobId) args[0];
                         if (jobId.value() == 9001L) {
-                            return exportJob(ClassicsContentExportJobId.of(9001L), ClassicsExportStatus.COMPLETED);
+                            return exportJob(
+                                    ClassicsContentExportJobIdCodec.toDomain(9001L), ClassicsExportStatus.COMPLETED);
                         }
                         if (jobId.value() == 9002L) {
-                            return exportJob(ClassicsContentExportJobId.of(9002L), ClassicsExportStatus.REQUESTED);
+                            return exportJob(
+                                    ClassicsContentExportJobIdCodec.toDomain(9002L), ClassicsExportStatus.REQUESTED);
                         }
                         if (jobId.value() == 9003L) {
                             return exportJob(
-                                    ClassicsContentExportJobId.of(9003L),
+                                    ClassicsContentExportJobIdCodec.toDomain(9003L),
                                     ClassicsExportStatus.COMPLETED,
                                     new Date(System.currentTimeMillis() - 60_000L));
                         }
@@ -703,7 +707,7 @@ class ClassicsContentAdminControllerTest {
                         assertEquals("礼制", command.getTagNameSnapshot());
                         assertEquals("MANUAL", command.getSource().value());
                         assertEquals("ACTIVE", command.getStatus().value());
-                        return com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId.of(
+                        return com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentTagIdCodec.toDomain(
                                 3001L);
                     }
                     if ("updateTag".equals(method.getName())) {
@@ -716,7 +720,7 @@ class ClassicsContentAdminControllerTest {
                         assertEquals("祭祀", command.getTagNameSnapshot());
                         assertEquals("MANUAL", command.getSource().value());
                         assertEquals("ACTIVE", command.getStatus().value());
-                        return com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId.of(
+                        return com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentTagIdCodec.toDomain(
                                 3001L);
                     }
                     if ("deleteTag".equals(method.getName())) {
@@ -734,8 +738,8 @@ class ClassicsContentAdminControllerTest {
                         assertEquals(457L, command.getContentId());
                         assertEquals("是什么", command.getQuestion());
                         assertEquals("这是一个测试", command.getAnswer());
-                        return com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentQaPairId
-                                .of(4001L);
+                        return com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentQaPairIdCodec.toDomain(
+                                4001L);
                     }
                     if ("updateQaPair".equals(method.getName())) {
                         var command = (com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand)
@@ -746,8 +750,8 @@ class ClassicsContentAdminControllerTest {
                         assertEquals("为何", command.getQuestion());
                         assertEquals("为了测试", command.getAnswer());
                         assertEquals("MANUAL", command.getSource().value());
-                        return com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentQaPairId
-                                .of(4001L);
+                        return com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentQaPairIdCodec.toDomain(
+                                4001L);
                     }
                     if ("deleteQaPair".equals(method.getName())) {
                         assertEquals(
@@ -766,15 +770,14 @@ class ClassicsContentAdminControllerTest {
                                                 args[1])
                                         .value());
                         var tag = new com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag();
-                        tag.setId(
-                                com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId.of(
-                                        3001L));
+                        tag.setId(com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentTagIdCodec.toDomain(
+                                3001L));
                         tag.setContentType(ClassicsContentType.SANCAI_ENTRY);
                         tag.setContentId(
-                                com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId.of(
+                                com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec.toDomain(
                                         456L));
                         tag.setTagId(
-                                com.thundax.kuzhambu.classics.domain.common.model.valueobject.KnowledgeTagId.of(2001L));
+                                com.thundax.kuzhambu.classics.domain.common.codec.KnowledgeTagIdCodec.toDomain(2001L));
                         tag.setTagNameSnapshot("礼制");
                         tag.setSource(
                                 com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentSource.MANUAL);
@@ -816,7 +819,7 @@ class ClassicsContentAdminControllerTest {
                 new Date(),
                 expiresAt,
                 status,
-                StorageObjectId.of(7001L),
+                StorageObjectIdCodec.toDomain(7001L),
                 1,
                 2,
                 SancaiVisibilityRiskStatus.PUBLIC_ONLY,
