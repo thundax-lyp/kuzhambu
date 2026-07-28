@@ -1,11 +1,11 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.invocation.assembler;
 
-import com.thundax.kuzhambu.ai.application.batch.command.AiBatchJobCreateCommand;
-import com.thundax.kuzhambu.ai.application.batch.result.AiBatchJobResult;
-import com.thundax.kuzhambu.ai.domain.batch.codec.AiBatchJobIdCodec;
+import com.thundax.kuzhambu.ai.application.invocation.batch.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.batch.result.AiBatchJobResult;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
@@ -17,6 +17,8 @@ import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.AiInvocationResponses;
+import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
+import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Collections;
@@ -62,8 +64,8 @@ public final class AiInvocationInterfaceAssembler {
                 .modelId(AiModelIdCodec.toValue(invocationLog.getModelId()))
                 .modelName(AiModelNameCodec.toValue(invocationLog.getModelName()))
                 .promptVersionId(PromptVersionIdCodec.toValue(invocationLog.getPromptVersionId()))
-                .requestId(invocationLog.getRequestId())
-                .traceId(invocationLog.getTraceId())
+                .requestId(RequestIdCodec.toValue(invocationLog.getRequestId()))
+                .traceId(TraceIdCodec.toValue(invocationLog.getTraceId()))
                 .status(
                         invocationLog.getStatus() == null
                                 ? null
@@ -173,6 +175,7 @@ public final class AiInvocationInterfaceAssembler {
                 .scope(result.getScope())
                 .capability(result.getCapability())
                 .contentType(result.getContentType())
+                .contentId(result.getContentId())
                 .status(result.getStatus())
                 .totalCount(result.getTotalCount())
                 .successCount(result.getSuccessCount())

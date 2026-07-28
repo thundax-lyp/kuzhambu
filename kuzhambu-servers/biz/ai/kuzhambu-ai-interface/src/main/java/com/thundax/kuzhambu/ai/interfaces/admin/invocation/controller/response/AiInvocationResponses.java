@@ -248,6 +248,9 @@ public final class AiInvocationResponses {
         @JsonProperty(value = "contentType")
         private String contentType;
 
+        @JsonProperty(value = "contentId")
+        private Long contentId;
+
         @JsonProperty(value = "status")
         private String status;
 

@@ -27,6 +27,14 @@ public interface AiInvocationMapper extends BaseMapper<AiInvocationLogDO> {
     @Select(
             """
             select * from ai_invocation_log
+            where batch_id = #{batchId}
+            order by requested_at desc
+            """)
+    List<AiInvocationLogDO> selectInvocationLogsByBatch(@Param("batchId") Long batchId);
+
+    @Select(
+            """
+            select * from ai_invocation_log
             where (#{scope} is null or scope = #{scope})
               and (#{capability} is null or capability = #{capability})
               and (#{contentType} is null or content_type = #{contentType})
@@ -116,6 +124,14 @@ public interface AiInvocationMapper extends BaseMapper<AiInvocationLogDO> {
             @Param("objectId") Long objectId,
             @Param("capability") String capability,
             @Param("status") String status);
+
+    @Select(
+            """
+            select * from ai_candidate
+            where batch_id = #{batchId}
+            order by requested_at desc
+            """)
+    List<AiCandidateDO> selectCandidatesByBatch(@Param("batchId") Long batchId);
 
     @Insert(
             """

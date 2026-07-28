@@ -7,11 +7,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.thundax.kuzhambu.ai.domain.batch.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiPromptVersionIdCodec;
@@ -26,6 +26,8 @@ import com.thundax.kuzhambu.ai.infra.invocation.persistence.dataobject.AiCandida
 import com.thundax.kuzhambu.ai.infra.invocation.persistence.dataobject.AiInvocationLogDO;
 import com.thundax.kuzhambu.ai.infra.invocation.persistence.mapper.AiInvocationMapper;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
+import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
@@ -70,8 +72,8 @@ class AiInvocationRepositoryIT {
         invocationLog.setModelId(new AiModelId(2001L));
         invocationLog.setModelName(AiModelName.of("gpt-test"));
         invocationLog.setPromptVersionId(new PromptVersionId(5001L));
-        invocationLog.setRequestId("req-1");
-        invocationLog.setTraceId("trace-1");
+        invocationLog.setRequestId(RequestIdCodec.toDomain("req-1"));
+        invocationLog.setTraceId(TraceIdCodec.toDomain("trace-1"));
         invocationLog.setStatus(AiInvocationStatus.SUCCEEDED);
         invocationLog.setStreamUsed(true);
         invocationLog.setStreamCompleted(true);
@@ -85,12 +87,14 @@ class AiInvocationRepositoryIT {
         invocationLog.setRequestedAt(requestedAt);
         invocationLog.setCompletedAt(requestedAt);
 
-        Long callId = repository.insertInvocationLog(invocationLog);
+        var callId = repository.insertInvocationLog(invocationLog);
 
         ArgumentCaptor<AiInvocationLogDO> callCaptor = ArgumentCaptor.forClass(AiInvocationLogDO.class);
         verify(mapper).insert(callCaptor.capture());
         AiInvocationLogDO savedCall = callCaptor.getValue();
-        assertEquals(7001L, callId);
+        assertEquals(AiCallIdCodec.toDomain(7001L), callId);
+        assertEquals("req-1", savedCall.getRequestId());
+        assertEquals("trace-1", savedCall.getTraceId());
         assertEquals("classics", savedCall.getScope());
         assertEquals(10, savedCall.getInputTokens());
         assertEquals(new BigDecimal("0.01"), savedCall.getCostAmount());
@@ -100,9 +104,9 @@ class AiInvocationRepositoryIT {
         assertEquals("{\"artifact\":\"s3://ai/call/7001.json\"}", savedCall.getArtifactReferenceJson());
 
         when(mapper.selectOne(any())).thenReturn(savedCall);
-        AiInvocationLog loadedRecord = repository.getInvocationLog(7001L);
+        AiInvocationLog loadedRecord = repository.getInvocationLog(AiCallIdCodec.toDomain(7001L));
 
-        assertEquals("trace-1", loadedRecord.getTraceId());
+        assertEquals(TraceIdCodec.toDomain("trace-1"), loadedRecord.getTraceId());
         assertEquals(20, loadedRecord.getUsage().getOutputTokens());
         assertTrue(loadedRecord.isStreamCompleted());
         assertEquals("WORKER_RESULT", loadedRecord.getFailureStage());
@@ -132,12 +136,12 @@ class AiInvocationRepositoryIT {
         candidate.setRequestedAt(requestedAt);
         candidate.setRejectedAt(requestedAt);
 
-        Long candidateId = repository.insertCandidate(candidate);
+        var candidateId = repository.insertCandidate(candidate);
 
         ArgumentCaptor<AiCandidateDO> candidateCaptor = ArgumentCaptor.forClass(AiCandidateDO.class);
         verify(mapper).insertCandidate(candidateCaptor.capture());
         AiCandidateDO savedCandidate = candidateCaptor.getValue();
-        assertEquals(7101L, candidateId);
+        assertEquals(AiCandidateIdCodec.toDomain(7101L), candidateId);
         assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE.value(), savedCandidate.getCapability());
         assertEquals("{\"artifact\":\"s3://ai/candidate/7101.json\"}", savedCandidate.getArtifactReferenceJson());
         assertEquals("json", savedCandidate.getResultFormat());
@@ -149,9 +153,12 @@ class AiInvocationRepositoryIT {
         when(mapper.selectCandidate(7101L)).thenReturn(savedCandidate);
         when(mapper.selectCandidates("ENTRY", 9001L, null, AiBusinessCapability.CLASSICS_TRANSLATE.value(), "REJECTED"))
                 .thenReturn(List.of(savedCandidate));
-        AiCandidate loadedCandidate = repository.getCandidate(7101L);
+        AiCandidate loadedCandidate = repository.getCandidate(AiCandidateIdCodec.toDomain(7101L));
         List<AiCandidate> loadedCandidates = repository.listCandidates(
-                "ENTRY", 9001L, null, AiBusinessCapability.CLASSICS_TRANSLATE.value(), "REJECTED");
+                AiContentRef.of("ENTRY", 9001L),
+                null,
+                AiBusinessCapability.CLASSICS_TRANSLATE,
+                AiCandidateStatus.REJECTED);
 
         assertEquals("{\"title\":\"ok\"}", loadedCandidate.getResultPayload());
         assertEquals("SCHEMA_CHECK", loadedCandidate.getFailureStage());
@@ -179,11 +186,20 @@ class AiInvocationRepositoryIT {
         dataObject.setRequestedAt(start);
 
         when(mapper.countInvocationLogs(
-                        "classics", "summary", "SANCAI_ENTRY", 9002L, "SUCCEEDED", "PRIMARY", "gpt", false, start, end))
+                        "classics",
+                        AiBusinessCapability.CLASSICS_SUMMARY.value(),
+                        "SANCAI_ENTRY",
+                        9002L,
+                        "SUCCEEDED",
+                        "PRIMARY",
+                        "gpt",
+                        false,
+                        start,
+                        end))
                 .thenReturn(1L);
         when(mapper.selectInvocationLogsPage(
                         "classics",
-                        "summary",
+                        AiBusinessCapability.CLASSICS_SUMMARY.value(),
                         "SANCAI_ENTRY",
                         9002L,
                         "SUCCEEDED",
@@ -197,7 +213,17 @@ class AiInvocationRepositoryIT {
                 .thenReturn(List.of(dataObject));
 
         PageResult<AiInvocationLog> page = repository.pageInvocationLogs(
-                "classics", "summary", "SANCAI_ENTRY", 9002L, "SUCCEEDED", "PRIMARY", "gpt", false, start, end, 2, 20);
+                "classics",
+                AiBusinessCapability.CLASSICS_SUMMARY,
+                AiContentRef.of("SANCAI_ENTRY", 9002L),
+                AiInvocationStatus.SUCCEEDED,
+                "PRIMARY",
+                AiModelName.of("gpt"),
+                false,
+                start,
+                end,
+                2,
+                20);
 
         assertEquals(2, page.getPageNo());
         assertEquals(20, page.getPageSize());
@@ -216,10 +242,12 @@ class AiInvocationRepositoryIT {
         dataObject.setCallId(7003L);
         dataObject.setCapability(AiBusinessCapability.CLASSICS_TAG_EXTRACT.value());
 
-        when(mapper.selectInvocationLogsForSummary("classics", "tags", "BACKUP", start, end))
+        when(mapper.selectInvocationLogsForSummary(
+                        "classics", AiBusinessCapability.CLASSICS_TAG_EXTRACT.value(), "BACKUP", start, end))
                 .thenReturn(List.of(dataObject));
 
-        List<AiInvocationLog> records = repository.listInvocationLogs("classics", "tags", "BACKUP", start, end);
+        List<AiInvocationLog> records = repository.listInvocationLogs(
+                "classics", AiBusinessCapability.CLASSICS_TAG_EXTRACT, "BACKUP", start, end);
 
         assertEquals(1, records.size());
         assertEquals(7003L, records.get(0).getCallId().value());

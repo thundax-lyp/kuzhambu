@@ -4,16 +4,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.thundax.kuzhambu.ai.application.batch.service.AiBatchJobApplicationService;
+import com.thundax.kuzhambu.ai.application.invocation.batch.service.AiBatchJobApplicationService;
+import com.thundax.kuzhambu.ai.application.invocation.service.AiCandidateApplicationService;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiCandidateStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjectId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
-import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainService;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests.CandidateListRequest;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests.CandidateMarkAppliedRequest;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests.CandidateRejectRequest;
@@ -79,7 +85,7 @@ class AiInvocationControllerTest {
     @Test
     void rejectCandidateShouldMapToDomainService() {
         AiInvocationController controller =
-                new AiInvocationController(noRepository(), noBatchService(), rejectDomainService());
+                new AiInvocationController(noRepository(), noBatchService(), rejectCandidateService());
         CandidateRejectRequest request = new CandidateRejectRequest();
         request.setCandidateId(11L);
         request.setErrorType("TIMEOUT");
@@ -93,9 +99,9 @@ class AiInvocationControllerTest {
     }
 
     @Test
-    void markAppliedShouldFallbackByCurrentCandidateAndMapToDomainService() {
-        AiInvocationController controller =
-                new AiInvocationController(currentInvocationRepository(), noBatchService(), markAppliedDomainService());
+    void markAppliedShouldDelegateToCandidateApplicationService() {
+        AiInvocationController controller = new AiInvocationController(
+                currentInvocationRepository(), noBatchService(), markAppliedCandidateService());
         CandidateMarkAppliedRequest request = new CandidateMarkAppliedRequest();
         request.setCandidateId(22L);
 
@@ -112,12 +118,14 @@ class AiInvocationControllerTest {
         AiInvocationRepository repository = new FakeRepository() {
             @Override
             public List<AiCandidate> listCandidates(
-                    String contentType, Long contentId, Long objectId, String capability, String status) {
-                assertEquals("ENTRY", contentType);
-                assertEquals(9001L, contentId);
-                assertEquals(10001L, objectId);
-                assertEquals("summary", capability);
-                assertEquals("PENDING", status);
+                    AiContentRef contentRef,
+                    AiTargetObjectId targetObjectId,
+                    AiBusinessCapability capability,
+                    AiCandidateStatus status) {
+                assertEquals(AiContentRef.ofNullable("ENTRY", 9001L), contentRef);
+                assertEquals(AiTargetObjectIdCodec.toDomain(10001L), targetObjectId);
+                assertEquals(AiBusinessCapability.CLASSICS_SUMMARY, capability);
+                assertEquals(AiCandidateStatus.PENDING, status);
                 return List.of();
             }
         };
@@ -139,24 +147,22 @@ class AiInvocationControllerTest {
             @Override
             public PageResult<AiInvocationLog> pageInvocationLogs(
                     String scope,
-                    String capability,
-                    String contentType,
-                    Long contentId,
-                    String status,
+                    AiBusinessCapability capability,
+                    AiContentRef contentRef,
+                    AiInvocationStatus status,
                     String serviceRole,
-                    String modelName,
+                    AiModelName modelName,
                     Boolean fallbackUsed,
                     Instant requestedAtStart,
                     Instant requestedAtEnd,
                     int pageNo,
                     int pageSize) {
                 assertEquals("classics", scope);
-                assertEquals("summary", capability);
-                assertEquals("ENTRY", contentType);
-                assertEquals(1001L, contentId);
-                assertEquals("FAILED", status);
+                assertEquals(AiBusinessCapability.CLASSICS_SUMMARY, capability);
+                assertEquals(AiContentRef.ofNullable("ENTRY", 1001L), contentRef);
+                assertEquals(AiInvocationStatus.FAILED, status);
                 assertEquals("PRIMARY", serviceRole);
-                assertEquals("gpt", modelName);
+                assertEquals(AiModelName.of("gpt"), modelName);
                 assertEquals(Boolean.TRUE, fallbackUsed);
                 assertEquals(Instant.parse("2026-07-01T00:00:00Z"), requestedAtStart);
                 assertEquals(Instant.parse("2026-07-02T00:00:00Z"), requestedAtEnd);
@@ -195,12 +201,12 @@ class AiInvocationControllerTest {
             @Override
             public List<AiInvocationLog> listInvocationLogs(
                     String scope,
-                    String capability,
+                    AiBusinessCapability capability,
                     String serviceRole,
                     Instant requestedAtStart,
                     Instant requestedAtEnd) {
                 assertEquals("classics", scope);
-                assertEquals("summary", capability);
+                assertEquals(AiBusinessCapability.CLASSICS_SUMMARY, capability);
                 assertEquals("PRIMARY", serviceRole);
                 assertEquals(Instant.parse("2026-07-01T00:00:00Z"), requestedAtStart);
                 assertEquals(Instant.parse("2026-07-02T00:00:00Z"), requestedAtEnd);
@@ -260,8 +266,8 @@ class AiInvocationControllerTest {
     private static AiInvocationRepository currentInvocationRepository() {
         return new FakeRepository() {
             @Override
-            public AiCandidate getCandidate(Long candidateId) {
-                assertEquals(22L, candidateId);
+            public AiCandidate getCandidate(AiCandidateId candidateId) {
+                assertEquals(AiCandidateIdCodec.toDomain(22L), candidateId);
                 return currentCandidate();
             }
         };
@@ -290,11 +296,12 @@ class AiInvocationControllerTest {
                 (proxy, method, args) -> {
                     if ("cancel".equals(method.getName())) {
                         assertEquals(8801L, args[0]);
-                        return new com.thundax.kuzhambu.ai.application.batch.result.AiBatchJobResult(
+                        return new com.thundax.kuzhambu.ai.application.invocation.batch.result.AiBatchJobResult(
                                 8801L,
                                 "classics",
                                 "image_analysis",
                                 "SANCAI_ENTRY",
+                                3001L,
                                 "CANCELLED",
                                 1,
                                 0,
@@ -310,29 +317,36 @@ class AiInvocationControllerTest {
                 });
     }
 
-    private static AiCandidateDomainService noDomainService() {
-        return new AiCandidateDomainService(fakeRepository()) {
+    private static AiCandidateApplicationService noDomainService() {
+        return new AiCandidateApplicationService() {
             @Override
-            public AiCandidate reject(Long candidateId, String errorType, String errorMessage) {
-                throw new UnsupportedOperationException("candidate domain service should not be called in this test");
+            public AiCandidate requirePendingForApply(
+                    Long candidateId, String contentType, Long contentId, String capability, Long objectId) {
+                throw new UnsupportedOperationException(
+                        "candidate application service should not be called in this test");
             }
 
             @Override
             public AiCandidate markApplied(
                     Long candidateId, String resultFormat, String resultPayload, java.time.Instant appliedAt) {
-                throw new UnsupportedOperationException("candidate domain service should not be called in this test");
+                throw new UnsupportedOperationException(
+                        "candidate application service should not be called in this test");
+            }
+
+            @Override
+            public AiCandidate reject(Long candidateId, String errorType, String errorMessage) {
+                throw new UnsupportedOperationException(
+                        "candidate application service should not be called in this test");
             }
         };
     }
 
-    private static AiCandidateDomainService rejectDomainService() {
-        return new AiCandidateDomainService(fakeRepository()) {
+    private static AiCandidateApplicationService rejectCandidateService() {
+        return new AiCandidateApplicationService() {
             @Override
-            public AiCandidate reject(Long candidateId, String errorType, String errorMessage) {
-                assertEquals(11L, candidateId);
-                assertEquals("TIMEOUT", errorType);
-                assertEquals("执行超时", errorMessage);
-                return rejectedCandidate();
+            public AiCandidate requirePendingForApply(
+                    Long candidateId, String contentType, Long contentId, String capability, Long objectId) {
+                throw new UnsupportedOperationException("requirePendingForApply should not be called in this test");
             }
 
             @Override
@@ -340,17 +354,32 @@ class AiInvocationControllerTest {
                     Long candidateId, String resultFormat, String resultPayload, java.time.Instant appliedAt) {
                 throw new UnsupportedOperationException("markApplied should not be called in this test");
             }
+
+            @Override
+            public AiCandidate reject(Long candidateId, String errorType, String errorMessage) {
+                assertEquals(11L, candidateId);
+                assertEquals("TIMEOUT", errorType);
+                assertEquals("执行超时", errorMessage);
+                return rejectedCandidate();
+            }
         };
     }
 
-    private static AiCandidateDomainService markAppliedDomainService() {
-        return new AiCandidateDomainService(fakeRepository()) {
+    private static AiCandidateApplicationService markAppliedCandidateService() {
+        return new AiCandidateApplicationService() {
+            @Override
+            public AiCandidate requirePendingForApply(
+                    Long candidateId, String contentType, Long contentId, String capability, Long objectId) {
+                throw new UnsupportedOperationException("requirePendingForApply should not be called in this test");
+            }
+
             @Override
             public AiCandidate markApplied(
                     Long candidateId, String resultFormat, String resultPayload, java.time.Instant appliedAt) {
                 assertEquals(22L, candidateId);
-                assertEquals("TEXT", resultFormat);
-                assertEquals("existing", resultPayload);
+                assertEquals(null, resultFormat);
+                assertEquals(null, resultPayload);
+                assertEquals(null, appliedAt);
                 return appliedCandidate();
             }
 
@@ -431,12 +460,13 @@ class AiInvocationControllerTest {
 
     private static class FakeRepository implements AiInvocationRepository {
         @Override
-        public com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog getInvocationLog(Long callId) {
+        public com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog getInvocationLog(
+                AiCallId callId) {
             return null;
         }
 
         @Override
-        public Long insertInvocationLog(
+        public AiCallId insertInvocationLog(
                 com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog invocationLog) {
             return null;
         }
@@ -454,14 +484,19 @@ class AiInvocationControllerTest {
         }
 
         @Override
+        public List<AiInvocationLog> listInvocationLogsByBatch(
+                com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId batchId) {
+            return java.util.Collections.emptyList();
+        }
+
+        @Override
         public PageResult<AiInvocationLog> pageInvocationLogs(
                 String scope,
-                String capability,
-                String contentType,
-                Long contentId,
-                String status,
+                AiBusinessCapability capability,
+                AiContentRef contentRef,
+                AiInvocationStatus status,
                 String serviceRole,
-                String modelName,
+                AiModelName modelName,
                 Boolean fallbackUsed,
                 java.time.Instant requestedAtStart,
                 java.time.Instant requestedAtEnd,
@@ -473,7 +508,7 @@ class AiInvocationControllerTest {
         @Override
         public List<AiInvocationLog> listInvocationLogs(
                 String scope,
-                String capability,
+                AiBusinessCapability capability,
                 String serviceRole,
                 java.time.Instant requestedAtStart,
                 java.time.Instant requestedAtEnd) {
@@ -481,12 +516,12 @@ class AiInvocationControllerTest {
         }
 
         @Override
-        public AiCandidate getCandidate(Long candidateId) {
+        public AiCandidate getCandidate(AiCandidateId candidateId) {
             return null;
         }
 
         @Override
-        public Long insertCandidate(AiCandidate candidate) {
+        public AiCandidateId insertCandidate(AiCandidate candidate) {
             return null;
         }
 
@@ -497,7 +532,16 @@ class AiInvocationControllerTest {
 
         @Override
         public List<com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate> listCandidates(
-                String contentType, Long contentId, Long objectId, String capability, String status) {
+                AiContentRef contentRef,
+                AiTargetObjectId targetObjectId,
+                AiBusinessCapability capability,
+                AiCandidateStatus status) {
+            return java.util.Collections.emptyList();
+        }
+
+        @Override
+        public List<AiCandidate> listCandidatesByBatch(
+                com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId batchId) {
             return java.util.Collections.emptyList();
         }
     }
