@@ -16,6 +16,7 @@ import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVersion;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiApiSource;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiModelCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiBusinessConfigId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptTemplateId;
@@ -249,22 +250,22 @@ class AiBusinessInvokeConfigResolverTest {
     private static class FakeBusinessConfigApplicationService implements AiBusinessConfigApplicationService {
 
         @Override
-        public AiBusinessConfig get(Long id) {
+        public AiBusinessConfig get(AiBusinessConfigId id) {
             return config();
         }
 
         @Override
-        public AiBusinessConfig get(String capability) {
+        public AiBusinessConfig get(AiBusinessCapability capability) {
             return config();
         }
 
         @Override
-        public List<AiBusinessConfig> list(String capability, Boolean enabled) {
+        public List<AiBusinessConfig> list(AiBusinessCapability capability, Boolean enabled) {
             return List.of(config());
         }
 
         @Override
-        public Long save(AiBusinessConfig config) {
+        public AiBusinessConfigId save(AiBusinessConfig config) {
             return null;
         }
 
@@ -274,7 +275,7 @@ class AiBusinessInvokeConfigResolverTest {
         }
 
         @Override
-        public int delete(Long id) {
+        public int delete(AiBusinessConfigId id) {
             return 0;
         }
 

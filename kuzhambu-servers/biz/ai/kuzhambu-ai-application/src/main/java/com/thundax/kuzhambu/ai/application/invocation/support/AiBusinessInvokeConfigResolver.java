@@ -91,7 +91,7 @@ public class AiBusinessInvokeConfigResolver {
     }
 
     private AiBusinessConfig resolveBusinessConfig(String capability) {
-        List<AiBusinessConfig> configs = businessConfigService.list(capability, true);
+        List<AiBusinessConfig> configs = businessConfigService.list(AiBusinessCapability.from(capability), true);
         if (configs == null || configs.isEmpty()) {
             throw new BizException("AI business config is not configured: " + capability);
         }

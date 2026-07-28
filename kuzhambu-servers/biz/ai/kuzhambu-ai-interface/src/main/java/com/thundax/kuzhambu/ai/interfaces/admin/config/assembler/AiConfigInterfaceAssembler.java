@@ -9,6 +9,7 @@ import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiApiSource;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiModelCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiBusinessConfigId;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.request.AiConfigRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.response.AiConfigResponses;
 import java.time.Instant;
@@ -45,6 +46,14 @@ public final class AiConfigInterfaceAssembler {
         config.setEnabled(request.getEnabled() == null || request.getEnabled());
         config.setConfiguredAt(Instant.now());
         return config;
+    }
+
+    public static AiBusinessConfigId toBusinessConfigId(Long value) {
+        return AiBusinessConfigIdCodec.toDomain(value);
+    }
+
+    public static AiBusinessCapability toBusinessCapability(String value) {
+        return isBlank(value) ? null : AiBusinessCapability.from(value);
     }
 
     public static AiConfigResponses.ModelResponse toResponse(AiModel model) {

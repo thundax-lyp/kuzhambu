@@ -1,7 +1,6 @@
 package com.thundax.kuzhambu.ai.application.config.service.impl;
 
 import com.thundax.kuzhambu.ai.application.config.service.AiBusinessConfigApplicationService;
-import com.thundax.kuzhambu.ai.domain.config.codec.AiBusinessConfigIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiBusinessConfig;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
@@ -35,23 +34,23 @@ public class AiBusinessConfigApplicationServiceImpl implements AiBusinessConfigA
     }
 
     @Override
-    public AiBusinessConfig get(Long id) {
-        return aiBusinessConfigRepository.get(AiBusinessConfigIdCodec.toDomain(id));
+    public AiBusinessConfig get(AiBusinessConfigId id) {
+        return aiBusinessConfigRepository.get(id);
     }
 
     @Override
-    public AiBusinessConfig get(String capability) {
-        return aiBusinessConfigRepository.get(toCapability(capability));
+    public AiBusinessConfig get(AiBusinessCapability capability) {
+        return aiBusinessConfigRepository.get(capability);
     }
 
     @Override
-    public List<AiBusinessConfig> list(String capability, Boolean enabled) {
-        return aiBusinessConfigRepository.list(toCapability(capability), enabled);
+    public List<AiBusinessConfig> list(AiBusinessCapability capability, Boolean enabled) {
+        return aiBusinessConfigRepository.list(capability, enabled);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Long save(AiBusinessConfig config) {
+    public AiBusinessConfigId save(AiBusinessConfig config) {
         validateConfig(config);
         if (config.getId() == null) {
             config.setPriority(aiBusinessConfigRepository.maxPriority() + 1);
@@ -60,8 +59,7 @@ public class AiBusinessConfigApplicationServiceImpl implements AiBusinessConfigA
             config.setPriority(
                     existing == null ? aiBusinessConfigRepository.maxPriority() + 1 : existing.getPriority());
         }
-        AiBusinessConfigId id = aiBusinessConfigRepository.insert(config);
-        return AiBusinessConfigIdCodec.toValue(id);
+        return aiBusinessConfigRepository.insert(config);
     }
 
     @Override
@@ -81,11 +79,11 @@ public class AiBusinessConfigApplicationServiceImpl implements AiBusinessConfigA
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public int delete(Long id) {
+    public int delete(AiBusinessConfigId id) {
         if (id == null) {
             return 0;
         }
-        return aiBusinessConfigRepository.delete(AiBusinessConfigIdCodec.toDomain(id));
+        return aiBusinessConfigRepository.delete(id);
     }
 
     private void validateConfig(AiBusinessConfig config) {
@@ -100,12 +98,5 @@ public class AiBusinessConfigApplicationServiceImpl implements AiBusinessConfigA
         if (!config.promptMatches(promptTemplate) || !config.modelMatches(model)) {
             throw new BizException("AI business config does not match prompt template or model capability");
         }
-    }
-
-    private AiBusinessCapability toCapability(String capability) {
-        if (capability == null || capability.trim().isEmpty()) {
-            return null;
-        }
-        return AiBusinessCapability.from(capability);
     }
 }
