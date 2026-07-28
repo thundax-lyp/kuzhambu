@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject;
+package com.thundax.kuzhambu.ai.application.knowledge.command;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class KnowledgeAiExtractionInput {
+public class KnowledgeAiExtractionCommand {
     private String taskType;
     private String scopeType;
     private String scopeJson;

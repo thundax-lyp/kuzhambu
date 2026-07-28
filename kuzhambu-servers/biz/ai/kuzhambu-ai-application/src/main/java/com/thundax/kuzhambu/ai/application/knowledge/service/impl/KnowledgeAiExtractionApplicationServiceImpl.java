@@ -4,11 +4,11 @@ import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.support.AiBusinessInvokeConfigResolver;
+import com.thundax.kuzhambu.ai.application.knowledge.command.KnowledgeAiExtractionCommand;
+import com.thundax.kuzhambu.ai.application.knowledge.result.KnowledgeAiExtractionResult;
 import com.thundax.kuzhambu.ai.application.knowledge.service.KnowledgeAiExtractionApplicationService;
 import com.thundax.kuzhambu.ai.application.knowledge.support.KnowledgeAiWorkerUsecaseResolver;
 import com.thundax.kuzhambu.ai.application.knowledge.support.KnowledgeAiWorkerUsecaseSpec;
-import com.thundax.kuzhambu.ai.domain.knowledge.model.entity.KnowledgeAiExtractionRecord;
-import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionInput;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,26 +33,26 @@ public class KnowledgeAiExtractionApplicationServiceImpl implements KnowledgeAiE
     }
 
     @Override
-    public KnowledgeAiExtractionRecord extractRelations(KnowledgeAiExtractionInput input) {
+    public KnowledgeAiExtractionResult extractRelations(KnowledgeAiExtractionCommand input) {
         return invoke(input, "RELATION");
     }
 
     @Override
-    public KnowledgeAiExtractionRecord extractGraph(KnowledgeAiExtractionInput input) {
+    public KnowledgeAiExtractionResult extractGraph(KnowledgeAiExtractionCommand input) {
         return invoke(input, "GRAPH");
     }
 
     @Override
-    public KnowledgeAiExtractionRecord extractLineage(KnowledgeAiExtractionInput input) {
+    public KnowledgeAiExtractionResult extractLineage(KnowledgeAiExtractionCommand input) {
         return invoke(input, "LINEAGE");
     }
 
     @Override
-    public KnowledgeAiExtractionRecord extractTags(KnowledgeAiExtractionInput input) {
+    public KnowledgeAiExtractionResult extractTags(KnowledgeAiExtractionCommand input) {
         return invoke(input, "TAG");
     }
 
-    private KnowledgeAiExtractionRecord invoke(KnowledgeAiExtractionInput input, String taskType) {
+    private KnowledgeAiExtractionResult invoke(KnowledgeAiExtractionCommand input, String taskType) {
         validateRequest(input);
         KnowledgeAiWorkerUsecaseSpec spec = resolver.resolve(taskType);
         AiInvokeCommand command = new AiInvokeCommand();
@@ -80,7 +80,7 @@ public class KnowledgeAiExtractionApplicationServiceImpl implements KnowledgeAiE
         command.setCreateCandidate(true);
         enrichBusinessInvokeConfig(command);
         AiInvokeResult result = invocationApplicationService.invoke(command);
-        return new KnowledgeAiExtractionRecord(
+        return new KnowledgeAiExtractionResult(
                 result.getCallId(),
                 result.getCandidateId(),
                 result.getStatus(),
@@ -91,7 +91,7 @@ public class KnowledgeAiExtractionApplicationServiceImpl implements KnowledgeAiE
                 result.getErrorMessage());
     }
 
-    private void validateRequest(KnowledgeAiExtractionInput input) {
+    private void validateRequest(KnowledgeAiExtractionCommand input) {
         if (input == null
                 || isBlank(input.getSourceContentType())
                 || input.getSourceContentId() == null

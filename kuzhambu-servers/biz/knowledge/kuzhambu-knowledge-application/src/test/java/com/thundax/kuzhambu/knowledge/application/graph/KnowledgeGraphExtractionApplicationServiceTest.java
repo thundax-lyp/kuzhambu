@@ -275,7 +275,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         finishedChild.setStatus("SUCCEEDED");
         repository.tasks.add(finishedChild);
         FakeAiBatchJobApplicationService batchService = new FakeAiBatchJobApplicationService();
-        batchService.create(new AiBatchJobCreateCommand("{}", "relation_extraction", "SANCAI_ENTRY", 2, null));
+        batchService.create(new AiBatchJobCreateCommand("{}", "relation_extraction", "SANCAI_ENTRY", null, 2, null));
         batchService.recordSuccess(1001L);
         KnowledgeGraphExtractionApplicationServiceImpl service = service(
                 repository,
@@ -972,6 +972,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         private final String scope;
         private final String capability;
         private final String contentType;
+        private final Long contentId;
         private final int totalCount;
         private final String failureSummaryJson;
     }
@@ -983,6 +984,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
         private final String scope;
         private final String capability;
         private final String contentType;
+        private final Long contentId;
         private final String status;
         private final int totalCount;
         private final int successCount;
@@ -1310,6 +1312,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                             request.getScope(),
                             request.getCapability(),
                             request.getContentType(),
+                            null,
                             request.getTotalCount(),
                             request.getFailureSummaryJson()));
             return AiBatchJobActionFacadeResponse.builder().batchId(batchId).build();
@@ -1443,6 +1446,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                     .scope(result.getScope())
                     .capability(result.getCapability())
                     .contentType(result.getContentType())
+                    .contentId(result.getContentId())
                     .status(result.getStatus())
                     .totalCount(result.getTotalCount())
                     .successCount(result.getSuccessCount())
@@ -1528,6 +1532,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                     command.getScope(),
                     command.getCapability(),
                     command.getContentType(),
+                    command.getContentId(),
                     "RUNNING",
                     command.getTotalCount(),
                     0,
@@ -1553,6 +1558,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                     lastResult.getScope(),
                     lastResult.getCapability(),
                     lastResult.getContentType(),
+                    lastResult.getContentId(),
                     recordSuccessCalls + recordFailureCalls >= lastResult.getTotalCount() ? "SUCCEEDED" : "RUNNING",
                     lastResult.getTotalCount(),
                     lastResult.getSuccessCount() + 1,
@@ -1575,6 +1581,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                     lastResult.getScope(),
                     lastResult.getCapability(),
                     lastResult.getContentType(),
+                    lastResult.getContentId(),
                     "PARTIAL",
                     lastResult.getTotalCount(),
                     lastResult.getSuccessCount(),
@@ -1596,6 +1603,7 @@ class KnowledgeGraphExtractionApplicationServiceTest {
                     lastResult.getScope(),
                     lastResult.getCapability(),
                     lastResult.getContentType(),
+                    lastResult.getContentId(),
                     "CANCELLED",
                     lastResult.getTotalCount(),
                     lastResult.getSuccessCount(),
