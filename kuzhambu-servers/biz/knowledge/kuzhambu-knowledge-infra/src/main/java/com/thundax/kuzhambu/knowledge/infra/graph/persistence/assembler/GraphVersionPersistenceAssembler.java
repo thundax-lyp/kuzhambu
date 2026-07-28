@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.knowledge.infra.graph.persistence.assembler;
 
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTaskIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
-import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphVersionDO;
 
 public final class GraphVersionPersistenceAssembler {
@@ -38,7 +38,7 @@ public final class GraphVersionPersistenceAssembler {
         GraphVersion entity = new GraphVersion();
         entity.setId(dataObject.getId());
         entity.setVersionId(dataObject.getVersionId());
-        entity.setTaskId(GraphExtractionTaskId.ofNullable(dataObject.getTaskId()));
+        entity.setTaskId(GraphExtractionTaskIdCodec.toDomain(dataObject.getTaskId()));
         entity.setCandidateId(dataObject.getCandidateId());
         entity.setTaskType(dataObject.getTaskType());
         entity.setScopeType(dataObject.getScopeType());

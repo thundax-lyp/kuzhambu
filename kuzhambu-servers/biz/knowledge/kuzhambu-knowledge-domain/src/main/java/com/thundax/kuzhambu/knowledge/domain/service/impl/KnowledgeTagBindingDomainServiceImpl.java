@@ -3,6 +3,9 @@ package com.thundax.kuzhambu.knowledge.domain.service.impl;
 import com.thundax.kuzhambu.common.core.exception.DomainException;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.knowledge.domain.service.KnowledgeTagBindingDomainService;
+import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.TagCategoryIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.TagContentRefIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.TagIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.Tag;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.TagAlias;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.TagCategory;
@@ -13,7 +16,6 @@ import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagReviewStatu
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagSource;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagStatus;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagCategoryId;
-import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagContentRefId;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagId;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagAliasRepository;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagCategoryRepository;
@@ -27,7 +29,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class KnowledgeTagBindingDomainServiceImpl implements KnowledgeTagBindingDomainService {
-    private static final TagCategoryId DEFAULT_CATEGORY_ID = TagCategoryId.of(1999L);
+    private static final TagCategoryId DEFAULT_CATEGORY_ID = TagCategoryIdCodec.toDomain(1999L);
 
     private final TagRepository tagRepository;
     private final TagAliasRepository tagAliasRepository;
@@ -111,7 +113,7 @@ public class KnowledgeTagBindingDomainServiceImpl implements KnowledgeTagBinding
         }
 
         TagContentRef ref = new TagContentRef();
-        ref.setRefId(TagContentRefId.of(idGenerator.nextId().value()));
+        ref.setRefId(TagContentRefIdCodec.toDomain(idGenerator.nextId().value()));
         ref.setTagId(tagId);
         ref.setContentType(contentType);
         ref.setContentId(contentId);
@@ -142,7 +144,7 @@ public class KnowledgeTagBindingDomainServiceImpl implements KnowledgeTagBinding
         TagCategory category = requireDefaultCategory();
         Date now = new Date();
         Tag tag = new Tag();
-        tag.setTagId(TagId.of(idGenerator.nextId().value()));
+        tag.setTagId(TagIdCodec.toDomain(idGenerator.nextId().value()));
         tag.setName(normalizedName);
         tag.setCategoryId(category.getCategoryId());
         tag.setStatus(TagStatus.ENABLED);

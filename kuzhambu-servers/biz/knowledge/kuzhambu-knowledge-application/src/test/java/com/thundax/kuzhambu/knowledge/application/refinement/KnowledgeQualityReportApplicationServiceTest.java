@@ -26,12 +26,12 @@ import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRep
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageNodeRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageRelationRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeRelationRepository;
+import com.thundax.kuzhambu.knowledge.domain.refinement.codec.RefinementTaskIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.QualityAnnotation;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.QualityReport;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.QualityReportIssue;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.QualityReportSourceDetail;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementTask;
-import com.thundax.kuzhambu.knowledge.domain.refinement.model.valueobject.RefinementTaskId;
 import com.thundax.kuzhambu.knowledge.domain.refinement.repository.QualityAnnotationRepository;
 import com.thundax.kuzhambu.knowledge.domain.refinement.repository.QualityReportRepository;
 import com.thundax.kuzhambu.knowledge.domain.refinement.repository.RefinementEntityDraftRepository;
@@ -278,7 +278,7 @@ class KnowledgeQualityReportApplicationServiceTest {
         when(refinementTaskRepository.findLatestAppliedByGraphVersionId(71L))
                 .thenReturn(new RefinementTask(
                         null,
-                        RefinementTaskId.of(31L),
+                        RefinementTaskIdCodec.toDomain(31L),
                         "GRAPH",
                         "SANCAI_ENTRY",
                         2001L,

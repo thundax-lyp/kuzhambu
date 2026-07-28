@@ -9,6 +9,7 @@ import com.thundax.kuzhambu.knowledge.application.refinement.support.KnowledgeRe
 import com.thundax.kuzhambu.knowledge.application.refinement.support.QualitySummaryAggregationSupport;
 import com.thundax.kuzhambu.knowledge.application.refinement.support.RefinementApplySupport;
 import com.thundax.kuzhambu.knowledge.application.refinement.support.RefinementDraftBootstrapSupport;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTaskIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
@@ -22,6 +23,7 @@ import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeEntityRep
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageNodeRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeLineageRelationRepository;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.KnowledgeRelationRepository;
+import com.thundax.kuzhambu.knowledge.domain.refinement.codec.RefinementTaskIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.QualityAnnotation;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementEntityDraft;
 import com.thundax.kuzhambu.knowledge.domain.refinement.model.entity.RefinementLineageNodeDraft;
@@ -48,7 +50,7 @@ class KnowledgeGraphRefinementApplyTest {
         FakeRefinementTaskRepository taskRepository = new FakeRefinementTaskRepository();
         taskRepository.task = new RefinementTask(
                 null,
-                RefinementTaskId.of(31L),
+                RefinementTaskIdCodec.toDomain(31L),
                 "GRAPH",
                 "SANCAI_ENTRY",
                 1001L,
@@ -204,7 +206,7 @@ class KnowledgeGraphRefinementApplyTest {
             return new GraphVersion(
                     7L,
                     versionId,
-                    GraphExtractionTaskId.of(88L),
+                    GraphExtractionTaskIdCodec.toDomain(88L),
                     12L,
                     "GRAPH",
                     "CONTENT",
