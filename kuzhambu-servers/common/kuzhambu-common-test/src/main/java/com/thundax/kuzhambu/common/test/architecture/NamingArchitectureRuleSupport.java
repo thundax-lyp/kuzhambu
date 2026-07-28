@@ -32,6 +32,8 @@ public final class NamingArchitectureRuleSupport {
     private static final String GENERIC_HELPER_NAMES = "(List|Object|Data|Common|Base|Generic)Helper";
     private static final Pattern SERVICE_QUERY_SETTER_DECLARATION_PATTERN =
             Pattern.compile("\\bpublic\\s+void\\s+set[A-Z][A-Za-z0-9_]*\\s*\\(");
+    private static final Pattern STATIC_METHOD_DECLARATION_PATTERN = Pattern.compile(
+            "\\b(?:public|protected|private)?\\s+static\\s+(?:<[^>]+>\\s+)?[\\w<>?,.\\[\\]\\s]+\\s+\\w+\\s*\\(");
     private static final Set<String> SERVICE_QUERY_REQUIRED_ANNOTATIONS =
             new LinkedHashSet<String>(Arrays.asList("Getter", "Setter", "NoArgsConstructor", "AllArgsConstructor"));
     private static final Set<String> ENTITY_REQUIRED_ANNOTATIONS =
@@ -151,6 +153,29 @@ public final class NamingArchitectureRuleSupport {
 
         assertTrue(
                 "valueobject packages must only be com.thundax.kuzhambu.{module}.domain.{domain}.model.valueobject: "
+                        + violations,
+                violations.isEmpty());
+    }
+
+    public static void assertValueObjectIdSourcesDeclareNoStaticMethods(Path sourceRoot) {
+        Path root = ArchitectureSourceSupport.repositoryRoot();
+        List<String> violations = new ArrayList<String>();
+
+        if (!Files.exists(sourceRoot)) {
+            return;
+        }
+        try (Stream<Path> paths = Files.walk(sourceRoot)) {
+            paths.filter(Files::isRegularFile)
+                    .filter(NamingArchitectureRuleSupport::isValueObjectIdSource)
+                    .filter(NamingArchitectureRuleSupport::containsStaticMethodDeclaration)
+                    .map(path -> ArchitectureSourceSupport.repositoryPath(root, path))
+                    .forEach(violations::add);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to scan valueobject *Id source files under " + sourceRoot, e);
+        }
+
+        assertTrue(
+                "valueobject *Id source must not declare static methods; create/nullable conversion belongs in *Codec: "
                         + violations,
                 violations.isEmpty());
     }
@@ -760,6 +785,17 @@ public final class NamingArchitectureRuleSupport {
                 && value.contains("/application/")
                 && value.contains("/query/")
                 && value.endsWith("Query.java");
+    }
+
+    private static boolean isValueObjectIdSource(Path path) {
+        String value = ArchitectureSourceSupport.normalizePath(path);
+        return value.contains("/valueobject/") && value.endsWith("Id.java");
+    }
+
+    private static boolean containsStaticMethodDeclaration(Path path) {
+        return STATIC_METHOD_DECLARATION_PATTERN
+                .matcher(ArchitectureSourceSupport.readSourceWithoutComments(path))
+                .find();
     }
 
     private static boolean containsServiceQuerySetter(Path path) {

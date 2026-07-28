@@ -43,7 +43,8 @@
 - 统一业务对象对外标识采用 ULID。
 - 统一 ID 采用“单值包装 + 强类型”模型。
 - `BaseId<T>` 必须不可变。
-- 构造器固定非公开，统一使用 `of(...)`。
+- 具体 ID 构造器负责校验和规范化底层值；`valueobject` 下的 `*Id` 不得声明 `static` 方法。
+- 基础值创建、nullable 处理、字符串转换和生成入口固定放到对应 `*Codec` 或统一发号入口。
 - 判等必须基于具体类型和底层值。
 - 不允许每个具体 ID 重写 `equals`、`hashCode`、`toString`。
 - 框架适配逻辑固定放在转换器或 TypeHandler。
@@ -70,7 +71,7 @@
 默认风格：
 
 ```java
-UserId userId = UserId.of("01J00000000000000000000000");
+UserId userId = UserIdCodec.toDomain("01J00000000000000000000000");
 RoleId roleId = ids.roleId();
 MenuId menuId = ids.menuId();
 ```
