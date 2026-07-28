@@ -24,7 +24,6 @@ import com.thundax.kuzhambu.knowledge.domain.taxonomy.repository.TagRepository;
 import java.util.Date;
 import java.util.List;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -35,33 +34,17 @@ public class KnowledgeTagBindingDomainServiceImpl implements KnowledgeTagBinding
     private final TagAliasRepository tagAliasRepository;
     private final TagCategoryRepository tagCategoryRepository;
     private final TagContentRefRepository tagContentRefRepository;
-    private final SnowflakeIdGenerator idGenerator;
+    private final SnowflakeIdGenerator idGenerator = new SnowflakeIdGenerator();
 
-    @Autowired
     public KnowledgeTagBindingDomainServiceImpl(
             TagRepository tagRepository,
             TagAliasRepository tagAliasRepository,
             TagCategoryRepository tagCategoryRepository,
             TagContentRefRepository tagContentRefRepository) {
-        this(
-                tagRepository,
-                tagAliasRepository,
-                tagCategoryRepository,
-                tagContentRefRepository,
-                new SnowflakeIdGenerator());
-    }
-
-    KnowledgeTagBindingDomainServiceImpl(
-            TagRepository tagRepository,
-            TagAliasRepository tagAliasRepository,
-            TagCategoryRepository tagCategoryRepository,
-            TagContentRefRepository tagContentRefRepository,
-            SnowflakeIdGenerator idGenerator) {
         this.tagRepository = tagRepository;
         this.tagAliasRepository = tagAliasRepository;
         this.tagCategoryRepository = tagCategoryRepository;
         this.tagContentRefRepository = tagContentRefRepository;
-        this.idGenerator = idGenerator;
     }
 
     @Override
