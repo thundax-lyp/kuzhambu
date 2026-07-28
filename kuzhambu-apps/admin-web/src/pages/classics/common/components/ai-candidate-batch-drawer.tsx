@@ -11,6 +11,7 @@ import {
 
 import * as aiCandidateService from "../ai-candidate-service";
 import type { AiCandidateApplyCommand } from "../ai-candidate-service";
+import * as aiRefinementTaskService from "../ai-refinement-task-service";
 import * as classicsContentService from "../classics-content-service";
 import { type AiCandidateCapability, type AiCandidateRecord } from "../ai-candidate-types";
 import type { ClassicsBatchOperationRecord, ClassicsContentType } from "../classics-content-types";
@@ -40,7 +41,8 @@ interface BatchOperationState {
 }
 
 const defaultResultFormatForCapability = (capability: string) => {
-    if (capability === "tags" || capability === "qa") {
+    const normalizedCapability = aiRefinementTaskService.getNormalizedTaskCapability(capability);
+    if (normalizedCapability === "tags" || normalizedCapability === "qa") {
         return "STRUCTURED";
     }
     return "TEXT";
@@ -70,6 +72,7 @@ const buildCandidateQueryKey = (contentType: ClassicsContentType, contentId: str
 };
 
 const isSupportCapability = (capability: string): capability is AiCandidateCapability => {
+    const normalizedCapability = aiRefinementTaskService.getNormalizedTaskCapability(capability);
     return [
         "translate",
         "summary",
@@ -79,7 +82,7 @@ const isSupportCapability = (capability: string): capability is AiCandidateCapab
         "visual",
         "fusion",
         "image_gen"
-    ].includes(capability);
+    ].includes(normalizedCapability);
 };
 
 export const AiCandidateBatchDrawer = ({
@@ -128,12 +131,16 @@ export const AiCandidateBatchDrawer = ({
         const allCandidates = pendingCandidateQueries.flatMap((query) =>
             Array.isArray(query.data) ? query.data : []
         );
-        const filteredCandidates = allCandidates.filter(
-            (candidate) =>
+        const filteredCandidates = allCandidates.filter((candidate) => {
+            const normalizedCapability = aiRefinementTaskService.getNormalizedTaskCapability(
+                candidate.capability
+            );
+            return (
                 candidate.status === "PENDING" &&
                 isSupportCapability(candidate.capability) &&
-                capabilitySet.has(candidate.capability)
-        );
+                capabilitySet.has(normalizedCapability as AiCandidateCapability)
+            );
+        });
 
         const candidatesById = new Map<string, AiCandidateRecord>();
         filteredCandidates.forEach((candidate) => {
@@ -263,17 +270,20 @@ export const AiCandidateBatchDrawer = ({
         const payload: ClassicsAiCandidateBatchApplyCommand = {
             items: selectedCandidates.map((candidate) => {
                 const payload = effectivePayloads[normalizeId(candidate.candidateId)] ?? "";
+                const normalizedCapability = aiRefinementTaskService.getNormalizedTaskCapability(
+                    candidate.capability
+                );
                 const command: AiCandidateApplyCommand = {
                     candidateId: candidate.candidateIdText || String(candidate.candidateId),
                     contentType: candidate.contentType,
                     contentId: normalizeId(candidate.contentId),
-                    capability: candidate.capability,
+                    capability: normalizedCapability,
                     objectId: candidate.objectId,
                     resultFormat:
                         candidate.resultFormat ||
-                        defaultResultFormatForCapability(candidate.capability),
+                        defaultResultFormatForCapability(normalizedCapability),
                     resultPayload: payload,
-                    changeSummary: `AI 应用：${candidate.capability}`
+                    changeSummary: `AI 应用：${normalizedCapability}`
                 };
                 return command;
             })
@@ -410,7 +420,11 @@ export const AiCandidateBatchDrawer = ({
                         return (
                             <AiCandidatePayloadEditor
                                 candidateId={candidateId}
-                                capability={candidate.capability as AiCandidateCapability}
+                                capability={
+                                    aiRefinementTaskService.getNormalizedTaskCapability(
+                                        candidate.capability
+                                    ) as AiCandidateCapability
+                                }
                                 initialPayload={
                                     effectivePayloads[candidateId] ?? candidate.resultPayload
                                 }

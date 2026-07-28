@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuSpace, KuzhambuButton } from "@/components";
 import type { AiCandidateCapability } from "../ai-candidate-types";
+import * as aiRefinementTaskService from "../ai-refinement-task-service";
 
 const TEXT_CAPABILITY_ARIA_LABEL: Record<
     "translate" | "summary" | "image_analysis" | "visual" | "fusion" | "image_gen",
@@ -100,18 +101,19 @@ export const AiCandidatePayloadEditor = ({
     onPayloadChange,
     onSubmitEnabledChange
 }: AiCandidatePayloadEditorProps) => {
+    const normalizedCapability = aiRefinementTaskService.getNormalizedTaskCapability(capability);
     const [textPayload, setTextPayload] = useState(() => buildTextPayload(initialPayload));
     const [tagsPayload, setTagsPayload] = useState(() => parseTagsPayload(initialPayload));
     const [qaPayload, setQaPayload] = useState(() => parseQaPayload(initialPayload));
 
     useEffect(() => {
         if (
-            capability === "summary" ||
-            capability === "translate" ||
-            capability === "image_analysis" ||
-            capability === "visual" ||
-            capability === "fusion" ||
-            capability === "image_gen"
+            normalizedCapability === "summary" ||
+            normalizedCapability === "translate" ||
+            normalizedCapability === "image_analysis" ||
+            normalizedCapability === "visual" ||
+            normalizedCapability === "fusion" ||
+            normalizedCapability === "image_gen"
         ) {
             const payload = textPayload.trim();
             onPayloadChange(candidateId, payload);
@@ -119,7 +121,7 @@ export const AiCandidatePayloadEditor = ({
             return;
         }
 
-        if (capability === "tags") {
+        if (normalizedCapability === "tags") {
             const payload = stringifyTagsPayload(tagsPayload);
             const canSubmit = tagsPayload.some((tag) => tag.trim());
             onPayloadChange(candidateId, payload);
@@ -135,7 +137,7 @@ export const AiCandidatePayloadEditor = ({
         onSubmitEnabledChange(candidateId, canSubmit);
     }, [
         candidateId,
-        capability,
+        normalizedCapability,
         onPayloadChange,
         onSubmitEnabledChange,
         qaPayload,
@@ -189,16 +191,16 @@ export const AiCandidatePayloadEditor = ({
     };
 
     if (
-        capability === "summary" ||
-        capability === "translate" ||
-        capability === "image_analysis" ||
-        capability === "visual" ||
-        capability === "fusion" ||
-        capability === "image_gen"
+        normalizedCapability === "summary" ||
+        normalizedCapability === "translate" ||
+        normalizedCapability === "image_analysis" ||
+        normalizedCapability === "visual" ||
+        normalizedCapability === "fusion" ||
+        normalizedCapability === "image_gen"
     ) {
         return (
             <Input.TextArea
-                aria-label={TEXT_CAPABILITY_ARIA_LABEL[capability]}
+                aria-label={TEXT_CAPABILITY_ARIA_LABEL[normalizedCapability]}
                 autoSize={resolveTextAreaAutoSize({ minRows: 4, maxRows: 10 })}
                 disabled={disabled}
                 value={textPayload}
@@ -207,7 +209,7 @@ export const AiCandidatePayloadEditor = ({
         );
     }
 
-    if (capability === "tags") {
+    if (normalizedCapability === "tags") {
         return (
             <div>
                 {tagsPayload.map((tag: string, index: number) => (
