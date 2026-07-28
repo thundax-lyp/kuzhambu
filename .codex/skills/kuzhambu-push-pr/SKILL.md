@@ -106,14 +106,27 @@ git diff --stat main...HEAD
   - `Risks`
 - 不要把未运行的验证伪装为已通过；未覆盖项明确写在 `Not Covered` 或 `Risks`。
 
+创建或更新 PR 时，必须基于当前远端 HEAD 的最终 commits 和 diff 重新整合 PR 信息：
+
+- 重新判断 PR 标题是否仍能概括完整交付边界；不准确时更新标题。
+- 重新生成 `Business Closure`、`Scope`、`Verification Evidence`、`Not Covered`、`Cross-domain Impact`、`Documentation, TODO And RUNBOOK Closure` 和 `Risks`。
+- 删除已被后续 commit、review fix 或历史整理淘汰的旧 SHA、旧文件范围、旧验证状态和过程性描述。
+- 保留仍然有效的人工背景、取舍、风险说明和未覆盖项；不要用自动生成内容覆盖用户仍需保留的信息。
+- 以远端 PR 的 commits、diff 和 checks 为准，不要仅根据本地 commit message 推断完成状态。
+- 每轮 review fix push 后，如果交付范围、验证证据、未覆盖项或风险发生变化，再次同步 PR 信息。
+
 ### 6. 等待 PR 完成
 
-创建或更新 PR 后，继续检查：
+创建或更新 PR 后，开启最长 5 分钟的观察窗口；步骤 7 中每轮修复 push 后重新开启一个最长 5 分钟的观察窗口。观察期间每 20 至 30 秒检查：
 
 - PR URL 和编号。
 - GitHub Actions / required checks 状态。
 - PR review 状态。
 - Codex comments、review comments、issue comments 和 check annotations。
+
+checks 和 review 已完成且状态稳定时提前结束观察；发现明确失败或 actionable feedback 时立即进入处理，不必等待当前窗口结束。5 分钟到期后仍有 checks 或 review 正在运行时，停止本轮等待，报告当前状态和下一步检查方式；等待超时本身不视为失败。
+
+观察因 checks/review 稳定、明确失败或 5 分钟到期而结束后，必须重新读取最终 checks、review 和 comments，并按步骤 5 再次同步 PR 信息。将终态、失败原因或超时仍在运行的状态写入 `Verification Evidence` 或 `Risks`，回读确认 PR 标题和描述对应观察结束时的远端状态后，才允许输出收口结果。
 
 优先使用 GitHub connector 获取 PR 信息；如果需要 thread-level review comment 状态或 connector 不足，使用 `gh` 查询。
 
@@ -146,9 +159,9 @@ git diff --stat main...HEAD
 - 当前工作区干净。
 - 非 main 分支已 push。
 - PR 已创建或更新，并给出 URL。
-- PR 描述完整，符合 PR 模板和 `PR-RULES.md`。
+- PR 标题和描述已按远端最终 commits、diff 和 checks 重新整合，符合 PR 模板和 `PR-RULES.md`。
 - 本地最小相关验证已运行，或未运行原因已明确记录。
-- GitHub checks 通过；如果仍在运行，报告当前状态和下一步检查方式。
+- GitHub checks 通过；如果 5 分钟观察窗口结束时仍在运行，报告当前状态和下一步检查方式。
 - Codex/reviewer actionable comments 已处理并回复；如果仍有未处理项，明确列出。
 - 没有未清理的 TODO/RUNBOOK 收口问题，或 PR 描述已说明剩余风险。
 
