@@ -11,6 +11,7 @@ import {
 } from "@/components";
 
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
+import { isPositiveDecimalId } from "@/types/id";
 
 import type { TagCandidateApplyCommand, TagExtractionCommand } from "../taxonomy-service";
 import type { TagExtractionCandidateRecord, TagExtractionResultRecord } from "../taxonomy-types";
@@ -26,8 +27,11 @@ const CONTENT_TYPE_OPTIONS = [
 
 interface TagExtractionDrawerProps {
     applying?: boolean;
+    canCustomizePromptVersion?: boolean;
     extracting?: boolean;
     open?: boolean;
+    promptVersionOptions?: Array<{ label: string; value: string }>;
+    promptVersionsLoading?: boolean;
     result?: TagExtractionResultRecord | null;
     onApply: (request: TagCandidateApplyCommand) => void;
     onClose: () => void;
@@ -40,9 +44,9 @@ interface TagExtractionFormValues {
     contentText: string;
     contentTitle?: string | null;
     maxTags?: number | null;
-    modelId: number;
+    modelId: string;
     modelName: string;
-    promptVersionId?: number | null;
+    promptVersionId?: string | null;
     reviewNote?: string | null;
     sourceContentId: string;
     sourceContentType: string;
@@ -59,14 +63,26 @@ const normalizeText = (value?: string | null) => {
     return normalizedValue || undefined;
 };
 
+const positiveDecimalIdRule = {
+    validator: async (_: unknown, value?: string | null) => {
+        if (isPositiveDecimalId(value)) {
+            return;
+        }
+        throw new Error("请输入正整数 ID");
+    }
+};
+
 const readCandidateKey = (candidate: TagExtractionCandidateRecord, index: number) => {
     return `${candidate.name || "tag"}-${candidate.matchedExistingTagId || "new"}-${index}`;
 };
 
 export const TagExtractionDrawer = ({
     applying = false,
+    canCustomizePromptVersion = false,
     extracting = false,
     open,
+    promptVersionOptions = [],
+    promptVersionsLoading = false,
     result,
     onApply,
     onClose,
@@ -75,6 +91,7 @@ export const TagExtractionDrawer = ({
 }: TagExtractionDrawerProps) => {
     const confirm = useKuzhambuConfirm();
     const [form] = Form.useForm<TagExtractionFormValues>();
+    const [advancedConfigVisible, setAdvancedConfigVisible] = useState(false);
     const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
     const visible = Boolean(open);
     const candidates = useMemo(() => result?.candidates || [], [result?.candidates]);
@@ -94,6 +111,7 @@ export const TagExtractionDrawer = ({
         if (!visible) {
             return;
         }
+        form.resetFields();
         form.setFieldsValue(DEFAULT_VALUES);
     }, [form, visible]);
 
@@ -101,19 +119,26 @@ export const TagExtractionDrawer = ({
         if (extracting || applying) {
             return;
         }
+        form.setFieldValue("promptVersionId", undefined);
+        setAdvancedConfigVisible(false);
         onClose();
     };
 
     const extractTags = async () => {
-        const values = await form.validateFields();
+        const values = await form.validateFields().catch(() => null);
+        if (!values) {
+            return;
+        }
         onExtract({
             sourceContentType: values.sourceContentType,
             sourceContentId: values.sourceContentId.trim(),
             contentTitle: normalizeText(values.contentTitle),
             contentText: values.contentText.trim(),
-            modelId: values.modelId,
+            modelId: values.modelId.trim(),
             modelName: values.modelName.trim(),
-            promptVersionId: values.promptVersionId ?? undefined,
+            promptVersionId: advancedConfigVisible
+                ? (values.promptVersionId ?? undefined)
+                : undefined,
             maxTags: values.maxTags ?? 10,
             allowNewTags: values.allowNewTags ?? true
         });
@@ -122,6 +147,13 @@ export const TagExtractionDrawer = ({
     const reExtractTags = () => {
         onResetResult();
         setSelectedRowKeys([]);
+    };
+
+    const toggleAdvancedConfig = () => {
+        if (advancedConfigVisible) {
+            form.setFieldValue("promptVersionId", undefined);
+        }
+        setAdvancedConfigVisible(!advancedConfigVisible);
     };
 
     const applySelectedTags = async () => {
@@ -133,12 +165,14 @@ export const TagExtractionDrawer = ({
             title: "应用 AI 标签候选",
             message: "将把选中候选进入标签审核治理",
             okText: "应用",
-            onConfirm: () =>
+            onConfirm: () => {
+                setAdvancedConfigVisible(false);
                 onApply({
-                    aiCandidateId: result.aiCandidateId || 0,
+                    aiCandidateId: result.aiCandidateId || "",
                     selectedTags,
                     reviewNote: normalizeText(values.reviewNote)
-                })
+                });
+            }
         });
     };
 
@@ -196,15 +230,38 @@ export const TagExtractionDrawer = ({
                 >
                     <TextArea rows={6} />
                 </KuzhambuFormItem>
-                <KuzhambuFormItem name="modelId" label="模型 ID" rules={[{ required: true }]}>
-                    <InputNumber min={1} style={{ width: "100%" }} />
+                <KuzhambuFormItem
+                    name="modelId"
+                    label="模型 ID"
+                    rules={[{ required: true }, positiveDecimalIdRule]}
+                >
+                    <Input />
                 </KuzhambuFormItem>
                 <KuzhambuFormItem name="modelName" label="模型名称" rules={[{ required: true }]}>
                     <Input />
                 </KuzhambuFormItem>
-                <KuzhambuFormItem name="promptVersionId" label="提示词版本 ID">
-                    <InputNumber min={1} style={{ width: "100%" }} />
-                </KuzhambuFormItem>
+                {canCustomizePromptVersion ? (
+                    <KuzhambuFormItem colon={false} label="高级配置">
+                        <KuzhambuButton
+                            testId="knowledge-taxonomy-tag-extraction-advanced-config-button"
+                            htmlType="button"
+                            onClick={toggleAdvancedConfig}
+                        >
+                            {advancedConfigVisible ? "使用默认提示词配置" : "覆盖提示词配置"}
+                        </KuzhambuButton>
+                    </KuzhambuFormItem>
+                ) : null}
+                {advancedConfigVisible ? (
+                    <KuzhambuFormItem name="promptVersionId" label="提示词版本 ID">
+                        <KuzhambuSelect
+                            allowClear
+                            loading={promptVersionsLoading}
+                            options={promptVersionOptions}
+                            placeholder="请选择提示词版本"
+                            showSearch
+                        />
+                    </KuzhambuFormItem>
+                ) : null}
                 <KuzhambuFormItem name="maxTags" label="最大标签数">
                     <InputNumber min={1} max={50} style={{ width: "100%" }} />
                 </KuzhambuFormItem>

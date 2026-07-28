@@ -13,7 +13,7 @@ export type RefinementWorkbenchSection =
     "entities" | "relations" | "lineageNodes" | "lineageRelations" | "annotations" | "followUp";
 
 export const readRefinementDetailTaskId = (detail: RefinementDetailRecord | null) =>
-    detail?.refinementTaskId ?? 0;
+    detail?.refinementTaskId ?? "";
 
 export const useRefinementWorkbench = () => {
     const [taskQuery, setTaskQuery] = useState<RefinementTaskPageQuery>({

@@ -1,5 +1,6 @@
 import { Table, Tag } from "antd";
 import { KuzhambuSpaceCompact, KuzhambuButton } from "@/components";
+import { normalizeId } from "@/types/id";
 import type { ColumnsType } from "antd/es/table";
 import type { QualityReportRecord } from "../quality-report-types";
 
@@ -65,7 +66,7 @@ export const QualityReportHistoryTable = ({
             dataSource={reports}
             loading={loading}
             pagination={false}
-            rowKey={(report) => report.reportId}
+            rowKey={(report) => normalizeId(report.reportId)}
         />
     );
 };

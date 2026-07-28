@@ -1,5 +1,6 @@
 import { Table, Tag } from "antd";
 import { KuzhambuSpaceCompact, KuzhambuButton } from "@/components";
+import { normalizeId } from "@/types/id";
 import type { ColumnsType } from "antd/es/table";
 import type { RefinementWorkbenchRecord } from "../refinement-types";
 
@@ -75,7 +76,7 @@ export const RefinementWorkbenchTable = ({
             dataSource={items}
             loading={loading}
             pagination={false}
-            rowKey={(item) => item.refinementTaskId}
+            rowKey={(item) => normalizeId(item.refinementTaskId)}
         />
     );
 };

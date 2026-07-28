@@ -164,7 +164,7 @@ vi.mock("./components/lineage-detail-panel", () => ({
 
 const father: LineageNodeRecord = {
     id: "lineage-node:1",
-    nodeId: 1,
+    nodeId: "1",
     nodeKey: "person:1",
     name: "贾代善",
     nodeType: "PERSON",
@@ -175,7 +175,7 @@ const father: LineageNodeRecord = {
 
 const son: LineageNodeRecord = {
     id: "lineage-node:2",
-    nodeId: 2,
+    nodeId: "2",
     nodeKey: "person:2",
     name: "贾政",
     nodeType: "PERSON",
@@ -186,10 +186,10 @@ const son: LineageNodeRecord = {
 
 const relation: LineageRelationRecord = {
     id: "lineage-relation:10",
-    relationId: 10,
-    sourceNodeId: 1,
+    relationId: "10",
+    sourceNodeId: "1",
     sourceNodeName: "贾代善",
-    targetNodeId: 2,
+    targetNodeId: "2",
     targetNodeName: "贾政",
     relationType: "PARENT_CHILD",
     relationLabel: "父子",
@@ -199,7 +199,7 @@ const relation: LineageRelationRecord = {
 
 const canvasFor = (query: LineageCanvasQuery): LineageCanvasRecord => ({
     version: {
-        versionId: 71,
+        versionId: "71",
         versionNo: 3,
         taskType: "LINEAGE",
         status: "APPLIED",
@@ -215,12 +215,12 @@ const canvasFor = (query: LineageCanvasQuery): LineageCanvasRecord => ({
     },
     nodes: [father, son],
     relations: [relation],
-    selectedNode: query.focusNodeId === 2 ? son : null,
-    selectedRelation: query.focusRelationId === 10 ? relation : null,
+    selectedNode: query.focusNodeId === "2" ? son : null,
+    selectedRelation: query.focusRelationId === "10" ? relation : null,
     availableFilters: {
         versions: [
             {
-                versionId: 71,
+                versionId: "71",
                 versionNo: 3,
                 taskType: "LINEAGE",
                 status: "APPLIED",
@@ -303,7 +303,7 @@ describe("LineagePage", () => {
         await waitFor(() =>
             expect(getLineageCanvas).toHaveBeenLastCalledWith(
                 expect.objectContaining({
-                    focusNodeId: 2,
+                    focusNodeId: "2",
                     focusRelationId: null
                 })
             )
@@ -315,7 +315,7 @@ describe("LineagePage", () => {
             expect(getLineageCanvas).toHaveBeenLastCalledWith(
                 expect.objectContaining({
                     focusNodeId: null,
-                    focusRelationId: 10
+                    focusRelationId: "10"
                 })
             )
         );
@@ -325,7 +325,7 @@ describe("LineagePage", () => {
         await waitFor(() =>
             expect(getLineageCanvas).toHaveBeenLastCalledWith(
                 expect.objectContaining({
-                    focusNodeId: 2,
+                    focusNodeId: "2",
                     focusRelationId: null
                 })
             )

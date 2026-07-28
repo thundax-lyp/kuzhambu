@@ -1,11 +1,12 @@
 import { Table, Tag } from "antd";
+import { isSameId, normalizeId } from "@/types/id";
 import type { ColumnsType } from "antd/es/table";
 import type { LineageNodeRecord } from "../lineage-types";
 
 interface LineageNodeTableProps {
     loading?: boolean;
     nodes: LineageNodeRecord[];
-    selectedNodeId?: number | null;
+    selectedNodeId?: string | null;
     onSelectNode: (node: LineageNodeRecord) => void;
 }
 
@@ -50,9 +51,9 @@ export const LineageNodeTable = ({
             loading={loading}
             pagination={false}
             rowClassName={(node) =>
-                node.nodeId === selectedNodeId ? "knowledge-lineage-table-row--selected" : ""
+                isSameId(node.nodeId, selectedNodeId) ? "knowledge-lineage-table-row--selected" : ""
             }
-            rowKey={(node) => node.nodeId}
+            rowKey={(node) => normalizeId(node.nodeId)}
             size="small"
             onRow={(node) => ({
                 onClick: () => onSelectNode(node)

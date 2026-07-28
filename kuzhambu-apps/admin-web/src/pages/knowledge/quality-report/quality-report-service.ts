@@ -12,35 +12,35 @@ import type {
 const API_PREFIX = "/knowledge/quality/report";
 
 export interface GenerateQualityReportCommand {
-    graphVersionId: number;
+    graphVersionId: string;
     generatedBy?: number | null;
 }
 
 export interface ReextractLowQualityCategoryCommand {
-    reportId: number;
+    reportId: string;
     sourceCategoryCode: string;
     taskType?: string | null;
     replaceUnconfirmedOnly?: boolean | null;
-    modelId?: number | null;
+    modelId?: string | null;
     modelName?: string | null;
     promptMessagesJson?: string | null;
     inputPayloadJson?: string | null;
-    requestedBy?: number | null;
+    requestedBy?: string | null;
 }
 
 export type QualityReportPageQuery = PageQuery<{
-    graphVersionId?: number | null;
+    graphVersionId?: string | null;
     sourceContentType?: string | null;
-    sourceContentId?: number | null;
+    sourceContentId?: string | null;
     reportStatus?: QualityReportStatus | null;
 }>;
 
 export interface QualityReportDetailQuery {
-    reportId: number;
+    reportId: string;
 }
 
 export interface QualityReportLatestQuery {
-    graphVersionId?: number | null;
+    graphVersionId?: string | null;
 }
 
 export const generateReport = (request: GenerateQualityReportCommand) => {

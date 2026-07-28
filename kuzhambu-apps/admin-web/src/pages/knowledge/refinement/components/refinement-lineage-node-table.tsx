@@ -1,12 +1,13 @@
 import { Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { KuzhambuButton } from "@/components";
+import { normalizeId } from "@/types/id";
 import type { QualityAnnotationTarget, RefinementLineageNodeRecord } from "../refinement-types";
 
 interface RefinementLineageNodeTableProps {
     canEdit: boolean;
     nodes: RefinementLineageNodeRecord[];
-    sourceContentId?: number | null;
+    sourceContentId?: string | null;
     sourceContentType?: string | null;
     onAnnotate: (target: Omit<QualityAnnotationTarget, "graphVersionId">) => void;
 }
@@ -61,7 +62,9 @@ export const RefinementLineageNodeTable = ({
             columns={columns}
             dataSource={nodes}
             pagination={false}
-            rowKey={(node) => node.draftId || node.nodeKey || node.name || "lineage-node"}
+            rowKey={(node) =>
+                normalizeId(node.draftId || node.nodeKey || node.name || "lineage-node")
+            }
         />
     );
 };

@@ -1,5 +1,6 @@
 import { Table, Tag } from "antd";
 import { KuzhambuSpaceCompact, KuzhambuButton } from "@/components";
+import { normalizeId } from "@/types/id";
 import type { ColumnsType } from "antd/es/table";
 import type { RefinementRelationRecord } from "../refinement-types";
 
@@ -95,7 +96,12 @@ export const RefinementRelationTable = ({
                 dataSource={relations}
                 pagination={false}
                 rowKey={(relation) =>
-                    relation.draftId || relation.relationKey || relation.relationType || "relation"
+                    normalizeId(
+                        relation.draftId ||
+                            relation.relationKey ||
+                            relation.relationType ||
+                            "relation"
+                    )
                 }
             />
         </>

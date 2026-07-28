@@ -94,25 +94,25 @@ describe("knowledge graph workbench service request contracts", () => {
 
         await service.getManuscript({
             sourceContentType: "WANGQI_DOCUMENT",
-            sourceContentId: 2001
+            sourceContentId: "2001"
         });
         expectLastCall("POST", "/knowledge/graph-workbench/manuscript/get", {
             sourceContentType: "WANGQI_DOCUMENT",
-            sourceContentId: 2001
+            sourceContentId: "2001"
         });
     });
 
     it("sends automatic extraction payload without manual JSON fields", async () => {
         await service.extractManuscript({
             sourceContentType: "SANCAI_ENTRY",
-            sourceContentId: 1001,
+            sourceContentId: "1001",
             taskType: "GRAPH"
         });
 
         const body = capturedCalls.at(-1)?.body;
         expectLastCall("POST", "/knowledge/graph-workbench/manuscript/extract", {
             sourceContentType: "SANCAI_ENTRY",
-            sourceContentId: 1001,
+            sourceContentId: "1001",
             taskType: "GRAPH"
         });
         expect(body).not.toHaveProperty("scopeJson");
@@ -126,18 +126,18 @@ describe("knowledge graph workbench service request contracts", () => {
     it("sends candidate read and apply requests", async () => {
         await service.getLatestCandidate({
             sourceContentType: "SANCAI_ENTRY",
-            sourceContentId: 1001,
+            sourceContentId: "1001",
             taskType: "GRAPH"
         });
         expectLastCall("POST", "/knowledge/graph-workbench/candidate/get", {
             sourceContentType: "SANCAI_ENTRY",
-            sourceContentId: 1001,
+            sourceContentId: "1001",
             taskType: "GRAPH"
         });
 
-        await service.applyCandidate({ taskId: 9001 });
+        await service.applyCandidate({ taskId: "9001" });
         expectLastCall("POST", "/knowledge/graph-workbench/candidate/apply", {
-            taskId: 9001
+            taskId: "9001"
         });
     });
 });

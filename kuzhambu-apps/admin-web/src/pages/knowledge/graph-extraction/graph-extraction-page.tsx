@@ -10,6 +10,7 @@ import {
     KuzhambuAlert,
     KuzhambuDrawer
 } from "@/components";
+import { isPositiveDecimalId, normalizeId } from "@/types/id";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 
 import { GraphExtractionManuscriptDetail } from "./components/graph-extraction-manuscript-detail";
@@ -58,8 +59,8 @@ const readRegenerateCommandFromSearch = (): GraphExtractionRegenerateCommand | n
     if (params.get("regenerate") !== "1") {
         return null;
     }
-    const sourceTaskId = Number(params.get("sourceTaskId"));
-    if (!Number.isFinite(sourceTaskId) || sourceTaskId <= 0) {
+    const sourceTaskId = params.get("sourceTaskId")?.trim();
+    if (!isPositiveDecimalId(sourceTaskId)) {
         return null;
     }
     return {
@@ -97,7 +98,7 @@ export const GraphExtractionPage = () => {
         pageNo: DEFAULT_PAGE_NO,
         pageSize: DEFAULT_PAGE_SIZE
     });
-    const [detailTaskId, setDetailTaskId] = useState<number | null>(null);
+    const [detailTaskId, setDetailTaskId] = useState<string | null>(null);
     const [taskDetailDrawerOpen, setTaskDetailDrawerOpen] = useState(false);
     const [taskListDrawerOpen, setTaskListDrawerOpen] = useState(false);
     const [manuscriptChildrenByNodeKey, setManuscriptChildrenByNodeKey] = useState<
@@ -139,7 +140,7 @@ export const GraphExtractionPage = () => {
     });
     const taskDetailQuery = useQuery({
         queryKey: ["knowledge", "graph-extraction", "task-detail", detailTaskId],
-        queryFn: () => service.getTaskDetail({ taskId: detailTaskId || 0 }),
+        queryFn: () => service.getTaskDetail({ taskId: detailTaskId || "" }),
         enabled: taskDetailDrawerOpen && detailTaskId !== null,
         retry: false
     });
@@ -161,7 +162,7 @@ export const GraphExtractionPage = () => {
             workbenchService.getManuscript({
                 sourceContentType:
                     selectedManuscript?.sourceContentType as GraphWorkbenchSourceContentType,
-                sourceContentId: selectedManuscript?.sourceContentId || 0
+                sourceContentId: selectedManuscript?.sourceContentId || ""
             }),
         enabled:
             canViewGraph &&
@@ -180,7 +181,7 @@ export const GraphExtractionPage = () => {
             workbenchService.getLatestCandidate({
                 sourceContentType:
                     selectedManuscript?.sourceContentType as GraphWorkbenchSourceContentType,
-                sourceContentId: selectedManuscript?.sourceContentId || 0,
+                sourceContentId: selectedManuscript?.sourceContentId || "",
                 taskType: "GRAPH"
             }),
         enabled:
@@ -226,7 +227,7 @@ export const GraphExtractionPage = () => {
             return workbenchService.extractManuscript({
                 sourceContentType:
                     selectedManuscript?.sourceContentType as GraphWorkbenchSourceContentType,
-                sourceContentId: selectedManuscript?.sourceContentId || 0,
+                sourceContentId: selectedManuscript?.sourceContentId || "",
                 taskType
             });
         },
@@ -249,7 +250,7 @@ export const GraphExtractionPage = () => {
         }
     });
     const applyWorkbenchCandidateMutation = useMutation({
-        mutationFn: (taskId: number) => workbenchService.applyCandidate({ taskId }),
+        mutationFn: (taskId: string) => workbenchService.applyCandidate({ taskId }),
         onSuccess: async () => {
             loadedManuscriptNodeKeysRef.current.clear();
             loadingManuscriptNodeKeysRef.current.clear();
@@ -269,7 +270,7 @@ export const GraphExtractionPage = () => {
         }
     });
     const applyTaskMutation = useMutation({
-        mutationFn: (taskId: number) => service.applyTaskCandidate({ taskId }),
+        mutationFn: (taskId: string) => service.applyTaskCandidate({ taskId }),
         onSuccess: async () => {
             await Promise.all([
                 queryClient.invalidateQueries({
@@ -300,7 +301,7 @@ export const GraphExtractionPage = () => {
     const cancelBatchTaskMutation = useMutation({
         mutationFn: (task: GraphExtractionTaskRecord) =>
             service.cancelBatchTask({
-                batchJobId: task.batchJobId || 0,
+                batchJobId: task.batchJobId || "",
                 requestedBy: task.requestedBy
             }),
         onSuccess: async () => {
@@ -323,9 +324,11 @@ export const GraphExtractionPage = () => {
     const taskTotalCount = taskPageQuery.data?.totalCount || 0;
     const selectedNodeKey = selectedManuscript?.nodeKey || null;
 
+    const readTaskId = (task: GraphExtractionTaskRecord) => normalizeId(task.taskId).trim();
+
     const openTaskDetailDrawer = (task: GraphExtractionTaskRecord) => {
-        const taskId = Number(task.taskId);
-        if (Number.isNaN(taskId)) {
+        const taskId = readTaskId(task);
+        if (!taskId) {
             return;
         }
         setDetailTaskId(taskId);
@@ -333,16 +336,16 @@ export const GraphExtractionPage = () => {
     };
 
     const applyTask = (task: GraphExtractionTaskRecord) => {
-        const taskId = Number(task.taskId);
-        if (Number.isNaN(taskId)) {
+        const taskId = readTaskId(task);
+        if (!taskId) {
             return;
         }
         applyTaskMutation.mutate(taskId);
     };
 
     const regenerateTask = (task: GraphExtractionTaskRecord) => {
-        const taskId = Number(task.taskId);
-        if (Number.isNaN(taskId)) {
+        const taskId = readTaskId(task);
+        if (!taskId) {
             return;
         }
         regenerateTaskMutation.mutate({

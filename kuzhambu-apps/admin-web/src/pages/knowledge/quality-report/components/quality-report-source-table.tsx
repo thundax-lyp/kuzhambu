@@ -1,12 +1,13 @@
 import { ReloadOutlined } from "@ant-design/icons";
 import { Table, Tag, Tooltip } from "antd";
 import { KuzhambuSpaceCompact, KuzhambuButton } from "@/components";
+import { normalizeId } from "@/types/id";
 import type { ColumnsType } from "antd/es/table";
 import type { QualityReportSourceDetailRecord } from "../quality-report-types";
 
 interface QualityReportSourceTableProps {
     canReextract?: boolean;
-    reextractingDetailId?: number | null;
+    reextractingDetailId?: string | null;
     reportNo?: string | null;
     sourceDetails: QualityReportSourceDetailRecord[];
     onReextract?: (sourceDetail: QualityReportSourceDetailRecord) => void;
@@ -96,7 +97,7 @@ export const QualityReportSourceTable = ({
             columns={columns}
             dataSource={sourceDetails}
             pagination={false}
-            rowKey={(sourceDetail) => sourceDetail.detailId}
+            rowKey={(sourceDetail) => normalizeId(sourceDetail.detailId)}
         />
     );
 };

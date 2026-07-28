@@ -1,5 +1,6 @@
 import { Table, Tag } from "antd";
 import { KuzhambuSpaceCompact, KuzhambuButton } from "@/components";
+import { normalizeId } from "@/types/id";
 import type { ColumnsType } from "antd/es/table";
 import type { GraphEntityRecord } from "../graph-results-types";
 
@@ -61,7 +62,7 @@ export const GraphEntityTable = ({
             dataSource={entities}
             loading={loading}
             pagination={false}
-            rowKey={(entity) => entity.entityId}
+            rowKey={(entity) => normalizeId(entity.entityId)}
         />
     );
 };

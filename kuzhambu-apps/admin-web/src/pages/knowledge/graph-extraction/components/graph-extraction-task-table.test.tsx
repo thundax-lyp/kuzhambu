@@ -3,11 +3,11 @@ import { describe, expect, it, vi } from "vitest";
 import { GraphExtractionTaskTable } from "./graph-extraction-task-table";
 
 const TASK = {
-    aiCandidateId: 7001,
-    batchJobId: 1001,
+    aiCandidateId: "7001",
+    batchJobId: "1001",
     replaceUnconfirmedOnly: true,
     selectionScopeJson: '{"sourceContentIds":[1001,1002]}',
-    sourceContentId: 1001,
+    sourceContentId: "1001",
     sourceContentType: "SANCAI_ENTRY",
     status: "SUCCEEDED",
     taskId: "8008",

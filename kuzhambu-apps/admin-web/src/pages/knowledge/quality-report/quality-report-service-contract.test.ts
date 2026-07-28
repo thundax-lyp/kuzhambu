@@ -48,8 +48,8 @@ const installFetchRecorder = () => {
                 message: "success",
                 data: {
                     report: {
-                        reportId: 1001,
-                        graphVersionId: 71,
+                        reportId: "1001",
+                        graphVersionId: "71",
                         reportStatus: "PUBLISHED"
                     },
                     records: []
@@ -82,7 +82,7 @@ describe("knowledge quality report service request contracts", () => {
 
     it("sends generate request", async () => {
         const command: GenerateQualityReportCommand = {
-            graphVersionId: 71,
+            graphVersionId: "71",
             generatedBy: 1
         };
 
@@ -95,9 +95,9 @@ describe("knowledge quality report service request contracts", () => {
         const query: QualityReportPageQuery = {
             pageNo: 1,
             pageSize: 20,
-            graphVersionId: 71,
+            graphVersionId: "71",
             sourceContentType: "SANCAI_ENTRY",
-            sourceContentId: 1001,
+            sourceContentId: "1001",
             reportStatus: "PUBLISHED"
         };
 
@@ -107,24 +107,24 @@ describe("knowledge quality report service request contracts", () => {
     });
 
     it("sends detail and latest requests", async () => {
-        await service.getReportDetail({ reportId: 1001 });
-        expectLastCall("POST", "/knowledge/quality/report/detail", { reportId: 1001 });
+        await service.getReportDetail({ reportId: "1001" });
+        expectLastCall("POST", "/knowledge/quality/report/detail", { reportId: "1001" });
 
-        await service.getLatestReport({ graphVersionId: 71 });
-        expectLastCall("POST", "/knowledge/quality/report/latest", { graphVersionId: 71 });
+        await service.getLatestReport({ graphVersionId: "71" });
+        expectLastCall("POST", "/knowledge/quality/report/latest", { graphVersionId: "71" });
     });
 
     it("sends reextract low quality category request", async () => {
         const command: ReextractLowQualityCategoryCommand = {
-            reportId: 1001,
+            reportId: "1001",
             sourceCategoryCode: "myth",
             taskType: "GRAPH",
             replaceUnconfirmedOnly: true,
-            modelId: 1,
+            modelId: "1",
             modelName: "gpt-5.5",
             promptMessagesJson: '[{"role":"system","content":"extract"}]',
             inputPayloadJson: '{"sourceCategoryCode":"myth"}',
-            requestedBy: 9
+            requestedBy: "9"
         };
 
         await service.reextractLowQualityCategory(command);

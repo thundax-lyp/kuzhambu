@@ -1,5 +1,6 @@
 import { Table, Tag } from "antd";
 import { KuzhambuSpaceCompact, KuzhambuButton } from "@/components";
+import { normalizeId } from "@/types/id";
 import type { ColumnsType } from "antd/es/table";
 import type { GraphLineageNodeRecord } from "../graph-results-types";
 
@@ -61,7 +62,7 @@ export const GraphLineageNodeTable = ({
             dataSource={nodes}
             loading={loading}
             pagination={false}
-            rowKey={(node) => node.nodeId}
+            rowKey={(node) => normalizeId(node.nodeId)}
         />
     );
 };

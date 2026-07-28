@@ -1,4 +1,5 @@
 import { Table, Tag } from "antd";
+import { normalizeId } from "@/types/id";
 import type { ColumnsType } from "antd/es/table";
 import type { QualityAnnotationRecord } from "../refinement-types";
 import { KuzhambuButton } from "@/components";
@@ -58,7 +59,7 @@ export const RefinementQualityAnnotationTable = ({
             dataSource={annotations}
             loading={loading}
             pagination={false}
-            rowKey={(annotation) => annotation.annotationId}
+            rowKey={(annotation) => normalizeId(annotation.annotationId)}
         />
     );
 };

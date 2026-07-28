@@ -1,5 +1,6 @@
 import { Table, Tag } from "antd";
 import { KuzhambuSpaceCompact, KuzhambuButton } from "@/components";
+import { normalizeId } from "@/types/id";
 import type { ColumnsType } from "antd/es/table";
 import type { GraphRelationRecord } from "../graph-results-types";
 
@@ -61,7 +62,7 @@ export const GraphRelationTable = ({
             dataSource={relations}
             loading={loading}
             pagination={false}
-            rowKey={(relation) => relation.relationId}
+            rowKey={(relation) => normalizeId(relation.relationId)}
         />
     );
 };
