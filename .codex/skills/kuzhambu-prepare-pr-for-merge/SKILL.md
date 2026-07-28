@@ -123,6 +123,14 @@ git log --oneline --decorate --max-count=30
 
 发生冲突时停止并报告冲突，不要猜测解决。除非用户另有明确指示，保持本地备份引用直到 PR merge。
 
+如果历史整理完成后、push 前发现 base SHA 或 remote head SHA 已变化，不要直接在已重写的本地历史上重新分析：
+
+1. 先创建指向当前已重写 HEAD 的额外本地恢复引用，并确认原始 HEAD 备份引用仍存在。
+2. 如果只有 base SHA 前进而 remote head 未变化，将当前分支精确恢复到原始 HEAD 备份引用，并验证恢复后的 `HEAD` 等于记录的 remote head SHA。
+3. 如果 remote head 已前进，从已确认的 PR head remote fetch 最新 head branch，将当前分支精确恢复到 fetch 得到的 remote head SHA，并验证本地 `HEAD` 与 GitHub PR head SHA 一致。
+4. 如果 rebase 尚未结束，先安全 abort rebase，再执行恢复。
+5. 任一恢复验证失败时停止并请求人工处理；恢复完成后从步骤 1 重新分析，不得复用旧方案或旧 lease。
+
 ## 5. 推送与最终检查
 
 验证最终 tree 与整理前完全一致后：
@@ -144,8 +152,12 @@ git log --oneline --decorate --max-count=30
 5. 回读 PR 标题和描述，确认其内容对应整理后的最终远端状态。
 6. 检查 required checks 是否因新 SHA 重新触发。
 7. 最多观察 5 分钟；每 20 至 30 秒检查 checks 和新增 review 状态。到期仍在运行时报告当前状态，超时不视为失败。
-8. 观察结束后重新读取最终 checks、review 和 comments，再次执行步骤 4 的 PR 信息整合；将终态、失败原因或超时仍在运行的状态写入 `Verification Evidence` 或 `Risks`，并回读确认。
-9. 不因 SHA 改写自动请求新一轮 Codex Review；如果最终 tree 发生实质变化，则必须停止并重新审查。
+8. 观察结束后重新读取最终 checks、review 和 comments，对新增反馈按 `Actionable`、`Question`、`Non-actionable` 分类：
+   - 出现 `Actionable` 时停止合并准备，不得报告完成；保留当前分支和备份引用，转入 review-fix 工作流，修复完成后重新调用本 skill。
+   - 出现 `Question` 时回复依据或列为 blocker，未完成处理前不得报告完成。
+   - 对 `Non-actionable` 给出不修改的依据并确认 thread 状态。
+9. 再次执行步骤 4 的 PR 信息整合；将 checks 终态、失败原因、超时状态和最终反馈处理结果写入 `Verification Evidence` 或 `Risks`，并回读确认。
+10. 不因 SHA 改写自动请求新一轮 Codex Review；如果最终 tree 发生实质变化，则必须停止并重新审查。
 
 ## 完成标准
 
@@ -156,6 +168,7 @@ git log --oneline --decorate --max-count=30
 - PR diff 与提交列表符合预期。
 - PR 标题和描述已按整理后的远端 commits、diff 和 checks 重新整合。
 - checks 已通过，或 5 分钟观察窗口结束后已明确报告仍在运行的状态。
+- 最终观察期间新增的 actionable feedback 和 questions 已处理；存在未解决项时不得报告 PR 已完成合并准备。
 - PR 未被 merge。
 
 ## 输出格式
