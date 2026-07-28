@@ -171,7 +171,7 @@ public class AiRefinementTaskController {
         command.setContentRef(AiContentRef.ofNullable(request.getContentType(), null));
         command.setTotalCount(request.getTotalCount());
         command.setFailureSummaryJson(request.getFailureSummaryJson());
-        Long batchId = batchJobApplicationService.create(command);
+        var batchId = batchJobApplicationService.create(command);
         return toBatchResponse(batchJobApplicationService.get(batchId));
     }
 
@@ -188,7 +188,7 @@ public class AiRefinementTaskController {
     @PostMapping(value = "batch/get")
     public AiRefinementResponses.BatchJobResponse getBatch(
             @Valid @RequestBody AiRefinementRequests.BatchIdRequest request) {
-        return toBatchResponse(batchJobApplicationService.get(request.getBatchId()));
+        return toBatchResponse(batchJobApplicationService.get(AiBatchJobIdCodec.toDomain(request.getBatchId())));
     }
 
     @Operation(summary = "取消AI精修批量任务", description = "ai:refinement:edit")
@@ -204,7 +204,7 @@ public class AiRefinementTaskController {
     @PostMapping(value = "batch/cancel")
     public AiRefinementResponses.BatchJobResponse cancelBatch(
             @Valid @RequestBody AiRefinementRequests.BatchIdRequest request) {
-        return toBatchResponse(batchJobApplicationService.cancel(request.getBatchId()));
+        return toBatchResponse(batchJobApplicationService.cancel(AiBatchJobIdCodec.toDomain(request.getBatchId())));
     }
 
     private static AiRefinementResponses.BatchJobResponse toBatchResponse(

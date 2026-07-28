@@ -10,6 +10,10 @@ import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicat
 import com.thundax.kuzhambu.ai.application.scenario.command.AiRefinementRequestCommand;
 import com.thundax.kuzhambu.ai.application.scenario.result.AiRefinementTaskResult;
 import com.thundax.kuzhambu.ai.application.scenario.service.AiRefinementTaskApplicationService;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiBatchJobStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.request.AiRefinementRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.response.AiRefinementResponses;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
@@ -161,17 +165,16 @@ class AiRefinementTaskControllerTest {
     private static final class NoOpBatchJobService implements AiBatchJobApplicationService {
 
         @Override
-        public AiBatchJobResult get(Long batchId) {
+        public AiBatchJobResult get(AiBatchJobId batchId) {
             return null;
         }
 
         @Override
         public PageResult<AiBatchJobResult> page(
                 String scope,
-                String capability,
-                String status,
-                String contentType,
-                Long contentId,
+                AiBusinessCapability capability,
+                AiBatchJobStatus status,
+                AiContentRef contentRef,
                 PageQuery pageQuery) {
             return PageResult.of(1, 10, 0, List.of());
         }
@@ -179,53 +182,52 @@ class AiRefinementTaskControllerTest {
         @Override
         public PageResult<AiBatchJobResult> pageByCapabilities(
                 String scope,
-                List<String> capabilities,
-                String status,
-                String contentType,
-                Long contentId,
+                List<AiBusinessCapability> capabilities,
+                AiBatchJobStatus status,
+                AiContentRef contentRef,
                 PageQuery pageQuery) {
             return PageResult.of(1, 10, 0, List.of());
         }
 
         @Override
-        public Long create(AiBatchJobCreateCommand command) {
+        public AiBatchJobId create(AiBatchJobCreateCommand command) {
             return null;
         }
 
         @Override
-        public boolean canDispatchNextUnit(Long batchId) {
+        public boolean canDispatchNextUnit(AiBatchJobId batchId) {
             return false;
         }
 
         @Override
-        public AiBatchJobResult recordSuccess(Long batchId) {
+        public AiBatchJobResult recordSuccess(AiBatchJobId batchId) {
             return null;
         }
 
         @Override
-        public AiBatchJobResult recordSuccessIfRunning(Long batchId) {
+        public AiBatchJobResult recordSuccessIfRunning(AiBatchJobId batchId) {
             return null;
         }
 
         @Override
-        public AiBatchJobResult recordFailure(Long batchId, String failureSummaryJson) {
+        public AiBatchJobResult recordFailure(AiBatchJobId batchId, String failureSummaryJson) {
             return null;
         }
 
         @Override
-        public AiBatchJobResult recordFailureIfRunning(Long batchId, String failureSummaryJson) {
+        public AiBatchJobResult recordFailureIfRunning(AiBatchJobId batchId, String failureSummaryJson) {
             return null;
         }
 
         @Override
-        public AiBatchJobResult recordPartialIfRunning(Long batchId, String failureSummaryJson) {
+        public AiBatchJobResult recordPartialIfRunning(AiBatchJobId batchId, String failureSummaryJson) {
             return null;
         }
 
         @Override
         public int expireRunning(
                 String scope,
-                List<String> capabilities,
+                List<AiBusinessCapability> capabilities,
                 Instant requestedBefore,
                 String failureSummaryJson,
                 int limit) {
@@ -233,7 +235,7 @@ class AiRefinementTaskControllerTest {
         }
 
         @Override
-        public AiBatchJobResult cancel(Long batchId) {
+        public AiBatchJobResult cancel(AiBatchJobId batchId) {
             return null;
         }
     }
