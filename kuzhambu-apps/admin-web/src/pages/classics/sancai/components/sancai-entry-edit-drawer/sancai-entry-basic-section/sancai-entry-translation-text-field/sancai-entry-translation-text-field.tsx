@@ -295,9 +295,7 @@ export const SancaiEntryTranslationTextField = ({
                 open={translationModalOpen}
                 onApply={applyTranslationDraft}
                 onCancel={closeTranslationModal}
-                onFetchTask={(taskId) =>
-                    aiRefinementTaskService.getTask({ taskId: Number(taskId) })
-                }
+                onFetchTask={(taskId) => aiRefinementTaskService.getTask({ taskId })}
                 onRequestTask={requestTranslationTask}
                 onTaskChange={syncTranslationTask}
                 onTextDraftChange={setTranslationDraft}

@@ -3,6 +3,7 @@ import { Input } from "antd";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import { KuzhambuAlert, KuzhambuSyncTaskModal, type KuzhambuSyncTaskAdapter } from "@/components";
 
+import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
 import type { SancaiEntryFormValues } from "@/pages/classics/sancai/components/sancai-entry-edit-drawer/sancai-entry-form-values";
 
@@ -38,9 +39,22 @@ const readRefinementTaskAlertType = (status?: string | null) => {
     return "info";
 };
 
+const readRefinementTaskFailureText = (task?: AiRefinementTaskRecord | null) => {
+    if (!task) {
+        return undefined;
+    }
+    return (
+        aiRefinementTaskService.getTaskFailureText(
+            task.failureStage,
+            task.errorType,
+            task.errorMessage
+        ) || undefined
+    );
+};
+
 const translationTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = {
-    getId: (task) => task.taskId,
-    getMessage: (task) => task.errorMessage || undefined,
+    getId: (task) => aiRefinementTaskService.getTaskStableId(task.taskId, task.taskIdText),
+    getMessage: (task) => readRefinementTaskFailureText(task),
     getPhase: (task) => {
         if (task.status === "PENDING" || task.status === "RUNNING") {
             return "tracking";
@@ -135,7 +149,7 @@ export const SancaiEntryTranslationModal = ({
                         description={
                             hasRunningAiTextTask
                                 ? "任务完成后会自动刷新 AI译文。"
-                                : task?.errorMessage || undefined
+                                : readRefinementTaskFailureText(task)
                         }
                     />
                 ) : null

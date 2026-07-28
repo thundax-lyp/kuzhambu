@@ -290,9 +290,7 @@ export const SancaiEntrySummaryTextField = ({
                 open={summaryModalOpen}
                 onApply={applySummaryDraft}
                 onCancel={closeSummaryModal}
-                onFetchTask={(taskId) =>
-                    aiRefinementTaskService.getTask({ taskId: Number(taskId) })
-                }
+                onFetchTask={(taskId) => aiRefinementTaskService.getTask({ taskId })}
                 onRequestTask={requestSummaryTask}
                 onTaskChange={syncSummaryTask}
                 onTextDraftChange={setSummaryDraft}
