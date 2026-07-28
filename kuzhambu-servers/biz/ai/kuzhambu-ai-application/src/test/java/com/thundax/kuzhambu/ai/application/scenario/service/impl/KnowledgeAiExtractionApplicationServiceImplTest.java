@@ -112,9 +112,9 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertEquals(capturedCommand, businessResolver.capturedCommand());
-        assertEquals(2001L, capturedCommand.getModelId());
-        assertEquals("gpt-4o", capturedCommand.getModelName());
-        assertEquals(940106L, capturedCommand.getPromptVersionId());
+        assertEquals(2001L, capturedCommand.getModelId().value());
+        assertEquals("gpt-4o", capturedCommand.getModelName().value());
+        assertEquals(940106L, capturedCommand.getPromptVersionId().value());
         assertEquals("[{\"role\":\"user\",\"content\":\"rendered\"}]", capturedCommand.getPromptMessagesJson());
     }
 
@@ -168,10 +168,8 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
             AiInvokeResult result = new AiInvokeResult();
             result.setCallId(new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId(101L));
             result.setCandidateId(new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId(102L));
-            result.setRequestId(
-                    new com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId(command.getRequestId()));
-            result.setTraceId(
-                    new com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId(command.getTraceId()));
+            result.setRequestId(command.getRequestId());
+            result.setTraceId(command.getTraceId());
             result.setStatus(com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus.SUCCEEDED);
             result.setCapability(command.getCapability());
             result.setResultFormat("STRUCTURED");
@@ -202,9 +200,10 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
             captured = command;
             command.setServiceId(1001L);
             command.setServiceRole("PRIMARY");
-            command.setModelId(2001L);
-            command.setModelName("gpt-4o");
-            command.setPromptVersionId(940106L);
+            command.setModelId(new com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId(2001L));
+            command.setModelName(com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName.of("gpt-4o"));
+            command.setPromptVersionId(
+                    new com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId(940106L));
             command.setPromptMessagesJson("[{\"role\":\"user\",\"content\":\"rendered\"}]");
             command.setPromptVariablesJson("{\"text\":\"hello\"}");
         }
