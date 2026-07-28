@@ -45,7 +45,20 @@ vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
     ),
     getTask: vi.fn(),
     pageTasks: vi.fn(() => Promise.resolve({ items: [], totalCount: 0, pageNo: 1, pageSize: 10 })),
-    cancelTask: vi.fn()
+    cancelTask: vi.fn(),
+    getNormalizedTaskCapability: vi.fn((capability: string) => {
+        const aliases: Record<string, string> = {
+            classics_translate: "translate",
+            classics_summary: "summary",
+            classics_tags: "tags",
+            classics_qa: "qa",
+            classics_image_describe: "image_analysis",
+            classics_image_prompt_fusion: "fusion",
+            classics_visual_describe: "visual",
+            classics_image_generate: "image_gen"
+        };
+        return aliases[capability] ?? capability;
+    })
 }));
 
 const apiResponse = (data: unknown) =>
