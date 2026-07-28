@@ -2,8 +2,6 @@ package com.thundax.kuzhambu.ai.application.invocation.service.impl;
 
 import com.thundax.kuzhambu.ai.application.invocation.service.AiCandidateApplicationService;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
@@ -24,21 +22,22 @@ public class AiCandidateApplicationServiceImpl implements AiCandidateApplication
 
     @Override
     public AiCandidate requirePendingForApply(
-            Long candidateId, String contentType, Long contentId, String capability, Long objectId) {
-        AiCandidate candidate = getRequired(AiCandidateIdCodec.toDomain(candidateId));
-        AiBusinessCapability expectedCapability = AiBusinessCapability.fromAlias(capability);
-        AiContentRef expectedContentRef = AiContentRef.ofNullable(contentType, contentId);
-        candidate.requirePendingForApply(expectedContentRef, expectedCapability);
-        if (objectId != null) {
-            AiTargetObjectId expectedTargetObjectId = AiTargetObjectIdCodec.toDomain(objectId);
-            candidate.requireTargetObject(expectedTargetObjectId);
+            AiCandidateId candidateId,
+            AiContentRef contentRef,
+            AiBusinessCapability capability,
+            AiTargetObjectId targetObjectId) {
+        AiCandidate candidate = getRequired(candidateId);
+        candidate.requirePendingForApply(contentRef, capability);
+        if (targetObjectId != null) {
+            candidate.requireTargetObject(targetObjectId);
         }
         return candidate;
     }
 
     @Override
-    public AiCandidate markApplied(Long candidateId, String resultFormat, String resultPayload, Instant appliedAt) {
-        AiCandidate candidate = getRequired(AiCandidateIdCodec.toDomain(candidateId));
+    public AiCandidate markApplied(
+            AiCandidateId candidateId, String resultFormat, String resultPayload, Instant appliedAt) {
+        AiCandidate candidate = getRequired(candidateId);
         candidate.markApplied(
                 defaultIfNull(resultFormat, candidate.getResultFormat()),
                 defaultIfNull(resultPayload, candidate.getResultPayload()),
@@ -48,8 +47,8 @@ public class AiCandidateApplicationServiceImpl implements AiCandidateApplication
     }
 
     @Override
-    public AiCandidate reject(Long candidateId, String errorType, String errorMessage) {
-        AiCandidate candidate = getRequired(AiCandidateIdCodec.toDomain(candidateId));
+    public AiCandidate reject(AiCandidateId candidateId, String errorType, String errorMessage) {
+        AiCandidate candidate = getRequired(candidateId);
         candidate.reject(errorType, errorMessage);
         updateRequired(candidate);
         return candidate;
