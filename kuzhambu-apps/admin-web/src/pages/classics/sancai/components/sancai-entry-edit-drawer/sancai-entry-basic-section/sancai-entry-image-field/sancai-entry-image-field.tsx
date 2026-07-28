@@ -32,7 +32,7 @@ const formatImageSize = (size?: number | null) => {
     return `${(size / 1024 / 1024).toFixed(1)} MB`;
 };
 
-const resolveImagePreviewUrl = (entryId: number, image: SancaiEntryImageRecord) => {
+const resolveImagePreviewUrl = (entryId: string, image: SancaiEntryImageRecord) => {
     return toAuthenticatedResourceUrl(
         entryService.getImageContentUrl({
             entryId,
@@ -44,7 +44,7 @@ const resolveImagePreviewUrl = (entryId: number, image: SancaiEntryImageRecord) 
 
 interface SancaiEntryImageFieldProps {
     deleteImageLoading: boolean;
-    entryId: number;
+    entryId: string;
     images: SancaiEntryImageRecord[];
     isLoading: boolean;
     isUploadingImage: boolean;

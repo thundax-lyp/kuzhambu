@@ -1,14 +1,14 @@
 import type { SancaiVolumeRecord } from "@/pages/classics/sancai/sancai-types";
 
 export interface SancaiVolumeFormValues {
-    categoryId: number | null;
+    categoryId: string | null;
     title: string;
     volumeType: string;
 }
 
 export const toVolumeFormValues = (
     volume?: SancaiVolumeRecord,
-    fallbackCategoryId?: number | null
+    fallbackCategoryId?: string | null
 ): SancaiVolumeFormValues => {
     return {
         categoryId: volume?.categoryId ?? fallbackCategoryId ?? null,

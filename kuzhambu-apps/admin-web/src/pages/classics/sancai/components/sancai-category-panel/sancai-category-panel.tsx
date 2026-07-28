@@ -23,7 +23,7 @@ interface SancaiCategoryPanelProps {
     selectedCategory: SancaiCategoryRecord | null;
 }
 
-const readTitle = (value: { id: number; title?: string | null }, fallback: string) => {
+const readTitle = (value: { id: string; title?: string | null }, fallback: string) => {
     return value.title?.trim() || `${fallback} ${value.id}`;
 };
 

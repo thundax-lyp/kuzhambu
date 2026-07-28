@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { type KuzhambuTableSortPosition } from "@/components";
 import type { DictItem } from "@/types/dict";
+import { isSameId } from "@/types/id";
 import type { SancaiVolumeFormValues } from "./sancai-volume-form-values";
 import { SancaiVolumeList } from "./sancai-volume-list";
 import { SancaiVolumeEditModal } from "./sancai-volume-edit-modal";
@@ -24,7 +25,7 @@ interface SancaiVolumePanelProps {
     volumes: SancaiVolumeRecord[];
 }
 
-const readTitle = (value: { id: number; title?: string | null }, fallback: string) => {
+const readTitle = (value: { id: string; title?: string | null }, fallback: string) => {
     return value.title?.trim() || `${fallback} ${value.id}`;
 };
 
@@ -110,7 +111,7 @@ export const SancaiVolumePanel = ({
 
     const readValidCategoryId = (form: SancaiVolumeFormValues) => {
         const categoryId = form.categoryId ?? selectedCategory?.id ?? null;
-        if (!categoryId || !categories.some((category) => category.id === categoryId)) {
+        if (!categoryId || !categories.some((category) => isSameId(category.id, categoryId))) {
             messageApi.warning("请选择有效门类");
             return null;
         }
@@ -150,11 +151,13 @@ export const SancaiVolumePanel = ({
         targetVolume: SancaiVolumeRecord,
         position: KuzhambuTableSortPosition
     ) => {
-        if (sourceVolume.id === targetVolume.id) {
+        if (isSameId(sourceVolume.id, targetVolume.id)) {
             return;
         }
-        const remainingVolumes = volumes.filter((volume) => volume.id !== sourceVolume.id);
-        const targetIndex = remainingVolumes.findIndex((volume) => volume.id === targetVolume.id);
+        const remainingVolumes = volumes.filter((volume) => !isSameId(volume.id, sourceVolume.id));
+        const targetIndex = remainingVolumes.findIndex((volume) =>
+            isSameId(volume.id, targetVolume.id)
+        );
         if (targetIndex < 0) {
             return;
         }

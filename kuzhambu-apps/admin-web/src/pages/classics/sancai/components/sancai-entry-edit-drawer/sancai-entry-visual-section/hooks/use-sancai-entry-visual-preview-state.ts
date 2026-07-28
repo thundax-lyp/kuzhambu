@@ -16,11 +16,11 @@ const resolveStorageUrl = (url?: string | null) => {
 };
 
 export const useSancaiEntryVisualPreviewState = (
-    entryId: number | undefined
+    entryId: string | undefined
 ): SancaiEntryVisualPreviewState => {
     const visualAssetsQuery = useQuery({
         queryKey: ["classics", "sancai", "entries", "visual-assets", entryId],
-        queryFn: () => entryService.listVisualAssets(entryId ?? 0),
+        queryFn: () => entryService.listVisualAssets(entryId ?? ""),
         enabled: Boolean(entryId),
         retry: false
     });

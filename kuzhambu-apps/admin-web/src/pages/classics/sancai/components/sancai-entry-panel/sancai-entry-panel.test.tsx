@@ -25,7 +25,7 @@ vi.mock("@/pages/classics/common/classics-content-service", () => ({
         failureCount: 1,
         failures: [
             {
-                contentId: 3002,
+                contentId: "3002",
                 contentType: "SANCAI_ENTRY",
                 failureCode: "PERMISSION_DENIED",
                 failureReason: "PERMISSION_DENIED",
@@ -35,9 +35,9 @@ vi.mock("@/pages/classics/common/classics-content-service", () => ({
         successCount: 1,
         successes: [
             {
-                contentId: 3001,
+                contentId: "3001",
                 contentType: "SANCAI_ENTRY",
-                resultId: 3001,
+                resultId: "3001",
                 status: "PRIVATE"
             }
         ]
@@ -45,10 +45,10 @@ vi.mock("@/pages/classics/common/classics-content-service", () => ({
     deleteTag: vi.fn(),
     listQaPairs: vi.fn(async () => [
         {
-            id: 6001,
+            id: "6001",
             contentType: "SANCAI_ENTRY",
-            contentId: 3001,
-            qaPairId: 7001,
+            contentId: "3001",
+            qaPairId: "7001",
             question: "天地为何不变？",
             answer: "因为天地变化永恒。",
             source: "MANUAL",
@@ -60,10 +60,10 @@ vi.mock("@/pages/classics/common/classics-content-service", () => ({
     ]),
     listTags: vi.fn(async () => [
         {
-            id: 5001,
+            id: "5001",
             contentType: "SANCAI_ENTRY",
-            contentId: 3001,
-            tagId: 8001,
+            contentId: "3001",
+            tagId: "8001",
             tagNameSnapshot: "三才",
             source: "MANUAL",
             status: "ACTIVE",
@@ -80,7 +80,7 @@ vi.mock("@/pages/classics/common/classics-content-service", () => ({
 
 vi.mock("@/service/current-user-service", () => ({
     getCurrentUserInfo: vi.fn(async () => ({
-        id: 99,
+        id: "99",
         loginName: "admin",
         name: "Admin"
     }))
@@ -102,21 +102,21 @@ const normalizeTaskCapabilityMock = vi.hoisted(() => {
 
 vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
     createTask: vi.fn(
-        async (command: { capability: string; contentId: number; contentType: string }) => ({
-            taskId: 7001,
+        async (command: { capability: string; contentId: string; contentType: string }) => ({
+            taskId: "7001",
             status: "PENDING",
             capability: command.capability,
             contentType: command.contentType,
             contentId: command.contentId
         })
     ),
-    getTask: vi.fn(async ({ taskId }: { taskId: number }) => ({
+    getTask: vi.fn(async ({ taskId }: { taskId: string }) => ({
         taskId,
         status: "RUNNING",
         capability: "image_analysis",
         contentType: "SANCAI_ENTRY",
-        contentId: 3001,
-        objectId: 5002,
+        contentId: "3001",
+        objectId: "5002",
         streamEnabled: true,
         requestId: "req-stream-1",
         traceId: "trace-stream-1"
@@ -158,7 +158,7 @@ vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
         (failureStage?: string | null, errorType?: string | null, errorMessage?: string | null) =>
             [failureStage, errorType, errorMessage].filter(Boolean).join(" / ") || null
     ),
-    getTaskStableId: vi.fn((taskId: number, taskIdText?: string | null) => taskIdText || taskId),
+    getTaskStableId: vi.fn((taskId: string, taskIdText?: string | null) => taskIdText || taskId),
     getTaskRetryable: vi.fn(
         (status: string, capability: string) =>
             ["FAILED", "PARTIAL", "CANCELLED"].includes(status) &&
@@ -171,8 +171,8 @@ vi.mock("@/pages/classics/common/ai-candidate-service", () => ({
     list: vi.fn(async () => []),
     apply: vi.fn(async () => ({
         contentType: "SANCAI_ENTRY",
-        contentId: 3001,
-        versionId: 5002,
+        contentId: "3001",
+        versionId: "5002",
         versionNo: 2
     })),
     reject: vi.fn(async () => ({}))
@@ -193,7 +193,7 @@ vi.mock("@/pages/classics/common/classics-share-service", () => ({
         failureCount: 1,
         failures: [
             {
-                contentId: 3002,
+                contentId: "3002",
                 contentType: "SANCAI_ENTRY",
                 failureCode: "PERMISSION_DENIED",
                 failureReason: "PERMISSION_DENIED",
@@ -203,15 +203,15 @@ vi.mock("@/pages/classics/common/classics-share-service", () => ({
         successCount: 1,
         successes: [
             {
-                contentId: 3001,
+                contentId: "3001",
                 contentType: "SANCAI_ENTRY",
-                resultId: 9001,
+                resultId: "9001",
                 status: "ACTIVE"
             }
         ]
     })),
     create: vi.fn(async () => ({
-        id: 9001,
+        id: "9001",
         shareToken: "abc123_-",
         shareUrl: "http://localhost:5174/share/abc123_-",
         title: "天地 分享",
@@ -221,14 +221,14 @@ vi.mock("@/pages/classics/common/classics-share-service", () => ({
 
 vi.mock("@/pages/classics/common/classics-export-service", () => ({
     create: vi.fn(async () => ({
-        id: 1001,
+        id: "1001",
         contentType: "SANCAI_ENTRY",
         exportKind: "CONTENT_DATASET",
         exportFormat: "HTML",
         scopeType: "SELECTED_ITEMS",
         scopeJson: JSON.stringify({
             title: "天地 导出",
-            ids: [3001]
+            ids: ["3001"]
         }),
         status: "REQUESTED"
     })),
@@ -239,14 +239,14 @@ vi.mock("@/pages/classics/common/classics-export-service", () => ({
         count: 1,
         records: [
             {
-                id: 1001,
+                id: "1001",
                 contentType: "SANCAI_ENTRY",
                 exportKind: "CONTENT_DATASET",
                 exportFormat: "HTML",
                 scopeType: "SELECTED_ITEMS",
                 scopeJson: JSON.stringify({
                     title: "天地 导出",
-                    ids: [3001]
+                    ids: ["3001"]
                 }),
                 requestedAt: "2026-06-21T10:00:00.000+08:00",
                 status: "COMPLETED",
@@ -265,8 +265,8 @@ vi.mock("@/pages/classics/sancai/sancai-entry-service", () => ({
     add: vi.fn(),
     deleteById: vi.fn(),
     get: vi.fn(async () => ({
-        id: 3001,
-        volumeId: 101,
+        id: "3001",
+        volumeId: "101",
         title: entryState.restored ? "历史天地" : "天地",
         originalText: entryState.restored ? "历史原文" : "天地玄黄",
         translationText: entryState.restored ? "历史译文" : "译文",
@@ -288,15 +288,15 @@ vi.mock("@/pages/classics/sancai/sancai-entry-service", () => ({
         versionDirty: false
     })),
     getVersion: vi.fn(async () => ({
-        id: 9001,
+        id: "9001",
         contentType: "SANCAI_ENTRY",
-        contentId: 3001,
+        contentId: "3001",
         versionNo: 1,
         versionedAt: "2026-06-20T01:00:00.000+08:00",
         snapshotJson: JSON.stringify({
             contentType: "SANCAI_ENTRY",
-            contentId: 3001,
-            volumeId: 101,
+            contentId: "3001",
+            volumeId: "101",
             title: "历史天地",
             originalText: "历史原文",
             translationText: "历史译文",
@@ -314,8 +314,8 @@ vi.mock("@/pages/classics/sancai/sancai-entry-service", () => ({
     })),
     list: vi.fn(async () => [
         {
-            id: 3001,
-            volumeId: 101,
+            id: "3001",
+            volumeId: "101",
             title: "天地",
             originalText: "天地玄黄",
             translationText: "译文",
@@ -326,15 +326,15 @@ vi.mock("@/pages/classics/sancai/sancai-entry-service", () => ({
             imageStatus: "READY",
             visualAssetStatus: "READY",
             refinementStatus: "COMPLETE",
-            currentVersionId: 9001,
+            currentVersionId: "9001",
             currentVersionNo: 1,
             currentVersionedAt: "2026-06-20T01:00:00.000+08:00",
             contentUpdatedAt: "2026-06-20T01:00:00.000+08:00",
             versionDirty: false
         },
         {
-            id: 3002,
-            volumeId: 101,
+            id: "3002",
+            volumeId: "101",
             title: "地理",
             originalText: "山川",
             translationText: "译文",
@@ -352,8 +352,8 @@ vi.mock("@/pages/classics/sancai/sancai-entry-service", () => ({
             versionDirty: false
         },
         {
-            id: 3003,
-            volumeId: 101,
+            id: "3003",
+            volumeId: "101",
             title: "人物",
             originalText: "人物",
             translationText: "译文",
@@ -364,7 +364,7 @@ vi.mock("@/pages/classics/sancai/sancai-entry-service", () => ({
             imageStatus: "READY",
             visualAssetStatus: "READY",
             refinementStatus: "COMPLETE",
-            currentVersionId: 9003,
+            currentVersionId: "9003",
             currentVersionNo: 1,
             currentVersionedAt: "2026-06-20T01:00:00.000+08:00",
             contentUpdatedAt: "2026-06-20T01:00:00.000+08:00",
@@ -374,24 +374,24 @@ vi.mock("@/pages/classics/sancai/sancai-entry-service", () => ({
     listImages: vi.fn(async () => [
         {
             currentUsed: true,
-            entryId: 3001,
-            id: 8001,
+            entryId: "3001",
+            id: "8001",
             imageType: "ORIGINAL",
             originalFilename: "sancai.png",
             priority: 1,
             size: 10,
-            storageObjectId: 7001,
+            storageObjectId: "7001",
             title: "sancai.png"
         },
         {
             currentUsed: false,
-            entryId: 3001,
-            id: 8002,
+            entryId: "3001",
+            id: "8002",
             imageType: "GENERATED",
             originalFilename: "generated.png",
             priority: 2,
             size: 2048,
-            storageObjectId: 7002,
+            storageObjectId: "7002",
             title: "生成图"
         }
     ]),
@@ -401,13 +401,13 @@ vi.mock("@/pages/classics/sancai/sancai-entry-service", () => ({
     sortImages: vi.fn(async () => true),
     listVisualAssets: vi.fn(async () => [
         {
-            id: 5002,
-            visualAssetId: 5002,
-            entryId: 3001,
+            id: "5002",
+            visualAssetId: "5002",
+            entryId: "3001",
             versionNo: 2,
             status: "READY",
-            sourceImageStorageObjectId: 7001,
-            generatedImageStorageObjectId: 7002,
+            sourceImageStorageObjectId: "7001",
+            generatedImageStorageObjectId: "7002",
             currentUsed: true,
             textWeight: 60,
             imageWeight: 40,
@@ -424,13 +424,13 @@ vi.mock("@/pages/classics/sancai/sancai-entry-service", () => ({
                 "/api/classics/sancai/assets/visual-assets/3001/5002/generated-content?download=true"
         },
         {
-            id: 5001,
-            visualAssetId: 5001,
-            entryId: 3001,
+            id: "5001",
+            visualAssetId: "5001",
+            entryId: "3001",
             versionNo: 1,
             status: "READY",
-            sourceImageStorageObjectId: 7001,
-            generatedImageStorageObjectId: 7102,
+            sourceImageStorageObjectId: "7001",
+            generatedImageStorageObjectId: "7102",
             currentUsed: false,
             textWeight: 55,
             imageWeight: 45,
@@ -449,9 +449,9 @@ vi.mock("@/pages/classics/sancai/sancai-entry-service", () => ({
     ]),
     listVersions: vi.fn(async () => [
         {
-            id: 9001,
+            id: "9001",
             contentType: "SANCAI_ENTRY",
-            contentId: 3001,
+            contentId: "3001",
             versionNo: 1,
             versionedAt: "2026-06-20T01:00:00.000+08:00",
             snapshotJson: JSON.stringify({
@@ -464,9 +464,9 @@ vi.mock("@/pages/classics/sancai/sancai-entry-service", () => ({
     resetVersion: vi.fn(async () => {
         entryState.restored = true;
         return {
-            id: 9002,
+            id: "9002",
             contentType: "SANCAI_ENTRY",
-            contentId: 3001,
+            contentId: "3001",
             versionNo: 2,
             changeType: "HISTORY_RESTORED",
             changeSummary: "恢复历史版本 v1"
@@ -476,15 +476,15 @@ vi.mock("@/pages/classics/sancai/sancai-entry-service", () => ({
     updateVisualAsset: vi.fn(async (request) => request),
     changeCurrentVisualAsset: vi.fn(async () => true),
     getImageContentUrl: vi.fn(
-        (request: { entryId: number; imageId: number; mode?: "download" | "preview" }) => {
+        (request: { entryId: string; imageId: string; mode?: "download" | "preview" }) => {
             const search = request.mode === "download" ? "?download=true" : "";
             return `/kuzhambu-admin-api/api/classics/sancai/assets/images/${request.entryId}/${request.imageId}/content${search}`;
         }
     ),
     getVisualAssetContentUrl: vi.fn(
         (request: {
-            entryId: number;
-            visualAssetId: number;
+            entryId: string;
+            visualAssetId: string;
             variant: "source" | "generated";
             mode?: "download" | "preview";
         }) => {
@@ -494,13 +494,13 @@ vi.mock("@/pages/classics/sancai/sancai-entry-service", () => ({
         }
     ),
     uploadImage: vi.fn(async () => ({
-        id: 8003,
-        entryId: 3001,
-        storageObjectId: 7003
+        id: "8003",
+        entryId: "3001",
+        storageObjectId: "7003"
     })),
     update: vi.fn(),
     createRefinementBatch: vi.fn(async () => ({
-        batchId: 8801,
+        batchId: "8801",
         scope: "classics",
         capability: "image_analysis",
         contentType: "SANCAI_ENTRY",
@@ -511,7 +511,7 @@ vi.mock("@/pages/classics/sancai/sancai-entry-service", () => ({
         cancelledCount: 0
     })),
     getRefinementBatch: vi.fn(async () => ({
-        batchId: 8801,
+        batchId: "8801",
         scope: "classics",
         capability: "image_analysis",
         contentType: "SANCAI_ENTRY",
@@ -522,7 +522,7 @@ vi.mock("@/pages/classics/sancai/sancai-entry-service", () => ({
         cancelledCount: 0
     })),
     cancelRefinementBatch: vi.fn(async () => ({
-        batchId: 8801,
+        batchId: "8801",
         scope: "classics",
         capability: "image_analysis",
         contentType: "SANCAI_ENTRY",
@@ -550,32 +550,32 @@ const renderEntryPanel = ({ exportJobsDrawerOpen = false } = {}) => {
                     categories={[
                         {
                             categoryType: "FORMAL",
-                            id: 2,
+                            id: "2",
                             priority: 10,
                             title: "天文"
                         },
                         {
                             categoryType: "FORMAL",
-                            id: 3,
+                            id: "3",
                             priority: 20,
                             title: "地理"
                         }
                     ]}
-                    categoryId={2}
+                    categoryId="2"
                     exportJobsDrawerOpen={exportJobsDrawerOpen}
                     isCatalogLoading={false}
                     refreshVersion={0}
-                    volumeId={101}
+                    volumeId="101"
                     volumes={[
                         {
-                            categoryId: 2,
-                            id: 101,
+                            categoryId: "2",
+                            id: "101",
                             title: "天文卷一",
                             volumeType: "MAIN"
                         },
                         {
-                            categoryId: 3,
-                            id: 202,
+                            categoryId: "3",
+                            id: "202",
                             title: "地理卷一",
                             volumeType: "MAIN"
                         }
@@ -665,7 +665,7 @@ describe("SancaiEntryPanel sharing", () => {
         expect(vi.mocked(shareService.create).mock.calls[0]?.[0]).toEqual({
             targets: [
                 {
-                    contentId: 3001,
+                    contentId: "3001",
                     contentType: "SANCAI_ENTRY"
                 }
             ],
@@ -692,7 +692,7 @@ describe("SancaiEntryPanel sharing", () => {
             status: "ACTIVE",
             targets: [
                 {
-                    contentId: 3001,
+                    contentId: "3001",
                     contentType: "SANCAI_ENTRY"
                 }
             ],
@@ -717,7 +717,7 @@ describe("SancaiEntryPanel sharing", () => {
             expect(contentService.changeVisibilityBatch).toHaveBeenCalled();
         });
         expect(vi.mocked(contentService.changeVisibilityBatch).mock.calls[0]?.[0]).toEqual({
-            contentIds: [3001],
+            contentIds: ["3001"],
             contentType: "SANCAI_ENTRY",
             visibility: "PRIVATE"
         });
@@ -807,8 +807,8 @@ describe("SancaiEntryPanel sharing", () => {
             expect(entryService.update).toHaveBeenCalled();
         });
         expect(vi.mocked(entryService.update).mock.calls.at(-1)?.at(0)).toEqual({
-            id: 3001,
-            volumeId: 202,
+            id: "3001",
+            volumeId: "202",
             title: "天地",
             originalText: "天地玄黄",
             translationText: "译文",
@@ -844,7 +844,7 @@ describe("SancaiEntryPanel sharing", () => {
             expect(entryService.changeLifecycleStatus).toHaveBeenCalled();
         });
         expect(vi.mocked(entryService.changeLifecycleStatus).mock.calls[0]?.[0]).toEqual({
-            id: 3002,
+            id: "3002",
             lifecycleStatus: "PUBLISHED"
         });
         expect(await screen.findByText("三才图会条目已发布")).toBeInTheDocument();
@@ -866,7 +866,7 @@ describe("SancaiEntryPanel sharing", () => {
             expect(entryService.changeLifecycleStatus).toHaveBeenCalled();
         });
         expect(vi.mocked(entryService.changeLifecycleStatus).mock.calls[0]?.[0]).toEqual({
-            id: 3001,
+            id: "3001",
             lifecycleStatus: "ARCHIVED"
         });
         expect(
@@ -874,7 +874,7 @@ describe("SancaiEntryPanel sharing", () => {
                 (call) =>
                     JSON.stringify(call[0]) ===
                     JSON.stringify({
-                        queryKey: ["classics", "sancai", "entries", "detail", 3001]
+                        queryKey: ["classics", "sancai", "entries", "detail", "3001"]
                     })
             )
         ).toBeTruthy();
@@ -883,7 +883,7 @@ describe("SancaiEntryPanel sharing", () => {
                 (call) =>
                     JSON.stringify(call[0]) ===
                     JSON.stringify({
-                        queryKey: ["classics", "sancai", "entries", "versions", 3001]
+                        queryKey: ["classics", "sancai", "entries", "versions", "3001"]
                     })
             )
         ).toBeTruthy();
@@ -909,9 +909,9 @@ describe("SancaiEntryPanel sharing", () => {
         expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).toMatchObject({
             capability: "image_analysis",
             contentType: "SANCAI_ENTRY",
-            contentId: 3001,
-            objectId: 5002,
-            requestedBy: 99,
+            contentId: "3001",
+            objectId: "5002",
+            requestedBy: "99",
             locale: "zh-CN"
         });
         expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
@@ -947,7 +947,7 @@ describe("SancaiEntryPanel sharing", () => {
 
         expect(aiRefinementTaskService.requestTaskStream).toHaveBeenCalledWith(
             expect.objectContaining({
-                taskId: 7001
+                taskId: "7001"
             })
         );
     }, 30000);
@@ -966,12 +966,12 @@ describe("SancaiEntryPanel sharing", () => {
             }
         );
         vi.mocked(aiRefinementTaskService.getTask).mockResolvedValue({
-            taskId: 7001,
+            taskId: "7001",
             status: "FAILED",
             capability: "image_analysis",
             contentType: "SANCAI_ENTRY",
-            contentId: 3001,
-            objectId: 5002,
+            contentId: "3001",
+            objectId: "5002",
             streamEnabled: true,
             failureStage: "WORKER_STREAM",
             errorType: "WORKER_PROTOCOL_FAILURE",
@@ -996,11 +996,11 @@ describe("SancaiEntryPanel sharing", () => {
 
         expect(aiRefinementTaskService.requestTaskStream).toHaveBeenCalledWith(
             expect.objectContaining({
-                taskId: 7001
+                taskId: "7001"
             })
         );
         expect(aiRefinementTaskService.getTask).toHaveBeenCalledWith({
-            taskId: 7001
+            taskId: "7001"
         });
     }, 30000);
 
@@ -1019,13 +1019,13 @@ describe("SancaiEntryPanel sharing", () => {
 
         vi.mocked(entryService.listVisualAssets).mockResolvedValueOnce([
             {
-                id: 5002,
-                visualAssetId: 5002,
-                entryId: 3001,
+                id: "5002",
+                visualAssetId: "5002",
+                entryId: "3001",
                 versionNo: 2,
                 status: "READY",
-                sourceImageStorageObjectId: 7001,
-                generatedImageStorageObjectId: 7002,
+                sourceImageStorageObjectId: "7001",
+                generatedImageStorageObjectId: "7002",
                 currentUsed: true,
                 textWeight: 60,
                 imageWeight: 40,
@@ -1044,7 +1044,7 @@ describe("SancaiEntryPanel sharing", () => {
             }
         ]);
         await client.invalidateQueries({
-            queryKey: ["classics", "sancai", "entries", "visual-assets", 3001]
+            queryKey: ["classics", "sancai", "entries", "visual-assets", "3001"]
         });
 
         await waitFor(() => {
@@ -1079,12 +1079,12 @@ describe("SancaiEntryPanel sharing", () => {
         vi.mocked(aiRefinementTaskService.pageTasks).mockResolvedValue({
             items: [
                 {
-                    taskId: 7001,
+                    taskId: "7001",
                     status: "RUNNING",
                     capability: "image_analysis",
                     contentType: "SANCAI_ENTRY",
-                    contentId: 3001,
-                    objectId: 5002,
+                    contentId: "3001",
+                    objectId: "5002",
                     streamEnabled: true,
                     requestId: "req-stream-1",
                     traceId: "trace-stream-1"
@@ -1117,7 +1117,7 @@ describe("SancaiEntryPanel sharing", () => {
         });
         expect(aiRefinementTaskService.requestTaskStream).toHaveBeenLastCalledWith(
             expect.objectContaining({
-                taskId: 7001
+                taskId: "7001"
             })
         );
     }, 30000);
@@ -1128,11 +1128,11 @@ describe("SancaiEntryPanel sharing", () => {
         vi.mocked(aiCandidateService.list)
             .mockResolvedValueOnce([
                 {
-                    candidateId: 8001,
+                    candidateId: "8001",
                     capability: "image_analysis",
                     contentType: "SANCAI_ENTRY",
-                    contentId: 3001,
-                    objectId: 5002,
+                    contentId: "3001",
+                    objectId: "5002",
                     resultFormat: "TEXT",
                     resultPayload: "候选 A",
                     status: "PENDING",
@@ -1141,11 +1141,11 @@ describe("SancaiEntryPanel sharing", () => {
             ])
             .mockResolvedValueOnce([
                 {
-                    candidateId: 8002,
+                    candidateId: "8002",
                     capability: "image_analysis",
                     contentType: "SANCAI_ENTRY",
-                    contentId: 3001,
-                    objectId: 5001,
+                    contentId: "3001",
+                    objectId: "5001",
                     resultFormat: "TEXT",
                     resultPayload: "候选 B",
                     status: "PENDING",
@@ -1164,9 +1164,9 @@ describe("SancaiEntryPanel sharing", () => {
         });
         expect(vi.mocked(aiCandidateService.list).mock.calls[0]?.[0]).toMatchObject({
             contentType: "SANCAI_ENTRY",
-            contentId: 3001,
+            contentId: "3001",
             status: "PENDING",
-            objectId: 5002
+            objectId: "5002"
         });
 
         const visualAssetPanel = await openVisualAssetSection(user);
@@ -1180,9 +1180,9 @@ describe("SancaiEntryPanel sharing", () => {
         });
         expect(vi.mocked(aiCandidateService.list).mock.calls[1]?.[0]).toMatchObject({
             contentType: "SANCAI_ENTRY",
-            contentId: 3001,
+            contentId: "3001",
             status: "PENDING",
-            objectId: 5001
+            objectId: "5001"
         });
     }, 30000);
 
@@ -1191,33 +1191,33 @@ describe("SancaiEntryPanel sharing", () => {
         vi.mocked(aiCandidateService.list).mockReset();
         vi.mocked(aiCandidateService.list).mockResolvedValue([
             {
-                candidateId: 8005,
+                candidateId: "8005",
                 capability: "image_analysis",
                 contentType: "SANCAI_ENTRY",
-                contentId: 3001,
-                objectId: 5002,
+                contentId: "3001",
+                objectId: "5002",
                 resultFormat: "TEXT",
                 resultPayload: "候选 画像",
                 status: "PENDING",
                 requestedAt: "2026-06-20T01:00:00.000+08:00"
             },
             {
-                candidateId: 8006,
+                candidateId: "8006",
                 capability: "summary",
                 contentType: "SANCAI_ENTRY",
-                contentId: 3001,
-                objectId: 5002,
+                contentId: "3001",
+                objectId: "5002",
                 resultFormat: "STRUCTURED",
                 resultPayload: "候选 摘要",
                 status: "PENDING",
                 requestedAt: "2026-06-20T01:00:00.000+08:00"
             },
             {
-                candidateId: 8007,
+                candidateId: "8007",
                 capability: "visual",
                 contentType: "SANCAI_ENTRY",
-                contentId: 3001,
-                objectId: 5001,
+                contentId: "3001",
+                objectId: "5001",
                 resultFormat: "TEXT",
                 resultPayload: "历史 画像",
                 status: "PENDING",
@@ -1245,11 +1245,11 @@ describe("SancaiEntryPanel sharing", () => {
         vi.mocked(aiCandidateService.list).mockReset();
         vi.mocked(aiCandidateService.list).mockResolvedValue([
             {
-                candidateId: 8003,
+                candidateId: "8003",
                 capability: "image_analysis",
                 contentType: "SANCAI_ENTRY",
-                contentId: 3001,
-                objectId: 5002,
+                contentId: "3001",
+                objectId: "5002",
                 resultFormat: "TEXT",
                 resultPayload: "候选 C",
                 status: "PENDING",
@@ -1277,9 +1277,9 @@ describe("SancaiEntryPanel sharing", () => {
         expect(vi.mocked(aiCandidateService.apply).mock.calls[0]?.[0]).toMatchObject({
             candidateId: "8003",
             contentType: "SANCAI_ENTRY",
-            contentId: 3001,
+            contentId: "3001",
             capability: "image_analysis",
-            objectId: 5002,
+            objectId: "5002",
             resultFormat: "TEXT",
             resultPayload: "候选 C",
             changeSummary: "AI 应用：image_analysis"
@@ -1290,7 +1290,7 @@ describe("SancaiEntryPanel sharing", () => {
                 (call) =>
                     JSON.stringify(call[0]) ===
                     JSON.stringify({
-                        queryKey: ["classics", "sancai", "entries", "detail", 3001]
+                        queryKey: ["classics", "sancai", "entries", "detail", "3001"]
                     })
             )
         ).toBeTruthy();
@@ -1299,7 +1299,7 @@ describe("SancaiEntryPanel sharing", () => {
                 (call) =>
                     JSON.stringify(call[0]) ===
                     JSON.stringify({
-                        queryKey: ["classics", "sancai", "entries", "visual-assets", 3001]
+                        queryKey: ["classics", "sancai", "entries", "visual-assets", "3001"]
                     })
             )
         ).toBeTruthy();
@@ -1308,7 +1308,7 @@ describe("SancaiEntryPanel sharing", () => {
                 (call) =>
                     JSON.stringify(call[0]) ===
                     JSON.stringify({
-                        queryKey: ["ai", "candidates", "SANCAI_ENTRY", 3001, 5002]
+                        queryKey: ["ai", "candidates", "SANCAI_ENTRY", "3001", "5002"]
                     })
             )
         ).toBeTruthy();
@@ -1319,11 +1319,11 @@ describe("SancaiEntryPanel sharing", () => {
         vi.mocked(aiCandidateService.list).mockReset();
         vi.mocked(aiCandidateService.list).mockResolvedValue([
             {
-                candidateId: 8004,
+                candidateId: "8004",
                 capability: "image_analysis",
                 contentType: "SANCAI_ENTRY",
-                contentId: 3001,
-                objectId: 5002,
+                contentId: "3001",
+                objectId: "5002",
                 resultFormat: "TEXT",
                 resultPayload: "候选 D",
                 status: "PENDING",
@@ -1361,7 +1361,7 @@ describe("SancaiEntryPanel sharing", () => {
                 (call) =>
                     JSON.stringify(call[0]) ===
                     JSON.stringify({
-                        queryKey: ["classics", "sancai", "entries", "detail", 3001]
+                        queryKey: ["classics", "sancai", "entries", "detail", "3001"]
                     })
             )
         ).toBeTruthy();
@@ -1370,7 +1370,7 @@ describe("SancaiEntryPanel sharing", () => {
                 (call) =>
                     JSON.stringify(call[0]) ===
                     JSON.stringify({
-                        queryKey: ["classics", "sancai", "entries", "visual-assets", 3001]
+                        queryKey: ["classics", "sancai", "entries", "visual-assets", "3001"]
                     })
             )
         ).toBeTruthy();
@@ -1379,7 +1379,7 @@ describe("SancaiEntryPanel sharing", () => {
                 (call) =>
                     JSON.stringify(call[0]) ===
                     JSON.stringify({
-                        queryKey: ["ai", "candidates", "SANCAI_ENTRY", 3001, 5002]
+                        queryKey: ["ai", "candidates", "SANCAI_ENTRY", "3001", "5002"]
                     })
             )
         ).toBeTruthy();
@@ -1389,9 +1389,9 @@ describe("SancaiEntryPanel sharing", () => {
         vi.mocked(entryService.listImages).mockResolvedValueOnce([]);
         vi.mocked(entryService.listVisualAssets).mockResolvedValueOnce([
             {
-                id: 6002,
-                visualAssetId: 6002,
-                entryId: 3001,
+                id: "6002",
+                visualAssetId: "6002",
+                entryId: "3001",
                 versionNo: 1,
                 status: "READY",
                 sourceImageStorageObjectId: null,
@@ -1433,7 +1433,7 @@ describe("SancaiEntryPanel sharing", () => {
     it("creates batch image analysis task and shows aggregated batch status", async () => {
         const user = userEvent.setup();
         vi.mocked(entryService.createRefinementBatch).mockResolvedValueOnce({
-            batchId: 8801,
+            batchId: "8801",
             scope: "classics",
             capability: "image_analysis",
             contentType: "SANCAI_ENTRY",
@@ -1444,7 +1444,7 @@ describe("SancaiEntryPanel sharing", () => {
             cancelledCount: 0
         });
         vi.mocked(entryService.getRefinementBatch).mockResolvedValue({
-            batchId: 8801,
+            batchId: "8801",
             scope: "classics",
             capability: "image_analysis",
             contentType: "SANCAI_ENTRY",
@@ -1498,7 +1498,7 @@ describe("SancaiEntryPanel sharing", () => {
         );
 
         await waitFor(() => {
-            expect(entryService.resetVersion).toHaveBeenCalledWith(3001, 9001);
+            expect(entryService.resetVersion).toHaveBeenCalledWith("3001", "9001");
         });
         expect(confirmDangerMock).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -1525,7 +1525,7 @@ describe("SancaiEntryPanel sharing", () => {
                 scopeType: "SELECTED_ITEMS",
                 scopeJson: JSON.stringify({
                     title: "天地 导出",
-                    ids: [3001]
+                    ids: ["3001"]
                 })
             });
         });
@@ -1556,8 +1556,8 @@ describe("SancaiEntryPanel sharing", () => {
             capability: "translate",
             scope: "classics",
             contentType: "SANCAI_ENTRY",
-            contentId: 3001,
-            requestedBy: 99,
+            contentId: "3001",
+            requestedBy: "99",
             locale: "zh-CN"
         });
         expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
@@ -1579,11 +1579,11 @@ describe("SancaiEntryPanel sharing", () => {
         vi.mocked(aiRefinementTaskService.pageTasks).mockResolvedValueOnce({
             items: [
                 {
-                    taskId: 8202,
+                    taskId: "8202",
                     status: "RUNNING",
                     capability: "classics_translate",
                     contentType: "SANCAI_ENTRY",
-                    contentId: 3001,
+                    contentId: "3001",
                     requestedAt: "2026-06-22T01:00:00.000+08:00"
                 }
             ],
@@ -1592,11 +1592,11 @@ describe("SancaiEntryPanel sharing", () => {
             pageSize: 20
         });
         vi.mocked(aiRefinementTaskService.getTask).mockResolvedValueOnce({
-            taskId: 8202,
+            taskId: "8202",
             status: "RUNNING",
             capability: "classics_translate",
             contentType: "SANCAI_ENTRY",
-            contentId: 3001,
+            contentId: "3001",
             requestedAt: "2026-06-22T01:00:00.000+08:00"
         });
 
@@ -1631,8 +1631,8 @@ describe("SancaiEntryPanel sharing", () => {
             capability: "summary",
             scope: "classics",
             contentType: "SANCAI_ENTRY",
-            contentId: 3001,
-            requestedBy: 99,
+            contentId: "3001",
+            requestedBy: "99",
             locale: "zh-CN"
         });
         expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
@@ -1687,10 +1687,10 @@ describe("SancaiEntryPanel sharing", () => {
         vi.mocked(aiCandidateService.list).mockReset();
         vi.mocked(aiCandidateService.list).mockResolvedValue([
             {
-                candidateId: 8101,
+                candidateId: "8101",
                 capability: "summary",
                 contentType: "SANCAI_ENTRY",
-                contentId: 3001,
+                contentId: "3001",
                 objectId: null,
                 resultFormat: "TEXT",
                 resultPayload: "候选摘要",
@@ -1717,7 +1717,7 @@ describe("SancaiEntryPanel sharing", () => {
         expect(vi.mocked(aiCandidateService.apply).mock.calls[0]?.[0]).toMatchObject({
             candidateId: "8101",
             contentType: "SANCAI_ENTRY",
-            contentId: 3001,
+            contentId: "3001",
             capability: "summary",
             objectId: null,
             resultFormat: "TEXT",
@@ -1731,10 +1731,10 @@ describe("SancaiEntryPanel sharing", () => {
         vi.mocked(aiCandidateService.list).mockReset();
         vi.mocked(aiCandidateService.list).mockResolvedValue([
             {
-                candidateId: 8102,
+                candidateId: "8102",
                 capability: "summary",
                 contentType: "SANCAI_ENTRY",
-                contentId: 3001,
+                contentId: "3001",
                 objectId: null,
                 resultFormat: "TEXT",
                 resultPayload: "失败候选摘要",
@@ -1798,11 +1798,11 @@ describe("SancaiEntryPanel sharing", () => {
         vi.mocked(aiRefinementTaskService.pageTasks).mockResolvedValueOnce({
             items: [
                 {
-                    taskId: 8201,
+                    taskId: "8201",
                     status: "RUNNING",
                     capability: "summary",
                     contentType: "SANCAI_ENTRY",
-                    contentId: 3001,
+                    contentId: "3001",
                     requestedAt: "2026-06-22T01:00:00.000+08:00"
                 }
             ],
@@ -1811,11 +1811,11 @@ describe("SancaiEntryPanel sharing", () => {
             pageSize: 20
         });
         vi.mocked(aiRefinementTaskService.getTask).mockResolvedValueOnce({
-            taskId: 8201,
+            taskId: "8201",
             status: "RUNNING",
             capability: "summary",
             contentType: "SANCAI_ENTRY",
-            contentId: 3001,
+            contentId: "3001",
             requestedAt: "2026-06-22T01:00:00.000+08:00"
         });
 
@@ -1839,14 +1839,14 @@ describe("SancaiEntryPanel sharing", () => {
             count: 1,
             records: [
                 {
-                    id: 1002,
+                    id: "1002",
                     contentType: "SANCAI_ENTRY",
                     exportKind: "CONTENT_DATASET",
                     exportFormat: "HTML",
                     scopeType: "SELECTED_ITEMS",
                     scopeJson: JSON.stringify({
                         title: "天地 导出",
-                        ids: [3001]
+                        ids: ["3001"]
                     }),
                     requestedAt: "2026-06-10T10:00:00.000+08:00",
                     expiresAt: "2026-06-13T10:00:00.000+08:00",
@@ -1928,7 +1928,7 @@ describe("SancaiEntryPanel sharing", () => {
         await waitFor(() => {
             expect(entryService.uploadImage).toHaveBeenCalledWith({
                 currentUsed: false,
-                entryId: 3001,
+                entryId: "3001",
                 file: expect.any(File),
                 imageType: "ORIGINAL",
                 title: "new-image.png"
@@ -1949,8 +1949,8 @@ describe("SancaiEntryPanel sharing", () => {
 
         await waitFor(() => {
             expect(vi.mocked(entryService.sortImages).mock.calls.at(-1)?.at(0)).toEqual({
-                entryId: 3001,
-                orderedIds: [8002, 8001],
+                entryId: "3001",
+                orderedIds: ["8002", "8001"],
                 sortDirection: "ASC"
             });
         });
@@ -2037,8 +2037,8 @@ describe("SancaiEntryPanel sharing", () => {
             { timeout: 1000 }
         );
         expect(vi.mocked(entryService.changeCurrentVisualAsset).mock.calls[0]?.[0]).toEqual({
-            entryId: 3001,
-            visualAssetId: 5001
+            entryId: "3001",
+            visualAssetId: "5001"
         });
     });
 
@@ -2162,12 +2162,12 @@ describe("SancaiEntryPanel sharing", () => {
         });
         expect(vi.mocked(entryService.updateVisualAsset).mock.calls[0]?.[0]).toEqual(
             expect.objectContaining({
-                visualAssetId: 5002,
-                entryId: 3001,
+                visualAssetId: "5002",
+                entryId: "3001",
                 visualDescription: "更新后的视觉描述",
                 textWeight: 60,
                 imageWeight: 40,
-                sourceImageStorageObjectId: 7002
+                sourceImageStorageObjectId: "7002"
             })
         );
     });

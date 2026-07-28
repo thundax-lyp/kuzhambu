@@ -21,10 +21,16 @@ const sortRefinementTasksByNewest = (
     left: AiRefinementTaskRecord,
     right: AiRefinementTaskRecord
 ) => {
-    if (left.requestedAt && right.requestedAt && left.requestedAt !== right.requestedAt) {
-        return right.requestedAt.localeCompare(left.requestedAt);
-    }
-    return right.taskId - left.taskId;
+    return aiRefinementTaskService.sortNewestByRequestedAtThenId({
+        left: {
+            id: aiRefinementTaskService.getTaskStableId(left.taskId, left.taskIdText),
+            requestedAt: left.requestedAt
+        },
+        right: {
+            id: aiRefinementTaskService.getTaskStableId(right.taskId, right.taskIdText),
+            requestedAt: right.requestedAt
+        }
+    });
 };
 
 const readRefinementTaskStatusLabel = (status?: string | null) => {
@@ -93,7 +99,7 @@ const translationTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = 
 
 interface SancaiEntryTranslationModalProps {
     aiTextDraft: string;
-    entryId?: number;
+    entryId?: string;
     form: SancaiEntryFormValues;
     isAiTextApplyDisabled: boolean;
     isAiTextCandidateFetching: boolean;
@@ -102,7 +108,7 @@ interface SancaiEntryTranslationModalProps {
     isCreatingAiTextTask: boolean;
     translationTasks: AiRefinementTaskRecord[];
     onFetchResult: (task: AiRefinementTaskRecord | null) => Promise<AiCandidateRecord | null>;
-    onFetchTask: (taskId: number | string) => Promise<AiRefinementTaskRecord>;
+    onFetchTask: (taskId: string) => Promise<AiRefinementTaskRecord>;
     onApply: () => void;
     onCancel: () => void;
     onRequestTranslationTask?: (draft: SancaiEntryFormValues) => void;

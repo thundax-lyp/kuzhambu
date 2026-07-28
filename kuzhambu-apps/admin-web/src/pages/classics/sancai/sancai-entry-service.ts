@@ -14,8 +14,8 @@ const ASSET_IMAGES_PATH = "/classics/sancai/assets/images";
 const ASSET_VISUAL_ASSETS_PATH = "/classics/sancai/assets/visual-assets";
 
 export interface SancaiEntryQuery {
-    categoryId?: number | null;
-    volumeId?: number | null;
+    categoryId?: string | null;
+    volumeId?: string | null;
     keyword?: string | null;
     lifecycleStatus?: string | null;
     visibility?: string | null;
@@ -27,8 +27,8 @@ export interface SancaiEntryQuery {
 }
 
 export interface SancaiEntryCommand {
-    id?: number | null;
-    volumeId?: number | null;
+    id?: string | null;
+    volumeId?: string | null;
     title?: string | null;
     originalText?: string | null;
     translationText?: string | null;
@@ -42,61 +42,61 @@ export interface SancaiEntryCommand {
 }
 
 export interface SancaiEntryLifecycleCommand {
-    id: number;
+    id: string;
     lifecycleStatus: SancaiEntryLifecycleStatus;
 }
 
 export interface SancaiEntrySortCommand {
-    orderedIds: number[];
+    orderedIds: string[];
     sortDirection?: "ASC" | "DESC" | null;
 }
 
 interface SancaiVersionCommand {
-    id: number;
-    versionId?: number | null;
+    id: string;
+    versionId?: string | null;
 }
 
 export interface SancaiEntryImageUploadCommand {
     currentUsed?: boolean;
-    entryId: number;
+    entryId: string;
     file: File;
     imageType?: string | null;
-    replaceImageId?: number | null;
+    replaceImageId?: string | null;
     title?: string | null;
 }
 
 export interface SancaiEntryImageContentUrlCommand {
-    entryId: number;
-    imageId: number;
+    entryId: string;
+    imageId: string;
     mode?: SancaiEntryImageContentMode;
 }
 
 export interface SancaiEntryImageMutationCommand {
-    entryId: number;
-    imageId: number;
+    entryId: string;
+    imageId: string;
 }
 
 export interface SancaiEntryImageSortCommand {
-    entryId: number;
-    orderedIds: number[];
+    entryId: string;
+    orderedIds: string[];
     sortDirection?: "ASC" | "DESC" | null;
 }
 
 export interface SancaiVisualAssetContentUrlCommand {
-    entryId: number;
+    entryId: string;
     mode?: SancaiEntryImageContentMode;
-    visualAssetId: number;
+    visualAssetId: string;
     variant: "source" | "generated";
 }
 
 export interface SancaiVisualAssetCommand {
-    id?: number | null;
-    visualAssetId?: number | null;
-    entryId?: number | null;
+    id?: string | null;
+    visualAssetId?: string | null;
+    entryId?: string | null;
     versionNo?: number | null;
     status?: string | null;
-    sourceImageStorageObjectId?: number | null;
-    generatedImageStorageObjectId?: number | null;
+    sourceImageStorageObjectId?: string | null;
+    generatedImageStorageObjectId?: string | null;
     currentUsed?: boolean | null;
     textWeight?: number | null;
     imageWeight?: number | null;
@@ -107,8 +107,8 @@ export interface SancaiVisualAssetCommand {
 }
 
 export interface SancaiVisualAssetUseCommand {
-    entryId: number;
-    visualAssetId: number;
+    entryId: string;
+    visualAssetId: string;
 }
 
 export type SancaiVisualAssetRefinementCapability =
@@ -128,7 +128,7 @@ export const list = (request: SancaiEntryQuery = {}) => {
     });
 };
 
-export const get = (id: number) => {
+export const get = (id: string) => {
     return postJson<SancaiEntryRecord, SancaiEntryCommand>(`${ENTRIES_PATH}/get`, {
         body: { id }
     });
@@ -152,7 +152,7 @@ export const changeLifecycleStatus = (request: SancaiEntryLifecycleCommand) => {
     });
 };
 
-export const deleteById = (id: number) => {
+export const deleteById = (id: string) => {
     return postJson<boolean, SancaiEntryCommand>(`${ENTRIES_PATH}/delete`, {
         body: { id }
     });
@@ -164,14 +164,14 @@ export const sort = (request: SancaiEntrySortCommand) => {
     });
 };
 
-export const listImages = (entryId: number) => {
-    return postJson<SancaiEntryImageRecord[], { entryId: number }>(`${ASSET_IMAGES_PATH}/list`, {
+export const listImages = (entryId: string) => {
+    return postJson<SancaiEntryImageRecord[], { entryId: string }>(`${ASSET_IMAGES_PATH}/list`, {
         body: { entryId }
     });
 };
 
 export const deleteImage = (command: SancaiEntryImageMutationCommand) => {
-    return postJson<boolean, { entryId: number; id: number }>(`${ASSET_IMAGES_PATH}/delete`, {
+    return postJson<boolean, { entryId: string; id: string }>(`${ASSET_IMAGES_PATH}/delete`, {
         body: {
             entryId: command.entryId,
             id: command.imageId
@@ -180,7 +180,7 @@ export const deleteImage = (command: SancaiEntryImageMutationCommand) => {
 };
 
 export const changeCurrentImage = (command: SancaiEntryImageMutationCommand) => {
-    return postJson<boolean, { entryId: number; id: number }>(
+    return postJson<boolean, { entryId: string; id: string }>(
         `${ASSET_IMAGES_PATH}/current/change`,
         {
             body: {
@@ -197,8 +197,8 @@ export const sortImages = (command: SancaiEntryImageSortCommand) => {
     });
 };
 
-export const listVisualAssets = (entryId: number) => {
-    return postJson<SancaiVisualAssetRecord[], { entryId: number }>(
+export const listVisualAssets = (entryId: string) => {
+    return postJson<SancaiVisualAssetRecord[], { entryId: string }>(
         `${ASSET_VISUAL_ASSETS_PATH}/list`,
         {
             body: { entryId }
@@ -256,7 +256,7 @@ export const changeCurrentVisualAsset = (command: SancaiVisualAssetUseCommand) =
     );
 };
 
-export const listVersions = (entryId: number) => {
+export const listVersions = (entryId: string) => {
     return postJson<SancaiContentVersionRecord[], SancaiVersionCommand>(
         `${ENTRIES_PATH}/versions/list`,
         {
@@ -265,7 +265,7 @@ export const listVersions = (entryId: number) => {
     );
 };
 
-export const getVersion = (entryId: number, versionId: number) => {
+export const getVersion = (entryId: string, versionId: string) => {
     return postJson<SancaiContentVersionRecord, SancaiVersionCommand>(
         `${ENTRIES_PATH}/versions/get`,
         {
@@ -274,7 +274,7 @@ export const getVersion = (entryId: number, versionId: number) => {
     );
 };
 
-export const resetVersion = (entryId: number, versionId: number) => {
+export const resetVersion = (entryId: string, versionId: string) => {
     return postJson<SancaiContentVersionRecord, SancaiVersionCommand>(
         `${ENTRIES_PATH}/versions/reset`,
         {
@@ -292,8 +292,8 @@ export const createRefinementBatch = (command: SancaiRefinementBatchCreateComman
     );
 };
 
-export const getRefinementBatch = (batchId: number) => {
-    return postJson<SancaiRefinementBatchRecord, { batchId: number }>(
+export const getRefinementBatch = (batchId: string) => {
+    return postJson<SancaiRefinementBatchRecord, { batchId: string }>(
         "/ai/refinement/task/batch/get",
         {
             body: { batchId }
@@ -301,8 +301,8 @@ export const getRefinementBatch = (batchId: number) => {
     );
 };
 
-export const cancelRefinementBatch = (batchId: number) => {
-    return postJson<SancaiRefinementBatchRecord, { batchId: number }>(
+export const cancelRefinementBatch = (batchId: string) => {
+    return postJson<SancaiRefinementBatchRecord, { batchId: string }>(
         "/ai/refinement/task/batch/cancel",
         {
             body: { batchId }

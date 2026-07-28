@@ -2,18 +2,18 @@ import { postJson } from "@/api/http";
 import type { SancaiVolumeRecord, SancaiVolumeTypeRecord } from "./sancai-types";
 
 export interface SancaiVolumeQuery {
-    categoryId?: number | null;
+    categoryId?: string | null;
 }
 
 export interface SancaiVolumeCommand {
-    categoryId?: number | null;
-    id?: number | null;
+    categoryId?: string | null;
+    id?: string | null;
     title?: string | null;
     volumeType?: string | null;
 }
 
 export interface SancaiVolumeSortCommand {
-    orderedIds: number[];
+    orderedIds: string[];
     sortDirection?: "ASC" | "DESC" | null;
 }
 
@@ -39,7 +39,7 @@ export const update = (request: SancaiVolumeCommand) => {
     });
 };
 
-export const deleteById = (id: number) => {
+export const deleteById = (id: string) => {
     return postJson<boolean, SancaiVolumeCommand>("/classics/sancai/volumes/delete", {
         body: { id }
     });
