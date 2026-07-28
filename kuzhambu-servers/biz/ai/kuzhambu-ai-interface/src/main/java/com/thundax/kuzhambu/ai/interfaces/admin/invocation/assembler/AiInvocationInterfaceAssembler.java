@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.invocation.assembler;
 
-import com.thundax.kuzhambu.ai.application.invocation.batch.command.AiBatchJobCreateCommand;
-import com.thundax.kuzhambu.ai.application.invocation.batch.result.AiBatchJobResult;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;

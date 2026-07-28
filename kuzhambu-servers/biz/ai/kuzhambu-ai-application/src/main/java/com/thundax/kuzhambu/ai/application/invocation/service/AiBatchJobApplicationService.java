@@ -1,7 +1,7 @@
-package com.thundax.kuzhambu.ai.application.invocation.batch.service;
+package com.thundax.kuzhambu.ai.application.invocation.service;
 
-import com.thundax.kuzhambu.ai.application.invocation.batch.command.AiBatchJobCreateCommand;
-import com.thundax.kuzhambu.ai.application.invocation.batch.result.AiBatchJobResult;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult;
 import com.thundax.kuzhambu.common.core.arch.LayerPublicApi;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;

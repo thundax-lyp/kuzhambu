@@ -4,9 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.thundax.kuzhambu.ai.application.invocation.batch.command.AiBatchJobCreateCommand;
-import com.thundax.kuzhambu.ai.application.invocation.batch.result.AiBatchJobResult;
-import com.thundax.kuzhambu.ai.application.invocation.batch.service.AiBatchJobApplicationService;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult;
+import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.command.AiRefinementRequestCommand;
 import com.thundax.kuzhambu.ai.application.scenario.result.AiCandidateResult;
 import com.thundax.kuzhambu.ai.application.scenario.result.AiRefinementTaskResult;

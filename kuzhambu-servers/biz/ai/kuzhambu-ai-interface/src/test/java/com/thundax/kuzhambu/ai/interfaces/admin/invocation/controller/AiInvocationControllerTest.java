@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.thundax.kuzhambu.ai.application.invocation.batch.service.AiBatchJobApplicationService;
+import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiCandidateApplicationService;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
@@ -296,7 +296,7 @@ class AiInvocationControllerTest {
                 (proxy, method, args) -> {
                     if ("cancel".equals(method.getName())) {
                         assertEquals(8801L, args[0]);
-                        return new com.thundax.kuzhambu.ai.application.invocation.batch.result.AiBatchJobResult(
+                        return new com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult(
                                 8801L,
                                 "classics",
                                 "image_analysis",

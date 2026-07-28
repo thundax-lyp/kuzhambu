@@ -10,11 +10,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.thundax.kuzhambu.ai.application.facade.assembler.AiFacadeAssembler;
-import com.thundax.kuzhambu.ai.application.invocation.batch.command.AiBatchJobCreateCommand;
-import com.thundax.kuzhambu.ai.application.invocation.batch.service.AiBatchJobApplicationService;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCommand;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiReportSummaryResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiReportSummaryResult.TopCapabilityResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
+import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiCandidateApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiReportApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.command.DiscoveryAiCommand;

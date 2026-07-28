@@ -1,8 +1,8 @@
-package com.thundax.kuzhambu.ai.application.invocation.batch.service.impl;
+package com.thundax.kuzhambu.ai.application.invocation.service.impl;
 
-import com.thundax.kuzhambu.ai.application.invocation.batch.command.AiBatchJobCreateCommand;
-import com.thundax.kuzhambu.ai.application.invocation.batch.result.AiBatchJobResult;
-import com.thundax.kuzhambu.ai.application.invocation.batch.service.AiBatchJobApplicationService;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult;
+import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiBatchJob;

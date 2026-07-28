@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.ai.application.invocation.batch.command;
+package com.thundax.kuzhambu.ai.application.invocation.command;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller;
 
-import com.thundax.kuzhambu.ai.application.invocation.batch.command.AiBatchJobCreateCommand;
-import com.thundax.kuzhambu.ai.application.invocation.batch.service.AiBatchJobApplicationService;
+import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.configuration.AiRefinementExecutorConfiguration;
 import com.thundax.kuzhambu.ai.application.scenario.service.AiRefinementTaskApplicationService;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.assembler.AiRefinementInterfaceAssembler;
@@ -204,7 +204,7 @@ public class AiRefinementTaskController {
     }
 
     private static AiRefinementResponses.BatchJobResponse toBatchResponse(
-            com.thundax.kuzhambu.ai.application.invocation.batch.result.AiBatchJobResult result) {
+            com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult result) {
         if (result == null) {
             return AiRefinementResponses.BatchJobResponse.builder().build();
         }

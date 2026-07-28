@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.ai.application.invocation.batch.result;
+package com.thundax.kuzhambu.ai.application.invocation.result;
 
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiBatchJob;
