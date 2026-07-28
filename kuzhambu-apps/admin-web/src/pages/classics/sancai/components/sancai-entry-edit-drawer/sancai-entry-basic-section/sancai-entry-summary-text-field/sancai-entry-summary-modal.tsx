@@ -1,5 +1,6 @@
 import { FileTextOutlined } from "@ant-design/icons";
 import { Input } from "antd";
+import { useMemo } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
 import {
     KuzhambuAlert,
@@ -14,6 +15,16 @@ import type { SancaiEntryFormValues } from "@/pages/classics/sancai/components/s
 
 const MODAL_TITLE = "AI摘要";
 const TASK_LABEL = "摘要";
+
+const sortRefinementTasksByNewest = (
+    left: AiRefinementTaskRecord,
+    right: AiRefinementTaskRecord
+) => {
+    if (left.requestedAt && right.requestedAt && left.requestedAt !== right.requestedAt) {
+        return right.requestedAt.localeCompare(left.requestedAt);
+    }
+    return right.taskId - left.taskId;
+};
 
 const readRefinementTaskStatusLabel = (status?: string | null) => {
     switch (status) {
@@ -82,13 +93,12 @@ const summaryTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = {
 interface SancaiEntrySummaryModalProps {
     aiTextDraft: string;
     form: SancaiEntryFormValues;
-    hasRunningAiTextTask: boolean;
     isAiTextApplyDisabled: boolean;
     isAiTextCandidateFetching: boolean;
     isAiTextCandidateLoadError: boolean;
     isApplyingAiText: boolean;
     isCreatingAiTextTask: boolean;
-    latestAiTextTask: AiRefinementTaskRecord | null;
+    summaryTasks: AiRefinementTaskRecord[];
     onFetchTask: (taskId: number | string) => Promise<AiRefinementTaskRecord>;
     onApply: () => void;
     onCancel: () => void;
@@ -101,13 +111,12 @@ interface SancaiEntrySummaryModalProps {
 export const SancaiEntrySummaryModal = ({
     aiTextDraft,
     form,
-    hasRunningAiTextTask,
     isAiTextApplyDisabled,
     isAiTextCandidateFetching,
     isAiTextCandidateLoadError,
     isApplyingAiText,
     isCreatingAiTextTask,
-    latestAiTextTask,
+    summaryTasks,
     onFetchTask,
     onApply,
     onCancel,
@@ -116,6 +125,18 @@ export const SancaiEntrySummaryModal = ({
     onTextDraftChange,
     open
 }: SancaiEntrySummaryModalProps) => {
+    const latestAiTextTask = useMemo(
+        () =>
+            [...summaryTasks]
+                .filter(
+                    (task) =>
+                        aiRefinementTaskService.getNormalizedTaskCapability(task.capability) ===
+                        "summary"
+                )
+                .sort(sortRefinementTasksByNewest)[0] ?? null,
+        [summaryTasks]
+    );
+
     return (
         <KuzhambuSyncTaskModal<AiRefinementTaskRecord, null>
             testId="classics-sancai-sancai-entry-ai-text-modal"
@@ -123,7 +144,12 @@ export const SancaiEntrySummaryModal = ({
             open={open}
             width={960}
             applying={isApplyingAiText}
-            applyDisabled={isAiTextApplyDisabled}
+            applyDisabled={(state) =>
+                isAiTextApplyDisabled ||
+                state.tracking ||
+                state.taskLoading ||
+                isAiTextCandidateFetching
+            }
             applyTestId="classics-sancai-sancai-entry-apply-ai-text-button"
             cancelTestId="classics-sancai-sancai-entry-cancel-ai-text-button"
             createIcon={<FileTextOutlined />}
@@ -140,7 +166,7 @@ export const SancaiEntrySummaryModal = ({
                 onTaskChange,
                 trackTask: Boolean(latestAiTextTask?.taskId)
             }}
-            renderStatus={({ creating, task }) =>
+            renderStatus={({ creating, task, tracking }) =>
                 creating || task ? (
                     <KuzhambuAlert
                         showIcon
@@ -152,78 +178,86 @@ export const SancaiEntrySummaryModal = ({
                                 : `${TASK_LABEL}任务：${readRefinementTaskStatusLabel(task?.status)}`
                         }
                         description={
-                            hasRunningAiTextTask
+                            tracking
                                 ? "任务完成后会自动刷新 AI摘要。"
                                 : readRefinementTaskFailureText(task)
                         }
                     />
                 ) : null
             }
-            renderBody={() => (
-                <>
-                    <div className="sancai-detail-card sancai-entry-edit-drawer-form sancai-ai-text-modal-original">
-                        <div className="sancai-ai-text-modal-field">
-                            <label className="sancai-ai-text-modal-label">原文</label>
-                            <Input.TextArea
-                                aria-label={`${MODAL_TITLE}原文`}
-                                value={form.originalText}
-                                readOnly
-                                autoSize={resolveTextAreaAutoSize({ minRows: 5, maxRows: 8 })}
-                            />
-                        </div>
-                    </div>
-                    <div className="sancai-ai-text-modal-compare-grid">
-                        <div className="sancai-detail-card sancai-entry-edit-drawer-form">
+            renderBody={({ taskLoading, tracking }) => {
+                const isAiTextGenerating = isCreatingAiTextTask || tracking || taskLoading;
+                const isAiTextLoading = isAiTextGenerating || isAiTextCandidateFetching;
+                return (
+                    <>
+                        <div className="sancai-detail-card sancai-entry-edit-drawer-form sancai-ai-text-modal-original">
                             <div className="sancai-ai-text-modal-field">
-                                <label className="sancai-ai-text-modal-label">当前摘要</label>
+                                <label className="sancai-ai-text-modal-label">原文</label>
                                 <Input.TextArea
-                                    aria-label={`${MODAL_TITLE}当前摘要`}
-                                    value={form.summary}
+                                    aria-label={`${MODAL_TITLE}原文`}
+                                    value={form.originalText}
                                     readOnly
-                                    autoSize={resolveTextAreaAutoSize({ minRows: 10, maxRows: 16 })}
+                                    autoSize={resolveTextAreaAutoSize({ minRows: 5, maxRows: 8 })}
                                 />
                             </div>
                         </div>
-                        <div className="sancai-detail-card sancai-entry-edit-drawer-form">
-                            <div className="sancai-ai-text-modal-field">
-                                <label className="sancai-ai-text-modal-label">AI摘要</label>
-                                <Input.TextArea
-                                    aria-label={`${MODAL_TITLE}AI摘要`}
-                                    value={aiTextDraft}
-                                    placeholder={
-                                        isCreatingAiTextTask || isAiTextCandidateFetching
-                                            ? "AI 摘要生成中..."
-                                            : "暂无候选摘要，可先保留当前摘要或稍后重试"
-                                    }
-                                    disabled={
-                                        isCreatingAiTextTask ||
-                                        hasRunningAiTextTask ||
-                                        isAiTextCandidateFetching
-                                    }
-                                    autoSize={resolveTextAreaAutoSize({ minRows: 10, maxRows: 16 })}
-                                    onChange={(event) => onTextDraftChange(event.target.value)}
-                                />
+                        <div className="sancai-ai-text-modal-compare-grid">
+                            <div className="sancai-detail-card sancai-entry-edit-drawer-form">
+                                <div className="sancai-ai-text-modal-field">
+                                    <label className="sancai-ai-text-modal-label">当前摘要</label>
+                                    <Input.TextArea
+                                        aria-label={`${MODAL_TITLE}当前摘要`}
+                                        value={form.summary}
+                                        readOnly
+                                        autoSize={resolveTextAreaAutoSize({
+                                            minRows: 10,
+                                            maxRows: 16
+                                        })}
+                                    />
+                                </div>
                             </div>
-                            {isAiTextCandidateLoadError ? (
-                                <KuzhambuAlert
-                                    showIcon
-                                    type="warning"
-                                    title={`候选${TASK_LABEL}加载失败`}
-                                    description="AI 任务可能仍在执行，请稍后重新打开。"
-                                />
-                            ) : null}
+                            <div className="sancai-detail-card sancai-entry-edit-drawer-form">
+                                <div className="sancai-ai-text-modal-field">
+                                    <label className="sancai-ai-text-modal-label">AI摘要</label>
+                                    <Input.TextArea
+                                        aria-label={`${MODAL_TITLE}AI摘要`}
+                                        value={aiTextDraft}
+                                        placeholder={
+                                            isAiTextGenerating
+                                                ? "AI 摘要生成中..."
+                                                : isAiTextCandidateFetching
+                                                  ? "AI 摘要加载中..."
+                                                  : "暂无候选摘要，可先保留当前摘要或稍后重试"
+                                        }
+                                        disabled={isAiTextLoading}
+                                        autoSize={resolveTextAreaAutoSize({
+                                            minRows: 10,
+                                            maxRows: 16
+                                        })}
+                                        onChange={(event) => onTextDraftChange(event.target.value)}
+                                    />
+                                </div>
+                                {isAiTextCandidateLoadError ? (
+                                    <KuzhambuAlert
+                                        showIcon
+                                        type="warning"
+                                        title={`候选${TASK_LABEL}加载失败`}
+                                        description="AI 任务可能仍在执行，请稍后重新打开。"
+                                    />
+                                ) : null}
+                            </div>
                         </div>
-                    </div>
-                    <KuzhambuTextCompare
-                        baseline={form.summary}
-                        candidate={aiTextDraft}
-                        className="sancai-ai-text-modal-diff"
-                        emptyText="当前摘要与 AI 摘要暂无差异"
-                        testId="classics-sancai-sancai-entry-ai-summary-compare"
-                        title="摘要差异"
-                    />
-                </>
-            )}
+                        <KuzhambuTextCompare
+                            baseline={form.summary}
+                            candidate={aiTextDraft}
+                            className="sancai-ai-text-modal-diff"
+                            emptyText="当前摘要与 AI 摘要暂无差异"
+                            testId="classics-sancai-sancai-entry-ai-summary-compare"
+                            title="摘要差异"
+                        />
+                    </>
+                );
+            }}
         />
     );
 };

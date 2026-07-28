@@ -14,17 +14,6 @@ import { SancaiEntrySummaryModal } from "./sancai-entry-summary-modal";
 import "./sancai-entry-summary-text-field.css";
 
 const AI_TEXT_CANDIDATE_POLL_INTERVAL_MS = 3000;
-const RUNNING_REFINEMENT_STATUSES = new Set(["PENDING", "RUNNING"]);
-
-const sortRefinementTasksByNewest = (
-    left: AiRefinementTaskRecord,
-    right: AiRefinementTaskRecord
-) => {
-    if (left.requestedAt && right.requestedAt && left.requestedAt !== right.requestedAt) {
-        return right.requestedAt.localeCompare(left.requestedAt);
-    }
-    return right.taskId - left.taskId;
-};
 
 const selectLatestSummaryCandidate = (candidates: AiCandidateRecord[] | undefined) => {
     return [...(candidates || [])]
@@ -41,10 +30,6 @@ const selectLatestSummaryCandidate = (candidates: AiCandidateRecord[] | undefine
             }
             return right.candidateId - left.candidateId;
         })[0];
-};
-
-const isRunningRefinementTask = (task?: AiRefinementTaskRecord | null) => {
-    return Boolean(task?.status) && RUNNING_REFINEMENT_STATUSES.has(task?.status ?? "");
 };
 
 interface SancaiEntrySummaryTextFieldProps {
@@ -73,18 +58,6 @@ export const SancaiEntrySummaryTextField = ({
     const [summaryModalOpen, setSummaryModalOpen] = useState(false);
     const [summaryDraft, setSummaryDraft] = useState("");
     const [loadedSummaryCandidateId, setLoadedSummaryCandidateId] = useState<number | null>(null);
-    const latestSummaryTask = useMemo(
-        () =>
-            [...summaryTasks]
-                .filter(
-                    (task) =>
-                        aiRefinementTaskService.getNormalizedTaskCapability(task.capability) ===
-                        "summary"
-                )
-                .sort(sortRefinementTasksByNewest)[0] ?? null,
-        [summaryTasks]
-    );
-    const hasRunningSummaryTask = isRunningRefinementTask(latestSummaryTask);
     const syncSummaryTask = useCallback(
         (task: AiRefinementTaskRecord | null) => {
             if (!task || !entryId) {
@@ -127,9 +100,7 @@ export const SancaiEntrySummaryTextField = ({
         enabled: summaryModalOpen && Boolean(entryId),
         retry: false,
         refetchInterval: () => {
-            return isCreatingSummaryTask || hasRunningSummaryTask
-                ? AI_TEXT_CANDIDATE_POLL_INTERVAL_MS
-                : false;
+            return isCreatingSummaryTask ? AI_TEXT_CANDIDATE_POLL_INTERVAL_MS : false;
         }
     });
     const applySummaryCandidateMutation = useMutation({
@@ -173,11 +144,18 @@ export const SancaiEntrySummaryTextField = ({
             ) ?? null
         );
     }, [summaryCandidatesQuery.data, loadedSummaryCandidateId]);
-    const isSummaryApplyDisabled =
-        !summaryDraft.trim() ||
-        isCreatingSummaryTask ||
-        hasRunningSummaryTask ||
-        summaryCandidatesQuery.isFetching;
+    const isSummaryApplyDisabled = !summaryDraft.trim() || isCreatingSummaryTask;
+    const refetchSummaryCandidates = summaryCandidatesQuery.refetch;
+
+    const handleSummaryTaskChange = useCallback(
+        (task: AiRefinementTaskRecord | null) => {
+            syncSummaryTask(task);
+            if (task?.status === "SUCCEEDED" || task?.status === "PARTIAL") {
+                void refetchSummaryCandidates();
+            }
+        },
+        [refetchSummaryCandidates, syncSummaryTask]
+    );
 
     useEffect(() => {
         if (!summaryModalOpen || !latestSummaryCandidate) {
@@ -192,21 +170,6 @@ export const SancaiEntrySummaryTextField = ({
         }, 0);
         return () => window.clearTimeout(timer);
     }, [latestSummaryCandidate, loadedSummaryCandidateId, summaryModalOpen]);
-
-    useEffect(() => {
-        if (!summaryModalOpen || !latestSummaryTask?.taskId) {
-            return;
-        }
-        if (latestSummaryTask.status !== "SUCCEEDED" && latestSummaryTask.status !== "PARTIAL") {
-            return;
-        }
-        void summaryCandidatesQuery.refetch();
-    }, [
-        latestSummaryTask?.status,
-        latestSummaryTask?.taskId,
-        summaryCandidatesQuery,
-        summaryModalOpen
-    ]);
 
     const openSummaryModal = () => {
         setSummaryDraft(value || "");
@@ -280,19 +243,18 @@ export const SancaiEntrySummaryTextField = ({
             <SancaiEntrySummaryModal
                 aiTextDraft={summaryDraft}
                 form={formValues}
-                hasRunningAiTextTask={hasRunningSummaryTask}
                 isAiTextApplyDisabled={isSummaryApplyDisabled}
                 isAiTextCandidateFetching={summaryCandidatesQuery.isFetching}
                 isAiTextCandidateLoadError={summaryCandidatesQuery.isError}
                 isApplyingAiText={applySummaryCandidateMutation.isPending}
                 isCreatingAiTextTask={isCreatingSummaryTask}
-                latestAiTextTask={latestSummaryTask}
                 open={summaryModalOpen}
+                summaryTasks={summaryTasks}
                 onApply={applySummaryDraft}
                 onCancel={closeSummaryModal}
                 onFetchTask={(taskId) => aiRefinementTaskService.getTask({ taskId })}
                 onRequestTask={requestSummaryTask}
-                onTaskChange={syncSummaryTask}
+                onTaskChange={handleSummaryTaskChange}
                 onTextDraftChange={setSummaryDraft}
             />
         </div>

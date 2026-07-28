@@ -14,17 +14,6 @@ import { SancaiEntryTranslationModal } from "./sancai-entry-translation-modal";
 import "./sancai-entry-translation-text-field.css";
 
 const AI_TEXT_CANDIDATE_POLL_INTERVAL_MS = 3000;
-const RUNNING_REFINEMENT_STATUSES = new Set(["PENDING", "RUNNING"]);
-
-const sortRefinementTasksByNewest = (
-    left: AiRefinementTaskRecord,
-    right: AiRefinementTaskRecord
-) => {
-    if (left.requestedAt && right.requestedAt && left.requestedAt !== right.requestedAt) {
-        return right.requestedAt.localeCompare(left.requestedAt);
-    }
-    return right.taskId - left.taskId;
-};
 
 const selectLatestTranslationCandidate = (candidates: AiCandidateRecord[] | undefined) => {
     return [...(candidates || [])]
@@ -41,10 +30,6 @@ const selectLatestTranslationCandidate = (candidates: AiCandidateRecord[] | unde
             }
             return right.candidateId - left.candidateId;
         })[0];
-};
-
-const isRunningRefinementTask = (task?: AiRefinementTaskRecord | null) => {
-    return Boolean(task?.status) && RUNNING_REFINEMENT_STATUSES.has(task?.status ?? "");
 };
 
 interface SancaiEntryTranslationTextFieldProps {
@@ -75,18 +60,6 @@ export const SancaiEntryTranslationTextField = ({
     const [loadedTranslationCandidateId, setLoadedTranslationCandidateId] = useState<number | null>(
         null
     );
-    const latestTranslationTask = useMemo(
-        () =>
-            [...translationTasks]
-                .filter(
-                    (task) =>
-                        aiRefinementTaskService.getNormalizedTaskCapability(task.capability) ===
-                        "translate"
-                )
-                .sort(sortRefinementTasksByNewest)[0] ?? null,
-        [translationTasks]
-    );
-    const hasRunningTranslationTask = isRunningRefinementTask(latestTranslationTask);
     const syncTranslationTask = useCallback(
         (task: AiRefinementTaskRecord | null) => {
             if (!task || !entryId) {
@@ -129,9 +102,7 @@ export const SancaiEntryTranslationTextField = ({
         enabled: translationModalOpen && Boolean(entryId),
         retry: false,
         refetchInterval: () => {
-            return isCreatingTranslationTask || hasRunningTranslationTask
-                ? AI_TEXT_CANDIDATE_POLL_INTERVAL_MS
-                : false;
+            return isCreatingTranslationTask ? AI_TEXT_CANDIDATE_POLL_INTERVAL_MS : false;
         }
     });
     const applyTranslationCandidateMutation = useMutation({
@@ -175,11 +146,18 @@ export const SancaiEntryTranslationTextField = ({
             ) ?? null
         );
     }, [translationCandidatesQuery.data, loadedTranslationCandidateId]);
-    const isTranslationApplyDisabled =
-        !translationDraft.trim() ||
-        isCreatingTranslationTask ||
-        hasRunningTranslationTask ||
-        translationCandidatesQuery.isFetching;
+    const isTranslationApplyDisabled = !translationDraft.trim() || isCreatingTranslationTask;
+    const refetchTranslationCandidates = translationCandidatesQuery.refetch;
+
+    const handleTranslationTaskChange = useCallback(
+        (task: AiRefinementTaskRecord | null) => {
+            syncTranslationTask(task);
+            if (task?.status === "SUCCEEDED" || task?.status === "PARTIAL") {
+                void refetchTranslationCandidates();
+            }
+        },
+        [refetchTranslationCandidates, syncTranslationTask]
+    );
 
     useEffect(() => {
         if (!translationModalOpen || !latestTranslationCandidate) {
@@ -194,24 +172,6 @@ export const SancaiEntryTranslationTextField = ({
         }, 0);
         return () => window.clearTimeout(timer);
     }, [latestTranslationCandidate, loadedTranslationCandidateId, translationModalOpen]);
-
-    useEffect(() => {
-        if (!translationModalOpen || !latestTranslationTask?.taskId) {
-            return;
-        }
-        if (
-            latestTranslationTask.status !== "SUCCEEDED" &&
-            latestTranslationTask.status !== "PARTIAL"
-        ) {
-            return;
-        }
-        void translationCandidatesQuery.refetch();
-    }, [
-        latestTranslationTask?.status,
-        latestTranslationTask?.taskId,
-        translationCandidatesQuery,
-        translationModalOpen
-    ]);
 
     const openTranslationModal = () => {
         setTranslationDraft(value || "");
@@ -285,20 +245,19 @@ export const SancaiEntryTranslationTextField = ({
             <SancaiEntryTranslationModal
                 aiTextDraft={translationDraft}
                 form={formValues}
-                hasRunningAiTextTask={hasRunningTranslationTask}
                 isAiTextApplyDisabled={isTranslationApplyDisabled}
                 isAiTextCandidateFetching={translationCandidatesQuery.isFetching}
                 isAiTextCandidateLoadError={translationCandidatesQuery.isError}
                 isApplyingAiText={applyTranslationCandidateMutation.isPending}
                 isCreatingAiTextTask={isCreatingTranslationTask}
-                latestAiTextTask={latestTranslationTask}
                 open={translationModalOpen}
                 onApply={applyTranslationDraft}
                 onCancel={closeTranslationModal}
                 onFetchTask={(taskId) => aiRefinementTaskService.getTask({ taskId })}
                 onRequestTask={requestTranslationTask}
-                onTaskChange={syncTranslationTask}
+                onTaskChange={handleTranslationTaskChange}
                 onTextDraftChange={setTranslationDraft}
+                translationTasks={translationTasks}
             />
         </div>
     );
