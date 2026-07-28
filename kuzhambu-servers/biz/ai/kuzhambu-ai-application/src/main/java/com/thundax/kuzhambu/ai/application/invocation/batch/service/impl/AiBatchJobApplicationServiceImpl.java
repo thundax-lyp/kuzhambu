@@ -108,6 +108,9 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
     @Transactional(rollbackFor = Exception.class)
     public AiBatchJobResult cancel(Long batchId) {
         AiBatchJob job = getRequired(batchId);
+        if (isTerminal(job.getStatus())) {
+            return AiBatchJobResult.from(job);
+        }
         int finishedCount = job.getSuccessCount() + job.getFailedCount();
         job.setCancelledCount(Math.max(0, job.getTotalCount() - finishedCount));
         job.cancel(Instant.now());
@@ -157,6 +160,13 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private boolean isTerminal(AiBatchJobStatus status) {
+        return AiBatchJobStatus.SUCCEEDED == status
+                || AiBatchJobStatus.FAILED == status
+                || AiBatchJobStatus.PARTIAL == status
+                || AiBatchJobStatus.CANCELLED == status;
     }
 
     private AiBusinessCapability parseCapability(String capability) {

@@ -112,6 +112,25 @@ public class AiBatchJobApplicationServiceImplTest {
     }
 
     @Test
+    public void cancelShouldKeepSucceededJobUnchanged() {
+        AiBatchJob job = new AiBatchJob();
+        job.setId(AiBatchJobIdCodec.toDomain(1L));
+        job.setScope("classics");
+        job.setCapability(AiBusinessCapability.CLASSICS_SUMMARY);
+        job.setContentType("SANCAI_ENTRY");
+        job.setStatus(AiBatchJobStatus.SUCCEEDED);
+        job.setTotalCount(1);
+        job.setSuccessCount(1);
+        AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(new FakeRepository(job));
+
+        AiBatchJobResult result = service.cancel(1L);
+
+        assertEquals("SUCCEEDED", result.getStatus());
+        assertEquals(1, result.getSuccessCount());
+        assertEquals(0, result.getCancelledCount());
+    }
+
+    @Test
     public void pageShouldFilterByBatchContentIdWithoutInvocationLog() {
         AiBatchJob job = new AiBatchJob();
         job.setId(AiBatchJobIdCodec.toDomain(1L));
