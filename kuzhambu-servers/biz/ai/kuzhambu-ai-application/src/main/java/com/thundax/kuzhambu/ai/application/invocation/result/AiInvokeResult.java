@@ -2,10 +2,15 @@ package com.thundax.kuzhambu.ai.application.invocation.result;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiPromptVersionIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,12 +23,12 @@ import lombok.Setter;
 @AllArgsConstructor
 public class AiInvokeResult {
 
-    private Long callId;
-    private Long candidateId;
-    private String requestId;
-    private String traceId;
-    private String status;
-    private String capability;
+    private AiCallId callId;
+    private AiCandidateId candidateId;
+    private RequestId requestId;
+    private TraceId traceId;
+    private AiInvocationStatus status;
+    private AiBusinessCapability capability;
     private String resultFormat;
     private String resultPayload;
     private String artifactReferenceJson;
@@ -36,7 +41,7 @@ public class AiInvokeResult {
     private boolean fallbackUsed;
 
     public boolean isSucceeded() {
-        return "SUCCEEDED".equals(status);
+        return AiInvocationStatus.SUCCEEDED == status;
     }
 
     public AiCandidate toCandidate(AiInvokeCommand command, AiCallId effectiveCallId) {
@@ -59,11 +64,11 @@ public class AiInvokeResult {
     }
 
     public static AiInvokeResult failed(
-            String requestId, String traceId, String errorType, String errorMessage, String failureStage) {
+            RequestId requestId, TraceId traceId, String errorType, String errorMessage, String failureStage) {
         AiInvokeResult result = new AiInvokeResult();
         result.setRequestId(requestId);
         result.setTraceId(traceId);
-        result.setStatus("FAILED");
+        result.setStatus(AiInvocationStatus.FAILED);
         result.setErrorType(errorType);
         result.setErrorMessage(errorMessage);
         result.setFailureStage(failureStage);

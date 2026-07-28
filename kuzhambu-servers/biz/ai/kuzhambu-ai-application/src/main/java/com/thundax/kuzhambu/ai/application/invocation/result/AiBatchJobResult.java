@@ -1,7 +1,11 @@
 package com.thundax.kuzhambu.ai.application.invocation.result;
 
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiBatchJob;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiBatchJobStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,12 +14,11 @@ import lombok.Getter;
 @AllArgsConstructor
 public class AiBatchJobResult {
 
-    private final Long batchId;
+    private final AiBatchJobId batchId;
     private final String scope;
-    private final String capability;
-    private final String contentType;
-    private final Long contentId;
-    private final String status;
+    private final AiBusinessCapability capability;
+    private final AiContentRef contentRef;
+    private final AiBatchJobStatus status;
     private final int totalCount;
     private final int successCount;
     private final int failedCount;
@@ -30,12 +33,11 @@ public class AiBatchJobResult {
             return null;
         }
         return new AiBatchJobResult(
-                AiBatchJobIdCodec.toValue(job.getId()),
+                job.getId(),
                 job.getScope(),
-                job.getCapability() == null ? null : job.getCapability().value(),
-                job.getContentType(),
-                job.getContentId(),
-                job.getStatus() == null ? null : job.getStatus().name(),
+                job.getCapability(),
+                AiContentRefCodec.toDomain(job.getContentType(), job.getContentId()),
+                job.getStatus(),
                 job.getTotalCount(),
                 job.getSuccessCount(),
                 job.getFailedCount(),

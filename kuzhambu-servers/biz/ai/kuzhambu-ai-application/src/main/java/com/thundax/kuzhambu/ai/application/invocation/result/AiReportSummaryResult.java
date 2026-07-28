@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.ai.application.invocation.result;
 
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -29,7 +30,7 @@ public class AiReportSummaryResult {
     @AllArgsConstructor
     public static class TopCapabilityResult {
 
-        private String capability;
+        private AiBusinessCapability capability;
         private Long invocationCount;
     }
 }
