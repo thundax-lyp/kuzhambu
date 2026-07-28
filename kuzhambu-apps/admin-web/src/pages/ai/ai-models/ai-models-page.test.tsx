@@ -86,7 +86,7 @@ describe("AiModelsPage", () => {
         expect(screen.getByText("维护 AI 模型、供应商、能力和调用参数。")).toBeInTheDocument();
         expect(await screen.findByText("GPT 4o")).toBeInTheDocument();
         expect(screen.getByText("gpt-4o")).toBeInTheDocument();
-        expect(screen.getByText("OpenAI 兼容")).toBeInTheDocument();
+        expect(screen.getByText("OpenAI 兼容（旧）")).toBeInTheDocument();
         expect(screen.getByText("文本生成")).toBeInTheDocument();
         expect(screen.getByText("图像理解")).toBeInTheDocument();
         expect(screen.getByRole("columnheader", { name: "模型名称" })).toBeInTheDocument();
