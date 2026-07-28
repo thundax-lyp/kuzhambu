@@ -158,7 +158,7 @@ const resolvePhase = <TResult,>({
     if (creating) {
         return "creating";
     }
-    if (taskPhase === "result_ready" && hasFetchResult && !result) {
+    if (taskPhase === "result_ready" && hasFetchResult && !result && resultFetching) {
         return "waiting_result";
     }
     if (taskFetching || resultFetching) {
@@ -248,12 +248,10 @@ export const KuzhambuSyncTaskModal = <TTask, TResult>({
             if (latestResult) {
                 return false;
             }
-            if (
-                creating ||
-                taskPhase === "tracking" ||
-                taskPhase === "waiting_result" ||
-                taskPhase === "result_ready"
-            ) {
+            if (creating || taskPhase === "tracking" || taskPhase === "waiting_result") {
+                return pollIntervalMs;
+            }
+            if (taskPhase === "result_ready" && latestResult === undefined) {
                 return pollIntervalMs;
             }
             return false;

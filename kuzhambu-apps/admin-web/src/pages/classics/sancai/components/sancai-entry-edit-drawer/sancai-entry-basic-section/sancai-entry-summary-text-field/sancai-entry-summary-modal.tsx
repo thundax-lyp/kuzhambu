@@ -153,6 +153,7 @@ export const SancaiEntrySummaryModal = ({
                 isAiTextApplyDisabled ||
                 state.tracking ||
                 state.taskLoading ||
+                state.resultLoading ||
                 isAiTextCandidateFetching
             }
             applyTestId="classics-sancai-sancai-entry-apply-ai-text-button"
