@@ -50,6 +50,7 @@ export const WangqiTimeline = ({
             <KuzhambuButton
                 testId="classics-wangqi-wangqi-timeline-action-button"
                 icon={<ClockCircleOutlined />}
+                ariaLabel="打开王圻文档时间线"
                 onClick={() => setOpen(true)}
             >
                 时间线
@@ -57,10 +58,11 @@ export const WangqiTimeline = ({
             <KuzhambuDrawer
                 testId="classics-wangqi-wangqi-timeline-drawer"
                 aria-label="王圻文档时间线"
+                className="wangqi-timeline-drawer"
                 destroyOnHidden
                 loading={loading}
                 open={open}
-                size="middle"
+                size="large"
                 title="时间线"
                 onClose={() => setOpen(false)}
                 footerActions={[
@@ -76,9 +78,15 @@ export const WangqiTimeline = ({
                     <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无王圻时间线" />
                 ) : (
                     <Timeline
+                        mode="alternate"
+                        className="wangqi-timeline"
                         items={dataSource.map((record) => ({
                             key: record.id,
-                            title: readTimelineTitle(record),
+                            title: (
+                                <span className="wangqi-timeline-item-date">
+                                    {readTimelineTitle(record)}
+                                </span>
+                            ),
                             content: (
                                 <KuzhambuButton
                                     testId="classics-wangqi-wangqi-timeline-action-button-2"

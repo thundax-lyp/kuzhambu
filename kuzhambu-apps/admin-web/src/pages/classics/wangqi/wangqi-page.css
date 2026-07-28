@@ -1,10 +1,19 @@
 .wangqi-page {
     --kuzhambu-page-overflow: visible;
     --kuzhambu-page-padding: 20px 0 0;
+    min-width: 0;
+}
+
+.wangqi-page,
+.wangqi-timeline-drawer {
     --wangqi-accent-color: #7c5d3b;
+    --wangqi-ink-color: #26201a;
+    --wangqi-cinnabar-color: #9f2f2d;
+    --wangqi-gold-color: #c49345;
+    --wangqi-jade-color: #1f7464;
     --wangqi-panel-border: rgba(124, 93, 59, 0.18);
     --wangqi-panel-bg: rgba(124, 93, 59, 0.06);
-    min-width: 0;
+    --wangqi-paper-bg: linear-gradient(135deg, #fffaf0 0%, #f8efe1 48%, #eef4ef 100%);
 }
 
 .wangqi-page-actions {
@@ -100,30 +109,153 @@
     margin-top: 18px;
 }
 
+.wangqi-timeline-drawer .ant-drawer-body {
+    padding-top: 12px;
+}
+
+.wangqi-timeline {
+    padding: 12px 8px 4px;
+}
+
+.wangqi-timeline .ant-timeline-item-rail {
+    background-color: color-mix(
+        in srgb,
+        var(--wangqi-cinnabar-color) 58%,
+        var(--wangqi-gold-color)
+    ) !important;
+}
+
+.wangqi-timeline .ant-timeline-item-icon {
+    background: radial-gradient(
+        circle,
+        var(--wangqi-gold-color) 0 36%,
+        #f7e2a6 38% 58%,
+        var(--wangqi-cinnabar-color) 60%
+    );
+    border-color: var(--wangqi-cinnabar-color);
+    box-shadow:
+        0 0 0 3px rgba(196, 147, 69, 0.18),
+        0 0 0 7px rgba(159, 47, 45, 0.08);
+}
+
+.wangqi-timeline .ant-timeline-item {
+    padding-bottom: 22px;
+}
+
+.wangqi-timeline .ant-timeline-item-header {
+    width: calc(50% - 26px) !important;
+}
+
+.wangqi-timeline .ant-timeline-item-content {
+    width: calc(50% - 26px) !important;
+}
+
+.wangqi-timeline-item-date {
+    display: inline-flex;
+    max-width: 100%;
+    padding: 3px 8px;
+    overflow: hidden;
+    color: var(--wangqi-accent-color);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.4;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    background: linear-gradient(135deg, rgba(159, 47, 45, 0.1), rgba(196, 147, 69, 0.16));
+    border: 1px solid rgba(159, 47, 45, 0.18);
+    border-radius: 999px;
+}
+
 .wangqi-timeline-item {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     justify-items: start;
     width: 100%;
     height: auto;
-    padding: 10px;
+    min-height: 88px;
+    padding: 12px 14px;
     text-align: left;
     white-space: normal;
-    border: 1px solid rgba(124, 93, 59, 0.12);
+    background: var(--wangqi-paper-bg);
+    border: 1px solid rgba(196, 147, 69, 0.34);
     border-radius: 8px;
+    box-shadow:
+        0 10px 24px rgba(38, 32, 26, 0.09),
+        inset 3px 0 0 var(--wangqi-cinnabar-color);
+    transition:
+        border-color 0.18s ease,
+        box-shadow 0.18s ease,
+        transform 0.18s ease;
+}
+
+.wangqi-timeline-item:hover {
+    border-color: rgba(159, 47, 45, 0.42) !important;
+    box-shadow:
+        0 14px 30px rgba(38, 32, 26, 0.14),
+        inset 3px 0 0 var(--wangqi-gold-color);
+    transform: translateY(-1px);
 }
 
 .wangqi-timeline-item-title {
-    color: var(--wangqi-accent-color);
+    max-width: 100%;
+    overflow: hidden;
+    color: var(--wangqi-ink-color);
     font-weight: 700;
+    line-height: 1.45;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .wangqi-timeline-item-summary {
     max-width: 100%;
+    color: color-mix(in srgb, var(--wangqi-jade-color) 52%, var(--wangqi-ink-color));
+    line-height: 1.65;
+    white-space: normal;
 }
 
-html[data-theme="dark"] .wangqi-page {
+html[data-theme="dark"] .wangqi-timeline-item {
+    background: linear-gradient(135deg, rgba(36, 31, 28, 0.96), rgba(28, 41, 37, 0.92));
+    border-color: rgba(241, 194, 125, 0.28);
+    box-shadow:
+        0 10px 24px rgba(0, 0, 0, 0.3),
+        inset 3px 0 0 var(--wangqi-cinnabar-color);
+}
+
+html[data-theme="dark"] .wangqi-page,
+html[data-theme="dark"] .wangqi-timeline-drawer {
     --wangqi-accent-color: #f1c27d;
+    --wangqi-ink-color: #f8ead8;
+    --wangqi-cinnabar-color: #d05b52;
+    --wangqi-gold-color: #f1c27d;
+    --wangqi-jade-color: #7fd0be;
     --wangqi-panel-border: rgba(205, 167, 112, 0.24);
     --wangqi-panel-bg: rgba(205, 167, 112, 0.1);
+    --wangqi-paper-bg: linear-gradient(135deg, rgba(39, 31, 24, 0.96), rgba(31, 45, 40, 0.92));
+}
+
+html[data-theme="dark"] .wangqi-timeline-item-summary {
+    color: rgba(217, 239, 230, 0.74);
+}
+
+@media (max-width: 760px) {
+    .wangqi-timeline {
+        padding-right: 0;
+        padding-left: 0;
+    }
+
+    .wangqi-timeline .ant-timeline-item {
+        padding-bottom: 16px;
+    }
+
+    .wangqi-timeline .ant-timeline-item-header {
+        width: calc(100% - 34px) !important;
+        padding-inline-start: 0 !important;
+        text-align: left !important;
+    }
+
+    .wangqi-timeline .ant-timeline-item-content {
+        width: calc(100% - 34px) !important;
+        margin-inline-start: 34px !important;
+        text-align: left !important;
+    }
 }
