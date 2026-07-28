@@ -1,5 +1,7 @@
 package com.thundax.kuzhambu.ai.application.refinement.result;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.ai.application.invocation.batch.result.AiBatchJobResult;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
@@ -16,6 +18,7 @@ import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId;
 import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
 import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import java.time.Instant;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -26,6 +29,8 @@ public class AiRefinementTaskResult {
     private static final String CONTENT_TYPE_SANCAI_ENTRY = "SANCAI_ENTRY";
     private static final String CAPABILITY_IMAGE_ANALYSIS = "classics_image_describe";
     private static final String CAPABILITY_IMAGE_GEN = "classics_image_generate";
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final TypeReference<Map<String, String>> FAILURE_SUMMARY_TYPE = new TypeReference<>() {};
 
     private final Long taskId;
     private final String scope;
@@ -62,6 +67,7 @@ public class AiRefinementTaskResult {
         if (job == null) {
             return null;
         }
+        FailureSummary failureSummary = FailureSummary.from(job.getFailureSummaryJson());
         return new AiRefinementTaskResult(
                 job.getBatchId(),
                 job.getScope(),
@@ -80,9 +86,9 @@ public class AiRefinementTaskResult {
                 AiCandidateIdCodec.toValue(candidate == null ? null : candidate.getId()),
                 resultFormat(invocationLog, candidate),
                 resultPayload(invocationLog, candidate),
-                failureStage(invocationLog, candidate),
-                errorType(invocationLog, candidate),
-                errorMessage(job, invocationLog, candidate),
+                failureStage(invocationLog, candidate, failureSummary),
+                errorType(invocationLog, candidate, failureSummary),
+                errorMessage(job, invocationLog, candidate, failureSummary),
                 isStreamEnabled(job),
                 job.getRequestedAt(),
                 invocationLog == null ? null : invocationLog.getRequestedAt(),
@@ -162,27 +168,67 @@ public class AiRefinementTaskResult {
         return invocationLog == null ? null : invocationLog.getResultPayload();
     }
 
-    private static String failureStage(AiInvocationLog invocationLog, AiCandidate candidate) {
+    private static String failureStage(
+            AiInvocationLog invocationLog, AiCandidate candidate, FailureSummary failureSummary) {
         if (candidate != null && candidate.getFailureStage() != null) {
             return candidate.getFailureStage();
         }
-        return invocationLog == null ? null : invocationLog.getFailureStage();
+        if (invocationLog != null && invocationLog.getFailureStage() != null) {
+            return invocationLog.getFailureStage();
+        }
+        return failureSummary.failureStage;
     }
 
-    private static String errorType(AiInvocationLog invocationLog, AiCandidate candidate) {
+    private static String errorType(
+            AiInvocationLog invocationLog, AiCandidate candidate, FailureSummary failureSummary) {
         if (candidate != null && candidate.getErrorType() != null) {
             return candidate.getErrorType();
         }
-        return invocationLog == null ? null : invocationLog.getErrorType();
+        if (invocationLog != null && invocationLog.getErrorType() != null) {
+            return invocationLog.getErrorType();
+        }
+        return failureSummary.errorType;
     }
 
-    private static String errorMessage(AiBatchJobResult job, AiInvocationLog invocationLog, AiCandidate candidate) {
+    private static String errorMessage(
+            AiBatchJobResult job, AiInvocationLog invocationLog, AiCandidate candidate, FailureSummary failureSummary) {
         if (candidate != null && candidate.getErrorMessage() != null) {
             return candidate.getErrorMessage();
         }
         if (invocationLog != null && invocationLog.getErrorMessage() != null) {
             return invocationLog.getErrorMessage();
         }
-        return job.getFailureSummaryJson();
+        return failureSummary.errorMessage == null ? job.getFailureSummaryJson() : failureSummary.errorMessage;
+    }
+
+    private static String blankToNull(String value) {
+        return value == null || value.trim().isEmpty() ? null : value;
+    }
+
+    private static final class FailureSummary {
+        private final String failureStage;
+        private final String errorType;
+        private final String errorMessage;
+
+        private FailureSummary(String failureStage, String errorType, String errorMessage) {
+            this.failureStage = failureStage;
+            this.errorType = errorType;
+            this.errorMessage = errorMessage;
+        }
+
+        private static FailureSummary from(String failureSummaryJson) {
+            if (blankToNull(failureSummaryJson) == null) {
+                return new FailureSummary(null, null, null);
+            }
+            try {
+                Map<String, String> fields = OBJECT_MAPPER.readValue(failureSummaryJson, FAILURE_SUMMARY_TYPE);
+                return new FailureSummary(
+                        blankToNull(fields.get("failureStage")),
+                        blankToNull(fields.get("errorType")),
+                        blankToNull(fields.get("errorMessage")));
+            } catch (Exception exception) {
+                return new FailureSummary(null, null, null);
+            }
+        }
     }
 }

@@ -169,6 +169,71 @@ class AiRefinementTaskApplicationServiceImplTest {
     }
 
     @Test
+    void addTaskShouldPreservePartialResultStatus() {
+        RecordingBatchJobService batchJobService = new RecordingBatchJobService();
+        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
+                101L,
+                201L,
+                "PARTIAL",
+                AiBusinessCapability.CLASSICS_IMAGE_GENERATE.value(),
+                "WORKER_RESULT",
+                "TEXT",
+                "partial",
+                "MODEL_SEMANTIC_FAILURE",
+                "partial output"));
+        AiRefinementTaskApplicationServiceImpl service =
+                new AiRefinementTaskApplicationServiceImpl(batchJobService, refinementService, null, DIRECT_EXECUTOR);
+
+        AiRefinementTaskResult accepted =
+                service.addTask(command(AiBusinessCapability.CLASSICS_IMAGE_GENERATE.value()));
+        AiBatchJobResult completed = batchJobService.get(accepted.getTaskId());
+
+        assertEquals("PARTIAL", completed.getStatus());
+        assertEquals(1, completed.getSuccessCount());
+        assertTrue(completed.getFailureSummaryJson().contains("MODEL_SEMANTIC_FAILURE"));
+    }
+
+    @Test
+    void taskResultShouldParseBatchFailureSummaryWhenInvocationAndCandidateAreMissing() {
+        AiBatchJobResult job = new AiBatchJobResult(
+                1001L,
+                "classics",
+                "classics_summary",
+                "SANCAI_ENTRY",
+                10L,
+                "FAILED",
+                1,
+                0,
+                1,
+                0,
+                "{\"failureStage\":\"WORKER_REQUEST\",\"errorType\":\"MODEL_CONFIG_INVALID\",\"errorMessage\":\"prompt invalid\"}",
+                Instant.parse("2026-01-01T00:00:00Z"),
+                null,
+                Instant.parse("2026-01-01T00:01:00Z"));
+
+        AiRefinementTaskResult result = AiRefinementTaskResult.fromBatchJob(job);
+
+        assertEquals("WORKER_REQUEST", result.getFailureStage());
+        assertEquals("MODEL_CONFIG_INVALID", result.getErrorType());
+        assertEquals("prompt invalid", result.getErrorMessage());
+    }
+
+    @Test
+    void expireOrphanedRunningTasksShouldFailStaleRefinementBatches() {
+        RecordingBatchJobService batchJobService = new RecordingBatchJobService();
+        Long batchId = batchJobService.create(
+                new AiBatchJobCreateCommand("classics", "classics_summary", "SANCAI_ENTRY", 10L, 1, null));
+        AiRefinementTaskApplicationServiceImpl service = new AiRefinementTaskApplicationServiceImpl(
+                batchJobService, new StubRefinementApplicationService(null), null, DIRECT_EXECUTOR);
+
+        service.expireOrphanedRunningTasks();
+
+        AiBatchJobResult expired = batchJobService.get(batchId);
+        assertEquals("FAILED", expired.getStatus());
+        assertTrue(expired.getFailureSummaryJson().contains("TASK_ORPHANED"));
+    }
+
+    @Test
     void pageTasksShouldLoadInvocationAndCandidateByBatchIdsInBulk() {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
         Long firstBatchId = batchJobService.create(
@@ -291,11 +356,60 @@ class AiRefinementTaskApplicationServiceImplTest {
         }
 
         @Override
+        public AiBatchJobResult recordSuccessIfRunning(Long batchId) {
+            AiBatchJobResult job = get(batchId);
+            if (!"RUNNING".equals(job.getStatus())) {
+                return job;
+            }
+            return recordSuccess(batchId);
+        }
+
+        @Override
         public AiBatchJobResult recordFailure(Long batchId, String failureSummaryJson) {
             AiBatchJobResult job = get(batchId);
             AiBatchJobResult updated = copy(job, "FAILED", 0, 1, failureSummaryJson);
             replace(updated);
             return updated;
+        }
+
+        @Override
+        public AiBatchJobResult recordFailureIfRunning(Long batchId, String failureSummaryJson) {
+            AiBatchJobResult job = get(batchId);
+            if (!"RUNNING".equals(job.getStatus())) {
+                return job;
+            }
+            return recordFailure(batchId, failureSummaryJson);
+        }
+
+        @Override
+        public AiBatchJobResult recordPartialIfRunning(Long batchId, String failureSummaryJson) {
+            AiBatchJobResult job = get(batchId);
+            if (!"RUNNING".equals(job.getStatus())) {
+                return job;
+            }
+            AiBatchJobResult updated = copy(job, "PARTIAL", 1, 0, failureSummaryJson);
+            replace(updated);
+            return updated;
+        }
+
+        @Override
+        public int expireRunning(
+                String scope,
+                List<String> capabilities,
+                Instant requestedBefore,
+                String failureSummaryJson,
+                int limit) {
+            int expiredCount = 0;
+            for (AiBatchJobResult job : List.copyOf(jobs)) {
+                if ("RUNNING".equals(job.getStatus())
+                        && scope.equals(job.getScope())
+                        && capabilities.contains(job.getCapability())
+                        && job.getRequestedAt().isBefore(requestedBefore)) {
+                    recordFailure(job.getBatchId(), failureSummaryJson);
+                    expiredCount++;
+                }
+            }
+            return expiredCount;
         }
 
         @Override

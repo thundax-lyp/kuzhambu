@@ -192,8 +192,33 @@ class AiRefinementTaskControllerTest {
         }
 
         @Override
+        public AiBatchJobResult recordSuccessIfRunning(Long batchId) {
+            return null;
+        }
+
+        @Override
         public AiBatchJobResult recordFailure(Long batchId, String failureSummaryJson) {
             return null;
+        }
+
+        @Override
+        public AiBatchJobResult recordFailureIfRunning(Long batchId, String failureSummaryJson) {
+            return null;
+        }
+
+        @Override
+        public AiBatchJobResult recordPartialIfRunning(Long batchId, String failureSummaryJson) {
+            return null;
+        }
+
+        @Override
+        public int expireRunning(
+                String scope,
+                List<String> capabilities,
+                Instant requestedBefore,
+                String failureSummaryJson,
+                int limit) {
+            return 0;
         }
 
         @Override

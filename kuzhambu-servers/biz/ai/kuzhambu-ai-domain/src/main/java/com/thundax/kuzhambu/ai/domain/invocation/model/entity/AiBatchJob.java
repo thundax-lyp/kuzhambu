@@ -40,6 +40,14 @@ public class AiBatchJob {
         completeIfFinished();
     }
 
+    public void recordPartial() {
+        successCount++;
+        if (successCount + failedCount + cancelledCount >= totalCount) {
+            status = AiBatchJobStatus.PARTIAL;
+            completedAt = Instant.now();
+        }
+    }
+
     public void cancel(Instant cancelledTime) {
         status = AiBatchJobStatus.CANCELLED;
         cancelledAt = cancelledTime;

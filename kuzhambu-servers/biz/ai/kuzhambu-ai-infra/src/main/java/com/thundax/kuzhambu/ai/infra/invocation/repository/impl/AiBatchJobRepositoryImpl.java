@@ -2,8 +2,10 @@ package com.thundax.kuzhambu.ai.infra.invocation.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiBatchJob;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiBatchJobStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.query.AiBatchJobQuery;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiBatchJobRepository;
@@ -48,17 +50,56 @@ public class AiBatchJobRepositoryImpl implements AiBatchJobRepository {
     @Override
     public int update(AiBatchJob batchJob) {
         AiBatchJobDO dataObject = AiBatchJobPersistenceAssembler.toObject(batchJob);
-        return aiBatchJobMapper.update(
-                null,
-                new LambdaUpdateWrapper<AiBatchJobDO>()
-                        .eq(AiBatchJobDO::getId, dataObject.getId())
-                        .set(AiBatchJobDO::getStatus, dataObject.getStatus())
-                        .set(AiBatchJobDO::getSuccessCount, dataObject.getSuccessCount())
-                        .set(AiBatchJobDO::getFailedCount, dataObject.getFailedCount())
-                        .set(AiBatchJobDO::getCancelledCount, dataObject.getCancelledCount())
-                        .set(AiBatchJobDO::getFailureSummaryJson, dataObject.getFailureSummaryJson())
-                        .set(AiBatchJobDO::getCancelledAt, dataObject.getCancelledAt())
-                        .set(AiBatchJobDO::getCompletedAt, dataObject.getCompletedAt()));
+        LambdaUpdateWrapper<AiBatchJobDO> updateWrapper =
+                new LambdaUpdateWrapper<AiBatchJobDO>().eq(AiBatchJobDO::getId, dataObject.getId());
+        fillUpdateWrapper(updateWrapper, dataObject);
+        return aiBatchJobMapper.update(null, updateWrapper);
+    }
+
+    @Override
+    public int updateIfStatus(AiBatchJob batchJob, AiBatchJobStatus expectedStatus) {
+        AiBatchJobDO dataObject = AiBatchJobPersistenceAssembler.toObject(batchJob);
+        LambdaUpdateWrapper<AiBatchJobDO> updateWrapper = new LambdaUpdateWrapper<AiBatchJobDO>()
+                .eq(AiBatchJobDO::getId, dataObject.getId())
+                .eq(AiBatchJobDO::getStatus, expectedStatus.name());
+        fillUpdateWrapper(updateWrapper, dataObject);
+        return aiBatchJobMapper.update(null, updateWrapper);
+    }
+
+    @Override
+    public List<AiBatchJob> listRunningJobsRequestedBefore(
+            String scope, List<AiBusinessCapability> capabilities, Instant requestedBefore, int limit) {
+        LambdaQueryWrapper<AiBatchJobDO> queryWrapper = new LambdaQueryWrapper<AiBatchJobDO>()
+                .eq(AiBatchJobDO::getStatus, AiBatchJobStatus.RUNNING.name())
+                .lt(AiBatchJobDO::getRequestedAt, requestedBefore)
+                .orderByAsc(AiBatchJobDO::getRequestedAt)
+                .last("limit " + Math.max(1, limit));
+        if (!isBlank(scope)) {
+            queryWrapper.eq(AiBatchJobDO::getScope, scope);
+        }
+        if (capabilities != null && !capabilities.isEmpty()) {
+            List<String> capabilityValues = new ArrayList<>();
+            for (AiBusinessCapability capability : capabilities) {
+                if (capability != null) {
+                    capabilityValues.add(capability.value());
+                }
+            }
+            if (!capabilityValues.isEmpty()) {
+                queryWrapper.in(AiBatchJobDO::getCapability, capabilityValues);
+            }
+        }
+        return toBatchJobs(aiBatchJobMapper.selectList(queryWrapper));
+    }
+
+    private void fillUpdateWrapper(LambdaUpdateWrapper<AiBatchJobDO> updateWrapper, AiBatchJobDO dataObject) {
+        updateWrapper
+                .set(AiBatchJobDO::getStatus, dataObject.getStatus())
+                .set(AiBatchJobDO::getSuccessCount, dataObject.getSuccessCount())
+                .set(AiBatchJobDO::getFailedCount, dataObject.getFailedCount())
+                .set(AiBatchJobDO::getCancelledCount, dataObject.getCancelledCount())
+                .set(AiBatchJobDO::getFailureSummaryJson, dataObject.getFailureSummaryJson())
+                .set(AiBatchJobDO::getCancelledAt, dataObject.getCancelledAt())
+                .set(AiBatchJobDO::getCompletedAt, dataObject.getCompletedAt());
     }
 
     @Override

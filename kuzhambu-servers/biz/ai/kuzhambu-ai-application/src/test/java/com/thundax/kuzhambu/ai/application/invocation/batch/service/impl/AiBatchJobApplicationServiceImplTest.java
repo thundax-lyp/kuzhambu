@@ -131,6 +131,43 @@ public class AiBatchJobApplicationServiceImplTest {
     }
 
     @Test
+    public void recordSuccessIfRunningShouldReloadTerminalJobWhenConditionalUpdateLosesRace() {
+        AiBatchJob job = new AiBatchJob();
+        job.setId(AiBatchJobIdCodec.toDomain(1L));
+        job.setScope("classics");
+        job.setCapability(AiBusinessCapability.CLASSICS_SUMMARY);
+        job.setContentType("SANCAI_ENTRY");
+        job.setStatus(AiBatchJobStatus.RUNNING);
+        job.setTotalCount(1);
+        FakeRepository repository = new FakeRepository(job);
+        repository.failNextConditionalUpdateWith(AiBatchJobStatus.CANCELLED);
+        AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(repository);
+
+        AiBatchJobResult result = service.recordSuccessIfRunning(1L);
+
+        assertEquals("CANCELLED", result.getStatus());
+        assertEquals(0, result.getSuccessCount());
+    }
+
+    @Test
+    public void recordPartialIfRunningShouldPreservePartialTerminalState() {
+        AiBatchJob job = new AiBatchJob();
+        job.setId(AiBatchJobIdCodec.toDomain(1L));
+        job.setScope("classics");
+        job.setCapability(AiBusinessCapability.CLASSICS_IMAGE_GENERATE);
+        job.setContentType("SANCAI_ENTRY");
+        job.setStatus(AiBatchJobStatus.RUNNING);
+        job.setTotalCount(1);
+        AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(new FakeRepository(job));
+
+        AiBatchJobResult result = service.recordPartialIfRunning(1L, "{\"errorType\":\"MODEL_SEMANTIC_FAILURE\"}");
+
+        assertEquals("PARTIAL", result.getStatus());
+        assertEquals(1, result.getSuccessCount());
+        assertEquals("{\"errorType\":\"MODEL_SEMANTIC_FAILURE\"}", result.getFailureSummaryJson());
+    }
+
+    @Test
     public void pageShouldFilterByBatchContentIdWithoutInvocationLog() {
         AiBatchJob job = new AiBatchJob();
         job.setId(AiBatchJobIdCodec.toDomain(1L));
@@ -167,6 +204,7 @@ public class AiBatchJobApplicationServiceImplTest {
 
         private final AiBatchJob job;
         private AiBatchJob inserted;
+        private AiBatchJobStatus raceStatus;
 
         FakeRepository(AiBatchJob job) {
             this.job = job;
@@ -174,7 +212,7 @@ public class AiBatchJobApplicationServiceImplTest {
 
         @Override
         public AiBatchJob get(AiBatchJobId batchId) {
-            return job != null && batchId.equals(job.getId()) ? job : null;
+            return job != null && batchId.equals(job.getId()) ? copy(job) : null;
         }
 
         @Override
@@ -185,12 +223,36 @@ public class AiBatchJobApplicationServiceImplTest {
 
         @Override
         public int update(AiBatchJob batchJob) {
+            copyInto(job, batchJob);
             return 1;
         }
 
         @Override
+        public int updateIfStatus(AiBatchJob batchJob, AiBatchJobStatus expectedStatus) {
+            if (raceStatus != null) {
+                job.setStatus(raceStatus);
+                raceStatus = null;
+                return 0;
+            }
+            if (job.getStatus() != expectedStatus) {
+                return 0;
+            }
+            copyInto(job, batchJob);
+            return 1;
+        }
+
+        @Override
+        public List<AiBatchJob> listRunningJobsRequestedBefore(
+                String scope, List<AiBusinessCapability> capabilities, java.time.Instant requestedBefore, int limit) {
+            if (job == null || job.getStatus() != AiBatchJobStatus.RUNNING) {
+                return List.of();
+            }
+            return List.of(copy(job));
+        }
+
+        @Override
         public List<AiBatchJob> listJobs(AiBatchJobQuery query) {
-            return matches(query) ? List.of(job) : List.of();
+            return matches(query) ? List.of(copy(job)) : List.of();
         }
 
         @Override
@@ -205,6 +267,39 @@ public class AiBatchJobApplicationServiceImplTest {
             return query == null
                     || query.getContentId() == null
                     || Objects.equals(query.getContentId(), job.getContentId());
+        }
+
+        private void failNextConditionalUpdateWith(AiBatchJobStatus status) {
+            raceStatus = status;
+        }
+
+        private void copyInto(AiBatchJob target, AiBatchJob source) {
+            target.setStatus(source.getStatus());
+            target.setSuccessCount(source.getSuccessCount());
+            target.setFailedCount(source.getFailedCount());
+            target.setCancelledCount(source.getCancelledCount());
+            target.setFailureSummaryJson(source.getFailureSummaryJson());
+            target.setCancelledAt(source.getCancelledAt());
+            target.setCompletedAt(source.getCompletedAt());
+        }
+
+        private AiBatchJob copy(AiBatchJob source) {
+            AiBatchJob target = new AiBatchJob();
+            target.setId(source.getId());
+            target.setScope(source.getScope());
+            target.setCapability(source.getCapability());
+            target.setContentType(source.getContentType());
+            target.setContentId(source.getContentId());
+            target.setStatus(source.getStatus());
+            target.setTotalCount(source.getTotalCount());
+            target.setSuccessCount(source.getSuccessCount());
+            target.setFailedCount(source.getFailedCount());
+            target.setCancelledCount(source.getCancelledCount());
+            target.setFailureSummaryJson(source.getFailureSummaryJson());
+            target.setRequestedAt(source.getRequestedAt());
+            target.setCancelledAt(source.getCancelledAt());
+            target.setCompletedAt(source.getCompletedAt());
+            return target;
         }
     }
 }

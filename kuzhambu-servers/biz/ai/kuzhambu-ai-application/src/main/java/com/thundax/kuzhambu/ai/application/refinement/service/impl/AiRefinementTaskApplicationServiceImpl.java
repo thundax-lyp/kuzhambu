@@ -37,6 +37,7 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -59,6 +60,18 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     private static final int RESULT_PREVIEW_MAX_LENGTH = 500;
     private static final int STREAM_EVENT_HISTORY_LIMIT = 100;
     private static final Duration STREAM_SUBSCRIBE_TIMEOUT = Duration.ofMinutes(10L);
+    private static final Duration ORPHANED_TASK_TIMEOUT = Duration.ofHours(1L);
+    private static final int ORPHANED_TASK_EXPIRE_LIMIT = 100;
+    private static final List<String> REFINEMENT_CAPABILITIES = List.of(
+            "classics_translate",
+            "classics_summary",
+            "classics_tags",
+            "classics_qa",
+            "classics_image_describe",
+            "classics_image_prompt_fusion",
+            "classics_visual_describe",
+            "classics_image_generate",
+            "classics_split");
 
     private final AiBatchJobApplicationService batchJobApplicationService;
     private final AiRefinementApplicationService refinementApplicationService;
@@ -183,9 +196,11 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         }
         AiBatchJobResult finalJob;
         if (result != null && STATUS_SUCCEEDED.equals(result.getStatus())) {
-            finalJob = batchJobApplicationService.recordSuccess(taskId);
+            finalJob = batchJobApplicationService.recordSuccessIfRunning(taskId);
+        } else if (result != null && STATUS_PARTIAL.equals(result.getStatus())) {
+            finalJob = batchJobApplicationService.recordPartialIfRunning(taskId, failureSummaryJson(result));
         } else {
-            finalJob = batchJobApplicationService.recordFailure(taskId, failureSummaryJson(result));
+            finalJob = batchJobApplicationService.recordFailureIfRunning(taskId, failureSummaryJson(result));
         }
         publishTerminalEvent(taskId, toTaskResult(taskId, finalJob, command, result), result);
     }
@@ -219,8 +234,35 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
                 null,
                 "INTERNAL_FAILURE",
                 exception.getMessage());
-        AiBatchJobResult failed = batchJobApplicationService.recordFailure(taskId, failureSummaryJson(result));
+        AiBatchJobResult failed = batchJobApplicationService.recordFailureIfRunning(taskId, failureSummaryJson(result));
         publishTerminalEvent(taskId, toTaskResult(taskId, failed, null, result), result);
+    }
+
+    @Scheduled(
+            initialDelayString = "${kuzhambu.ai.refinement.orphaned-task-expiry.initial-delay-ms:60000}",
+            fixedDelayString = "${kuzhambu.ai.refinement.orphaned-task-expiry.fixed-delay-ms:3600000}")
+    @Transactional(rollbackFor = Exception.class)
+    public void expireOrphanedRunningTasks() {
+        Instant requestedBefore = Instant.now().minus(ORPHANED_TASK_TIMEOUT);
+        AiCandidateResult result = new AiCandidateResult(
+                null,
+                null,
+                STATUS_FAILED,
+                null,
+                "INTERNAL_EXECUTION",
+                null,
+                null,
+                "TASK_ORPHANED",
+                "AI refinement task execution context was lost before completion");
+        int expired = batchJobApplicationService.expireRunning(
+                "classics",
+                REFINEMENT_CAPABILITIES,
+                requestedBefore,
+                failureSummaryJson(result),
+                ORPHANED_TASK_EXPIRE_LIMIT);
+        if (expired > 0) {
+            LOGGER.warn("Expired orphaned AI refinement tasks, count={}", expired);
+        }
     }
 
     private AiCandidateResult invoke(Long taskId, AiRefinementRequestCommand command, boolean streamEnabled) {
