@@ -183,6 +183,7 @@ com/thundax/kuzhambu/<domain>/interfaces/portal/
 
 - `application/`：用例编排、事务边界、跨域协调、命令、查询和结果对象。
 - `application` 层公开方法输入默认使用 `*Command` / `*Query` / `PageQuery`。
+- `application` 层 `*Command` / `*Query` 是纯契约对象，只定义字段；对象创建、值对象转换和领域模型装配放在 `*InterfaceAssembler`、application assembler 或应用服务编排代码中。
 - `application` 层公开方法输出默认使用 `*Result`；仅在稳定通用传输对象场景下使用 `*DTO`；分页输出统一使用 `PageResult<...>`。
 - `application/<subdomain>/service/`：应用用例入口接口，命名为 `*ApplicationService`。
 - `application/<subdomain>/service/impl/`：应用用例入口实现，命名为 `*ApplicationServiceImpl`。

@@ -34,6 +34,12 @@ public final class NamingArchitectureRuleSupport {
             Pattern.compile("\\bpublic\\s+void\\s+set[A-Z][A-Za-z0-9_]*\\s*\\(");
     private static final Pattern STATIC_METHOD_DECLARATION_PATTERN = Pattern.compile(
             "\\b(?:(?:public|protected|private)\\s+)?static\\s+(?:<[^>]+>\\s+)?[\\w<>?,.\\[\\]\\s]+\\s+\\w+\\s*\\(");
+    private static final Pattern METHOD_DECLARATION_PATTERN =
+            Pattern.compile("(?m)^\\s*(?:@[\\w.]+(?:\\([^\\n]*\\))?\\s*)*"
+                    + "(?:(?:public|protected|private)\\s+)?"
+                    + "(?:(?:static|final|synchronized|abstract|native|strictfp)\\s+)*"
+                    + "(?:<[^>]+>\\s+)?[\\w<>?,.\\[\\]][\\w<>?,.\\[\\] ]*\\s+(\\w+)\\s*\\([^;{}]*\\)\\s*"
+                    + "(?:throws\\s+[^;{]+)?\\{");
     private static final Set<String> SERVICE_QUERY_REQUIRED_ANNOTATIONS =
             new LinkedHashSet<String>(Arrays.asList("Getter", "Setter", "NoArgsConstructor", "AllArgsConstructor"));
     private static final Set<String> ENTITY_REQUIRED_ANNOTATIONS =
@@ -176,6 +182,29 @@ public final class NamingArchitectureRuleSupport {
 
         assertTrue(
                 "valueobject *Id source must not declare static methods; create/nullable conversion belongs in *Codec: "
+                        + violations,
+                violations.isEmpty());
+    }
+
+    public static void assertApplicationCommandQuerySourcesDeclareNoMethods(Path sourceRoot) {
+        Path root = ArchitectureSourceSupport.repositoryRoot();
+        List<String> violations = new ArrayList<String>();
+
+        if (!Files.exists(sourceRoot)) {
+            return;
+        }
+        try (Stream<Path> paths = Files.walk(sourceRoot)) {
+            paths.filter(Files::isRegularFile)
+                    .filter(NamingArchitectureRuleSupport::isApplicationCommandOrQuerySource)
+                    .forEach(path -> collectMethodDeclarationViolations(root, path, violations));
+        } catch (IOException e) {
+            throw new IllegalStateException(
+                    "Failed to scan application command/query source files under " + sourceRoot, e);
+        }
+
+        assertTrue(
+                "Application *Command/*Query source must only define fields; creation and conversion belong in "
+                        + "*InterfaceAssembler or application services: "
                         + violations,
                 violations.isEmpty());
     }
@@ -627,6 +656,27 @@ public final class NamingArchitectureRuleSupport {
         return javaClass.getName().contains("$");
     }
 
+    private static void collectMethodDeclarationViolations(Path root, Path path, List<String> violations) {
+        Matcher matcher = METHOD_DECLARATION_PATTERN.matcher(ArchitectureSourceSupport.readSourceWithoutComments(path));
+        String className = sourceClassName(path);
+        while (matcher.find()) {
+            String methodName = matcher.group(1);
+            if (methodName.equals(className)) {
+                continue;
+            }
+            violations.add(ArchitectureSourceSupport.repositoryPath(root, path) + "#" + methodName);
+        }
+    }
+
+    private static String sourceClassName(Path path) {
+        String fileName = path.getFileName().toString();
+        int extensionIndex = fileName.lastIndexOf('.');
+        if (extensionIndex < 0) {
+            return fileName;
+        }
+        return fileName.substring(0, extensionIndex);
+    }
+
     private static void collectLayerTypeNameViolation(JavaClass javaClass, List<String> violations) {
         String packageName = javaClass.getPackageName();
         String simpleName = javaClass.getSimpleName();
@@ -785,6 +835,11 @@ public final class NamingArchitectureRuleSupport {
                 && value.contains("/application/")
                 && value.contains("/query/")
                 && value.endsWith("Query.java");
+    }
+
+    private static boolean isApplicationCommandOrQuerySource(Path path) {
+        String value = ArchitectureSourceSupport.normalizePath(path);
+        return value.contains("/application/") && (value.endsWith("Command.java") || value.endsWith("Query.java"));
     }
 
     private static boolean isValueObjectIdSource(Path path) {

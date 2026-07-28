@@ -45,6 +45,7 @@
 - `BaseId<T>` 必须不可变。
 - 具体 ID 构造器负责校验和规范化底层值；`valueobject` 下的 `*Id` 不得声明 `static` 方法。
 - 基础值创建、nullable 处理、字符串转换和生成入口固定放到对应 `*Codec` 或统一发号入口。
+- 领域 `Repository` 端口的参数和返回值应使用已有强类型 ID、Ref、Name、Status 等领域类型；协议 DTO、application 边界入参和 infra DO 可保留基础类型，并在 assembler、codec 或 infra 实现中完成转换。
 - 判等必须基于具体类型和底层值。
 - 不允许每个具体 ID 重写 `equals`、`hashCode`、`toString`。
 - 框架适配逻辑固定放在转换器或 TypeHandler。
