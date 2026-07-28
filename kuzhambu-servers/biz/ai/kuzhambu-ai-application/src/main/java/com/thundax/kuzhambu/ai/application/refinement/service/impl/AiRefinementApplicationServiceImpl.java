@@ -51,7 +51,7 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
     @Override
     public void validateSnapshotInvokeConfig(AiRefinementRequestCommand command) {
         validateCommand(command);
-        businessInvokeConfigResolver.validatePromptVersionEnabled(command.toInvokeCommand(command.getCapability()));
+        businessInvokeConfigResolver.validatePromptVersionEnabled(toInvokeCommand(command, command.getCapability()));
     }
 
     @Override
@@ -131,13 +131,40 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
     private AiInvokeCommand prepareInvokeCommand(AiRefinementRequestCommand command, String capability) {
         validateCommand(command);
         var spec = classicsAiWorkerUsecaseResolver.resolve(command.getContentType(), capability);
-        AiInvokeCommand invokeCommand = command.toInvokeCommand(capability);
+        AiInvokeCommand invokeCommand = toInvokeCommand(command, capability);
         invokeCommand.setOperation(spec.operation());
         invokeCommand.setWorkerPath(spec.workerPath());
         invokeCommand.setWorkerCapability(spec.workerCapability());
         enrichBusinessInvokeConfig(invokeCommand);
         copyResolvedInvokeConfig(command, invokeCommand);
         return invokeCommand;
+    }
+
+    private AiInvokeCommand toInvokeCommand(AiRefinementRequestCommand source, String capability) {
+        AiInvokeCommand command = new AiInvokeCommand();
+        command.setBatchId(source.getBatchId());
+        command.setScope(source.getScope());
+        command.setCapability(capability);
+        command.setOperation(source.getOperation());
+        command.setContentType(source.getContentType());
+        command.setContentId(source.getContentId());
+        command.setObjectId(source.getObjectId());
+        command.setServiceId(source.getServiceId());
+        command.setServiceRole(source.getServiceRole());
+        command.setModelId(source.getModelId());
+        command.setModelName(source.getModelName());
+        command.setPromptVersionId(source.getPromptVersionId());
+        command.setRequestId(source.getRequestId());
+        command.setTraceId(source.getTraceId());
+        command.setPromptMessagesJson(source.getPromptMessagesJson());
+        command.setPromptVariablesJson(source.getPromptVariablesJson());
+        command.setPromptHash(source.getPromptHash());
+        command.setInputPayloadJson(source.getInputPayloadJson());
+        command.setOutputSchemaJson(source.getOutputSchemaJson());
+        command.setForceJson(source.isForceJson());
+        command.setLocale(source.getLocale());
+        command.setCreateCandidate(true);
+        return command;
     }
 
     private void enrichBusinessInvokeConfig(AiInvokeCommand command) {

@@ -12,6 +12,7 @@ import {
 
 import * as aiCandidateService from "../ai-candidate-service";
 import type { AiCandidateCapability, AiCandidateRecord } from "../ai-candidate-types";
+import * as aiRefinementTaskService from "../ai-refinement-task-service";
 import { AiCandidatePayloadEditor } from "./ai-candidate-payload-editor";
 
 type CandidateContentType = "SANCAI_ENTRY" | "WANGQI_DOCUMENT" | "MING_CUSTOMS";
@@ -29,7 +30,8 @@ const REJECT_ERROR_TYPE = "USER_REJECTED";
 const REJECT_ERROR_MESSAGE = "用户已拒绝该 AI 候选";
 
 const defaultResultFormatForCapability = (capability: string) => {
-    if (capability === "tags" || capability === "qa") {
+    const normalizedCapability = aiRefinementTaskService.getNormalizedTaskCapability(capability);
+    if (normalizedCapability === "tags" || normalizedCapability === "qa") {
         return "STRUCTURED";
     }
     return "TEXT";
@@ -57,6 +59,7 @@ const formatDateTime = (value?: string | null) => {
 };
 
 const isSupportCapability = (capability: string): capability is AiCandidateCapability => {
+    const normalizedCapability = aiRefinementTaskService.getNormalizedTaskCapability(capability);
     return [
         "translate",
         "summary",
@@ -66,7 +69,7 @@ const isSupportCapability = (capability: string): capability is AiCandidateCapab
         "visual",
         "fusion",
         "image_gen"
-    ].includes(capability);
+    ].includes(normalizedCapability);
 };
 
 const getCandidateStableId = (candidate: AiCandidateRecord) => {
@@ -107,13 +110,17 @@ export const AiCandidatePanel = ({
         const candidates = Array.isArray(pendingCandidatesQuery.data)
             ? pendingCandidatesQuery.data
             : [];
-        const result = candidates.filter(
-            (candidate) =>
+        const result = candidates.filter((candidate) => {
+            const normalizedCapability = aiRefinementTaskService.getNormalizedTaskCapability(
+                candidate.capability
+            );
+            return (
                 candidate.status === "PENDING" &&
                 isSupportCapability(candidate.capability) &&
-                capabilityFilter.has(candidate.capability) &&
+                capabilityFilter.has(normalizedCapability as AiCandidateCapability) &&
                 (objectId == null || candidate.objectId === objectId)
-        );
+            );
+        });
         return result;
     }, [capabilityFilter, objectId, pendingCandidatesQuery.data]);
 
@@ -177,17 +184,20 @@ export const AiCandidatePanel = ({
             messageApi.warning("候选内容未通过完整性校验");
             return;
         }
+        const normalizedCapability = aiRefinementTaskService.getNormalizedTaskCapability(
+            candidate.capability
+        );
         applyMutation.mutate({
             candidateId: getCandidateStableId(candidate),
             contentId,
             contentType,
-            capability: candidate.capability,
+            capability: normalizedCapability,
             objectId: candidate.objectId,
             resultFormat:
                 candidate.resultFormat?.trim() ||
-                defaultResultFormatForCapability(candidate.capability),
+                defaultResultFormatForCapability(normalizedCapability),
             resultPayload: payload,
-            changeSummary: `AI 应用：${candidate.capability}`
+            changeSummary: `AI 应用：${normalizedCapability}`
         });
     };
 
@@ -253,7 +263,11 @@ export const AiCandidatePanel = ({
                                 </KuzhambuSpace>
                                 <AiCandidatePayloadEditor
                                     candidateId={candidate.candidateId}
-                                    capability={candidate.capability as AiCandidateCapability}
+                                    capability={
+                                        aiRefinementTaskService.getNormalizedTaskCapability(
+                                            candidate.capability
+                                        ) as AiCandidateCapability
+                                    }
                                     initialPayload={candidate.resultPayload}
                                     key={`${candidate.candidateId}-${candidate.resultPayload ?? ""}`}
                                     onPayloadChange={updateCandidatePayload}

@@ -9,7 +9,6 @@ import { isSameId } from "@/types/id";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import * as shareService from "@/pages/classics/common/classics-share-service";
-import * as currentUserService from "@/service/current-user-service";
 import type { ClassicsExportJobRecord } from "@/pages/classics/common/classics-export-types";
 import { ClassicsContentQaPanel } from "@/pages/classics/common/components/classics-content-qa-panel";
 import { ClassicsContentTagPanel } from "@/pages/classics/common/components/classics-content-tag-panel";
@@ -96,11 +95,6 @@ export const SancaiEntryPanel = ({
             })),
         [categories]
     );
-    const currentUserQuery = useQuery({
-        queryKey: ["sys", "current-user", "info"],
-        queryFn: currentUserService.getCurrentUserInfo,
-        retry: false
-    });
     const entriesQuery = useQuery({
         queryKey: [
             "classics",
@@ -268,7 +262,6 @@ export const SancaiEntryPanel = ({
         messageApi,
         selectedEntry,
         selectedEntryId,
-        currentUserId: currentUserQuery.data?.id,
         refinementTasks,
         invalidateEntries,
         invalidateRefinementTasks
@@ -720,7 +713,6 @@ export const SancaiEntryPanel = ({
                 mode={isCreating ? "create" : "edit"}
                 open={isModelOpen && !isLoading}
                 volumes={volumes}
-                currentUserId={currentUserQuery.data?.id}
                 onCancel={closeModel}
                 onSubmit={submitEntry}
                 onUseVisualAsset={switchVisualAsset}

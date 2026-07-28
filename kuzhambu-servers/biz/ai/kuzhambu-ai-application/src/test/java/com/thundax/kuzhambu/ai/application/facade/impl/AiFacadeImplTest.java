@@ -5,27 +5,29 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.thundax.kuzhambu.ai.application.batch.command.AiBatchJobCreateCommand;
-import com.thundax.kuzhambu.ai.application.batch.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.discovery.command.DiscoveryAiCommand;
 import com.thundax.kuzhambu.ai.application.discovery.result.DiscoveryAiInvokeResult;
 import com.thundax.kuzhambu.ai.application.discovery.service.DiscoveryAiApplicationService;
 import com.thundax.kuzhambu.ai.application.facade.assembler.AiFacadeAssembler;
+import com.thundax.kuzhambu.ai.application.invocation.batch.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.batch.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
+import com.thundax.kuzhambu.ai.application.invocation.service.AiCandidateApplicationService;
+import com.thundax.kuzhambu.ai.application.knowledge.command.KnowledgeAiExtractionCommand;
+import com.thundax.kuzhambu.ai.application.knowledge.result.KnowledgeAiExtractionResult;
 import com.thundax.kuzhambu.ai.application.knowledge.service.KnowledgeAiExtractionApplicationService;
 import com.thundax.kuzhambu.ai.application.report.result.AiReportSummaryResult;
 import com.thundax.kuzhambu.ai.application.report.result.AiReportSummaryResult.TopCapabilityResult;
 import com.thundax.kuzhambu.ai.application.report.service.AiReportApplicationService;
-import com.thundax.kuzhambu.ai.domain.batch.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiPromptVersionIdCodec;
@@ -37,10 +39,6 @@ import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
-import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateApplyCheck;
-import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainService;
-import com.thundax.kuzhambu.ai.domain.knowledge.model.entity.KnowledgeAiExtractionRecord;
-import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionInput;
 import com.thundax.kuzhambu.ai.facade.request.AiReportSummaryFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.CreateAiBatchJobFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
@@ -48,6 +46,8 @@ import com.thundax.kuzhambu.ai.facade.request.GetAiInvocationLogFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.KnowledgeAiExtractionFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RejectAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
+import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
+import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Date;
@@ -78,7 +78,7 @@ class AiFacadeImplTest {
                 mock(DiscoveryAiApplicationService.class),
                 mock(KnowledgeAiExtractionApplicationService.class),
                 mock(AiInvocationRepository.class),
-                mock(AiCandidateDomainService.class));
+                mock(AiCandidateApplicationService.class));
 
         var response = facade.summary(AiReportSummaryFacadeRequest.builder()
                 .periodStart(periodStart)
@@ -108,7 +108,7 @@ class AiFacadeImplTest {
                 mock(DiscoveryAiApplicationService.class),
                 mock(KnowledgeAiExtractionApplicationService.class),
                 mock(AiInvocationRepository.class),
-                mock(AiCandidateDomainService.class));
+                mock(AiCandidateApplicationService.class));
         CreateAiBatchJobFacadeRequest request = CreateAiBatchJobFacadeRequest.builder()
                 .scope("knowledge")
                 .capability("KNOWLEDGE_GRAPH")
@@ -166,7 +166,7 @@ class AiFacadeImplTest {
                 discoveryAiApplicationService,
                 mock(KnowledgeAiExtractionApplicationService.class),
                 mock(AiInvocationRepository.class),
-                mock(AiCandidateDomainService.class));
+                mock(AiCandidateApplicationService.class));
 
         var response = facade.understandDiscoveryQuery(DiscoveryAiFacadeRequest.builder()
                 .serviceId(21L)
@@ -232,7 +232,7 @@ class AiFacadeImplTest {
                 discoveryAiApplicationService,
                 mock(KnowledgeAiExtractionApplicationService.class),
                 mock(AiInvocationRepository.class),
-                mock(AiCandidateDomainService.class));
+                mock(AiCandidateApplicationService.class));
 
         var response = facade.generateDiscoveryAnswer(DiscoveryAiFacadeRequest.builder()
                 .serviceId(21L)
@@ -289,7 +289,7 @@ class AiFacadeImplTest {
                 discoveryAiApplicationService,
                 mock(KnowledgeAiExtractionApplicationService.class),
                 mock(AiInvocationRepository.class),
-                mock(AiCandidateDomainService.class));
+                mock(AiCandidateApplicationService.class));
         List<String> deltas = new java.util.ArrayList<>();
 
         var response = facade.streamDiscoveryAnswer(
@@ -320,7 +320,7 @@ class AiFacadeImplTest {
         KnowledgeAiExtractionApplicationService knowledgeAiExtractionApplicationService =
                 mock(KnowledgeAiExtractionApplicationService.class);
         when(knowledgeAiExtractionApplicationService.extractGraph(any())).thenAnswer(invocation -> {
-            KnowledgeAiExtractionInput input = invocation.getArgument(0);
+            KnowledgeAiExtractionCommand input = invocation.getArgument(0);
             assertEquals("GRAPH", input.getTaskType());
             assertEquals("ENTRY", input.getScopeType());
             assertEquals("{\"entryId\":9}", input.getScopeJson());
@@ -341,7 +341,7 @@ class AiFacadeImplTest {
             assertEquals("{\"type\":\"graph\"}", input.getOutputSchemaJson());
             assertFalse(input.isForceJson());
             assertEquals("zh-CN", input.getLocale());
-            return new KnowledgeAiExtractionRecord(
+            return new KnowledgeAiExtractionResult(
                     701L,
                     801L,
                     "SUCCEEDED",
@@ -357,7 +357,7 @@ class AiFacadeImplTest {
                 mock(DiscoveryAiApplicationService.class),
                 knowledgeAiExtractionApplicationService,
                 mock(AiInvocationRepository.class),
-                mock(AiCandidateDomainService.class));
+                mock(AiCandidateApplicationService.class));
 
         var response = facade.extractKnowledgeGraph(KnowledgeAiExtractionFacadeRequest.builder()
                 .taskType("GRAPH")
@@ -395,7 +395,7 @@ class AiFacadeImplTest {
         KnowledgeAiExtractionApplicationService knowledgeAiExtractionApplicationService =
                 mock(KnowledgeAiExtractionApplicationService.class);
         when(knowledgeAiExtractionApplicationService.extractTags(any())).thenAnswer(invocation -> {
-            KnowledgeAiExtractionInput input = invocation.getArgument(0);
+            KnowledgeAiExtractionCommand input = invocation.getArgument(0);
             assertEquals("TAG", input.getTaskType());
             assertEquals("CONTENT", input.getScopeType());
             assertEquals("{\"contentType\":\"SANCAI_ENTRY\",\"contentIds\":[1001]}", input.getScopeJson());
@@ -416,7 +416,7 @@ class AiFacadeImplTest {
             assertEquals("{\"type\":\"object\",\"required\":[\"tags\"]}", input.getOutputSchemaJson());
             assertTrue(input.isForceJson());
             assertEquals("zh-CN", input.getLocale());
-            return new KnowledgeAiExtractionRecord(
+            return new KnowledgeAiExtractionResult(
                     711L, 811L, "SUCCEEDED", "KNOWLEDGE_TAG_EXTRACTION", "STRUCTURED", "{\"tags\":[]}", null, null);
         });
         AiFacadeImpl facade = newFacade(
@@ -425,7 +425,7 @@ class AiFacadeImplTest {
                 mock(DiscoveryAiApplicationService.class),
                 knowledgeAiExtractionApplicationService,
                 mock(AiInvocationRepository.class),
-                mock(AiCandidateDomainService.class));
+                mock(AiCandidateApplicationService.class));
 
         var response = facade.extractKnowledgeTags(KnowledgeAiExtractionFacadeRequest.builder()
                 .taskType("TAG")
@@ -463,14 +463,15 @@ class AiFacadeImplTest {
     @Test
     void getInvocationLogShouldMapUsageSnapshot() {
         AiInvocationRepository aiInvocationRepository = mock(AiInvocationRepository.class);
-        when(aiInvocationRepository.getInvocationLog(301L)).thenReturn(invocationLog());
+        when(aiInvocationRepository.getInvocationLog(AiCallIdCodec.toDomain(301L)))
+                .thenReturn(invocationLog());
         AiFacadeImpl facade = newFacade(
                 mock(AiReportApplicationService.class),
                 mock(AiBatchJobApplicationService.class),
                 mock(DiscoveryAiApplicationService.class),
                 mock(KnowledgeAiExtractionApplicationService.class),
                 aiInvocationRepository,
-                mock(AiCandidateDomainService.class));
+                mock(AiCandidateApplicationService.class));
 
         var response = facade.getInvocationLog(
                 GetAiInvocationLogFacadeRequest.builder().callId(301L).build());
@@ -492,23 +493,17 @@ class AiFacadeImplTest {
 
     @Test
     void requirePendingCandidateShouldMapApplyCheckAndCandidateDto() {
-        AiCandidateDomainService aiCandidateDomainService = mock(AiCandidateDomainService.class);
-        when(aiCandidateDomainService.requirePendingForApply(any(AiCandidateApplyCheck.class), eq(903L)))
-                .thenAnswer(invocation -> {
-                    AiCandidateApplyCheck check = invocation.getArgument(0);
-                    assertEquals(901L, check.getCandidateId());
-                    assertEquals("CLASSICS_CONTENT", check.getContentType());
-                    assertEquals(902L, check.getContentId());
-                    assertEquals("KNOWLEDGE_GRAPH", check.getCapability());
-                    return candidate();
-                });
+        AiCandidateApplicationService aiCandidateApplicationService = mock(AiCandidateApplicationService.class);
+        when(aiCandidateApplicationService.requirePendingForApply(
+                        901L, "CLASSICS_CONTENT", 902L, "KNOWLEDGE_GRAPH", 903L))
+                .thenReturn(candidate());
         AiFacadeImpl facade = newFacade(
                 mock(AiReportApplicationService.class),
                 mock(AiBatchJobApplicationService.class),
                 mock(DiscoveryAiApplicationService.class),
                 mock(KnowledgeAiExtractionApplicationService.class),
                 mock(AiInvocationRepository.class),
-                aiCandidateDomainService);
+                aiCandidateApplicationService);
 
         var response = facade.requirePendingCandidate(RequirePendingAiCandidateFacadeRequest.builder()
                 .candidateId(901L)
@@ -535,8 +530,8 @@ class AiFacadeImplTest {
 
     @Test
     void rejectCandidateShouldDelegateToDomainServiceAndMapDto() {
-        AiCandidateDomainService aiCandidateDomainService = mock(AiCandidateDomainService.class);
-        when(aiCandidateDomainService.reject(901L, "USER_REJECTED", "not useful"))
+        AiCandidateApplicationService aiCandidateApplicationService = mock(AiCandidateApplicationService.class);
+        when(aiCandidateApplicationService.reject(901L, "USER_REJECTED", "not useful"))
                 .thenReturn(candidate());
         AiFacadeImpl facade = newFacade(
                 mock(AiReportApplicationService.class),
@@ -544,7 +539,7 @@ class AiFacadeImplTest {
                 mock(DiscoveryAiApplicationService.class),
                 mock(KnowledgeAiExtractionApplicationService.class),
                 mock(AiInvocationRepository.class),
-                aiCandidateDomainService);
+                aiCandidateApplicationService);
 
         var response = facade.rejectCandidate(RejectAiCandidateFacadeRequest.builder()
                 .candidateId(901L)
@@ -553,7 +548,7 @@ class AiFacadeImplTest {
                 .build());
 
         assertEquals(901L, response.getCandidateId());
-        verify(aiCandidateDomainService).reject(901L, "USER_REJECTED", "not useful");
+        verify(aiCandidateApplicationService).reject(901L, "USER_REJECTED", "not useful");
     }
 
     private static AiFacadeImpl newFacade(
@@ -562,14 +557,14 @@ class AiFacadeImplTest {
             DiscoveryAiApplicationService discoveryAiApplicationService,
             KnowledgeAiExtractionApplicationService knowledgeAiExtractionApplicationService,
             AiInvocationRepository aiInvocationRepository,
-            AiCandidateDomainService aiCandidateDomainService) {
+            AiCandidateApplicationService aiCandidateApplicationService) {
         return new AiFacadeImpl(
                 aiReportApplicationService,
                 aiBatchJobApplicationService,
                 discoveryAiApplicationService,
                 knowledgeAiExtractionApplicationService,
+                aiCandidateApplicationService,
                 aiInvocationRepository,
-                aiCandidateDomainService,
                 new AiFacadeAssembler());
     }
 
@@ -586,8 +581,8 @@ class AiFacadeImplTest {
         invocationLog.setModelId(new AiModelId(801L));
         invocationLog.setModelName(AiModelName.of("gpt-5"));
         invocationLog.setPromptVersionId(new PromptVersionId(901L));
-        invocationLog.setRequestId("req-call");
-        invocationLog.setTraceId("trace-call");
+        invocationLog.setRequestId(RequestIdCodec.toDomain("req-call"));
+        invocationLog.setTraceId(TraceIdCodec.toDomain("trace-call"));
         invocationLog.setStatus(AiInvocationStatus.SUCCEEDED);
         invocationLog.setStreamUsed(true);
         invocationLog.setStreamCompleted(true);

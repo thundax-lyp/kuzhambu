@@ -12,7 +12,6 @@ export interface AiRefinementTaskRecord {
     contentType: string;
     contentId: string;
     objectId?: string | null;
-    requestedBy?: string | null;
     serviceRole?: string | null;
     modelId?: string | null;
     modelName?: string | null;
@@ -40,7 +39,6 @@ export interface AiRefinementTaskCreatePayload {
     contentType: string;
     contentId: string;
     objectId?: string | null;
-    requestedBy: string;
     serviceId?: string | null;
     serviceRole?: string | null;
     modelId?: string | null;
@@ -63,7 +61,6 @@ export interface AiRefinementTaskGetPayload {
 
 export interface AiRefinementTaskCancelPayload {
     taskId: string;
-    requestedBy: string;
 }
 
 export interface AiRefinementTaskPagePayload {
@@ -71,7 +68,6 @@ export interface AiRefinementTaskPagePayload {
     status?: AiRefinementTaskStatus | null;
     contentType?: string | null;
     contentId?: string | null;
-    requestedBy?: string | null;
     pageNo?: number;
     pageSize?: number;
 }

@@ -88,7 +88,6 @@ Admin Web 默认使用异步任务协议：
   "contentType": "SANCAI_ENTRY",
   "contentId": 300000000001,
   "objectId": null,
-  "requestedBy": 10001,
   "requestId": "req_20260601_000001",
   "traceId": "trace_20260601_000001",
   "inputPayloadJson": "{\"sourceText\":\"天地玄黄\",\"tone\":\"concise\"}",

@@ -176,7 +176,6 @@ interface UseSancaiEntryPanelStateParams {
     messageApi: MessageInstance;
     selectedEntry: SancaiEntryRecord | null | undefined;
     selectedEntryId: string | null;
-    currentUserId?: string | null;
     refinementTasks: AiRefinementTaskRecord[];
     invalidateEntries: () => Promise<void>;
     invalidateRefinementTasks: () => Promise<void>;
@@ -210,7 +209,6 @@ export const useSancaiEntryPanelState = ({
     messageApi,
     selectedEntry,
     selectedEntryId,
-    currentUserId,
     refinementTasks,
     invalidateEntries,
     invalidateRefinementTasks
@@ -477,10 +475,6 @@ export const useSancaiEntryPanelState = ({
             if (!selectedEntry?.id) {
                 return;
             }
-            if (!currentUserId) {
-                messageApi.warning("当前用户信息尚未加载完成");
-                return;
-            }
             const taskEntry = entryDraft ? { ...selectedEntry, ...entryDraft } : selectedEntry;
             const resolvedVisualAsset = imageAnalysisAsset ?? selectedVisualAsset;
             const imageAnalysisObjectId = resolvedVisualAsset
@@ -558,7 +552,6 @@ export const useSancaiEntryPanelState = ({
                         capability === "image_gen"
                             ? imageAnalysisObjectId
                             : null,
-                    requestedBy: currentUserId,
                     requestId: createEventId("sancai-task"),
                     traceId: createEventId("sancai-trace"),
                     promptMessagesJson: buildPromptMessagesJson(
@@ -597,13 +590,7 @@ export const useSancaiEntryPanelState = ({
                 }
             );
         },
-        [
-            createRefinementTaskMutation,
-            currentUserId,
-            messageApi,
-            selectedEntry,
-            selectedVisualAsset
-        ]
+        [createRefinementTaskMutation, messageApi, selectedEntry, selectedVisualAsset]
     );
 
     const createRefinementTask = (

@@ -125,15 +125,30 @@ public class UserApplicationServiceImpl implements UserApplicationService {
             action = AuditAction.UPDATE,
             summary = "变更后台用户状态",
             before = "#command.beforeUser",
-            after = "#command.auditAfterUser()",
+            after = "#command.afterUser",
             recordWhenUnchanged = true)
     public int changeStatus(ChangeUserStatusCommand command) {
         User user = new User();
         user.setId(command.getId());
         user.setStatus(command.getStatus());
+        command.setAfterUser(auditAfterUser(command));
         int result = dao.updateStatus(user);
         notifyRoleCacheChanged();
         return result;
+    }
+
+    private User auditAfterUser(ChangeUserStatusCommand command) {
+        User user = new User();
+        User beforeUser = command.getBeforeUser();
+        if (beforeUser != null) {
+            user.setId(beforeUser.getId());
+            user.setName(beforeUser.getName());
+            user.setPrivilege(beforeUser.getPrivilege());
+        } else {
+            user.setId(command.getId());
+        }
+        user.setStatus(command.getStatus());
+        return user;
     }
 
     @Transactional(rollbackFor = Exception.class)

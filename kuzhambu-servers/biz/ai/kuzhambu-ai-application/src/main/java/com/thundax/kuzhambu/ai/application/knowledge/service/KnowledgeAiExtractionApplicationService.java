@@ -1,15 +1,15 @@
 package com.thundax.kuzhambu.ai.application.knowledge.service;
 
-import com.thundax.kuzhambu.ai.domain.knowledge.model.entity.KnowledgeAiExtractionRecord;
-import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionInput;
+import com.thundax.kuzhambu.ai.application.knowledge.command.KnowledgeAiExtractionCommand;
+import com.thundax.kuzhambu.ai.application.knowledge.result.KnowledgeAiExtractionResult;
 
 public interface KnowledgeAiExtractionApplicationService {
 
-    KnowledgeAiExtractionRecord extractRelations(KnowledgeAiExtractionInput input);
+    KnowledgeAiExtractionResult extractRelations(KnowledgeAiExtractionCommand input);
 
-    KnowledgeAiExtractionRecord extractGraph(KnowledgeAiExtractionInput input);
+    KnowledgeAiExtractionResult extractGraph(KnowledgeAiExtractionCommand input);
 
-    KnowledgeAiExtractionRecord extractLineage(KnowledgeAiExtractionInput input);
+    KnowledgeAiExtractionResult extractLineage(KnowledgeAiExtractionCommand input);
 
-    KnowledgeAiExtractionRecord extractTags(KnowledgeAiExtractionInput input);
+    KnowledgeAiExtractionResult extractTags(KnowledgeAiExtractionCommand input);
 }

@@ -28,7 +28,6 @@ import * as contentService from "@/pages/classics/common/classics-content-servic
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import * as shareService from "@/pages/classics/common/classics-share-service";
-import * as currentUserService from "@/service/current-user-service";
 import {
     hasClassicsContentPermission,
     type ClassicsBatchOperationRecord
@@ -246,11 +245,6 @@ export const WangqiPage = () => {
         retry: false
     });
     const editingDocumentData = wangqiDocumentDetailQuery.data || editingDocument;
-    const currentUserQuery = useQuery({
-        queryKey: ["sys", "current-user", "info"],
-        queryFn: currentUserService.getCurrentUserInfo,
-        retry: false
-    });
     const exportJobsQuery = useQuery({
         queryKey: ["classics", "wangqi", "exports", "jobs"],
         queryFn: () =>
@@ -262,7 +256,6 @@ export const WangqiPage = () => {
             }),
         retry: false
     });
-    const currentUserId = currentUserQuery.data?.id ?? "";
     const sourceFileQuery = useQuery({
         queryKey: [
             "wangqi",
@@ -332,15 +325,28 @@ export const WangqiPage = () => {
         [refinementTasksQuery.data?.items]
     );
     const tagRefinementTasks = useMemo(
-        () => refinementTasks.filter((task) => task.capability === "tags"),
+        () =>
+            refinementTasks.filter(
+                (task) =>
+                    aiRefinementTaskService.getNormalizedTaskCapability(task.capability) === "tags"
+            ),
         [refinementTasks]
     );
     const summaryRefinementTasks = useMemo(
-        () => refinementTasks.filter((task) => task.capability === "summary"),
+        () =>
+            refinementTasks.filter(
+                (task) =>
+                    aiRefinementTaskService.getNormalizedTaskCapability(task.capability) ===
+                    "summary"
+            ),
         [refinementTasks]
     );
     const qaRefinementTasks = useMemo(
-        () => refinementTasks.filter((task) => task.capability === "qa"),
+        () =>
+            refinementTasks.filter(
+                (task) =>
+                    aiRefinementTaskService.getNormalizedTaskCapability(task.capability) === "qa"
+            ),
         [refinementTasks]
     );
     const exportJobs = exportJobsQuery.data?.records || [];
@@ -790,11 +796,6 @@ export const WangqiPage = () => {
         capability: AiRefinementTaskCapability,
         context: RefinementTaskContext = {}
     ) => {
-        const requestedBy = currentUserQuery.data?.id;
-        if (!requestedBy) {
-            messageApi.warning("当前用户信息未加载完成，请稍后重试");
-            return;
-        }
         if (!document.content?.trim()) {
             messageApi.warning("正文为空，无法创建 AI 精修任务");
             return;
@@ -805,7 +806,6 @@ export const WangqiPage = () => {
             scope: "classics",
             contentType: "WANGQI_DOCUMENT",
             contentId: document.id,
-            requestedBy: currentUserId,
             serviceRole: DEFAULT_REFINEMENT_SERVICE_ROLE,
             modelId: DEFAULT_REFINEMENT_MODEL_ID,
             modelName: DEFAULT_REFINEMENT_MODEL_NAME,

@@ -2,6 +2,7 @@ package com.thundax.kuzhambu.classics.application.wangqi.support;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.classics.application.content.assembler.ClassicsContentApplicationAssembler;
 import com.thundax.kuzhambu.classics.application.content.command.ContentQaPairCommand;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
 import com.thundax.kuzhambu.classics.application.content.support.ClassicsTagBindingSupport;
@@ -166,7 +167,7 @@ public class WangqiDocumentVersionRestorer {
                     snapshot.tagNameSnapshot(),
                     parseSource(snapshot.source()),
                     parseTagStatus(snapshot.status()));
-            ClassicsContentTag tag = command.toEntity();
+            ClassicsContentTag tag = ClassicsContentApplicationAssembler.toTag(command);
             tag.setPriority(priority);
             tag.setId(null);
             contentRepository.insertTag(tag);
@@ -203,7 +204,7 @@ public class WangqiDocumentVersionRestorer {
                     : tagBindingSupport.bindManualTag(command, priority);
         }
 
-        ClassicsContentTag tag = command.toEntity();
+        ClassicsContentTag tag = ClassicsContentApplicationAssembler.toTag(command);
         tag.setId(null);
         tag.setPriority(priority);
         return tag;
@@ -227,7 +228,7 @@ public class WangqiDocumentVersionRestorer {
                 snapshot.question(),
                 snapshot.answer(),
                 parseSource(snapshot.source()));
-        ClassicsContentQaPair qaPair = command.toEntity();
+        ClassicsContentQaPair qaPair = ClassicsContentApplicationAssembler.toQaPair(command);
         qaPair.setId(null);
         qaPair.setPriority(fallbackPriority);
         contentRepository.insertQaPair(qaPair);

@@ -141,47 +141,13 @@ CREATE TABLE IF NOT EXISTS `ai_candidate` (
     KEY `idx_ai_candidate_call` (`call_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI候选结果表';
 
-CREATE TABLE IF NOT EXISTS `ai_refinement_task` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `task_id` bigint NOT NULL,
-    `scope` varchar(32) DEFAULT NULL,
-    `capability` varchar(64) NOT NULL,
-    `content_type` varchar(32) NOT NULL,
-    `content_id` bigint NOT NULL,
-    `object_id` bigint DEFAULT NULL,
-    `requested_by` bigint NOT NULL,
-    `request_id` varchar(128) DEFAULT NULL,
-    `trace_id` varchar(128) DEFAULT NULL,
-    `status` varchar(32) NOT NULL DEFAULT 'PENDING',
-    `service_role` varchar(16) DEFAULT NULL,
-    `model_id` bigint DEFAULT NULL,
-    `model_name` varchar(255) DEFAULT NULL,
-    `prompt_version_id` bigint DEFAULT NULL,
-    `call_id` bigint DEFAULT NULL,
-    `candidate_id` bigint DEFAULT NULL,
-    `result_format` varchar(32) DEFAULT NULL,
-    `result_preview` text DEFAULT NULL,
-    `failure_stage` varchar(32) DEFAULT NULL,
-    `error_type` varchar(64) DEFAULT NULL,
-    `error_message` text DEFAULT NULL,
-    `stream_enabled` tinyint(1) NOT NULL DEFAULT 0,
-    `requested_at` datetime(3) NOT NULL,
-    `started_at` datetime(3) DEFAULT NULL,
-    `completed_at` datetime(3) DEFAULT NULL,
-    `cancelled_at` datetime(3) DEFAULT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_ai_refinement_task_id` (`task_id`),
-    KEY `idx_ai_refinement_task_status` (`status`, `requested_at`),
-    KEY `idx_ai_refinement_task_target` (`content_type`, `content_id`, `capability`),
-    KEY `idx_ai_refinement_task_requested_by` (`requested_by`, `requested_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI精修任务台账表';
-
 CREATE TABLE IF NOT EXISTS `ai_batch_job` (
     `id` bigint NOT NULL COMMENT 'AI批量任务业务ID，对外作为batchId使用',
     `scope` varchar(32) DEFAULT NULL COMMENT '批量任务所属业务域或运行范围',
     `capability` varchar(64) NOT NULL COMMENT '批量任务处理的AI业务能力',
     `content_type` varchar(32) NOT NULL COMMENT '批量任务处理的业务内容类型',
-    `status` varchar(32) NOT NULL DEFAULT 'RUNNING' COMMENT '批量任务状态：RUNNING/SUCCEEDED/PARTIAL/CANCELLED',
+    `content_id` bigint DEFAULT NULL COMMENT '批量任务处理的单一业务内容ID；批量多内容任务可为空',
+    `status` varchar(32) NOT NULL DEFAULT 'RUNNING' COMMENT '批量任务状态：RUNNING/SUCCEEDED/FAILED/PARTIAL/CANCELLED',
     `total_count` int NOT NULL DEFAULT 0 COMMENT '批量任务总单元数量',
     `success_count` int NOT NULL DEFAULT 0 COMMENT '批量任务成功单元数量',
     `failed_count` int NOT NULL DEFAULT 0 COMMENT '批量任务失败单元数量',
@@ -192,39 +158,6 @@ CREATE TABLE IF NOT EXISTS `ai_batch_job` (
     `completed_at` datetime(3) DEFAULT NULL COMMENT '批量任务完成时间',
     PRIMARY KEY (`id`),
     KEY `idx_ai_batch_job_status` (`status`, `requested_at`),
-    KEY `idx_ai_batch_job_capability` (`content_type`, `capability`)
+    KEY `idx_ai_batch_job_capability` (`content_type`, `capability`),
+    KEY `idx_ai_batch_job_content` (`content_type`, `content_id`, `capability`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI批量任务表';
-
-CREATE TABLE IF NOT EXISTS `ai_image_understanding` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `understanding_id` bigint NOT NULL,
-    `storage_object_id` bigint NOT NULL,
-    `content_hash` varchar(128) NOT NULL,
-    `analysis_markdown` longtext NOT NULL,
-    `call_id` bigint DEFAULT NULL,
-    `prompt_version_id` bigint DEFAULT NULL,
-    `model_name` varchar(255) DEFAULT NULL,
-    `requested_at` datetime(3) NOT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_ai_image_understanding_id` (`understanding_id`),
-    UNIQUE KEY `uk_ai_image_understanding_object_hash` (`storage_object_id`, `content_hash`),
-    KEY `idx_ai_image_understanding_hash` (`content_hash`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI图片理解结果表';
-
-CREATE TABLE IF NOT EXISTS `ai_entry_split_candidate` (
-    `id` bigint NOT NULL AUTO_INCREMENT,
-    `split_candidate_id` bigint NOT NULL,
-    `candidate_id` bigint NOT NULL,
-    `parent_content_type` varchar(32) NOT NULL,
-    `parent_content_id` bigint NOT NULL,
-    `title` varchar(255) NOT NULL,
-    `original_text` longtext NOT NULL,
-    `translation_text` longtext DEFAULT NULL,
-    `target_volume_id` bigint DEFAULT NULL,
-    `priority` int NOT NULL COMMENT 'AI域全局唯一排序权重，不按candidate_id重新编号',
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_ai_entry_split_candidate_id` (`split_candidate_id`),
-    UNIQUE KEY `uk_ai_entry_split_candidate_priority` (`priority`),
-    KEY `idx_ai_entry_split_candidate_parent` (`parent_content_type`, `parent_content_id`),
-    KEY `idx_ai_entry_split_candidate_candidate` (`candidate_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='AI条目拆分候选表';

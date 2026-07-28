@@ -2,11 +2,12 @@ package com.thundax.kuzhambu.ai.infra.invocation.repository.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.thundax.kuzhambu.ai.domain.batch.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
@@ -17,6 +18,11 @@ import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiCandidateStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjectId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.ai.infra.invocation.persistence.dataobject.AiCandidateDO;
@@ -25,6 +31,8 @@ import com.thundax.kuzhambu.ai.infra.invocation.persistence.mapper.AiInvocationM
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
+import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -42,13 +50,13 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
     }
 
     @Override
-    public AiInvocationLog getInvocationLog(Long callId) {
-        return toInvocationLogDomain(aiInvocationMapper.selectOne(
-                new LambdaQueryWrapper<AiInvocationLogDO>().eq(AiInvocationLogDO::getCallId, callId)));
+    public AiInvocationLog getInvocationLog(AiCallId callId) {
+        return toInvocationLogDomain(aiInvocationMapper.selectOne(new LambdaQueryWrapper<AiInvocationLogDO>()
+                .eq(AiInvocationLogDO::getCallId, AiCallIdCodec.toValue(callId))));
     }
 
     @Override
-    public Long insertInvocationLog(AiInvocationLog invocationLog) {
+    public AiCallId insertInvocationLog(AiInvocationLog invocationLog) {
         AiInvocationLogDO dataObject = toInvocationLogObject(invocationLog);
         if (dataObject.getCallId() == null) {
             dataObject.setCallId(nextId());
@@ -57,7 +65,7 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
             dataObject.setRequestedAt(Instant.now());
         }
         aiInvocationMapper.insert(dataObject);
-        return dataObject.getCallId();
+        return AiCallIdCodec.toDomain(dataObject.getCallId());
     }
 
     @Override
@@ -90,14 +98,39 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
     }
 
     @Override
+    public List<AiInvocationLog> listInvocationLogsByBatch(AiBatchJobId batchId) {
+        return toInvocationLogDomainList(
+                aiInvocationMapper.selectInvocationLogsByBatch(AiBatchJobIdCodec.toValue(batchId)));
+    }
+
+    @Override
+    public List<AiInvocationLog> listInvocationLogsByBatches(List<AiBatchJobId> batchIds) {
+        List<Long> values = batchIdValues(batchIds);
+        if (values.isEmpty()) {
+            return List.of();
+        }
+        return toInvocationLogDomainList(aiInvocationMapper.selectInvocationLogsByBatches(values));
+    }
+
+    @Override
+    public List<AiInvocationLog> listInvocationLogsByBatchesAndContent(
+            List<AiBatchJobId> batchIds, AiContentRef contentRef) {
+        List<Long> values = batchIdValues(batchIds);
+        if (values.isEmpty()) {
+            return List.of();
+        }
+        return toInvocationLogDomainList(aiInvocationMapper.selectInvocationLogsByBatchesAndContent(
+                values, AiContentRefCodec.toContentType(contentRef), AiContentRefCodec.toContentId(contentRef)));
+    }
+
+    @Override
     public PageResult<AiInvocationLog> pageInvocationLogs(
             String scope,
-            String capability,
-            String contentType,
-            Long contentId,
-            String status,
+            AiBusinessCapability capability,
+            AiContentRef contentRef,
+            AiInvocationStatus status,
             String serviceRole,
-            String modelName,
+            AiModelName modelName,
             Boolean fallbackUsed,
             Instant requestedAtStart,
             Instant requestedAtEnd,
@@ -107,23 +140,23 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
         int offset = (pageQuery.getPageNo() - 1) * pageQuery.getPageSize();
         long total = aiInvocationMapper.countInvocationLogs(
                 scope,
-                capability,
-                contentType,
-                contentId,
-                status,
+                capabilityValue(capability),
+                AiContentRefCodec.toContentType(contentRef),
+                AiContentRefCodec.toContentId(contentRef),
+                invocationStatusValue(status),
                 serviceRole,
-                modelName,
+                AiModelNameCodec.toValue(modelName),
                 fallbackUsed,
                 requestedAtStart,
                 requestedAtEnd);
         List<AiInvocationLogDO> records = aiInvocationMapper.selectInvocationLogsPage(
                 scope,
-                capability,
-                contentType,
-                contentId,
-                status,
+                capabilityValue(capability),
+                AiContentRefCodec.toContentType(contentRef),
+                AiContentRefCodec.toContentId(contentRef),
+                invocationStatusValue(status),
                 serviceRole,
-                modelName,
+                AiModelNameCodec.toValue(modelName),
                 fallbackUsed,
                 requestedAtStart,
                 requestedAtEnd,
@@ -134,18 +167,22 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
 
     @Override
     public List<AiInvocationLog> listInvocationLogs(
-            String scope, String capability, String serviceRole, Instant requestedAtStart, Instant requestedAtEnd) {
+            String scope,
+            AiBusinessCapability capability,
+            String serviceRole,
+            Instant requestedAtStart,
+            Instant requestedAtEnd) {
         return toInvocationLogDomainList(aiInvocationMapper.selectInvocationLogsForSummary(
-                scope, capability, serviceRole, requestedAtStart, requestedAtEnd));
+                scope, capabilityValue(capability), serviceRole, requestedAtStart, requestedAtEnd));
     }
 
     @Override
-    public AiCandidate getCandidate(Long candidateId) {
-        return toCandidateDomain(aiInvocationMapper.selectCandidate(candidateId));
+    public AiCandidate getCandidate(AiCandidateId candidateId) {
+        return toCandidateDomain(aiInvocationMapper.selectCandidate(AiCandidateIdCodec.toValue(candidateId)));
     }
 
     @Override
-    public Long insertCandidate(AiCandidate candidate) {
+    public AiCandidateId insertCandidate(AiCandidate candidate) {
         AiCandidateDO dataObject = toCandidateObject(candidate);
         if (dataObject.getId() == null) {
             dataObject.setId(nextId());
@@ -154,7 +191,7 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
             dataObject.setRequestedAt(Instant.now());
         }
         aiInvocationMapper.insertCandidate(dataObject);
-        return dataObject.getId();
+        return AiCandidateIdCodec.toDomain(dataObject.getId());
     }
 
     @Override
@@ -165,9 +202,54 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
 
     @Override
     public List<AiCandidate> listCandidates(
-            String contentType, Long contentId, Long objectId, String capability, String status) {
-        return toCandidateDomainList(
-                aiInvocationMapper.selectCandidates(contentType, contentId, objectId, capability, status));
+            AiContentRef contentRef,
+            AiTargetObjectId targetObjectId,
+            AiBusinessCapability capability,
+            AiCandidateStatus status) {
+        return toCandidateDomainList(aiInvocationMapper.selectCandidates(
+                AiContentRefCodec.toContentType(contentRef),
+                AiContentRefCodec.toContentId(contentRef),
+                AiTargetObjectIdCodec.toValue(targetObjectId),
+                capabilityValue(capability),
+                candidateStatusValue(status)));
+    }
+
+    @Override
+    public List<AiCandidate> listCandidatesByBatch(AiBatchJobId batchId) {
+        return toCandidateDomainList(aiInvocationMapper.selectCandidatesByBatch(AiBatchJobIdCodec.toValue(batchId)));
+    }
+
+    @Override
+    public List<AiCandidate> listCandidatesByBatches(List<AiBatchJobId> batchIds) {
+        List<Long> values = batchIdValues(batchIds);
+        if (values.isEmpty()) {
+            return List.of();
+        }
+        return toCandidateDomainList(aiInvocationMapper.selectCandidatesByBatches(values));
+    }
+
+    @Override
+    public List<AiCandidate> listCandidatesByBatchesAndContent(List<AiBatchJobId> batchIds, AiContentRef contentRef) {
+        List<Long> values = batchIdValues(batchIds);
+        if (values.isEmpty()) {
+            return List.of();
+        }
+        return toCandidateDomainList(aiInvocationMapper.selectCandidatesByBatchesAndContent(
+                values, AiContentRefCodec.toContentType(contentRef), AiContentRefCodec.toContentId(contentRef)));
+    }
+
+    private List<Long> batchIdValues(List<AiBatchJobId> batchIds) {
+        List<Long> values = new ArrayList<>();
+        if (batchIds == null) {
+            return values;
+        }
+        for (AiBatchJobId batchId : batchIds) {
+            Long value = AiBatchJobIdCodec.toValue(batchId);
+            if (value != null) {
+                values.add(value);
+            }
+        }
+        return values;
     }
 
     private AiInvocationLogDO toInvocationLogObject(AiInvocationLog invocationLog) {
@@ -192,8 +274,8 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
         dataObject.setModelId(AiModelIdCodec.toValue(invocationLog.getModelId()));
         dataObject.setModelName(AiModelNameCodec.toValue(invocationLog.getModelName()));
         dataObject.setPromptVersionId(PromptVersionIdCodec.toValue(invocationLog.getPromptVersionId()));
-        dataObject.setRequestId(invocationLog.getRequestId());
-        dataObject.setTraceId(invocationLog.getTraceId());
+        dataObject.setRequestId(RequestIdCodec.toValue(invocationLog.getRequestId()));
+        dataObject.setTraceId(TraceIdCodec.toValue(invocationLog.getTraceId()));
         dataObject.setStatus(
                 invocationLog.getStatus() == null
                         ? null
@@ -235,8 +317,8 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
         invocationLog.setModelId(AiModelIdCodec.toDomain(dataObject.getModelId()));
         invocationLog.setModelName(AiModelNameCodec.toDomain(dataObject.getModelName()));
         invocationLog.setPromptVersionId(PromptVersionIdCodec.toDomain(dataObject.getPromptVersionId()));
-        invocationLog.setRequestId(dataObject.getRequestId());
-        invocationLog.setTraceId(dataObject.getTraceId());
+        invocationLog.setRequestId(RequestIdCodec.toDomain(dataObject.getRequestId()));
+        invocationLog.setTraceId(TraceIdCodec.toDomain(dataObject.getTraceId()));
         invocationLog.setStatus(
                 dataObject.getStatus() == null ? null : AiInvocationStatus.from(dataObject.getStatus()));
         invocationLog.setStreamUsed(Boolean.TRUE.equals(dataObject.getStreamUsed()));
@@ -341,5 +423,17 @@ public class AiInvocationRepositoryImpl implements AiInvocationRepository {
 
     private Long nextId() {
         return idGenerator.nextId().value();
+    }
+
+    private String capabilityValue(AiBusinessCapability capability) {
+        return capability == null ? null : capability.value();
+    }
+
+    private String invocationStatusValue(AiInvocationStatus status) {
+        return status == null ? null : status.name();
+    }
+
+    private String candidateStatusValue(AiCandidateStatus status) {
+        return status == null ? null : status.name();
     }
 }

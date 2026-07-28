@@ -1,7 +1,6 @@
 package com.thundax.kuzhambu.classics.application.content.command;
 
 import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
-import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportFormat;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsExportKind;
@@ -66,23 +65,5 @@ public class ContentExportCommand {
                 contentChanged,
                 null,
                 null);
-    }
-
-    public ClassicsContentExportJob toEntity() {
-        return new ClassicsContentExportJob(
-                null,
-                exportKind,
-                contentType,
-                exportFormat,
-                scopeType,
-                scopeJson,
-                requestedAt,
-                expiresAt,
-                status,
-                storageObjectId,
-                itemCount,
-                assetCount,
-                visibilityRiskStatus,
-                contentChanged);
     }
 }

@@ -2,9 +2,9 @@ package com.thundax.kuzhambu.ai.interfaces.admin.config.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.thundax.kuzhambu.ai.application.capability.service.AiCapabilityApplicationService;
-import com.thundax.kuzhambu.ai.application.config.business.service.AiBusinessConfigApplicationService;
-import com.thundax.kuzhambu.ai.application.config.model.service.AiModelApplicationService;
+import com.thundax.kuzhambu.ai.application.config.service.AiBusinessConfigApplicationService;
+import com.thundax.kuzhambu.ai.application.config.service.AiCapabilityCatalogApplicationService;
+import com.thundax.kuzhambu.ai.application.config.service.AiModelApplicationService;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.controller.request.AiConfigRequests.CapabilityQueryRequest;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;
@@ -48,8 +48,8 @@ class AiConfigControllerTest {
         return proxy(AiModelApplicationService.class, noOpInvocationHandler("model service"));
     }
 
-    private static AiCapabilityApplicationService capabilityListService() {
-        return proxy(AiCapabilityApplicationService.class, (proxy, method, args) -> {
+    private static AiCapabilityCatalogApplicationService capabilityListService() {
+        return proxy(AiCapabilityCatalogApplicationService.class, (proxy, method, args) -> {
             if ("listCapabilities".equals(method.getName())) {
                 assertEquals(true, args[0]);
                 return List.of(AiBusinessCapability.CLASSICS_TRANSLATE);

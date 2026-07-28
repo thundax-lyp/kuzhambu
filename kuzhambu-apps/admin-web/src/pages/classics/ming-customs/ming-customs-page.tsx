@@ -10,7 +10,6 @@ import * as contentService from "@/pages/classics/common/classics-content-servic
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import * as shareService from "@/pages/classics/common/classics-share-service";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
-import * as currentUserService from "@/service/current-user-service";
 import {
     hasClassicsContentPermission,
     type ClassicsBatchOperationRecord
@@ -211,11 +210,6 @@ export const MingCustomsPage = () => {
         queryFn: () => service.getVersion(editingEntry?.id ?? "", selectedVersionId ?? ""),
         enabled:
             mingCustomsEditDrawerOpen && Boolean(editingEntry?.id) && Boolean(selectedVersionId),
-        retry: false
-    });
-    const currentUserQuery = useQuery({
-        queryKey: ["sys", "current-user", "info"],
-        queryFn: currentUserService.getCurrentUserInfo,
         retry: false
     });
     const exportJobsQuery = useQuery({
@@ -676,11 +670,6 @@ export const MingCustomsPage = () => {
         entry: MingCustomsRecord,
         capability: AiRefinementTaskCapability
     ) => {
-        const requestedBy = currentUserQuery.data?.id;
-        if (!requestedBy) {
-            messageApi.warning("当前用户信息未加载完成，请稍后重试");
-            return;
-        }
         if (!entry.content?.trim() && !entry.originalExcerpts?.trim()) {
             messageApi.warning("正文与原文摘录均为空，无法创建 AI 精修任务");
             return;
@@ -691,7 +680,6 @@ export const MingCustomsPage = () => {
             scope: "classics",
             contentType: "MING_CUSTOMS",
             contentId: entry.id,
-            requestedBy,
             serviceRole: DEFAULT_REFINEMENT_SERVICE_ROLE,
             modelId: DEFAULT_REFINEMENT_MODEL_ID,
             modelName: DEFAULT_REFINEMENT_MODEL_NAME,

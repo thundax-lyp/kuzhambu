@@ -164,7 +164,8 @@ const selectLatestSummaryCandidate = (
     return [...candidates]
         .filter(
             (candidate) =>
-                candidate.capability === "summary" &&
+                aiRefinementTaskService.getNormalizedTaskCapability(candidate.capability) ===
+                    "summary" &&
                 candidate.status === "PENDING" &&
                 (!normalizedTrackedCandidateId ||
                     isSameId(candidate.candidateId, normalizedTrackedCandidateId)) &&
@@ -422,7 +423,11 @@ export const WangqiDocumentEditDrawer = ({
     const documentId = mode === "edit" ? document?.id : undefined;
     const latestSummaryTaskFromList = useMemo(() => {
         return [...summaryTasks]
-            .filter((task) => task.capability === "summary")
+            .filter(
+                (task) =>
+                    aiRefinementTaskService.getNormalizedTaskCapability(task.capability) ===
+                    "summary"
+            )
             .sort(sortTasksByNewest)[0];
     }, [summaryTasks]);
     const trackedSummaryTaskFromList = useMemo(() => {

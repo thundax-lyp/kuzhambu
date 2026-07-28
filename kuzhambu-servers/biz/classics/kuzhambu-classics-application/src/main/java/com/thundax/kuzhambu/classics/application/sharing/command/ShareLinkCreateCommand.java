@@ -1,7 +1,6 @@
 package com.thundax.kuzhambu.classics.application.sharing.command;
 
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
-import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareLinkStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVisibility;
 import java.util.Date;
@@ -36,20 +35,5 @@ public class ShareLinkCreateCommand {
             Date expiresAt,
             List<ShareTargetCreateCommand> targets) {
         this(title, visibility, status, visibilityRiskStatus, issuedAt, expiresAt, targets, null, null);
-    }
-
-    public ClassicsShareLink toLink(String shareToken, String tokenHash) {
-        return new ClassicsShareLink(
-                null,
-                shareToken,
-                tokenHash,
-                title,
-                visibility,
-                status,
-                visibilityRiskStatus,
-                operatorUserId,
-                issuedAt,
-                expiresAt,
-                0L);
     }
 }

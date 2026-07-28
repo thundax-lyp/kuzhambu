@@ -2,7 +2,7 @@ package com.thundax.kuzhambu.ai.interfaces.admin.refinement.assembler;
 
 import com.thundax.kuzhambu.ai.application.refinement.command.AiRefinementRequestCommand;
 import com.thundax.kuzhambu.ai.application.refinement.result.AiCandidateResult;
-import com.thundax.kuzhambu.ai.domain.refinement.model.entity.AiRefinementTask;
+import com.thundax.kuzhambu.ai.application.refinement.result.AiRefinementTaskResult;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.request.AiRefinementRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.response.AiRefinementResponses;
 import java.util.ArrayList;
@@ -25,7 +25,6 @@ public final class AiRefinementInterfaceAssembler {
         command.setContentType(request.getContentType());
         command.setContentId(request.getContentId());
         command.setObjectId(request.getObjectId());
-        command.setRequestedBy(request.getRequestedBy());
         command.setServiceId(request.getServiceId());
         command.setServiceRole(request.getServiceRole());
         command.setModelId(request.getModelId());
@@ -62,7 +61,7 @@ public final class AiRefinementInterfaceAssembler {
                 .build();
     }
 
-    public static AiRefinementResponses.TaskDetailResponse toTaskDetailResponse(AiRefinementTask task) {
+    public static AiRefinementResponses.TaskDetailResponse toTaskDetailResponse(AiRefinementTaskResult task) {
         if (task == null) {
             return AiRefinementResponses.TaskDetailResponse.builder().build();
         }
@@ -75,7 +74,6 @@ public final class AiRefinementInterfaceAssembler {
                 .contentType(task.getContentType())
                 .contentId(task.getContentId())
                 .objectId(task.getObjectId())
-                .requestedBy(task.getRequestedBy())
                 .serviceRole(task.getServiceRole())
                 .modelId(task.getModelId())
                 .modelName(task.getModelName())
@@ -99,7 +97,7 @@ public final class AiRefinementInterfaceAssembler {
                 .build();
     }
 
-    public static AiRefinementResponses.TaskAcceptedResponse toTaskAcceptedResponse(AiRefinementTask task) {
+    public static AiRefinementResponses.TaskAcceptedResponse toTaskAcceptedResponse(AiRefinementTaskResult task) {
         if (task == null) {
             return AiRefinementResponses.TaskAcceptedResponse.builder().build();
         }
@@ -114,7 +112,7 @@ public final class AiRefinementInterfaceAssembler {
                 .build();
     }
 
-    public static AiRefinementResponses.TaskCancelResponse toTaskCancelResponse(AiRefinementTask task) {
+    public static AiRefinementResponses.TaskCancelResponse toTaskCancelResponse(AiRefinementTaskResult task) {
         if (task == null) {
             return AiRefinementResponses.TaskCancelResponse.builder().build();
         }
@@ -127,10 +125,10 @@ public final class AiRefinementInterfaceAssembler {
     }
 
     public static AiRefinementResponses.TaskPageResponse toTaskPageResponse(
-            int pageNo, int pageSize, long total, List<AiRefinementTask> records) {
+            int pageNo, int pageSize, long total, List<AiRefinementTaskResult> records) {
         List<AiRefinementResponses.TaskDetailResponse> items = new ArrayList<>();
         if (records != null) {
-            for (AiRefinementTask record : records) {
+            for (AiRefinementTaskResult record : records) {
                 items.add(toTaskDetailResponse(record));
             }
         }

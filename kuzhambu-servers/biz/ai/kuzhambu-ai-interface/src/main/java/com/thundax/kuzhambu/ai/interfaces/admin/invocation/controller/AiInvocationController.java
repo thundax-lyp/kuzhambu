@@ -1,9 +1,16 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller;
 
-import com.thundax.kuzhambu.ai.application.batch.service.AiBatchJobApplicationService;
-import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.application.invocation.batch.service.AiBatchJobApplicationService;
+import com.thundax.kuzhambu.ai.application.invocation.service.AiCandidateApplicationService;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiCandidateStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
-import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainService;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.assembler.AiInvocationInterfaceAssembler;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.request.AiInvocationRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.invocation.controller.response.AiInvocationResponses.BatchJobResponse;
@@ -24,7 +31,6 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,15 +45,15 @@ public class AiInvocationController {
 
     private final AiInvocationRepository invocationRepository;
     private final AiBatchJobApplicationService batchJobService;
-    private final AiCandidateDomainService aiCandidateDomainService;
+    private final AiCandidateApplicationService aiCandidateApplicationService;
 
     public AiInvocationController(
             AiInvocationRepository invocationRepository,
             AiBatchJobApplicationService batchJobService,
-            AiCandidateDomainService aiCandidateDomainService) {
+            AiCandidateApplicationService aiCandidateApplicationService) {
         this.invocationRepository = invocationRepository;
         this.batchJobService = batchJobService;
-        this.aiCandidateDomainService = aiCandidateDomainService;
+        this.aiCandidateApplicationService = aiCandidateApplicationService;
     }
 
     @Operation(summary = "获取AI调用记录", description = "ai:invocation:view")
@@ -62,7 +68,8 @@ public class AiInvocationController {
     @SysLogger(value = "调用读取")
     @PostMapping(value = "invocation-log/get")
     public InvocationLogResponse getInvocationLog(@Valid @RequestBody AiInvocationRequests.CallIdRequest request) {
-        return AiInvocationInterfaceAssembler.toResponse(invocationRepository.getInvocationLog(request.getCallId()));
+        return AiInvocationInterfaceAssembler.toResponse(
+                invocationRepository.getInvocationLog(AiCallIdCodec.toDomain(request.getCallId())));
     }
 
     @Operation(summary = "分页查询AI调用记录", description = "ai:invocation:view")
@@ -82,12 +89,11 @@ public class AiInvocationController {
         return PageResponseHelper.fromPageResult(
                 invocationRepository.pageInvocationLogs(
                         request.getScope(),
-                        request.getCapability(),
-                        request.getContentType(),
-                        request.getContentId(),
-                        request.getStatus(),
+                        toCapability(request.getCapability()),
+                        AiContentRefCodec.toDomain(request.getContentType(), request.getContentId()),
+                        toInvocationStatus(request.getStatus()),
                         request.getServiceRole(),
-                        request.getModelName(),
+                        AiModelNameCodec.toDomain(request.getModelName()),
                         request.getFallbackUsed(),
                         request.getRequestedAtStart(),
                         request.getRequestedAtEnd(),
@@ -114,7 +120,7 @@ public class AiInvocationController {
                 request.getPeriodEnd(),
                 invocationRepository.listInvocationLogs(
                         request.getScope(),
-                        request.getCapability(),
+                        toCapability(request.getCapability()),
                         request.getServiceRole(),
                         request.getPeriodStart(),
                         request.getPeriodEnd()));
@@ -132,7 +138,8 @@ public class AiInvocationController {
     @SysLogger(value = "候选读取")
     @PostMapping(value = "candidate/get")
     public CandidateResponse getCandidate(@Valid @RequestBody AiInvocationRequests.CandidateIdRequest request) {
-        return AiInvocationInterfaceAssembler.toResponse(invocationRepository.getCandidate(request.getCandidateId()));
+        return AiInvocationInterfaceAssembler.toResponse(
+                invocationRepository.getCandidate(AiCandidateIdCodec.toDomain(request.getCandidateId())));
     }
 
     @Operation(summary = "获取AI候选列表", description = "ai:invocation:view")
@@ -150,11 +157,10 @@ public class AiInvocationController {
             @Valid @RequestBody AiInvocationRequests.CandidateListRequest request) {
         return invocationRepository
                 .listCandidates(
-                        request.getContentType(),
-                        request.getContentId(),
-                        request.getObjectId(),
-                        request.getCapability(),
-                        request.getStatus())
+                        AiContentRefCodec.toDomain(request.getContentType(), request.getContentId()),
+                        AiTargetObjectIdCodec.toDomain(request.getObjectId()),
+                        toCapability(request.getCapability()),
+                        toCandidateStatus(request.getStatus()))
                 .stream()
                 .map(AiInvocationInterfaceAssembler::toResponse)
                 .collect(Collectors.toList());
@@ -172,7 +178,7 @@ public class AiInvocationController {
     @SysLogger(value = "候选拒绝")
     @PostMapping(value = "candidate/reject")
     public CandidateResponse rejectCandidate(@Valid @RequestBody AiInvocationRequests.CandidateRejectRequest request) {
-        return AiInvocationInterfaceAssembler.toResponse(aiCandidateDomainService.reject(
+        return AiInvocationInterfaceAssembler.toResponse(aiCandidateApplicationService.reject(
                 request.getCandidateId(), request.getErrorType(), request.getErrorMessage()));
     }
 
@@ -189,17 +195,24 @@ public class AiInvocationController {
     @PostMapping(value = "candidate/mark-applied")
     public CandidateResponse markCandidateApplied(
             @Valid @RequestBody AiInvocationRequests.CandidateMarkAppliedRequest request) {
-        AiCandidate current = invocationRepository.getCandidate(request.getCandidateId());
-        String resultFormat =
-                defaultIfNull(request.getResultFormat(), current == null ? null : current.getResultFormat());
-        String resultPayload =
-                defaultIfNull(request.getResultPayload(), current == null ? null : current.getResultPayload());
-        return AiInvocationInterfaceAssembler.toResponse(aiCandidateDomainService.markApplied(
-                request.getCandidateId(), resultFormat, resultPayload, Instant.now()));
+        return AiInvocationInterfaceAssembler.toResponse(aiCandidateApplicationService.markApplied(
+                request.getCandidateId(), request.getResultFormat(), request.getResultPayload(), null));
     }
 
-    private String defaultIfNull(String requestValue, String currentValue) {
-        return requestValue == null ? currentValue : requestValue;
+    private AiBusinessCapability toCapability(String value) {
+        return isBlank(value) ? null : AiBusinessCapability.fromAlias(value);
+    }
+
+    private AiInvocationStatus toInvocationStatus(String value) {
+        return isBlank(value) ? null : AiInvocationStatus.from(value);
+    }
+
+    private AiCandidateStatus toCandidateStatus(String value) {
+        return isBlank(value) ? null : AiCandidateStatus.from(value);
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 
     @Operation(summary = "获取AI批量任务", description = "ai:invocation:view")

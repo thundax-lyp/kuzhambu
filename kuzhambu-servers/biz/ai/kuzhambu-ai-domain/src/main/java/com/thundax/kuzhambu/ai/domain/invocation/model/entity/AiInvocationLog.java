@@ -1,16 +1,18 @@
 package com.thundax.kuzhambu.ai.domain.invocation.model.entity;
 
-import com.thundax.kuzhambu.ai.domain.batch.model.valueobject.AiBatchJobId;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiInvocationLogId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjectId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -35,8 +37,8 @@ public class AiInvocationLog {
     private AiModelId modelId;
     private AiModelName modelName;
     private PromptVersionId promptVersionId;
-    private String requestId;
-    private String traceId;
+    private RequestId requestId;
+    private TraceId traceId;
     private AiInvocationStatus status = AiInvocationStatus.RUNNING;
     private boolean streamUsed;
     private boolean streamCompleted;

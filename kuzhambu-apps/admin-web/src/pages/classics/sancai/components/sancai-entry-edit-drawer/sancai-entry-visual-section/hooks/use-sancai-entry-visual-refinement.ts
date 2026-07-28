@@ -139,7 +139,6 @@ const buildInputPayloadJson = (
 };
 
 interface UseSancaiEntryVisualRefinementParams {
-    currentUserId?: string | null;
     entry: SancaiEntryRecord;
     selectedVisualAsset: SancaiVisualAssetRecord | null | undefined;
     selectedVisualAssetId: string | null;
@@ -148,7 +147,6 @@ interface UseSancaiEntryVisualRefinementParams {
 }
 
 export const useSancaiEntryVisualRefinement = ({
-    currentUserId,
     entry,
     selectedVisualAsset,
     selectedVisualAssetId,
@@ -384,10 +382,6 @@ export const useSancaiEntryVisualRefinement = ({
                 messageApi.warning("当前视觉处理缺少视觉描述结果，无法创建生图任务");
                 return;
             }
-            if (!currentUserId) {
-                messageApi.warning("当前用户信息尚未加载完成");
-                return;
-            }
             if (sourceTaskId) {
                 setRetryingRefinementTaskId(sourceTaskId);
             }
@@ -398,7 +392,6 @@ export const useSancaiEntryVisualRefinement = ({
                     contentType: "SANCAI_ENTRY",
                     contentId: entry.id,
                     objectId,
-                    requestedBy: currentUserId,
                     requestId: createEventId("sancai-task"),
                     traceId: createEventId("sancai-trace"),
                     promptMessagesJson: buildPromptMessagesJson(capability, entry, asset),
@@ -417,7 +410,7 @@ export const useSancaiEntryVisualRefinement = ({
                 }
             );
         },
-        [createRefinementTaskMutation, currentUserId, entry, messageApi]
+        [createRefinementTaskMutation, entry, messageApi]
     );
 
     const createVisualAssetTask = (capability: SancaiVisualAssetRefinementCapability) => {

@@ -35,8 +35,6 @@ Workers 不拥有 AI 配置、提示词、调用记录或候选结果。Classics
 - `AiInvocationLog`
 - `AiCandidate`
 - `AiBatchJob`
-- `ImageUnderstandingResult`
-- `EntrySplitCandidate`
 - `AiWorkerInvocation`
 - `AiStreamEvent`
 
@@ -58,8 +56,6 @@ Workers 不拥有 AI 配置、提示词、调用记录或候选结果。Classics
 - `ai_invocation_log`
 - `ai_candidate`
 - `ai_batch_job`
-- `ai_image_understanding`
-- `ai_entry_split_candidate`
 
 数据模型必须记录 worker 调用所需的稳定追踪信息，包括模型、服务、能力、提示词版本、请求标识、链路标识、耗时、用量、失败类型和降级状态。stream 片段不是业务事实，默认不逐片段持久化；最终结果、失败或部分失败状态必须进入调用记录。
 
@@ -88,8 +84,8 @@ AI 候选记录固定补充以下字段口径：
 
 排序字段规则：
 
-- `ai_prompt_variable.priority` 和 `ai_entry_split_candidate.priority` 表达 AI 域内可信的后端内部全局排序权重，不表示父级对象内的第几个位置。
-- 该值必须全局唯一；不同 `template_id` 或不同候选结果 ID 下也不得复用同一个 `priority`。
+- `ai_prompt_variable.priority` 表达 AI 域内可信的后端内部全局排序权重，不表示父级对象内的第几个位置。
+- 该值必须全局唯一；不同 `template_id` 下也不得复用同一个 `priority`。
 - 查询仍可按父级过滤后使用 `priority asc` 展示局部列表，但排序权重的分配、去重和冲突处理以全局唯一为准。
 - 前端协议不得读写 `priority`；排序时只提交对象 ID 顺序，由后端在事务内交换或重算内部排序权重。
 
@@ -97,6 +93,7 @@ AI 候选记录固定补充以下字段口径：
 
 - `AiServiceConfigApplicationService`
 - `AiModelApplicationService`
+- `AiCapabilityCatalogApplicationService`
 - `PromptApplicationService`
 - `AiActionStatusApplicationService`
 - `AiRefinementApplicationService`
@@ -127,7 +124,7 @@ Knowledge 抽取协作语义：
 
 批量流程：
 
-- `AiBatchJob` 保存批量任务状态、总数、成功数、失败数、取消状态和失败原因摘要。
+- `AiBatchJob` 属于 invocation 边界内的批量调用模型，保存批量任务状态、总数、成功数、失败数、取消状态和失败原因摘要。
 - AI application 将批量任务拆分为多个 worker 单元调用。
 - 取消批量任务时，AI application 停止继续派发未开始的 worker 单元调用。
 - workers 正在执行的单元调用不保存取消状态；返回成功、失败或超时后由 AI application 归档。
@@ -145,10 +142,10 @@ Stream 流程：
 Admin Web 交互流程：
 
 - Java servers 对前端的默认协议不是直接暴露 workers SSE，也不是默认使用 WebSocket。
-- AI 能力默认采用 `createJob -> jobId -> get/page status` 的异步任务协议。
+- AI 能力默认采用 `createJob -> jobId -> get/page status` 的异步任务协议；单条精修任务是 `totalCount = 1` 的 `AiBatchJob`。
 - workers 的 SSE 只表示 `AI domain -> workers` 的内部执行传输，不直接决定 `Admin Web -> Java` 的产品协议。
 - 只有明确需要边生成边展示的能力，才在任务协议之上补充 Java 对前端的 SSE 订阅能力。
-- 无论是否存在前端 SSE，任务台账、调用记录、候选结果和最终状态都必须先落到 AI 域本地表，再由前端读取。
+- 无论是否存在前端 SSE，任务台账、调用记录、候选结果和最终状态都必须先落到 AI 域本地表，再由前端读取。任务台账统一使用 `ai_batch_job`，不得再为 refinement 单独建立任务事实源。
 
 默认前端任务协议：
 
@@ -165,24 +162,22 @@ Admin Web 交互流程：
 
 默认任务协议详细流程：
 
-1. Admin Web 调用 `POST /api/ai/refinement/task/add`，传入 `contentType`、`contentId`、`capability`、`requestId`、`requestedBy` 和业务参数 JSON；前端默认不传 `modelId`、`promptVersionId` 或已渲染 prompt。
+1. Admin Web 调用 `POST /api/ai/refinement/task/add`，传入 `contentType`、`contentId`、`capability`、`requestId` 和业务参数 JSON；前端默认不传 `modelId`、`promptVersionId` 或已渲染 prompt。
 2. AI interface 校验权限、请求字段、AI 动作开关和内容类型与 capability 的匹配关系。
-3. AI application 创建 `ai_refinement_task`，初始状态为 `PENDING`。
+3. AI application 创建 `ai_batch_job`，其中单条精修任务固定 `totalCount = 1`；对外 `taskId` 兼容指向 `ai_batch_job.id`。
 4. AI application 根据 capability 读取第一个启用的 `ai_business_config`，从业务配置中取得 `model_id`、`prompt_template_id` 和 `default_params_json`。
    `ai_business_config.capability` 是业务配置的能力归属键，创建后不可在编辑流程中切换；编辑业务配置只允许调整提示词模板、模型、默认参数和启停状态。
 5. AI application 根据 `prompt_template_id` 读取当前 prompt version，把业务参数 JSON 按 `{{variableName}}` 注入提示词模板，生成本次调用的 `promptMessagesJson`、`promptVariablesJson` 和 `promptVersionId`。
 6. AI application 合并模型默认参数和业务配置辅助参数；业务配置参数覆盖模型默认参数。
 7. AI application 保留业务 `capability` 作为业务配置、调用记录和候选归档字段，同时把本次调用映射为 workers canonical `workerCapability`，例如 `classics_summary -> summary`、`knowledge_graph_extract -> knowledge_graph`。
-8. AI application 把任务状态更新为 `RUNNING`，并以解析后的模型、提示词、参数和 `workerCapability` 开始本次 worker 调用。
+8. AI application 以解析后的模型、提示词、参数和 `workerCapability` 开始本次 worker 调用；任务生命周期沿用 `AiBatchJob` 状态规则。
 9. 对同步 capability，AI application 等待 worker JSON 完成，再统一写入：
    - `ai_invocation_log`
    - `ai_candidate`
-   - `ai_refinement_task.callId`
-   - `ai_refinement_task.candidateId`
-   - `ai_refinement_task.status`
-10. 对流式 capability，AI application 内部消费 workers SSE；`delta/progress/warning` 只更新任务进度快照，`completed/error` 才形成最终态。
-11. 成功时，AI application 把任务状态更新为 `SUCCEEDED`，并写入 `candidateId`、`resultFormat`、`resultPreview`、`completedAt`。
-12. 失败时，AI application 把任务状态更新为 `FAILED` 或 `PARTIAL`，并写入 `failureStage`、`errorType`、`errorMessage`、`completedAt`。
+   - `ai_batch_job` 计数和终态
+10. 对流式 capability，AI application 内部消费 workers SSE；`delta/progress/warning` 只用于前端实时展示，`completed/error` 才形成最终态。
+11. 成功时，AI application 调用 `AiBatchJob.recordSuccess`，并由 `ai_candidate` 保存候选结果。
+12. 失败时，AI application 调用 `AiBatchJob.recordFailure`，失败阶段、失败类型和失败详情进入调用记录和批任务失败摘要。
 13. Admin Web 通过 `POST /api/ai/refinement/task/get` 或 `POST /api/ai/refinement/task/page` 轮询任务状态。
 14. 当任务进入 `SUCCEEDED` 且存在 `candidateId` 后，Admin Web 刷新候选面板，用户再通过候选应用接口把结果落到正式内容。
 15. `task/add` 的成功只表示“任务已受理”，不表示候选已生成；候选是否可用必须以后续 `task/get` 返回的最终状态判断。
@@ -193,28 +188,14 @@ Admin Web 交互流程：
 - `modelId`、`promptVersionId`、`promptMessagesJson`、`workerCapability` 和 `workerPath` 不属于默认外部运行时协议。
 - Java AI 域对外响应和持久化字段始终使用业务 capability；workers canonical capability 只存在于 Java AI 域到 workers 的内部请求。
 
-精修任务失效清理流程：
+精修任务保留流程：
 
-1. 清理范围只包含 `ai_refinement_task`。
-2. 不清理：
-   - `ai_invocation_log`
-   - `ai_candidate`
-   - `ai_batch_job`
-3. 清理由 Java servers 计划任务执行，建议频率为每 `1` 小时一次。
-4. 默认失效阈值固定为 `12` 小时。
-5. 对 `status in (PENDING, RUNNING)` 且 `requestedAt < now - 12h` 的任务，不直接删除，先自动收口为失败终态：
-   - `status = FAILED`
-   - `failureStage = WORKER_RESULT`
-   - `errorType = TASK_EXPIRED`
-   - `errorMessage = 任务超过 12 小时未完成，系统自动关闭`
-   - `completedAt = now`
-6. 对 `status in (SUCCEEDED, FAILED, PARTIAL, CANCELLED)` 的终态任务，当终态时间早于 `now - 12h` 时执行物理删除。
-7. 终态时间字段取值规则：
-   - 优先 `completedAt`
-   - 若为空则取 `cancelledAt`
-   - 若仍为空则回退 `requestedAt`
-8. 删除 `ai_refinement_task` 不得级联删除 `ai_invocation_log` 或 `ai_candidate`；调用记录和候选快照继续作为追踪真相源保留。
-9. Admin Web 轮询到已被清理的 `taskId` 时，Java 应返回稳定业务提示，例如“任务不存在或已过期清理”，而不是前端无限重试。
+1. 精修任务不再拥有独立 `ai_refinement_task` 事实源。
+2. `ai_batch_job` 保存任务生命周期、批量计数和单内容任务的 `contentId`；单任务精修以 `totalCount = 1` 表达，批量多内容任务的业务内容明细由调用记录与候选归档承载。
+3. `ai_invocation_log` 保存 worker 调用、失败阶段、失败类型和链路追踪。
+4. `ai_candidate` 保存待确认候选结果。
+5. `task/get` 和 `task/page` 的读模型由 `ai_batch_job` 关联最近一次 `ai_invocation_log` 与 `ai_candidate` 组装，不再按客户端传入的请求人过滤。
+6. 任务历史保留和清理应按 `ai_batch_job` 统一治理，不在 refinement 维度单独调度。
 
 前端 SSE 的适用边界：
 

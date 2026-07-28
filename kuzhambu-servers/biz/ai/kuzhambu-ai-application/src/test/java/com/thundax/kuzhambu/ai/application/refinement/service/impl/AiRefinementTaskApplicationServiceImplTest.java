@@ -1,26 +1,37 @@
 package com.thundax.kuzhambu.ai.application.refinement.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.thundax.kuzhambu.ai.application.invocation.batch.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.batch.result.AiBatchJobResult;
+import com.thundax.kuzhambu.ai.application.invocation.batch.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.refinement.command.AiRefinementRequestCommand;
 import com.thundax.kuzhambu.ai.application.refinement.result.AiCandidateResult;
+import com.thundax.kuzhambu.ai.application.refinement.result.AiRefinementTaskResult;
 import com.thundax.kuzhambu.ai.application.refinement.service.AiRefinementApplicationService;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
-import com.thundax.kuzhambu.ai.domain.refinement.model.entity.AiRefinementTask;
-import com.thundax.kuzhambu.ai.domain.refinement.repository.AiRefinementTaskRepository;
-import com.thundax.kuzhambu.common.core.exception.BizException;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiCandidateStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjectId;
+import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
+import com.thundax.kuzhambu.common.core.page.PageQuery;
+import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.Test;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -30,36 +41,111 @@ class AiRefinementTaskApplicationServiceImplTest {
     private static final Executor DIRECT_EXECUTOR = Runnable::run;
 
     @Test
-    void addTaskShouldMarkSancaiImageAnalysisStreamAndPersistSucceededCandidate() {
-        RecordingTaskRepository repository = new RecordingTaskRepository();
+    void addTaskShouldCreateSingleUnitBatchJobAndRecordSuccess() {
+        RecordingBatchJobService batchJobService = new RecordingBatchJobService();
         StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
                 101L,
                 201L,
                 "SUCCEEDED",
-                AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE.value(),
+                AiBusinessCapability.CLASSICS_TRANSLATE.value(),
                 null,
-                "MARKDOWN",
-                "候选正文",
+                "TEXT",
+                "译文",
                 null,
                 null));
         AiRefinementTaskApplicationServiceImpl service =
-                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
+                new AiRefinementTaskApplicationServiceImpl(batchJobService, refinementService, null, DIRECT_EXECUTOR);
 
-        AiRefinementTask accepted = service.addTask(command(AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE.value()));
-        AiRefinementTask completed = awaitTerminal(repository, accepted.getTaskId());
+        AiRefinementTaskResult accepted = service.addTask(command(AiBusinessCapability.CLASSICS_TRANSLATE.value()));
 
-        assertTrue(accepted.isStreamEnabled());
-        assertEquals("SUCCEEDED", completed.getStatus());
-        assertTrue(completed.isStreamEnabled());
-        assertEquals(101L, completed.getCallId());
-        assertEquals(201L, completed.getCandidateId());
-        assertEquals("MARKDOWN", completed.getResultFormat());
-        assertEquals("候选正文", completed.getResultPreview());
+        assertEquals(1, batchJobService.created.getTotalCount());
+        assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE.value(), accepted.getCapability());
+        assertEquals("SUCCEEDED", batchJobService.get(accepted.getTaskId()).getStatus());
+        assertEquals(1, batchJobService.get(accepted.getTaskId()).getSuccessCount());
+        assertEquals(accepted.getTaskId(), refinementService.lastCommand.getBatchId());
     }
 
     @Test
-    void addTaskShouldKeepStreamFailureWithoutCandidate() {
-        RecordingTaskRepository repository = new RecordingTaskRepository();
+    void addTaskShouldNormalizeLegacyCapabilityBeforeCreatingBatchJob() {
+        RecordingBatchJobService batchJobService = new RecordingBatchJobService();
+        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
+                101L,
+                201L,
+                "SUCCEEDED",
+                AiBusinessCapability.CLASSICS_TRANSLATE.value(),
+                null,
+                "TEXT",
+                "译文",
+                null,
+                null));
+        AiRefinementTaskApplicationServiceImpl service =
+                new AiRefinementTaskApplicationServiceImpl(batchJobService, refinementService, null, DIRECT_EXECUTOR);
+        AiRefinementRequestCommand command = command("translate");
+
+        service.addTask(command);
+
+        assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE.value(), command.getCapability());
+        assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE.value(), batchJobService.created.getCapability());
+    }
+
+    @Test
+    void addTaskShouldNormalizeLegacyFusionCapabilityAndInvokeFusionUseCase() {
+        RecordingBatchJobService batchJobService = new RecordingBatchJobService();
+        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
+                101L,
+                201L,
+                "SUCCEEDED",
+                AiBusinessCapability.CLASSICS_IMAGE_PROMPT_FUSION.value(),
+                null,
+                "TEXT",
+                "融合说明",
+                null,
+                null));
+        AiRefinementTaskApplicationServiceImpl service =
+                new AiRefinementTaskApplicationServiceImpl(batchJobService, refinementService, null, DIRECT_EXECUTOR);
+        AiRefinementRequestCommand command = command("fusion");
+
+        service.addTask(command);
+
+        assertEquals(AiBusinessCapability.CLASSICS_IMAGE_PROMPT_FUSION.value(), command.getCapability());
+        assertEquals(
+                AiBusinessCapability.CLASSICS_IMAGE_PROMPT_FUSION.value(), batchJobService.created.getCapability());
+        assertEquals(1, refinementService.fusionInvokeCount);
+    }
+
+    @Test
+    void addTaskShouldExecuteOnlyAfterTransactionCommitWhenSynchronizationIsActive() {
+        RecordingBatchJobService batchJobService = new RecordingBatchJobService();
+        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
+                101L,
+                201L,
+                "SUCCEEDED",
+                AiBusinessCapability.CLASSICS_SUMMARY.value(),
+                null,
+                "TEXT",
+                "摘要",
+                null,
+                null));
+        AiRefinementTaskApplicationServiceImpl service =
+                new AiRefinementTaskApplicationServiceImpl(batchJobService, refinementService, null, DIRECT_EXECUTOR);
+
+        TransactionSynchronizationManager.initSynchronization();
+        AiRefinementTaskResult accepted;
+        try {
+            accepted = service.addTask(command(AiBusinessCapability.CLASSICS_SUMMARY.value()));
+            assertEquals("RUNNING", batchJobService.get(accepted.getTaskId()).getStatus());
+            TransactionSynchronizationManager.getSynchronizations()
+                    .forEach(synchronization -> synchronization.afterCommit());
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+
+        assertEquals("SUCCEEDED", batchJobService.get(accepted.getTaskId()).getStatus());
+    }
+
+    @Test
+    void addTaskShouldRecordFailureThroughBatchJobRule() {
+        RecordingBatchJobService batchJobService = new RecordingBatchJobService();
         StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
                 101L,
                 201L,
@@ -71,276 +157,150 @@ class AiRefinementTaskApplicationServiceImplTest {
                 "WORKER_PROTOCOL_FAILURE",
                 "Worker stream ended without completed event"));
         AiRefinementTaskApplicationServiceImpl service =
-                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
+                new AiRefinementTaskApplicationServiceImpl(batchJobService, refinementService, null, DIRECT_EXECUTOR);
 
-        AiRefinementTask accepted = service.addTask(command(AiBusinessCapability.CLASSICS_IMAGE_GENERATE.value()));
-        AiRefinementTask completed = awaitTerminal(repository, accepted.getTaskId());
+        AiRefinementTaskResult accepted =
+                service.addTask(command(AiBusinessCapability.CLASSICS_IMAGE_GENERATE.value()));
+        AiBatchJobResult completed = batchJobService.get(accepted.getTaskId());
 
-        assertTrue(completed.isStreamEnabled());
+        assertTrue(accepted.isStreamEnabled());
         assertEquals("FAILED", completed.getStatus());
-        assertEquals(101L, completed.getCallId());
-        assertNull(completed.getCandidateId());
-        assertEquals("WORKER_STREAM", completed.getFailureStage());
-        assertEquals("WORKER_PROTOCOL_FAILURE", completed.getErrorType());
-        assertEquals("Worker stream ended without completed event", completed.getErrorMessage());
+        assertEquals(1, completed.getFailedCount());
+        assertTrue(completed.getFailureSummaryJson().contains("WORKER_PROTOCOL_FAILURE"));
     }
 
     @Test
-    void addTaskShouldExecuteOnlyAfterTransactionCommitWhenSynchronizationIsActive() {
-        RecordingTaskRepository repository = new RecordingTaskRepository();
+    void addTaskShouldPreservePartialResultStatus() {
+        RecordingBatchJobService batchJobService = new RecordingBatchJobService();
         StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
                 101L,
                 201L,
-                "SUCCEEDED",
-                AiBusinessCapability.CLASSICS_TRANSLATE.value(),
-                null,
+                "PARTIAL",
+                AiBusinessCapability.CLASSICS_IMAGE_GENERATE.value(),
+                "WORKER_RESULT",
                 "TEXT",
-                "译文",
-                null,
-                null));
+                "partial",
+                "MODEL_SEMANTIC_FAILURE",
+                "partial output"));
         AiRefinementTaskApplicationServiceImpl service =
-                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
+                new AiRefinementTaskApplicationServiceImpl(batchJobService, refinementService, null, DIRECT_EXECUTOR);
 
-        TransactionSynchronizationManager.initSynchronization();
-        AiRefinementTask accepted;
-        try {
-            accepted = service.addTask(command(AiBusinessCapability.CLASSICS_TRANSLATE.value()));
-            assertEquals("PENDING", repository.get(accepted.getTaskId()).getStatus());
-            TransactionSynchronizationManager.getSynchronizations()
-                    .forEach(synchronization -> synchronization.afterCommit());
-        } finally {
-            TransactionSynchronizationManager.clearSynchronization();
-        }
+        AiRefinementTaskResult accepted =
+                service.addTask(command(AiBusinessCapability.CLASSICS_IMAGE_GENERATE.value()));
+        AiBatchJobResult completed = batchJobService.get(accepted.getTaskId());
 
-        AiRefinementTask completed = awaitTerminal(repository, accepted.getTaskId());
-        assertEquals("SUCCEEDED", completed.getStatus());
-        assertEquals("译文", completed.getResultPreview());
+        assertEquals("PARTIAL", completed.getStatus());
+        assertEquals(1, completed.getSuccessCount());
+        assertTrue(completed.getFailureSummaryJson().contains("MODEL_SEMANTIC_FAILURE"));
     }
 
     @Test
-    void addTaskShouldNormalizeLegacyCapabilityBeforePersistAndExecute() {
-        RecordingTaskRepository repository = new RecordingTaskRepository();
-        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
-                101L,
-                201L,
-                "SUCCEEDED",
-                AiBusinessCapability.CLASSICS_TRANSLATE.value(),
+    void taskResultShouldParseBatchFailureSummaryWhenInvocationAndCandidateAreMissing() {
+        AiBatchJobResult job = new AiBatchJobResult(
+                1001L,
+                "classics",
+                "classics_summary",
+                "SANCAI_ENTRY",
+                10L,
+                "FAILED",
+                1,
+                0,
+                1,
+                0,
+                "{\"failureStage\":\"WORKER_REQUEST\",\"errorType\":\"MODEL_CONFIG_INVALID\",\"errorMessage\":\"prompt invalid\"}",
+                Instant.parse("2026-01-01T00:00:00Z"),
                 null,
-                "TEXT",
-                "译文",
-                null,
-                null));
-        AiRefinementTaskApplicationServiceImpl service =
-                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
+                Instant.parse("2026-01-01T00:01:00Z"));
 
-        AiRefinementRequestCommand command = command("translate");
-        AiRefinementTask accepted = service.addTask(command);
-        AiRefinementTask completed = awaitTerminal(repository, accepted.getTaskId());
+        AiRefinementTaskResult result = AiRefinementTaskResult.fromBatchJob(job);
 
-        assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE.value(), command.getCapability());
-        assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE.value(), completed.getCapability());
-        assertEquals("SUCCEEDED", completed.getStatus());
+        assertEquals("WORKER_REQUEST", result.getFailureStage());
+        assertEquals("MODEL_CONFIG_INVALID", result.getErrorType());
+        assertEquals("prompt invalid", result.getErrorMessage());
     }
 
     @Test
-    void addTaskShouldAcceptBusinessPayloadAndPersistResolvedPromptConfig() {
-        RecordingTaskRepository repository = new RecordingTaskRepository();
-        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
-                101L,
-                201L,
-                "SUCCEEDED",
-                AiBusinessCapability.CLASSICS_SUMMARY.value(),
-                null,
-                "TEXT",
-                "摘要",
-                null,
-                null));
-        refinementService.setResolvedPromptConfig("PRIMARY", 2001L, "gpt-4o", 940106L);
-        AiRefinementTaskApplicationServiceImpl service =
-                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
-        AiRefinementRequestCommand command = command(AiBusinessCapability.CLASSICS_SUMMARY.value());
-        command.setServiceRole(null);
-        command.setModelId(null);
-        command.setModelName(null);
-        command.setPromptVersionId(null);
-        command.setPromptMessagesJson(null);
+    void expireOrphanedRunningTasksShouldFailStaleRefinementBatches() {
+        RecordingBatchJobService batchJobService = new RecordingBatchJobService();
+        Long batchId = batchJobService.create(
+                new AiBatchJobCreateCommand("classics", "classics_summary", "SANCAI_ENTRY", 10L, 1, null));
+        AiRefinementTaskApplicationServiceImpl service = new AiRefinementTaskApplicationServiceImpl(
+                batchJobService, new StubRefinementApplicationService(null), null, DIRECT_EXECUTOR);
 
-        AiRefinementTask accepted = service.addTask(command);
-        AiRefinementTask completed = awaitTerminal(repository, accepted.getTaskId());
+        service.expireOrphanedRunningTasks();
 
-        assertEquals("PRIMARY", accepted.getServiceRole());
-        assertEquals(2001L, accepted.getModelId());
-        assertEquals("gpt-4o", accepted.getModelName());
-        assertEquals(940106L, accepted.getPromptVersionId());
-        assertEquals("SUCCEEDED", completed.getStatus());
-        assertEquals("PRIMARY", completed.getServiceRole());
-        assertEquals(2001L, completed.getModelId());
-        assertEquals("gpt-4o", completed.getModelName());
-        assertEquals(940106L, completed.getPromptVersionId());
+        AiBatchJobResult expired = batchJobService.get(batchId);
+        assertEquals("FAILED", expired.getStatus());
+        assertTrue(expired.getFailureSummaryJson().contains("TASK_ORPHANED"));
     }
 
     @Test
-    void addTaskShouldSnapshotResolvedPromptConfigBeforeTransactionCommit() {
-        RecordingTaskRepository repository = new RecordingTaskRepository();
-        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
-                101L,
-                201L,
-                "SUCCEEDED",
-                AiBusinessCapability.CLASSICS_SUMMARY.value(),
-                null,
-                "TEXT",
-                "摘要",
-                null,
-                null));
-        refinementService.setResolvedPromptConfig("PRIMARY", 2001L, "gpt-4o", 940106L);
-        AiRefinementTaskApplicationServiceImpl service =
-                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
-        AiRefinementRequestCommand command = command(AiBusinessCapability.CLASSICS_SUMMARY.value());
-        command.setServiceRole(null);
-        command.setModelId(null);
-        command.setModelName(null);
-        command.setPromptVersionId(null);
-        command.setPromptMessagesJson(null);
-        command.setPromptVariablesJson(null);
+    void pageTasksShouldLoadInvocationAndCandidateByBatchIdsInBulk() {
+        RecordingBatchJobService batchJobService = new RecordingBatchJobService();
+        Long firstBatchId = batchJobService.create(
+                new AiBatchJobCreateCommand("classics", "classics_summary", "SANCAI_ENTRY", 10L, 1, null));
+        Long secondBatchId = batchJobService.create(
+                new AiBatchJobCreateCommand("classics", "classics_tags", "SANCAI_ENTRY", 10L, 1, null));
+        batchJobService.create(
+                new AiBatchJobCreateCommand("knowledge", "knowledge_graph_extract", "SANCAI_ENTRY", 10L, 1, null));
+        RecordingInvocationRepository invocationRepository =
+                new RecordingInvocationRepository(firstBatchId, secondBatchId);
+        AiRefinementTaskApplicationServiceImpl service = new AiRefinementTaskApplicationServiceImpl(
+                batchJobService, new StubRefinementApplicationService(null), invocationRepository, DIRECT_EXECUTOR);
 
-        TransactionSynchronizationManager.initSynchronization();
-        AiRefinementTask accepted;
-        try {
-            accepted = service.addTask(command);
-            AiRefinementTask pending = repository.get(accepted.getTaskId());
-            assertEquals("PENDING", pending.getStatus());
-            assertEquals("PRIMARY", pending.getServiceRole());
-            assertEquals(2001L, pending.getModelId());
-            assertEquals("gpt-4o", pending.getModelName());
-            assertEquals(940106L, pending.getPromptVersionId());
+        PageResult<AiRefinementTaskResult> page = service.pageTasks(null, null, "SANCAI_ENTRY", 10L, new PageQuery());
 
-            refinementService.setResolvedPromptConfig("SECONDARY", 3001L, "gpt-5", 950106L);
-            TransactionSynchronizationManager.getSynchronizations()
-                    .forEach(synchronization -> synchronization.afterCommit());
-        } finally {
-            TransactionSynchronizationManager.clearSynchronization();
-        }
-
-        AiRefinementTask completed = awaitTerminal(repository, accepted.getTaskId());
-        assertEquals("SUCCEEDED", completed.getStatus());
-        assertEquals("PRIMARY", completed.getServiceRole());
-        assertEquals(2001L, completed.getModelId());
-        assertEquals("gpt-4o", completed.getModelName());
-        assertEquals(940106L, completed.getPromptVersionId());
+        assertEquals(2, page.getRecords().size());
+        assertEquals(1, invocationRepository.contentInvocationQueryCount);
+        assertEquals(1, invocationRepository.contentCandidateQueryCount);
+        assertEquals(301L, page.getRecords().get(0).getCandidateId());
+        assertEquals(302L, page.getRecords().get(1).getCandidateId());
     }
 
     @Test
-    void addTaskShouldRevalidateSnapshotBeforeDispatch() {
-        RecordingTaskRepository repository = new RecordingTaskRepository();
-        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
-                101L,
-                201L,
-                "SUCCEEDED",
-                AiBusinessCapability.CLASSICS_SUMMARY.value(),
-                null,
-                "TEXT",
-                "摘要",
-                null,
-                null));
-        refinementService.setResolvedPromptConfig("PRIMARY", 2001L, "gpt-4o", 940106L);
-        AiRefinementTaskApplicationServiceImpl service =
-                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
-        AiRefinementRequestCommand command = command(AiBusinessCapability.CLASSICS_SUMMARY.value());
-        command.setPromptVersionId(null);
-        command.setPromptMessagesJson(null);
-        command.setPromptVariablesJson(null);
+    void getTaskShouldRejectNonRefinementBatchJob() {
+        RecordingBatchJobService batchJobService = new RecordingBatchJobService();
+        Long batchId = batchJobService.create(
+                new AiBatchJobCreateCommand("knowledge", "knowledge_graph_extract", "SANCAI_ENTRY", 10L, 1, null));
+        AiRefinementTaskApplicationServiceImpl service = new AiRefinementTaskApplicationServiceImpl(
+                batchJobService, new StubRefinementApplicationService(null), null, DIRECT_EXECUTOR);
 
-        AiRefinementTask accepted = service.addTask(command);
-        AiRefinementTask completed = awaitTerminal(repository, accepted.getTaskId());
-
-        assertEquals(1, refinementService.validateSnapshotInvokeConfigCount);
-        assertEquals("SUCCEEDED", completed.getStatus());
+        assertThrows(RuntimeException.class, () -> service.getTask(batchId));
     }
 
     @Test
-    void addTaskShouldFailWhenSnapshotPromptTemplateIsDisabledBeforeDispatch() {
-        RecordingTaskRepository repository = new RecordingTaskRepository();
-        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
-                101L,
-                201L,
-                "SUCCEEDED",
-                AiBusinessCapability.CLASSICS_SUMMARY.value(),
-                null,
-                "TEXT",
-                "摘要",
-                null,
-                null));
-        refinementService.setResolvedPromptConfig("PRIMARY", 2001L, "gpt-4o", 940106L);
-        refinementService.setSnapshotValidationException(
-                new BizException("AI business config prompt template is disabled or mismatched: 930106"));
-        AiRefinementTaskApplicationServiceImpl service =
-                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
-        AiRefinementRequestCommand command = command(AiBusinessCapability.CLASSICS_SUMMARY.value());
-        command.setPromptVersionId(null);
-        command.setPromptMessagesJson(null);
-        command.setPromptVariablesJson(null);
+    void cancelTaskShouldRejectNonRefinementBatchJob() {
+        RecordingBatchJobService batchJobService = new RecordingBatchJobService();
+        Long batchId = batchJobService.create(
+                new AiBatchJobCreateCommand("knowledge", "knowledge_graph_extract", "SANCAI_ENTRY", 10L, 1, null));
+        AiRefinementTaskApplicationServiceImpl service = new AiRefinementTaskApplicationServiceImpl(
+                batchJobService, new StubRefinementApplicationService(null), null, DIRECT_EXECUTOR);
 
-        AiRefinementTask accepted = service.addTask(command);
-        AiRefinementTask completed = awaitTerminal(repository, accepted.getTaskId());
-
-        assertEquals(1, refinementService.validateSnapshotInvokeConfigCount);
-        assertEquals("FAILED", completed.getStatus());
-        assertEquals("WORKER_REQUEST", completed.getFailureStage());
-        assertEquals("INTERNAL_FAILURE", completed.getErrorType());
-        assertEquals(
-                "AI business config prompt template is disabled or mismatched: 930106", completed.getErrorMessage());
+        assertThrows(RuntimeException.class, () -> service.cancelTask(batchId));
+        assertEquals("RUNNING", batchJobService.get(batchId).getStatus());
     }
 
     @Test
-    void conditionalUpdateShouldKeepCancelledWhenWorkerCompletionArrivesLate() {
-        RecordingTaskRepository repository = new RecordingTaskRepository();
-        AiRefinementTask task = task(AiBusinessCapability.CLASSICS_TRANSLATE.value(), "RUNNING");
-        repository.insertWithTaskId(task);
-        AiRefinementTask staleRunningTask = repository.get(task.getTaskId());
-        staleRunningTask.markSucceeded(101L, 201L, "TEXT", "译文", Instant.now());
-        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
-                101L,
-                201L,
-                "SUCCEEDED",
-                AiBusinessCapability.CLASSICS_TRANSLATE.value(),
-                null,
-                "TEXT",
-                "译文",
-                null,
-                null));
-        AiRefinementTaskApplicationServiceImpl service =
-                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
+    void pageTasksShouldKeepCandidateScopedToRequestedContentInMultiContentBatch() {
+        RecordingBatchJobService batchJobService = new RecordingBatchJobService();
+        Long batchId = batchJobService.create(
+                new AiBatchJobCreateCommand("classics", "classics_summary", "SANCAI_ENTRY", null, 2, null));
+        RecordingInvocationRepository invocationRepository = new RecordingInvocationRepository(
+                List.of(
+                        RecordingInvocationRepository.invocationLog(batchId, 202L, 20L, "2026-01-01T00:03:00Z"),
+                        RecordingInvocationRepository.invocationLog(batchId, 201L, 10L, "2026-01-01T00:01:00Z")),
+                List.of(
+                        RecordingInvocationRepository.candidate(batchId, 302L, 202L, 20L, "2026-01-01T00:04:00Z"),
+                        RecordingInvocationRepository.candidate(batchId, 301L, 201L, 10L, "2026-01-01T00:02:00Z")));
+        AiRefinementTaskApplicationServiceImpl service = new AiRefinementTaskApplicationServiceImpl(
+                batchJobService, new StubRefinementApplicationService(null), invocationRepository, DIRECT_EXECUTOR);
 
-        service.cancelTask(task.getTaskId(), task.getRequestedBy());
-        int updated = repository.updateWhenStatusIn(staleRunningTask, List.of("RUNNING"));
+        PageResult<AiRefinementTaskResult> page = service.pageTasks(null, null, "SANCAI_ENTRY", 10L, new PageQuery());
 
-        assertEquals(0, updated);
-        assertEquals("CANCELLED", repository.get(task.getTaskId()).getStatus());
-        assertNull(repository.get(task.getTaskId()).getCallId());
-    }
-
-    @Test
-    void cancelTaskShouldPublishStreamTerminalEvent() throws Exception {
-        RecordingTaskRepository repository = new RecordingTaskRepository();
-        AiRefinementTask task = task(AiBusinessCapability.CLASSICS_IMAGE_GENERATE.value(), "RUNNING");
-        task.setStreamEnabled(true);
-        repository.insertWithTaskId(task);
-        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(null);
-        AiRefinementTaskApplicationServiceImpl service =
-                new AiRefinementTaskApplicationServiceImpl(repository, refinementService, DIRECT_EXECUTOR);
-        List<String> statuses = new ArrayList<>();
-        CompletableFuture<Void> subscription =
-                CompletableFuture.runAsync(() -> service.streamTaskEvents(task.getTaskId(), event -> {
-                    if (event.isError()) {
-                        statuses.add(event.getStatus());
-                    }
-                }));
-
-        Thread.sleep(20L);
-        service.cancelTask(task.getTaskId(), task.getRequestedBy());
-        subscription.get(1L, TimeUnit.SECONDS);
-
-        assertEquals(List.of("CANCELLED"), statuses);
+        assertEquals(1, page.getRecords().size());
+        assertEquals(10L, page.getRecords().get(0).getContentId());
+        assertEquals(301L, page.getRecords().get(0).getCandidateId());
+        assertEquals(201L, page.getRecords().get(0).getCallId());
     }
 
     private AiRefinementRequestCommand command(String capability) {
@@ -351,7 +311,6 @@ class AiRefinementTaskApplicationServiceImplTest {
         command.setContentType("SANCAI_ENTRY");
         command.setContentId(10L);
         command.setObjectId(20L);
-        command.setRequestedBy(30L);
         command.setModelId(40L);
         command.setModelName("model-a");
         command.setPromptVersionId(50L);
@@ -362,253 +321,432 @@ class AiRefinementTaskApplicationServiceImplTest {
         return command;
     }
 
-    private AiRefinementTask task(String capability, String status) {
-        AiRefinementTask task = new AiRefinementTask();
-        task.setTaskId(9001L);
-        task.setScope("classics");
-        task.setCapability(capability);
-        task.setContentType("SANCAI_ENTRY");
-        task.setContentId(10L);
-        task.setObjectId(20L);
-        task.setRequestedBy(30L);
-        task.setRequestId("req-1");
-        task.setTraceId("trace-1");
-        task.setStatus(status);
-        task.setServiceRole("PRIMARY");
-        task.setModelId(40L);
-        task.setModelName("model-a");
-        task.setPromptVersionId(50L);
-        task.setRequestedAt(Instant.now());
-        task.setStartedAt(Instant.now());
-        return task;
-    }
+    private static final class RecordingBatchJobService implements AiBatchJobApplicationService {
 
-    private AiRefinementTask awaitTerminal(RecordingTaskRepository repository, Long taskId) {
-        long deadline = System.currentTimeMillis() + 3000L;
-        AiRefinementTask task = repository.get(taskId);
-        while (System.currentTimeMillis() < deadline) {
-            task = repository.get(taskId);
-            if (task != null && ("SUCCEEDED".equals(task.getStatus()) || "FAILED".equals(task.getStatus()))) {
-                return task;
-            }
-            try {
-                Thread.sleep(10L);
-            } catch (InterruptedException exception) {
-                Thread.currentThread().interrupt();
-                throw new AssertionError("interrupted while waiting for task completion", exception);
-            }
+        private final AtomicLong sequence = new AtomicLong(1000L);
+        private final List<AiBatchJobResult> jobs = new ArrayList<>();
+        private AiBatchJobCreateCommand created;
+
+        @Override
+        public AiBatchJobResult get(Long batchId) {
+            return jobs.stream()
+                    .filter(job -> job.getBatchId().equals(batchId))
+                    .findFirst()
+                    .orElse(null);
         }
-        assertNotNull(task);
-        return task;
+
+        @Override
+        public PageResult<AiBatchJobResult> page(
+                String scope,
+                String capability,
+                String status,
+                String contentType,
+                Long contentId,
+                PageQuery pageQuery) {
+            List<AiBatchJobResult> records = filtered(scope, capability == null ? List.of() : List.of(capability));
+            return PageResult.of(1, 10, records.size(), records);
+        }
+
+        @Override
+        public PageResult<AiBatchJobResult> pageByCapabilities(
+                String scope,
+                List<String> capabilities,
+                String status,
+                String contentType,
+                Long contentId,
+                PageQuery pageQuery) {
+            List<AiBatchJobResult> records = filtered(scope, capabilities);
+            return PageResult.of(1, 10, records.size(), records);
+        }
+
+        @Override
+        public Long create(AiBatchJobCreateCommand command) {
+            created = command;
+            long batchId = sequence.incrementAndGet();
+            jobs.add(new AiBatchJobResult(
+                    batchId,
+                    command.getScope(),
+                    command.getCapability(),
+                    command.getContentType(),
+                    command.getContentId(),
+                    "RUNNING",
+                    command.getTotalCount(),
+                    0,
+                    0,
+                    0,
+                    command.getFailureSummaryJson(),
+                    Instant.parse("2026-01-01T00:00:00Z"),
+                    null,
+                    null));
+            return batchId;
+        }
+
+        @Override
+        public boolean canDispatchNextUnit(Long batchId) {
+            return true;
+        }
+
+        @Override
+        public AiBatchJobResult recordSuccess(Long batchId) {
+            AiBatchJobResult job = get(batchId);
+            AiBatchJobResult updated = copy(job, "SUCCEEDED", 1, 0, null);
+            replace(updated);
+            return updated;
+        }
+
+        @Override
+        public AiBatchJobResult recordSuccessIfRunning(Long batchId) {
+            AiBatchJobResult job = get(batchId);
+            if (!"RUNNING".equals(job.getStatus())) {
+                return job;
+            }
+            return recordSuccess(batchId);
+        }
+
+        @Override
+        public AiBatchJobResult recordFailure(Long batchId, String failureSummaryJson) {
+            AiBatchJobResult job = get(batchId);
+            AiBatchJobResult updated = copy(job, "FAILED", 0, 1, failureSummaryJson);
+            replace(updated);
+            return updated;
+        }
+
+        @Override
+        public AiBatchJobResult recordFailureIfRunning(Long batchId, String failureSummaryJson) {
+            AiBatchJobResult job = get(batchId);
+            if (!"RUNNING".equals(job.getStatus())) {
+                return job;
+            }
+            return recordFailure(batchId, failureSummaryJson);
+        }
+
+        @Override
+        public AiBatchJobResult recordPartialIfRunning(Long batchId, String failureSummaryJson) {
+            AiBatchJobResult job = get(batchId);
+            if (!"RUNNING".equals(job.getStatus())) {
+                return job;
+            }
+            AiBatchJobResult updated = copy(job, "PARTIAL", 1, 0, failureSummaryJson);
+            replace(updated);
+            return updated;
+        }
+
+        @Override
+        public int expireRunning(
+                String scope,
+                List<String> capabilities,
+                Instant requestedBefore,
+                String failureSummaryJson,
+                int limit) {
+            int expiredCount = 0;
+            for (AiBatchJobResult job : List.copyOf(jobs)) {
+                if ("RUNNING".equals(job.getStatus())
+                        && scope.equals(job.getScope())
+                        && capabilities.contains(job.getCapability())
+                        && job.getRequestedAt().isBefore(requestedBefore)) {
+                    recordFailure(job.getBatchId(), failureSummaryJson);
+                    expiredCount++;
+                }
+            }
+            return expiredCount;
+        }
+
+        @Override
+        public AiBatchJobResult cancel(Long batchId) {
+            AiBatchJobResult job = get(batchId);
+            AiBatchJobResult updated = copy(job, "CANCELLED", job.getSuccessCount(), job.getFailedCount(), null);
+            replace(updated);
+            return updated;
+        }
+
+        private AiBatchJobResult copy(
+                AiBatchJobResult job, String status, int successCount, int failedCount, String failureSummaryJson) {
+            return new AiBatchJobResult(
+                    job.getBatchId(),
+                    job.getScope(),
+                    job.getCapability(),
+                    job.getContentType(),
+                    job.getContentId(),
+                    status,
+                    job.getTotalCount(),
+                    successCount,
+                    failedCount,
+                    job.getCancelledCount(),
+                    failureSummaryJson,
+                    job.getRequestedAt(),
+                    "CANCELLED".equals(status) ? Instant.parse("2026-01-01T00:01:00Z") : job.getCancelledAt(),
+                    !"RUNNING".equals(status) ? Instant.parse("2026-01-01T00:02:00Z") : job.getCompletedAt());
+        }
+
+        private void replace(AiBatchJobResult updated) {
+            jobs.removeIf(job -> job.getBatchId().equals(updated.getBatchId()));
+            jobs.add(updated);
+        }
+
+        private List<AiBatchJobResult> filtered(String scope, List<String> capabilities) {
+            List<AiBatchJobResult> records = new ArrayList<>();
+            for (AiBatchJobResult job : jobs) {
+                if ((scope == null || scope.equals(job.getScope()))
+                        && (capabilities == null
+                                || capabilities.isEmpty()
+                                || capabilities.contains(job.getCapability()))) {
+                    records.add(job);
+                }
+            }
+            return records;
+        }
     }
 
     private static class StubRefinementApplicationService implements AiRefinementApplicationService {
 
         private final AiCandidateResult result;
-        private String resolvedServiceRole;
-        private Long resolvedModelId;
-        private String resolvedModelName;
-        private Long resolvedPromptVersionId;
-        private RuntimeException snapshotValidationException;
-        private int validateSnapshotInvokeConfigCount;
+        private int fusionInvokeCount;
+        private AiRefinementRequestCommand lastCommand;
 
         StubRefinementApplicationService(AiCandidateResult result) {
             this.result = result;
         }
 
-        void setResolvedPromptConfig(String serviceRole, Long modelId, String modelName, Long promptVersionId) {
-            this.resolvedServiceRole = serviceRole;
-            this.resolvedModelId = modelId;
-            this.resolvedModelName = modelName;
-            this.resolvedPromptVersionId = promptVersionId;
-        }
-
-        void setSnapshotValidationException(RuntimeException exception) {
-            this.snapshotValidationException = exception;
-        }
+        @Override
+        public void snapshotInvokeConfig(AiRefinementRequestCommand command) {}
 
         @Override
-        public void snapshotInvokeConfig(AiRefinementRequestCommand command) {
-            applyResolvedPromptConfig(command);
-        }
-
-        @Override
-        public void validateSnapshotInvokeConfig(AiRefinementRequestCommand command) {
-            validateSnapshotInvokeConfigCount++;
-            if (snapshotValidationException != null) {
-                throw snapshotValidationException;
-            }
-        }
+        public void validateSnapshotInvokeConfig(AiRefinementRequestCommand command) {}
 
         @Override
         public AiCandidateResult translate(AiRefinementRequestCommand command) {
-            applyResolvedPromptConfig(command);
+            lastCommand = command;
             return result;
         }
 
         @Override
         public AiCandidateResult summarize(AiRefinementRequestCommand command) {
-            applyResolvedPromptConfig(command);
+            lastCommand = command;
             return result;
         }
 
         @Override
         public AiCandidateResult generateTags(AiRefinementRequestCommand command) {
-            applyResolvedPromptConfig(command);
+            lastCommand = command;
             return result;
         }
 
         @Override
         public AiCandidateResult generateQa(AiRefinementRequestCommand command) {
-            applyResolvedPromptConfig(command);
+            lastCommand = command;
             return result;
         }
 
         @Override
         public AiCandidateResult analyzeImage(AiRefinementRequestCommand command) {
-            applyResolvedPromptConfig(command);
+            lastCommand = command;
             return result;
         }
 
         @Override
         public AiCandidateResult fuseVisualContext(AiRefinementRequestCommand command) {
-            applyResolvedPromptConfig(command);
+            lastCommand = command;
+            fusionInvokeCount++;
             return result;
         }
 
         @Override
         public AiCandidateResult generateImage(AiRefinementRequestCommand command) {
-            applyResolvedPromptConfig(command);
+            lastCommand = command;
             return result;
         }
 
         @Override
         public AiCandidateResult describeVisual(AiRefinementRequestCommand command) {
-            applyResolvedPromptConfig(command);
+            lastCommand = command;
             return result;
         }
 
         @Override
         public AiCandidateResult splitEntry(AiRefinementRequestCommand command) {
-            applyResolvedPromptConfig(command);
+            lastCommand = command;
             return result;
         }
-
-        private void applyResolvedPromptConfig(AiRefinementRequestCommand command) {
-            if (resolvedPromptVersionId == null || command.getPromptVersionId() != null) {
-                return;
-            }
-            command.setServiceRole(resolvedServiceRole);
-            command.setModelId(resolvedModelId);
-            command.setModelName(resolvedModelName);
-            command.setPromptVersionId(resolvedPromptVersionId);
-            command.setPromptMessagesJson("[{\"role\":\"user\",\"content\":\"resolved\"}]");
-            command.setPromptVariablesJson("{}");
-        }
     }
 
-    private static class RecordingTaskRepository implements AiRefinementTaskRepository {
+    private static final class RecordingInvocationRepository implements AiInvocationRepository {
 
-        private final AtomicLong sequence = new AtomicLong(1000L);
-        private final Map<Long, AiRefinementTask> tasks = new ConcurrentHashMap<>();
+        private final List<AiInvocationLog> invocationLogs;
+        private final List<AiCandidate> candidates;
+        private int batchInvocationQueryCount;
+        private int batchCandidateQueryCount;
+        private int contentInvocationQueryCount;
+        private int contentCandidateQueryCount;
 
-        @Override
-        public AiRefinementTask get(Long taskId) {
-            return copy(tasks.get(taskId));
+        RecordingInvocationRepository(Long firstBatchId, Long secondBatchId) {
+            invocationLogs = List.of(invocationLog(firstBatchId, 201L), invocationLog(secondBatchId, 202L));
+            candidates = List.of(candidate(firstBatchId, 301L, 201L), candidate(secondBatchId, 302L, 202L));
+        }
+
+        RecordingInvocationRepository(List<AiInvocationLog> invocationLogs, List<AiCandidate> candidates) {
+            this.invocationLogs = invocationLogs;
+            this.candidates = candidates;
         }
 
         @Override
-        public Long insert(AiRefinementTask task) {
-            long taskId = sequence.incrementAndGet();
-            task.setTaskId(taskId);
-            tasks.put(taskId, copy(task));
-            return taskId;
-        }
-
-        void insertWithTaskId(AiRefinementTask task) {
-            tasks.put(task.getTaskId(), copy(task));
+        public AiInvocationLog getInvocationLog(AiCallId callId) {
+            throw new UnsupportedOperationException();
         }
 
         @Override
-        public int update(AiRefinementTask task) {
-            tasks.put(task.getTaskId(), copy(task));
-            return 1;
+        public AiCallId insertInvocationLog(AiInvocationLog invocationLog) {
+            throw new UnsupportedOperationException();
         }
 
         @Override
-        public int updateWhenStatusIn(AiRefinementTask task, Collection<String> statuses) {
-            AiRefinementTask current = tasks.get(task.getTaskId());
-            if (current == null || statuses == null || !statuses.contains(current.getStatus())) {
-                return 0;
+        public int updateInvocationLog(AiInvocationLog invocationLog) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<AiInvocationLog> listInvocationLogs(Instant requestedAtStart, Instant requestedAtEnd) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<AiInvocationLog> listInvocationLogsByBatch(AiBatchJobId batchId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<AiInvocationLog> listInvocationLogsByBatches(List<AiBatchJobId> batchIds) {
+            batchInvocationQueryCount++;
+            return invocationLogs;
+        }
+
+        @Override
+        public List<AiInvocationLog> listInvocationLogsByBatchesAndContent(
+                List<AiBatchJobId> batchIds, AiContentRef contentRef) {
+            contentInvocationQueryCount++;
+            List<AiInvocationLog> records = new ArrayList<>();
+            for (AiInvocationLog record : invocationLogs) {
+                if (matchesContentRef(record.getContentRef(), contentRef)) {
+                    records.add(record);
+                }
             }
-            tasks.put(task.getTaskId(), copy(task));
-            return 1;
+            return records;
         }
 
         @Override
-        public List<AiRefinementTask> listTasks(
-                String capability,
-                String status,
-                String contentType,
-                Long contentId,
-                Long requestedBy,
-                Integer pageNo,
-                Integer pageSize) {
-            return new ArrayList<>(tasks.values());
+        public PageResult<AiInvocationLog> pageInvocationLogs(
+                String scope,
+                AiBusinessCapability capability,
+                AiContentRef contentRef,
+                AiInvocationStatus status,
+                String serviceRole,
+                AiModelName modelName,
+                Boolean fallbackUsed,
+                Instant requestedAtStart,
+                Instant requestedAtEnd,
+                int pageNo,
+                int pageSize) {
+            throw new UnsupportedOperationException();
         }
 
         @Override
-        public long countTasks(String capability, String status, String contentType, Long contentId, Long requestedBy) {
-            return tasks.size();
+        public List<AiInvocationLog> listInvocationLogs(
+                String scope,
+                AiBusinessCapability capability,
+                String serviceRole,
+                Instant requestedAtStart,
+                Instant requestedAtEnd) {
+            throw new UnsupportedOperationException();
         }
 
         @Override
-        public List<AiRefinementTask> listActiveTasks() {
-            return List.of();
+        public AiCandidate getCandidate(AiCandidateId candidateId) {
+            throw new UnsupportedOperationException();
         }
 
         @Override
-        public List<AiRefinementTask> listExpiredRunningTasks(Instant threshold) {
-            return List.of();
+        public AiCandidateId insertCandidate(AiCandidate candidate) {
+            throw new UnsupportedOperationException();
         }
 
         @Override
-        public int deleteExpiredTerminalTasks(Instant threshold) {
-            return 0;
+        public int updateCandidate(AiCandidate candidate) {
+            throw new UnsupportedOperationException();
         }
-    }
 
-    private static AiRefinementTask copy(AiRefinementTask task) {
-        if (task == null) {
-            return null;
+        @Override
+        public List<AiCandidate> listCandidates(
+                AiContentRef contentRef,
+                AiTargetObjectId targetObjectId,
+                AiBusinessCapability capability,
+                AiCandidateStatus status) {
+            throw new UnsupportedOperationException();
         }
-        return new AiRefinementTask(
-                task.getId(),
-                task.getTaskId(),
-                task.getScope(),
-                task.getCapability(),
-                task.getContentType(),
-                task.getContentId(),
-                task.getObjectId(),
-                task.getRequestedBy(),
-                task.getRequestId(),
-                task.getTraceId(),
-                task.getStatus(),
-                task.getServiceRole(),
-                task.getModelId(),
-                task.getModelName(),
-                task.getPromptVersionId(),
-                task.getCallId(),
-                task.getCandidateId(),
-                task.getResultFormat(),
-                task.getResultPreview(),
-                task.getFailureStage(),
-                task.getErrorType(),
-                task.getErrorMessage(),
-                task.isStreamEnabled(),
-                task.getRequestedAt(),
-                task.getStartedAt(),
-                task.getCompletedAt(),
-                task.getCancelledAt());
+
+        @Override
+        public List<AiCandidate> listCandidatesByBatch(AiBatchJobId batchId) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<AiCandidate> listCandidatesByBatches(List<AiBatchJobId> batchIds) {
+            batchCandidateQueryCount++;
+            return candidates;
+        }
+
+        @Override
+        public List<AiCandidate> listCandidatesByBatchesAndContent(
+                List<AiBatchJobId> batchIds, AiContentRef contentRef) {
+            contentCandidateQueryCount++;
+            List<AiCandidate> records = new ArrayList<>();
+            for (AiCandidate record : candidates) {
+                if (matchesContentRef(record.getContentRef(), contentRef)) {
+                    records.add(record);
+                }
+            }
+            return records;
+        }
+
+        private static AiInvocationLog invocationLog(Long batchId, Long callId) {
+            return invocationLog(batchId, callId, 10L, "2026-01-01T00:01:00Z");
+        }
+
+        private static AiInvocationLog invocationLog(Long batchId, Long callId, Long contentId, String requestedAt) {
+            AiInvocationLog invocationLog = new AiInvocationLog();
+            invocationLog.setBatchId(AiBatchJobIdCodec.toDomain(batchId));
+            invocationLog.setCallId(AiCallIdCodec.toDomain(callId));
+            invocationLog.setCapability(AiBusinessCapability.CLASSICS_SUMMARY);
+            invocationLog.setContentRef(AiContentRef.ofNullable("SANCAI_ENTRY", contentId));
+            invocationLog.setStatus(AiInvocationStatus.SUCCEEDED);
+            invocationLog.setRequestedAt(Instant.parse(requestedAt));
+            return invocationLog;
+        }
+
+        private static AiCandidate candidate(Long batchId, Long candidateId, Long callId) {
+            return candidate(batchId, candidateId, callId, 10L, "2026-01-01T00:02:00Z");
+        }
+
+        private static AiCandidate candidate(
+                Long batchId, Long candidateId, Long callId, Long contentId, String requestedAt) {
+            AiCandidate candidate = new AiCandidate();
+            candidate.setId(AiCandidateIdCodec.toDomain(candidateId));
+            candidate.setBatchId(AiBatchJobIdCodec.toDomain(batchId));
+            candidate.setCallId(AiCallIdCodec.toDomain(callId));
+            candidate.setCapability(AiBusinessCapability.CLASSICS_SUMMARY);
+            candidate.setContentRef(AiContentRef.ofNullable("SANCAI_ENTRY", contentId));
+            candidate.setResultFormat("TEXT");
+            candidate.setResultPayload("result-" + candidateId);
+            candidate.setStatus(AiCandidateStatus.PENDING);
+            candidate.setRequestedAt(Instant.parse(requestedAt));
+            return candidate;
+        }
+
+        private static boolean matchesContentRef(AiContentRef actual, AiContentRef expected) {
+            if (expected == null) {
+                return true;
+            }
+            return actual != null
+                    && (expected.contentType() == null || expected.contentType().equals(actual.contentType()))
+                    && (expected.contentId() == null || expected.contentId().equals(actual.contentId()));
+        }
     }
 }

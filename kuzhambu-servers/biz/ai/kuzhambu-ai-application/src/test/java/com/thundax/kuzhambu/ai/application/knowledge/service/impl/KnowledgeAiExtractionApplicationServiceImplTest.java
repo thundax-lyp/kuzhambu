@@ -9,10 +9,10 @@ import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.support.AiBusinessInvokeConfigResolver;
+import com.thundax.kuzhambu.ai.application.knowledge.command.KnowledgeAiExtractionCommand;
+import com.thundax.kuzhambu.ai.application.knowledge.result.KnowledgeAiExtractionResult;
 import com.thundax.kuzhambu.ai.application.knowledge.support.KnowledgeAiWorkerUsecaseResolver;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
-import com.thundax.kuzhambu.ai.domain.knowledge.model.entity.KnowledgeAiExtractionRecord;
-import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionInput;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 
@@ -26,7 +26,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         KnowledgeAiExtractionApplicationServiceImpl repository =
                 new KnowledgeAiExtractionApplicationServiceImpl(invocationService, resolver, null);
 
-        KnowledgeAiExtractionRecord result = extractGraph(repository);
+        KnowledgeAiExtractionResult result = extractGraph(repository);
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertNotNull(result);
@@ -87,7 +87,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         KnowledgeAiExtractionApplicationServiceImpl repository =
                 new KnowledgeAiExtractionApplicationServiceImpl(invocationService, resolver, null);
 
-        KnowledgeAiExtractionRecord result = extractGraph(repository);
+        KnowledgeAiExtractionResult result = extractGraph(repository);
 
         assertEquals(101L, result.getCallId());
         assertEquals(102L, result.getCandidateId());
@@ -100,7 +100,7 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         CapturingBusinessInvokeConfigResolver businessResolver = new CapturingBusinessInvokeConfigResolver();
         KnowledgeAiExtractionApplicationServiceImpl repository =
                 new KnowledgeAiExtractionApplicationServiceImpl(invocationService, resolver, businessResolver);
-        KnowledgeAiExtractionInput input = input();
+        KnowledgeAiExtractionCommand input = input();
         input.setServiceId(null);
         input.setServiceRole(null);
         input.setModelId(null);
@@ -118,24 +118,24 @@ class KnowledgeAiExtractionApplicationServiceImplTest {
         assertEquals("[{\"role\":\"user\",\"content\":\"rendered\"}]", capturedCommand.getPromptMessagesJson());
     }
 
-    private KnowledgeAiExtractionRecord extractGraph(KnowledgeAiExtractionApplicationServiceImpl repository) {
+    private KnowledgeAiExtractionResult extractGraph(KnowledgeAiExtractionApplicationServiceImpl repository) {
         return repository.extractGraph(input());
     }
 
-    private KnowledgeAiExtractionRecord extractRelations(KnowledgeAiExtractionApplicationServiceImpl repository) {
+    private KnowledgeAiExtractionResult extractRelations(KnowledgeAiExtractionApplicationServiceImpl repository) {
         return repository.extractRelations(input());
     }
 
-    private KnowledgeAiExtractionRecord extractLineage(KnowledgeAiExtractionApplicationServiceImpl repository) {
+    private KnowledgeAiExtractionResult extractLineage(KnowledgeAiExtractionApplicationServiceImpl repository) {
         return repository.extractLineage(input());
     }
 
-    private KnowledgeAiExtractionRecord extractTags(KnowledgeAiExtractionApplicationServiceImpl repository) {
+    private KnowledgeAiExtractionResult extractTags(KnowledgeAiExtractionApplicationServiceImpl repository) {
         return repository.extractTags(input());
     }
 
-    private KnowledgeAiExtractionInput input() {
-        return new KnowledgeAiExtractionInput(
+    private KnowledgeAiExtractionCommand input() {
+        return new KnowledgeAiExtractionCommand(
                 "GRAPH",
                 "ENTRY",
                 "{\"entryIds\":[1]}",

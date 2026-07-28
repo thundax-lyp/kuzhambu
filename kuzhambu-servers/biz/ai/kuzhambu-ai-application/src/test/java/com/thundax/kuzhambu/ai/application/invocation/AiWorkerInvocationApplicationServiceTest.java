@@ -6,16 +6,23 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
+import com.thundax.kuzhambu.ai.application.invocation.gateway.AiWorkerGateway;
+import com.thundax.kuzhambu.ai.application.invocation.gateway.AiWorkerGateway.DownloadedArtifact;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
-import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService.DownloadedArtifact;
-import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService.WorkerAiClient;
 import com.thundax.kuzhambu.ai.application.invocation.service.impl.AiWorkerInvocationApplicationServiceImpl;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiCandidateStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjectId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.common.core.page.PageResult;
@@ -32,7 +39,7 @@ class AiWorkerInvocationApplicationServiceTest {
     @Test
     void streamShouldFailWhenWorkerEndsWithoutCompletedEvent() {
         RecordingInvocationRepository repository = new RecordingInvocationRepository();
-        WorkerAiClient workerClient = new WorkerAiClient() {
+        AiWorkerGateway aiWorkerGateway = new AiWorkerGateway() {
             @Override
             public AiInvokeResult invoke(AiInvokeCommand command) {
                 throw new UnsupportedOperationException("not used");
@@ -54,7 +61,7 @@ class AiWorkerInvocationApplicationServiceTest {
             }
         };
         AiWorkerInvocationApplicationServiceImpl service =
-                new AiWorkerInvocationApplicationServiceImpl(repository, workerClient, unusedStorageFacade());
+                new AiWorkerInvocationApplicationServiceImpl(repository, aiWorkerGateway, unusedStorageFacade());
 
         AiInvokeResult result = service.stream(command(), event -> {});
 
@@ -70,7 +77,7 @@ class AiWorkerInvocationApplicationServiceTest {
     @Test
     void streamShouldNotPersistCandidateWhenWorkerFails() {
         RecordingInvocationRepository repository = new RecordingInvocationRepository();
-        WorkerAiClient workerClient = new WorkerAiClient() {
+        AiWorkerGateway aiWorkerGateway = new AiWorkerGateway() {
             @Override
             public AiInvokeResult invoke(AiInvokeCommand command) {
                 throw new UnsupportedOperationException("not used");
@@ -94,7 +101,7 @@ class AiWorkerInvocationApplicationServiceTest {
             }
         };
         AiWorkerInvocationApplicationServiceImpl service =
-                new AiWorkerInvocationApplicationServiceImpl(repository, workerClient, unusedStorageFacade());
+                new AiWorkerInvocationApplicationServiceImpl(repository, aiWorkerGateway, unusedStorageFacade());
         AiInvokeCommand command = command();
         command.setCreateCandidate(true);
 
@@ -112,7 +119,7 @@ class AiWorkerInvocationApplicationServiceTest {
     void invokeShouldPreserveBusinessCapabilityWhenWorkerReturnsCanonicalCapability() {
         RecordingInvocationRepository repository = new RecordingInvocationRepository();
         AtomicReference<AiInvokeCommand> capturedCommand = new AtomicReference<>();
-        WorkerAiClient workerClient = new WorkerAiClient() {
+        AiWorkerGateway aiWorkerGateway = new AiWorkerGateway() {
             @Override
             public AiInvokeResult invoke(AiInvokeCommand command) {
                 capturedCommand.set(command);
@@ -138,7 +145,7 @@ class AiWorkerInvocationApplicationServiceTest {
             }
         };
         AiWorkerInvocationApplicationServiceImpl service =
-                new AiWorkerInvocationApplicationServiceImpl(repository, workerClient, unusedStorageFacade());
+                new AiWorkerInvocationApplicationServiceImpl(repository, aiWorkerGateway, unusedStorageFacade());
 
         AiInvokeCommand command = command();
         command.setOperation("CLASSICS_SANCAI_SUMMARY");
@@ -164,7 +171,7 @@ class AiWorkerInvocationApplicationServiceTest {
     @Test
     void invokeShouldPersistFailedCandidateSnapshot() {
         RecordingInvocationRepository repository = new RecordingInvocationRepository();
-        WorkerAiClient workerClient = new WorkerAiClient() {
+        AiWorkerGateway aiWorkerGateway = new AiWorkerGateway() {
             @Override
             public AiInvokeResult invoke(AiInvokeCommand command) {
                 AiInvokeResult result = new AiInvokeResult();
@@ -192,7 +199,7 @@ class AiWorkerInvocationApplicationServiceTest {
             }
         };
         AiWorkerInvocationApplicationServiceImpl service =
-                new AiWorkerInvocationApplicationServiceImpl(repository, workerClient, unusedStorageFacade());
+                new AiWorkerInvocationApplicationServiceImpl(repository, aiWorkerGateway, unusedStorageFacade());
 
         AiInvokeCommand command = command();
         command.setCreateCandidate(true);
@@ -220,7 +227,7 @@ class AiWorkerInvocationApplicationServiceTest {
     @Test
     void invokeShouldDefaultResultFormatWhenWorkerOmitsFormat() {
         RecordingInvocationRepository repository = new RecordingInvocationRepository();
-        WorkerAiClient workerClient = new WorkerAiClient() {
+        AiWorkerGateway aiWorkerGateway = new AiWorkerGateway() {
             @Override
             public AiInvokeResult invoke(AiInvokeCommand command) {
                 AiInvokeResult result = new AiInvokeResult();
@@ -244,7 +251,7 @@ class AiWorkerInvocationApplicationServiceTest {
             }
         };
         AiWorkerInvocationApplicationServiceImpl service =
-                new AiWorkerInvocationApplicationServiceImpl(repository, workerClient, unusedStorageFacade());
+                new AiWorkerInvocationApplicationServiceImpl(repository, aiWorkerGateway, unusedStorageFacade());
 
         AiInvokeCommand command = command();
         command.setForceJson(true);
@@ -287,13 +294,13 @@ class AiWorkerInvocationApplicationServiceTest {
         private final AtomicReference<AiCandidate> savedCandidate = new AtomicReference<>();
 
         @Override
-        public AiInvocationLog getInvocationLog(Long callId) {
+        public AiInvocationLog getInvocationLog(AiCallId callId) {
             return null;
         }
 
         @Override
-        public Long insertInvocationLog(AiInvocationLog invocationLog) {
-            return 100L;
+        public AiCallId insertInvocationLog(AiInvocationLog invocationLog) {
+            return AiCallIdCodec.toDomain(100L);
         }
 
         @Override
@@ -309,14 +316,19 @@ class AiWorkerInvocationApplicationServiceTest {
         }
 
         @Override
+        public List<AiInvocationLog> listInvocationLogsByBatch(
+                com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId batchId) {
+            return Collections.emptyList();
+        }
+
+        @Override
         public PageResult<AiInvocationLog> pageInvocationLogs(
                 String scope,
-                String capability,
-                String contentType,
-                Long contentId,
-                String status,
+                AiBusinessCapability capability,
+                AiContentRef contentRef,
+                AiInvocationStatus status,
                 String serviceRole,
-                String modelName,
+                AiModelName modelName,
                 Boolean fallbackUsed,
                 java.time.Instant requestedAtStart,
                 java.time.Instant requestedAtEnd,
@@ -328,7 +340,7 @@ class AiWorkerInvocationApplicationServiceTest {
         @Override
         public List<AiInvocationLog> listInvocationLogs(
                 String scope,
-                String capability,
+                AiBusinessCapability capability,
                 String serviceRole,
                 java.time.Instant requestedAtStart,
                 java.time.Instant requestedAtEnd) {
@@ -336,14 +348,14 @@ class AiWorkerInvocationApplicationServiceTest {
         }
 
         @Override
-        public AiCandidate getCandidate(Long candidateId) {
+        public AiCandidate getCandidate(AiCandidateId candidateId) {
             return null;
         }
 
         @Override
-        public Long insertCandidate(AiCandidate candidate) {
+        public AiCandidateId insertCandidate(AiCandidate candidate) {
             savedCandidate.set(candidate);
-            return 200L;
+            return AiCandidateIdCodec.toDomain(200L);
         }
 
         @Override
@@ -353,7 +365,16 @@ class AiWorkerInvocationApplicationServiceTest {
 
         @Override
         public List<AiCandidate> listCandidates(
-                String contentType, Long contentId, Long objectId, String capability, String status) {
+                AiContentRef contentRef,
+                AiTargetObjectId targetObjectId,
+                AiBusinessCapability capability,
+                AiCandidateStatus status) {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public List<AiCandidate> listCandidatesByBatch(
+                com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId batchId) {
             return Collections.emptyList();
         }
     }

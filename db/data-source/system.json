@@ -189,7 +189,6 @@
         "古籍管理/三才图会",
         "古籍管理/王圻文档",
         "古籍管理/明代习俗",
-        "古籍管理/内容导出",
         "古籍管理/分享管理",
         "知识治理",
         "知识治理/知识图谱",
@@ -232,7 +231,6 @@
         "古籍管理/三才图会",
         "古籍管理/王圻文档",
         "古籍管理/明代习俗",
-        "古籍管理/内容导出",
         "古籍管理/分享管理",
         "知识库",
         "知识库/检索",
@@ -616,7 +614,12 @@
     },
     {
       "name": "古籍管理",
-      "perms": ["classics"],
+      "perms": [
+        "classics",
+        "classics:content:view",
+        "classics:content:edit",
+        "classics:content:export"
+      ],
       "priority": 95,
       "icon": "dictionaries",
       "url": "/classics",
@@ -659,18 +662,7 @@
           "remarks": "明代习俗知识库"
         },
         {
-          "name": "内容导出",
-          "perms": [
-            "classics:content:view",
-            "classics:content:edit",
-            "classics:content:export"
-          ],
-          "priority": 80,
-          "icon": "submissions",
-          "url": "/classics/exports",
-          "remarks": "古籍内容和视觉资产导出"
-        },
-        {
+          "id": 7,
           "name": "分享管理",
           "perms": ["classics:sharing:view", "classics:sharing:edit"],
           "priority": 75,
@@ -690,6 +682,7 @@
       "remarks": "AI 配置和调用治理根菜单",
       "children": [
         {
+          "id": 9,
           "name": "模型配置",
           "perms": ["ai:config:view", "ai:config:edit"],
           "priority": 85,

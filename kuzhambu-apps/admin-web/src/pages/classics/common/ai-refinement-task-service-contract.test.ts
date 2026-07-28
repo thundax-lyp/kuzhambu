@@ -116,7 +116,6 @@ describe("AI refinement task service request contracts", () => {
             contentType: "SANCAI_ENTRY",
             contentId: "3001",
             objectId: null,
-            requestedBy: "99",
             serviceRole: "PRIMARY",
             modelId: "11",
             modelName: "gpt-test",
@@ -249,7 +248,6 @@ describe("AI refinement task service request contracts", () => {
             status: "RUNNING",
             contentType: "SANCAI_ENTRY",
             contentId: "3001",
-            requestedBy: "99",
             pageNo: 1,
             pageSize: 20
         });
@@ -260,7 +258,6 @@ describe("AI refinement task service request contracts", () => {
                 status: "RUNNING",
                 contentType: "SANCAI_ENTRY",
                 contentId: "3001",
-                requestedBy: "99",
                 pageNo: 1,
                 pageSize: 20
             },
@@ -273,10 +270,9 @@ describe("AI refinement task service request contracts", () => {
         });
     });
 
-    it("cancels task with requester id", async () => {
+    it("cancels task by id", async () => {
         const command: AiRefinementTaskCancelCommand = {
-            taskId: "7001",
-            requestedBy: "99"
+            taskId: "7001"
         };
 
         await aiRefinementTaskService.cancelTask(command);

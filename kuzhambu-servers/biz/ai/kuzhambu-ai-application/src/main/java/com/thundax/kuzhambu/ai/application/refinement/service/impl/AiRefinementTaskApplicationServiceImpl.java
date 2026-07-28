@@ -1,13 +1,23 @@
 package com.thundax.kuzhambu.ai.application.refinement.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thundax.kuzhambu.ai.application.invocation.batch.command.AiBatchJobCreateCommand;
+import com.thundax.kuzhambu.ai.application.invocation.batch.result.AiBatchJobResult;
+import com.thundax.kuzhambu.ai.application.invocation.batch.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.refinement.command.AiRefinementRequestCommand;
 import com.thundax.kuzhambu.ai.application.refinement.configuration.AiRefinementExecutorConfiguration;
 import com.thundax.kuzhambu.ai.application.refinement.result.AiCandidateResult;
+import com.thundax.kuzhambu.ai.application.refinement.result.AiRefinementTaskResult;
 import com.thundax.kuzhambu.ai.application.refinement.service.AiRefinementApplicationService;
 import com.thundax.kuzhambu.ai.application.refinement.service.AiRefinementTaskApplicationService;
-import com.thundax.kuzhambu.ai.domain.refinement.model.entity.AiRefinementTask;
-import com.thundax.kuzhambu.ai.domain.refinement.repository.AiRefinementTaskRepository;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
+import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
+import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
@@ -15,7 +25,9 @@ import com.thundax.kuzhambu.common.core.page.PageResult;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -25,6 +37,7 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -37,11 +50,10 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AiRefinementTaskApplicationServiceImpl.class);
 
+    private static final String REFINEMENT_SCOPE = "classics";
     private static final String CONTENT_TYPE_SANCAI_ENTRY = "SANCAI_ENTRY";
     private static final String CAPABILITY_IMAGE_ANALYSIS = "classics_image_describe";
     private static final String CAPABILITY_IMAGE_GEN = "classics_image_generate";
-    private static final String STATUS_PENDING = "PENDING";
-    private static final String STATUS_RUNNING = "RUNNING";
     private static final String STATUS_SUCCEEDED = "SUCCEEDED";
     private static final String STATUS_FAILED = "FAILED";
     private static final String STATUS_PARTIAL = "PARTIAL";
@@ -49,88 +61,99 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     private static final int RESULT_PREVIEW_MAX_LENGTH = 500;
     private static final int STREAM_EVENT_HISTORY_LIMIT = 100;
     private static final Duration STREAM_SUBSCRIBE_TIMEOUT = Duration.ofMinutes(10L);
+    private static final Duration ORPHANED_TASK_TIMEOUT = Duration.ofHours(1L);
+    private static final int ORPHANED_TASK_EXPIRE_LIMIT = 100;
+    private static final List<String> REFINEMENT_CAPABILITIES = List.of(
+            "classics_translate",
+            "classics_summary",
+            "classics_tags",
+            "classics_qa",
+            "classics_image_describe",
+            "classics_image_prompt_fusion",
+            "classics_visual_describe",
+            "classics_image_generate",
+            "classics_split");
 
-    private final AiRefinementTaskRepository taskRepository;
+    private final AiBatchJobApplicationService batchJobApplicationService;
     private final AiRefinementApplicationService refinementApplicationService;
+    private final AiInvocationRepository aiInvocationRepository;
     private final Executor taskExecutor;
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private final ConcurrentHashMap<Long, TaskStreamHub> streamHubs = new ConcurrentHashMap<>();
 
     public AiRefinementTaskApplicationServiceImpl(
-            AiRefinementTaskRepository taskRepository,
+            AiBatchJobApplicationService batchJobApplicationService,
             AiRefinementApplicationService refinementApplicationService,
+            AiInvocationRepository aiInvocationRepository,
             @Qualifier(AiRefinementExecutorConfiguration.TASK_EXECUTOR) Executor taskExecutor) {
-        this.taskRepository = taskRepository;
+        this.batchJobApplicationService = batchJobApplicationService;
         this.refinementApplicationService = refinementApplicationService;
+        this.aiInvocationRepository = aiInvocationRepository;
         this.taskExecutor = taskExecutor;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public AiRefinementTask addTask(AiRefinementRequestCommand command) {
+    public AiRefinementTaskResult addTask(AiRefinementRequestCommand command) {
         normalizeCommandCapability(command);
         validateAddCommand(command);
+        validateRefinementBatchOwnership(command.getScope(), command.getCapability());
         refinementApplicationService.snapshotInvokeConfig(command);
-        Instant now = Instant.now();
-        AiRefinementTask task = new AiRefinementTask();
-        task.setScope(command.getScope());
-        task.setCapability(command.getCapability());
-        task.setContentType(command.getContentType());
-        task.setContentId(command.getContentId());
-        task.setObjectId(command.getObjectId());
-        task.setRequestedBy(command.getRequestedBy());
-        task.setRequestId(command.getRequestId());
-        task.setTraceId(command.getTraceId());
-        task.setStatus(STATUS_PENDING);
-        task.setServiceRole(command.getServiceRole());
-        task.setModelId(command.getModelId());
-        task.setModelName(command.getModelName());
-        task.setPromptVersionId(command.getPromptVersionId());
-        task.setStreamEnabled(isStreamEnabledTask(command));
-        task.setRequestedAt(now);
-        Long taskId = taskRepository.insert(task);
-        task.setTaskId(taskId);
+        Long taskId = batchJobApplicationService.create(new AiBatchJobCreateCommand(
+                command.getScope(),
+                command.getCapability(),
+                command.getContentType(),
+                command.getContentId(),
+                1,
+                null));
+        command.setBatchId(taskId);
         scheduleTaskExecution(taskId, command);
-        return task;
+        return toTaskResult(taskId, batchJobApplicationService.get(taskId), command, null);
     }
 
     @Override
-    public AiRefinementTask getTask(Long taskId) {
-        return getRequiredTask(taskId);
+    public AiRefinementTaskResult getTask(Long taskId) {
+        AiBatchJobResult job = batchJobApplicationService.get(taskId);
+        validateRefinementBatchOwnership(job);
+        return toTaskResult(job);
     }
 
     @Override
-    public PageResult<AiRefinementTask> pageTasks(
-            String capability,
-            String status,
-            String contentType,
-            Long contentId,
-            Long requestedBy,
-            PageQuery pageQuery) {
-        PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
-        effectivePage.normalize();
-        long total = taskRepository.countTasks(capability, status, contentType, contentId, requestedBy);
-        return PageResult.of(
-                effectivePage.getPageNo(),
-                effectivePage.getPageSize(),
-                total,
-                taskRepository.listTasks(
-                        capability,
+    public PageResult<AiRefinementTaskResult> pageTasks(
+            String capability, String status, String contentType, Long contentId, PageQuery pageQuery) {
+        String normalizedCapability = normalizeCapability(capability);
+        PageResult<AiBatchJobResult> page = isBlank(normalizedCapability)
+                ? batchJobApplicationService.pageByCapabilities(
+                        REFINEMENT_SCOPE, REFINEMENT_CAPABILITIES, status, contentType, contentId, pageQuery)
+                : batchJobApplicationService.page(
+                        REFINEMENT_SCOPE,
+                        validateRefinementCapability(normalizedCapability),
                         status,
                         contentType,
                         contentId,
-                        requestedBy,
-                        effectivePage.getPageNo(),
-                        effectivePage.getPageSize()));
+                        pageQuery);
+        AiContentRef contentRef = AiContentRef.ofNullable(contentType, contentId);
+        Map<Long, AiInvocationLog> invocationLogsByBatch = latestInvocationLogsByBatch(page.getRecords(), contentRef);
+        Map<Long, AiCandidate> candidatesByBatch = latestCandidatesByBatch(page.getRecords(), contentRef);
+        List<AiRefinementTaskResult> records = new ArrayList<>();
+        for (AiBatchJobResult record : page.getRecords()) {
+            records.add(toTaskResult(
+                    record,
+                    invocationLogsByBatch.get(record.getBatchId()),
+                    candidatesByBatch.get(record.getBatchId())));
+        }
+        return PageResult.of(page.getPageNo(), page.getPageSize(), page.getTotalCount(), records);
     }
 
     @Override
     public void streamTaskEvents(Long taskId, Consumer<AiStreamEventResult> eventConsumer) {
-        AiRefinementTask task = getRequiredTask(taskId);
-        if (!task.isStreamEnabled()) {
+        AiBatchJobResult job = batchJobApplicationService.get(taskId);
+        validateRefinementBatchOwnership(job);
+        if (!isStreamEnabledTask(job)) {
             throw new BizException("AI refinement task stream is not enabled: " + taskId);
         }
         TaskStreamHub hub = streamHubs.computeIfAbsent(taskId, ignored -> new TaskStreamHub());
-        publishSnapshotIfTerminal(hub, task);
+        publishSnapshotIfTerminal(hub, toTaskResult(job));
         try {
             hub.subscribe(eventConsumer, STREAM_SUBSCRIBE_TIMEOUT);
         } finally {
@@ -142,20 +165,11 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public AiRefinementTask cancelTask(Long taskId, Long requestedBy) {
-        AiRefinementTask task = getRequiredTask(taskId);
-        if (task.getRequestedBy() != null
-                && requestedBy != null
-                && !task.getRequestedBy().equals(requestedBy)) {
-            throw new BizException("AI refinement task cancel requester mismatch: " + taskId);
-        }
-        if (isTerminal(task.getStatus())) {
-            return task;
-        }
-        task.markCancelled(Instant.now());
-        if (taskRepository.updateWhenStatusIn(task, List.of(STATUS_PENDING, STATUS_RUNNING)) == 0) {
-            return getRequiredTask(taskId);
-        }
+    public AiRefinementTaskResult cancelTask(Long taskId) {
+        AiBatchJobResult job = batchJobApplicationService.get(taskId);
+        validateRefinementBatchOwnership(job);
+        AiBatchJobResult cancelled = batchJobApplicationService.cancel(taskId);
+        AiRefinementTaskResult task = toTaskResult(cancelled);
         publishTerminalEvent(taskId, task, null);
         return task;
     }
@@ -170,19 +184,15 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     }
 
     private void executeTask(Long taskId, AiRefinementRequestCommand command) {
-        AiRefinementTask task = taskRepository.get(taskId);
-        if (task == null || STATUS_CANCELLED.equals(task.getStatus())) {
-            return;
-        }
-        task.markRunning(Instant.now());
-        if (taskRepository.updateWhenStatusIn(task, List.of(STATUS_PENDING)) == 0) {
+        AiBatchJobResult job = batchJobApplicationService.get(taskId);
+        if (STATUS_CANCELLED.equals(job.getStatus())) {
             return;
         }
 
         AiCandidateResult result;
         try {
             refinementApplicationService.validateSnapshotInvokeConfig(command);
-            result = invoke(taskId, command, task.isStreamEnabled());
+            result = invoke(taskId, command, isStreamEnabledTask(command));
         } catch (RuntimeException exception) {
             result = new AiCandidateResult(
                     null,
@@ -196,26 +206,19 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
                     exception.getMessage());
             publishFailureEvent(taskId, command, result);
         }
-
-        AiRefinementTask latestTask = taskRepository.get(taskId);
-        if (latestTask == null || STATUS_CANCELLED.equals(latestTask.getStatus())) {
+        AiBatchJobResult latestJob = batchJobApplicationService.get(taskId);
+        if (STATUS_CANCELLED.equals(latestJob.getStatus())) {
             return;
         }
-        latestTask.setServiceRole(command.getServiceRole());
-        latestTask.setModelId(command.getModelId());
-        if (!isBlank(command.getModelName())) {
-            latestTask.setModelName(command.getModelName());
+        AiBatchJobResult finalJob;
+        if (result != null && STATUS_SUCCEEDED.equals(result.getStatus())) {
+            finalJob = batchJobApplicationService.recordSuccessIfRunning(taskId);
+        } else if (result != null && STATUS_PARTIAL.equals(result.getStatus())) {
+            finalJob = batchJobApplicationService.recordPartialIfRunning(taskId, failureSummaryJson(result));
+        } else {
+            finalJob = batchJobApplicationService.recordFailureIfRunning(taskId, failureSummaryJson(result));
         }
-        latestTask.setPromptVersionId(command.getPromptVersionId());
-        applyResult(latestTask, result);
-        if (taskRepository.updateWhenStatusIn(latestTask, List.of(STATUS_RUNNING)) == 0) {
-            AiRefinementTask finalTask = taskRepository.get(taskId);
-            if (finalTask != null && isTerminal(finalTask.getStatus())) {
-                publishTerminalEvent(taskId, finalTask, null);
-            }
-            return;
-        }
-        publishTerminalEvent(taskId, latestTask, result);
+        publishTerminalEvent(taskId, toTaskResult(taskId, finalJob, command, result), result);
     }
 
     private void scheduleTaskExecution(Long taskId, AiRefinementRequestCommand command) {
@@ -233,31 +236,49 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     }
 
     private void markFailedAfterUnexpectedException(Long taskId, RuntimeException exception) {
-        AiRefinementTask task = taskRepository.get(taskId);
-        if (task == null || isTerminal(task.getStatus())) {
+        AiBatchJobResult job = batchJobApplicationService.get(taskId);
+        if (job == null || isTerminal(job.getStatus())) {
             return;
         }
-        task.setFailureStage("INTERNAL_EXECUTION");
-        task.setErrorType("INTERNAL_FAILURE");
-        task.setErrorMessage(exception.getMessage());
-        task.setCompletedAt(Instant.now());
-        task.setStatus(STATUS_FAILED);
-        if (taskRepository.updateWhenStatusIn(task, List.of(STATUS_PENDING, STATUS_RUNNING)) == 0) {
-            return;
+        AiCandidateResult result = new AiCandidateResult(
+                null,
+                null,
+                STATUS_FAILED,
+                job.getCapability(),
+                "INTERNAL_EXECUTION",
+                null,
+                null,
+                "INTERNAL_FAILURE",
+                exception.getMessage());
+        AiBatchJobResult failed = batchJobApplicationService.recordFailureIfRunning(taskId, failureSummaryJson(result));
+        publishTerminalEvent(taskId, toTaskResult(taskId, failed, null, result), result);
+    }
+
+    @Scheduled(
+            initialDelayString = "${kuzhambu.ai.refinement.orphaned-task-expiry.initial-delay-ms:60000}",
+            fixedDelayString = "${kuzhambu.ai.refinement.orphaned-task-expiry.fixed-delay-ms:3600000}")
+    @Transactional(rollbackFor = Exception.class)
+    public void expireOrphanedRunningTasks() {
+        Instant requestedBefore = Instant.now().minus(ORPHANED_TASK_TIMEOUT);
+        AiCandidateResult result = new AiCandidateResult(
+                null,
+                null,
+                STATUS_FAILED,
+                null,
+                "INTERNAL_EXECUTION",
+                null,
+                null,
+                "TASK_ORPHANED",
+                "AI refinement task execution context was lost before completion");
+        int expired = batchJobApplicationService.expireRunning(
+                "classics",
+                REFINEMENT_CAPABILITIES,
+                requestedBefore,
+                failureSummaryJson(result),
+                ORPHANED_TASK_EXPIRE_LIMIT);
+        if (expired > 0) {
+            LOGGER.warn("Expired orphaned AI refinement tasks, count={}", expired);
         }
-        publishTerminalEvent(
-                taskId,
-                task,
-                new AiCandidateResult(
-                        task.getCallId(),
-                        task.getCandidateId(),
-                        STATUS_FAILED,
-                        task.getCapability(),
-                        task.getFailureStage(),
-                        task.getResultFormat(),
-                        task.getResultPreview(),
-                        task.getErrorType(),
-                        task.getErrorMessage()));
     }
 
     private AiCandidateResult invoke(Long taskId, AiRefinementRequestCommand command, boolean streamEnabled) {
@@ -281,6 +302,9 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         }
         if ("classics_visual_describe".equals(capability)) {
             return refinementApplicationService.describeVisual(command);
+        }
+        if ("classics_image_prompt_fusion".equals(capability)) {
+            return refinementApplicationService.fuseVisualContext(command);
         }
         if ("classics_image_generate".equals(capability)) {
             return streamEnabled
@@ -310,51 +334,12 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
             case "tags" -> "classics_tags";
             case "qa" -> "classics_qa";
             case "image_analysis" -> "classics_image_describe";
+            case "fusion" -> "classics_image_prompt_fusion";
             case "visual" -> "classics_visual_describe";
             case "image_gen" -> "classics_image_generate";
             case "split" -> "classics_split";
             default -> capability;
         };
-    }
-
-    private void applyResult(AiRefinementTask task, AiCandidateResult result) {
-        Instant completedAt = Instant.now();
-        String preview = truncate(result == null ? null : result.getResultPayload());
-        if (result != null && STATUS_SUCCEEDED.equals(result.getStatus())) {
-            task.markSucceeded(
-                    result.getCallId(), result.getCandidateId(), result.getResultFormat(), preview, completedAt);
-            return;
-        }
-        task.setCallId(result == null ? null : result.getCallId());
-        task.setCandidateId(result == null || task.isStreamEnabled() ? null : result.getCandidateId());
-        task.setResultFormat(result == null ? null : result.getResultFormat());
-        task.setResultPreview(preview);
-        task.setFailureStage(result == null ? "WORKER_RESULT" : result.getFailureStage());
-        task.setErrorType(result == null ? "WORKER_PROTOCOL_FAILURE" : result.getErrorType());
-        task.setErrorMessage(result == null ? "Worker returned empty result" : result.getErrorMessage());
-        task.setCompletedAt(completedAt);
-        task.setStatus(resolveFinalStatus(result == null ? null : result.getStatus()));
-    }
-
-    private String resolveFinalStatus(String status) {
-        if (STATUS_PARTIAL.equals(status)) {
-            return STATUS_PARTIAL;
-        }
-        if (STATUS_CANCELLED.equals(status)) {
-            return STATUS_CANCELLED;
-        }
-        return STATUS_FAILED;
-    }
-
-    private AiRefinementTask getRequiredTask(Long taskId) {
-        if (taskId == null) {
-            throw new BizException("AI refinement taskId is required");
-        }
-        AiRefinementTask task = taskRepository.get(taskId);
-        if (task == null) {
-            throw new BizException("AI refinement task not found or expired: " + taskId);
-        }
-        return task;
     }
 
     private void validateAddCommand(AiRefinementRequestCommand command) {
@@ -365,7 +350,6 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
                 || isBlank(command.getTraceId())
                 || isBlank(command.getContentType())
                 || command.getContentId() == null
-                || command.getRequestedBy() == null
                 || isBlank(command.getInputPayloadJson())) {
             throw new BizException("AI refinement task add command is incomplete");
         }
@@ -378,12 +362,40 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
                 || STATUS_CANCELLED.equals(status);
     }
 
+    private void validateRefinementBatchOwnership(AiBatchJobResult job) {
+        if (job == null) {
+            throw new BizException("AI refinement task not found");
+        }
+        validateRefinementBatchOwnership(job.getScope(), job.getCapability());
+    }
+
+    private void validateRefinementBatchOwnership(String scope, String capability) {
+        if (!REFINEMENT_SCOPE.equals(scope) || !REFINEMENT_CAPABILITIES.contains(capability)) {
+            throw new BizException("AI refinement task does not belong to refinement workflow");
+        }
+    }
+
+    private String validateRefinementCapability(String capability) {
+        if (!REFINEMENT_CAPABILITIES.contains(capability)) {
+            throw new BizException("unsupported ai refinement capability: " + capability);
+        }
+        return capability;
+    }
+
     private boolean isStreamEnabledTask(AiRefinementRequestCommand command) {
         if (command == null || !CONTENT_TYPE_SANCAI_ENTRY.equals(command.getContentType())) {
             return false;
         }
         return CAPABILITY_IMAGE_ANALYSIS.equals(command.getCapability())
                 || CAPABILITY_IMAGE_GEN.equals(command.getCapability());
+    }
+
+    private boolean isStreamEnabledTask(AiBatchJobResult job) {
+        if (job == null || !CONTENT_TYPE_SANCAI_ENTRY.equals(job.getContentType())) {
+            return false;
+        }
+        return CAPABILITY_IMAGE_ANALYSIS.equals(job.getCapability())
+                || CAPABILITY_IMAGE_GEN.equals(job.getCapability());
     }
 
     private void publishStreamEvent(Long taskId, AiStreamEventResult event) {
@@ -393,7 +405,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         streamHubs.computeIfAbsent(taskId, ignored -> new TaskStreamHub()).publish(event);
     }
 
-    private void publishTerminalEvent(Long taskId, AiRefinementTask task, AiCandidateResult result) {
+    private void publishTerminalEvent(Long taskId, AiRefinementTaskResult task, AiCandidateResult result) {
         if (taskId == null || task == null || !task.isStreamEnabled()) {
             return;
         }
@@ -417,17 +429,11 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         if (taskId == null || command == null || !isStreamEnabledTask(command)) {
             return;
         }
-        AiRefinementTask task = new AiRefinementTask();
-        task.setRequestId(command.getRequestId());
-        task.setTraceId(command.getTraceId());
-        task.setStatus(STATUS_FAILED);
-        task.setFailureStage(result == null ? "WORKER_REQUEST" : result.getFailureStage());
-        task.setErrorType(result == null ? "INTERNAL_FAILURE" : result.getErrorType());
-        task.setErrorMessage(result == null ? "Worker request failed" : result.getErrorMessage());
+        AiRefinementTaskResult task = toTaskResult(taskId, null, command, result);
         streamHubs.computeIfAbsent(taskId, ignored -> new TaskStreamHub()).publish(toErrorEvent(task));
     }
 
-    private void publishSnapshotIfTerminal(TaskStreamHub hub, AiRefinementTask task) {
+    private void publishSnapshotIfTerminal(TaskStreamHub hub, AiRefinementTaskResult task) {
         if (hub.hasTerminalEvent() || task == null || !isTerminal(task.getStatus())) {
             return;
         }
@@ -438,7 +444,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         hub.publish(toErrorEvent(task));
     }
 
-    private AiStreamEventResult toCompletedEvent(AiRefinementTask task, AiCandidateResult result) {
+    private AiStreamEventResult toCompletedEvent(AiRefinementTaskResult task, AiCandidateResult result) {
         AiStreamEventResult event = baseEvent(task);
         event.setEventType("completed");
         event.setStage("completed");
@@ -448,7 +454,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         return event;
     }
 
-    private AiStreamEventResult toErrorEvent(AiRefinementTask task) {
+    private AiStreamEventResult toErrorEvent(AiRefinementTaskResult task) {
         AiStreamEventResult event = baseEvent(task);
         event.setEventType("error");
         event.setStage(task.getFailureStage());
@@ -459,7 +465,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         return event;
     }
 
-    private AiStreamEventResult baseEvent(AiRefinementTask task) {
+    private AiStreamEventResult baseEvent(AiRefinementTaskResult task) {
         AiStreamEventResult event = new AiStreamEventResult();
         event.setEventId("task-" + task.getTaskId() + "-" + System.currentTimeMillis());
         event.setRequestId(task.getRequestId());
@@ -477,6 +483,156 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
             return value;
         }
         return value.substring(0, RESULT_PREVIEW_MAX_LENGTH);
+    }
+
+    private AiRefinementTaskResult toTaskResult(
+            Long taskId, AiBatchJobResult job, AiRefinementRequestCommand command, AiCandidateResult result) {
+        String status = job == null ? null : job.getStatus();
+        if (status == null && result != null) {
+            status = result.getStatus();
+        }
+        return new AiRefinementTaskResult(
+                job == null ? taskId : job.getBatchId(),
+                command == null ? (job == null ? null : job.getScope()) : command.getScope(),
+                command == null ? (job == null ? null : job.getCapability()) : command.getCapability(),
+                command == null ? (job == null ? null : job.getContentType()) : command.getContentType(),
+                command == null ? (job == null ? null : job.getContentId()) : command.getContentId(),
+                command == null ? null : command.getObjectId(),
+                command == null ? null : command.getRequestId(),
+                command == null ? null : command.getTraceId(),
+                status,
+                command == null ? null : command.getServiceRole(),
+                command == null ? null : command.getModelId(),
+                command == null ? null : command.getModelName(),
+                command == null ? null : command.getPromptVersionId(),
+                result == null ? null : result.getCallId(),
+                result == null || (command != null && isStreamEnabledTask(command)) ? null : result.getCandidateId(),
+                result == null ? null : result.getResultFormat(),
+                result == null ? null : truncate(result.getResultPayload()),
+                result == null ? null : result.getFailureStage(),
+                result == null ? null : result.getErrorType(),
+                result == null ? (job == null ? null : job.getFailureSummaryJson()) : result.getErrorMessage(),
+                command != null ? isStreamEnabledTask(command) : isStreamEnabledTask(job),
+                job == null ? null : job.getRequestedAt(),
+                null,
+                job == null ? null : job.getCompletedAt(),
+                job == null ? null : job.getCancelledAt());
+    }
+
+    private AiRefinementTaskResult toTaskResult(AiBatchJobResult job) {
+        if (job == null) {
+            return null;
+        }
+        AiBatchJobId batchId = AiBatchJobIdCodec.toDomain(job.getBatchId());
+        AiInvocationLog invocationLog = latestInvocationLog(aiInvocationRepository.listInvocationLogsByBatch(batchId));
+        AiCandidate candidate = latestCandidate(aiInvocationRepository.listCandidatesByBatch(batchId));
+        return toTaskResult(job, invocationLog, candidate);
+    }
+
+    private AiRefinementTaskResult toTaskResult(
+            AiBatchJobResult job, AiInvocationLog invocationLog, AiCandidate candidate) {
+        AiRefinementTaskResult task = AiRefinementTaskResult.fromBatchJob(job, invocationLog, candidate);
+        return new AiRefinementTaskResult(
+                task.getTaskId(),
+                task.getScope(),
+                task.getCapability(),
+                task.getContentType(),
+                task.getContentId(),
+                task.getObjectId(),
+                task.getRequestId(),
+                task.getTraceId(),
+                task.getStatus(),
+                task.getServiceRole(),
+                task.getModelId(),
+                task.getModelName(),
+                task.getPromptVersionId(),
+                task.getCallId(),
+                task.getCandidateId(),
+                task.getResultFormat(),
+                truncate(task.getResultPreview()),
+                task.getFailureStage(),
+                task.getErrorType(),
+                task.getErrorMessage(),
+                task.isStreamEnabled(),
+                task.getRequestedAt(),
+                task.getStartedAt(),
+                task.getCompletedAt(),
+                task.getCancelledAt());
+    }
+
+    private Map<Long, AiInvocationLog> latestInvocationLogsByBatch(
+            List<AiBatchJobResult> jobs, AiContentRef contentRef) {
+        List<AiBatchJobId> batchIds = batchIds(jobs);
+        Map<Long, AiInvocationLog> records = new LinkedHashMap<>();
+        if (batchIds.isEmpty()) {
+            return records;
+        }
+        List<AiInvocationLog> invocationLogs = contentRef == null
+                ? aiInvocationRepository.listInvocationLogsByBatches(batchIds)
+                : aiInvocationRepository.listInvocationLogsByBatchesAndContent(batchIds, contentRef);
+        for (AiInvocationLog record : invocationLogs) {
+            Long batchId = AiBatchJobIdCodec.toValue(record.getBatchId());
+            records.putIfAbsent(batchId, record);
+        }
+        return records;
+    }
+
+    private Map<Long, AiCandidate> latestCandidatesByBatch(List<AiBatchJobResult> jobs, AiContentRef contentRef) {
+        List<AiBatchJobId> batchIds = batchIds(jobs);
+        Map<Long, AiCandidate> records = new LinkedHashMap<>();
+        if (batchIds.isEmpty()) {
+            return records;
+        }
+        List<AiCandidate> candidates = contentRef == null
+                ? aiInvocationRepository.listCandidatesByBatches(batchIds)
+                : aiInvocationRepository.listCandidatesByBatchesAndContent(batchIds, contentRef);
+        for (AiCandidate record : candidates) {
+            Long batchId = AiBatchJobIdCodec.toValue(record.getBatchId());
+            records.putIfAbsent(batchId, record);
+        }
+        return records;
+    }
+
+    private List<AiBatchJobId> batchIds(List<AiBatchJobResult> jobs) {
+        List<AiBatchJobId> ids = new ArrayList<>();
+        if (jobs == null) {
+            return ids;
+        }
+        for (AiBatchJobResult job : jobs) {
+            if (job != null && job.getBatchId() != null) {
+                ids.add(AiBatchJobIdCodec.toDomain(job.getBatchId()));
+            }
+        }
+        return ids;
+    }
+
+    private AiInvocationLog latestInvocationLog(List<AiInvocationLog> records) {
+        return records == null || records.isEmpty() ? null : records.get(0);
+    }
+
+    private AiCandidate latestCandidate(List<AiCandidate> records) {
+        return records == null || records.isEmpty() ? null : records.get(0);
+    }
+
+    private String failureSummaryJson(AiCandidateResult result) {
+        Map<String, String> failure = Map.of(
+                "failureStage", result == null ? "WORKER_RESULT" : nullToEmpty(result.getFailureStage()),
+                "errorType", result == null ? "WORKER_PROTOCOL_FAILURE" : nullToEmpty(result.getErrorType()),
+                "errorMessage",
+                        result == null ? "Worker returned empty result" : nullToEmpty(result.getErrorMessage()));
+        try {
+            return objectMapper.writeValueAsString(failure);
+        } catch (JsonProcessingException exception) {
+            throw new BizException(
+                    "AI-REFINEMENT-500",
+                    "ai.refinement.failure-summary-invalid",
+                    "AI refinement task failure summary is not valid JSON",
+                    exception);
+        }
+    }
+
+    private String nullToEmpty(String value) {
+        return value == null ? "" : value;
     }
 
     private static final class TaskStreamHub {

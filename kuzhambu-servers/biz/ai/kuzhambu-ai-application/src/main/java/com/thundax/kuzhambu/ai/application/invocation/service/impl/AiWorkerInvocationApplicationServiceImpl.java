@@ -4,17 +4,30 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
+import com.thundax.kuzhambu.ai.application.invocation.gateway.AiWorkerGateway;
+import com.thundax.kuzhambu.ai.application.invocation.gateway.AiWorkerGateway.ArtifactDownloadException;
+import com.thundax.kuzhambu.ai.application.invocation.gateway.AiWorkerGateway.DownloadedArtifact;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
-import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService.ArtifactDownloadException;
-import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService.DownloadedArtifact;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
+import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import com.thundax.kuzhambu.storage.facade.request.CompleteMultipartUploadFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.InitMultipartUploadFacadeRequest;
@@ -37,14 +50,16 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
     private static final long MULTIPART_PART_SIZE_BYTES = 5L * 1024 * 1024;
 
     private final AiInvocationRepository aiInvocationRepository;
-    private final WorkerAiClient workerAiClient;
+    private final AiWorkerGateway aiWorkerGateway;
     private final StorageFacade storageFacade;
     private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
     public AiWorkerInvocationApplicationServiceImpl(
-            AiInvocationRepository aiInvocationRepository, WorkerAiClient workerAiClient, StorageFacade storageFacade) {
+            AiInvocationRepository aiInvocationRepository,
+            AiWorkerGateway aiWorkerGateway,
+            StorageFacade storageFacade) {
         this.aiInvocationRepository = aiInvocationRepository;
-        this.workerAiClient = workerAiClient;
+        this.aiWorkerGateway = aiWorkerGateway;
         this.storageFacade = storageFacade;
     }
 
@@ -52,12 +67,12 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
     public AiInvokeResult invoke(AiInvokeCommand command) {
         validateCommand(command);
         command.setStream(false);
-        AiInvocationLog invocationLog = command.toRunningInvocationLog();
-        Long callId = aiInvocationRepository.insertInvocationLog(invocationLog);
-        invocationLog.setCallId(AiCallIdCodec.toDomain(callId));
+        AiInvocationLog invocationLog = toRunningInvocationLog(command);
+        AiCallId callId = aiInvocationRepository.insertInvocationLog(invocationLog);
+        invocationLog.setCallId(callId);
         AiInvokeResult result;
         try {
-            result = workerAiClient.invoke(command);
+            result = aiWorkerGateway.invoke(command);
         } catch (RuntimeException ex) {
             result = AiInvokeResult.failed(
                     command.getRequestId(),
@@ -73,12 +88,12 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
     public AiInvokeResult stream(AiInvokeCommand command, Consumer<AiStreamEventResult> eventConsumer) {
         validateCommand(command);
         command.setStream(true);
-        AiInvocationLog invocationLog = command.toRunningInvocationLog();
-        Long callId = aiInvocationRepository.insertInvocationLog(invocationLog);
-        invocationLog.setCallId(AiCallIdCodec.toDomain(callId));
+        AiInvocationLog invocationLog = toRunningInvocationLog(command);
+        AiCallId callId = aiInvocationRepository.insertInvocationLog(invocationLog);
+        invocationLog.setCallId(callId);
         AtomicReference<AiInvokeResult> completedResult = new AtomicReference<>();
         try {
-            workerAiClient.stream(command, event -> handleStreamEvent(eventConsumer, completedResult, event));
+            aiWorkerGateway.stream(command, event -> handleStreamEvent(eventConsumer, completedResult, event));
         } catch (RuntimeException ex) {
             completedResult.compareAndSet(
                     null,
@@ -99,6 +114,26 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
                     "WORKER_STREAM");
         }
         return completeCall(command, invocationLog, normalizeResult(command, result));
+    }
+
+    private AiInvocationLog toRunningInvocationLog(AiInvokeCommand command) {
+        AiInvocationLog invocationLog = new AiInvocationLog();
+        invocationLog.setBatchId(AiBatchJobIdCodec.toDomain(command.getBatchId()));
+        invocationLog.setScope(command.getScope());
+        invocationLog.setCapability(
+                command.getCapability() == null ? null : AiBusinessCapability.from(command.getCapability()));
+        invocationLog.setContentRef(AiContentRefCodec.toDomain(command.getContentType(), command.getContentId()));
+        invocationLog.setTargetObjectId(AiTargetObjectIdCodec.toDomain(command.getObjectId()));
+        invocationLog.setServiceId(command.getServiceId());
+        invocationLog.setServiceRole(command.getServiceRole());
+        invocationLog.setModelId(AiModelIdCodec.toDomain(command.getModelId()));
+        invocationLog.setModelName(AiModelNameCodec.toDomain(command.getModelName()));
+        invocationLog.setPromptVersionId(PromptVersionIdCodec.toDomain(command.getPromptVersionId()));
+        invocationLog.setRequestId(RequestIdCodec.toDomain(command.getRequestId()));
+        invocationLog.setTraceId(TraceIdCodec.toDomain(command.getTraceId()));
+        invocationLog.setStreamUsed(command.isStream());
+        invocationLog.setRequestedAt(Instant.now());
+        return invocationLog;
     }
 
     private void handleStreamEvent(
@@ -134,9 +169,9 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
             invocationLog.markSucceeded(result.getUsage(), completedAt);
             aiInvocationRepository.updateInvocationLog(invocationLog);
             if (command.isCreateCandidate()) {
-                Long candidateId =
+                AiCandidateId candidateId =
                         aiInvocationRepository.insertCandidate(result.toCandidate(command, invocationLog.getCallId()));
-                result.setCandidateId(candidateId);
+                result.setCandidateId(AiCandidateIdCodec.toValue(candidateId));
             }
         } else {
             invocationLog.recordFailureStage(result.getFailureStage());
@@ -145,8 +180,8 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
                 AiCandidate candidate = result.toCandidate(command, invocationLog.getCallId());
                 candidate.reject(
                         result.getErrorType(), result.getErrorMessage(), result.getFailureStage(), completedAt);
-                Long candidateId = aiInvocationRepository.insertCandidate(candidate);
-                result.setCandidateId(candidateId);
+                AiCandidateId candidateId = aiInvocationRepository.insertCandidate(candidate);
+                result.setCandidateId(AiCandidateIdCodec.toValue(candidateId));
             }
             aiInvocationRepository.updateInvocationLog(invocationLog);
         }
@@ -207,7 +242,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
     private AiInvokeResult persistArtifactResult(AiInvokeCommand command, AiInvokeResult result) {
         try {
             JsonNode artifactReference = objectMapper.readTree(result.getArtifactReferenceJson());
-            DownloadedArtifact artifact = workerAiClient.downloadArtifact(
+            DownloadedArtifact artifact = aiWorkerGateway.downloadArtifact(
                     command.getRequestId(),
                     command.getTraceId(),
                     artifactReference.path("downloadPath").asText());
