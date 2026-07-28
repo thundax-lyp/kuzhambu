@@ -47,6 +47,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE.value(), accepted.getCapability());
         assertEquals("SUCCEEDED", batchJobService.get(accepted.getTaskId()).getStatus());
         assertEquals(1, batchJobService.get(accepted.getTaskId()).getSuccessCount());
+        assertEquals(accepted.getTaskId(), refinementService.lastCommand.getBatchId());
     }
 
     @Test
@@ -276,6 +277,7 @@ class AiRefinementTaskApplicationServiceImplTest {
 
         private final AiCandidateResult result;
         private int fusionInvokeCount;
+        private AiRefinementRequestCommand lastCommand;
 
         StubRefinementApplicationService(AiCandidateResult result) {
             this.result = result;
@@ -289,47 +291,56 @@ class AiRefinementTaskApplicationServiceImplTest {
 
         @Override
         public AiCandidateResult translate(AiRefinementRequestCommand command) {
+            lastCommand = command;
             return result;
         }
 
         @Override
         public AiCandidateResult summarize(AiRefinementRequestCommand command) {
+            lastCommand = command;
             return result;
         }
 
         @Override
         public AiCandidateResult generateTags(AiRefinementRequestCommand command) {
+            lastCommand = command;
             return result;
         }
 
         @Override
         public AiCandidateResult generateQa(AiRefinementRequestCommand command) {
+            lastCommand = command;
             return result;
         }
 
         @Override
         public AiCandidateResult analyzeImage(AiRefinementRequestCommand command) {
+            lastCommand = command;
             return result;
         }
 
         @Override
         public AiCandidateResult fuseVisualContext(AiRefinementRequestCommand command) {
+            lastCommand = command;
             fusionInvokeCount++;
             return result;
         }
 
         @Override
         public AiCandidateResult generateImage(AiRefinementRequestCommand command) {
+            lastCommand = command;
             return result;
         }
 
         @Override
         public AiCandidateResult describeVisual(AiRefinementRequestCommand command) {
+            lastCommand = command;
             return result;
         }
 
         @Override
         public AiCandidateResult splitEntry(AiRefinementRequestCommand command) {
+            lastCommand = command;
             return result;
         }
     }

@@ -142,6 +142,7 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
 
     private AiInvokeCommand toInvokeCommand(AiRefinementRequestCommand source, String capability) {
         AiInvokeCommand command = new AiInvokeCommand();
+        command.setBatchId(source.getBatchId());
         command.setScope(source.getScope());
         command.setCapability(capability);
         command.setOperation(source.getOperation());

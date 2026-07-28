@@ -11,6 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class AiRefinementRequestCommand {
 
+    private Long batchId;
     private String capability;
     private String scope;
     private String operation;

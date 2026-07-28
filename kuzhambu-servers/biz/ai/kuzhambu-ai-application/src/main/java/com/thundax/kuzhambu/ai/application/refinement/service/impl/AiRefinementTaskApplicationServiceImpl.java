@@ -89,6 +89,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
                 command.getContentId(),
                 1,
                 null));
+        command.setBatchId(taskId);
         scheduleTaskExecution(taskId, command);
         return toTaskResult(taskId, batchJobApplicationService.get(taskId), command, null);
     }
