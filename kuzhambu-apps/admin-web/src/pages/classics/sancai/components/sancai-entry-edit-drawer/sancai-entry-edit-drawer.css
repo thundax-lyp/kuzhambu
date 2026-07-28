@@ -19,10 +19,6 @@
     box-shadow: 0 0 0 2px var(--sancai-accent-soft) !important;
 }
 
-.sancai-entry-edit-drawer-form .ant-form-item {
-    margin-bottom: 0;
-}
-
 .sancai-entry-edit-drawer-form .ant-form-item-label > label {
     color: color-mix(in srgb, var(--sancai-ink) 82%, #7e2e25 18%);
     font-weight: 700;
