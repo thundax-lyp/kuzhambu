@@ -4,6 +4,7 @@ import { App, Empty, Input, Tag, Typography } from "antd";
 import { useCallback, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
+import { isSameId, normalizeId, normalizeNullableId } from "@/types/id";
 import {
     KuzhambuAlert,
     KuzhambuButton,
@@ -57,10 +58,16 @@ const TAG_TASK_ALERT_TYPES: Record<string, "success" | "info" | "warning" | "err
 };
 
 const sortTasksByNewest = (left: AiRefinementTaskRecord, right: AiRefinementTaskRecord) => {
-    if (left.requestedAt && right.requestedAt && left.requestedAt !== right.requestedAt) {
-        return right.requestedAt.localeCompare(left.requestedAt);
-    }
-    return right.taskId - left.taskId;
+    return aiRefinementTaskService.sortNewestByRequestedAtThenId({
+        left: {
+            id: aiRefinementTaskService.getTaskStableId(left.taskId, left.taskIdText),
+            requestedAt: left.requestedAt
+        },
+        right: {
+            id: aiRefinementTaskService.getTaskStableId(right.taskId, right.taskIdText),
+            requestedAt: right.requestedAt
+        }
+    });
 };
 
 const isTagTaskActive = (task?: AiRefinementTaskRecord | null) => {
@@ -94,22 +101,30 @@ const getTagTaskDescription = (task: AiRefinementTaskRecord) => {
 
 const selectLatestTagCandidate = (
     candidates: AiCandidateRecord[] | undefined,
-    trackedCandidateId?: number | null
+    trackedCandidateId?: string | null
 ) => {
+    const normalizedTrackedCandidateId = normalizeNullableId(trackedCandidateId);
     return [...(candidates || [])]
         .filter(
             (candidate) =>
                 candidate.capability === "tags" &&
                 candidate.status === "PENDING" &&
-                (!trackedCandidateId || candidate.candidateId === trackedCandidateId) &&
+                (!normalizedTrackedCandidateId ||
+                    isSameId(candidate.candidateId, normalizedTrackedCandidateId)) &&
                 typeof candidate.resultPayload === "string" &&
                 candidate.resultPayload.trim().length > 0
         )
         .sort((left, right) => {
-            if (left.requestedAt && right.requestedAt && left.requestedAt !== right.requestedAt) {
-                return right.requestedAt.localeCompare(left.requestedAt);
-            }
-            return right.candidateId - left.candidateId;
+            return aiRefinementTaskService.sortNewestByRequestedAtThenId({
+                left: {
+                    id: left.candidateIdText || left.candidateId,
+                    requestedAt: left.requestedAt
+                },
+                right: {
+                    id: right.candidateIdText || right.candidateId,
+                    requestedAt: right.requestedAt
+                }
+            });
         })[0];
 };
 
@@ -135,7 +150,7 @@ const tagTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = {
         }
         return "tracking";
     },
-    getResultKey: (task) => task.candidateId,
+    getResultKey: (task) => normalizeId(task.candidateId),
     getStatusLabel: (task) => {
         const statusLabel = TAG_TASK_STATUS_LABELS[task.status] || task.status;
         return `标签任务${statusLabel}`;
@@ -240,8 +255,8 @@ export const WangqiTagAiModal = ({
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
     const [isOpen, setIsOpen] = useState(false);
-    const [candidatePayloads, setCandidatePayloads] = useState<Record<number, string>>({});
-    const [candidateSubmitEnabled, setCandidateSubmitEnabled] = useState<Record<number, boolean>>(
+    const [candidatePayloads, setCandidatePayloads] = useState<Record<string, string>>({});
+    const [candidateSubmitEnabled, setCandidateSubmitEnabled] = useState<Record<string, boolean>>(
         {}
     );
     const tagTrackingTaskId = tagTrackingTask?.taskId;
@@ -267,7 +282,7 @@ export const WangqiTagAiModal = ({
             .sort(sortTasksByNewest)[0];
     }, [tagTasks]);
     const trackedTagTaskFromList = useMemo(() => {
-        return tagTasks.find((task) => task.taskId === tagTrackingTaskId);
+        return tagTasks.find((task) => isSameId(task.taskId, tagTrackingTaskId));
     }, [tagTasks, tagTrackingTaskId]);
     const latestTagTask = trackedTagTaskFromList || tagTrackingTask || latestTagTaskFromList;
 
@@ -329,7 +344,7 @@ export const WangqiTagAiModal = ({
         return selectLatestTagCandidate(candidates, trackedCandidateId) ?? null;
     };
 
-    const updateCandidatePayload = useCallback((candidateId: number, payload: string) => {
+    const updateCandidatePayload = useCallback((candidateId: string, payload: string) => {
         setCandidatePayloads((currentPayloads) => {
             if (currentPayloads[candidateId] === payload) {
                 return currentPayloads;
@@ -341,7 +356,7 @@ export const WangqiTagAiModal = ({
         });
     }, []);
 
-    const updateCandidateSubmitEnabled = useCallback((candidateId: number, canSubmit: boolean) => {
+    const updateCandidateSubmitEnabled = useCallback((candidateId: string, canSubmit: boolean) => {
         setCandidateSubmitEnabled((currentSubmitEnabled) => {
             if ((currentSubmitEnabled[candidateId] ?? false) === canSubmit) {
                 return currentSubmitEnabled;
@@ -358,14 +373,14 @@ export const WangqiTagAiModal = ({
             messageApi.warning("暂无可采用的候选标签");
             return;
         }
-        const payload =
-            candidatePayloads[candidate.candidateId] || candidate.resultPayload?.trim() || "";
-        if (!payload || !candidateSubmitEnabled[candidate.candidateId]) {
+        const candidateId = normalizeId(candidate.candidateId);
+        const payload = candidatePayloads[candidateId] || candidate.resultPayload?.trim() || "";
+        if (!payload || !candidateSubmitEnabled[candidateId]) {
             messageApi.warning("请先确认候选标签内容");
             return;
         }
         applyMutation.mutate({
-            candidateId: candidate.candidateIdText || String(candidate.candidateId),
+            candidateId: candidate.candidateIdText || normalizeId(candidate.candidateId),
             contentId: document.id,
             contentType: "WANGQI_DOCUMENT",
             capability: "tags",
@@ -398,7 +413,7 @@ export const WangqiTagAiModal = ({
                     tracking ||
                     resultLoading ||
                     !result ||
-                    !candidateSubmitEnabled[result.candidateId]
+                    !candidateSubmitEnabled[normalizeId(result.candidateId)]
                 }
                 applyTestId="classics-wangqi-document-tags-ai-apply-button"
                 createAriaLabel="生成 AI 标签"
@@ -443,7 +458,7 @@ export const WangqiTagAiModal = ({
                                 {result ? (
                                     <AiCandidatePayloadEditor
                                         key={`${result.candidateId}-${result.resultPayload ?? ""}`}
-                                        candidateId={result.candidateId}
+                                        candidateId={normalizeId(result.candidateId)}
                                         capability="tags"
                                         initialPayload={result.resultPayload}
                                         disabled={creating || tracking || resultLoading}

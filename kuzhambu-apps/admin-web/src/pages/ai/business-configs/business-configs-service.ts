@@ -1,4 +1,5 @@
 import { postJson } from "@/api/http";
+import { normalizeId } from "@/types/id";
 import type {
     AiBusinessConfigCapabilityRecord,
     AiBusinessConfigModelRecord,
@@ -12,10 +13,10 @@ export interface AiBusinessConfigQuery {
 }
 
 export interface AiBusinessConfigChangeCommand {
-    id?: number | null;
+    id?: string | null;
     capability: string;
-    promptTemplateId: number;
-    modelId: number;
+    promptTemplateId: string;
+    modelId: string;
     defaultParamsJson?: string | null;
     enabled: boolean;
 }
@@ -26,7 +27,7 @@ export const listBusinessConfigs = (query: AiBusinessConfigQuery = {}) => {
         {
             body: query
         }
-    );
+    ).then((configs) => (configs || []).map(normalizeBusinessConfigRecord));
 };
 
 export const createBusinessConfig = (command: AiBusinessConfigChangeCommand) => {
@@ -35,7 +36,7 @@ export const createBusinessConfig = (command: AiBusinessConfigChangeCommand) => 
         {
             body: command
         }
-    );
+    ).then(normalizeBusinessConfigRecord);
 };
 
 export const changeBusinessConfig = (command: AiBusinessConfigChangeCommand) => {
@@ -44,11 +45,11 @@ export const changeBusinessConfig = (command: AiBusinessConfigChangeCommand) => 
         {
             body: command
         }
-    );
+    ).then(normalizeBusinessConfigRecord);
 };
 
-export const deleteBusinessConfig = (id: number) => {
-    return postJson<boolean, { id: number }>("/ai/config/business-config/delete", {
+export const deleteBusinessConfig = (id: string) => {
+    return postJson<boolean, { id: string }>("/ai/config/business-config/delete", {
         body: { id }
     });
 };
@@ -65,7 +66,7 @@ export const listBusinessConfigCapabilities = () => {
 export const listBusinessConfigModels = () => {
     return postJson<AiBusinessConfigModelRecord[], { enabled: boolean }>("/ai/config/model/list", {
         body: { enabled: true }
-    });
+    }).then((models) => (models || []).map(normalizeBusinessConfigModelRecord));
 };
 
 export const listBusinessConfigPrompts = () => {
@@ -74,5 +75,26 @@ export const listBusinessConfigPrompts = () => {
         {
             body: { enabled: true }
         }
-    );
+    ).then((prompts) => (prompts || []).map(normalizeBusinessConfigPromptRecord));
 };
+
+const normalizeBusinessConfigRecord = (config: AiBusinessConfigRecord): AiBusinessConfigRecord => ({
+    ...config,
+    id: normalizeId(config?.id),
+    promptTemplateId: normalizeId(config?.promptTemplateId),
+    modelId: normalizeId(config?.modelId)
+});
+
+const normalizeBusinessConfigModelRecord = (
+    model: AiBusinessConfigModelRecord
+): AiBusinessConfigModelRecord => ({
+    ...model,
+    id: normalizeId(model?.id)
+});
+
+const normalizeBusinessConfigPromptRecord = (
+    prompt: AiBusinessConfigPromptRecord
+): AiBusinessConfigPromptRecord => ({
+    ...prompt,
+    id: normalizeId(prompt?.id)
+});

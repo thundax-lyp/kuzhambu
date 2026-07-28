@@ -61,14 +61,30 @@ export interface TagExtractionCandidateRecord {
 }
 
 export interface TagExtractionResultRecord {
-    aiCallId?: number | null;
-    aiCandidateId?: number | null;
+    aiCallId?: string | null;
+    aiCandidateId?: string | null;
     status?: string | null;
     resultFormat?: string | null;
     resultPayload?: string | null;
     errorType?: string | null;
     errorMessage?: string | null;
     candidates?: TagExtractionCandidateRecord[] | null;
+}
+
+export interface TagExtractionPromptVersionRecord {
+    id?: string | null;
+    templateId?: string | null;
+    templateName?: string | null;
+    capability?: string | null;
+    versionNo?: number | null;
+    registeredAt?: string | null;
+}
+
+export interface TagExtractionPromptTemplateRecord {
+    id?: string | null;
+    capability?: string | null;
+    name?: string | null;
+    currentVersionNo?: number | null;
 }
 
 export interface TagUsageMetricRecord {

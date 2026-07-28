@@ -109,9 +109,9 @@ describe("ming customs service request contracts", () => {
             sortDirection: "DESC"
         });
 
-        await service.get(500000000001);
+        await service.get("500000000001");
         expectLastCall("POST", "/classics/ming-customs/get", {
-            id: 500000000001
+            id: "500000000001"
         });
     });
 
@@ -132,17 +132,17 @@ describe("ming customs service request contracts", () => {
         expectLastCall("POST", "/classics/ming-customs/add", command);
 
         await service.update({
-            id: 500000000001,
+            id: "500000000001",
             ...command
         });
         expectLastCall("POST", "/classics/ming-customs/update", {
-            id: 500000000001,
+            id: "500000000001",
             ...command
         });
 
-        await service.deleteById(500000000001);
+        await service.deleteById("500000000001");
         expectLastCall("POST", "/classics/ming-customs/delete", {
-            id: 500000000001
+            id: "500000000001"
         });
     });
 
@@ -185,21 +185,21 @@ describe("ming customs service request contracts", () => {
     });
 
     it("sends ming customs version requests", async () => {
-        await service.listVersions(600000000001);
+        await service.listVersions("600000000001");
         expectLastCall("POST", "/classics/ming-customs/versions/list", {
-            id: 600000000001
+            id: "600000000001"
         });
 
-        await service.getVersion(600000000001, 9001);
+        await service.getVersion("600000000001", "9001");
         expectLastCall("POST", "/classics/ming-customs/versions/get", {
-            id: 600000000001,
-            versionId: 9001
+            id: "600000000001",
+            versionId: "9001"
         });
 
-        await service.resetVersion(600000000001, 9001);
+        await service.resetVersion("600000000001", "9001");
         expectLastCall("POST", "/classics/ming-customs/versions/reset", {
-            id: 600000000001,
-            versionId: 9001
+            id: "600000000001",
+            versionId: "9001"
         });
     });
 });

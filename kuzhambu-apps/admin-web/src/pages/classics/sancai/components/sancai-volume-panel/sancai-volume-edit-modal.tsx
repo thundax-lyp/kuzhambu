@@ -17,7 +17,7 @@ import type {
 
 interface SancaiVolumeEditModalProps {
     categories: SancaiCategoryRecord[];
-    fallbackCategoryId: number | null;
+    fallbackCategoryId: string | null;
     isSubmitting: boolean;
     onCancel: () => void;
     onSubmit: (values: SancaiVolumeFormValues) => void;
@@ -25,7 +25,7 @@ interface SancaiVolumeEditModalProps {
     volumeTypeOptions: DictItem[];
 }
 
-const readTitle = (value: { id: number; title?: string | null }, fallback: string) => {
+const readTitle = (value: { id: string; title?: string | null }, fallback: string) => {
     return value.title?.trim() || `${fallback} ${value.id}`;
 };
 

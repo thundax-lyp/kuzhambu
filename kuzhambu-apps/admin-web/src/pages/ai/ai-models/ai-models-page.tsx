@@ -193,7 +193,7 @@ export const AiModelsPage = () => {
             okText: "删除",
             onConfirm: async () => {
                 await Promise.all(
-                    selectedRowKeys.map((id) => deleteMutation.mutateAsync(Number(id)))
+                    selectedRowKeys.map((id) => deleteMutation.mutateAsync(String(id)))
                 );
             }
         });

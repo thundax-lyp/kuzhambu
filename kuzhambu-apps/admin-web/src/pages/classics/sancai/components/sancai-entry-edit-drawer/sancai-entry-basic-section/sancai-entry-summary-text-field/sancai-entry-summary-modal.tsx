@@ -21,10 +21,16 @@ const sortRefinementTasksByNewest = (
     left: AiRefinementTaskRecord,
     right: AiRefinementTaskRecord
 ) => {
-    if (left.requestedAt && right.requestedAt && left.requestedAt !== right.requestedAt) {
-        return right.requestedAt.localeCompare(left.requestedAt);
-    }
-    return right.taskId - left.taskId;
+    return aiRefinementTaskService.sortNewestByRequestedAtThenId({
+        left: {
+            id: aiRefinementTaskService.getTaskStableId(left.taskId, left.taskIdText),
+            requestedAt: left.requestedAt
+        },
+        right: {
+            id: aiRefinementTaskService.getTaskStableId(right.taskId, right.taskIdText),
+            requestedAt: right.requestedAt
+        }
+    });
 };
 
 const readRefinementTaskStatusLabel = (status?: string | null) => {
@@ -101,7 +107,7 @@ interface SancaiEntrySummaryModalProps {
     isCreatingAiTextTask: boolean;
     summaryTasks: AiRefinementTaskRecord[];
     onFetchResult: (task: AiRefinementTaskRecord | null) => Promise<AiCandidateRecord | null>;
-    onFetchTask: (taskId: number | string) => Promise<AiRefinementTaskRecord>;
+    onFetchTask: (taskId: string) => Promise<AiRefinementTaskRecord>;
     onApply: () => void;
     onCancel: () => void;
     onRequestTask: () => void;

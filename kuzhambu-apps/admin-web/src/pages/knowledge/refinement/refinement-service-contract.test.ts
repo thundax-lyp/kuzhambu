@@ -41,7 +41,7 @@ const installFetchRecorder = () => {
                 code: "COMMON-00000",
                 message: "success",
                 data: {
-                    refinementTaskId: 31,
+                    refinementTaskId: "31",
                     status: "DRAFT"
                 }
             }),
@@ -84,66 +84,66 @@ describe("knowledge refinement service request contracts", () => {
             sourceCategoryCode: "myth"
         });
 
-        await service.getTaskDraft({ graphVersionId: 71, openedBy: 1 });
+        await service.getTaskDraft({ graphVersionId: "71", openedBy: "1" });
         expectLastCall("POST", "/knowledge/refinement/task/open", {
-            graphVersionId: 71,
-            openedBy: 1
+            graphVersionId: "71",
+            openedBy: "1"
         });
 
-        await service.getTaskDetail({ refinementTaskId: 31 });
+        await service.getTaskDetail({ refinementTaskId: "31" });
         expectLastCall("POST", "/knowledge/refinement/task/detail", {
-            refinementTaskId: 31
+            refinementTaskId: "31"
         });
 
-        await service.applyTask({ refinementTaskId: 31, appliedBy: 1 });
+        await service.applyTask({ refinementTaskId: "31", appliedBy: "1" });
         expectLastCall("POST", "/knowledge/refinement/task/apply", {
-            refinementTaskId: 31,
-            appliedBy: 1
+            refinementTaskId: "31",
+            appliedBy: "1"
         });
     });
 
     it("sends entity, relation and quality requests", async () => {
         await service.addEntity({
-            refinementTaskId: 31,
+            refinementTaskId: "31",
             name: "黄帝",
             entityType: "PERSON",
-            operatorId: 1
+            operatorId: "1"
         });
         expectLastCall("POST", "/knowledge/refinement/entity/add", {
-            refinementTaskId: 31,
+            refinementTaskId: "31",
             name: "黄帝",
             entityType: "PERSON",
-            operatorId: 1
+            operatorId: "1"
         });
 
         await service.updateRelation({
-            refinementTaskId: 31,
+            refinementTaskId: "31",
             relationKey: "person:huangdi->person:fuxi:ancestor",
             relationType: "ANCESTOR",
-            operatorId: 1
+            operatorId: "1"
         });
         expectLastCall("POST", "/knowledge/refinement/relation/update", {
-            refinementTaskId: 31,
+            refinementTaskId: "31",
             relationKey: "person:huangdi->person:fuxi:ancestor",
             relationType: "ANCESTOR",
-            operatorId: 1
+            operatorId: "1"
         });
 
-        await service.getQualitySummary({ refinementTaskId: 31 });
+        await service.getQualitySummary({ refinementTaskId: "31" });
         expectLastCall("POST", "/knowledge/refinement/quality/summary", {
-            refinementTaskId: 31
+            refinementTaskId: "31"
         });
 
         await service.pageAnnotations({
             pageNo: 1,
             pageSize: 20,
-            refinementTaskId: 31,
+            refinementTaskId: "31",
             objectType: "ENTITY"
         });
         expectLastCall("POST", "/knowledge/refinement/annotation/page", {
             pageNo: 1,
             pageSize: 20,
-            refinementTaskId: 31,
+            refinementTaskId: "31",
             objectType: "ENTITY"
         });
     });

@@ -12,20 +12,20 @@ export interface ClassicsShareAccessClientSnapshot {
     accessType?: ClassicsShareAccessType | string | null;
     download?: boolean | null;
     privateAccess?: boolean | null;
-    storageObjectId?: number | null;
+    storageObjectId?: string | null;
 }
 
 export interface ClassicsShareTargetRef {
-    contentId: number;
+    contentId: string;
     contentType: ClassicsShareContentType;
 }
 
 export interface ClassicsBatchOperationItemRecord {
-    contentId: number;
+    contentId: string;
     contentType: ClassicsShareContentType;
     failureCode?: string | null;
     failureReason?: string | null;
-    resultId?: number | null;
+    resultId?: string | null;
     status?: string | null;
 }
 
@@ -38,14 +38,14 @@ export interface ClassicsBatchOperationRecord {
 
 export interface ClassicsShareTargetRecord {
     contentChangedAfterShare?: boolean | null;
-    contentId?: number | null;
+    contentId?: string | null;
     contentType?: ClassicsShareContentType | string | null;
-    contentVersionId?: number | null;
+    contentVersionId?: string | null;
     contentVersionNo?: number | null;
     contentVisibilitySnapshot?: string | null;
-    currentContentVersionId?: number | null;
+    currentContentVersionId?: string | null;
     currentContentVersionNo?: number | null;
-    id?: number | null;
+    id?: string | null;
     priority?: number | null;
     targetStatus?: ClassicsShareTargetStatus | string | null;
     titleSnapshot?: string | null;
@@ -54,7 +54,7 @@ export interface ClassicsShareTargetRecord {
 export interface ClassicsShareRecord {
     accessCount?: number | null;
     expiresAt?: string | null;
-    id: number;
+    id: string;
     issuedAt?: string | null;
     shareToken: string;
     shareUrl: string;
@@ -68,7 +68,7 @@ export interface ClassicsShareAccessRecord {
     accessResult?: string | null;
     accessedAt?: string | null;
     clientSnapshot?: string | null;
-    id?: number | null;
-    shareLinkId?: number | null;
-    shareTargetId?: number | null;
+    id?: string | null;
+    shareLinkId?: string | null;
+    shareTargetId?: string | null;
 }

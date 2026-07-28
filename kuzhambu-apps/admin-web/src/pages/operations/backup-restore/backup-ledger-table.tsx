@@ -73,7 +73,7 @@ const failureReasonText = (value?: string | null) => {
     return value || "未返回失败原因";
 };
 
-const buildAlertPath = (sourceRefType: string, sourceRefId?: number | null) => {
+const buildAlertPath = (sourceRefType: string, sourceRefId?: string | null) => {
     if (!sourceRefId) {
         return "/operations/dashboard";
     }

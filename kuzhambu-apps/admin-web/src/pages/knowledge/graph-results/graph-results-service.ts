@@ -16,13 +16,13 @@ export interface GraphVersionPageQuery {
     taskType?: string | null;
     status?: string | null;
     sourceContentType?: string | null;
-    sourceContentId?: number | null;
+    sourceContentId?: string | null;
 }
 
 export interface GraphEntityPageQuery {
     pageNo?: number;
     pageSize?: number;
-    versionId?: number | null;
+    versionId?: string | null;
     keyword?: string | null;
     entityType?: string | null;
     confirmationStatus?: string | null;
@@ -31,7 +31,7 @@ export interface GraphEntityPageQuery {
 export interface GraphRelationPageQuery {
     pageNo?: number;
     pageSize?: number;
-    versionId?: number | null;
+    versionId?: string | null;
     keyword?: string | null;
     relationType?: string | null;
     confirmationStatus?: string | null;
@@ -40,7 +40,7 @@ export interface GraphRelationPageQuery {
 export interface GraphLineageNodePageQuery {
     pageNo?: number;
     pageSize?: number;
-    versionId?: number | null;
+    versionId?: string | null;
     keyword?: string | null;
     nodeType?: string | null;
     confirmationStatus?: string | null;
@@ -49,30 +49,30 @@ export interface GraphLineageNodePageQuery {
 export interface GraphLineageRelationPageQuery {
     pageNo?: number;
     pageSize?: number;
-    versionId?: number | null;
+    versionId?: string | null;
     keyword?: string | null;
     relationType?: string | null;
     confirmationStatus?: string | null;
 }
 
 interface GraphVersionDetailCommand {
-    versionId: number;
+    versionId: string;
 }
 
 interface GraphEntityDetailCommand {
-    entityId: number;
+    entityId: string;
 }
 
 interface GraphRelationDetailCommand {
-    relationId: number;
+    relationId: string;
 }
 
 interface GraphLineageNodeDetailCommand {
-    nodeId: number;
+    nodeId: string;
 }
 
 interface GraphLineageRelationDetailCommand {
-    relationId: number;
+    relationId: string;
 }
 
 export const pageVersions = (request: GraphVersionPageQuery = {}) => {

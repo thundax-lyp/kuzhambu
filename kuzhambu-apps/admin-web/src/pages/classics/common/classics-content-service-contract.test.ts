@@ -56,7 +56,7 @@ const installFetchRecorder = () => {
                     failureCount: 1,
                     failures: [
                         {
-                            contentId: 4002,
+                            contentId: "4002",
                             contentType: "WANGQI_DOCUMENT",
                             failureCode: "BATCH_VISIBILITY_FAILED",
                             failureReason: "内容不存在",
@@ -67,11 +67,11 @@ const installFetchRecorder = () => {
                     successCount: 1,
                     successes: [
                         {
-                            contentId: 4001,
+                            contentId: "4001",
                             contentType: "WANGQI_DOCUMENT",
                             failureCode: null,
                             failureReason: null,
-                            resultId: 4001,
+                            resultId: "4001",
                             status: "PUBLIC"
                         }
                     ]
@@ -83,8 +83,8 @@ const installFetchRecorder = () => {
                     failureCount: 1,
                     failures: [
                         {
-                            candidateId: 7002,
-                            contentId: 4002,
+                            candidateId: "7002",
+                            contentId: "4002",
                             contentType: "WANGQI_DOCUMENT",
                             capability: "summary",
                             failureCode: "INVALID_FORMAT",
@@ -94,12 +94,12 @@ const installFetchRecorder = () => {
                     successCount: 1,
                     successes: [
                         {
-                            candidateId: 7001,
-                            contentId: 4001,
+                            candidateId: "7001",
+                            contentId: "4001",
                             contentType: "WANGQI_DOCUMENT",
                             capability: "summary",
                             objectId: null,
-                            resultId: 9001,
+                            resultId: "9001",
                             status: "APPLIED"
                         }
                     ]
@@ -113,21 +113,21 @@ const installFetchRecorder = () => {
                     successCount: 2,
                     successes: [
                         {
-                            candidateId: 8001,
-                            contentId: 5001,
+                            candidateId: "8001",
+                            contentId: "5001",
                             contentType: "MING_CUSTOMS",
                             capability: "tags",
                             objectId: null,
-                            resultId: 8001,
+                            resultId: "8001",
                             status: "REJECTED"
                         },
                         {
-                            candidateId: 8002,
-                            contentId: 5002,
+                            candidateId: "8002",
+                            contentId: "5002",
                             contentType: "MING_CUSTOMS",
                             capability: "qa",
-                            objectId: 9002,
-                            resultId: 8002,
+                            objectId: "9002",
+                            resultId: "8002",
                             status: "REJECTED"
                         }
                     ]
@@ -180,11 +180,11 @@ describe("classics content service request contracts", () => {
     it("sends POST list requests for tags and qa pairs", async () => {
         const tagQuery = {
             contentType: "SANCAI_ENTRY",
-            contentId: 3001
+            contentId: "3001"
         };
         const qaPairQuery = {
             contentType: "WANGQI_DOCUMENT",
-            contentId: 4001
+            contentId: "4001"
         };
 
         await contentService.listTags(tagQuery);
@@ -197,7 +197,7 @@ describe("classics content service request contracts", () => {
     it("sends tag add/update/sort commands", async () => {
         const addTagCommand: ClassicsContentTagCommand = {
             contentType: "SANCAI_ENTRY",
-            contentId: 3001,
+            contentId: "3001",
             tagNameSnapshot: "礼制",
             source: "MANUAL",
             status: "ACTIVE"
@@ -208,8 +208,8 @@ describe("classics content service request contracts", () => {
 
         const updateTagCommand: ClassicsContentTagCommand = {
             ...addTagCommand,
-            id: 7001,
-            tagId: 2001,
+            id: "7001",
+            tagId: "2001",
             tagNameSnapshot: "祭祀"
         };
 
@@ -217,7 +217,7 @@ describe("classics content service request contracts", () => {
         expectLastCall("POST", "/classics/content/tags/update", updateTagCommand);
 
         const deleteTagCommand: ClassicsContentTagDeleteCommand = {
-            id: 7001
+            id: "7001"
         };
 
         await contentService.deleteTag(deleteTagCommand);
@@ -225,8 +225,8 @@ describe("classics content service request contracts", () => {
 
         const sortTagCommand: ClassicsContentTagSortCommand = {
             contentType: "SANCAI_ENTRY",
-            contentId: 3001,
-            orderedIds: [7001, 7002],
+            contentId: "3001",
+            orderedIds: ["7001", "7002"],
             sortDirection: "ASC"
         };
 
@@ -237,7 +237,7 @@ describe("classics content service request contracts", () => {
     it("sends qa pair add/update/sort commands", async () => {
         const addQaCommand: ClassicsContentQaPairCommand = {
             contentType: "MING_CUSTOMS",
-            contentId: 5001,
+            contentId: "5001",
             question: "太极生两仪？",
             answer: "此言文献常见于道家语境。",
             source: "MANUAL"
@@ -248,7 +248,7 @@ describe("classics content service request contracts", () => {
 
         const updateQaCommand: ClassicsContentQaPairCommand = {
             ...addQaCommand,
-            id: 8001,
+            id: "8001",
             answer: "修订后的回答。"
         };
 
@@ -256,7 +256,7 @@ describe("classics content service request contracts", () => {
         expectLastCall("POST", "/classics/content/qa-pairs/update", updateQaCommand);
 
         const sortQaCommand: ClassicsContentQaPairSortCommand = {
-            orderedIds: [8001, 8002],
+            orderedIds: ["8001", "8002"],
             sortDirection: "DESC"
         };
 
@@ -266,7 +266,7 @@ describe("classics content service request contracts", () => {
 
     it("sends qa pair delete commands", async () => {
         const deleteQaCommand: ClassicsContentQaPairDeleteCommand = {
-            id: 8001
+            id: "8001"
         };
 
         await contentService.deleteQaPair(deleteQaCommand);
@@ -275,7 +275,7 @@ describe("classics content service request contracts", () => {
 
     it("sends batch visibility commands and preserves operation result fields", async () => {
         const command: ClassicsBatchVisibilityCommand = {
-            contentIds: [4001, 4002],
+            contentIds: ["4001", "4002"],
             contentType: "WANGQI_DOCUMENT",
             visibility: "PUBLIC"
         };
@@ -285,16 +285,16 @@ describe("classics content service request contracts", () => {
         expectLastCall("POST", "/classics/content/visibility/change", command);
         expect(response.successCount).toBe(1);
         expect(response.successes[0]).toEqual({
-            contentId: 4001,
+            contentId: "4001",
             contentType: "WANGQI_DOCUMENT",
             failureCode: null,
             failureReason: null,
-            resultId: 4001,
+            resultId: "4001",
             status: "PUBLIC"
         });
         expect(response.failureCount).toBe(1);
         expect(response.failures[0]).toEqual({
-            contentId: 4002,
+            contentId: "4002",
             contentType: "WANGQI_DOCUMENT",
             failureCode: "BATCH_VISIBILITY_FAILED",
             failureReason: "内容不存在",
@@ -309,7 +309,7 @@ describe("classics content service request contracts", () => {
                 {
                     candidateId: "869897501442834432",
                     contentType: "WANGQI_DOCUMENT",
-                    contentId: 4001,
+                    contentId: "4001",
                     capability: "summary",
                     objectId: null,
                     resultFormat: "TEXT",
@@ -318,7 +318,7 @@ describe("classics content service request contracts", () => {
                 {
                     candidateId: "869897501442834433",
                     contentType: "WANGQI_DOCUMENT",
-                    contentId: 4002,
+                    contentId: "4002",
                     capability: "summary",
                     resultFormat: "TEXT",
                     resultPayload: "bad payload"
@@ -331,19 +331,19 @@ describe("classics content service request contracts", () => {
         expectLastCall("POST", "/classics/content/ai-candidates/batch/apply", command);
         expect(response.successCount).toBe(1);
         expect(response.successes[0]).toEqual({
-            candidateId: 7001,
-            contentId: 4001,
+            candidateId: "7001",
+            contentId: "4001",
             contentType: "WANGQI_DOCUMENT",
             capability: "summary",
             objectId: null,
-            resultId: 9001,
+            resultId: "9001",
             status: "APPLIED"
         });
         expect(response.failureCount).toBe(1);
         expect(response.failures[0]).toEqual({
-            candidateId: 7002,
+            candidateId: "7002",
             contentType: "WANGQI_DOCUMENT",
-            contentId: 4002,
+            contentId: "4002",
             capability: "summary",
             failureCode: "INVALID_FORMAT",
             failureReason: "Payload 不符合结构化摘要约束"
@@ -358,15 +358,15 @@ describe("classics content service request contracts", () => {
                 {
                     candidateId: "869897501442834434",
                     contentType: "MING_CUSTOMS",
-                    contentId: 5001,
+                    contentId: "5001",
                     capability: "tags"
                 },
                 {
                     candidateId: "869897501442834435",
                     contentType: "MING_CUSTOMS",
-                    contentId: 5002,
+                    contentId: "5002",
                     capability: "qa",
-                    objectId: 9002
+                    objectId: "9002"
                 }
             ]
         };
@@ -376,21 +376,21 @@ describe("classics content service request contracts", () => {
         expectLastCall("POST", "/classics/content/ai-candidates/batch/reject", command);
         expect(response.successCount).toBe(2);
         expect(response.successes[0]).toEqual({
-            candidateId: 8001,
-            contentId: 5001,
+            candidateId: "8001",
+            contentId: "5001",
             contentType: "MING_CUSTOMS",
             capability: "tags",
             objectId: null,
-            resultId: 8001,
+            resultId: "8001",
             status: "REJECTED"
         });
         expect(response.successes[1]).toEqual({
-            candidateId: 8002,
-            contentId: 5002,
+            candidateId: "8002",
+            contentId: "5002",
             contentType: "MING_CUSTOMS",
             capability: "qa",
-            objectId: 9002,
-            resultId: 8002,
+            objectId: "9002",
+            resultId: "8002",
             status: "REJECTED"
         });
     });

@@ -151,7 +151,7 @@ describe("BackupRestorePage", () => {
             totalCount: 1,
             records: [
                 {
-                    backupId: 9001,
+                    backupId: "9001",
                     backupType: "AUTO",
                     backupStatus: "SUCCEEDED",
                     fileName: "backup_20260629-120000.sql",
@@ -172,15 +172,15 @@ describe("BackupRestorePage", () => {
             totalCount: 1,
             records: [
                 {
-                    restoreId: 9101,
-                    backupId: 9001,
-                    preRestoreBackupId: 9201,
+                    restoreId: "9101",
+                    backupId: "9001",
+                    preRestoreBackupId: "9201",
                     restoreMode: "DRILL",
                     restoreStatus: "SUCCEEDED",
                     writeBlockEnabled: false,
                     writeBlockStartedAt: "2026-06-29T12:02:00+08:00",
                     writeBlockReleasedAt: "2026-06-29T12:03:00+08:00",
-                    requesterUserId: 1001,
+                    requesterUserId: "1001",
                     startedAt: "2026-06-29T12:02:00+08:00",
                     completedAt: "2026-06-29T12:03:00+08:00"
                 }
@@ -188,22 +188,22 @@ describe("BackupRestorePage", () => {
         });
         vi.mocked(service.getBackupDetail).mockResolvedValue(null as never);
         vi.mocked(service.getRestoreDetail).mockResolvedValue({
-            restoreId: 9101,
-            backupId: 9001,
-            preRestoreBackupId: 9201,
+            restoreId: "9101",
+            backupId: "9001",
+            preRestoreBackupId: "9201",
             restoreMode: "DRILL",
             restoreStatus: "SUCCEEDED",
             writeBlockEnabled: false,
             writeBlockStartedAt: "2026-06-29T12:02:00+08:00",
             writeBlockReleasedAt: "2026-06-29T12:03:00+08:00",
-            requesterUserId: 1001,
+            requesterUserId: "1001",
             startedAt: "2026-06-29T12:02:00+08:00",
             completedAt: "2026-06-29T12:03:00+08:00"
         });
         vi.mocked(service.createManualBackup).mockResolvedValue(null as never);
         vi.mocked(service.recoverBackup).mockResolvedValue({
-            restoreId: 9102,
-            backupId: 9001,
+            restoreId: "9102",
+            backupId: "9001",
             restoreMode: "DRILL",
             restoreStatus: "SUCCEEDED"
         });
@@ -264,7 +264,7 @@ describe("BackupRestorePage", () => {
         );
         await confirmDanger.mock.calls.at(-1)?.[0].onConfirm();
         expect(vi.mocked(service.recoverBackup).mock.calls.at(-1)?.[0]).toEqual({
-            backupId: 9001,
+            backupId: "9001",
             restoreMode: "DRILL"
         });
 
@@ -277,7 +277,7 @@ describe("BackupRestorePage", () => {
         );
         await confirmDanger.mock.calls.at(-1)?.[0].onConfirm();
         expect(vi.mocked(service.recoverBackup).mock.calls.at(-1)?.[0]).toEqual({
-            backupId: 9001,
+            backupId: "9001",
             restoreMode: "REAL"
         });
     }, 30000);
@@ -307,20 +307,20 @@ describe("BackupRestorePage", () => {
             count: 1,
             records: [
                 {
-                    backupId: 9301,
+                    backupId: "9301",
                     backupType: "MANUAL",
                     backupStatus: "FAILED",
                     failureReason: "storage unavailable",
-                    requesterUserId: 1001
+                    requesterUserId: "1001"
                 }
             ]
         });
         vi.mocked(service.getBackupDetail).mockResolvedValue({
-            backupId: 9301,
+            backupId: "9301",
             backupType: "MANUAL",
             backupStatus: "FAILED",
             failureReason: "storage unavailable",
-            requesterUserId: 1001
+            requesterUserId: "1001"
         });
         vi.mocked(service.pageRestores).mockResolvedValue({
             pageNo: 1,
@@ -329,9 +329,9 @@ describe("BackupRestorePage", () => {
             count: 1,
             records: [
                 {
-                    restoreId: 9401,
-                    backupId: 9300,
-                    preRestoreBackupId: 9302,
+                    restoreId: "9401",
+                    backupId: "9300",
+                    preRestoreBackupId: "9302",
                     restoreMode: "REAL",
                     restoreStatus: "FAILED",
                     failureReason: "write block release failed"
@@ -339,9 +339,9 @@ describe("BackupRestorePage", () => {
             ]
         });
         vi.mocked(service.getRestoreDetail).mockResolvedValue({
-            restoreId: 9401,
-            backupId: 9300,
-            preRestoreBackupId: 9302,
+            restoreId: "9401",
+            backupId: "9300",
+            preRestoreBackupId: "9302",
             restoreMode: "REAL",
             restoreStatus: "FAILED",
             writeBlockEnabled: true,

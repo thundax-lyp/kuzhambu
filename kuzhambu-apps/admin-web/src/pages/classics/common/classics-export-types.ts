@@ -1,7 +1,7 @@
 export type ClassicsExportStatus = "REQUESTED" | "RUNNING" | "COMPLETED" | "FAILED" | "EXPIRED";
 
 export interface ClassicsExportJobRecord {
-    id?: number | null;
+    id?: string | null;
     contentType?: string | null;
     exportKind?: string | null;
     exportFormat?: string | null;
@@ -10,7 +10,7 @@ export interface ClassicsExportJobRecord {
     requestedAt?: string | null;
     expiresAt?: string | null;
     status?: ClassicsExportStatus | null;
-    storageObjectId?: number | null;
+    storageObjectId?: string | null;
     itemCount?: number | null;
     assetCount?: number | null;
     visibilityRiskStatus?: string | null;
@@ -20,14 +20,14 @@ export interface ClassicsExportJobRecord {
 }
 
 export interface ClassicsExportScopePayloadItem {
-    id: number;
+    id: string;
     title: string;
     text: string;
     summary?: string | null;
     visibility?: string | null;
     category?: string | null;
     documentTime?: string | null;
-    sourceFileStorageObjectId?: number | null;
+    sourceFileStorageObjectId?: string | null;
 }
 
 export interface ClassicsExportScopePayload {

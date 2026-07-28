@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Empty, Skeleton, Tag, Typography } from "antd";
 import { useMemo, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
+import { isSameId } from "@/types/id";
 import {
     KuzhambuAlert,
     KuzhambuTable,
@@ -43,7 +44,7 @@ interface SancaiEntryListProps {
     volumes: SancaiVolumeRecord[];
 }
 
-const readTitle = (value: { id: number; title?: string | null }, fallback: string) => {
+const readTitle = (value: { id: string; title?: string | null }, fallback: string) => {
     return value.title?.trim() || `${fallback} ${value.id}`;
 };
 
@@ -128,7 +129,7 @@ const readEntrySummary = (entry: SancaiEntryRecord) => {
 };
 
 const readVolumeTitle = (entry: SancaiEntryRecord, volumes: SancaiVolumeRecord[]) => {
-    const volume = volumes.find((item) => item.id === entry.volumeId);
+    const volume = volumes.find((item) => isSameId(item.id, entry.volumeId));
     return volume ? readTitle(volume, "卷") : `卷 ${entry.volumeId || "-"}`;
 };
 
@@ -163,10 +164,10 @@ export const SancaiEntryList = ({
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
     const [selectedRowsState, setSelectedRowsState] = useState<{
-        keys: number[];
+        keys: string[];
         scopeKey: string;
     }>({ keys: [], scopeKey: "" });
-    const [activeBatchId, setActiveBatchId] = useState<number | null>(null);
+    const [activeBatchId, setActiveBatchId] = useState<string | null>(null);
     const [batchShareResult, setBatchShareResult] = useState<ClassicsBatchOperationRecord | null>(
         null
     );
@@ -182,7 +183,7 @@ export const SancaiEntryList = ({
 
     const activeBatchQuery = useQuery({
         queryKey: ["classics", "sancai", "refinement", "batch", activeBatchId],
-        queryFn: () => entryService.getRefinementBatch(activeBatchId ?? 0),
+        queryFn: () => entryService.getRefinementBatch(activeBatchId ?? ""),
         enabled: activeBatchId !== null,
         retry: false,
         refetchInterval: (query) => {
@@ -242,7 +243,7 @@ export const SancaiEntryList = ({
     });
 
     const currentPageSelectionScopeKey = useMemo(
-        () => entries.map((entry) => entry.id).join("|"),
+        () => entries.map((entry) => String(entry.id ?? "")).join("|"),
         [entries]
     );
     const selectedRowKeys = useMemo(
@@ -253,7 +254,10 @@ export const SancaiEntryList = ({
         [currentPageSelectionScopeKey, selectedRowsState.keys, selectedRowsState.scopeKey]
     );
     const selectedEntries = useMemo(
-        () => entries.filter((entry) => selectedRowKeys.includes(entry.id)),
+        () =>
+            entries.filter(
+                (entry) => entry.id != null && selectedRowKeys.includes(String(entry.id))
+            ),
         [entries, selectedRowKeys]
     );
     const activeBatch = activeBatchQuery.data;
@@ -558,11 +562,11 @@ export const SancaiEntryList = ({
                     selectedRowKeys,
                     onChange: (keys) =>
                         setSelectedRowsState({
-                            keys: keys.map((key) => Number(key)),
+                            keys: keys.map(String),
                             scopeKey: currentPageSelectionScopeKey
                         })
                 }}
-                rowKey="id"
+                rowKey={(entry) => String(entry.id ?? "")}
                 size="middle"
                 scroll={{ x: 760 }}
                 sortable

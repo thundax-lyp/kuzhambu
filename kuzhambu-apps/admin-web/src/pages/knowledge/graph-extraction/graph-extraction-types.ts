@@ -22,29 +22,29 @@ export type GraphWorkbenchStatus =
 
 export interface GraphExtractionTaskRecord {
     taskId: string;
-    batchJobId?: number | null;
+    batchJobId?: string | null;
     triggerSource?: GraphExtractionTriggerSource | null;
     taskType?: GraphExtractionTaskType | null;
     scopeType?: string | null;
     scopeJson?: string | null;
     selectionScopeJson?: string | null;
     replaceUnconfirmedOnly?: boolean | null;
-    parentTaskId?: number | null;
+    parentTaskId?: string | null;
     sourceContentType?: string | null;
-    sourceContentId?: number | null;
-    aiCallId?: number | null;
-    aiCandidateId?: number | null;
+    sourceContentId?: string | null;
+    aiCallId?: string | null;
+    aiCandidateId?: string | null;
     status?: GraphExtractionTaskStatus | null;
     errorType?: string | null;
     errorMessage?: string | null;
-    requestedBy?: number | null;
+    requestedBy?: string | null;
     requestedAt?: number | null;
     completedAt?: number | null;
     appliedAt?: number | null;
 }
 
 export interface GraphExtractionBatchCancelRecord {
-    batchJobId: number;
+    batchJobId: string;
     status?: GraphExtractionTaskStatus | null;
     cancelledCount?: number | null;
     completedCount?: number | null;
@@ -57,17 +57,17 @@ export interface GraphWorkbenchManuscriptNode {
     nodeType?: GraphWorkbenchNodeType | null;
     title?: string | null;
     sourceContentType?: GraphWorkbenchSourceContentType | null;
-    sourceContentId?: number | null;
+    sourceContentId?: string | null;
     sourcePath?: string | null;
     graphStatus?: GraphWorkbenchStatus | null;
-    latestTaskId?: number | null;
-    latestGraphVersionId?: number | null;
+    latestTaskId?: string | null;
+    latestGraphVersionId?: string | null;
     children?: GraphWorkbenchManuscriptNode[] | null;
 }
 
 export interface GraphWorkbenchManuscriptRecord {
     sourceContentType?: GraphWorkbenchSourceContentType | null;
-    sourceContentId?: number | null;
+    sourceContentId?: string | null;
     title?: string | null;
     summary?: string | null;
     sourcePath?: string | null;
@@ -79,17 +79,17 @@ export interface GraphWorkbenchManuscriptRecord {
 }
 
 export interface GraphWorkbenchCandidateRecord {
-    taskId?: number | null;
-    aiCandidateId?: number | null;
+    taskId?: string | null;
+    aiCandidateId?: string | null;
     taskType?: GraphExtractionTaskType | null;
     status?: string | null;
     sourceContentType?: GraphWorkbenchSourceContentType | null;
-    sourceContentId?: number | null;
+    sourceContentId?: string | null;
     candidatePayloadJson?: string | null;
 }
 
 export interface GraphWorkbenchCandidateApplyRecord {
-    taskId?: number | null;
-    graphVersionId?: number | null;
+    taskId?: string | null;
+    graphVersionId?: string | null;
     graphStatus?: GraphWorkbenchStatus | null;
 }

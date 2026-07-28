@@ -5,11 +5,11 @@ import { GraphVersionTable } from "./graph-version-table";
 describe("GraphVersionTable", () => {
     const versions = [
         {
-            versionId: 71,
+            versionId: "71",
             taskType: "GRAPH",
             status: "APPLIED",
             sourceContentType: "SANCAI_ENTRY",
-            sourceContentId: 1001,
+            sourceContentId: "1001",
             versionNo: 2,
             refinementApplied: false
         }

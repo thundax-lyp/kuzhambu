@@ -7,9 +7,9 @@ import { GraphExtractionPage } from "./graph-extraction-page";
 const serviceMocks = vi.hoisted(() => ({
     addTask: vi.fn(async () => ({ taskId: "9001", taskType: "GRAPH", status: "REQUESTED" })),
     applyTaskCandidate: vi.fn(async () => ({ taskId: "9001", status: "APPLIED" })),
-    cancelBatchTask: vi.fn(async () => ({ batchJobId: 1001, status: "CANCELLED" })),
+    cancelBatchTask: vi.fn(async () => ({ batchJobId: "1001", status: "CANCELLED" })),
     getTaskDetail: vi.fn(async () => ({
-        batchJobId: 1001,
+        batchJobId: "1001",
         selectionScopeJson: '{"sourceContentIds":[1001,1002]}',
         taskId: "8008",
         triggerSource: "QUALITY_REPORT",
@@ -23,7 +23,7 @@ const serviceMocks = vi.hoisted(() => ({
         count: 1,
         records: [
             {
-                batchJobId: 1001,
+                batchJobId: "1001",
                 triggerSource: "QUALITY_REPORT",
                 selectionScopeJson: '{"sourceContentIds":[1001,1002]}',
                 replaceUnconfirmedOnly: true,
@@ -31,8 +31,8 @@ const serviceMocks = vi.hoisted(() => ({
                 taskType: "GRAPH",
                 status: "SUCCEEDED",
                 sourceContentType: "SANCAI_ENTRY",
-                sourceContentId: 1001,
-                aiCandidateId: 7001
+                sourceContentId: "1001",
+                aiCandidateId: "7001"
             }
         ]
     })),
@@ -41,8 +41,8 @@ const serviceMocks = vi.hoisted(() => ({
 
 const workbenchServiceMocks = vi.hoisted(() => ({
     applyCandidate: vi.fn(async () => ({
-        taskId: 9001,
-        graphVersionId: 8001,
+        taskId: "9001",
+        graphVersionId: "8001",
         graphStatus: "APPLIED"
     })),
     extractManuscript: vi.fn(async (request: unknown) => {
@@ -54,17 +54,17 @@ const workbenchServiceMocks = vi.hoisted(() => ({
         };
     }),
     getLatestCandidate: vi.fn(async () => ({
-        taskId: 9001,
-        aiCandidateId: 7001,
+        taskId: "9001",
+        aiCandidateId: "7001",
         taskType: "GRAPH",
         status: "SUCCEEDED",
         sourceContentType: "SANCAI_ENTRY",
-        sourceContentId: 1001,
+        sourceContentId: "1001",
         candidatePayloadJson: '{"entities":[{"name":"黄帝"}]}'
     })),
     getManuscript: vi.fn(async () => ({
         sourceContentType: "SANCAI_ENTRY",
-        sourceContentId: 1001,
+        sourceContentId: "1001",
         title: "三才稿件",
         summary: "三才稿件摘要",
         sourcePath: "人物 / 三才稿件",
@@ -75,11 +75,11 @@ const workbenchServiceMocks = vi.hoisted(() => ({
             taskType: "GRAPH",
             status: "SUCCEEDED",
             sourceContentType: "SANCAI_ENTRY",
-            sourceContentId: 1001,
-            aiCandidateId: 7001
+            sourceContentId: "1001",
+            aiCandidateId: "7001"
         },
         latestGraphVersion: {
-            versionId: 8001,
+            versionId: "8001",
             taskId: "9001",
             graphStatus: "APPLIED"
         }
@@ -94,7 +94,7 @@ const workbenchServiceMocks = vi.hoisted(() => ({
                         nodeType: "MANUSCRIPT",
                         title: "三才稿件",
                         sourceContentType: "SANCAI_ENTRY",
-                        sourceContentId: 1001,
+                        sourceContentId: "1001",
                         graphStatus: "CANDIDATE_READY"
                     }
                 ];
@@ -192,7 +192,7 @@ describe("GraphExtractionPage", () => {
         fireEvent.click(screen.getByRole("button", { name: /查\s*看/u }));
 
         await waitFor(() => {
-            expect(serviceMocks.getTaskDetail).toHaveBeenCalledWith({ taskId: 8008 });
+            expect(serviceMocks.getTaskDetail).toHaveBeenCalledWith({ taskId: "8008" });
         });
         expect(await screen.findByText('{"sourceContentIds":[1001,1002]}')).toBeInTheDocument();
     }, 60_000);
@@ -205,13 +205,13 @@ describe("GraphExtractionPage", () => {
         await waitFor(() => {
             expect(workbenchServiceMocks.getManuscript).toHaveBeenCalledWith({
                 sourceContentType: "SANCAI_ENTRY",
-                sourceContentId: 1001
+                sourceContentId: "1001"
             });
         });
         await waitFor(() => {
             expect(workbenchServiceMocks.getLatestCandidate).toHaveBeenCalledWith({
                 sourceContentType: "SANCAI_ENTRY",
-                sourceContentId: 1001,
+                sourceContentId: "1001",
                 taskType: "GRAPH"
             });
         });
@@ -220,7 +220,7 @@ describe("GraphExtractionPage", () => {
         await waitFor(() => {
             expect(workbenchServiceMocks.extractManuscript).toHaveBeenCalledWith({
                 sourceContentType: "SANCAI_ENTRY",
-                sourceContentId: 1001,
+                sourceContentId: "1001",
                 taskType: "GRAPH"
             });
         });
@@ -230,7 +230,7 @@ describe("GraphExtractionPage", () => {
 
         fireEvent.click(screen.getByRole("button", { name: "应用候选" }));
         await waitFor(() => {
-            expect(workbenchServiceMocks.applyCandidate).toHaveBeenCalledWith({ taskId: 9001 });
+            expect(workbenchServiceMocks.applyCandidate).toHaveBeenCalledWith({ taskId: "9001" });
         });
         expect(screen.getByRole("link", { name: "查看结果" })).toHaveAttribute(
             "href",
@@ -252,7 +252,7 @@ describe("GraphExtractionPage", () => {
         await waitFor(() => {
             expect(workbenchServiceMocks.getManuscript).toHaveBeenCalledWith({
                 sourceContentType: "SANCAI_ENTRY",
-                sourceContentId: 1001
+                sourceContentId: "1001"
             });
         });
         const extractButton = screen.getByTestId(
@@ -301,11 +301,26 @@ describe("GraphExtractionPage", () => {
             >;
             expect(regenerateCalls[0]?.[0]).toEqual({
                 taskType: "GRAPH",
-                sourceTaskId: 88,
+                sourceTaskId: "88",
                 triggerSource: "REFINEMENT_APPLIED",
                 replaceUnconfirmedOnly: true,
                 selectionScopeJson: '{"sourceContentIds":[1001]}'
             });
         });
+    });
+
+    it("ignores invalid refinement handoff source task id", async () => {
+        window.history.pushState(
+            {},
+            "",
+            "/knowledge/graph-extraction?regenerate=1&taskType=GRAPH&sourceTaskId=abc&triggerSource=REFINEMENT_APPLIED"
+        );
+        renderPage();
+
+        await waitFor(() => {
+            expect(screen.queryByText("精修应用后的图谱重生成参数已载入")).not.toBeInTheDocument();
+        });
+        expect(screen.queryByRole("button", { name: "提交重生成" })).not.toBeInTheDocument();
+        expect(serviceMocks.regenerateTask).not.toHaveBeenCalled();
     });
 });

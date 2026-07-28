@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { KuzhambuSpace, KuzhambuPage, KuzhambuCard } from "@/components";
 import * as currentUserService from "@/service/current-user-service";
+import { isPositiveDecimalId } from "@/types/id";
 
 import { RefinementEntityDeleteModal } from "./components/refinement-entity-delete-modal";
 import { RefinementEntityEditModal } from "./components/refinement-entity-edit-modal";
@@ -29,10 +30,10 @@ import "./refinement-page.css";
 const { Text, Title } = Typography;
 
 const readInitialGraphVersionId = () => {
-    const graphVersionId = Number(
-        new URLSearchParams(window.location.search).get("graphVersionId")
-    );
-    return Number.isFinite(graphVersionId) && graphVersionId > 0 ? graphVersionId : null;
+    const graphVersionId = new URLSearchParams(window.location.search)
+        .get("graphVersionId")
+        ?.trim();
+    return isPositiveDecimalId(graphVersionId) ? graphVersionId : null;
 };
 
 export const RefinementPage = () => {
@@ -105,9 +106,9 @@ export const RefinementPage = () => {
         enabled: canView || canEdit,
         retry: false
     });
-    const currentUserId = Number(currentUserQuery.data?.id ?? 0);
+    const currentUserId = currentUserQuery.data?.id ?? "";
 
-    const refreshDetail = async (refinementTaskId: number) => {
+    const refreshDetail = async (refinementTaskId: string) => {
         const nextDetail = await service.getTaskDetail({ refinementTaskId });
         setDetail(nextDetail);
         await Promise.all([
@@ -174,7 +175,7 @@ export const RefinementPage = () => {
         });
     }, [currentUserId, initialGraphVersionId, openTaskMutation]);
 
-    const openRefinementTask = (graphVersionId: number) => {
+    const openRefinementTask = (graphVersionId: string) => {
         if (!currentUserId) {
             messageApi.warning("当前用户信息未加载完成，请稍后重试");
             return;
@@ -423,7 +424,7 @@ export const RefinementPage = () => {
                             <RefinementWorkbenchTable
                                 items={taskItems}
                                 loading={taskPageQuery.isLoading}
-                                onOpenTask={(item) => openRefinementTask(item.graphVersionId || 0)}
+                                onOpenTask={(item) => openRefinementTask(item.graphVersionId || "")}
                             />
                         </KuzhambuSpace>
                     </KuzhambuCard>

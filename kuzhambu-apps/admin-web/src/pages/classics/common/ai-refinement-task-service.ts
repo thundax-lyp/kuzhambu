@@ -17,10 +17,15 @@ export type AiRefinementTaskGetCommand = AiRefinementTaskGetPayload;
 export type AiRefinementTaskCancelCommand = AiRefinementTaskCancelPayload;
 export type AiRefinementTaskPageQuery = AiRefinementTaskPagePayload;
 
+export interface SortNewestByRequestedAtThenIdCommand {
+    left: { id?: string | null; requestedAt?: string | null };
+    right: { id?: string | null; requestedAt?: string | null };
+}
+
 interface AiRefinementTaskStreamCommand {
     onEvent: (event: AiRefinementStreamEventRecord) => void;
     signal?: AbortSignal;
-    taskId: number | string;
+    taskId: string;
 }
 
 const RETRYABLE_STATUSES = new Set(["FAILED", "PARTIAL", "CANCELLED"]);
@@ -48,6 +53,7 @@ const CAPABILITY_LABELS: Record<string, string> = {
 };
 
 const GENERIC_ERROR_MESSAGES = new Set(["业务处理失败"]);
+const DECIMAL_ID_PATTERN = /^\d+$/;
 
 const FAILURE_STAGE_LABELS: Record<string, string> = {
     REQUEST_VALIDATE: "任务请求参数校验失败",
@@ -116,8 +122,30 @@ export const getTaskCapabilityLabel = (capability: string) => {
     return CAPABILITY_LABELS[normalizedCapability] ?? capability;
 };
 
-export const getTaskStableId = (taskId: number, taskIdText?: string | null) => {
+export const getTaskStableId = (taskId: string, taskIdText?: string | null) => {
     return taskIdText || taskId;
+};
+
+export const sortDecimalIdAsc = (leftId?: string | null, rightId?: string | null) => {
+    const left = String(leftId ?? "").trim();
+    const right = String(rightId ?? "").trim();
+    if (DECIMAL_ID_PATTERN.test(left) && DECIMAL_ID_PATTERN.test(right)) {
+        if (left.length !== right.length) {
+            return left.length - right.length;
+        }
+    }
+    return left.localeCompare(right);
+};
+
+export const sortDecimalIdDesc = (leftId?: string | null, rightId?: string | null) =>
+    sortDecimalIdAsc(rightId, leftId);
+
+export const sortNewestByRequestedAtThenId = (command: SortNewestByRequestedAtThenIdCommand) => {
+    const { left, right } = command;
+    if (left.requestedAt && right.requestedAt && left.requestedAt !== right.requestedAt) {
+        return right.requestedAt.localeCompare(left.requestedAt);
+    }
+    return sortDecimalIdDesc(left.id, right.id);
 };
 
 export const getTaskFailureText = (

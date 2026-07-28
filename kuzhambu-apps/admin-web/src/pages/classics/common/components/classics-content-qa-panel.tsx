@@ -23,16 +23,16 @@ import {
 } from "../classics-content-service";
 
 interface ClassicsContentQaPanelProps {
-    contentId: number;
+    contentId: string;
     contentType: ClassicsContentType;
     onChanged?: () => void;
     panelTitle?: string;
 }
 
 interface QaEditorValues {
-    contentId: number;
+    contentId: string;
     contentType: ClassicsContentType;
-    id?: number | null;
+    id?: string | null;
     question: string;
     answer: string;
     source: string;
@@ -136,7 +136,7 @@ export const ClassicsContentQaPanel = ({
     });
 
     const deleteMutation = useMutation({
-        mutationFn: (request: { id: number }) => contentService.deleteQaPair(request),
+        mutationFn: (request: { id: string }) => contentService.deleteQaPair(request),
         onSuccess: async () => {
             await notifyChanged();
             messageApi.success("问答对已删除");
@@ -200,8 +200,10 @@ export const ClassicsContentQaPanel = ({
         }
 
         const filtered = [...qaPairs];
-        const sourceIndex = filtered.findIndex((pair) => pair.id === sourcePair.id);
-        const targetIndex = filtered.findIndex((pair) => pair.id === targetPair.id);
+        const sourcePairId = String(sourcePair.id);
+        const targetPairId = String(targetPair.id);
+        const sourceIndex = filtered.findIndex((pair) => String(pair.id) === sourcePairId);
+        const targetIndex = filtered.findIndex((pair) => String(pair.id) === targetPairId);
         if (sourceIndex < 0 || targetIndex < 0) {
             return;
         }
@@ -214,7 +216,8 @@ export const ClassicsContentQaPanel = ({
         sortMutation.mutate({
             orderedIds: sorted
                 .map((pair) => pair.id)
-                .filter((id): id is number => typeof id === "number"),
+                .filter((id) => id != null && String(id).length > 0)
+                .map(String),
             sortDirection: "ASC"
         });
     };

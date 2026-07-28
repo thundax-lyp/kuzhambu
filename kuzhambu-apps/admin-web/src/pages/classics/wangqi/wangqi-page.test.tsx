@@ -37,28 +37,30 @@ vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => 
 }));
 
 vi.mock("@/service/current-user-service", () => ({
-    getCurrentUserInfo: vi.fn(() => Promise.resolve({ id: 99, loginName: "admin", name: "Admin" }))
+    getCurrentUserInfo: vi.fn(() =>
+        Promise.resolve({ id: "99", loginName: "admin", name: "Admin" })
+    )
 }));
 
 vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
     createTask: vi.fn(() =>
         Promise.resolve({
-            taskId: 9001,
+            taskId: "9001",
             status: "PENDING",
             capability: "summary",
             contentType: "WANGQI_DOCUMENT",
-            contentId: 1
+            contentId: "1"
         })
     ),
     getTaskFailureText: vi.fn(() => null),
-    getTaskStableId: vi.fn((taskId: number, taskIdText?: string | null) => taskIdText || taskId),
+    getTaskStableId: vi.fn((taskId: string, taskIdText?: string | null) => taskIdText || taskId),
     getTask: vi.fn(() =>
         Promise.resolve({
-            taskId: 9001,
+            taskId: "9001",
             status: "PENDING",
             capability: "summary",
             contentType: "WANGQI_DOCUMENT",
-            contentId: 1
+            contentId: "1"
         })
     ),
     pageTasks: vi.fn(() => Promise.resolve({ items: [], total: 0, pageNo: 1, pageSize: 10 })),
@@ -81,20 +83,20 @@ interface CapturedCall {
 
 const capturedCalls: CapturedCall[] = [];
 let mockDocumentRecord = {
-    id: 1,
+    id: "1",
     title: "王圻文档",
     summary: "记录王圻古籍条目。",
     contentFormat: "MARKDOWN",
     content: "## 王圻",
     documentTime: "2026-01-01T00:00:00.000+00:00",
-    storageObjectId: 7001,
+    storageObjectId: "7001",
     visibility: "PUBLIC"
 };
 let mockSummaryCandidates = [
     {
-        candidateId: 5001,
+        candidateId: "5001",
         contentType: "WANGQI_DOCUMENT",
-        contentId: 1,
+        contentId: "1",
         capability: "summary",
         objectId: null,
         resultFormat: "TEXT",
@@ -105,9 +107,9 @@ let mockSummaryCandidates = [
 ];
 let mockTagCandidates = [
     {
-        candidateId: 6001,
+        candidateId: "6001",
         contentType: "WANGQI_DOCUMENT",
-        contentId: 1,
+        contentId: "1",
         capability: "tags",
         objectId: null,
         resultFormat: "STRUCTURED",
@@ -118,10 +120,10 @@ let mockTagCandidates = [
 ];
 let mockTagRecords = [
     {
-        id: 8101,
-        tagId: 9101,
+        id: "8101",
+        tagId: "9101",
         contentType: "WANGQI_DOCUMENT",
-        contentId: 1,
+        contentId: "1",
         tagNameSnapshot: "史部",
         source: "MANUAL",
         status: "ACTIVE"
@@ -129,9 +131,9 @@ let mockTagRecords = [
 ];
 let mockQaCandidates = [
     {
-        candidateId: 7001,
+        candidateId: "7001",
         contentType: "WANGQI_DOCUMENT",
-        contentId: 1,
+        contentId: "1",
         capability: "qa",
         objectId: null,
         resultFormat: "STRUCTURED",
@@ -144,9 +146,9 @@ let mockQaCandidates = [
 ];
 let mockQaRecords = [
     {
-        id: 8201,
+        id: "8201",
         contentType: "WANGQI_DOCUMENT",
-        contentId: 1,
+        contentId: "1",
         question: "已有问题？",
         answer: "已有答案。",
         source: "MANUAL"
@@ -251,7 +253,7 @@ const installFetchMock = () => {
                 failureCount: 1,
                 failures: [
                     {
-                        contentId: 2,
+                        contentId: "2",
                         contentType: "WANGQI_DOCUMENT",
                         failureCode: "CONTENT_NOT_FOUND",
                         failureReason: "文档不存在",
@@ -261,9 +263,9 @@ const installFetchMock = () => {
                 successCount: 1,
                 successes: [
                     {
-                        contentId: 1,
+                        contentId: "1",
                         contentType: "WANGQI_DOCUMENT",
-                        resultId: 9101,
+                        resultId: "9101",
                         status: "ACTIVE"
                     }
                 ]
@@ -274,7 +276,7 @@ const installFetchMock = () => {
                 failureCount: 1,
                 failures: [
                     {
-                        contentId: 2,
+                        contentId: "2",
                         contentType: "WANGQI_DOCUMENT",
                         failureCode: "BATCH_VISIBILITY_FAILED",
                         failureReason: "文档不存在",
@@ -284,9 +286,9 @@ const installFetchMock = () => {
                 successCount: 1,
                 successes: [
                     {
-                        contentId: 1,
+                        contentId: "1",
                         contentType: "WANGQI_DOCUMENT",
-                        resultId: 1,
+                        resultId: "1",
                         status: "PRIVATE"
                     }
                 ]
@@ -303,9 +305,9 @@ const installFetchMock = () => {
         }
         if (path.endsWith("/classics/content/ai-candidates/change")) {
             return apiResponse({
-                contentId: 1,
+                contentId: "1",
                 contentType: "WANGQI_DOCUMENT",
-                versionId: 9101,
+                versionId: "9101",
                 versionNo: 2
             });
         }
@@ -316,12 +318,12 @@ const installFetchMock = () => {
                 successCount: 1,
                 successes: [
                     {
-                        candidateId: 5001,
-                        contentId: 1,
+                        candidateId: "5001",
+                        contentId: "1",
                         contentType: "WANGQI_DOCUMENT",
                         capability: "summary",
                         objectId: null,
-                        resultId: 5001,
+                        resultId: "5001",
                         status: "REJECTED"
                     }
                 ]
@@ -345,20 +347,20 @@ describe("WangqiPage", () => {
         queryClient = createTestQueryClient();
         capturedCalls.length = 0;
         mockDocumentRecord = {
-            id: 1,
+            id: "1",
             title: "王圻文档",
             summary: "记录王圻古籍条目。",
             contentFormat: "MARKDOWN",
             content: "## 王圻",
             documentTime: "2026-01-01T00:00:00.000+00:00",
-            storageObjectId: 7001,
+            storageObjectId: "7001",
             visibility: "PUBLIC"
         };
         mockSummaryCandidates = [
             {
-                candidateId: 5001,
+                candidateId: "5001",
                 contentType: "WANGQI_DOCUMENT",
-                contentId: 1,
+                contentId: "1",
                 capability: "summary",
                 objectId: null,
                 resultFormat: "TEXT",
@@ -369,9 +371,9 @@ describe("WangqiPage", () => {
         ];
         mockTagCandidates = [
             {
-                candidateId: 6001,
+                candidateId: "6001",
                 contentType: "WANGQI_DOCUMENT",
-                contentId: 1,
+                contentId: "1",
                 capability: "tags",
                 objectId: null,
                 resultFormat: "STRUCTURED",
@@ -382,10 +384,10 @@ describe("WangqiPage", () => {
         ];
         mockTagRecords = [
             {
-                id: 8101,
-                tagId: 9101,
+                id: "8101",
+                tagId: "9101",
                 contentType: "WANGQI_DOCUMENT",
-                contentId: 1,
+                contentId: "1",
                 tagNameSnapshot: "史部",
                 source: "MANUAL",
                 status: "ACTIVE"
@@ -393,9 +395,9 @@ describe("WangqiPage", () => {
         ];
         mockQaCandidates = [
             {
-                candidateId: 7001,
+                candidateId: "7001",
                 contentType: "WANGQI_DOCUMENT",
-                contentId: 1,
+                contentId: "1",
                 capability: "qa",
                 objectId: null,
                 resultFormat: "STRUCTURED",
@@ -408,9 +410,9 @@ describe("WangqiPage", () => {
         ];
         mockQaRecords = [
             {
-                id: 8201,
+                id: "8201",
                 contentType: "WANGQI_DOCUMENT",
-                contentId: 1,
+                contentId: "1",
                 question: "已有问题？",
                 answer: "已有答案。",
                 source: "MANUAL"
@@ -543,15 +545,15 @@ describe("WangqiPage", () => {
         const user = userEvent.setup();
 
         vi.mocked(aiRefinementTaskService.pageTasks).mockImplementation(async (query) => {
-            if (query?.contentType === "WANGQI_DOCUMENT" && query.contentId === 1) {
+            if (query?.contentType === "WANGQI_DOCUMENT" && query.contentId === "1") {
                 return {
                     items: [
                         {
-                            taskId: 9001,
+                            taskId: "9001",
                             status: "RUNNING",
                             capability: "summary",
                             contentType: "WANGQI_DOCUMENT",
-                            contentId: 1,
+                            contentId: "1",
                             requestedAt: "2026-01-01T00:00:00.000+00:00"
                         }
                     ],
@@ -623,9 +625,9 @@ describe("WangqiPage", () => {
             mockSummaryCandidates = [
                 ...mockSummaryCandidates,
                 {
-                    candidateId: 5002,
+                    candidateId: "5002",
                     contentType: "WANGQI_DOCUMENT",
-                    contentId: 1,
+                    contentId: "1",
                     capability: "summary",
                     objectId: null,
                     resultFormat: "TEXT",
@@ -635,20 +637,20 @@ describe("WangqiPage", () => {
                 }
             ];
             return {
-                taskId: 9100,
+                taskId: "9100",
                 status: "PENDING",
                 capability: "summary",
                 contentType: "WANGQI_DOCUMENT",
-                contentId: 1
+                contentId: "1"
             };
         });
         vi.mocked(aiRefinementTaskService.getTask).mockResolvedValueOnce({
-            taskId: 9100,
+            taskId: "9100",
             status: "SUCCEEDED",
             capability: "summary",
             contentType: "WANGQI_DOCUMENT",
-            contentId: 1,
-            candidateId: 5002,
+            contentId: "1",
+            candidateId: "5002",
             requestedAt: "2026-01-01T00:01:00.000+00:00"
         });
 
@@ -669,7 +671,7 @@ describe("WangqiPage", () => {
         await user.click(screen.getByTestId("classics-wangqi-document-summary-ai-generate-button"));
 
         await waitFor(() =>
-            expect(aiRefinementTaskService.getTask).toHaveBeenCalledWith({ taskId: 9100 })
+            expect(aiRefinementTaskService.getTask).toHaveBeenCalledWith({ taskId: "9100" })
         );
         await waitFor(() => {
             expect(screen.getByLabelText("AI摘要候选摘要")).toHaveValue("新生成摘要候选");
@@ -716,10 +718,10 @@ describe("WangqiPage", () => {
                 expect.objectContaining({
                     scope: "classics",
                     contentType: "WANGQI_DOCUMENT",
-                    contentId: 1,
-                    requestedBy: 99,
+                    contentId: "1",
+                    requestedBy: "99",
                     serviceRole: "PRIMARY",
-                    modelId: 1,
+                    modelId: "1",
                     modelName: "gpt-5.5",
                     locale: "zh-CN"
                 })
@@ -733,19 +735,19 @@ describe("WangqiPage", () => {
         const user = userEvent.setup();
 
         vi.mocked(aiRefinementTaskService.createTask).mockResolvedValueOnce({
-            taskId: 9300,
+            taskId: "9300",
             status: "PENDING",
             capability: "qa",
             contentType: "WANGQI_DOCUMENT",
-            contentId: 1
+            contentId: "1"
         });
         vi.mocked(aiRefinementTaskService.getTask).mockResolvedValueOnce({
-            taskId: 9300,
+            taskId: "9300",
             status: "SUCCEEDED",
             capability: "qa",
             contentType: "WANGQI_DOCUMENT",
-            contentId: 1,
-            candidateId: 7001,
+            contentId: "1",
+            candidateId: "7001",
             requestedAt: "2026-01-01T00:01:00.000+00:00"
         });
 
@@ -780,7 +782,7 @@ describe("WangqiPage", () => {
             '"existingQaPairs":[{"question":"已有问题？","answer":"已有答案。"}]'
         );
         await waitFor(() =>
-            expect(aiRefinementTaskService.getTask).toHaveBeenCalledWith({ taskId: 9300 })
+            expect(aiRefinementTaskService.getTask).toHaveBeenCalledWith({ taskId: "9300" })
         );
         expect(await screen.findByText("问答任务已完成")).toBeInTheDocument();
         expect(await screen.findByLabelText("问答问题 1")).toHaveValue("王圻是谁？");
@@ -796,7 +798,7 @@ describe("WangqiPage", () => {
             ).toEqual(
                 expect.objectContaining({
                     candidateId: "7001",
-                    contentId: 1,
+                    contentId: "1",
                     contentType: "WANGQI_DOCUMENT",
                     capability: "qa",
                     resultFormat: "STRUCTURED",
@@ -812,19 +814,19 @@ describe("WangqiPage", () => {
         const user = userEvent.setup();
 
         vi.mocked(aiRefinementTaskService.createTask).mockResolvedValueOnce({
-            taskId: 9200,
+            taskId: "9200",
             status: "PENDING",
             capability: "tags",
             contentType: "WANGQI_DOCUMENT",
-            contentId: 1
+            contentId: "1"
         });
         vi.mocked(aiRefinementTaskService.getTask).mockResolvedValueOnce({
-            taskId: 9200,
+            taskId: "9200",
             status: "SUCCEEDED",
             capability: "tags",
             contentType: "WANGQI_DOCUMENT",
-            contentId: 1,
-            candidateId: 6001,
+            contentId: "1",
+            candidateId: "6001",
             requestedAt: "2026-01-01T00:01:00.000+00:00"
         });
 
@@ -855,7 +857,7 @@ describe("WangqiPage", () => {
         expect(taskPayload?.promptVariablesJson).toContain('"existingTags":["史部"]');
         expect(taskPayload?.inputPayloadJson).toContain('"existingTags":["史部"]');
         await waitFor(() =>
-            expect(aiRefinementTaskService.getTask).toHaveBeenCalledWith({ taskId: 9200 })
+            expect(aiRefinementTaskService.getTask).toHaveBeenCalledWith({ taskId: "9200" })
         );
         expect(await screen.findByText("标签任务已完成")).toBeInTheDocument();
         expect(await screen.findByLabelText("候选标签 1")).toHaveValue("经部");
@@ -871,7 +873,7 @@ describe("WangqiPage", () => {
             ).toEqual(
                 expect.objectContaining({
                     candidateId: "6001",
-                    contentId: 1,
+                    contentId: "1",
                     contentType: "WANGQI_DOCUMENT",
                     capability: "tags",
                     resultFormat: "STRUCTURED",
@@ -937,7 +939,7 @@ describe("WangqiPage", () => {
         const user = userEvent.setup();
         mockDocumentRecord = {
             ...mockDocumentRecord,
-            id: 0
+            id: ""
         };
 
         render(
@@ -948,7 +950,7 @@ describe("WangqiPage", () => {
             </QueryClientProvider>
         );
 
-        await user.click(await screen.findByTestId("wangqi-document-edit-0-button"));
+        await user.click(await screen.findByTestId("wangqi-document-edit--button"));
         await openQaSection(user);
 
         expect(await screen.findByRole("button", { name: "单文档问答" })).toBeDisabled();
@@ -1030,7 +1032,7 @@ describe("WangqiPage", () => {
         });
         expect(capturedCalls).toContainEqual({
             body: {
-                contentIds: [1],
+                contentIds: ["1"],
                 contentType: "WANGQI_DOCUMENT",
                 visibility: "PRIVATE"
             },
@@ -1072,7 +1074,7 @@ describe("WangqiPage", () => {
         expect(capturedCalls).toContainEqual({
             body: {
                 contentType: "WANGQI_DOCUMENT",
-                contentId: 1,
+                contentId: "1",
                 status: "PENDING"
             },
             method: "POST",
@@ -1093,7 +1095,7 @@ describe("WangqiPage", () => {
                     {
                         candidateId: "5001",
                         contentType: "WANGQI_DOCUMENT",
-                        contentId: 1,
+                        contentId: "1",
                         capability: "summary",
                         objectId: null
                     }
@@ -1194,7 +1196,7 @@ describe("WangqiPage", () => {
 
     it("renders wangqi version history panel with confirmed tags and qa snapshots", () => {
         const version: WangqiContentVersionRecord = {
-            id: 400000000003,
+            id: "400000000003",
             versionNo: 6,
             changeType: "AI_APPLIED",
             changeSummary: "更新快照",
@@ -1205,28 +1207,28 @@ describe("WangqiPage", () => {
                 contentFormat: "MARKDOWN",
                 content: "快照正文",
                 documentTime: "明年正月初一",
-                storageObjectId: 7001,
+                storageObjectId: "7001",
                 visibility: "PUBLIC",
                 tags: [
                     {
-                        id: 5001,
-                        tagId: 6001,
+                        id: "5001",
+                        tagId: "6001",
                         tagNameSnapshot: "文献"
                     },
                     {
-                        id: 5002,
-                        tagId: 6002,
+                        id: "5002",
+                        tagId: "6002",
                         tagNameSnapshot: "校勘"
                     }
                 ],
                 qaPairs: [
                     {
-                        id: 7001,
+                        id: "7001",
                         question: "什么是经文注释？",
                         answer: "为文献加注释与解释。"
                     },
                     {
-                        id: 7002,
+                        id: "7002",
                         question: "应用来源有哪些？",
                         answer: "来自专家校对。"
                     }
@@ -1237,13 +1239,13 @@ describe("WangqiPage", () => {
         render(
             <WangqiVersionPanel
                 currentDocument={{
-                    id: 1,
+                    id: "1",
                     title: "正文标题",
                     summary: "正文摘要",
                     contentFormat: "MARKDOWN",
                     content: "正文正文",
                     documentTime: "2026-01-01",
-                    storageObjectId: 7001,
+                    storageObjectId: "7001",
                     visibility: "PUBLIC"
                 }}
                 versions={[version]}

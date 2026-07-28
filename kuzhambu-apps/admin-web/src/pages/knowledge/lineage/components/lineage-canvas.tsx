@@ -4,12 +4,13 @@ import { useMemo, useRef, useState } from "react";
 import type { MouseEvent as ReactMouseEvent, WheelEvent as ReactWheelEvent } from "react";
 import type { LineageNodeRecord, LineageRelationRecord } from "../lineage-types";
 import { KuzhambuButton } from "@/components";
+import { isSameId, normalizeId, normalizeNullableId } from "@/types/id";
 
 interface LineageCanvasProps {
     nodes: LineageNodeRecord[];
     relations: LineageRelationRecord[];
-    selectedNodeId?: number | null;
-    selectedRelationId?: number | null;
+    selectedNodeId?: string | null;
+    selectedRelationId?: string | null;
     onSelectNode: (node: LineageNodeRecord) => void;
     onSelectRelation: (relation: LineageRelationRecord) => void;
 }
@@ -74,23 +75,26 @@ const readRelationLabel = (relation: LineageRelationRecord) => {
     return relation.relationLabel || relation.relationType || "关系";
 };
 
-const readRelationNodeIds = (relations: LineageRelationRecord[], nodeId?: number | null) => {
-    if (nodeId == null) {
-        return new Set<number>();
+const readRelationNodeIds = (relations: LineageRelationRecord[], nodeId?: string | null) => {
+    const selectedNodeId = normalizeNullableId(nodeId);
+    if (selectedNodeId == null) {
+        return new Set<string>();
     }
-    return relations.reduce<Set<number>>(
+    return relations.reduce<Set<string>>(
         (nodeIds, relation) => {
-            if (relation.sourceNodeId === nodeId || relation.targetNodeId === nodeId) {
+            const sourceNodeId = normalizeNullableId(relation.sourceNodeId);
+            const targetNodeId = normalizeNullableId(relation.targetNodeId);
+            if (sourceNodeId === selectedNodeId || targetNodeId === selectedNodeId) {
                 if (relation.sourceNodeId != null) {
-                    nodeIds.add(relation.sourceNodeId);
+                    nodeIds.add(normalizeId(relation.sourceNodeId));
                 }
                 if (relation.targetNodeId != null) {
-                    nodeIds.add(relation.targetNodeId);
+                    nodeIds.add(normalizeId(relation.targetNodeId));
                 }
             }
             return nodeIds;
         },
-        new Set([nodeId])
+        new Set([selectedNodeId])
     );
 };
 
@@ -112,8 +116,8 @@ export const LineageCanvas = ({
     );
     const canvasNodes = useMemo(() => layoutNodes(nodes), [nodes]);
     const nodeById = useMemo(() => {
-        return canvasNodes.reduce<Map<number, CanvasItem>>((nodesById, node) => {
-            nodesById.set(node.nodeId, node);
+        return canvasNodes.reduce<Map<string, CanvasItem>>((nodesById, node) => {
+            nodesById.set(normalizeId(node.nodeId), node);
             return nodesById;
         }, new Map());
     }, [canvasNodes]);
@@ -229,19 +233,19 @@ export const LineageCanvas = ({
                         const sourceNode =
                             relation.sourceNodeId == null
                                 ? null
-                                : nodeById.get(relation.sourceNodeId);
+                                : nodeById.get(normalizeId(relation.sourceNodeId));
                         const targetNode =
                             relation.targetNodeId == null
                                 ? null
-                                : nodeById.get(relation.targetNodeId);
+                                : nodeById.get(normalizeId(relation.targetNodeId));
                         if (!sourceNode || !targetNode) {
                             return null;
                         }
-                        const isSelected = relation.relationId === selectedRelationId;
+                        const isSelected = isSameId(relation.relationId, selectedRelationId);
                         const isAdjacent =
                             selectedNodeId == null ||
-                            relation.sourceNodeId === selectedNodeId ||
-                            relation.targetNodeId === selectedNodeId;
+                            isSameId(relation.sourceNodeId, selectedNodeId) ||
+                            isSameId(relation.targetNodeId, selectedNodeId);
                         const labelX = (sourceNode.canvasX + targetNode.canvasX) / 2;
                         const labelY = (sourceNode.canvasY + targetNode.canvasY) / 2 - 8;
                         return (
@@ -286,9 +290,10 @@ export const LineageCanvas = ({
                 </g>
                 <g className="knowledge-lineage-canvas__nodes">
                     {canvasNodes.map((node) => {
-                        const isSelected = node.nodeId === selectedNodeId;
+                        const isSelected = isSameId(node.nodeId, selectedNodeId);
                         const isMuted =
-                            selectedNodeId != null && !selectedNeighborNodeIds.has(node.nodeId);
+                            selectedNodeId != null &&
+                            !selectedNeighborNodeIds.has(normalizeId(node.nodeId));
                         return (
                             <g
                                 className={[

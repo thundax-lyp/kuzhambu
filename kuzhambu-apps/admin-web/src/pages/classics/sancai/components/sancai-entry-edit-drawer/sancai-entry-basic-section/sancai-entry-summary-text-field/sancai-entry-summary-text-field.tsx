@@ -32,15 +32,15 @@ const isUsableSummaryCandidate = (candidate?: AiCandidateRecord | null) => {
 
 const selectLatestSummaryCandidate = (candidates: AiCandidateRecord[] | undefined) => {
     return [...(candidates || [])].filter(isUsableSummaryCandidate).sort((left, right) => {
-        if (left.requestedAt && right.requestedAt && left.requestedAt !== right.requestedAt) {
-            return right.requestedAt.localeCompare(left.requestedAt);
-        }
-        return right.candidateId - left.candidateId;
+        return aiRefinementTaskService.sortNewestByRequestedAtThenId({
+            left: { id: getCandidateStableId(left), requestedAt: left.requestedAt },
+            right: { id: getCandidateStableId(right), requestedAt: right.requestedAt }
+        });
     })[0];
 };
 
 interface SancaiEntrySummaryTextFieldProps {
-    entryId?: number;
+    entryId?: string;
     getFormValues: () => SancaiEntryFormValues;
     isCreatingSummaryTask?: boolean;
     mode: "create" | "edit";

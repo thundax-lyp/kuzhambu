@@ -115,8 +115,8 @@ vi.mock("./taxonomy-service", () => ({
     reviewTag: vi.fn(async () => true),
     reviewBatchTags: vi.fn(async () => true),
     requestTagExtraction: vi.fn(async () => ({
-        aiCallId: 501,
-        aiCandidateId: 601,
+        aiCallId: "501",
+        aiCandidateId: "601",
         status: "SUCCEEDED",
         resultFormat: "STRUCTURED",
         resultPayload: '{"tags":[]}',
@@ -131,6 +131,15 @@ vi.mock("./taxonomy-service", () => ({
             }
         ]
     })),
+    listTagExtractionPromptVersions: vi.fn(async () => [
+        {
+            id: "301",
+            templateId: "201",
+            templateName: "知识标签提取",
+            capability: "knowledge_tags",
+            versionNo: 3
+        }
+    ]),
     applyExtractedTags: vi.fn(async () => true),
     createTagAlias: vi.fn(async () => true),
     removeTagAlias: vi.fn(async () => true),
@@ -200,7 +209,7 @@ describe("TaxonomyPage", () => {
             sourceContentId: "SANCAI_ENTRY:1001",
             contentTitle: undefined,
             contentText: "正月礼俗与乡饮酒礼相关内容",
-            modelId: 100,
+            modelId: "100",
             modelName: "gpt-5.5",
             promptVersionId: undefined,
             maxTags: 10,
@@ -215,7 +224,7 @@ describe("TaxonomyPage", () => {
 
         await waitFor(() => expect(service.applyExtractedTags).toHaveBeenCalled());
         expect(vi.mocked(service.applyExtractedTags).mock.calls[0][0]).toEqual({
-            aiCandidateId: 601,
+            aiCandidateId: "601",
             selectedTags: [
                 {
                     name: "岁时礼俗",
@@ -239,6 +248,65 @@ describe("TaxonomyPage", () => {
                 "aria-selected",
                 "true"
             )
+        );
+    }, 30000);
+
+    it("requires a positive decimal model id before extracting tags", async () => {
+        const user = userEvent.setup();
+        vi.mocked(service.requestTagExtraction).mockClear();
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <TaxonomyPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await user.click(screen.getByRole("tab", { name: "统一标签" }));
+        await user.click(await screen.findByRole("button", { name: "AI 抽取标签" }));
+
+        await user.type(screen.getByLabelText("内容 ID"), "SANCAI_ENTRY:1001");
+        await user.type(screen.getByLabelText("内容片段"), "正月礼俗与乡饮酒礼相关内容");
+        await user.type(screen.getByLabelText("模型 ID"), "abc");
+        await user.type(screen.getByLabelText("模型名称"), "gpt-5.5");
+        await user.click(screen.getByRole("button", { name: "开始抽取" }));
+
+        expect(await screen.findByText("请输入正整数 ID")).toBeInTheDocument();
+        expect(service.requestTagExtraction).not.toHaveBeenCalled();
+    }, 30000);
+
+    it("sends prompt version override as string when advanced config is enabled", async () => {
+        const user = userEvent.setup();
+        replacePermissions([
+            "knowledge:taxonomy:view",
+            "knowledge:taxonomy:edit",
+            "ai:prompt:view"
+        ]);
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <TaxonomyPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        await user.click(screen.getByRole("tab", { name: "统一标签" }));
+        await user.click(await screen.findByRole("button", { name: "AI 抽取标签" }));
+
+        await user.type(screen.getByLabelText("内容 ID"), "1001");
+        await user.type(screen.getByLabelText("内容片段"), "正月礼俗与乡饮酒礼相关内容");
+        await user.type(screen.getByLabelText("模型 ID"), "100");
+        await user.type(screen.getByLabelText("模型名称"), "gpt-5.5");
+        await user.click(screen.getByRole("button", { name: "覆盖提示词配置" }));
+        await user.click(screen.getByLabelText("提示词版本 ID"));
+        await user.click(await screen.findByText("知识标签提取 / v3"));
+        await user.click(screen.getByRole("button", { name: "开始抽取" }));
+
+        await waitFor(() => expect(service.requestTagExtraction).toHaveBeenCalled());
+        expect(vi.mocked(service.requestTagExtraction).mock.calls.at(-1)?.[0]).toEqual(
+            expect.objectContaining({
+                promptVersionId: "301"
+            })
         );
     }, 30000);
 });

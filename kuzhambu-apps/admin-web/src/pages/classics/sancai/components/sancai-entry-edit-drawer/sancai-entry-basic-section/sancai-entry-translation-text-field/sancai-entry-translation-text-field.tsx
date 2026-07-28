@@ -32,15 +32,15 @@ const isUsableTranslationCandidate = (candidate?: AiCandidateRecord | null) => {
 
 const selectLatestTranslationCandidate = (candidates: AiCandidateRecord[] | undefined) => {
     return [...(candidates || [])].filter(isUsableTranslationCandidate).sort((left, right) => {
-        if (left.requestedAt && right.requestedAt && left.requestedAt !== right.requestedAt) {
-            return right.requestedAt.localeCompare(left.requestedAt);
-        }
-        return right.candidateId - left.candidateId;
+        return aiRefinementTaskService.sortNewestByRequestedAtThenId({
+            left: { id: getCandidateStableId(left), requestedAt: left.requestedAt },
+            right: { id: getCandidateStableId(right), requestedAt: right.requestedAt }
+        });
     })[0];
 };
 
 interface SancaiEntryTranslationTextFieldProps {
-    entryId?: number;
+    entryId?: string;
     getFormValues: () => SancaiEntryFormValues;
     isCreatingTranslationTask?: boolean;
     mode: "create" | "edit";

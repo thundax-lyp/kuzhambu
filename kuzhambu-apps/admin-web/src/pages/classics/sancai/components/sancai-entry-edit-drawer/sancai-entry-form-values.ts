@@ -1,23 +1,24 @@
 import type { SancaiEntryRecord, SancaiVolumeRecord } from "@/pages/classics/sancai/sancai-types";
+import { isSameId } from "@/types/id";
 
 export interface SancaiEntryFormValues {
-    categoryId: number | null;
+    categoryId: string | null;
     originalText: string;
     summary: string;
     title: string;
     translationText: string;
-    volumeId: number | null;
+    volumeId: string | null;
     visibility: string;
 }
 
 export const toEntryFormValues = (
     entry?: SancaiEntryRecord,
     volumes: SancaiVolumeRecord[] = [],
-    fallbackCategoryId?: number | null,
-    fallbackVolumeId?: number | null
+    fallbackCategoryId?: string | null,
+    fallbackVolumeId?: string | null
 ): SancaiEntryFormValues => {
     const volumeId = entry?.volumeId ?? fallbackVolumeId ?? null;
-    const currentVolume = volumes.find((volume) => volume.id === volumeId);
+    const currentVolume = volumes.find((volume) => isSameId(volume.id, volumeId));
     return {
         categoryId: currentVolume?.categoryId ?? fallbackCategoryId ?? null,
         originalText: entry?.originalText || "",

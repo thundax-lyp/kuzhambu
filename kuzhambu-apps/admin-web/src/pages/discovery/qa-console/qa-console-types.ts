@@ -10,7 +10,7 @@ export interface KnowledgeHealthRecord {
 }
 
 export interface KnowledgeSyncItemRecord {
-    contentId?: number | null;
+    contentId?: string | null;
     contentType?: string | null;
     createdAt?: number | null;
     currentVersionNo?: number | null;
@@ -42,13 +42,13 @@ export interface DiscoveryQaSessionMessageRecord {
 }
 
 export interface DiscoveryQaSessionDetailRecord {
-    contextContentId?: number | null;
+    contextContentId?: string | null;
     contextContentType?: string | null;
     contextMode?: string | null;
     lastMessageAt?: number | null;
     messages?: DiscoveryQaSessionMessageRecord[] | null;
     openedAt?: number | null;
-    ownerUserId?: number | null;
+    ownerUserId?: string | null;
     scope?: string | null;
     sessionId?: string | null;
     status?: string | null;
@@ -60,12 +60,12 @@ export type DiscoveryQaSessionPageRecord = Page<DiscoveryQaSessionDetailRecord>;
 export interface DiscoveryQaSessionExportRecord {
     completedAt?: number | null;
     contentType?: string | null;
-    exportId?: number | null;
+    exportId?: string | null;
     exportStatus?: string | null;
     failureReason?: string | null;
     filename?: string | null;
     format?: string | null;
     requestedAt?: number | null;
     sessionId?: string | null;
-    storageObjectId?: number | null;
+    storageObjectId?: string | null;
 }

@@ -25,7 +25,7 @@ const { Title } = Typography;
 interface GraphResultsTabsProps {
     activeTab: GraphResultsTabKey;
     activeVersion: GraphVersionRecord | null;
-    activeVersionId: number | null;
+    activeVersionId: string | null;
     canOpenRefinement: boolean;
     canViewGraph: boolean;
     versionDetailDrawerOpen: boolean;

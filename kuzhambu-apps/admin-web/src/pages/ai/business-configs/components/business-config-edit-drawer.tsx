@@ -96,7 +96,7 @@ export const BusinessConfigEditDrawer = ({
             .filter((prompt) => prompt.id != null)
             .map((prompt) => ({
                 label: formatPromptLabel(prompt, capabilityNameByCode),
-                value: Number(prompt.id)
+                value: prompt.id ?? ""
             }));
     }, [capabilityNameByCode, prompts, selectedCapability]);
 

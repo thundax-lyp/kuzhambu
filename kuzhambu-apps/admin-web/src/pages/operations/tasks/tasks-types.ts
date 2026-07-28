@@ -1,5 +1,5 @@
 export interface OperationsTaskRecord {
-    snapshotId: number;
+    snapshotId: string;
     sourceDomain?: string | null;
     taskType?: string | null;
     taskKey?: string | null;
@@ -8,7 +8,7 @@ export interface OperationsTaskRecord {
     successCount?: number | null;
     failedCount?: number | null;
     failureReason?: string | null;
-    requestedByUserId?: number | null;
+    requestedByUserId?: string | null;
     startedAt?: string | null;
     completedAt?: string | null;
     snapshotAt?: string | null;

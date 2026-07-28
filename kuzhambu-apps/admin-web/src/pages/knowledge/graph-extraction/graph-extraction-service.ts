@@ -18,13 +18,13 @@ export interface GraphExtractionCreateCommand {
     selectionScopeJson?: string | null;
     replaceUnconfirmedOnly?: boolean | null;
     sourceContentType?: string | null;
-    sourceContentId?: number | null;
-    requestedBy?: number | null;
-    serviceId?: number | null;
+    sourceContentId?: string | null;
+    requestedBy?: string | null;
+    serviceId?: string | null;
     serviceRole?: string | null;
-    modelId?: number | null;
+    modelId?: string | null;
     modelName?: string | null;
-    promptVersionId?: number | null;
+    promptVersionId?: string | null;
     requestId?: string | null;
     traceId?: string | null;
     promptMessagesJson?: string | null;
@@ -39,30 +39,30 @@ export interface GraphExtractionCreateCommand {
 export interface GraphExtractionTaskPageQuery {
     pageNo?: number;
     pageSize?: number;
-    batchJobId?: number | null;
+    batchJobId?: string | null;
     triggerSource?: GraphExtractionTriggerSource | null;
     taskType?: GraphExtractionTaskType | null;
     status?: GraphExtractionTaskStatus | null;
     sourceContentType?: string | null;
-    sourceContentId?: number | null;
+    sourceContentId?: string | null;
 }
 
 export interface GraphExtractionTaskIdCommand {
-    taskId: number;
+    taskId: string;
 }
 
 export interface GraphExtractionRegenerateCommand {
     taskType: GraphExtractionTaskType;
-    sourceTaskId?: number | null;
+    sourceTaskId?: string | null;
     triggerSource?: GraphExtractionTriggerSource | null;
     selectionScopeJson?: string | null;
     replaceUnconfirmedOnly?: boolean | null;
-    requestedBy?: number | null;
+    requestedBy?: string | null;
 }
 
 export interface GraphExtractionBatchCancelCommand {
-    batchJobId: number;
-    requestedBy?: number | null;
+    batchJobId: string;
+    requestedBy?: string | null;
 }
 
 export const addTask = (request: GraphExtractionCreateCommand) => {

@@ -1,11 +1,12 @@
 import { Table, Tag } from "antd";
 import { KuzhambuSpaceCompact, KuzhambuButton } from "@/components";
+import { normalizeId } from "@/types/id";
 import type { ColumnsType } from "antd/es/table";
 import type { GraphExtractionTaskRecord } from "../graph-extraction-types";
 
 interface GraphExtractionTaskTableProps {
     applyingTaskId?: string | null;
-    cancellingBatchId?: number | null;
+    cancellingBatchId?: string | null;
     canApply?: boolean;
     canEdit?: boolean;
     loading?: boolean;
@@ -135,7 +136,7 @@ export const GraphExtractionTaskTable = ({
             dataSource={tasks}
             loading={loading}
             pagination={false}
-            rowKey={(task) => task.taskId}
+            rowKey={(task) => normalizeId(task.taskId)}
         />
     );
 };

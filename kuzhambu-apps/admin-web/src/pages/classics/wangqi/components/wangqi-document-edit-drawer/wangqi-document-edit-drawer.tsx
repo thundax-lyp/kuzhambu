@@ -13,6 +13,7 @@ import type { DatePickerProps, SwitchProps } from "antd";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
+import { isSameId, normalizeId, normalizeNullableId } from "@/types/id";
 import {
     KuzhambuAlert,
     KuzhambuButton,
@@ -89,10 +90,16 @@ const SUMMARY_TASK_ALERT_TYPES: Record<string, "success" | "info" | "warning" | 
 };
 
 const sortTasksByNewest = (left: AiRefinementTaskRecord, right: AiRefinementTaskRecord) => {
-    if (left.requestedAt && right.requestedAt && left.requestedAt !== right.requestedAt) {
-        return right.requestedAt.localeCompare(left.requestedAt);
-    }
-    return right.taskId - left.taskId;
+    return aiRefinementTaskService.sortNewestByRequestedAtThenId({
+        left: {
+            id: aiRefinementTaskService.getTaskStableId(left.taskId, left.taskIdText),
+            requestedAt: left.requestedAt
+        },
+        right: {
+            id: aiRefinementTaskService.getTaskStableId(right.taskId, right.taskIdText),
+            requestedAt: right.requestedAt
+        }
+    });
 };
 
 const getSummaryTaskDescription = (task: AiRefinementTaskRecord) => {
@@ -142,7 +149,7 @@ const summaryTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = {
         }
         return "tracking";
     },
-    getResultKey: (task) => task.candidateId,
+    getResultKey: (task) => normalizeId(task.candidateId),
     getStatusLabel: (task) => {
         const statusLabel = SUMMARY_TASK_STATUS_LABELS[task.status] || task.status;
         return `摘要任务${statusLabel}`;
@@ -151,22 +158,30 @@ const summaryTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = {
 
 const selectLatestSummaryCandidate = (
     candidates: AiCandidateRecord[],
-    trackedCandidateId?: number | null
+    trackedCandidateId?: string | null
 ) => {
+    const normalizedTrackedCandidateId = normalizeNullableId(trackedCandidateId);
     return [...candidates]
         .filter(
             (candidate) =>
                 candidate.capability === "summary" &&
                 candidate.status === "PENDING" &&
-                (!trackedCandidateId || candidate.candidateId === trackedCandidateId) &&
+                (!normalizedTrackedCandidateId ||
+                    isSameId(candidate.candidateId, normalizedTrackedCandidateId)) &&
                 typeof candidate.resultPayload === "string" &&
                 candidate.resultPayload.trim().length > 0
         )
         .sort((left, right) => {
-            if (left.requestedAt && right.requestedAt && left.requestedAt !== right.requestedAt) {
-                return right.requestedAt.localeCompare(left.requestedAt);
-            }
-            return right.candidateId - left.candidateId;
+            return aiRefinementTaskService.sortNewestByRequestedAtThenId({
+                left: {
+                    id: left.candidateIdText || left.candidateId,
+                    requestedAt: left.requestedAt
+                },
+                right: {
+                    id: right.candidateIdText || right.candidateId,
+                    requestedAt: right.requestedAt
+                }
+            });
         })[0];
 };
 
@@ -403,7 +418,7 @@ export const WangqiDocumentEditDrawer = ({
     const [activeSection, setActiveSection] = useState<WangqiDocumentEditDrawerSection>("basic");
     const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
     const [summaryDraft, setSummaryDraft] = useState("");
-    const [loadedSummaryCandidateId, setLoadedSummaryCandidateId] = useState<number | null>(null);
+    const [loadedSummaryCandidateId, setLoadedSummaryCandidateId] = useState<string | null>(null);
     const documentId = mode === "edit" ? document?.id : undefined;
     const latestSummaryTaskFromList = useMemo(() => {
         return [...summaryTasks]
@@ -411,7 +426,7 @@ export const WangqiDocumentEditDrawer = ({
             .sort(sortTasksByNewest)[0];
     }, [summaryTasks]);
     const trackedSummaryTaskFromList = useMemo(() => {
-        return summaryTasks.find((task) => task.taskId === summaryTrackingTask?.taskId);
+        return summaryTasks.find((task) => isSameId(task.taskId, summaryTrackingTask?.taskId));
     }, [summaryTasks, summaryTrackingTask?.taskId]);
     const summaryTrackingTaskId = summaryTrackingTask?.taskId;
     const latestSummaryTask =
@@ -475,10 +490,11 @@ export const WangqiDocumentEditDrawer = ({
     };
 
     const updateSummaryDraftFromCandidate = (candidate: AiCandidateRecord | null) => {
-        if (!candidate || candidate.candidateId === loadedSummaryCandidateId) {
+        const candidateId = normalizeNullableId(candidate?.candidateId);
+        if (!candidate || candidateId === loadedSummaryCandidateId) {
             return;
         }
-        setLoadedSummaryCandidateId(candidate.candidateId);
+        setLoadedSummaryCandidateId(candidateId);
         setSummaryDraft(candidate.resultPayload?.trim() || "");
     };
 

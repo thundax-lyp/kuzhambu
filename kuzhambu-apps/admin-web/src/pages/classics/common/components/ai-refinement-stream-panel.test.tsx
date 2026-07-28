@@ -28,11 +28,11 @@ describe("AiRefinementStreamPanel", () => {
                 ]}
                 isStreaming={false}
                 task={{
-                    taskId: 7001,
+                    taskId: "7001",
                     status: "FAILED",
                     capability: "image_analysis",
                     contentType: "SANCAI_ENTRY",
-                    contentId: 3001,
+                    contentId: "3001",
                     failureStage: "WORKER_STREAM",
                     errorType: "WORKER_PROTOCOL_FAILURE",
                     errorMessage: "Worker stream ended without completed event"
@@ -73,11 +73,11 @@ describe("AiRefinementStreamPanel", () => {
                 ]}
                 isStreaming={false}
                 task={{
-                    taskId: 7001,
+                    taskId: "7001",
                     status: "RUNNING",
                     capability: "image_analysis",
                     contentType: "SANCAI_ENTRY",
-                    contentId: 3001
+                    contentId: "3001"
                 }}
                 onClose={onClose}
                 onRetry={onRetry}

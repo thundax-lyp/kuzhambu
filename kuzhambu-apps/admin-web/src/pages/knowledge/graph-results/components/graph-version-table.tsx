@@ -1,12 +1,13 @@
 import { Table, Tag } from "antd";
 import { KuzhambuSpaceCompact, KuzhambuButton } from "@/components";
+import { isSameId, normalizeId } from "@/types/id";
 import type { ColumnsType } from "antd/es/table";
 import type { GraphVersionRecord } from "../graph-results-types";
 
 interface GraphVersionTableProps {
     canOpenRefinement?: boolean;
     loading?: boolean;
-    selectedVersionId?: number | null;
+    selectedVersionId?: string | null;
     versions: GraphVersionRecord[];
     onOpenDetail: (version: GraphVersionRecord) => void;
     onOpenResults: (version: GraphVersionRecord) => void;
@@ -86,7 +87,9 @@ export const GraphVersionTable = ({
                     </KuzhambuButton>
                     <KuzhambuButton
                         testId="knowledge-graph-results-graph-version-action-button"
-                        type={selectedVersionId === version.versionId ? "primary" : "default"}
+                        type={
+                            isSameId(selectedVersionId, version.versionId) ? "primary" : "default"
+                        }
                         onClick={() => onOpenResults(version)}
                     >
                         查看正式结果
@@ -95,7 +98,7 @@ export const GraphVersionTable = ({
                         <KuzhambuButton
                             testId="knowledge-graph-results-graph-version-refinement-button"
                             href={`/knowledge/refinement?graphVersionId=${encodeURIComponent(
-                                String(version.versionId)
+                                normalizeId(version.versionId)
                             )}`}
                         >
                             进入精修
@@ -114,7 +117,7 @@ export const GraphVersionTable = ({
             dataSource={versions}
             loading={loading}
             pagination={false}
-            rowKey={(version) => version.versionId}
+            rowKey={(version) => normalizeId(version.versionId)}
         />
     );
 };

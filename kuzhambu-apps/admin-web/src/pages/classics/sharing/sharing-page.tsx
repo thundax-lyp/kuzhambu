@@ -37,9 +37,9 @@ export const SharingPage = () => {
         pageNo: DEFAULT_PAGE_NO,
         pageSize: DEFAULT_PAGE_SIZE
     });
-    const [detailShareId, setDetailShareId] = useState<number | null>(null);
+    const [detailShareId, setDetailShareId] = useState<string | null>(null);
     const [accessRecordPageNo, setAccessRecordPageNo] = useState(DEFAULT_PAGE_NO);
-    const [accessRecordTargetId, setAccessRecordTargetId] = useState<number | null>(null);
+    const [accessRecordTargetId, setAccessRecordTargetId] = useState<string | null>(null);
 
     const hasActiveFilters = useMemo(() => {
         return (
@@ -57,7 +57,7 @@ export const SharingPage = () => {
     });
     const shareDetailQuery = useQuery({
         queryKey: ["classics", "shares", "detail", detailShareId],
-        queryFn: () => shareService.get(detailShareId || 0),
+        queryFn: () => shareService.get(detailShareId || ""),
         enabled: detailShareId !== null,
         retry: false
     });
@@ -75,7 +75,7 @@ export const SharingPage = () => {
             shareService.pageAccessRecords({
                 pageNo: accessRecordPageNo,
                 pageSize: query.pageSize || DEFAULT_PAGE_SIZE,
-                shareLinkId: detailShareId || 0,
+                shareLinkId: detailShareId || "",
                 ...(accessRecordTargetId ? { shareTargetId: accessRecordTargetId } : {})
             }),
         enabled: detailShareId !== null,

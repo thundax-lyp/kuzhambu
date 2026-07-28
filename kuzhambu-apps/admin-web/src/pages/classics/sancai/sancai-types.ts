@@ -2,7 +2,7 @@ import type { ClassicsContentTagRecord } from "@/pages/classics/common/classics-
 import type { DictItem } from "@/types/dict";
 
 export interface SancaiCategoryRecord {
-    id: number;
+    id: string;
     title?: string | null;
     categoryType?: string | null;
     priority?: number | null;
@@ -11,8 +11,8 @@ export interface SancaiCategoryRecord {
 export type SancaiCategoryTypeRecord = DictItem;
 
 export interface SancaiVolumeRecord {
-    id: number;
-    categoryId?: number | null;
+    id: string;
+    categoryId?: string | null;
     title?: string | null;
     volumeType?: string | null;
     priority?: number | null;
@@ -23,8 +23,8 @@ export type SancaiVolumeTypeRecord = DictItem;
 export type SancaiEntryLifecycleStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 
 export interface SancaiEntryRecord {
-    id: number;
-    volumeId?: number | null;
+    id: string;
+    volumeId?: string | null;
     title?: string | null;
     originalText?: string | null;
     translationText?: string | null;
@@ -36,7 +36,7 @@ export interface SancaiEntryRecord {
     visualAssetStatus?: string | null;
     refinementStatus?: string | null;
     priority?: number | null;
-    currentVersionId?: number | null;
+    currentVersionId?: string | null;
     currentVersionNo?: number | null;
     currentVersionedAt?: string | null;
     contentUpdatedAt?: string | null;
@@ -45,9 +45,9 @@ export interface SancaiEntryRecord {
 }
 
 export interface SancaiEntryImageRecord {
-    id: number;
-    entryId?: number | null;
-    storageObjectId?: number | null;
+    id: string;
+    entryId?: string | null;
+    storageObjectId?: string | null;
     imageType?: string | null;
     title?: string | null;
     currentUsed?: boolean | null;
@@ -60,13 +60,13 @@ export interface SancaiEntryImageRecord {
 }
 
 export interface SancaiVisualAssetRecord {
-    id?: number | null;
-    visualAssetId?: number | null;
-    entryId?: number | null;
+    id?: string | null;
+    visualAssetId?: string | null;
+    entryId?: string | null;
     versionNo?: number | null;
     status?: string | null;
-    sourceImageStorageObjectId?: number | null;
-    generatedImageStorageObjectId?: number | null;
+    sourceImageStorageObjectId?: string | null;
+    generatedImageStorageObjectId?: string | null;
     currentUsed?: boolean | null;
     textWeight?: number | null;
     imageWeight?: number | null;
@@ -81,7 +81,7 @@ export interface SancaiVisualAssetRecord {
 }
 
 export interface SancaiRefinementBatchRecord {
-    batchId: number;
+    batchId: string;
     scope?: string | null;
     capability?: string | null;
     contentType?: string | null;
@@ -99,9 +99,9 @@ export interface SancaiRefinementBatchRecord {
 export type SancaiEntryImageContentMode = "preview" | "download";
 
 export interface SancaiContentVersionRecord {
-    id: number;
+    id: string;
     contentType?: string | null;
-    contentId?: number | null;
+    contentId?: string | null;
     versionNo?: number | null;
     versionedAt?: string | null;
     snapshotJson?: string | null;
@@ -111,9 +111,9 @@ export interface SancaiContentVersionRecord {
 
 export interface SancaiVersionSnapshot {
     contentType?: string | null;
-    contentId?: number | null;
+    contentId?: string | null;
     contentUpdatedAt?: string | null;
-    volumeId?: number | null;
+    volumeId?: string | null;
     title?: string | null;
     originalText?: string | null;
     translationText?: string | null;
@@ -130,7 +130,7 @@ export interface SancaiVersionSnapshot {
 export type SancaiExportStatus = "REQUESTED" | "RUNNING" | "COMPLETED" | "FAILED" | "EXPIRED";
 
 export interface SancaiExportJobRecord {
-    id?: number | null;
+    id?: string | null;
     contentType?: string | null;
     exportKind?: string | null;
     exportFormat?: string | null;
@@ -139,7 +139,7 @@ export interface SancaiExportJobRecord {
     requestedAt?: string | null;
     expiresAt?: string | null;
     status?: SancaiExportStatus | null;
-    storageObjectId?: number | null;
+    storageObjectId?: string | null;
     itemCount?: number | null;
     assetCount?: number | null;
     visibilityRiskStatus?: string | null;

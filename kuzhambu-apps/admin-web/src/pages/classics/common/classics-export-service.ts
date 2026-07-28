@@ -15,7 +15,7 @@ export interface ClassicsExportCreateCommand {
 export type ClassicsExportContentMode = "preview" | "download";
 
 export interface ClassicsExportContentUrlCommand {
-    jobId: number;
+    jobId: string;
     mode?: ClassicsExportContentMode;
 }
 
@@ -41,8 +41,8 @@ export const page = (request: ClassicsExportQuery = {}) => {
     });
 };
 
-export const deleteById = (jobId: number) => {
-    return postJson<boolean, { id: number }>(`${EXPORT_PATH}/delete`, {
+export const deleteById = (jobId: string) => {
+    return postJson<boolean, { id: string }>(`${EXPORT_PATH}/delete`, {
         body: { id: jobId }
     });
 };

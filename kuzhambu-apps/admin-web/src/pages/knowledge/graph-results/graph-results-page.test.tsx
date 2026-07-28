@@ -15,15 +15,15 @@ const serviceMocks = vi.hoisted(() => ({
         count: 1,
         records: [
             {
-                versionId: 71,
+                versionId: "71",
                 taskId: "31",
                 taskType: "GRAPH",
                 status: "APPLIED",
                 sourceContentType: "SANCAI_ENTRY",
-                sourceContentId: 1001,
+                sourceContentId: "1001",
                 versionNo: 2,
                 refinementApplied: true,
-                lastRefinementTaskId: 31,
+                lastRefinementTaskId: "31",
                 lastRefinementAppliedAt: 1760000000000
             }
         ]
@@ -175,25 +175,50 @@ describe("GraphResultsPage", () => {
 
         await waitFor(() => {
             expect(serviceMocks.pageEntities).toHaveBeenCalledWith(
-                expect.objectContaining({ versionId: 71 })
+                expect.objectContaining({ versionId: "71" })
             );
         });
 
         fireEvent.click(screen.getByRole("tab", { name: "正式关系" }));
         await waitFor(() => {
             expect(serviceMocks.pageRelations).toHaveBeenCalledWith(
-                expect.objectContaining({ versionId: 71 })
+                expect.objectContaining({ versionId: "71" })
             );
         });
 
         fireEvent.click(screen.getByRole("tab", { name: "正式世系" }));
         await waitFor(() => {
             expect(serviceMocks.pageLineageNodes).toHaveBeenCalledWith(
-                expect.objectContaining({ versionId: 71 })
+                expect.objectContaining({ versionId: "71" })
             );
             expect(serviceMocks.pageLineageRelations).toHaveBeenCalledWith(
-                expect.objectContaining({ versionId: 71 })
+                expect.objectContaining({ versionId: "71" })
             );
+        });
+    }, 30000);
+
+    it("ignores invalid graph version search param", async () => {
+        window.history.pushState({}, "", "/knowledge/graph-results?graphVersionId=abc");
+        const queryClient = new QueryClient({
+            defaultOptions: {
+                queries: { gcTime: Infinity, refetchOnWindowFocus: false, retry: false }
+            }
+        });
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <GraphResultsPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        expect(await screen.findByLabelText("知识图谱版本表格")).toBeInTheDocument();
+        await waitFor(() => {
+            expect(serviceMocks.pageEntities).not.toHaveBeenCalled();
+            expect(serviceMocks.pageRelations).not.toHaveBeenCalled();
+            expect(serviceMocks.pageLineageNodes).not.toHaveBeenCalled();
+            expect(serviceMocks.pageLineageRelations).not.toHaveBeenCalled();
         });
     }, 30000);
 });

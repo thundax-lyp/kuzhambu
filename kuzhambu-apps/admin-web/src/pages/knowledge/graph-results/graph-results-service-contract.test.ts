@@ -50,7 +50,7 @@ const installFetchRecorder = () => {
                 code: "COMMON-00000",
                 message: "success",
                 data: {
-                    versionId: 71,
+                    versionId: "71",
                     taskId: "31",
                     taskType: "GRAPH",
                     status: "APPLIED"
@@ -87,7 +87,7 @@ describe("knowledge graph results service request contracts", () => {
             taskType: "GRAPH",
             status: "APPLIED",
             sourceContentType: "SANCAI_ENTRY",
-            sourceContentId: 1001
+            sourceContentId: "1001"
         };
 
         await service.pageVersions(query);
@@ -97,9 +97,9 @@ describe("knowledge graph results service request contracts", () => {
             path: "/knowledge/graph-extraction/version/page"
         });
 
-        await service.getVersionDetail({ versionId: 71 });
+        await service.getVersionDetail({ versionId: "71" });
         expect(capturedCalls.at(-1)).toEqual({
-            body: { versionId: 71 },
+            body: { versionId: "71" },
             method: "POST",
             path: "/knowledge/graph-extraction/version/get"
         });
@@ -109,7 +109,7 @@ describe("knowledge graph results service request contracts", () => {
         const entityQuery: GraphEntityPageQuery = {
             pageNo: 1,
             pageSize: 20,
-            versionId: 71,
+            versionId: "71",
             keyword: "孙悟空",
             entityType: "PERSON",
             confirmationStatus: "CONFIRMED"
@@ -117,7 +117,7 @@ describe("knowledge graph results service request contracts", () => {
         const relationQuery: GraphRelationPageQuery = {
             pageNo: 1,
             pageSize: 20,
-            versionId: 71,
+            versionId: "71",
             keyword: "师徒",
             relationType: "MASTER_DISCIPLE",
             confirmationStatus: "CONFIRMED"
@@ -130,9 +130,9 @@ describe("knowledge graph results service request contracts", () => {
             path: "/knowledge/graph-extraction/entity/page"
         });
 
-        await service.getEntityDetail({ entityId: 101 });
+        await service.getEntityDetail({ entityId: "101" });
         expect(capturedCalls.at(-1)).toEqual({
-            body: { entityId: 101 },
+            body: { entityId: "101" },
             method: "POST",
             path: "/knowledge/graph-extraction/entity/get"
         });
@@ -144,9 +144,9 @@ describe("knowledge graph results service request contracts", () => {
             path: "/knowledge/graph-extraction/relation/page"
         });
 
-        await service.getRelationDetail({ relationId: 202 });
+        await service.getRelationDetail({ relationId: "202" });
         expect(capturedCalls.at(-1)).toEqual({
-            body: { relationId: 202 },
+            body: { relationId: "202" },
             method: "POST",
             path: "/knowledge/graph-extraction/relation/get"
         });
@@ -156,7 +156,7 @@ describe("knowledge graph results service request contracts", () => {
         const nodeQuery: GraphLineageNodePageQuery = {
             pageNo: 1,
             pageSize: 20,
-            versionId: 71,
+            versionId: "71",
             keyword: "贾宝玉",
             nodeType: "PERSON",
             confirmationStatus: "CONFIRMED"
@@ -164,7 +164,7 @@ describe("knowledge graph results service request contracts", () => {
         const relationQuery: GraphLineageRelationPageQuery = {
             pageNo: 1,
             pageSize: 20,
-            versionId: 71,
+            versionId: "71",
             keyword: "父子",
             relationType: "PARENT_CHILD",
             confirmationStatus: "CONFIRMED"
@@ -177,9 +177,9 @@ describe("knowledge graph results service request contracts", () => {
             path: "/knowledge/graph-extraction/lineage/node/page"
         });
 
-        await service.getLineageNodeDetail({ nodeId: 301 });
+        await service.getLineageNodeDetail({ nodeId: "301" });
         expect(capturedCalls.at(-1)).toEqual({
-            body: { nodeId: 301 },
+            body: { nodeId: "301" },
             method: "POST",
             path: "/knowledge/graph-extraction/lineage/node/get"
         });
@@ -191,9 +191,9 @@ describe("knowledge graph results service request contracts", () => {
             path: "/knowledge/graph-extraction/lineage/relation/page"
         });
 
-        await service.getLineageRelationDetail({ relationId: 302 });
+        await service.getLineageRelationDetail({ relationId: "302" });
         expect(capturedCalls.at(-1)).toEqual({
-            body: { relationId: 302 },
+            body: { relationId: "302" },
             method: "POST",
             path: "/knowledge/graph-extraction/lineage/relation/get"
         });

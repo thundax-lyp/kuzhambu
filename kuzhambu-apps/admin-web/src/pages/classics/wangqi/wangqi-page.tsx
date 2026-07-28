@@ -37,6 +37,7 @@ import type {
     ClassicsExportJobRecord,
     ClassicsExportScopePayload
 } from "@/pages/classics/common/classics-export-types";
+import { isSameId } from "@/types/id";
 import { WangqiDocumentTable } from "./components/wangqi-document-table";
 import { WangqiDocumentBatchResults } from "./components/wangqi-document-batch-results";
 import { WangqiExportActions } from "./components/wangqi-export-actions";
@@ -66,7 +67,7 @@ const DEFAULT_WANGQI_FILTERS: WangqiFilters = {
 };
 const TASK_POLL_INTERVAL_MS = 3000;
 const EXPORT_PAGE_SIZE = 8;
-const DEFAULT_REFINEMENT_MODEL_ID = 1;
+const DEFAULT_REFINEMENT_MODEL_ID = "1";
 const DEFAULT_REFINEMENT_MODEL_NAME = "gpt-5.5";
 const DEFAULT_REFINEMENT_SERVICE_ROLE = "PRIMARY";
 
@@ -202,10 +203,10 @@ export const WangqiPage = () => {
     >("create");
     const [wangqiDocumentEditDrawerOpen, setWangqiDocumentEditDrawerOpen] = useState(false);
     const [editingDocument, setEditingDocument] = useState<WangqiDocumentRecord | null>(null);
-    const [selectedVersionId, setSelectedVersionId] = useState<number | null>(null);
-    const [selectedDocumentIds, setSelectedDocumentIds] = useState<number[]>([]);
-    const [batchCandidateDocumentIds, setBatchCandidateDocumentIds] = useState<number[]>([]);
-    const [batchCandidateTitleById, setBatchCandidateTitleById] = useState<Record<number, string>>(
+    const [selectedVersionId, setSelectedVersionId] = useState<string | null>(null);
+    const [selectedDocumentIds, setSelectedDocumentIds] = useState<string[]>([]);
+    const [batchCandidateDocumentIds, setBatchCandidateDocumentIds] = useState<string[]>([]);
+    const [batchCandidateTitleById, setBatchCandidateTitleById] = useState<Record<string, string>>(
         {}
     );
     const [batchCandidateDrawerOpen, setBatchCandidateDrawerOpen] = useState(false);
@@ -223,7 +224,7 @@ export const WangqiPage = () => {
     );
     const [tagTrackingTask, setTagTrackingTask] = useState<AiRefinementTaskRecord | null>(null);
     const [qaTrackingTask, setQaTrackingTask] = useState<AiRefinementTaskRecord | null>(null);
-    const handledSucceededTaskIdsRef = useRef<Set<number>>(new Set());
+    const handledSucceededTaskIdsRef = useRef<Set<string>>(new Set());
 
     const hasActiveFilters = Boolean(
         filters.visibility !== "ALL" ||
@@ -237,7 +238,7 @@ export const WangqiPage = () => {
     });
     const wangqiDocumentDetailQuery = useQuery({
         queryKey: ["wangqi", "detail", editingDocument?.id],
-        queryFn: () => wangqiService.get(editingDocument?.id ?? 0),
+        queryFn: () => wangqiService.get(editingDocument?.id ?? ""),
         enabled:
             wangqiDocumentEditDrawerOpen &&
             wangqiDocumentEditDrawerMode === "edit" &&
@@ -261,7 +262,7 @@ export const WangqiPage = () => {
             }),
         retry: false
     });
-    const currentUserId = Number(currentUserQuery.data?.id ?? 0);
+    const currentUserId = currentUserQuery.data?.id ?? "";
     const sourceFileQuery = useQuery({
         queryKey: [
             "wangqi",
@@ -269,7 +270,7 @@ export const WangqiPage = () => {
             editingDocumentData?.id,
             editingDocumentData?.storageObjectId
         ],
-        queryFn: () => wangqiService.getSourceFile(editingDocumentData?.id ?? 0),
+        queryFn: () => wangqiService.getSourceFile(editingDocumentData?.id ?? ""),
         enabled:
             wangqiDocumentEditDrawerOpen &&
             Boolean(editingDocumentData?.id && editingDocumentData?.storageObjectId),
@@ -277,7 +278,7 @@ export const WangqiPage = () => {
     });
     const versionsQuery = useQuery({
         queryKey: ["wangqi", "versions", editingDocumentData?.id],
-        queryFn: () => wangqiService.listVersions(editingDocumentData?.id ?? 0),
+        queryFn: () => wangqiService.listVersions(editingDocumentData?.id ?? ""),
         enabled:
             wangqiDocumentEditDrawerOpen &&
             wangqiDocumentEditDrawerMode === "edit" &&
@@ -287,7 +288,7 @@ export const WangqiPage = () => {
     const versionDetailQuery = useQuery({
         queryKey: ["wangqi", "version", editingDocumentData?.id, selectedVersionId],
         queryFn: () =>
-            wangqiService.getVersion(editingDocumentData?.id ?? 0, selectedVersionId ?? 0),
+            wangqiService.getVersion(editingDocumentData?.id ?? "", selectedVersionId ?? ""),
         enabled:
             wangqiDocumentEditDrawerOpen && Boolean(editingDocumentData?.id && selectedVersionId),
         retry: false
@@ -324,7 +325,7 @@ export const WangqiPage = () => {
     const currentPageSize = pageResult?.pageSize || query.pageSize || DEFAULT_PAGE_SIZE;
     const selectedVersion =
         versionDetailQuery.data ||
-        versions.find((version) => version.id === selectedVersionId) ||
+        versions.find((version) => isSameId(version.id, selectedVersionId)) ||
         null;
     const refinementTasks = useMemo(
         () => refinementTasksQuery.data?.items || [],
@@ -344,7 +345,10 @@ export const WangqiPage = () => {
     );
     const exportJobs = exportJobsQuery.data?.records || [];
     const selectedDocuments = useMemo(
-        () => records.filter((record) => selectedDocumentIds.includes(record.id)),
+        () =>
+            records.filter(
+                (record) => record.id != null && selectedDocumentIds.includes(String(record.id))
+            ),
         [records, selectedDocumentIds]
     );
     const canShareDocuments = hasClassicsContentPermission(
@@ -462,7 +466,7 @@ export const WangqiPage = () => {
         }
     });
     const uploadSourceFileMutation = useMutation({
-        mutationFn: ({ documentId, file }: { documentId: number; file: File }) =>
+        mutationFn: ({ documentId, file }: { documentId: string; file: File }) =>
             wangqiService.uploadSourceFile(documentId, file),
         onSuccess: async () => {
             await invalidateWangqi();
@@ -473,7 +477,7 @@ export const WangqiPage = () => {
         }
     });
     const resetVersionMutation = useMutation({
-        mutationFn: ({ documentId, versionId }: { documentId: number; versionId: number }) =>
+        mutationFn: ({ documentId, versionId }: { documentId: string; versionId: string }) =>
             wangqiService.resetVersion(documentId, versionId),
         onSuccess: async () => {
             setSelectedVersionId(null);
@@ -578,7 +582,7 @@ export const WangqiPage = () => {
             .filter(
                 (task) =>
                     (task.status === "SUCCEEDED" || task.status === "PARTIAL") &&
-                    typeof task.taskId === "number" &&
+                    Boolean(task.taskId) &&
                     !handledSucceededTaskIdsRef.current.has(task.taskId)
             )
             .map((task) => task.taskId);
@@ -671,12 +675,12 @@ export const WangqiPage = () => {
             description:
                 "删除后该记录会从列表移除，并释放其导出产物引用；已无引用的文件对象会进入 Storage 删除流程。",
             okText: "删除",
-            onConfirm: () => deleteExportMutation.mutateAsync(job.id as number)
+            onConfirm: () => deleteExportMutation.mutateAsync(job.id ?? "")
         });
     };
 
     const deleteExportJobs = (jobs: ClassicsExportJobRecord[]) => {
-        const ids = jobs.map((job) => job.id).filter((id): id is number => id != null);
+        const ids = jobs.map((job) => job.id).filter((id): id is string => Boolean(id));
         if (!ids.length) {
             return;
         }

@@ -3,12 +3,12 @@ import type { SancaiCategoryRecord, SancaiCategoryTypeRecord } from "./sancai-ty
 
 export interface SancaiCategoryCommand {
     categoryType?: string | null;
-    id?: number | null;
+    id?: string | null;
     title?: string | null;
 }
 
 export interface SancaiCategorySortCommand {
-    orderedIds: number[];
+    orderedIds: string[];
     sortDirection?: "ASC" | "DESC" | null;
 }
 
@@ -38,7 +38,7 @@ export const update = (request: SancaiCategoryCommand) => {
     );
 };
 
-export const deleteById = (id: number) => {
+export const deleteById = (id: string) => {
     return postJson<boolean, SancaiCategoryCommand>("/classics/sancai/categories/delete", {
         body: { id }
     });

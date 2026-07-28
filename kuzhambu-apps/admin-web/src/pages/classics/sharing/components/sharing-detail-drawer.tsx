@@ -128,7 +128,7 @@ const targetColumns: KuzhambuTableProps<ClassicsShareTargetRecord>["columns"] = 
         dataIndex: "contentId",
         key: "contentId",
         width: 120,
-        render: (contentId?: number | null) => contentId ?? "-"
+        render: (contentId?: string | null) => contentId ?? "-"
     },
     {
         title: "标题快照",
@@ -176,7 +176,7 @@ const accessRecordColumns: KuzhambuTableProps<ClassicsShareAccessRecord>["column
         dataIndex: "shareTargetId",
         key: "shareTargetId",
         width: 120,
-        render: (shareTargetId?: number | null) => shareTargetId ?? "-"
+        render: (shareTargetId?: string | null) => shareTargetId ?? "-"
     }
 ];
 

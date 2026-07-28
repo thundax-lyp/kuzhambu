@@ -9,7 +9,7 @@ export interface OperationsTaskPageQuery {
 }
 
 export interface OperationsTaskDetailCommand {
-    snapshotId: number;
+    snapshotId: string;
 }
 
 export const pageTasks = (query: PageQuery<OperationsTaskPageQuery> = {}) => {

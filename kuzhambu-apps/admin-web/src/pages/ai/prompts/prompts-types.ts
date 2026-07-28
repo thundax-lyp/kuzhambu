@@ -1,5 +1,5 @@
 export interface AiPromptTemplateRecord {
-    id?: number | null;
+    id?: string | null;
     capability?: string | null;
     name?: string | null;
     description?: string | null;
@@ -9,8 +9,8 @@ export interface AiPromptTemplateRecord {
 }
 
 export interface AiPromptVersionRecord {
-    id?: number | null;
-    templateId?: number | null;
+    id?: string | null;
+    templateId?: string | null;
     versionNo?: number | null;
     messageTemplatesJson?: string | null;
     variablesSnapshotJson?: string | null;
@@ -20,8 +20,8 @@ export interface AiPromptVersionRecord {
 }
 
 export interface AiPromptVariableRecord {
-    id?: number | null;
-    templateId?: number | null;
+    id?: string | null;
+    templateId?: string | null;
     variableName: string;
     required: boolean;
     description?: string | null;

@@ -1,7 +1,7 @@
 export type OperationsHealthStatus = "UP" | "DEGRADED" | "DOWN";
 
 export interface OperationsHealthRecord {
-    checkId: number;
+    checkId: string;
     component?: string | null;
     healthStatus?: OperationsHealthStatus | null;
     latencyMs?: number | null;
@@ -16,14 +16,14 @@ export type OperationsHealthAlertLevel = "WARNING" | "CRITICAL";
 export type OperationsHealthAlertStatus = "ACTIVE" | "ACKED" | "RECOVERED";
 
 export interface OperationsHealthAlertRecord {
-    alertId: number;
+    alertId: string;
     component?: string | null;
     alertType?: string | null;
     alertLevel?: OperationsHealthAlertLevel | null;
     alertStatus?: OperationsHealthAlertStatus | null;
     sourceRefType?: string | null;
-    sourceRefId?: number | null;
-    latestCheckId?: number | null;
+    sourceRefId?: string | null;
+    latestCheckId?: string | null;
     message?: string | null;
     suggestion?: string | null;
     recoveryAction?: string | null;
@@ -31,7 +31,7 @@ export interface OperationsHealthAlertRecord {
     firstTriggeredAt?: string | null;
     lastTriggeredAt?: string | null;
     ackedAt?: string | null;
-    ackedByUserId?: number | null;
+    ackedByUserId?: string | null;
     recoveredAt?: string | null;
     failureReason?: string | null;
 }

@@ -8,6 +8,11 @@ const DECLARATION_PATTERN = /\bexport\s+(?:interface|type|class|enum)\s+([A-Za-z
 const SERVICE_INPUT_TYPE_PATTERN = /(?:Command|Query)$/;
 const API_CONTRACT_TYPE_PATTERN = /(?:Request|Response)$/;
 const FORM_VALUES_TYPE_PATTERN = /FormValues$/;
+const ID_NUMBER_TYPE_DECLARATION_PATTERN =
+    /\b(id|[A-Za-z_$][\w$]*Id)\??\s*:\s*([^=;,)\n]*(?:\n\s*[^=;,)\n]+)*)/g;
+const ID_NUMBER_HOOK_DECLARATION_PATTERN =
+    /\b(?:const|let|var)\s+(?:\[\s*)?(id|[A-Za-z_$][\w$]*Id)\b[^=]*=\s*(?:useState|useRef)<([^>]+)>/g;
+const NUMBER_TYPE_PATTERN = /\bnumber\b|\b(?:Array|ReadonlyArray)\s*<\s*number\s*>|\bnumber\s*\[\]/;
 
 const listFiles = (directory, predicate) => {
     if (!fs.existsSync(directory)) {
@@ -25,6 +30,8 @@ const listFiles = (directory, predicate) => {
 
 const normalizePath = (filePath) => filePath.split(path.sep).join("/");
 
+const getLineNumber = (content, index) => content.slice(0, index).split(/\r?\n/).length;
+
 const isAllowedFormValuesFile = (filePath) => {
     const normalizedFilePath = normalizePath(filePath);
     return (
@@ -39,6 +46,24 @@ const violations = [];
 sourceFiles.forEach((filePath) => {
     const normalizedFilePath = normalizePath(filePath);
     const content = fs.readFileSync(filePath, "utf8");
+
+    for (const match of content.matchAll(ID_NUMBER_TYPE_DECLARATION_PATTERN)) {
+        const typeText = match[2] ?? "";
+        if (NUMBER_TYPE_PATTERN.test(typeText)) {
+            violations.push(
+                `${normalizedFilePath}:${getLineNumber(content, match.index ?? 0)}: ADMIN_WEB_TYPE_ID_STRING ${match[1]} must use string instead of number.`
+            );
+        }
+    }
+
+    for (const match of content.matchAll(ID_NUMBER_HOOK_DECLARATION_PATTERN)) {
+        const typeText = match[2] ?? "";
+        if (NUMBER_TYPE_PATTERN.test(typeText)) {
+            violations.push(
+                `${normalizedFilePath}:${getLineNumber(content, match.index ?? 0)}: ADMIN_WEB_TYPE_ID_STRING ${match[1]} hook state/ref must use string instead of number.`
+            );
+        }
+    }
 
     for (const match of content.matchAll(DECLARATION_PATTERN)) {
         const declarationName = match[1];

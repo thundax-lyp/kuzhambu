@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import * as categoryService from "../sancai-category-service";
 import * as volumeService from "../sancai-volume-service";
+import { isSameId } from "@/types/id";
 import type {
     SancaiCatalogTreeNode,
     SancaiCategoryRecord,
@@ -24,20 +25,20 @@ const reloadQueries = (...queries: Array<{ refetch: () => Promise<unknown> }>) =
     void Promise.all(queries.map((query) => query.refetch()));
 };
 
-const readTitle = (value: { id: number; title?: string | null }, fallback: string) => {
+const readTitle = (value: { id: string; title?: string | null }, fallback: string) => {
     return value.title?.trim() || `${fallback} ${value.id}`;
 };
 
-const toCategoryKey = (id: number) => `category:${id}`;
+const toCategoryKey = (id: string) => `category:${id}`;
 
-const toVolumeKey = (id: number) => `volume:${id}`;
+const toVolumeKey = (id: string) => `volume:${id}`;
 
 const readNodeId = (key: string | null, nodeType: string) => {
     if (!key?.startsWith(`${nodeType}:`)) {
         return null;
     }
-    const id = Number(key.slice(nodeType.length + 1));
-    return Number.isFinite(id) ? id : null;
+    const id = key.slice(nodeType.length + 1).trim();
+    return id || null;
 };
 
 const buildTreeNodes = (
@@ -45,7 +46,9 @@ const buildTreeNodes = (
     volumes: SancaiVolumeRecord[]
 ): SancaiCatalogTreeNode[] => {
     const categoryNodes: SancaiCatalogTreeNode[] = categories.map((category) => {
-        const categoryVolumes = volumes.filter((volume) => volume.categoryId === category.id);
+        const categoryVolumes = volumes.filter((volume) =>
+            isSameId(volume.categoryId, category.id)
+        );
         return {
             children: categoryVolumes.map((volume) => ({
                 key: toVolumeKey(volume.id),
@@ -87,12 +90,13 @@ export const useSancaiCatalogState = () => {
     const isRootSelected = actualSelectedKey === ROOT_KEY;
     const selectedCategoryIdFromKey = readNodeId(actualSelectedKey, "category");
     const selectedVolumeIdFromKey = readNodeId(actualSelectedKey, "volume");
-    const selectedVolume = volumes.find((volume) => volume.id === selectedVolumeIdFromKey) ?? null;
+    const selectedVolume =
+        volumes.find((volume) => isSameId(volume.id, selectedVolumeIdFromKey)) ?? null;
     const selectedCategoryId = selectedVolume?.categoryId ?? selectedCategoryIdFromKey;
     const selectedCategory =
-        categories.find((category) => category.id === selectedCategoryId) ?? null;
+        categories.find((category) => isSameId(category.id, selectedCategoryId)) ?? null;
     const visibleVolumes = selectedCategory
-        ? volumes.filter((volume) => volume.categoryId === selectedCategory.id)
+        ? volumes.filter((volume) => isSameId(volume.categoryId, selectedCategory.id))
         : volumes;
     let selectedPanel: "category" | "entry" | "volume" = "category";
     if (selectedCategory && !isRootSelected) {

@@ -40,7 +40,7 @@ vi.mock("@/components/kuzhambu-drawer", () => {
 
 const models = [
     {
-        id: 2001,
+        id: "2001",
         apiSource: "OPENAI",
         baseUrl: "https://api.primary.example",
         apiKeyConfigured: true,
@@ -108,7 +108,7 @@ describe("AiModelsPage", () => {
         vi.mocked(service.listAiModels).mockResolvedValue([
             models[0],
             {
-                id: 2002,
+                id: "2002",
                 apiSource: "BYTEDANCE",
                 baseUrl: "https://api.secondary.example",
                 apiKeyConfigured: true,
@@ -135,7 +135,7 @@ describe("AiModelsPage", () => {
         await waitFor(() => {
             expect(service.changeAiModel).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    id: 2001,
+                    id: "2001",
                     modelName: "gpt-4o",
                     enabled: false
                 }),

@@ -1,12 +1,13 @@
 import { Table, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { KuzhambuButton } from "@/components";
+import { normalizeId } from "@/types/id";
 import type { QualityAnnotationTarget, RefinementLineageRelationRecord } from "../refinement-types";
 
 interface RefinementLineageRelationTableProps {
     canEdit: boolean;
     relations: RefinementLineageRelationRecord[];
-    sourceContentId?: number | null;
+    sourceContentId?: string | null;
     sourceContentType?: string | null;
     onAnnotate: (target: Omit<QualityAnnotationTarget, "graphVersionId">) => void;
 }
@@ -62,10 +63,12 @@ export const RefinementLineageRelationTable = ({
             dataSource={relations}
             pagination={false}
             rowKey={(relation) =>
-                relation.draftId ||
-                relation.relationKey ||
-                relation.relationType ||
-                "lineage-relation"
+                normalizeId(
+                    relation.draftId ||
+                        relation.relationKey ||
+                        relation.relationType ||
+                        "lineage-relation"
+                )
             }
         />
     );
