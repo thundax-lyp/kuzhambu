@@ -40,22 +40,49 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
     @Override
     public PageResult<AiBatchJobResult> page(
             String scope, String capability, String status, String contentType, Long contentId, PageQuery pageQuery) {
-        PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
-        effectivePage.normalize();
-        AiBatchJobQuery query = new AiBatchJobQuery(
+        PageQuery effectivePage = effectivePage(pageQuery);
+        return page(new AiBatchJobQuery(
                 scope,
                 parseCapability(capability),
                 parseStatus(status),
                 contentType,
                 contentId,
                 effectivePage.getPageNo(),
-                effectivePage.getPageSize());
+                effectivePage.getPageSize()));
+    }
+
+    @Override
+    public PageResult<AiBatchJobResult> pageByCapabilities(
+            String scope,
+            List<String> capabilities,
+            String status,
+            String contentType,
+            Long contentId,
+            PageQuery pageQuery) {
+        PageQuery effectivePage = effectivePage(pageQuery);
+        return page(new AiBatchJobQuery(
+                scope,
+                parseCapabilities(capabilities),
+                parseStatus(status),
+                contentType,
+                contentId,
+                effectivePage.getPageNo(),
+                effectivePage.getPageSize()));
+    }
+
+    private PageResult<AiBatchJobResult> page(AiBatchJobQuery query) {
         long total = aiBatchJobRepository.countJobs(query);
         List<AiBatchJobResult> records = new ArrayList<>();
         for (AiBatchJob job : aiBatchJobRepository.listJobs(query)) {
             records.add(AiBatchJobResult.from(job));
         }
-        return PageResult.of(effectivePage.getPageNo(), effectivePage.getPageSize(), total, records);
+        return PageResult.of(query.getPageNo(), query.getPageSize(), total, records);
+    }
+
+    private PageQuery effectivePage(PageQuery pageQuery) {
+        PageQuery effectivePage = pageQuery == null ? new PageQuery() : pageQuery;
+        effectivePage.normalize();
+        return effectivePage;
     }
 
     @Override

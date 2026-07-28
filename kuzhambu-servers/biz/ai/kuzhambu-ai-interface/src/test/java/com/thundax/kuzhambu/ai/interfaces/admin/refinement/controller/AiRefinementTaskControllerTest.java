@@ -177,6 +177,17 @@ class AiRefinementTaskControllerTest {
         }
 
         @Override
+        public PageResult<AiBatchJobResult> pageByCapabilities(
+                String scope,
+                List<String> capabilities,
+                String status,
+                String contentType,
+                Long contentId,
+                PageQuery pageQuery) {
+            return PageResult.of(1, 10, 0, List.of());
+        }
+
+        @Override
         public Long create(AiBatchJobCreateCommand command) {
             return null;
         }

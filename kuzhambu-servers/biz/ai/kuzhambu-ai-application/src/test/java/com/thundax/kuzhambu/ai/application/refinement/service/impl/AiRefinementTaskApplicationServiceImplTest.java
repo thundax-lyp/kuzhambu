@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.ai.application.refinement.service.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.thundax.kuzhambu.ai.application.invocation.batch.command.AiBatchJobCreateCommand;
@@ -240,6 +241,8 @@ class AiRefinementTaskApplicationServiceImplTest {
                 new AiBatchJobCreateCommand("classics", "classics_summary", "SANCAI_ENTRY", 10L, 1, null));
         Long secondBatchId = batchJobService.create(
                 new AiBatchJobCreateCommand("classics", "classics_tags", "SANCAI_ENTRY", 10L, 1, null));
+        batchJobService.create(
+                new AiBatchJobCreateCommand("knowledge", "knowledge_graph_extract", "SANCAI_ENTRY", 10L, 1, null));
         RecordingInvocationRepository invocationRepository =
                 new RecordingInvocationRepository(firstBatchId, secondBatchId);
         AiRefinementTaskApplicationServiceImpl service = new AiRefinementTaskApplicationServiceImpl(
@@ -252,6 +255,29 @@ class AiRefinementTaskApplicationServiceImplTest {
         assertEquals(1, invocationRepository.contentCandidateQueryCount);
         assertEquals(301L, page.getRecords().get(0).getCandidateId());
         assertEquals(302L, page.getRecords().get(1).getCandidateId());
+    }
+
+    @Test
+    void getTaskShouldRejectNonRefinementBatchJob() {
+        RecordingBatchJobService batchJobService = new RecordingBatchJobService();
+        Long batchId = batchJobService.create(
+                new AiBatchJobCreateCommand("knowledge", "knowledge_graph_extract", "SANCAI_ENTRY", 10L, 1, null));
+        AiRefinementTaskApplicationServiceImpl service = new AiRefinementTaskApplicationServiceImpl(
+                batchJobService, new StubRefinementApplicationService(null), null, DIRECT_EXECUTOR);
+
+        assertThrows(RuntimeException.class, () -> service.getTask(batchId));
+    }
+
+    @Test
+    void cancelTaskShouldRejectNonRefinementBatchJob() {
+        RecordingBatchJobService batchJobService = new RecordingBatchJobService();
+        Long batchId = batchJobService.create(
+                new AiBatchJobCreateCommand("knowledge", "knowledge_graph_extract", "SANCAI_ENTRY", 10L, 1, null));
+        AiRefinementTaskApplicationServiceImpl service = new AiRefinementTaskApplicationServiceImpl(
+                batchJobService, new StubRefinementApplicationService(null), null, DIRECT_EXECUTOR);
+
+        assertThrows(RuntimeException.class, () -> service.cancelTask(batchId));
+        assertEquals("RUNNING", batchJobService.get(batchId).getStatus());
     }
 
     @Test
@@ -317,7 +343,20 @@ class AiRefinementTaskApplicationServiceImplTest {
                 String contentType,
                 Long contentId,
                 PageQuery pageQuery) {
-            return PageResult.of(1, 10, jobs.size(), jobs);
+            List<AiBatchJobResult> records = filtered(scope, capability == null ? List.of() : List.of(capability));
+            return PageResult.of(1, 10, records.size(), records);
+        }
+
+        @Override
+        public PageResult<AiBatchJobResult> pageByCapabilities(
+                String scope,
+                List<String> capabilities,
+                String status,
+                String contentType,
+                Long contentId,
+                PageQuery pageQuery) {
+            List<AiBatchJobResult> records = filtered(scope, capabilities);
+            return PageResult.of(1, 10, records.size(), records);
         }
 
         @Override
@@ -442,6 +481,19 @@ class AiRefinementTaskApplicationServiceImplTest {
         private void replace(AiBatchJobResult updated) {
             jobs.removeIf(job -> job.getBatchId().equals(updated.getBatchId()));
             jobs.add(updated);
+        }
+
+        private List<AiBatchJobResult> filtered(String scope, List<String> capabilities) {
+            List<AiBatchJobResult> records = new ArrayList<>();
+            for (AiBatchJobResult job : jobs) {
+                if ((scope == null || scope.equals(job.getScope()))
+                        && (capabilities == null
+                                || capabilities.isEmpty()
+                                || capabilities.contains(job.getCapability()))) {
+                    records.add(job);
+                }
+            }
+            return records;
         }
     }
 

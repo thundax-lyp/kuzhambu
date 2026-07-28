@@ -108,6 +108,7 @@ public class AiBatchJobRepositoryImpl implements AiBatchJobRepository {
             return toBatchJobs(aiBatchJobMapper.selectJobsByInvocationContent(
                     query.getScope(),
                     query.getCapability() == null ? null : query.getCapability().value(),
+                    capabilityValues(query.getCapabilities()),
                     query.getStatus() == null ? null : query.getStatus().name(),
                     query.getContentType(),
                     query.getContentId(),
@@ -135,6 +136,7 @@ public class AiBatchJobRepositoryImpl implements AiBatchJobRepository {
             return aiBatchJobMapper.countJobsByInvocationContent(
                     query.getScope(),
                     query.getCapability() == null ? null : query.getCapability().value(),
+                    capabilityValues(query.getCapabilities()),
                     query.getStatus() == null ? null : query.getStatus().name(),
                     query.getContentType(),
                     query.getContentId());
@@ -152,6 +154,10 @@ public class AiBatchJobRepositoryImpl implements AiBatchJobRepository {
         }
         if (query.getCapability() != null) {
             queryWrapper.eq(AiBatchJobDO::getCapability, query.getCapability().value());
+        }
+        List<String> capabilityValues = capabilityValues(query.getCapabilities());
+        if (capabilityValues != null && !capabilityValues.isEmpty()) {
+            queryWrapper.in(AiBatchJobDO::getCapability, capabilityValues);
         }
         if (query.getStatus() != null) {
             queryWrapper.eq(AiBatchJobDO::getStatus, query.getStatus().name());
@@ -177,6 +183,19 @@ public class AiBatchJobRepositoryImpl implements AiBatchJobRepository {
 
     private Long nextId() {
         return idGenerator.nextId().value();
+    }
+
+    private List<String> capabilityValues(List<AiBusinessCapability> capabilities) {
+        if (capabilities == null || capabilities.isEmpty()) {
+            return null;
+        }
+        List<String> values = new ArrayList<>();
+        for (AiBusinessCapability capability : capabilities) {
+            if (capability != null) {
+                values.add(capability.value());
+            }
+        }
+        return values;
     }
 
     private boolean isBlank(String value) {

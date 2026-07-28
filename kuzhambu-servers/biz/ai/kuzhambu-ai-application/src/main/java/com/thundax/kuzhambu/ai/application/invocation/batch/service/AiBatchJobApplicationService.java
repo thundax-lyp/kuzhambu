@@ -17,6 +17,15 @@ public interface AiBatchJobApplicationService {
     PageResult<AiBatchJobResult> page(
             String scope, String capability, String status, String contentType, Long contentId, PageQuery pageQuery);
 
+    @LayerPublicApi(reason = "AI 精修任务按能力集合查询自有批任务入口")
+    PageResult<AiBatchJobResult> pageByCapabilities(
+            String scope,
+            List<String> capabilities,
+            String status,
+            String contentType,
+            Long contentId,
+            PageQuery pageQuery);
+
     @LayerPublicApi(reason = "Knowledge 图谱抽取按批量选择范围创建 AI 批任务的跨模块入口")
     Long create(AiBatchJobCreateCommand command);
 

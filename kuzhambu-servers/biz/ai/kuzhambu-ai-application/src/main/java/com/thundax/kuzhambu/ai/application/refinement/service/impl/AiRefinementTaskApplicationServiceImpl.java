@@ -50,6 +50,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AiRefinementTaskApplicationServiceImpl.class);
 
+    private static final String REFINEMENT_SCOPE = "classics";
     private static final String CONTENT_TYPE_SANCAI_ENTRY = "SANCAI_ENTRY";
     private static final String CAPABILITY_IMAGE_ANALYSIS = "classics_image_describe";
     private static final String CAPABILITY_IMAGE_GEN = "classics_image_generate";
@@ -96,6 +97,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     public AiRefinementTaskResult addTask(AiRefinementRequestCommand command) {
         normalizeCommandCapability(command);
         validateAddCommand(command);
+        validateRefinementBatchOwnership(command.getScope(), command.getCapability());
         refinementApplicationService.snapshotInvokeConfig(command);
         Long taskId = batchJobApplicationService.create(new AiBatchJobCreateCommand(
                 command.getScope(),
@@ -111,14 +113,25 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
 
     @Override
     public AiRefinementTaskResult getTask(Long taskId) {
-        return toTaskResult(batchJobApplicationService.get(taskId));
+        AiBatchJobResult job = batchJobApplicationService.get(taskId);
+        validateRefinementBatchOwnership(job);
+        return toTaskResult(job);
     }
 
     @Override
     public PageResult<AiRefinementTaskResult> pageTasks(
             String capability, String status, String contentType, Long contentId, PageQuery pageQuery) {
-        PageResult<AiBatchJobResult> page = batchJobApplicationService.page(
-                null, normalizeCapability(capability), status, contentType, contentId, pageQuery);
+        String normalizedCapability = normalizeCapability(capability);
+        PageResult<AiBatchJobResult> page = isBlank(normalizedCapability)
+                ? batchJobApplicationService.pageByCapabilities(
+                        REFINEMENT_SCOPE, REFINEMENT_CAPABILITIES, status, contentType, contentId, pageQuery)
+                : batchJobApplicationService.page(
+                        REFINEMENT_SCOPE,
+                        validateRefinementCapability(normalizedCapability),
+                        status,
+                        contentType,
+                        contentId,
+                        pageQuery);
         AiContentRef contentRef = AiContentRef.ofNullable(contentType, contentId);
         Map<Long, AiInvocationLog> invocationLogsByBatch = latestInvocationLogsByBatch(page.getRecords(), contentRef);
         Map<Long, AiCandidate> candidatesByBatch = latestCandidatesByBatch(page.getRecords(), contentRef);
@@ -135,6 +148,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     @Override
     public void streamTaskEvents(Long taskId, Consumer<AiStreamEventResult> eventConsumer) {
         AiBatchJobResult job = batchJobApplicationService.get(taskId);
+        validateRefinementBatchOwnership(job);
         if (!isStreamEnabledTask(job)) {
             throw new BizException("AI refinement task stream is not enabled: " + taskId);
         }
@@ -152,6 +166,8 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AiRefinementTaskResult cancelTask(Long taskId) {
+        AiBatchJobResult job = batchJobApplicationService.get(taskId);
+        validateRefinementBatchOwnership(job);
         AiBatchJobResult cancelled = batchJobApplicationService.cancel(taskId);
         AiRefinementTaskResult task = toTaskResult(cancelled);
         publishTerminalEvent(taskId, task, null);
@@ -344,6 +360,26 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
                 || STATUS_FAILED.equals(status)
                 || STATUS_PARTIAL.equals(status)
                 || STATUS_CANCELLED.equals(status);
+    }
+
+    private void validateRefinementBatchOwnership(AiBatchJobResult job) {
+        if (job == null) {
+            throw new BizException("AI refinement task not found");
+        }
+        validateRefinementBatchOwnership(job.getScope(), job.getCapability());
+    }
+
+    private void validateRefinementBatchOwnership(String scope, String capability) {
+        if (!REFINEMENT_SCOPE.equals(scope) || !REFINEMENT_CAPABILITIES.contains(capability)) {
+            throw new BizException("AI refinement task does not belong to refinement workflow");
+        }
+    }
+
+    private String validateRefinementCapability(String capability) {
+        if (!REFINEMENT_CAPABILITIES.contains(capability)) {
+            throw new BizException("unsupported ai refinement capability: " + capability);
+        }
+        return capability;
     }
 
     private boolean isStreamEnabledTask(AiRefinementRequestCommand command) {
