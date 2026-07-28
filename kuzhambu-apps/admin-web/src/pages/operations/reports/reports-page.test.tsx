@@ -1,5 +1,5 @@
 import { QueryClientProvider } from "@tanstack/react-query";
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { replacePermissions } from "@/auth/permission-storage";
 import { queryClient } from "@/query/query-client";
@@ -10,7 +10,7 @@ vi.mock("./reports-service", () => ({
     generateReport: vi.fn(),
     getReportDetail: vi.fn(),
     pageReports: vi.fn(),
-    toReportDownloadUrl: vi.fn((reportId: number) => `/download/report/${reportId}`)
+    toReportDownloadUrl: vi.fn((reportId: string) => `/download/report/${reportId}`)
 }));
 
 vi.mock("@/components/kuzhambu-drawer", () => {
@@ -50,7 +50,7 @@ describe("OperationsReportsPage", () => {
         queryClient.clear();
         replacePermissions(["operations:report:view", "operations:report:generate"]);
         vi.mocked(service.generateReport).mockResolvedValue({
-            reportId: 9003,
+            reportId: "9003",
             reportStatus: "PENDING"
         });
         vi.mocked(service.pageReports).mockResolvedValue({
@@ -61,33 +61,33 @@ describe("OperationsReportsPage", () => {
             totalCount: 2,
             records: [
                 {
-                    reportId: 9001,
+                    reportId: "9001",
                     reportType: "WEEKLY",
                     format: "PDF",
                     periodStart: "2026-07-01T00:00:00.000Z",
                     periodEnd: "2026-07-07T23:59:59.000Z",
-                    storageObjectId: 7001,
+                    storageObjectId: "7001",
                     artifactFilename: "weekly.pdf",
                     reportStatus: "SUCCEEDED",
-                    requesterUserId: 1001,
+                    requesterUserId: "1001",
                     requestedAt: "2026-07-08T01:00:00.000Z",
                     completedAt: "2026-07-08T01:01:00.000Z"
                 },
                 {
-                    reportId: 9002,
+                    reportId: "9002",
                     reportType: "MONTHLY",
                     format: "HTML",
                     periodStart: "2026-06-01T00:00:00.000Z",
                     periodEnd: "2026-06-30T23:59:59.000Z",
                     reportStatus: "FAILED",
                     failureReason: "render worker timeout",
-                    requesterUserId: 1002,
+                    requesterUserId: "1002",
                     requestedAt: "2026-07-08T02:00:00.000Z"
                 }
             ]
         });
         vi.mocked(service.getReportDetail).mockResolvedValue({
-            reportId: 9002,
+            reportId: "9002",
             reportType: "MONTHLY",
             format: "HTML",
             periodStart: "2026-06-01T00:00:00.000Z",
@@ -97,7 +97,7 @@ describe("OperationsReportsPage", () => {
             templateVersion: "v1",
             reportStatus: "FAILED",
             failureReason: "render worker timeout",
-            requesterUserId: 1002,
+            requesterUserId: "1002",
             requestedAt: "2026-07-08T02:00:00.000Z"
         });
     });
@@ -136,7 +136,7 @@ describe("OperationsReportsPage", () => {
         expect(await screen.findByText("报表详情")).toBeInTheDocument();
         expect(await screen.findByText("req-9002")).toBeInTheDocument();
         expect(screen.getAllByText("render worker timeout").length).toBeGreaterThan(0);
-        expect(service.getReportDetail).toHaveBeenCalledWith({ reportId: 9002 });
+        expect(service.getReportDetail).toHaveBeenCalledWith({ reportId: "9002" });
     });
 
     it("disables generation without generate permission", async () => {
@@ -146,6 +146,30 @@ describe("OperationsReportsPage", () => {
         expect(await screen.findByRole("heading", { name: "报表管理" })).toBeInTheDocument();
         expect(screen.getByRole("button", { name: /生成报表/ })).toBeDisabled();
         expect(screen.getByRole("button", { name: /提交生成/ })).toBeDisabled();
+    });
+
+    it("requires a positive decimal requester user id before filtering reports", async () => {
+        renderPage();
+
+        expect(await screen.findByRole("heading", { name: "报表管理" })).toBeInTheDocument();
+        vi.mocked(service.pageReports).mockClear();
+
+        fireEvent.change(screen.getByLabelText("请求人用户 ID"), { target: { value: "abc" } });
+        expect(screen.getByRole("button", { name: /查询/ })).toBeDisabled();
+        await waitFor(() =>
+            expect(service.pageReports).toHaveBeenCalledWith(
+                expect.objectContaining({ requesterUserId: undefined })
+            )
+        );
+
+        vi.mocked(service.pageReports).mockClear();
+        fireEvent.change(screen.getByLabelText("请求人用户 ID"), { target: { value: "1003" } });
+        expect(screen.getByRole("button", { name: /查询/ })).toBeEnabled();
+        await waitFor(() =>
+            expect(service.pageReports).toHaveBeenCalledWith(
+                expect.objectContaining({ requesterUserId: "1003" })
+            )
+        );
     });
 
     it("polls when report page contains running records", async () => {
@@ -158,7 +182,7 @@ describe("OperationsReportsPage", () => {
             totalCount: 1,
             records: [
                 {
-                    reportId: 9004,
+                    reportId: "9004",
                     reportType: "WEEKLY",
                     format: "PDF",
                     reportStatus: "RUNNING",

@@ -10,9 +10,9 @@ const confirmDangerMock = vi.hoisted(() => vi.fn());
 const qualityReportServiceMock = vi.hoisted(() => ({
     generateReport: vi.fn(async () => ({
         report: {
-            reportId: 1002,
+            reportId: "1002",
             reportNo: "KQR-1002",
-            graphVersionId: 71,
+            graphVersionId: "71",
             reportStatus: "PUBLISHED",
             entityCoverageRate: 0.91,
             relationAccuracyRate: 0.82,
@@ -26,9 +26,9 @@ const qualityReportServiceMock = vi.hoisted(() => ({
     })),
     getLatestReport: vi.fn(async () => ({
         report: {
-            reportId: 1001,
+            reportId: "1001",
             reportNo: "KQR-1001",
-            graphVersionId: 71,
+            graphVersionId: "71",
             reportStatus: "PUBLISHED",
             entityCoverageRate: 0.9,
             relationAccuracyRate: 0.8,
@@ -37,7 +37,7 @@ const qualityReportServiceMock = vi.hoisted(() => ({
         },
         issues: [
             {
-                issueId: 1,
+                issueId: "1",
                 issueType: "ANNOTATION_ISSUE",
                 severity: "high",
                 objectType: "ENTITY",
@@ -47,19 +47,19 @@ const qualityReportServiceMock = vi.hoisted(() => ({
         ],
         sourceDetails: [
             {
-                detailId: 1,
+                detailId: "1",
                 sourceContentType: "SANCAI_ENTRY",
-                sourceContentId: 1001,
+                sourceContentId: "1001",
                 sourceCategoryCode: "myth",
                 sourceCategoryName: "神话",
-                graphVersionId: 71,
+                graphVersionId: "71",
                 issueCount: 2,
                 status: "PUBLISHED"
             }
         ],
         annotations: [
             {
-                annotationId: 1,
+                annotationId: "1",
                 objectType: "ENTITY",
                 objectKey: "person:sunwukong",
                 annotationStatus: "ISSUE",
@@ -79,22 +79,22 @@ const qualityReportServiceMock = vi.hoisted(() => ({
         count: 1,
         records: [
             {
-                reportId: 1001,
+                reportId: "1001",
                 reportNo: "KQR-1001",
-                graphVersionId: 71,
+                graphVersionId: "71",
                 reportStatus: "PUBLISHED",
                 issueCount: 1
             }
         ]
     })),
     reextractLowQualityCategory: vi.fn(async () => ({
-        reportId: 1001,
+        reportId: "1001",
         sourceCategoryCode: "myth",
         sourceCategoryName: "神话",
         sourceContentType: "SANCAI_ENTRY",
-        sourceContentId: 1001,
-        taskId: 3001,
-        batchJobId: 4001,
+        sourceContentId: "1001",
+        taskId: "3001",
+        batchJobId: "4001",
         taskType: "GRAPH",
         triggerSource: "QUALITY_REPORT",
         selectionScopeJson: '{"sourceContentIds":[1001]}',
@@ -110,16 +110,16 @@ const qualityReportSourceTableModuleMock = vi.hoisted(() => {
         onReextract
     }: {
         canReextract?: boolean;
-        reextractingDetailId?: number | null;
+        reextractingDetailId?: string | null;
         reportNo?: string | null;
         sourceDetails?: {
-            detailId: number;
+            detailId: string;
             issueCount?: number | null;
             sourceCategoryCode?: string | null;
             sourceCategoryName?: string | null;
         }[];
         onReextract?: (sourceDetail: {
-            detailId: number;
+            detailId: string;
             issueCount?: number | null;
             sourceCategoryCode?: string | null;
             sourceCategoryName?: string | null;
@@ -214,6 +214,32 @@ describe("QualityReportPage", () => {
         expect(screen.getByText("人工标注")).toBeInTheDocument();
     }, 30000);
 
+    it("requires a positive decimal graph version id before generation", async () => {
+        const user = userEvent.setup();
+        renderQualityReportPage();
+
+        const graphVersionInput = screen.getByPlaceholderText("graphVersionId");
+        const generateButton = screen.getByRole("button", { name: "生成报告" });
+        await user.type(graphVersionInput, "abc");
+        expect(generateButton).toBeDisabled();
+
+        await user.clear(graphVersionInput);
+        await user.type(graphVersionInput, "0");
+        expect(generateButton).toBeDisabled();
+
+        await user.clear(graphVersionInput);
+        await user.type(graphVersionInput, "72");
+        expect(generateButton).toBeEnabled();
+        await user.click(generateButton);
+
+        await waitFor(() => {
+            expect(service.generateReport).toHaveBeenCalledWith({
+                graphVersionId: "72",
+                generatedBy: 1
+            });
+        });
+    }, 30000);
+
     it("disables reextract without graph edit permission", async () => {
         renderQualityReportPage();
 
@@ -229,9 +255,9 @@ describe("QualityReportPage", () => {
         ]);
         vi.mocked(service.getLatestReport).mockResolvedValueOnce({
             report: {
-                reportId: 1001,
+                reportId: "1001",
                 reportNo: "KQR-1001",
-                graphVersionId: 71,
+                graphVersionId: "71",
                 reportStatus: "PUBLISHED",
                 entityCoverageRate: 0.9,
                 relationAccuracyRate: 0.8,
@@ -240,7 +266,7 @@ describe("QualityReportPage", () => {
             },
             sourceDetails: [
                 {
-                    detailId: 1,
+                    detailId: "1",
                     sourceCategoryCode: "myth",
                     sourceCategoryName: "神话",
                     issueCount: 0
@@ -279,14 +305,14 @@ describe("QualityReportPage", () => {
         await waitFor(() => {
             expect(service.reextractLowQualityCategory).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    reportId: 1001,
+                    reportId: "1001",
                     sourceCategoryCode: "myth",
                     taskType: "GRAPH",
                     replaceUnconfirmedOnly: true,
-                    modelId: 1,
+                    modelId: "1",
                     modelName: "gpt-5.5",
                     inputPayloadJson: '{"triggerSource":"QUALITY_REPORT"}',
-                    requestedBy: 1
+                    requestedBy: "1"
                 })
             );
         });
@@ -307,9 +333,9 @@ describe("QualityReportPage", () => {
         );
         qualityReportServiceMock.getLatestReport.mockResolvedValueOnce({
             report: {
-                reportId: 1001,
+                reportId: "1001",
                 reportNo: "KQR-1001",
-                graphVersionId: 71,
+                graphVersionId: "71",
                 reportStatus: "PUBLISHED",
                 entityCoverageRate: 0.9,
                 relationAccuracyRate: 0.8,
@@ -325,9 +351,9 @@ describe("QualityReportPage", () => {
         });
         qualityReportServiceMock.generateReport.mockResolvedValueOnce({
             report: {
-                reportId: 1002,
+                reportId: "1002",
                 reportNo: "KQR-1002",
-                graphVersionId: 71,
+                graphVersionId: "71",
                 reportStatus: "PUBLISHED",
                 entityCoverageRate: 0.91,
                 relationAccuracyRate: 0.82,
@@ -345,9 +371,9 @@ describe("QualityReportPage", () => {
         expect(await screen.findByText("该版本质量报告早于最新精修应用")).toBeInTheDocument();
         expect(screen.getByDisplayValue("71")).toBeInTheDocument();
         await waitFor(() => {
-            expect(service.getLatestReport).toHaveBeenCalledWith({ graphVersionId: 71 });
+            expect(service.getLatestReport).toHaveBeenCalledWith({ graphVersionId: "71" });
             expect(service.pageReports).toHaveBeenCalledWith(
-                expect.objectContaining({ graphVersionId: 71 })
+                expect.objectContaining({ graphVersionId: "71" })
             );
         });
 
@@ -356,9 +382,59 @@ describe("QualityReportPage", () => {
 
         await waitFor(() => {
             expect(service.generateReport).toHaveBeenCalledWith({
-                graphVersionId: 71,
+                graphVersionId: "71",
                 generatedBy: 1
             });
+        });
+    }, 30000);
+
+    it("normalizes stale report graph version id before regenerating", async () => {
+        const user = userEvent.setup();
+        qualityReportServiceMock.getLatestReport.mockResolvedValueOnce({
+            report: {
+                reportId: "1001",
+                reportNo: "KQR-1001",
+                graphVersionId: 71 as unknown as string,
+                reportStatus: "PUBLISHED",
+                entityCoverageRate: 0.9,
+                relationAccuracyRate: 0.8,
+                lineageCoverageRate: 0.7,
+                completenessRate: 0.6
+            },
+            issues: [],
+            sourceDetails: [],
+            annotations: [],
+            stale: true,
+            staleReason: "REFINEMENT_APPLIED_AFTER_REPORT"
+        });
+
+        renderQualityReportPage();
+
+        expect(await screen.findByText("该版本质量报告早于最新精修应用")).toBeInTheDocument();
+        const regenerateButtons = screen.getAllByRole("button", { name: "重新生成报告" });
+        await user.click(regenerateButtons[regenerateButtons.length - 1]);
+
+        expect(screen.getByPlaceholderText("graphVersionId")).toHaveValue("71");
+        await waitFor(() => {
+            expect(service.generateReport).toHaveBeenCalledWith({
+                graphVersionId: "71",
+                generatedBy: 1
+            });
+        });
+    }, 30000);
+
+    it("ignores invalid graph version search param", async () => {
+        window.history.pushState({}, "", "/knowledge/quality-report?graphVersionId=abc");
+
+        renderQualityReportPage();
+
+        expect(await screen.findByRole("heading", { name: "质量报告" })).toBeInTheDocument();
+        expect(screen.getByPlaceholderText("graphVersionId")).toHaveValue("");
+        await waitFor(() => {
+            expect(service.getLatestReport).not.toHaveBeenCalledWith({ graphVersionId: "abc" });
+            expect(service.pageReports).not.toHaveBeenCalledWith(
+                expect.objectContaining({ graphVersionId: "abc" })
+            );
         });
     }, 30000);
 });

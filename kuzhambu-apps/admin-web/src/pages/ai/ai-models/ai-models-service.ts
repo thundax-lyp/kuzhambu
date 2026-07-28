@@ -1,4 +1,5 @@
 import { postJson } from "@/api/http";
+import { normalizeId } from "@/types/id";
 import type { AiModelRecord } from "./ai-models-types";
 
 export interface AiModelListQuery {
@@ -7,7 +8,7 @@ export interface AiModelListQuery {
 }
 
 export interface AiModelChangeCommand {
-    id?: number | null;
+    id?: string | null;
     apiSource: string;
     baseUrl: string;
     apiKey?: string | null;
@@ -22,23 +23,28 @@ export interface AiModelChangeCommand {
 export const listAiModels = (query: AiModelListQuery = {}) => {
     return postJson<AiModelRecord[], AiModelListQuery>("/ai/config/model/list", {
         body: query
-    });
+    }).then((models) => (models || []).map(normalizeAiModelRecord));
 };
 
 export const createAiModel = (command: AiModelChangeCommand) => {
     return postJson<AiModelRecord, AiModelChangeCommand>("/ai/config/model/create", {
         body: command
-    });
+    }).then(normalizeAiModelRecord);
 };
 
 export const changeAiModel = (command: AiModelChangeCommand) => {
     return postJson<AiModelRecord, AiModelChangeCommand>("/ai/config/model/update", {
         body: command
-    });
+    }).then(normalizeAiModelRecord);
 };
 
-export const deleteAiModel = (id: number) => {
-    return postJson<boolean, { id: number }>("/ai/config/model/delete", {
+export const deleteAiModel = (id: string) => {
+    return postJson<boolean, { id: string }>("/ai/config/model/delete", {
         body: { id }
     });
 };
+
+const normalizeAiModelRecord = (model: AiModelRecord): AiModelRecord => ({
+    ...model,
+    id: normalizeId(model?.id)
+});

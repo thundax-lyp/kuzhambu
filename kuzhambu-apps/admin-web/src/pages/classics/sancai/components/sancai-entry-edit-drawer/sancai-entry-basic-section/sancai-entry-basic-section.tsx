@@ -4,6 +4,7 @@ import { useEffect, useMemo } from "react";
 import { toAuthenticatedResourceUrl } from "@/auth/resource-url";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
+import { isSameId } from "@/types/id";
 import {
     KuzhambuForm,
     KuzhambuFormItem,
@@ -23,9 +24,7 @@ import type {
 } from "@/pages/classics/sancai/sancai-types";
 
 const selectCurrentImage = (images: SancaiEntryImageRecord[]) => {
-    return [...images]
-        .filter((image) => image.currentUsed !== false)
-        .sort((left, right) => (left.priority ?? 0) - (right.priority ?? 0))[0];
+    return images.find((image) => image.currentUsed !== false);
 };
 
 const readImageTitle = (image: SancaiEntryImageRecord) => {
@@ -33,7 +32,7 @@ const readImageTitle = (image: SancaiEntryImageRecord) => {
 };
 
 const resolveImageUrl = (
-    entryId: number | undefined,
+    entryId: string | undefined,
     image: SancaiEntryImageRecord | undefined,
     mode: SancaiEntryImageContentMode
 ) => {
@@ -54,8 +53,8 @@ interface SancaiEntryBasicPreviewState {
 }
 
 interface SancaiEntryBasicSectionProps {
-    categoryOptions: Array<{ label: string; value: number }>;
-    entryId?: number;
+    categoryOptions: Array<{ label: string; value: string }>;
+    entryId?: string;
     isCreatingSummaryTask: boolean;
     isCreatingTranslationTask: boolean;
     mode: "create" | "edit";
@@ -91,26 +90,17 @@ export const SancaiEntryBasicSection = ({
     const queryClient = useQueryClient();
     const imagesQuery = useQuery({
         queryKey: ["classics", "sancai", "entries", "images", entryId],
-        queryFn: () => entryService.listImages(entryId ?? 0),
+        queryFn: () => entryService.listImages(entryId ?? ""),
         enabled: Boolean(entryId),
         retry: false
     });
-    const entryImages = useMemo(
-        () =>
-            [...(imagesQuery.data || [])].sort((left, right) => {
-                if ((left.priority ?? 0) !== (right.priority ?? 0)) {
-                    return (left.priority ?? 0) - (right.priority ?? 0);
-                }
-                return left.id - right.id;
-            }),
-        [imagesQuery.data]
-    );
+    const entryImages = useMemo(() => imagesQuery.data || [], [imagesQuery.data]);
     const currentImage = selectCurrentImage(entryImages);
     const previewUrl = resolveImageUrl(entryId, currentImage, "preview");
     const volumeOptions = useMemo(
         () =>
             volumes
-                .filter((volume) => volume.categoryId === selectedCategoryId)
+                .filter((volume) => isSameId(volume.categoryId, selectedCategoryId))
                 .map((volume) => ({
                     label: volume.title?.trim() || `卷 ${volume.id}`,
                     value: volume.id
@@ -250,8 +240,8 @@ export const SancaiEntryBasicSection = ({
         values: SancaiEntryFormValues
     ) => {
         if (Object.prototype.hasOwnProperty.call(changedValues, "categoryId")) {
-            const currentVolume = volumes.find((volume) => volume.id === values.volumeId);
-            if (currentVolume?.categoryId !== values.categoryId) {
+            const currentVolume = volumes.find((volume) => isSameId(volume.id, values.volumeId));
+            if (!isSameId(currentVolume?.categoryId, values.categoryId)) {
                 const nextValues = {
                     ...values,
                     volumeId: null

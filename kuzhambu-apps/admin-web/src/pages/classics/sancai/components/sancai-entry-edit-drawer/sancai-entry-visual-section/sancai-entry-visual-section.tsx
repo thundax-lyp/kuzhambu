@@ -26,6 +26,7 @@ import type {
     SancaiEntryRecord,
     SancaiVisualAssetRecord
 } from "@/pages/classics/sancai/sancai-types";
+import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import * as entryService from "@/pages/classics/sancai/sancai-entry-service";
 import { useSancaiEntryVisualRefinement } from "./hooks/use-sancai-entry-visual-refinement";
 import { SancaiEntryVisualRefinementSection } from "./sancai-entry-visual-refinement-section";
@@ -41,7 +42,7 @@ const readVisualAssetTitle = (asset: SancaiVisualAssetRecord | undefined | null)
 };
 
 const readVisualAssetId = (asset: SancaiVisualAssetRecord) => {
-    return asset.visualAssetId ?? asset.id ?? 0;
+    return asset.visualAssetId ?? asset.id ?? "";
 };
 
 const selectCurrentVisualAsset = (assets: SancaiVisualAssetRecord[]) => {
@@ -51,7 +52,7 @@ const selectCurrentVisualAsset = (assets: SancaiVisualAssetRecord[]) => {
 };
 
 const resolveImageUrl = (
-    entryId: number | undefined,
+    entryId: string | undefined,
     image: SancaiEntryImageRecord | undefined,
     mode: SancaiEntryImageContentMode
 ) => {
@@ -146,7 +147,7 @@ const VISUAL_ASSET_FORM_FIELD_NAMES: Array<keyof SancaiVisualAssetRecord> = [
 const toVisualAssetFormValue = (
     asset: SancaiVisualAssetRecord | null,
     defaultSourceImage: SancaiEntryImageRecord | undefined,
-    entryId: number | undefined
+    entryId: string | undefined
 ) => {
     if (!asset) {
         return null;
@@ -191,16 +192,7 @@ export const SancaiEntryVisualSection = ({
         refetchOnMount: false,
         retry: false
     });
-    const entryImages = useMemo(
-        () =>
-            [...(imagesQuery.data || [])].sort((left, right) => {
-                if ((left.priority ?? 0) !== (right.priority ?? 0)) {
-                    return (left.priority ?? 0) - (right.priority ?? 0);
-                }
-                return left.id - right.id;
-            }),
-        [imagesQuery.data]
-    );
+    const entryImages = useMemo(() => imagesQuery.data || [], [imagesQuery.data]);
     const visualAssetsQuery = useQuery({
         queryKey: ["classics", "sancai", "entries", "visual-assets", entryId],
         queryFn: () => entryService.listVisualAssets(entryId),
@@ -215,8 +207,9 @@ export const SancaiEntryVisualSection = ({
                 if ((left.versionNo ?? 0) !== (right.versionNo ?? 0)) {
                     return (right.versionNo ?? 0) - (left.versionNo ?? 0);
                 }
-                return (
-                    (right.visualAssetId ?? right.id ?? 0) - (left.visualAssetId ?? left.id ?? 0)
+                return aiRefinementTaskService.sortDecimalIdDesc(
+                    left.visualAssetId ?? left.id,
+                    right.visualAssetId ?? right.id
                 );
             }),
         [visualAssets]
@@ -225,9 +218,9 @@ export const SancaiEntryVisualSection = ({
         () => selectCurrentVisualAsset(visualAssets),
         [visualAssets]
     );
-    const [selectedVisualAssetId, setSelectedVisualAssetId] = useState<number | null>(null);
+    const [selectedVisualAssetId, setSelectedVisualAssetId] = useState<string | null>(null);
     const [visualAssetForm] = Form.useForm<SancaiVisualAssetRecord>();
-    const loadedVisualAssetIdRef = useRef<number | null>(null);
+    const loadedVisualAssetIdRef = useRef<string | null>(null);
     const activeVisualAssetId =
         selectedVisualAssetId ??
         currentVisualAsset?.visualAssetId ??
@@ -413,7 +406,7 @@ export const SancaiEntryVisualSection = ({
             sourceDownloadUrl: resolveImageUrl(entryId, image, "download")
         });
     };
-    const selectVisualSourceImageBySelectValue = (storageObjectId: number | string) => {
+    const selectVisualSourceImageBySelectValue = (storageObjectId: string) => {
         const image = entryImages.find((entryImage) =>
             isSameStorageObjectId(entryImage.storageObjectId, storageObjectId)
         );
@@ -613,9 +606,9 @@ export const SancaiEntryVisualSection = ({
                                                 const assetId = readVisualAssetId(asset);
                                                 const selectedAssetId = selectedVisualAsset
                                                     ? readVisualAssetId(selectedVisualAsset)
-                                                    : 0;
+                                                    : "";
                                                 const isSelected =
-                                                    assetId > 0 && assetId === selectedAssetId;
+                                                    Boolean(assetId) && assetId === selectedAssetId;
                                                 return [
                                                     {
                                                         key: "select",

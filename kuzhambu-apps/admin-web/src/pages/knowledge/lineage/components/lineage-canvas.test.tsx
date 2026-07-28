@@ -6,7 +6,7 @@ import type { LineageNodeRecord, LineageRelationRecord } from "../lineage-types"
 const nodes: LineageNodeRecord[] = [
     {
         id: "lineage-node:1",
-        nodeId: 1,
+        nodeId: "1",
         nodeKey: "person:1",
         name: "贾代善",
         nodeType: "PERSON",
@@ -16,7 +16,7 @@ const nodes: LineageNodeRecord[] = [
     },
     {
         id: "lineage-node:2",
-        nodeId: 2,
+        nodeId: "2",
         nodeKey: "person:2",
         name: "贾政",
         nodeType: "PERSON",
@@ -29,10 +29,10 @@ const nodes: LineageNodeRecord[] = [
 const relations: LineageRelationRecord[] = [
     {
         id: "lineage-relation:10",
-        relationId: 10,
-        sourceNodeId: 1,
+        relationId: "10",
+        sourceNodeId: "1",
         sourceNodeName: "贾代善",
-        targetNodeId: 2,
+        targetNodeId: "2",
         targetNodeName: "贾政",
         relationType: "PARENT_CHILD",
         relationLabel: "父子",
@@ -50,7 +50,7 @@ describe("LineageCanvas", () => {
             <LineageCanvas
                 nodes={nodes}
                 relations={relations}
-                selectedNodeId={1}
+                selectedNodeId="1"
                 selectedRelationId={null}
                 onSelectNode={onSelectNode}
                 onSelectRelation={onSelectRelation}
@@ -61,7 +61,7 @@ describe("LineageCanvas", () => {
         expect(onSelectNode).toHaveBeenCalledWith(
             expect.objectContaining({
                 name: "贾政",
-                nodeId: 2
+                nodeId: "2"
             })
         );
 

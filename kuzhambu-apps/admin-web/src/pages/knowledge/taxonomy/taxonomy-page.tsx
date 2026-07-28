@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { App, Tabs } from "antd";
+import { useMemo } from "react";
 import { hasPermission } from "@/auth/permission-storage";
 import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm";
+import { normalizeId } from "@/types/id";
 import { CategoryEditDrawer } from "./components/category-edit-drawer";
 import { SynonymEditDrawer } from "./components/synonym-edit-drawer";
 import { TagBatchReviewPanel } from "./components/tag-batch-review-panel";
@@ -58,6 +60,7 @@ export const TaxonomyPage = () => {
     const queryClient = useQueryClient();
     const canViewTaxonomy = hasPermission("knowledge:taxonomy:view");
     const canEditTaxonomy = hasPermission("knowledge:taxonomy:edit");
+    const canViewAiPrompt = hasPermission("ai:prompt:view");
     const {
         activeTabKey,
         categoryEditDrawerOpen,
@@ -143,6 +146,12 @@ export const TaxonomyPage = () => {
         queryKey: ["knowledge", "taxonomy", "metrics", DEFAULT_GOVERNANCE_METRICS_QUERY],
         queryFn: () => service.getTagGovernanceMetrics(DEFAULT_GOVERNANCE_METRICS_QUERY),
         enabled: (canViewTaxonomy || canEditTaxonomy) && activeTabKey === "tags",
+        retry: false
+    });
+    const tagExtractionPromptVersionsQuery = useQuery({
+        queryKey: ["knowledge", "taxonomy", "tag-extraction", "prompt-versions"],
+        queryFn: service.listTagExtractionPromptVersions,
+        enabled: tagExtractionOpen && canViewAiPrompt,
         retry: false
     });
 
@@ -447,10 +456,20 @@ export const TaxonomyPage = () => {
     const reviewTags = reviewPage?.records || [];
     const synonyms = synonymPage?.records || [];
     const selectedTagIds = selectedTagRowKeys.map(String);
-    const selectedTags = tags.filter((tag) => selectedTagIds.includes(tag.id));
-    const candidateTargetTags = tags.filter((tag) => !selectedTagIds.includes(tag.id));
+    const selectedTags = tags.filter((tag) => selectedTagIds.includes(normalizeId(tag.id)));
+    const candidateTargetTags = tags.filter((tag) => !selectedTagIds.includes(normalizeId(tag.id)));
     const selectedReviewIds = selectedReviewRowKeys.map(String);
-    const selectedReviewTags = reviewTags.filter((tag) => selectedReviewIds.includes(tag.id));
+    const selectedReviewTags = reviewTags.filter((tag) =>
+        selectedReviewIds.includes(normalizeId(tag.id))
+    );
+    const tagExtractionPromptVersionOptions = useMemo(
+        () =>
+            (tagExtractionPromptVersionsQuery.data || []).map((version) => ({
+                label: `${version.templateName || "知识标签提取"} / v${version.versionNo ?? "-"}`,
+                value: version.id || ""
+            })),
+        [tagExtractionPromptVersionsQuery.data]
+    );
 
     const openCreateCategoryDrawer = () => {
         setEditingCategory(null);
@@ -776,8 +795,11 @@ export const TaxonomyPage = () => {
             {tagExtractionOpen ? (
                 <TagExtractionDrawer
                     open={tagExtractionOpen}
+                    canCustomizePromptVersion={canViewAiPrompt}
                     extracting={requestTagExtractionMutation.isPending}
                     applying={applyExtractedTagsMutation.isPending}
+                    promptVersionOptions={tagExtractionPromptVersionOptions}
+                    promptVersionsLoading={tagExtractionPromptVersionsQuery.isFetching}
                     result={tagExtractionResult}
                     onClose={closeTagExtractionDrawer}
                     onExtract={(request) => requestTagExtractionMutation.mutate(request)}

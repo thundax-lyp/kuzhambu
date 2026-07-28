@@ -19,16 +19,6 @@ const DEFAULT_PAGE_SIZE = 10;
 
 type QaConsolePanel = "health" | "sync" | "sessions" | "diagnostics";
 
-const parseNumber = (value: string) => {
-    const trimmed = value.trim();
-    if (!trimmed) {
-        return null;
-    }
-
-    const parsed = Number.parseInt(trimmed, 10);
-    return Number.isNaN(parsed) ? null : parsed;
-};
-
 const parseString = (value?: string | null) => {
     const trimmed = value?.trim() ?? "";
     return trimmed.length ? trimmed : null;
@@ -150,7 +140,7 @@ export const QaConsolePage = () => {
         }
 
         deleteSessionMutation.mutate({
-            requesterUserId: parseNumber(requesterUserId),
+            requesterUserId,
             sessionId: nextSessionId
         });
     };
@@ -189,7 +179,7 @@ export const QaConsolePage = () => {
 
         exportSessionMutation.mutate({
             format: "CSV",
-            requesterUserId: parseNumber(requesterUserId),
+            requesterUserId,
             sessionId: nextSessionId
         });
     };
@@ -255,7 +245,7 @@ export const QaConsolePage = () => {
                             onRebuild={() => rebuildMutation.mutate({})}
                             onSyncItem={(record: KnowledgeSyncItemRecord) =>
                                 syncKnowledgeMutation.mutate({
-                                    contentId: record.contentId ?? 0,
+                                    contentId: record.contentId ?? "",
                                     contentType: record.contentType ?? "",
                                     currentVersionNo: record.currentVersionNo ?? null
                                 })

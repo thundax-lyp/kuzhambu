@@ -19,7 +19,7 @@ import type { ClassicsContentTagRecord, ClassicsContentType } from "../classics-
 import { type ClassicsContentTagCommand } from "../classics-content-service";
 
 interface ClassicsContentTagPanelProps {
-    contentId: number;
+    contentId: string;
     contentType: ClassicsContentType;
     onChanged?: () => void;
     panelTitle?: string;
@@ -28,10 +28,10 @@ interface ClassicsContentTagPanelProps {
 }
 
 interface TagEditorValues {
-    contentId: number;
+    contentId: string;
     contentType: ClassicsContentType;
-    id?: number | null;
-    tagId?: number | null;
+    id?: string | null;
+    tagId?: string | null;
     tagNameSnapshot: string;
     source: string;
     status: string;
@@ -223,8 +223,10 @@ export const ClassicsContentTagPanel = ({
         }
 
         const filtered = [...tags];
-        const sourceIndex = filtered.findIndex((tag) => tag.id === sourceTag.id);
-        const targetIndex = filtered.findIndex((tag) => tag.id === targetTag.id);
+        const sourceTagId = String(sourceTag.id);
+        const targetTagId = String(targetTag.id);
+        const sourceIndex = filtered.findIndex((tag) => String(tag.id) === sourceTagId);
+        const targetIndex = filtered.findIndex((tag) => String(tag.id) === targetTagId);
         if (sourceIndex < 0 || targetIndex < 0) {
             return;
         }
@@ -239,7 +241,8 @@ export const ClassicsContentTagPanel = ({
             contentType,
             orderedIds: sorted
                 .map((tag) => tag.id)
-                .filter((id): id is number => typeof id === "number"),
+                .filter((id) => id != null && String(id).length > 0)
+                .map(String),
             sortDirection: "ASC"
         });
     };

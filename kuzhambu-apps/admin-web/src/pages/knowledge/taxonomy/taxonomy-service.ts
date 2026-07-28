@@ -1,4 +1,5 @@
 import { postJson } from "@/api/http";
+import { normalizeId } from "@/types/id";
 import type { Page } from "@/types/page";
 import type {
     SynonymRecord,
@@ -7,6 +8,8 @@ import type {
     TagCategoryRecord,
     TagDetailRecord,
     TagExtractionCandidateRecord,
+    TagExtractionPromptTemplateRecord,
+    TagExtractionPromptVersionRecord,
     TagExtractionResultRecord,
     TagGovernanceMetricsRecord,
     TagMergePreviewRecord,
@@ -14,6 +17,7 @@ import type {
 } from "./taxonomy-types";
 
 const API_PREFIX = "/knowledge/taxonomy";
+const TAG_EXTRACTION_CAPABILITY = "knowledge_tags";
 
 export interface TagCategoryPageQuery {
     pageNo?: number;
@@ -138,18 +142,18 @@ export interface TagExtractionCommand {
     sourceContentId: string;
     contentTitle?: string | null;
     contentText: string;
-    modelId: number;
+    modelId: string;
     modelName: string;
-    promptVersionId?: number | null;
+    promptVersionId?: string | null;
     maxTags?: number | null;
     allowNewTags?: boolean | null;
 }
 
 export interface TagCandidateApplyCommand {
-    aiCandidateId: number;
+    aiCandidateId: string;
     selectedTags: TagExtractionCandidateRecord[];
     reviewNote?: string | null;
-    reviewedBy?: number | null;
+    reviewedBy?: string | null;
 }
 
 export interface TagAliasCreateCommand {
@@ -314,6 +318,51 @@ export const applyExtractedTags = (request: TagCandidateApplyCommand) => {
     return postJson<boolean, TagCandidateApplyCommand>(`${API_PREFIX}/tag/extract/apply`, {
         body: request
     });
+};
+
+export const listTagExtractionPromptVersions = async () => {
+    const templates = await postJson<
+        TagExtractionPromptTemplateRecord[],
+        { capability: string; enabled: boolean }
+    >("/ai/config/prompt/template/list", {
+        body: { capability: TAG_EXTRACTION_CAPABILITY, enabled: true }
+    });
+    const versionGroups = await Promise.all(
+        (templates || [])
+            .map((template) => ({
+                ...template,
+                id: normalizeId(template.id)
+            }))
+            .filter((template) => template.id)
+            .map(async (template) => {
+                const templateId = normalizeId(template.id);
+                const versions = await postJson<TagExtractionPromptVersionRecord[], { id: string }>(
+                    "/ai/config/prompt/version/list",
+                    {
+                        body: { id: templateId }
+                    }
+                );
+                return (versions || []).map((version) => ({
+                    ...version,
+                    id: normalizeId(version.id),
+                    templateId: normalizeId(version.templateId || templateId),
+                    capability: template.capability || TAG_EXTRACTION_CAPABILITY,
+                    templateName: template.name || template.capability || templateId
+                }));
+            })
+    );
+    return versionGroups
+        .flat()
+        .filter((version) => version.id)
+        .sort((left, right) => {
+            const templateCompare = String(left.templateName || "").localeCompare(
+                String(right.templateName || "")
+            );
+            if (templateCompare !== 0) {
+                return templateCompare;
+            }
+            return (right.versionNo || 0) - (left.versionNo || 0);
+        });
 };
 
 export const getTagGovernanceMetrics = (request: TagGovernanceMetricsQuery = {}) => {

@@ -129,8 +129,8 @@ describe("taxonomy service merge contracts", () => {
 
     it("sends tag extraction and candidate apply requests", async () => {
         responseData = {
-            aiCallId: 501,
-            aiCandidateId: 601,
+            aiCallId: "501",
+            aiCandidateId: "601",
             status: "SUCCEEDED",
             resultFormat: "STRUCTURED",
             resultPayload:
@@ -141,9 +141,9 @@ describe("taxonomy service merge contracts", () => {
             sourceContentId: "1001",
             contentTitle: "条目标题",
             contentText: "正文片段",
-            modelId: 401,
+            modelId: "401",
             modelName: "gpt-5",
-            promptVersionId: 301,
+            promptVersionId: "301",
             maxTags: 8,
             allowNewTags: true
         };
@@ -151,8 +151,8 @@ describe("taxonomy service merge contracts", () => {
         const result = await service.requestTagExtraction(extractionRequest);
 
         expectLastCall("POST", "/knowledge/taxonomy/tag/extract", extractionRequest);
-        expect(result.aiCallId).toBe(501);
-        expect(result.aiCandidateId).toBe(601);
+        expect(result.aiCallId).toBe("501");
+        expect(result.aiCandidateId).toBe("601");
         expect(result.candidates).toEqual([
             {
                 name: "礼制",
@@ -166,12 +166,78 @@ describe("taxonomy service merge contracts", () => {
 
         responseData = true;
         const applyRequest = {
-            aiCandidateId: 601,
+            aiCandidateId: "601",
             selectedTags: result.candidates ?? [],
             reviewNote: "AI 审核",
-            reviewedBy: 201
+            reviewedBy: "201"
         };
         await service.applyExtractedTags(applyRequest);
         expectLastCall("POST", "/knowledge/taxonomy/tag/extract/apply", applyRequest);
+    });
+
+    it("normalizes numeric prompt template and version ids at the response boundary", async () => {
+        const responseByPath = new Map<string, unknown>([
+            ["/knowledge/taxonomy/tag/extract/apply", true],
+            [
+                "/ai/config/prompt/template/list",
+                [
+                    {
+                        id: 201,
+                        capability: "knowledge_tags",
+                        name: "知识标签提取",
+                        currentVersionNo: 3
+                    }
+                ]
+            ],
+            [
+                "/ai/config/prompt/version/list",
+                [
+                    {
+                        id: 301,
+                        templateId: 201,
+                        versionNo: 3,
+                        registeredAt: "2026-07-01T00:00:00.000Z"
+                    }
+                ]
+            ]
+        ]);
+        vi.mocked(globalThis.fetch).mockImplementation(async (input, init) => {
+            const url = readFetchUrl(input);
+            const path = url.replace(API_PREFIX, "").replace(DEV_PROXY_PREFIX, "");
+            capturedCalls.push({
+                body: readFetchBody(init?.body),
+                method: init?.method,
+                path
+            });
+            return new Response(
+                JSON.stringify({
+                    code: "COMMON-00000",
+                    message: "success",
+                    data: responseByPath.get(path) ?? true
+                }),
+                {
+                    headers: { "Content-Type": "application/json" },
+                    status: 200
+                }
+            );
+        });
+
+        const versions = await service.listTagExtractionPromptVersions();
+
+        expect(capturedCalls.at(-1)).toEqual({
+            body: { id: "201" },
+            method: "POST",
+            path: "/ai/config/prompt/version/list"
+        });
+        expect(versions).toEqual([
+            {
+                id: "301",
+                templateId: "201",
+                templateName: "知识标签提取",
+                capability: "knowledge_tags",
+                versionNo: 3,
+                registeredAt: "2026-07-01T00:00:00.000Z"
+            }
+        ]);
     });
 });

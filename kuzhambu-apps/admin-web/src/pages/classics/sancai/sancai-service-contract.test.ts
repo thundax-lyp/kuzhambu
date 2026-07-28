@@ -106,27 +106,27 @@ describe("sancai service request contracts", () => {
         });
 
         await categoryService.update({
-            id: 2,
+            id: "2",
             title: "天文",
             categoryType: "FORMAL"
         });
         expectLastCall("POST", "/classics/sancai/categories/update", {
-            id: 2,
+            id: "2",
             title: "天文",
             categoryType: "FORMAL"
         });
 
-        await categoryService.deleteById(2);
+        await categoryService.deleteById("2");
         expectLastCall("POST", "/classics/sancai/categories/delete", {
-            id: 2
+            id: "2"
         });
 
         await categoryService.sort({
-            orderedIds: [2, 3, 4],
+            orderedIds: ["2", "3", "4"],
             sortDirection: "ASC"
         });
         expectLastCall("POST", "/classics/sancai/categories/sort", {
-            orderedIds: [2, 3, 4],
+            orderedIds: ["2", "3", "4"],
             sortDirection: "ASC"
         });
     });
@@ -136,54 +136,54 @@ describe("sancai service request contracts", () => {
         expectLastCall("POST", "/classics/sancai/volumes/types/list", undefined);
 
         await volumeService.list({
-            categoryId: 2
+            categoryId: "2"
         });
         expectLastCall("POST", "/classics/sancai/volumes/list", {
-            categoryId: 2
+            categoryId: "2"
         });
 
         await volumeService.add({
-            categoryId: 2,
+            categoryId: "2",
             title: "天文卷一",
             volumeType: "MAIN"
         });
         expectLastCall("POST", "/classics/sancai/volumes/add", {
-            categoryId: 2,
+            categoryId: "2",
             title: "天文卷一",
             volumeType: "MAIN"
         });
 
         await volumeService.update({
-            id: 101,
-            categoryId: 2,
+            id: "101",
+            categoryId: "2",
             title: "天文卷一",
             volumeType: "MAIN"
         });
         expectLastCall("POST", "/classics/sancai/volumes/update", {
-            id: 101,
-            categoryId: 2,
+            id: "101",
+            categoryId: "2",
             title: "天文卷一",
             volumeType: "MAIN"
         });
 
-        await volumeService.deleteById(101);
+        await volumeService.deleteById("101");
         expectLastCall("POST", "/classics/sancai/volumes/delete", {
-            id: 101
+            id: "101"
         });
 
         await volumeService.sort({
-            orderedIds: [101, 102],
+            orderedIds: ["101", "102"],
             sortDirection: "ASC"
         });
         expectLastCall("POST", "/classics/sancai/volumes/sort", {
-            orderedIds: [101, 102],
+            orderedIds: ["101", "102"],
             sortDirection: "ASC"
         });
     });
 
     it("sends entry service requests with domain function names", async () => {
         const entryCommand = {
-            volumeId: 101,
+            volumeId: "101",
             title: "天地",
             originalText: "原文",
             translationText: "译文",
@@ -197,8 +197,8 @@ describe("sancai service request contracts", () => {
         };
 
         await entryService.list({
-            categoryId: 2,
-            volumeId: 101,
+            categoryId: "2",
+            volumeId: "101",
             keyword: "天地",
             lifecycleStatus: "PUBLISHED",
             visibility: "PUBLIC",
@@ -209,8 +209,8 @@ describe("sancai service request contracts", () => {
             sortDirection: "ASC"
         });
         expectLastCall("POST", "/classics/sancai/entries/list", {
-            categoryId: 2,
-            volumeId: 101,
+            categoryId: "2",
+            volumeId: "101",
             keyword: "天地",
             lifecycleStatus: "PUBLISHED",
             visibility: "PUBLIC",
@@ -221,93 +221,93 @@ describe("sancai service request contracts", () => {
             sortDirection: "ASC"
         });
 
-        await entryService.get(3001);
+        await entryService.get("3001");
         expectLastCall("POST", "/classics/sancai/entries/get", {
-            id: 3001
+            id: "3001"
         });
 
         await entryService.add(entryCommand);
         expectLastCall("POST", "/classics/sancai/entries/add", entryCommand);
 
         await entryService.update({
-            id: 3001,
+            id: "3001",
             ...entryCommand,
-            volumeId: 202
+            volumeId: "202"
         });
         expectLastCall("POST", "/classics/sancai/entries/update", {
-            id: 3001,
+            id: "3001",
             ...entryCommand,
-            volumeId: 202
+            volumeId: "202"
         });
 
         await entryService.changeLifecycleStatus({
-            id: 3001,
+            id: "3001",
             lifecycleStatus: "ARCHIVED"
         });
         expectLastCall("POST", "/classics/sancai/entries/lifecycle/change", {
-            id: 3001,
+            id: "3001",
             lifecycleStatus: "ARCHIVED"
         });
 
-        await entryService.deleteById(3001);
+        await entryService.deleteById("3001");
         expectLastCall("POST", "/classics/sancai/entries/delete", {
-            id: 3001
+            id: "3001"
         });
 
         await entryService.sort({
-            orderedIds: [3001, 3002],
+            orderedIds: ["3001", "3002"],
             sortDirection: "ASC"
         });
         expectLastCall("POST", "/classics/sancai/entries/sort", {
-            orderedIds: [3001, 3002],
+            orderedIds: ["3001", "3002"],
             sortDirection: "ASC"
         });
 
-        await entryService.listImages(3001);
+        await entryService.listImages("3001");
         expectLastCall("POST", "/classics/sancai/assets/images/list", {
-            entryId: 3001
+            entryId: "3001"
         });
 
         await entryService.deleteImage({
-            entryId: 3001,
-            imageId: 8002
+            entryId: "3001",
+            imageId: "8002"
         });
         expectLastCall("POST", "/classics/sancai/assets/images/delete", {
-            entryId: 3001,
-            id: 8002
+            entryId: "3001",
+            id: "8002"
         });
 
         await entryService.changeCurrentImage({
-            entryId: 3001,
-            imageId: 8002
+            entryId: "3001",
+            imageId: "8002"
         });
         expectLastCall("POST", "/classics/sancai/assets/images/current/change", {
-            entryId: 3001,
-            id: 8002
+            entryId: "3001",
+            id: "8002"
         });
 
         await entryService.sortImages({
-            entryId: 3001,
-            orderedIds: [8002, 8003],
+            entryId: "3001",
+            orderedIds: ["8002", "8003"],
             sortDirection: "ASC"
         });
         expectLastCall("POST", "/classics/sancai/assets/images/sort", {
-            entryId: 3001,
-            orderedIds: [8002, 8003],
+            entryId: "3001",
+            orderedIds: ["8002", "8003"],
             sortDirection: "ASC"
         });
 
-        await entryService.listVisualAssets(3001);
+        await entryService.listVisualAssets("3001");
         expectLastCall("POST", "/classics/sancai/assets/visual-assets/list", {
-            entryId: 3001
+            entryId: "3001"
         });
 
         await entryService.uploadImage({
             currentUsed: true,
-            entryId: 3001,
+            entryId: "3001",
             file: new File(["image-bin"], "sancai.png", { type: "image/png" }),
             imageType: "ORIGINAL",
-            replaceImageId: 8001,
+            replaceImageId: "8001",
             title: "sancai.png"
         });
         expectLastCall("POST", "/classics/sancai/assets/images/upload", {
@@ -319,23 +319,23 @@ describe("sancai service request contracts", () => {
             title: "sancai.png"
         });
 
-        expect(entryService.getImageContentUrl({ entryId: 3001, imageId: 8002 })).toBe(
+        expect(entryService.getImageContentUrl({ entryId: "3001", imageId: "8002" })).toBe(
             `${DEV_PROXY_PREFIX}/classics/sancai/assets/images/3001/8002/content`
         );
         expect(
-            entryService.getImageContentUrl({ entryId: 3001, imageId: 8002, mode: "download" })
+            entryService.getImageContentUrl({ entryId: "3001", imageId: "8002", mode: "download" })
         ).toBe(`${DEV_PROXY_PREFIX}/classics/sancai/assets/images/3001/8002/content?download=true`);
         expect(
             entryService.getVisualAssetContentUrl({
-                entryId: 3001,
-                visualAssetId: 5001,
+                entryId: "3001",
+                visualAssetId: "5001",
                 variant: "source"
             })
         ).toBe(`${DEV_PROXY_PREFIX}/classics/sancai/assets/visual-assets/3001/5001/source-content`);
         expect(
             entryService.getVisualAssetContentUrl({
-                entryId: 3001,
-                visualAssetId: 5001,
+                entryId: "3001",
+                visualAssetId: "5001",
                 variant: "generated",
                 mode: "download"
             })
@@ -344,12 +344,12 @@ describe("sancai service request contracts", () => {
         );
 
         await entryService.updateVisualAsset({
-            visualAssetId: 5001,
-            entryId: 3001,
+            visualAssetId: "5001",
+            entryId: "3001",
             versionNo: 2,
             status: "READY",
-            sourceImageStorageObjectId: 7001,
-            generatedImageStorageObjectId: 7002,
+            sourceImageStorageObjectId: "7001",
+            generatedImageStorageObjectId: "7002",
             currentUsed: true,
             textWeight: 60,
             imageWeight: 40,
@@ -359,12 +359,12 @@ describe("sancai service request contracts", () => {
             generationParamsJson: '{"style":"gongbi"}'
         });
         expectLastCall("POST", "/classics/sancai/assets/visual-assets/update", {
-            visualAssetId: 5001,
-            entryId: 3001,
+            visualAssetId: "5001",
+            entryId: "3001",
             versionNo: 2,
             status: "READY",
-            sourceImageStorageObjectId: 7001,
-            generatedImageStorageObjectId: 7002,
+            sourceImageStorageObjectId: "7001",
+            generatedImageStorageObjectId: "7002",
             currentUsed: true,
             textWeight: 60,
             imageWeight: 40,
@@ -375,29 +375,29 @@ describe("sancai service request contracts", () => {
         });
 
         await entryService.changeCurrentVisualAsset({
-            entryId: 3001,
-            visualAssetId: 5001
+            entryId: "3001",
+            visualAssetId: "5001"
         });
         expectLastCall("POST", "/classics/sancai/assets/visual-assets/current/change", {
-            entryId: 3001,
-            visualAssetId: 5001
+            entryId: "3001",
+            visualAssetId: "5001"
         });
 
-        await entryService.listVersions(3001);
+        await entryService.listVersions("3001");
         expectLastCall("POST", "/classics/sancai/entries/versions/list", {
-            id: 3001
+            id: "3001"
         });
 
-        await entryService.getVersion(3001, 9001);
+        await entryService.getVersion("3001", "9001");
         expectLastCall("POST", "/classics/sancai/entries/versions/get", {
-            id: 3001,
-            versionId: 9001
+            id: "3001",
+            versionId: "9001"
         });
 
-        await entryService.resetVersion(3001, 9001);
+        await entryService.resetVersion("3001", "9001");
         expectLastCall("POST", "/classics/sancai/entries/versions/reset", {
-            id: 3001,
-            versionId: 9001
+            id: "3001",
+            versionId: "9001"
         });
 
         await entryService.createRefinementBatch({
@@ -413,49 +413,49 @@ describe("sancai service request contracts", () => {
             totalCount: 2
         });
 
-        await entryService.getRefinementBatch(8801);
+        await entryService.getRefinementBatch("8801");
         expectLastCall("POST", "/ai/refinement/task/batch/get", {
-            batchId: 8801
+            batchId: "8801"
         });
 
-        await entryService.cancelRefinementBatch(8801);
+        await entryService.cancelRefinementBatch("8801");
         expectLastCall("POST", "/ai/refinement/task/batch/cancel", {
-            batchId: 8801
+            batchId: "8801"
         });
     });
 
     it("sends AI candidate contracts with objectId payload", async () => {
         await aiCandidateService.list({
             contentType: "SANCAI_ENTRY",
-            contentId: 3001,
-            objectId: 5001,
+            contentId: "3001",
+            objectId: "5001",
             capability: "image_analysis",
             status: "PENDING"
         });
         expectLastCall("POST", "/ai/invocation/candidate/list", {
             contentType: "SANCAI_ENTRY",
-            contentId: 3001,
-            objectId: 5001,
+            contentId: "3001",
+            objectId: "5001",
             capability: "image_analysis",
             status: "PENDING"
         });
 
         await aiCandidateService.apply({
-            candidateId: 7001,
+            candidateId: "869897501442834432",
             contentType: "SANCAI_ENTRY",
-            contentId: 3001,
+            contentId: "3001",
             capability: "image_analysis",
-            objectId: 5001,
+            objectId: "5001",
             resultFormat: "TEXT",
             resultPayload: "图片理解内容",
             changeSummary: "AI 应用：图片理解"
         });
         expectLastCall("POST", "/classics/content/ai-candidates/change", {
-            candidateId: 7001,
+            candidateId: "869897501442834432",
             contentType: "SANCAI_ENTRY",
-            contentId: 3001,
+            contentId: "3001",
             capability: "image_analysis",
-            objectId: 5001,
+            objectId: "5001",
             resultFormat: "TEXT",
             resultPayload: "图片理解内容",
             changeSummary: "AI 应用：图片理解"

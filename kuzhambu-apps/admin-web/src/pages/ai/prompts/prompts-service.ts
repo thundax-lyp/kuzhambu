@@ -1,4 +1,5 @@
 import { postJson } from "@/api/http";
+import { normalizeId } from "@/types/id";
 import type {
     AiPromptCapabilityRecord,
     AiPromptTemplateRecord,
@@ -12,7 +13,7 @@ export interface AiPromptTemplateQuery {
 }
 
 export interface AiPromptTemplateChangeCommand {
-    id?: number | null;
+    id?: string | null;
     capability: string;
     name: string;
     description?: string | null;
@@ -25,27 +26,27 @@ export interface AiPromptTemplateChangeCommand {
 }
 
 export interface AiPromptTemplateIdCommand {
-    id: number;
+    id: string;
 }
 
 export interface AiPromptVariableValidateCommand {
-    id: number;
+    id: string;
     providedNames: string[];
 }
 
 export interface AiPromptVersionCompareCommand {
-    id: number;
+    id: string;
     leftVersionNo: number;
     rightVersionNo: number;
 }
 
 export interface AiPromptVersionRollbackCommand {
-    id: number;
+    id: string;
     versionNo: number;
 }
 
 export interface AiPromptSuggestionCommand {
-    id: number;
+    id: string;
     changeSummary?: string | null;
 }
 
@@ -64,7 +65,7 @@ export const getPromptTemplateByCapability = (query: AiPromptTemplateQuery) => {
         {
             body: query
         }
-    );
+    ).then(normalizePromptTemplateRecord);
 };
 
 export const listPromptTemplates = (query: AiPromptTemplateQuery = {}) => {
@@ -73,7 +74,7 @@ export const listPromptTemplates = (query: AiPromptTemplateQuery = {}) => {
         {
             body: query
         }
-    );
+    ).then((templates) => (templates || []).map(normalizePromptTemplateRecord));
 };
 
 export const changePromptTemplate = (command: AiPromptTemplateChangeCommand) => {
@@ -82,25 +83,25 @@ export const changePromptTemplate = (command: AiPromptTemplateChangeCommand) => 
         {
             body: command
         }
-    );
+    ).then(normalizePromptTemplateRecord);
 };
 
-export const getCurrentPromptVersion = (templateId: number) => {
+export const getCurrentPromptVersion = (templateId: string) => {
     return postJson<AiPromptVersionRecord, AiPromptTemplateIdCommand>(
         "/ai/config/prompt/version/current",
         {
             body: { id: templateId }
         }
-    );
+    ).then(normalizePromptVersionRecord);
 };
 
-export const listPromptVersions = (templateId: number) => {
+export const listPromptVersions = (templateId: string) => {
     return postJson<AiPromptVersionRecord[], AiPromptTemplateIdCommand>(
         "/ai/config/prompt/version/list",
         {
             body: { id: templateId }
         }
-    );
+    ).then((versions) => (versions || []).map(normalizePromptVersionRecord));
 };
 
 export const previewPromptVersionCompare = (command: AiPromptVersionCompareCommand) => {
@@ -109,7 +110,7 @@ export const previewPromptVersionCompare = (command: AiPromptVersionCompareComma
         {
             body: command
         }
-    );
+    ).then((versions) => (versions || []).map(normalizePromptVersionRecord));
 };
 
 export const changePromptVersionRollback = (command: AiPromptVersionRollbackCommand) => {
@@ -118,16 +119,16 @@ export const changePromptVersionRollback = (command: AiPromptVersionRollbackComm
         {
             body: command
         }
-    );
+    ).then(normalizePromptVersionRecord);
 };
 
-export const listPromptVariables = (templateId: number) => {
+export const listPromptVariables = (templateId: string) => {
     return postJson<AiPromptVariableRecord[], AiPromptTemplateIdCommand>(
         "/ai/config/prompt/variable/list",
         {
             body: { id: templateId }
         }
-    );
+    ).then((variables) => (variables || []).map(normalizePromptVariableRecord));
 };
 
 export const confirmPromptVariables = (command: AiPromptVariableValidateCommand) => {
@@ -145,5 +146,26 @@ export const regeneratePromptSuggestion = (command: AiPromptSuggestionCommand) =
         {
             body: command
         }
-    );
+    ).then(normalizePromptVersionRecord);
 };
+
+const normalizePromptTemplateRecord = (
+    template: AiPromptTemplateRecord
+): AiPromptTemplateRecord => ({
+    ...template,
+    id: normalizeId(template?.id)
+});
+
+const normalizePromptVersionRecord = (version: AiPromptVersionRecord): AiPromptVersionRecord => ({
+    ...version,
+    id: normalizeId(version?.id),
+    templateId: normalizeId(version?.templateId)
+});
+
+const normalizePromptVariableRecord = (
+    variable: AiPromptVariableRecord
+): AiPromptVariableRecord => ({
+    ...variable,
+    id: normalizeId(variable?.id),
+    templateId: normalizeId(variable?.templateId)
+});

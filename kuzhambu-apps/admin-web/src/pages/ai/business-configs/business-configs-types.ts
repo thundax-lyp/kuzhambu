@@ -1,8 +1,8 @@
 export interface AiBusinessConfigRecord {
-    id?: number | null;
+    id?: string | null;
     capability: string;
-    promptTemplateId: number;
-    modelId: number;
+    promptTemplateId: string;
+    modelId: string;
     defaultParamsJson?: string | null;
     enabled?: boolean | null;
     configuredAt?: string | null;
@@ -18,7 +18,7 @@ export interface AiBusinessConfigCapabilityRecord {
 }
 
 export interface AiBusinessConfigModelRecord {
-    id: number;
+    id: string;
     apiSource: string;
     baseUrl: string;
     modelName: string;
@@ -31,7 +31,7 @@ export interface AiBusinessConfigModelRecord {
 }
 
 export interface AiBusinessConfigPromptRecord {
-    id?: number | null;
+    id?: string | null;
     capability?: string | null;
     name?: string | null;
     description?: string | null;

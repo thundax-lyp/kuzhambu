@@ -9,27 +9,27 @@ import type {
 export interface BackupLedgerQuery {
     backupType?: string | null;
     backupStatus?: string | null;
-    requesterUserId?: number | null;
+    requesterUserId?: string | null;
 }
 
 export interface BackupDetailCommand {
-    backupId: number;
+    backupId: string;
 }
 
 export interface RestoreExecuteCommand {
-    backupId: number;
+    backupId: string;
     restoreMode: OperationsRestoreMode;
 }
 
 export interface RestoreLedgerQuery {
-    backupId?: number | null;
+    backupId?: string | null;
     restoreMode?: OperationsRestoreMode | null;
     restoreStatus?: string | null;
-    requesterUserId?: number | null;
+    requesterUserId?: string | null;
 }
 
 export interface RestoreDetailCommand {
-    restoreId: number;
+    restoreId: string;
 }
 
 export const createManualBackup = () => {

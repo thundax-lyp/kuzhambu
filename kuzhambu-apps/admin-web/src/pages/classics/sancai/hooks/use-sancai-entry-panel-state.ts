@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { MessageInstance } from "antd/es/message/interface";
+import { isSameId } from "@/types/id";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import type {
     AiRefinementStreamEventRecord,
@@ -130,14 +131,14 @@ const buildPromptMessagesJson = (
 const buildInputPayloadJson = (
     capability: RefinementCapability,
     entry: SancaiEntryRecord,
-    objectId?: number | null,
+    objectId?: string | null,
     textWeight?: number | null,
     imageWeight?: number | null,
     imageAnalysisMarkdown?: string | null,
     fusionDescription?: string | null,
     visualDescription?: string | null,
     generationParamsJson?: string | null,
-    sourceImageStorageObjectId?: number | null
+    sourceImageStorageObjectId?: string | null
 ) => {
     const payload = {
         capability,
@@ -174,7 +175,7 @@ interface UseSancaiEntryPanelStateParams {
     queryClient: QueryClient;
     messageApi: MessageInstance;
     selectedEntry: SancaiEntryRecord | null | undefined;
-    selectedEntryId: number | null;
+    selectedEntryId: string | null;
     refinementTasks: AiRefinementTaskRecord[];
     invalidateEntries: () => Promise<void>;
     invalidateRefinementTasks: () => Promise<void>;
@@ -182,15 +183,15 @@ interface UseSancaiEntryPanelStateParams {
 
 interface UseSancaiEntryPanelStateResult {
     setSelectedVisualAsset: (asset: SancaiVisualAssetRecord | null) => void;
-    selectedVisualAssetId: number | null;
+    selectedVisualAssetId: string | null;
     streamingRefinementTask: AiRefinementTaskRecord | null;
     streamEvents: AiRefinementStreamEventRecord[];
     isStreamingRefinementTask: boolean;
     streamErrorText: string | null;
     creatingRefinementCapability: RefinementCapability | null;
-    retryingRefinementTaskId: number | null;
+    retryingRefinementTaskId: string | null;
     invalidateSancaiContentGovernance: () => Promise<void>;
-    invalidateSancaiContentCandidates: (visualAssetId: number | null) => Promise<void>;
+    invalidateSancaiContentCandidates: (visualAssetId: string | null) => Promise<void>;
     refreshSancaiEntryDetail: () => Promise<void>;
     createRefinementTask: (
         capability: RefinementCapability,
@@ -214,7 +215,7 @@ export const useSancaiEntryPanelState = ({
 }: UseSancaiEntryPanelStateParams): UseSancaiEntryPanelStateResult => {
     const [creatingRefinementCapability, setCreatingRefinementCapability] =
         useState<RefinementCapability | null>(null);
-    const [retryingRefinementTaskId, setRetryingRefinementTaskId] = useState<number | null>(null);
+    const [retryingRefinementTaskId, setRetryingRefinementTaskId] = useState<string | null>(null);
     const [selectedVisualAsset, setSelectedVisualAsset] = useState<SancaiVisualAssetRecord | null>(
         null
     );
@@ -227,7 +228,7 @@ export const useSancaiEntryPanelState = ({
     const selectedVisualAssetId =
         selectedVisualAsset?.visualAssetId ?? selectedVisualAsset?.id ?? null;
 
-    const handledSucceededTaskIdsRef = useRef<Set<number>>(new Set());
+    const handledSucceededTaskIdsRef = useRef<Set<string>>(new Set());
     const resetHandledSucceededTaskIds = () => {
         handledSucceededTaskIdsRef.current.clear();
     };
@@ -272,7 +273,7 @@ export const useSancaiEntryPanelState = ({
     }, [queryClient, selectedEntryId]);
 
     const invalidateSancaiContentCandidates = useCallback(
-        (visualAssetId: number | null) =>
+        (visualAssetId: string | null) =>
             queryClient.invalidateQueries({
                 queryKey: ["ai", "candidates", "SANCAI_ENTRY", selectedEntryId, visualAssetId]
             }),
@@ -289,7 +290,7 @@ export const useSancaiEntryPanelState = ({
     }, []);
 
     const refreshStreamingTaskDetail = useCallback(
-        async (taskId: number) => {
+        async (taskId: string) => {
             const task = await aiRefinementTaskService.getTask({ taskId });
             setStreamingRefinementTask(task);
             await invalidateRefinementTasks();
@@ -347,7 +348,7 @@ export const useSancaiEntryPanelState = ({
                         return current;
                     }
                     const items = current?.items || [];
-                    if (items.some((task) => task.taskId === acceptedTask.taskId)) {
+                    if (items.some((task) => isSameId(task.taskId, acceptedTask.taskId))) {
                         return current;
                     }
                     return {
@@ -360,8 +361,12 @@ export const useSancaiEntryPanelState = ({
             );
             await invalidateRefinementTasks();
             if (acceptedTask?.taskId && isStreamRefinementCapability(command.capability)) {
+                const taskId = aiRefinementTaskService.getTaskStableId(
+                    acceptedTask.taskId,
+                    acceptedTask.taskIdText
+                );
                 const task = await aiRefinementTaskService.getTask({
-                    taskId: acceptedTask.taskId
+                    taskId
                 });
                 if (task.streamEnabled === true) {
                     openStreamingRefinementTask(task);
@@ -393,7 +398,10 @@ export const useSancaiEntryPanelState = ({
         if (!streamingRefinementTask?.taskId || streamingRefinementTask.streamEnabled !== true) {
             return undefined;
         }
-        const taskId = streamingRefinementTask.taskId;
+        const taskId = aiRefinementTaskService.getTaskStableId(
+            streamingRefinementTask.taskId,
+            streamingRefinementTask.taskIdText
+        );
         const controller = new AbortController();
         streamAbortControllerRef.current = controller;
         void aiRefinementTaskService
@@ -428,7 +436,8 @@ export const useSancaiEntryPanelState = ({
     }, [
         refreshStreamingTaskDetail,
         streamingRefinementTask?.streamEnabled,
-        streamingRefinementTask?.taskId
+        streamingRefinementTask?.taskId,
+        streamingRefinementTask?.taskIdText
     ]);
 
     useEffect(() => {
@@ -436,7 +445,7 @@ export const useSancaiEntryPanelState = ({
             .filter(
                 (task) =>
                     (task.status === "SUCCEEDED" || task.status === "PARTIAL") &&
-                    typeof task.taskId === "number" &&
+                    Boolean(task.taskId) &&
                     !handledSucceededTaskIdsRef.current.has(task.taskId)
             )
             .map((task) => task.taskId);
@@ -460,7 +469,7 @@ export const useSancaiEntryPanelState = ({
         (
             capability: RefinementCapability,
             imageAnalysisAsset: SancaiVisualAssetRecord | null = null,
-            sourceTaskId: number | null = null,
+            sourceTaskId: string | null = null,
             entryDraft: TextRefinementEntryDraft | null = null
         ) => {
             if (!selectedEntry?.id) {
@@ -619,12 +628,11 @@ export const useSancaiEntryPanelState = ({
                 selectedEntry.id
             ]) || [];
         const taskAsset =
-            visualAssets.find(
-                (asset) => (asset.visualAssetId ?? asset.id ?? null) === (task.objectId ?? null)
+            visualAssets.find((asset) =>
+                isSameId(asset.visualAssetId ?? asset.id, task.objectId)
             ) ||
             (selectedVisualAsset &&
-            (selectedVisualAsset.visualAssetId ?? selectedVisualAsset.id ?? null) ===
-                (task.objectId ?? null)
+            isSameId(selectedVisualAsset.visualAssetId ?? selectedVisualAsset.id, task.objectId)
                 ? selectedVisualAsset
                 : null);
         submitRefinementTask(capability, taskAsset, task.taskId);

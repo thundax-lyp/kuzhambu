@@ -33,7 +33,7 @@ const mocks = vi.hoisted(() => ({
             sessionId: "7001",
             sources: [
                 {
-                    contentId: 1001,
+                    contentId: "1001",
                     contentType: "SANCAI_ENTRY",
                     knowledgeBase: "SANCAI_ENTRY",
                     sourceId: "SANCAI_ENTRY:1001",
@@ -112,7 +112,7 @@ describe("QaPage", () => {
         expect(screen.queryByLabelText("Trace ID")).not.toBeInTheDocument();
         await waitFor(() => {
             expect(mocks.pageQaSessions).toHaveBeenCalledWith({
-                ownerUserId: 1001,
+                ownerUserId: "1001",
                 pageNo: 1,
                 pageSize: 20,
                 scope: "PORTAL"
@@ -133,7 +133,7 @@ describe("QaPage", () => {
                     contextContentId: null,
                     contextContentType: null,
                     contextMode: "GENERAL",
-                    ownerUserId: 1001,
+                    ownerUserId: "1001",
                     requestId: null,
                     scope: "PORTAL",
                     title: "礼学和礼制有什么关系？",
@@ -173,7 +173,7 @@ describe("QaPage", () => {
             expect(mocks.createQaSessionExport).toHaveBeenCalledWith(
                 {
                     format: "CSV",
-                    ownerUserId: 1001,
+                    ownerUserId: "1001",
                     sessionId: "7001"
                 },
                 expect.anything()
@@ -236,7 +236,7 @@ describe("QaPage", () => {
         expect(await screen.findByText("礼学是什么？")).toBeInTheDocument();
         expect(screen.getByText("礼学是礼制相关的学问。")).toBeInTheDocument();
         expect(mocks.getQaSession).toHaveBeenCalledWith({
-            ownerUserId: 1001,
+            ownerUserId: "1001",
             sessionId: "7001"
         });
     });
@@ -282,7 +282,7 @@ describe("QaPage", () => {
         await waitFor(() => {
             expect(mocks.deleteQaSession).toHaveBeenCalledWith(
                 {
-                    ownerUserId: 1001,
+                    ownerUserId: "1001",
                     sessionId: "7001"
                 },
                 expect.anything()

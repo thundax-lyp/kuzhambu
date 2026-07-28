@@ -4,21 +4,23 @@ export type AiRefinementTaskStatus =
 export type AiRefinementTaskCapability = "summary" | "tags" | "qa";
 
 export interface AiRefinementTaskRecord {
-    taskId: number;
+    taskId: string;
+    taskIdText?: string | null;
     status: AiRefinementTaskStatus;
     scope?: string | null;
     capability: string;
     contentType: string;
-    contentId: number;
-    objectId?: number | null;
+    contentId: string;
+    objectId?: string | null;
     serviceRole?: string | null;
-    modelId?: number | null;
+    modelId?: string | null;
     modelName?: string | null;
-    promptVersionId?: number | null;
+    promptVersionId?: string | null;
     requestId?: string | null;
     traceId?: string | null;
-    callId?: number | null;
-    candidateId?: number | null;
+    callId?: string | null;
+    candidateId?: string | null;
+    candidateIdText?: string | null;
     failureStage?: string | null;
     errorType?: string | null;
     errorMessage?: string | null;
@@ -35,13 +37,13 @@ export interface AiRefinementTaskCreatePayload {
     capability: string;
     scope: string;
     contentType: string;
-    contentId: number;
-    objectId?: number | null;
-    serviceId?: number | null;
+    contentId: string;
+    objectId?: string | null;
+    serviceId?: string | null;
     serviceRole?: string | null;
-    modelId?: number | null;
+    modelId?: string | null;
     modelName?: string | null;
-    promptVersionId?: number | null;
+    promptVersionId?: string | null;
     requestId: string;
     traceId: string;
     promptMessagesJson: string;
@@ -54,28 +56,29 @@ export interface AiRefinementTaskCreatePayload {
 }
 
 export interface AiRefinementTaskGetPayload {
-    taskId: number;
+    taskId: string;
 }
 
 export interface AiRefinementTaskCancelPayload {
-    taskId: number;
+    taskId: string;
 }
 
 export interface AiRefinementTaskPagePayload {
     capability?: string | null;
     status?: AiRefinementTaskStatus | null;
     contentType?: string | null;
-    contentId?: number | null;
+    contentId?: string | null;
     pageNo?: number;
     pageSize?: number;
 }
 
 export interface AiRefinementTaskAcceptedRecord {
-    taskId: number;
+    taskId: string;
+    taskIdText?: string | null;
     status: AiRefinementTaskStatus;
     capability: string;
     contentType: string;
-    contentId: number;
+    contentId: string;
     requestedAt?: string | null;
 }
 

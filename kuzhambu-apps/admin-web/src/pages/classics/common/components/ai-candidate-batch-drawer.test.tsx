@@ -58,7 +58,7 @@ const renderDrawer = (onChanged: () => Promise<void> | void) => {
                 <AiCandidateBatchDrawer
                     open
                     contentType="SANCAI_ENTRY"
-                    contentIds={[3001, 3002]}
+                    contentIds={["3001", "3002"]}
                     capabilities={["summary", "image_analysis"]}
                     contentTitleById={{
                         3001: "天地",
@@ -74,17 +74,17 @@ const renderDrawer = (onChanged: () => Promise<void> | void) => {
 };
 
 const createListMock = (
-    candidatesByContentId: Record<number, Awaited<ReturnType<typeof aiCandidateService.list>>>
+    candidatesByContentId: Record<string, Awaited<ReturnType<typeof aiCandidateService.list>>>
 ) => {
     let fallbackIndex = 0;
-    const fallbackOrder = [3001, 3002];
+    const fallbackOrder = ["3001", "3002"];
 
     return vi.fn(async (query: Parameters<typeof aiCandidateService.list>[0]) => {
-        const request = query as { contentId?: number; queryKey?: unknown[] };
+        const request = query as { contentId?: string; queryKey?: unknown[] };
         const fallbackContentId = fallbackOrder[fallbackIndex++] ?? request?.contentId;
-        const contentId = request.contentId ?? request.queryKey?.at(4) ?? fallbackContentId;
+        const contentId = String(request.contentId ?? request.queryKey?.at(4) ?? fallbackContentId);
 
-        return candidatesByContentId[contentId as number] ?? [];
+        return candidatesByContentId[contentId] ?? [];
     }) as (
         query: Parameters<typeof aiCandidateService.list>[0]
     ) => Promise<Awaited<ReturnType<typeof aiCandidateService.list>>>;
@@ -107,9 +107,9 @@ describe("AiCandidateBatchDrawer", () => {
             createListMock({
                 3001: [
                     {
-                        candidateId: 7001,
+                        candidateId: "7001",
                         contentType: "SANCAI_ENTRY",
-                        contentId: 3001,
+                        contentId: "3001",
                         capability: "summary",
                         objectId: null,
                         resultFormat: "TEXT",
@@ -120,20 +120,20 @@ describe("AiCandidateBatchDrawer", () => {
                 ],
                 3002: [
                     {
-                        candidateId: 7002,
+                        candidateId: "7002",
                         contentType: "SANCAI_ENTRY",
-                        contentId: 3002,
+                        contentId: "3002",
                         capability: "image_analysis",
-                        objectId: 9002,
+                        objectId: "9002",
                         resultFormat: "TEXT",
                         resultPayload: "图像文本",
                         status: "PENDING",
                         requestedAt: "2026-07-01T10:01:00.000+08:00"
                     },
                     {
-                        candidateId: 7003,
+                        candidateId: "7003",
                         contentType: "SANCAI_ENTRY",
-                        contentId: 3002,
+                        contentId: "3002",
                         capability: "qa",
                         objectId: null,
                         resultFormat: "STRUCTURED",
@@ -157,12 +157,12 @@ describe("AiCandidateBatchDrawer", () => {
         expect(screen.getByText(/待处理候选\s*2\s*个/)).toBeInTheDocument();
         expect(aiCandidateService.list).toHaveBeenNthCalledWith(1, {
             contentType: "SANCAI_ENTRY",
-            contentId: 3001,
+            contentId: "3001",
             status: "PENDING"
         });
         expect(aiCandidateService.list).toHaveBeenNthCalledWith(2, {
             contentType: "SANCAI_ENTRY",
-            contentId: 3002,
+            contentId: "3002",
             status: "PENDING"
         });
     });
@@ -173,9 +173,9 @@ describe("AiCandidateBatchDrawer", () => {
             createListMock({
                 3001: [
                     {
-                        candidateId: 7101,
+                        candidateId: "7101",
                         contentType: "SANCAI_ENTRY",
-                        contentId: 3001,
+                        contentId: "3001",
                         capability: "summary",
                         objectId: null,
                         resultFormat: "TEXT",
@@ -185,11 +185,11 @@ describe("AiCandidateBatchDrawer", () => {
                 ],
                 3002: [
                     {
-                        candidateId: 7102,
+                        candidateId: "7102",
                         contentType: "SANCAI_ENTRY",
-                        contentId: 3002,
+                        contentId: "3002",
                         capability: "image_analysis",
-                        objectId: 8001,
+                        objectId: "8001",
                         resultFormat: "TEXT",
                         resultPayload: "有效内容",
                         status: "PENDING"
@@ -217,9 +217,9 @@ describe("AiCandidateBatchDrawer", () => {
             createListMock({
                 3001: [
                     {
-                        candidateId: 7201,
+                        candidateId: "7201",
                         contentType: "SANCAI_ENTRY",
-                        contentId: 3001,
+                        contentId: "3001",
                         capability: "summary",
                         resultPayload: "初稿",
                         resultFormat: "TEXT",
@@ -228,9 +228,9 @@ describe("AiCandidateBatchDrawer", () => {
                 ],
                 3002: [
                     {
-                        candidateId: 7202,
+                        candidateId: "7202",
                         contentType: "SANCAI_ENTRY",
-                        contentId: 3002,
+                        contentId: "3002",
                         capability: "summary",
                         resultPayload: "再次提交",
                         resultFormat: "TEXT",
@@ -244,8 +244,8 @@ describe("AiCandidateBatchDrawer", () => {
             failureCount: 1,
             failures: [
                 {
-                    candidateId: 7202,
-                    contentId: 3002,
+                    candidateId: "7202",
+                    contentId: "3002",
                     contentType: "SANCAI_ENTRY",
                     capability: "summary",
                     failureCode: "UNKNOWN",
@@ -255,10 +255,10 @@ describe("AiCandidateBatchDrawer", () => {
             successCount: 1,
             successes: [
                 {
-                    candidateId: 7201,
-                    contentId: 3001,
+                    candidateId: "7201",
+                    contentId: "3001",
                     contentType: "SANCAI_ENTRY",
-                    resultId: 9001,
+                    resultId: "9001",
                     status: "APPLIED",
                     capability: "summary"
                 }
@@ -268,9 +268,9 @@ describe("AiCandidateBatchDrawer", () => {
         vi.mocked(aiCandidateService.list)
             .mockResolvedValueOnce([
                 {
-                    candidateId: 7201,
+                    candidateId: "7201",
                     contentType: "SANCAI_ENTRY",
-                    contentId: 3001,
+                    contentId: "3001",
                     capability: "summary",
                     resultPayload: "初稿",
                     resultFormat: "TEXT",
@@ -279,9 +279,9 @@ describe("AiCandidateBatchDrawer", () => {
             ])
             .mockResolvedValueOnce([
                 {
-                    candidateId: 7202,
+                    candidateId: "7202",
                     contentType: "SANCAI_ENTRY",
-                    contentId: 3002,
+                    contentId: "3002",
                     capability: "summary",
                     resultPayload: "再次提交",
                     resultFormat: "TEXT",
@@ -304,9 +304,9 @@ describe("AiCandidateBatchDrawer", () => {
             {
                 items: [
                     {
-                        candidateId: 7201,
+                        candidateId: "7201",
                         contentType: "SANCAI_ENTRY",
-                        contentId: 3001,
+                        contentId: "3001",
                         capability: "summary",
                         objectId: undefined,
                         resultFormat: "TEXT",
@@ -314,9 +314,9 @@ describe("AiCandidateBatchDrawer", () => {
                         changeSummary: "AI 应用：summary"
                     },
                     {
-                        candidateId: 7202,
+                        candidateId: "7202",
                         contentType: "SANCAI_ENTRY",
-                        contentId: 3002,
+                        contentId: "3002",
                         capability: "summary",
                         objectId: undefined,
                         resultFormat: "TEXT",
@@ -338,11 +338,11 @@ describe("AiCandidateBatchDrawer", () => {
             createListMock({
                 3001: [
                     {
-                        candidateId: 7301,
+                        candidateId: "7301",
                         contentType: "SANCAI_ENTRY",
-                        contentId: 3001,
+                        contentId: "3001",
                         capability: "summary",
-                        objectId: 6001,
+                        objectId: "6001",
                         resultFormat: "TEXT",
                         resultPayload: "待拒绝",
                         status: "PENDING"
@@ -357,11 +357,11 @@ describe("AiCandidateBatchDrawer", () => {
             successCount: 1,
             successes: [
                 {
-                    candidateId: 7301,
-                    contentId: 3001,
+                    candidateId: "7301",
+                    contentId: "3001",
                     contentType: "SANCAI_ENTRY",
                     capability: "summary",
-                    resultId: 3001,
+                    resultId: "3001",
                     status: "REJECTED"
                 }
             ]
@@ -375,7 +375,7 @@ describe("AiCandidateBatchDrawer", () => {
                     <AiCandidateBatchDrawer
                         open
                         contentType="SANCAI_ENTRY"
-                        contentIds={[3001]}
+                        contentIds={["3001"]}
                         capabilities={["summary"]}
                         contentTitleById={{
                             3001: "天地"
@@ -401,11 +401,11 @@ describe("AiCandidateBatchDrawer", () => {
                 errorMessage: "用户已批量拒绝该 AI 候选",
                 items: [
                     {
-                        candidateId: 7301,
+                        candidateId: "7301",
                         contentType: "SANCAI_ENTRY",
-                        contentId: 3001,
+                        contentId: "3001",
                         capability: "summary",
-                        objectId: 6001
+                        objectId: "6001"
                     }
                 ]
             },

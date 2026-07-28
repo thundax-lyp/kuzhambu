@@ -1,4 +1,5 @@
 import { Table, Tag } from "antd";
+import { normalizeId } from "@/types/id";
 import type { ColumnsType } from "antd/es/table";
 import type { QualityReportAnnotationRecord } from "../quality-report-types";
 
@@ -40,7 +41,7 @@ export const QualityReportAnnotationTable = ({
             columns={columns}
             dataSource={annotations}
             pagination={false}
-            rowKey={(annotation) => annotation.annotationId}
+            rowKey={(annotation) => normalizeId(annotation.annotationId)}
         />
     );
 };

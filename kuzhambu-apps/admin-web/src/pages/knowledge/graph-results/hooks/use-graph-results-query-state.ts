@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { isPositiveDecimalId, normalizeNullableId } from "@/types/id";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import type {
     GraphEntityPageQuery,
@@ -15,12 +16,12 @@ const readGraphVersionIdFromSearch = () => {
     if (typeof window === "undefined") {
         return null;
     }
-    const versionId = Number(new URLSearchParams(window.location.search).get("graphVersionId"));
-    return Number.isFinite(versionId) && versionId > 0 ? versionId : null;
+    const versionId = new URLSearchParams(window.location.search).get("graphVersionId")?.trim();
+    return isPositiveDecimalId(versionId) ? versionId : null;
 };
 
 export const useGraphResultsQueryState = () => {
-    const [focusVersionId] = useState<number | null>(() => readGraphVersionIdFromSearch());
+    const [focusVersionId] = useState<string | null>(() => readGraphVersionIdFromSearch());
     const [activeTab, setActiveTab] = useState<GraphResultsTabKey>(
         focusVersionId ? "entities" : "versions"
     );
@@ -51,7 +52,9 @@ export const useGraphResultsQueryState = () => {
     const resolveActiveVersion = useCallback(
         (versions: GraphVersionRecord[]) => {
             const focusedVersion = focusVersionId
-                ? versions.find((version) => version.versionId === focusVersionId) || null
+                ? versions.find(
+                      (version) => normalizeNullableId(version.versionId) === focusVersionId
+                  ) || null
                 : null;
             return selectedVersion || focusedVersion;
         },
@@ -63,27 +66,28 @@ export const useGraphResultsQueryState = () => {
         setEntityQuery((current) => ({
             ...current,
             pageNo: DEFAULT_PAGE_NO,
-            versionId: version.versionId
+            versionId: normalizeNullableId(version.versionId)
         }));
         setRelationQuery((current) => ({
             ...current,
             pageNo: DEFAULT_PAGE_NO,
-            versionId: version.versionId
+            versionId: normalizeNullableId(version.versionId)
         }));
         setLineageNodeQuery((current) => ({
             ...current,
             pageNo: DEFAULT_PAGE_NO,
-            versionId: version.versionId
+            versionId: normalizeNullableId(version.versionId)
         }));
         setLineageRelationQuery((current) => ({
             ...current,
             pageNo: DEFAULT_PAGE_NO,
-            versionId: version.versionId
+            versionId: normalizeNullableId(version.versionId)
         }));
         setActiveTab("entities");
     }, []);
 
-    const activeVersionId = selectedVersion?.versionId || focusVersionId || null;
+    const activeVersionId =
+        normalizeNullableId(selectedVersion?.versionId) || focusVersionId || null;
     const effectiveEntityQuery = useMemo(
         () => ({
             ...entityQuery,

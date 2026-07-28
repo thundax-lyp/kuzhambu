@@ -68,7 +68,7 @@ const capabilities = [
 
 const models = [
     {
-        id: 900001,
+        id: "900001",
         apiSource: "OPENAI",
         baseUrl: "https://example.test/v1",
         modelName: "gpt-4o",
@@ -83,7 +83,7 @@ const models = [
 
 const prompts = [
     {
-        id: 800001,
+        id: "800001",
         capability: "classics_summary",
         name: "古籍摘要提示词",
         enabled: true,
@@ -94,10 +94,10 @@ const prompts = [
 
 const configs = [
     {
-        id: 700001,
+        id: "700001",
         capability: "classics_summary",
-        promptTemplateId: 800001,
-        modelId: 900001,
+        promptTemplateId: "800001",
+        modelId: "900001",
         defaultParamsJson: '{"temperature":0.2}',
         enabled: true,
         configuredAt: "2026-07-01T00:00:00.000Z"
@@ -154,8 +154,8 @@ describe("BusinessConfigsPage", () => {
                 {
                     id: null,
                     capability: "classics_summary",
-                    promptTemplateId: 800001,
-                    modelId: 900001,
+                    promptTemplateId: "800001",
+                    modelId: "900001",
                     defaultParamsJson: "{}",
                     enabled: true
                 },
@@ -177,10 +177,10 @@ describe("BusinessConfigsPage", () => {
         await waitFor(() => {
             expect(service.changeBusinessConfig).toHaveBeenCalledWith(
                 {
-                    id: 700001,
+                    id: "700001",
                     capability: "classics_summary",
-                    promptTemplateId: 800001,
-                    modelId: 900001,
+                    promptTemplateId: "800001",
+                    modelId: "900001",
                     defaultParamsJson: '{"temperature":0.2}',
                     enabled: true
                 },

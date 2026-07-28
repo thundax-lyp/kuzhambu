@@ -25,7 +25,7 @@ describe("operations cleanup service contracts", () => {
         await service.pageCleanups({
             cleanupType: "EXPIRED_BACKUP",
             cleanupStatus: "SUCCEEDED",
-            requesterUserId: 1001,
+            requesterUserId: "1001",
             pageNo: 1,
             pageSize: 20
         });
@@ -33,29 +33,29 @@ describe("operations cleanup service contracts", () => {
             body: {
                 cleanupType: "EXPIRED_BACKUP",
                 cleanupStatus: "SUCCEEDED",
-                requesterUserId: 1001,
+                requesterUserId: "1001",
                 pageNo: 1,
                 pageSize: 20
             }
         });
 
         postJson.mockResolvedValueOnce({
-            cleanupId: 901,
+            cleanupId: "901",
             items: [
                 {
-                    cleanupItemId: 9201,
+                    cleanupItemId: "9201",
                     targetType: "share",
-                    targetId: 201,
+                    targetId: "201",
                     itemStatus: "FAILED",
                     failureReason: "TARGET_NOT_FOUND",
                     processedAt: "2026-07-06T10:00:00Z"
                 }
             ]
         });
-        const detail = await service.getCleanupDetail({ cleanupId: 901 });
+        const detail = await service.getCleanupDetail({ cleanupId: "901" });
         expect(postJson).toHaveBeenLastCalledWith("/operations/cleanup/detail", {
             body: {
-                cleanupId: 901
+                cleanupId: "901"
             }
         });
         expect(detail.items?.[0]?.targetType).toBe("share");

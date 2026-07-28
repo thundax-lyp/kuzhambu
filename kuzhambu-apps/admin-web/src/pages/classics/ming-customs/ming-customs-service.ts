@@ -15,13 +15,13 @@ export type MingCustomsQuery = PageQuery<{
     category?: string | null;
     visibility?: string | null;
     tagName?: string | null;
-    tagId?: number | null;
+    tagId?: string | null;
     tagNameSnapshot?: string | null;
     sortDirection?: "ASC" | "DESC" | null;
 }>;
 
 export interface MingCustomsCommand {
-    id?: number | null;
+    id?: string | null;
     title?: string | null;
     category?: string | null;
     chapter?: string | null;
@@ -40,8 +40,8 @@ export interface MingCustomsTagCloudQuery {
 }
 
 interface MingCustomsVersionCommand {
-    id: number;
-    versionId?: number | null;
+    id: string;
+    versionId?: string | null;
 }
 
 export const page = (request: MingCustomsQuery = {}) => {
@@ -50,7 +50,7 @@ export const page = (request: MingCustomsQuery = {}) => {
     });
 };
 
-export const get = (id: number) => {
+export const get = (id: string) => {
     return postJson<MingCustomsRecord, MingCustomsCommand>("/classics/ming-customs/get", {
         body: { id }
     });
@@ -68,7 +68,7 @@ export const update = (request: MingCustomsCommand) => {
     });
 };
 
-export const deleteById = (id: number) => {
+export const deleteById = (id: string) => {
     return postJson<void, MingCustomsCommand>("/classics/ming-customs/delete", {
         body: { id }
     });
@@ -92,7 +92,7 @@ export const listTagCloud = (query: MingCustomsTagCloudQuery = {}) => {
     );
 };
 
-export const listVersions = (entryId: number) => {
+export const listVersions = (entryId: string) => {
     return postJson<MingCustomsContentVersionRecord[], MingCustomsVersionCommand>(
         "/classics/ming-customs/versions/list",
         {
@@ -101,7 +101,7 @@ export const listVersions = (entryId: number) => {
     );
 };
 
-export const getVersion = (entryId: number, versionId: number) => {
+export const getVersion = (entryId: string, versionId: string) => {
     return postJson<MingCustomsContentVersionRecord, MingCustomsVersionCommand>(
         "/classics/ming-customs/versions/get",
         {
@@ -113,7 +113,7 @@ export const getVersion = (entryId: number, versionId: number) => {
     );
 };
 
-export const resetVersion = (entryId: number, versionId: number) => {
+export const resetVersion = (entryId: string, versionId: string) => {
     return postJson<MingCustomsContentVersionRecord, MingCustomsVersionCommand>(
         "/classics/ming-customs/versions/reset",
         {

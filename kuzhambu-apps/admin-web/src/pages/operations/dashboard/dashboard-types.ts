@@ -9,7 +9,7 @@ export interface OperationsBucketCountRecord {
 }
 
 export interface OperationsHealthSummaryRecord {
-    checkId: number;
+    checkId: string;
     component?: string | null;
     healthStatus?: string | null;
     latencyMs?: number | null;
@@ -20,14 +20,14 @@ export interface OperationsHealthSummaryRecord {
 }
 
 export interface OperationsHealthAlertRecord {
-    alertId: number;
+    alertId: string;
     component?: string | null;
     alertType?: string | null;
     alertLevel?: OperationsHealthAlertLevel | null;
     alertStatus?: OperationsHealthAlertStatus | null;
     sourceRefType?: string | null;
-    sourceRefId?: number | null;
-    latestCheckId?: number | null;
+    sourceRefId?: string | null;
+    latestCheckId?: string | null;
     message?: string | null;
     suggestion?: string | null;
     recoveryAction?: string | null;
@@ -35,19 +35,19 @@ export interface OperationsHealthAlertRecord {
     firstTriggeredAt?: string | null;
     lastTriggeredAt?: string | null;
     ackedAt?: string | null;
-    ackedByUserId?: number | null;
+    ackedByUserId?: string | null;
     recoveredAt?: string | null;
     failureReason?: string | null;
 }
 
 export interface OperationsHealthAlertSummaryRecord {
-    alertId: number;
+    alertId: string;
     component?: string | null;
     alertType?: string | null;
     alertLevel?: OperationsHealthAlertLevel | null;
     alertStatus?: OperationsHealthAlertStatus | null;
     sourceRefType?: string | null;
-    sourceRefId?: number | null;
+    sourceRefId?: string | null;
     message?: string | null;
     suggestion?: string | null;
     recoveryAction?: string | null;
@@ -69,7 +69,7 @@ export interface OperationsTaskStatusSummaryRecord {
 }
 
 export interface OperationsTopContentRecord {
-    contentId?: number | null;
+    contentId?: string | null;
     contentType?: string | null;
     title?: string | null;
     visitCount?: number | null;

@@ -3,6 +3,7 @@ package com.thundax.kuzhambu.ai.domain.config.model.enums;
 import java.util.Locale;
 
 public enum AiApiSource {
+    OPENAI_COMPATIBLE,
     OPENAI,
     BYTEDANCE;
 

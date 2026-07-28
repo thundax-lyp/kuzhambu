@@ -7,7 +7,7 @@ import { KuzhambuSyncTaskModal } from "./kuzhambu-sync-task-modal";
 import type { KuzhambuSyncTaskAdapter } from "./kuzhambu-sync-task-modal";
 
 interface DemoTask {
-    id: number;
+    id: string;
     status: string;
 }
 
@@ -43,7 +43,7 @@ describe("KuzhambuSyncTaskModal", () => {
                 onCancel={vi.fn()}
                 workflow={{
                     ...adapter,
-                    task: { id: 1, status: "SUCCEEDED" },
+                    task: { id: "1", status: "SUCCEEDED" },
                     createTask: onCreate
                 }}
                 renderBody={() => "任务内容"}
@@ -70,7 +70,7 @@ describe("KuzhambuSyncTaskModal", () => {
                 onCancel={vi.fn()}
                 workflow={{
                     ...adapter,
-                    task: { id: 1, status: "RUNNING" },
+                    task: { id: "1", status: "RUNNING" },
                     createTask: onCreate
                 }}
                 renderBody={() => "任务内容"}
@@ -95,7 +95,7 @@ describe("KuzhambuSyncTaskModal", () => {
                 onCancel={onCancel}
                 workflow={{
                     ...adapter,
-                    task: { id: 1, status: "RUNNING" },
+                    task: { id: "1", status: "RUNNING" },
                     createTask: vi.fn()
                 }}
                 renderBody={() => "任务内容"}
@@ -121,7 +121,7 @@ describe("KuzhambuSyncTaskModal", () => {
                 onCancel={vi.fn()}
                 workflow={{
                     ...adapter,
-                    task: { id: 1, status: "SUCCEEDED" },
+                    task: { id: "1", status: "SUCCEEDED" },
                     createTask: vi.fn(),
                     fetchResult: async () => "候选结果",
                     applyResult: onApply
@@ -147,7 +147,7 @@ describe("KuzhambuSyncTaskModal", () => {
                 onCancel={vi.fn()}
                 workflow={{
                     ...adapter,
-                    task: { id: 1, status: "SUCCEEDED" },
+                    task: { id: "1", status: "SUCCEEDED" },
                     createTask: vi.fn(),
                     fetchResult: async () => {
                         throw new Error("candidate request failed");
@@ -161,7 +161,11 @@ describe("KuzhambuSyncTaskModal", () => {
         expect(screen.getByText("candidate request failed")).toBeInTheDocument();
     });
 
-    it("keeps polling a result-ready task until the result is returned", async () => {
+    it("keeps polling a waiting-result task until the result is returned", async () => {
+        const waitingResultAdapter: KuzhambuSyncTaskAdapter<DemoTask> = {
+            ...adapter,
+            getPhase: () => "waiting_result"
+        };
         const fetchResult = vi
             .fn<() => Promise<string | null>>()
             .mockResolvedValueOnce(null)
@@ -175,8 +179,8 @@ describe("KuzhambuSyncTaskModal", () => {
                 title="任务"
                 onCancel={vi.fn()}
                 workflow={{
-                    ...adapter,
-                    task: { id: 1, status: "SUCCEEDED" },
+                    ...waitingResultAdapter,
+                    task: { id: "1", status: "SUCCEEDED" },
                     createTask: vi.fn(),
                     fetchResult,
                     pollIntervalMs: 10
@@ -187,5 +191,35 @@ describe("KuzhambuSyncTaskModal", () => {
 
         expect(await screen.findByText("候选结果")).toBeInTheDocument();
         await waitFor(() => expect(fetchResult).toHaveBeenCalledTimes(2));
+    });
+
+    it("treats an empty result-ready task as terminal so users can create again", async () => {
+        const user = userEvent.setup();
+        const onCreate = vi.fn();
+        const fetchResult = vi.fn<() => Promise<string | null>>().mockResolvedValue(null);
+
+        renderWithQueryClient(
+            <KuzhambuSyncTaskModal<DemoTask, string>
+                open
+                createText="启动"
+                testId="sync-task-modal-demo"
+                title="任务"
+                onCancel={vi.fn()}
+                workflow={{
+                    ...adapter,
+                    task: { id: "1", status: "SUCCEEDED" },
+                    createTask: onCreate,
+                    fetchResult,
+                    pollIntervalMs: 10
+                }}
+                renderBody={({ tracking }) => <span>{tracking ? "等待中" : "可重试"}</span>}
+            />
+        );
+
+        expect(await screen.findByText("可重试")).toBeInTheDocument();
+        await user.click(screen.getByTestId("sync-task-modal-demo-create-button"));
+
+        expect(fetchResult).toHaveBeenCalledTimes(1);
+        expect(onCreate).toHaveBeenCalledTimes(1);
     });
 });

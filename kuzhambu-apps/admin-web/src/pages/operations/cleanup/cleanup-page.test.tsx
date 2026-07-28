@@ -90,14 +90,14 @@ describe("CleanupPage", () => {
             totalCount: 1,
             records: [
                 {
-                    cleanupId: 9101,
+                    cleanupId: "9101",
                     cleanupType: "EXPIRED_BACKUP",
                     cleanupStatus: "SUCCEEDED",
                     totalCount: 10,
                     successCount: 10,
                     failedCount: 0,
                     failureReason: null,
-                    requesterUserId: 1001,
+                    requesterUserId: "1001",
                     startedAt: "2026-06-29T10:00:00+08:00",
                     completedAt: "2026-06-29T10:05:00+08:00"
                 }
@@ -133,21 +133,21 @@ describe("CleanupPage", () => {
             totalCount: 2,
             records: [
                 {
-                    cleanupId: 9103,
+                    cleanupId: "9103",
                     cleanupType: "EXPIRED_BACKUP",
                     cleanupStatus: "SUCCEEDED",
                     requesterUserId: null
                 },
                 {
-                    cleanupId: 9104,
+                    cleanupId: "9104",
                     cleanupType: "EXPIRED_SHARE",
                     cleanupStatus: "SUCCEEDED",
-                    requesterUserId: 1001
+                    requesterUserId: "1001"
                 }
             ]
         });
         vi.mocked(service.getCleanupDetail).mockResolvedValue({
-            cleanupId: 9103,
+            cleanupId: "9103",
             cleanupType: "EXPIRED_BACKUP",
             cleanupStatus: "SUCCEEDED",
             requesterUserId: null,
@@ -200,31 +200,31 @@ describe("CleanupPage", () => {
             totalCount: 1,
             records: [
                 {
-                    cleanupId: 9102,
+                    cleanupId: "9102",
                     cleanupType: "EXPIRED_EXPORT",
                     cleanupStatus: "FAILED",
                     totalCount: 2,
                     successCount: 1,
                     failedCount: 1,
                     failureReason: "object delete denied",
-                    requesterUserId: 1001
+                    requesterUserId: "1001"
                 }
             ]
         });
         vi.mocked(service.getCleanupDetail).mockResolvedValue({
-            cleanupId: 9102,
+            cleanupId: "9102",
             cleanupType: "EXPIRED_EXPORT",
             cleanupStatus: "FAILED",
             totalCount: 2,
             successCount: 1,
             failedCount: 1,
             failureReason: "object delete denied",
-            requesterUserId: 1001,
+            requesterUserId: "1001",
             items: [
                 {
-                    cleanupItemId: 11,
+                    cleanupItemId: "11",
                     targetType: "EXPORT_OBJECT",
-                    targetId: 8801,
+                    targetId: "8801",
                     itemStatus: "FAILED",
                     failureReason: "storage object locked"
                 }

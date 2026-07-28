@@ -1,11 +1,11 @@
 export type QualityReportStatus = "PUBLISHED" | "DRAFT" | string;
 
 export interface QualityReportRecord {
-    reportId: number;
+    reportId: string;
     reportNo?: string | null;
-    graphVersionId?: number | null;
+    graphVersionId?: string | null;
     sourceContentType?: string | null;
-    sourceContentId?: number | null;
+    sourceContentId?: string | null;
     sourceCategoryCode?: string | null;
     sourceCategoryName?: string | null;
     reportStatus?: QualityReportStatus | null;
@@ -27,7 +27,7 @@ export interface QualityReportRecord {
 }
 
 export interface QualityReportIssueRecord {
-    issueId: number;
+    issueId: string;
     issueType?: string | null;
     severity?: string | null;
     objectType?: string | null;
@@ -40,12 +40,12 @@ export interface QualityReportIssueRecord {
 }
 
 export interface QualityReportSourceDetailRecord {
-    detailId: number;
+    detailId: string;
     sourceContentType?: string | null;
-    sourceContentId?: number | null;
+    sourceContentId?: string | null;
     sourceCategoryCode?: string | null;
     sourceCategoryName?: string | null;
-    graphVersionId?: number | null;
+    graphVersionId?: string | null;
     appliedAt?: number | null;
     annotationCount?: number | null;
     issueCount?: number | null;
@@ -54,10 +54,10 @@ export interface QualityReportSourceDetailRecord {
 }
 
 export interface QualityReportAnnotationRecord {
-    annotationId: number;
+    annotationId: string;
     objectType?: string | null;
     objectKey?: string | null;
-    graphVersionId?: number | null;
+    graphVersionId?: string | null;
     annotationStatus?: string | null;
     annotationLabel?: string | null;
     comment?: string | null;
@@ -74,13 +74,13 @@ export interface QualityReportDetailRecord {
 }
 
 export interface ReextractLowQualityCategoryRecord {
-    reportId?: number | null;
+    reportId?: string | null;
     sourceCategoryCode?: string | null;
     sourceCategoryName?: string | null;
     sourceContentType?: string | null;
-    sourceContentId?: number | null;
-    taskId?: number | null;
-    batchJobId?: number | null;
+    sourceContentId?: string | null;
+    taskId?: string | null;
+    batchJobId?: string | null;
     taskType?: string | null;
     triggerSource?: string | null;
     selectionScopeJson?: string | null;

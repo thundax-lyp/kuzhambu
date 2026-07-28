@@ -97,7 +97,7 @@ vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => 
 }));
 
 const template = {
-    id: 1001,
+    id: "1001",
     capability: "classics_summary",
     name: "摘要提示词",
     description: "生成摘要",
@@ -107,8 +107,8 @@ const template = {
 };
 
 const currentVersion = {
-    id: 2002,
-    templateId: 1001,
+    id: "2002",
+    templateId: "1001",
     versionNo: 2,
     messageTemplatesJson: '[{"role":"user","content":"{{title}}"}]',
     variablesSnapshotJson: '[{"variableName":"title","required":true,"priority":1}]',
@@ -120,7 +120,7 @@ const currentVersion = {
 const versions = [
     {
         ...currentVersion,
-        id: 2001,
+        id: "2001",
         versionNo: 1,
         changeSummary: "initial"
     },
@@ -129,8 +129,8 @@ const versions = [
 
 const variables = [
     {
-        id: 3001,
-        templateId: 1001,
+        id: "3001",
+        templateId: "1001",
         variableName: "title",
         required: true,
         description: "标题",

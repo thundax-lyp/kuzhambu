@@ -47,9 +47,9 @@ const installFetchRecorder = () => {
                 code: "COMMON-00000",
                 message: "success",
                 data: {
-                    candidateId: 7001,
+                    candidateId: "7001",
                     contentType: "SANCAI_ENTRY",
-                    contentId: 3001,
+                    contentId: "3001",
                     candidateIdList: [7001],
                     capability: "summary",
                     resultFormat: "TEXT",
@@ -86,8 +86,8 @@ describe("AI candidate service request contracts", () => {
     it("lists candidates by content type and id", async () => {
         await aiCandidateService.list({
             contentType: "SANCAI_ENTRY",
-            contentId: 3001,
-            objectId: 5001,
+            contentId: "3001",
+            objectId: "5001",
             capability: "summary",
             status: "PENDING"
         });
@@ -95,8 +95,8 @@ describe("AI candidate service request contracts", () => {
         expect(capturedCalls.at(-1)).toEqual({
             body: {
                 contentType: "SANCAI_ENTRY",
-                contentId: 3001,
-                objectId: 5001,
+                contentId: "3001",
+                objectId: "5001",
                 capability: "summary",
                 status: "PENDING"
             },
@@ -105,13 +105,27 @@ describe("AI candidate service request contracts", () => {
         });
     });
 
+    it("gets candidate by stable id text", async () => {
+        await aiCandidateService.get({
+            candidateId: "869897501442834432"
+        });
+
+        expect(capturedCalls.at(-1)).toEqual({
+            body: {
+                candidateId: "869897501442834432"
+            },
+            method: "POST",
+            path: "/ai/invocation/candidate/get"
+        });
+    });
+
     it("applies candidate by invoking classics content apply api", async () => {
         const command: AiCandidateApplyCommand = {
-            candidateId: 7001,
+            candidateId: "869897501442834432",
             contentType: "SANCAI_ENTRY",
-            contentId: 3001,
+            contentId: "3001",
             capability: "summary",
-            objectId: 5001,
+            objectId: "5001",
             resultFormat: "TEXT",
             resultPayload: "new summary",
             changeSummary: "AI 应用：摘要"
@@ -128,7 +142,7 @@ describe("AI candidate service request contracts", () => {
 
     it("rejects candidate with error info", async () => {
         const request: AiCandidateRejectCommand = {
-            candidateId: 7001,
+            candidateId: "869897501442834432",
             errorType: "INVALID",
             errorMessage: "invalid"
         };

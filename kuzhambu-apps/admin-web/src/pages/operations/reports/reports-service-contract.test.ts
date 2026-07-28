@@ -33,7 +33,7 @@ describe("operations reports service contracts", () => {
             reportType: "MONTHLY",
             format: "HTML",
             reportStatus: "SUCCEEDED",
-            requesterUserId: 1001,
+            requesterUserId: "1001",
             periodStart: "2026-07-01T00:00:00.000+08:00",
             periodEnd: "2026-07-31T23:59:59.000+08:00",
             pageNo: 2,
@@ -44,7 +44,7 @@ describe("operations reports service contracts", () => {
                 reportType: "MONTHLY",
                 format: "HTML",
                 reportStatus: "SUCCEEDED",
-                requesterUserId: 1001,
+                requesterUserId: "1001",
                 periodStart: "2026-07-01T00:00:00.000+08:00",
                 periodEnd: "2026-07-31T23:59:59.000+08:00",
                 pageNo: 2,
@@ -52,14 +52,14 @@ describe("operations reports service contracts", () => {
             }
         });
 
-        await service.getReportDetail({ reportId: 9001 });
+        await service.getReportDetail({ reportId: "9001" });
         expect(postJson).toHaveBeenLastCalledWith("/operations/report/detail", {
             body: {
-                reportId: 9001
+                reportId: "9001"
             }
         });
 
-        expect(service.toReportDownloadUrl(9001)).toBe(
+        expect(service.toReportDownloadUrl("9001")).toBe(
             "/kuzhambu-admin-api/api/operations/report/9001/content?download=true"
         );
     });

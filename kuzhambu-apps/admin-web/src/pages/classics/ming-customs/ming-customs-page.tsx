@@ -40,7 +40,7 @@ import "./ming-customs-page.css";
 
 const EXPORT_PAGE_SIZE = 8;
 const TASK_POLL_INTERVAL_MS = 3000;
-const DEFAULT_REFINEMENT_MODEL_ID = 1;
+const DEFAULT_REFINEMENT_MODEL_ID = "1";
 const DEFAULT_REFINEMENT_MODEL_NAME = "gpt-5.5";
 const DEFAULT_REFINEMENT_SERVICE_ROLE = "PRIMARY";
 
@@ -148,9 +148,9 @@ export const MingCustomsPage = () => {
     );
     const [mingCustomsEditDrawerOpen, setMingCustomsEditDrawerOpen] = useState(false);
     const [editingEntry, setEditingEntry] = useState<MingCustomsRecord | null>(null);
-    const [selectedEntryIds, setSelectedEntryIds] = useState<number[]>([]);
-    const [batchCandidateEntryIds, setBatchCandidateEntryIds] = useState<number[]>([]);
-    const [batchCandidateTitleById, setBatchCandidateTitleById] = useState<Record<number, string>>(
+    const [selectedEntryIds, setSelectedEntryIds] = useState<string[]>([]);
+    const [batchCandidateEntryIds, setBatchCandidateEntryIds] = useState<string[]>([]);
+    const [batchCandidateTitleById, setBatchCandidateTitleById] = useState<Record<string, string>>(
         {}
     );
     const [batchCandidateDrawerOpen, setBatchCandidateDrawerOpen] = useState(false);
@@ -161,8 +161,8 @@ export const MingCustomsPage = () => {
         useState<ClassicsBatchOperationRecord | null>(null);
     const [creatingRefinementCapability, setCreatingRefinementCapability] =
         useState<AiRefinementTaskCapability | null>(null);
-    const [selectedVersionId, setSelectedVersionId] = useState<number | null>(null);
-    const handledSucceededTaskIdsRef = useRef<Set<number>>(new Set());
+    const [selectedVersionId, setSelectedVersionId] = useState<string | null>(null);
+    const handledSucceededTaskIdsRef = useRef<Set<string>>(new Set());
     const hasActiveFilters = Boolean(
         filters.category ||
         selectedTagFilter ||
@@ -182,7 +182,7 @@ export const MingCustomsPage = () => {
     });
     const mingCustomsDetailQuery = useQuery({
         queryKey: ["ming-customs", "detail", editingEntry?.id],
-        queryFn: () => service.get(editingEntry?.id ?? 0),
+        queryFn: () => service.get(editingEntry?.id ?? ""),
         enabled:
             mingCustomsEditDrawerOpen &&
             mingCustomsEditDrawerMode === "edit" &&
@@ -191,7 +191,7 @@ export const MingCustomsPage = () => {
     });
     const versionsQuery = useQuery({
         queryKey: ["ming-customs", "versions", editingEntry?.id],
-        queryFn: () => service.listVersions(editingEntry?.id ?? 0),
+        queryFn: () => service.listVersions(editingEntry?.id ?? ""),
         enabled:
             mingCustomsEditDrawerOpen &&
             mingCustomsEditDrawerMode === "edit" &&
@@ -200,12 +200,9 @@ export const MingCustomsPage = () => {
     });
     const mingCustomsVersionDetailQuery = useQuery({
         queryKey: ["ming-customs", "versions", "detail", editingEntry?.id, selectedVersionId],
-        queryFn: () => service.getVersion(editingEntry?.id ?? 0, selectedVersionId ?? 0),
+        queryFn: () => service.getVersion(editingEntry?.id ?? "", selectedVersionId ?? ""),
         enabled:
-            mingCustomsEditDrawerOpen &&
-            Boolean(editingEntry?.id) &&
-            typeof selectedVersionId === "number" &&
-            Number.isInteger(selectedVersionId),
+            mingCustomsEditDrawerOpen && Boolean(editingEntry?.id) && Boolean(selectedVersionId),
         retry: false
     });
     const exportJobsQuery = useQuery({
@@ -255,7 +252,10 @@ export const MingCustomsPage = () => {
     const editingEntryDetail = mingCustomsDetailQuery.data || editingEntry;
     const exportJobs = exportJobsQuery.data?.records || [];
     const selectedEntries = useMemo(
-        () => records.filter((record) => selectedEntryIds.includes(record.id)),
+        () =>
+            records.filter(
+                (record) => record.id != null && selectedEntryIds.includes(String(record.id))
+            ),
         [records, selectedEntryIds]
     );
     const canShareEntries = hasClassicsContentPermission("MING_CUSTOMS", "share", hasPermission);
@@ -412,7 +412,7 @@ export const MingCustomsPage = () => {
         }
     });
     const resetVersionMutation = useMutation({
-        mutationFn: ({ entryId, versionId }: { entryId: number; versionId: number }) =>
+        mutationFn: ({ entryId, versionId }: { entryId: string; versionId: string }) =>
             service.resetVersion(entryId, versionId),
         onSuccess: async () => {
             setSelectedVersionId(null);
@@ -429,7 +429,7 @@ export const MingCustomsPage = () => {
             .filter(
                 (task) =>
                     (task.status === "SUCCEEDED" || task.status === "PARTIAL") &&
-                    typeof task.taskId === "number" &&
+                    Boolean(task.taskId) &&
                     !handledSucceededTaskIdsRef.current.has(task.taskId)
             )
             .map((task) => task.taskId);
@@ -626,12 +626,12 @@ export const MingCustomsPage = () => {
             description:
                 "删除后该记录会从列表移除，并释放其导出产物引用；已无引用的文件对象会进入 Storage 删除流程。",
             okText: "删除",
-            onConfirm: () => deleteExportMutation.mutateAsync(job.id as number)
+            onConfirm: () => deleteExportMutation.mutateAsync(job.id ?? "")
         });
     };
 
     const deleteExportJobs = (jobs: ClassicsExportJobRecord[]) => {
-        const ids = jobs.map((job) => job.id).filter((id): id is number => id != null);
+        const ids = jobs.map((job) => job.id).filter((id): id is string => Boolean(id));
         if (!ids.length) {
             return;
         }

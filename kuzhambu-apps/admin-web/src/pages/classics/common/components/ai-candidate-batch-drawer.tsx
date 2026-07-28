@@ -16,6 +16,7 @@ import { type AiCandidateCapability, type AiCandidateRecord } from "../ai-candid
 import type { ClassicsBatchOperationRecord, ClassicsContentType } from "../classics-content-types";
 import type { ClassicsAiCandidateBatchApplyCommand } from "../classics-content-service";
 import { AiCandidatePayloadEditor } from "./ai-candidate-payload-editor";
+import { normalizeId } from "@/types/id";
 
 const { Text } = Typography;
 
@@ -25,9 +26,9 @@ const REJECT_ERROR_MESSAGE = "用户已批量拒绝该 AI 候选";
 interface AiCandidateBatchDrawerProps {
     open: boolean;
     contentType: ClassicsContentType;
-    contentIds: number[];
+    contentIds: string[];
     capabilities: AiCandidateCapability[];
-    contentTitleById?: Record<number, string>;
+    contentTitleById?: Record<string, string>;
     canEdit: boolean;
     onClose: () => void;
     onChanged: () => Promise<void> | void;
@@ -64,7 +65,7 @@ const formatDateTime = (value?: string | null) => {
     return `${year}/${month}/${day} ${hour}:${minute}:${second}`;
 };
 
-const buildCandidateQueryKey = (contentType: ClassicsContentType, contentId: number) => {
+const buildCandidateQueryKey = (contentType: ClassicsContentType, contentId: string) => {
     return ["ai", "candidates", "batch", contentType, contentId];
 };
 
@@ -95,13 +96,13 @@ export const AiCandidateBatchDrawer = ({
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
 
-    const [selectedCandidateIds, setSelectedCandidateIds] = useState<number[]>([]);
-    const [payloads, setPayloads] = useState<Record<number, string>>({});
-    const [submitEnabled, setSubmitEnabled] = useState<Record<number, boolean>>({});
+    const [selectedCandidateIds, setSelectedCandidateIds] = useState<string[]>([]);
+    const [payloads, setPayloads] = useState<Record<string, string>>({});
+    const [submitEnabled, setSubmitEnabled] = useState<Record<string, boolean>>({});
     const [operationResult, setOperationResult] = useState<BatchOperationState | null>(null);
 
     const requestCandidateIds = useMemo(
-        () => Array.from(new Set(contentIds.map((contentId) => Number(contentId)))).filter(Boolean),
+        () => Array.from(new Set(contentIds)).filter(Boolean),
         [contentIds]
     );
     const capabilitySet = useMemo(() => new Set(capabilities), [capabilities]);
@@ -134,10 +135,11 @@ export const AiCandidateBatchDrawer = ({
                 capabilitySet.has(candidate.capability)
         );
 
-        const candidatesById = new Map<number, AiCandidateRecord>();
+        const candidatesById = new Map<string, AiCandidateRecord>();
         filteredCandidates.forEach((candidate) => {
-            if (!candidatesById.has(candidate.candidateId)) {
-                candidatesById.set(candidate.candidateId, candidate);
+            const candidateId = normalizeId(candidate.candidateId);
+            if (!candidatesById.has(candidateId)) {
+                candidatesById.set(candidateId, candidate);
             }
         });
 
@@ -149,20 +151,25 @@ export const AiCandidateBatchDrawer = ({
 
     const effectivePayloads = useMemo(() => {
         return Object.fromEntries(
-            pendingCandidates.map((candidate) => [
-                candidate.candidateId,
-                payloads[candidate.candidateId] ?? candidate.resultPayload?.trim() ?? ""
-            ])
+            pendingCandidates.map((candidate) => {
+                const candidateId = normalizeId(candidate.candidateId);
+                return [
+                    candidateId,
+                    payloads[candidateId] ?? candidate.resultPayload?.trim() ?? ""
+                ];
+            })
         );
     }, [payloads, pendingCandidates]);
 
     const effectiveSubmitEnabled = useMemo(() => {
         return Object.fromEntries(
-            pendingCandidates.map((candidate) => [
-                candidate.candidateId,
-                submitEnabled[candidate.candidateId] ??
-                    (candidate.resultPayload?.trim() || "").length > 0
-            ])
+            pendingCandidates.map((candidate) => {
+                const candidateId = normalizeId(candidate.candidateId);
+                return [
+                    candidateId,
+                    submitEnabled[candidateId] ?? (candidate.resultPayload?.trim() || "").length > 0
+                ];
+            })
         );
     }, [pendingCandidates, submitEnabled]);
 
@@ -215,7 +222,7 @@ export const AiCandidateBatchDrawer = ({
     const selectedCandidates = useMemo(
         () =>
             pendingCandidates.filter((candidate) =>
-                selectedCandidateIds.includes(candidate.candidateId)
+                selectedCandidateIds.includes(normalizeId(candidate.candidateId))
             ),
         [pendingCandidates, selectedCandidateIds]
     );
@@ -223,7 +230,9 @@ export const AiCandidateBatchDrawer = ({
     const canApplySelected = useMemo(
         () =>
             selectedCandidates.length > 0 &&
-            selectedCandidates.every((candidate) => effectiveSubmitEnabled[candidate.candidateId]),
+            selectedCandidates.every(
+                (candidate) => effectiveSubmitEnabled[normalizeId(candidate.candidateId)]
+            ),
         [effectiveSubmitEnabled, selectedCandidates]
     );
 
@@ -253,11 +262,11 @@ export const AiCandidateBatchDrawer = ({
 
         const payload: ClassicsAiCandidateBatchApplyCommand = {
             items: selectedCandidates.map((candidate) => {
-                const payload = effectivePayloads[candidate.candidateId] ?? "";
+                const payload = effectivePayloads[normalizeId(candidate.candidateId)] ?? "";
                 const command: AiCandidateApplyCommand = {
-                    candidateId: candidate.candidateId,
+                    candidateId: candidate.candidateIdText || String(candidate.candidateId),
                     contentType: candidate.contentType,
-                    contentId: candidate.contentId,
+                    contentId: normalizeId(candidate.contentId),
                     capability: candidate.capability,
                     objectId: candidate.objectId,
                     resultFormat:
@@ -292,9 +301,9 @@ export const AiCandidateBatchDrawer = ({
                     errorType: REJECT_ERROR_TYPE,
                     errorMessage: REJECT_ERROR_MESSAGE,
                     items: selectedCandidates.map((candidate) => ({
-                        candidateId: candidate.candidateId,
+                        candidateId: candidate.candidateIdText || String(candidate.candidateId),
                         contentType: candidate.contentType,
-                        contentId: candidate.contentId,
+                        contentId: normalizeId(candidate.contentId),
                         capability: candidate.capability,
                         objectId: candidate.objectId
                     }))
@@ -310,7 +319,7 @@ export const AiCandidateBatchDrawer = ({
         onClose();
     };
 
-    const updateCandidatePayload = (candidateId: number, payload: string) => {
+    const updateCandidatePayload = (candidateId: string, payload: string) => {
         setPayloads((currentPayloads) => {
             if (currentPayloads[candidateId] === payload) {
                 return currentPayloads;
@@ -322,7 +331,7 @@ export const AiCandidateBatchDrawer = ({
         });
     };
 
-    const updateCandidateSubmitEnabled = (candidateId: number, canSubmit: boolean) => {
+    const updateCandidateSubmitEnabled = (candidateId: string, canSubmit: boolean) => {
         setSubmitEnabled((currentSubmitEnabled) => {
             if ((currentSubmitEnabled[candidateId] ?? false) === canSubmit) {
                 return currentSubmitEnabled;
@@ -343,7 +352,8 @@ export const AiCandidateBatchDrawer = ({
                     width: 220,
                     render: (_: unknown, candidate: AiCandidateRecord) => (
                         <Text>
-                            {contentTitleById?.[candidate.contentId]?.trim() || candidate.contentId}
+                            {contentTitleById?.[normalizeId(candidate.contentId)]?.trim() ||
+                                candidate.contentId}
                         </Text>
                     )
                 },
@@ -382,7 +392,8 @@ export const AiCandidateBatchDrawer = ({
                     key: "submitStatus",
                     width: 120,
                     render: (_: unknown, candidate: AiCandidateRecord) => {
-                        const canSubmit = effectiveSubmitEnabled[candidate.candidateId];
+                        const canSubmit =
+                            effectiveSubmitEnabled[normalizeId(candidate.candidateId)];
                         return canSubmit ? (
                             <Text type="success">校验通过</Text>
                         ) : (
@@ -395,13 +406,13 @@ export const AiCandidateBatchDrawer = ({
                     key: "payload",
                     width: 420,
                     render: (_: unknown, candidate: AiCandidateRecord) => {
+                        const candidateId = normalizeId(candidate.candidateId);
                         return (
                             <AiCandidatePayloadEditor
-                                candidateId={candidate.candidateId}
+                                candidateId={candidateId}
                                 capability={candidate.capability as AiCandidateCapability}
                                 initialPayload={
-                                    effectivePayloads[candidate.candidateId] ??
-                                    candidate.resultPayload
+                                    effectivePayloads[candidateId] ?? candidate.resultPayload
                                 }
                                 onPayloadChange={updateCandidatePayload}
                                 onSubmitEnabledChange={updateCandidateSubmitEnabled}
@@ -498,12 +509,12 @@ export const AiCandidateBatchDrawer = ({
                             </Text>
                         )
                     }}
-                    rowKey="candidateId"
+                    rowKey={(candidate) => normalizeId(candidate.candidateId)}
                     rowSelection={{
                         selectedRowKeys: selectedCandidateIds,
                         preserveSelectedRowKeys: true,
                         onChange: (keys) => {
-                            setSelectedCandidateIds(keys.map((key) => Number(key)));
+                            setSelectedCandidateIds(keys.map(String));
                         }
                     }}
                     size="middle"

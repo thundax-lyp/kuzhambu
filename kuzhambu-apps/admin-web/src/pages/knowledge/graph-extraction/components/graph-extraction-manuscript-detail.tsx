@@ -20,7 +20,7 @@ interface GraphExtractionManuscriptDetailProps {
     detail?: GraphWorkbenchManuscriptRecord | null;
     extracting?: boolean;
     selectedNode?: GraphWorkbenchManuscriptNode | null;
-    onApplyCandidate: (taskId: number) => void;
+    onApplyCandidate: (taskId: string) => void;
     onExtract: (taskType: GraphExtractionTaskType) => void;
 }
 
@@ -83,9 +83,12 @@ export const GraphExtractionManuscriptDetail = ({
 
     const latestVersionId = detail?.latestGraphVersion?.versionId;
     const candidateTaskId = candidate?.taskId || detail?.latestExtractionTask?.taskId;
-    const numericCandidateTaskId = Number(candidateTaskId);
+    const normalizedCandidateTaskId =
+        candidateTaskId === null || candidateTaskId === undefined
+            ? ""
+            : String(candidateTaskId).trim();
     const canApplyCandidate =
-        Number.isFinite(numericCandidateTaskId) &&
+        Boolean(normalizedCandidateTaskId) &&
         (detail?.graphStatus === "CANDIDATE_READY" || candidate?.status === "SUCCEEDED");
 
     return (
@@ -136,7 +139,7 @@ export const GraphExtractionManuscriptDetail = ({
                             testId="knowledge-graph-extraction-manuscript-apply-candidate-button"
                             disabled={!canApply || !canApplyCandidate || !hasCandidate(candidate)}
                             loading={applying}
-                            onClick={() => onApplyCandidate(numericCandidateTaskId)}
+                            onClick={() => onApplyCandidate(normalizedCandidateTaskId)}
                         >
                             应用候选
                         </KuzhambuButton>

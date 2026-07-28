@@ -1,12 +1,13 @@
-import { InputNumber } from "antd";
+import { Input } from "antd";
 import { KuzhambuSpace, KuzhambuButton } from "@/components";
+import { isPositiveDecimalId } from "@/types/id";
 
 interface QualityReportGenerateFormProps {
     disabled?: boolean;
-    graphVersionId?: number | null;
+    graphVersionId?: string | null;
     loading?: boolean;
     submitLabel?: string;
-    onChange: (graphVersionId: number | null) => void;
+    onChange: (graphVersionId: string | null) => void;
     onGenerate: () => void;
 }
 
@@ -18,18 +19,20 @@ export const QualityReportGenerateForm = ({
     onChange,
     onGenerate
 }: QualityReportGenerateFormProps) => {
+    const normalizedGraphVersionId = graphVersionId?.trim() ?? "";
+    const isGraphVersionIdValid = isPositiveDecimalId(normalizedGraphVersionId);
+
     return (
         <KuzhambuSpace wrap size={12}>
-            <InputNumber
-                min={1}
+            <Input
                 placeholder="graphVersionId"
-                precision={0}
-                value={graphVersionId}
-                onChange={onChange}
+                value={graphVersionId ?? ""}
+                status={normalizedGraphVersionId && !isGraphVersionIdValid ? "error" : undefined}
+                onChange={(event) => onChange(event.target.value.trim() || null)}
             />
             <KuzhambuButton
                 testId="knowledge-quality-report-quality-report-generate-action-button"
-                disabled={disabled || !graphVersionId}
+                disabled={disabled || !isGraphVersionIdValid}
                 loading={loading}
                 type="primary"
                 onClick={onGenerate}

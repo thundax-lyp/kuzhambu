@@ -18,9 +18,9 @@ type CandidateContentType = "SANCAI_ENTRY" | "WANGQI_DOCUMENT" | "MING_CUSTOMS";
 
 interface AiCandidatePanelProps {
     capabilities: AiCandidateCapability[];
-    contentId: number;
+    contentId: string;
     contentType: CandidateContentType;
-    objectId?: number | null;
+    objectId?: string | null;
     onApplied?: () => void;
     onRejected?: () => void;
 }
@@ -69,6 +69,10 @@ const isSupportCapability = (capability: string): capability is AiCandidateCapab
     ].includes(capability);
 };
 
+const getCandidateStableId = (candidate: AiCandidateRecord) => {
+    return candidate.candidateIdText || String(candidate.candidateId);
+};
+
 export const AiCandidatePanel = ({
     capabilities,
     contentId,
@@ -79,10 +83,10 @@ export const AiCandidatePanel = ({
 }: AiCandidatePanelProps) => {
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
-    const [payloads, setPayloads] = useState<Record<number, string>>({});
-    const [submitEnabled, setSubmitEnabled] = useState<Record<number, boolean>>({});
-    const [applyingCandidateId, setApplyingCandidateId] = useState<number | null>(null);
-    const [rejectingCandidateId, setRejectingCandidateId] = useState<number | null>(null);
+    const [payloads, setPayloads] = useState<Record<string, string>>({});
+    const [submitEnabled, setSubmitEnabled] = useState<Record<string, boolean>>({});
+    const [applyingCandidateId, setApplyingCandidateId] = useState<string | null>(null);
+    const [rejectingCandidateId, setRejectingCandidateId] = useState<string | null>(null);
 
     const capabilityFilter = useMemo(() => toCapabilityFilterSet(capabilities), [capabilities]);
 
@@ -174,7 +178,7 @@ export const AiCandidatePanel = ({
             return;
         }
         applyMutation.mutate({
-            candidateId: candidate.candidateId,
+            candidateId: getCandidateStableId(candidate),
             contentId,
             contentType,
             capability: candidate.capability,
@@ -189,13 +193,13 @@ export const AiCandidatePanel = ({
 
     const reject = (candidate: AiCandidateRecord) => {
         rejectMutation.mutate({
-            candidateId: candidate.candidateId,
+            candidateId: getCandidateStableId(candidate),
             errorType: REJECT_ERROR_TYPE,
             errorMessage: REJECT_ERROR_MESSAGE
         });
     };
 
-    const updateCandidateSubmitEnabled = useCallback((candidateId: number, canSubmit: boolean) => {
+    const updateCandidateSubmitEnabled = useCallback((candidateId: string, canSubmit: boolean) => {
         setSubmitEnabled((currentSubmitEnabled) => {
             if ((currentSubmitEnabled[candidateId] ?? false) === canSubmit) {
                 return currentSubmitEnabled;
@@ -207,7 +211,7 @@ export const AiCandidatePanel = ({
         });
     }, []);
 
-    const updateCandidatePayload = useCallback((candidateId: number, payload: string) => {
+    const updateCandidatePayload = useCallback((candidateId: string, payload: string) => {
         setPayloads((currentPayloads) => {
             if (currentPayloads[candidateId] === payload) {
                 return currentPayloads;
@@ -237,48 +241,51 @@ export const AiCandidatePanel = ({
         <KuzhambuCard size="small" title="AI 候选确认">
             <KuzhambuList
                 dataSource={pendingCandidates}
-                renderItem={(candidate) => (
-                    <KuzhambuListItem key={candidate.candidateId}>
-                        <KuzhambuSpace orientation="vertical" style={{ width: "100%" }}>
-                            <KuzhambuSpace wrap>
-                                <span>能力：{candidate.capability}</span>
-                                <span>格式：{candidate.resultFormat || "未设置"}</span>
-                                <span>时间：{formatDateTime(candidate.requestedAt)}</span>
+                renderItem={(candidate) => {
+                    const candidateStableId = getCandidateStableId(candidate);
+                    return (
+                        <KuzhambuListItem key={candidateStableId}>
+                            <KuzhambuSpace orientation="vertical" style={{ width: "100%" }}>
+                                <KuzhambuSpace wrap>
+                                    <span>能力：{candidate.capability}</span>
+                                    <span>格式：{candidate.resultFormat || "未设置"}</span>
+                                    <span>时间：{formatDateTime(candidate.requestedAt)}</span>
+                                </KuzhambuSpace>
+                                <AiCandidatePayloadEditor
+                                    candidateId={candidate.candidateId}
+                                    capability={candidate.capability as AiCandidateCapability}
+                                    initialPayload={candidate.resultPayload}
+                                    key={`${candidate.candidateId}-${candidate.resultPayload ?? ""}`}
+                                    onPayloadChange={updateCandidatePayload}
+                                    onSubmitEnabledChange={updateCandidateSubmitEnabled}
+                                />
+                                <KuzhambuSpace wrap>
+                                    <KuzhambuButton
+                                        testId="classics-common-ai-candidate-action-button"
+                                        disabled={
+                                            applyingCandidateId === candidateStableId ||
+                                            !canApply(candidate)
+                                        }
+                                        type="primary"
+                                        onClick={() => apply(candidate)}
+                                    >
+                                        应用
+                                    </KuzhambuButton>
+                                    <KuzhambuButton
+                                        testId="classics-common-ai-candidate-action-button-2"
+                                        disabled={
+                                            rejectingCandidateId === candidateStableId ||
+                                            rejectMutation.isPending
+                                        }
+                                        onClick={() => reject(candidate)}
+                                    >
+                                        拒绝
+                                    </KuzhambuButton>
+                                </KuzhambuSpace>
                             </KuzhambuSpace>
-                            <AiCandidatePayloadEditor
-                                candidateId={candidate.candidateId}
-                                capability={candidate.capability as AiCandidateCapability}
-                                initialPayload={candidate.resultPayload}
-                                key={`${candidate.candidateId}-${candidate.resultPayload ?? ""}`}
-                                onPayloadChange={updateCandidatePayload}
-                                onSubmitEnabledChange={updateCandidateSubmitEnabled}
-                            />
-                            <KuzhambuSpace wrap>
-                                <KuzhambuButton
-                                    testId="classics-common-ai-candidate-action-button"
-                                    disabled={
-                                        applyingCandidateId === candidate.candidateId ||
-                                        !canApply(candidate)
-                                    }
-                                    type="primary"
-                                    onClick={() => apply(candidate)}
-                                >
-                                    应用
-                                </KuzhambuButton>
-                                <KuzhambuButton
-                                    testId="classics-common-ai-candidate-action-button-2"
-                                    disabled={
-                                        rejectingCandidateId === candidate.candidateId ||
-                                        rejectMutation.isPending
-                                    }
-                                    onClick={() => reject(candidate)}
-                                >
-                                    拒绝
-                                </KuzhambuButton>
-                            </KuzhambuSpace>
-                        </KuzhambuSpace>
-                    </KuzhambuListItem>
-                )}
+                        </KuzhambuListItem>
+                    );
+                }}
             />
         </KuzhambuCard>
     );

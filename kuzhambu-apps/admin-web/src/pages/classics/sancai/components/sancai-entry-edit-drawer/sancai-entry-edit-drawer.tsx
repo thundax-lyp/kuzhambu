@@ -29,10 +29,10 @@ interface SancaiEntryEditDrawerProps {
     qaContent?: ReactNode;
     tagContent?: ReactNode;
     versionContent?: ReactNode;
-    categoryOptions?: Array<{ label: string; value: number }>;
+    categoryOptions?: Array<{ label: string; value: string }>;
     entry: SancaiEntryRecord | undefined;
-    initialCategoryId?: number | null;
-    initialVolumeId?: number | null;
+    initialCategoryId?: string | null;
+    initialVolumeId?: string | null;
     isSubmitting: boolean;
     isUpdatingVisualAsset?: boolean;
     mode?: "create" | "edit";
@@ -48,7 +48,7 @@ interface SancaiEntryEditDrawerProps {
     isCreatingSummaryTask?: boolean;
     translationTasks?: AiRefinementTaskRecord[];
     summaryTasks?: AiRefinementTaskRecord[];
-    volumes?: Array<{ categoryId?: number | null; id: number; title?: string | null }>;
+    volumes?: Array<{ categoryId?: string | null; id: string; title?: string | null }>;
 }
 
 export const SancaiEntryEditDrawer = ({

@@ -17,15 +17,15 @@ const componentMocks = vi.hoisted(() => ({
         items,
         onOpenTask
     }: {
-        items: Array<{ refinementTaskId: number; sourceContentType: string }>;
-        onOpenTask: (item: { refinementTaskId: number; graphVersionId: number }) => void;
+        items: Array<{ refinementTaskId: string; sourceContentType: string }>;
+        onOpenTask: (item: { refinementTaskId: string; graphVersionId: string }) => void;
     }) => (
         <div aria-label="知识图谱精修任务表格">
             {items.map((item) => (
                 <button
                     key={item.refinementTaskId}
                     type="button"
-                    onClick={() => onOpenTask({ ...item, graphVersionId: 71 })}
+                    onClick={() => onOpenTask({ ...item, graphVersionId: "71" })}
                 >
                     {item.sourceContentType}
                 </button>
@@ -73,11 +73,11 @@ vi.mock("./refinement-service", () => ({
         count: 1,
         records: [
             {
-                refinementTaskId: 31,
-                graphVersionId: 71,
+                refinementTaskId: "31",
+                graphVersionId: "71",
                 taskType: "GRAPH",
                 sourceContentType: "SANCAI_ENTRY",
-                sourceContentId: 1001,
+                sourceContentId: "1001",
                 sourceCategoryCode: "myth",
                 sourceCategoryName: "神话",
                 status: "DRAFT",
@@ -97,11 +97,11 @@ vi.mock("./refinement-service", () => ({
     })),
     getTaskDetail: vi.fn(async () => null),
     getTaskDraft: vi.fn(async () => ({
-        refinementTaskId: 31,
-        graphVersionId: 71,
+        refinementTaskId: "31",
+        graphVersionId: "71",
         taskType: "GRAPH",
         sourceContentType: "SANCAI_ENTRY",
-        sourceContentId: 1001,
+        sourceContentId: "1001",
         sourceCategoryCode: "myth",
         sourceCategoryName: "神话",
         status: "DRAFT",
@@ -120,10 +120,10 @@ vi.mock("./refinement-service", () => ({
     addEntity: vi.fn(async () => ({})),
     addRelation: vi.fn(async () => ({})),
     applyTask: vi.fn(async () => ({
-        refinementTaskId: 31,
-        graphVersionId: 71,
+        refinementTaskId: "31",
+        graphVersionId: "71",
         taskType: "GRAPH",
-        sourceTaskId: 88,
+        sourceTaskId: "88",
         selectionScopeJson: '{"sourceContentIds":[1001]}',
         replaceUnconfirmedOnly: true,
         triggerSource: "REFINEMENT_APPLIED",
@@ -199,8 +199,8 @@ describe("RefinementPage", () => {
             expect(service.applyTask).toHaveBeenCalled();
         });
         expect(vi.mocked(service.applyTask).mock.calls[0]?.[0]).toEqual({
-            refinementTaskId: 31,
-            appliedBy: 99
+            refinementTaskId: "31",
+            appliedBy: "99"
         });
         await waitFor(() => {
             expect(screen.getByRole("link", { name: "查看图谱结果" })).toHaveAttribute(
@@ -233,9 +233,27 @@ describe("RefinementPage", () => {
             expect(service.getTaskDraft).toHaveBeenCalled();
         });
         expect(vi.mocked(service.getTaskDraft).mock.calls[0]?.[0]).toEqual({
-            graphVersionId: 71,
-            openedBy: 99
+            graphVersionId: "71",
+            openedBy: "99"
         });
         expect(await screen.findByTestId("knowledge-refinement-task-drawer")).toBeInTheDocument();
+    }, 30000);
+
+    it("ignores invalid graph version search param", async () => {
+        window.history.pushState({}, "", "/knowledge/refinement?graphVersionId=abc");
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <AntdApp>
+                    <RefinementPage />
+                </AntdApp>
+            </QueryClientProvider>
+        );
+
+        expect(await screen.findByRole("heading", { name: "知识图谱工作台" })).toBeInTheDocument();
+        await waitFor(() => {
+            expect(service.pageTasks).toHaveBeenCalled();
+            expect(service.getTaskDraft).not.toHaveBeenCalled();
+        });
     }, 30000);
 });

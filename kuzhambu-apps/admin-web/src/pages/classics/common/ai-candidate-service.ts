@@ -7,16 +7,20 @@ import type {
 
 export interface AiCandidateListQuery {
     contentType?: string | null;
-    contentId?: number | null;
-    objectId?: number | null;
+    contentId?: string | null;
+    objectId?: string | null;
     capability?: string | null;
     status?: "PENDING" | "APPLIED" | "REJECTED" | string | null;
+}
+
+export interface AiCandidateGetQuery {
+    candidateId: string;
 }
 
 export type AiCandidateApplyCommand = AiCandidateApplyPayload;
 
 export interface AiCandidateRejectCommand {
-    candidateId: number;
+    candidateId: string;
     errorType: string;
     errorMessage?: string | null;
 }
@@ -31,6 +35,12 @@ export const list = (query: AiCandidateListQuery) => {
             body: query
         }
     );
+};
+
+export const get = (query: AiCandidateGetQuery) => {
+    return postJson<AiCandidateRecord, AiCandidateGetQuery>(`${AI_INVOCATION_CANDIDATE_PATH}/get`, {
+        body: query
+    });
 };
 
 export const apply = (command: AiCandidateApplyCommand) => {

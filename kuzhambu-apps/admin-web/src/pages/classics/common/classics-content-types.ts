@@ -43,15 +43,15 @@ export const hasClassicsContentPermission = (
 };
 
 export interface ClassicsContentRef {
-    contentId: number;
+    contentId: string;
     contentType: ClassicsContentType;
 }
 
 export interface ClassicsContentTagRecord {
-    id?: number | null;
-    tagId?: number | null;
+    id?: string | null;
+    tagId?: string | null;
     contentType?: ClassicsContentType | null;
-    contentId?: number | null;
+    contentId?: string | null;
     tagNameSnapshot?: string | null;
     status?: string | null;
     source?: string | null;
@@ -59,67 +59,67 @@ export interface ClassicsContentTagRecord {
 }
 
 export interface ClassicsContentTagPayload extends ClassicsContentRef {
-    id?: number | null;
-    tagId?: number | null;
+    id?: string | null;
+    tagId?: string | null;
     tagNameSnapshot: string;
     status?: string | null;
     source?: string | null;
 }
 
 export interface ClassicsContentTagSortPayload extends ClassicsContentRef {
-    orderedIds: number[];
+    orderedIds: string[];
     sortDirection?: string | null;
 }
 
 export interface ClassicsContentTagDeletePayload {
-    id: number;
+    id: string;
 }
 
 export interface ClassicsContentQaPairRecord {
-    id?: number | null;
+    id?: string | null;
     contentType?: ClassicsContentType | null;
-    contentId?: number | null;
+    contentId?: string | null;
     question?: string | null;
     answer?: string | null;
     source?: string | null;
 }
 
 export interface ClassicsContentQaPairPayload extends ClassicsContentRef {
-    id?: number | null;
+    id?: string | null;
     question: string;
     answer: string;
     source?: string | null;
 }
 
 export interface ClassicsContentQaPairDeletePayload {
-    id: number;
+    id: string;
 }
 
 export interface ClassicsContentQaPairSortPayload {
-    orderedIds: number[];
+    orderedIds: string[];
     sortDirection?: string | null;
 }
 
 export interface ClassicsContentListPayload {
     contentType: ClassicsContentType;
-    contentId: number;
+    contentId: string;
 }
 
 export interface ClassicsBatchVisibilityPayload {
-    contentIds: number[];
+    contentIds: string[];
     contentType: ClassicsContentType;
     visibility: ClassicsContentVisibility;
 }
 
 export interface ClassicsBatchOperationItemRecord {
-    candidateId?: number | null;
-    objectId?: number | null;
+    candidateId?: string | null;
+    objectId?: string | null;
     capability?: string | null;
-    contentId: number | null;
+    contentId: string | null;
     contentType: ClassicsContentType | string | null;
     failureCode?: string | null;
     failureReason?: string | null;
-    resultId?: number | null;
+    resultId?: string | null;
     status?: string | null;
 }
 
@@ -135,11 +135,11 @@ export interface ClassicsAiCandidateBatchApplyPayload {
 }
 
 export interface ClassicsAiCandidateBatchRejectItemPayload {
-    candidateId: number;
+    candidateId: string;
     contentType: ClassicsContentType;
-    contentId: number;
+    contentId: string;
     capability: string;
-    objectId?: number | null;
+    objectId?: string | null;
 }
 
 export interface ClassicsAiCandidateBatchRejectPayload {

@@ -16,23 +16,23 @@ export type WangqiDocumentQuery = PageQuery<{
 }>;
 
 export interface WangqiDocumentCommand {
-    id?: number | null;
+    id?: string | null;
     title?: string | null;
     summary?: string | null;
     contentFormat?: string | null;
     content?: string | null;
     documentTime?: string | null;
-    storageObjectId?: number | null;
+    storageObjectId?: string | null;
     visibility?: string | null;
 }
 
 interface WangqiVersionCommand {
-    id: number;
-    versionId?: number | null;
+    id: string;
+    versionId?: string | null;
 }
 
 export interface WangqiSourceFileContentUrlCommand {
-    documentId: number;
+    documentId: string;
     mode?: WangqiSourceFileContentMode;
 }
 
@@ -42,7 +42,7 @@ export const page = (request: WangqiDocumentQuery = {}) => {
     });
 };
 
-export const get = (id: number) => {
+export const get = (id: string) => {
     return postJson<WangqiDocumentRecord, WangqiDocumentCommand>(`${DOCUMENTS_PATH}/get`, {
         body: { id }
     });
@@ -69,13 +69,13 @@ export const update = (request: WangqiDocumentCommand) => {
     });
 };
 
-export const deleteById = (id: number) => {
+export const deleteById = (id: string) => {
     return postJson<void, WangqiDocumentCommand>(`${DOCUMENTS_PATH}/delete`, {
         body: { id }
     });
 };
 
-export const uploadSourceFile = (documentId: number, file: File) => {
+export const uploadSourceFile = (documentId: string, file: File) => {
     const body = new FormData();
     body.append("file", file);
     return postFormData<WangqiSourceFileRecord>(
@@ -84,7 +84,7 @@ export const uploadSourceFile = (documentId: number, file: File) => {
     );
 };
 
-export const getSourceFile = (documentId: number) => {
+export const getSourceFile = (documentId: string) => {
     return postJson<WangqiSourceFileRecord, WangqiDocumentCommand>(
         `${DOCUMENTS_PATH}/source-file/get`,
         {
@@ -99,7 +99,7 @@ export const getSourceFileContentUrl = (request: WangqiSourceFileContentUrlComma
     return `${ADMIN_API_BASE_URL}${DOCUMENTS_PATH}/${request.documentId}/source-file/content${search}`;
 };
 
-export const listVersions = (documentId: number) => {
+export const listVersions = (documentId: string) => {
     return postJson<WangqiContentVersionRecord[], WangqiVersionCommand>(
         `${DOCUMENTS_PATH}/versions/list`,
         {
@@ -108,7 +108,7 @@ export const listVersions = (documentId: number) => {
     );
 };
 
-export const getVersion = (documentId: number, versionId: number) => {
+export const getVersion = (documentId: string, versionId: string) => {
     return postJson<WangqiContentVersionRecord, WangqiVersionCommand>(
         `${DOCUMENTS_PATH}/versions/get`,
         {
@@ -117,7 +117,7 @@ export const getVersion = (documentId: number, versionId: number) => {
     );
 };
 
-export const resetVersion = (documentId: number, versionId: number) => {
+export const resetVersion = (documentId: string, versionId: string) => {
     return postJson<WangqiContentVersionRecord, WangqiVersionCommand>(
         `${DOCUMENTS_PATH}/versions/reset`,
         {

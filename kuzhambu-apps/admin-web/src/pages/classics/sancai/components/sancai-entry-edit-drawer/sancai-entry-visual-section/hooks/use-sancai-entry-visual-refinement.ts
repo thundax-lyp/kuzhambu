@@ -104,7 +104,7 @@ const buildPromptMessagesJson = (
 const buildInputPayloadJson = (
     capability: SancaiVisualAssetRefinementCapability,
     entry: SancaiEntryRecord,
-    objectId: number | null,
+    objectId: string | null,
     asset: SancaiVisualAssetRecord
 ) => {
     const payload = {
@@ -141,7 +141,7 @@ const buildInputPayloadJson = (
 interface UseSancaiEntryVisualRefinementParams {
     entry: SancaiEntryRecord;
     selectedVisualAsset: SancaiVisualAssetRecord | null | undefined;
-    selectedVisualAssetId: number | null;
+    selectedVisualAssetId: string | null;
     visualAssetFormValue: SancaiVisualAssetRecord | null;
     onRefinementChanged: () => Promise<void> | void;
 }
@@ -157,14 +157,14 @@ export const useSancaiEntryVisualRefinement = ({
     const queryClient = useQueryClient();
     const [creatingVisualAssetCapability, setCreatingVisualAssetCapability] =
         useState<SancaiVisualAssetRefinementCapability | null>(null);
-    const [retryingRefinementTaskId, setRetryingRefinementTaskId] = useState<number | null>(null);
+    const [retryingRefinementTaskId, setRetryingRefinementTaskId] = useState<string | null>(null);
     const [streamingRefinementTask, setStreamingRefinementTask] =
         useState<AiRefinementTaskRecord | null>(null);
     const [streamEvents, setStreamEvents] = useState<AiRefinementStreamEventRecord[]>([]);
     const [isStreamingRefinementTask, setIsStreamingRefinementTask] = useState(false);
     const [streamErrorText, setStreamErrorText] = useState<string | null>(null);
     const streamAbortControllerRef = useRef<AbortController | null>(null);
-    const dismissedStreamingTaskIdsRef = useRef<Set<number>>(new Set());
+    const dismissedStreamingTaskIdsRef = useRef<Set<string>>(new Set());
     const streamingRefinementTaskId = streamingRefinementTask?.taskId ?? null;
 
     const refinementTasksQuery = useQuery({
@@ -201,7 +201,7 @@ export const useSancaiEntryVisualRefinement = ({
     }, [entry.id, queryClient]);
 
     const invalidateVisualAssetCandidates = useCallback(
-        (visualAssetId: number | null) =>
+        (visualAssetId: string | null) =>
             queryClient.invalidateQueries({
                 queryKey: ["ai", "candidates", "SANCAI_ENTRY", entry.id, visualAssetId]
             }),
@@ -221,7 +221,7 @@ export const useSancaiEntryVisualRefinement = ({
     }, [streamingRefinementTaskId]);
 
     const refreshStreamingTaskDetail = useCallback(
-        async (taskId: number) => {
+        async (taskId: string) => {
             const task = await aiRefinementTaskService.getTask({ taskId });
             setStreamingRefinementTask(task);
             await invalidateRefinementTasks();
@@ -348,7 +348,7 @@ export const useSancaiEntryVisualRefinement = ({
         (
             capability: SancaiVisualAssetRefinementCapability,
             asset: SancaiVisualAssetRecord | null,
-            sourceTaskId: number | null = null
+            sourceTaskId: string | null = null
         ) => {
             const objectId = asset?.visualAssetId ?? asset?.id ?? null;
             const sourceImageStorageObjectId = asset?.sourceImageStorageObjectId;
@@ -465,7 +465,7 @@ export const useSancaiEntryVisualRefinement = ({
         selectedVisualAssetId
     ]);
 
-    const refreshVisualAssetCandidates = (visualAssetId?: number | null) => {
+    const refreshVisualAssetCandidates = (visualAssetId?: string | null) => {
         void invalidateVisualAssetCandidates(visualAssetId ?? selectedVisualAssetId);
     };
 

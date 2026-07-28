@@ -32,10 +32,10 @@ interface MingCustomsTableProps {
     onDelete: (record: MingCustomsRecord) => void;
     onOpenEdit: (record: MingCustomsRecord) => void;
     onExport: (record: MingCustomsRecord) => void;
-    onSelectedEntryIdsChange: (ids: number[]) => void;
+    onSelectedEntryIdsChange: (ids: string[]) => void;
     onShare: (record: MingCustomsRecord) => void;
     pagination: KuzhambuTableProps<MingCustomsRecord>["pagination"];
-    selectedEntryIds: number[];
+    selectedEntryIds: string[];
 }
 
 export const MingCustomsTable = ({
@@ -152,14 +152,14 @@ export const MingCustomsTable = ({
     return (
         <KuzhambuTable<MingCustomsRecord>
             ariaLabel="明代习俗表格"
-            rowKey="id"
+            rowKey={(record) => String(record.id ?? "")}
             loading={loading}
             dataSource={dataSource}
             columns={columns}
             pagination={pagination}
             rowSelection={{
                 selectedRowKeys: selectedEntryIds,
-                onChange: (keys) => onSelectedEntryIdsChange(keys.map((key) => Number(key)))
+                onChange: (keys) => onSelectedEntryIdsChange(keys.map(String))
             }}
         />
     );

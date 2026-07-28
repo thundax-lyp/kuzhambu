@@ -32,17 +32,17 @@ const installFetchRecorder = () => {
             path: url.replace(API_PREFIX, "").replace(DEV_PROXY_PREFIX, "")
         });
         let data: unknown = {
-            id: 9001,
+            id: "9001",
             shareToken: "abc123_-",
             shareUrl: "http://localhost:5174/share/abc123_-",
             status: "ACTIVE",
             targets: [
                 {
-                    contentId: 3001,
+                    contentId: "3001",
                     contentType: "SANCAI_ENTRY",
-                    contentVersionId: 8101,
+                    contentVersionId: "8101",
                     contentVersionNo: 1,
-                    id: 7001,
+                    id: "7001",
                     titleSnapshot: "天地"
                 }
             ],
@@ -64,7 +64,7 @@ const installFetchRecorder = () => {
                 failureCount: 1,
                 failures: [
                     {
-                        contentId: 3002,
+                        contentId: "3002",
                         contentType: "SANCAI_ENTRY",
                         failureCode: "DUPLICATE_TARGET",
                         failureReason: "重复目标",
@@ -74,9 +74,9 @@ const installFetchRecorder = () => {
                 successCount: 1,
                 successes: [
                     {
-                        contentId: 3001,
+                        contentId: "3001",
                         contentType: "SANCAI_ENTRY",
-                        resultId: 9001,
+                        resultId: "9001",
                         status: "ACTIVE"
                     }
                 ]
@@ -91,8 +91,8 @@ const installFetchRecorder = () => {
                 totalPage: 1,
                 records: [
                     {
-                        id: 5001,
-                        shareLinkId: 9001,
+                        id: "5001",
+                        shareLinkId: "9001",
                         accessResult: "ALLOWED",
                         clientSnapshot: JSON.stringify({
                             accessType: "DETAIL_VIEW",
@@ -139,7 +139,7 @@ describe("classics share service request contracts", () => {
         const response = await shareService.create({
             targets: [
                 {
-                    contentId: 3001,
+                    contentId: "3001",
                     contentType: "SANCAI_ENTRY"
                 }
             ],
@@ -151,7 +151,7 @@ describe("classics share service request contracts", () => {
             body: {
                 targets: [
                     {
-                        contentId: 3001,
+                        contentId: "3001",
                         contentType: "SANCAI_ENTRY"
                     }
                 ],
@@ -170,11 +170,11 @@ describe("classics share service request contracts", () => {
             status: "ACTIVE",
             targets: [
                 {
-                    contentId: 3001,
+                    contentId: "3001",
                     contentType: "SANCAI_ENTRY"
                 },
                 {
-                    contentId: 3002,
+                    contentId: "3002",
                     contentType: "SANCAI_ENTRY"
                 }
             ],
@@ -189,11 +189,11 @@ describe("classics share service request contracts", () => {
                 status: "ACTIVE",
                 targets: [
                     {
-                        contentId: 3001,
+                        contentId: "3001",
                         contentType: "SANCAI_ENTRY"
                     },
                     {
-                        contentId: 3002,
+                        contentId: "3002",
                         contentType: "SANCAI_ENTRY"
                     }
                 ],
@@ -206,14 +206,14 @@ describe("classics share service request contracts", () => {
         });
         expect(response.successCount).toBe(1);
         expect(response.successes[0]).toMatchObject({
-            contentId: 3001,
+            contentId: "3001",
             contentType: "SANCAI_ENTRY",
-            resultId: 9001,
+            resultId: "9001",
             status: "ACTIVE"
         });
         expect(response.failureCount).toBe(1);
         expect(response.failures[0]).toMatchObject({
-            contentId: 3002,
+            contentId: "3002",
             contentType: "SANCAI_ENTRY",
             failureCode: "DUPLICATE_TARGET",
             failureReason: "重复目标"
@@ -240,10 +240,10 @@ describe("classics share service request contracts", () => {
     });
 
     it("gets a share by id", async () => {
-        await shareService.get(9001);
+        await shareService.get("9001");
         expect(capturedCalls.at(-1)).toEqual({
             body: {
-                id: 9001
+                id: "9001"
             },
             method: "POST",
             path: "/classics/shares/get"
@@ -252,12 +252,12 @@ describe("classics share service request contracts", () => {
 
     it("updates share status by id", async () => {
         await shareService.updateStatus({
-            id: 9001,
+            id: "9001",
             status: "ACTIVE"
         });
         expect(capturedCalls.at(-1)).toEqual({
             body: {
-                id: 9001,
+                id: "9001",
                 status: "ACTIVE"
             },
             method: "POST",
@@ -269,15 +269,15 @@ describe("classics share service request contracts", () => {
         const response = await shareService.pageAccessRecords({
             pageNo: 1,
             pageSize: 10,
-            shareLinkId: 9001,
-            shareTargetId: 7001
+            shareLinkId: "9001",
+            shareTargetId: "7001"
         });
         expect(capturedCalls.at(-1)).toEqual({
             body: {
                 pageNo: 1,
                 pageSize: 10,
-                shareLinkId: 9001,
-                shareTargetId: 7001
+                shareLinkId: "9001",
+                shareTargetId: "7001"
             },
             method: "POST",
             path: "/classics/shares/access-records/page"

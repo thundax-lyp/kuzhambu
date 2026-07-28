@@ -11,6 +11,7 @@ import {
     KuzhambuCard
 } from "@/components";
 
+import { isPositiveDecimalId, normalizeNullableId } from "@/types/id";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import { QualityReportGenerateForm } from "./components/quality-report-generate-form";
 import { QualityReportAnnotationTable } from "./components/quality-report-annotation-table";
@@ -30,7 +31,7 @@ import "./quality-report-page.css";
 
 const { Text, Title } = Typography;
 const QUALITY_REEXTRACT_TASK_TYPE = "GRAPH";
-const QUALITY_REEXTRACT_MODEL_ID = 1;
+const QUALITY_REEXTRACT_MODEL_ID = "1";
 const QUALITY_REEXTRACT_MODEL_NAME = "gpt-5.5";
 const QUALITY_REEXTRACT_PROMPT_MESSAGES_JSON =
     '[{"role":"system","content":"extract knowledge graph from quality report low quality category"}]';
@@ -40,10 +41,10 @@ const readGraphVersionIdFromSearch = () => {
     if (typeof window === "undefined") {
         return null;
     }
-    const graphVersionId = Number(
-        new URLSearchParams(window.location.search).get("graphVersionId")
-    );
-    return Number.isFinite(graphVersionId) && graphVersionId > 0 ? graphVersionId : null;
+    const graphVersionId = new URLSearchParams(window.location.search)
+        .get("graphVersionId")
+        ?.trim();
+    return isPositiveDecimalId(graphVersionId) ? graphVersionId : null;
 };
 
 const readRegenerateModeFromSearch = () => {
@@ -69,7 +70,7 @@ export const QualityReportPage = () => {
     const canGenerate = hasPermission("knowledge:quality-report:generate");
     const canReextract = hasPermission("knowledge:graph:edit");
     const [regenerateMode] = useState(() => readRegenerateModeFromSearch());
-    const [graphVersionId, setGraphVersionId] = useState<number | null>(() =>
+    const [graphVersionId, setGraphVersionId] = useState<string | null>(() =>
         readGraphVersionIdFromSearch()
     );
     const [detailReport, setDetailReport] = useState<QualityReportDetailRecord | null>(null);
@@ -102,7 +103,7 @@ export const QualityReportPage = () => {
         }
     });
     const generateMutation = useMutation({
-        mutationFn: (targetGraphVersionId: number) =>
+        mutationFn: (targetGraphVersionId: string) =>
             service.generateReport({
                 graphVersionId: targetGraphVersionId,
                 generatedBy: 1
@@ -126,7 +127,8 @@ export const QualityReportPage = () => {
 
     const currentReportDetail = detailReport || latestReportQuery.data || null;
     const currentReport = currentReportDetail?.report || null;
-    const staleGraphVersionId = currentReport?.graphVersionId || graphVersionId || null;
+    const staleGraphVersionId =
+        normalizeNullableId(currentReport?.graphVersionId) || graphVersionId || null;
     const reportItems = reportPageQuery.data?.records || [];
 
     const reextractMutation = useMutation({
@@ -146,7 +148,7 @@ export const QualityReportPage = () => {
                 modelName: QUALITY_REEXTRACT_MODEL_NAME,
                 promptMessagesJson: QUALITY_REEXTRACT_PROMPT_MESSAGES_JSON,
                 inputPayloadJson: QUALITY_REEXTRACT_INPUT_PAYLOAD_JSON,
-                requestedBy: 1
+                requestedBy: "1"
             });
         },
         onSuccess: (task) => {
@@ -194,7 +196,7 @@ export const QualityReportPage = () => {
                         loading={generateMutation.isPending}
                         submitLabel={regenerateMode ? "重新生成报告" : "生成报告"}
                         onChange={setGraphVersionId}
-                        onGenerate={() => generateMutation.mutate(graphVersionId || 0)}
+                        onGenerate={() => generateMutation.mutate(graphVersionId || "")}
                     />
                 </KuzhambuCard>
 

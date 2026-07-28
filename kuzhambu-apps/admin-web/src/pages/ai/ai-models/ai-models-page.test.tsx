@@ -40,7 +40,7 @@ vi.mock("@/components/kuzhambu-drawer", () => {
 
 const models = [
     {
-        id: 2001,
+        id: "2001",
         apiSource: "OPENAI",
         baseUrl: "https://api.primary.example",
         apiKeyConfigured: true,
@@ -86,7 +86,7 @@ describe("AiModelsPage", () => {
         expect(screen.getByText("维护 AI 模型、供应商、能力和调用参数。")).toBeInTheDocument();
         expect(await screen.findByText("GPT 4o")).toBeInTheDocument();
         expect(screen.getByText("gpt-4o")).toBeInTheDocument();
-        expect(screen.getByText("OpenAI 兼容")).toBeInTheDocument();
+        expect(screen.getByText("OpenAI 兼容（旧）")).toBeInTheDocument();
         expect(screen.getByText("文本生成")).toBeInTheDocument();
         expect(screen.getByText("图像理解")).toBeInTheDocument();
         expect(screen.getByRole("columnheader", { name: "模型名称" })).toBeInTheDocument();
@@ -108,7 +108,7 @@ describe("AiModelsPage", () => {
         vi.mocked(service.listAiModels).mockResolvedValue([
             models[0],
             {
-                id: 2002,
+                id: "2002",
                 apiSource: "BYTEDANCE",
                 baseUrl: "https://api.secondary.example",
                 apiKeyConfigured: true,
@@ -135,7 +135,7 @@ describe("AiModelsPage", () => {
         await waitFor(() => {
             expect(service.changeAiModel).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    id: 2001,
+                    id: "2001",
                     modelName: "gpt-4o",
                     enabled: false
                 }),

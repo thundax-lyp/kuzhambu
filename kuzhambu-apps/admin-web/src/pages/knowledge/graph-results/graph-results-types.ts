@@ -1,26 +1,26 @@
 export interface GraphVersionRecord {
-    versionId: number;
+    versionId: string;
     taskId?: string | null;
-    candidateId?: number | null;
+    candidateId?: string | null;
     taskType?: string | null;
     sourceContentType?: string | null;
-    sourceContentId?: number | null;
+    sourceContentId?: string | null;
     versionNo?: number | null;
     status?: string | null;
     appliedAt?: number | null;
     refinementApplied?: boolean | null;
-    lastRefinementTaskId?: number | null;
+    lastRefinementTaskId?: string | null;
     lastRefinementAppliedAt?: number | null;
 }
 
 export interface GraphEntityRecord {
-    entityId: number;
+    entityId: string;
     entityKey?: string | null;
     name?: string | null;
     entityType?: string | null;
     description?: string | null;
     confirmationStatus?: string | null;
-    latestVersionId?: number | null;
+    latestVersionId?: string | null;
     sourceRefsJson?: string | null;
     firstExtractedAt?: number | null;
     lastExtractedAt?: number | null;
@@ -28,14 +28,14 @@ export interface GraphEntityRecord {
 }
 
 export interface GraphRelationRecord {
-    relationId: number;
+    relationId: string;
     relationKey?: string | null;
     sourceName?: string | null;
     targetName?: string | null;
     relationType?: string | null;
     evidence?: string | null;
     confirmationStatus?: string | null;
-    latestVersionId?: number | null;
+    latestVersionId?: string | null;
     sourceRefsJson?: string | null;
     firstExtractedAt?: number | null;
     lastExtractedAt?: number | null;
@@ -43,14 +43,14 @@ export interface GraphRelationRecord {
 }
 
 export interface GraphLineageNodeRecord {
-    nodeId: number;
+    nodeId: string;
     nodeKey?: string | null;
     name?: string | null;
     nodeType?: string | null;
     generation?: number | null;
     gender?: string | null;
     confirmationStatus?: string | null;
-    latestVersionId?: number | null;
+    latestVersionId?: string | null;
     sourceRefsJson?: string | null;
     firstExtractedAt?: number | null;
     lastExtractedAt?: number | null;
@@ -58,14 +58,14 @@ export interface GraphLineageNodeRecord {
 }
 
 export interface GraphLineageRelationRecord {
-    relationId: number;
+    relationId: string;
     relationKey?: string | null;
     sourceName?: string | null;
     targetName?: string | null;
     relationType?: string | null;
     evidence?: string | null;
     confirmationStatus?: string | null;
-    latestVersionId?: number | null;
+    latestVersionId?: string | null;
     sourceRefsJson?: string | null;
     firstExtractedAt?: number | null;
     lastExtractedAt?: number | null;

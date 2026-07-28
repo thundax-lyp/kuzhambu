@@ -4,6 +4,7 @@ import { App, Empty, Input, Typography } from "antd";
 import { useCallback, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
+import { isSameId, normalizeId, normalizeNullableId } from "@/types/id";
 import {
     KuzhambuAlert,
     KuzhambuButton,
@@ -62,10 +63,16 @@ const QA_TASK_ALERT_TYPES: Record<string, "success" | "info" | "warning" | "erro
 };
 
 const sortTasksByNewest = (left: AiRefinementTaskRecord, right: AiRefinementTaskRecord) => {
-    if (left.requestedAt && right.requestedAt && left.requestedAt !== right.requestedAt) {
-        return right.requestedAt.localeCompare(left.requestedAt);
-    }
-    return right.taskId - left.taskId;
+    return aiRefinementTaskService.sortNewestByRequestedAtThenId({
+        left: {
+            id: aiRefinementTaskService.getTaskStableId(left.taskId, left.taskIdText),
+            requestedAt: left.requestedAt
+        },
+        right: {
+            id: aiRefinementTaskService.getTaskStableId(right.taskId, right.taskIdText),
+            requestedAt: right.requestedAt
+        }
+    });
 };
 
 const isQaTaskActive = (task?: AiRefinementTaskRecord | null) => {
@@ -99,22 +106,30 @@ const getQaTaskDescription = (task: AiRefinementTaskRecord) => {
 
 const selectLatestQaCandidate = (
     candidates: AiCandidateRecord[] | undefined,
-    trackedCandidateId?: number | null
+    trackedCandidateId?: string | null
 ) => {
+    const normalizedTrackedCandidateId = normalizeNullableId(trackedCandidateId);
     return [...(candidates || [])]
         .filter(
             (candidate) =>
                 candidate.capability === "qa" &&
                 candidate.status === "PENDING" &&
-                (!trackedCandidateId || candidate.candidateId === trackedCandidateId) &&
+                (!normalizedTrackedCandidateId ||
+                    isSameId(candidate.candidateId, normalizedTrackedCandidateId)) &&
                 typeof candidate.resultPayload === "string" &&
                 candidate.resultPayload.trim().length > 0
         )
         .sort((left, right) => {
-            if (left.requestedAt && right.requestedAt && left.requestedAt !== right.requestedAt) {
-                return right.requestedAt.localeCompare(left.requestedAt);
-            }
-            return right.candidateId - left.candidateId;
+            return aiRefinementTaskService.sortNewestByRequestedAtThenId({
+                left: {
+                    id: left.candidateIdText || left.candidateId,
+                    requestedAt: left.requestedAt
+                },
+                right: {
+                    id: right.candidateIdText || right.candidateId,
+                    requestedAt: right.requestedAt
+                }
+            });
         })[0];
 };
 
@@ -123,7 +138,7 @@ const defaultResultFormatForQa = (candidate?: AiCandidateRecord) => {
 };
 
 const qaTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = {
-    getId: (task) => task.taskId,
+    getId: (task) => aiRefinementTaskService.getTaskStableId(task.taskId, task.taskIdText),
     getMessage: getQaTaskDescription,
     getPhase: (task) => {
         if (isQaTaskActive(task)) {
@@ -140,7 +155,7 @@ const qaTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = {
         }
         return "tracking";
     },
-    getResultKey: (task) => task.candidateId,
+    getResultKey: (task) => normalizeId(task.candidateId),
     getStatusLabel: (task) => {
         const statusLabel = QA_TASK_STATUS_LABELS[task.status] || task.status;
         return `问答任务${statusLabel}`;
@@ -240,8 +255,8 @@ export const WangqiQaAiModal = ({
     const { message: messageApi } = App.useApp();
     const queryClient = useQueryClient();
     const [isOpen, setIsOpen] = useState(false);
-    const [candidatePayloads, setCandidatePayloads] = useState<Record<number, string>>({});
-    const [candidateSubmitEnabled, setCandidateSubmitEnabled] = useState<Record<number, boolean>>(
+    const [candidatePayloads, setCandidatePayloads] = useState<Record<string, string>>({});
+    const [candidateSubmitEnabled, setCandidateSubmitEnabled] = useState<Record<string, boolean>>(
         {}
     );
     const qaTrackingTaskId = qaTrackingTask?.taskId;
@@ -264,7 +279,7 @@ export const WangqiQaAiModal = ({
         return [...qaTasks].filter((task) => task.capability === "qa").sort(sortTasksByNewest)[0];
     }, [qaTasks]);
     const trackedQaTaskFromList = useMemo(() => {
-        return qaTasks.find((task) => task.taskId === qaTrackingTaskId);
+        return qaTasks.find((task) => isSameId(task.taskId, qaTrackingTaskId));
     }, [qaTasks, qaTrackingTaskId]);
 
     const latestQaTask = trackedQaTaskFromList || qaTrackingTask || latestQaTaskFromList;
@@ -327,7 +342,7 @@ export const WangqiQaAiModal = ({
         return selectLatestQaCandidate(candidates, trackedCandidateId) ?? null;
     };
 
-    const updateCandidatePayload = useCallback((candidateId: number, payload: string) => {
+    const updateCandidatePayload = useCallback((candidateId: string, payload: string) => {
         setCandidatePayloads((currentPayloads) => {
             if (currentPayloads[candidateId] === payload) {
                 return currentPayloads;
@@ -339,7 +354,7 @@ export const WangqiQaAiModal = ({
         });
     }, []);
 
-    const updateCandidateSubmitEnabled = useCallback((candidateId: number, canSubmit: boolean) => {
+    const updateCandidateSubmitEnabled = useCallback((candidateId: string, canSubmit: boolean) => {
         setCandidateSubmitEnabled((currentSubmitEnabled) => {
             if ((currentSubmitEnabled[candidateId] ?? false) === canSubmit) {
                 return currentSubmitEnabled;
@@ -356,14 +371,14 @@ export const WangqiQaAiModal = ({
             messageApi.warning("暂无可采用的候选问答");
             return;
         }
-        const payload =
-            candidatePayloads[candidate.candidateId] || candidate.resultPayload?.trim() || "";
-        if (!payload || !candidateSubmitEnabled[candidate.candidateId]) {
+        const candidateId = normalizeId(candidate.candidateId);
+        const payload = candidatePayloads[candidateId] || candidate.resultPayload?.trim() || "";
+        if (!payload || !candidateSubmitEnabled[candidateId]) {
             messageApi.warning("请先确认候选问答内容");
             return;
         }
         applyMutation.mutate({
-            candidateId: candidate.candidateId,
+            candidateId: candidate.candidateIdText || normalizeId(candidate.candidateId),
             contentId: document.id,
             contentType: "WANGQI_DOCUMENT",
             capability: "qa",
@@ -396,7 +411,7 @@ export const WangqiQaAiModal = ({
                     tracking ||
                     resultLoading ||
                     !result ||
-                    !candidateSubmitEnabled[result.candidateId]
+                    !candidateSubmitEnabled[normalizeId(result.candidateId)]
                 }
                 applyTestId="classics-wangqi-document-qa-ai-apply-button"
                 createAriaLabel="生成问答"
@@ -410,8 +425,7 @@ export const WangqiQaAiModal = ({
                     task: latestQaTask,
                     createTask: createQaTask,
                     fetchResult: loadQaCandidate,
-                    fetchTask: (taskId) =>
-                        aiRefinementTaskService.getTask({ taskId: Number(taskId) }),
+                    fetchTask: (taskId) => aiRefinementTaskService.getTask({ taskId }),
                     applyResult: applyCandidate,
                     onTaskChange,
                     pollIntervalMs: QA_CANDIDATE_POLL_INTERVAL_MS,
@@ -444,7 +458,7 @@ export const WangqiQaAiModal = ({
                                 {result ? (
                                     <AiCandidatePayloadEditor
                                         key={`${result.candidateId}-${result.resultPayload ?? ""}`}
-                                        candidateId={result.candidateId}
+                                        candidateId={normalizeId(result.candidateId)}
                                         capability="qa"
                                         initialPayload={result.resultPayload}
                                         disabled={creating || tracking || resultLoading}

@@ -5,7 +5,7 @@ import type { OperationsCleanupRecord } from "./cleanup-types";
 export interface CleanupPageQuery {
     cleanupType?: string | null;
     cleanupStatus?: string | null;
-    requesterUserId?: number | null;
+    requesterUserId?: string | null;
 }
 
 export interface CleanupExecuteCommand {
@@ -13,7 +13,7 @@ export interface CleanupExecuteCommand {
 }
 
 export interface CleanupDetailCommand {
-    cleanupId: number;
+    cleanupId: string;
 }
 
 export const requestCleanup = (command: CleanupExecuteCommand) => {

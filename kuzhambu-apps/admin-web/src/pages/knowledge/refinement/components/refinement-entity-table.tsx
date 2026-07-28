@@ -1,5 +1,6 @@
 import { Table, Tag } from "antd";
 import { KuzhambuSpaceCompact, KuzhambuButton } from "@/components";
+import { normalizeId } from "@/types/id";
 import type { ColumnsType } from "antd/es/table";
 import type { RefinementEntityRecord } from "../refinement-types";
 
@@ -93,7 +94,9 @@ export const RefinementEntityTable = ({
                 columns={columns}
                 dataSource={entities}
                 pagination={false}
-                rowKey={(entity) => entity.draftId || entity.entityKey || entity.name || "entity"}
+                rowKey={(entity) =>
+                    normalizeId(entity.draftId || entity.entityKey || entity.name || "entity")
+                }
             />
         </>
     );

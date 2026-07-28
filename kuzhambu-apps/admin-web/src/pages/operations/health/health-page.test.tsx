@@ -41,7 +41,7 @@ describe("OperationsHealthPage", () => {
             count: 2,
             records: [
                 {
-                    checkId: 9101,
+                    checkId: "9101",
                     component: "admin-starter",
                     healthStatus: "UP",
                     latencyMs: 32,
@@ -52,7 +52,7 @@ describe("OperationsHealthPage", () => {
                     checkedAt: "2026-07-01T01:00:00+08:00"
                 },
                 {
-                    checkId: 9102,
+                    checkId: "9102",
                     component: "search-worker",
                     healthStatus: "DOWN",
                     latencyMs: null,
@@ -70,11 +70,11 @@ describe("OperationsHealthPage", () => {
             count: 1,
             records: [
                 {
-                    alertId: 9201,
+                    alertId: "9201",
                     component: "admin-starter",
                     alertLevel: "CRITICAL",
                     alertStatus: "ACTIVE",
-                    latestCheckId: 9101,
+                    latestCheckId: "9101",
                     message: "health down",
                     suggestion: "check probe",
                     recoveryAction: "OPEN_HEALTH_DETAIL",
@@ -172,7 +172,7 @@ describe("OperationsHealthPage", () => {
             count: 30,
             records: [
                 {
-                    checkId: 9101,
+                    checkId: "9101",
                     component: "admin-starter",
                     healthStatus: "DEGRADED",
                     probeSource: "HTTP",
@@ -243,7 +243,7 @@ describe("OperationsHealthPage", () => {
             count: 1,
             records: [
                 {
-                    checkId: 9103,
+                    checkId: "9103",
                     component: "empty-detail",
                     healthStatus: "UP",
                     detailsJson: null
@@ -266,7 +266,7 @@ describe("OperationsHealthPage", () => {
 
         await waitFor(() => {
             expect(service.getOperationsHealthAlerts).toHaveBeenCalledWith({
-                latestCheckId: 9101,
+                latestCheckId: "9101",
                 pageNo: 1,
                 pageSize: 10
             });
@@ -288,11 +288,11 @@ describe("OperationsHealthPage", () => {
 
         await waitFor(() => {
             expect(service.confirmOperationsHealthAlert).toHaveBeenCalledWith(
-                { alertId: 9201 },
+                { alertId: "9201" },
                 expect.anything()
             );
             expect(service.recoverOperationsHealthAlert).toHaveBeenCalledWith(
-                { alertId: 9201 },
+                { alertId: "9201" },
                 expect.anything()
             );
         });

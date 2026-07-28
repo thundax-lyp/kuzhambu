@@ -21,13 +21,13 @@ export interface DiscoveryQaSessionPageQuery {
 }
 
 export interface DiscoveryQaSessionDeleteCommand {
-    requesterUserId?: number | null;
+    requesterUserId?: string | null;
     sessionId: string;
 }
 
 export interface DiscoveryQaSessionExportCommand {
     format?: string | null;
-    requesterUserId?: number | null;
+    requesterUserId?: string | null;
     sessionId: string;
 }
 
@@ -37,7 +37,7 @@ export interface KnowledgeRebuildCommand {
 }
 
 export interface KnowledgeSyncContentCommand {
-    contentId: number;
+    contentId: string;
     contentType: string;
     currentVersionNo?: number | null;
     requestId?: string | null;

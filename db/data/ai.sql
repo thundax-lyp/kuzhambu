@@ -4,8 +4,8 @@ INSERT INTO `ai_model` (
     `id`, `api_source`, `base_url`, `encrypted_api_key`, `model_name`, `display_name`, `capabilities_json`,
     `default_params_json`, `description`, `enabled`, `registered_at`
 ) VALUES
-    (900101, 'OPENAI', '', NULL, 'CTYUN-CX-Qwen3.5-397B-A17B', '天翼千问 3.5 397B', '["TEXT2TEXT","IMAGE2TEXT"]', '{"temperature":0.2,"max_tokens":4096}', 'Default OpenAI-compatible vision-capable model for classics AI.', 1, '2026-02-27 04:00:00.000'),
-    (900102, 'OPENAI', '', NULL, 'CTYUN-bot-DeepSeek-V3.2-pro', '天翼 DeepSeek V3.2 Pro', '["TEXT2TEXT"]', '{"temperature":0.2,"max_tokens":4096}', 'Default OpenAI-compatible LLM from local server configuration.', 1, '2026-02-27 04:00:00.000'),
+    (900101, 'OPENAI_COMPATIBLE', '', NULL, 'CTYUN-CX-Qwen3.5-397B-A17B', '天翼千问 3.5 397B', '["TEXT2TEXT","IMAGE2TEXT"]', '{"temperature":0.2,"max_tokens":4096}', 'Default OpenAI-compatible vision-capable model for classics AI.', 1, '2026-02-27 04:00:00.000'),
+    (900102, 'OPENAI_COMPATIBLE', '', NULL, 'CTYUN-bot-DeepSeek-V3.2-pro', '天翼 DeepSeek V3.2 Pro', '["TEXT2TEXT"]', '{"temperature":0.2,"max_tokens":4096}', 'Default OpenAI-compatible LLM from local server configuration.', 1, '2026-02-27 04:00:00.000'),
     (900201, 'BYTEDANCE', '', NULL, 'doubao-seedream-5-0-pro-260628', '豆包 Seedream 5.0 Pro', '["TEXT2IMAGE"]', '{"response_format":"url","size":"2K","stream":false,"watermark":true}', 'Default ByteDance text-to-image model.', 1, '2026-02-27 04:00:00.000')
 ON DUPLICATE KEY UPDATE
     `api_source` = VALUES(`api_source`),

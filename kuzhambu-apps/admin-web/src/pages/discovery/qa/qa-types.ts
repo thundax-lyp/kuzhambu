@@ -1,5 +1,5 @@
 export interface DiscoveryQaSessionRecord {
-    contextContentId?: number | null;
+    contextContentId?: string | null;
     contextContentType?: string | null;
     contextMode?: string | null;
     lastMessageAt?: number | null;
@@ -34,14 +34,14 @@ export interface DiscoveryQaSessionPageRecord {
 export interface DiscoveryQaExportSessionRecord {
     completedAt?: number | null;
     contentType?: string | null;
-    exportId?: number | null;
+    exportId?: string | null;
     exportStatus?: string | null;
     failureReason?: string | null;
     filename?: string | null;
     format?: string | null;
     requestedAt?: number | null;
     sessionId?: string | null;
-    storageObjectId?: number | null;
+    storageObjectId?: string | null;
 }
 
 export interface DiscoveryQaChatMessage {
@@ -50,7 +50,7 @@ export interface DiscoveryQaChatMessage {
 }
 
 export interface DiscoveryQaChatMetadata {
-    contextContentId?: number | null;
+    contextContentId?: string | null;
     contextContentType?: string | null;
     contextMode?: string | null;
     sessionId: string;
@@ -68,7 +68,7 @@ export interface DiscoveryQaChatChoice {
 }
 
 export interface DiscoveryQaSourceRecord {
-    contentId?: number | string | null;
+    contentId?: string | null;
     contentType?: string | null;
     knowledgeBase?: string | null;
     locationLabel?: string | null;

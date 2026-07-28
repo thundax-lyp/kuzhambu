@@ -9,6 +9,7 @@ import {
     KuzhambuSpace,
     KuzhambuCard
 } from "@/components";
+import { normalizeId } from "@/types/id";
 
 import type { TagMergeCommand } from "../taxonomy-service";
 import type {
@@ -172,7 +173,7 @@ export const TagMergePanel = ({
                             disabled={!canEditTag}
                             options={tags.map((tag) => ({
                                 label: readTagOptionLabel(tag),
-                                value: tag.id
+                                value: normalizeId(tag.id)
                             }))}
                             onChange={setSourceTagId}
                         />
@@ -186,10 +187,10 @@ export const TagMergePanel = ({
                             value={targetTagId}
                             disabled={!canEditTag}
                             options={tags
-                                .filter((tag) => tag.id !== sourceTagId)
+                                .filter((tag) => normalizeId(tag.id) !== sourceTagId)
                                 .map((tag) => ({
                                     label: readTagOptionLabel(tag),
-                                    value: tag.id
+                                    value: normalizeId(tag.id)
                                 }))}
                             onChange={setTargetTagId}
                         />

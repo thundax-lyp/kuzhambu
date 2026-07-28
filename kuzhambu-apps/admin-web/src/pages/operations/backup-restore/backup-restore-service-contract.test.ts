@@ -21,7 +21,7 @@ describe("operations backup restore service contracts", () => {
         await service.pageBackups({
             backupType: "MANUAL",
             backupStatus: "SUCCEEDED",
-            requesterUserId: 1001,
+            requesterUserId: "1001",
             pageNo: 1,
             pageSize: 20
         });
@@ -29,61 +29,61 @@ describe("operations backup restore service contracts", () => {
             body: {
                 backupType: "MANUAL",
                 backupStatus: "SUCCEEDED",
-                requesterUserId: 1001,
+                requesterUserId: "1001",
                 pageNo: 1,
                 pageSize: 20
             }
         });
 
-        await service.getBackupDetail({ backupId: 9001 });
+        await service.getBackupDetail({ backupId: "9001" });
         expect(postJson).toHaveBeenLastCalledWith("/operations/backup/detail", {
             body: {
-                backupId: 9001
+                backupId: "9001"
             }
         });
     });
 
     it("maps restore endpoints and request bodies", async () => {
-        await service.recoverBackup({ backupId: 9001, restoreMode: "DRILL" });
+        await service.recoverBackup({ backupId: "9001", restoreMode: "DRILL" });
         expect(postJson).toHaveBeenLastCalledWith("/operations/restore/execute", {
             body: {
-                backupId: 9001,
+                backupId: "9001",
                 restoreMode: "DRILL"
             }
         });
 
         await service.pageRestores({
-            backupId: 9001,
+            backupId: "9001",
             restoreMode: "DRILL",
             restoreStatus: "SUCCEEDED",
-            requesterUserId: 1001,
+            requesterUserId: "1001",
             pageNo: 1,
             pageSize: 20
         });
         expect(postJson).toHaveBeenLastCalledWith("/operations/restore/page", {
             body: {
-                backupId: 9001,
+                backupId: "9001",
                 restoreMode: "DRILL",
                 restoreStatus: "SUCCEEDED",
-                requesterUserId: 1001,
+                requesterUserId: "1001",
                 pageNo: 1,
                 pageSize: 20
             }
         });
 
-        await service.getRestoreDetail({ restoreId: 9101 });
+        await service.getRestoreDetail({ restoreId: "9101" });
         expect(postJson).toHaveBeenLastCalledWith("/operations/restore/detail", {
             body: {
-                restoreId: 9101
+                restoreId: "9101"
             }
         });
     });
 
     it("keeps restore response fields available to callers", async () => {
         postJson.mockResolvedValueOnce({
-            restoreId: 9101,
-            backupId: 9001,
-            preRestoreBackupId: 9201,
+            restoreId: "9101",
+            backupId: "9001",
+            preRestoreBackupId: "9201",
             restoreMode: "DRILL",
             restoreStatus: "SUCCEEDED",
             writeBlockEnabled: true,
@@ -91,7 +91,7 @@ describe("operations backup restore service contracts", () => {
             writeBlockReleasedAt: "2026-07-06T02:03:00.000Z"
         });
 
-        const response = await service.recoverBackup({ backupId: 9001, restoreMode: "DRILL" });
+        const response = await service.recoverBackup({ backupId: "9001", restoreMode: "DRILL" });
 
         expect(response.restoreMode).toBe("DRILL");
         expect(response.writeBlockStartedAt).toBe("2026-07-06T02:00:00.000Z");

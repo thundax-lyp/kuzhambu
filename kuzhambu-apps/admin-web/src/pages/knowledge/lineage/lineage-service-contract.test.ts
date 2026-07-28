@@ -45,7 +45,7 @@ const installFetchRecorder = () => {
                 message: "success",
                 data: {
                     version: {
-                        versionId: 71,
+                        versionId: "71",
                         versionNo: 3,
                         taskType: "LINEAGE",
                         status: "APPLIED"
@@ -92,8 +92,8 @@ describe("knowledge lineage service request contracts", () => {
 
     it("gets lineage canvas through the admin lineage api", async () => {
         const query: LineageCanvasQuery = {
-            versionId: 71,
-            focusNodeId: 301,
+            versionId: "71",
+            focusNodeId: "301",
             focusRelationId: null,
             keyword: "贾宝玉",
             nodeType: "PERSON",
@@ -104,7 +104,7 @@ describe("knowledge lineage service request contracts", () => {
 
         const result = await service.getLineageCanvas(query);
 
-        expect(result.version?.versionId).toBe(71);
+        expect(result.version?.versionId).toBe("71");
         expect(capturedCalls.at(-1)).toEqual({
             body: query,
             method: "POST",

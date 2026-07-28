@@ -4,9 +4,9 @@ import type { LineageCanvasRecord } from "./lineage-types";
 const API_PREFIX = "/knowledge/lineage";
 
 export interface LineageCanvasQuery {
-    versionId?: number | null;
-    focusNodeId?: number | null;
-    focusRelationId?: number | null;
+    versionId?: string | null;
+    focusNodeId?: string | null;
+    focusRelationId?: string | null;
     keyword?: string | null;
     nodeType?: string | null;
     relationType?: string | null;

@@ -2,16 +2,18 @@ export type AiCandidateCapability =
     "translate" | "summary" | "tags" | "qa" | "image_analysis" | "visual" | "fusion" | "image_gen";
 
 export interface AiCandidateRecord {
-    candidateId: number;
-    callId?: number | null;
+    candidateId: string;
+    candidateIdText?: string | null;
+    callId?: string | null;
+    callIdText?: string | null;
     capability: AiCandidateCapability | string;
     contentType: string;
-    contentId: number;
-    objectId?: number | null;
+    contentId: string;
+    objectId?: string | null;
     resultFormat: string;
     resultPayload?: string | null;
     status: "PENDING" | "APPLIED" | "REJECTED" | string;
-    promptVersionId?: number | null;
+    promptVersionId?: string | null;
     modelName?: string | null;
     errorType?: string | null;
     errorMessage?: string | null;
@@ -21,24 +23,24 @@ export interface AiCandidateRecord {
 
 export interface AiCandidateApplyRecord {
     contentType: string;
-    contentId: number;
-    versionId: number;
+    contentId: string;
+    versionId: string;
     versionNo: number;
 }
 
 export interface AiCandidateApplyPayload {
-    candidateId: number;
+    candidateId: string;
     contentType: string;
-    contentId: number;
+    contentId: string;
     capability: AiCandidateCapability | string;
-    objectId?: number | null;
+    objectId?: string | null;
     resultFormat: string;
     resultPayload: string;
     changeSummary?: string | null;
 }
 
 export interface AiCandidateRejectPayload {
-    candidateId: number;
+    candidateId: string;
     errorType: string;
     errorMessage?: string | null;
 }

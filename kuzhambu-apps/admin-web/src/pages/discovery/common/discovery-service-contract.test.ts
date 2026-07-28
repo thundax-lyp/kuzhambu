@@ -22,58 +22,58 @@ describe("discovery admin service contracts", () => {
 
     it("maps qa consumer endpoints and request bodies", async () => {
         await qaConsumerService.createQaSession({
-            ownerUserId: 1001,
+            ownerUserId: "1001",
             scope: "PORTAL",
             title: "知识中心问答"
         });
         expect(postJson).toHaveBeenLastCalledWith("/discovery/qa/session/open", {
             body: {
-                ownerUserId: 1001,
+                ownerUserId: "1001",
                 scope: "PORTAL",
                 title: "知识中心问答"
             }
         });
 
         await qaConsumerService.pageQaSessions({
-            ownerUserId: 1001,
+            ownerUserId: "1001",
             pageNo: 1,
             pageSize: 20,
             scope: "PORTAL"
         });
         expect(postJson).toHaveBeenLastCalledWith("/discovery/qa/session/page", {
             body: {
-                ownerUserId: 1001,
+                ownerUserId: "1001",
                 pageNo: 1,
                 pageSize: 20,
                 scope: "PORTAL"
             }
         });
 
-        await qaConsumerService.getQaSession({ ownerUserId: 1001, sessionId: "7001" });
+        await qaConsumerService.getQaSession({ ownerUserId: "1001", sessionId: "7001" });
         expect(postJson).toHaveBeenLastCalledWith("/discovery/qa/session/get", {
             body: {
-                ownerUserId: 1001,
+                ownerUserId: "1001",
                 sessionId: "7001"
             }
         });
 
-        await qaConsumerService.deleteQaSession({ ownerUserId: 1001, sessionId: "7001" });
+        await qaConsumerService.deleteQaSession({ ownerUserId: "1001", sessionId: "7001" });
         expect(postJson).toHaveBeenLastCalledWith("/discovery/qa/session/delete", {
             body: {
-                ownerUserId: 1001,
+                ownerUserId: "1001",
                 sessionId: "7001"
             }
         });
 
         await qaConsumerService.createQaSessionExport({
             format: "CSV",
-            ownerUserId: 1001,
+            ownerUserId: "1001",
             sessionId: "7001"
         });
         expect(postJson).toHaveBeenLastCalledWith("/discovery/qa/session/export", {
             body: {
                 format: "CSV",
-                ownerUserId: 1001,
+                ownerUserId: "1001",
                 sessionId: "7001"
             }
         });
@@ -115,7 +115,7 @@ describe("discovery admin service contracts", () => {
         });
 
         await qaService.createKnowledgeSync({
-            contentId: 1001,
+            contentId: "1001",
             contentType: "SANCAI_ENTRY",
             currentVersionNo: 2,
             requestId: "REQ-2",
@@ -123,7 +123,7 @@ describe("discovery admin service contracts", () => {
         });
         expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/knowledge/sync", {
             body: {
-                contentId: 1001,
+                contentId: "1001",
                 contentType: "SANCAI_ENTRY",
                 currentVersionNo: 2,
                 requestId: "REQ-2",
@@ -170,23 +170,23 @@ describe("discovery admin service contracts", () => {
             }
         });
 
-        await qaService.deleteQaSession({ requesterUserId: 1001, sessionId: "2001" });
+        await qaService.deleteQaSession({ requesterUserId: "1001", sessionId: "2001" });
         expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/session/delete", {
             body: {
-                requesterUserId: 1001,
+                requesterUserId: "1001",
                 sessionId: "2001"
             }
         });
 
         await qaService.createQaSessionExport({
             format: "CSV",
-            requesterUserId: 1001,
+            requesterUserId: "1001",
             sessionId: "2001"
         });
         expect(postJson).toHaveBeenLastCalledWith("/discovery/qa-admin/session/export", {
             body: {
                 format: "CSV",
-                requesterUserId: 1001,
+                requesterUserId: "1001",
                 sessionId: "2001"
             }
         });

@@ -15,18 +15,18 @@ export interface AiInvocationSummaryRecord {
 }
 
 export interface AiInvocationLogRecord {
-    callId: number;
+    callId: string;
     callIdText?: string | null;
-    batchId?: number | null;
+    batchId?: string | null;
     scope?: string | null;
     capability?: string | null;
     contentType?: string | null;
-    contentId?: number | null;
-    objectId?: number | null;
+    contentId?: string | null;
+    objectId?: string | null;
     serviceRole?: string | null;
-    modelId?: number | null;
+    modelId?: string | null;
     modelName?: string | null;
-    promptVersionId?: number | null;
+    promptVersionId?: string | null;
     requestId?: string | null;
     traceId?: string | null;
     status?: string | null;

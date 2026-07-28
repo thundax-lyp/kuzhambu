@@ -12,15 +12,15 @@ export interface RefinementProgressSummary {
 }
 
 export interface RefinementWorkbenchRecord {
-    refinementTaskId: number;
-    graphVersionId?: number | null;
+    refinementTaskId: string;
+    graphVersionId?: string | null;
     taskType?: RefinementTaskType | null;
     sourceContentType?: string | null;
-    sourceContentId?: number | null;
+    sourceContentId?: string | null;
     sourceCategoryCode?: string | null;
     sourceCategoryName?: string | null;
     status?: RefinementTaskStatus | null;
-    openedBy?: number | null;
+    openedBy?: string | null;
     openedAt?: number | null;
     progressSummary?: RefinementProgressSummary | null;
 }
@@ -31,8 +31,8 @@ export interface RefinementEntityOption {
 }
 
 export interface RefinementEntityRecord {
-    draftId?: number | null;
-    entityId?: number | null;
+    draftId?: string | null;
+    entityId?: string | null;
     entityKey?: string | null;
     originType?: string | null;
     operationType?: RefinementOperationType | null;
@@ -45,8 +45,8 @@ export interface RefinementEntityRecord {
 }
 
 export interface RefinementRelationRecord {
-    draftId?: number | null;
-    relationId?: number | null;
+    draftId?: string | null;
+    relationId?: string | null;
     relationKey?: string | null;
     originType?: string | null;
     operationType?: RefinementOperationType | null;
@@ -62,8 +62,8 @@ export interface RefinementRelationRecord {
 }
 
 export interface RefinementLineageNodeRecord {
-    draftId?: number | null;
-    nodeId?: number | null;
+    draftId?: string | null;
+    nodeId?: string | null;
     nodeKey?: string | null;
     originType?: string | null;
     operationType?: RefinementOperationType | null;
@@ -77,8 +77,8 @@ export interface RefinementLineageNodeRecord {
 }
 
 export interface RefinementLineageRelationRecord {
-    draftId?: number | null;
-    relationId?: number | null;
+    draftId?: string | null;
+    relationId?: string | null;
     relationKey?: string | null;
     originType?: string | null;
     operationType?: RefinementOperationType | null;
@@ -94,10 +94,10 @@ export interface RefinementLineageRelationRecord {
 }
 
 export interface QualityAnnotationRecord {
-    annotationId: number;
+    annotationId: string;
     objectType?: QualityAnnotationObjectType | null;
     objectKey?: string | null;
-    graphVersionId?: number | null;
+    graphVersionId?: string | null;
     annotationStatus?: QualityAnnotationStatus | null;
     annotationLabel?: QualityAnnotationLabel | null;
     comment?: string | null;
@@ -119,8 +119,8 @@ export interface QualityAnnotationTarget {
     objectType: QualityAnnotationObjectType;
     objectKey: string;
     sourceContentType?: string | null;
-    sourceContentId?: number | null;
-    graphVersionId?: number | null;
+    sourceContentId?: string | null;
+    graphVersionId?: string | null;
 }
 
 export interface QualitySummaryRecord {
@@ -130,11 +130,11 @@ export interface QualitySummaryRecord {
 }
 
 export interface RefinementDetailRecord {
-    refinementTaskId: number;
-    graphVersionId?: number | null;
+    refinementTaskId: string;
+    graphVersionId?: string | null;
     taskType?: RefinementTaskType | null;
     sourceContentType?: string | null;
-    sourceContentId?: number | null;
+    sourceContentId?: string | null;
     sourceCategoryCode?: string | null;
     sourceCategoryName?: string | null;
     status?: RefinementTaskStatus | null;
@@ -147,18 +147,18 @@ export interface RefinementDetailRecord {
 }
 
 export interface RefinementApplyRecord {
-    refinementTaskId: number;
-    graphVersionId?: number | null;
+    refinementTaskId: string;
+    graphVersionId?: string | null;
     taskType?: RefinementTaskType | null;
     sourceContentType?: string | null;
-    sourceContentId?: number | null;
+    sourceContentId?: string | null;
     sourceCategoryCode?: string | null;
     sourceCategoryName?: string | null;
     status?: RefinementTaskStatus | null;
     appliedAt?: number | null;
     graphRefreshRequired?: boolean | null;
     regenerateSupported?: boolean | null;
-    sourceTaskId?: number | null;
+    sourceTaskId?: string | null;
     selectionScopeJson?: string | null;
     replaceUnconfirmedOnly?: boolean | null;
     triggerSource?: string | null;

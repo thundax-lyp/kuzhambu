@@ -102,9 +102,9 @@ describe("wangqi service request contracts", () => {
             sortDirection: "DESC"
         });
 
-        await service.get(1);
+        await service.get("1");
         expectLastCall("POST", "/classics/wangqi/documents/get", {
-            id: 1
+            id: "1"
         });
 
         await service.listTimeline({
@@ -126,7 +126,7 @@ describe("wangqi service request contracts", () => {
             contentFormat: "MARKDOWN",
             content: "正文",
             documentTime: "2026-01-01T00:00:00.000+00:00",
-            storageObjectId: 7001,
+            storageObjectId: "7001",
             visibility: "PUBLIC"
         };
 
@@ -134,58 +134,58 @@ describe("wangqi service request contracts", () => {
         expectLastCall("POST", "/classics/wangqi/documents/add", command);
 
         await service.update({
-            id: 1,
+            id: "1",
             ...command
         });
         expectLastCall("POST", "/classics/wangqi/documents/update", {
-            id: 1,
+            id: "1",
             ...command
         });
 
-        await service.deleteById(1);
+        await service.deleteById("1");
         expectLastCall("POST", "/classics/wangqi/documents/delete", {
-            id: 1
+            id: "1"
         });
     });
 
     it("sends wangqi source file requests without storage api coupling", async () => {
         await service.uploadSourceFile(
-            1,
+            "1",
             new File(["source-bin"], "wangqi.pdf", { type: "application/pdf" })
         );
         expectLastCall("POST", "/classics/wangqi/documents/1/source-file/upload", {
             file: "wangqi.pdf"
         });
 
-        await service.getSourceFile(1);
+        await service.getSourceFile("1");
         expectLastCall("POST", "/classics/wangqi/documents/source-file/get", {
-            id: 1
+            id: "1"
         });
 
-        expect(service.getSourceFileContentUrl({ documentId: 1 })).toBe(
+        expect(service.getSourceFileContentUrl({ documentId: "1" })).toBe(
             `${DEV_PROXY_PREFIX}/classics/wangqi/documents/1/source-file/content`
         );
-        expect(service.getSourceFileContentUrl({ documentId: 1, mode: "download" })).toBe(
+        expect(service.getSourceFileContentUrl({ documentId: "1", mode: "download" })).toBe(
             `${DEV_PROXY_PREFIX}/classics/wangqi/documents/1/source-file/content?download=true`
         );
     });
 
     it("sends wangqi version requests", async () => {
-        await service.listVersions(1);
+        await service.listVersions("1");
         expectLastCall("POST", "/classics/wangqi/documents/versions/list", {
-            id: 1
+            id: "1"
         });
 
-        await service.getVersion(1, 9001);
+        await service.getVersion("1", "9001");
         expectLastCall("POST", "/classics/wangqi/documents/versions/get", {
-            id: 1,
-            versionId: 9001
+            id: "1",
+            versionId: "9001"
         });
 
-        await service.resetVersion(1, 9001);
+        await service.resetVersion("1", "9001");
         expectLastCall("POST", "/classics/wangqi/documents/versions/reset", {
-            id: 1,
-            versionId: 9001
+            id: "1",
+            versionId: "9001"
         });
     });
 });

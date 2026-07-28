@@ -9,16 +9,16 @@ import { AiCandidatePanel } from "@/pages/classics/common/components/ai-candidat
 import { AiRefinementStreamPanel } from "@/pages/classics/common/components/ai-refinement-stream-panel";
 
 interface SancaiEntryVisualRefinementSectionProps {
-    entryId: number;
+    entryId: string;
     isStreamingRefinementTask: boolean;
     refinementTasks: AiRefinementTaskRecord[];
-    retryingRefinementTaskId: number | null;
-    selectedVisualAssetId: number | null;
+    retryingRefinementTaskId: string | null;
+    selectedVisualAssetId: string | null;
     streamErrorText?: string | null;
     streamEvents: AiRefinementStreamEventRecord[];
     streamingRefinementTask: AiRefinementTaskRecord | null;
     onCloseStreamingRefinementTask: () => void;
-    onRefreshVisualAssetCandidates: (objectId?: number | null) => void;
+    onRefreshVisualAssetCandidates: (objectId?: string | null) => void;
     onRetryRefinementTask: (task: AiRefinementTaskRecord) => void;
     onVisualAssetCandidateChanged: () => Promise<void> | void;
 }

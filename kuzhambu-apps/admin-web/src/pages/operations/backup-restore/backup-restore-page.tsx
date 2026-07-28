@@ -145,7 +145,7 @@ const restoreModeLabel = (value?: OperationsRestoreMode | null) => {
     return "-";
 };
 
-const requesterLabel = (value?: number | null) => {
+const requesterLabel = (value?: string | null) => {
     return value == null ? "系统自动" : String(value);
 };
 
@@ -153,7 +153,7 @@ const failureReasonText = (value?: string | null) => {
     return value || "未返回失败原因";
 };
 
-const buildAlertPath = (sourceRefType: string, sourceRefId?: number | null) => {
+const buildAlertPath = (sourceRefType: string, sourceRefId?: string | null) => {
     if (!sourceRefId) {
         return "/operations/dashboard";
     }
@@ -201,8 +201,8 @@ export const BackupRestorePage = () => {
     });
     const [backupPageNo, setBackupPageNo] = useState(DEFAULT_PAGE_NO);
     const [restorePageNo, setRestorePageNo] = useState(DEFAULT_PAGE_NO);
-    const [backupDetailId, setBackupDetailId] = useState<number | null>(null);
-    const [restoreDetailId, setRestoreDetailId] = useState<number | null>(null);
+    const [backupDetailId, setBackupDetailId] = useState<string | null>(null);
+    const [restoreDetailId, setRestoreDetailId] = useState<string | null>(null);
 
     const backupQuery = useQuery({
         queryKey: ["operations", "backup", "page", backupFilter, backupPageNo],
@@ -226,13 +226,13 @@ export const BackupRestorePage = () => {
     });
     const backupDetailQuery = useQuery({
         queryKey: ["operations", "backup", "detail", backupDetailId],
-        queryFn: () => service.getBackupDetail({ backupId: backupDetailId as number }),
+        queryFn: () => service.getBackupDetail({ backupId: backupDetailId ?? "" }),
         enabled: backupDetailId !== null,
         retry: false
     });
     const restoreDetailQuery = useQuery({
         queryKey: ["operations", "restore", "detail", restoreDetailId],
-        queryFn: () => service.getRestoreDetail({ restoreId: restoreDetailId as number }),
+        queryFn: () => service.getRestoreDetail({ restoreId: restoreDetailId ?? "" }),
         enabled: restoreDetailId !== null,
         retry: false
     });

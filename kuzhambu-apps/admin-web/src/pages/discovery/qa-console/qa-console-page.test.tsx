@@ -82,7 +82,7 @@ describe("QaConsolePage", () => {
             status: "AVAILABLE"
         });
         mocks.getQaSession.mockResolvedValue({
-            ownerUserId: 1001,
+            ownerUserId: "1001",
             sessionId: "2001",
             title: "礼器问答",
             status: "OPEN",
@@ -107,7 +107,7 @@ describe("QaConsolePage", () => {
             totalPage: 1,
             records: [
                 {
-                    ownerUserId: 1001,
+                    ownerUserId: "1001",
                     sessionId: "2001",
                     title: "礼器问答",
                     status: "OPEN",
@@ -128,7 +128,7 @@ describe("QaConsolePage", () => {
                 {
                     sourceId: "SANCAI_ENTRY:1001",
                     contentType: "SANCAI_ENTRY",
-                    contentId: 1001,
+                    contentId: "1001",
                     title: "黄帝",
                     knowledgeBaseName: "kuzhambu-qa",
                     currentVersionNo: 2,
@@ -143,17 +143,17 @@ describe("QaConsolePage", () => {
         mocks.createKnowledgeSync.mockResolvedValue({
             sourceId: "SANCAI_ENTRY:1001",
             contentType: "SANCAI_ENTRY",
-            contentId: 1001,
+            contentId: "1001",
             title: "黄帝",
             syncStatus: "SUCCEEDED"
         });
         mocks.deleteQaSession.mockResolvedValue(undefined);
         mocks.createQaSessionExport.mockResolvedValue({
-            exportId: 7001,
+            exportId: "7001",
             exportStatus: "SUCCEEDED",
             filename: "discovery-qa-session-2001-7001.csv",
             sessionId: "2001",
-            storageObjectId: 8001
+            storageObjectId: "8001"
         });
     });
 
@@ -212,7 +212,7 @@ describe("QaConsolePage", () => {
 
         await waitFor(() => {
             expect(mocks.createKnowledgeSync.mock.calls[0]?.[0]).toEqual({
-                contentId: 1001,
+                contentId: "1001",
                 contentType: "SANCAI_ENTRY",
                 currentVersionNo: 2
             });
@@ -266,7 +266,7 @@ describe("QaConsolePage", () => {
         await waitFor(() => {
             expect(mocks.createQaSessionExport.mock.calls[0]?.[0]).toEqual({
                 format: "CSV",
-                requesterUserId: 1001,
+                requesterUserId: "1001",
                 sessionId: "2001"
             });
         });
@@ -285,7 +285,7 @@ describe("QaConsolePage", () => {
                 totalPage: 1,
                 records: [
                     {
-                        ownerUserId: 1001,
+                        ownerUserId: "1001",
                         sessionId: "2001",
                         title: "礼器问答",
                         status: "OPEN",
@@ -304,7 +304,7 @@ describe("QaConsolePage", () => {
                 totalPage: 1,
                 records: [
                     {
-                        ownerUserId: 1001,
+                        ownerUserId: "1001",
                         sessionId: "2001",
                         title: "礼器问答",
                         status: "REMOVED",
@@ -340,7 +340,7 @@ describe("QaConsolePage", () => {
         );
         await waitFor(() => {
             expect(mocks.deleteQaSession.mock.calls[0]?.[0]).toEqual({
-                requesterUserId: 1001,
+                requesterUserId: "1001",
                 sessionId: "2001"
             });
         });

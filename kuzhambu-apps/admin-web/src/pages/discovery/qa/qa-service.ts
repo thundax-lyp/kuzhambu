@@ -9,10 +9,10 @@ import type {
 } from "./qa-types";
 
 export interface DiscoveryQaOpenSessionCommand {
-    contextContentId?: number | null;
+    contextContentId?: string | null;
     contextContentType?: string | null;
     contextMode?: string | null;
-    ownerUserId?: number | null;
+    ownerUserId?: string | null;
     requestId?: string | null;
     scope?: string | null;
     title?: string | null;
@@ -20,25 +20,25 @@ export interface DiscoveryQaOpenSessionCommand {
 }
 
 export interface DiscoveryQaSessionPageQuery {
-    ownerUserId?: number | null;
+    ownerUserId?: string | null;
     pageNo?: number | null;
     pageSize?: number | null;
     scope?: string | null;
 }
 
 export interface DiscoveryQaGetSessionQuery {
-    ownerUserId?: number | null;
+    ownerUserId?: string | null;
     sessionId: string;
 }
 
 export interface DiscoveryQaDeleteSessionCommand {
-    ownerUserId?: number | null;
+    ownerUserId?: string | null;
     sessionId: string;
 }
 
 export interface DiscoveryQaExportSessionCommand {
     format?: string | null;
-    ownerUserId?: number | null;
+    ownerUserId?: string | null;
     sessionId: string;
 }
 

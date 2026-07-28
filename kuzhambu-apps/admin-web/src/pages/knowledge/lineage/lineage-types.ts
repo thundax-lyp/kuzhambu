@@ -10,12 +10,12 @@ export interface LineageCanvasRecord {
 }
 
 export interface LineageVersionRecord {
-    versionId: number;
+    versionId: string;
     versionNo?: number | null;
     taskType?: string | null;
     status?: string | null;
     sourceContentType?: string | null;
-    sourceContentId?: number | null;
+    sourceContentId?: string | null;
     sourceCategoryCode?: string | null;
     sourceCategoryName?: string | null;
     appliedAt?: number | null;
@@ -26,13 +26,13 @@ export interface LineageSummaryRecord {
     relationCount: number;
     confirmedNodeCount: number;
     confirmedRelationCount: number;
-    focusNodeId?: number | null;
-    focusRelationId?: number | null;
+    focusNodeId?: string | null;
+    focusRelationId?: string | null;
 }
 
 export interface LineageNodeRecord {
     id: string;
-    nodeId: number;
+    nodeId: string;
     nodeKey?: string | null;
     name?: string | null;
     nodeType?: string | null;
@@ -50,10 +50,10 @@ export interface LineageNodeRecord {
 
 export interface LineageRelationRecord {
     id: string;
-    relationId: number;
-    sourceNodeId?: number | null;
+    relationId: string;
+    sourceNodeId?: string | null;
     sourceNodeName?: string | null;
-    targetNodeId?: number | null;
+    targetNodeId?: string | null;
     targetNodeName?: string | null;
     relationType?: string | null;
     relationLabel?: string | null;
@@ -67,7 +67,7 @@ export interface LineageRelationRecord {
 
 export interface LineageSourceRefRecord {
     sourceContentType?: string | null;
-    sourceContentId?: number | null;
+    sourceContentId?: string | null;
     sourceTitle?: string | null;
     snippet?: string | null;
     href?: string | null;

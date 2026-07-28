@@ -9,12 +9,12 @@ import type { SancaiEntryRecord } from "./sancai-types";
 
 const { mockSancaiEntryPanel } = vi.hoisted(() => ({
     mockSancaiEntryPanel: (props: {
-        categoryId: number | null;
+        categoryId: string | null;
         keyword?: string | null;
         lifecycleStatus?: string | null;
         refreshVersion: number;
-        volumeId: number | null;
-        volumes: Array<{ id: number }>;
+        volumeId: string | null;
+        volumes: Array<{ id: string }>;
     }) => (
         <section aria-label="三才图会条目面板">
             <span>{`category:${props.categoryId ?? "none"}`}</span>
@@ -49,8 +49,8 @@ const readFetchUrl = (input: RequestInfo | URL) => {
     return input.url;
 };
 
-let mockCategories = [{ categoryType: "FORMAL", id: 2, title: "天文" }];
-let mockVolumes = [{ categoryId: 2, id: 101, title: "天文卷一", volumeType: "MAIN" }];
+let mockCategories = [{ categoryType: "FORMAL", id: "2", title: "天文" }];
+let mockVolumes = [{ categoryId: "2", id: "101", title: "天文卷一", volumeType: "MAIN" }];
 
 const installFetchMock = () => {
     vi.spyOn(globalThis, "fetch").mockImplementation((input) => {
@@ -82,8 +82,8 @@ const installFetchMock = () => {
         if (path.endsWith("/classics/sancai/entries/list")) {
             return apiResponse([
                 {
-                    id: 3001,
-                    volumeId: 101,
+                    id: "3001",
+                    volumeId: "101",
                     title: "天地",
                     originalText: "天地玄黄",
                     translationText: "译文",
@@ -94,7 +94,7 @@ const installFetchMock = () => {
                     imageStatus: "READY",
                     visualAssetStatus: "READY",
                     refinementStatus: "COMPLETE",
-                    currentVersionId: 9001,
+                    currentVersionId: "9001",
                     currentVersionNo: 1,
                     currentVersionedAt: "2026-06-20T01:00:00.000+08:00",
                     contentUpdatedAt: "2026-06-20T01:00:00.000+08:00",
@@ -104,8 +104,8 @@ const installFetchMock = () => {
         }
         if (path.endsWith("/classics/sancai/entries/get")) {
             return apiResponse({
-                id: 3001,
-                volumeId: 101,
+                id: "3001",
+                volumeId: "101",
                 title: "天地",
                 originalText: "天地玄黄",
                 translationText: "译文",
@@ -116,7 +116,7 @@ const installFetchMock = () => {
                 imageStatus: "READY",
                 visualAssetStatus: "READY",
                 refinementStatus: "COMPLETE",
-                currentVersionId: 9001,
+                currentVersionId: "9001",
                 currentVersionNo: 1,
                 currentVersionedAt: "2026-06-20T01:00:00.000+08:00",
                 contentUpdatedAt: "2026-06-20T01:00:00.000+08:00",
@@ -127,13 +127,13 @@ const installFetchMock = () => {
             return apiResponse([
                 {
                     currentUsed: true,
-                    entryId: 3001,
-                    id: 8001,
+                    entryId: "3001",
+                    id: "8001",
                     imageType: "ORIGINAL",
                     originalFilename: "sancai.png",
                     priority: 1,
                     size: 10,
-                    storageObjectId: 7001,
+                    storageObjectId: "7001",
                     title: "sancai.png"
                 }
             ]);
@@ -141,9 +141,9 @@ const installFetchMock = () => {
         if (path.endsWith("/classics/sancai/assets/visual-assets/list")) {
             return apiResponse([
                 {
-                    id: 5002,
-                    visualAssetId: 5002,
-                    entryId: 3001,
+                    id: "5002",
+                    visualAssetId: "5002",
+                    entryId: "3001",
                     versionNo: 2,
                     status: "READY",
                     sourcePreviewUrl:
@@ -167,9 +167,9 @@ const installFetchMock = () => {
         if (path.endsWith("/classics/sancai/entries/versions/list")) {
             return apiResponse([
                 {
-                    id: 9001,
+                    id: "9001",
                     contentType: "SANCAI_ENTRY",
-                    contentId: 3001,
+                    contentId: "3001",
                     versionNo: 1,
                     versionedAt: "2026-06-20T01:00:00.000+08:00",
                     snapshotJson: '{"title":"天地"}',
@@ -180,7 +180,7 @@ const installFetchMock = () => {
         }
         if (path.endsWith("/sys/current-user/info")) {
             return apiResponse({
-                id: 99,
+                id: "99",
                 loginName: "admin",
                 name: "Admin"
             });
@@ -207,10 +207,10 @@ const installFetchMock = () => {
     });
 };
 
-const buildEntry = (id: number, title: string): SancaiEntryRecord =>
+const buildEntry = (id: string, title: string): SancaiEntryRecord =>
     ({
         id,
-        volumeId: 101,
+        volumeId: "101",
         title,
         originalText: `${title}原文`,
         translationText: `${title}译文`,
@@ -221,7 +221,7 @@ const buildEntry = (id: number, title: string): SancaiEntryRecord =>
         imageStatus: "READY",
         visualAssetStatus: "READY",
         refinementStatus: "COMPLETE",
-        currentVersionId: 9001,
+        currentVersionId: "9001",
         currentVersionNo: 1,
         currentVersionedAt: "2026-06-20T01:00:00.000+08:00",
         contentUpdatedAt: "2026-06-20T01:00:00.000+08:00",
@@ -235,7 +235,7 @@ const renderEntryList = (entries: SancaiEntryRecord[]) =>
                 <SancaiEntryList
                     entries={entries}
                     isLoading={false}
-                    volumes={[{ id: 101, title: "天文卷一" } as never]}
+                    volumes={[{ id: "101", title: "天文卷一" } as never]}
                     onBatchCandidateGovernance={vi.fn()}
                     onChangeLifecycleStatus={vi.fn()}
                     onDelete={vi.fn()}
@@ -252,8 +252,8 @@ const renderEntryList = (entries: SancaiEntryRecord[]) =>
 describe("SancaiPage", () => {
     beforeEach(() => {
         queryClient.clear();
-        mockCategories = [{ categoryType: "FORMAL", id: 2, title: "天文" }];
-        mockVolumes = [{ categoryId: 2, id: 101, title: "天文卷一", volumeType: "MAIN" }];
+        mockCategories = [{ categoryType: "FORMAL", id: "2", title: "天文" }];
+        mockVolumes = [{ categoryId: "2", id: "101", title: "天文卷一", volumeType: "MAIN" }];
         localStorage.setItem("kuzhambu.admin.accessToken", "test-token");
         installFetchMock();
     });
@@ -281,12 +281,12 @@ describe("SancaiPage", () => {
     it("switches to the entry panel with the selected catalog context", async () => {
         const user = userEvent.setup();
         mockCategories = [
-            { categoryType: "FORMAL", id: 2, title: "天文" },
-            { categoryType: "FORMAL", id: 3, title: "地理" }
+            { categoryType: "FORMAL", id: "2", title: "天文" },
+            { categoryType: "FORMAL", id: "3", title: "地理" }
         ];
         mockVolumes = [
-            { categoryId: 2, id: 101, title: "天文卷一", volumeType: "MAIN" },
-            { categoryId: 3, id: 202, title: "地理卷一", volumeType: "MAIN" }
+            { categoryId: "2", id: "101", title: "天文卷一", volumeType: "MAIN" },
+            { categoryId: "3", id: "202", title: "地理卷一", volumeType: "MAIN" }
         ];
 
         render(
@@ -321,8 +321,8 @@ describe("SancaiPage", () => {
 
     it("keeps entry batch selection scoped to the current page entries", async () => {
         const user = userEvent.setup();
-        const firstPageEntries = [buildEntry(3001, "天地")];
-        const secondPageEntries = [buildEntry(3002, "山川")];
+        const firstPageEntries = [buildEntry("3001", "天地")];
+        const secondPageEntries = [buildEntry("3002", "山川")];
 
         const { rerender } = renderEntryList(firstPageEntries);
         const table = await screen.findByLabelText("三才图会条目表格");
@@ -342,7 +342,7 @@ describe("SancaiPage", () => {
                     <SancaiEntryList
                         entries={secondPageEntries}
                         isLoading={false}
-                        volumes={[{ id: 101, title: "天文卷一" } as never]}
+                        volumes={[{ id: "101", title: "天文卷一" } as never]}
                         onBatchCandidateGovernance={vi.fn()}
                         onChangeLifecycleStatus={vi.fn()}
                         onDelete={vi.fn()}

@@ -28,11 +28,11 @@ describe("AiRefinementStreamPanel", () => {
                 ]}
                 isStreaming={false}
                 task={{
-                    taskId: 7001,
+                    taskId: "7001",
                     status: "FAILED",
                     capability: "image_analysis",
                     contentType: "SANCAI_ENTRY",
-                    contentId: 3001,
+                    contentId: "3001",
                     failureStage: "WORKER_STREAM",
                     errorType: "WORKER_PROTOCOL_FAILURE",
                     errorMessage: "Worker stream ended without completed event"
@@ -47,7 +47,7 @@ describe("AiRefinementStreamPanel", () => {
         expect(screen.getByText("失败原因")).toBeInTheDocument();
         expect(
             screen.getByText(
-                "WORKER_STREAM / WORKER_PROTOCOL_FAILURE / Worker stream ended without completed event"
+                "AI Worker 协议应答异常，请检查 Worker 版本或接口契约（阶段：WORKER_STREAM；类型：WORKER_PROTOCOL_FAILURE；详情：Worker stream ended without completed event）"
             )
         ).toBeInTheDocument();
 
@@ -73,11 +73,11 @@ describe("AiRefinementStreamPanel", () => {
                 ]}
                 isStreaming={false}
                 task={{
-                    taskId: 7001,
+                    taskId: "7001",
                     status: "RUNNING",
                     capability: "image_analysis",
                     contentType: "SANCAI_ENTRY",
-                    contentId: 3001
+                    contentId: "3001"
                 }}
                 onClose={onClose}
                 onRetry={onRetry}

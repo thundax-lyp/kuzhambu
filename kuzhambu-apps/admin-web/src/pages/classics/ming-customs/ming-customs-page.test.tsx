@@ -41,7 +41,7 @@ vi.mock("@/pages/classics/common/components/ai-candidate-panel", () => {
 
 vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
     createTask: vi.fn(() =>
-        Promise.resolve({ id: 9101, status: "PENDING", capability: "summary" })
+        Promise.resolve({ id: "9101", status: "PENDING", capability: "summary" })
     ),
     getTask: vi.fn(),
     pageTasks: vi.fn(() => Promise.resolve({ items: [], totalCount: 0, pageNo: 1, pageSize: 10 })),
@@ -71,7 +71,7 @@ interface CapturedCall {
 
 const capturedCalls: CapturedCall[] = [];
 let mockMingCustomsRecord = {
-    id: 500000000001,
+    id: "500000000001",
     title: "岁时礼仪：元旦朝贺",
     category: "RITUAL",
     chapter: "岁时礼仪",
@@ -147,7 +147,7 @@ const installFetchMock = () => {
         if (path.endsWith("/classics/ming-customs/tag-cloud/list")) {
             return apiResponse([
                 {
-                    tagId: 700000000001,
+                    tagId: "700000000001",
                     tagNameSnapshot: "礼制",
                     count: 3
                 }
@@ -187,9 +187,9 @@ const installFetchMock = () => {
         if (path.endsWith("/classics/ming-customs/versions/list")) {
             return apiResponse([
                 {
-                    id: 9001,
+                    id: "9001",
                     contentType: "MING_CUSTOMS",
-                    contentId: 500000000001,
+                    contentId: "500000000001",
                     versionNo: 1,
                     versionedAt: "2026-01-01T00:00:00.000+00:00",
                     snapshotJson: JSON.stringify({
@@ -210,9 +210,9 @@ const installFetchMock = () => {
         }
         if (path.endsWith("/classics/ming-customs/versions/get")) {
             return apiResponse({
-                id: 9001,
+                id: "9001",
                 contentType: "MING_CUSTOMS",
-                contentId: 500000000001,
+                contentId: "500000000001",
                 versionNo: 1,
                 versionedAt: "2026-01-01T00:00:00.000+00:00",
                 snapshotJson: JSON.stringify({
@@ -231,9 +231,9 @@ const installFetchMock = () => {
             });
         }
         if (path.endsWith("/classics/ming-customs/versions/reset")) {
-            const body = readFetchBody(init?.body) as { id: number };
+            const body = readFetchBody(init?.body) as { id: string };
             return apiResponse({
-                id: 9002,
+                id: "9002",
                 contentType: "MING_CUSTOMS",
                 contentId: body.id,
                 versionNo: 2,
@@ -258,7 +258,7 @@ const installFetchMock = () => {
                 failureCount: 1,
                 failures: [
                     {
-                        contentId: 500000000002,
+                        contentId: "500000000002",
                         contentType: "MING_CUSTOMS",
                         failureCode: "CONTENT_NOT_FOUND",
                         failureReason: "习俗条目不存在",
@@ -268,9 +268,9 @@ const installFetchMock = () => {
                 successCount: 1,
                 successes: [
                     {
-                        contentId: 500000000001,
+                        contentId: "500000000001",
                         contentType: "MING_CUSTOMS",
-                        resultId: 9201,
+                        resultId: "9201",
                         status: "ACTIVE"
                     }
                 ]
@@ -281,7 +281,7 @@ const installFetchMock = () => {
                 failureCount: 1,
                 failures: [
                     {
-                        contentId: 500000000002,
+                        contentId: "500000000002",
                         contentType: "MING_CUSTOMS",
                         failureCode: "BATCH_VISIBILITY_FAILED",
                         failureReason: "习俗条目不存在",
@@ -291,9 +291,9 @@ const installFetchMock = () => {
                 successCount: 1,
                 successes: [
                     {
-                        contentId: 500000000001,
+                        contentId: "500000000001",
                         contentType: "MING_CUSTOMS",
-                        resultId: 500000000001,
+                        resultId: "500000000001",
                         status: "PUBLIC"
                     }
                 ]
@@ -302,9 +302,9 @@ const installFetchMock = () => {
         if (path.endsWith("/ai/invocation/candidate/list")) {
             return apiResponse([
                 {
-                    candidateId: 6001,
+                    candidateId: "6001",
                     contentType: "MING_CUSTOMS",
-                    contentId: 500000000001,
+                    contentId: "500000000001",
                     capability: "summary",
                     objectId: null,
                     resultFormat: "TEXT",
@@ -319,9 +319,9 @@ const installFetchMock = () => {
                 failureCount: 1,
                 failures: [
                     {
-                        candidateId: 6002,
+                        candidateId: "6002",
                         contentType: "MING_CUSTOMS",
-                        contentId: 500000000002,
+                        contentId: "500000000002",
                         capability: "summary",
                         failureCode: "INVALID_FORMAT",
                         failureReason: "payload invalid"
@@ -330,12 +330,12 @@ const installFetchMock = () => {
                 successCount: 1,
                 successes: [
                     {
-                        candidateId: 6001,
+                        candidateId: "6001",
                         contentType: "MING_CUSTOMS",
-                        contentId: 500000000001,
+                        contentId: "500000000001",
                         capability: "summary",
                         objectId: null,
-                        resultId: 5001,
+                        resultId: "5001",
                         status: "APPLIED"
                     }
                 ]
@@ -354,7 +354,7 @@ describe("MingCustomsPage", () => {
         queryClient = createTestQueryClient();
         capturedCalls.length = 0;
         mockMingCustomsRecord = {
-            id: 500000000001,
+            id: "500000000001",
             title: "岁时礼仪：元旦朝贺",
             category: "RITUAL",
             chapter: "岁时礼仪",
@@ -425,14 +425,14 @@ describe("MingCustomsPage", () => {
                         call.path === "/classics/ming-customs/page" &&
                         (
                             call.body as {
-                                tagId?: number;
+                                tagId?: string;
                                 tagNameSnapshot?: string;
                                 tagName?: string;
                             }
-                        ).tagId === 700000000001 &&
+                        ).tagId === "700000000001" &&
                         (
                             call.body as {
-                                tagId?: number;
+                                tagId?: string;
                                 tagNameSnapshot?: string;
                                 tagName?: string;
                             }
@@ -491,9 +491,9 @@ describe("MingCustomsPage", () => {
                 expect.objectContaining({
                     scope: "classics",
                     contentType: "MING_CUSTOMS",
-                    contentId: 500000000001,
+                    contentId: "500000000001",
                     serviceRole: "PRIMARY",
-                    modelId: 1,
+                    modelId: "1",
                     modelName: "gpt-5.5",
                     locale: "zh-CN"
                 })
@@ -580,7 +580,7 @@ describe("MingCustomsPage", () => {
         });
         expect(capturedCalls).toContainEqual({
             body: {
-                contentIds: [500000000001],
+                contentIds: ["500000000001"],
                 contentType: "MING_CUSTOMS",
                 visibility: "PUBLIC"
             },
@@ -624,8 +624,8 @@ describe("MingCustomsPage", () => {
                 (call) =>
                     call.path === "/ai/invocation/candidate/list" &&
                     call.method === "POST" &&
-                    (call.body as { contentType: string; contentId: number; status: string })
-                        .contentId === 500000000001
+                    (call.body as { contentType: string; contentId: string; status: string })
+                        .contentId === "500000000001"
             )
         ).toBeTruthy();
 
@@ -642,9 +642,9 @@ describe("MingCustomsPage", () => {
             body: {
                 items: [
                     {
-                        candidateId: 6001,
+                        candidateId: "6001",
                         contentType: "MING_CUSTOMS",
-                        contentId: 500000000001,
+                        contentId: "500000000001",
                         capability: "summary",
                         objectId: null,
                         resultFormat: "TEXT",
@@ -726,7 +726,7 @@ describe("MingCustomsPage", () => {
                 invalidateSpy.mock.calls.some(
                     ([arg]) =>
                         JSON.stringify(arg?.queryKey) ===
-                        JSON.stringify(["ai", "candidates", "MING_CUSTOMS", 500000000001])
+                        JSON.stringify(["ai", "candidates", "MING_CUSTOMS", "500000000001"])
                 )
             ).toBeTruthy();
         });
@@ -735,14 +735,14 @@ describe("MingCustomsPage", () => {
             invalidateSpy.mock.calls.every(
                 ([arg]) =>
                     JSON.stringify(arg?.queryKey) ===
-                    JSON.stringify(["ai", "candidates", "MING_CUSTOMS", 500000000001])
+                    JSON.stringify(["ai", "candidates", "MING_CUSTOMS", "500000000001"])
             )
         ).toBeTruthy();
     }, 30000);
 
     it("renders ming customs version history panel with snapshot compare", () => {
         const version: MingCustomsContentVersionRecord = {
-            id: 500000000003,
+            id: "500000000003",
             versionNo: 12,
             changeType: "HISTORY_RESTORED",
             changeSummary: "恢复历史版本 v12",
@@ -759,24 +759,24 @@ describe("MingCustomsPage", () => {
                 visibility: "PUBLIC",
                 tags: [
                     {
-                        id: 9001,
-                        tagId: 11001,
+                        id: "9001",
+                        tagId: "11001",
                         tagNameSnapshot: "礼制"
                     },
                     {
-                        id: 9002,
-                        tagId: 11002,
+                        id: "9002",
+                        tagId: "11002",
                         tagNameSnapshot: "朝仪"
                     }
                 ],
                 qaPairs: [
                     {
-                        id: 8001,
+                        id: "8001",
                         question: "问：元旦朝贺是什么？",
                         answer: "元旦朝贺是祭祖和祭社的重要礼节。"
                     },
                     {
-                        id: 8002,
+                        id: "8002",
                         question: "问：参与者有哪些？",
                         answer: "家族长辈与主祭人。"
                     }
@@ -787,7 +787,7 @@ describe("MingCustomsPage", () => {
         render(
             <MingCustomsVersionHistoryPanel
                 currentEntry={{
-                    id: 500000000001,
+                    id: "500000000001",
                     title: "新标题",
                     category: "RITUAL",
                     chapter: "先秦",
@@ -829,7 +829,7 @@ describe("MingCustomsPage", () => {
 
     it("disables reset when ming customs version snapshot invalid", () => {
         const version: MingCustomsContentVersionRecord = {
-            id: 500000000004,
+            id: "500000000004",
             versionNo: 13,
             changeType: "HISTORY_RESTORED",
             changeSummary: "恢复历史版本 v13",
@@ -857,7 +857,7 @@ describe("MingCustomsPage", () => {
         render(
             <MingCustomsVersionHistoryPanel
                 currentEntry={{
-                    id: 500000000001,
+                    id: "500000000001",
                     title: "版本空白测试条目"
                 }}
                 selectedVersion={null}
@@ -912,7 +912,7 @@ describe("MingCustomsPage", () => {
                 })
             );
             expect(capturedCalls).toContainEqual({
-                body: { id: 500000000001, versionId: 9001 },
+                body: { id: "500000000001", versionId: "9001" },
                 method: "POST",
                 path: "/classics/ming-customs/versions/reset"
             });

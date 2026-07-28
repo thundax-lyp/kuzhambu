@@ -114,7 +114,7 @@ const readCapabilityLabel = (
     return capabilityByCode.get(capability)?.name || capability;
 };
 
-const readModelLabel = (modelId: number, modelById: Map<number, AiBusinessConfigModelRecord>) => {
+const readModelLabel = (modelId: string, modelById: Map<string, AiBusinessConfigModelRecord>) => {
     const model = modelById.get(modelId);
     if (!model) {
         return String(modelId);
@@ -124,8 +124,8 @@ const readModelLabel = (modelId: number, modelById: Map<number, AiBusinessConfig
 };
 
 const readPromptLabel = (
-    promptId: number,
-    promptById: Map<number, AiBusinessConfigPromptRecord>,
+    promptId: string,
+    promptById: Map<string, AiBusinessConfigPromptRecord>,
     capabilityByCode: Map<string, AiBusinessConfigCapabilityRecord>
 ) => {
     const prompt = promptById.get(promptId);
@@ -210,7 +210,7 @@ export const BusinessConfigsPage = () => {
         return new Map(
             (businessConfigPromptsQuery.data || [])
                 .filter((prompt) => prompt.id != null)
-                .map((prompt) => [Number(prompt.id), prompt])
+                .map((prompt) => [prompt.id ?? "", prompt])
         );
     }, [businessConfigPromptsQuery.data]);
 
@@ -351,7 +351,7 @@ export const BusinessConfigsPage = () => {
             message: `确认删除 ${readConfigName(record)}？`,
             description: "删除后对应业务能力将无法通过该配置解析提示词和模型。",
             okText: "删除",
-            onConfirm: () => deleteMutation.mutateAsync(Number(record.id))
+            onConfirm: () => deleteMutation.mutateAsync(record.id ?? "")
         });
     };
 

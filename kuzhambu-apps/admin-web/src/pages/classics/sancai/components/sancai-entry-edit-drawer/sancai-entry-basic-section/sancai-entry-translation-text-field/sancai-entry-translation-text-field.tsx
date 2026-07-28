@@ -14,41 +14,33 @@ import { SancaiEntryTranslationModal } from "./sancai-entry-translation-modal";
 import "./sancai-entry-translation-text-field.css";
 
 const AI_TEXT_CANDIDATE_POLL_INTERVAL_MS = 3000;
-const RUNNING_REFINEMENT_STATUSES = new Set(["PENDING", "RUNNING"]);
+const TRANSLATION_CANDIDATE_CAPABILITY = "classics_translate";
 
-const sortRefinementTasksByNewest = (
-    left: AiRefinementTaskRecord,
-    right: AiRefinementTaskRecord
-) => {
-    if (left.requestedAt && right.requestedAt && left.requestedAt !== right.requestedAt) {
-        return right.requestedAt.localeCompare(left.requestedAt);
-    }
-    return right.taskId - left.taskId;
+const getCandidateStableId = (candidate: AiCandidateRecord) => {
+    return candidate.candidateIdText || String(candidate.candidateId);
+};
+
+const isUsableTranslationCandidate = (candidate?: AiCandidateRecord | null) => {
+    return (
+        candidate?.capability &&
+        aiRefinementTaskService.getNormalizedTaskCapability(candidate.capability) === "translate" &&
+        candidate.status === "PENDING" &&
+        typeof candidate.resultPayload === "string" &&
+        candidate.resultPayload.trim().length > 0
+    );
 };
 
 const selectLatestTranslationCandidate = (candidates: AiCandidateRecord[] | undefined) => {
-    return [...(candidates || [])]
-        .filter(
-            (candidate) =>
-                candidate.capability === "translate" &&
-                candidate.status === "PENDING" &&
-                typeof candidate.resultPayload === "string" &&
-                candidate.resultPayload.trim().length > 0
-        )
-        .sort((left, right) => {
-            if (left.requestedAt && right.requestedAt && left.requestedAt !== right.requestedAt) {
-                return right.requestedAt.localeCompare(left.requestedAt);
-            }
-            return right.candidateId - left.candidateId;
-        })[0];
-};
-
-const isRunningRefinementTask = (task?: AiRefinementTaskRecord | null) => {
-    return Boolean(task?.status) && RUNNING_REFINEMENT_STATUSES.has(task?.status ?? "");
+    return [...(candidates || [])].filter(isUsableTranslationCandidate).sort((left, right) => {
+        return aiRefinementTaskService.sortNewestByRequestedAtThenId({
+            left: { id: getCandidateStableId(left), requestedAt: left.requestedAt },
+            right: { id: getCandidateStableId(right), requestedAt: right.requestedAt }
+        });
+    })[0];
 };
 
 interface SancaiEntryTranslationTextFieldProps {
-    entryId?: number;
+    entryId?: string;
     getFormValues: () => SancaiEntryFormValues;
     isCreatingTranslationTask?: boolean;
     mode: "create" | "edit";
@@ -72,21 +64,11 @@ export const SancaiEntryTranslationTextField = ({
     const queryClient = useQueryClient();
     const [translationModalOpen, setTranslationModalOpen] = useState(false);
     const [translationDraft, setTranslationDraft] = useState("");
-    const [loadedTranslationCandidateId, setLoadedTranslationCandidateId] = useState<number | null>(
+    const [loadedTranslationCandidateId, setLoadedTranslationCandidateId] = useState<string | null>(
         null
     );
-    const latestTranslationTask = useMemo(
-        () =>
-            [...translationTasks]
-                .filter(
-                    (task) =>
-                        aiRefinementTaskService.getNormalizedTaskCapability(task.capability) ===
-                        "translate"
-                )
-                .sort(sortRefinementTasksByNewest)[0] ?? null,
-        [translationTasks]
-    );
-    const hasRunningTranslationTask = isRunningRefinementTask(latestTranslationTask);
+    const [loadedTranslationCandidateSnapshot, setLoadedTranslationCandidateSnapshot] =
+        useState<AiCandidateRecord | null>(null);
     const syncTranslationTask = useCallback(
         (task: AiRefinementTaskRecord | null) => {
             if (!task || !entryId) {
@@ -123,15 +105,13 @@ export const SancaiEntryTranslationTextField = ({
             aiCandidateService.list({
                 contentId: entryId,
                 contentType: "SANCAI_ENTRY",
-                capability: "translate",
+                capability: TRANSLATION_CANDIDATE_CAPABILITY,
                 status: "PENDING"
             }),
         enabled: translationModalOpen && Boolean(entryId),
         retry: false,
         refetchInterval: () => {
-            return isCreatingTranslationTask || hasRunningTranslationTask
-                ? AI_TEXT_CANDIDATE_POLL_INTERVAL_MS
-                : false;
+            return isCreatingTranslationTask ? AI_TEXT_CANDIDATE_POLL_INTERVAL_MS : false;
         }
     });
     const applyTranslationCandidateMutation = useMutation({
@@ -167,75 +147,96 @@ export const SancaiEntryTranslationTextField = ({
         if (!loadedTranslationCandidateId) {
             return null;
         }
-        return (
+        const queryCandidate =
             (translationCandidatesQuery.data || []).find(
                 (candidate) =>
-                    candidate.candidateId === loadedTranslationCandidateId &&
-                    candidate.capability === "translate"
-            ) ?? null
-        );
-    }, [translationCandidatesQuery.data, loadedTranslationCandidateId]);
-    const isTranslationApplyDisabled =
-        !translationDraft.trim() ||
-        isCreatingTranslationTask ||
-        hasRunningTranslationTask ||
-        translationCandidatesQuery.isFetching;
+                    getCandidateStableId(candidate) === loadedTranslationCandidateId &&
+                    aiRefinementTaskService.getNormalizedTaskCapability(candidate.capability) ===
+                        "translate"
+            ) ?? null;
+        if (queryCandidate) {
+            return queryCandidate;
+        }
+        return loadedTranslationCandidateSnapshot &&
+            getCandidateStableId(loadedTranslationCandidateSnapshot) ===
+                loadedTranslationCandidateId &&
+            isUsableTranslationCandidate(loadedTranslationCandidateSnapshot)
+            ? loadedTranslationCandidateSnapshot
+            : null;
+    }, [
+        loadedTranslationCandidateId,
+        loadedTranslationCandidateSnapshot,
+        translationCandidatesQuery.data
+    ]);
+    const isTranslationApplyDisabled = !translationDraft.trim() || isCreatingTranslationTask;
+    const refetchTranslationCandidates = translationCandidatesQuery.refetch;
+    const loadTranslationCandidate = useCallback(
+        async (task: AiRefinementTaskRecord | null) => {
+            const candidateId =
+                task?.candidateIdText || (task?.candidateId ? String(task.candidateId) : null);
+            if (candidateId) {
+                const candidate = await aiCandidateService.get({ candidateId });
+                return isUsableTranslationCandidate(candidate) ? candidate : null;
+            }
+            const candidates = await aiCandidateService.list({
+                contentId: entryId,
+                contentType: "SANCAI_ENTRY",
+                capability: TRANSLATION_CANDIDATE_CAPABILITY,
+                status: "PENDING"
+            });
+            return selectLatestTranslationCandidate(candidates) ?? null;
+        },
+        [entryId]
+    );
+    const updateTranslationDraftFromCandidate = useCallback(
+        (candidate: AiCandidateRecord | null) => {
+            if (!candidate || !isUsableTranslationCandidate(candidate)) {
+                return;
+            }
+            const candidateId = getCandidateStableId(candidate);
+            if (candidateId === loadedTranslationCandidateId) {
+                return;
+            }
+            setLoadedTranslationCandidateId(candidateId);
+            setLoadedTranslationCandidateSnapshot(candidate);
+            setTranslationDraft(candidate.resultPayload?.trim() || "");
+        },
+        [loadedTranslationCandidateId]
+    );
+
+    const handleTranslationTaskChange = useCallback(
+        (task: AiRefinementTaskRecord | null) => {
+            syncTranslationTask(task);
+            if (task?.status === "SUCCEEDED" || task?.status === "PARTIAL") {
+                void refetchTranslationCandidates();
+            }
+        },
+        [refetchTranslationCandidates, syncTranslationTask]
+    );
 
     useEffect(() => {
         if (!translationModalOpen || !latestTranslationCandidate) {
             return;
         }
-        if (latestTranslationCandidate.candidateId === loadedTranslationCandidateId) {
+        if (getCandidateStableId(latestTranslationCandidate) === loadedTranslationCandidateId) {
             return;
         }
         const timer = window.setTimeout(() => {
-            setLoadedTranslationCandidateId(latestTranslationCandidate.candidateId);
+            setLoadedTranslationCandidateId(getCandidateStableId(latestTranslationCandidate));
+            setLoadedTranslationCandidateSnapshot(latestTranslationCandidate);
             setTranslationDraft(latestTranslationCandidate.resultPayload?.trim() || "");
         }, 0);
         return () => window.clearTimeout(timer);
     }, [latestTranslationCandidate, loadedTranslationCandidateId, translationModalOpen]);
 
-    useEffect(() => {
-        if (!translationModalOpen || !latestTranslationTask?.taskId) {
-            return;
-        }
-        if (
-            latestTranslationTask.status !== "SUCCEEDED" &&
-            latestTranslationTask.status !== "PARTIAL"
-        ) {
-            return;
-        }
-        void translationCandidatesQuery.refetch();
-    }, [
-        latestTranslationTask?.status,
-        latestTranslationTask?.taskId,
-        translationCandidatesQuery,
-        translationModalOpen
-    ]);
-
     const openTranslationModal = () => {
         setTranslationDraft(value || "");
         setLoadedTranslationCandidateId(null);
+        setLoadedTranslationCandidateSnapshot(null);
         setTranslationModalOpen(true);
     };
     const closeTranslationModal = () => {
         setTranslationModalOpen(false);
-    };
-    const requestTranslationTask = () => {
-        if (!entryId) {
-            return false;
-        }
-        if (!onRequestTranslationTask) {
-            messageApi.warning("请先保存条目后再使用 AI翻译");
-            return false;
-        }
-        const formValues = getFormValues();
-        if (!formValues.originalText?.trim()) {
-            messageApi.warning("请先填写原文");
-            return false;
-        }
-        onRequestTranslationTask(formValues);
-        return true;
     };
     const applyTranslationDraft = () => {
         if (!entryId) {
@@ -244,7 +245,7 @@ export const SancaiEntryTranslationTextField = ({
         const resultPayload = translationDraft;
         if (loadedTranslationCandidate) {
             applyTranslationCandidateMutation.mutate({
-                candidateId: loadedTranslationCandidate.candidateId,
+                candidateId: getCandidateStableId(loadedTranslationCandidate),
                 contentId: entryId,
                 contentType: "SANCAI_ENTRY",
                 capability: "translate",
@@ -284,23 +285,23 @@ export const SancaiEntryTranslationTextField = ({
             ) : null}
             <SancaiEntryTranslationModal
                 aiTextDraft={translationDraft}
+                entryId={entryId}
                 form={formValues}
-                hasRunningAiTextTask={hasRunningTranslationTask}
                 isAiTextApplyDisabled={isTranslationApplyDisabled}
                 isAiTextCandidateFetching={translationCandidatesQuery.isFetching}
                 isAiTextCandidateLoadError={translationCandidatesQuery.isError}
                 isApplyingAiText={applyTranslationCandidateMutation.isPending}
                 isCreatingAiTextTask={isCreatingTranslationTask}
-                latestAiTextTask={latestTranslationTask}
                 open={translationModalOpen}
                 onApply={applyTranslationDraft}
                 onCancel={closeTranslationModal}
-                onFetchTask={(taskId) =>
-                    aiRefinementTaskService.getTask({ taskId: Number(taskId) })
-                }
-                onRequestTask={requestTranslationTask}
-                onTaskChange={syncTranslationTask}
+                onFetchResult={loadTranslationCandidate}
+                onFetchTask={(taskId) => aiRefinementTaskService.getTask({ taskId })}
+                onResultChange={updateTranslationDraftFromCandidate}
+                onRequestTranslationTask={onRequestTranslationTask}
+                onTaskChange={handleTranslationTaskChange}
                 onTextDraftChange={setTranslationDraft}
+                translationTasks={translationTasks}
             />
         </div>
     );

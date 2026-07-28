@@ -5,6 +5,7 @@ import { useKuzhambuConfirm } from "@/components/kuzhambu-confirm-modal/hooks/us
 import { type KuzhambuTableSortPosition, KuzhambuAlert } from "@/components";
 
 import { hasPermission } from "@/auth/permission-storage";
+import { isSameId } from "@/types/id";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import * as shareService from "@/pages/classics/common/classics-share-service";
@@ -47,14 +48,14 @@ interface SancaiEntryLifecycleAction {
 
 interface SancaiEntryPanelProps {
     categories?: SancaiCategoryRecord[];
-    categoryId: number | null;
+    categoryId: string | null;
     defaultCreateOpen?: boolean;
     exportJobsDrawerOpen?: boolean;
     isCatalogLoading: boolean;
     keyword?: string | null;
     lifecycleStatus?: string | null;
     refreshVersion: number;
-    volumeId: number | null;
+    volumeId: string | null;
     volumes: SancaiVolumeRecord[];
     onExportJobsDrawerOpenChange?: (open: boolean) => void;
 }
@@ -78,9 +79,9 @@ export const SancaiEntryPanel = ({
     const [isCreating, setIsCreating] = useState(defaultCreateOpen);
     const [isModelOpen, setIsModelOpen] = useState(defaultCreateOpen);
     const [editingEntry, setEditingEntry] = useState<SancaiEntryRecord | null>(null);
-    const [selectedVersionId, setSelectedVersionId] = useState<number | null>(null);
-    const [batchCandidateContentIds, setBatchCandidateContentIds] = useState<number[]>([]);
-    const [batchCandidateTitleById, setBatchCandidateTitleById] = useState<Record<number, string>>(
+    const [selectedVersionId, setSelectedVersionId] = useState<string | null>(null);
+    const [batchCandidateContentIds, setBatchCandidateContentIds] = useState<string[]>([]);
+    const [batchCandidateTitleById, setBatchCandidateTitleById] = useState<Record<string, string>>(
         {}
     );
     const [batchCandidateDrawerOpen, setBatchCandidateDrawerOpen] = useState(false);
@@ -120,7 +121,7 @@ export const SancaiEntryPanel = ({
     const entries = entriesQuery.data || [];
     const detailQuery = useQuery({
         queryKey: ["classics", "sancai", "entries", "detail", editingEntry?.id],
-        queryFn: () => entryService.get(editingEntry?.id ?? 0),
+        queryFn: () => entryService.get(editingEntry?.id ?? ""),
         enabled: isModelOpen && !isCreating && Boolean(editingEntry?.id),
         retry: false
     });
@@ -128,7 +129,7 @@ export const SancaiEntryPanel = ({
     const selectedEntryId = selectedEntry?.id ?? null;
     const versionsQuery = useQuery({
         queryKey: ["classics", "sancai", "entries", "versions", selectedEntry?.id],
-        queryFn: () => entryService.listVersions(selectedEntry?.id ?? 0),
+        queryFn: () => entryService.listVersions(selectedEntry?.id ?? ""),
         enabled: isModelOpen && !isCreating && Boolean(selectedEntry?.id),
         retry: false
     });
@@ -141,14 +142,14 @@ export const SancaiEntryPanel = ({
             selectedEntry?.id,
             selectedVersionId
         ],
-        queryFn: () => entryService.getVersion(selectedEntry?.id ?? 0, selectedVersionId ?? 0),
+        queryFn: () => entryService.getVersion(selectedEntry?.id ?? "", selectedVersionId ?? ""),
         enabled: isModelOpen && Boolean(selectedEntry?.id && selectedVersionId),
         retry: false
     });
     const versions = versionsQuery.data || [];
     const selectedVersion =
         versionDetailQuery.data ||
-        versions.find((version) => version.id === selectedVersionId) ||
+        versions.find((version) => isSameId(version.id, selectedVersionId)) ||
         null;
     const canChangeEntryVisibility = hasClassicsContentPermission(
         "SANCAI_ENTRY",
@@ -165,7 +166,7 @@ export const SancaiEntryPanel = ({
         queryFn: () =>
             aiRefinementTaskService.pageTasks({
                 contentType: "SANCAI_ENTRY",
-                contentId: selectedEntry?.id ?? 0,
+                contentId: selectedEntry?.id ?? "",
                 pageNo: 1,
                 pageSize: 20
             }),
@@ -212,7 +213,7 @@ export const SancaiEntryPanel = ({
         ]);
     }, [queryClient]);
     const refreshAfterLifecycleChange = useCallback(
-        async (entryId: number) => {
+        async (entryId: string) => {
             const refreshes = [invalidateEntries()];
             if (isModelOpen && !isCreating && selectedEntry?.id === entryId) {
                 refreshes.push(
@@ -370,7 +371,7 @@ export const SancaiEntryPanel = ({
         }
     });
     const resetVersionMutation = useMutation({
-        mutationFn: ({ entryId, versionId }: { entryId: number; versionId: number }) =>
+        mutationFn: ({ entryId, versionId }: { entryId: string; versionId: string }) =>
             entryService.resetVersion(entryId, versionId),
         onSuccess: async () => {
             setSelectedVersionId(null);
@@ -548,11 +549,11 @@ export const SancaiEntryPanel = ({
             description:
                 "删除后该记录会从列表移除，并释放其导出产物引用；已无引用的文件对象会进入 Storage 删除流程。",
             okText: "删除",
-            onConfirm: () => deleteExportMutation.mutateAsync(job.id as number)
+            onConfirm: () => deleteExportMutation.mutateAsync(job.id ?? "")
         });
     };
     const deleteExportJobs = (jobs: ClassicsExportJobRecord[]) => {
-        const ids = jobs.map((job) => job.id).filter((id): id is number => id != null);
+        const ids = jobs.map((job) => job.id).filter((id): id is string => Boolean(id));
         if (!ids.length) {
             return;
         }
@@ -618,11 +619,13 @@ export const SancaiEntryPanel = ({
         targetEntry: SancaiEntryRecord,
         position: KuzhambuTableSortPosition
     ) => {
-        if (sourceEntry.id === targetEntry.id) {
+        if (isSameId(sourceEntry.id, targetEntry.id)) {
             return;
         }
-        const remainingEntries = entries.filter((entry) => entry.id !== sourceEntry.id);
-        const targetIndex = remainingEntries.findIndex((entry) => entry.id === targetEntry.id);
+        const remainingEntries = entries.filter((entry) => !isSameId(entry.id, sourceEntry.id));
+        const targetIndex = remainingEntries.findIndex((entry) =>
+            isSameId(entry.id, targetEntry.id)
+        );
         if (targetIndex < 0) {
             return;
         }

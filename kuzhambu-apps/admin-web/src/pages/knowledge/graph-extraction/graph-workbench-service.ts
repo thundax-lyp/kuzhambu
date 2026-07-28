@@ -21,23 +21,23 @@ export interface GraphWorkbenchManuscriptTreeQuery {
 
 export interface GraphWorkbenchManuscriptQuery {
     sourceContentType: GraphWorkbenchSourceContentType;
-    sourceContentId: number;
+    sourceContentId: string;
 }
 
 export interface GraphWorkbenchExtractCommand {
     sourceContentType: GraphWorkbenchSourceContentType;
-    sourceContentId: number;
+    sourceContentId: string;
     taskType: GraphExtractionTaskType;
 }
 
 export interface GraphWorkbenchCandidateQuery {
     sourceContentType: GraphWorkbenchSourceContentType;
-    sourceContentId: number;
+    sourceContentId: string;
     taskType?: GraphExtractionTaskType | null;
 }
 
 export interface GraphWorkbenchCandidateApplyCommand {
-    taskId: number;
+    taskId: string;
 }
 
 export const listManuscriptTree = (request: GraphWorkbenchManuscriptTreeQuery = {}) => {

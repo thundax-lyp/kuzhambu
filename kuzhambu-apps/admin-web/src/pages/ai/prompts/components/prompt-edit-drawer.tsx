@@ -364,21 +364,21 @@ export const PromptEditDrawer = ({
 
     const currentVersionQuery = useQuery({
         queryKey: ["ai", "prompts", "current-version", templateId],
-        queryFn: () => service.getCurrentPromptVersion(templateId || 0),
+        queryFn: () => service.getCurrentPromptVersion(templateId || ""),
         enabled: open && Boolean(templateId),
         retry: false
     });
 
     const versionsQuery = useQuery({
         queryKey: ["ai", "prompts", "versions", templateId],
-        queryFn: () => service.listPromptVersions(templateId || 0),
+        queryFn: () => service.listPromptVersions(templateId || ""),
         enabled: open && Boolean(templateId),
         retry: false
     });
 
     const variablesQuery = useQuery({
         queryKey: ["ai", "prompts", "variables", templateId],
-        queryFn: () => service.listPromptVariables(templateId || 0),
+        queryFn: () => service.listPromptVariables(templateId || ""),
         enabled: open && Boolean(templateId),
         retry: false
     });

@@ -19,7 +19,7 @@ export interface OperationsReportGenerateCommand {
 }
 
 export interface OperationsReportGenerateResult {
-    reportId: number;
+    reportId: string;
     reportStatus?: string | null;
 }
 
@@ -27,13 +27,13 @@ export interface OperationsReportPageQuery {
     reportType?: string | null;
     format?: string | null;
     reportStatus?: string | null;
-    requesterUserId?: number | null;
+    requesterUserId?: string | null;
     periodStart?: string | null;
     periodEnd?: string | null;
 }
 
 export interface OperationsReportDetailCommand {
-    reportId: number;
+    reportId: string;
 }
 
 export const generateReport = (command: OperationsReportGenerateCommand) => {
@@ -57,6 +57,6 @@ export const getReportDetail = (command: OperationsReportDetailCommand) => {
     );
 };
 
-export const toReportDownloadUrl = (reportId: number) => {
+export const toReportDownloadUrl = (reportId: string) => {
     return `${ADMIN_API_BASE_URL}${API_PREFIX}/${encodeURIComponent(reportId)}/content?download=true`;
 };

@@ -66,8 +66,8 @@ const capabilities = [
 
 const models = [
     {
-        modelId: 2001,
-        serviceId: 1001,
+        modelId: "2001",
+        serviceId: "1001",
         modelName: "gpt-4o",
         displayName: "GPT 4o",
         capabilityTags: ["chat", "long-context"],
@@ -80,10 +80,10 @@ const models = [
 
 const mappings = [
     {
-        mappingId: 3001,
+        mappingId: "3001",
         scope: "classics",
         capability: "summary",
-        modelId: 2001,
+        modelId: "2001",
         enabled: true,
         configuredAt: "2026-07-01T00:00:00.000Z"
     }
@@ -105,7 +105,7 @@ describe("CapabilityMappingsPage", () => {
         vi.mocked(service.listCapabilities).mockResolvedValue(capabilities);
         vi.mocked(service.listCapabilityMappings).mockResolvedValue(mappings);
         vi.mocked(service.listEnabledModels).mockResolvedValue(models);
-        vi.mocked(service.changeCapabilityMapping).mockResolvedValue({ id: 3001 });
+        vi.mocked(service.changeCapabilityMapping).mockResolvedValue({ id: "3001" });
     });
 
     afterEach(() => {
@@ -143,10 +143,10 @@ describe("CapabilityMappingsPage", () => {
         await waitFor(() => {
             expect(service.changeCapabilityMapping).toHaveBeenCalledWith(
                 {
-                    mappingId: 3001,
+                    mappingId: "3001",
                     scope: "classics",
                     capability: "summary",
-                    modelId: 2001,
+                    modelId: "2001",
                     enabled: true
                 },
                 expect.anything()
@@ -163,10 +163,10 @@ describe("CapabilityMappingsPage", () => {
         await waitFor(() => {
             expect(service.changeCapabilityMapping).toHaveBeenCalledWith(
                 {
-                    mappingId: 3001,
+                    mappingId: "3001",
                     scope: "classics",
                     capability: "summary",
-                    modelId: 2001,
+                    modelId: "2001",
                     enabled: false
                 },
                 expect.anything()
