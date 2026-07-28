@@ -122,13 +122,17 @@ const generate = (seed: SystemSeed) => {
     { table: "system_department", nextValue: departments.length + 1 },
     { table: "system_user", nextValue: users.length + 1 },
     { table: "system_role", nextValue: roles.length + 1 },
-    { table: "system_menu", nextValue: menus.length + 1 },
+    { table: "system_menu", nextValue: nextAutoIncrement(menus) },
     { table: "system_dict", nextValue: (seed.dicts ?? []).length + 1 },
     { table: "system_auth_principal_identity", nextValue: users.length + 1 },
     { table: "system_auth_principal_credential", nextValue: users.length + 1 },
   ]);
   lines.push("-- Audit has no required seed data.", "");
   return lines.join("\n");
+};
+
+const nextAutoIncrement = (records: Array<{ id: number }>) => {
+  return records.reduce((maxId, record) => Math.max(maxId, record.id), 0) + 1;
 };
 
 const buildRoles = (roles: RoleSeed[]) => {
