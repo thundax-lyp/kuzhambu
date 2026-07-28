@@ -132,6 +132,7 @@
 
 - `ADMIN_WEB_CODE_NO_CONSOLE_LOG`：禁止 `console.log`；临时诊断必须用带原因的 ESLint 单行豁免。
 - `ADMIN_WEB_CODE_NO_EXPLICIT_ANY`：禁止显式 `any`；无法建模的边界必须用带原因的 ESLint 单行豁免。
+- `ADMIN_WEB_TYPE_ID_STRING`：前端业务类型、表单值、React state/ref 中的 `id` / `xxxId` 必须使用 `string`，不得使用 `number`、`number[]` 或 `Array<number>`；从运行时边界读取的历史数字 ID 必须在消费或映射边界显式转为字符串。
 
 ### UI
 
