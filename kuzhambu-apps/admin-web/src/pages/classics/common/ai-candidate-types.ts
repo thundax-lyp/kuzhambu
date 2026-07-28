@@ -3,7 +3,9 @@ export type AiCandidateCapability =
 
 export interface AiCandidateRecord {
     candidateId: number;
+    candidateIdText?: string | null;
     callId?: number | null;
+    callIdText?: string | null;
     capability: AiCandidateCapability | string;
     contentType: string;
     contentId: number;

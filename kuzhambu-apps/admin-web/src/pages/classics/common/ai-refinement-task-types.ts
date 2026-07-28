@@ -21,6 +21,7 @@ export interface AiRefinementTaskRecord {
     traceId?: string | null;
     callId?: number | null;
     candidateId?: number | null;
+    candidateIdText?: string | null;
     failureStage?: string | null;
     errorType?: string | null;
     errorMessage?: string | null;

@@ -105,6 +105,20 @@ describe("AI candidate service request contracts", () => {
         });
     });
 
+    it("gets candidate by stable id text", async () => {
+        await aiCandidateService.get({
+            candidateId: "869897501442834432"
+        });
+
+        expect(capturedCalls.at(-1)).toEqual({
+            body: {
+                candidateId: "869897501442834432"
+            },
+            method: "POST",
+            path: "/ai/invocation/candidate/get"
+        });
+    });
+
     it("applies candidate by invoking classics content apply api", async () => {
         const command: AiCandidateApplyCommand = {
             candidateId: 7001,

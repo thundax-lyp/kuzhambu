@@ -13,6 +13,10 @@ export interface AiCandidateListQuery {
     status?: "PENDING" | "APPLIED" | "REJECTED" | string | null;
 }
 
+export interface AiCandidateGetQuery {
+    candidateId: number | string;
+}
+
 export type AiCandidateApplyCommand = AiCandidateApplyPayload;
 
 export interface AiCandidateRejectCommand {
@@ -31,6 +35,12 @@ export const list = (query: AiCandidateListQuery) => {
             body: query
         }
     );
+};
+
+export const get = (query: AiCandidateGetQuery) => {
+    return postJson<AiCandidateRecord, AiCandidateGetQuery>(`${AI_INVOCATION_CANDIDATE_PATH}/get`, {
+        body: query
+    });
 };
 
 export const apply = (command: AiCandidateApplyCommand) => {
