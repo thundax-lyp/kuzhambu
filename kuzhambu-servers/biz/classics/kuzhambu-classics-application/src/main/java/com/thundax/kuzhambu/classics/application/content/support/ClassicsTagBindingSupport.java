@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.content.support;
 
+import com.thundax.kuzhambu.classics.application.content.assembler.ClassicsContentApplicationAssembler;
 import com.thundax.kuzhambu.classics.application.content.command.ContentTagCommand;
 import com.thundax.kuzhambu.classics.domain.common.codec.KnowledgeTagIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.Versionable;
@@ -37,7 +38,7 @@ public class ClassicsTagBindingSupport {
     }
 
     private ClassicsContentTag bindTag(ContentTagCommand command, Integer priority, boolean aiTag) {
-        ClassicsContentTag tag = command.toEntity();
+        ClassicsContentTag tag = ClassicsContentApplicationAssembler.toTag(command);
         KnowledgeResolveTagFacadeRequest request = KnowledgeResolveTagFacadeRequest.builder()
                 .tagName(command.getTagNameSnapshot())
                 .build();

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
+import com.thundax.kuzhambu.classics.application.sancai.assembler.SancaiApplicationAssembler;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiDraftCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageSortCommand;
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryImageUploadCommand;
@@ -342,7 +343,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public SancaiShowcaseJobResult requestShowcaseJob(SancaiShowcaseCommand command) {
         validateShowcaseCommand(command);
-        SancaiShowcase showcase = command == null ? new SancaiShowcase() : command.toEntity();
+        SancaiShowcase showcase = SancaiApplicationAssembler.toShowcase(command);
         showcase.setStatus(SancaiShowcaseStatus.REQUESTED);
         showcase.setStorageObjectId(null);
         SancaiShowcaseId showcaseId = repository.insertShowcase(showcase);

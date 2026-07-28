@@ -14,6 +14,7 @@ import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
 import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RejectAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
+import com.thundax.kuzhambu.classics.application.content.assembler.ClassicsContentApplicationAssembler;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateApplyContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchApplyContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchRejectContentCommand;
@@ -605,7 +606,7 @@ class ClassicsContentApplicationServiceAiCandidateTest {
         ClassicsTagBindingSupport tagBindingSupport = org.mockito.Mockito.mock(ClassicsTagBindingSupport.class);
         when(tagBindingSupport.bindAiTag(any(ContentTagCommand.class), any())).thenAnswer(invocation -> {
             ContentTagCommand command = invocation.getArgument(0);
-            return command.toEntity();
+            return ClassicsContentApplicationAssembler.toTag(command);
         });
 
         ClassicsContentApplicationServiceImpl service = new ClassicsContentApplicationServiceImpl(

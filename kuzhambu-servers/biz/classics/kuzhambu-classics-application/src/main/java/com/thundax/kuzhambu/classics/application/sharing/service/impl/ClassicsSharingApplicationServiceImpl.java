@@ -9,6 +9,7 @@ import com.thundax.kuzhambu.classics.application.content.support.ClassicsContent
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationItemResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationResult;
 import com.thundax.kuzhambu.classics.application.result.ClassicsStoredContentResult;
+import com.thundax.kuzhambu.classics.application.sharing.assembler.ClassicsSharingApplicationAssembler;
 import com.thundax.kuzhambu.classics.application.sharing.command.BatchShareCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ClassicsShareTargetSortCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
@@ -147,7 +148,8 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
         requireSharePermission(
                 command.getTargets(), command.getOperatorPermissions(), command.getVisibility(), allowPrivateContent);
         String shareToken = shareTokenGenerator.generate();
-        ClassicsShareLink link = command.toLink(shareToken, shareTokenHasher.hash(shareToken));
+        ClassicsShareLink link =
+                ClassicsSharingApplicationAssembler.toLink(command, shareToken, shareTokenHasher.hash(shareToken));
         if (link.getIssuedAt() == null) {
             link.setIssuedAt(new Date());
         }
@@ -157,7 +159,7 @@ public class ClassicsSharingApplicationServiceImpl implements ClassicsSharingApp
                 command.getTargets() == null ? Collections.emptyList() : command.getTargets();
         List<ClassicsShareTarget> savedTargets = new ArrayList<>(targetCommands.size());
         for (ShareTargetCreateCommand targetCommand : targetCommands) {
-            ClassicsShareTarget target = targetCommand.toTarget();
+            ClassicsShareTarget target = ClassicsSharingApplicationAssembler.toTarget(targetCommand);
             bindVersionSnapshot(target, link.getVisibility(), allowPrivateContent);
             target.setShareLinkId(linkId == null ? null : linkId);
             target.setPriority(nextPriority++);

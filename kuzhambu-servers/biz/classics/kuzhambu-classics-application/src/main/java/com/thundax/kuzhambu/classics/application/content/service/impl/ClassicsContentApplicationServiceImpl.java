@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
 import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RejectAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
+import com.thundax.kuzhambu.classics.application.content.assembler.ClassicsContentApplicationAssembler;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateApplyContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchApplyContentCommand;
 import com.thundax.kuzhambu.classics.application.content.command.AiCandidateBatchRejectContentCommand;
@@ -194,7 +195,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         int nextPriority = repository.maxTagPriority(null, null) + 1;
         ClassicsContentTag tag;
         if (tagBindingSupport == null) {
-            tag = command.toEntity();
+            tag = ClassicsContentApplicationAssembler.toTag(command);
         } else if (command.getSource() == ClassicsContentSource.AI) {
             tag = tagBindingSupport.bindAiTag(command, nextPriority);
         } else {
@@ -228,7 +229,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
             throw new BizException("古籍内容标签不属于当前内容");
         }
         ClassicsContentTag tag = tagBindingSupport == null
-                ? command.toEntity()
+                ? ClassicsContentApplicationAssembler.toTag(command)
                 : tagBindingSupport.bindManualTag(command, existing == null ? null : existing.getPriority());
         repository.updateTag(tag);
         if (tagBindingSupport != null) {
@@ -275,7 +276,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ClassicsContentQaPairId addQaPair(ContentQaPairCommand command) {
-        ClassicsContentQaPair qaPair = command.toEntity();
+        ClassicsContentQaPair qaPair = ClassicsContentApplicationAssembler.toQaPair(command);
         qaPair.setId(null);
         qaPair.setPriority(repository.maxQaPairPriority() + 1);
         ClassicsContentQaPairId createdId = repository.insertQaPair(qaPair);
@@ -287,7 +288,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ClassicsContentQaPairId updateQaPair(ContentQaPairCommand command) {
-        ClassicsContentQaPair qaPair = command.toEntity();
+        ClassicsContentQaPair qaPair = ClassicsContentApplicationAssembler.toQaPair(command);
         repository.updateQaPair(qaPair);
         versionAndPublishContentSync(
                 qaPair.getContentType(), qaPair.getContentId(), ClassicsContentChangeType.QA_CHANGED, "更新问答对");
@@ -986,7 +987,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         int nextPriority = repository.maxTagPriority(null, null) + 1;
         ClassicsContentTag tag;
         if (tagBindingSupport == null) {
-            tag = command.toEntity();
+            tag = ClassicsContentApplicationAssembler.toTag(command);
         } else if (command.getSource() == ClassicsContentSource.AI) {
             tag = tagBindingSupport.bindAiTag(command, nextPriority);
         } else {
@@ -1005,7 +1006,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     }
 
     private ClassicsContentQaPairId insertQaPairWithoutVersion(ContentQaPairCommand command) {
-        ClassicsContentQaPair qaPair = command.toEntity();
+        ClassicsContentQaPair qaPair = ClassicsContentApplicationAssembler.toQaPair(command);
         qaPair.setId(null);
         qaPair.setPriority(repository.maxQaPairPriority() + 1);
         return repository.insertQaPair(qaPair);
@@ -1245,7 +1246,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                     snapshot.tagNameSnapshot(),
                     parseSource(snapshot.source()),
                     parseTagStatus(snapshot.status()));
-            ClassicsContentTag tag = command.toEntity();
+            ClassicsContentTag tag = ClassicsContentApplicationAssembler.toTag(command);
             tag.setPriority(priority);
             tag.setId(null);
             repository.insertTag(tag);
@@ -1279,7 +1280,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                     ? tagBindingSupport.bindAiTag(command, priority)
                     : tagBindingSupport.bindManualTag(command, priority);
         }
-        ClassicsContentTag tag = command.toEntity();
+        ClassicsContentTag tag = ClassicsContentApplicationAssembler.toTag(command);
         tag.setId(null);
         tag.setPriority(priority);
         return tag;
@@ -1302,7 +1303,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 snapshot.question(),
                 snapshot.answer(),
                 parseSource(snapshot.source()));
-        ClassicsContentQaPair qaPair = command.toEntity();
+        ClassicsContentQaPair qaPair = ClassicsContentApplicationAssembler.toQaPair(command);
         qaPair.setId(null);
         qaPair.setPriority(fallbackPriority);
         repository.insertQaPair(qaPair);
@@ -1312,7 +1313,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public ClassicsExportJobResult createExportJob(ContentExportCommand command) {
         requirePrivateExportPermission(command);
-        ClassicsContentExportJob job = command.toEntity();
+        ClassicsContentExportJob job = ClassicsContentApplicationAssembler.toExportJob(command);
         if (job.getRequestedAt() == null) {
             job.setRequestedAt(new Date());
         }
