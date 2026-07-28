@@ -51,6 +51,7 @@ vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
         })
     ),
     getTaskFailureText: vi.fn(() => null),
+    getTaskStableId: vi.fn((taskId: number, taskIdText?: string | null) => taskIdText || taskId),
     getTask: vi.fn(() =>
         Promise.resolve({
             taskId: 9001,
