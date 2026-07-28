@@ -12,6 +12,7 @@ import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.impl.AiWorkerInvocationApplicationServiceImpl;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
@@ -51,8 +52,8 @@ class AiWorkerInvocationApplicationServiceTest {
             public void stream(AiInvokeCommand command, Consumer<AiStreamEventResult> eventConsumer) {
                 AiStreamEventResult event = new AiStreamEventResult();
                 event.setEventType("delta");
-                event.setRequestId(new RequestId(command.getRequestId()));
-                event.setTraceId(new TraceId(command.getTraceId()));
+                event.setRequestId(command.getRequestId());
+                event.setTraceId(command.getTraceId());
                 event.setStatus(AiInvocationStatus.RUNNING);
                 eventConsumer.accept(event);
             }
@@ -89,8 +90,8 @@ class AiWorkerInvocationApplicationServiceTest {
             public void stream(AiInvokeCommand command, Consumer<AiStreamEventResult> eventConsumer) {
                 AiStreamEventResult event = new AiStreamEventResult();
                 event.setEventType("error");
-                event.setRequestId(new RequestId(command.getRequestId()));
-                event.setTraceId(new TraceId(command.getTraceId()));
+                event.setRequestId(command.getRequestId());
+                event.setTraceId(command.getTraceId());
                 event.setErrorType("WORKER_PROTOCOL_FAILURE");
                 event.setErrorMessage("bad stream");
                 event.setFailureStage("WORKER_STREAM");
@@ -126,8 +127,8 @@ class AiWorkerInvocationApplicationServiceTest {
             public AiInvokeResult invoke(AiInvokeCommand command) {
                 capturedCommand.set(command);
                 AiInvokeResult result = new AiInvokeResult();
-                result.setRequestId(new RequestId(command.getRequestId()));
-                result.setTraceId(new TraceId(command.getTraceId()));
+                result.setRequestId(command.getRequestId());
+                result.setTraceId(command.getTraceId());
                 result.setStatus(AiInvocationStatus.SUCCEEDED);
                 result.setCapability(command.getCapability());
                 result.setResultFormat("text");
@@ -178,8 +179,8 @@ class AiWorkerInvocationApplicationServiceTest {
             @Override
             public AiInvokeResult invoke(AiInvokeCommand command) {
                 AiInvokeResult result = new AiInvokeResult();
-                result.setRequestId(new RequestId(command.getRequestId()));
-                result.setTraceId(new TraceId(command.getTraceId()));
+                result.setRequestId(command.getRequestId());
+                result.setTraceId(command.getTraceId());
                 result.setStatus(AiInvocationStatus.FAILED);
                 result.setCapability(command.getCapability());
                 result.setResultFormat("TEXT");
@@ -234,8 +235,8 @@ class AiWorkerInvocationApplicationServiceTest {
             @Override
             public AiInvokeResult invoke(AiInvokeCommand command) {
                 AiInvokeResult result = new AiInvokeResult();
-                result.setRequestId(new RequestId(command.getRequestId()));
-                result.setTraceId(new TraceId(command.getTraceId()));
+                result.setRequestId(command.getRequestId());
+                result.setTraceId(command.getTraceId());
                 result.setStatus(AiInvocationStatus.SUCCEEDED);
                 result.setCapability(command.getCapability());
                 result.setResultPayload("{\"ok\":true}");
@@ -275,10 +276,10 @@ class AiWorkerInvocationApplicationServiceTest {
         command.setOperation("translate");
         command.setContentRef(
                 com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable("entry", 10L));
-        command.setModelId(20L);
-        command.setModelName("model-a");
-        command.setRequestId("req-1");
-        command.setTraceId("trace-1");
+        command.setModelId(new AiModelId(20L));
+        command.setModelName(AiModelName.of("model-a"));
+        command.setRequestId(new RequestId("req-1"));
+        command.setTraceId(new TraceId("trace-1"));
         command.setPromptMessagesJson("[{\"role\":\"user\",\"content\":\"hello\"}]");
         command.setInputPayloadJson("{\"text\":\"hello\"}");
         command.setCreateCandidate(false);

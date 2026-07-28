@@ -1,7 +1,6 @@
 package com.thundax.kuzhambu.ai.application.invocation.result;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
-import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiPromptVersionIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
@@ -57,8 +56,11 @@ public class AiInvokeResult {
         candidate.setFailureStage(failureStage);
         candidate.setErrorType(errorType);
         candidate.setErrorMessage(errorMessage);
-        candidate.setPromptVersionId(AiPromptVersionIdCodec.toDomain(command.getPromptVersionId()));
-        candidate.setModelName(AiModelNameCodec.toDomain(command.getModelName()));
+        candidate.setPromptVersionId(AiPromptVersionIdCodec.toDomain(
+                command.getPromptVersionId() == null
+                        ? null
+                        : command.getPromptVersionId().value()));
+        candidate.setModelName(command.getModelName());
         candidate.setRequestedAt(Instant.now());
         return candidate;
     }

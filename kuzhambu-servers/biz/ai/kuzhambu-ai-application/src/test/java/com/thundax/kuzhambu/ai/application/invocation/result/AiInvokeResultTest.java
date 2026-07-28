@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
@@ -21,8 +23,8 @@ class AiInvokeResultTest {
                 "SANCAI_ENTRY", 10L));
         command.setTargetObjectId(
                 new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjectId(20L));
-        command.setPromptVersionId(30L);
-        command.setModelName("model-a");
+        command.setPromptVersionId(new PromptVersionId(30L));
+        command.setModelName(AiModelName.of("model-a"));
         command.setStream(true);
 
         AiInvokeResult result = new AiInvokeResult();
@@ -58,7 +60,7 @@ class AiInvokeResultTest {
         command.setCapability(AiBusinessCapability.CLASSICS_TRANSLATE);
         command.setContentRef(
                 com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable("ENTRY", 10L));
-        command.setModelName("model-a");
+        command.setModelName(AiModelName.of("model-a"));
 
         AiInvokeResult result = new AiInvokeResult();
         result.setStatus(com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus.FAILED);
