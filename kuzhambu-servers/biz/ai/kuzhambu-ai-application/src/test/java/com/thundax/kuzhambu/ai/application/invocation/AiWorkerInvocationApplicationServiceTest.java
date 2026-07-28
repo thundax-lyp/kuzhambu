@@ -51,9 +51,9 @@ class AiWorkerInvocationApplicationServiceTest {
             public void stream(AiInvokeCommand command, Consumer<AiStreamEventResult> eventConsumer) {
                 AiStreamEventResult event = new AiStreamEventResult();
                 event.setEventType("delta");
-                event.setRequestId(command.getRequestId());
-                event.setTraceId(command.getTraceId());
-                event.setStatus("RUNNING");
+                event.setRequestId(new RequestId(command.getRequestId()));
+                event.setTraceId(new TraceId(command.getTraceId()));
+                event.setStatus(AiInvocationStatus.RUNNING);
                 eventConsumer.accept(event);
             }
 
@@ -67,10 +67,10 @@ class AiWorkerInvocationApplicationServiceTest {
 
         AiInvokeResult result = service.stream(command(), event -> {});
 
-        assertEquals("FAILED", result.getStatus());
+        assertEquals(AiInvocationStatus.FAILED, result.getStatus());
         assertEquals("WORKER_PROTOCOL_FAILURE", result.getErrorType());
         assertEquals("Worker stream ended without completed event", result.getErrorMessage());
-        assertEquals(100L, result.getCallId());
+        assertEquals(new AiCallId(100L), result.getCallId());
         assertEquals(
                 AiInvocationStatus.FAILED, repository.updatedInvocationLog.get().getStatus());
         assertFalse(repository.updatedInvocationLog.get().isStreamCompleted());
@@ -89,8 +89,8 @@ class AiWorkerInvocationApplicationServiceTest {
             public void stream(AiInvokeCommand command, Consumer<AiStreamEventResult> eventConsumer) {
                 AiStreamEventResult event = new AiStreamEventResult();
                 event.setEventType("error");
-                event.setRequestId(command.getRequestId());
-                event.setTraceId(command.getTraceId());
+                event.setRequestId(new RequestId(command.getRequestId()));
+                event.setTraceId(new TraceId(command.getTraceId()));
                 event.setErrorType("WORKER_PROTOCOL_FAILURE");
                 event.setErrorMessage("bad stream");
                 event.setFailureStage("WORKER_STREAM");
@@ -109,8 +109,8 @@ class AiWorkerInvocationApplicationServiceTest {
 
         AiInvokeResult result = service.stream(command, event -> {});
 
-        assertEquals("FAILED", result.getStatus());
-        assertEquals(100L, result.getCallId());
+        assertEquals(AiInvocationStatus.FAILED, result.getStatus());
+        assertEquals(new AiCallId(100L), result.getCallId());
         assertNull(result.getCandidateId());
         assertEquals(
                 AiInvocationStatus.FAILED, repository.updatedInvocationLog.get().getStatus());
@@ -126,10 +126,10 @@ class AiWorkerInvocationApplicationServiceTest {
             public AiInvokeResult invoke(AiInvokeCommand command) {
                 capturedCommand.set(command);
                 AiInvokeResult result = new AiInvokeResult();
-                result.setRequestId(command.getRequestId());
-                result.setTraceId(command.getTraceId());
-                result.setStatus("SUCCEEDED");
-                result.setCapability(command.getWorkerCapability());
+                result.setRequestId(new RequestId(command.getRequestId()));
+                result.setTraceId(new TraceId(command.getTraceId()));
+                result.setStatus(AiInvocationStatus.SUCCEEDED);
+                result.setCapability(command.getCapability());
                 result.setResultFormat("text");
                 result.setResultPayload("candidate-result");
                 result.setUsage(AiUsageSnapshot.empty());
@@ -160,11 +160,11 @@ class AiWorkerInvocationApplicationServiceTest {
 
         assertEquals("CLASSICS_SANCAI_SUMMARY", capturedCommand.get().getOperation());
         assertFalse(capturedCommand.get().isStream());
-        assertEquals("classics_summary", result.getCapability());
-        assertEquals(100L, result.getCallId());
+        assertEquals(AiBusinessCapability.CLASSICS_SUMMARY, result.getCapability());
+        assertEquals(new AiCallId(100L), result.getCallId());
         assertEquals("text", repository.updatedInvocationLog.get().getResultFormat());
         assertEquals("candidate-result", repository.updatedInvocationLog.get().getResultPayload());
-        assertEquals(200L, result.getCandidateId());
+        assertEquals(new AiCandidateId(200L), result.getCandidateId());
         assertEquals(100L, repository.savedCandidate.get().getCallId().value());
         assertEquals(
                 AiBusinessCapability.CLASSICS_SUMMARY,
@@ -178,10 +178,10 @@ class AiWorkerInvocationApplicationServiceTest {
             @Override
             public AiInvokeResult invoke(AiInvokeCommand command) {
                 AiInvokeResult result = new AiInvokeResult();
-                result.setRequestId(command.getRequestId());
-                result.setTraceId(command.getTraceId());
-                result.setStatus("FAILED");
-                result.setCapability(command.getCapability().value());
+                result.setRequestId(new RequestId(command.getRequestId()));
+                result.setTraceId(new TraceId(command.getTraceId()));
+                result.setStatus(AiInvocationStatus.FAILED);
+                result.setCapability(command.getCapability());
                 result.setResultFormat("TEXT");
                 result.setResultPayload("should-be-persisted");
                 result.setErrorType("WORKER_PROTOCOL_FAILURE");
@@ -208,9 +208,9 @@ class AiWorkerInvocationApplicationServiceTest {
         command.setCreateCandidate(true);
         AiInvokeResult result = service.invoke(command);
 
-        assertEquals("FAILED", result.getStatus());
-        assertEquals(100L, result.getCallId());
-        assertEquals(200L, result.getCandidateId());
+        assertEquals(AiInvocationStatus.FAILED, result.getStatus());
+        assertEquals(new AiCallId(100L), result.getCallId());
+        assertEquals(new AiCandidateId(200L), result.getCandidateId());
         assertEquals(
                 AiInvocationStatus.FAILED, repository.updatedInvocationLog.get().getStatus());
         assertEquals(
@@ -234,10 +234,10 @@ class AiWorkerInvocationApplicationServiceTest {
             @Override
             public AiInvokeResult invoke(AiInvokeCommand command) {
                 AiInvokeResult result = new AiInvokeResult();
-                result.setRequestId(command.getRequestId());
-                result.setTraceId(command.getTraceId());
-                result.setStatus("SUCCEEDED");
-                result.setCapability(command.getCapability().value());
+                result.setRequestId(new RequestId(command.getRequestId()));
+                result.setTraceId(new TraceId(command.getTraceId()));
+                result.setStatus(AiInvocationStatus.SUCCEEDED);
+                result.setCapability(command.getCapability());
                 result.setResultPayload("{\"ok\":true}");
                 result.setUsage(AiUsageSnapshot.empty());
                 return result;
@@ -261,7 +261,7 @@ class AiWorkerInvocationApplicationServiceTest {
         command.setCreateCandidate(true);
         AiInvokeResult result = service.invoke(command);
 
-        assertEquals("SUCCEEDED", result.getStatus());
+        assertEquals(AiInvocationStatus.SUCCEEDED, result.getStatus());
         assertEquals("JSON", result.getResultFormat());
         assertEquals("JSON", repository.updatedInvocationLog.get().getResultFormat());
         assertEquals("JSON", repository.savedCandidate.get().getResultFormat());

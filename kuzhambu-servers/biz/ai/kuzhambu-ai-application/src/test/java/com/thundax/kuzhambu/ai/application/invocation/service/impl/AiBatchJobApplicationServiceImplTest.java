@@ -146,7 +146,7 @@ public class AiBatchJobApplicationServiceImplTest {
 
         AiBatchJobResult result = service.cancel(1L);
 
-        assertEquals("SUCCEEDED", result.getStatus());
+        assertEquals(AiBatchJobStatus.SUCCEEDED, result.getStatus());
         assertEquals(1, result.getSuccessCount());
         assertEquals(0, result.getCancelledCount());
     }
@@ -166,7 +166,7 @@ public class AiBatchJobApplicationServiceImplTest {
 
         AiBatchJobResult result = service.recordSuccessIfRunning(1L);
 
-        assertEquals("CANCELLED", result.getStatus());
+        assertEquals(AiBatchJobStatus.CANCELLED, result.getStatus());
         assertEquals(0, result.getSuccessCount());
     }
 
@@ -183,7 +183,7 @@ public class AiBatchJobApplicationServiceImplTest {
 
         AiBatchJobResult result = service.recordPartialIfRunning(1L, "{\"errorType\":\"MODEL_SEMANTIC_FAILURE\"}");
 
-        assertEquals("PARTIAL", result.getStatus());
+        assertEquals(AiBatchJobStatus.PARTIAL, result.getStatus());
         assertEquals(1, result.getSuccessCount());
         assertEquals("{\"errorType\":\"MODEL_SEMANTIC_FAILURE\"}", result.getFailureSummaryJson());
     }
@@ -204,7 +204,7 @@ public class AiBatchJobApplicationServiceImplTest {
                 service.page("classics", "summary", null, "SANCAI_ENTRY", 3001L, new PageQuery(1, 10));
 
         assertEquals(1, page.getTotalCount());
-        assertEquals(3001L, page.getRecords().get(0).getContentId());
+        assertEquals(3001L, page.getRecords().get(0).getContentRef().contentId());
     }
 
     private AiBatchJob cancelledJob() {

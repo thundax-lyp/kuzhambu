@@ -61,7 +61,7 @@ class AiInvokeResultTest {
         command.setModelName("model-a");
 
         AiInvokeResult result = new AiInvokeResult();
-        result.setStatus("FAILED");
+        result.setStatus(com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus.FAILED);
         result.setFailureStage("WORKER_RESULT");
         result.setErrorType("WORKER_PROTOCOL_FAILURE");
         result.setErrorMessage("bad");

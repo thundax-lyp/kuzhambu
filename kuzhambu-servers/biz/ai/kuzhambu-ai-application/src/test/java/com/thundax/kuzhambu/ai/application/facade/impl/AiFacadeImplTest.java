@@ -71,7 +71,7 @@ class AiFacadeImplTest {
                         2L,
                         320L,
                         new BigDecimal("12.34"),
-                        List.of(new TopCapabilityResult("DISCOVERY_QA", 5L))));
+                        List.of(new TopCapabilityResult(AiBusinessCapability.DISCOVERY_ANSWER_GENERATION, 5L))));
         AiFacadeImpl facade = newFacade(
                 aiReportApplicationService,
                 mock(AiBatchJobApplicationService.class),
@@ -94,7 +94,9 @@ class AiFacadeImplTest {
         assertEquals(320L, response.getAvgLatencyMs());
         assertEquals(new BigDecimal("12.34"), response.getTotalCostAmount());
         assertEquals(1, response.getTopCapabilities().size());
-        assertEquals("DISCOVERY_QA", response.getTopCapabilities().get(0).getCapability());
+        assertEquals(
+                AiBusinessCapability.DISCOVERY_ANSWER_GENERATION.value(),
+                response.getTopCapabilities().get(0).getCapability());
         assertEquals(5L, response.getTopCapabilities().get(0).getInvocationCount());
     }
 

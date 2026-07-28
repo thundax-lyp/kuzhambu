@@ -44,10 +44,13 @@ class AiReportApplicationServiceImplTest {
         assertEquals(1L, result.getFailedInvocationCount());
         assertEquals(200L, result.getAvgLatencyMs());
         assertEquals(new BigDecimal("4.00"), result.getTotalCostAmount());
-        assertEquals("classics_translate", result.getTopCapabilities().get(0).getCapability());
+        assertEquals(
+                AiBusinessCapability.CLASSICS_TRANSLATE,
+                result.getTopCapabilities().get(0).getCapability());
         assertEquals(2L, result.getTopCapabilities().get(0).getInvocationCount());
         assertEquals(
-                "knowledge_graph_extract", result.getTopCapabilities().get(1).getCapability());
+                AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT,
+                result.getTopCapabilities().get(1).getCapability());
     }
 
     private static AiInvocationLog invocationLog(
