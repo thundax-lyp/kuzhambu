@@ -868,8 +868,7 @@ public final class NamingArchitectureRuleSupport {
 
     private static boolean isApplicationContractSource(Path path) {
         String value = ArchitectureSourceSupport.normalizePath(path);
-        return value.contains("/application/")
-                && (value.endsWith("Command.java") || value.endsWith("Query.java") || value.endsWith("Result.java"));
+        return value.endsWith("Command.java") || value.endsWith("Query.java") || value.endsWith("Result.java");
     }
 
     private static boolean isApplicationModuleSourceRoot(Path sourceRoot) {

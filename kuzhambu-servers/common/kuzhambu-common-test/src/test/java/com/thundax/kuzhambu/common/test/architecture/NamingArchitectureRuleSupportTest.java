@@ -164,6 +164,18 @@ class NamingArchitectureRuleSupportTest {
     }
 
     @Test
+    void applicationContractPackageGateShouldRejectContractsOutsideApplicationPackage() throws Exception {
+        Path source = applicationSourceRoot().resolve("com/thundax/kuzhambu/sample/misc");
+        Files.createDirectories(source);
+        Files.writeString(source.resolve("SampleCreateCommand.java"), "public class SampleCreateCommand {}");
+
+        assertThrows(
+                AssertionError.class,
+                () -> NamingArchitectureRuleSupport.assertApplicationContractSourcesUnderDedicatedPackages(
+                        applicationSourceRoot()));
+    }
+
+    @Test
     void applicationContractPackageGateShouldAllowDedicatedPackages() throws Exception {
         Path application = applicationSourceRoot().resolve("com/thundax/kuzhambu/sample/application/core");
         Files.createDirectories(application.resolve("command"));
@@ -179,7 +191,7 @@ class NamingArchitectureRuleSupportTest {
     }
 
     @Test
-    void applicationContractPackageGateShouldIgnoreContractsOutsideApplicationLayer() throws Exception {
+    void applicationContractPackageGateShouldIgnoreContractsOutsideApplicationModule() throws Exception {
         Path interfaceSourceRoot = tempDir.resolve("kuzhambu-sample-interface/src/main/java");
         Path source = interfaceSourceRoot.resolve("com/thundax/kuzhambu/sample/application/core");
         Files.createDirectories(source);
