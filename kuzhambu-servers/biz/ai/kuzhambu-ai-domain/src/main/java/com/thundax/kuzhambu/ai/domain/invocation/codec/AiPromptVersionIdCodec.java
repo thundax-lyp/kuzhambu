@@ -7,7 +7,7 @@ public final class AiPromptVersionIdCodec {
     private AiPromptVersionIdCodec() {}
 
     public static AiPromptVersionId toDomain(Long value) {
-        return AiPromptVersionId.ofNullable(value);
+        return value == null ? null : new AiPromptVersionId(value);
     }
 
     public static AiPromptVersionId toDomain(String value) {
