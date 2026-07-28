@@ -7,7 +7,7 @@ public final class AiTargetObjectIdCodec {
     private AiTargetObjectIdCodec() {}
 
     public static AiTargetObjectId toDomain(Long value) {
-        return AiTargetObjectId.ofNullable(value);
+        return value == null ? null : new AiTargetObjectId(value);
     }
 
     public static AiTargetObjectId toDomain(String value) {

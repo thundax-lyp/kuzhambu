@@ -9,7 +9,7 @@ public final class MultipartUploadSessionIdCodec {
     private MultipartUploadSessionIdCodec() {}
 
     public static MultipartUploadSessionId toDomain(Long value) {
-        return MultipartUploadSessionId.ofNullable(value);
+        return value == null ? null : new MultipartUploadSessionId(value);
     }
 
     public static Long toValue(MultipartUploadSessionId id) {

@@ -32,6 +32,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeLineageR
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeRelationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.service.KnowledgeGraphExtractionApplicationService;
 import com.thundax.kuzhambu.knowledge.application.graph.support.KnowledgeGraphCandidateApplySupport;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTaskIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphVersion;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.KnowledgeEntity;
@@ -626,7 +627,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
         parentTask.setTriggerSource(triggerSource);
         parentTask.setSelectionScopeJson(selectionScopeJson);
         parentTask.setReplaceUnconfirmedOnly(replaceUnconfirmedOnly);
-        parentTask.setParentTaskId(GraphExtractionTaskId.ofNullable(parentTaskId));
+        parentTask.setParentTaskId(GraphExtractionTaskIdCodec.toDomain(parentTaskId));
         parentTask.setSourceContentType(sourceContentType);
         parentTask.setSourceContentId(sourceContentId);
         parentTask.setRequestedBy(requestedBy);
@@ -775,7 +776,7 @@ public class KnowledgeGraphExtractionApplicationServiceImpl implements Knowledge
                 ? buildTask(
                         batchJobId,
                         resolvedParentTaskId == null
-                                ? GraphExtractionTaskId.ofNullable(parentTaskId)
+                                ? GraphExtractionTaskIdCodec.toDomain(parentTaskId)
                                 : resolvedParentTaskId,
                         taskType,
                         scopeType,

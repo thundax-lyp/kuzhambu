@@ -8,7 +8,7 @@ import com.thundax.kuzhambu.operations.application.report.query.OperationsReport
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportDetailResult;
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportGenerateResult;
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportPageResult;
-import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
+import com.thundax.kuzhambu.operations.domain.report.codec.ReportIdCodec;
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.request.OperationsReportDetailRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.request.OperationsReportGenerateRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.request.OperationsReportPageRequest;
@@ -49,7 +49,7 @@ public final class OperationsReportInterfaceAssembler {
         if (request == null || request.getReportId() == null) {
             return null;
         }
-        return new OperationsReportDetailQuery(ReportId.of(request.getReportId()));
+        return new OperationsReportDetailQuery(ReportIdCodec.toDomain(request.getReportId()));
     }
 
     public static OperationsReportGenerateResponse toResponse(OperationsReportGenerateResult result) {

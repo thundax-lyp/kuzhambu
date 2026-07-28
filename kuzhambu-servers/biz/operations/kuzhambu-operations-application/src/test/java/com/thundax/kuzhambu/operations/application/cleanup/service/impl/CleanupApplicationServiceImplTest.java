@@ -25,21 +25,27 @@ import com.thundax.kuzhambu.operations.application.cleanup.query.OperationsClean
 import com.thundax.kuzhambu.operations.application.cleanup.result.OperationsCleanupDetailResult;
 import com.thundax.kuzhambu.operations.application.cleanup.result.OperationsCleanupPageResult;
 import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthAlertStrategy;
+import com.thundax.kuzhambu.operations.domain.backup.codec.BackupIdCodec;
 import com.thundax.kuzhambu.operations.domain.backup.model.entity.BackupRecord;
 import com.thundax.kuzhambu.operations.domain.backup.model.valueobject.BackupId;
 import com.thundax.kuzhambu.operations.domain.backup.repository.BackupRepository;
+import com.thundax.kuzhambu.operations.domain.cleanup.codec.CleanupItemIdCodec;
+import com.thundax.kuzhambu.operations.domain.cleanup.codec.CleanupJobIdCodec;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.entity.CleanupItem;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.entity.CleanupJob;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.valueobject.CleanupItemId;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.valueobject.CleanupJobId;
 import com.thundax.kuzhambu.operations.domain.cleanup.repository.CleanupJobRepository;
+import com.thundax.kuzhambu.operations.domain.health.codec.HealthCheckIdCodec;
 import com.thundax.kuzhambu.operations.domain.health.model.entity.HealthCheckRecord;
 import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthCheckId;
 import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthTrendBucket;
 import com.thundax.kuzhambu.operations.domain.health.repository.HealthCheckRepository;
+import com.thundax.kuzhambu.operations.domain.report.codec.ReportIdCodec;
 import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
 import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
 import com.thundax.kuzhambu.operations.domain.report.repository.ReportRepository;
+import com.thundax.kuzhambu.operations.domain.task.codec.LongTaskSnapshotIdCodec;
 import com.thundax.kuzhambu.operations.domain.task.model.entity.LongTaskSnapshot;
 import com.thundax.kuzhambu.operations.domain.task.model.valueobject.LongTaskSnapshotId;
 import com.thundax.kuzhambu.operations.domain.task.repository.LongTaskSnapshotRepository;
@@ -56,7 +62,7 @@ class CleanupApplicationServiceImplTest {
     void executeShouldPersistSucceededCleanupJob() {
         InMemoryCleanupJobRepository repository = new InMemoryCleanupJobRepository();
         InMemoryBackupRepository backupRepository = new InMemoryBackupRepository();
-        backupRepository.expiredBackupIds = List.of(BackupId.of(101L), BackupId.of(102L));
+        backupRepository.expiredBackupIds = List.of(BackupIdCodec.toDomain(101L), BackupIdCodec.toDomain(102L));
         backupRepository.records.put(101L, new BackupRecord());
         backupRepository.records.put(102L, new BackupRecord());
         CleanupApplicationServiceImpl service =
@@ -112,7 +118,7 @@ class CleanupApplicationServiceImplTest {
     void executeScheduledShouldAllowSystemRequesterAndApplyPolicyLimit() {
         InMemoryCleanupJobRepository repository = new InMemoryCleanupJobRepository();
         InMemoryBackupRepository backupRepository = new InMemoryBackupRepository();
-        backupRepository.expiredBackupIds = List.of(BackupId.of(101L), BackupId.of(102L));
+        backupRepository.expiredBackupIds = List.of(BackupIdCodec.toDomain(101L), BackupIdCodec.toDomain(102L));
         backupRepository.records.put(101L, new BackupRecord());
         backupRepository.records.put(102L, new BackupRecord());
         CleanupApplicationServiceImpl service =
@@ -154,7 +160,7 @@ class CleanupApplicationServiceImplTest {
     void executeShouldCleanExpiredRuntimeTargetsAndPersistTargetTypes() {
         InMemoryCleanupJobRepository repository = new InMemoryCleanupJobRepository();
         InMemoryReportRepository reportRepository = new InMemoryReportRepository();
-        reportRepository.expiredReportIds = List.of(ReportId.of(301L));
+        reportRepository.expiredReportIds = List.of(ReportIdCodec.toDomain(301L));
         reportRepository.records.put(301L, new ReportRecord());
         CleanupApplicationServiceImpl service = new CleanupApplicationServiceImpl(
                 repository,
@@ -180,7 +186,7 @@ class CleanupApplicationServiceImplTest {
     void executeShouldPersistFailureReasonForRuntimeTargetDeleteMiss() {
         InMemoryCleanupJobRepository repository = new InMemoryCleanupJobRepository();
         InMemoryLongTaskSnapshotRepository longTaskRepository = new InMemoryLongTaskSnapshotRepository();
-        longTaskRepository.expiredSnapshotIds = List.of(LongTaskSnapshotId.of(501L));
+        longTaskRepository.expiredSnapshotIds = List.of(LongTaskSnapshotIdCodec.toDomain(501L));
         CleanupApplicationServiceImpl service = new CleanupApplicationServiceImpl(
                 repository,
                 new InMemoryBackupRepository(),
@@ -204,7 +210,8 @@ class CleanupApplicationServiceImplTest {
     void executeScheduledShouldApplyRetentionAndLimitToHealthCheckTargets() {
         InMemoryCleanupJobRepository repository = new InMemoryCleanupJobRepository();
         InMemoryHealthCheckRepository healthCheckRepository = new InMemoryHealthCheckRepository();
-        healthCheckRepository.expiredCheckIds = List.of(HealthCheckId.of(401L), HealthCheckId.of(402L));
+        healthCheckRepository.expiredCheckIds =
+                List.of(HealthCheckIdCodec.toDomain(401L), HealthCheckIdCodec.toDomain(402L));
         healthCheckRepository.records.put(401L, new HealthCheckRecord());
         healthCheckRepository.records.put(402L, new HealthCheckRecord());
         CleanupApplicationServiceImpl service = new CleanupApplicationServiceImpl(
@@ -243,7 +250,7 @@ class CleanupApplicationServiceImplTest {
     void pageAndDetailShouldMapRepositoryRecords() {
         InMemoryCleanupJobRepository repository = new InMemoryCleanupJobRepository();
         CleanupJob cleanupJob = new CleanupJob(
-                CleanupJobId.of(9001L),
+                CleanupJobIdCodec.toDomain(9001L),
                 "EXPIRED_BACKUP",
                 "SUCCEEDED",
                 3,
@@ -262,7 +269,7 @@ class CleanupApplicationServiceImplTest {
         PageResult<OperationsCleanupPageResult> pageResult = service.page(
                 new OperationsCleanupPageQuery("EXPIRED_BACKUP", "SUCCEEDED", 1001L), new PageQuery(1, 10));
         OperationsCleanupDetailResult detailResult =
-                service.detail(new OperationsCleanupDetailQuery(CleanupJobId.of(9001L)));
+                service.detail(new OperationsCleanupDetailQuery(CleanupJobIdCodec.toDomain(9001L)));
 
         assertEquals(1, pageResult.getRecords().size());
         assertEquals(9001L, pageResult.getRecords().get(0).getCleanupId().value());
@@ -287,7 +294,7 @@ class CleanupApplicationServiceImplTest {
 
         @Override
         public CleanupJobId insert(CleanupJob job) {
-            CleanupJobId cleanupJobId = CleanupJobId.of(nextCleanupId++);
+            CleanupJobId cleanupJobId = CleanupJobIdCodec.toDomain(nextCleanupId++);
             job.setId(cleanupJobId);
             job.setStartedAt(new Date(1_719_000_000_000L));
             jobs.put(cleanupJobId.value(), job);
@@ -314,7 +321,7 @@ class CleanupApplicationServiceImplTest {
 
         @Override
         public CleanupItemId insertItem(CleanupItem item) {
-            CleanupItemId itemId = CleanupItemId.of(nextItemId++);
+            CleanupItemId itemId = CleanupItemIdCodec.toDomain(nextItemId++);
             item.setId(itemId);
             itemsByCleanupId
                     .computeIfAbsent(item.getCleanupId(), key -> new java.util.ArrayList<>())
@@ -379,7 +386,7 @@ class CleanupApplicationServiceImplTest {
 
         @Override
         public BackupId insert(BackupRecord record) {
-            BackupId id = BackupId.of((long) records.size() + 1L);
+            BackupId id = BackupIdCodec.toDomain((long) records.size() + 1L);
             records.put(id.value(), record);
             return id;
         }
@@ -472,7 +479,7 @@ class CleanupApplicationServiceImplTest {
 
         @Override
         public ReportId insert(ReportRecord record) {
-            ReportId id = ReportId.of((long) records.size() + 1L);
+            ReportId id = ReportIdCodec.toDomain((long) records.size() + 1L);
             records.put(id.value(), record);
             return id;
         }
@@ -530,7 +537,7 @@ class CleanupApplicationServiceImplTest {
 
         @Override
         public HealthCheckId insert(HealthCheckRecord record) {
-            HealthCheckId id = HealthCheckId.of((long) records.size() + 1L);
+            HealthCheckId id = HealthCheckIdCodec.toDomain((long) records.size() + 1L);
             records.put(id.value(), record);
             return id;
         }
@@ -570,7 +577,7 @@ class CleanupApplicationServiceImplTest {
 
         @Override
         public LongTaskSnapshotId insert(LongTaskSnapshot snapshot) {
-            LongTaskSnapshotId id = LongTaskSnapshotId.of((long) records.size() + 1L);
+            LongTaskSnapshotId id = LongTaskSnapshotIdCodec.toDomain((long) records.size() + 1L);
             records.put(id.value(), snapshot);
             return id;
         }

@@ -9,7 +9,7 @@ public final class AuditMetaIdCodec {
     private AuditMetaIdCodec() {}
 
     public static AuditMetaId toDomain(Long value) {
-        return AuditMetaId.ofNullable(value);
+        return value == null ? null : new AuditMetaId(value);
     }
 
     public static Long toValue(AuditMetaId id) {

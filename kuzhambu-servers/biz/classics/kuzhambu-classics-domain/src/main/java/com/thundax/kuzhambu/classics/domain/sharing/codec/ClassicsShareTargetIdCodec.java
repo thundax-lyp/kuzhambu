@@ -7,7 +7,7 @@ public final class ClassicsShareTargetIdCodec {
     private ClassicsShareTargetIdCodec() {}
 
     public static ClassicsShareTargetId toDomain(Long value) {
-        return ClassicsShareTargetId.ofNullable(value);
+        return value == null ? null : new ClassicsShareTargetId(value);
     }
 
     public static Long toValue(ClassicsShareTargetId id) {

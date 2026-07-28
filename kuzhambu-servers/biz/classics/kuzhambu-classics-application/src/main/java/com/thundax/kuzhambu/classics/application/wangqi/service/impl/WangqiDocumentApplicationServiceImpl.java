@@ -148,7 +148,7 @@ public class WangqiDocumentApplicationServiceImpl implements WangqiDocumentAppli
             throw new BizException("王圻原始文件上传失败");
         }
         bindStorageOwner(uploadResponse.getStorageObjectId(), documentId);
-        document.setStorageObjectId(StorageObjectId.of(uploadResponse.getStorageObjectId()));
+        document.setStorageObjectId(StorageObjectIdCodec.toDomain(uploadResponse.getStorageObjectId()));
         document.setContentUpdatedAt(new Date());
         markVersion(document, replacing ? "替换原始文件" : "上传原始文件");
         publishSearchSyncAfterCommit(document);

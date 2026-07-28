@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.domain.sancai.model.entity;
 
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.Versionable;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
@@ -79,7 +80,7 @@ public class SancaiEntry implements Sortable, Versionable {
 
     @Override
     public ClassicsContentId contentId() {
-        return ClassicsContentId.ofNullable(id == null ? null : id.value());
+        return ClassicsContentIdCodec.toDomain(id == null ? null : id.value());
     }
 
     @Override

@@ -9,7 +9,7 @@ public final class AuditLogIdCodec {
     private AuditLogIdCodec() {}
 
     public static AuditLogId toDomain(Long value) {
-        return AuditLogId.ofNullable(value);
+        return value == null ? null : new AuditLogId(value);
     }
 
     public static AuditLogId toDomain(String value) {

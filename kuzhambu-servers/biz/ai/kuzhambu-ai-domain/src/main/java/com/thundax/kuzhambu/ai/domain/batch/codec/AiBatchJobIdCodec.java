@@ -7,7 +7,7 @@ public final class AiBatchJobIdCodec {
     private AiBatchJobIdCodec() {}
 
     public static AiBatchJobId toDomain(Long value) {
-        return AiBatchJobId.ofNullable(value);
+        return value == null ? null : new AiBatchJobId(value);
     }
 
     public static AiBatchJobId toDomain(String value) {

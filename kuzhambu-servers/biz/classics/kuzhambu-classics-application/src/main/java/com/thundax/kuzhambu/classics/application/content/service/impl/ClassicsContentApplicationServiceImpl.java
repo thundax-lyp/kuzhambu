@@ -40,6 +40,7 @@ import com.thundax.kuzhambu.classics.domain.common.client.dto.WorkerRenderDtos;
 import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
 import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentTagIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.Versionable;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentExportJob;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentQaPair;
@@ -60,12 +61,12 @@ import com.thundax.kuzhambu.classics.domain.content.service.ClassicsContentVersi
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsContentFormat;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVisualAsset;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTranslationStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
@@ -188,7 +189,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     @Transactional(rollbackFor = Exception.class)
     public ClassicsContentTagId addTag(ContentTagCommand command) {
         validateTagCommand(command, false);
-        ClassicsContentId contentId = ClassicsContentId.of(command.getContentId());
+        ClassicsContentId contentId = ClassicsContentIdCodec.toDomain(command.getContentId());
         ClassicsContentType contentType = command.getContentType();
         int nextPriority = repository.maxTagPriority(null, null) + 1;
         ClassicsContentTag tag;
@@ -217,9 +218,9 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     public ClassicsContentTagId updateTag(ContentTagCommand command) {
         validateTagCommand(command, true);
         ClassicsContentType contentType = command.getContentType();
-        ClassicsContentId contentId = ClassicsContentId.of(command.getContentId());
+        ClassicsContentId contentId = ClassicsContentIdCodec.toDomain(command.getContentId());
         ClassicsContentTag existing =
-                repository.getTagById(command == null ? null : ClassicsContentTagId.of(command.getId()));
+                repository.getTagById(command == null ? null : ClassicsContentTagIdCodec.toDomain(command.getId()));
         if (existing == null) {
             throw new BizException("古籍内容标签不存在");
         }
@@ -412,7 +413,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
 
         ClassicsContentType contentType = command.getContentType();
         String capability = command.getCapability();
-        ClassicsContentId contentId = ClassicsContentId.of(command.getContentId());
+        ClassicsContentId contentId = ClassicsContentIdCodec.toDomain(command.getContentId());
         String changeSummary = resolveChangeSummary(capability, command.getChangeSummary());
         Versionable content = null;
 
@@ -759,7 +760,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
         if (sancaiAssetApplicationService == null || contentId == null || objectId == null) {
             return null;
         }
-        return sancaiAssetApplicationService.listVisualAssets(SancaiEntryId.of(contentId.value())).stream()
+        return sancaiAssetApplicationService.listVisualAssets(SancaiEntryIdCodec.toDomain(contentId.value())).stream()
                 .filter(visualAsset -> visualAsset != null
                         && visualAsset.getId() != null
                         && objectId.equals(visualAsset.getId().value()))
@@ -784,16 +785,18 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private void applySancaiFusionCandidate(ClassicsContentId contentId, AiCandidateApplyContentCommand command) {
         SancaiVisualAsset visualAsset = requireSancaiVisualAsset(contentId, command);
         sancaiAssetApplicationService.applyFusionDescription(
-                SancaiEntryId.of(contentId.value()), visualAsset.getId(), parseRequiredCandidateText(command, "信息融合"));
+                SancaiEntryIdCodec.toDomain(contentId.value()),
+                visualAsset.getId(),
+                parseRequiredCandidateText(command, "信息融合"));
     }
 
     private SancaiVisualAsset applySancaiImageGenCandidate(
             ClassicsContentId contentId, AiCandidateApplyContentCommand command) {
         SancaiVisualAsset visualAsset = requireSancaiVisualAsset(contentId, command);
         return sancaiAssetApplicationService.createGeneratedVisualAssetVersion(
-                SancaiEntryId.of(contentId.value()),
+                SancaiEntryIdCodec.toDomain(contentId.value()),
                 visualAsset.getId(),
-                StorageObjectId.of(parseGeneratedStorageObjectId(command)));
+                StorageObjectIdCodec.toDomain(parseGeneratedStorageObjectId(command)));
     }
 
     private SancaiVisualAsset requireSancaiVisualAsset(
@@ -979,7 +982,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     }
 
     private ClassicsContentTagId insertTagWithoutVersion(ContentTagCommand command) {
-        ClassicsContentId contentId = ClassicsContentId.of(command.getContentId());
+        ClassicsContentId contentId = ClassicsContentIdCodec.toDomain(command.getContentId());
         int nextPriority = repository.maxTagPriority(null, null) + 1;
         ClassicsContentTag tag;
         if (tagBindingSupport == null) {
@@ -1412,7 +1415,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
                 command.getContentType() == null
                         ? null
                         : command.getContentType().value(),
-                ClassicsContentId.of(command.getContentId()));
+                ClassicsContentIdCodec.toDomain(command.getContentId()));
         String tagName = StringUtils.trimToNull(command.getTagNameSnapshot());
         if (tagName == null) {
             throw new BizException("古籍内容标签名称不能为空");
@@ -1772,7 +1775,7 @@ public class ClassicsContentApplicationServiceImpl implements ClassicsContentApp
     private StorageObjectId toStorageObjectId(UploadStorageFacadeResponse uploadResponse) {
         return uploadResponse == null || uploadResponse.getStorageObjectId() == null
                 ? null
-                : StorageObjectId.of(uploadResponse.getStorageObjectId());
+                : StorageObjectIdCodec.toDomain(uploadResponse.getStorageObjectId());
     }
 
     private byte[] artifactContent(WorkerRenderDtos.Artifact artifact) {

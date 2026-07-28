@@ -4,9 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.infra.sancai.persistence.assembler.SancaiPersistenceAssembler;
 import com.thundax.kuzhambu.classics.infra.sancai.persistence.dataobject.SancaiEntryDO;
 import java.util.Date;
@@ -19,8 +19,8 @@ class SancaiVersionableMappingTest {
         Date versionedAt = new Date(2_000L);
         Date contentUpdatedAt = new Date(3_000L);
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(10L));
-        entry.setCurrentVersionId(ClassicsContentVersionId.of(20L));
+        entry.setId(SancaiEntryIdCodec.toDomain(10L));
+        entry.setCurrentVersionId(ClassicsContentVersionIdCodec.toDomain(20L));
         entry.setCurrentVersionNo(2);
         entry.setCurrentVersionedAt(versionedAt);
         entry.setContentUpdatedAt(contentUpdatedAt);
@@ -39,7 +39,7 @@ class SancaiVersionableMappingTest {
     @Test
     void contentUpdatedAtShouldBeGeneratedWhenContentIsSavedWithoutExplicitValue() {
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(10L));
+        entry.setId(SancaiEntryIdCodec.toDomain(10L));
 
         SancaiEntryDO dataObject = SancaiPersistenceAssembler.toEntryObject(entry);
 
@@ -49,7 +49,7 @@ class SancaiVersionableMappingTest {
     @Test
     void nonVersionActionsShouldNotCarryVersionMarkerFields() {
         SancaiEntry statusOnly = new SancaiEntry();
-        statusOnly.setId(SancaiEntryId.of(10L));
+        statusOnly.setId(SancaiEntryIdCodec.toDomain(10L));
 
         SancaiEntryDO dataObject = SancaiPersistenceAssembler.toEntryObject(statusOnly);
 

@@ -12,7 +12,7 @@ import com.thundax.kuzhambu.common.web.response.PageResponseHelper;
 import com.thundax.kuzhambu.operations.application.report.query.OperationsReportDetailQuery;
 import com.thundax.kuzhambu.operations.application.report.result.OperationsReportDownloadResult;
 import com.thundax.kuzhambu.operations.application.report.service.ReportApplicationService;
-import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
+import com.thundax.kuzhambu.operations.domain.report.codec.ReportIdCodec;
 import com.thundax.kuzhambu.operations.interfaces.admin.report.assembler.OperationsReportInterfaceAssembler;
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.request.OperationsReportDetailRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.report.controller.request.OperationsReportGenerateRequest;
@@ -120,7 +120,7 @@ public class OperationsReportAdminController {
             HttpServletResponse response)
             throws IOException {
         OperationsReportDownloadResult result =
-                reportApplicationService.download(new OperationsReportDetailQuery(ReportId.of(reportId)));
+                reportApplicationService.download(new OperationsReportDetailQuery(ReportIdCodec.toDomain(reportId)));
         response.setContentType(
                 StringUtils.defaultIfBlank(result.getContentType(), MediaType.APPLICATION_OCTET_STREAM_VALUE));
         if (result.getContentLength() != null) {

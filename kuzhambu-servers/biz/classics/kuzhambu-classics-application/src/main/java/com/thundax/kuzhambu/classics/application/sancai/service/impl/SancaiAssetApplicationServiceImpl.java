@@ -170,7 +170,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
         image.setStorageObjectId(
                 uploadResponse == null || uploadResponse.getStorageObjectId() == null
                         ? null
-                        : StorageObjectId.of(uploadResponse.getStorageObjectId()));
+                        : StorageObjectIdCodec.toDomain(uploadResponse.getStorageObjectId()));
         image.setImageType(command.getImageType());
         image.setTitle(command.getTitle());
         image.setCurrentUsed(command.isCurrentUsed());
@@ -780,7 +780,7 @@ public class SancaiAssetApplicationServiceImpl implements SancaiAssetApplication
     private StorageObjectId toStorageObjectId(UploadStorageFacadeResponse uploadResponse) {
         return uploadResponse == null || uploadResponse.getStorageObjectId() == null
                 ? null
-                : StorageObjectId.of(uploadResponse.getStorageObjectId());
+                : StorageObjectIdCodec.toDomain(uploadResponse.getStorageObjectId());
     }
 
     private static boolean isSuccess(WorkerRenderDtos.WorkerRenderResponse response) {

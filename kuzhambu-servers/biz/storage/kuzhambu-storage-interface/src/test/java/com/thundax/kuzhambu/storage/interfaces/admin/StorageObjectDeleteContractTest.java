@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.storage.application.service.StorageApplicationService;
+import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
@@ -51,7 +52,7 @@ class StorageObjectDeleteContractTest {
 
         assertTrue(controller.delete(request));
 
-        assertEquals(List.of(StoredObjectId.of(1L), StoredObjectId.of(2L)), removedIds);
+        assertEquals(List.of(StoredObjectIdCodec.toDomain(1L), StoredObjectIdCodec.toDomain(2L)), removedIds);
     }
 
     @Test
@@ -62,7 +63,7 @@ class StorageObjectDeleteContractTest {
         request.setIds(List.of(101L));
 
         assertTrue(controller.delete(request));
-        assertEquals(List.of(StoredObjectId.of(101L)), removedIds);
+        assertEquals(List.of(StoredObjectIdCodec.toDomain(101L)), removedIds);
     }
 
     @Test

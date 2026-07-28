@@ -1,9 +1,9 @@
 package com.thundax.kuzhambu.operations.infra.cleanup.persistence.assembler;
 
+import com.thundax.kuzhambu.operations.domain.cleanup.codec.CleanupItemIdCodec;
+import com.thundax.kuzhambu.operations.domain.cleanup.codec.CleanupJobIdCodec;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.entity.CleanupItem;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.entity.CleanupJob;
-import com.thundax.kuzhambu.operations.domain.cleanup.model.valueobject.CleanupItemId;
-import com.thundax.kuzhambu.operations.domain.cleanup.model.valueobject.CleanupJobId;
 import com.thundax.kuzhambu.operations.infra.cleanup.persistence.dataobject.CleanupItemDO;
 import com.thundax.kuzhambu.operations.infra.cleanup.persistence.dataobject.CleanupJobDO;
 import java.util.ArrayList;
@@ -34,7 +34,7 @@ public final class CleanupPersistenceAssembler {
         return dataObject == null
                 ? null
                 : new CleanupJob(
-                        CleanupJobId.ofNullable(dataObject.getCleanupId()),
+                        CleanupJobIdCodec.toDomain(dataObject.getCleanupId()),
                         dataObject.getCleanupType(),
                         dataObject.getCleanupStatus(),
                         dataObject.getTotalCount(),
@@ -65,7 +65,7 @@ public final class CleanupPersistenceAssembler {
         return dataObject == null
                 ? null
                 : new CleanupItem(
-                        CleanupItemId.ofNullable(dataObject.getCleanupItemId()),
+                        CleanupItemIdCodec.toDomain(dataObject.getCleanupItemId()),
                         dataObject.getCleanupId(),
                         dataObject.getTargetType(),
                         dataObject.getTargetId(),

@@ -7,7 +7,7 @@ import com.thundax.kuzhambu.operations.application.cleanup.query.OperationsClean
 import com.thundax.kuzhambu.operations.application.cleanup.query.OperationsCleanupPageQuery;
 import com.thundax.kuzhambu.operations.application.cleanup.result.OperationsCleanupDetailResult;
 import com.thundax.kuzhambu.operations.application.cleanup.result.OperationsCleanupPageResult;
-import com.thundax.kuzhambu.operations.domain.cleanup.model.valueobject.CleanupJobId;
+import com.thundax.kuzhambu.operations.domain.cleanup.codec.CleanupJobIdCodec;
 import com.thundax.kuzhambu.operations.interfaces.admin.cleanup.controller.request.OperationsCleanupDetailRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.cleanup.controller.request.OperationsCleanupExecuteRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.cleanup.controller.request.OperationsCleanupPageRequest;
@@ -38,7 +38,7 @@ public final class OperationsCleanupInterfaceAssembler {
         if (request == null || request.getCleanupId() == null) {
             return null;
         }
-        return new OperationsCleanupDetailQuery(CleanupJobId.of(request.getCleanupId()));
+        return new OperationsCleanupDetailQuery(CleanupJobIdCodec.toDomain(request.getCleanupId()));
     }
 
     public static OperationsCleanupExecuteResponse toResponse(OperationsCleanupDetailResult result) {

@@ -7,7 +7,7 @@ public final class ReportIdCodec {
     private ReportIdCodec() {}
 
     public static ReportId toDomain(Long value) {
-        return ReportId.ofNullable(value);
+        return value == null ? null : new ReportId(value);
     }
 
     public static Long toValue(ReportId id) {

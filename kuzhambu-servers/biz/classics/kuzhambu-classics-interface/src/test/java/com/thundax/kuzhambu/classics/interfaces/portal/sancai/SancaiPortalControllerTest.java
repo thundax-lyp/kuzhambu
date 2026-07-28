@@ -10,14 +10,19 @@ import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQue
 import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageContent;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiAssetApplicationService;
-import com.thundax.kuzhambu.classics.domain.common.model.valueobject.KnowledgeTagId;
-import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
+import com.thundax.kuzhambu.classics.domain.common.codec.KnowledgeTagIdCodec;
+import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentTagIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentSource;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentTagStatus;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiCategoryIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryImageIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVisualAssetIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVolumeIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategoryOverview;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
@@ -30,11 +35,6 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryLifecy
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisualAssetStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVolumeType;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiCategoryId;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisualAssetId;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVolumeId;
 import com.thundax.kuzhambu.classics.interfaces.portal.sancai.controller.SancaiPortalController;
 import com.thundax.kuzhambu.classics.interfaces.portal.sancai.controller.request.SancaiPortalEntrySearchRequest;
 import com.thundax.kuzhambu.common.core.exception.BizException;
@@ -164,21 +164,26 @@ class SancaiPortalControllerTest {
                 new Class<?>[] {SancaiApplicationService.class},
                 (proxy, method, args) -> {
                     if ("listCategories".equals(method.getName())) {
-                        return List.of(new SancaiCategory(SancaiCategoryId.of(2L), "天文", SancaiCategoryType.FORMAL, 1));
+                        return List.of(new SancaiCategory(
+                                SancaiCategoryIdCodec.toDomain(2L), "天文", SancaiCategoryType.FORMAL, 1));
                     }
                     if ("listCategoryOverviews".equals(method.getName())) {
                         return List.of(new SancaiCategoryOverview(
-                                SancaiCategoryId.of(2L),
+                                SancaiCategoryIdCodec.toDomain(2L),
                                 12L,
                                 8L,
-                                SancaiEntryId.of(3001L),
-                                SancaiEntryImageId.of(8001L),
+                                SancaiEntryIdCodec.toDomain(3001L),
+                                SancaiEntryImageIdCodec.toDomain(8001L),
                                 "天图"));
                     }
                     if ("listVolumes".equals(method.getName())) {
-                        assertEquals(SancaiCategoryId.of(2L), args[0]);
+                        assertEquals(SancaiCategoryIdCodec.toDomain(2L), args[0]);
                         return List.of(new SancaiVolume(
-                                SancaiVolumeId.of(101L), SancaiCategoryId.of(2L), "天文卷一", SancaiVolumeType.MAIN, 1));
+                                SancaiVolumeIdCodec.toDomain(101L),
+                                SancaiCategoryIdCodec.toDomain(2L),
+                                "天文卷一",
+                                SancaiVolumeType.MAIN,
+                                1));
                     }
                     if ("pageEntries".equals(method.getName())) {
                         SancaiEntryPageQuery query = (SancaiEntryPageQuery) args[0];
@@ -194,7 +199,7 @@ class SancaiPortalControllerTest {
                         return PageResult.of(1, 100, 1, List.of(publicEntry()));
                     }
                     if ("getEntry".equals(method.getName())) {
-                        if (SancaiEntryId.of(3002L).equals(args[0])) {
+                        if (SancaiEntryIdCodec.toDomain(3002L).equals(args[0])) {
                             SancaiEntry entry = publicEntry();
                             entry.setVisibility(SancaiEntryVisibility.PRIVATE);
                             return entry;
@@ -234,7 +239,7 @@ class SancaiPortalControllerTest {
                 (proxy, method, args) -> {
                     if ("listTags".equals(method.getName())) {
                         assertEquals("SANCAI_ENTRY", args[0]);
-                        assertEquals(ClassicsContentId.of(3001L), args[1]);
+                        assertEquals(ClassicsContentIdCodec.toDomain(3001L), args[1]);
                         return List.of(tag());
                     }
                     throw new UnsupportedOperationException(method.getName());
@@ -243,8 +248,8 @@ class SancaiPortalControllerTest {
 
     private static SancaiEntry publicEntry() {
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(3001L));
-        entry.setVolumeId(SancaiVolumeId.of(101L));
+        entry.setId(SancaiEntryIdCodec.toDomain(3001L));
+        entry.setVolumeId(SancaiVolumeIdCodec.toDomain(101L));
         entry.setTitle("天地");
         entry.setOriginalText("天地玄黄");
         entry.setTranslationText("天地的译文");
@@ -256,10 +261,10 @@ class SancaiPortalControllerTest {
 
     private static ClassicsContentTag tag() {
         ClassicsContentTag tag = new ClassicsContentTag();
-        tag.setId(ClassicsContentTagId.of(6001L));
+        tag.setId(ClassicsContentTagIdCodec.toDomain(6001L));
         tag.setContentType(ClassicsContentType.SANCAI_ENTRY);
-        tag.setContentId(ClassicsContentId.of(3001L));
-        tag.setTagId(KnowledgeTagId.of(7001L));
+        tag.setContentId(ClassicsContentIdCodec.toDomain(3001L));
+        tag.setTagId(KnowledgeTagIdCodec.toDomain(7001L));
         tag.setTagNameSnapshot("三才");
         tag.setSource(ClassicsContentSource.MANUAL);
         tag.setStatus(ClassicsContentTagStatus.ACTIVE);
@@ -269,9 +274,9 @@ class SancaiPortalControllerTest {
 
     private static SancaiEntryImage image() {
         SancaiEntryImage image = new SancaiEntryImage();
-        image.setId(SancaiEntryImageId.of(8001L));
-        image.setEntryId(SancaiEntryId.of(3001L));
-        image.setStorageObjectId(StorageObjectId.of(7001L));
+        image.setId(SancaiEntryImageIdCodec.toDomain(8001L));
+        image.setEntryId(SancaiEntryIdCodec.toDomain(3001L));
+        image.setStorageObjectId(StorageObjectIdCodec.toDomain(7001L));
         image.setImageType(SancaiEntryImageType.ORIGINAL);
         image.setTitle("原图");
         image.setCurrentUsed(true);
@@ -281,12 +286,12 @@ class SancaiPortalControllerTest {
 
     private static SancaiVisualAsset visualAsset() {
         SancaiVisualAsset visualAsset = new SancaiVisualAsset();
-        visualAsset.setId(SancaiVisualAssetId.of(5001L));
-        visualAsset.setEntryId(SancaiEntryId.of(3001L));
+        visualAsset.setId(SancaiVisualAssetIdCodec.toDomain(5001L));
+        visualAsset.setEntryId(SancaiEntryIdCodec.toDomain(3001L));
         visualAsset.setVersionNo(1);
         visualAsset.setStatus(SancaiVisualAssetStatus.READY);
-        visualAsset.setSourceImageStorageObjectId(StorageObjectId.of(7001L));
-        visualAsset.setGeneratedImageStorageObjectId(StorageObjectId.of(7002L));
+        visualAsset.setSourceImageStorageObjectId(StorageObjectIdCodec.toDomain(7001L));
+        visualAsset.setGeneratedImageStorageObjectId(StorageObjectIdCodec.toDomain(7002L));
         visualAsset.setCurrentUsed(true);
         visualAsset.setImageAnalysisMarkdown("图片理解");
         visualAsset.setFusionDescription("融合描述");

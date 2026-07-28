@@ -14,7 +14,7 @@ import com.thundax.kuzhambu.operations.application.restore.result.OperationsRest
 import com.thundax.kuzhambu.operations.application.restore.result.OperationsRestoreExecuteResult;
 import com.thundax.kuzhambu.operations.application.restore.result.OperationsRestorePageResult;
 import com.thundax.kuzhambu.operations.application.restore.service.RestoreApplicationService;
-import com.thundax.kuzhambu.operations.domain.restore.model.valueobject.RestoreId;
+import com.thundax.kuzhambu.operations.domain.restore.codec.RestoreIdCodec;
 import com.thundax.kuzhambu.operations.interfaces.admin.restore.controller.request.OperationsRestoreDetailRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.restore.controller.request.OperationsRestoreExecuteRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.restore.controller.request.OperationsRestorePageRequest;
@@ -56,7 +56,7 @@ class OperationsRestoreAdminControllerTest {
         OperationsRestoreAdminController controller = new OperationsRestoreAdminController(service);
         when(service.execute(any()))
                 .thenReturn(new OperationsRestoreExecuteResult(
-                        RestoreId.of(9101L),
+                        RestoreIdCodec.toDomain(9101L),
                         9001L,
                         9201L,
                         "DRILL",
@@ -73,7 +73,7 @@ class OperationsRestoreAdminControllerTest {
                         10,
                         1L,
                         List.of(new OperationsRestorePageResult(
-                                RestoreId.of(9101L),
+                                RestoreIdCodec.toDomain(9101L),
                                 9001L,
                                 9201L,
                                 "DRILL",
@@ -87,7 +87,7 @@ class OperationsRestoreAdminControllerTest {
                                 new Date(1_719_630_500_000L)))));
         when(service.detail(any()))
                 .thenReturn(new OperationsRestoreDetailResult(
-                        RestoreId.of(9101L),
+                        RestoreIdCodec.toDomain(9101L),
                         9001L,
                         9201L,
                         "DRILL",

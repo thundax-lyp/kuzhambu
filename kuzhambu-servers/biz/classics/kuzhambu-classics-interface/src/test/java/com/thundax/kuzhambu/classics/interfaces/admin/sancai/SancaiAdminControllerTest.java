@@ -14,16 +14,19 @@ import com.thundax.kuzhambu.classics.application.sancai.command.SancaiEntryStatu
 import com.thundax.kuzhambu.classics.application.sancai.command.SancaiVolumeCommand;
 import com.thundax.kuzhambu.classics.application.sancai.query.SancaiEntryPageQuery;
 import com.thundax.kuzhambu.classics.application.sancai.service.SancaiApplicationService;
-import com.thundax.kuzhambu.classics.domain.common.model.valueobject.KnowledgeTagId;
+import com.thundax.kuzhambu.classics.domain.common.codec.KnowledgeTagIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentTagIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentTag;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentSource;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentTagStatus;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentTagId;
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiCategoryIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVolumeIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiCategory;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVolume;
@@ -35,9 +38,6 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryTransl
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisualAssetStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVolumeType;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiCategoryId;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVolumeId;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.SancaiAdminController;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiCategoryRequest;
 import com.thundax.kuzhambu.classics.interfaces.admin.sancai.controller.request.SancaiEntryPageRequest;
@@ -462,12 +462,13 @@ class SancaiAdminControllerTest {
                 new Class<?>[] {SancaiApplicationService.class},
                 (proxy, method, args) -> {
                     if ("listCategories".equals(method.getName())) {
-                        return List.of(
-                                new SancaiCategory(SancaiCategoryId.of(2L), "天文", SancaiCategoryType.FORMAL, 10));
+                        return List.of(new SancaiCategory(
+                                SancaiCategoryIdCodec.toDomain(2L), "天文", SancaiCategoryType.FORMAL, 10));
                     }
                     if ("getCategory".equals(method.getName())) {
-                        assertEquals(SancaiCategoryId.of(2L), args[0]);
-                        return new SancaiCategory(SancaiCategoryId.of(2L), "天文", SancaiCategoryType.FORMAL, 10);
+                        assertEquals(SancaiCategoryIdCodec.toDomain(2L), args[0]);
+                        return new SancaiCategory(
+                                SancaiCategoryIdCodec.toDomain(2L), "天文", SancaiCategoryType.FORMAL, 10);
                     }
                     if ("addCategory".equals(method.getName())) {
                         SancaiCategoryCommand command = (SancaiCategoryCommand) args[0];
@@ -475,7 +476,7 @@ class SancaiAdminControllerTest {
                         assertEquals("天文", command.getTitle());
                         assertEquals(SancaiCategoryType.FORMAL, command.getCategoryType());
                         assertEquals(null, command.getPriority());
-                        return SancaiCategoryId.of(2L);
+                        return SancaiCategoryIdCodec.toDomain(2L);
                     }
                     if ("updateCategory".equals(method.getName())) {
                         SancaiCategoryCommand command = (SancaiCategoryCommand) args[0];
@@ -483,21 +484,29 @@ class SancaiAdminControllerTest {
                         assertEquals("天文", command.getTitle());
                         assertEquals(SancaiCategoryType.FORMAL, command.getCategoryType());
                         assertEquals(null, command.getPriority());
-                        return SancaiCategoryId.of(2L);
+                        return SancaiCategoryIdCodec.toDomain(2L);
                     }
                     if ("deleteCategory".equals(method.getName())) {
-                        assertEquals(SancaiCategoryId.of(2L), args[0]);
+                        assertEquals(SancaiCategoryIdCodec.toDomain(2L), args[0]);
                         return null;
                     }
                     if ("listVolumes".equals(method.getName())) {
-                        assertEquals(SancaiCategoryId.of(2L), args[0]);
+                        assertEquals(SancaiCategoryIdCodec.toDomain(2L), args[0]);
                         return List.of(new SancaiVolume(
-                                SancaiVolumeId.of(101L), SancaiCategoryId.of(2L), "天文卷一", SancaiVolumeType.MAIN, 101));
+                                SancaiVolumeIdCodec.toDomain(101L),
+                                SancaiCategoryIdCodec.toDomain(2L),
+                                "天文卷一",
+                                SancaiVolumeType.MAIN,
+                                101));
                     }
                     if ("getVolume".equals(method.getName())) {
-                        assertEquals(SancaiVolumeId.of(101L), args[0]);
+                        assertEquals(SancaiVolumeIdCodec.toDomain(101L), args[0]);
                         return new SancaiVolume(
-                                SancaiVolumeId.of(101L), SancaiCategoryId.of(2L), "天文卷一", SancaiVolumeType.MAIN, 101);
+                                SancaiVolumeIdCodec.toDomain(101L),
+                                SancaiCategoryIdCodec.toDomain(2L),
+                                "天文卷一",
+                                SancaiVolumeType.MAIN,
+                                101);
                     }
                     if ("addVolume".equals(method.getName()) || "updateVolume".equals(method.getName())) {
                         SancaiVolumeCommand command = (SancaiVolumeCommand) args[0];
@@ -506,10 +515,10 @@ class SancaiAdminControllerTest {
                         assertEquals("天文卷一", command.getTitle());
                         assertEquals(SancaiVolumeType.MAIN, command.getVolumeType());
                         assertEquals(null, command.getPriority());
-                        return SancaiVolumeId.of(101L);
+                        return SancaiVolumeIdCodec.toDomain(101L);
                     }
                     if ("deleteVolume".equals(method.getName())) {
-                        assertEquals(SancaiVolumeId.of(101L), args[0]);
+                        assertEquals(SancaiVolumeIdCodec.toDomain(101L), args[0]);
                         return null;
                     }
                     if ("pageEntries".equals(method.getName())) {
@@ -534,7 +543,7 @@ class SancaiAdminControllerTest {
                         return List.of(entry());
                     }
                     if ("getEntry".equals(method.getName())) {
-                        assertEquals(SancaiEntryId.of(3001L), args[0]);
+                        assertEquals(SancaiEntryIdCodec.toDomain(3001L), args[0]);
                         return entry();
                     }
                     if ("addEntry".equals(method.getName()) || "updateEntry".equals(method.getName())) {
@@ -544,7 +553,7 @@ class SancaiAdminControllerTest {
                         assertEquals("天地", command.getTitle());
                         assertEquals(SancaiEntryLifecycleStatus.PUBLISHED, command.getLifecycleStatus());
                         assertEquals(SancaiEntryVisibility.PUBLIC, command.getVisibility());
-                        return SancaiEntryId.of(3001L);
+                        return SancaiEntryIdCodec.toDomain(3001L);
                     }
                     if ("changeEntryStatus".equals(method.getName())) {
                         SancaiEntryStatusCommand command = (SancaiEntryStatusCommand) args[0];
@@ -554,7 +563,7 @@ class SancaiAdminControllerTest {
                         return null;
                     }
                     if ("deleteEntry".equals(method.getName())) {
-                        assertEquals(SancaiEntryId.of(3001L), args[0]);
+                        assertEquals(SancaiEntryIdCodec.toDomain(3001L), args[0]);
                         return null;
                     }
                     throw new UnsupportedOperationException(method.getName());
@@ -573,7 +582,7 @@ class SancaiAdminControllerTest {
                         assertEquals("迁移条目", command.getTitle());
                         assertEquals(SancaiEntryLifecycleStatus.PUBLISHED, command.getLifecycleStatus());
                         assertEquals(SancaiEntryVisibility.PUBLIC, command.getVisibility());
-                        return SancaiEntryId.of(3001L);
+                        return SancaiEntryIdCodec.toDomain(3001L);
                     }
                     throw new UnsupportedOperationException(method.getName());
                 });
@@ -586,17 +595,17 @@ class SancaiAdminControllerTest {
                 (proxy, method, args) -> {
                     if ("listVersions".equals(method.getName())) {
                         assertEquals(ClassicsContentType.SANCAI_ENTRY.value(), args[0]);
-                        assertEquals(ClassicsContentId.of(3001L), args[1]);
+                        assertEquals(ClassicsContentIdCodec.toDomain(3001L), args[1]);
                         return List.of(version(9001L, 3001L, 1, ClassicsContentChangeType.MANUAL_SAVE));
                     }
                     if ("listTags".equals(method.getName())) {
                         assertEquals(ClassicsContentType.SANCAI_ENTRY.value(), args[0]);
-                        assertEquals(ClassicsContentId.of(3001L), args[1]);
+                        assertEquals(ClassicsContentIdCodec.toDomain(3001L), args[1]);
                         ClassicsContentTag tag = new ClassicsContentTag();
-                        tag.setId(ClassicsContentTagId.of(7001L));
+                        tag.setId(ClassicsContentTagIdCodec.toDomain(7001L));
                         tag.setContentType(ClassicsContentType.SANCAI_ENTRY);
-                        tag.setContentId(ClassicsContentId.of(3001L));
-                        tag.setTagId(KnowledgeTagId.of(8001L));
+                        tag.setContentId(ClassicsContentIdCodec.toDomain(3001L));
+                        tag.setTagId(KnowledgeTagIdCodec.toDomain(8001L));
                         tag.setTagNameSnapshot("天文");
                         tag.setSource(ClassicsContentSource.MANUAL);
                         tag.setStatus(ClassicsContentTagStatus.ACTIVE);
@@ -604,11 +613,11 @@ class SancaiAdminControllerTest {
                         return List.of(tag);
                     }
                     if ("getVersion".equals(method.getName())) {
-                        assertEquals(ClassicsContentVersionId.of(9001L), args[0]);
+                        assertEquals(ClassicsContentVersionIdCodec.toDomain(9001L), args[0]);
                         return version(9001L, 3001L, 1, ClassicsContentChangeType.MANUAL_SAVE);
                     }
                     if ("restoreHistoryVersion".equals(method.getName())) {
-                        assertEquals(ClassicsContentVersionId.of(9001L), args[0]);
+                        assertEquals(ClassicsContentVersionIdCodec.toDomain(9001L), args[0]);
                         return version(9002L, 3001L, 2, ClassicsContentChangeType.HISTORY_RESTORED);
                     }
                     throw new UnsupportedOperationException(method.getName());
@@ -617,8 +626,8 @@ class SancaiAdminControllerTest {
 
     private static SancaiEntry entry() {
         return new SancaiEntry(
-                SancaiEntryId.of(3001L),
-                SancaiVolumeId.of(101L),
+                SancaiEntryIdCodec.toDomain(3001L),
+                SancaiVolumeIdCodec.toDomain(101L),
                 "天地",
                 "原文",
                 "译文",
@@ -635,9 +644,9 @@ class SancaiAdminControllerTest {
     private static ClassicsContentVersion version(
             Long versionId, Long contentId, int versionNo, ClassicsContentChangeType changeType) {
         ClassicsContentVersion version = new ClassicsContentVersion();
-        version.setId(ClassicsContentVersionId.of(versionId));
+        version.setId(ClassicsContentVersionIdCodec.toDomain(versionId));
         version.setContentType(ClassicsContentType.SANCAI_ENTRY);
-        version.setContentId(ClassicsContentId.of(contentId));
+        version.setContentId(ClassicsContentIdCodec.toDomain(contentId));
         version.setVersionNo(versionNo);
         version.setVersionedAt(new java.util.Date(1_000L));
         version.setSnapshotJson("{}");

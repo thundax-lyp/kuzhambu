@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.operations.domain.report.codec.ReportIdCodec;
 import com.thundax.kuzhambu.operations.domain.report.model.entity.ReportRecord;
 import com.thundax.kuzhambu.operations.domain.report.model.enums.ReportStatus;
 import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
@@ -29,7 +30,7 @@ class ReportRepositoryImplTest {
         ReportRepositoryImpl repository = new ReportRepositoryImpl(mapper);
         when(mapper.selectOne(any())).thenReturn(dataObject(9001L));
 
-        ReportRecord result = repository.getById(ReportId.of(9001L));
+        ReportRecord result = repository.getById(ReportIdCodec.toDomain(9001L));
 
         assertNotNull(result);
         assertEquals(9001L, result.getId().value());

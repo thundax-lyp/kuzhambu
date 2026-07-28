@@ -11,12 +11,13 @@ import com.thundax.kuzhambu.classics.application.wangqi.command.WangqiDocumentSo
 import com.thundax.kuzhambu.classics.application.wangqi.query.WangqiDocumentPageQuery;
 import com.thundax.kuzhambu.classics.application.wangqi.result.WangqiDocumentSourceFile;
 import com.thundax.kuzhambu.classics.application.wangqi.service.WangqiDocumentApplicationService;
-import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
+import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
+import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiContentFormat;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
@@ -242,7 +243,7 @@ class WangqiDocumentAdminControllerTest {
                         return PageResult.of(1, 20, 1, List.of(document()));
                     }
                     if ("get".equals(method.getName())) {
-                        assertEquals(WangqiDocumentId.of(400000000001L), args[0]);
+                        assertEquals(WangqiDocumentIdCodec.toDomain(400000000001L), args[0]);
                         return document();
                     }
                     if ("listTimeline".equals(method.getName())) {
@@ -258,10 +259,10 @@ class WangqiDocumentAdminControllerTest {
                         assertEquals("正文", command.getContent());
                         assertEquals(7001L, command.getStorageObjectId());
                         assertEquals(WangqiDocumentVisibility.PUBLIC, command.getVisibility());
-                        return WangqiDocumentId.of(400000000001L);
+                        return WangqiDocumentIdCodec.toDomain(400000000001L);
                     }
                     if ("delete".equals(method.getName())) {
-                        assertEquals(WangqiDocumentId.of(400000000001L), args[0]);
+                        assertEquals(WangqiDocumentIdCodec.toDomain(400000000001L), args[0]);
                         return null;
                     }
                     if ("changeSourceFile".equals(method.getName())) {
@@ -273,7 +274,7 @@ class WangqiDocumentAdminControllerTest {
                         return sourceFile();
                     }
                     if ("getSourceFile".equals(method.getName())) {
-                        assertEquals(WangqiDocumentId.of(400000000001L), args[0]);
+                        assertEquals(WangqiDocumentIdCodec.toDomain(400000000001L), args[0]);
                         return sourceFile();
                     }
                     if ("getSourceFileContent".equals(method.getName())) {
@@ -291,15 +292,15 @@ class WangqiDocumentAdminControllerTest {
                 (proxy, method, args) -> {
                     if ("listVersions".equals(method.getName())) {
                         assertEquals("WANGQI_DOCUMENT", args[0]);
-                        assertEquals(ClassicsContentId.of(400000000001L), args[1]);
+                        assertEquals(ClassicsContentIdCodec.toDomain(400000000001L), args[1]);
                         return List.of(version(9001L, 2, ClassicsContentChangeType.MANUAL_SAVE));
                     }
                     if ("getVersion".equals(method.getName())) {
-                        assertEquals(ClassicsContentVersionId.of(9001L), args[0]);
+                        assertEquals(ClassicsContentVersionIdCodec.toDomain(9001L), args[0]);
                         return version(9001L, 2, ClassicsContentChangeType.MANUAL_SAVE);
                     }
                     if ("restoreHistoryVersion".equals(method.getName())) {
-                        assertEquals(ClassicsContentVersionId.of(9001L), args[0]);
+                        assertEquals(ClassicsContentVersionIdCodec.toDomain(9001L), args[0]);
                         return version(9002L, 3, ClassicsContentChangeType.HISTORY_RESTORED);
                     }
                     throw new UnsupportedOperationException(method.getName());
@@ -340,21 +341,21 @@ class WangqiDocumentAdminControllerTest {
 
     private static WangqiDocument document() {
         return new WangqiDocument(
-                WangqiDocumentId.of(400000000001L),
+                WangqiDocumentIdCodec.toDomain(400000000001L),
                 "王圻文档",
                 "摘要",
                 WangqiContentFormat.MARKDOWN,
                 "正文",
                 new Date(1767225600000L),
-                StorageObjectId.of(7001L),
+                StorageObjectIdCodec.toDomain(7001L),
                 WangqiDocumentVisibility.PUBLIC);
     }
 
     private static ClassicsContentVersion version(Long id, int versionNo, ClassicsContentChangeType changeType) {
         return new ClassicsContentVersion(
-                ClassicsContentVersionId.of(id),
+                ClassicsContentVersionIdCodec.toDomain(id),
                 ClassicsContentType.WANGQI_DOCUMENT,
-                ClassicsContentId.of(400000000001L),
+                ClassicsContentIdCodec.toDomain(400000000001L),
                 versionNo,
                 new Date(1767225600000L),
                 "{\"contentType\":\"WANGQI_DOCUMENT\",\"contentId\":400000000001}",

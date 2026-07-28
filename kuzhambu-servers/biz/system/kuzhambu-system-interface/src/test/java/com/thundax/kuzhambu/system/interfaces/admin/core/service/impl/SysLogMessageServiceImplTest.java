@@ -13,10 +13,11 @@ import com.thundax.kuzhambu.common.rocketmq.KuzhambuMqSender;
 import com.thundax.kuzhambu.system.application.core.command.CreateLogCommand;
 import com.thundax.kuzhambu.system.application.core.query.LogQuery;
 import com.thundax.kuzhambu.system.application.core.service.LogApplicationService;
+import com.thundax.kuzhambu.system.domain.core.codec.LogIdCodec;
+import com.thundax.kuzhambu.system.domain.core.codec.UserIdCodec;
 import com.thundax.kuzhambu.system.domain.core.model.entity.Log;
 import com.thundax.kuzhambu.system.domain.core.model.enums.LogType;
 import com.thundax.kuzhambu.system.domain.core.model.valueobject.LogId;
-import com.thundax.kuzhambu.system.domain.core.model.valueobject.UserId;
 import com.thundax.kuzhambu.system.interfaces.admin.configure.KuzhambuProperties;
 import java.nio.file.Path;
 import java.util.Date;
@@ -39,7 +40,7 @@ class SysLogMessageServiceImplTest {
                 new SysLogMessageServiceImpl(mqSender, properties(), logService, OBJECT_MAPPER);
         Date logDate = new Date(1778513052000L);
         Log log = new Log();
-        log.setUserId(UserId.of(1L));
+        log.setUserId(UserIdCodec.toDomain(1L));
         log.setType(LogType.ACCESS);
         log.setLogDate(logDate);
         log.setTitle("系统-登录-成功");
@@ -109,7 +110,7 @@ class SysLogMessageServiceImplTest {
         @Override
         public LogId create(CreateLogCommand command) {
             this.command = command;
-            return LogId.of(1L);
+            return LogIdCodec.toDomain(1L);
         }
 
         @Override

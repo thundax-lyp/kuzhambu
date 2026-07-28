@@ -54,6 +54,8 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagMergePrevie
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.TagResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.service.TaxonomyApplicationService;
 import com.thundax.kuzhambu.knowledge.domain.service.KnowledgeTagBindingDomainService;
+import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.TagCategoryIdCodec;
+import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.TagIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.Synonym;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.Tag;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.TagAlias;
@@ -846,7 +848,7 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
         }
 
         Tag tag = new Tag();
-        tag.setTagId(TagId.of(idGenerator.nextId().value()));
+        tag.setTagId(TagIdCodec.toDomain(idGenerator.nextId().value()));
         tag.setName(name);
         tag.setCategoryId(parseCategoryId(effective.getCategoryId()));
         tag.setDescription(trimOptionalText(effective.getReason()));
@@ -860,12 +862,12 @@ public class TaxonomyApplicationServiceImpl implements TaxonomyApplicationServic
 
     private TagId parseTagId(String value) {
         String normalized = StringUtils.trimToNull(value);
-        return normalized == null ? null : TagId.of(Long.valueOf(normalized));
+        return normalized == null ? null : TagIdCodec.toDomain(Long.valueOf(normalized));
     }
 
     private TagCategoryId parseCategoryId(String value) {
         String normalized = StringUtils.trimToNull(value);
-        return normalized == null ? null : TagCategoryId.of(Long.valueOf(normalized));
+        return normalized == null ? null : TagCategoryIdCodec.toDomain(Long.valueOf(normalized));
     }
 
     private Map<String, Object> candidateApplyPayload(TagCandidateApplyCommand command, Long reviewedBy) {

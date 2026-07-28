@@ -7,7 +7,7 @@ public final class SancaiEntryDraftIdCodec {
     private SancaiEntryDraftIdCodec() {}
 
     public static SancaiEntryDraftId toDomain(Long value) {
-        return SancaiEntryDraftId.ofNullable(value);
+        return value == null ? null : new SancaiEntryDraftId(value);
     }
 
     public static Long toValue(SancaiEntryDraftId id) {

@@ -8,6 +8,7 @@ import com.thundax.kuzhambu.common.test.architecture.NamingArchitectureRuleSuppo
 import com.thundax.kuzhambu.common.test.architecture.SpringBeanArchitectureRuleSupport;
 import com.thundax.kuzhambu.common.test.architecture.TransactionArchitectureRuleSupport;
 import com.tngtech.archunit.core.domain.JavaClasses;
+import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 
 class AiApplicationArchitectureTest extends AbstractArchitectureTest {
@@ -26,6 +27,7 @@ class AiApplicationArchitectureTest extends AbstractArchitectureTest {
         NamingArchitectureRuleSupport.assertApplicationServicesUseApplicationServiceSuffix(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertCodecPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertValueObjectPlacement(classes, BASE_PACKAGE);
+        NamingArchitectureRuleSupport.assertValueObjectIdSourcesDeclareNoStaticMethods(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertEntityPlacement(classes, BASE_PACKAGE);
         ConcurrencyArchitectureRuleSupport.shouldNotUseCompletableFutureAsyncWithoutExecutor(BASE_PACKAGE)
                 .check(classes);

@@ -7,7 +7,7 @@ public final class AiCandidateIdCodec {
     private AiCandidateIdCodec() {}
 
     public static AiCandidateId toDomain(Long value) {
-        return AiCandidateId.ofNullable(value);
+        return value == null ? null : new AiCandidateId(value);
     }
 
     public static AiCandidateId toDomain(String value) {

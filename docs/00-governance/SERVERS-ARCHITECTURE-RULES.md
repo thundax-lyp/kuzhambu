@@ -54,6 +54,7 @@ Hard Rules 必须使用 ArchUnit、Maven reactor、Checkstyle、脚本或测试�
 - `SERVERS_APPLICATION_INPUT_PACKAGE`：应用层写入输入模型必须位于 `application/{domain}/command/`；读取输入模型必须位于 `application/{domain}/query/`；不得放在 `service/command/` 或 `service/query/` 下。
 - `SERVERS_NAMING_APPLICATION_OUTPUT`：应用层输出模型必须以 `Result`、`DTO` 或 `PageResult` 结尾；默认用例输出优先使用 `*Result`，`*DTO` 只用于稳定通用传输对象。
 - `SERVERS_NAMING_DOMAIN_ID`：强类型业务 ID 必须以 `Id` 结尾，必须是 `final class`，必须继承 common 基础 ID 类型，并位于对应业务域 `{module}-domain` 模块下的 `com.thundax.kuzhambu.{module}.domain.{domain}.model.valueobject`。
+- `SERVERS_VALUE_OBJECT_ID_NO_STATIC_METHODS`：`valueobject` 包下以 `Id` 结尾的值对象不得声明 `static` 方法；基础类型创建、nullable 处理和字符串转换必须放入对应 `*Codec`；每个包含 `valueobject/*Id.java` 的 domain 模块必须在架构测试中挂载该 source scan。
 - `SERVERS_VALUE_OBJECT_DOMAIN_ONLY`：`valueobject` 包只能出现在对应业务域 `{module}-domain` 模块下的 `com.thundax.kuzhambu.{module}.domain.{domain}.model.valueobject`；`infra`、`application`、`interfaces` 不得定义 `valueobject` 包。
 - `SERVERS_ENTITY_DOMAIN_ONLY`：`entity` 包只能出现在对应业务域 `{module}-domain` 模块下的 `com.thundax.kuzhambu.{module}.domain.{domain}.model.entity`；`infra`、`application`、`interfaces` 不得定义 `entity` 包。
 - `SERVERS_ENTITY_CLASS_ANNOTATIONS`：领域实体类必须且只能声明 `@Getter`、`@Setter`、`@NoArgsConstructor`、`@AllArgsConstructor` 四个类级 Lombok 注解。

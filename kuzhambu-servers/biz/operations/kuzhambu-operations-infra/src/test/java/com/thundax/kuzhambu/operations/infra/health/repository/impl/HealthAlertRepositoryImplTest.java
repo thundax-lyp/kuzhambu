@@ -16,9 +16,9 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.operations.domain.health.codec.HealthAlertIdCodec;
+import com.thundax.kuzhambu.operations.domain.health.codec.HealthCheckIdCodec;
 import com.thundax.kuzhambu.operations.domain.health.model.entity.HealthAlertRecord;
-import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthAlertId;
-import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthCheckId;
 import com.thundax.kuzhambu.operations.infra.health.persistence.dataobject.HealthAlertDO;
 import com.thundax.kuzhambu.operations.infra.health.persistence.mapper.HealthAlertMapper;
 import java.util.Date;
@@ -153,14 +153,14 @@ class HealthAlertRepositoryImplTest {
 
     private static HealthAlertRecord domainRecord(long alertId, String alertStatus) {
         return new HealthAlertRecord(
-                HealthAlertId.of(alertId),
+                HealthAlertIdCodec.toDomain(alertId),
                 "database",
                 "BACKUP_FAILED",
                 "CRITICAL",
                 alertStatus,
                 "BACKUP",
                 9001L,
-                HealthCheckId.of(9101L),
+                HealthCheckIdCodec.toDomain(9101L),
                 "backup failed",
                 "retry backup",
                 "OPEN_BACKUP",

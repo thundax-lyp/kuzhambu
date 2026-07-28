@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.operations.domain.cleanup.codec.CleanupItemIdCodec;
+import com.thundax.kuzhambu.operations.domain.cleanup.codec.CleanupJobIdCodec;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.entity.CleanupItem;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.entity.CleanupJob;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.valueobject.CleanupItemId;
@@ -45,7 +47,7 @@ public class CleanupJobRepositoryImpl implements CleanupJobRepository {
     public CleanupJobId insert(CleanupJob job) {
         CleanupJobDO dataObject = CleanupPersistenceAssembler.toObject(job);
         jobMapper.insert(dataObject);
-        return CleanupJobId.of(dataObject.getCleanupId());
+        return CleanupJobIdCodec.toDomain(dataObject.getCleanupId());
     }
 
     @Override
@@ -83,7 +85,7 @@ public class CleanupJobRepositoryImpl implements CleanupJobRepository {
     public CleanupItemId insertItem(CleanupItem item) {
         CleanupItemDO dataObject = CleanupPersistenceAssembler.toObject(item);
         itemMapper.insert(dataObject);
-        return CleanupItemId.of(dataObject.getCleanupItemId());
+        return CleanupItemIdCodec.toDomain(dataObject.getCleanupItemId());
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.knowledge.infra.graph.persistence.assembler;
 
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTaskIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.infra.graph.persistence.dataobject.GraphExtractionTaskDO;
@@ -56,8 +57,8 @@ public final class KnowledgeGraphPersistenceAssembler {
             return null;
         }
         GraphExtractionTask entity = new GraphExtractionTask();
-        entity.setId(GraphExtractionTaskId.ofNullable(dataObject.getId()));
-        entity.setTaskId(GraphExtractionTaskId.ofNullable(dataObject.getTaskId()));
+        entity.setId(GraphExtractionTaskIdCodec.toDomain(dataObject.getId()));
+        entity.setTaskId(GraphExtractionTaskIdCodec.toDomain(dataObject.getTaskId()));
         entity.setBatchJobId(dataObject.getBatchJobId());
         entity.setTaskType(dataObject.getTaskType());
         entity.setScopeType(dataObject.getScopeType());
@@ -65,7 +66,7 @@ public final class KnowledgeGraphPersistenceAssembler {
         entity.setTriggerSource(dataObject.getTriggerSource());
         entity.setSelectionScopeJson(dataObject.getSelectionScopeJson());
         entity.setReplaceUnconfirmedOnly(dataObject.getReplaceUnconfirmedOnly());
-        entity.setParentTaskId(GraphExtractionTaskId.ofNullable(dataObject.getParentTaskId()));
+        entity.setParentTaskId(GraphExtractionTaskIdCodec.toDomain(dataObject.getParentTaskId()));
         entity.setSourceContentType(dataObject.getSourceContentType());
         entity.setSourceContentId(dataObject.getSourceContentId());
         entity.setModelId(dataObject.getModelId());

@@ -7,8 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.thundax.kuzhambu.common.core.exception.DomainException;
+import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.TagIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagStatus;
-import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.valueobject.TagId;
 import org.junit.jupiter.api.Test;
 
 class TagTest {
@@ -20,7 +20,7 @@ class TagTest {
 
         sourceTag.mergeInto(targetTag);
 
-        assertEquals(TagId.of(1002L), sourceTag.getMergedToTagId());
+        assertEquals(TagIdCodec.toDomain(1002L), sourceTag.getMergedToTagId());
         assertTrue(sourceTag.isMerged());
         assertFalse(sourceTag.isUsableForNewBinding());
         assertTrue(targetTag.isUsableForNewBinding());
@@ -30,7 +30,7 @@ class TagTest {
     void mergeIntoShouldRejectInvalidSourceOrTarget() {
         Tag sourceTag = enabledTag(1001L);
         Tag mergedSourceTag = enabledTag(1003L);
-        mergedSourceTag.setMergedToTagId(TagId.of(1004L));
+        mergedSourceTag.setMergedToTagId(TagIdCodec.toDomain(1004L));
         Tag disabledTargetTag = enabledTag(1005L);
         disabledTargetTag.setStatus(TagStatus.DISABLED);
 
@@ -72,7 +72,7 @@ class TagTest {
 
     private static Tag enabledTag(Long tagId) {
         Tag tag = new Tag();
-        tag.setTagId(TagId.of(tagId));
+        tag.setTagId(TagIdCodec.toDomain(tagId));
         tag.setStatus(TagStatus.ENABLED);
         return tag;
     }

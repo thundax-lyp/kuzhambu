@@ -7,7 +7,7 @@ public final class MingCustomsEntryIdCodec {
     private MingCustomsEntryIdCodec() {}
 
     public static MingCustomsEntryId toDomain(Long value) {
-        return MingCustomsEntryId.ofNullable(value);
+        return value == null ? null : new MingCustomsEntryId(value);
     }
 
     public static Long toValue(MingCustomsEntryId id) {

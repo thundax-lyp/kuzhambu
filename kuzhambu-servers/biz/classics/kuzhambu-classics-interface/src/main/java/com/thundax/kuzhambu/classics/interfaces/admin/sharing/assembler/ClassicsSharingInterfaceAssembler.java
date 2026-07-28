@@ -4,8 +4,8 @@ import com.thundax.kuzhambu.classics.application.sharing.command.BatchShareCreat
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.command.ShareTargetCreateCommand;
 import com.thundax.kuzhambu.classics.application.sharing.result.ShareLinkCreateResult;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareAccessRecord;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
@@ -111,7 +111,7 @@ public final class ClassicsSharingInterfaceAssembler {
                 : targets.stream()
                         .map(target -> new ShareTargetCreateCommand(
                                 ClassicsContentType.from(target.getContentType()),
-                                ClassicsContentId.of(target.getContentId())))
+                                ClassicsContentIdCodec.toDomain(target.getContentId())))
                         .toList();
     }
 

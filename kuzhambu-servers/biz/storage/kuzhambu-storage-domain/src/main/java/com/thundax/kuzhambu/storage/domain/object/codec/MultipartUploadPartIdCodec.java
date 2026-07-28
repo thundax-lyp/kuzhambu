@@ -9,7 +9,7 @@ public final class MultipartUploadPartIdCodec {
     private MultipartUploadPartIdCodec() {}
 
     public static MultipartUploadPartId toDomain(Long value) {
-        return MultipartUploadPartId.ofNullable(value);
+        return value == null ? null : new MultipartUploadPartId(value);
     }
 
     public static Long toValue(MultipartUploadPartId id) {

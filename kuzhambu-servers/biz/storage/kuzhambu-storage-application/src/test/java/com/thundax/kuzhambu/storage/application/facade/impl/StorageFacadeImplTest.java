@@ -18,13 +18,13 @@ import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageRef
 import com.thundax.kuzhambu.storage.application.service.command.CompleteMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.service.command.InitMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
+import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.MultipartUploadStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
-import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.facade.request.AbortMultipartUploadFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.BindStorageOwnerFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.CompleteMultipartUploadFacadeRequest;
@@ -45,7 +45,7 @@ class StorageFacadeImplTest {
                 new StorageReadableContentFacadeAssembler(),
                 new StorageOwnerBindingFacadeAssembler(),
                 new StorageUploadFacadeAssembler());
-        when(storageApplicationService.get(StoredObjectId.of(7001L))).thenReturn(storage(7001L));
+        when(storageApplicationService.get(StoredObjectIdCodec.toDomain(7001L))).thenReturn(storage(7001L));
         when(storageApplicationService.listReferences(any(StorageQuery.class))).thenReturn(List.of());
 
         facade.bindOwner(BindStorageOwnerFacadeRequest.builder()
@@ -67,7 +67,8 @@ class StorageFacadeImplTest {
         ArgumentCaptor<ChangeStorageReferenceStatusCommand> statusCaptor =
                 ArgumentCaptor.forClass(ChangeStorageReferenceStatusCommand.class);
         verify(storageApplicationService).changeReferenceStatus(statusCaptor.capture());
-        assertEquals(StoredObjectId.of(7001L), statusCaptor.getValue().getId());
+        assertEquals(
+                StoredObjectIdCodec.toDomain(7001L), statusCaptor.getValue().getId());
         assertEquals("REFERENCED", statusCaptor.getValue().getReferenceStatus().value());
     }
 
@@ -80,10 +81,10 @@ class StorageFacadeImplTest {
                 new StorageReadableContentFacadeAssembler(),
                 new StorageOwnerBindingFacadeAssembler(),
                 new StorageUploadFacadeAssembler());
-        when(storageApplicationService.get(StoredObjectId.of(7001L))).thenReturn(storage(7001L));
+        when(storageApplicationService.get(StoredObjectIdCodec.toDomain(7001L))).thenReturn(storage(7001L));
         when(storageApplicationService.listReferences(any(StorageQuery.class)))
                 .thenReturn(List.of(new StoredObjectReference(
-                        StoredObjectId.of(7001L),
+                        StoredObjectIdCodec.toDomain(7001L),
                         "400000000001",
                         StorageOwnerType.CLASSICS_WANGQI_DOCUMENT.value(),
                         null)));
@@ -107,10 +108,10 @@ class StorageFacadeImplTest {
                 new StorageReadableContentFacadeAssembler(),
                 new StorageOwnerBindingFacadeAssembler(),
                 new StorageUploadFacadeAssembler());
-        when(storageApplicationService.get(StoredObjectId.of(7001L))).thenReturn(storage(7001L));
+        when(storageApplicationService.get(StoredObjectIdCodec.toDomain(7001L))).thenReturn(storage(7001L));
         when(storageApplicationService.listReferences(any(StorageQuery.class)))
                 .thenReturn(List.of(new StoredObjectReference(
-                        StoredObjectId.of(7001L),
+                        StoredObjectIdCodec.toDomain(7001L),
                         "400000000002",
                         StorageOwnerType.CLASSICS_WANGQI_DOCUMENT.value(),
                         null)));
@@ -256,7 +257,7 @@ class StorageFacadeImplTest {
 
     private static StoredObject storage(Long id) {
         StoredObject storage = new StoredObject();
-        storage.setId(StoredObjectId.of(id));
+        storage.setId(StoredObjectIdCodec.toDomain(id));
         storage.setOriginalFilename("source.pdf");
         storage.setContentType("application/pdf");
         storage.setSize(4L);

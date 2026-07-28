@@ -24,19 +24,21 @@ import com.thundax.kuzhambu.classics.application.sharing.result.SharePortalResul
 import com.thundax.kuzhambu.classics.application.sharing.service.impl.ClassicsSharingApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.application.sharing.support.ClassicsShareTokenGenerator;
 import com.thundax.kuzhambu.classics.application.sharing.support.ClassicsShareTokenHasher;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
-import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.repository.MingCustomsRepository;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntry;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryVisibility;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiRepository;
+import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareLinkIdCodec;
+import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareTargetIdCodec;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareAccessRecord;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
@@ -46,11 +48,10 @@ import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareTar
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsSharedContentVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
-import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareTargetId;
 import com.thundax.kuzhambu.classics.domain.sharing.repository.ClassicsSharingRepository;
+import com.thundax.kuzhambu.classics.domain.wangqi.codec.WangqiDocumentIdCodec;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.entity.WangqiDocument;
 import com.thundax.kuzhambu.classics.domain.wangqi.model.enums.WangqiDocumentVisibility;
-import com.thundax.kuzhambu.classics.domain.wangqi.model.valueobject.WangqiDocumentId;
 import com.thundax.kuzhambu.classics.domain.wangqi.repository.WangqiDocumentRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
@@ -87,21 +88,22 @@ class ClassicsSharingApplicationServiceImplTest {
                 null);
 
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(100L));
+        entry.setId(SancaiEntryIdCodec.toDomain(100L));
         entry.setTitle("正式标题");
         entry.setVisibility(SancaiEntryVisibility.PUBLIC);
         entry.setContentUpdatedAt(new Date(1_000L));
         ClassicsContentVersion version = new ClassicsContentVersion();
-        version.setId(ClassicsContentVersionId.of(9L));
+        version.setId(ClassicsContentVersionIdCodec.toDomain(9L));
         version.setVersionNo(2);
         version.setVersionedAt(new Date(2_000L));
         version.setSnapshotJson("{\"title\":\"正式标题\"}");
 
-        when(sharingRepository.insertLink(org.mockito.ArgumentMatchers.any())).thenReturn(ClassicsShareLinkId.of(10L));
+        when(sharingRepository.insertLink(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(ClassicsShareLinkIdCodec.toDomain(10L));
         when(sharingRepository.maxTargetPriority()).thenReturn(4);
         when(shareTokenGenerator.generate()).thenReturn("abc123_-");
         when(shareTokenHasher.hash("abc123_-")).thenReturn("hashed-share-token");
-        when(sancaiRepository.getEntryById(SancaiEntryId.of(100L))).thenReturn(entry);
+        when(sancaiRepository.getEntryById(SancaiEntryIdCodec.toDomain(100L))).thenReturn(entry);
         when(contentApplicationService.ensureVersioned(
                         eq(entry), eq(ClassicsContentChangeType.SHARE_CREATED), eq("创建分享")))
                 .thenAnswer(invocation -> {
@@ -117,7 +119,8 @@ class ClassicsSharingApplicationServiceImplTest {
                 null,
                 null,
                 null,
-                List.of(new ShareTargetCreateCommand(ClassicsContentType.SANCAI_ENTRY, ClassicsContentId.of(100L)))));
+                List.of(new ShareTargetCreateCommand(
+                        ClassicsContentType.SANCAI_ENTRY, ClassicsContentIdCodec.toDomain(100L)))));
 
         ArgumentCaptor<ClassicsShareLink> linkCaptor = ArgumentCaptor.forClass(ClassicsShareLink.class);
         verify(sharingRepository).insertLink(linkCaptor.capture());
@@ -125,13 +128,13 @@ class ClassicsSharingApplicationServiceImplTest {
         verify(sharingRepository).insertTarget(targetCaptor.capture());
         assertEquals("abc123_-", result.getShareToken());
         assertEquals("http://localhost:5174/share/abc123_-", result.getShareUrl());
-        assertEquals(ClassicsShareLinkId.of(10L), result.getId());
+        assertEquals(ClassicsShareLinkIdCodec.toDomain(10L), result.getId());
         assertEquals("abc123_-", linkCaptor.getValue().getShareToken());
         assertEquals("hashed-share-token", linkCaptor.getValue().getTokenHash());
         ClassicsShareTarget savedTarget = targetCaptor.getValue();
-        assertEquals(ClassicsShareLinkId.of(10L), savedTarget.getShareLinkId());
+        assertEquals(ClassicsShareLinkIdCodec.toDomain(10L), savedTarget.getShareLinkId());
         assertEquals(5, savedTarget.getPriority());
-        assertEquals(ClassicsContentVersionId.of(9L), savedTarget.getContentVersionId());
+        assertEquals(ClassicsContentVersionIdCodec.toDomain(9L), savedTarget.getContentVersionId());
         assertEquals(2, savedTarget.getContentVersionNo());
         assertEquals("{\"title\":\"正式标题\"}", savedTarget.getContentSnapshotJson());
         assertEquals("正式标题", savedTarget.getTitleSnapshot());
@@ -160,15 +163,15 @@ class ClassicsSharingApplicationServiceImplTest {
                 null);
 
         SancaiEntry sancai = new SancaiEntry();
-        sancai.setId(SancaiEntryId.of(100L));
+        sancai.setId(SancaiEntryIdCodec.toDomain(100L));
         sancai.setTitle("三才");
         sancai.setVisibility(SancaiEntryVisibility.PUBLIC);
         WangqiDocument wangqi = new WangqiDocument();
-        wangqi.setId(WangqiDocumentId.of(200L));
+        wangqi.setId(WangqiDocumentIdCodec.toDomain(200L));
         wangqi.setTitle("王圻");
         wangqi.setVisibility(WangqiDocumentVisibility.PUBLIC);
         MingCustomsEntry mingCustoms = new MingCustomsEntry();
-        mingCustoms.setId(MingCustomsEntryId.of(300L));
+        mingCustoms.setId(MingCustomsEntryIdCodec.toDomain(300L));
         mingCustoms.setTitle("明俗");
         mingCustoms.setVisibility(MingCustomsVisibility.PUBLIC);
 
@@ -176,13 +179,16 @@ class ClassicsSharingApplicationServiceImplTest {
         ClassicsContentVersion wangqiVersion = version(12L, 2, "{\"title\":\"王圻\"}");
         ClassicsContentVersion mingCustomsVersion = version(13L, 3, "{\"title\":\"明俗\"}");
 
-        when(sharingRepository.insertLink(org.mockito.ArgumentMatchers.any())).thenReturn(ClassicsShareLinkId.of(10L));
+        when(sharingRepository.insertLink(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(ClassicsShareLinkIdCodec.toDomain(10L));
         when(sharingRepository.maxTargetPriority()).thenReturn(0);
         when(shareTokenGenerator.generate()).thenReturn("abc123_-");
         when(shareTokenHasher.hash("abc123_-")).thenReturn("hashed-share-token");
-        when(sancaiRepository.getEntryById(SancaiEntryId.of(100L))).thenReturn(sancai);
-        when(wangqiDocumentRepository.getById(WangqiDocumentId.of(200L))).thenReturn(wangqi);
-        when(mingCustomsRepository.getById(MingCustomsEntryId.of(300L))).thenReturn(mingCustoms);
+        when(sancaiRepository.getEntryById(SancaiEntryIdCodec.toDomain(100L))).thenReturn(sancai);
+        when(wangqiDocumentRepository.getById(WangqiDocumentIdCodec.toDomain(200L)))
+                .thenReturn(wangqi);
+        when(mingCustomsRepository.getById(MingCustomsEntryIdCodec.toDomain(300L)))
+                .thenReturn(mingCustoms);
         when(contentApplicationService.ensureVersioned(
                         eq(sancai), eq(ClassicsContentChangeType.SHARE_CREATED), eq("创建分享")))
                 .thenReturn(sancaiVersion);
@@ -204,9 +210,12 @@ class ClassicsSharingApplicationServiceImplTest {
                 null,
                 null,
                 List.of(
-                        new ShareTargetCreateCommand(ClassicsContentType.SANCAI_ENTRY, ClassicsContentId.of(100L)),
-                        new ShareTargetCreateCommand(ClassicsContentType.WANGQI_DOCUMENT, ClassicsContentId.of(200L)),
-                        new ShareTargetCreateCommand(ClassicsContentType.MING_CUSTOMS, ClassicsContentId.of(300L)))));
+                        new ShareTargetCreateCommand(
+                                ClassicsContentType.SANCAI_ENTRY, ClassicsContentIdCodec.toDomain(100L)),
+                        new ShareTargetCreateCommand(
+                                ClassicsContentType.WANGQI_DOCUMENT, ClassicsContentIdCodec.toDomain(200L)),
+                        new ShareTargetCreateCommand(
+                                ClassicsContentType.MING_CUSTOMS, ClassicsContentIdCodec.toDomain(300L)))));
 
         ArgumentCaptor<ClassicsShareTarget> captor = ArgumentCaptor.forClass(ClassicsShareTarget.class);
         verify(sharingRepository, times(3)).insertTarget(captor.capture());
@@ -215,9 +224,12 @@ class ClassicsSharingApplicationServiceImplTest {
         assertEquals(sancaiVersion.getSnapshotJson(), savedTargets.get(0).getContentSnapshotJson());
         assertEquals(wangqiVersion.getSnapshotJson(), savedTargets.get(1).getContentSnapshotJson());
         assertEquals(mingCustomsVersion.getSnapshotJson(), savedTargets.get(2).getContentSnapshotJson());
-        assertEquals(ClassicsContentVersionId.of(11L), savedTargets.get(0).getContentVersionId());
-        assertEquals(ClassicsContentVersionId.of(12L), savedTargets.get(1).getContentVersionId());
-        assertEquals(ClassicsContentVersionId.of(13L), savedTargets.get(2).getContentVersionId());
+        assertEquals(
+                ClassicsContentVersionIdCodec.toDomain(11L), savedTargets.get(0).getContentVersionId());
+        assertEquals(
+                ClassicsContentVersionIdCodec.toDomain(12L), savedTargets.get(1).getContentVersionId());
+        assertEquals(
+                ClassicsContentVersionIdCodec.toDomain(13L), savedTargets.get(2).getContentVersionId());
         assertEquals("三才", savedTargets.get(0).getTitleSnapshot());
         assertEquals("王圻", savedTargets.get(1).getTitleSnapshot());
         assertEquals("明俗", savedTargets.get(2).getTitleSnapshot());
@@ -240,7 +252,7 @@ class ClassicsSharingApplicationServiceImplTest {
                 shareTokenHasher,
                 null);
         ShareTargetCreateCommand target =
-                new ShareTargetCreateCommand(ClassicsContentType.SANCAI_ENTRY, ClassicsContentId.of(100L));
+                new ShareTargetCreateCommand(ClassicsContentType.SANCAI_ENTRY, ClassicsContentIdCodec.toDomain(100L));
 
         BizException exception = assertThrows(
                 BizException.class,
@@ -280,14 +292,15 @@ class ClassicsSharingApplicationServiceImplTest {
                 null);
 
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(100L));
+        entry.setId(SancaiEntryIdCodec.toDomain(100L));
         entry.setTitle("私有内容");
         entry.setVisibility(SancaiEntryVisibility.PRIVATE);
 
         when(shareTokenGenerator.generate()).thenReturn("abc123_-");
         when(shareTokenHasher.hash("abc123_-")).thenReturn("hashed-share-token");
-        when(sharingRepository.insertLink(org.mockito.ArgumentMatchers.any())).thenReturn(ClassicsShareLinkId.of(10L));
-        when(sancaiRepository.getEntryById(SancaiEntryId.of(100L))).thenReturn(entry);
+        when(sharingRepository.insertLink(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(ClassicsShareLinkIdCodec.toDomain(10L));
+        when(sancaiRepository.getEntryById(SancaiEntryIdCodec.toDomain(100L))).thenReturn(entry);
 
         assertThrows(
                 BizException.class,
@@ -299,7 +312,7 @@ class ClassicsSharingApplicationServiceImplTest {
                         null,
                         null,
                         List.of(new ShareTargetCreateCommand(
-                                ClassicsContentType.SANCAI_ENTRY, ClassicsContentId.of(100L))))));
+                                ClassicsContentType.SANCAI_ENTRY, ClassicsContentIdCodec.toDomain(100L))))));
         verify(contentApplicationService, never())
                 .ensureVersioned(eq(entry), eq(ClassicsContentChangeType.SHARE_CREATED), eq("创建分享"));
         verify(sharingRepository, never()).insertTarget(org.mockito.ArgumentMatchers.any());
@@ -322,10 +335,10 @@ class ClassicsSharingApplicationServiceImplTest {
                 shareTokenHasher,
                 null);
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(103L));
+        entry.setId(SancaiEntryIdCodec.toDomain(103L));
         entry.setTitle("私有三才");
         entry.setVisibility(SancaiEntryVisibility.PRIVATE);
-        when(sancaiRepository.getEntryById(SancaiEntryId.of(103L))).thenReturn(entry);
+        when(sancaiRepository.getEntryById(SancaiEntryIdCodec.toDomain(103L))).thenReturn(entry);
 
         assertThrows(
                 BizException.class,
@@ -337,7 +350,7 @@ class ClassicsSharingApplicationServiceImplTest {
                         null,
                         null,
                         List.of(new ShareTargetCreateCommand(
-                                ClassicsContentType.SANCAI_ENTRY, ClassicsContentId.of(103L))))));
+                                ClassicsContentType.SANCAI_ENTRY, ClassicsContentIdCodec.toDomain(103L))))));
 
         verify(sharingRepository, never()).insertLink(any());
         verify(sharingRepository, never()).insertTarget(any());
@@ -365,13 +378,13 @@ class ClassicsSharingApplicationServiceImplTest {
                 shareTokenHasher,
                 null);
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(100L));
+        entry.setId(SancaiEntryIdCodec.toDomain(100L));
         entry.setTitle("三才");
         entry.setVisibility(SancaiEntryVisibility.PUBLIC);
         ClassicsContentVersion version = version(21L, 1, "{\"title\":\"三才\"}");
 
-        when(sancaiRepository.getEntryById(SancaiEntryId.of(100L))).thenReturn(entry);
-        when(sharingRepository.insertLink(any())).thenReturn(ClassicsShareLinkId.of(31L));
+        when(sancaiRepository.getEntryById(SancaiEntryIdCodec.toDomain(100L))).thenReturn(entry);
+        when(sharingRepository.insertLink(any())).thenReturn(ClassicsShareLinkIdCodec.toDomain(31L));
         when(sharingRepository.maxTargetPriority()).thenReturn(2);
         when(shareTokenGenerator.generate()).thenReturn("batch-token");
         when(shareTokenHasher.hash("batch-token")).thenReturn("batch-hash");
@@ -380,7 +393,7 @@ class ClassicsSharingApplicationServiceImplTest {
                 .thenReturn(version);
         when(sancaiRepository.updateEntry(entry)).thenReturn(1);
         ShareTargetCreateCommand target =
-                new ShareTargetCreateCommand(ClassicsContentType.SANCAI_ENTRY, ClassicsContentId.of(100L));
+                new ShareTargetCreateCommand(ClassicsContentType.SANCAI_ENTRY, ClassicsContentIdCodec.toDomain(100L));
 
         ClassicsBatchOperationResult result = service.batchCreateLinks(new BatchShareCreateCommand(
                 "批量-",
@@ -418,10 +431,10 @@ class ClassicsSharingApplicationServiceImplTest {
                 shareTokenHasher,
                 null);
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(101L));
+        entry.setId(SancaiEntryIdCodec.toDomain(101L));
         entry.setTitle("私有三才");
         entry.setVisibility(SancaiEntryVisibility.PRIVATE);
-        when(sancaiRepository.getEntryById(SancaiEntryId.of(101L))).thenReturn(entry);
+        when(sancaiRepository.getEntryById(SancaiEntryIdCodec.toDomain(101L))).thenReturn(entry);
 
         ClassicsBatchOperationResult result = service.batchCreateLinks(new BatchShareCreateCommand(
                 null,
@@ -430,7 +443,8 @@ class ClassicsSharingApplicationServiceImplTest {
                 null,
                 null,
                 false,
-                List.of(new ShareTargetCreateCommand(ClassicsContentType.SANCAI_ENTRY, ClassicsContentId.of(101L)))));
+                List.of(new ShareTargetCreateCommand(
+                        ClassicsContentType.SANCAI_ENTRY, ClassicsContentIdCodec.toDomain(101L)))));
 
         assertEquals(0, result.getSuccessCount());
         assertEquals(1, result.getFailureCount());
@@ -456,12 +470,12 @@ class ClassicsSharingApplicationServiceImplTest {
                 shareTokenHasher,
                 null);
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(102L));
+        entry.setId(SancaiEntryIdCodec.toDomain(102L));
         entry.setTitle("私有三才");
         entry.setVisibility(SancaiEntryVisibility.PRIVATE);
         ClassicsContentVersion version = version(22L, 2, "{\"title\":\"私有三才\"}");
-        when(sancaiRepository.getEntryById(SancaiEntryId.of(102L))).thenReturn(entry);
-        when(sharingRepository.insertLink(any())).thenReturn(ClassicsShareLinkId.of(32L));
+        when(sancaiRepository.getEntryById(SancaiEntryIdCodec.toDomain(102L))).thenReturn(entry);
+        when(sharingRepository.insertLink(any())).thenReturn(ClassicsShareLinkIdCodec.toDomain(32L));
         when(shareTokenGenerator.generate()).thenReturn("private-token");
         when(shareTokenHasher.hash("private-token")).thenReturn("private-hash");
         when(contentApplicationService.ensureVersioned(
@@ -476,7 +490,8 @@ class ClassicsSharingApplicationServiceImplTest {
                 null,
                 null,
                 true,
-                List.of(new ShareTargetCreateCommand(ClassicsContentType.SANCAI_ENTRY, ClassicsContentId.of(102L))));
+                List.of(new ShareTargetCreateCommand(
+                        ClassicsContentType.SANCAI_ENTRY, ClassicsContentIdCodec.toDomain(102L))));
         command.setOperatorPermissions(Set.of("classics:sancai:view", "classics:sharing:edit"));
 
         ClassicsBatchOperationResult result = service.batchCreateLinks(command);
@@ -503,10 +518,10 @@ class ClassicsSharingApplicationServiceImplTest {
                 shareTokenHasher,
                 null);
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(104L));
+        entry.setId(SancaiEntryIdCodec.toDomain(104L));
         entry.setTitle("私有三才");
         entry.setVisibility(SancaiEntryVisibility.PRIVATE);
-        when(sancaiRepository.getEntryById(SancaiEntryId.of(104L))).thenReturn(entry);
+        when(sancaiRepository.getEntryById(SancaiEntryIdCodec.toDomain(104L))).thenReturn(entry);
 
         ClassicsBatchOperationResult result = service.batchCreateLinks(new BatchShareCreateCommand(
                 null,
@@ -515,7 +530,8 @@ class ClassicsSharingApplicationServiceImplTest {
                 null,
                 null,
                 true,
-                List.of(new ShareTargetCreateCommand(ClassicsContentType.SANCAI_ENTRY, ClassicsContentId.of(104L)))));
+                List.of(new ShareTargetCreateCommand(
+                        ClassicsContentType.SANCAI_ENTRY, ClassicsContentIdCodec.toDomain(104L)))));
 
         assertEquals(0, result.getSuccessCount());
         assertEquals(1, result.getFailureCount());
@@ -547,24 +563,24 @@ class ClassicsSharingApplicationServiceImplTest {
                 null);
 
         ClassicsShareTarget target = new ClassicsShareTarget();
-        target.setId(ClassicsShareTargetId.of(20L));
+        target.setId(ClassicsShareTargetIdCodec.toDomain(20L));
         target.setContentType(ClassicsContentType.SANCAI_ENTRY);
-        target.setContentId(ClassicsContentId.of(100L));
-        target.setContentVersionId(ClassicsContentVersionId.of(9L));
+        target.setContentId(ClassicsContentIdCodec.toDomain(100L));
+        target.setContentVersionId(ClassicsContentVersionIdCodec.toDomain(9L));
         target.setContentVersionNo(2);
         SancaiEntry entry = new SancaiEntry();
-        entry.setId(SancaiEntryId.of(100L));
-        entry.setCurrentVersionId(ClassicsContentVersionId.of(10L));
+        entry.setId(SancaiEntryIdCodec.toDomain(100L));
+        entry.setCurrentVersionId(ClassicsContentVersionIdCodec.toDomain(10L));
         entry.setCurrentVersionNo(3);
 
-        ClassicsShareLinkId shareLinkId = ClassicsShareLinkId.of(10L);
+        ClassicsShareLinkId shareLinkId = ClassicsShareLinkIdCodec.toDomain(10L);
         when(sharingRepository.listTargetsByLinkId(shareLinkId, SortDirection.ASC))
                 .thenReturn(List.of(target));
-        when(sancaiRepository.getEntryById(SancaiEntryId.of(100L))).thenReturn(entry);
+        when(sancaiRepository.getEntryById(SancaiEntryIdCodec.toDomain(100L))).thenReturn(entry);
 
         List<ClassicsShareTarget> targets = service.listTargets(shareLinkId);
 
-        assertEquals(ClassicsContentVersionId.of(10L), targets.get(0).getCurrentContentVersionId());
+        assertEquals(ClassicsContentVersionIdCodec.toDomain(10L), targets.get(0).getCurrentContentVersionId());
         assertEquals(3, targets.get(0).getCurrentContentVersionNo());
         assertEquals(Boolean.TRUE, targets.get(0).getContentChangedAfterShare());
     }
@@ -580,7 +596,7 @@ class ClassicsSharingApplicationServiceImplTest {
 
         when(shareTokenHasher.hash("share-token")).thenReturn("hashed-share-token");
         when(sharingRepository.getLinkByTokenHash("hashed-share-token")).thenReturn(link);
-        when(sharingRepository.listTargetsByLinkId(ClassicsShareLinkId.of(10L), SortDirection.ASC))
+        when(sharingRepository.listTargetsByLinkId(ClassicsShareLinkIdCodec.toDomain(10L), SortDirection.ASC))
                 .thenReturn(List.of(target));
 
         SharePortalResult result = service.getPortalShare("share-token");
@@ -591,13 +607,14 @@ class ClassicsSharingApplicationServiceImplTest {
         ArgumentCaptor<ClassicsShareAccessRecord> accessCaptor =
                 ArgumentCaptor.forClass(ClassicsShareAccessRecord.class);
         verify(sharingRepository).insertAccessRecord(accessCaptor.capture());
-        assertEquals(ClassicsShareLinkId.of(10L), accessCaptor.getValue().getShareLinkId());
+        assertEquals(
+                ClassicsShareLinkIdCodec.toDomain(10L), accessCaptor.getValue().getShareLinkId());
         assertNull(accessCaptor.getValue().getShareTargetId());
         assertEquals(ClassicsShareAccessResult.ALLOWED, accessCaptor.getValue().getAccessResult());
         assertEquals(
                 "{\"accessType\":\"DETAIL_VIEW\",\"privateAccess\":false}",
                 accessCaptor.getValue().getClientSnapshot());
-        verify(sharingRepository).increaseAccessCount(ClassicsShareLinkId.of(10L));
+        verify(sharingRepository).increaseAccessCount(ClassicsShareLinkIdCodec.toDomain(10L));
     }
 
     @Test
@@ -628,7 +645,7 @@ class ClassicsSharingApplicationServiceImplTest {
 
         when(shareTokenHasher.hash("share-token")).thenReturn("hashed-share-token");
         when(sharingRepository.getLinkByTokenHash("hashed-share-token")).thenReturn(link);
-        when(sharingRepository.listTargetsByLinkId(ClassicsShareLinkId.of(10L), SortDirection.ASC))
+        when(sharingRepository.listTargetsByLinkId(ClassicsShareLinkIdCodec.toDomain(10L), SortDirection.ASC))
                 .thenReturn(List.of(target));
 
         SharePortalResult creatorResult = service.getPrivatePortalShare("share-token", 1001L, Set.of());
@@ -648,7 +665,7 @@ class ClassicsSharingApplicationServiceImplTest {
         assertEquals(
                 "{\"accessType\":\"DETAIL_VIEW\",\"privateAccess\":true}",
                 accessCaptor.getAllValues().get(1).getClientSnapshot());
-        verify(sharingRepository, times(2)).increaseAccessCount(ClassicsShareLinkId.of(10L));
+        verify(sharingRepository, times(2)).increaseAccessCount(ClassicsShareLinkIdCodec.toDomain(10L));
     }
 
     @Test
@@ -663,7 +680,7 @@ class ClassicsSharingApplicationServiceImplTest {
         ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
         ClassicsShareTokenHasher shareTokenHasher = mock(ClassicsShareTokenHasher.class);
         ClassicsSharingApplicationServiceImpl service = portalService(sharingRepository, shareTokenHasher);
-        ClassicsShareLinkId shareLinkId = ClassicsShareLinkId.of(10L);
+        ClassicsShareLinkId shareLinkId = ClassicsShareLinkIdCodec.toDomain(10L);
         ClassicsShareLink revoked = link(ClassicsShareVisibility.PUBLIC, ClassicsShareLinkStatus.REVOKED, futureDate());
         when(sharingRepository.getLinkById(shareLinkId)).thenReturn(revoked);
         when(sharingRepository.updateLinkStatus(shareLinkId, ClassicsShareLinkStatus.ACTIVE.value()))
@@ -679,7 +696,7 @@ class ClassicsSharingApplicationServiceImplTest {
         ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
         ClassicsShareTokenHasher shareTokenHasher = mock(ClassicsShareTokenHasher.class);
         ClassicsSharingApplicationServiceImpl service = portalService(sharingRepository, shareTokenHasher);
-        ClassicsShareLinkId shareLinkId = ClassicsShareLinkId.of(10L);
+        ClassicsShareLinkId shareLinkId = ClassicsShareLinkIdCodec.toDomain(10L);
         ShareLinkStatusCommand restoreCommand = new ShareLinkStatusCommand(shareLinkId, ClassicsShareLinkStatus.ACTIVE);
 
         when(sharingRepository.getLinkById(shareLinkId))
@@ -707,7 +724,7 @@ class ClassicsSharingApplicationServiceImplTest {
 
         when(shareTokenHasher.hash("share-token")).thenReturn("hashed-share-token");
         when(sharingRepository.getLinkByTokenHash("hashed-share-token")).thenReturn(link);
-        when(sharingRepository.listTargetsByLinkId(ClassicsShareLinkId.of(10L), SortDirection.ASC))
+        when(sharingRepository.listTargetsByLinkId(ClassicsShareLinkIdCodec.toDomain(10L), SortDirection.ASC))
                 .thenReturn(List.of(target));
         when(storageFacade.exists(any(OpenStorageFacadeRequest.class))).thenReturn(true);
         when(storageFacade.open(any(OpenStorageFacadeRequest.class))).thenReturn(content);
@@ -722,13 +739,16 @@ class ClassicsSharingApplicationServiceImplTest {
         ArgumentCaptor<ClassicsShareAccessRecord> accessCaptor =
                 ArgumentCaptor.forClass(ClassicsShareAccessRecord.class);
         verify(sharingRepository).insertAccessRecord(accessCaptor.capture());
-        assertEquals(ClassicsShareLinkId.of(10L), accessCaptor.getValue().getShareLinkId());
-        assertEquals(ClassicsShareTargetId.of(20L), accessCaptor.getValue().getShareTargetId());
+        assertEquals(
+                ClassicsShareLinkIdCodec.toDomain(10L), accessCaptor.getValue().getShareLinkId());
+        assertEquals(
+                ClassicsShareTargetIdCodec.toDomain(20L),
+                accessCaptor.getValue().getShareTargetId());
         assertEquals(ClassicsShareAccessResult.ALLOWED, accessCaptor.getValue().getAccessResult());
         assertEquals(
                 "{\"accessType\":\"RESOURCE_READ\",\"privateAccess\":false,\"storageObjectId\":7002,\"download\":true}",
                 accessCaptor.getValue().getClientSnapshot());
-        verify(sharingRepository).increaseAccessCount(ClassicsShareLinkId.of(10L));
+        verify(sharingRepository).increaseAccessCount(ClassicsShareLinkIdCodec.toDomain(10L));
     }
 
     @Test
@@ -746,7 +766,7 @@ class ClassicsSharingApplicationServiceImplTest {
 
         when(shareTokenHasher.hash("share-token")).thenReturn("hashed-share-token");
         when(sharingRepository.getLinkByTokenHash("hashed-share-token")).thenReturn(link);
-        when(sharingRepository.listTargetsByLinkId(ClassicsShareLinkId.of(10L), SortDirection.ASC))
+        when(sharingRepository.listTargetsByLinkId(ClassicsShareLinkIdCodec.toDomain(10L), SortDirection.ASC))
                 .thenReturn(List.of(target));
         when(storageFacade.exists(any(OpenStorageFacadeRequest.class))).thenReturn(true);
         when(storageFacade.open(any(OpenStorageFacadeRequest.class))).thenReturn(content);
@@ -771,7 +791,7 @@ class ClassicsSharingApplicationServiceImplTest {
 
         when(shareTokenHasher.hash("share-token")).thenReturn("hashed-share-token");
         when(sharingRepository.getLinkByTokenHash("hashed-share-token")).thenReturn(link);
-        when(sharingRepository.listTargetsByLinkId(ClassicsShareLinkId.of(10L), SortDirection.ASC))
+        when(sharingRepository.listTargetsByLinkId(ClassicsShareLinkIdCodec.toDomain(10L), SortDirection.ASC))
                 .thenReturn(List.of(target));
 
         assertThrows(BizException.class, () -> service.getPortalShareResourceContent("share-token", 9999L, false));
@@ -797,7 +817,7 @@ class ClassicsSharingApplicationServiceImplTest {
 
         when(shareTokenHasher.hash("share-token")).thenReturn("hashed-share-token");
         when(sharingRepository.getLinkByTokenHash("hashed-share-token")).thenReturn(link);
-        when(sharingRepository.listTargetsByLinkId(ClassicsShareLinkId.of(10L), SortDirection.ASC))
+        when(sharingRepository.listTargetsByLinkId(ClassicsShareLinkIdCodec.toDomain(10L), SortDirection.ASC))
                 .thenReturn(List.of(sancaiTarget, mingCustomsTarget));
 
         assertThrows(BizException.class, () -> service.getPortalShareResourceContent("share-token", 7003L, true));
@@ -808,7 +828,7 @@ class ClassicsSharingApplicationServiceImplTest {
 
     private static ClassicsContentVersion version(Long id, int versionNo, String snapshotJson) {
         ClassicsContentVersion version = new ClassicsContentVersion();
-        version.setId(ClassicsContentVersionId.of(id));
+        version.setId(ClassicsContentVersionIdCodec.toDomain(id));
         version.setVersionNo(versionNo);
         version.setVersionedAt(new Date(versionNo));
         version.setSnapshotJson(snapshotJson);
@@ -857,9 +877,9 @@ class ClassicsSharingApplicationServiceImplTest {
 
     private static ClassicsShareTarget target(ClassicsContentType contentType, String snapshotJson) {
         ClassicsShareTarget target = new ClassicsShareTarget();
-        target.setId(ClassicsShareTargetId.of(20L));
+        target.setId(ClassicsShareTargetIdCodec.toDomain(20L));
         target.setContentType(contentType);
-        target.setContentId(ClassicsContentId.of(100L));
+        target.setContentId(ClassicsContentIdCodec.toDomain(100L));
         target.setContentSnapshotJson(snapshotJson);
         target.setTargetStatus(ClassicsShareTargetStatus.AVAILABLE);
         return target;
@@ -880,7 +900,7 @@ class ClassicsSharingApplicationServiceImplTest {
     private static ClassicsShareLink link(
             ClassicsShareVisibility visibility, ClassicsShareLinkStatus status, Date expiresAt) {
         ClassicsShareLink link = new ClassicsShareLink();
-        link.setId(ClassicsShareLinkId.of(10L));
+        link.setId(ClassicsShareLinkIdCodec.toDomain(10L));
         link.setTitle("公开分享");
         link.setVisibility(visibility);
         link.setStatus(status);

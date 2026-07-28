@@ -8,9 +8,9 @@ import com.thundax.kuzhambu.classics.application.cleanup.service.ClassicsCleanup
 import com.thundax.kuzhambu.classics.application.cleanup.service.ClassicsCleanupApplicationService.CleanupTarget;
 import com.thundax.kuzhambu.classics.application.cleanup.service.impl.ClassicsCleanupApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryDraftId;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryDraftIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiAssetRepository;
-import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
+import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareLinkIdCodec;
 import com.thundax.kuzhambu.classics.domain.sharing.repository.ClassicsSharingRepository;
 import java.util.Date;
 import java.util.List;
@@ -23,7 +23,7 @@ class ClassicsCleanupApplicationServiceImplTest {
         ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
         Date now = new Date(1_735_689_600_000L);
         when(sharingRepository.listExpiredShareLinkIds(now, 50))
-                .thenReturn(List.of(ClassicsShareLinkId.of(11L), ClassicsShareLinkId.of(12L)));
+                .thenReturn(List.of(ClassicsShareLinkIdCodec.toDomain(11L), ClassicsShareLinkIdCodec.toDomain(12L)));
         ClassicsCleanupApplicationServiceImpl service = new ClassicsCleanupApplicationServiceImpl(
                 sharingRepository, mock(SancaiAssetRepository.class), mock(ClassicsContentRepository.class));
 
@@ -40,7 +40,7 @@ class ClassicsCleanupApplicationServiceImplTest {
         Date now = new Date(1_735_689_600_000L);
         Date expectedCutoff = new Date(1_735_689_600_000L - 14L * 24L * 60L * 60L * 1000L);
         when(sancaiAssetRepository.listExpiredDraftIds(expectedCutoff, 10))
-                .thenReturn(List.of(SancaiEntryDraftId.of(21L)));
+                .thenReturn(List.of(SancaiEntryDraftIdCodec.toDomain(21L)));
         ClassicsCleanupApplicationServiceImpl service = new ClassicsCleanupApplicationServiceImpl(
                 mock(ClassicsSharingRepository.class), sancaiAssetRepository, mock(ClassicsContentRepository.class));
 
@@ -54,7 +54,7 @@ class ClassicsCleanupApplicationServiceImplTest {
     @Test
     void executeTargetShouldReturnFailureWithoutThrowingWhenSingleItemFails() {
         ClassicsSharingRepository sharingRepository = mock(ClassicsSharingRepository.class);
-        when(sharingRepository.markShareLinkExpired(ClassicsShareLinkId.of(11L)))
+        when(sharingRepository.markShareLinkExpired(ClassicsShareLinkIdCodec.toDomain(11L)))
                 .thenThrow(new IllegalStateException("db unavailable"));
         ClassicsCleanupApplicationServiceImpl service = new ClassicsCleanupApplicationServiceImpl(
                 sharingRepository, mock(SancaiAssetRepository.class), mock(ClassicsContentRepository.class));
