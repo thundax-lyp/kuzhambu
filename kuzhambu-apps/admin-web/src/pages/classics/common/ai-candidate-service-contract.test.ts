@@ -105,9 +105,23 @@ describe("AI candidate service request contracts", () => {
         });
     });
 
+    it("gets candidate by stable id text", async () => {
+        await aiCandidateService.get({
+            candidateId: "869897501442834432"
+        });
+
+        expect(capturedCalls.at(-1)).toEqual({
+            body: {
+                candidateId: "869897501442834432"
+            },
+            method: "POST",
+            path: "/ai/invocation/candidate/get"
+        });
+    });
+
     it("applies candidate by invoking classics content apply api", async () => {
         const command: AiCandidateApplyCommand = {
-            candidateId: 7001,
+            candidateId: "869897501442834432",
             contentType: "SANCAI_ENTRY",
             contentId: 3001,
             capability: "summary",
@@ -128,7 +142,7 @@ describe("AI candidate service request contracts", () => {
 
     it("rejects candidate with error info", async () => {
         const request: AiCandidateRejectCommand = {
-            candidateId: 7001,
+            candidateId: "869897501442834432",
             errorType: "INVALID",
             errorMessage: "invalid"
         };

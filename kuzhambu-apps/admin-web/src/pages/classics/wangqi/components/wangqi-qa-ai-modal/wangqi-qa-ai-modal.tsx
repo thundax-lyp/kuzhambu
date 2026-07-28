@@ -123,7 +123,7 @@ const defaultResultFormatForQa = (candidate?: AiCandidateRecord) => {
 };
 
 const qaTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = {
-    getId: (task) => task.taskId,
+    getId: (task) => aiRefinementTaskService.getTaskStableId(task.taskId, task.taskIdText),
     getMessage: getQaTaskDescription,
     getPhase: (task) => {
         if (isQaTaskActive(task)) {
@@ -363,7 +363,7 @@ export const WangqiQaAiModal = ({
             return;
         }
         applyMutation.mutate({
-            candidateId: candidate.candidateId,
+            candidateId: candidate.candidateIdText || String(candidate.candidateId),
             contentId: document.id,
             contentType: "WANGQI_DOCUMENT",
             capability: "qa",
@@ -410,8 +410,7 @@ export const WangqiQaAiModal = ({
                     task: latestQaTask,
                     createTask: createQaTask,
                     fetchResult: loadQaCandidate,
-                    fetchTask: (taskId) =>
-                        aiRefinementTaskService.getTask({ taskId: Number(taskId) }),
+                    fetchTask: (taskId) => aiRefinementTaskService.getTask({ taskId }),
                     applyResult: applyCandidate,
                     onTaskChange,
                     pollIntervalMs: QA_CANDIDATE_POLL_INTERVAL_MS,

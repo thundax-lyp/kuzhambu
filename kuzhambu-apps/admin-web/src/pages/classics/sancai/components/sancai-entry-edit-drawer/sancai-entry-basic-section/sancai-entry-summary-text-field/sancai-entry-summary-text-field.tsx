@@ -14,37 +14,29 @@ import { SancaiEntrySummaryModal } from "./sancai-entry-summary-modal";
 import "./sancai-entry-summary-text-field.css";
 
 const AI_TEXT_CANDIDATE_POLL_INTERVAL_MS = 3000;
-const RUNNING_REFINEMENT_STATUSES = new Set(["PENDING", "RUNNING"]);
+const SUMMARY_CANDIDATE_CAPABILITY = "classics_summary";
 
-const sortRefinementTasksByNewest = (
-    left: AiRefinementTaskRecord,
-    right: AiRefinementTaskRecord
-) => {
-    if (left.requestedAt && right.requestedAt && left.requestedAt !== right.requestedAt) {
-        return right.requestedAt.localeCompare(left.requestedAt);
-    }
-    return right.taskId - left.taskId;
+const getCandidateStableId = (candidate: AiCandidateRecord) => {
+    return candidate.candidateIdText || String(candidate.candidateId);
+};
+
+const isUsableSummaryCandidate = (candidate?: AiCandidateRecord | null) => {
+    return (
+        candidate?.capability &&
+        aiRefinementTaskService.getNormalizedTaskCapability(candidate.capability) === "summary" &&
+        candidate.status === "PENDING" &&
+        typeof candidate.resultPayload === "string" &&
+        candidate.resultPayload.trim().length > 0
+    );
 };
 
 const selectLatestSummaryCandidate = (candidates: AiCandidateRecord[] | undefined) => {
-    return [...(candidates || [])]
-        .filter(
-            (candidate) =>
-                candidate.capability === "summary" &&
-                candidate.status === "PENDING" &&
-                typeof candidate.resultPayload === "string" &&
-                candidate.resultPayload.trim().length > 0
-        )
-        .sort((left, right) => {
-            if (left.requestedAt && right.requestedAt && left.requestedAt !== right.requestedAt) {
-                return right.requestedAt.localeCompare(left.requestedAt);
-            }
-            return right.candidateId - left.candidateId;
-        })[0];
-};
-
-const isRunningRefinementTask = (task?: AiRefinementTaskRecord | null) => {
-    return Boolean(task?.status) && RUNNING_REFINEMENT_STATUSES.has(task?.status ?? "");
+    return [...(candidates || [])].filter(isUsableSummaryCandidate).sort((left, right) => {
+        if (left.requestedAt && right.requestedAt && left.requestedAt !== right.requestedAt) {
+            return right.requestedAt.localeCompare(left.requestedAt);
+        }
+        return right.candidateId - left.candidateId;
+    })[0];
 };
 
 interface SancaiEntrySummaryTextFieldProps {
@@ -72,19 +64,9 @@ export const SancaiEntrySummaryTextField = ({
     const queryClient = useQueryClient();
     const [summaryModalOpen, setSummaryModalOpen] = useState(false);
     const [summaryDraft, setSummaryDraft] = useState("");
-    const [loadedSummaryCandidateId, setLoadedSummaryCandidateId] = useState<number | null>(null);
-    const latestSummaryTask = useMemo(
-        () =>
-            [...summaryTasks]
-                .filter(
-                    (task) =>
-                        aiRefinementTaskService.getNormalizedTaskCapability(task.capability) ===
-                        "summary"
-                )
-                .sort(sortRefinementTasksByNewest)[0] ?? null,
-        [summaryTasks]
-    );
-    const hasRunningSummaryTask = isRunningRefinementTask(latestSummaryTask);
+    const [loadedSummaryCandidateId, setLoadedSummaryCandidateId] = useState<string | null>(null);
+    const [loadedSummaryCandidateSnapshot, setLoadedSummaryCandidateSnapshot] =
+        useState<AiCandidateRecord | null>(null);
     const syncSummaryTask = useCallback(
         (task: AiRefinementTaskRecord | null) => {
             if (!task || !entryId) {
@@ -121,15 +103,13 @@ export const SancaiEntrySummaryTextField = ({
             aiCandidateService.list({
                 contentId: entryId,
                 contentType: "SANCAI_ENTRY",
-                capability: "summary",
+                capability: SUMMARY_CANDIDATE_CAPABILITY,
                 status: "PENDING"
             }),
         enabled: summaryModalOpen && Boolean(entryId),
         retry: false,
         refetchInterval: () => {
-            return isCreatingSummaryTask || hasRunningSummaryTask
-                ? AI_TEXT_CANDIDATE_POLL_INTERVAL_MS
-                : false;
+            return isCreatingSummaryTask ? AI_TEXT_CANDIDATE_POLL_INTERVAL_MS : false;
         }
     });
     const applySummaryCandidateMutation = useMutation({
@@ -165,52 +145,87 @@ export const SancaiEntrySummaryTextField = ({
         if (!loadedSummaryCandidateId) {
             return null;
         }
-        return (
+        const queryCandidate =
             (summaryCandidatesQuery.data || []).find(
                 (candidate) =>
-                    candidate.candidateId === loadedSummaryCandidateId &&
-                    candidate.capability === "summary"
-            ) ?? null
-        );
-    }, [summaryCandidatesQuery.data, loadedSummaryCandidateId]);
-    const isSummaryApplyDisabled =
-        !summaryDraft.trim() ||
-        isCreatingSummaryTask ||
-        hasRunningSummaryTask ||
-        summaryCandidatesQuery.isFetching;
+                    getCandidateStableId(candidate) === loadedSummaryCandidateId &&
+                    aiRefinementTaskService.getNormalizedTaskCapability(candidate.capability) ===
+                        "summary"
+            ) ?? null;
+        if (queryCandidate) {
+            return queryCandidate;
+        }
+        return loadedSummaryCandidateSnapshot &&
+            getCandidateStableId(loadedSummaryCandidateSnapshot) === loadedSummaryCandidateId &&
+            isUsableSummaryCandidate(loadedSummaryCandidateSnapshot)
+            ? loadedSummaryCandidateSnapshot
+            : null;
+    }, [loadedSummaryCandidateId, loadedSummaryCandidateSnapshot, summaryCandidatesQuery.data]);
+    const isSummaryApplyDisabled = !summaryDraft.trim() || isCreatingSummaryTask;
+    const refetchSummaryCandidates = summaryCandidatesQuery.refetch;
+    const loadSummaryCandidate = useCallback(
+        async (task: AiRefinementTaskRecord | null) => {
+            const candidateId =
+                task?.candidateIdText || (task?.candidateId ? String(task.candidateId) : null);
+            if (candidateId) {
+                const candidate = await aiCandidateService.get({ candidateId });
+                return isUsableSummaryCandidate(candidate) ? candidate : null;
+            }
+            const candidates = await aiCandidateService.list({
+                contentId: entryId,
+                contentType: "SANCAI_ENTRY",
+                capability: SUMMARY_CANDIDATE_CAPABILITY,
+                status: "PENDING"
+            });
+            return selectLatestSummaryCandidate(candidates) ?? null;
+        },
+        [entryId]
+    );
+    const updateSummaryDraftFromCandidate = useCallback(
+        (candidate: AiCandidateRecord | null) => {
+            if (!candidate || !isUsableSummaryCandidate(candidate)) {
+                return;
+            }
+            const candidateId = getCandidateStableId(candidate);
+            if (candidateId === loadedSummaryCandidateId) {
+                return;
+            }
+            setLoadedSummaryCandidateId(candidateId);
+            setLoadedSummaryCandidateSnapshot(candidate);
+            setSummaryDraft(candidate.resultPayload?.trim() || "");
+        },
+        [loadedSummaryCandidateId]
+    );
+
+    const handleSummaryTaskChange = useCallback(
+        (task: AiRefinementTaskRecord | null) => {
+            syncSummaryTask(task);
+            if (task?.status === "SUCCEEDED" || task?.status === "PARTIAL") {
+                void refetchSummaryCandidates();
+            }
+        },
+        [refetchSummaryCandidates, syncSummaryTask]
+    );
 
     useEffect(() => {
         if (!summaryModalOpen || !latestSummaryCandidate) {
             return;
         }
-        if (latestSummaryCandidate.candidateId === loadedSummaryCandidateId) {
+        if (getCandidateStableId(latestSummaryCandidate) === loadedSummaryCandidateId) {
             return;
         }
         const timer = window.setTimeout(() => {
-            setLoadedSummaryCandidateId(latestSummaryCandidate.candidateId);
+            setLoadedSummaryCandidateId(getCandidateStableId(latestSummaryCandidate));
+            setLoadedSummaryCandidateSnapshot(latestSummaryCandidate);
             setSummaryDraft(latestSummaryCandidate.resultPayload?.trim() || "");
         }, 0);
         return () => window.clearTimeout(timer);
     }, [latestSummaryCandidate, loadedSummaryCandidateId, summaryModalOpen]);
 
-    useEffect(() => {
-        if (!summaryModalOpen || !latestSummaryTask?.taskId) {
-            return;
-        }
-        if (latestSummaryTask.status !== "SUCCEEDED" && latestSummaryTask.status !== "PARTIAL") {
-            return;
-        }
-        void summaryCandidatesQuery.refetch();
-    }, [
-        latestSummaryTask?.status,
-        latestSummaryTask?.taskId,
-        summaryCandidatesQuery,
-        summaryModalOpen
-    ]);
-
     const openSummaryModal = () => {
         setSummaryDraft(value || "");
         setLoadedSummaryCandidateId(null);
+        setLoadedSummaryCandidateSnapshot(null);
         setSummaryModalOpen(true);
     };
     const closeSummaryModal = () => {
@@ -239,7 +254,7 @@ export const SancaiEntrySummaryTextField = ({
         const resultPayload = summaryDraft;
         if (loadedSummaryCandidate) {
             applySummaryCandidateMutation.mutate({
-                candidateId: loadedSummaryCandidate.candidateId,
+                candidateId: getCandidateStableId(loadedSummaryCandidate),
                 contentId: entryId,
                 contentType: "SANCAI_ENTRY",
                 capability: "summary",
@@ -280,21 +295,20 @@ export const SancaiEntrySummaryTextField = ({
             <SancaiEntrySummaryModal
                 aiTextDraft={summaryDraft}
                 form={formValues}
-                hasRunningAiTextTask={hasRunningSummaryTask}
                 isAiTextApplyDisabled={isSummaryApplyDisabled}
                 isAiTextCandidateFetching={summaryCandidatesQuery.isFetching}
                 isAiTextCandidateLoadError={summaryCandidatesQuery.isError}
                 isApplyingAiText={applySummaryCandidateMutation.isPending}
                 isCreatingAiTextTask={isCreatingSummaryTask}
-                latestAiTextTask={latestSummaryTask}
                 open={summaryModalOpen}
+                summaryTasks={summaryTasks}
                 onApply={applySummaryDraft}
                 onCancel={closeSummaryModal}
-                onFetchTask={(taskId) =>
-                    aiRefinementTaskService.getTask({ taskId: Number(taskId) })
-                }
+                onFetchResult={loadSummaryCandidate}
+                onFetchTask={(taskId) => aiRefinementTaskService.getTask({ taskId })}
                 onRequestTask={requestSummaryTask}
-                onTaskChange={syncSummaryTask}
+                onResultChange={updateSummaryDraftFromCandidate}
+                onTaskChange={handleSummaryTaskChange}
                 onTextDraftChange={setSummaryDraft}
             />
         </div>

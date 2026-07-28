@@ -125,7 +125,7 @@ const isSummaryTaskCompleted = (task?: AiRefinementTaskRecord | null) => {
 };
 
 const summaryTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = {
-    getId: (task) => task.taskId,
+    getId: (task) => aiRefinementTaskService.getTaskStableId(task.taskId, task.taskIdText),
     getMessage: getSummaryTaskDescription,
     getPhase: (task) => {
         if (isSummaryTaskActive(task)) {
@@ -609,8 +609,7 @@ export const WangqiDocumentEditDrawer = ({
                     task: latestSummaryTask,
                     createTask: requestSummaryTask,
                     fetchResult: loadSummaryCandidate,
-                    fetchTask: (taskId) =>
-                        aiRefinementTaskService.getTask({ taskId: Number(taskId) }),
+                    fetchTask: (taskId) => aiRefinementTaskService.getTask({ taskId }),
                     applyResult: applySummaryDraft,
                     onTaskChange: onSummaryTaskChange,
                     onResultChange: updateSummaryDraftFromCandidate,

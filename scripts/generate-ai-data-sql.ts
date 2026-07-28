@@ -145,7 +145,7 @@ const appendModelSql = (lines: string[]) => {
     [
       [
         900101,
-        "OPENAI",
+        "OPENAI_COMPATIBLE",
         "",
         null,
         "CTYUN-CX-Qwen3.5-397B-A17B",
@@ -158,7 +158,7 @@ const appendModelSql = (lines: string[]) => {
       ],
       [
         900102,
-        "OPENAI",
+        "OPENAI_COMPATIBLE",
         "",
         null,
         "CTYUN-bot-DeepSeek-V3.2-pro",

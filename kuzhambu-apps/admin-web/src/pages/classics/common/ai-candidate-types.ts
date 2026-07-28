@@ -3,7 +3,9 @@ export type AiCandidateCapability =
 
 export interface AiCandidateRecord {
     candidateId: number;
+    candidateIdText?: string | null;
     callId?: number | null;
+    callIdText?: string | null;
     capability: AiCandidateCapability | string;
     contentType: string;
     contentId: number;
@@ -27,7 +29,7 @@ export interface AiCandidateApplyRecord {
 }
 
 export interface AiCandidateApplyPayload {
-    candidateId: number;
+    candidateId: string;
     contentType: string;
     contentId: number;
     capability: AiCandidateCapability | string;
@@ -38,7 +40,7 @@ export interface AiCandidateApplyPayload {
 }
 
 export interface AiCandidateRejectPayload {
-    candidateId: number;
+    candidateId: string;
     errorType: string;
     errorMessage?: string | null;
 }

@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.ai.infra.invocation.repository.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -51,6 +52,7 @@ class AiInvocationRepositoryIT {
         assertTrue(schemaSql.contains("`rejected_at`"));
         assertTrue(schemaSql.contains("KEY `idx_ai_invocation_log_trace`"));
         assertTrue(schemaSql.contains("KEY `idx_ai_candidate_target`"));
+        assertFalse(readCreateTableBlock(schemaSql, "ai_candidate").contains("`candidate_id`"));
     }
 
     @Test
@@ -233,5 +235,15 @@ class AiInvocationRepositoryIT {
             }
         }
         throw new IOException("Required SQL file not found: " + path);
+    }
+
+    private static String readCreateTableBlock(String schemaSql, String tableName) {
+        String tableStart = "CREATE TABLE IF NOT EXISTS `" + tableName + "`";
+        int start = schemaSql.indexOf(tableStart);
+        if (start < 0) {
+            return "";
+        }
+        int end = schemaSql.indexOf(";\n", start);
+        return end < 0 ? schemaSql.substring(start) : schemaSql.substring(start, end);
     }
 }

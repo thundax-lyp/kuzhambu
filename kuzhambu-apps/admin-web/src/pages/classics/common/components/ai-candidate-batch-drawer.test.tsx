@@ -304,7 +304,7 @@ describe("AiCandidateBatchDrawer", () => {
             {
                 items: [
                     {
-                        candidateId: 7201,
+                        candidateId: "7201",
                         contentType: "SANCAI_ENTRY",
                         contentId: 3001,
                         capability: "summary",
@@ -314,7 +314,7 @@ describe("AiCandidateBatchDrawer", () => {
                         changeSummary: "AI 应用：summary"
                     },
                     {
-                        candidateId: 7202,
+                        candidateId: "7202",
                         contentType: "SANCAI_ENTRY",
                         contentId: 3002,
                         capability: "summary",
@@ -401,7 +401,7 @@ describe("AiCandidateBatchDrawer", () => {
                 errorMessage: "用户已批量拒绝该 AI 候选",
                 items: [
                     {
-                        candidateId: 7301,
+                        candidateId: "7301",
                         contentType: "SANCAI_ENTRY",
                         contentId: 3001,
                         capability: "summary",

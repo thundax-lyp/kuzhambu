@@ -158,6 +158,7 @@ vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
         (failureStage?: string | null, errorType?: string | null, errorMessage?: string | null) =>
             [failureStage, errorType, errorMessage].filter(Boolean).join(" / ") || null
     ),
+    getTaskStableId: vi.fn((taskId: number, taskIdText?: string | null) => taskIdText || taskId),
     getTaskRetryable: vi.fn(
         (status: string, capability: string) =>
             ["FAILED", "PARTIAL", "CANCELLED"].includes(status) &&
@@ -1274,7 +1275,7 @@ describe("SancaiEntryPanel sharing", () => {
             expect(vi.mocked(aiCandidateService.apply)).toHaveBeenCalledTimes(1);
         });
         expect(vi.mocked(aiCandidateService.apply).mock.calls[0]?.[0]).toMatchObject({
-            candidateId: 8003,
+            candidateId: "8003",
             contentType: "SANCAI_ENTRY",
             contentId: 3001,
             capability: "image_analysis",
@@ -1350,7 +1351,7 @@ describe("SancaiEntryPanel sharing", () => {
             expect(vi.mocked(aiCandidateService.reject)).toHaveBeenCalledTimes(1);
         });
         expect(vi.mocked(aiCandidateService.reject).mock.calls[0]?.[0]).toMatchObject({
-            candidateId: 8004,
+            candidateId: "8004",
             errorType: "USER_REJECTED",
             errorMessage: "用户已拒绝该 AI 候选"
         });
@@ -1714,7 +1715,7 @@ describe("SancaiEntryPanel sharing", () => {
             expect(aiCandidateService.apply).toHaveBeenCalledTimes(1);
         });
         expect(vi.mocked(aiCandidateService.apply).mock.calls[0]?.[0]).toMatchObject({
-            candidateId: 8101,
+            candidateId: "8101",
             contentType: "SANCAI_ENTRY",
             contentId: 3001,
             capability: "summary",

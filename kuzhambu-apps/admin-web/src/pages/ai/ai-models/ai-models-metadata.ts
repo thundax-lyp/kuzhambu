@@ -2,7 +2,7 @@ import { type KuzhambuTagType } from "@/components";
 
 export const DEFAULT_MODEL_PARAMS = "{}";
 
-export const API_SOURCE_OPTIONS = ["OPENAI", "BYTEDANCE"];
+export const API_SOURCE_OPTIONS = ["OPENAI_COMPATIBLE", "BYTEDANCE"];
 
 export const MODEL_CAPABILITY_OPTIONS = ["TEXT2TEXT", "TEXT2IMAGE", "IMAGE2TEXT", "IMAGE2IMAGE"];
 
@@ -13,7 +13,8 @@ const API_SOURCE_META: Record<
         type: KuzhambuTagType;
     }
 > = {
-    OPENAI: { label: "OpenAI 兼容", type: "accent" },
+    OPENAI: { label: "OpenAI 兼容（旧）", type: "neutral" },
+    OPENAI_COMPATIBLE: { label: "OpenAI 兼容", type: "accent" },
     BYTEDANCE: { label: "火山方舟", type: "warning" }
 };
 

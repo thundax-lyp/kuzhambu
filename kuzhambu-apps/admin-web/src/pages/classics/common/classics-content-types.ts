@@ -135,7 +135,7 @@ export interface ClassicsAiCandidateBatchApplyPayload {
 }
 
 export interface ClassicsAiCandidateBatchRejectItemPayload {
-    candidateId: number;
+    candidateId: string;
     contentType: ClassicsContentType;
     contentId: number;
     capability: string;

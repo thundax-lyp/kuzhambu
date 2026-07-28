@@ -118,7 +118,7 @@ const defaultResultFormatForTags = (candidate?: AiCandidateRecord) => {
 };
 
 const tagTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = {
-    getId: (task) => task.taskId,
+    getId: (task) => aiRefinementTaskService.getTaskStableId(task.taskId, task.taskIdText),
     getMessage: getTagTaskDescription,
     getPhase: (task) => {
         if (isTagTaskActive(task)) {
@@ -365,7 +365,7 @@ export const WangqiTagAiModal = ({
             return;
         }
         applyMutation.mutate({
-            candidateId: candidate.candidateId,
+            candidateId: candidate.candidateIdText || String(candidate.candidateId),
             contentId: document.id,
             contentType: "WANGQI_DOCUMENT",
             capability: "tags",
@@ -412,8 +412,7 @@ export const WangqiTagAiModal = ({
                     task: latestTagTask,
                     createTask: createTagTask,
                     fetchResult: loadTagCandidate,
-                    fetchTask: (taskId) =>
-                        aiRefinementTaskService.getTask({ taskId: Number(taskId) }),
+                    fetchTask: (taskId) => aiRefinementTaskService.getTask({ taskId }),
                     applyResult: applyCandidate,
                     onTaskChange,
                     pollIntervalMs: TAG_CANDIDATE_POLL_INTERVAL_MS,

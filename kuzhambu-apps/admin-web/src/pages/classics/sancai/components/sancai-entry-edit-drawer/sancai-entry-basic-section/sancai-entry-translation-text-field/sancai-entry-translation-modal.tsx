@@ -1,13 +1,31 @@
 import { TranslationOutlined } from "@ant-design/icons";
-import { Input } from "antd";
+import { App, Input } from "antd";
+import { useMemo } from "react";
 import { resolveTextAreaAutoSize } from "@/components/form/text-area-auto-size";
-import { KuzhambuAlert, KuzhambuSyncTaskModal, type KuzhambuSyncTaskAdapter } from "@/components";
+import {
+    KuzhambuAlert,
+    KuzhambuSyncTaskModal,
+    KuzhambuTextCompare,
+    type KuzhambuSyncTaskAdapter
+} from "@/components";
 
+import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
+import type { AiCandidateRecord } from "@/pages/classics/common/ai-candidate-types";
 import type { AiRefinementTaskRecord } from "@/pages/classics/common/ai-refinement-task-types";
 import type { SancaiEntryFormValues } from "@/pages/classics/sancai/components/sancai-entry-edit-drawer/sancai-entry-form-values";
 
 const MODAL_TITLE = "AI翻译";
 const TASK_LABEL = "翻译";
+
+const sortRefinementTasksByNewest = (
+    left: AiRefinementTaskRecord,
+    right: AiRefinementTaskRecord
+) => {
+    if (left.requestedAt && right.requestedAt && left.requestedAt !== right.requestedAt) {
+        return right.requestedAt.localeCompare(left.requestedAt);
+    }
+    return right.taskId - left.taskId;
+};
 
 const readRefinementTaskStatusLabel = (status?: string | null) => {
     switch (status) {
@@ -38,9 +56,22 @@ const readRefinementTaskAlertType = (status?: string | null) => {
     return "info";
 };
 
+const readRefinementTaskFailureText = (task?: AiRefinementTaskRecord | null) => {
+    if (!task) {
+        return undefined;
+    }
+    return (
+        aiRefinementTaskService.getTaskFailureText(
+            task.failureStage,
+            task.errorType,
+            task.errorMessage
+        ) || undefined
+    );
+};
+
 const translationTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = {
-    getId: (task) => task.taskId,
-    getMessage: (task) => task.errorMessage || undefined,
+    getId: (task) => aiRefinementTaskService.getTaskStableId(task.taskId, task.taskIdText),
+    getMessage: (task) => readRefinementTaskFailureText(task),
     getPhase: (task) => {
         if (task.status === "PENDING" || task.status === "RUNNING") {
             return "tracking";
@@ -62,18 +93,20 @@ const translationTaskAdapter: KuzhambuSyncTaskAdapter<AiRefinementTaskRecord> = 
 
 interface SancaiEntryTranslationModalProps {
     aiTextDraft: string;
+    entryId?: number;
     form: SancaiEntryFormValues;
-    hasRunningAiTextTask: boolean;
     isAiTextApplyDisabled: boolean;
     isAiTextCandidateFetching: boolean;
     isAiTextCandidateLoadError: boolean;
     isApplyingAiText: boolean;
     isCreatingAiTextTask: boolean;
-    latestAiTextTask: AiRefinementTaskRecord | null;
+    translationTasks: AiRefinementTaskRecord[];
+    onFetchResult: (task: AiRefinementTaskRecord | null) => Promise<AiCandidateRecord | null>;
     onFetchTask: (taskId: number | string) => Promise<AiRefinementTaskRecord>;
     onApply: () => void;
     onCancel: () => void;
-    onRequestTask: () => void;
+    onRequestTranslationTask?: (draft: SancaiEntryFormValues) => void;
+    onResultChange?: (candidate: AiCandidateRecord | null) => void;
     onTaskChange?: (task: AiRefinementTaskRecord | null) => void;
     onTextDraftChange: (draft: string) => void;
     open: boolean;
@@ -81,30 +114,65 @@ interface SancaiEntryTranslationModalProps {
 
 export const SancaiEntryTranslationModal = ({
     aiTextDraft,
+    entryId,
     form,
-    hasRunningAiTextTask,
     isAiTextApplyDisabled,
     isAiTextCandidateFetching,
     isAiTextCandidateLoadError,
     isApplyingAiText,
     isCreatingAiTextTask,
-    latestAiTextTask,
+    translationTasks,
+    onFetchResult,
     onFetchTask,
     onApply,
     onCancel,
-    onRequestTask,
+    onRequestTranslationTask,
+    onResultChange,
     onTaskChange,
     onTextDraftChange,
     open
 }: SancaiEntryTranslationModalProps) => {
+    const { message: messageApi } = App.useApp();
+    const latestAiTextTask = useMemo(
+        () =>
+            [...translationTasks]
+                .filter(
+                    (task) =>
+                        aiRefinementTaskService.getNormalizedTaskCapability(task.capability) ===
+                        "translate"
+                )
+                .sort(sortRefinementTasksByNewest)[0] ?? null,
+        [translationTasks]
+    );
+    const requestTranslationTask = () => {
+        if (!entryId) {
+            return;
+        }
+        if (!onRequestTranslationTask) {
+            messageApi.warning("请先保存条目后再使用 AI翻译");
+            return;
+        }
+        if (!form.originalText?.trim()) {
+            messageApi.warning("请先填写原文");
+            return;
+        }
+        onRequestTranslationTask(form);
+    };
+
     return (
-        <KuzhambuSyncTaskModal<AiRefinementTaskRecord, null>
+        <KuzhambuSyncTaskModal<AiRefinementTaskRecord, AiCandidateRecord>
             testId="classics-sancai-sancai-entry-ai-text-modal"
             title={MODAL_TITLE}
             open={open}
             width={960}
             applying={isApplyingAiText}
-            applyDisabled={isAiTextApplyDisabled}
+            applyDisabled={(state) =>
+                isAiTextApplyDisabled ||
+                state.tracking ||
+                state.taskLoading ||
+                state.resultLoading ||
+                isAiTextCandidateFetching
+            }
             applyTestId="classics-sancai-sancai-entry-apply-ai-text-button"
             cancelTestId="classics-sancai-sancai-entry-cancel-ai-text-button"
             createIcon={<TranslationOutlined />}
@@ -115,13 +183,17 @@ export const SancaiEntryTranslationModal = ({
             workflow={{
                 ...translationTaskAdapter,
                 task: latestAiTextTask,
-                createTask: onRequestTask,
+                createTask: requestTranslationTask,
+                fetchResult: onFetchResult,
                 fetchTask: onFetchTask,
                 applyResult: onApply,
+                onResultChange,
                 onTaskChange,
+                pollIntervalMs: 3000,
+                resultQueryKey: ["SANCAI_ENTRY", latestAiTextTask?.contentId ?? null, "translate"],
                 trackTask: Boolean(latestAiTextTask?.taskId)
             }}
-            renderStatus={({ creating, task }) =>
+            renderStatus={({ creating, task, tracking }) =>
                 creating || task ? (
                     <KuzhambuAlert
                         showIcon
@@ -133,70 +205,86 @@ export const SancaiEntryTranslationModal = ({
                                 : `${TASK_LABEL}任务：${readRefinementTaskStatusLabel(task?.status)}`
                         }
                         description={
-                            hasRunningAiTextTask
+                            tracking
                                 ? "任务完成后会自动刷新 AI译文。"
-                                : task?.errorMessage || undefined
+                                : readRefinementTaskFailureText(task)
                         }
                     />
                 ) : null
             }
-            renderBody={() => (
-                <>
-                    <div className="sancai-detail-card sancai-entry-edit-drawer-form sancai-ai-text-modal-original">
-                        <div className="sancai-ai-text-modal-field">
-                            <label className="sancai-ai-text-modal-label">原文</label>
-                            <Input.TextArea
-                                aria-label={`${MODAL_TITLE}原文`}
-                                value={form.originalText}
-                                readOnly
-                                autoSize={resolveTextAreaAutoSize({ minRows: 5, maxRows: 8 })}
-                            />
-                        </div>
-                    </div>
-                    <div className="sancai-ai-text-modal-compare-grid">
-                        <div className="sancai-detail-card sancai-entry-edit-drawer-form">
+            renderBody={({ taskLoading, tracking }) => {
+                const isAiTextGenerating = isCreatingAiTextTask || tracking || taskLoading;
+                const isAiTextLoading = isAiTextGenerating || isAiTextCandidateFetching;
+                return (
+                    <>
+                        <div className="sancai-detail-card sancai-entry-edit-drawer-form sancai-ai-text-modal-original">
                             <div className="sancai-ai-text-modal-field">
-                                <label className="sancai-ai-text-modal-label">当前译文</label>
+                                <label className="sancai-ai-text-modal-label">原文</label>
                                 <Input.TextArea
-                                    aria-label={`${MODAL_TITLE}当前译文`}
-                                    value={form.translationText}
+                                    aria-label={`${MODAL_TITLE}原文`}
+                                    value={form.originalText}
                                     readOnly
-                                    autoSize={resolveTextAreaAutoSize({ minRows: 10, maxRows: 16 })}
+                                    autoSize={resolveTextAreaAutoSize({ minRows: 5, maxRows: 8 })}
                                 />
                             </div>
                         </div>
-                        <div className="sancai-detail-card sancai-entry-edit-drawer-form">
-                            <div className="sancai-ai-text-modal-field">
-                                <label className="sancai-ai-text-modal-label">AI译文</label>
-                                <Input.TextArea
-                                    aria-label={`${MODAL_TITLE}AI译文`}
-                                    value={aiTextDraft}
-                                    placeholder={
-                                        isCreatingAiTextTask || isAiTextCandidateFetching
-                                            ? "AI 翻译生成中..."
-                                            : "暂无候选译文，可先保留当前译文或稍后重试"
-                                    }
-                                    disabled={
-                                        isCreatingAiTextTask ||
-                                        hasRunningAiTextTask ||
-                                        isAiTextCandidateFetching
-                                    }
-                                    autoSize={resolveTextAreaAutoSize({ minRows: 10, maxRows: 16 })}
-                                    onChange={(event) => onTextDraftChange(event.target.value)}
-                                />
+                        <div className="sancai-ai-text-modal-compare-grid">
+                            <div className="sancai-detail-card sancai-entry-edit-drawer-form">
+                                <div className="sancai-ai-text-modal-field">
+                                    <label className="sancai-ai-text-modal-label">当前译文</label>
+                                    <Input.TextArea
+                                        aria-label={`${MODAL_TITLE}当前译文`}
+                                        value={form.translationText}
+                                        readOnly
+                                        autoSize={resolveTextAreaAutoSize({
+                                            minRows: 10,
+                                            maxRows: 16
+                                        })}
+                                    />
+                                </div>
                             </div>
-                            {isAiTextCandidateLoadError ? (
-                                <KuzhambuAlert
-                                    showIcon
-                                    type="warning"
-                                    title={`候选${TASK_LABEL}加载失败`}
-                                    description="AI 任务可能仍在执行，请稍后重新打开。"
-                                />
-                            ) : null}
+                            <div className="sancai-detail-card sancai-entry-edit-drawer-form">
+                                <div className="sancai-ai-text-modal-field">
+                                    <label className="sancai-ai-text-modal-label">AI译文</label>
+                                    <Input.TextArea
+                                        aria-label={`${MODAL_TITLE}AI译文`}
+                                        value={aiTextDraft}
+                                        placeholder={
+                                            isAiTextGenerating
+                                                ? "AI 翻译生成中..."
+                                                : isAiTextCandidateFetching
+                                                  ? "AI 译文加载中..."
+                                                  : "暂无候选译文，可先保留当前译文或稍后重试"
+                                        }
+                                        disabled={isAiTextLoading}
+                                        autoSize={resolveTextAreaAutoSize({
+                                            minRows: 10,
+                                            maxRows: 16
+                                        })}
+                                        onChange={(event) => onTextDraftChange(event.target.value)}
+                                    />
+                                </div>
+                                {isAiTextCandidateLoadError ? (
+                                    <KuzhambuAlert
+                                        showIcon
+                                        type="warning"
+                                        title={`候选${TASK_LABEL}加载失败`}
+                                        description="AI 任务可能仍在执行，请稍后重新打开。"
+                                    />
+                                ) : null}
+                            </div>
                         </div>
-                    </div>
-                </>
-            )}
+                        <KuzhambuTextCompare
+                            baseline={form.translationText}
+                            candidate={aiTextDraft}
+                            className="sancai-ai-text-modal-diff"
+                            emptyText="当前译文与 AI 译文暂无差异"
+                            testId="classics-sancai-sancai-entry-ai-translation-compare"
+                            title="译文差异"
+                        />
+                    </>
+                );
+            }}
         />
     );
 };

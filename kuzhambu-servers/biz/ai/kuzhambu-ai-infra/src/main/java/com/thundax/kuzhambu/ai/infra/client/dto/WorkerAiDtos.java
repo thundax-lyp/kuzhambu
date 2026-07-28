@@ -91,6 +91,8 @@ public final class WorkerAiDtos {
         private Boolean fallbackUsed;
         private JsonNode artifactReference;
         private JsonNode warnings;
+        private String errorType;
+        private String errorMessage;
         private Error error;
     }
 

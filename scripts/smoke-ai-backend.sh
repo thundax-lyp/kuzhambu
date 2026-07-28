@@ -331,7 +331,7 @@ mutating_smoke() {
     local suffix="smoke-$(date +%s)"
     local model_body model_id update_body
     model_body="$(jq -n --arg suffix "${suffix}" '{
-        apiSource:"OPENAI",
+        apiSource:"OPENAI_COMPATIBLE",
         baseUrl:"http://127.0.0.1/smoke",
         apiKey:"",
         modelName:("kuzhambu-smoke-" + $suffix),
@@ -346,7 +346,7 @@ mutating_smoke() {
         if [[ -n "${model_id}" ]]; then
             update_body="$(jq -n --argjson id "${model_id}" --arg suffix "${suffix}" '{
                 id:$id,
-                apiSource:"OPENAI",
+                apiSource:"OPENAI_COMPATIBLE",
                 baseUrl:"http://127.0.0.1/smoke-updated",
                 apiKey:"",
                 modelName:("kuzhambu-smoke-" + $suffix),

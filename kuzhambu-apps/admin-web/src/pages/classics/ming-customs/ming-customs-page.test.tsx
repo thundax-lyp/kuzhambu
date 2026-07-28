@@ -648,7 +648,7 @@ describe("MingCustomsPage", () => {
             body: {
                 items: [
                     {
-                        candidateId: 6001,
+                        candidateId: "6001",
                         contentType: "MING_CUSTOMS",
                         contentId: 500000000001,
                         capability: "summary",

@@ -5,6 +5,7 @@ export type AiRefinementTaskCapability = "summary" | "tags" | "qa";
 
 export interface AiRefinementTaskRecord {
     taskId: number;
+    taskIdText?: string | null;
     status: AiRefinementTaskStatus;
     scope?: string | null;
     capability: string;
@@ -20,6 +21,7 @@ export interface AiRefinementTaskRecord {
     traceId?: string | null;
     callId?: number | null;
     candidateId?: number | null;
+    candidateIdText?: string | null;
     failureStage?: string | null;
     errorType?: string | null;
     errorMessage?: string | null;
@@ -56,11 +58,11 @@ export interface AiRefinementTaskCreatePayload {
 }
 
 export interface AiRefinementTaskGetPayload {
-    taskId: number;
+    taskId: number | string;
 }
 
 export interface AiRefinementTaskCancelPayload {
-    taskId: number;
+    taskId: number | string;
     requestedBy: number;
 }
 
@@ -76,6 +78,7 @@ export interface AiRefinementTaskPagePayload {
 
 export interface AiRefinementTaskAcceptedRecord {
     taskId: number;
+    taskIdText?: string | null;
     status: AiRefinementTaskStatus;
     capability: string;
     contentType: string;

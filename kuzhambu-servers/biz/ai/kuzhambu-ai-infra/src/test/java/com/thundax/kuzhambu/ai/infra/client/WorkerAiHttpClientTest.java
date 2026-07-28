@@ -87,6 +87,34 @@ class WorkerAiHttpClientTest {
     }
 
     @Test
+    void invokeShouldReadTopLevelWorkerErrorFields() throws IOException {
+        startServer(
+                "/internal/ai/invoke",
+                exchange -> respond(
+                        exchange,
+                        200,
+                        """
+                                {
+                                  "requestId":"req-1",
+                                  "traceId":"trace-1",
+                                  "status":"FAILED",
+                                  "capability":"summary",
+                                  "failureStage":"WORKER_REQUEST",
+                                  "errorType":"MODEL_REQUEST_REJECTED",
+                                  "errorMessage":"模型拒绝请求"
+                                }
+                                """));
+        WorkerAiHttpClient client = new WorkerAiHttpClient(properties(), new WorkerAiSignatureSupport(), null);
+
+        AiInvokeResult result = client.invoke(command());
+
+        assertEquals("FAILED", result.getStatus());
+        assertEquals("WORKER_REQUEST", result.getFailureStage());
+        assertEquals("MODEL_REQUEST_REJECTED", result.getErrorType());
+        assertEquals("模型拒绝请求", result.getErrorMessage());
+    }
+
+    @Test
     void streamShouldUseUnifiedWorkerPathForInvocation() throws IOException {
         AtomicReference<HttpExchange> captured = new AtomicReference<>();
         AtomicReference<String> capturedBody = new AtomicReference<>();
