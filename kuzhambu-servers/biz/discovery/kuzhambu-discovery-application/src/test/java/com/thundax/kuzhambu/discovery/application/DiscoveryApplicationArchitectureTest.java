@@ -10,5 +10,6 @@ class DiscoveryApplicationArchitectureTest extends AbstractArchitectureTest {
     @Test
     void applicationCommandAndQuerySourcesShouldDeclareFieldsOnly() {
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesDeclareNoMethods(Path.of("src/main/java"));
+        NamingArchitectureRuleSupport.assertApplicationContractSourcesUnderDedicatedPackages(Path.of("src/main/java"));
     }
 }
