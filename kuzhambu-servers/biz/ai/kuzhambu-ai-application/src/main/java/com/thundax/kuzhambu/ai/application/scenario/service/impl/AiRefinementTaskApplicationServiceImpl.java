@@ -12,6 +12,7 @@ import com.thundax.kuzhambu.ai.application.scenario.result.AiCandidateResult;
 import com.thundax.kuzhambu.ai.application.scenario.result.AiRefinementTaskResult;
 import com.thundax.kuzhambu.ai.application.scenario.service.AiRefinementApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.service.AiRefinementTaskApplicationService;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
@@ -101,9 +102,8 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         refinementApplicationService.snapshotInvokeConfig(command);
         Long taskId = batchJobApplicationService.create(new AiBatchJobCreateCommand(
                 command.getScope(),
-                command.getCapability(),
-                command.getContentType(),
-                command.getContentId(),
+                AiBusinessCapability.fromAlias(command.getCapability()),
+                AiContentRef.ofNullable(command.getContentType(), command.getContentId()),
                 1,
                 null));
         command.setBatchId(taskId);

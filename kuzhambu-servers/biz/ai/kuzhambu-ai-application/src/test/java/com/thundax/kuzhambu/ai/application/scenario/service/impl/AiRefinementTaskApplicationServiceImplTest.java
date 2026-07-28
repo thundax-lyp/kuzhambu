@@ -85,7 +85,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         service.addTask(command);
 
         assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE.value(), command.getCapability());
-        assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE.value(), batchJobService.created.getCapability());
+        assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE, batchJobService.created.getCapability());
     }
 
     @Test
@@ -108,8 +108,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         service.addTask(command);
 
         assertEquals(AiBusinessCapability.CLASSICS_IMAGE_PROMPT_FUSION.value(), command.getCapability());
-        assertEquals(
-                AiBusinessCapability.CLASSICS_IMAGE_PROMPT_FUSION.value(), batchJobService.created.getCapability());
+        assertEquals(AiBusinessCapability.CLASSICS_IMAGE_PROMPT_FUSION, batchJobService.created.getCapability());
         assertEquals(1, refinementService.fusionInvokeCount);
     }
 
@@ -222,8 +221,12 @@ class AiRefinementTaskApplicationServiceImplTest {
     @Test
     void expireOrphanedRunningTasksShouldFailStaleRefinementBatches() {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
-        Long batchId = batchJobService.create(
-                new AiBatchJobCreateCommand("classics", "classics_summary", "SANCAI_ENTRY", 10L, 1, null));
+        Long batchId = batchJobService.create(new AiBatchJobCreateCommand(
+                "classics",
+                AiBusinessCapability.fromAlias("classics_summary"),
+                AiContentRef.ofNullable("SANCAI_ENTRY", 10L),
+                1,
+                null));
         AiRefinementTaskApplicationServiceImpl service = new AiRefinementTaskApplicationServiceImpl(
                 batchJobService, new StubRefinementApplicationService(null), null, DIRECT_EXECUTOR);
 
@@ -237,12 +240,24 @@ class AiRefinementTaskApplicationServiceImplTest {
     @Test
     void pageTasksShouldLoadInvocationAndCandidateByBatchIdsInBulk() {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
-        Long firstBatchId = batchJobService.create(
-                new AiBatchJobCreateCommand("classics", "classics_summary", "SANCAI_ENTRY", 10L, 1, null));
-        Long secondBatchId = batchJobService.create(
-                new AiBatchJobCreateCommand("classics", "classics_tags", "SANCAI_ENTRY", 10L, 1, null));
-        batchJobService.create(
-                new AiBatchJobCreateCommand("knowledge", "knowledge_graph_extract", "SANCAI_ENTRY", 10L, 1, null));
+        Long firstBatchId = batchJobService.create(new AiBatchJobCreateCommand(
+                "classics",
+                AiBusinessCapability.fromAlias("classics_summary"),
+                AiContentRef.ofNullable("SANCAI_ENTRY", 10L),
+                1,
+                null));
+        Long secondBatchId = batchJobService.create(new AiBatchJobCreateCommand(
+                "classics",
+                AiBusinessCapability.fromAlias("classics_tags"),
+                AiContentRef.ofNullable("SANCAI_ENTRY", 10L),
+                1,
+                null));
+        batchJobService.create(new AiBatchJobCreateCommand(
+                "knowledge",
+                AiBusinessCapability.fromAlias("knowledge_graph_extract"),
+                AiContentRef.ofNullable("SANCAI_ENTRY", 10L),
+                1,
+                null));
         RecordingInvocationRepository invocationRepository =
                 new RecordingInvocationRepository(firstBatchId, secondBatchId);
         AiRefinementTaskApplicationServiceImpl service = new AiRefinementTaskApplicationServiceImpl(
@@ -260,8 +275,12 @@ class AiRefinementTaskApplicationServiceImplTest {
     @Test
     void getTaskShouldRejectNonRefinementBatchJob() {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
-        Long batchId = batchJobService.create(
-                new AiBatchJobCreateCommand("knowledge", "knowledge_graph_extract", "SANCAI_ENTRY", 10L, 1, null));
+        Long batchId = batchJobService.create(new AiBatchJobCreateCommand(
+                "knowledge",
+                AiBusinessCapability.fromAlias("knowledge_graph_extract"),
+                AiContentRef.ofNullable("SANCAI_ENTRY", 10L),
+                1,
+                null));
         AiRefinementTaskApplicationServiceImpl service = new AiRefinementTaskApplicationServiceImpl(
                 batchJobService, new StubRefinementApplicationService(null), null, DIRECT_EXECUTOR);
 
@@ -271,8 +290,12 @@ class AiRefinementTaskApplicationServiceImplTest {
     @Test
     void cancelTaskShouldRejectNonRefinementBatchJob() {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
-        Long batchId = batchJobService.create(
-                new AiBatchJobCreateCommand("knowledge", "knowledge_graph_extract", "SANCAI_ENTRY", 10L, 1, null));
+        Long batchId = batchJobService.create(new AiBatchJobCreateCommand(
+                "knowledge",
+                AiBusinessCapability.fromAlias("knowledge_graph_extract"),
+                AiContentRef.ofNullable("SANCAI_ENTRY", 10L),
+                1,
+                null));
         AiRefinementTaskApplicationServiceImpl service = new AiRefinementTaskApplicationServiceImpl(
                 batchJobService, new StubRefinementApplicationService(null), null, DIRECT_EXECUTOR);
 
@@ -283,8 +306,12 @@ class AiRefinementTaskApplicationServiceImplTest {
     @Test
     void pageTasksShouldKeepCandidateScopedToRequestedContentInMultiContentBatch() {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
-        Long batchId = batchJobService.create(
-                new AiBatchJobCreateCommand("classics", "classics_summary", "SANCAI_ENTRY", null, 2, null));
+        Long batchId = batchJobService.create(new AiBatchJobCreateCommand(
+                "classics",
+                AiBusinessCapability.fromAlias("classics_summary"),
+                AiContentRef.ofNullable("SANCAI_ENTRY", null),
+                2,
+                null));
         RecordingInvocationRepository invocationRepository = new RecordingInvocationRepository(
                 List.of(
                         RecordingInvocationRepository.invocationLog(batchId, 202L, 20L, "2026-01-01T00:03:00Z"),
@@ -366,9 +393,9 @@ class AiRefinementTaskApplicationServiceImplTest {
             jobs.add(new AiBatchJobResult(
                     batchId,
                     command.getScope(),
-                    command.getCapability(),
-                    command.getContentType(),
-                    command.getContentId(),
+                    command.getCapability().value(),
+                    command.getContentRef().contentType(),
+                    command.getContentRef().contentId(),
                     "RUNNING",
                     command.getTotalCount(),
                     0,

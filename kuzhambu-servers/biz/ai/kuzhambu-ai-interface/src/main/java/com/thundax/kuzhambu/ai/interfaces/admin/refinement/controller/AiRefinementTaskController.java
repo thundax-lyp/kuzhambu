@@ -4,6 +4,8 @@ import com.thundax.kuzhambu.ai.application.invocation.command.AiBatchJobCreateCo
 import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.configuration.AiRefinementExecutorConfiguration;
 import com.thundax.kuzhambu.ai.application.scenario.service.AiRefinementTaskApplicationService;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.assembler.AiRefinementInterfaceAssembler;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.request.AiRefinementRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.response.AiRefinementResponses;
@@ -163,8 +165,8 @@ public class AiRefinementTaskController {
             @Valid @RequestBody AiRefinementRequests.BatchCreateRequest request) {
         AiBatchJobCreateCommand command = new AiBatchJobCreateCommand();
         command.setScope(request.getScope());
-        command.setCapability(request.getCapability());
-        command.setContentType(request.getContentType());
+        command.setCapability(AiBusinessCapability.fromAlias(request.getCapability()));
+        command.setContentRef(AiContentRef.ofNullable(request.getContentType(), null));
         command.setTotalCount(request.getTotalCount());
         command.setFailureSummaryJson(request.getFailureSummaryJson());
         Long batchId = batchJobApplicationService.create(command);

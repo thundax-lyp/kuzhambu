@@ -111,7 +111,7 @@ class AiFacadeImplTest {
                 mock(AiCandidateApplicationService.class));
         CreateAiBatchJobFacadeRequest request = CreateAiBatchJobFacadeRequest.builder()
                 .scope("knowledge")
-                .capability("KNOWLEDGE_GRAPH")
+                .capability("knowledge_graph_extract")
                 .contentType("WANGQI_DOCUMENT")
                 .totalCount(12)
                 .failureSummaryJson("{\"retry\":0}")
@@ -123,8 +123,8 @@ class AiFacadeImplTest {
 
         AiBatchJobCreateCommand command = captor.getValue();
         assertEquals("knowledge", command.getScope());
-        assertEquals("KNOWLEDGE_GRAPH", command.getCapability());
-        assertEquals("WANGQI_DOCUMENT", command.getContentType());
+        assertEquals(AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT, command.getCapability());
+        assertEquals("WANGQI_DOCUMENT", command.getContentRef().contentType());
         assertEquals(12, command.getTotalCount());
         assertEquals("{\"retry\":0}", command.getFailureSummaryJson());
         assertEquals(88L, response.getBatchId());

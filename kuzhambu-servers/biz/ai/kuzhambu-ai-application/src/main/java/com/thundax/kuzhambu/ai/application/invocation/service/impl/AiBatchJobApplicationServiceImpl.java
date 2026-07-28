@@ -213,9 +213,9 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
     private AiBatchJob toEntity(AiBatchJobCreateCommand command) {
         AiBatchJob job = new AiBatchJob();
         job.setScope(command.getScope());
-        job.setCapability(AiBusinessCapability.fromAlias(command.getCapability()));
-        job.setContentType(command.getContentType());
-        job.setContentId(command.getContentId());
+        job.setCapability(command.getCapability());
+        job.setContentType(command.getContentRef().contentType());
+        job.setContentId(command.getContentRef().contentId());
         job.setTotalCount(command.getTotalCount());
         job.setFailureSummaryJson(command.getFailureSummaryJson());
         job.setRequestedAt(Instant.now());
@@ -225,8 +225,9 @@ public class AiBatchJobApplicationServiceImpl implements AiBatchJobApplicationSe
     private void validateCreateCommand(AiBatchJobCreateCommand command) {
         if (command == null
                 || isBlank(command.getScope())
-                || isBlank(command.getCapability())
-                || isBlank(command.getContentType())
+                || command.getCapability() == null
+                || command.getContentRef() == null
+                || isBlank(command.getContentRef().contentType())
                 || command.getTotalCount() <= 0) {
             throw new BizException("AI batch job create command is incomplete");
         }

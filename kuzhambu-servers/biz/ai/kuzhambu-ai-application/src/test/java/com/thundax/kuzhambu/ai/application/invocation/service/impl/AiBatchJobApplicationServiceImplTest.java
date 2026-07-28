@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiBatchJob;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiBatchJobStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.query.AiBatchJobQuery;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiBatchJobRepository;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
@@ -26,7 +27,12 @@ public class AiBatchJobApplicationServiceImplTest {
         FakeRepository repository = new FakeRepository(null);
         AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(repository);
 
-        service.create(new AiBatchJobCreateCommand("classics", "image_analysis", "SANCAI_ENTRY", 3001L, 1, null));
+        service.create(new AiBatchJobCreateCommand(
+                "classics",
+                AiBusinessCapability.fromAlias("image_analysis"),
+                AiContentRef.ofNullable("SANCAI_ENTRY", 3001L),
+                1,
+                null));
 
         assertEquals(AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE, repository.inserted.getCapability());
     }
@@ -36,7 +42,12 @@ public class AiBatchJobApplicationServiceImplTest {
         FakeRepository repository = new FakeRepository(null);
         AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(repository);
 
-        service.create(new AiBatchJobCreateCommand("classics", "visual", "SANCAI_ENTRY", 3001L, 1, null));
+        service.create(new AiBatchJobCreateCommand(
+                "classics",
+                AiBusinessCapability.fromAlias("visual"),
+                AiContentRef.ofNullable("SANCAI_ENTRY", 3001L),
+                1,
+                null));
 
         assertEquals(AiBusinessCapability.CLASSICS_VISUAL_DESCRIBE, repository.inserted.getCapability());
     }
@@ -46,7 +57,12 @@ public class AiBatchJobApplicationServiceImplTest {
         FakeRepository repository = new FakeRepository(null);
         AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(repository);
 
-        service.create(new AiBatchJobCreateCommand("classics", "fusion", "SANCAI_ENTRY", 3001L, 1, null));
+        service.create(new AiBatchJobCreateCommand(
+                "classics",
+                AiBusinessCapability.fromAlias("fusion"),
+                AiContentRef.ofNullable("SANCAI_ENTRY", 3001L),
+                1,
+                null));
 
         assertEquals(AiBusinessCapability.CLASSICS_IMAGE_PROMPT_FUSION, repository.inserted.getCapability());
         assertEquals(3001L, repository.inserted.getContentId());
@@ -63,7 +79,12 @@ public class AiBatchJobApplicationServiceImplTest {
         FakeRepository repository = new FakeRepository(null);
         AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(repository);
 
-        service.create(new AiBatchJobCreateCommand("knowledge", legacyCapability, "SANCAI_ENTRY", null, 1, null));
+        service.create(new AiBatchJobCreateCommand(
+                "knowledge",
+                AiBusinessCapability.fromAlias(legacyCapability),
+                AiContentRef.ofNullable("SANCAI_ENTRY", null),
+                1,
+                null));
 
         assertEquals(expectedCapability, repository.inserted.getCapability());
     }
