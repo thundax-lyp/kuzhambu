@@ -1,0 +1,7 @@
+interface:
+  display_name: "Kuzhambu Prepare PR For Merge"
+  short_description: "Consolidate review fix commits before merging a PR."
+  default_prompt: "Use $kuzhambu-prepare-pr-for-merge to prepare the current PR commit history for merge."
+
+policy:
+  allow_implicit_invocation: false
