@@ -227,7 +227,7 @@ class AiRefinementTaskApplicationServiceImplTest {
     @Test
     void expireOrphanedRunningTasksShouldFailStaleRefinementBatches() {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
-        Long batchId = batchJobService.create(new AiBatchJobCreateCommand(
+        Long batchId = batchJobService.createLong(new AiBatchJobCreateCommand(
                 "classics",
                 AiBusinessCapability.fromAlias("classics_summary"),
                 AiContentRef.ofNullable("SANCAI_ENTRY", 10L),
@@ -246,13 +246,13 @@ class AiRefinementTaskApplicationServiceImplTest {
     @Test
     void pageTasksShouldLoadInvocationAndCandidateByBatchIdsInBulk() {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
-        Long firstBatchId = batchJobService.create(new AiBatchJobCreateCommand(
+        Long firstBatchId = batchJobService.createLong(new AiBatchJobCreateCommand(
                 "classics",
                 AiBusinessCapability.fromAlias("classics_summary"),
                 AiContentRef.ofNullable("SANCAI_ENTRY", 10L),
                 1,
                 null));
-        Long secondBatchId = batchJobService.create(new AiBatchJobCreateCommand(
+        Long secondBatchId = batchJobService.createLong(new AiBatchJobCreateCommand(
                 "classics",
                 AiBusinessCapability.fromAlias("classics_tags"),
                 AiContentRef.ofNullable("SANCAI_ENTRY", 10L),
@@ -281,7 +281,7 @@ class AiRefinementTaskApplicationServiceImplTest {
     @Test
     void getTaskShouldRejectNonRefinementBatchJob() {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
-        Long batchId = batchJobService.create(new AiBatchJobCreateCommand(
+        Long batchId = batchJobService.createLong(new AiBatchJobCreateCommand(
                 "knowledge",
                 AiBusinessCapability.fromAlias("knowledge_graph_extract"),
                 AiContentRef.ofNullable("SANCAI_ENTRY", 10L),
@@ -296,7 +296,7 @@ class AiRefinementTaskApplicationServiceImplTest {
     @Test
     void cancelTaskShouldRejectNonRefinementBatchJob() {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
-        Long batchId = batchJobService.create(new AiBatchJobCreateCommand(
+        Long batchId = batchJobService.createLong(new AiBatchJobCreateCommand(
                 "knowledge",
                 AiBusinessCapability.fromAlias("knowledge_graph_extract"),
                 AiContentRef.ofNullable("SANCAI_ENTRY", 10L),
@@ -312,7 +312,7 @@ class AiRefinementTaskApplicationServiceImplTest {
     @Test
     void pageTasksShouldKeepCandidateScopedToRequestedContentInMultiContentBatch() {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
-        Long batchId = batchJobService.create(new AiBatchJobCreateCommand(
+        Long batchId = batchJobService.createLong(new AiBatchJobCreateCommand(
                 "classics",
                 AiBusinessCapability.fromAlias("classics_summary"),
                 AiContentRef.ofNullable("SANCAI_ENTRY", null),
@@ -361,20 +361,23 @@ class AiRefinementTaskApplicationServiceImplTest {
         private AiBatchJobCreateCommand created;
 
         @Override
-        public AiBatchJobResult get(Long batchId) {
+        public AiBatchJobResult get(AiBatchJobId batchId) {
             return jobs.stream()
-                    .filter(job -> job.getBatchId().value().equals(batchId))
+                    .filter(job -> job.getBatchId().equals(batchId))
                     .findFirst()
                     .orElse(null);
+        }
+
+        private AiBatchJobResult get(Long batchId) {
+            return get(AiBatchJobIdCodec.toDomain(batchId));
         }
 
         @Override
         public PageResult<AiBatchJobResult> page(
                 String scope,
-                String capability,
-                String status,
-                String contentType,
-                Long contentId,
+                AiBusinessCapability capability,
+                AiBatchJobStatus status,
+                AiContentRef contentRef,
                 PageQuery pageQuery) {
             List<AiBatchJobResult> records = filtered(scope, capability == null ? List.of() : List.of(capability));
             return PageResult.of(1, 10, records.size(), records);
@@ -383,17 +386,16 @@ class AiRefinementTaskApplicationServiceImplTest {
         @Override
         public PageResult<AiBatchJobResult> pageByCapabilities(
                 String scope,
-                List<String> capabilities,
-                String status,
-                String contentType,
-                Long contentId,
+                List<AiBusinessCapability> capabilities,
+                AiBatchJobStatus status,
+                AiContentRef contentRef,
                 PageQuery pageQuery) {
             List<AiBatchJobResult> records = filtered(scope, capabilities);
             return PageResult.of(1, 10, records.size(), records);
         }
 
         @Override
-        public Long create(AiBatchJobCreateCommand command) {
+        public AiBatchJobId create(AiBatchJobCreateCommand command) {
             created = command;
             long batchId = sequence.incrementAndGet();
             jobs.add(new AiBatchJobResult(
@@ -410,16 +412,20 @@ class AiRefinementTaskApplicationServiceImplTest {
                     Instant.parse("2026-01-01T00:00:00Z"),
                     null,
                     null));
-            return batchId;
+            return new AiBatchJobId(batchId);
+        }
+
+        private Long createLong(AiBatchJobCreateCommand command) {
+            return AiBatchJobIdCodec.toValue(create(command));
         }
 
         @Override
-        public boolean canDispatchNextUnit(Long batchId) {
+        public boolean canDispatchNextUnit(AiBatchJobId batchId) {
             return true;
         }
 
         @Override
-        public AiBatchJobResult recordSuccess(Long batchId) {
+        public AiBatchJobResult recordSuccess(AiBatchJobId batchId) {
             AiBatchJobResult job = get(batchId);
             AiBatchJobResult updated = copy(job, "SUCCEEDED", 1, 0, null);
             replace(updated);
@@ -427,7 +433,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         }
 
         @Override
-        public AiBatchJobResult recordSuccessIfRunning(Long batchId) {
+        public AiBatchJobResult recordSuccessIfRunning(AiBatchJobId batchId) {
             AiBatchJobResult job = get(batchId);
             if (AiBatchJobStatus.RUNNING != job.getStatus()) {
                 return job;
@@ -436,7 +442,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         }
 
         @Override
-        public AiBatchJobResult recordFailure(Long batchId, String failureSummaryJson) {
+        public AiBatchJobResult recordFailure(AiBatchJobId batchId, String failureSummaryJson) {
             AiBatchJobResult job = get(batchId);
             AiBatchJobResult updated = copy(job, "FAILED", 0, 1, failureSummaryJson);
             replace(updated);
@@ -444,7 +450,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         }
 
         @Override
-        public AiBatchJobResult recordFailureIfRunning(Long batchId, String failureSummaryJson) {
+        public AiBatchJobResult recordFailureIfRunning(AiBatchJobId batchId, String failureSummaryJson) {
             AiBatchJobResult job = get(batchId);
             if (AiBatchJobStatus.RUNNING != job.getStatus()) {
                 return job;
@@ -453,7 +459,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         }
 
         @Override
-        public AiBatchJobResult recordPartialIfRunning(Long batchId, String failureSummaryJson) {
+        public AiBatchJobResult recordPartialIfRunning(AiBatchJobId batchId, String failureSummaryJson) {
             AiBatchJobResult job = get(batchId);
             if (AiBatchJobStatus.RUNNING != job.getStatus()) {
                 return job;
@@ -466,7 +472,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         @Override
         public int expireRunning(
                 String scope,
-                List<String> capabilities,
+                List<AiBusinessCapability> capabilities,
                 Instant requestedBefore,
                 String failureSummaryJson,
                 int limit) {
@@ -474,9 +480,9 @@ class AiRefinementTaskApplicationServiceImplTest {
             for (AiBatchJobResult job : List.copyOf(jobs)) {
                 if (AiBatchJobStatus.RUNNING == job.getStatus()
                         && scope.equals(job.getScope())
-                        && capabilities.contains(job.getCapability().value())
+                        && capabilities.contains(job.getCapability())
                         && job.getRequestedAt().isBefore(requestedBefore)) {
-                    recordFailure(job.getBatchId().value(), failureSummaryJson);
+                    recordFailure(job.getBatchId(), failureSummaryJson);
                     expiredCount++;
                 }
             }
@@ -484,7 +490,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         }
 
         @Override
-        public AiBatchJobResult cancel(Long batchId) {
+        public AiBatchJobResult cancel(AiBatchJobId batchId) {
             AiBatchJobResult job = get(batchId);
             AiBatchJobResult updated = copy(job, "CANCELLED", job.getSuccessCount(), job.getFailedCount(), null);
             replace(updated);
@@ -514,13 +520,13 @@ class AiRefinementTaskApplicationServiceImplTest {
             jobs.add(updated);
         }
 
-        private List<AiBatchJobResult> filtered(String scope, List<String> capabilities) {
+        private List<AiBatchJobResult> filtered(String scope, List<AiBusinessCapability> capabilities) {
             List<AiBatchJobResult> records = new ArrayList<>();
             for (AiBatchJobResult job : jobs) {
                 if ((scope == null || scope.equals(job.getScope()))
                         && (capabilities == null
                                 || capabilities.isEmpty()
-                                || capabilities.contains(job.getCapability().value()))) {
+                                || capabilities.contains(job.getCapability()))) {
                     records.add(job);
                 }
             }
