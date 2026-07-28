@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.ai.infra.client;
+package com.thundax.kuzhambu.ai.infra.invocation.gateway;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -8,7 +8,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.springframework.stereotype.Component;
 
 @Component
-public class WorkerAiSignatureSupport {
+public class AiWorkerRequestSigner {
 
     private static final String HMAC_SHA256 = "HmacSHA256";
     private static final char[] HEX = "0123456789abcdef".toCharArray();

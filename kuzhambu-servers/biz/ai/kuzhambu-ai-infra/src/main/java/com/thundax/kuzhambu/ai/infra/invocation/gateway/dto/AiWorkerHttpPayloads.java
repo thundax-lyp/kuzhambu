@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.ai.infra.client.dto;
+package com.thundax.kuzhambu.ai.infra.invocation.gateway.dto;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.List;
@@ -6,14 +6,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-public final class WorkerAiDtos {
+public final class AiWorkerHttpPayloads {
 
-    private WorkerAiDtos() {}
+    private AiWorkerHttpPayloads() {}
 
     @Getter
     @Setter
     @NoArgsConstructor
-    public static class WorkerAiRequest {
+    public static class InvokeRequest {
 
         private String requestId;
         private String traceId;
@@ -79,7 +79,7 @@ public final class WorkerAiDtos {
     @Getter
     @Setter
     @NoArgsConstructor
-    public static class WorkerAiResponse {
+    public static class InvokeResponse {
 
         private String requestId;
         private String traceId;

@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.ai.infra.client;
+package com.thundax.kuzhambu.ai.infra.invocation.gateway;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Getter
 @Setter
 @Component
-public class WorkerAiProperties {
+public class AiWorkerGatewayProperties {
 
     @Value("${kuzhambu.ai.worker.base-url:http://localhost:8000}")
     private String baseUrl;

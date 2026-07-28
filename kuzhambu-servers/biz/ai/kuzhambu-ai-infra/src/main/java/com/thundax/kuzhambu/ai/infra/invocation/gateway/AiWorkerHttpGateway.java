@@ -1,16 +1,17 @@
-package com.thundax.kuzhambu.ai.infra.client;
+package com.thundax.kuzhambu.ai.infra.invocation.gateway;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
+import com.thundax.kuzhambu.ai.application.invocation.gateway.AiWorkerGateway;
+import com.thundax.kuzhambu.ai.application.invocation.gateway.AiWorkerGateway.ArtifactDownloadException;
+import com.thundax.kuzhambu.ai.application.invocation.gateway.AiWorkerGateway.DownloadedArtifact;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
-import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService.ArtifactDownloadException;
-import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService.DownloadedArtifact;
 import com.thundax.kuzhambu.ai.application.invocation.support.AiWorkerModelConfigResolver;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
-import com.thundax.kuzhambu.ai.infra.client.dto.WorkerAiDtos;
+import com.thundax.kuzhambu.ai.infra.invocation.gateway.dto.AiWorkerHttpPayloads;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,7 +30,7 @@ import java.util.function.Consumer;
 import org.springframework.stereotype.Component;
 
 @Component
-public class WorkerAiHttpClient implements WorkerAiClient {
+public class AiWorkerHttpGateway implements AiWorkerGateway {
 
     private static final String CALLER_DOMAIN = "AI";
     private static final String INVOKE_PATH = "/internal/ai/invoke";
@@ -40,18 +41,18 @@ public class WorkerAiHttpClient implements WorkerAiClient {
     private static final String ERROR_WORKER_TIMEOUT = "WORKER_TIMEOUT";
     private static final String ERROR_WORKER_UNAVAILABLE = "WORKER_UNAVAILABLE";
 
-    private final WorkerAiProperties properties;
-    private final WorkerAiSignatureSupport signatureSupport;
+    private final AiWorkerGatewayProperties properties;
+    private final AiWorkerRequestSigner requestSigner;
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
     private final AiWorkerModelConfigResolver modelConfigResolver;
 
-    public WorkerAiHttpClient(
-            WorkerAiProperties properties,
-            WorkerAiSignatureSupport signatureSupport,
+    public AiWorkerHttpGateway(
+            AiWorkerGatewayProperties properties,
+            AiWorkerRequestSigner requestSigner,
             AiWorkerModelConfigResolver modelConfigResolver) {
         this.properties = properties;
-        this.signatureSupport = signatureSupport;
+        this.requestSigner = requestSigner;
         this.modelConfigResolver = modelConfigResolver;
         this.objectMapper = new ObjectMapper().findAndRegisterModules();
         this.httpClient = HttpClient.newBuilder()
@@ -71,7 +72,7 @@ public class WorkerAiHttpClient implements WorkerAiClient {
                 return httpFailure(command, response.statusCode(), response.body());
             }
             return toInvokeResult(
-                    command, objectMapper.readValue(response.body(), WorkerAiDtos.WorkerAiResponse.class));
+                    command, objectMapper.readValue(response.body(), AiWorkerHttpPayloads.InvokeResponse.class));
         } catch (JsonProcessingException | IllegalArgumentException ex) {
             return failure(command, ERROR_WORKER_PROTOCOL_FAILURE, ex.getMessage());
         } catch (HttpTimeoutException ex) {
@@ -187,8 +188,8 @@ public class WorkerAiHttpClient implements WorkerAiClient {
         return STREAM_PATH;
     }
 
-    private WorkerAiDtos.WorkerAiRequest toRequest(AiInvokeCommand command, boolean stream) {
-        WorkerAiDtos.WorkerAiRequest request = new WorkerAiDtos.WorkerAiRequest();
+    private AiWorkerHttpPayloads.InvokeRequest toRequest(AiInvokeCommand command, boolean stream) {
+        AiWorkerHttpPayloads.InvokeRequest request = new AiWorkerHttpPayloads.InvokeRequest();
         request.setRequestId(command.getRequestId());
         request.setTraceId(command.getTraceId());
         request.setCallerDomain(CALLER_DOMAIN);
@@ -204,8 +205,8 @@ public class WorkerAiHttpClient implements WorkerAiClient {
         return request;
     }
 
-    private WorkerAiDtos.ModelConfig modelConfig(AiInvokeCommand command) {
-        WorkerAiDtos.ModelConfig modelConfig = new WorkerAiDtos.ModelConfig();
+    private AiWorkerHttpPayloads.ModelConfig modelConfig(AiInvokeCommand command) {
+        AiWorkerHttpPayloads.ModelConfig modelConfig = new AiWorkerHttpPayloads.ModelConfig();
         if (modelConfigResolver != null) {
             AiWorkerModelConfigResolver.ResolvedModelConfig resolved = modelConfigResolver.resolve(command);
             if (resolved != null) {
@@ -230,8 +231,8 @@ public class WorkerAiHttpClient implements WorkerAiClient {
         return modelConfig;
     }
 
-    private WorkerAiDtos.Prompt prompt(AiInvokeCommand command) {
-        WorkerAiDtos.Prompt prompt = new WorkerAiDtos.Prompt();
+    private AiWorkerHttpPayloads.Prompt prompt(AiInvokeCommand command) {
+        AiWorkerHttpPayloads.Prompt prompt = new AiWorkerHttpPayloads.Prompt();
         if (command.getPromptVersionId() != null) {
             prompt.setPromptVersionId(String.valueOf(command.getPromptVersionId()));
         }
@@ -241,8 +242,8 @@ public class WorkerAiHttpClient implements WorkerAiClient {
         return prompt;
     }
 
-    private WorkerAiDtos.Input input(AiInvokeCommand command) {
-        WorkerAiDtos.Input input = new WorkerAiDtos.Input();
+    private AiWorkerHttpPayloads.Input input(AiInvokeCommand command) {
+        AiWorkerHttpPayloads.Input input = new AiWorkerHttpPayloads.Input();
         input.setContentType(command.getContentType());
         if (command.getContentId() != null) {
             input.setContentId(String.valueOf(command.getContentId()));
@@ -251,8 +252,8 @@ public class WorkerAiHttpClient implements WorkerAiClient {
         return input;
     }
 
-    private WorkerAiDtos.Options options(AiInvokeCommand command, boolean stream) {
-        WorkerAiDtos.Options options = new WorkerAiDtos.Options();
+    private AiWorkerHttpPayloads.Options options(AiInvokeCommand command, boolean stream) {
+        AiWorkerHttpPayloads.Options options = new AiWorkerHttpPayloads.Options();
         options.setStream(stream);
         options.setForceJson(command.isForceJson());
         options.setLocale(command.getLocale());
@@ -261,8 +262,7 @@ public class WorkerAiHttpClient implements WorkerAiClient {
 
     private HttpRequest buildPostRequest(String path, String requestId, String traceId, String body) {
         String timestamp = String.valueOf(System.currentTimeMillis());
-        String signature =
-                signatureSupport.sign("POST", path, timestamp, requestId, body, properties.getInternalSecret());
+        String signature = requestSigner.sign("POST", path, timestamp, requestId, body, properties.getInternalSecret());
         return HttpRequest.newBuilder(uri(path))
                 .version(HttpClient.Version.HTTP_1_1)
                 .timeout(Duration.ofMillis(properties.getTimeoutMs()))
@@ -279,7 +279,7 @@ public class WorkerAiHttpClient implements WorkerAiClient {
 
     private HttpRequest buildGetRequest(String path, String requestId, String traceId) {
         String timestamp = String.valueOf(System.currentTimeMillis());
-        String signature = signatureSupport.sign("GET", path, timestamp, requestId, "", properties.getInternalSecret());
+        String signature = requestSigner.sign("GET", path, timestamp, requestId, "", properties.getInternalSecret());
         return HttpRequest.newBuilder(uri(path))
                 .version(HttpClient.Version.HTTP_1_1)
                 .timeout(Duration.ofMillis(properties.getTimeoutMs()))
@@ -301,7 +301,7 @@ public class WorkerAiHttpClient implements WorkerAiClient {
         return URI.create(baseUrl.replaceAll("/+$", "") + path);
     }
 
-    private AiInvokeResult toInvokeResult(AiInvokeCommand command, WorkerAiDtos.WorkerAiResponse response)
+    private AiInvokeResult toInvokeResult(AiInvokeCommand command, AiWorkerHttpPayloads.InvokeResponse response)
             throws JsonProcessingException {
         if (response == null || response.getStatus() == null) {
             return failure(command, ERROR_WORKER_PROTOCOL_FAILURE, "Worker returned invalid response");
@@ -412,7 +412,7 @@ public class WorkerAiHttpClient implements WorkerAiClient {
     }
 
     private AiInvokeResult httpFailure(AiInvokeCommand command, int statusCode, String body) {
-        WorkerAiDtos.WorkerAiResponse response = readWorkerResponse(body);
+        AiWorkerHttpPayloads.InvokeResponse response = readWorkerResponse(body);
         if (response != null
                 && response.getError() != null
                 && !isBlank(response.getError().getType())) {
@@ -422,12 +422,12 @@ public class WorkerAiHttpClient implements WorkerAiClient {
         return failure(command, httpErrorType(statusCode), "Worker returned HTTP " + statusCode);
     }
 
-    private WorkerAiDtos.WorkerAiResponse readWorkerResponse(String body) {
+    private AiWorkerHttpPayloads.InvokeResponse readWorkerResponse(String body) {
         if (isBlank(body)) {
             return null;
         }
         try {
-            return objectMapper.readValue(body, WorkerAiDtos.WorkerAiResponse.class);
+            return objectMapper.readValue(body, AiWorkerHttpPayloads.InvokeResponse.class);
         } catch (JsonProcessingException ex) {
             return null;
         }
@@ -478,7 +478,7 @@ public class WorkerAiHttpClient implements WorkerAiClient {
         }
     }
 
-    private AiUsageSnapshot toUsage(WorkerAiDtos.Usage usage) {
+    private AiUsageSnapshot toUsage(AiWorkerHttpPayloads.Usage usage) {
         if (usage == null) {
             return AiUsageSnapshot.empty();
         }

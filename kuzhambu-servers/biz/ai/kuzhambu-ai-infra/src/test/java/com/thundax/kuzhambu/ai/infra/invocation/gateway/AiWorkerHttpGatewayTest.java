@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.ai.infra.client;
+package com.thundax.kuzhambu.ai.infra.invocation.gateway;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -8,9 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
+import com.thundax.kuzhambu.ai.application.invocation.gateway.AiWorkerGateway.ArtifactDownloadException;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
-import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService.ArtifactDownloadException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-class WorkerAiHttpClientTest {
+class AiWorkerHttpGatewayTest {
 
     private static final String STREAM_COMPLETED_EVENT = "event:completed\n"
             + "data: {\"eventType\":\"completed\",\"status\":\"SUCCEEDED\",\"requestId\":\"req-1\",\"traceId\":\"trace-1\"}\n\n";
@@ -55,7 +55,7 @@ class WorkerAiHttpClientTest {
                             }
                             """);
         });
-        WorkerAiHttpClient client = new WorkerAiHttpClient(properties(), new WorkerAiSignatureSupport(), null);
+        AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties(), new AiWorkerRequestSigner(), null);
 
         AiInvokeResult result = client.invoke(command());
 
@@ -67,7 +67,7 @@ class WorkerAiHttpClientTest {
         String timestamp = captured.get().getRequestHeaders().getFirst("X-Kuzhambu-Timestamp");
         assertNotNull(timestamp);
         assertEquals(
-                new WorkerAiSignatureSupport()
+                new AiWorkerRequestSigner()
                         .sign("POST", "/internal/ai/invoke", timestamp, "req-1", capturedBody.get(), "worker-secret"),
                 captured.get().getRequestHeaders().getFirst("X-Kuzhambu-Signature"));
         assertTrue(capturedBody.get().contains("\"capability\":\"summary\""));
@@ -77,7 +77,7 @@ class WorkerAiHttpClientTest {
     @Test
     void invokeShouldNormalizeWorkerHttpFailure() throws IOException {
         startServer("/internal/ai/invoke", exchange -> respond(exchange, 503, ""));
-        WorkerAiHttpClient client = new WorkerAiHttpClient(properties(), new WorkerAiSignatureSupport(), null);
+        AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties(), new AiWorkerRequestSigner(), null);
 
         AiInvokeResult result = client.invoke(command());
 
@@ -96,7 +96,7 @@ class WorkerAiHttpClientTest {
             capturedBody.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
             respond(exchange, 200, STREAM_COMPLETED_EVENT);
         });
-        WorkerAiHttpClient client = new WorkerAiHttpClient(properties(), new WorkerAiSignatureSupport(), null);
+        AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties(), new AiWorkerRequestSigner(), null);
 
         client.stream(command(), capturedEvent::set);
 
@@ -105,7 +105,7 @@ class WorkerAiHttpClientTest {
         String timestamp = captured.get().getRequestHeaders().getFirst("X-Kuzhambu-Timestamp");
         assertNotNull(timestamp);
         assertEquals(
-                new WorkerAiSignatureSupport()
+                new AiWorkerRequestSigner()
                         .sign("POST", "/internal/ai/stream", timestamp, "req-1", capturedBody.get(), "worker-secret"),
                 captured.get().getRequestHeaders().getFirst("X-Kuzhambu-Signature"));
     }
@@ -117,7 +117,7 @@ class WorkerAiHttpClientTest {
             captured.set(exchange);
             respond(exchange, 200, STREAM_COMPLETED_EVENT);
         });
-        WorkerAiHttpClient client = new WorkerAiHttpClient(properties(), new WorkerAiSignatureSupport(), null);
+        AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties(), new AiWorkerRequestSigner(), null);
 
         client.stream(command(), event -> {});
 
@@ -135,7 +135,7 @@ class WorkerAiHttpClientTest {
                                 + "data: {\"eventId\":\"evt-1\",\"requestId\":\"req-1\",\"traceId\":\"trace-1\",\"stage\":\"model_stream\",\"deltaText\":\"片段一\"}\n\n"
                                 + "event:completed\n"
                                 + "data: {\"eventId\":\"evt-2\",\"requestId\":\"req-1\",\"traceId\":\"trace-1\",\"stage\":\"completed\",\"result\":{\"format\":\"MARKDOWN\",\"payload\":\"完整结果\"},\"extra\":{\"status\":\"SUCCEEDED\"}}\n\n"));
-        WorkerAiHttpClient client = new WorkerAiHttpClient(properties(), new WorkerAiSignatureSupport(), null);
+        AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties(), new AiWorkerRequestSigner(), null);
         List<AiStreamEventResult> events = new ArrayList<>();
 
         client.stream(command(), events::add);
@@ -159,7 +159,7 @@ class WorkerAiHttpClientTest {
                         200,
                         "event:error\n"
                                 + "data: {\"eventId\":\"evt-err\",\"requestId\":\"req-1\",\"traceId\":\"trace-1\",\"stage\":\"worker_stream\",\"error\":{\"type\":\"MODEL_TRANSPORT_FAILURE\",\"message\":\"模型服务不可用\"},\"extra\":{\"failureStage\":\"WORKER_STREAM\",\"status\":\"FAILED\"}}\n\n"));
-        WorkerAiHttpClient client = new WorkerAiHttpClient(properties(), new WorkerAiSignatureSupport(), null);
+        AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties(), new AiWorkerRequestSigner(), null);
         AtomicReference<AiStreamEventResult> capturedEvent = new AtomicReference<>();
 
         client.stream(command(), capturedEvent::set);
@@ -180,7 +180,7 @@ class WorkerAiHttpClientTest {
                         200,
                         "event:delta\n"
                                 + "data: {\"eventId\":\"evt-1\",\"requestId\":\"req-1\",\"traceId\":\"trace-1\",\"stage\":\"model_stream\",\"delta\":{\"text\":\"未完成片段\"}}\n\n"));
-        WorkerAiHttpClient client = new WorkerAiHttpClient(properties(), new WorkerAiSignatureSupport(), null);
+        AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties(), new AiWorkerRequestSigner(), null);
         List<AiStreamEventResult> events = new ArrayList<>();
 
         client.stream(command(), events::add);
@@ -195,7 +195,7 @@ class WorkerAiHttpClientTest {
         startServer(
                 "/artifact/large",
                 exchange -> respondBinary(exchange, 200, "too-large".getBytes(StandardCharsets.UTF_8)));
-        WorkerAiHttpClient client = new WorkerAiHttpClient(properties(4L), new WorkerAiSignatureSupport(), null);
+        AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties(4L), new AiWorkerRequestSigner(), null);
 
         ArtifactDownloadException exception = assertThrows(
                 ArtifactDownloadException.class, () -> client.downloadArtifact("req-1", "trace-1", "/artifact/large"));
@@ -209,7 +209,7 @@ class WorkerAiHttpClientTest {
             exchange.getResponseHeaders().set("X-Kuzhambu-Artifact-Size-Bytes", "9");
             respondBinary(exchange, 200, "ok".getBytes(StandardCharsets.UTF_8));
         });
-        WorkerAiHttpClient client = new WorkerAiHttpClient(properties(4L), new WorkerAiSignatureSupport(), null);
+        AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties(4L), new AiWorkerRequestSigner(), null);
 
         ArtifactDownloadException exception = assertThrows(
                 ArtifactDownloadException.class,
@@ -226,7 +226,7 @@ class WorkerAiHttpClientTest {
             exchange.getResponseBody().write("too-large".getBytes(StandardCharsets.UTF_8));
             exchange.close();
         });
-        WorkerAiHttpClient client = new WorkerAiHttpClient(properties(4L), new WorkerAiSignatureSupport(), null);
+        AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties(4L), new AiWorkerRequestSigner(), null);
 
         ArtifactDownloadException exception = assertThrows(
                 ArtifactDownloadException.class,
@@ -248,7 +248,7 @@ class WorkerAiHttpClientTest {
         server.start();
     }
 
-    private WorkerAiProperties properties() {
+    private AiWorkerGatewayProperties properties() {
         return properties(50L * 1024L * 1024L);
     }
 
@@ -263,8 +263,8 @@ class WorkerAiHttpClientTest {
         return false;
     }
 
-    private WorkerAiProperties properties(long maxArtifactSizeBytes) {
-        WorkerAiProperties properties = new WorkerAiProperties();
+    private AiWorkerGatewayProperties properties(long maxArtifactSizeBytes) {
+        AiWorkerGatewayProperties properties = new AiWorkerGatewayProperties();
         properties.setBaseUrl("http://127.0.0.1:" + server.getAddress().getPort());
         properties.setInternalSecret("worker-secret");
         properties.setServiceName("kuzhambu-ai-test");
