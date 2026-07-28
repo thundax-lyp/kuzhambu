@@ -1,6 +1,13 @@
 import type { ReactNode } from "react";
+import { ScheduleOutlined } from "@ant-design/icons";
 import { Badge } from "antd";
-import { KuzhambuAlert, KuzhambuButton, KuzhambuListPage, KuzhambuSelect } from "@/components";
+import {
+    KuzhambuAlert,
+    KuzhambuButton,
+    KuzhambuListPage,
+    KuzhambuSelect,
+    KuzhambuSpace
+} from "@/components";
 
 import { MingCustomsTagCloud } from "./ming-customs-keyword-cloud";
 import type { MingCustomsQuery } from "../ming-customs-service";
@@ -31,6 +38,7 @@ interface MingCustomsToolbarProps {
     onFilterApply: () => void;
     onFilterReset: () => void;
     onFiltersChange: (filters: MingCustomsFilters) => void;
+    onOpenExportJobs: () => void;
     onSearchChange: (value: string) => void;
     onSelectTag: (item: MingCustomsTagCloudItem) => void;
     query: MingCustomsQuery;
@@ -48,6 +56,7 @@ export const MingCustomsToolbar = ({
     onFilterApply,
     onFilterReset,
     onFiltersChange,
+    onOpenExportJobs,
     onSearchChange,
     onSelectTag,
     query,
@@ -134,12 +143,22 @@ export const MingCustomsToolbar = ({
             onFilterReset={onFilterReset}
             onAdd={onAdd}
             pageActions={
-                <MingCustomsTagCloud
-                    category={query.category}
-                    keyword={query.keyword}
-                    visibility={query.visibility}
-                    onSelect={onSelectTag}
-                />
+                <KuzhambuSpace>
+                    <MingCustomsTagCloud
+                        category={query.category}
+                        keyword={query.keyword}
+                        visibility={query.visibility}
+                        onSelect={onSelectTag}
+                    />
+                    <KuzhambuButton
+                        testId="classics-ming-customs-ming-customs-export-jobs-button"
+                        ariaLabel="打开明代习俗导出任务"
+                        icon={<ScheduleOutlined />}
+                        onClick={onOpenExportJobs}
+                    >
+                        任务
+                    </KuzhambuButton>
+                </KuzhambuSpace>
             }
             searchValue={searchValue}
             onSearchChange={onSearchChange}

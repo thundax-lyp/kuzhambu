@@ -1,5 +1,13 @@
 import { Typography } from "antd";
-import { KuzhambuButton, KuzhambuTable, type KuzhambuTableProps, KuzhambuTag } from "@/components";
+import {
+    KuzhambuAlert,
+    KuzhambuButton,
+    KuzhambuSpace,
+    KuzhambuTable,
+    type KuzhambuTableProps,
+    KuzhambuTag
+} from "@/components";
+import type { ClassicsBatchOperationRecord } from "@/pages/classics/common/classics-content-types";
 
 import type { MingCustomsRecord } from "../ming-customs-types";
 
@@ -24,33 +32,62 @@ const visibilityTagType = (visibility?: string | null) => {
 };
 
 interface MingCustomsTableProps {
+    batchShareResult: ClassicsBatchOperationRecord | null;
+    batchVisibilityResult: ClassicsBatchOperationRecord | null;
+    canChangeEntryVisibility?: boolean;
     canExport?: boolean;
     canShare?: boolean;
     categoryLabels: Record<string, string>;
     dataSource: MingCustomsRecord[];
     loading?: boolean;
+    onBatchCandidate: () => void;
+    onChangeSelectedVisibility: (visibility: "PRIVATE" | "PUBLIC") => void;
     onDelete: (record: MingCustomsRecord) => void;
     onOpenEdit: (record: MingCustomsRecord) => void;
     onExport: (record: MingCustomsRecord) => void;
     onSelectedEntryIdsChange: (ids: string[]) => void;
     onShare: (record: MingCustomsRecord) => void;
+    onShareSelectedEntries: () => void;
     pagination: KuzhambuTableProps<MingCustomsRecord>["pagination"];
     selectedEntryIds: string[];
+    sharing?: boolean;
+    visibilityChanging?: boolean;
 }
 
+const renderBatchResultDescription = (result: ClassicsBatchOperationRecord) => {
+    if (!result.failures.length) {
+        return "全部选中明代习俗已处理完成。";
+    }
+
+    return result.failures
+        .map(
+            (item) =>
+                `${item.contentType}#${item.contentId}: ${item.failureReason || item.failureCode || "未知失败"}`
+        )
+        .join("；");
+};
+
 export const MingCustomsTable = ({
+    batchShareResult,
+    batchVisibilityResult,
+    canChangeEntryVisibility = true,
     canExport = true,
     canShare = true,
     categoryLabels,
     dataSource,
     loading = false,
+    onBatchCandidate,
+    onChangeSelectedVisibility,
     onDelete,
     onOpenEdit,
     onExport,
     onSelectedEntryIdsChange,
     onShare,
+    onShareSelectedEntries,
     pagination,
-    selectedEntryIds
+    selectedEntryIds,
+    sharing = false,
+    visibilityChanging = false
 }: MingCustomsTableProps) => {
     const columns: KuzhambuTableProps<MingCustomsRecord>["columns"] = [
         {
@@ -150,17 +187,81 @@ export const MingCustomsTable = ({
     ];
 
     return (
-        <KuzhambuTable<MingCustomsRecord>
-            ariaLabel="明代习俗表格"
-            rowKey={(record) => String(record.id ?? "")}
-            loading={loading}
-            dataSource={dataSource}
-            columns={columns}
-            pagination={pagination}
-            rowSelection={{
-                selectedRowKeys: selectedEntryIds,
-                onChange: (keys) => onSelectedEntryIdsChange(keys.map(String))
-            }}
-        />
+        <>
+            {batchShareResult ? (
+                <KuzhambuAlert
+                    showIcon
+                    type={batchShareResult.failureCount > 0 ? "warning" : "success"}
+                    style={{ marginBottom: 12 }}
+                    title={`批量分享结果：成功 ${batchShareResult.successCount}，失败 ${batchShareResult.failureCount}`}
+                    description={
+                        batchShareResult.failures.length
+                            ? renderBatchResultDescription(batchShareResult)
+                            : "全部选中明代习俗已创建分享记录。"
+                    }
+                />
+            ) : null}
+            {batchVisibilityResult ? (
+                <KuzhambuAlert
+                    showIcon
+                    type={batchVisibilityResult.failureCount > 0 ? "warning" : "success"}
+                    style={{ marginBottom: 12 }}
+                    title={`批量可见性结果：成功 ${batchVisibilityResult.successCount}，失败 ${batchVisibilityResult.failureCount}`}
+                    description={
+                        batchVisibilityResult.failures.length
+                            ? renderBatchResultDescription(batchVisibilityResult)
+                            : "全部选中明代习俗已更新可见性。"
+                    }
+                />
+            ) : null}
+            <KuzhambuTable<MingCustomsRecord>
+                ariaLabel="明代习俗表格"
+                rowKey={(record) => String(record.id ?? "")}
+                loading={loading}
+                dataSource={dataSource}
+                columns={columns}
+                pagination={pagination}
+                toolbar={{
+                    leading: (
+                        <KuzhambuSpace wrap>
+                            <Text type="secondary">当前页已选 {selectedEntryIds.length} 条</Text>
+                        </KuzhambuSpace>
+                    ),
+                    actions: [
+                        {
+                            testId: "classics-ming-customs-ming-customs-batch-share-button",
+                            title: "分享",
+                            disabled: !selectedEntryIds.length || !canShare,
+                            loading: sharing,
+                            action: onShareSelectedEntries
+                        },
+                        {
+                            testId: "classics-ming-customs-ming-customs-batch-public-button",
+                            title: "公开",
+                            disabled: !selectedEntryIds.length || !canChangeEntryVisibility,
+                            loading: visibilityChanging,
+                            action: () => onChangeSelectedVisibility("PUBLIC")
+                        },
+                        {
+                            testId: "classics-ming-customs-ming-customs-batch-private-button",
+                            title: "私有",
+                            disabled: !selectedEntryIds.length || !canChangeEntryVisibility,
+                            loading: visibilityChanging,
+                            action: () => onChangeSelectedVisibility("PRIVATE")
+                        },
+                        {
+                            testId: "classics-ming-customs-ming-customs-action-button-2",
+                            title: "候选治理",
+                            disabled: !selectedEntryIds.length || !canChangeEntryVisibility,
+                            action: onBatchCandidate
+                        }
+                    ]
+                }}
+                rowSelection={{
+                    selectedRowKeys: selectedEntryIds,
+                    onChange: (keys) => onSelectedEntryIdsChange(keys.map(String))
+                }}
+            />
+        </>
     );
 };
