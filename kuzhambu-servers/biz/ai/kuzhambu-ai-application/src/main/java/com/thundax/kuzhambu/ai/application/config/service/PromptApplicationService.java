@@ -5,30 +5,32 @@ import com.thundax.kuzhambu.ai.application.config.query.PromptVersionCompareQuer
 import com.thundax.kuzhambu.ai.application.config.result.PromptVersionResult;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVariable;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptTemplateId;
 import java.util.Collection;
 import java.util.List;
 
 public interface PromptApplicationService {
 
-    PromptTemplate getTemplate(Long templateId);
+    PromptTemplate getTemplate(PromptTemplateId templateId);
 
-    PromptTemplate getTemplate(String capability);
+    PromptTemplate getTemplate(AiBusinessCapability capability);
 
-    List<PromptTemplate> listTemplates(String capability, Boolean enabled);
+    List<PromptTemplate> listTemplates(AiBusinessCapability capability, Boolean enabled);
 
-    Long saveTemplate(PromptTemplateSaveCommand command);
+    PromptTemplateId saveTemplate(PromptTemplateSaveCommand command);
 
-    PromptVersionResult getCurrentVersion(Long templateId);
+    PromptVersionResult getCurrentVersion(PromptTemplateId templateId);
 
-    List<PromptVersionResult> listVersions(Long templateId);
+    List<PromptVersionResult> listVersions(PromptTemplateId templateId);
 
     List<PromptVersionResult> compareVersions(PromptVersionCompareQuery query);
 
-    PromptVersionResult rollback(Long templateId, int versionNo);
+    PromptVersionResult rollback(PromptTemplateId templateId, int versionNo);
 
-    List<PromptVariable> listVariables(Long templateId);
+    List<PromptVariable> listVariables(PromptTemplateId templateId);
 
-    void validateRequiredVariables(Long templateId, Collection<String> providedNames);
+    void validateRequiredVariables(PromptTemplateId templateId, Collection<String> providedNames);
 
-    PromptVersionResult buildOptimizationSuggestion(Long templateId, String changeSummary);
+    PromptVersionResult buildOptimizationSuggestion(PromptTemplateId templateId, String changeSummary);
 }

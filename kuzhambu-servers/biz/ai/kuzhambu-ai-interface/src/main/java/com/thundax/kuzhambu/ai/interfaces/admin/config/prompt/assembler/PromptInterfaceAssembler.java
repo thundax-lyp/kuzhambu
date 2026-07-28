@@ -9,6 +9,7 @@ import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVariable;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptTemplateId;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.controller.request.PromptRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.config.prompt.controller.response.PromptResponses;
 import java.util.ArrayList;
@@ -39,6 +40,14 @@ public final class PromptInterfaceAssembler {
         query.setLeftVersionNo(request.getLeftVersionNo());
         query.setRightVersionNo(request.getRightVersionNo());
         return query;
+    }
+
+    public static PromptTemplateId toTemplateId(Long value) {
+        return PromptTemplateIdCodec.toDomain(value);
+    }
+
+    public static AiBusinessCapability toCapability(String value) {
+        return isBlank(value) ? null : AiBusinessCapability.from(value);
     }
 
     public static PromptResponses.TemplateResponse toResponse(PromptTemplate template) {
@@ -105,5 +114,9 @@ public final class PromptInterfaceAssembler {
             items.add(item);
         }
         return items;
+    }
+
+    private static boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }

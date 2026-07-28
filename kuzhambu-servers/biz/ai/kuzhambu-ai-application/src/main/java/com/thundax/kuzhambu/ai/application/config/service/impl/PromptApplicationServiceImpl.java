@@ -41,26 +41,26 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
     }
 
     @Override
-    public PromptTemplate getTemplate(Long templateId) {
-        return promptRepository.get(PromptTemplateIdCodec.toDomain(templateId));
+    public PromptTemplate getTemplate(PromptTemplateId templateId) {
+        return promptRepository.get(templateId);
     }
 
     @Override
-    public PromptTemplate getTemplate(String capability) {
-        if (isBlank(capability)) {
+    public PromptTemplate getTemplate(AiBusinessCapability capability) {
+        if (capability == null) {
             return null;
         }
-        return promptRepository.get(AiBusinessCapability.from(capability));
+        return promptRepository.get(capability);
     }
 
     @Override
-    public List<PromptTemplate> listTemplates(String capability, Boolean enabled) {
-        return promptRepository.list(toCapability(capability), enabled);
+    public List<PromptTemplate> listTemplates(AiBusinessCapability capability, Boolean enabled) {
+        return promptRepository.list(capability, enabled);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Long saveTemplate(PromptTemplateSaveCommand command) {
+    public PromptTemplateId saveTemplate(PromptTemplateSaveCommand command) {
         validateCommand(command);
         PromptTemplate template = toTemplate(command);
         PromptTemplateId templateId = saveOrUpdateTemplate(template);
@@ -71,24 +71,24 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
         replaceVariablesOnCreate(template, templateId, variables);
         insertVersion(version);
         promptRepository.markCurrentVersion(templateId, versionNo);
-        return PromptTemplateIdCodec.toValue(templateId);
+        return templateId;
     }
 
     @Override
-    public PromptVersionResult getCurrentVersion(Long templateId) {
+    public PromptVersionResult getCurrentVersion(PromptTemplateId templateId) {
         if (templateId == null) {
             return null;
         }
-        return PromptVersionResult.from(promptRepository.getCurrentVersion(PromptTemplateIdCodec.toDomain(templateId)));
+        return PromptVersionResult.from(promptRepository.getCurrentVersion(templateId));
     }
 
     @Override
-    public List<PromptVersionResult> listVersions(Long templateId) {
+    public List<PromptVersionResult> listVersions(PromptTemplateId templateId) {
         List<PromptVersionResult> results = new ArrayList<>();
         if (templateId == null) {
             return results;
         }
-        for (PromptVersion version : promptRepository.listVersions(PromptTemplateIdCodec.toDomain(templateId))) {
+        for (PromptVersion version : promptRepository.listVersions(templateId)) {
             results.add(PromptVersionResult.from(version));
         }
         return results;
@@ -107,39 +107,38 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public PromptVersionResult rollback(Long templateId, int versionNo) {
+    public PromptVersionResult rollback(PromptTemplateId templateId, int versionNo) {
         findVersion(templateId, versionNo);
-        PromptTemplateId id = PromptTemplateIdCodec.toDomain(templateId);
-        int affectedRows = promptRepository.markCurrentVersion(id, versionNo);
+        int affectedRows = promptRepository.markCurrentVersion(templateId, versionNo);
         if (affectedRows <= 0) {
-            throw new BizException("Prompt rollback failed: " + templateId + "#" + versionNo);
+            throw new BizException("Prompt rollback failed: " + templateId.value() + "#" + versionNo);
         }
         return getCurrentVersion(templateId);
     }
 
     @Override
-    public List<PromptVariable> listVariables(Long templateId) {
+    public List<PromptVariable> listVariables(PromptTemplateId templateId) {
         if (templateId == null) {
             return new ArrayList<>();
         }
-        return promptRepository.listVariables(PromptTemplateIdCodec.toDomain(templateId));
+        return promptRepository.listVariables(templateId);
     }
 
     @Override
-    public void validateRequiredVariables(Long templateId, Collection<String> providedNames) {
+    public void validateRequiredVariables(PromptTemplateId templateId, Collection<String> providedNames) {
         if (templateId == null) {
             throw new BizException("Prompt templateId is required");
         }
         List<String> missingNames = promptVariableDomainService.findMissingRequiredVariables(
-                promptRepository.listVariables(PromptTemplateIdCodec.toDomain(templateId)), providedNames);
+                promptRepository.listVariables(templateId), providedNames);
         if (!missingNames.isEmpty()) {
             throw new BizException("Prompt required variables are missing: " + missingNames);
         }
     }
 
     @Override
-    public PromptVersionResult buildOptimizationSuggestion(Long templateId, String changeSummary) {
-        PromptVersion current = promptRepository.getCurrentVersion(PromptTemplateIdCodec.toDomain(templateId));
+    public PromptVersionResult buildOptimizationSuggestion(PromptTemplateId templateId, String changeSummary) {
+        PromptVersion current = promptRepository.getCurrentVersion(templateId);
         if (current == null) {
             return null;
         }
@@ -239,10 +238,6 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
         }
     }
 
-    private PromptVersion findVersion(Long templateId, int versionNo) {
-        return findVersion(PromptTemplateIdCodec.toDomain(templateId), versionNo);
-    }
-
     private PromptVersion findVersion(PromptTemplateId templateId, int versionNo) {
         if (templateId == null || versionNo <= 0) {
             throw new BizException("Prompt templateId and versionNo are required");
@@ -331,9 +326,5 @@ public class PromptApplicationServiceImpl implements PromptApplicationService {
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
-    }
-
-    private AiBusinessCapability toCapability(String capability) {
-        return isBlank(capability) ? null : AiBusinessCapability.from(capability);
     }
 }
