@@ -12,7 +12,7 @@ import com.thundax.kuzhambu.operations.application.backup.result.OperationsBacku
 import com.thundax.kuzhambu.operations.application.backup.service.BackupApplicationService;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupExecutionGuard;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupScriptExecutor;
-import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupSupportModels.OperationsBackupArtifactResult;
+import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupSupportModels.OperationsBackupArtifact;
 import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthAlertStrategy;
 import com.thundax.kuzhambu.operations.domain.backup.model.entity.BackupRecord;
 import com.thundax.kuzhambu.operations.domain.backup.model.enums.BackupStatus;
@@ -106,7 +106,7 @@ public class BackupApplicationServiceImpl implements BackupApplicationService {
         BackupId backupId = backupRepository.insert(record);
         record.setId(backupId);
         try {
-            OperationsBackupArtifactResult artifact = scriptExecutor.executeBackup(backupType, timestamp);
+            OperationsBackupArtifact artifact = scriptExecutor.executeBackup(backupType, timestamp);
             record.setFileName(artifact.getFileName());
             record.setFileSizeBytes(artifact.getFileSizeBytes());
             record.setChecksum(artifact.getChecksum());

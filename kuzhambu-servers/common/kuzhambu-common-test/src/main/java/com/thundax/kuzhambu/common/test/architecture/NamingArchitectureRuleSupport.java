@@ -6,6 +6,7 @@ import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.domain.JavaMethod;
 import com.tngtech.archunit.core.domain.JavaModifier;
+import com.tngtech.archunit.core.importer.ClassFileImporter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -42,8 +43,30 @@ public final class NamingArchitectureRuleSupport {
                     + "(?:throws\\s+[^;{]+)?\\{");
     private static final Set<String> SERVICE_QUERY_REQUIRED_ANNOTATIONS =
             new LinkedHashSet<String>(Arrays.asList("Getter", "Setter", "NoArgsConstructor", "AllArgsConstructor"));
-    private static final Set<String> APPLICATION_STRUCTURAL_PACKAGES =
-            Set.of("assembler", "command", "impl", "query", "result", "service", "support");
+    private static final Set<String> APPLICATION_STRUCTURAL_PACKAGES = Set.of(
+            "assembler",
+            "command",
+            "configure",
+            "configuration",
+            "dto",
+            "exception",
+            "executor",
+            "facade",
+            "factory",
+            "gateway",
+            "handler",
+            "helper",
+            "impl",
+            "misc",
+            "model",
+            "query",
+            "result",
+            "resolver",
+            "runtime",
+            "service",
+            "support",
+            "util",
+            "utils");
     private static final Set<String> ENTITY_REQUIRED_ANNOTATIONS =
             new LinkedHashSet<String>(Arrays.asList("Getter", "Setter", "NoArgsConstructor", "AllArgsConstructor"));
     private static final Set<String> MAPPER_REQUIRED_ANNOTATIONS = new LinkedHashSet<String>(Arrays.asList("Mapper"));
@@ -58,6 +81,8 @@ public final class NamingArchitectureRuleSupport {
     private static final Pattern INTERFACE_DECLARATION_PATTERN =
             Pattern.compile("(?s)(.*?)\\bpublic\\s+interface\\s+\\w+\\b");
     private static final Pattern SOURCE_ANNOTATION_PATTERN = Pattern.compile("@(?:[\\w.]+\\.)?(\\w+)\\b");
+    private static final Pattern PACKAGE_DECLARATION_PATTERN =
+            Pattern.compile("(?m)^\\s*package\\s+([a-zA-Z_][\\w]*(?:\\.[a-zA-Z_][\\w]*)*)\\s*;");
 
     private NamingArchitectureRuleSupport() {}
 
@@ -227,12 +252,38 @@ public final class NamingArchitectureRuleSupport {
         } catch (IOException e) {
             throw new IllegalStateException("Failed to scan application contract source files under " + sourceRoot, e);
         }
+        Path classesRoot = sourceRoot
+                .toAbsolutePath()
+                .normalize()
+                .resolve("../../..")
+                .normalize()
+                .resolve("target/classes");
+        if (Files.isDirectory(classesRoot)) {
+            for (JavaClass javaClass : new ClassFileImporter().importPath(classesRoot)) {
+                if (isDeclaredUnderSourceRoot(javaClass, sourceRoot)
+                        && isApplicationContractType(javaClass)
+                        && !isApplicationContractUnderDedicatedPackage(javaClass)) {
+                    violations.add(javaClass.getName());
+                }
+            }
+        }
 
         assertTrue(
-                "In *-application modules, *Command/*Query/*Result sources must be placed directly under "
+                "In *-application modules, *Command/*Query/*Result sources and declared types must be placed in "
                         + "application/**/command, application/**/query, or application/**/result: "
                         + violations,
                 violations.isEmpty());
+    }
+
+    private static boolean isDeclaredUnderSourceRoot(JavaClass javaClass, Path sourceRoot) {
+        return javaClass
+                .getSource()
+                .flatMap(source -> source.getFileName())
+                .map(fileName -> sourceRoot
+                        .resolve(javaClass.getPackageName().replace('.', '/'))
+                        .resolve(fileName))
+                .filter(Files::isRegularFile)
+                .isPresent();
     }
 
     public static void assertBaseIdTypes(JavaClasses classes, String basePackage) {
@@ -873,6 +924,28 @@ public final class NamingArchitectureRuleSupport {
         return value.endsWith("Command.java") || value.endsWith("Query.java") || value.endsWith("Result.java");
     }
 
+    private static boolean isApplicationContractType(JavaClass javaClass) {
+        String simpleName = javaClass.getSimpleName();
+        return simpleName.endsWith("Command") || simpleName.endsWith("Query") || simpleName.endsWith("Result");
+    }
+
+    private static boolean isApplicationContractUnderDedicatedPackage(JavaClass javaClass) {
+        String simpleName = javaClass.getSimpleName();
+        String responsibilityPackage =
+                simpleName.endsWith("Command") ? "command" : simpleName.endsWith("Query") ? "query" : "result";
+        String[] segments = javaClass.getPackageName().split("\\.");
+        int applicationIndex = Arrays.asList(segments).indexOf("application");
+        if (applicationIndex < 0 || !responsibilityPackage.equals(segments[segments.length - 1])) {
+            return false;
+        }
+        for (int index = applicationIndex + 1; index < segments.length - 1; index++) {
+            if (APPLICATION_STRUCTURAL_PACKAGES.contains(segments[index])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private static boolean isApplicationModuleSourceRoot(Path sourceRoot) {
         return Stream.iterate(sourceRoot.toAbsolutePath(), path -> path != null, Path::getParent)
                 .map(Path::getFileName)
@@ -911,7 +984,25 @@ public final class NamingArchitectureRuleSupport {
                 return false;
             }
         }
-        return true;
+        return declaresPackageMatchingSourcePath(path);
+    }
+
+    private static boolean declaresPackageMatchingSourcePath(Path path) {
+        String value = ArchitectureSourceSupport.normalizePath(path);
+        String sourceMarker = "src/main/java/";
+        int sourceIndex = value.indexOf(sourceMarker);
+        if (sourceIndex < 0) {
+            return false;
+        }
+        String relativePath = value.substring(sourceIndex + sourceMarker.length());
+        int fileNameIndex = relativePath.lastIndexOf('/');
+        if (fileNameIndex < 0) {
+            return false;
+        }
+        String expectedPackage = relativePath.substring(0, fileNameIndex).replace('/', '.');
+        Matcher matcher =
+                PACKAGE_DECLARATION_PATTERN.matcher(ArchitectureSourceSupport.readSourceWithoutComments(path));
+        return matcher.find() && expectedPackage.equals(matcher.group(1));
     }
 
     private static boolean isValueObjectIdSource(Path path) {

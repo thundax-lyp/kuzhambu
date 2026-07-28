@@ -266,7 +266,7 @@ public final class DiscoverySearchStatisticsInterfaceAssembler {
     }
 
     private static List<DiscoverySearchStatisticsSummaryResponse.TopQueryResponse> toTopQueryResponses(
-            List<SearchStatisticsSummaryResult.TopQuery> topQueries) {
+            List<SearchStatisticsSummaryResult.TopQueryItem> topQueries) {
         if (topQueries == null) {
             return List.of();
         }

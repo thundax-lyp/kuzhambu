@@ -11,11 +11,11 @@ public interface OperationsHealthProbe {
 
     String probeTarget();
 
-    OperationsHealthProbeResult probe();
+    OperationsHealthProbeOutcome probe();
 
     @Getter
     @AllArgsConstructor
-    class OperationsHealthProbeResult {
+    class OperationsHealthProbeOutcome {
         private final String healthStatus;
         private final Integer latencyMs;
         private final String message;

@@ -41,19 +41,4 @@ public final class OperationsReportSupportModels {
         private String sectionTitle;
         private Map<String, Object> payload;
     }
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class OperationsReportArtifactResult {
-
-        private String format;
-        private String filename;
-        private String contentType;
-        private byte[] contentBytes;
-        private Long sizeBytes;
-        private String sha256;
-        private Long storageObjectId;
-    }
 }

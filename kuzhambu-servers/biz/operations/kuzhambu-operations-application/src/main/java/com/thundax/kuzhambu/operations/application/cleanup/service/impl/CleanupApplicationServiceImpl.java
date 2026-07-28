@@ -212,7 +212,7 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
 
     private boolean executeCleanupItem(CleanupItem item) {
         try {
-            CleanupExecutionResult result = executeCleanupTarget(item);
+            CleanupExecutionOutcome result = executeCleanupTarget(item);
             item.setItemStatus(result.success() ? CLEANUP_ITEM_STATUS_SUCCEEDED : CLEANUP_ITEM_STATUS_FAILED);
             item.setFailureReason(truncateFailureReason(result.failureReason()));
             item.setProcessedAt(new Date());
@@ -278,23 +278,23 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
                 .toList();
     }
 
-    private CleanupExecutionResult executeCleanupTarget(CleanupItem item) {
+    private CleanupExecutionOutcome executeCleanupTarget(CleanupItem item) {
         if (OperationsCleanupSupport.CLEANUP_ITEM_TYPE_BACKUP.equals(item.getTargetType())) {
             int affectedRows = backupRepository.deleteById(BackupIdCodec.toDomain(item.getTargetId()));
-            return new CleanupExecutionResult(affectedRows > 0, affectedRows > 0 ? null : "TARGET_NOT_FOUND");
+            return new CleanupExecutionOutcome(affectedRows > 0, affectedRows > 0 ? null : "TARGET_NOT_FOUND");
         }
         if (OperationsCleanupSupport.CLEANUP_ITEM_TYPE_REPORT.equals(item.getTargetType())) {
             int affectedRows = reportRepository.deleteById(ReportIdCodec.toDomain(item.getTargetId()));
-            return new CleanupExecutionResult(affectedRows > 0, affectedRows > 0 ? null : "TARGET_NOT_FOUND");
+            return new CleanupExecutionOutcome(affectedRows > 0, affectedRows > 0 ? null : "TARGET_NOT_FOUND");
         }
         if (OperationsCleanupSupport.CLEANUP_ITEM_TYPE_HEALTH_CHECK.equals(item.getTargetType())) {
             int affectedRows = healthCheckRepository.deleteById(HealthCheckIdCodec.toDomain(item.getTargetId()));
-            return new CleanupExecutionResult(affectedRows > 0, affectedRows > 0 ? null : "TARGET_NOT_FOUND");
+            return new CleanupExecutionOutcome(affectedRows > 0, affectedRows > 0 ? null : "TARGET_NOT_FOUND");
         }
         if (OperationsCleanupSupport.CLEANUP_ITEM_TYPE_LONG_TASK.equals(item.getTargetType())) {
             int affectedRows =
                     longTaskSnapshotRepository.deleteById(LongTaskSnapshotIdCodec.toDomain(item.getTargetId()));
-            return new CleanupExecutionResult(affectedRows > 0, affectedRows > 0 ? null : "TARGET_NOT_FOUND");
+            return new CleanupExecutionOutcome(affectedRows > 0, affectedRows > 0 ? null : "TARGET_NOT_FOUND");
         }
         ClassicsCleanupExecutionFacadeResponse response =
                 classicsFacade.executeCleanupTargets(ClassicsCleanupTargetsFacadeRequest.builder()
@@ -303,12 +303,12 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
                         .build());
         if (response == null || !response.isSupported() || response.getItemResults() == null) {
             String failureReason = response == null ? "CLASSICS_CLEANUP_NO_RESPONSE" : response.getFailureReason();
-            return new CleanupExecutionResult(false, failureReason);
+            return new CleanupExecutionOutcome(false, failureReason);
         }
         return response.getItemResults().stream()
                 .findFirst()
-                .map(result -> new CleanupExecutionResult(result.isSuccess(), result.getFailureReason()))
-                .orElseGet(() -> new CleanupExecutionResult(false, "CLASSICS_CLEANUP_NO_ITEM_RESULT"));
+                .map(result -> new CleanupExecutionOutcome(result.isSuccess(), result.getFailureReason()))
+                .orElseGet(() -> new CleanupExecutionOutcome(false, "CLASSICS_CLEANUP_NO_ITEM_RESULT"));
     }
 
     private String resolveCleanupType(String targetType) {
@@ -403,5 +403,5 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
 
     private record DiscoveredCleanupTarget(String targetType, Long targetId) {}
 
-    private record CleanupExecutionResult(boolean success, String failureReason) {}
+    private record CleanupExecutionOutcome(boolean success, String failureReason) {}
 }

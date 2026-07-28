@@ -76,7 +76,7 @@ class QueryUnderstandingApplicationServiceImplTest {
         QueryUnderstandingPayloadBuilder payloadBuilder = mock(QueryUnderstandingPayloadBuilder.class);
         AiFacade aiFacade = mock(AiFacade.class);
         when(enhancementProvider.enhance("礼制"))
-                .thenReturn(new DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult(
+                .thenReturn(new com.thundax.kuzhambu.discovery.application.search.result.KnowledgeEnhancementResult(
                         List.of("礼学", "典礼"),
                         null,
                         List.of(new QueryUnderstandingResult.RecognizedEntityResult("礼制", "TAG", "礼制"))));
@@ -130,7 +130,7 @@ class QueryUnderstandingApplicationServiceImplTest {
         QueryUnderstandingPayloadBuilder payloadBuilder = mock(QueryUnderstandingPayloadBuilder.class);
         AiFacade aiFacade = mock(AiFacade.class);
         when(enhancementProvider.enhance("礼制"))
-                .thenReturn(new DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult(
+                .thenReturn(new com.thundax.kuzhambu.discovery.application.search.result.KnowledgeEnhancementResult(
                         List.of("礼学"), null, List.of()));
         when(payloadBuilder.buildPromptMessagesJson(any(), any(), any())).thenReturn("[]");
         when(payloadBuilder.buildInputPayloadJson(any(), any(), any())).thenReturn("{\"query\":\"礼制\"}");

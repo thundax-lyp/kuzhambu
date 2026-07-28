@@ -367,7 +367,7 @@ class DiscoverySearchStatisticsControllerTest {
         request.setDateTo("2026-01-02T00:00:00Z");
         when(service.getStatisticsSummary(any()))
                 .thenReturn(new SearchStatisticsSummaryResult(
-                        12L, 2L, 3L, 9L, List.of(new SearchStatisticsSummaryResult.TopQuery("黄帝", 5L))));
+                        12L, 2L, 3L, 9L, List.of(new SearchStatisticsSummaryResult.TopQueryItem("黄帝", 5L))));
 
         var response = controller.getStatisticsSummary(request);
 

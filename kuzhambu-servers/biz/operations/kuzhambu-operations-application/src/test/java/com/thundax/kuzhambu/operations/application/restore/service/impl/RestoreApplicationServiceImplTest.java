@@ -10,7 +10,7 @@ import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupExecutionGuard;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupScriptExecutor;
-import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupSupportModels.OperationsBackupArtifactResult;
+import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupSupportModels.OperationsBackupArtifact;
 import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthAlertStrategy;
 import com.thundax.kuzhambu.operations.application.restore.command.OperationsRestoreExecuteCommand;
 import com.thundax.kuzhambu.operations.application.restore.query.OperationsRestoreDetailQuery;
@@ -297,7 +297,7 @@ class RestoreApplicationServiceImplTest {
         protected int drillRestoreCount;
 
         @Override
-        public OperationsBackupArtifactResult executeBackup(
+        public OperationsBackupArtifact executeBackup(
                 com.thundax.kuzhambu.operations.domain.backup.model.enums.BackupType backupType, String timestamp) {
             throw new UnsupportedOperationException();
         }
@@ -313,8 +313,8 @@ class RestoreApplicationServiceImplTest {
         }
 
         @Override
-        public OperationsBackupArtifactResult loadArtifact(String baseName) {
-            return new OperationsBackupArtifactResult(
+        public OperationsBackupArtifact loadArtifact(String baseName) {
+            return new OperationsBackupArtifact(
                     baseName,
                     baseName + ".sql",
                     Path.of("/backup/kuzhambu/" + baseName + ".sql"),

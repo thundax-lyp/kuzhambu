@@ -127,7 +127,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
 
         String model = resolveModel(command, session);
         String question = extractLatestQuestion(command.getMessages());
-        DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult enhancement =
+        com.thundax.kuzhambu.discovery.application.search.result.KnowledgeEnhancementResult enhancement =
                 discoveryKnowledgeEnhancementProvider.enhance(question);
         ClassicsQaKnowledgeFacadeDto singleDocumentKnowledge =
                 isWangqiSingleDocumentSession(session) ? requireSingleDocumentKnowledge(session) : null;
@@ -291,7 +291,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
 
         String model = resolveModel(command, session);
         String question = extractLatestQuestion(command.getMessages());
-        DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult enhancement =
+        com.thundax.kuzhambu.discovery.application.search.result.KnowledgeEnhancementResult enhancement =
                 discoveryKnowledgeEnhancementProvider.enhance(question);
         ClassicsQaKnowledgeFacadeDto singleDocumentKnowledge =
                 isWangqiSingleDocumentSession(session) ? requireSingleDocumentKnowledge(session) : null;
@@ -1100,7 +1100,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
             QaSession session,
             String model,
             String question,
-            DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult enhancement) {
+            com.thundax.kuzhambu.discovery.application.search.result.KnowledgeEnhancementResult enhancement) {
         return new KnowledgeChatRequest(
                 model,
                 toKnowledgeMessages(command.getMessages()),
@@ -1112,7 +1112,7 @@ public class KnowledgeQaApplicationServiceImpl implements KnowledgeQaApplication
     private Map<String, Object> enrichedMetadata(
             ChatCompletionCommand command,
             String question,
-            DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult enhancement) {
+            com.thundax.kuzhambu.discovery.application.search.result.KnowledgeEnhancementResult enhancement) {
         Map<String, Object> metadata = new LinkedHashMap<>();
         if (command.getMetadata() != null) {
             metadata.putAll(command.getMetadata());

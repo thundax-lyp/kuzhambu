@@ -17,7 +17,7 @@ public class QueryUnderstandingPayloadBuilder {
     public String buildPromptMessagesJson(
             SearchQuery query,
             String normalizedQueryText,
-            DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult enhancement) {
+            com.thundax.kuzhambu.discovery.application.search.result.KnowledgeEnhancementResult enhancement) {
         Map<String, Object> systemMessage = new LinkedHashMap<>();
         systemMessage.put("role", "system");
         systemMessage.put("content", "You are a discovery query understanding assistant.");
@@ -32,7 +32,7 @@ public class QueryUnderstandingPayloadBuilder {
     public String buildInputPayloadJson(
             SearchQuery query,
             String normalizedQueryText,
-            DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult enhancement) {
+            com.thundax.kuzhambu.discovery.application.search.result.KnowledgeEnhancementResult enhancement) {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("queryText", query.getQueryText());
         payload.put("normalizedQueryText", normalizedQueryText);

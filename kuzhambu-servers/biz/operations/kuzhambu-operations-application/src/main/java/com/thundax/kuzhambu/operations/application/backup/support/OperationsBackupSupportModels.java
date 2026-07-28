@@ -10,7 +10,7 @@ public final class OperationsBackupSupportModels {
 
     @Getter
     @AllArgsConstructor
-    public static class OperationsBackupArtifactResult {
+    public static class OperationsBackupArtifact {
         private final String baseName;
         private final String fileName;
         private final Path sqlFilePath;

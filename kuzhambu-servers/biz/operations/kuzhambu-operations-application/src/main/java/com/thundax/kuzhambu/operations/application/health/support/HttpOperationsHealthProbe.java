@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.operations.application.health.support;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.operations.application.health.configure.OperationsExternalHealthProbeProperties.Target;
-import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthProbe.OperationsHealthProbeResult;
+import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthProbe.OperationsHealthProbeOutcome;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -59,7 +59,7 @@ public class HttpOperationsHealthProbe implements OperationsHealthProbe {
     }
 
     @Override
-    public OperationsHealthProbeResult probe() {
+    public OperationsHealthProbeOutcome probe() {
         long startedAt = System.nanoTime();
         try {
             HttpResponse<Void> response = httpClient.send(buildRequest(), HttpResponse.BodyHandlers.discarding());
@@ -72,13 +72,13 @@ public class HttpOperationsHealthProbe implements OperationsHealthProbe {
                         details(actualStatus, latencyMs, ERROR_TYPE_INVALID_STATUS, null));
             }
             if (latencyMs > target.getDegradedLatencyMs()) {
-                return new OperationsHealthProbeResult(
+                return new OperationsHealthProbeOutcome(
                         OperationsHealthCollector.HEALTH_STATUS_DEGRADED,
                         latencyMs,
                         "http status " + actualStatus + ", latency degraded",
                         details(actualStatus, latencyMs, null, null));
             }
-            return new OperationsHealthProbeResult(
+            return new OperationsHealthProbeOutcome(
                     OperationsHealthCollector.HEALTH_STATUS_UP,
                     latencyMs,
                     "http status " + actualStatus,
@@ -103,8 +103,8 @@ public class HttpOperationsHealthProbe implements OperationsHealthProbe {
                 .build();
     }
 
-    private OperationsHealthProbeResult down(Integer latencyMs, String message, String detailsJson) {
-        return new OperationsHealthProbeResult(
+    private OperationsHealthProbeOutcome down(Integer latencyMs, String message, String detailsJson) {
+        return new OperationsHealthProbeOutcome(
                 OperationsHealthCollector.HEALTH_STATUS_DOWN, latencyMs, message, detailsJson);
     }
 

@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.discovery.application.search.support;
 
+import com.thundax.kuzhambu.discovery.application.search.result.KnowledgeEnhancementResult;
 import com.thundax.kuzhambu.discovery.application.search.result.QueryUnderstandingResult;
 import com.thundax.kuzhambu.knowledge.facade.KnowledgeFacade;
 import com.thundax.kuzhambu.knowledge.facade.dto.KnowledgeEntityHintFacadeDto;
@@ -49,9 +50,4 @@ public class DiscoveryKnowledgeEnhancementProvider {
                         item.getEntityName(), item.getEntityType(), item.getTerm()))
                 .toList();
     }
-
-    public record KnowledgeEnhancementResult(
-            List<String> expandedSynonyms,
-            KnowledgeTagHintFacadeResponse tagHint,
-            List<QueryUnderstandingResult.RecognizedEntityResult> recognizedEntities) {}
 }

@@ -17,7 +17,7 @@ import com.thundax.kuzhambu.operations.application.backup.result.OperationsBacku
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupPageResult;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupExecutionGuard;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupScriptExecutor;
-import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupSupportModels.OperationsBackupArtifactResult;
+import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupSupportModels.OperationsBackupArtifact;
 import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthAlertStrategy;
 import com.thundax.kuzhambu.operations.domain.backup.codec.BackupIdCodec;
 import com.thundax.kuzhambu.operations.domain.backup.model.entity.BackupRecord;
@@ -144,8 +144,8 @@ class BackupApplicationServiceImplTest {
     private static class SuccessfulBackupScriptExecutor implements OperationsBackupScriptExecutor {
 
         @Override
-        public OperationsBackupArtifactResult executeBackup(BackupType backupType, String timestamp) {
-            return new OperationsBackupArtifactResult(
+        public OperationsBackupArtifact executeBackup(BackupType backupType, String timestamp) {
+            return new OperationsBackupArtifact(
                     "backup_20260629-120000",
                     "backup_20260629-120000.sql",
                     Path.of("/backup/kuzhambu/backup_20260629-120000.sql"),
@@ -162,7 +162,7 @@ class BackupApplicationServiceImplTest {
         public void executeRestoreDrill(String backupBaseName, String preRestoreTimestamp) {}
 
         @Override
-        public OperationsBackupArtifactResult loadArtifact(String baseName) {
+        public OperationsBackupArtifact loadArtifact(String baseName) {
             return executeBackup(BackupType.MANUAL, "20260629-120000");
         }
     }
@@ -170,7 +170,7 @@ class BackupApplicationServiceImplTest {
     private static final class FailingBackupScriptExecutor implements OperationsBackupScriptExecutor {
 
         @Override
-        public OperationsBackupArtifactResult executeBackup(BackupType backupType, String timestamp) {
+        public OperationsBackupArtifact executeBackup(BackupType backupType, String timestamp) {
             throw new IllegalStateException("script failed");
         }
 
@@ -181,7 +181,7 @@ class BackupApplicationServiceImplTest {
         public void executeRestoreDrill(String backupBaseName, String preRestoreTimestamp) {}
 
         @Override
-        public OperationsBackupArtifactResult loadArtifact(String baseName) {
+        public OperationsBackupArtifact loadArtifact(String baseName) {
             throw new IllegalStateException("script failed");
         }
     }
@@ -190,7 +190,7 @@ class BackupApplicationServiceImplTest {
         private int executeBackupCount;
 
         @Override
-        public OperationsBackupArtifactResult executeBackup(BackupType backupType, String timestamp) {
+        public OperationsBackupArtifact executeBackup(BackupType backupType, String timestamp) {
             executeBackupCount++;
             return super.executeBackup(backupType, timestamp);
         }

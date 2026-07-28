@@ -42,7 +42,8 @@ class DiscoveryKnowledgeEnhancementProviderTest {
                         .build());
 
         DiscoveryKnowledgeEnhancementProvider provider = new DiscoveryKnowledgeEnhancementProvider(knowledgeFacade);
-        DiscoveryKnowledgeEnhancementProvider.KnowledgeEnhancementResult enhancement = provider.enhance("礼制");
+        com.thundax.kuzhambu.discovery.application.search.result.KnowledgeEnhancementResult enhancement =
+                provider.enhance("礼制");
 
         assertEquals(List.of("礼学", "典礼"), enhancement.expandedSynonyms());
         assertEquals(0, enhancement.recognizedEntities().size());

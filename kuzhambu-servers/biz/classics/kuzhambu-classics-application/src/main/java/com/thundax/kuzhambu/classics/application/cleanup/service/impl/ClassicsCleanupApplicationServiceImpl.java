@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.classics.application.cleanup.service.impl;
 
+import com.thundax.kuzhambu.classics.application.cleanup.result.CleanupExecutionResult;
 import com.thundax.kuzhambu.classics.application.cleanup.service.ClassicsCleanupApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentExportJobIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.repository.ClassicsContentRepository;
