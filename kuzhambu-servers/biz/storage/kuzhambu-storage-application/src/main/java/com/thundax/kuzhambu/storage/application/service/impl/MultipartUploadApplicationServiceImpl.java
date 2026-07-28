@@ -10,6 +10,7 @@ import com.thundax.kuzhambu.storage.application.service.command.CompleteMultipar
 import com.thundax.kuzhambu.storage.application.service.command.CreateStorageCommand;
 import com.thundax.kuzhambu.storage.application.service.command.InitMultipartUploadCommand;
 import com.thundax.kuzhambu.storage.application.service.command.UploadMultipartPartCommand;
+import com.thundax.kuzhambu.storage.domain.object.codec.MultipartUploadIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadPart;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.MultipartUploadSession;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
@@ -108,7 +109,7 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
     @Override
     @Transactional(rollbackFor = Exception.class)
     public StoredObject complete(CompleteMultipartUploadCommand command) {
-        MultipartUploadId uploadId = MultipartUploadId.ofNullable(command == null ? null : command.getUploadId());
+        MultipartUploadId uploadId = MultipartUploadIdCodec.toDomain(command == null ? null : command.getUploadId());
         MultipartUploadSession session = requireActiveMultipartSession(uploadId);
         claimCompleting(session);
         List<MultipartUploadPart> parts = multipartUploadRepository.listMultipartParts(uploadId);
@@ -212,7 +213,7 @@ public class MultipartUploadApplicationServiceImpl implements MultipartUploadApp
     @Transactional(rollbackFor = Exception.class)
     public int abort(AbortMultipartUploadCommand command) {
         MultipartUploadSession session = requireActiveMultipartSession(
-                MultipartUploadId.ofNullable(command == null ? null : command.getUploadId()));
+                MultipartUploadIdCodec.toDomain(command == null ? null : command.getUploadId()));
         List<MultipartUploadPart> parts = multipartUploadRepository.listMultipartParts(session.getUploadIdRef());
         for (MultipartUploadPart part : parts) {
             StoredObject partStorage = new StoredObject();

@@ -9,7 +9,7 @@ public final class StoredObjectIdCodec {
     private StoredObjectIdCodec() {}
 
     public static StoredObjectId toDomain(Long value) {
-        return StoredObjectId.ofNullable(value);
+        return value == null ? null : new StoredObjectId(value);
     }
 
     public static StoredObjectId toDomain(String value) {

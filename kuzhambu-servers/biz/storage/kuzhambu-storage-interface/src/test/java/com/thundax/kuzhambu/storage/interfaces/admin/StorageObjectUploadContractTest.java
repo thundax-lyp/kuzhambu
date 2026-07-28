@@ -16,6 +16,7 @@ import com.thundax.kuzhambu.storage.application.service.command.UploadStorageObj
 import com.thundax.kuzhambu.storage.application.service.content.StoredObjectContent;
 import com.thundax.kuzhambu.storage.application.service.query.StorageQuery;
 import com.thundax.kuzhambu.storage.application.service.result.StorageUploadResult;
+import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
@@ -151,7 +152,7 @@ class StorageObjectUploadContractTest {
             assertEquals("user-1", command.getOwnerId());
 
             StoredObject storage = new StoredObject();
-            storage.setId(StoredObjectId.of(10L));
+            storage.setId(StoredObjectIdCodec.toDomain(10L));
             storage.setOriginalFilename(command.getOriginalFilename());
             storage.setContentType(command.getContentType());
             storage.setSize(command.getSize());
