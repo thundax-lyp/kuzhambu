@@ -246,9 +246,13 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
 
     private AiWorkerHttpPayloads.Input input(AiInvokeCommand command) {
         AiWorkerHttpPayloads.Input input = new AiWorkerHttpPayloads.Input();
-        input.setContentType(command.getContentType());
-        if (command.getContentId() != null) {
-            input.setContentId(String.valueOf(command.getContentId()));
+        input.setContentType(
+                command.getContentRef() == null ? null : command.getContentRef().contentType());
+        if (command.getContentRef() == null ? null : command.getContentRef().contentId() != null) {
+            input.setContentId(String.valueOf(
+                    command.getContentRef() == null
+                            ? null
+                            : command.getContentRef().contentId()));
         }
         input.setPayload(jsonOrDefault(command.getInputPayloadJson(), objectMapper.createObjectNode()));
         return input;

@@ -39,7 +39,7 @@ class DiscoveryAiApplicationServiceImplTest {
         assertNull(capturedCommand.getWorkerPath());
         assertEquals(AiBusinessCapability.DISCOVERY_QUERY_UNDERSTANDING, capturedCommand.getCapability());
         assertEquals("query_understanding", capturedCommand.getWorkerCapability());
-        assertEquals("DISCOVERY_QUERY", capturedCommand.getContentType());
+        assertEquals("DISCOVERY_QUERY", capturedCommand.getContentRef().contentType());
         assertFalse(capturedCommand.isStream());
         assertFalse(capturedCommand.isCreateCandidate());
         assertEquals("SUCCEEDED", result.getStatus());

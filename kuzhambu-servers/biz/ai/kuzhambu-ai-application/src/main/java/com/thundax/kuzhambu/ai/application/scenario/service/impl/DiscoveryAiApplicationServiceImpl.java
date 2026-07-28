@@ -84,7 +84,8 @@ public class DiscoveryAiApplicationServiceImpl implements DiscoveryAiApplication
         invokeCommand.setWorkerCapability(spec.workerCapability());
         invokeCommand.setOperation(spec.operation());
         invokeCommand.setWorkerPath(spec.workerPath());
-        invokeCommand.setContentType(CONTENT_TYPE_DISCOVERY_QUERY);
+        invokeCommand.setContentRef(com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable(
+                CONTENT_TYPE_DISCOVERY_QUERY, null));
         invokeCommand.setServiceId(command.getServiceId());
         invokeCommand.setServiceRole(command.getServiceRole());
         invokeCommand.setModelId(command.getModelId());

@@ -15,11 +15,12 @@ class AiInvokeResultTest {
     @Test
     void toCandidateShouldKeepMarkdownResultPayloadForImageAnalysis() {
         AiInvokeCommand command = new AiInvokeCommand();
-        command.setBatchId(1L);
+        command.setBatchId(new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId(1L));
         command.setCapability(AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE);
-        command.setContentType("SANCAI_ENTRY");
-        command.setContentId(10L);
-        command.setObjectId(20L);
+        command.setContentRef(com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable(
+                "SANCAI_ENTRY", 10L));
+        command.setTargetObjectId(
+                new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjectId(20L));
         command.setPromptVersionId(30L);
         command.setModelName("model-a");
         command.setStream(true);
@@ -53,10 +54,10 @@ class AiInvokeResultTest {
     @Test
     void toCandidateShouldKeepFailureSnapshot() {
         AiInvokeCommand command = new AiInvokeCommand();
-        command.setBatchId(1L);
+        command.setBatchId(new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId(1L));
         command.setCapability(AiBusinessCapability.CLASSICS_TRANSLATE);
-        command.setContentType("ENTRY");
-        command.setContentId(10L);
+        command.setContentRef(
+                com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable("ENTRY", 10L));
         command.setModelName("model-a");
 
         AiInvokeResult result = new AiInvokeResult();

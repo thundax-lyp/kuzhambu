@@ -138,8 +138,8 @@ class AiBusinessInvokeConfigResolverTest {
         AiInvokeCommand command = new AiInvokeCommand();
         command.setScope("classics");
         command.setCapability(AiBusinessCapability.CLASSICS_SUMMARY);
-        command.setContentType("SANCAI_ENTRY");
-        command.setContentId(300000000001L);
+        command.setContentRef(com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable(
+                "SANCAI_ENTRY", 300000000001L));
         command.setInputPayloadJson("{\"sourceText\":\"天地玄黄\"}");
         return command;
     }

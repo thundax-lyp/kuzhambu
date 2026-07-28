@@ -201,9 +201,20 @@ public class AiBusinessInvokeConfigResolver {
         ObjectNode payload = inputPayload.deepCopy();
         putIfAbsent(payload, "scope", command.getScope());
         putIfAbsent(payload, "capability", command.getCapability().value());
-        putIfAbsent(payload, "contentType", command.getContentType());
-        putIfAbsent(payload, "contentId", command.getContentId());
-        putIfAbsent(payload, "objectId", command.getObjectId());
+        putIfAbsent(
+                payload,
+                "contentType",
+                command.getContentRef() == null ? null : command.getContentRef().contentType());
+        putIfAbsent(
+                payload,
+                "contentId",
+                command.getContentRef() == null ? null : command.getContentRef().contentId());
+        putIfAbsent(
+                payload,
+                "objectId",
+                command.getTargetObjectId() == null
+                        ? null
+                        : command.getTargetObjectId().value());
         putIfAbsent(payload, "locale", command.getLocale());
         return payload;
     }

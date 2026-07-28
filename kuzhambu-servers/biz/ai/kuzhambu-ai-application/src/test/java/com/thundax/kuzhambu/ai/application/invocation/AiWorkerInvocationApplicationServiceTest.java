@@ -271,8 +271,8 @@ class AiWorkerInvocationApplicationServiceTest {
         command.setCapability(
                 com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias("classics_translate"));
         command.setOperation("translate");
-        command.setContentType("entry");
-        command.setContentId(10L);
+        command.setContentRef(
+                com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable("entry", 10L));
         command.setModelId(20L);
         command.setModelName("model-a");
         command.setRequestId("req-1");

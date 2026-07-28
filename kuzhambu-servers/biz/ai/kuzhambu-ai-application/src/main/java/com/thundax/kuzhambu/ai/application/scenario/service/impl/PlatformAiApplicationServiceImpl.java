@@ -55,9 +55,10 @@ public class PlatformAiApplicationServiceImpl implements PlatformAiApplicationSe
         command.setWorkerCapability(spec.workerCapability());
         command.setOperation(spec.operation());
         command.setWorkerPath(spec.workerPath());
-        command.setContentType(source.getContentType());
-        command.setContentId(source.getContentId());
-        command.setObjectId(source.getObjectId());
+        command.setContentRef(com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable(
+                source.getContentType(), source.getContentId()));
+        command.setTargetObjectId(
+                com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec.toDomain(source.getObjectId()));
         command.setServiceId(source.getServiceId());
         command.setServiceRole(source.getServiceRole());
         command.setModelId(source.getModelId());

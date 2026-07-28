@@ -62,8 +62,8 @@ public class KnowledgeAiExtractionApplicationServiceImpl implements KnowledgeAiE
         command.setWorkerCapability(spec.workerCapability());
         command.setOperation(spec.operation());
         command.setWorkerPath(spec.workerPath());
-        command.setContentType(input.getSourceContentType());
-        command.setContentId(input.getSourceContentId());
+        command.setContentRef(com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable(
+                input.getSourceContentType(), input.getSourceContentId()));
         command.setServiceId(input.getServiceId());
         command.setServiceRole(input.getServiceRole());
         command.setModelId(input.getModelId());

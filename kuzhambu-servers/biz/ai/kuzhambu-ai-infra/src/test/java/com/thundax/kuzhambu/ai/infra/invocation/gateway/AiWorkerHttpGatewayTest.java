@@ -308,8 +308,8 @@ class AiWorkerHttpGatewayTest {
                 com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias("classics_summary"));
         command.setWorkerCapability("summary");
         command.setOperation("translate");
-        command.setContentType("entry");
-        command.setContentId(10L);
+        command.setContentRef(
+                com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable("entry", 10L));
         command.setServiceRole("default");
         command.setModelId(20L);
         command.setModelName("model-a");

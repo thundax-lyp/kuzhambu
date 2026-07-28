@@ -13,11 +13,8 @@ import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocation
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId;
@@ -117,11 +114,11 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
 
     private AiInvocationLog toRunningInvocationLog(AiInvokeCommand command) {
         AiInvocationLog invocationLog = new AiInvocationLog();
-        invocationLog.setBatchId(AiBatchJobIdCodec.toDomain(command.getBatchId()));
+        invocationLog.setBatchId(command.getBatchId());
         invocationLog.setScope(command.getScope());
         invocationLog.setCapability(command.getCapability());
-        invocationLog.setContentRef(AiContentRefCodec.toDomain(command.getContentType(), command.getContentId()));
-        invocationLog.setTargetObjectId(AiTargetObjectIdCodec.toDomain(command.getObjectId()));
+        invocationLog.setContentRef(command.getContentRef());
+        invocationLog.setTargetObjectId(command.getTargetObjectId());
         invocationLog.setServiceId(command.getServiceId());
         invocationLog.setServiceRole(command.getServiceRole());
         invocationLog.setModelId(AiModelIdCodec.toDomain(command.getModelId()));
