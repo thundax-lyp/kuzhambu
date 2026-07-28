@@ -795,7 +795,7 @@ describe("WangqiPage", () => {
                 )?.body
             ).toEqual(
                 expect.objectContaining({
-                    candidateId: 7001,
+                    candidateId: "7001",
                     contentId: 1,
                     contentType: "WANGQI_DOCUMENT",
                     capability: "qa",
@@ -870,7 +870,7 @@ describe("WangqiPage", () => {
                 )?.body
             ).toEqual(
                 expect.objectContaining({
-                    candidateId: 6001,
+                    candidateId: "6001",
                     contentId: 1,
                     contentType: "WANGQI_DOCUMENT",
                     capability: "tags",
@@ -1091,7 +1091,7 @@ describe("WangqiPage", () => {
                 errorMessage: "用户已批量拒绝该 AI 候选",
                 items: [
                     {
-                        candidateId: 5001,
+                        candidateId: "5001",
                         contentType: "WANGQI_DOCUMENT",
                         contentId: 1,
                         capability: "summary",
