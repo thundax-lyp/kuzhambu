@@ -7,7 +7,7 @@ import { KuzhambuSyncTaskModal } from "./kuzhambu-sync-task-modal";
 import type { KuzhambuSyncTaskAdapter } from "./kuzhambu-sync-task-modal";
 
 interface DemoTask {
-    id: number;
+    id: string;
     status: string;
 }
 
@@ -43,7 +43,7 @@ describe("KuzhambuSyncTaskModal", () => {
                 onCancel={vi.fn()}
                 workflow={{
                     ...adapter,
-                    task: { id: 1, status: "SUCCEEDED" },
+                    task: { id: "1", status: "SUCCEEDED" },
                     createTask: onCreate
                 }}
                 renderBody={() => "任务内容"}
@@ -70,7 +70,7 @@ describe("KuzhambuSyncTaskModal", () => {
                 onCancel={vi.fn()}
                 workflow={{
                     ...adapter,
-                    task: { id: 1, status: "RUNNING" },
+                    task: { id: "1", status: "RUNNING" },
                     createTask: onCreate
                 }}
                 renderBody={() => "任务内容"}
@@ -95,7 +95,7 @@ describe("KuzhambuSyncTaskModal", () => {
                 onCancel={onCancel}
                 workflow={{
                     ...adapter,
-                    task: { id: 1, status: "RUNNING" },
+                    task: { id: "1", status: "RUNNING" },
                     createTask: vi.fn()
                 }}
                 renderBody={() => "任务内容"}
@@ -121,7 +121,7 @@ describe("KuzhambuSyncTaskModal", () => {
                 onCancel={vi.fn()}
                 workflow={{
                     ...adapter,
-                    task: { id: 1, status: "SUCCEEDED" },
+                    task: { id: "1", status: "SUCCEEDED" },
                     createTask: vi.fn(),
                     fetchResult: async () => "候选结果",
                     applyResult: onApply
@@ -147,7 +147,7 @@ describe("KuzhambuSyncTaskModal", () => {
                 onCancel={vi.fn()}
                 workflow={{
                     ...adapter,
-                    task: { id: 1, status: "SUCCEEDED" },
+                    task: { id: "1", status: "SUCCEEDED" },
                     createTask: vi.fn(),
                     fetchResult: async () => {
                         throw new Error("candidate request failed");
@@ -180,7 +180,7 @@ describe("KuzhambuSyncTaskModal", () => {
                 onCancel={vi.fn()}
                 workflow={{
                     ...waitingResultAdapter,
-                    task: { id: 1, status: "SUCCEEDED" },
+                    task: { id: "1", status: "SUCCEEDED" },
                     createTask: vi.fn(),
                     fetchResult,
                     pollIntervalMs: 10
@@ -207,7 +207,7 @@ describe("KuzhambuSyncTaskModal", () => {
                 onCancel={vi.fn()}
                 workflow={{
                     ...adapter,
-                    task: { id: 1, status: "SUCCEEDED" },
+                    task: { id: "1", status: "SUCCEEDED" },
                     createTask: onCreate,
                     fetchResult,
                     pollIntervalMs: 10

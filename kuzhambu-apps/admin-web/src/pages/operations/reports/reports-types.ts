@@ -3,16 +3,16 @@ export type OperationsReportFormat = "HTML" | "PDF";
 export type OperationsReportStatus = "PENDING" | "RUNNING" | "SUCCEEDED" | "FAILED";
 
 export interface OperationsReportRecord {
-    reportId: number;
+    reportId: string;
     reportType?: string | null;
     format?: string | null;
     periodStart?: string | null;
     periodEnd?: string | null;
-    storageObjectId?: number | null;
+    storageObjectId?: string | null;
     artifactFilename?: string | null;
     reportStatus?: string | null;
     failureReason?: string | null;
-    requesterUserId?: number | null;
+    requesterUserId?: string | null;
     requestedAt?: string | null;
     completedAt?: string | null;
 }

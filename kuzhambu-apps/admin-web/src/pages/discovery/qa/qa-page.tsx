@@ -27,16 +27,6 @@ const INITIAL_FORM_STATE: QaFormState = {
     question: ""
 };
 
-const parseNumber = (value: string) => {
-    const trimmed = value.trim();
-    if (!trimmed) {
-        return null;
-    }
-
-    const parsed = Number.parseInt(trimmed, 10);
-    return Number.isNaN(parsed) ? null : parsed;
-};
-
 const toSessionId = (value?: string | null) => {
     return typeof value === "string" && value.trim().length ? value : null;
 };
@@ -61,7 +51,7 @@ const toConversationTitle = (question: string) => {
     return `${normalizedQuestion.slice(0, SESSION_TITLE_MAX_LENGTH)}...`;
 };
 
-const toOpenSessionRequest = (ownerUserId: number | null, title = FULL_LIBRARY_SESSION_TITLE) => {
+const toOpenSessionRequest = (ownerUserId: string | null, title = FULL_LIBRARY_SESSION_TITLE) => {
     return {
         contextContentId: null,
         contextContentType: null,
@@ -107,7 +97,7 @@ export const QaPage = () => {
     const [sessionDetailDrawerOpen, setSessionDetailDrawerOpen] = useState(false);
     const [timelineBySession, setTimelineBySession] = useState<QaTimeline>({});
     const [operationMessage, setOperationMessage] = useState<string | null>(null);
-    const ownerUserId = parseNumber(DEFAULT_OWNER_USER_ID);
+    const ownerUserId = DEFAULT_OWNER_USER_ID;
 
     const sessionsQuery = useQuery({
         queryFn: () =>

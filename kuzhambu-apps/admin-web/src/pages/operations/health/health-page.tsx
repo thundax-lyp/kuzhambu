@@ -138,7 +138,7 @@ export const OperationsHealthPage = () => {
     const [pageNo, setPageNo] = useState(DEFAULT_PAGE_NO);
     const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
     const [detailHealth, setDetailHealth] = useState<OperationsHealthRecord | null>(null);
-    const [alertCheckId, setAlertCheckId] = useState<number | null>(null);
+    const [alertCheckId, setAlertCheckId] = useState<string | null>(null);
     const [submittedQuery, setSubmittedQuery] = useState<OperationsHealthPageQuery>(() =>
         buildQuery("", "ALL", "ALL", "", null, DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE)
     );

@@ -24,8 +24,8 @@ export interface OperationsHealthAlertPageQuery {
     alertLevel?: OperationsHealthAlertLevel | null;
     alertStatus?: OperationsHealthAlertStatus | null;
     sourceRefType?: string | null;
-    sourceRefId?: number | null;
-    latestCheckId?: number | null;
+    sourceRefId?: string | null;
+    latestCheckId?: string | null;
     pageNo?: number | null;
     pageSize?: number | null;
 }
@@ -40,7 +40,7 @@ export const getOperationsHealthPage = (query: OperationsHealthPageQuery = {}) =
 };
 
 export interface OperationsHealthAlertActionCommand {
-    alertId: number;
+    alertId: string;
 }
 
 export const getOperationsHealthAlerts = (query: OperationsHealthAlertPageQuery = {}) => {

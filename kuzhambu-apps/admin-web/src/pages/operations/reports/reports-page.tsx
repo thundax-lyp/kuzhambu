@@ -5,10 +5,11 @@ import {
     ReloadOutlined
 } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { DatePicker, Descriptions, InputNumber, Spin, Typography } from "antd";
+import { DatePicker, Descriptions, Input, Spin, Typography } from "antd";
 import type { Dayjs } from "dayjs";
 import { useState } from "react";
 import { hasPermission } from "@/auth/permission-storage";
+import { isPositiveDecimalId } from "@/types/id";
 import { DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE } from "@/types/page";
 import {
     KuzhambuAlert,
@@ -130,7 +131,9 @@ const buildPageQuery = (filter: OperationsReportPageQuery, pageNo: number, pageS
     reportType: normalizeOption(filter.reportType),
     format: normalizeOption(filter.format),
     reportStatus: normalizeOption(filter.reportStatus),
-    requesterUserId: filter.requesterUserId ?? undefined,
+    requesterUserId: isPositiveDecimalId(filter.requesterUserId)
+        ? filter.requesterUserId
+        : undefined,
     periodStart: filter.periodStart || undefined,
     periodEnd: filter.periodEnd || undefined,
     pageNo,
@@ -145,7 +148,7 @@ export const OperationsReportsPage = () => {
     const [pageNo, setPageNo] = useState(DEFAULT_PAGE_NO);
     const [generateForm, setGenerateForm] =
         useState<OperationsReportGenerateCommand>(defaultGenerateForm);
-    const [detailReportId, setDetailReportId] = useState<number | null>(null);
+    const [detailReportId, setDetailReportId] = useState<string | null>(null);
 
     const reportPageQuery = useQuery({
         queryKey: ["operations", "report", "page", filter, pageNo],
@@ -160,7 +163,7 @@ export const OperationsReportsPage = () => {
 
     const reportDetailQuery = useQuery({
         queryKey: ["operations", "report", "detail", detailReportId],
-        queryFn: () => service.getReportDetail({ reportId: detailReportId as number }),
+        queryFn: () => service.getReportDetail({ reportId: detailReportId ?? "" }),
         enabled: detailReportId !== null,
         retry: false
     });
@@ -177,6 +180,8 @@ export const OperationsReportsPage = () => {
     const totalCount = reportPage?.totalCount ?? reportPage?.count ?? 0;
     const totalPage = reportPage?.totalPage || 1;
     const detailReportRecord = reportDetailQuery.data;
+    const requesterUserId = filter.requesterUserId?.trim() ?? "";
+    const isRequesterUserIdValid = !requesterUserId || isPositiveDecimalId(requesterUserId);
 
     const updateFilter = (patch: Partial<OperationsReportPageQuery>) => {
         setFilter((currentFilter) => ({
@@ -250,12 +255,16 @@ export const OperationsReportsPage = () => {
                         </label>
                         <label className="operations-reports-field operations-reports-field-compact">
                             <Text type="secondary">请求人用户 ID</Text>
-                            <InputNumber
+                            <Input
                                 aria-label="请求人用户 ID"
-                                min={1}
-                                value={filter.requesterUserId}
-                                onChange={(value) =>
-                                    updateFilter({ requesterUserId: value ?? undefined })
+                                status={
+                                    requesterUserId && !isRequesterUserIdValid ? "error" : undefined
+                                }
+                                value={filter.requesterUserId ?? ""}
+                                onChange={(event) =>
+                                    updateFilter({
+                                        requesterUserId: event.target.value.trim() || undefined
+                                    })
                                 }
                             />
                         </label>
@@ -270,6 +279,7 @@ export const OperationsReportsPage = () => {
                         <KuzhambuButton
                             testId="operations-reports-reports-query-button"
                             icon={<ReloadOutlined />}
+                            disabled={!isRequesterUserIdValid}
                             onClick={() => reportPageQuery.refetch()}
                         >
                             查询

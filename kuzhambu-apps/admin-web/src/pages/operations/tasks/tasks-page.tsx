@@ -82,7 +82,7 @@ const failureReasonText = (value?: string | null) => {
     return value || "未返回失败原因";
 };
 
-const buildTaskAlertPath = (snapshotId?: number | null) => {
+const buildTaskAlertPath = (snapshotId?: string | null) => {
     if (!snapshotId) {
         return "/operations/dashboard";
     }
@@ -125,7 +125,7 @@ export const OperationsTasksPage = () => {
     const [filters, setFilters] = useState<OperationsTaskPageQuery>(EMPTY_TASK_QUERY);
     const [taskPageNo, setTaskPageNo] = useState(DEFAULT_PAGE_NO);
     const [taskPageSize, setTaskPageSize] = useState(DEFAULT_PAGE_SIZE);
-    const [detailTaskSnapshotId, setDetailTaskSnapshotId] = useState<number | null>(null);
+    const [detailTaskSnapshotId, setDetailTaskSnapshotId] = useState<string | null>(null);
 
     const taskQuery = useQuery({
         queryKey: ["operations", "task", "page", filters, taskPageNo, taskPageSize],
@@ -136,7 +136,7 @@ export const OperationsTasksPage = () => {
 
     const taskDetailQuery = useQuery({
         queryKey: ["operations", "task", "detail", detailTaskSnapshotId],
-        queryFn: () => service.getTaskDetail({ snapshotId: detailTaskSnapshotId as number }),
+        queryFn: () => service.getTaskDetail({ snapshotId: detailTaskSnapshotId ?? "" }),
         enabled: detailTaskSnapshotId !== null,
         retry: false
     });
@@ -170,7 +170,7 @@ export const OperationsTasksPage = () => {
         setTaskPageNo(taskPageNo - 1);
     };
 
-    const openTaskDetailDrawer = (snapshotId: number) => {
+    const openTaskDetailDrawer = (snapshotId: string) => {
         setDetailTaskSnapshotId(snapshotId);
     };
 

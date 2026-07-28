@@ -45,7 +45,7 @@ describe("OperationsTasksPage", () => {
             totalCount: 1,
             records: [
                 {
-                    snapshotId: 901,
+                    snapshotId: "901",
                     sourceDomain: "operations",
                     taskType: "BACKUP_RESTORE",
                     taskStatus: "RUNNING",
@@ -89,7 +89,7 @@ describe("OperationsTasksPage", () => {
             totalCount: 1,
             records: [
                 {
-                    snapshotId: 902,
+                    snapshotId: "902",
                     sourceDomain: "operations",
                     taskType: "REPORT_EXPORT",
                     taskStatus: "FAILED",
@@ -102,7 +102,7 @@ describe("OperationsTasksPage", () => {
             ]
         });
         vi.mocked(service.getTaskDetail).mockResolvedValue({
-            snapshotId: 902,
+            snapshotId: "902",
             sourceDomain: "operations",
             taskType: "REPORT_EXPORT",
             taskKey: "report-902",
@@ -110,7 +110,7 @@ describe("OperationsTasksPage", () => {
             successCount: 1,
             failedCount: 2,
             failureReason: null,
-            requestedByUserId: 1001,
+            requestedByUserId: "1001",
             startedAt: "2026-06-29T01:10:00.000Z",
             completedAt: "2026-06-29T01:11:00.000Z"
         });

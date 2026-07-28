@@ -68,7 +68,7 @@ describe("OperationsDashboardPage", () => {
             tagGrowthSeries: [],
             healthSummaries: [
                 {
-                    checkId: 1,
+                    checkId: "1",
                     component: "admin-server",
                     healthStatus: "DEGRADED",
                     latencyMs: 180,
@@ -81,7 +81,7 @@ describe("OperationsDashboardPage", () => {
             taskStatusSummaries: [],
             topContents: [
                 {
-                    contentId: 101,
+                    contentId: "101",
                     contentType: "ARTICLE",
                     title: "热门内容",
                     visitCount: 88
@@ -106,12 +106,12 @@ describe("OperationsDashboardPage", () => {
             count: 1,
             records: [
                 {
-                    alertId: 9201,
+                    alertId: "9201",
                     component: "admin-server",
                     alertLevel: "CRITICAL",
                     alertStatus: "ACTIVE",
                     sourceRefType: "TASK",
-                    sourceRefId: 6101,
+                    sourceRefId: "6101",
                     message: "slow response",
                     suggestion: "检查 admin-server",
                     recoveryAction: "重启服务",
@@ -339,7 +339,7 @@ describe("OperationsDashboardPage", () => {
         vi.mocked(service.getDashboardOverview).mockResolvedValue({
             healthSummaries: [
                 {
-                    checkId: 2,
+                    checkId: "2",
                     component: "worker",
                     healthStatus: "UP",
                     probeSource: "LOCAL"
@@ -390,10 +390,10 @@ describe("OperationsDashboardPage", () => {
 
         await waitFor(() => {
             expect(vi.mocked(service.confirmHealthAlert).mock.calls[0]?.[0]).toEqual({
-                alertId: 9201
+                alertId: "9201"
             });
             expect(vi.mocked(service.recoverHealthAlert).mock.calls[0]?.[0]).toEqual({
-                alertId: 9201
+                alertId: "9201"
             });
         });
     }, 30000);

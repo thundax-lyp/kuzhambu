@@ -40,27 +40,27 @@ describe("operations health service contracts", () => {
 
     it("maps health alert ledger and action endpoints", async () => {
         await service.getOperationsHealthAlerts({
-            latestCheckId: 9101,
+            latestCheckId: "9101",
             alertStatus: "ACTIVE",
             pageNo: 1,
             pageSize: 10
         });
-        await service.confirmOperationsHealthAlert({ alertId: 9201 });
-        await service.recoverOperationsHealthAlert({ alertId: 9201 });
+        await service.confirmOperationsHealthAlert({ alertId: "9201" });
+        await service.recoverOperationsHealthAlert({ alertId: "9201" });
 
         expect(postJson).toHaveBeenNthCalledWith(1, "/operations/health/alerts/page", {
             body: {
-                latestCheckId: 9101,
+                latestCheckId: "9101",
                 alertStatus: "ACTIVE",
                 pageNo: 1,
                 pageSize: 10
             }
         });
         expect(postJson).toHaveBeenNthCalledWith(2, "/operations/health/alerts/ack", {
-            body: { alertId: 9201 }
+            body: { alertId: "9201" }
         });
         expect(postJson).toHaveBeenNthCalledWith(3, "/operations/health/alerts/recover", {
-            body: { alertId: 9201 }
+            body: { alertId: "9201" }
         });
     });
 });

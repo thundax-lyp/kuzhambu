@@ -85,15 +85,15 @@ const failureReasonText = (value?: string | null) => {
     return value || "未返回失败原因";
 };
 
-const executorText = (requesterUserId?: number | null) => {
+const executorText = (requesterUserId?: string | null) => {
     return requesterUserId == null ? "系统自动" : requesterUserId;
 };
 
-const triggerSourceText = (requesterUserId?: number | null) => {
+const triggerSourceText = (requesterUserId?: string | null) => {
     return requesterUserId == null ? "系统自动" : `人工执行：${requesterUserId}`;
 };
 
-const buildAlertPath = (cleanupId?: number | null) => {
+const buildAlertPath = (cleanupId?: string | null) => {
     if (!cleanupId) {
         return "/operations/dashboard";
     }
@@ -111,7 +111,7 @@ export const CleanupPage = () => {
         cleanupStatus: undefined
     });
     const [pageNo, setPageNo] = useState(DEFAULT_PAGE_NO);
-    const [detailCleanupId, setDetailCleanupId] = useState<number | null>(null);
+    const [detailCleanupId, setDetailCleanupId] = useState<string | null>(null);
     const [showFailureItems, setShowFailureItems] = useState(false);
 
     const cleanupPageQuery = useQuery({
@@ -128,7 +128,7 @@ export const CleanupPage = () => {
 
     const cleanupDetailQuery = useQuery({
         queryKey: ["operations", "cleanup", "detail", detailCleanupId],
-        queryFn: () => service.getCleanupDetail({ cleanupId: detailCleanupId as number }),
+        queryFn: () => service.getCleanupDetail({ cleanupId: detailCleanupId ?? "" }),
         enabled: detailCleanupId !== null,
         retry: false
     });
@@ -164,7 +164,7 @@ export const CleanupPage = () => {
         : detailItems;
     const cleanupDetailDrawerOpen = detailCleanupId !== null;
 
-    const openCleanupDetailDrawer = (cleanupId: number, shouldShowFailureItems: boolean) => {
+    const openCleanupDetailDrawer = (cleanupId: string, shouldShowFailureItems: boolean) => {
         setDetailCleanupId(cleanupId);
         setShowFailureItems(shouldShowFailureItems);
     };

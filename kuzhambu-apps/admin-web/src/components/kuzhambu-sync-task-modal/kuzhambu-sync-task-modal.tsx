@@ -22,7 +22,7 @@ export type KuzhambuSyncTaskPhase =
  */
 export interface KuzhambuSyncTaskAdapter<TTask> {
     /** 用于定位远端任务，也是 fetchTask 的入参。 */
-    getId: (task: TTask) => number | string;
+    getId: (task: TTask) => string;
     /** 状态提示的补充描述；不应包含业务表单写入逻辑。 */
     getMessage?: (task: TTask) => ReactNode;
     getPhase: (task: TTask) => KuzhambuSyncTaskPhase;
@@ -50,7 +50,7 @@ export interface KuzhambuSyncTaskWorkflow<TTask, TResult> extends KuzhambuSyncTa
      */
     fetchResult?: (task: TTask | null) => Promise<TResult | null>;
     /** 根据 getId(task) 轮询远端任务状态。 */
-    fetchTask?: (taskId: number | string) => Promise<TTask>;
+    fetchTask?: (taskId: string) => Promise<TTask>;
     onResultChange?: (result: TResult | null) => void;
     onTaskChange?: (task: TTask | null) => void;
     /** 采用候选结果；业务保存、候选状态变更和表单字段回填都应放在这里。 */
