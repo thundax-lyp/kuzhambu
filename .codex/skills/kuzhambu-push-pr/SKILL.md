@@ -126,6 +126,8 @@ git diff --stat main...HEAD
 
 checks 和 review 已完成且状态稳定时提前结束观察；发现明确失败或 actionable feedback 时立即进入处理，不必等待当前窗口结束。5 分钟到期后仍有 checks 或 review 正在运行时，停止本轮等待，报告当前状态和下一步检查方式；等待超时本身不视为失败。
 
+观察因 checks/review 稳定、明确失败或 5 分钟到期而结束后，必须重新读取最终 checks、review 和 comments，并按步骤 5 再次同步 PR 信息。将终态、失败原因或超时仍在运行的状态写入 `Verification Evidence` 或 `Risks`，回读确认 PR 标题和描述对应观察结束时的远端状态后，才允许输出收口结果。
+
 优先使用 GitHub connector 获取 PR 信息；如果需要 thread-level review comment 状态或 connector 不足，使用 `gh` 查询。
 
 ### 7. 处理 Codex 和 reviewer 评论

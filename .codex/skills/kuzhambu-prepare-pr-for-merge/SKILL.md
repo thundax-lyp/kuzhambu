@@ -42,6 +42,7 @@ git log --oneline --decorate --max-count=30
 
 - 当前分支对应唯一的 open PR。
 - PR 目标分支、head 分支和当前本地分支一致。
+- PR head repository 的完整名称，以及 fetch/push URL 与它匹配的唯一可写 local remote；后续 fetch、remote head 查询和 push 固定使用该 remote。
 - PR 尚未 merge 或关闭。
 - required checks、review 状态和 unresolved review threads。
 - PR 的 base ref、base SHA 和当前远端 head SHA；后续 diff 范围固定使用记录的 base SHA，lease 固定使用记录的远端 head SHA。
@@ -52,6 +53,7 @@ git log --oneline --decorate --max-count=30
 - 当前分支是 `main`。
 - 工作区存在修改或未跟踪文件。
 - 没有 open PR，或分支对应多个 PR。
+- 找不到与 PR head repository 匹配的可写 local remote，或存在多个匹配项而无法确定 push 目标；不要默认使用 `origin`。
 - 仍有未处理的 actionable review feedback。
 - 分支含其他作者或协作者在当前 review 周期新增的提交，且用户未确认允许改写。
 - 本地 `HEAD` 不等于记录的远端 head SHA；不要从陈旧本地历史规划或执行重写。
@@ -111,7 +113,7 @@ git log --oneline --decorate --max-count=30
 
 确认后：
 
-1. Fetch 远端并再次确认本地 `HEAD` 等于记录的 remote head SHA，且 base SHA 和 remote head SHA 均未变化；任一条件不满足时停止并重新分析。
+1. 使用记录的 PR head remote 执行 fetch，并再次确认本地 `HEAD` 等于记录的 remote head SHA，且 base SHA 和 remote head SHA 均未变化；任一条件不满足时停止并重新分析。
 2. 记录原始 HEAD、`HEAD^{tree}` 和 `<base-sha>...HEAD` 的完整 patch-id 或等价 diff 证据。
 3. 创建明确指向原始 HEAD 的本地备份引用，便于恢复。
 4. 使用 interactive rebase、fixup/autosquash 或等价的非交互 Git 操作实现已确认方案。
@@ -125,11 +127,11 @@ git log --oneline --decorate --max-count=30
 
 验证最终 tree 与整理前完全一致后：
 
-1. 使用只读远端查询再次读取 base SHA 和 remote head SHA，不要通过更新 remote-tracking ref 改变 lease 依据；任一值与分析时记录值不同都必须停止。
+1. 从 PR base repository 和 head repository 分别执行只读远端查询，再次读取 base SHA 和 remote head SHA；不要通过更新 remote-tracking ref 改变 lease 依据，任一值与分析时记录值不同都必须停止。
 2. 使用分析时记录的远端 head SHA 作为显式 lease 推送：
 
    ```sh
-   git push --force-with-lease=refs/heads/<head-branch>:<original-remote-head-sha> origin HEAD:refs/heads/<head-branch>
+   git push --force-with-lease=refs/heads/<head-branch>:<original-remote-head-sha> <pr-head-remote> HEAD:refs/heads/<head-branch>
    ```
 
 3. 读取 PR commits 和 diff，确认远端历史与计划一致。
@@ -142,7 +144,8 @@ git log --oneline --decorate --max-count=30
 5. 回读 PR 标题和描述，确认其内容对应整理后的最终远端状态。
 6. 检查 required checks 是否因新 SHA 重新触发。
 7. 最多观察 5 分钟；每 20 至 30 秒检查 checks 和新增 review 状态。到期仍在运行时报告当前状态，超时不视为失败。
-8. 不因 SHA 改写自动请求新一轮 Codex Review；如果最终 tree 发生实质变化，则必须停止并重新审查。
+8. 观察结束后重新读取最终 checks、review 和 comments，再次执行步骤 4 的 PR 信息整合；将终态、失败原因或超时仍在运行的状态写入 `Verification Evidence` 或 `Risks`，并回读确认。
+9. 不因 SHA 改写自动请求新一轮 Codex Review；如果最终 tree 发生实质变化，则必须停止并重新审查。
 
 ## 完成标准
 
