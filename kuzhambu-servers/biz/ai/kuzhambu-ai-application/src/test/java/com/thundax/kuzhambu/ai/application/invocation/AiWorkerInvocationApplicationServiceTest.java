@@ -26,6 +26,8 @@ import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjec
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import java.lang.reflect.Proxy;
 import java.util.Collections;
@@ -56,7 +58,7 @@ class AiWorkerInvocationApplicationServiceTest {
             }
 
             @Override
-            public DownloadedArtifact downloadArtifact(String requestId, String traceId, String downloadPath) {
+            public DownloadedArtifact downloadArtifact(RequestId requestId, TraceId traceId, String downloadPath) {
                 throw new UnsupportedOperationException("not used");
             }
         };
@@ -96,7 +98,7 @@ class AiWorkerInvocationApplicationServiceTest {
             }
 
             @Override
-            public DownloadedArtifact downloadArtifact(String requestId, String traceId, String downloadPath) {
+            public DownloadedArtifact downloadArtifact(RequestId requestId, TraceId traceId, String downloadPath) {
                 throw new UnsupportedOperationException("not used");
             }
         };
@@ -140,7 +142,7 @@ class AiWorkerInvocationApplicationServiceTest {
             }
 
             @Override
-            public DownloadedArtifact downloadArtifact(String requestId, String traceId, String downloadPath) {
+            public DownloadedArtifact downloadArtifact(RequestId requestId, TraceId traceId, String downloadPath) {
                 throw new UnsupportedOperationException("not used");
             }
         };
@@ -195,7 +197,7 @@ class AiWorkerInvocationApplicationServiceTest {
             }
 
             @Override
-            public DownloadedArtifact downloadArtifact(String requestId, String traceId, String downloadPath) {
+            public DownloadedArtifact downloadArtifact(RequestId requestId, TraceId traceId, String downloadPath) {
                 throw new UnsupportedOperationException("not used");
             }
         };
@@ -247,7 +249,7 @@ class AiWorkerInvocationApplicationServiceTest {
             }
 
             @Override
-            public DownloadedArtifact downloadArtifact(String requestId, String traceId, String downloadPath) {
+            public DownloadedArtifact downloadArtifact(RequestId requestId, TraceId traceId, String downloadPath) {
                 throw new UnsupportedOperationException("not used");
             }
         };

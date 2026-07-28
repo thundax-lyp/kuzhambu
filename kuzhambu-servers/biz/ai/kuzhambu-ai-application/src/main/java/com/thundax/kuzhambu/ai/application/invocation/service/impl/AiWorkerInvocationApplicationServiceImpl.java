@@ -238,8 +238,8 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
         try {
             JsonNode artifactReference = objectMapper.readTree(result.getArtifactReferenceJson());
             DownloadedArtifact artifact = aiWorkerGateway.downloadArtifact(
-                    command.getRequestId(),
-                    command.getTraceId(),
+                    RequestIdCodec.toDomain(command.getRequestId()),
+                    TraceIdCodec.toDomain(command.getTraceId()),
                     artifactReference.path("downloadPath").asText());
             result.setResultPayload(
                     artifact.sizeBytes() > MULTIPART_THRESHOLD_BYTES

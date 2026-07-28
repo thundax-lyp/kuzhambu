@@ -12,6 +12,10 @@ import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult
 import com.thundax.kuzhambu.ai.application.invocation.support.AiWorkerModelConfigResolver;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import com.thundax.kuzhambu.ai.infra.invocation.gateway.dto.AiWorkerHttpPayloads;
+import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
+import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -116,9 +120,10 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
     }
 
     @Override
-    public DownloadedArtifact downloadArtifact(String requestId, String traceId, String downloadPath) {
+    public DownloadedArtifact downloadArtifact(RequestId requestId, TraceId traceId, String downloadPath) {
         try {
-            HttpRequest request = buildGetRequest(downloadPath, requestId, traceId);
+            HttpRequest request =
+                    buildGetRequest(downloadPath, RequestIdCodec.toValue(requestId), TraceIdCodec.toValue(traceId));
             HttpResponse<byte[]> response = httpClient.send(request, boundedArtifactBodyHandler());
             if (!isSuccessful(response.statusCode())) {
                 throw new ArtifactDownloadException("ARTIFACT_DOWNLOAD failed with HTTP " + response.statusCode());

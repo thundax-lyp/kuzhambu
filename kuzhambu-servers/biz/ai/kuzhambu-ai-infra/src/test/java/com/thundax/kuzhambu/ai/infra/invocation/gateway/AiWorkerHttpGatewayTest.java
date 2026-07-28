@@ -12,6 +12,8 @@ import com.thundax.kuzhambu.ai.application.invocation.gateway.AiWorkerGateway.Ar
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
+import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
+import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -257,15 +259,21 @@ class AiWorkerHttpGatewayTest {
 
     @Test
     void downloadArtifactShouldRejectOversizeContentLength() throws IOException {
-        startServer(
-                "/artifact/large",
-                exchange -> respondBinary(exchange, 200, "too-large".getBytes(StandardCharsets.UTF_8)));
+        AtomicReference<HttpExchange> captured = new AtomicReference<>();
+        startServer("/artifact/large", exchange -> {
+            captured.set(exchange);
+            respondBinary(exchange, 200, "too-large".getBytes(StandardCharsets.UTF_8));
+        });
         AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties(4L), new AiWorkerRequestSigner(), null);
 
         ArtifactDownloadException exception = assertThrows(
-                ArtifactDownloadException.class, () -> client.downloadArtifact("req-1", "trace-1", "/artifact/large"));
+                ArtifactDownloadException.class,
+                () -> client.downloadArtifact(
+                        RequestIdCodec.toDomain("req-1"), TraceIdCodec.toDomain("trace-1"), "/artifact/large"));
 
         assertTrue(hasMessage(exception, "Content-Length exceeds max size"));
+        assertEquals("req-1", captured.get().getRequestHeaders().getFirst("X-Kuzhambu-Request-Id"));
+        assertEquals("trace-1", captured.get().getRequestHeaders().getFirst("X-Kuzhambu-Trace-Id"));
     }
 
     @Test
@@ -278,7 +286,10 @@ class AiWorkerHttpGatewayTest {
 
         ArtifactDownloadException exception = assertThrows(
                 ArtifactDownloadException.class,
-                () -> client.downloadArtifact("req-1", "trace-1", "/artifact/declared-large"));
+                () -> client.downloadArtifact(
+                        RequestIdCodec.toDomain("req-1"),
+                        TraceIdCodec.toDomain("trace-1"),
+                        "/artifact/declared-large"));
 
         assertTrue(exception.getMessage().contains("X-Kuzhambu-Artifact-Size-Bytes exceeds max size"));
     }
@@ -295,7 +306,8 @@ class AiWorkerHttpGatewayTest {
 
         ArtifactDownloadException exception = assertThrows(
                 ArtifactDownloadException.class,
-                () -> client.downloadArtifact("req-1", "trace-1", "/artifact/chunked-large"));
+                () -> client.downloadArtifact(
+                        RequestIdCodec.toDomain("req-1"), TraceIdCodec.toDomain("trace-1"), "/artifact/chunked-large"));
 
         assertTrue(exception.getMessage().contains("artifact body exceeds max size"));
     }
