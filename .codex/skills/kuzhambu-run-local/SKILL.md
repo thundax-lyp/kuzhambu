@@ -142,8 +142,14 @@ For `admin`:
 
   ```sh
   cd kuzhambu-workers
+  KUZHAMBU_WORKER_INTERNAL_SECRET="${KUZHAMBU_AI_WORKER_INTERNAL_SECRET}" \
+  KUZHAMBU_WORKER_ALLOWED_SERVICES="${KUZHAMBU_AI_WORKER_SERVICE_NAME}" \
   .venv/bin/uvicorn kuzhambu_workers.main:app --host 0.0.0.0 --port <workers-port>
   ```
+
+  The admin starter reads the AI worker auth values from `KUZHAMBU_AI_WORKER_*`,
+  while `kuzhambu-workers` expects `KUZHAMBU_WORKER_*`. Preserve this mapping so
+  local admin AI calls do not fail with worker authorization errors.
 
 - Start admin backend from `kuzhambu-servers/starter/kuzhambu-admin-starter` with:
   - `KUZHAMBU_ADMIN_SERVER_PORT=<selected-admin-backend-port>`
