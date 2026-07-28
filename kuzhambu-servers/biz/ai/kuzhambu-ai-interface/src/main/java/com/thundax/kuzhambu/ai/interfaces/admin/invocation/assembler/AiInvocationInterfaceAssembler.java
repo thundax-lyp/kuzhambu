@@ -173,12 +173,15 @@ public final class AiInvocationInterfaceAssembler {
             return AiInvocationResponses.BatchJobResponse.builder().build();
         }
         return AiInvocationResponses.BatchJobResponse.builder()
-                .batchId(result.getBatchId())
+                .batchId(AiBatchJobIdCodec.toValue(result.getBatchId()))
                 .scope(result.getScope())
-                .capability(result.getCapability())
-                .contentType(result.getContentType())
-                .contentId(result.getContentId())
-                .status(result.getStatus())
+                .capability(
+                        result.getCapability() == null
+                                ? null
+                                : result.getCapability().value())
+                .contentType(AiContentRefCodec.toContentType(result.getContentRef()))
+                .contentId(AiContentRefCodec.toContentId(result.getContentRef()))
+                .status(result.getStatus() == null ? null : result.getStatus().name())
                 .totalCount(result.getTotalCount())
                 .successCount(result.getSuccessCount())
                 .failedCount(result.getFailedCount())

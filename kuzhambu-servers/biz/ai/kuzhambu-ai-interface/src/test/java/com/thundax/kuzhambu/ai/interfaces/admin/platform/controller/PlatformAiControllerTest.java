@@ -48,7 +48,7 @@ class PlatformAiControllerTest {
         InvokeResponse response = controller.summarizeVersion(request());
 
         assertEquals("summary", service.lastMethod);
-        assertEquals("version_summary", response.getCapability());
+        assertEquals("platform_version_summary", response.getCapability());
     }
 
     @Test
@@ -100,17 +100,22 @@ class PlatformAiControllerTest {
         public AiInvokeResult summarizeVersion(PlatformAiInvokeCommand command) {
             lastMethod = "summary";
             lastCommand = command;
-            return result("version_summary", null);
+            return result("platform_version_summary", null);
         }
 
         private AiInvokeResult result(String capability, Long candidateId) {
             AiInvokeResult result = new AiInvokeResult();
-            result.setCallId(101L);
-            result.setCandidateId(candidateId);
-            result.setRequestId("req-1");
-            result.setTraceId("trace-1");
-            result.setStatus("SUCCEEDED");
-            result.setCapability(capability);
+            result.setCallId(new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId(101L));
+            result.setCandidateId(
+                    candidateId == null
+                            ? null
+                            : new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId(
+                                    candidateId));
+            result.setRequestId(new com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId("req-1"));
+            result.setTraceId(new com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId("trace-1"));
+            result.setStatus(com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus.SUCCEEDED);
+            result.setCapability(
+                    com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability.fromAlias(capability));
             result.setResultFormat("TEXT");
             result.setResultPayload("ok");
             return result;

@@ -36,7 +36,11 @@ import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiCandidateStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiReportBucketType;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjectId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.ai.facade.request.AiReportSummaryFacadeRequest;
@@ -62,7 +66,7 @@ class AiFacadeImplTest {
         AiReportApplicationService aiReportApplicationService = mock(AiReportApplicationService.class);
         Date periodStart = Date.from(Instant.parse("2025-01-01T00:00:00Z"));
         Date periodEnd = Date.from(Instant.parse("2025-01-31T23:59:59Z"));
-        when(aiReportApplicationService.summary(periodStart, periodEnd, "DAY"))
+        when(aiReportApplicationService.summary(periodStart.toInstant(), periodEnd.toInstant(), AiReportBucketType.DAY))
                 .thenReturn(new AiReportSummaryResult(
                         periodStart,
                         periodEnd,
@@ -71,7 +75,7 @@ class AiFacadeImplTest {
                         2L,
                         320L,
                         new BigDecimal("12.34"),
-                        List.of(new TopCapabilityResult("DISCOVERY_QA", 5L))));
+                        List.of(new TopCapabilityResult(AiBusinessCapability.DISCOVERY_ANSWER_GENERATION, 5L))));
         AiFacadeImpl facade = newFacade(
                 aiReportApplicationService,
                 mock(AiBatchJobApplicationService.class),
@@ -94,14 +98,16 @@ class AiFacadeImplTest {
         assertEquals(320L, response.getAvgLatencyMs());
         assertEquals(new BigDecimal("12.34"), response.getTotalCostAmount());
         assertEquals(1, response.getTopCapabilities().size());
-        assertEquals("DISCOVERY_QA", response.getTopCapabilities().get(0).getCapability());
+        assertEquals(
+                AiBusinessCapability.DISCOVERY_ANSWER_GENERATION.value(),
+                response.getTopCapabilities().get(0).getCapability());
         assertEquals(5L, response.getTopCapabilities().get(0).getInvocationCount());
     }
 
     @Test
     void createBatchJobShouldAssembleCommandAndMapActionResponse() {
         AiBatchJobApplicationService aiBatchJobApplicationService = mock(AiBatchJobApplicationService.class);
-        when(aiBatchJobApplicationService.create(any())).thenReturn(88L);
+        when(aiBatchJobApplicationService.create(any())).thenReturn(new AiBatchJobId(88L));
         AiFacadeImpl facade = newFacade(
                 mock(AiReportApplicationService.class),
                 aiBatchJobApplicationService,
@@ -495,7 +501,10 @@ class AiFacadeImplTest {
     void requirePendingCandidateShouldMapApplyCheckAndCandidateDto() {
         AiCandidateApplicationService aiCandidateApplicationService = mock(AiCandidateApplicationService.class);
         when(aiCandidateApplicationService.requirePendingForApply(
-                        901L, "CLASSICS_CONTENT", 902L, "KNOWLEDGE_GRAPH", 903L))
+                        new AiCandidateId(901L),
+                        AiContentRef.of("CLASSICS_CONTENT", 902L),
+                        AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT,
+                        new AiTargetObjectId(903L)))
                 .thenReturn(candidate());
         AiFacadeImpl facade = newFacade(
                 mock(AiReportApplicationService.class),
@@ -510,7 +519,7 @@ class AiFacadeImplTest {
                 .contentType("CLASSICS_CONTENT")
                 .contentId(902L)
                 .objectId(903L)
-                .capability("KNOWLEDGE_GRAPH")
+                .capability("knowledge_graph")
                 .build());
 
         assertEquals(901L, response.getCandidateId());
@@ -531,7 +540,7 @@ class AiFacadeImplTest {
     @Test
     void rejectCandidateShouldDelegateToDomainServiceAndMapDto() {
         AiCandidateApplicationService aiCandidateApplicationService = mock(AiCandidateApplicationService.class);
-        when(aiCandidateApplicationService.reject(901L, "USER_REJECTED", "not useful"))
+        when(aiCandidateApplicationService.reject(new AiCandidateId(901L), "USER_REJECTED", "not useful"))
                 .thenReturn(candidate());
         AiFacadeImpl facade = newFacade(
                 mock(AiReportApplicationService.class),
@@ -548,7 +557,7 @@ class AiFacadeImplTest {
                 .build());
 
         assertEquals(901L, response.getCandidateId());
-        verify(aiCandidateApplicationService).reject(901L, "USER_REJECTED", "not useful");
+        verify(aiCandidateApplicationService).reject(new AiCandidateId(901L), "USER_REJECTED", "not useful");
     }
 
     private static AiFacadeImpl newFacade(

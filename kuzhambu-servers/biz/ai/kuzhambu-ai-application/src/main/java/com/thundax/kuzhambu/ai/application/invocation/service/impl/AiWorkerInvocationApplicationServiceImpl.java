@@ -10,20 +10,14 @@ import com.thundax.kuzhambu.ai.application.invocation.gateway.AiWorkerGateway.Do
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocationApplicationService;
-import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
-import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
-import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
-import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
-import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
 import com.thundax.kuzhambu.storage.facade.request.CompleteMultipartUploadFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.InitMultipartUploadFacadeRequest;
@@ -121,11 +115,11 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
         invocationLog.setTargetObjectId(command.getTargetObjectId());
         invocationLog.setServiceId(command.getServiceId());
         invocationLog.setServiceRole(command.getServiceRole());
-        invocationLog.setModelId(AiModelIdCodec.toDomain(command.getModelId()));
-        invocationLog.setModelName(AiModelNameCodec.toDomain(command.getModelName()));
-        invocationLog.setPromptVersionId(PromptVersionIdCodec.toDomain(command.getPromptVersionId()));
-        invocationLog.setRequestId(RequestIdCodec.toDomain(command.getRequestId()));
-        invocationLog.setTraceId(TraceIdCodec.toDomain(command.getTraceId()));
+        invocationLog.setModelId(command.getModelId());
+        invocationLog.setModelName(command.getModelName());
+        invocationLog.setPromptVersionId(command.getPromptVersionId());
+        invocationLog.setRequestId(command.getRequestId());
+        invocationLog.setTraceId(command.getTraceId());
         invocationLog.setStreamUsed(command.isStream());
         invocationLog.setRequestedAt(Instant.now());
         return invocationLog;
@@ -166,7 +160,16 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
             if (command.isCreateCandidate()) {
                 AiCandidateId candidateId =
                         aiInvocationRepository.insertCandidate(result.toCandidate(command, invocationLog.getCallId()));
-                result.setCandidateId(AiCandidateIdCodec.toValue(candidateId));
+                result.setCandidateId(candidateId);
+            }
+        } else if (result.getStatus() == AiInvocationStatus.PARTIAL) {
+            invocationLog.recordFailureStage(result.getFailureStage());
+            invocationLog.markPartial(result.getErrorType(), result.getErrorMessage(), result.getUsage(), completedAt);
+            aiInvocationRepository.updateInvocationLog(invocationLog);
+            if (command.isCreateCandidate()) {
+                AiCandidateId candidateId =
+                        aiInvocationRepository.insertCandidate(result.toCandidate(command, invocationLog.getCallId()));
+                result.setCandidateId(candidateId);
             }
         } else {
             invocationLog.recordFailureStage(result.getFailureStage());
@@ -176,11 +179,11 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
                 candidate.reject(
                         result.getErrorType(), result.getErrorMessage(), result.getFailureStage(), completedAt);
                 AiCandidateId candidateId = aiInvocationRepository.insertCandidate(candidate);
-                result.setCandidateId(AiCandidateIdCodec.toValue(candidateId));
+                result.setCandidateId(candidateId);
             }
             aiInvocationRepository.updateInvocationLog(invocationLog);
         }
-        result.setCallId(AiCallIdCodec.toValue(invocationLog.getCallId()));
+        result.setCallId(invocationLog.getCallId());
         return result;
     }
 
@@ -200,12 +203,13 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
             result.setTraceId(command.getTraceId());
         }
         if (command.getCapability() != null) {
-            result.setCapability(command.getCapability().value());
+            result.setCapability(command.getCapability());
         }
         if (isBlank(result.getResultFormat())) {
             result.setResultFormat(defaultResultFormat(command, result));
         }
-        if (result.isSucceeded() && !isBlank(result.getArtifactReferenceJson())) {
+        if ((result.isSucceeded() || result.getStatus() == AiInvocationStatus.PARTIAL)
+                && !isBlank(result.getArtifactReferenceJson())) {
             return persistArtifactResult(command, result);
         }
         return result;
@@ -215,8 +219,8 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
         if (command == null
                 || isBlank(command.getScope())
                 || command.getCapability() == null
-                || isBlank(command.getRequestId())
-                || isBlank(command.getTraceId())
+                || command.getRequestId() == null
+                || command.getTraceId() == null
                 || isBlank(command.getPromptMessagesJson())
                 || isBlank(command.getInputPayloadJson())) {
             throw new BizException("AI invoke command is incomplete");

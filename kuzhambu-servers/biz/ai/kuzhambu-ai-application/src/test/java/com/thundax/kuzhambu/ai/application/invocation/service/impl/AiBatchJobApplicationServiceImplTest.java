@@ -94,7 +94,7 @@ public class AiBatchJobApplicationServiceImplTest {
         AiBatchJob job = cancelledJob();
         AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(new FakeRepository(job));
 
-        AiBatchJobResult result = service.recordSuccess(1L);
+        AiBatchJobResult result = service.recordSuccess(new AiBatchJobId(1L));
 
         assertEquals(2, result.getSuccessCount());
         assertEquals(1, result.getFailedCount());
@@ -107,7 +107,7 @@ public class AiBatchJobApplicationServiceImplTest {
         AiBatchJob job = cancelledJob();
         AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(new FakeRepository(job));
 
-        AiBatchJobResult result = service.recordFailure(1L, "{\"failed\":true}");
+        AiBatchJobResult result = service.recordFailure(new AiBatchJobId(1L), "{\"failed\":true}");
 
         assertEquals(1, result.getSuccessCount());
         assertEquals(2, result.getFailedCount());
@@ -124,7 +124,7 @@ public class AiBatchJobApplicationServiceImplTest {
         job.setCancelledCount(0);
         AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(new FakeRepository(job));
 
-        AiBatchJobResult result = service.recordSuccess(1L);
+        AiBatchJobResult result = service.recordSuccess(new AiBatchJobId(1L));
 
         assertEquals(9, result.getSuccessCount());
         assertEquals(1, result.getFailedCount());
@@ -144,9 +144,9 @@ public class AiBatchJobApplicationServiceImplTest {
         job.setSuccessCount(1);
         AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(new FakeRepository(job));
 
-        AiBatchJobResult result = service.cancel(1L);
+        AiBatchJobResult result = service.cancel(new AiBatchJobId(1L));
 
-        assertEquals("SUCCEEDED", result.getStatus());
+        assertEquals(AiBatchJobStatus.SUCCEEDED, result.getStatus());
         assertEquals(1, result.getSuccessCount());
         assertEquals(0, result.getCancelledCount());
     }
@@ -164,9 +164,9 @@ public class AiBatchJobApplicationServiceImplTest {
         repository.failNextConditionalUpdateWith(AiBatchJobStatus.CANCELLED);
         AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(repository);
 
-        AiBatchJobResult result = service.recordSuccessIfRunning(1L);
+        AiBatchJobResult result = service.recordSuccessIfRunning(new AiBatchJobId(1L));
 
-        assertEquals("CANCELLED", result.getStatus());
+        assertEquals(AiBatchJobStatus.CANCELLED, result.getStatus());
         assertEquals(0, result.getSuccessCount());
     }
 
@@ -181,9 +181,10 @@ public class AiBatchJobApplicationServiceImplTest {
         job.setTotalCount(1);
         AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(new FakeRepository(job));
 
-        AiBatchJobResult result = service.recordPartialIfRunning(1L, "{\"errorType\":\"MODEL_SEMANTIC_FAILURE\"}");
+        AiBatchJobResult result =
+                service.recordPartialIfRunning(new AiBatchJobId(1L), "{\"errorType\":\"MODEL_SEMANTIC_FAILURE\"}");
 
-        assertEquals("PARTIAL", result.getStatus());
+        assertEquals(AiBatchJobStatus.PARTIAL, result.getStatus());
         assertEquals(1, result.getSuccessCount());
         assertEquals("{\"errorType\":\"MODEL_SEMANTIC_FAILURE\"}", result.getFailureSummaryJson());
     }
@@ -200,11 +201,15 @@ public class AiBatchJobApplicationServiceImplTest {
         job.setTotalCount(1);
         AiBatchJobApplicationServiceImpl service = new AiBatchJobApplicationServiceImpl(new FakeRepository(job));
 
-        PageResult<AiBatchJobResult> page =
-                service.page("classics", "summary", null, "SANCAI_ENTRY", 3001L, new PageQuery(1, 10));
+        PageResult<AiBatchJobResult> page = service.page(
+                "classics",
+                AiBusinessCapability.CLASSICS_SUMMARY,
+                null,
+                AiContentRef.ofNullable("SANCAI_ENTRY", 3001L),
+                new PageQuery(1, 10));
 
         assertEquals(1, page.getTotalCount());
-        assertEquals(3001L, page.getRecords().get(0).getContentId());
+        assertEquals(3001L, page.getRecords().get(0).getContentRef().contentId());
     }
 
     private AiBatchJob cancelledJob() {

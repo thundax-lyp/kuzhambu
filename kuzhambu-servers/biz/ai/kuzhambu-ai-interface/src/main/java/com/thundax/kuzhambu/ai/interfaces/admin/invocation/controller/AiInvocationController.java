@@ -4,6 +4,7 @@ import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicat
 import com.thundax.kuzhambu.ai.application.invocation.service.AiCandidateApplicationService;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
@@ -179,7 +180,9 @@ public class AiInvocationController {
     @PostMapping(value = "candidate/reject")
     public CandidateResponse rejectCandidate(@Valid @RequestBody AiInvocationRequests.CandidateRejectRequest request) {
         return AiInvocationInterfaceAssembler.toResponse(aiCandidateApplicationService.reject(
-                request.getCandidateId(), request.getErrorType(), request.getErrorMessage()));
+                AiCandidateIdCodec.toDomain(request.getCandidateId()),
+                request.getErrorType(),
+                request.getErrorMessage()));
     }
 
     @Operation(summary = "标记AI候选已应用", description = "ai:invocation:edit")
@@ -196,7 +199,10 @@ public class AiInvocationController {
     public CandidateResponse markCandidateApplied(
             @Valid @RequestBody AiInvocationRequests.CandidateMarkAppliedRequest request) {
         return AiInvocationInterfaceAssembler.toResponse(aiCandidateApplicationService.markApplied(
-                request.getCandidateId(), request.getResultFormat(), request.getResultPayload(), null));
+                AiCandidateIdCodec.toDomain(request.getCandidateId()),
+                request.getResultFormat(),
+                request.getResultPayload(),
+                null));
     }
 
     private AiBusinessCapability toCapability(String value) {
@@ -227,7 +233,8 @@ public class AiInvocationController {
     @SysLogger(value = "批量读取")
     @PostMapping(value = "batch/get")
     public BatchJobResponse getBatch(@Valid @RequestBody AiInvocationRequests.BatchIdRequest request) {
-        return AiInvocationInterfaceAssembler.toResponse(batchJobService.get(request.getBatchId()));
+        return AiInvocationInterfaceAssembler.toResponse(
+                batchJobService.get(AiBatchJobIdCodec.toDomain(request.getBatchId())));
     }
 
     @Operation(summary = "创建AI批量任务", description = "ai:invocation:edit")
@@ -243,7 +250,8 @@ public class AiInvocationController {
     @PostMapping(value = "batch/create")
     public IdResponse createBatch(@Valid @RequestBody AiInvocationRequests.BatchCreateRequest request) {
         return IdResponse.builder()
-                .id(batchJobService.create(AiInvocationInterfaceAssembler.toCreateCommand(request)))
+                .id(AiBatchJobIdCodec.toValue(
+                        batchJobService.create(AiInvocationInterfaceAssembler.toCreateCommand(request))))
                 .build();
     }
 
@@ -259,7 +267,8 @@ public class AiInvocationController {
     @SysLogger(value = "批量取消")
     @PostMapping(value = "batch/cancel")
     public BatchJobResponse cancelBatch(@Valid @RequestBody AiInvocationRequests.BatchIdRequest request) {
-        return AiInvocationInterfaceAssembler.toResponse(batchJobService.cancel(request.getBatchId()));
+        return AiInvocationInterfaceAssembler.toResponse(
+                batchJobService.cancel(AiBatchJobIdCodec.toDomain(request.getBatchId())));
     }
 
     @Operation(summary = "记录AI批量成功", description = "ai:invocation:edit")
@@ -274,7 +283,8 @@ public class AiInvocationController {
     @SysLogger(value = "批量成功")
     @PostMapping(value = "batch/record-success")
     public BatchJobResponse recordBatchSuccess(@Valid @RequestBody AiInvocationRequests.BatchIdRequest request) {
-        return AiInvocationInterfaceAssembler.toResponse(batchJobService.recordSuccess(request.getBatchId()));
+        return AiInvocationInterfaceAssembler.toResponse(
+                batchJobService.recordSuccess(AiBatchJobIdCodec.toDomain(request.getBatchId())));
     }
 
     @Operation(summary = "记录AI批量失败", description = "ai:invocation:edit")
@@ -289,8 +299,8 @@ public class AiInvocationController {
     @SysLogger(value = "批量失败")
     @PostMapping(value = "batch/record-failure")
     public BatchJobResponse recordBatchFailure(@Valid @RequestBody AiInvocationRequests.BatchFailureRequest request) {
-        return AiInvocationInterfaceAssembler.toResponse(
-                batchJobService.recordFailure(request.getBatchId(), request.getFailureSummaryJson()));
+        return AiInvocationInterfaceAssembler.toResponse(batchJobService.recordFailure(
+                AiBatchJobIdCodec.toDomain(request.getBatchId()), request.getFailureSummaryJson()));
     }
 
     @Operation(summary = "判断AI批量任务是否可继续派发", description = "ai:invocation:view")
@@ -305,6 +315,6 @@ public class AiInvocationController {
     @SysLogger(value = "批量派发判断")
     @PostMapping(value = "batch/can-dispatch")
     public Boolean canDispatchBatch(@Valid @RequestBody AiInvocationRequests.BatchIdRequest request) {
-        return batchJobService.canDispatchNextUnit(request.getBatchId());
+        return batchJobService.canDispatchNextUnit(AiBatchJobIdCodec.toDomain(request.getBatchId()));
     }
 }

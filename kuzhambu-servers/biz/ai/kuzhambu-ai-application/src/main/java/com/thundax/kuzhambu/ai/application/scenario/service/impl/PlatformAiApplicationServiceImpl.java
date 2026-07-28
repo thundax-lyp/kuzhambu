@@ -8,8 +8,13 @@ import com.thundax.kuzhambu.ai.application.scenario.command.PlatformAiInvokeComm
 import com.thundax.kuzhambu.ai.application.scenario.service.PlatformAiApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.support.PlatformAiWorkerUsecaseResolver;
 import com.thundax.kuzhambu.ai.application.scenario.support.PlatformAiWorkerUsecaseSpec;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
+import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -61,11 +66,11 @@ public class PlatformAiApplicationServiceImpl implements PlatformAiApplicationSe
                 com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec.toDomain(source.getObjectId()));
         command.setServiceId(source.getServiceId());
         command.setServiceRole(source.getServiceRole());
-        command.setModelId(source.getModelId());
-        command.setModelName(source.getModelName());
-        command.setPromptVersionId(source.getPromptVersionId());
-        command.setRequestId(source.getRequestId());
-        command.setTraceId(source.getTraceId());
+        command.setModelId(AiModelIdCodec.toDomain(source.getModelId()));
+        command.setModelName(AiModelNameCodec.toDomain(source.getModelName()));
+        command.setPromptVersionId(PromptVersionIdCodec.toDomain(source.getPromptVersionId()));
+        command.setRequestId(RequestIdCodec.toDomain(source.getRequestId()));
+        command.setTraceId(TraceIdCodec.toDomain(source.getTraceId()));
         command.setPromptMessagesJson(source.getPromptMessagesJson());
         command.setPromptVariablesJson(source.getPromptVariablesJson());
         command.setPromptHash(source.getPromptHash());

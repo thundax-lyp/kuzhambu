@@ -1,6 +1,9 @@
 package com.thundax.kuzhambu.ai.application.invocation.result;
 
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,12 +18,12 @@ public class AiStreamEventResult {
 
     private String eventType;
     private String eventId;
-    private String requestId;
-    private String traceId;
+    private RequestId requestId;
+    private TraceId traceId;
     private String stage;
     private Instant timestamp;
     private String deltaText;
-    private String status;
+    private AiInvocationStatus status;
     private String resultFormat;
     private String resultPayload;
     private String artifactReferenceJson;

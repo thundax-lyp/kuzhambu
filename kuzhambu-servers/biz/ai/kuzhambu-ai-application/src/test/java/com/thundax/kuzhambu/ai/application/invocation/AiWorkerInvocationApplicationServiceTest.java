@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.gateway.AiWorkerGateway;
@@ -12,6 +13,7 @@ import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.service.impl.AiWorkerInvocationApplicationServiceImpl;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
@@ -26,7 +28,10 @@ import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjec
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId;
 import com.thundax.kuzhambu.storage.facade.StorageFacade;
+import com.thundax.kuzhambu.storage.facade.response.UploadStorageFacadeResponse;
 import java.lang.reflect.Proxy;
 import java.util.Collections;
 import java.util.List;
@@ -51,12 +56,12 @@ class AiWorkerInvocationApplicationServiceTest {
                 event.setEventType("delta");
                 event.setRequestId(command.getRequestId());
                 event.setTraceId(command.getTraceId());
-                event.setStatus("RUNNING");
+                event.setStatus(AiInvocationStatus.RUNNING);
                 eventConsumer.accept(event);
             }
 
             @Override
-            public DownloadedArtifact downloadArtifact(String requestId, String traceId, String downloadPath) {
+            public DownloadedArtifact downloadArtifact(RequestId requestId, TraceId traceId, String downloadPath) {
                 throw new UnsupportedOperationException("not used");
             }
         };
@@ -65,10 +70,10 @@ class AiWorkerInvocationApplicationServiceTest {
 
         AiInvokeResult result = service.stream(command(), event -> {});
 
-        assertEquals("FAILED", result.getStatus());
+        assertEquals(AiInvocationStatus.FAILED, result.getStatus());
         assertEquals("WORKER_PROTOCOL_FAILURE", result.getErrorType());
         assertEquals("Worker stream ended without completed event", result.getErrorMessage());
-        assertEquals(100L, result.getCallId());
+        assertEquals(new AiCallId(100L), result.getCallId());
         assertEquals(
                 AiInvocationStatus.FAILED, repository.updatedInvocationLog.get().getStatus());
         assertFalse(repository.updatedInvocationLog.get().isStreamCompleted());
@@ -96,7 +101,7 @@ class AiWorkerInvocationApplicationServiceTest {
             }
 
             @Override
-            public DownloadedArtifact downloadArtifact(String requestId, String traceId, String downloadPath) {
+            public DownloadedArtifact downloadArtifact(RequestId requestId, TraceId traceId, String downloadPath) {
                 throw new UnsupportedOperationException("not used");
             }
         };
@@ -107,8 +112,8 @@ class AiWorkerInvocationApplicationServiceTest {
 
         AiInvokeResult result = service.stream(command, event -> {});
 
-        assertEquals("FAILED", result.getStatus());
-        assertEquals(100L, result.getCallId());
+        assertEquals(AiInvocationStatus.FAILED, result.getStatus());
+        assertEquals(new AiCallId(100L), result.getCallId());
         assertNull(result.getCandidateId());
         assertEquals(
                 AiInvocationStatus.FAILED, repository.updatedInvocationLog.get().getStatus());
@@ -126,8 +131,8 @@ class AiWorkerInvocationApplicationServiceTest {
                 AiInvokeResult result = new AiInvokeResult();
                 result.setRequestId(command.getRequestId());
                 result.setTraceId(command.getTraceId());
-                result.setStatus("SUCCEEDED");
-                result.setCapability(command.getWorkerCapability());
+                result.setStatus(AiInvocationStatus.SUCCEEDED);
+                result.setCapability(command.getCapability());
                 result.setResultFormat("text");
                 result.setResultPayload("candidate-result");
                 result.setUsage(AiUsageSnapshot.empty());
@@ -140,7 +145,7 @@ class AiWorkerInvocationApplicationServiceTest {
             }
 
             @Override
-            public DownloadedArtifact downloadArtifact(String requestId, String traceId, String downloadPath) {
+            public DownloadedArtifact downloadArtifact(RequestId requestId, TraceId traceId, String downloadPath) {
                 throw new UnsupportedOperationException("not used");
             }
         };
@@ -158,11 +163,11 @@ class AiWorkerInvocationApplicationServiceTest {
 
         assertEquals("CLASSICS_SANCAI_SUMMARY", capturedCommand.get().getOperation());
         assertFalse(capturedCommand.get().isStream());
-        assertEquals("classics_summary", result.getCapability());
-        assertEquals(100L, result.getCallId());
+        assertEquals(AiBusinessCapability.CLASSICS_SUMMARY, result.getCapability());
+        assertEquals(new AiCallId(100L), result.getCallId());
         assertEquals("text", repository.updatedInvocationLog.get().getResultFormat());
         assertEquals("candidate-result", repository.updatedInvocationLog.get().getResultPayload());
-        assertEquals(200L, result.getCandidateId());
+        assertEquals(new AiCandidateId(200L), result.getCandidateId());
         assertEquals(100L, repository.savedCandidate.get().getCallId().value());
         assertEquals(
                 AiBusinessCapability.CLASSICS_SUMMARY,
@@ -178,8 +183,8 @@ class AiWorkerInvocationApplicationServiceTest {
                 AiInvokeResult result = new AiInvokeResult();
                 result.setRequestId(command.getRequestId());
                 result.setTraceId(command.getTraceId());
-                result.setStatus("FAILED");
-                result.setCapability(command.getCapability().value());
+                result.setStatus(AiInvocationStatus.FAILED);
+                result.setCapability(command.getCapability());
                 result.setResultFormat("TEXT");
                 result.setResultPayload("should-be-persisted");
                 result.setErrorType("WORKER_PROTOCOL_FAILURE");
@@ -195,7 +200,7 @@ class AiWorkerInvocationApplicationServiceTest {
             }
 
             @Override
-            public DownloadedArtifact downloadArtifact(String requestId, String traceId, String downloadPath) {
+            public DownloadedArtifact downloadArtifact(RequestId requestId, TraceId traceId, String downloadPath) {
                 throw new UnsupportedOperationException("not used");
             }
         };
@@ -206,9 +211,9 @@ class AiWorkerInvocationApplicationServiceTest {
         command.setCreateCandidate(true);
         AiInvokeResult result = service.invoke(command);
 
-        assertEquals("FAILED", result.getStatus());
-        assertEquals(100L, result.getCallId());
-        assertEquals(200L, result.getCandidateId());
+        assertEquals(AiInvocationStatus.FAILED, result.getStatus());
+        assertEquals(new AiCallId(100L), result.getCallId());
+        assertEquals(new AiCandidateId(200L), result.getCandidateId());
         assertEquals(
                 AiInvocationStatus.FAILED, repository.updatedInvocationLog.get().getStatus());
         assertEquals(
@@ -226,6 +231,122 @@ class AiWorkerInvocationApplicationServiceTest {
     }
 
     @Test
+    void invokeShouldPersistPartialLogAndPendingCandidate() {
+        RecordingInvocationRepository repository = new RecordingInvocationRepository();
+        AiWorkerGateway aiWorkerGateway = new AiWorkerGateway() {
+            @Override
+            public AiInvokeResult invoke(AiInvokeCommand command) {
+                return partialResult(command);
+            }
+
+            @Override
+            public void stream(AiInvokeCommand command, Consumer<AiStreamEventResult> eventConsumer) {
+                throw new UnsupportedOperationException("not used");
+            }
+
+            @Override
+            public DownloadedArtifact downloadArtifact(RequestId requestId, TraceId traceId, String downloadPath) {
+                throw new UnsupportedOperationException("not used");
+            }
+        };
+        AiWorkerInvocationApplicationServiceImpl service =
+                new AiWorkerInvocationApplicationServiceImpl(repository, aiWorkerGateway, unusedStorageFacade());
+        AiInvokeCommand command = command();
+        command.setCreateCandidate(true);
+
+        AiInvokeResult result = service.invoke(command);
+
+        assertEquals(AiInvocationStatus.PARTIAL, result.getStatus());
+        assertEquals(new AiCandidateId(200L), result.getCandidateId());
+        assertPartialPersistence(repository, false);
+    }
+
+    @Test
+    void streamShouldPersistPartialLogAndPendingCandidate() {
+        RecordingInvocationRepository repository = new RecordingInvocationRepository();
+        AiWorkerGateway aiWorkerGateway = new AiWorkerGateway() {
+            @Override
+            public AiInvokeResult invoke(AiInvokeCommand command) {
+                throw new UnsupportedOperationException("not used");
+            }
+
+            @Override
+            public void stream(AiInvokeCommand command, Consumer<AiStreamEventResult> eventConsumer) {
+                AiInvokeResult partialResult = partialResult(command);
+                AiStreamEventResult event = new AiStreamEventResult();
+                event.setEventType("completed");
+                event.setRequestId(partialResult.getRequestId());
+                event.setTraceId(partialResult.getTraceId());
+                event.setStatus(partialResult.getStatus());
+                event.setResultFormat(partialResult.getResultFormat());
+                event.setResultPayload(partialResult.getResultPayload());
+                event.setFailureStage(partialResult.getFailureStage());
+                event.setErrorType(partialResult.getErrorType());
+                event.setErrorMessage(partialResult.getErrorMessage());
+                event.setUsage(partialResult.getUsage());
+                eventConsumer.accept(event);
+            }
+
+            @Override
+            public DownloadedArtifact downloadArtifact(RequestId requestId, TraceId traceId, String downloadPath) {
+                throw new UnsupportedOperationException("not used");
+            }
+        };
+        AiWorkerInvocationApplicationServiceImpl service =
+                new AiWorkerInvocationApplicationServiceImpl(repository, aiWorkerGateway, unusedStorageFacade());
+        AiInvokeCommand command = command();
+        command.setCreateCandidate(true);
+
+        AiInvokeResult result = service.stream(command, event -> {});
+
+        assertEquals(AiInvocationStatus.PARTIAL, result.getStatus());
+        assertEquals(new AiCandidateId(200L), result.getCandidateId());
+        assertPartialPersistence(repository, true);
+    }
+
+    @Test
+    void invokeShouldPersistPartialArtifactBeforeCreatingCandidate() {
+        RecordingInvocationRepository repository = new RecordingInvocationRepository();
+        AiWorkerGateway aiWorkerGateway = new AiWorkerGateway() {
+            @Override
+            public AiInvokeResult invoke(AiInvokeCommand command) {
+                AiInvokeResult result = partialResult(command);
+                result.setArtifactReferenceJson(
+                        "{\"downloadPath\":\"/internal/artifacts/art-1\",\"filename\":\"partial.png\"}");
+                return result;
+            }
+
+            @Override
+            public void stream(AiInvokeCommand command, Consumer<AiStreamEventResult> eventConsumer) {
+                throw new UnsupportedOperationException("not used");
+            }
+
+            @Override
+            public DownloadedArtifact downloadArtifact(RequestId requestId, TraceId traceId, String downloadPath) {
+                return new DownloadedArtifact(
+                        "image".getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                        "image/png",
+                        "partial.png",
+                        "sha256",
+                        5L,
+                        null);
+            }
+        };
+        AiWorkerInvocationApplicationServiceImpl service = new AiWorkerInvocationApplicationServiceImpl(
+                repository, aiWorkerGateway, storageFacadeReturningUpload());
+        AiInvokeCommand command = command();
+        command.setCreateCandidate(true);
+
+        AiInvokeResult result = service.invoke(command);
+
+        assertEquals(AiInvocationStatus.PARTIAL, result.getStatus());
+        assertTrue(result.getResultPayload().contains("\"storageObjectId\":901"));
+        assertEquals("PARTIAL_RESULT", result.getErrorType());
+        assertEquals(AiCandidateStatus.PENDING, repository.savedCandidate.get().getStatus());
+        assertEquals(result.getResultPayload(), repository.savedCandidate.get().getResultPayload());
+    }
+
+    @Test
     void invokeShouldDefaultResultFormatWhenWorkerOmitsFormat() {
         RecordingInvocationRepository repository = new RecordingInvocationRepository();
         AiWorkerGateway aiWorkerGateway = new AiWorkerGateway() {
@@ -234,8 +355,8 @@ class AiWorkerInvocationApplicationServiceTest {
                 AiInvokeResult result = new AiInvokeResult();
                 result.setRequestId(command.getRequestId());
                 result.setTraceId(command.getTraceId());
-                result.setStatus("SUCCEEDED");
-                result.setCapability(command.getCapability().value());
+                result.setStatus(AiInvocationStatus.SUCCEEDED);
+                result.setCapability(command.getCapability());
                 result.setResultPayload("{\"ok\":true}");
                 result.setUsage(AiUsageSnapshot.empty());
                 return result;
@@ -247,7 +368,7 @@ class AiWorkerInvocationApplicationServiceTest {
             }
 
             @Override
-            public DownloadedArtifact downloadArtifact(String requestId, String traceId, String downloadPath) {
+            public DownloadedArtifact downloadArtifact(RequestId requestId, TraceId traceId, String downloadPath) {
                 throw new UnsupportedOperationException("not used");
             }
         };
@@ -259,7 +380,7 @@ class AiWorkerInvocationApplicationServiceTest {
         command.setCreateCandidate(true);
         AiInvokeResult result = service.invoke(command);
 
-        assertEquals("SUCCEEDED", result.getStatus());
+        assertEquals(AiInvocationStatus.SUCCEEDED, result.getStatus());
         assertEquals("JSON", result.getResultFormat());
         assertEquals("JSON", repository.updatedInvocationLog.get().getResultFormat());
         assertEquals("JSON", repository.savedCandidate.get().getResultFormat());
@@ -273,14 +394,43 @@ class AiWorkerInvocationApplicationServiceTest {
         command.setOperation("translate");
         command.setContentRef(
                 com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable("entry", 10L));
-        command.setModelId(20L);
-        command.setModelName("model-a");
-        command.setRequestId("req-1");
-        command.setTraceId("trace-1");
+        command.setModelId(new AiModelId(20L));
+        command.setModelName(AiModelName.of("model-a"));
+        command.setRequestId(new RequestId("req-1"));
+        command.setTraceId(new TraceId("trace-1"));
         command.setPromptMessagesJson("[{\"role\":\"user\",\"content\":\"hello\"}]");
         command.setInputPayloadJson("{\"text\":\"hello\"}");
         command.setCreateCandidate(false);
         return command;
+    }
+
+    private AiInvokeResult partialResult(AiInvokeCommand command) {
+        AiInvokeResult result = new AiInvokeResult();
+        result.setRequestId(command.getRequestId());
+        result.setTraceId(command.getTraceId());
+        result.setStatus(AiInvocationStatus.PARTIAL);
+        result.setCapability(command.getCapability());
+        result.setResultFormat("TEXT");
+        result.setResultPayload("partial result");
+        result.setFailureStage("WORKER_RESULT");
+        result.setErrorType("PARTIAL_RESULT");
+        result.setErrorMessage("部分结果可用");
+        result.setUsage(AiUsageSnapshot.empty());
+        return result;
+    }
+
+    private void assertPartialPersistence(RecordingInvocationRepository repository, boolean streamCompleted) {
+        AiInvocationLog invocationLog = repository.updatedInvocationLog.get();
+        assertEquals(AiInvocationStatus.PARTIAL, invocationLog.getStatus());
+        assertEquals("partial result", invocationLog.getResultPayload());
+        assertEquals("WORKER_RESULT", invocationLog.getFailureStage());
+        assertEquals("PARTIAL_RESULT", invocationLog.getErrorType());
+        assertEquals("部分结果可用", invocationLog.getErrorMessage());
+        assertEquals(streamCompleted, invocationLog.isStreamCompleted());
+        assertNotNull(repository.savedCandidate.get());
+        assertEquals(AiCandidateStatus.PENDING, repository.savedCandidate.get().getStatus());
+        assertEquals("partial result", repository.savedCandidate.get().getResultPayload());
+        assertNull(repository.savedCandidate.get().getRejectedAt());
     }
 
     private static StorageFacade unusedStorageFacade() {
@@ -288,6 +438,21 @@ class AiWorkerInvocationApplicationServiceTest {
                 StorageFacade.class.getClassLoader(),
                 new Class<?>[] {StorageFacade.class},
                 (proxy, method, args) -> boolean.class.equals(method.getReturnType()) ? Boolean.FALSE : null);
+    }
+
+    private static StorageFacade storageFacadeReturningUpload() {
+        return (StorageFacade) Proxy.newProxyInstance(
+                StorageFacade.class.getClassLoader(), new Class<?>[] {StorageFacade.class}, (proxy, method, args) -> {
+                    if ("upload".equals(method.getName())) {
+                        return UploadStorageFacadeResponse.builder()
+                                .storageObjectId(901L)
+                                .originalFilename("partial.png")
+                                .contentType("image/png")
+                                .sizeBytes(5L)
+                                .build();
+                    }
+                    return boolean.class.equals(method.getReturnType()) ? Boolean.FALSE : null;
+                });
     }
 
     private static class RecordingInvocationRepository implements AiInvocationRepository {

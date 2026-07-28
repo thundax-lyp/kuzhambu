@@ -14,8 +14,11 @@ import com.thundax.kuzhambu.ai.application.scenario.service.AiRefinementApplicat
 import com.thundax.kuzhambu.ai.application.scenario.service.AiRefinementTaskApplicationService;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiBatchJobStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
@@ -23,6 +26,8 @@ import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
+import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -64,16 +69,16 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     private static final Duration STREAM_SUBSCRIBE_TIMEOUT = Duration.ofMinutes(10L);
     private static final Duration ORPHANED_TASK_TIMEOUT = Duration.ofHours(1L);
     private static final int ORPHANED_TASK_EXPIRE_LIMIT = 100;
-    private static final List<String> REFINEMENT_CAPABILITIES = List.of(
-            "classics_translate",
-            "classics_summary",
-            "classics_tags",
-            "classics_qa",
-            "classics_image_describe",
-            "classics_image_prompt_fusion",
-            "classics_visual_describe",
-            "classics_image_generate",
-            "classics_split");
+    private static final List<AiBusinessCapability> REFINEMENT_CAPABILITIES = List.of(
+            AiBusinessCapability.CLASSICS_TRANSLATE,
+            AiBusinessCapability.CLASSICS_SUMMARY,
+            AiBusinessCapability.CLASSICS_TAG_EXTRACT,
+            AiBusinessCapability.CLASSICS_QA,
+            AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE,
+            AiBusinessCapability.CLASSICS_IMAGE_PROMPT_FUSION,
+            AiBusinessCapability.CLASSICS_VISUAL_DESCRIBE,
+            AiBusinessCapability.CLASSICS_IMAGE_GENERATE,
+            AiBusinessCapability.CLASSICS_SPLIT);
 
     private final AiBatchJobApplicationService batchJobApplicationService;
     private final AiRefinementApplicationService refinementApplicationService;
@@ -100,20 +105,20 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         validateAddCommand(command);
         validateRefinementBatchOwnership(command.getScope(), command.getCapability());
         refinementApplicationService.snapshotInvokeConfig(command);
-        Long taskId = batchJobApplicationService.create(new AiBatchJobCreateCommand(
+        Long taskId = AiBatchJobIdCodec.toValue(batchJobApplicationService.create(new AiBatchJobCreateCommand(
                 command.getScope(),
                 AiBusinessCapability.fromAlias(command.getCapability()),
                 AiContentRef.ofNullable(command.getContentType(), command.getContentId()),
                 1,
-                null));
+                null)));
         command.setBatchId(taskId);
         scheduleTaskExecution(taskId, command);
-        return toTaskResult(taskId, batchJobApplicationService.get(taskId), command, null);
+        return toTaskResult(taskId, batchJobApplicationService.get(AiBatchJobIdCodec.toDomain(taskId)), command, null);
     }
 
     @Override
     public AiRefinementTaskResult getTask(Long taskId) {
-        AiBatchJobResult job = batchJobApplicationService.get(taskId);
+        AiBatchJobResult job = batchJobApplicationService.get(AiBatchJobIdCodec.toDomain(taskId));
         validateRefinementBatchOwnership(job);
         return toTaskResult(job);
     }
@@ -122,32 +127,35 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     public PageResult<AiRefinementTaskResult> pageTasks(
             String capability, String status, String contentType, Long contentId, PageQuery pageQuery) {
         String normalizedCapability = normalizeCapability(capability);
+        AiContentRef contentRef = AiContentRef.ofNullable(contentType, contentId);
         PageResult<AiBatchJobResult> page = isBlank(normalizedCapability)
                 ? batchJobApplicationService.pageByCapabilities(
-                        REFINEMENT_SCOPE, REFINEMENT_CAPABILITIES, status, contentType, contentId, pageQuery)
+                        REFINEMENT_SCOPE,
+                        REFINEMENT_CAPABILITIES,
+                        isBlank(status) ? null : AiBatchJobStatus.from(status),
+                        contentRef,
+                        pageQuery)
                 : batchJobApplicationService.page(
                         REFINEMENT_SCOPE,
                         validateRefinementCapability(normalizedCapability),
-                        status,
-                        contentType,
-                        contentId,
+                        isBlank(status) ? null : AiBatchJobStatus.from(status),
+                        contentRef,
                         pageQuery);
-        AiContentRef contentRef = AiContentRef.ofNullable(contentType, contentId);
         Map<Long, AiInvocationLog> invocationLogsByBatch = latestInvocationLogsByBatch(page.getRecords(), contentRef);
         Map<Long, AiCandidate> candidatesByBatch = latestCandidatesByBatch(page.getRecords(), contentRef);
         List<AiRefinementTaskResult> records = new ArrayList<>();
         for (AiBatchJobResult record : page.getRecords()) {
             records.add(toTaskResult(
                     record,
-                    invocationLogsByBatch.get(record.getBatchId()),
-                    candidatesByBatch.get(record.getBatchId())));
+                    invocationLogsByBatch.get(AiBatchJobIdCodec.toValue(record.getBatchId())),
+                    candidatesByBatch.get(AiBatchJobIdCodec.toValue(record.getBatchId()))));
         }
         return PageResult.of(page.getPageNo(), page.getPageSize(), page.getTotalCount(), records);
     }
 
     @Override
     public void streamTaskEvents(Long taskId, Consumer<AiStreamEventResult> eventConsumer) {
-        AiBatchJobResult job = batchJobApplicationService.get(taskId);
+        AiBatchJobResult job = batchJobApplicationService.get(AiBatchJobIdCodec.toDomain(taskId));
         validateRefinementBatchOwnership(job);
         if (!isStreamEnabledTask(job)) {
             throw new BizException("AI refinement task stream is not enabled: " + taskId);
@@ -166,9 +174,10 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AiRefinementTaskResult cancelTask(Long taskId) {
-        AiBatchJobResult job = batchJobApplicationService.get(taskId);
+        AiBatchJobId batchId = AiBatchJobIdCodec.toDomain(taskId);
+        AiBatchJobResult job = batchJobApplicationService.get(batchId);
         validateRefinementBatchOwnership(job);
-        AiBatchJobResult cancelled = batchJobApplicationService.cancel(taskId);
+        AiBatchJobResult cancelled = batchJobApplicationService.cancel(batchId);
         AiRefinementTaskResult task = toTaskResult(cancelled);
         publishTerminalEvent(taskId, task, null);
         return task;
@@ -184,8 +193,9 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     }
 
     private void executeTask(Long taskId, AiRefinementRequestCommand command) {
-        AiBatchJobResult job = batchJobApplicationService.get(taskId);
-        if (STATUS_CANCELLED.equals(job.getStatus())) {
+        AiBatchJobId batchId = AiBatchJobIdCodec.toDomain(taskId);
+        AiBatchJobResult job = batchJobApplicationService.get(batchId);
+        if (AiBatchJobStatus.CANCELLED == job.getStatus()) {
             return;
         }
 
@@ -206,17 +216,17 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
                     exception.getMessage());
             publishFailureEvent(taskId, command, result);
         }
-        AiBatchJobResult latestJob = batchJobApplicationService.get(taskId);
-        if (STATUS_CANCELLED.equals(latestJob.getStatus())) {
+        AiBatchJobResult latestJob = batchJobApplicationService.get(batchId);
+        if (AiBatchJobStatus.CANCELLED == latestJob.getStatus()) {
             return;
         }
         AiBatchJobResult finalJob;
         if (result != null && STATUS_SUCCEEDED.equals(result.getStatus())) {
-            finalJob = batchJobApplicationService.recordSuccessIfRunning(taskId);
+            finalJob = batchJobApplicationService.recordSuccessIfRunning(batchId);
         } else if (result != null && STATUS_PARTIAL.equals(result.getStatus())) {
-            finalJob = batchJobApplicationService.recordPartialIfRunning(taskId, failureSummaryJson(result));
+            finalJob = batchJobApplicationService.recordPartialIfRunning(batchId, failureSummaryJson(result));
         } else {
-            finalJob = batchJobApplicationService.recordFailureIfRunning(taskId, failureSummaryJson(result));
+            finalJob = batchJobApplicationService.recordFailureIfRunning(batchId, failureSummaryJson(result));
         }
         publishTerminalEvent(taskId, toTaskResult(taskId, finalJob, command, result), result);
     }
@@ -236,21 +246,24 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     }
 
     private void markFailedAfterUnexpectedException(Long taskId, RuntimeException exception) {
-        AiBatchJobResult job = batchJobApplicationService.get(taskId);
-        if (job == null || isTerminal(job.getStatus())) {
+        AiBatchJobId batchId = AiBatchJobIdCodec.toDomain(taskId);
+        AiBatchJobResult job = batchJobApplicationService.get(batchId);
+        if (job == null
+                || isTerminal(job.getStatus() == null ? null : job.getStatus().name())) {
             return;
         }
         AiCandidateResult result = new AiCandidateResult(
                 null,
                 null,
                 STATUS_FAILED,
-                job.getCapability(),
+                job.getCapability() == null ? null : job.getCapability().value(),
                 "INTERNAL_EXECUTION",
                 null,
                 null,
                 "INTERNAL_FAILURE",
                 exception.getMessage());
-        AiBatchJobResult failed = batchJobApplicationService.recordFailureIfRunning(taskId, failureSummaryJson(result));
+        AiBatchJobResult failed =
+                batchJobApplicationService.recordFailureIfRunning(batchId, failureSummaryJson(result));
         publishTerminalEvent(taskId, toTaskResult(taskId, failed, null, result), result);
     }
 
@@ -366,20 +379,25 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         if (job == null) {
             throw new BizException("AI refinement task not found");
         }
-        validateRefinementBatchOwnership(job.getScope(), job.getCapability());
+        validateRefinementBatchOwnership(
+                job.getScope(),
+                job.getCapability() == null ? null : job.getCapability().value());
     }
 
     private void validateRefinementBatchOwnership(String scope, String capability) {
-        if (!REFINEMENT_SCOPE.equals(scope) || !REFINEMENT_CAPABILITIES.contains(capability)) {
+        if (!REFINEMENT_SCOPE.equals(scope)
+                || isBlank(capability)
+                || !REFINEMENT_CAPABILITIES.contains(AiBusinessCapability.from(capability))) {
             throw new BizException("AI refinement task does not belong to refinement workflow");
         }
     }
 
-    private String validateRefinementCapability(String capability) {
-        if (!REFINEMENT_CAPABILITIES.contains(capability)) {
+    private AiBusinessCapability validateRefinementCapability(String capability) {
+        AiBusinessCapability parsedCapability = AiBusinessCapability.from(capability);
+        if (!REFINEMENT_CAPABILITIES.contains(parsedCapability)) {
             throw new BizException("unsupported ai refinement capability: " + capability);
         }
-        return capability;
+        return parsedCapability;
     }
 
     private boolean isStreamEnabledTask(AiRefinementRequestCommand command) {
@@ -391,11 +409,11 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     }
 
     private boolean isStreamEnabledTask(AiBatchJobResult job) {
-        if (job == null || !CONTENT_TYPE_SANCAI_ENTRY.equals(job.getContentType())) {
+        if (job == null || !CONTENT_TYPE_SANCAI_ENTRY.equals(AiContentRefCodec.toContentType(job.getContentRef()))) {
             return false;
         }
-        return CAPABILITY_IMAGE_ANALYSIS.equals(job.getCapability())
-                || CAPABILITY_IMAGE_GEN.equals(job.getCapability());
+        return CAPABILITY_IMAGE_ANALYSIS.equals(job.getCapability().value())
+                || CAPABILITY_IMAGE_GEN.equals(job.getCapability().value());
     }
 
     private void publishStreamEvent(Long taskId, AiStreamEventResult event) {
@@ -448,7 +466,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         AiStreamEventResult event = baseEvent(task);
         event.setEventType("completed");
         event.setStage("completed");
-        event.setStatus(STATUS_SUCCEEDED);
+        event.setStatus(AiInvocationStatus.SUCCEEDED);
         event.setResultFormat(result == null ? task.getResultFormat() : result.getResultFormat());
         event.setResultPayload(result == null ? task.getResultPreview() : result.getResultPayload());
         return event;
@@ -458,7 +476,11 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         AiStreamEventResult event = baseEvent(task);
         event.setEventType("error");
         event.setStage(task.getFailureStage());
-        event.setStatus(task.getStatus());
+        event.setStatus(AiInvocationStatus.from(task.getStatus()));
+        if (STATUS_PARTIAL.equals(task.getStatus())) {
+            event.setResultFormat(task.getResultFormat());
+            event.setResultPayload(task.getResultPreview());
+        }
         event.setFailureStage(task.getFailureStage());
         event.setErrorType(task.getErrorType());
         event.setErrorMessage(task.getErrorMessage());
@@ -468,8 +490,8 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
     private AiStreamEventResult baseEvent(AiRefinementTaskResult task) {
         AiStreamEventResult event = new AiStreamEventResult();
         event.setEventId("task-" + task.getTaskId() + "-" + System.currentTimeMillis());
-        event.setRequestId(task.getRequestId());
-        event.setTraceId(task.getTraceId());
+        event.setRequestId(RequestIdCodec.toDomain(task.getRequestId()));
+        event.setTraceId(TraceIdCodec.toDomain(task.getTraceId()));
         event.setTimestamp(Instant.now());
         return event;
     }
@@ -487,16 +509,25 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
 
     private AiRefinementTaskResult toTaskResult(
             Long taskId, AiBatchJobResult job, AiRefinementRequestCommand command, AiCandidateResult result) {
-        String status = job == null ? null : job.getStatus();
+        String status =
+                job == null || job.getStatus() == null ? null : job.getStatus().name();
         if (status == null && result != null) {
             status = result.getStatus();
         }
         return new AiRefinementTaskResult(
-                job == null ? taskId : job.getBatchId(),
+                job == null ? taskId : AiBatchJobIdCodec.toValue(job.getBatchId()),
                 command == null ? (job == null ? null : job.getScope()) : command.getScope(),
-                command == null ? (job == null ? null : job.getCapability()) : command.getCapability(),
-                command == null ? (job == null ? null : job.getContentType()) : command.getContentType(),
-                command == null ? (job == null ? null : job.getContentId()) : command.getContentId(),
+                command == null
+                        ? (job == null || job.getCapability() == null
+                                ? null
+                                : job.getCapability().value())
+                        : command.getCapability(),
+                command == null
+                        ? (job == null ? null : AiContentRefCodec.toContentType(job.getContentRef()))
+                        : command.getContentType(),
+                command == null
+                        ? (job == null ? null : AiContentRefCodec.toContentId(job.getContentRef()))
+                        : command.getContentId(),
                 command == null ? null : command.getObjectId(),
                 command == null ? null : command.getRequestId(),
                 command == null ? null : command.getTraceId(),
@@ -523,7 +554,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         if (job == null) {
             return null;
         }
-        AiBatchJobId batchId = AiBatchJobIdCodec.toDomain(job.getBatchId());
+        AiBatchJobId batchId = job.getBatchId();
         AiInvocationLog invocationLog = latestInvocationLog(aiInvocationRepository.listInvocationLogsByBatch(batchId));
         AiCandidate candidate = latestCandidate(aiInvocationRepository.listCandidatesByBatch(batchId));
         return toTaskResult(job, invocationLog, candidate);
@@ -600,7 +631,7 @@ public class AiRefinementTaskApplicationServiceImpl implements AiRefinementTaskA
         }
         for (AiBatchJobResult job : jobs) {
             if (job != null && job.getBatchId() != null) {
-                ids.add(AiBatchJobIdCodec.toDomain(job.getBatchId()));
+                ids.add(job.getBatchId());
             }
         }
         return ids;

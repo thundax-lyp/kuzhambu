@@ -14,6 +14,7 @@ import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiCandidateStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
+import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
@@ -295,14 +296,15 @@ class AiInvocationControllerTest {
                 new Class<?>[] {AiBatchJobApplicationService.class},
                 (proxy, method, args) -> {
                     if ("cancel".equals(method.getName())) {
-                        assertEquals(8801L, args[0]);
+                        assertEquals(new AiBatchJobId(8801L), args[0]);
                         return new com.thundax.kuzhambu.ai.application.invocation.result.AiBatchJobResult(
-                                8801L,
+                                new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId(8801L),
                                 "classics",
-                                "image_analysis",
-                                "SANCAI_ENTRY",
-                                3001L,
-                                "CANCELLED",
+                                com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability
+                                        .CLASSICS_IMAGE_DESCRIBE,
+                                com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.of(
+                                        "SANCAI_ENTRY", 3001L),
+                                com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiBatchJobStatus.CANCELLED,
                                 1,
                                 0,
                                 0,
@@ -321,20 +323,23 @@ class AiInvocationControllerTest {
         return new AiCandidateApplicationService() {
             @Override
             public AiCandidate requirePendingForApply(
-                    Long candidateId, String contentType, Long contentId, String capability, Long objectId) {
+                    AiCandidateId candidateId,
+                    AiContentRef contentRef,
+                    AiBusinessCapability capability,
+                    AiTargetObjectId targetObjectId) {
                 throw new UnsupportedOperationException(
                         "candidate application service should not be called in this test");
             }
 
             @Override
             public AiCandidate markApplied(
-                    Long candidateId, String resultFormat, String resultPayload, java.time.Instant appliedAt) {
+                    AiCandidateId candidateId, String resultFormat, String resultPayload, java.time.Instant appliedAt) {
                 throw new UnsupportedOperationException(
                         "candidate application service should not be called in this test");
             }
 
             @Override
-            public AiCandidate reject(Long candidateId, String errorType, String errorMessage) {
+            public AiCandidate reject(AiCandidateId candidateId, String errorType, String errorMessage) {
                 throw new UnsupportedOperationException(
                         "candidate application service should not be called in this test");
             }
@@ -345,19 +350,22 @@ class AiInvocationControllerTest {
         return new AiCandidateApplicationService() {
             @Override
             public AiCandidate requirePendingForApply(
-                    Long candidateId, String contentType, Long contentId, String capability, Long objectId) {
+                    AiCandidateId candidateId,
+                    AiContentRef contentRef,
+                    AiBusinessCapability capability,
+                    AiTargetObjectId targetObjectId) {
                 throw new UnsupportedOperationException("requirePendingForApply should not be called in this test");
             }
 
             @Override
             public AiCandidate markApplied(
-                    Long candidateId, String resultFormat, String resultPayload, java.time.Instant appliedAt) {
+                    AiCandidateId candidateId, String resultFormat, String resultPayload, java.time.Instant appliedAt) {
                 throw new UnsupportedOperationException("markApplied should not be called in this test");
             }
 
             @Override
-            public AiCandidate reject(Long candidateId, String errorType, String errorMessage) {
-                assertEquals(11L, candidateId);
+            public AiCandidate reject(AiCandidateId candidateId, String errorType, String errorMessage) {
+                assertEquals(new AiCandidateId(11L), candidateId);
                 assertEquals("TIMEOUT", errorType);
                 assertEquals("执行超时", errorMessage);
                 return rejectedCandidate();
@@ -369,14 +377,17 @@ class AiInvocationControllerTest {
         return new AiCandidateApplicationService() {
             @Override
             public AiCandidate requirePendingForApply(
-                    Long candidateId, String contentType, Long contentId, String capability, Long objectId) {
+                    AiCandidateId candidateId,
+                    AiContentRef contentRef,
+                    AiBusinessCapability capability,
+                    AiTargetObjectId targetObjectId) {
                 throw new UnsupportedOperationException("requirePendingForApply should not be called in this test");
             }
 
             @Override
             public AiCandidate markApplied(
-                    Long candidateId, String resultFormat, String resultPayload, java.time.Instant appliedAt) {
-                assertEquals(22L, candidateId);
+                    AiCandidateId candidateId, String resultFormat, String resultPayload, java.time.Instant appliedAt) {
+                assertEquals(new AiCandidateId(22L), candidateId);
                 assertEquals(null, resultFormat);
                 assertEquals(null, resultPayload);
                 assertEquals(null, appliedAt);
@@ -384,7 +395,7 @@ class AiInvocationControllerTest {
             }
 
             @Override
-            public AiCandidate reject(Long candidateId, String errorType, String errorMessage) {
+            public AiCandidate reject(AiCandidateId candidateId, String errorType, String errorMessage) {
                 throw new UnsupportedOperationException("reject should not be called in this test");
             }
         };

@@ -7,9 +7,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.thundax.kuzhambu.ai.application.config.service.AiBusinessConfigApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
-import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptTemplateIdCodec;
-import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiBusinessConfig;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVariable;
@@ -58,8 +56,8 @@ public class AiBusinessInvokeConfigResolver {
         List<PromptVariable> variables = resolvePromptVariables(config, promptVersion);
         ObjectNode promptVariables = buildPromptVariables(variables, inputPayload);
 
-        command.setModelId(AiModelIdCodec.toValue(config.getModelId()));
-        command.setPromptVersionId(PromptVersionIdCodec.toValue(promptVersion.getId()));
+        command.setModelId(config.getModelId());
+        command.setPromptVersionId(promptVersion.getId());
         command.setPromptMessagesJson(renderPromptMessages(promptVersion.getMessageTemplatesJson(), promptVariables));
         command.setPromptVariablesJson(toJson(promptVariables, "AI prompt variables is not valid JSON"));
         if (isBlank(command.getOutputSchemaJson())) {
@@ -77,8 +75,7 @@ public class AiBusinessInvokeConfigResolver {
         if (command == null || command.getCapability() == null || command.getPromptVersionId() == null) {
             throw new BizException("AI prompt version is required");
         }
-        PromptVersion promptVersion =
-                promptRepository.getVersion(PromptVersionIdCodec.toDomain(command.getPromptVersionId()));
+        PromptVersion promptVersion = promptRepository.getVersion(command.getPromptVersionId());
         if (promptVersion == null || promptVersion.getTemplateId() == null) {
             throw new BizException("AI prompt version is not configured: " + command.getPromptVersionId());
         }

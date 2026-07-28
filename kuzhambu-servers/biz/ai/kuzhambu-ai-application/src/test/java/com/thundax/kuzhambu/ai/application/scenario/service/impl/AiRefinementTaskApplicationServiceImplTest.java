@@ -18,6 +18,7 @@ import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiBatchJobStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiCandidateStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiBatchJobId;
@@ -60,7 +61,9 @@ class AiRefinementTaskApplicationServiceImplTest {
 
         assertEquals(1, batchJobService.created.getTotalCount());
         assertEquals(AiBusinessCapability.CLASSICS_TRANSLATE.value(), accepted.getCapability());
-        assertEquals("SUCCEEDED", batchJobService.get(accepted.getTaskId()).getStatus());
+        assertEquals(
+                AiBatchJobStatus.SUCCEEDED,
+                batchJobService.get(accepted.getTaskId()).getStatus());
         assertEquals(1, batchJobService.get(accepted.getTaskId()).getSuccessCount());
         assertEquals(accepted.getTaskId(), refinementService.lastCommand.getBatchId());
     }
@@ -132,14 +135,18 @@ class AiRefinementTaskApplicationServiceImplTest {
         AiRefinementTaskResult accepted;
         try {
             accepted = service.addTask(command(AiBusinessCapability.CLASSICS_SUMMARY.value()));
-            assertEquals("RUNNING", batchJobService.get(accepted.getTaskId()).getStatus());
+            assertEquals(
+                    AiBatchJobStatus.RUNNING,
+                    batchJobService.get(accepted.getTaskId()).getStatus());
             TransactionSynchronizationManager.getSynchronizations()
                     .forEach(synchronization -> synchronization.afterCommit());
         } finally {
             TransactionSynchronizationManager.clearSynchronization();
         }
 
-        assertEquals("SUCCEEDED", batchJobService.get(accepted.getTaskId()).getStatus());
+        assertEquals(
+                AiBatchJobStatus.SUCCEEDED,
+                batchJobService.get(accepted.getTaskId()).getStatus());
     }
 
     @Test
@@ -163,7 +170,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         AiBatchJobResult completed = batchJobService.get(accepted.getTaskId());
 
         assertTrue(accepted.isStreamEnabled());
-        assertEquals("FAILED", completed.getStatus());
+        assertEquals(AiBatchJobStatus.FAILED, completed.getStatus());
         assertEquals(1, completed.getFailedCount());
         assertTrue(completed.getFailureSummaryJson().contains("WORKER_PROTOCOL_FAILURE"));
     }
@@ -188,20 +195,70 @@ class AiRefinementTaskApplicationServiceImplTest {
                 service.addTask(command(AiBusinessCapability.CLASSICS_IMAGE_GENERATE.value()));
         AiBatchJobResult completed = batchJobService.get(accepted.getTaskId());
 
-        assertEquals("PARTIAL", completed.getStatus());
+        assertEquals(AiBatchJobStatus.PARTIAL, completed.getStatus());
         assertEquals(1, completed.getSuccessCount());
         assertTrue(completed.getFailureSummaryJson().contains("MODEL_SEMANTIC_FAILURE"));
     }
 
     @Test
+    void streamTaskEventsShouldPreservePartialTerminalStatus() {
+        RecordingBatchJobService batchJobService = new RecordingBatchJobService();
+        StubRefinementApplicationService refinementService = new StubRefinementApplicationService(new AiCandidateResult(
+                101L,
+                201L,
+                "PARTIAL",
+                AiBusinessCapability.CLASSICS_IMAGE_GENERATE.value(),
+                "WORKER_RESULT",
+                "TEXT",
+                "partial",
+                "MODEL_SEMANTIC_FAILURE",
+                "partial output"));
+        AiRefinementTaskApplicationServiceImpl service = new AiRefinementTaskApplicationServiceImpl(
+                batchJobService,
+                refinementService,
+                new RecordingInvocationRepository(List.of(), List.of()),
+                DIRECT_EXECUTOR);
+        AiRefinementTaskResult accepted =
+                service.addTask(command(AiBusinessCapability.CLASSICS_IMAGE_GENERATE.value()));
+        List<com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult> events = new ArrayList<>();
+
+        service.streamTaskEvents(accepted.getTaskId(), events::add);
+
+        assertEquals(1, events.size());
+        assertEquals(AiInvocationStatus.PARTIAL, events.get(0).getStatus());
+    }
+
+    @Test
+    void streamTaskEventsShouldPreserveCancelledTerminalStatus() {
+        RecordingBatchJobService batchJobService = new RecordingBatchJobService();
+        Long taskId = batchJobService.createLong(new AiBatchJobCreateCommand(
+                "classics",
+                AiBusinessCapability.CLASSICS_IMAGE_GENERATE,
+                AiContentRef.ofNullable("SANCAI_ENTRY", 10L),
+                1,
+                null));
+        AiRefinementTaskApplicationServiceImpl service = new AiRefinementTaskApplicationServiceImpl(
+                batchJobService,
+                new StubRefinementApplicationService(null),
+                new RecordingInvocationRepository(List.of(), List.of()),
+                DIRECT_EXECUTOR);
+        service.cancelTask(taskId);
+        List<com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult> events = new ArrayList<>();
+
+        service.streamTaskEvents(taskId, events::add);
+
+        assertEquals(1, events.size());
+        assertEquals(AiInvocationStatus.CANCELLED, events.get(0).getStatus());
+    }
+
+    @Test
     void taskResultShouldParseBatchFailureSummaryWhenInvocationAndCandidateAreMissing() {
         AiBatchJobResult job = new AiBatchJobResult(
-                1001L,
+                new AiBatchJobId(1001L),
                 "classics",
-                "classics_summary",
-                "SANCAI_ENTRY",
-                10L,
-                "FAILED",
+                AiBusinessCapability.CLASSICS_SUMMARY,
+                AiContentRef.of("SANCAI_ENTRY", 10L),
+                AiBatchJobStatus.FAILED,
                 1,
                 0,
                 1,
@@ -221,7 +278,7 @@ class AiRefinementTaskApplicationServiceImplTest {
     @Test
     void expireOrphanedRunningTasksShouldFailStaleRefinementBatches() {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
-        Long batchId = batchJobService.create(new AiBatchJobCreateCommand(
+        Long batchId = batchJobService.createLong(new AiBatchJobCreateCommand(
                 "classics",
                 AiBusinessCapability.fromAlias("classics_summary"),
                 AiContentRef.ofNullable("SANCAI_ENTRY", 10L),
@@ -233,20 +290,20 @@ class AiRefinementTaskApplicationServiceImplTest {
         service.expireOrphanedRunningTasks();
 
         AiBatchJobResult expired = batchJobService.get(batchId);
-        assertEquals("FAILED", expired.getStatus());
+        assertEquals(AiBatchJobStatus.FAILED, expired.getStatus());
         assertTrue(expired.getFailureSummaryJson().contains("TASK_ORPHANED"));
     }
 
     @Test
     void pageTasksShouldLoadInvocationAndCandidateByBatchIdsInBulk() {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
-        Long firstBatchId = batchJobService.create(new AiBatchJobCreateCommand(
+        Long firstBatchId = batchJobService.createLong(new AiBatchJobCreateCommand(
                 "classics",
                 AiBusinessCapability.fromAlias("classics_summary"),
                 AiContentRef.ofNullable("SANCAI_ENTRY", 10L),
                 1,
                 null));
-        Long secondBatchId = batchJobService.create(new AiBatchJobCreateCommand(
+        Long secondBatchId = batchJobService.createLong(new AiBatchJobCreateCommand(
                 "classics",
                 AiBusinessCapability.fromAlias("classics_tags"),
                 AiContentRef.ofNullable("SANCAI_ENTRY", 10L),
@@ -275,7 +332,7 @@ class AiRefinementTaskApplicationServiceImplTest {
     @Test
     void getTaskShouldRejectNonRefinementBatchJob() {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
-        Long batchId = batchJobService.create(new AiBatchJobCreateCommand(
+        Long batchId = batchJobService.createLong(new AiBatchJobCreateCommand(
                 "knowledge",
                 AiBusinessCapability.fromAlias("knowledge_graph_extract"),
                 AiContentRef.ofNullable("SANCAI_ENTRY", 10L),
@@ -290,7 +347,7 @@ class AiRefinementTaskApplicationServiceImplTest {
     @Test
     void cancelTaskShouldRejectNonRefinementBatchJob() {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
-        Long batchId = batchJobService.create(new AiBatchJobCreateCommand(
+        Long batchId = batchJobService.createLong(new AiBatchJobCreateCommand(
                 "knowledge",
                 AiBusinessCapability.fromAlias("knowledge_graph_extract"),
                 AiContentRef.ofNullable("SANCAI_ENTRY", 10L),
@@ -300,13 +357,13 @@ class AiRefinementTaskApplicationServiceImplTest {
                 batchJobService, new StubRefinementApplicationService(null), null, DIRECT_EXECUTOR);
 
         assertThrows(RuntimeException.class, () -> service.cancelTask(batchId));
-        assertEquals("RUNNING", batchJobService.get(batchId).getStatus());
+        assertEquals(AiBatchJobStatus.RUNNING, batchJobService.get(batchId).getStatus());
     }
 
     @Test
     void pageTasksShouldKeepCandidateScopedToRequestedContentInMultiContentBatch() {
         RecordingBatchJobService batchJobService = new RecordingBatchJobService();
-        Long batchId = batchJobService.create(new AiBatchJobCreateCommand(
+        Long batchId = batchJobService.createLong(new AiBatchJobCreateCommand(
                 "classics",
                 AiBusinessCapability.fromAlias("classics_summary"),
                 AiContentRef.ofNullable("SANCAI_ENTRY", null),
@@ -355,20 +412,23 @@ class AiRefinementTaskApplicationServiceImplTest {
         private AiBatchJobCreateCommand created;
 
         @Override
-        public AiBatchJobResult get(Long batchId) {
+        public AiBatchJobResult get(AiBatchJobId batchId) {
             return jobs.stream()
                     .filter(job -> job.getBatchId().equals(batchId))
                     .findFirst()
                     .orElse(null);
         }
 
+        private AiBatchJobResult get(Long batchId) {
+            return get(AiBatchJobIdCodec.toDomain(batchId));
+        }
+
         @Override
         public PageResult<AiBatchJobResult> page(
                 String scope,
-                String capability,
-                String status,
-                String contentType,
-                Long contentId,
+                AiBusinessCapability capability,
+                AiBatchJobStatus status,
+                AiContentRef contentRef,
                 PageQuery pageQuery) {
             List<AiBatchJobResult> records = filtered(scope, capability == null ? List.of() : List.of(capability));
             return PageResult.of(1, 10, records.size(), records);
@@ -377,26 +437,24 @@ class AiRefinementTaskApplicationServiceImplTest {
         @Override
         public PageResult<AiBatchJobResult> pageByCapabilities(
                 String scope,
-                List<String> capabilities,
-                String status,
-                String contentType,
-                Long contentId,
+                List<AiBusinessCapability> capabilities,
+                AiBatchJobStatus status,
+                AiContentRef contentRef,
                 PageQuery pageQuery) {
             List<AiBatchJobResult> records = filtered(scope, capabilities);
             return PageResult.of(1, 10, records.size(), records);
         }
 
         @Override
-        public Long create(AiBatchJobCreateCommand command) {
+        public AiBatchJobId create(AiBatchJobCreateCommand command) {
             created = command;
             long batchId = sequence.incrementAndGet();
             jobs.add(new AiBatchJobResult(
-                    batchId,
+                    new AiBatchJobId(batchId),
                     command.getScope(),
-                    command.getCapability().value(),
-                    command.getContentRef().contentType(),
-                    command.getContentRef().contentId(),
-                    "RUNNING",
+                    command.getCapability(),
+                    command.getContentRef(),
+                    AiBatchJobStatus.RUNNING,
                     command.getTotalCount(),
                     0,
                     0,
@@ -405,16 +463,20 @@ class AiRefinementTaskApplicationServiceImplTest {
                     Instant.parse("2026-01-01T00:00:00Z"),
                     null,
                     null));
-            return batchId;
+            return new AiBatchJobId(batchId);
+        }
+
+        private Long createLong(AiBatchJobCreateCommand command) {
+            return AiBatchJobIdCodec.toValue(create(command));
         }
 
         @Override
-        public boolean canDispatchNextUnit(Long batchId) {
+        public boolean canDispatchNextUnit(AiBatchJobId batchId) {
             return true;
         }
 
         @Override
-        public AiBatchJobResult recordSuccess(Long batchId) {
+        public AiBatchJobResult recordSuccess(AiBatchJobId batchId) {
             AiBatchJobResult job = get(batchId);
             AiBatchJobResult updated = copy(job, "SUCCEEDED", 1, 0, null);
             replace(updated);
@@ -422,16 +484,16 @@ class AiRefinementTaskApplicationServiceImplTest {
         }
 
         @Override
-        public AiBatchJobResult recordSuccessIfRunning(Long batchId) {
+        public AiBatchJobResult recordSuccessIfRunning(AiBatchJobId batchId) {
             AiBatchJobResult job = get(batchId);
-            if (!"RUNNING".equals(job.getStatus())) {
+            if (AiBatchJobStatus.RUNNING != job.getStatus()) {
                 return job;
             }
             return recordSuccess(batchId);
         }
 
         @Override
-        public AiBatchJobResult recordFailure(Long batchId, String failureSummaryJson) {
+        public AiBatchJobResult recordFailure(AiBatchJobId batchId, String failureSummaryJson) {
             AiBatchJobResult job = get(batchId);
             AiBatchJobResult updated = copy(job, "FAILED", 0, 1, failureSummaryJson);
             replace(updated);
@@ -439,18 +501,18 @@ class AiRefinementTaskApplicationServiceImplTest {
         }
 
         @Override
-        public AiBatchJobResult recordFailureIfRunning(Long batchId, String failureSummaryJson) {
+        public AiBatchJobResult recordFailureIfRunning(AiBatchJobId batchId, String failureSummaryJson) {
             AiBatchJobResult job = get(batchId);
-            if (!"RUNNING".equals(job.getStatus())) {
+            if (AiBatchJobStatus.RUNNING != job.getStatus()) {
                 return job;
             }
             return recordFailure(batchId, failureSummaryJson);
         }
 
         @Override
-        public AiBatchJobResult recordPartialIfRunning(Long batchId, String failureSummaryJson) {
+        public AiBatchJobResult recordPartialIfRunning(AiBatchJobId batchId, String failureSummaryJson) {
             AiBatchJobResult job = get(batchId);
-            if (!"RUNNING".equals(job.getStatus())) {
+            if (AiBatchJobStatus.RUNNING != job.getStatus()) {
                 return job;
             }
             AiBatchJobResult updated = copy(job, "PARTIAL", 1, 0, failureSummaryJson);
@@ -461,13 +523,13 @@ class AiRefinementTaskApplicationServiceImplTest {
         @Override
         public int expireRunning(
                 String scope,
-                List<String> capabilities,
+                List<AiBusinessCapability> capabilities,
                 Instant requestedBefore,
                 String failureSummaryJson,
                 int limit) {
             int expiredCount = 0;
             for (AiBatchJobResult job : List.copyOf(jobs)) {
-                if ("RUNNING".equals(job.getStatus())
+                if (AiBatchJobStatus.RUNNING == job.getStatus()
                         && scope.equals(job.getScope())
                         && capabilities.contains(job.getCapability())
                         && job.getRequestedAt().isBefore(requestedBefore)) {
@@ -479,7 +541,7 @@ class AiRefinementTaskApplicationServiceImplTest {
         }
 
         @Override
-        public AiBatchJobResult cancel(Long batchId) {
+        public AiBatchJobResult cancel(AiBatchJobId batchId) {
             AiBatchJobResult job = get(batchId);
             AiBatchJobResult updated = copy(job, "CANCELLED", job.getSuccessCount(), job.getFailedCount(), null);
             replace(updated);
@@ -492,9 +554,8 @@ class AiRefinementTaskApplicationServiceImplTest {
                     job.getBatchId(),
                     job.getScope(),
                     job.getCapability(),
-                    job.getContentType(),
-                    job.getContentId(),
-                    status,
+                    job.getContentRef(),
+                    AiBatchJobStatus.valueOf(status),
                     job.getTotalCount(),
                     successCount,
                     failedCount,
@@ -510,7 +571,7 @@ class AiRefinementTaskApplicationServiceImplTest {
             jobs.add(updated);
         }
 
-        private List<AiBatchJobResult> filtered(String scope, List<String> capabilities) {
+        private List<AiBatchJobResult> filtered(String scope, List<AiBusinessCapability> capabilities) {
             List<AiBatchJobResult> records = new ArrayList<>();
             for (AiBatchJobResult job : jobs) {
                 if ((scope == null || scope.equals(job.getScope()))
@@ -637,7 +698,9 @@ class AiRefinementTaskApplicationServiceImplTest {
 
         @Override
         public List<AiInvocationLog> listInvocationLogsByBatch(AiBatchJobId batchId) {
-            throw new UnsupportedOperationException();
+            return invocationLogs.stream()
+                    .filter(record -> batchId.equals(record.getBatchId()))
+                    .toList();
         }
 
         @Override
@@ -711,7 +774,9 @@ class AiRefinementTaskApplicationServiceImplTest {
 
         @Override
         public List<AiCandidate> listCandidatesByBatch(AiBatchJobId batchId) {
-            throw new UnsupportedOperationException();
+            return candidates.stream()
+                    .filter(record -> batchId.equals(record.getBatchId()))
+                    .toList();
         }
 
         @Override

@@ -11,7 +11,13 @@ import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
 import com.thundax.kuzhambu.ai.application.invocation.gateway.AiWorkerGateway.ArtifactDownloadException;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
+import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
+import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId;
+import com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -50,7 +56,7 @@ class AiWorkerHttpGatewayTest {
                               "requestId":"req-1",
                               "traceId":"trace-1",
                               "status":"SUCCEEDED",
-                              "capability":"translate",
+                              "capability":"summary",
                               "result":{"format":"text","payload":"done"},
                               "usage":{"latencyMs":12,"inputTokens":3,"outputTokens":4,"costAmount":"0.01"}
                             }
@@ -118,7 +124,7 @@ class AiWorkerHttpGatewayTest {
 
         AiInvokeResult result = client.invoke(command());
 
-        assertEquals("FAILED", result.getStatus());
+        assertEquals(AiInvocationStatus.FAILED, result.getStatus());
         assertEquals("WORKER_UNAVAILABLE", result.getErrorType());
         assertEquals("Worker returned HTTP 503", result.getErrorMessage());
     }
@@ -145,10 +151,113 @@ class AiWorkerHttpGatewayTest {
 
         AiInvokeResult result = client.invoke(command());
 
-        assertEquals("FAILED", result.getStatus());
+        assertEquals(AiInvocationStatus.FAILED, result.getStatus());
         assertEquals("WORKER_REQUEST", result.getFailureStage());
         assertEquals("MODEL_REQUEST_REJECTED", result.getErrorType());
         assertEquals("模型拒绝请求", result.getErrorMessage());
+    }
+
+    @Test
+    void invokeShouldKeepBusinessCapabilityWhenWorkerEchoesWorkerCapability() throws IOException {
+        startServer(
+                "/internal/ai/invoke",
+                exchange -> respond(
+                        exchange,
+                        200,
+                        """
+                                {
+                                  "requestId":"req-1",
+                                  "traceId":"trace-1",
+                                  "status":"SUCCEEDED",
+                                  "capability":"version_summary",
+                                  "result":{"format":"text","payload":"done"}
+                                }
+                                """));
+        AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties(), new AiWorkerRequestSigner(), null);
+        AiInvokeCommand command = command();
+        command.setCapability(AiBusinessCapability.PLATFORM_VERSION_SUMMARY);
+        command.setWorkerCapability("version_summary");
+
+        AiInvokeResult result = client.invoke(command);
+
+        assertTrue(result.isSucceeded());
+        assertEquals(AiBusinessCapability.PLATFORM_VERSION_SUMMARY, result.getCapability());
+    }
+
+    @Test
+    void invokeShouldTreatUnknownStatusAsWorkerProtocolFailure() throws IOException {
+        startServer(
+                "/internal/ai/invoke",
+                exchange -> respond(
+                        exchange,
+                        200,
+                        """
+                                {
+                                  "requestId":"req-1",
+                                  "traceId":"trace-1",
+                                  "status":"UNKNOWN",
+                                  "capability":"summary"
+                                }
+                                """));
+        AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties(), new AiWorkerRequestSigner(), null);
+
+        AiInvokeResult result = client.invoke(command());
+
+        assertEquals(AiInvocationStatus.FAILED, result.getStatus());
+        assertEquals("WORKER_PROTOCOL_FAILURE", result.getErrorType());
+    }
+
+    @Test
+    void invokeShouldTreatMismatchedCapabilityAsWorkerProtocolFailure() throws IOException {
+        startServer(
+                "/internal/ai/invoke",
+                exchange -> respond(
+                        exchange,
+                        200,
+                        """
+                                {
+                                  "requestId":"req-1",
+                                  "traceId":"trace-1",
+                                  "status":"SUCCEEDED",
+                                  "capability":"translate"
+                                }
+                                """));
+        AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties(), new AiWorkerRequestSigner(), null);
+
+        AiInvokeResult result = client.invoke(command());
+
+        assertEquals(AiInvocationStatus.FAILED, result.getStatus());
+        assertEquals("WORKER_PROTOCOL_FAILURE", result.getErrorType());
+    }
+
+    @Test
+    void invokeShouldPreservePartialWorkerResponse() throws IOException {
+        startServer(
+                "/internal/ai/invoke",
+                exchange -> respond(
+                        exchange,
+                        200,
+                        """
+                                {
+                                  "requestId":"req-1",
+                                  "traceId":"trace-1",
+                                  "status":"PARTIAL",
+                                  "capability":"summary",
+                                  "failureStage":"WORKER_RESULT",
+                                  "result":{"format":"text","payload":"partial result"},
+                                  "errorType":"PARTIAL_RESULT",
+                                  "errorMessage":"部分结果可用"
+                                }
+                                """));
+        AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties(), new AiWorkerRequestSigner(), null);
+
+        AiInvokeResult result = client.invoke(command());
+
+        assertEquals(AiInvocationStatus.PARTIAL, result.getStatus());
+        assertEquals("partial result", result.getResultPayload());
+        assertEquals("WORKER_RESULT", result.getFailureStage());
+        assertEquals("PARTIAL_RESULT", result.getErrorType());
+        assertEquals("部分结果可用", result.getErrorMessage());
     }
 
     @Test
@@ -212,7 +321,7 @@ class AiWorkerHttpGatewayTest {
         assertEquals("completed", events.get(1).getEventType());
         assertEquals("MARKDOWN", events.get(1).getResultFormat());
         assertEquals("完整结果", events.get(1).getResultPayload());
-        assertEquals("SUCCEEDED", events.get(1).getStatus());
+        assertEquals(AiInvocationStatus.SUCCEEDED, events.get(1).getStatus());
     }
 
     @Test
@@ -230,10 +339,31 @@ class AiWorkerHttpGatewayTest {
         client.stream(command(), capturedEvent::set);
 
         assertEquals("error", capturedEvent.get().getEventType());
-        assertEquals("FAILED", capturedEvent.get().getStatus());
+        assertEquals(AiInvocationStatus.FAILED, capturedEvent.get().getStatus());
         assertEquals("MODEL_TRANSPORT_FAILURE", capturedEvent.get().getErrorType());
         assertEquals("模型服务不可用", capturedEvent.get().getErrorMessage());
         assertEquals("WORKER_STREAM", capturedEvent.get().getFailureStage());
+    }
+
+    @Test
+    void streamShouldPreservePartialCompletedEvent() throws IOException {
+        startServer(
+                "/internal/ai/stream",
+                exchange -> respond(
+                        exchange,
+                        200,
+                        "event:completed\n"
+                                + "data: {\"eventId\":\"evt-partial\",\"requestId\":\"req-1\",\"traceId\":\"trace-1\",\"stage\":\"completed\",\"result\":{\"format\":\"TEXT\",\"payload\":\"partial result\"},\"error\":{\"type\":\"PARTIAL_RESULT\",\"message\":\"部分结果可用\"},\"extra\":{\"failureStage\":\"WORKER_RESULT\",\"status\":\"PARTIAL\"}}\n\n"));
+        AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties(), new AiWorkerRequestSigner(), null);
+        AtomicReference<AiStreamEventResult> capturedEvent = new AtomicReference<>();
+
+        client.stream(command(), capturedEvent::set);
+
+        assertEquals(AiInvocationStatus.PARTIAL, capturedEvent.get().getStatus());
+        assertEquals("partial result", capturedEvent.get().getResultPayload());
+        assertEquals("WORKER_RESULT", capturedEvent.get().getFailureStage());
+        assertEquals("PARTIAL_RESULT", capturedEvent.get().getErrorType());
+        assertEquals("部分结果可用", capturedEvent.get().getErrorMessage());
     }
 
     @Test
@@ -257,15 +387,21 @@ class AiWorkerHttpGatewayTest {
 
     @Test
     void downloadArtifactShouldRejectOversizeContentLength() throws IOException {
-        startServer(
-                "/artifact/large",
-                exchange -> respondBinary(exchange, 200, "too-large".getBytes(StandardCharsets.UTF_8)));
+        AtomicReference<HttpExchange> captured = new AtomicReference<>();
+        startServer("/artifact/large", exchange -> {
+            captured.set(exchange);
+            respondBinary(exchange, 200, "too-large".getBytes(StandardCharsets.UTF_8));
+        });
         AiWorkerHttpGateway client = new AiWorkerHttpGateway(properties(4L), new AiWorkerRequestSigner(), null);
 
         ArtifactDownloadException exception = assertThrows(
-                ArtifactDownloadException.class, () -> client.downloadArtifact("req-1", "trace-1", "/artifact/large"));
+                ArtifactDownloadException.class,
+                () -> client.downloadArtifact(
+                        RequestIdCodec.toDomain("req-1"), TraceIdCodec.toDomain("trace-1"), "/artifact/large"));
 
         assertTrue(hasMessage(exception, "Content-Length exceeds max size"));
+        assertEquals("req-1", captured.get().getRequestHeaders().getFirst("X-Kuzhambu-Request-Id"));
+        assertEquals("trace-1", captured.get().getRequestHeaders().getFirst("X-Kuzhambu-Trace-Id"));
     }
 
     @Test
@@ -278,7 +414,10 @@ class AiWorkerHttpGatewayTest {
 
         ArtifactDownloadException exception = assertThrows(
                 ArtifactDownloadException.class,
-                () -> client.downloadArtifact("req-1", "trace-1", "/artifact/declared-large"));
+                () -> client.downloadArtifact(
+                        RequestIdCodec.toDomain("req-1"),
+                        TraceIdCodec.toDomain("trace-1"),
+                        "/artifact/declared-large"));
 
         assertTrue(exception.getMessage().contains("X-Kuzhambu-Artifact-Size-Bytes exceeds max size"));
     }
@@ -295,7 +434,8 @@ class AiWorkerHttpGatewayTest {
 
         ArtifactDownloadException exception = assertThrows(
                 ArtifactDownloadException.class,
-                () -> client.downloadArtifact("req-1", "trace-1", "/artifact/chunked-large"));
+                () -> client.downloadArtifact(
+                        RequestIdCodec.toDomain("req-1"), TraceIdCodec.toDomain("trace-1"), "/artifact/chunked-large"));
 
         assertTrue(exception.getMessage().contains("artifact body exceeds max size"));
     }
@@ -360,11 +500,11 @@ class AiWorkerHttpGatewayTest {
         command.setContentRef(
                 com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef.ofNullable("entry", 10L));
         command.setServiceRole("default");
-        command.setModelId(20L);
-        command.setModelName("model-a");
-        command.setPromptVersionId(30L);
-        command.setRequestId("req-1");
-        command.setTraceId("trace-1");
+        command.setModelId(new com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId(20L));
+        command.setModelName(com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName.of("model-a"));
+        command.setPromptVersionId(new com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId(30L));
+        command.setRequestId(new RequestId("req-1"));
+        command.setTraceId(new TraceId("trace-1"));
         command.setPromptMessagesJson("[{\"role\":\"user\",\"content\":\"hello\"}]");
         command.setPromptVariablesJson("{}");
         command.setInputPayloadJson("{\"text\":\"hello\"}");

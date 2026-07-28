@@ -66,7 +66,7 @@ class DiscoveryAiApplicationServiceImplTest {
         assertEquals("answer_generation", capturedCommand.getWorkerCapability());
         assertTrue(capturedCommand.isStream());
         assertFalse(capturedCommand.isCreateCandidate());
-        assertEquals("STREAM_SUCCEEDED", result.getStatus());
+        assertEquals("SUCCEEDED", result.getStatus());
         assertEquals(AiBusinessCapability.DISCOVERY_ANSWER_GENERATION.value(), result.getCapability());
     }
 
@@ -125,9 +125,9 @@ class DiscoveryAiApplicationServiceImplTest {
         AiInvokeCommand capturedCommand = invocationService.capturedCommand();
 
         assertEquals(capturedCommand, businessResolver.capturedCommand());
-        assertEquals(2001L, capturedCommand.getModelId());
-        assertEquals("gpt-4o", capturedCommand.getModelName());
-        assertEquals(940106L, capturedCommand.getPromptVersionId());
+        assertEquals(2001L, capturedCommand.getModelId().value());
+        assertEquals("gpt-4o", capturedCommand.getModelName().value());
+        assertEquals(940106L, capturedCommand.getPromptVersionId().value());
         assertEquals("[{\"role\":\"user\",\"content\":\"rendered\"}]", capturedCommand.getPromptMessagesJson());
     }
 
@@ -160,12 +160,15 @@ class DiscoveryAiApplicationServiceImplTest {
         public AiInvokeResult invoke(AiInvokeCommand command) {
             captured = command;
             AiInvokeResult result = new AiInvokeResult();
-            result.setCallId(101L);
-            result.setCandidateId(102L);
+            result.setCallId(new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId(101L));
+            result.setCandidateId(new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId(102L));
             result.setRequestId(command.getRequestId());
             result.setTraceId(command.getTraceId());
-            result.setStatus(failed ? "FAILED" : "SUCCEEDED");
-            result.setCapability(command.getCapability().value());
+            result.setStatus(
+                    failed
+                            ? com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus.FAILED
+                            : com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus.SUCCEEDED);
+            result.setCapability(command.getCapability());
             result.setResultFormat("STRUCTURED");
             result.setResultPayload(failed ? null : "{\"intent\":\"search\"}");
             result.setErrorType(failed ? "WORKER_STREAM" : null);
@@ -180,12 +183,12 @@ class DiscoveryAiApplicationServiceImplTest {
             eventConsumer.accept(delta("王圻"));
             eventConsumer.accept(delta("文档答案"));
             AiInvokeResult result = new AiInvokeResult();
-            result.setCallId(201L);
+            result.setCallId(new com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId(201L));
             result.setCandidateId(null);
             result.setRequestId(command.getRequestId());
             result.setTraceId(command.getTraceId());
-            result.setStatus("STREAM_SUCCEEDED");
-            result.setCapability(command.getCapability().value());
+            result.setStatus(com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus.SUCCEEDED);
+            result.setCapability(command.getCapability());
             result.setResultFormat("TEXT");
             result.setResultPayload("answer");
             return result;
@@ -202,8 +205,8 @@ class DiscoveryAiApplicationServiceImplTest {
         private AiStreamEventResult delta(String content) {
             AiStreamEventResult event = new AiStreamEventResult();
             event.setEventType("delta");
-            event.setRequestId("req-1");
-            event.setTraceId("trace-1");
+            event.setRequestId(new com.thundax.kuzhambu.common.core.traceability.valueobject.RequestId("req-1"));
+            event.setTraceId(new com.thundax.kuzhambu.common.core.traceability.valueobject.TraceId("trace-1"));
             event.setDeltaText(content);
             return event;
         }
@@ -222,9 +225,10 @@ class DiscoveryAiApplicationServiceImplTest {
             captured = command;
             command.setServiceId(1001L);
             command.setServiceRole("PRIMARY");
-            command.setModelId(2001L);
-            command.setModelName("gpt-4o");
-            command.setPromptVersionId(940106L);
+            command.setModelId(new com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId(2001L));
+            command.setModelName(com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName.of("gpt-4o"));
+            command.setPromptVersionId(
+                    new com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId(940106L));
             command.setPromptMessagesJson("[{\"role\":\"user\",\"content\":\"rendered\"}]");
             command.setPromptVariablesJson("{\"query\":\"hello\"}");
         }

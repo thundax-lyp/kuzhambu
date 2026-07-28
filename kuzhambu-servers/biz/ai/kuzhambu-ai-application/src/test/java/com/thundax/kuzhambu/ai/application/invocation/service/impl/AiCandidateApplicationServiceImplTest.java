@@ -37,7 +37,10 @@ class AiCandidateApplicationServiceImplTest {
                 new AiCandidateApplicationServiceImpl(new FakeRepository(candidate));
 
         AiCandidate actual = service.requirePendingForApply(
-                1L, "SANCAI_ENTRY", 2L, AiBusinessCapability.CLASSICS_SUMMARY.value(), null);
+                new AiCandidateId(1L),
+                AiContentRef.of("SANCAI_ENTRY", 2L),
+                AiBusinessCapability.CLASSICS_SUMMARY,
+                null);
 
         assertSame(candidate, actual);
     }
@@ -57,7 +60,11 @@ class AiCandidateApplicationServiceImplTest {
         AiCandidateApplicationServiceImpl service =
                 new AiCandidateApplicationServiceImpl(new FakeRepository(candidate));
 
-        AiCandidate actual = service.requirePendingForApply(1L, "SANCAI_ENTRY", 2L, legacyCapability, null);
+        AiCandidate actual = service.requirePendingForApply(
+                new AiCandidateId(1L),
+                AiContentRef.of("SANCAI_ENTRY", 2L),
+                AiBusinessCapability.fromAlias(legacyCapability),
+                null);
 
         assertSame(candidate, actual);
     }
@@ -75,7 +82,10 @@ class AiCandidateApplicationServiceImplTest {
                 new AiCandidateApplicationServiceImpl(new FakeRepository(candidate));
 
         AiCandidate actual = service.requirePendingForApply(
-                1L, "SANCAI_ENTRY", 2L, AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE.value(), 111L);
+                new AiCandidateId(1L),
+                AiContentRef.of("SANCAI_ENTRY", 2L),
+                AiBusinessCapability.CLASSICS_IMAGE_DESCRIBE,
+                new AiTargetObjectId(111L));
 
         assertSame(candidate, actual);
     }
@@ -90,7 +100,10 @@ class AiCandidateApplicationServiceImplTest {
         DomainException exception = assertThrows(
                 DomainException.class,
                 () -> service.requirePendingForApply(
-                        1L, "WANGQI_DOCUMENT", 2L, AiBusinessCapability.CLASSICS_SUMMARY.value(), null));
+                        new AiCandidateId(1L),
+                        AiContentRef.of("WANGQI_DOCUMENT", 2L),
+                        AiBusinessCapability.CLASSICS_SUMMARY,
+                        null));
 
         assertEquals("AI-INVOCATION-409", exception.getCode());
         assertEquals("ai.candidate.target-mismatch", exception.getMessageKey());
@@ -104,7 +117,7 @@ class AiCandidateApplicationServiceImplTest {
         AiCandidateApplicationServiceImpl service = new AiCandidateApplicationServiceImpl(repository);
         Instant appliedAt = Instant.parse("2026-06-22T02:00:00Z");
 
-        AiCandidate actual = service.markApplied(1L, "JSON", "{\"text\":\"ok\"}", appliedAt);
+        AiCandidate actual = service.markApplied(new AiCandidateId(1L), "JSON", "{\"text\":\"ok\"}", appliedAt);
 
         assertSame(candidate, actual);
         assertEquals(AiCandidateStatus.APPLIED, actual.getStatus());
@@ -124,7 +137,8 @@ class AiCandidateApplicationServiceImplTest {
         AiCandidateApplicationServiceImpl service =
                 new AiCandidateApplicationServiceImpl(new FakeRepository(candidate));
 
-        AiCandidate actual = service.markApplied(1L, null, null, Instant.parse("2026-06-22T02:00:00Z"));
+        AiCandidate actual =
+                service.markApplied(new AiCandidateId(1L), null, null, Instant.parse("2026-06-22T02:00:00Z"));
 
         assertEquals("TEXT", actual.getResultFormat());
         assertEquals("existing", actual.getResultPayload());
@@ -137,8 +151,8 @@ class AiCandidateApplicationServiceImplTest {
         FakeRepository repository = new FakeRepository(candidate);
         AiCandidateApplicationServiceImpl service = new AiCandidateApplicationServiceImpl(repository);
 
-        DomainException exception =
-                assertThrows(DomainException.class, () -> service.reject(1L, "USER_REJECTED", "not useful"));
+        DomainException exception = assertThrows(
+                DomainException.class, () -> service.reject(new AiCandidateId(1L), "USER_REJECTED", "not useful"));
 
         assertEquals("AI-INVOCATION-409", exception.getCode());
         assertEquals("ai.candidate.not-pending", exception.getMessageKey());
