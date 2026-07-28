@@ -325,15 +325,28 @@ export const WangqiPage = () => {
         [refinementTasksQuery.data?.items]
     );
     const tagRefinementTasks = useMemo(
-        () => refinementTasks.filter((task) => task.capability === "tags"),
+        () =>
+            refinementTasks.filter(
+                (task) =>
+                    aiRefinementTaskService.getNormalizedTaskCapability(task.capability) === "tags"
+            ),
         [refinementTasks]
     );
     const summaryRefinementTasks = useMemo(
-        () => refinementTasks.filter((task) => task.capability === "summary"),
+        () =>
+            refinementTasks.filter(
+                (task) =>
+                    aiRefinementTaskService.getNormalizedTaskCapability(task.capability) ===
+                    "summary"
+            ),
         [refinementTasks]
     );
     const qaRefinementTasks = useMemo(
-        () => refinementTasks.filter((task) => task.capability === "qa"),
+        () =>
+            refinementTasks.filter(
+                (task) =>
+                    aiRefinementTaskService.getNormalizedTaskCapability(task.capability) === "qa"
+            ),
         [refinementTasks]
     );
     const exportJobs = exportJobsQuery.data?.records || [];

@@ -112,7 +112,8 @@ const selectLatestQaCandidate = (
     return [...(candidates || [])]
         .filter(
             (candidate) =>
-                candidate.capability === "qa" &&
+                aiRefinementTaskService.getNormalizedTaskCapability(candidate.capability) ===
+                    "qa" &&
                 candidate.status === "PENDING" &&
                 (!normalizedTrackedCandidateId ||
                     isSameId(candidate.candidateId, normalizedTrackedCandidateId)) &&
@@ -276,7 +277,12 @@ export const WangqiQaAiModal = ({
     );
 
     const latestQaTaskFromList = useMemo(() => {
-        return [...qaTasks].filter((task) => task.capability === "qa").sort(sortTasksByNewest)[0];
+        return [...qaTasks]
+            .filter(
+                (task) =>
+                    aiRefinementTaskService.getNormalizedTaskCapability(task.capability) === "qa"
+            )
+            .sort(sortTasksByNewest)[0];
     }, [qaTasks]);
     const trackedQaTaskFromList = useMemo(() => {
         return qaTasks.find((task) => isSameId(task.taskId, qaTrackingTaskId));

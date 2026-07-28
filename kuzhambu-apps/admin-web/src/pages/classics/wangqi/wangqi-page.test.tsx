@@ -40,18 +40,26 @@ vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
         Promise.resolve({
             taskId: "9001",
             status: "PENDING",
-            capability: "summary",
+            capability: "classics_summary",
             contentType: "WANGQI_DOCUMENT",
             contentId: "1"
         })
     ),
     getTaskFailureText: vi.fn(() => null),
+    getNormalizedTaskCapability: vi.fn((capability: string) => {
+        const aliases: Record<string, string> = {
+            classics_qa: "qa",
+            classics_summary: "summary",
+            classics_tags: "tags"
+        };
+        return aliases[capability] ?? capability;
+    }),
     getTaskStableId: vi.fn((taskId: string, taskIdText?: string | null) => taskIdText || taskId),
     getTask: vi.fn(() =>
         Promise.resolve({
             taskId: "9001",
             status: "PENDING",
-            capability: "summary",
+            capability: "classics_summary",
             contentType: "WANGQI_DOCUMENT",
             contentId: "1"
         })
@@ -90,7 +98,7 @@ let mockSummaryCandidates = [
         candidateId: "5001",
         contentType: "WANGQI_DOCUMENT",
         contentId: "1",
-        capability: "summary",
+        capability: "classics_summary",
         objectId: null,
         resultFormat: "TEXT",
         resultPayload: "文档摘要候选",
@@ -103,7 +111,7 @@ let mockTagCandidates = [
         candidateId: "6001",
         contentType: "WANGQI_DOCUMENT",
         contentId: "1",
-        capability: "tags",
+        capability: "classics_tags",
         objectId: null,
         resultFormat: "STRUCTURED",
         resultPayload: JSON.stringify({ tags: ["经部", "文献"] }),
@@ -127,7 +135,7 @@ let mockQaCandidates = [
         candidateId: "7001",
         contentType: "WANGQI_DOCUMENT",
         contentId: "1",
-        capability: "qa",
+        capability: "classics_qa",
         objectId: null,
         resultFormat: "STRUCTURED",
         resultPayload: JSON.stringify({
@@ -314,7 +322,7 @@ const installFetchMock = () => {
                         candidateId: "5001",
                         contentId: "1",
                         contentType: "WANGQI_DOCUMENT",
-                        capability: "summary",
+                        capability: "classics_summary",
                         objectId: null,
                         resultId: "5001",
                         status: "REJECTED"
@@ -354,7 +362,7 @@ describe("WangqiPage", () => {
                 candidateId: "5001",
                 contentType: "WANGQI_DOCUMENT",
                 contentId: "1",
-                capability: "summary",
+                capability: "classics_summary",
                 objectId: null,
                 resultFormat: "TEXT",
                 resultPayload: "文档摘要候选",
@@ -367,7 +375,7 @@ describe("WangqiPage", () => {
                 candidateId: "6001",
                 contentType: "WANGQI_DOCUMENT",
                 contentId: "1",
-                capability: "tags",
+                capability: "classics_tags",
                 objectId: null,
                 resultFormat: "STRUCTURED",
                 resultPayload: JSON.stringify({ tags: ["经部", "文献"] }),
@@ -391,7 +399,7 @@ describe("WangqiPage", () => {
                 candidateId: "7001",
                 contentType: "WANGQI_DOCUMENT",
                 contentId: "1",
-                capability: "qa",
+                capability: "classics_qa",
                 objectId: null,
                 resultFormat: "STRUCTURED",
                 resultPayload: JSON.stringify({
@@ -544,7 +552,7 @@ describe("WangqiPage", () => {
                         {
                             taskId: "9001",
                             status: "RUNNING",
-                            capability: "summary",
+                            capability: "classics_summary",
                             contentType: "WANGQI_DOCUMENT",
                             contentId: "1",
                             requestedAt: "2026-01-01T00:00:00.000+00:00"
@@ -621,7 +629,7 @@ describe("WangqiPage", () => {
                     candidateId: "5002",
                     contentType: "WANGQI_DOCUMENT",
                     contentId: "1",
-                    capability: "summary",
+                    capability: "classics_summary",
                     objectId: null,
                     resultFormat: "TEXT",
                     resultPayload: "新生成摘要候选",
@@ -632,7 +640,7 @@ describe("WangqiPage", () => {
             return {
                 taskId: "9100",
                 status: "PENDING",
-                capability: "summary",
+                capability: "classics_summary",
                 contentType: "WANGQI_DOCUMENT",
                 contentId: "1"
             };
@@ -640,7 +648,7 @@ describe("WangqiPage", () => {
         vi.mocked(aiRefinementTaskService.getTask).mockResolvedValueOnce({
             taskId: "9100",
             status: "SUCCEEDED",
-            capability: "summary",
+            capability: "classics_summary",
             contentType: "WANGQI_DOCUMENT",
             contentId: "1",
             candidateId: "5002",
@@ -729,14 +737,14 @@ describe("WangqiPage", () => {
         vi.mocked(aiRefinementTaskService.createTask).mockResolvedValueOnce({
             taskId: "9300",
             status: "PENDING",
-            capability: "qa",
+            capability: "classics_qa",
             contentType: "WANGQI_DOCUMENT",
             contentId: "1"
         });
         vi.mocked(aiRefinementTaskService.getTask).mockResolvedValueOnce({
             taskId: "9300",
             status: "SUCCEEDED",
-            capability: "qa",
+            capability: "classics_qa",
             contentType: "WANGQI_DOCUMENT",
             contentId: "1",
             candidateId: "7001",
@@ -808,14 +816,14 @@ describe("WangqiPage", () => {
         vi.mocked(aiRefinementTaskService.createTask).mockResolvedValueOnce({
             taskId: "9200",
             status: "PENDING",
-            capability: "tags",
+            capability: "classics_tags",
             contentType: "WANGQI_DOCUMENT",
             contentId: "1"
         });
         vi.mocked(aiRefinementTaskService.getTask).mockResolvedValueOnce({
             taskId: "9200",
             status: "SUCCEEDED",
-            capability: "tags",
+            capability: "classics_tags",
             contentType: "WANGQI_DOCUMENT",
             contentId: "1",
             candidateId: "6001",
@@ -1088,7 +1096,7 @@ describe("WangqiPage", () => {
                         candidateId: "5001",
                         contentType: "WANGQI_DOCUMENT",
                         contentId: "1",
-                        capability: "summary",
+                        capability: "classics_summary",
                         objectId: null
                     }
                 ]

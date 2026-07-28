@@ -107,7 +107,8 @@ const selectLatestTagCandidate = (
     return [...(candidates || [])]
         .filter(
             (candidate) =>
-                candidate.capability === "tags" &&
+                aiRefinementTaskService.getNormalizedTaskCapability(candidate.capability) ===
+                    "tags" &&
                 candidate.status === "PENDING" &&
                 (!normalizedTrackedCandidateId ||
                     isSameId(candidate.candidateId, normalizedTrackedCandidateId)) &&
@@ -278,7 +279,10 @@ export const WangqiTagAiModal = ({
 
     const latestTagTaskFromList = useMemo(() => {
         return [...tagTasks]
-            .filter((task) => task.capability === "tags")
+            .filter(
+                (task) =>
+                    aiRefinementTaskService.getNormalizedTaskCapability(task.capability) === "tags"
+            )
             .sort(sortTasksByNewest)[0];
     }, [tagTasks]);
     const trackedTagTaskFromList = useMemo(() => {
