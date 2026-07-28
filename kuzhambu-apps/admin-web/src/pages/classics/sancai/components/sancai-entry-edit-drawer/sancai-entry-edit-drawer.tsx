@@ -30,7 +30,6 @@ interface SancaiEntryEditDrawerProps {
     tagContent?: ReactNode;
     versionContent?: ReactNode;
     categoryOptions?: Array<{ label: string; value: number }>;
-    currentUserId?: number | string | null;
     entry: SancaiEntryRecord | undefined;
     initialCategoryId?: number | null;
     initialVolumeId?: number | null;
@@ -57,7 +56,6 @@ export const SancaiEntryEditDrawer = ({
     tagContent,
     versionContent,
     categoryOptions = [],
-    currentUserId = null,
     entry,
     initialCategoryId = null,
     initialVolumeId = null,
@@ -133,7 +131,6 @@ export const SancaiEntryEditDrawer = ({
     const visualAssetContent =
         entryId && entry ? (
             <SancaiEntryVisualSection
-                currentUserId={currentUserId}
                 entry={entry}
                 isUpdatingVisualAsset={isUpdatingVisualAsset}
                 onRefinementChanged={onVisualRefinementChanged}

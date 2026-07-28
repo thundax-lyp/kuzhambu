@@ -7,7 +7,6 @@ import * as aiCandidateService from "@/pages/classics/common/ai-candidate-servic
 import * as exportService from "@/pages/classics/common/classics-export-service";
 import * as contentService from "@/pages/classics/common/classics-content-service";
 import * as shareService from "@/pages/classics/common/classics-share-service";
-import * as currentUserService from "@/service/current-user-service";
 import { clearPermissions, replacePermissions } from "@/auth/permission-storage";
 import { SancaiEntryPanel } from "./sancai-entry-panel";
 import * as entryService from "@/pages/classics/sancai/sancai-entry-service";
@@ -76,14 +75,6 @@ vi.mock("@/pages/classics/common/classics-content-service", () => ({
     sortTags: vi.fn(),
     updateQaPair: vi.fn(),
     updateTag: vi.fn()
-}));
-
-vi.mock("@/service/current-user-service", () => ({
-    getCurrentUserInfo: vi.fn(async () => ({
-        id: 99,
-        loginName: "admin",
-        name: "Admin"
-    }))
 }));
 
 const normalizeTaskCapabilityMock = vi.hoisted(() => {
@@ -910,9 +901,11 @@ describe("SancaiEntryPanel sharing", () => {
             contentType: "SANCAI_ENTRY",
             contentId: 3001,
             objectId: 5002,
-            requestedBy: 99,
             locale: "zh-CN"
         });
+        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
+            "requestedBy"
+        );
         expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
             "serviceId"
         );
@@ -1550,15 +1543,16 @@ describe("SancaiEntryPanel sharing", () => {
         await waitFor(() => {
             expect(aiRefinementTaskService.createTask).toHaveBeenCalled();
         });
-        expect(vi.mocked(currentUserService.getCurrentUserInfo)).toHaveBeenCalled();
         expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).toMatchObject({
             capability: "translate",
             scope: "classics",
             contentType: "SANCAI_ENTRY",
             contentId: 3001,
-            requestedBy: 99,
             locale: "zh-CN"
         });
+        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
+            "requestedBy"
+        );
         expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
             "serviceId"
         );
@@ -1625,15 +1619,16 @@ describe("SancaiEntryPanel sharing", () => {
         await waitFor(() => {
             expect(aiRefinementTaskService.createTask).toHaveBeenCalled();
         });
-        expect(vi.mocked(currentUserService.getCurrentUserInfo)).toHaveBeenCalled();
         expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).toMatchObject({
             capability: "summary",
             scope: "classics",
             contentType: "SANCAI_ENTRY",
             contentId: 3001,
-            requestedBy: 99,
             locale: "zh-CN"
         });
+        expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
+            "requestedBy"
+        );
         expect(vi.mocked(aiRefinementTaskService.createTask).mock.calls[0]?.[0]).not.toHaveProperty(
             "serviceId"
         );

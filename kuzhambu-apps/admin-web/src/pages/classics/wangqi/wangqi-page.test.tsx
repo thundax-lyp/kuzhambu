@@ -4,7 +4,6 @@ import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
 import { clearPermissions, replacePermissions } from "@/auth/permission-storage";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
-import * as currentUserService from "@/service/current-user-service";
 import { WangqiPage } from "./wangqi-page";
 import { WangqiVersionPanel } from "./components/wangqi-version-panel";
 import type { WangqiContentVersionRecord } from "./wangqi-types";
@@ -34,10 +33,6 @@ vi.mock("@/components/kuzhambu-confirm-modal/hooks/use-kuzhambu-confirm", () => 
     useKuzhambuConfirm: () => ({
         danger: vi.fn(({ onConfirm }) => onConfirm?.())
     })
-}));
-
-vi.mock("@/service/current-user-service", () => ({
-    getCurrentUserInfo: vi.fn(() => Promise.resolve({ id: 99, loginName: "admin", name: "Admin" }))
 }));
 
 vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
@@ -705,7 +700,6 @@ describe("WangqiPage", () => {
         );
         await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(3));
 
-        expect(currentUserService.getCurrentUserInfo).toHaveBeenCalled();
         const calls = vi
             .mocked(aiRefinementTaskService.createTask)
             .mock.calls.map(([payload]) => payload);
@@ -716,13 +710,13 @@ describe("WangqiPage", () => {
                     scope: "classics",
                     contentType: "WANGQI_DOCUMENT",
                     contentId: 1,
-                    requestedBy: 99,
                     serviceRole: "PRIMARY",
                     modelId: 1,
                     modelName: "gpt-5.5",
                     locale: "zh-CN"
                 })
             );
+            expect(payload).not.toHaveProperty("requestedBy");
             expect(payload.requestId).toContain(`wangqi-${payload.capability}-request`);
             expect(payload.traceId).toContain(`wangqi-${payload.capability}-trace`);
         });

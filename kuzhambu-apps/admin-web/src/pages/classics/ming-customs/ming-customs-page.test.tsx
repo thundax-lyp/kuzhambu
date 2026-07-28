@@ -4,7 +4,6 @@ import userEvent from "@testing-library/user-event";
 import { App as AntdApp } from "antd";
 import { clearPermissions, replacePermissions } from "@/auth/permission-storage";
 import * as aiRefinementTaskService from "@/pages/classics/common/ai-refinement-task-service";
-import * as currentUserService from "@/service/current-user-service";
 import { MingCustomsVersionHistoryPanel } from "./components/ming-customs-version-history-panel";
 import { MingCustomsPage } from "./ming-customs-page";
 import type { MingCustomsContentVersionRecord } from "./ming-customs-types";
@@ -39,10 +38,6 @@ vi.mock("@/pages/classics/common/components/ai-candidate-panel", () => {
         AiCandidatePanel: aiCandidatePanelMock
     };
 });
-
-vi.mock("@/service/current-user-service", () => ({
-    getCurrentUserInfo: vi.fn(() => Promise.resolve({ id: 99, loginName: "admin", name: "Admin" }))
-}));
 
 vi.mock("@/pages/classics/common/ai-refinement-task-service", () => ({
     createTask: vi.fn(() =>
@@ -487,7 +482,6 @@ describe("MingCustomsPage", () => {
         await user.click(await screen.findByRole("button", { name: "创建问答任务" }));
         await waitFor(() => expect(aiRefinementTaskService.createTask).toHaveBeenCalledTimes(3));
 
-        expect(currentUserService.getCurrentUserInfo).toHaveBeenCalled();
         const calls = vi
             .mocked(aiRefinementTaskService.createTask)
             .mock.calls.map(([payload]) => payload);
@@ -498,13 +492,13 @@ describe("MingCustomsPage", () => {
                     scope: "classics",
                     contentType: "MING_CUSTOMS",
                     contentId: 500000000001,
-                    requestedBy: 99,
                     serviceRole: "PRIMARY",
                     modelId: 1,
                     modelName: "gpt-5.5",
                     locale: "zh-CN"
                 })
             );
+            expect(payload).not.toHaveProperty("requestedBy");
             expect(payload.requestId).toContain(`ming-customs-${payload.capability}-request`);
             expect(payload.traceId).toContain(`ming-customs-${payload.capability}-trace`);
         });

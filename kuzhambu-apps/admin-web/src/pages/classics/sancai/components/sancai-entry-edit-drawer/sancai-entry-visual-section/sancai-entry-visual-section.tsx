@@ -161,7 +161,6 @@ const toVisualAssetFormValue = (
 };
 
 interface SancaiEntryVisualSectionProps {
-    currentUserId?: number | string | null;
     entry: SancaiEntryRecord;
     isUpdatingVisualAsset: boolean;
     onRefinementChanged: () => Promise<void> | void;
@@ -177,7 +176,6 @@ export interface SancaiEntryVisualPreviewState {
 }
 
 export const SancaiEntryVisualSection = ({
-    currentUserId,
     entry,
     isUpdatingVisualAsset,
     onRefinementChanged,
@@ -437,7 +435,6 @@ export const SancaiEntryVisualSection = ({
         streamEvents,
         streamingRefinementTask
     } = useSancaiEntryVisualRefinement({
-        currentUserId,
         entry,
         selectedVisualAsset,
         selectedVisualAssetId: selectedVisualAssetResourceId,
