@@ -45,6 +45,7 @@ git log --oneline --decorate --max-count=30
 - PR 尚未 merge 或关闭。
 - required checks、review 状态和 unresolved review threads。
 - PR 的 base ref、base SHA 和当前远端 head SHA；后续 diff 范围固定使用记录的 base SHA，lease 固定使用记录的远端 head SHA。
+- Fetch 当前 PR head 后，确认本地 `HEAD` 必须等于记录的远端 head SHA；只有从远端最新 PR head 开始，才允许制定历史整理方案。
 
 遇到以下任一情况时停止并说明原因：
 
@@ -53,6 +54,7 @@ git log --oneline --decorate --max-count=30
 - 没有 open PR，或分支对应多个 PR。
 - 仍有未处理的 actionable review feedback。
 - 分支含其他作者或协作者在当前 review 周期新增的提交，且用户未确认允许改写。
+- 本地 `HEAD` 不等于记录的远端 head SHA；不要从陈旧本地历史规划或执行重写。
 - 远端分支在分析后出现新的提交。
 
 ## 2. 建立 Review 与 Commit 对照
@@ -109,7 +111,7 @@ git log --oneline --decorate --max-count=30
 
 确认后：
 
-1. Fetch 远端并再次确认 base SHA 和 remote head SHA 均未变化；任一值变化时停止并重新分析。
+1. Fetch 远端并再次确认本地 `HEAD` 等于记录的 remote head SHA，且 base SHA 和 remote head SHA 均未变化；任一条件不满足时停止并重新分析。
 2. 记录原始 HEAD、`HEAD^{tree}` 和 `<base-sha>...HEAD` 的完整 patch-id 或等价 diff 证据。
 3. 创建明确指向原始 HEAD 的本地备份引用，便于恢复。
 4. 使用 interactive rebase、fixup/autosquash 或等价的非交互 Git 操作实现已确认方案。
