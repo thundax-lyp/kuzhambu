@@ -13,8 +13,6 @@ import com.thundax.kuzhambu.ai.application.invocation.service.AiWorkerInvocation
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
-import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId;
@@ -71,8 +69,8 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
             result = aiWorkerGateway.invoke(command);
         } catch (RuntimeException ex) {
             result = AiInvokeResult.failed(
-                    command.getRequestId(),
-                    command.getTraceId(),
+                    RequestIdCodec.toDomain(command.getRequestId()),
+                    TraceIdCodec.toDomain(command.getTraceId()),
                     "WORKER_UNAVAILABLE",
                     ex.getMessage(),
                     "WORKER_REQUEST");
@@ -94,8 +92,8 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
             completedResult.compareAndSet(
                     null,
                     AiInvokeResult.failed(
-                            command.getRequestId(),
-                            command.getTraceId(),
+                            RequestIdCodec.toDomain(command.getRequestId()),
+                            TraceIdCodec.toDomain(command.getTraceId()),
                             "WORKER_UNAVAILABLE",
                             ex.getMessage(),
                             "WORKER_STREAM"));
@@ -103,8 +101,8 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
         AiInvokeResult result = completedResult.get();
         if (result == null) {
             result = AiInvokeResult.failed(
-                    command.getRequestId(),
-                    command.getTraceId(),
+                    RequestIdCodec.toDomain(command.getRequestId()),
+                    TraceIdCodec.toDomain(command.getTraceId()),
                     "WORKER_PROTOCOL_FAILURE",
                     "Worker stream ended without completed event",
                     "WORKER_STREAM");
@@ -166,7 +164,7 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
             if (command.isCreateCandidate()) {
                 AiCandidateId candidateId =
                         aiInvocationRepository.insertCandidate(result.toCandidate(command, invocationLog.getCallId()));
-                result.setCandidateId(AiCandidateIdCodec.toValue(candidateId));
+                result.setCandidateId(candidateId);
             }
         } else {
             invocationLog.recordFailureStage(result.getFailureStage());
@@ -176,31 +174,31 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
                 candidate.reject(
                         result.getErrorType(), result.getErrorMessage(), result.getFailureStage(), completedAt);
                 AiCandidateId candidateId = aiInvocationRepository.insertCandidate(candidate);
-                result.setCandidateId(AiCandidateIdCodec.toValue(candidateId));
+                result.setCandidateId(candidateId);
             }
             aiInvocationRepository.updateInvocationLog(invocationLog);
         }
-        result.setCallId(AiCallIdCodec.toValue(invocationLog.getCallId()));
+        result.setCallId(invocationLog.getCallId());
         return result;
     }
 
     private AiInvokeResult normalizeResult(AiInvokeCommand command, AiInvokeResult result) {
         if (result == null) {
             return AiInvokeResult.failed(
-                    command.getRequestId(),
-                    command.getTraceId(),
+                    RequestIdCodec.toDomain(command.getRequestId()),
+                    TraceIdCodec.toDomain(command.getTraceId()),
                     "WORKER_PROTOCOL_FAILURE",
                     "Worker returned empty result",
                     "WORKER_RESULT");
         }
         if (result.getRequestId() == null) {
-            result.setRequestId(command.getRequestId());
+            result.setRequestId(RequestIdCodec.toDomain(command.getRequestId()));
         }
         if (result.getTraceId() == null) {
-            result.setTraceId(command.getTraceId());
+            result.setTraceId(TraceIdCodec.toDomain(command.getTraceId()));
         }
         if (command.getCapability() != null) {
-            result.setCapability(command.getCapability().value());
+            result.setCapability(command.getCapability());
         }
         if (isBlank(result.getResultFormat())) {
             result.setResultFormat(defaultResultFormat(command, result));
@@ -248,8 +246,8 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
             return result;
         } catch (ArtifactDownloadException ex) {
             AiInvokeResult failed = AiInvokeResult.failed(
-                    command.getRequestId(),
-                    command.getTraceId(),
+                    RequestIdCodec.toDomain(command.getRequestId()),
+                    TraceIdCodec.toDomain(command.getTraceId()),
                     "WORKER_UNAVAILABLE",
                     ex.getMessage(),
                     "ARTIFACT_DOWNLOAD");
@@ -257,8 +255,8 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
             return failed;
         } catch (JsonProcessingException ex) {
             AiInvokeResult failed = AiInvokeResult.failed(
-                    command.getRequestId(),
-                    command.getTraceId(),
+                    RequestIdCodec.toDomain(command.getRequestId()),
+                    TraceIdCodec.toDomain(command.getTraceId()),
                     "WORKER_PROTOCOL_FAILURE",
                     ex.getMessage(),
                     "ARTIFACT_DOWNLOAD");
@@ -266,8 +264,8 @@ public class AiWorkerInvocationApplicationServiceImpl implements AiWorkerInvocat
             return failed;
         } catch (RuntimeException ex) {
             AiInvokeResult failed = AiInvokeResult.failed(
-                    command.getRequestId(),
-                    command.getTraceId(),
+                    RequestIdCodec.toDomain(command.getRequestId()),
+                    TraceIdCodec.toDomain(command.getTraceId()),
                     "INTERNAL_FAILURE",
                     ex.getMessage(),
                     "STORAGE_PERSIST");

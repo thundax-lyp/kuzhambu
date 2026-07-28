@@ -54,11 +54,14 @@ public class AiReportApplicationServiceImpl implements AiReportApplicationServic
 
         List<TopCapabilityResult> topCapabilities = invocationLogs.stream()
                 .filter(record -> record.getCapability() != null)
-                .collect(Collectors.groupingBy(record -> record.getCapability().value(), Collectors.counting()))
+                .collect(Collectors.groupingBy(AiInvocationLog::getCapability, Collectors.counting()))
                 .entrySet()
                 .stream()
-                .sorted(Map.Entry.<String, Long>comparingByValue(Comparator.reverseOrder())
-                        .thenComparing(Map.Entry.comparingByKey()))
+                .sorted(
+                        Map.Entry
+                                .<com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability, Long>
+                                        comparingByValue(Comparator.reverseOrder())
+                                .thenComparing(Map.Entry.comparingByKey()))
                 .limit(TOP_CAPABILITY_LIMIT)
                 .map(entry -> new TopCapabilityResult(entry.getKey(), entry.getValue()))
                 .toList();
