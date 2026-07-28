@@ -151,6 +151,66 @@ describe("AI refinement task service request contracts", () => {
         expect(aiRefinementTaskService.getTaskRetryable("PARTIAL", "qa")).toBe(true);
     });
 
+    it("prefers text task ids to avoid precision loss for backend long ids", () => {
+        expect(
+            aiRefinementTaskService.getTaskStableId(869888422381092900, "869888422381092864")
+        ).toBe("869888422381092864");
+    });
+
+    it("explains task failures with user-facing categories and diagnostic codes", () => {
+        expect(
+            aiRefinementTaskService.getTaskFailureText(
+                "WORKER_REQUEST",
+                "MODEL_PROVIDER_UNAVAILABLE",
+                "业务处理失败"
+            )
+        ).toBe(
+            "模型服务暂时不可用，请稍后重试或切换模型（阶段：WORKER_REQUEST；类型：MODEL_PROVIDER_UNAVAILABLE）"
+        );
+        expect(
+            aiRefinementTaskService.getTaskFailureText(
+                "WORKER_REQUEST",
+                "UNSUPPORTED_MODEL_API_SOURCE",
+                "api source not supported"
+            )
+        ).toBe(
+            "模型服务来源不支持，请切换模型或修正模型配置（阶段：WORKER_REQUEST；类型：UNSUPPORTED_MODEL_API_SOURCE；详情：api source not supported）"
+        );
+        expect(
+            aiRefinementTaskService.getTaskFailureText(
+                "WORKER_REQUEST",
+                "WORKER_PROTOCOL_FAILURE",
+                "workers 仅支持 OpenAI-compatible 模型接口。"
+            )
+        ).toBe(
+            "模型服务来源不支持，请切换模型或修正模型配置（阶段：WORKER_REQUEST；类型：WORKER_PROTOCOL_FAILURE；详情：workers 仅支持 OpenAI-compatible 模型接口。）"
+        );
+        expect(
+            aiRefinementTaskService.getTaskFailureText(
+                "WORKER_RESULT",
+                "MODEL_OUTPUT_INVALID_JSON",
+                "expected JSON object"
+            )
+        ).toBe(
+            "模型应答格式错误，请检查提示词模板、输出 Schema 或模型能力（阶段：WORKER_RESULT；类型：MODEL_OUTPUT_INVALID_JSON；详情：expected JSON object）"
+        );
+    });
+
+    it("falls back to stage or raw message for unknown task failures", () => {
+        expect(
+            aiRefinementTaskService.getTaskFailureText(
+                "WORKER_STREAM",
+                "UNKNOWN_ERROR",
+                "bad stream"
+            )
+        ).toBe(
+            "AI Worker 流式应答异常（阶段：WORKER_STREAM；类型：UNKNOWN_ERROR；详情：bad stream）"
+        );
+        expect(aiRefinementTaskService.getTaskFailureText(null, null, "业务处理失败")).toBe(
+            "业务处理失败"
+        );
+    });
+
     it("gets task by id", async () => {
         await aiRefinementTaskService.getTask({ taskId: 7001 });
 
