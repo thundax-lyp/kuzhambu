@@ -209,6 +209,30 @@ public final class NamingArchitectureRuleSupport {
                 violations.isEmpty());
     }
 
+    public static void assertApplicationContractSourcesUnderDedicatedPackages(Path sourceRoot) {
+        Path root = ArchitectureSourceSupport.repositoryRoot();
+        List<String> violations = new ArrayList<String>();
+
+        if (!Files.exists(sourceRoot) || !isApplicationModuleSourceRoot(sourceRoot)) {
+            return;
+        }
+        try (Stream<Path> paths = Files.walk(sourceRoot)) {
+            paths.filter(Files::isRegularFile)
+                    .filter(NamingArchitectureRuleSupport::isApplicationContractSource)
+                    .filter(path -> !isApplicationContractUnderDedicatedPackage(path))
+                    .map(path -> ArchitectureSourceSupport.repositoryPath(root, path))
+                    .forEach(violations::add);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to scan application contract source files under " + sourceRoot, e);
+        }
+
+        assertTrue(
+                "In *-application modules, *Command/*Query/*Result sources must be placed directly under "
+                        + "application/{domain}/command, application/{domain}/query, or application/{domain}/result: "
+                        + violations,
+                violations.isEmpty());
+    }
+
     public static void assertBaseIdTypes(JavaClasses classes, String basePackage) {
         List<String> violations = new ArrayList<String>();
 
@@ -840,6 +864,37 @@ public final class NamingArchitectureRuleSupport {
     private static boolean isApplicationCommandOrQuerySource(Path path) {
         String value = ArchitectureSourceSupport.normalizePath(path);
         return value.contains("/application/") && (value.endsWith("Command.java") || value.endsWith("Query.java"));
+    }
+
+    private static boolean isApplicationContractSource(Path path) {
+        String value = ArchitectureSourceSupport.normalizePath(path);
+        return value.contains("/application/")
+                && (value.endsWith("Command.java") || value.endsWith("Query.java") || value.endsWith("Result.java"));
+    }
+
+    private static boolean isApplicationModuleSourceRoot(Path sourceRoot) {
+        return Stream.iterate(sourceRoot.toAbsolutePath(), path -> path != null, Path::getParent)
+                .map(Path::getFileName)
+                .filter(fileName -> fileName != null)
+                .map(Path::toString)
+                .anyMatch(name -> name.endsWith("-application"));
+    }
+
+    private static boolean isApplicationContractUnderDedicatedPackage(Path path) {
+        String value = ArchitectureSourceSupport.normalizePath(path);
+        String suffix;
+        String packageName;
+        if (value.endsWith("Command.java")) {
+            suffix = "Command.java";
+            packageName = "command";
+        } else if (value.endsWith("Query.java")) {
+            suffix = "Query.java";
+            packageName = "query";
+        } else {
+            suffix = "Result.java";
+            packageName = "result";
+        }
+        return value.matches(".*/application/[^/]+/" + packageName + "/[^/]*" + Pattern.quote(suffix));
     }
 
     private static boolean isValueObjectIdSource(Path path) {

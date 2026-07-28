@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.common.test.architecture;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.file.Files;
@@ -134,5 +135,61 @@ class NamingArchitectureRuleSupportTest {
 
         NamingArchitectureRuleSupport.assertApplicationCommandQuerySourcesDeclareNoMethods(
                 tempDir.resolve("src/main/java"));
+    }
+
+    @Test
+    void applicationContractPackageGateShouldRejectContractsOutsideDedicatedPackages() throws Exception {
+        Path source = applicationSourceRoot().resolve("com/thundax/kuzhambu/sample/application/core");
+        Files.createDirectories(source);
+        Files.writeString(source.resolve("SampleCreateCommand.java"), "public class SampleCreateCommand {}");
+        Files.writeString(source.resolve("SampleSearchQuery.java"), "public class SampleSearchQuery {}");
+        Files.writeString(source.resolve("SampleDetailResult.java"), "public class SampleDetailResult {}");
+
+        assertThrows(
+                AssertionError.class,
+                () -> NamingArchitectureRuleSupport.assertApplicationContractSourcesUnderDedicatedPackages(
+                        applicationSourceRoot()));
+    }
+
+    @Test
+    void applicationContractPackageGateShouldRejectServiceNestedContractPackages() throws Exception {
+        Path source = applicationSourceRoot().resolve("com/thundax/kuzhambu/sample/application/core/service/command");
+        Files.createDirectories(source);
+        Files.writeString(source.resolve("SampleCreateCommand.java"), "public class SampleCreateCommand {}");
+
+        assertThrows(
+                AssertionError.class,
+                () -> NamingArchitectureRuleSupport.assertApplicationContractSourcesUnderDedicatedPackages(
+                        applicationSourceRoot()));
+    }
+
+    @Test
+    void applicationContractPackageGateShouldAllowDedicatedPackages() throws Exception {
+        Path application = applicationSourceRoot().resolve("com/thundax/kuzhambu/sample/application/core");
+        Files.createDirectories(application.resolve("command"));
+        Files.createDirectories(application.resolve("query"));
+        Files.createDirectories(application.resolve("result"));
+        Files.writeString(
+                application.resolve("command/SampleCreateCommand.java"), "public class SampleCreateCommand {}");
+        Files.writeString(application.resolve("query/SampleSearchQuery.java"), "public class SampleSearchQuery {}");
+        Files.writeString(application.resolve("result/SampleDetailResult.java"), "public class SampleDetailResult {}");
+
+        assertDoesNotThrow(() -> NamingArchitectureRuleSupport.assertApplicationContractSourcesUnderDedicatedPackages(
+                applicationSourceRoot()));
+    }
+
+    @Test
+    void applicationContractPackageGateShouldIgnoreContractsOutsideApplicationLayer() throws Exception {
+        Path interfaceSourceRoot = tempDir.resolve("kuzhambu-sample-interface/src/main/java");
+        Path source = interfaceSourceRoot.resolve("com/thundax/kuzhambu/sample/application/core");
+        Files.createDirectories(source);
+        Files.writeString(source.resolve("AdminAuthCommand.java"), "public class AdminAuthCommand {}");
+
+        assertDoesNotThrow(() -> NamingArchitectureRuleSupport.assertApplicationContractSourcesUnderDedicatedPackages(
+                interfaceSourceRoot));
+    }
+
+    private Path applicationSourceRoot() {
+        return tempDir.resolve("kuzhambu-sample-application/src/main/java");
     }
 }
