@@ -3,8 +3,8 @@ package com.thundax.kuzhambu.ai.interfaces.admin.platform.controller;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
-import com.thundax.kuzhambu.ai.application.platform.command.PlatformAiInvokeCommand;
-import com.thundax.kuzhambu.ai.application.platform.service.PlatformAiApplicationService;
+import com.thundax.kuzhambu.ai.application.scenario.command.PlatformAiInvokeCommand;
+import com.thundax.kuzhambu.ai.application.scenario.service.PlatformAiApplicationService;
 import com.thundax.kuzhambu.ai.interfaces.admin.platform.controller.request.PlatformAiRequests.InvokeRequest;
 import com.thundax.kuzhambu.ai.interfaces.admin.platform.controller.response.PlatformAiResponses.InvokeResponse;
 import com.thundax.kuzhambu.common.security.annotation.HasPermission;

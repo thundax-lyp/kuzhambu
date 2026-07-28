@@ -1,7 +1,7 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.platform.assembler;
 
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
-import com.thundax.kuzhambu.ai.application.platform.command.PlatformAiInvokeCommand;
+import com.thundax.kuzhambu.ai.application.scenario.command.PlatformAiInvokeCommand;
 import com.thundax.kuzhambu.ai.interfaces.admin.platform.controller.request.PlatformAiRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.platform.controller.response.PlatformAiResponses;
 

@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller;
 
-import com.thundax.kuzhambu.ai.application.refinement.command.AiRefinementRequestCommand;
-import com.thundax.kuzhambu.ai.application.refinement.result.AiCandidateResult;
-import com.thundax.kuzhambu.ai.application.refinement.service.AiRefinementApplicationService;
+import com.thundax.kuzhambu.ai.application.scenario.command.AiRefinementRequestCommand;
+import com.thundax.kuzhambu.ai.application.scenario.result.AiCandidateResult;
+import com.thundax.kuzhambu.ai.application.scenario.service.AiRefinementApplicationService;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.assembler.AiRefinementInterfaceAssembler;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.request.AiRefinementRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.response.AiRefinementResponses;

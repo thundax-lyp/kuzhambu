@@ -2,8 +2,8 @@ package com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller;
 
 import com.thundax.kuzhambu.ai.application.invocation.batch.command.AiBatchJobCreateCommand;
 import com.thundax.kuzhambu.ai.application.invocation.batch.service.AiBatchJobApplicationService;
-import com.thundax.kuzhambu.ai.application.refinement.configuration.AiRefinementExecutorConfiguration;
-import com.thundax.kuzhambu.ai.application.refinement.service.AiRefinementTaskApplicationService;
+import com.thundax.kuzhambu.ai.application.scenario.configuration.AiRefinementExecutorConfiguration;
+import com.thundax.kuzhambu.ai.application.scenario.service.AiRefinementTaskApplicationService;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.assembler.AiRefinementInterfaceAssembler;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.request.AiRefinementRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.response.AiRefinementResponses;
