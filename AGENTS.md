@@ -104,6 +104,36 @@ Place tests under `src/test/` mirroring source structure. Name unit tests with a
 
 Run the narrowest relevant validation available. If no validation exists, document manual checks in the PR.
 
+## Code Review Guidelines
+
+Review the complete PR diff from its merge base. Judge the final code against the delivery intent, contracts, architecture rules, and surrounding system behavior. Complete all applicable review passes before reporting findings; do not stop after the first issues.
+
+Review:
+
+- **Behavior:** user flows, background and asynchronous workflows, failure paths, and regressions.
+- **Architecture:** module ownership, layer responsibilities, dependency direction, boundary bypasses, and duplicated capabilities.
+- **Contracts:** application, domain, facade, HTTP, event, worker, persistence, and configuration compatibility.
+- **Runtime integrity:** transactions, concurrency, idempotency, retries, ordering, state transitions, migrations, authorization, sensitive data, observability, and recovery where relevant.
+- **Verification:** tests and static checks for critical behavior and failure paths. Passing checks are evidence, not proof.
+
+Identify affected modules and contracts first, then follow real dependencies across Java servers, frontend apps, Python workers, deployment support, and external integrations. Do not expand scope without dependency evidence. Run the narrowest validation appropriate to the risk; broaden it only for shared contracts, common infrastructure, or cross-module behavior.
+
+A finding must:
+
+- be introduced, exposed, or materially worsened by the change;
+- have a concrete trigger and observable impact;
+- point to changed code and provide an actionable correction;
+- be more than style preference or unsupported speculation.
+
+Report all independent, actionable P0-P2 findings in one review, including severity, location, trigger, system impact, and correction direction:
+
+- **P0:** severe security incident, data loss, system outage, or irreversible impact.
+- **P1:** likely breakage of a critical flow, authorization boundary, key contract, or release.
+- **P2:** functional, compatibility, or operational failure under concrete conditions.
+- **P3:** maintainability, readability, or local design concern; omit from formal findings.
+
+Put unverified concerns under validation gaps or residual risks, not findings. If there are no findings, state that clearly and list any material gaps or residual risks.
+
 ## Commit & Pull Request Guidelines
 
 Use the project convention `Type(scope): 中文说明`, for example `Docs(governance): 初始化文档治理入口`. Keep each commit focused on one concrete engineering judgment. Keep each commit to 1-5 files; split larger changes into separate commits.
