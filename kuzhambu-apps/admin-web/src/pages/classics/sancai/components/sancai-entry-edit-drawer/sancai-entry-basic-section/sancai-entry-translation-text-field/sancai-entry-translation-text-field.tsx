@@ -67,6 +67,8 @@ export const SancaiEntryTranslationTextField = ({
     const [loadedTranslationCandidateId, setLoadedTranslationCandidateId] = useState<string | null>(
         null
     );
+    const [loadedTranslationCandidateSnapshot, setLoadedTranslationCandidateSnapshot] =
+        useState<AiCandidateRecord | null>(null);
     const syncTranslationTask = useCallback(
         (task: AiRefinementTaskRecord | null) => {
             if (!task || !entryId) {
@@ -145,15 +147,27 @@ export const SancaiEntryTranslationTextField = ({
         if (!loadedTranslationCandidateId) {
             return null;
         }
-        return (
+        const queryCandidate =
             (translationCandidatesQuery.data || []).find(
                 (candidate) =>
                     getCandidateStableId(candidate) === loadedTranslationCandidateId &&
                     aiRefinementTaskService.getNormalizedTaskCapability(candidate.capability) ===
                         "translate"
-            ) ?? null
-        );
-    }, [translationCandidatesQuery.data, loadedTranslationCandidateId]);
+            ) ?? null;
+        if (queryCandidate) {
+            return queryCandidate;
+        }
+        return loadedTranslationCandidateSnapshot &&
+            getCandidateStableId(loadedTranslationCandidateSnapshot) ===
+                loadedTranslationCandidateId &&
+            isUsableTranslationCandidate(loadedTranslationCandidateSnapshot)
+            ? loadedTranslationCandidateSnapshot
+            : null;
+    }, [
+        loadedTranslationCandidateId,
+        loadedTranslationCandidateSnapshot,
+        translationCandidatesQuery.data
+    ]);
     const isTranslationApplyDisabled = !translationDraft.trim() || isCreatingTranslationTask;
     const refetchTranslationCandidates = translationCandidatesQuery.refetch;
     const loadTranslationCandidate = useCallback(
@@ -183,6 +197,7 @@ export const SancaiEntryTranslationTextField = ({
                 return;
             }
             setLoadedTranslationCandidateId(candidateId);
+            setLoadedTranslationCandidateSnapshot(candidate);
             setTranslationDraft(candidate.resultPayload?.trim() || "");
         },
         [loadedTranslationCandidateId]
@@ -207,6 +222,7 @@ export const SancaiEntryTranslationTextField = ({
         }
         const timer = window.setTimeout(() => {
             setLoadedTranslationCandidateId(getCandidateStableId(latestTranslationCandidate));
+            setLoadedTranslationCandidateSnapshot(latestTranslationCandidate);
             setTranslationDraft(latestTranslationCandidate.resultPayload?.trim() || "");
         }, 0);
         return () => window.clearTimeout(timer);
@@ -215,6 +231,7 @@ export const SancaiEntryTranslationTextField = ({
     const openTranslationModal = () => {
         setTranslationDraft(value || "");
         setLoadedTranslationCandidateId(null);
+        setLoadedTranslationCandidateSnapshot(null);
         setTranslationModalOpen(true);
     };
     const closeTranslationModal = () => {

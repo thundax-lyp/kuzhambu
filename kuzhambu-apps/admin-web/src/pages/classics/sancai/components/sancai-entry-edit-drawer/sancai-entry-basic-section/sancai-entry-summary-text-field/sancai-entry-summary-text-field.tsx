@@ -65,6 +65,8 @@ export const SancaiEntrySummaryTextField = ({
     const [summaryModalOpen, setSummaryModalOpen] = useState(false);
     const [summaryDraft, setSummaryDraft] = useState("");
     const [loadedSummaryCandidateId, setLoadedSummaryCandidateId] = useState<string | null>(null);
+    const [loadedSummaryCandidateSnapshot, setLoadedSummaryCandidateSnapshot] =
+        useState<AiCandidateRecord | null>(null);
     const syncSummaryTask = useCallback(
         (task: AiRefinementTaskRecord | null) => {
             if (!task || !entryId) {
@@ -143,15 +145,22 @@ export const SancaiEntrySummaryTextField = ({
         if (!loadedSummaryCandidateId) {
             return null;
         }
-        return (
+        const queryCandidate =
             (summaryCandidatesQuery.data || []).find(
                 (candidate) =>
                     getCandidateStableId(candidate) === loadedSummaryCandidateId &&
                     aiRefinementTaskService.getNormalizedTaskCapability(candidate.capability) ===
                         "summary"
-            ) ?? null
-        );
-    }, [summaryCandidatesQuery.data, loadedSummaryCandidateId]);
+            ) ?? null;
+        if (queryCandidate) {
+            return queryCandidate;
+        }
+        return loadedSummaryCandidateSnapshot &&
+            getCandidateStableId(loadedSummaryCandidateSnapshot) === loadedSummaryCandidateId &&
+            isUsableSummaryCandidate(loadedSummaryCandidateSnapshot)
+            ? loadedSummaryCandidateSnapshot
+            : null;
+    }, [loadedSummaryCandidateId, loadedSummaryCandidateSnapshot, summaryCandidatesQuery.data]);
     const isSummaryApplyDisabled = !summaryDraft.trim() || isCreatingSummaryTask;
     const refetchSummaryCandidates = summaryCandidatesQuery.refetch;
     const loadSummaryCandidate = useCallback(
@@ -181,6 +190,7 @@ export const SancaiEntrySummaryTextField = ({
                 return;
             }
             setLoadedSummaryCandidateId(candidateId);
+            setLoadedSummaryCandidateSnapshot(candidate);
             setSummaryDraft(candidate.resultPayload?.trim() || "");
         },
         [loadedSummaryCandidateId]
@@ -205,6 +215,7 @@ export const SancaiEntrySummaryTextField = ({
         }
         const timer = window.setTimeout(() => {
             setLoadedSummaryCandidateId(getCandidateStableId(latestSummaryCandidate));
+            setLoadedSummaryCandidateSnapshot(latestSummaryCandidate);
             setSummaryDraft(latestSummaryCandidate.resultPayload?.trim() || "");
         }, 0);
         return () => window.clearTimeout(timer);
@@ -213,6 +224,7 @@ export const SancaiEntrySummaryTextField = ({
     const openSummaryModal = () => {
         setSummaryDraft(value || "");
         setLoadedSummaryCandidateId(null);
+        setLoadedSummaryCandidateSnapshot(null);
         setSummaryModalOpen(true);
     };
     const closeSummaryModal = () => {
