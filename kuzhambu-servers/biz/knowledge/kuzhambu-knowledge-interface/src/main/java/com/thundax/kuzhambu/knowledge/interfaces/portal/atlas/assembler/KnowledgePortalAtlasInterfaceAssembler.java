@@ -1,6 +1,6 @@
 package com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.assembler;
 
-import com.thundax.kuzhambu.knowledge.application.portal.KnowledgePortalAtlasResult;
+import com.thundax.kuzhambu.knowledge.application.portal.result.KnowledgePortalAtlasResult;
 import com.thundax.kuzhambu.knowledge.interfaces.portal.atlas.controller.response.KnowledgePortalAtlasResponse;
 import java.util.Collections;
 import java.util.List;
