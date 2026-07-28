@@ -9,8 +9,13 @@ import com.thundax.kuzhambu.ai.application.scenario.command.AiRefinementRequestC
 import com.thundax.kuzhambu.ai.application.scenario.result.AiCandidateResult;
 import com.thundax.kuzhambu.ai.application.scenario.service.AiRefinementApplicationService;
 import com.thundax.kuzhambu.ai.application.scenario.support.ClassicsAiWorkerUsecaseResolver;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
+import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
 import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.BizExceptionBoundary;
+import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
+import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import java.util.function.Consumer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -154,11 +159,11 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
                 com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec.toDomain(source.getObjectId()));
         command.setServiceId(source.getServiceId());
         command.setServiceRole(source.getServiceRole());
-        command.setModelId(source.getModelId());
-        command.setModelName(source.getModelName());
-        command.setPromptVersionId(source.getPromptVersionId());
-        command.setRequestId(source.getRequestId());
-        command.setTraceId(source.getTraceId());
+        command.setModelId(AiModelIdCodec.toDomain(source.getModelId()));
+        command.setModelName(AiModelNameCodec.toDomain(source.getModelName()));
+        command.setPromptVersionId(PromptVersionIdCodec.toDomain(source.getPromptVersionId()));
+        command.setRequestId(RequestIdCodec.toDomain(source.getRequestId()));
+        command.setTraceId(TraceIdCodec.toDomain(source.getTraceId()));
         command.setPromptMessagesJson(source.getPromptMessagesJson());
         command.setPromptVariablesJson(source.getPromptVariablesJson());
         command.setPromptHash(source.getPromptHash());
@@ -183,7 +188,7 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
     private boolean hasResolvedInvokeConfig(AiInvokeCommand command) {
         return !isBlank(command.getServiceRole())
                 && command.getModelId() != null
-                && !isBlank(command.getModelName())
+                && command.getModelName() != null
                 && command.getPromptVersionId() != null
                 && !isBlank(command.getPromptMessagesJson())
                 && !isBlank(command.getPromptVariablesJson());
@@ -192,9 +197,9 @@ public class AiRefinementApplicationServiceImpl implements AiRefinementApplicati
     private void copyResolvedInvokeConfig(AiRefinementRequestCommand command, AiInvokeCommand invokeCommand) {
         command.setServiceId(invokeCommand.getServiceId());
         command.setServiceRole(invokeCommand.getServiceRole());
-        command.setModelId(invokeCommand.getModelId());
-        command.setModelName(invokeCommand.getModelName());
-        command.setPromptVersionId(invokeCommand.getPromptVersionId());
+        command.setModelId(AiModelIdCodec.toValue(invokeCommand.getModelId()));
+        command.setModelName(AiModelNameCodec.toValue(invokeCommand.getModelName()));
+        command.setPromptVersionId(PromptVersionIdCodec.toValue(invokeCommand.getPromptVersionId()));
         command.setPromptMessagesJson(invokeCommand.getPromptMessagesJson());
         command.setPromptVariablesJson(invokeCommand.getPromptVariablesJson());
         command.setOutputSchemaJson(invokeCommand.getOutputSchemaJson());
