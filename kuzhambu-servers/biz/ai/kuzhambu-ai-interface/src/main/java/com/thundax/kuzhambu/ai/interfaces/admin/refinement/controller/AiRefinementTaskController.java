@@ -5,6 +5,8 @@ import com.thundax.kuzhambu.ai.application.invocation.service.AiBatchJobApplicat
 import com.thundax.kuzhambu.ai.application.scenario.configuration.AiRefinementExecutorConfiguration;
 import com.thundax.kuzhambu.ai.application.scenario.service.AiRefinementTaskApplicationService;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.assembler.AiRefinementInterfaceAssembler;
 import com.thundax.kuzhambu.ai.interfaces.admin.refinement.controller.request.AiRefinementRequests;
@@ -211,12 +213,15 @@ public class AiRefinementTaskController {
             return AiRefinementResponses.BatchJobResponse.builder().build();
         }
         return AiRefinementResponses.BatchJobResponse.builder()
-                .batchId(result.getBatchId())
+                .batchId(AiBatchJobIdCodec.toValue(result.getBatchId()))
                 .scope(result.getScope())
-                .capability(result.getCapability())
-                .contentType(result.getContentType())
-                .contentId(result.getContentId())
-                .status(result.getStatus())
+                .capability(
+                        result.getCapability() == null
+                                ? null
+                                : result.getCapability().value())
+                .contentType(AiContentRefCodec.toContentType(result.getContentRef()))
+                .contentId(AiContentRefCodec.toContentId(result.getContentRef()))
+                .status(result.getStatus() == null ? null : result.getStatus().name())
                 .totalCount(result.getTotalCount())
                 .successCount(result.getSuccessCount())
                 .failedCount(result.getFailedCount())

@@ -10,6 +10,8 @@ import com.thundax.kuzhambu.ai.application.invocation.gateway.AiWorkerGateway.Do
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.invocation.result.AiStreamEventResult;
 import com.thundax.kuzhambu.ai.application.invocation.support.AiWorkerModelConfigResolver;
+import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import com.thundax.kuzhambu.ai.infra.invocation.gateway.dto.AiWorkerHttpPayloads;
 import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
@@ -315,12 +317,13 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
             return failure(command, ERROR_WORKER_PROTOCOL_FAILURE, "Worker returned invalid response");
         }
         AiInvokeResult result = new AiInvokeResult();
-        result.setRequestId(defaultString(response.getRequestId(), command.getRequestId()));
-        result.setTraceId(defaultString(response.getTraceId(), command.getTraceId()));
-        result.setStatus(response.getStatus());
-        result.setCapability(defaultString(
+        result.setRequestId(RequestIdCodec.toDomain(defaultString(response.getRequestId(), command.getRequestId())));
+        result.setTraceId(TraceIdCodec.toDomain(defaultString(response.getTraceId(), command.getTraceId())));
+        result.setStatus(AiInvocationStatus.from(response.getStatus()));
+        String capability = defaultString(
                 response.getCapability(),
-                command.getCapability() == null ? null : command.getCapability().value()));
+                command.getCapability() == null ? null : command.getCapability().value());
+        result.setCapability(capability == null ? null : AiBusinessCapability.fromAlias(capability));
         result.setFailureStage(response.getFailureStage());
         result.setFallbackUsed(Boolean.TRUE.equals(response.getFallbackUsed()));
         if (response.getResult() != null) {
@@ -392,13 +395,14 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
         AiStreamEventResult event = new AiStreamEventResult();
         event.setEventType(defaultString(eventType, text(node, "eventType")));
         event.setEventId(text(node, "eventId"));
-        event.setRequestId(defaultString(text(node, "requestId"), command.getRequestId()));
-        event.setTraceId(defaultString(text(node, "traceId"), command.getTraceId()));
+        event.setRequestId(RequestIdCodec.toDomain(defaultString(text(node, "requestId"), command.getRequestId())));
+        event.setTraceId(TraceIdCodec.toDomain(defaultString(text(node, "traceId"), command.getTraceId())));
         event.setStage(text(node, "stage"));
         event.setTimestamp(toInstant(text(node, "timestamp")));
         event.setDeltaText(defaultString(
                 text(node, "deltaText"), payloadToString(node.path("delta").path("text"))));
-        event.setStatus(defaultString(text(node, "status"), text(node.path("extra"), "status")));
+        String status = defaultString(text(node, "status"), text(node.path("extra"), "status"));
+        event.setStatus(status == null ? null : AiInvocationStatus.from(status));
         event.setFailureStage(text(node.path("extra"), "failureStage"));
         event.setFallbackUsed(Boolean.parseBoolean(text(node.path("extra"), "fallbackUsed")));
         if (!node.path("extra").path("artifactReference").isMissingNode()
@@ -466,21 +470,24 @@ public class AiWorkerHttpGateway implements AiWorkerGateway {
         }
         AiStreamEventResult event = new AiStreamEventResult();
         event.setEventType(EVENT_ERROR);
-        event.setRequestId(command.getRequestId());
-        event.setTraceId(command.getTraceId());
+        event.setRequestId(RequestIdCodec.toDomain(command.getRequestId()));
+        event.setTraceId(TraceIdCodec.toDomain(command.getTraceId()));
         event.setStage(EVENT_ERROR);
         event.setTimestamp(Instant.now());
-        event.setStatus("FAILED");
+        event.setStatus(AiInvocationStatus.FAILED);
         event.setErrorType(failure.getErrorType());
         event.setErrorMessage(failure.getErrorMessage());
         eventConsumer.accept(event);
     }
 
     private AiInvokeResult failure(AiInvokeCommand command, String errorType, String errorMessage) {
-        AiInvokeResult result =
-                AiInvokeResult.failed(command.getRequestId(), command.getTraceId(), errorType, errorMessage, null);
-        result.setCapability(
-                command.getCapability() == null ? null : command.getCapability().value());
+        AiInvokeResult result = AiInvokeResult.failed(
+                RequestIdCodec.toDomain(command.getRequestId()),
+                TraceIdCodec.toDomain(command.getTraceId()),
+                errorType,
+                errorMessage,
+                null);
+        result.setCapability(command.getCapability());
         return result;
     }
 

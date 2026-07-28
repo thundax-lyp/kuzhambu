@@ -2,8 +2,12 @@ package com.thundax.kuzhambu.ai.interfaces.admin.platform.assembler;
 
 import com.thundax.kuzhambu.ai.application.invocation.result.AiInvokeResult;
 import com.thundax.kuzhambu.ai.application.scenario.command.PlatformAiInvokeCommand;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
 import com.thundax.kuzhambu.ai.interfaces.admin.platform.controller.request.PlatformAiRequests;
 import com.thundax.kuzhambu.ai.interfaces.admin.platform.controller.response.PlatformAiResponses;
+import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
+import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 
 public final class PlatformAiInterfaceAssembler {
 
@@ -38,12 +42,15 @@ public final class PlatformAiInterfaceAssembler {
             return PlatformAiResponses.InvokeResponse.builder().build();
         }
         return PlatformAiResponses.InvokeResponse.builder()
-                .callId(result.getCallId())
-                .candidateId(result.getCandidateId())
-                .requestId(result.getRequestId())
-                .traceId(result.getTraceId())
-                .status(result.getStatus())
-                .capability(result.getCapability())
+                .callId(AiCallIdCodec.toValue(result.getCallId()))
+                .candidateId(AiCandidateIdCodec.toValue(result.getCandidateId()))
+                .requestId(RequestIdCodec.toValue(result.getRequestId()))
+                .traceId(TraceIdCodec.toValue(result.getTraceId()))
+                .status(result.getStatus() == null ? null : result.getStatus().name())
+                .capability(
+                        result.getCapability() == null
+                                ? null
+                                : result.getCapability().value())
                 .resultFormat(result.getResultFormat())
                 .resultPayload(result.getResultPayload())
                 .artifactReferenceJson(result.getArtifactReferenceJson())
