@@ -131,9 +131,16 @@ git log --oneline --decorate --max-count=30
    ```
 
 3. 读取 PR commits 和 diff，确认远端历史与计划一致。
-4. 检查 required checks 是否因新 SHA 重新触发。
-5. 最多观察 5 分钟；每 20 至 30 秒检查 checks 和新增 review 状态。到期仍在运行时报告当前状态，超时不视为失败。
-6. 不因 SHA 改写自动请求新一轮 Codex Review；如果最终 tree 发生实质变化，则必须停止并重新审查。
+4. 基于整理后的远端 commits、diff 和 checks 重新整合 PR 信息：
+   - 重新判断 PR 标题是否仍能概括最终交付边界；不准确时更新标题。
+   - 按 `.github/pull_request_template.md` 重新生成 `Business Closure`、`Scope`、`Verification Evidence`、`Not Covered`、`Cross-domain Impact`、`Documentation, TODO And RUNBOOK Closure` 和 `Risks`。
+   - 删除已失效的 commit SHA、旧提交数量、旧文件范围、旧验证状态和 review/fix/replay/resolve 过程描述。
+   - 保留仍然有效的人工背景、工程取舍、风险和未覆盖项，不要覆盖用户需要保留的说明。
+   - 在 `Verification Evidence` 或 `Risks` 中记录提交历史已整理、最终 tree 未变化以及使用精确 lease 推送的事实。
+5. 回读 PR 标题和描述，确认其内容对应整理后的最终远端状态。
+6. 检查 required checks 是否因新 SHA 重新触发。
+7. 最多观察 5 分钟；每 20 至 30 秒检查 checks 和新增 review 状态。到期仍在运行时报告当前状态，超时不视为失败。
+8. 不因 SHA 改写自动请求新一轮 Codex Review；如果最终 tree 发生实质变化，则必须停止并重新审查。
 
 ## 完成标准
 
@@ -142,6 +149,7 @@ git log --oneline --decorate --max-count=30
 - 独立工程判断仍保留。
 - 远端分支通过 `--force-with-lease` 安全更新。
 - PR diff 与提交列表符合预期。
+- PR 标题和描述已按整理后的远端 commits、diff 和 checks 重新整合。
 - checks 已通过，或 5 分钟观察窗口结束后已明确报告仍在运行的状态。
 - PR 未被 merge。
 
@@ -157,6 +165,7 @@ git log --oneline --decorate --max-count=30
 * Consolidated commits:
 * Preserved commits:
 * Push status:
+* PR information:
 * Checks:
 * Local backup ref:
 * Remaining risks:
