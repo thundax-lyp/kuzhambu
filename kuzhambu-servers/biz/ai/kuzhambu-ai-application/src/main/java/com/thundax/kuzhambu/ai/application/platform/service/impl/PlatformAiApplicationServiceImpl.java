@@ -42,9 +42,40 @@ public class PlatformAiApplicationServiceImpl implements PlatformAiApplicationSe
     private AiInvokeResult invoke(PlatformAiInvokeCommand command, String usecase) {
         validateCommand(command);
         PlatformAiWorkerUsecaseSpec spec = resolver.resolve(usecase);
-        AiInvokeCommand invokeCommand = command.toInvokeCommand(spec);
+        AiInvokeCommand invokeCommand = toInvokeCommand(command, spec);
         enrichBusinessInvokeConfig(invokeCommand);
         return invocationApplicationService.invoke(invokeCommand);
+    }
+
+    private AiInvokeCommand toInvokeCommand(PlatformAiInvokeCommand source, PlatformAiWorkerUsecaseSpec spec) {
+        AiInvokeCommand command = new AiInvokeCommand();
+        command.setScope("platform");
+        command.setCapability(spec.capability());
+        command.setWorkerCapability(spec.workerCapability());
+        command.setOperation(spec.operation());
+        command.setWorkerPath(spec.workerPath());
+        command.setContentType(source.getContentType());
+        command.setContentId(source.getContentId());
+        command.setObjectId(source.getObjectId());
+        command.setServiceId(source.getServiceId());
+        command.setServiceRole(source.getServiceRole());
+        command.setModelId(source.getModelId());
+        command.setModelName(source.getModelName());
+        command.setPromptVersionId(source.getPromptVersionId());
+        command.setRequestId(source.getRequestId());
+        command.setTraceId(source.getTraceId());
+        command.setPromptMessagesJson(source.getPromptMessagesJson());
+        command.setPromptVariablesJson(source.getPromptVariablesJson());
+        command.setPromptHash(source.getPromptHash());
+        command.setInputPayloadJson(source.getInputPayloadJson());
+        command.setOutputSchemaJson(source.getOutputSchemaJson());
+        command.setStream(false);
+        command.setForceJson(source.isForceJson());
+        command.setLocale(source.getLocale());
+        command.setAllowFallback(source.isAllowFallback());
+        command.setCreateCandidate(
+                source.getCreateCandidate() == null ? spec.defaultCreateCandidate() : source.getCreateCandidate());
+        return command;
     }
 
     private void enrichBusinessInvokeConfig(AiInvokeCommand command) {

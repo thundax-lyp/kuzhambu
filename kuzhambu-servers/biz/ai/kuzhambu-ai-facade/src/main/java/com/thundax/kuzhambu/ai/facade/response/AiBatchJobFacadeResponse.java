@@ -15,6 +15,7 @@ public class AiBatchJobFacadeResponse {
     private final String scope;
     private final String capability;
     private final String contentType;
+    private final Long contentId;
     private final String status;
     private final int totalCount;
     private final int successCount;

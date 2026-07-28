@@ -1,14 +1,16 @@
 package com.thundax.kuzhambu.ai.application.facade.assembler;
 
-import com.thundax.kuzhambu.ai.application.batch.result.AiBatchJobResult;
 import com.thundax.kuzhambu.ai.application.discovery.command.DiscoveryAiCommand;
 import com.thundax.kuzhambu.ai.application.discovery.result.DiscoveryAiInvokeResult;
+import com.thundax.kuzhambu.ai.application.invocation.batch.result.AiBatchJobResult;
+import com.thundax.kuzhambu.ai.application.knowledge.command.KnowledgeAiExtractionCommand;
+import com.thundax.kuzhambu.ai.application.knowledge.result.KnowledgeAiExtractionResult;
 import com.thundax.kuzhambu.ai.application.report.result.AiReportSummaryResult;
 import com.thundax.kuzhambu.ai.application.report.result.AiReportSummaryResult.TopCapabilityResult;
-import com.thundax.kuzhambu.ai.domain.batch.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.codec.AiContentRefCodec;
@@ -17,22 +19,19 @@ import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
-import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateApplyCheck;
-import com.thundax.kuzhambu.ai.domain.knowledge.model.entity.KnowledgeAiExtractionRecord;
-import com.thundax.kuzhambu.ai.domain.knowledge.model.valueobject.KnowledgeAiExtractionInput;
 import com.thundax.kuzhambu.ai.facade.dto.AiCandidateFacadeDto;
 import com.thundax.kuzhambu.ai.facade.dto.AiInvocationLogFacadeDto;
 import com.thundax.kuzhambu.ai.facade.dto.AiTopCapabilityFacadeDto;
 import com.thundax.kuzhambu.ai.facade.dto.AiUsageSnapshotFacadeDto;
 import com.thundax.kuzhambu.ai.facade.request.DiscoveryAiFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.request.KnowledgeAiExtractionFacadeRequest;
-import com.thundax.kuzhambu.ai.facade.request.MarkAiCandidateAppliedFacadeRequest;
-import com.thundax.kuzhambu.ai.facade.request.RequirePendingAiCandidateFacadeRequest;
 import com.thundax.kuzhambu.ai.facade.response.AiBatchJobActionFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.AiBatchJobFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.AiReportSummaryFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.DiscoveryAiFacadeResponse;
 import com.thundax.kuzhambu.ai.facade.response.KnowledgeAiExtractionFacadeResponse;
+import com.thundax.kuzhambu.common.core.traceability.codec.RequestIdCodec;
+import com.thundax.kuzhambu.common.core.traceability.codec.TraceIdCodec;
 import java.util.Collections;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -60,8 +59,8 @@ public class AiFacadeAssembler {
                 .modelId(AiModelIdCodec.toValue(invocationLog.getModelId()))
                 .modelName(AiModelNameCodec.toValue(invocationLog.getModelName()))
                 .promptVersionId(PromptVersionIdCodec.toValue(invocationLog.getPromptVersionId()))
-                .requestId(invocationLog.getRequestId())
-                .traceId(invocationLog.getTraceId())
+                .requestId(RequestIdCodec.toValue(invocationLog.getRequestId()))
+                .traceId(TraceIdCodec.toValue(invocationLog.getTraceId()))
                 .status(
                         invocationLog.getStatus() == null
                                 ? null
@@ -109,22 +108,6 @@ public class AiFacadeAssembler {
                 .appliedAt(candidate.getAppliedAt())
                 .rejectedAt(candidate.getRejectedAt())
                 .build();
-    }
-
-    public AiCandidateApplyCheck toDomainCheck(RequirePendingAiCandidateFacadeRequest request) {
-        if (request == null) {
-            return null;
-        }
-        AiCandidateApplyCheck check = new AiCandidateApplyCheck();
-        check.setCandidateId(request.getCandidateId());
-        check.setContentType(request.getContentType());
-        check.setContentId(request.getContentId());
-        check.setCapability(request.getCapability());
-        return check;
-    }
-
-    public Long toCandidateId(MarkAiCandidateAppliedFacadeRequest request) {
-        return request == null ? null : request.getCandidateId();
     }
 
     public AiUsageSnapshotFacadeDto toFacadeDto(AiUsageSnapshot usage) {
@@ -181,11 +164,11 @@ public class AiFacadeAssembler {
                 .build();
     }
 
-    public KnowledgeAiExtractionInput toDomainInput(KnowledgeAiExtractionFacadeRequest request) {
+    public KnowledgeAiExtractionCommand toKnowledgeAiExtractionCommand(KnowledgeAiExtractionFacadeRequest request) {
         if (request == null) {
             return null;
         }
-        return new KnowledgeAiExtractionInput(
+        return new KnowledgeAiExtractionCommand(
                 request.getTaskType(),
                 request.getScopeType(),
                 request.getScopeJson(),
@@ -208,7 +191,7 @@ public class AiFacadeAssembler {
                 request.getLocale());
     }
 
-    public KnowledgeAiExtractionFacadeResponse toFacadeResponse(KnowledgeAiExtractionRecord record) {
+    public KnowledgeAiExtractionFacadeResponse toFacadeResponse(KnowledgeAiExtractionResult record) {
         if (record == null) {
             return null;
         }
@@ -249,6 +232,7 @@ public class AiFacadeAssembler {
                 .scope(result.getScope())
                 .capability(result.getCapability())
                 .contentType(result.getContentType())
+                .contentId(result.getContentId())
                 .status(result.getStatus())
                 .totalCount(result.getTotalCount())
                 .successCount(result.getSuccessCount())
