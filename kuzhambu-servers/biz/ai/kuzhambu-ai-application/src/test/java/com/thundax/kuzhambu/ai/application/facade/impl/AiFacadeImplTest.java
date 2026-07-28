@@ -21,20 +21,20 @@ import com.thundax.kuzhambu.ai.application.knowledge.service.KnowledgeAiExtracti
 import com.thundax.kuzhambu.ai.application.report.result.AiReportSummaryResult;
 import com.thundax.kuzhambu.ai.application.report.result.AiReportSummaryResult.TopCapabilityResult;
 import com.thundax.kuzhambu.ai.application.report.service.AiReportApplicationService;
-import com.thundax.kuzhambu.ai.domain.batch.model.valueobject.AiBatchJobId;
+import com.thundax.kuzhambu.ai.domain.batch.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelId;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName;
 import com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCallIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiPromptVersionIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiCandidateStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
-import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCallId;
-import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
-import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiPromptVersionId;
-import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjectId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateApplyCheck;
@@ -575,12 +575,12 @@ class AiFacadeImplTest {
 
     private static AiInvocationLog invocationLog() {
         AiInvocationLog invocationLog = new AiInvocationLog();
-        invocationLog.setCallId(AiCallId.of(301L));
-        invocationLog.setBatchId(AiBatchJobId.of(401L));
+        invocationLog.setCallId(AiCallIdCodec.toDomain(301L));
+        invocationLog.setBatchId(AiBatchJobIdCodec.toDomain(401L));
         invocationLog.setScope("discovery");
         invocationLog.setCapability(AiBusinessCapability.DISCOVERY_ANSWER_GENERATION);
         invocationLog.setContentRef(AiContentRef.of("QUESTION", 501L));
-        invocationLog.setTargetObjectId(AiTargetObjectId.of(601L));
+        invocationLog.setTargetObjectId(AiTargetObjectIdCodec.toDomain(601L));
         invocationLog.setServiceId(701L);
         invocationLog.setServiceRole("DISCOVERY");
         invocationLog.setModelId(new AiModelId(801L));
@@ -600,16 +600,16 @@ class AiFacadeImplTest {
 
     private static AiCandidate candidate() {
         AiCandidate candidate = new AiCandidate();
-        candidate.setId(AiCandidateId.of(901L));
-        candidate.setCallId(AiCallId.of(701L));
-        candidate.setBatchId(AiBatchJobId.of(801L));
+        candidate.setId(AiCandidateIdCodec.toDomain(901L));
+        candidate.setCallId(AiCallIdCodec.toDomain(701L));
+        candidate.setBatchId(AiBatchJobIdCodec.toDomain(801L));
         candidate.setCapability(AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT);
         candidate.setContentRef(AiContentRef.of("CLASSICS_CONTENT", 902L));
-        candidate.setTargetObjectId(AiTargetObjectId.of(903L));
+        candidate.setTargetObjectId(AiTargetObjectIdCodec.toDomain(903L));
         candidate.setResultFormat("JSON");
         candidate.setResultPayload("{\"graph\":true}");
         candidate.setStatus(AiCandidateStatus.PENDING);
-        candidate.setPromptVersionId(AiPromptVersionId.of(1001L));
+        candidate.setPromptVersionId(AiPromptVersionIdCodec.toDomain(1001L));
         candidate.setModelName(AiModelName.of("gpt-5"));
         candidate.setRequestedAt(Instant.parse("2025-02-01T10:15:30Z"));
         return candidate;

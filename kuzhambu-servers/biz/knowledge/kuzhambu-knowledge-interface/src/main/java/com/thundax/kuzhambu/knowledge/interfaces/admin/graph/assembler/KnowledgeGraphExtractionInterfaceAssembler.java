@@ -11,6 +11,7 @@ import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeEntityRe
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeLineageNodeResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeLineageRelationResult;
 import com.thundax.kuzhambu.knowledge.application.graph.result.KnowledgeRelationResult;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTaskIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.request.GraphExtractionRequests;
 import com.thundax.kuzhambu.knowledge.interfaces.admin.graph.controller.response.GraphExtractionResponses;
@@ -101,11 +102,11 @@ public final class KnowledgeGraphExtractionInterfaceAssembler {
     }
 
     public static GraphExtractionTaskId toTaskId(GraphExtractionRequests.TaskIdRequest request) {
-        return request == null ? null : GraphExtractionTaskId.ofNullable(request.getTaskId());
+        return request == null ? null : GraphExtractionTaskIdCodec.toDomain(request.getTaskId());
     }
 
     public static GraphExtractionTaskId toSourceTaskId(GraphExtractionRequests.RegenerateRequest request) {
-        return request == null ? null : GraphExtractionTaskId.ofNullable(request.getSourceTaskId());
+        return request == null ? null : GraphExtractionTaskIdCodec.toDomain(request.getSourceTaskId());
     }
 
     public static RegenerateGraphExtractionCommand toRegenerateCommand(

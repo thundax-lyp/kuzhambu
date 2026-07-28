@@ -9,7 +9,7 @@ public final class DictIdCodec {
     private DictIdCodec() {}
 
     public static DictId toDomain(Long value) {
-        return DictId.ofNullable(value);
+        return value == null ? null : new DictId(value);
     }
 
     public static DictId toDomain(String value) {

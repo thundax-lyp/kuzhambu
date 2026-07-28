@@ -13,9 +13,12 @@ import com.thundax.kuzhambu.classics.application.sharing.command.ShareLinkCreate
 import com.thundax.kuzhambu.classics.application.sharing.query.ShareAccessQuery;
 import com.thundax.kuzhambu.classics.application.sharing.result.ShareLinkCreateResult;
 import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
+import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareAccessRecordIdCodec;
+import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareLinkIdCodec;
+import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareTargetIdCodec;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareAccessRecord;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
@@ -24,9 +27,6 @@ import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareLin
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareTargetStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVisibility;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsSharedContentVisibility;
-import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareAccessRecordId;
-import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareLinkId;
-import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareTargetId;
 import com.thundax.kuzhambu.classics.interfaces.admin.common.response.ClassicsBatchOperationResponse;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.ClassicsSharingAdminController;
 import com.thundax.kuzhambu.classics.interfaces.admin.sharing.controller.request.ClassicsBatchShareCreateRequest;
@@ -190,10 +190,10 @@ class ClassicsSharingAdminControllerTest {
                                 ClassicsContentType.SANCAI_ENTRY,
                                 command.getTargets().get(0).getContentType());
                         assertEquals(
-                                ClassicsContentId.of(100L),
+                                ClassicsContentIdCodec.toDomain(100L),
                                 command.getTargets().get(0).getContentId());
                         return new ShareLinkCreateResult(
-                                ClassicsShareLinkId.of(10L),
+                                ClassicsShareLinkIdCodec.toDomain(10L),
                                 "share-token",
                                 "https://portal.example/share/share-token",
                                 "公开分享",
@@ -212,7 +212,7 @@ class ClassicsSharingAdminControllerTest {
                                 ClassicsContentType.SANCAI_ENTRY,
                                 command.getTargets().get(0).getContentType());
                         assertEquals(
-                                ClassicsContentId.of(100L),
+                                ClassicsContentIdCodec.toDomain(100L),
                                 command.getTargets().get(0).getContentId());
                         return ClassicsBatchOperationResult.of(
                                 List.of(ClassicsBatchOperationItemResult.success(
@@ -229,7 +229,7 @@ class ClassicsSharingAdminControllerTest {
                     }
                     if ("pageAccessRecords".equals(method.getName())) {
                         ShareAccessQuery query = (ShareAccessQuery) args[0];
-                        assertEquals(ClassicsShareLinkId.of(10L), query.getShareLinkId());
+                        assertEquals(ClassicsShareLinkIdCodec.toDomain(10L), query.getShareLinkId());
                         PageQuery page = (PageQuery) args[1];
                         assertEquals(1, page.getPageNo());
                         assertEquals(10, page.getPageSize());
@@ -237,11 +237,11 @@ class ClassicsSharingAdminControllerTest {
                                 PageRules.firstPageIndex(), page.getPageSize(), 1, List.of(accessRecord()));
                     }
                     if ("getLink".equals(method.getName())) {
-                        assertEquals(ClassicsShareLinkId.of(10L), args[0]);
+                        assertEquals(ClassicsShareLinkIdCodec.toDomain(10L), args[0]);
                         return link();
                     }
                     if ("listTargets".equals(method.getName())) {
-                        assertEquals(ClassicsShareLinkId.of(10L), args[0]);
+                        assertEquals(ClassicsShareLinkIdCodec.toDomain(10L), args[0]);
                         return List.of(deletedTarget());
                     }
                     throw new UnsupportedOperationException(method.getName());
@@ -250,7 +250,7 @@ class ClassicsSharingAdminControllerTest {
 
     private static ClassicsShareLink link() {
         ClassicsShareLink shareLink = new ClassicsShareLink();
-        shareLink.setId(ClassicsShareLinkId.of(10L));
+        shareLink.setId(ClassicsShareLinkIdCodec.toDomain(10L));
         shareLink.setTitle("公开分享");
         shareLink.setVisibility(ClassicsShareVisibility.PUBLIC);
         shareLink.setStatus(ClassicsShareLinkStatus.ACTIVE);
@@ -262,9 +262,9 @@ class ClassicsSharingAdminControllerTest {
 
     private static ClassicsShareAccessRecord accessRecord() {
         ClassicsShareAccessRecord record = new ClassicsShareAccessRecord();
-        record.setId(ClassicsShareAccessRecordId.of(100L));
-        record.setShareLinkId(ClassicsShareLinkId.of(10L));
-        record.setShareTargetId(ClassicsShareTargetId.of(20L));
+        record.setId(ClassicsShareAccessRecordIdCodec.toDomain(100L));
+        record.setShareLinkId(ClassicsShareLinkIdCodec.toDomain(10L));
+        record.setShareTargetId(ClassicsShareTargetIdCodec.toDomain(20L));
         record.setAccessedAt(new Date(System.currentTimeMillis() - 3_600_000L));
         record.setAccessResult(ClassicsShareAccessResult.ALLOWED);
         record.setClientSnapshot("resourceStorageObjectId=101");
@@ -273,10 +273,10 @@ class ClassicsSharingAdminControllerTest {
 
     private static ClassicsShareTarget target() {
         ClassicsShareTarget target = new ClassicsShareTarget();
-        target.setId(ClassicsShareTargetId.of(20L));
+        target.setId(ClassicsShareTargetIdCodec.toDomain(20L));
         target.setContentType(ClassicsContentType.SANCAI_ENTRY);
-        target.setContentId(ClassicsContentId.of(100L));
-        target.setContentVersionId(ClassicsContentVersionId.of(30L));
+        target.setContentId(ClassicsContentIdCodec.toDomain(100L));
+        target.setContentVersionId(ClassicsContentVersionIdCodec.toDomain(30L));
         target.setContentVersionNo(3);
         target.setTitleSnapshot("正式标题");
         target.setContentSnapshotJson("{\"title\":\"正式标题\"}");

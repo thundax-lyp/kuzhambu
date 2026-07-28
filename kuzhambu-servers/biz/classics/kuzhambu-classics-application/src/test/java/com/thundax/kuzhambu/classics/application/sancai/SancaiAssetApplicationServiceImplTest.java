@@ -20,7 +20,11 @@ import com.thundax.kuzhambu.classics.application.sancai.result.SancaiEntryImageR
 import com.thundax.kuzhambu.classics.application.sancai.service.impl.SancaiAssetApplicationServiceImpl;
 import com.thundax.kuzhambu.classics.domain.common.client.WorkerRenderClient;
 import com.thundax.kuzhambu.classics.domain.common.client.dto.WorkerRenderDtos;
-import com.thundax.kuzhambu.classics.domain.common.model.valueobject.StorageObjectId;
+import com.thundax.kuzhambu.classics.domain.common.codec.StorageObjectIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiEntryImageIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiShowcaseIdCodec;
+import com.thundax.kuzhambu.classics.domain.sancai.codec.SancaiVisualAssetIdCodec;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiEntryImage;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiShowcase;
 import com.thundax.kuzhambu.classics.domain.sancai.model.entity.SancaiVisualAsset;
@@ -28,8 +32,6 @@ import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiEntryImageT
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiShowcaseStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisibilityRiskStatus;
 import com.thundax.kuzhambu.classics.domain.sancai.model.enums.SancaiVisualAssetStatus;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryId;
-import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiEntryImageId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiShowcaseId;
 import com.thundax.kuzhambu.classics.domain.sancai.model.valueobject.SancaiVisualAssetId;
 import com.thundax.kuzhambu.classics.domain.sancai.repository.SancaiAssetRepository;
@@ -56,7 +58,7 @@ class SancaiAssetApplicationServiceImplTest {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
         SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(repository, null, null, null);
         SancaiVisualAsset visualAsset = visualAsset(null, 3001L);
-        when(repository.insertVisualAsset(visualAsset)).thenReturn(SancaiVisualAssetId.of(5001L));
+        when(repository.insertVisualAsset(visualAsset)).thenReturn(SancaiVisualAssetIdCodec.toDomain(5001L));
 
         SancaiVisualAssetId result = service.updateVisualAsset(visualAsset);
 
@@ -111,9 +113,10 @@ class SancaiAssetApplicationServiceImplTest {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
         SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(repository, null, null, null);
 
-        service.useVisualAsset(SancaiEntryId.of(3001L), SancaiVisualAssetId.of(5001L));
+        service.useVisualAsset(SancaiEntryIdCodec.toDomain(3001L), SancaiVisualAssetIdCodec.toDomain(5001L));
 
-        verify(repository).updateCurrentVisualAsset(SancaiEntryId.of(3001L), SancaiVisualAssetId.of(5001L));
+        verify(repository)
+                .updateCurrentVisualAsset(SancaiEntryIdCodec.toDomain(3001L), SancaiVisualAssetIdCodec.toDomain(5001L));
         verify(repository, never()).updateVisualAsset(org.mockito.ArgumentMatchers.any());
         verify(repository, never()).insertVisualAsset(org.mockito.ArgumentMatchers.any());
     }
@@ -123,12 +126,13 @@ class SancaiAssetApplicationServiceImplTest {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
         SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(repository, null, null, null);
         List<SancaiVisualAsset> expected = List.of(visualAsset(5001L, 3001L));
-        when(repository.listVisualAssetsByEntryId(SancaiEntryId.of(3001L))).thenReturn(expected);
+        when(repository.listVisualAssetsByEntryId(SancaiEntryIdCodec.toDomain(3001L)))
+                .thenReturn(expected);
 
-        List<SancaiVisualAsset> result = service.listVisualAssets(SancaiEntryId.of(3001L));
+        List<SancaiVisualAsset> result = service.listVisualAssets(SancaiEntryIdCodec.toDomain(3001L));
 
         assertEquals(expected, result);
-        verify(repository).listVisualAssetsByEntryId(SancaiEntryId.of(3001L));
+        verify(repository).listVisualAssetsByEntryId(SancaiEntryIdCodec.toDomain(3001L));
     }
 
     @Test
@@ -138,27 +142,31 @@ class SancaiAssetApplicationServiceImplTest {
         SancaiVisualAsset currentAsset = visualAsset(5001L, 3001L);
         currentAsset.setVersionNo(2);
         currentAsset.setStatus(SancaiVisualAssetStatus.PROCESSING);
-        currentAsset.setSourceImageStorageObjectId(StorageObjectId.of(7001L));
-        currentAsset.setGeneratedImageStorageObjectId(StorageObjectId.of(7002L));
+        currentAsset.setSourceImageStorageObjectId(StorageObjectIdCodec.toDomain(7001L));
+        currentAsset.setGeneratedImageStorageObjectId(StorageObjectIdCodec.toDomain(7002L));
         currentAsset.setImageAnalysisMarkdown("分析结果");
         currentAsset.setFusionDescription("融合说明");
         currentAsset.setVisualDescription("视觉描述");
         currentAsset.setGenerationParamsJson("{\"style\":\"ink\"}");
         SancaiVisualAsset olderAsset = visualAsset(4001L, 3001L);
         olderAsset.setVersionNo(5);
-        when(repository.getVisualAssetById(SancaiVisualAssetId.of(5001L))).thenReturn(currentAsset);
-        when(repository.maxVisualAssetVersionNo(SancaiEntryId.of(3001L))).thenReturn(5);
+        when(repository.getVisualAssetById(SancaiVisualAssetIdCodec.toDomain(5001L)))
+                .thenReturn(currentAsset);
+        when(repository.maxVisualAssetVersionNo(SancaiEntryIdCodec.toDomain(3001L)))
+                .thenReturn(5);
         when(repository.insertVisualAsset(org.mockito.ArgumentMatchers.any()))
-                .thenReturn(SancaiVisualAssetId.of(5002L));
+                .thenReturn(SancaiVisualAssetIdCodec.toDomain(5002L));
 
         SancaiVisualAsset result = service.createGeneratedVisualAssetVersion(
-                SancaiEntryId.of(3001L), SancaiVisualAssetId.of(5001L), StorageObjectId.of(7101L));
+                SancaiEntryIdCodec.toDomain(3001L),
+                SancaiVisualAssetIdCodec.toDomain(5001L),
+                StorageObjectIdCodec.toDomain(7101L));
 
         assertEquals(5002L, result.getId().value());
         assertEquals(6, result.getVersionNo());
         assertEquals(SancaiVisualAssetStatus.READY, result.getStatus());
-        assertEquals(StorageObjectId.of(7001L), result.getSourceImageStorageObjectId());
-        assertEquals(StorageObjectId.of(7101L), result.getGeneratedImageStorageObjectId());
+        assertEquals(StorageObjectIdCodec.toDomain(7001L), result.getSourceImageStorageObjectId());
+        assertEquals(StorageObjectIdCodec.toDomain(7101L), result.getGeneratedImageStorageObjectId());
         assertEquals(false, result.isCurrentUsed());
         assertEquals("分析结果", result.getImageAnalysisMarkdown());
         assertEquals("融合说明", result.getFusionDescription());
@@ -167,7 +175,8 @@ class SancaiAssetApplicationServiceImplTest {
         ArgumentCaptor<SancaiVisualAsset> insertCaptor = ArgumentCaptor.forClass(SancaiVisualAsset.class);
         verify(repository).insertVisualAsset(insertCaptor.capture());
         assertEquals(6, insertCaptor.getValue().getVersionNo());
-        assertEquals(StorageObjectId.of(7101L), insertCaptor.getValue().getGeneratedImageStorageObjectId());
+        assertEquals(
+                StorageObjectIdCodec.toDomain(7101L), insertCaptor.getValue().getGeneratedImageStorageObjectId());
         verify(repository, never())
                 .updateCurrentVisualAsset(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
     }
@@ -179,7 +188,8 @@ class SancaiAssetApplicationServiceImplTest {
         SancaiAssetApplicationServiceImpl service =
                 new SancaiAssetApplicationServiceImpl(repository, null, storageFacade, null);
         when(repository.maxPriority()).thenReturn(5);
-        when(repository.insertImage(org.mockito.ArgumentMatchers.any())).thenReturn(SancaiEntryImageId.of(8002L));
+        when(repository.insertImage(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(SancaiEntryImageIdCodec.toDomain(8002L));
         when(storageFacade.upload(org.mockito.ArgumentMatchers.any())).thenReturn(uploadResponse());
 
         SancaiEntryImageResource result = service.uploadImage(new SancaiEntryImageUploadCommand(
@@ -200,9 +210,10 @@ class SancaiAssetApplicationServiceImplTest {
         assertEquals("/api/classics/sancai/assets/images/3001/8002/content?download=true", result.getDownloadUrl());
         ArgumentCaptor<SancaiEntryImage> insertCaptor = ArgumentCaptor.forClass(SancaiEntryImage.class);
         verify(repository).insertImage(insertCaptor.capture());
-        assertEquals(StorageObjectId.of(7001L), insertCaptor.getValue().getStorageObjectId());
+        assertEquals(
+                StorageObjectIdCodec.toDomain(7001L), insertCaptor.getValue().getStorageObjectId());
         assertEquals(6, insertCaptor.getValue().getPriority());
-        verify(repository).clearCurrentImagesByEntryId(SancaiEntryId.of(3001L));
+        verify(repository).clearCurrentImagesByEntryId(SancaiEntryIdCodec.toDomain(3001L));
         verify(repository, never()).updateImage(org.mockito.ArgumentMatchers.any());
         ArgumentCaptor<UploadStorageFacadeRequest> uploadCaptor =
                 ArgumentCaptor.forClass(UploadStorageFacadeRequest.class);
@@ -232,7 +243,7 @@ class SancaiAssetApplicationServiceImplTest {
         SancaiAssetApplicationServiceImpl service =
                 new SancaiAssetApplicationServiceImpl(repository, null, storageFacade, null);
         SancaiEntryImage image = image(8002L, 3001L, 7001L);
-        when(repository.getImageById(SancaiEntryImageId.of(8002L))).thenReturn(image);
+        when(repository.getImageById(SancaiEntryImageIdCodec.toDomain(8002L))).thenReturn(image);
         when(storageFacade.exists(org.mockito.ArgumentMatchers.any())).thenReturn(true);
         when(storageFacade.open(org.mockito.ArgumentMatchers.any()))
                 .thenReturn(OpenStorageFacadeResponse.builder()
@@ -240,7 +251,8 @@ class SancaiAssetApplicationServiceImplTest {
                         .inputStream(new ByteArrayInputStream(new byte[] {1}))
                         .build());
 
-        SancaiEntryImageContent result = service.getImageContent(SancaiEntryId.of(3001L), SancaiEntryImageId.of(8002L));
+        SancaiEntryImageContent result =
+                service.getImageContent(SancaiEntryIdCodec.toDomain(3001L), SancaiEntryImageIdCodec.toDomain(8002L));
 
         assertEquals(3001L, result.getEntryId());
         assertEquals(8002L, result.getImageId());
@@ -262,16 +274,17 @@ class SancaiAssetApplicationServiceImplTest {
         SancaiAssetApplicationServiceImpl service =
                 new SancaiAssetApplicationServiceImpl(repository, null, storageFacade, null);
         SancaiVisualAsset asset = visualAsset(5002L, 3001L);
-        asset.setSourceImageStorageObjectId(StorageObjectId.of(7001L));
-        when(repository.getVisualAssetById(SancaiVisualAssetId.of(5002L))).thenReturn(asset);
+        asset.setSourceImageStorageObjectId(StorageObjectIdCodec.toDomain(7001L));
+        when(repository.getVisualAssetById(SancaiVisualAssetIdCodec.toDomain(5002L)))
+                .thenReturn(asset);
         when(storageFacade.open(org.mockito.ArgumentMatchers.any()))
                 .thenReturn(OpenStorageFacadeResponse.builder()
                         .storedObject(storageDto())
                         .inputStream(new ByteArrayInputStream(new byte[] {1}))
                         .build());
 
-        ClassicsStoredContentResult result =
-                service.getVisualAssetSourceContent(SancaiEntryId.of(3001L), SancaiVisualAssetId.of(5002L));
+        ClassicsStoredContentResult result = service.getVisualAssetSourceContent(
+                SancaiEntryIdCodec.toDomain(3001L), SancaiVisualAssetIdCodec.toDomain(5002L));
 
         assertEquals("sancai.png", result.getOriginalFilename());
         assertEquals("image/png", result.getContentType());
@@ -288,11 +301,13 @@ class SancaiAssetApplicationServiceImplTest {
         SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(repository, null, null, null);
         SancaiVisualAsset asset = visualAsset(5002L, 3001L);
         asset.setGeneratedImageStorageObjectId(null);
-        when(repository.getVisualAssetById(SancaiVisualAssetId.of(5002L))).thenReturn(asset);
+        when(repository.getVisualAssetById(SancaiVisualAssetIdCodec.toDomain(5002L)))
+                .thenReturn(asset);
 
         BizException exception = assertThrows(
                 BizException.class,
-                () -> service.getVisualAssetGeneratedContent(SancaiEntryId.of(3001L), SancaiVisualAssetId.of(5002L)));
+                () -> service.getVisualAssetGeneratedContent(
+                        SancaiEntryIdCodec.toDomain(3001L), SancaiVisualAssetIdCodec.toDomain(5002L)));
 
         assertEquals("三才视觉资产生成图不存在", exception.getMessage());
     }
@@ -304,16 +319,17 @@ class SancaiAssetApplicationServiceImplTest {
         SancaiAssetApplicationServiceImpl service =
                 new SancaiAssetApplicationServiceImpl(repository, null, storageFacade, null);
         SancaiVisualAsset asset = visualAsset(5002L, 3001L);
-        asset.setGeneratedImageStorageObjectId(StorageObjectId.of(7002L));
-        when(repository.getVisualAssetById(SancaiVisualAssetId.of(5002L))).thenReturn(asset);
+        asset.setGeneratedImageStorageObjectId(StorageObjectIdCodec.toDomain(7002L));
+        when(repository.getVisualAssetById(SancaiVisualAssetIdCodec.toDomain(5002L)))
+                .thenReturn(asset);
         when(storageFacade.open(org.mockito.ArgumentMatchers.any()))
                 .thenReturn(OpenStorageFacadeResponse.builder()
                         .storedObject(storageDto())
                         .inputStream(new ByteArrayInputStream(new byte[] {2}))
                         .build());
 
-        ClassicsStoredContentResult result =
-                service.getVisualAssetGeneratedContent(SancaiEntryId.of(3001L), SancaiVisualAssetId.of(5002L));
+        ClassicsStoredContentResult result = service.getVisualAssetGeneratedContent(
+                SancaiEntryIdCodec.toDomain(3001L), SancaiVisualAssetIdCodec.toDomain(5002L));
 
         assertEquals("sancai.png", result.getOriginalFilename());
         assertEquals("image/png", result.getContentType());
@@ -331,11 +347,11 @@ class SancaiAssetApplicationServiceImplTest {
         SancaiAssetApplicationServiceImpl service =
                 new SancaiAssetApplicationServiceImpl(repository, null, storageFacade, null);
         SancaiEntryImage image = image(8002L, 3001L, 7001L);
-        when(repository.getImageById(SancaiEntryImageId.of(8002L))).thenReturn(image);
+        when(repository.getImageById(SancaiEntryImageIdCodec.toDomain(8002L))).thenReturn(image);
 
-        service.deleteImage(SancaiEntryImageId.of(8002L));
+        service.deleteImage(SancaiEntryImageIdCodec.toDomain(8002L));
 
-        verify(repository).deleteImageById(SancaiEntryImageId.of(8002L));
+        verify(repository).deleteImageById(SancaiEntryImageIdCodec.toDomain(8002L));
         ArgumentCaptor<MarkStorageUsageFacadeRequest> usageCaptor =
                 ArgumentCaptor.forClass(MarkStorageUsageFacadeRequest.class);
         verify(storageFacade).markUnused(usageCaptor.capture());
@@ -347,14 +363,15 @@ class SancaiAssetApplicationServiceImplTest {
         SancaiAssetRepository repository = mock(SancaiAssetRepository.class);
         SancaiAssetApplicationServiceImpl service = new SancaiAssetApplicationServiceImpl(repository, null, null, null);
         SancaiEntryImage image = image(8002L, 3001L, 7001L);
-        when(repository.getImageById(SancaiEntryImageId.of(8002L))).thenReturn(image);
-        when(repository.markImageCurrent(SancaiEntryId.of(3001L), SancaiEntryImageId.of(8002L)))
+        when(repository.getImageById(SancaiEntryImageIdCodec.toDomain(8002L))).thenReturn(image);
+        when(repository.markImageCurrent(SancaiEntryIdCodec.toDomain(3001L), SancaiEntryImageIdCodec.toDomain(8002L)))
                 .thenReturn(1);
 
-        service.useImage(SancaiEntryId.of(3001L), SancaiEntryImageId.of(8002L));
+        service.useImage(SancaiEntryIdCodec.toDomain(3001L), SancaiEntryImageIdCodec.toDomain(8002L));
 
-        verify(repository).clearCurrentImagesByEntryId(SancaiEntryId.of(3001L));
-        verify(repository).markImageCurrent(SancaiEntryId.of(3001L), SancaiEntryImageId.of(8002L));
+        verify(repository).clearCurrentImagesByEntryId(SancaiEntryIdCodec.toDomain(3001L));
+        verify(repository)
+                .markImageCurrent(SancaiEntryIdCodec.toDomain(3001L), SancaiEntryImageIdCodec.toDomain(8002L));
     }
 
     @Test
@@ -366,20 +383,21 @@ class SancaiAssetApplicationServiceImplTest {
         SancaiEntryImage deletedImage = image(8002L, 3001L, 7001L);
         SancaiEntryImage remainingImage = image(8003L, 3001L, 7002L);
         remainingImage.setCurrentUsed(false);
-        when(repository.getImageById(SancaiEntryImageId.of(8002L))).thenReturn(deletedImage);
+        when(repository.getImageById(SancaiEntryImageIdCodec.toDomain(8002L))).thenReturn(deletedImage);
         when(repository.listImagesByEntryId(
-                        SancaiEntryId.of(3001L), com.thundax.kuzhambu.common.core.sort.SortDirection.ASC))
+                        SancaiEntryIdCodec.toDomain(3001L), com.thundax.kuzhambu.common.core.sort.SortDirection.ASC))
                 .thenReturn(List.of(remainingImage));
 
-        service.deleteImage(SancaiEntryImageId.of(8002L));
+        service.deleteImage(SancaiEntryImageIdCodec.toDomain(8002L));
 
-        verify(repository).deleteImageById(SancaiEntryImageId.of(8002L));
+        verify(repository).deleteImageById(SancaiEntryImageIdCodec.toDomain(8002L));
         ArgumentCaptor<UnbindStorageOwnerFacadeRequest> unbindCaptor =
                 ArgumentCaptor.forClass(UnbindStorageOwnerFacadeRequest.class);
         verify(storageFacade).unbindOwner(unbindCaptor.capture());
         assertEquals("CLASSICS_SANCAI_ENTRY_IMAGE", unbindCaptor.getValue().getOwnerType());
         assertEquals("entry:3001:image:8002", unbindCaptor.getValue().getOwnerId());
-        verify(repository).markImageCurrent(SancaiEntryId.of(3001L), SancaiEntryImageId.of(8003L));
+        verify(repository)
+                .markImageCurrent(SancaiEntryIdCodec.toDomain(3001L), SancaiEntryImageIdCodec.toDomain(8003L));
     }
 
     @Test
@@ -395,22 +413,22 @@ class SancaiAssetApplicationServiceImplTest {
         when(repository.maxPriority()).thenReturn(9);
         when(repository.updatePriority(org.mockito.ArgumentMatchers.any())).thenReturn(1);
 
-        service.sortImages(
-                new SancaiEntryImageSortCommand(List.of(SancaiEntryImageId.of(8002L), SancaiEntryImageId.of(8001L))));
+        service.sortImages(new SancaiEntryImageSortCommand(
+                List.of(SancaiEntryImageIdCodec.toDomain(8002L), SancaiEntryImageIdCodec.toDomain(8001L))));
 
         verify(repository).listImages(com.thundax.kuzhambu.common.core.sort.SortDirection.ASC);
         ArgumentCaptor<SancaiEntryImage> priorityCaptor = ArgumentCaptor.forClass(SancaiEntryImage.class);
         verify(repository, times(3)).updatePriority(priorityCaptor.capture());
         assertEquals(
-                SancaiEntryImageId.of(8002L),
+                SancaiEntryImageIdCodec.toDomain(8002L),
                 priorityCaptor.getAllValues().get(0).getId());
         assertEquals(10, priorityCaptor.getAllValues().get(0).getPriority());
         assertEquals(
-                SancaiEntryImageId.of(8001L),
+                SancaiEntryImageIdCodec.toDomain(8001L),
                 priorityCaptor.getAllValues().get(1).getId());
         assertEquals(2, priorityCaptor.getAllValues().get(1).getPriority());
         assertEquals(
-                SancaiEntryImageId.of(8002L),
+                SancaiEntryImageIdCodec.toDomain(8002L),
                 priorityCaptor.getAllValues().get(2).getId());
         assertEquals(1, priorityCaptor.getAllValues().get(2).getPriority());
     }
@@ -422,7 +440,7 @@ class SancaiAssetApplicationServiceImplTest {
         StorageFacade storageFacade = mock(StorageFacade.class);
         SancaiAssetApplicationServiceImpl service =
                 new SancaiAssetApplicationServiceImpl(repository, workerRenderClient, storageFacade, null);
-        SancaiShowcaseId showcaseId = SancaiShowcaseId.of(9001L);
+        SancaiShowcaseId showcaseId = SancaiShowcaseIdCodec.toDomain(9001L);
         when(repository.insertShowcase(org.mockito.ArgumentMatchers.any())).thenReturn(showcaseId);
         when(workerRenderClient.renderSancaiShowcase(org.mockito.ArgumentMatchers.any()))
                 .thenReturn(successRenderResponse());
@@ -455,7 +473,7 @@ class SancaiAssetApplicationServiceImplTest {
         verify(repository)
                 .markShowcaseCompleted(
                         showcaseId,
-                        StorageObjectId.of(7001L),
+                        StorageObjectIdCodec.toDomain(7001L),
                         2,
                         0,
                         "showcase.html",
@@ -506,7 +524,7 @@ class SancaiAssetApplicationServiceImplTest {
         StorageFacade storageFacade = mock(StorageFacade.class);
         SancaiAssetApplicationServiceImpl service =
                 new SancaiAssetApplicationServiceImpl(repository, workerRenderClient, storageFacade, null);
-        SancaiShowcaseId showcaseId = SancaiShowcaseId.of(9002L);
+        SancaiShowcaseId showcaseId = SancaiShowcaseIdCodec.toDomain(9002L);
         WorkerRenderDtos.WorkerRenderResponse response = successRenderResponse();
         response.getArtifact().setSizeBytes(50L * 1024L * 1024L + 1L);
         when(repository.insertShowcase(org.mockito.ArgumentMatchers.any())).thenReturn(showcaseId);
@@ -528,7 +546,7 @@ class SancaiAssetApplicationServiceImplTest {
         StorageFacade storageFacade = mock(StorageFacade.class);
         SancaiAssetApplicationServiceImpl service =
                 new SancaiAssetApplicationServiceImpl(repository, workerRenderClient, storageFacade, null);
-        SancaiShowcaseId showcaseId = SancaiShowcaseId.of(9001L);
+        SancaiShowcaseId showcaseId = SancaiShowcaseIdCodec.toDomain(9001L);
         when(repository.insertShowcase(org.mockito.ArgumentMatchers.any())).thenReturn(showcaseId);
         WorkerRenderDtos.WorkerRenderResponse response = new WorkerRenderDtos.WorkerRenderResponse();
         response.setStatus("FAILED");
@@ -580,17 +598,17 @@ class SancaiAssetApplicationServiceImplTest {
 
     private static SancaiEntryImage image(long imageId, long entryId, long storageObjectId) {
         SancaiEntryImage image = new SancaiEntryImage();
-        image.setId(SancaiEntryImageId.of(imageId));
-        image.setEntryId(SancaiEntryId.of(entryId));
-        image.setStorageObjectId(StorageObjectId.of(storageObjectId));
+        image.setId(SancaiEntryImageIdCodec.toDomain(imageId));
+        image.setEntryId(SancaiEntryIdCodec.toDomain(entryId));
+        image.setStorageObjectId(StorageObjectIdCodec.toDomain(storageObjectId));
         image.setCurrentUsed(true);
         return image;
     }
 
     private static SancaiVisualAsset visualAsset(Long visualAssetId, long entryId) {
         SancaiVisualAsset visualAsset = new SancaiVisualAsset();
-        visualAsset.setId(visualAssetId == null ? null : SancaiVisualAssetId.of(visualAssetId));
-        visualAsset.setEntryId(SancaiEntryId.of(entryId));
+        visualAsset.setId(visualAssetId == null ? null : SancaiVisualAssetIdCodec.toDomain(visualAssetId));
+        visualAsset.setEntryId(SancaiEntryIdCodec.toDomain(entryId));
         visualAsset.setTextWeight(60);
         visualAsset.setImageWeight(40);
         visualAsset.setCurrentUsed(true);

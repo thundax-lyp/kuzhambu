@@ -19,6 +19,7 @@ import com.thundax.kuzhambu.operations.application.backup.support.OperationsBack
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupScriptExecutor;
 import com.thundax.kuzhambu.operations.application.backup.support.OperationsBackupSupportModels.OperationsBackupArtifactResult;
 import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthAlertStrategy;
+import com.thundax.kuzhambu.operations.domain.backup.codec.BackupIdCodec;
 import com.thundax.kuzhambu.operations.domain.backup.model.entity.BackupRecord;
 import com.thundax.kuzhambu.operations.domain.backup.model.enums.BackupType;
 import com.thundax.kuzhambu.operations.domain.backup.model.valueobject.BackupId;
@@ -114,7 +115,7 @@ class BackupApplicationServiceImplTest {
     void pageAndDetailShouldMapRepositoryRecords() {
         InMemoryBackupRepository repository = new InMemoryBackupRepository();
         BackupRecord record = new BackupRecord(
-                BackupId.of(9001L),
+                BackupIdCodec.toDomain(9001L),
                 "MANUAL",
                 "SUCCEEDED",
                 null,
@@ -132,7 +133,8 @@ class BackupApplicationServiceImplTest {
 
         PageResult<OperationsBackupPageResult> pageResult =
                 service.page(new OperationsBackupPageQuery("MANUAL", "SUCCEEDED", 1001L), new PageQuery(1, 10));
-        OperationsBackupDetailResult detailResult = service.detail(new OperationsBackupDetailQuery(BackupId.of(9001L)));
+        OperationsBackupDetailResult detailResult =
+                service.detail(new OperationsBackupDetailQuery(BackupIdCodec.toDomain(9001L)));
 
         assertEquals(1, pageResult.getRecords().size());
         assertEquals(9001L, pageResult.getRecords().get(0).getBackupId().value());
@@ -220,7 +222,7 @@ class BackupApplicationServiceImplTest {
 
         @Override
         public BackupId insert(BackupRecord record) {
-            BackupId id = BackupId.of(nextId++);
+            BackupId id = BackupIdCodec.toDomain(nextId++);
             record.setId(id);
             records.put(id.value(), record);
             return id;

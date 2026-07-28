@@ -7,7 +7,7 @@ public final class SancaiEntryImageIdCodec {
     private SancaiEntryImageIdCodec() {}
 
     public static SancaiEntryImageId toDomain(Long value) {
-        return SancaiEntryImageId.ofNullable(value);
+        return value == null ? null : new SancaiEntryImageId(value);
     }
 
     public static Long toValue(SancaiEntryImageId id) {

@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.ai.domain.invocation.service;
 
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjectId;
@@ -40,7 +41,7 @@ public class AiCandidateDomainService {
 
     public AiCandidate requirePendingForApply(AiCandidateApplyCheck check, Long objectId) {
         AiCandidate candidate = requirePendingForApply(check);
-        AiTargetObjectId targetObjectId = AiTargetObjectId.ofNullable(objectId);
+        AiTargetObjectId targetObjectId = AiTargetObjectIdCodec.toDomain(objectId);
         if (!Objects.equals(targetObjectId, candidate.getTargetObjectId())) {
             throw new DomainException(
                     "AI-INVOCATION-409", "ai.candidate.target-mismatch", "AI candidate target mismatch");

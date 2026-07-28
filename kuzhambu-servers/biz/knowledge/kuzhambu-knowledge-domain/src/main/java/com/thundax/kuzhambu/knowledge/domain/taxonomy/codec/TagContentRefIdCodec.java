@@ -9,7 +9,7 @@ public final class TagContentRefIdCodec {
     private TagContentRefIdCodec() {}
 
     public static TagContentRefId toDomain(Long value) {
-        return TagContentRefId.ofNullable(value);
+        return value == null ? null : new TagContentRefId(value);
     }
 
     public static TagContentRefId toDomain(String value) {

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.thundax.kuzhambu.common.core.page.PageResult;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
+import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectStatus;
@@ -37,7 +38,7 @@ class StorageOrphanObjectCleanupSchedulerTest {
 
         assertEquals(1, count);
         assertEquals(List.of(expired), store.deletedObjects);
-        assertEquals(List.of(StoredObjectId.of(1001L)), repository.physicalDeletedIds);
+        assertEquals(List.of(StoredObjectIdCodec.toDomain(1001L)), repository.physicalDeletedIds);
     }
 
     @Test
@@ -49,7 +50,7 @@ class StorageOrphanObjectCleanupSchedulerTest {
         int count = scheduler(repository, store).cleanupExpiredOrphans();
 
         assertEquals(0, count);
-        assertEquals(List.of(StoredObjectId.of(1002L)), repository.objectStatusUpdatedIds);
+        assertEquals(List.of(StoredObjectIdCodec.toDomain(1002L)), repository.objectStatusUpdatedIds);
         assertEquals(List.of(), repository.physicalDeletedIds);
         assertEquals(List.of(), store.deletedObjects);
     }
@@ -96,8 +97,9 @@ class StorageOrphanObjectCleanupSchedulerTest {
         assertEquals(
                 StoredObjectReferenceStatus.UNREFERENCED,
                 store.deletedObjects.get(0).getReferenceStatus());
-        assertEquals(StoredObjectId.of(1004L), store.deletedObjects.get(0).getId());
-        assertEquals(List.of(StoredObjectId.of(1004L)), repository.physicalDeletedIds);
+        assertEquals(
+                StoredObjectIdCodec.toDomain(1004L), store.deletedObjects.get(0).getId());
+        assertEquals(List.of(StoredObjectIdCodec.toDomain(1004L)), repository.physicalDeletedIds);
     }
 
     @Test
@@ -136,7 +138,7 @@ class StorageOrphanObjectCleanupSchedulerTest {
         int count = scheduler(repository, store).cleanupExpiredOrphans();
 
         assertEquals(0, count);
-        assertEquals(List.of(StoredObjectId.of(1010L)), repository.objectStatusUpdatedIds);
+        assertEquals(List.of(StoredObjectIdCodec.toDomain(1010L)), repository.objectStatusUpdatedIds);
         assertEquals(List.of(), repository.physicalDeletedIds);
         assertEquals(List.of(), store.deletedObjects);
     }
@@ -158,19 +160,20 @@ class StorageOrphanObjectCleanupSchedulerTest {
         int count = scheduler(repository, store).cleanupExpiredOrphans();
 
         assertEquals(1, count);
-        assertEquals(List.of(StoredObjectId.of(1007L)), repository.objectStatusUpdatedIds);
+        assertEquals(List.of(StoredObjectIdCodec.toDomain(1007L)), repository.objectStatusUpdatedIds);
         assertEquals(1, store.deletedObjects.size());
-        assertEquals(StoredObjectId.of(1009L), store.deletedObjects.get(0).getId());
+        assertEquals(
+                StoredObjectIdCodec.toDomain(1009L), store.deletedObjects.get(0).getId());
         assertEquals(StoredObjectStatus.DELETED, store.deletedObjects.get(0).getObjectStatus());
         assertEquals(
                 StoredObjectReferenceStatus.UNREFERENCED,
                 store.deletedObjects.get(0).getReferenceStatus());
-        assertEquals(List.of(StoredObjectId.of(1009L)), repository.physicalDeletedIds);
+        assertEquals(List.of(StoredObjectIdCodec.toDomain(1009L)), repository.physicalDeletedIds);
     }
 
     private static StoredObject storage(long id, StoredObjectStatus objectStatus, long storedHoursAgo) {
         StoredObject storage = new StoredObject();
-        storage.setId(StoredObjectId.of(id));
+        storage.setId(StoredObjectIdCodec.toDomain(id));
         storage.setObjectStatus(objectStatus);
         storage.setReferenceStatus(StoredObjectReferenceStatus.UNREFERENCED);
         storage.setStoredAt(NOW.minusSeconds(storedHoursAgo * 60 * 60));

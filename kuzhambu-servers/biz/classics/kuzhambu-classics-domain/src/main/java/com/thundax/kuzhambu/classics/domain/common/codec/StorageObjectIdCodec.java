@@ -7,7 +7,7 @@ public final class StorageObjectIdCodec {
     private StorageObjectIdCodec() {}
 
     public static StorageObjectId toDomain(Long value) {
-        return StorageObjectId.ofNullable(value);
+        return value == null ? null : new StorageObjectId(value);
     }
 
     public static Long toValue(StorageObjectId id) {

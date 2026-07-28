@@ -7,7 +7,7 @@ public final class KnowledgeTagIdCodec {
     private KnowledgeTagIdCodec() {}
 
     public static KnowledgeTagId toDomain(Long value) {
-        return KnowledgeTagId.ofNullable(value);
+        return value == null ? null : new KnowledgeTagId(value);
     }
 
     public static Long toValue(KnowledgeTagId id) {

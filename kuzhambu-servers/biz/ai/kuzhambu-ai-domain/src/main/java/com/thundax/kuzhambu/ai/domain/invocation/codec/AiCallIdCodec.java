@@ -7,7 +7,7 @@ public final class AiCallIdCodec {
     private AiCallIdCodec() {}
 
     public static AiCallId toDomain(Long value) {
-        return AiCallId.ofNullable(value);
+        return value == null ? null : new AiCallId(value);
     }
 
     public static AiCallId toDomain(String value) {

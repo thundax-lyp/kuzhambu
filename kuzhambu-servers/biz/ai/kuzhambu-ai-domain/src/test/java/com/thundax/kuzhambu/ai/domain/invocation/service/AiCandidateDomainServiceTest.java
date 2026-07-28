@@ -5,11 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiTargetObjectIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiCandidateStatus;
-import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiContentRef;
-import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiTargetObjectId;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.common.core.exception.DomainException;
 import com.thundax.kuzhambu.common.core.page.PageResult;
@@ -199,7 +199,7 @@ class AiCandidateDomainServiceTest {
     private AiCandidate candidate(
             Long id, String contentType, Long contentId, String capability, AiCandidateStatus status) {
         AiCandidate candidate = new AiCandidate();
-        candidate.setId(AiCandidateId.of(id));
+        candidate.setId(AiCandidateIdCodec.toDomain(id));
         candidate.setContentRef(AiContentRef.ofNullable(contentType, contentId));
         candidate.setCapability(AiBusinessCapability.from(capability));
         candidate.setStatus(status);
@@ -209,7 +209,7 @@ class AiCandidateDomainServiceTest {
     private AiCandidate candidate(
             Long id, String contentType, Long contentId, String capability, AiCandidateStatus status, Long objectId) {
         AiCandidate candidate = candidate(id, contentType, contentId, capability, status);
-        candidate.setTargetObjectId(AiTargetObjectId.ofNullable(objectId));
+        candidate.setTargetObjectId(AiTargetObjectIdCodec.toDomain(objectId));
         return candidate;
     }
 

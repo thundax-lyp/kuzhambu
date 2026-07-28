@@ -1,6 +1,8 @@
 package com.thundax.kuzhambu.system.domain.auth.model.entity;
 
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
+import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalAuthSessionIdCodec;
+import com.thundax.kuzhambu.system.domain.auth.codec.PrincipalClientIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalAuthSessionId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalClientId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PrincipalKey;
@@ -42,7 +44,7 @@ public class PrincipalAuthSession {
             throw new IllegalArgumentException("ttlSeconds must be greater than 0");
         }
         return new PrincipalAuthSession(
-                PrincipalAuthSessionId.of(nextHexSnowflakeId()),
+                PrincipalAuthSessionIdCodec.toDomain(nextHexSnowflakeId()),
                 principalKey,
                 clientId,
                 new LinkedHashMap<>(),
@@ -53,7 +55,7 @@ public class PrincipalAuthSession {
 
     public static PrincipalAuthSession create(
             PrincipalKey principalKey, String clientId, Date issuedAt, long ttlSeconds) {
-        return create(principalKey, PrincipalClientId.ofNullable(clientId), issuedAt, ttlSeconds);
+        return create(principalKey, PrincipalClientIdCodec.toDomain(clientId), issuedAt, ttlSeconds);
     }
 
     public static PrincipalAuthSession restore(
@@ -86,7 +88,13 @@ public class PrincipalAuthSession {
             Date lastAccessTime,
             Date expireAt) {
         return restore(
-                id, principalKey, PrincipalClientId.ofNullable(clientId), values, issuedAt, lastAccessTime, expireAt);
+                id,
+                principalKey,
+                PrincipalClientIdCodec.toDomain(clientId),
+                values,
+                issuedAt,
+                lastAccessTime,
+                expireAt);
     }
 
     public boolean isExpired(Date now) {
@@ -112,7 +120,7 @@ public class PrincipalAuthSession {
     }
 
     public void setClientId(String clientId) {
-        this.clientId = PrincipalClientId.ofNullable(clientId);
+        this.clientId = PrincipalClientIdCodec.toDomain(clientId);
     }
 
     public void setClientId(PrincipalClientId clientId) {

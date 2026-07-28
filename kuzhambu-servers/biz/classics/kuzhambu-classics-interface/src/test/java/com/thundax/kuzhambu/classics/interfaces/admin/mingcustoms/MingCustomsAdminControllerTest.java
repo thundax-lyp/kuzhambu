@@ -12,11 +12,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thundax.kuzhambu.classics.application.content.service.ClassicsContentApplicationService;
 import com.thundax.kuzhambu.classics.application.mingcustoms.query.MingCustomsPageQuery;
 import com.thundax.kuzhambu.classics.application.mingcustoms.service.MingCustomsApplicationService;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentIdCodec;
+import com.thundax.kuzhambu.classics.domain.content.codec.ClassicsContentVersionIdCodec;
 import com.thundax.kuzhambu.classics.domain.content.model.entity.ClassicsContentVersion;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentChangeType;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
 import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentId;
-import com.thundax.kuzhambu.classics.domain.content.model.valueobject.ClassicsContentVersionId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordCloudItem;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsTagCloudItem;
 import com.thundax.kuzhambu.classics.interfaces.admin.mingcustoms.assembler.MingCustomsInterfaceAssembler;
@@ -123,9 +124,9 @@ class MingCustomsAdminControllerTest {
         MingCustomsAdminController controller =
                 new MingCustomsAdminController(mock(MingCustomsApplicationService.class));
         ClassicsContentVersion version = new ClassicsContentVersion(
-                ClassicsContentVersionId.of(9001L),
+                ClassicsContentVersionIdCodec.toDomain(9001L),
                 ClassicsContentType.MING_CUSTOMS,
-                ClassicsContentId.of(500000000001L),
+                ClassicsContentIdCodec.toDomain(500000000001L),
                 1,
                 new Date(1767225600000L),
                 "{\"contentType\":\"MING_CUSTOMS\",\"contentId\":500000000001}",
@@ -181,7 +182,7 @@ class MingCustomsAdminControllerTest {
     void listVersionsShouldQueryByMingCustomsTypeAndEntryId() {
         MingCustomsApplicationService service = mock(MingCustomsApplicationService.class);
         ClassicsContentApplicationService contentService = mock(ClassicsContentApplicationService.class);
-        ClassicsContentId entryId = ClassicsContentId.of(500000000001L);
+        ClassicsContentId entryId = ClassicsContentIdCodec.toDomain(500000000001L);
         when(contentService.listVersions("MING_CUSTOMS", entryId))
                 .thenReturn(List.of(version(9001L, ClassicsContentType.MING_CUSTOMS, entryId)));
         MingCustomsAdminController controller = new MingCustomsAdminController(service, contentService);
@@ -198,38 +199,42 @@ class MingCustomsAdminControllerTest {
     void getVersionShouldValidateOwnershipAndMapResult() {
         MingCustomsApplicationService service = mock(MingCustomsApplicationService.class);
         ClassicsContentApplicationService contentService = mock(ClassicsContentApplicationService.class);
-        when(contentService.getVersion(ClassicsContentVersionId.of(9001L)))
-                .thenReturn(version(9001L, ClassicsContentType.MING_CUSTOMS, ClassicsContentId.of(500000000001L)));
+        when(contentService.getVersion(ClassicsContentVersionIdCodec.toDomain(9001L)))
+                .thenReturn(version(
+                        9001L, ClassicsContentType.MING_CUSTOMS, ClassicsContentIdCodec.toDomain(500000000001L)));
         MingCustomsAdminController controller = new MingCustomsAdminController(service, contentService);
 
         MingCustomsVersionResponse response = controller.getVersion(versionRequest());
 
         assertEquals(9001L, response.getId());
-        verify(contentService).getVersion(ClassicsContentVersionId.of(9001L));
+        verify(contentService).getVersion(ClassicsContentVersionIdCodec.toDomain(9001L));
     }
 
     @Test
     void resetVersionShouldValidateOwnershipAndCallRestore() {
         MingCustomsApplicationService service = mock(MingCustomsApplicationService.class);
         ClassicsContentApplicationService contentService = mock(ClassicsContentApplicationService.class);
-        when(contentService.getVersion(ClassicsContentVersionId.of(9001L)))
-                .thenReturn(version(9001L, ClassicsContentType.MING_CUSTOMS, ClassicsContentId.of(500000000001L)));
-        when(contentService.restoreHistoryVersion(ClassicsContentVersionId.of(9001L)))
-                .thenReturn(version(9002L, ClassicsContentType.MING_CUSTOMS, ClassicsContentId.of(500000000001L)));
+        when(contentService.getVersion(ClassicsContentVersionIdCodec.toDomain(9001L)))
+                .thenReturn(version(
+                        9001L, ClassicsContentType.MING_CUSTOMS, ClassicsContentIdCodec.toDomain(500000000001L)));
+        when(contentService.restoreHistoryVersion(ClassicsContentVersionIdCodec.toDomain(9001L)))
+                .thenReturn(version(
+                        9002L, ClassicsContentType.MING_CUSTOMS, ClassicsContentIdCodec.toDomain(500000000001L)));
         MingCustomsAdminController controller = new MingCustomsAdminController(service, contentService);
 
         MingCustomsVersionResponse response = controller.resetVersion(versionRequest());
 
         assertEquals(9002L, response.getId());
-        verify(contentService).restoreHistoryVersion(ClassicsContentVersionId.of(9001L));
+        verify(contentService).restoreHistoryVersion(ClassicsContentVersionIdCodec.toDomain(9001L));
     }
 
     @Test
     void getVersionShouldRejectNotMatchedOwnership() {
         MingCustomsApplicationService service = mock(MingCustomsApplicationService.class);
         ClassicsContentApplicationService contentService = mock(ClassicsContentApplicationService.class);
-        when(contentService.getVersion(ClassicsContentVersionId.of(9001L)))
-                .thenReturn(version(9001L, ClassicsContentType.WANGQI_DOCUMENT, ClassicsContentId.of(400000000001L)));
+        when(contentService.getVersion(ClassicsContentVersionIdCodec.toDomain(9001L)))
+                .thenReturn(version(
+                        9001L, ClassicsContentType.WANGQI_DOCUMENT, ClassicsContentIdCodec.toDomain(400000000001L)));
         MingCustomsAdminController controller = new MingCustomsAdminController(service, contentService);
 
         BizException exception = assertThrows(BizException.class, () -> controller.getVersion(versionRequest()));
@@ -240,7 +245,8 @@ class MingCustomsAdminControllerTest {
     void getVersionShouldThrowIfHistoryVersionNotFound() {
         MingCustomsApplicationService service = mock(MingCustomsApplicationService.class);
         ClassicsContentApplicationService contentService = mock(ClassicsContentApplicationService.class);
-        when(contentService.getVersion(ClassicsContentVersionId.of(9001L))).thenReturn(null);
+        when(contentService.getVersion(ClassicsContentVersionIdCodec.toDomain(9001L)))
+                .thenReturn(null);
         MingCustomsAdminController controller = new MingCustomsAdminController(service, contentService);
 
         BizException exception = assertThrows(BizException.class, () -> controller.getVersion(versionRequest()));
@@ -273,7 +279,7 @@ class MingCustomsAdminControllerTest {
     private static ClassicsContentVersion version(
             long id, ClassicsContentType contentType, ClassicsContentId contentId) {
         return new ClassicsContentVersion(
-                ClassicsContentVersionId.of(id),
+                ClassicsContentVersionIdCodec.toDomain(id),
                 contentType,
                 contentId,
                 1,

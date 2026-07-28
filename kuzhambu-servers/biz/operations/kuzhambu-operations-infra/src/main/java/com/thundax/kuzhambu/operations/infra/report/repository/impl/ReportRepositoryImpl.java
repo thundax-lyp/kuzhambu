@@ -100,7 +100,7 @@ public class ReportRepositoryImpl implements ReportRepository {
                         .last("LIMIT " + limit))
                 .stream()
                 .map(ReportRepositoryImpl::longValue)
-                .map(ReportId::of)
+                .map(ReportIdCodec::toDomain)
                 .toList();
     }
 

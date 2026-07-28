@@ -4,15 +4,7 @@ import com.thundax.kuzhambu.common.core.id.BaseLongId;
 
 public final class StorageObjectId extends BaseLongId {
 
-    private StorageObjectId(Long value) {
+    public StorageObjectId(Long value) {
         super(value);
-    }
-
-    public static StorageObjectId of(Long value) {
-        return new StorageObjectId(value);
-    }
-
-    public static StorageObjectId ofNullable(Long value) {
-        return value == null ? null : of(value);
     }
 }

@@ -24,6 +24,7 @@ class SystemInfraArchitectureTest extends AbstractArchitectureTest {
         AnnotationBoundaryArchitectureRuleSupport.assertInfraAnnotationBoundary(classes, BASE_PACKAGE);
         SpringBeanArchitectureRuleSupport.assertDirectSpringBeansHaveSingleConstructor(classes);
         NamingArchitectureRuleSupport.assertValueObjectPlacement(classes, BASE_PACKAGE);
+        NamingArchitectureRuleSupport.assertValueObjectIdSourcesDeclareNoStaticMethods(Path.of("src/main/java"));
         NamingArchitectureRuleSupport.assertEntityPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertRepositoryImplPlacement(classes, BASE_PACKAGE);
         NamingArchitectureRuleSupport.assertPersistenceMapperPlacement(classes, BASE_PACKAGE);

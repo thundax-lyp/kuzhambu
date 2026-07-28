@@ -18,12 +18,13 @@ import com.thundax.kuzhambu.classics.application.result.ClassicsBatchOperationRe
 import com.thundax.kuzhambu.classics.application.searchsync.support.ClassicsSearchIndexSyncPublishSupport;
 import com.thundax.kuzhambu.classics.application.sharing.service.ClassicsSharingApplicationService;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsEntryIdCodec;
+import com.thundax.kuzhambu.classics.domain.mingcustoms.codec.MingCustomsKeywordIdCodec;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsEntry;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.entity.MingCustomsKeyword;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsContentFormat;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.enums.MingCustomsVisibility;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsEntryId;
-import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsKeywordId;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.model.valueobject.MingCustomsTagCloudItem;
 import com.thundax.kuzhambu.classics.domain.mingcustoms.repository.MingCustomsRepository;
 import com.thundax.kuzhambu.common.core.page.PageQuery;
@@ -42,7 +43,7 @@ class MingCustomsApplicationServiceImplTest {
         ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
         MingCustomsApplicationServiceImpl service =
                 new MingCustomsApplicationServiceImpl(repository, contentApplicationService, publishSupport, null);
-        when(repository.insert(any())).thenReturn(MingCustomsEntryId.of(3001L));
+        when(repository.insert(any())).thenReturn(MingCustomsEntryIdCodec.toDomain(3001L));
         versionEntryOnEnsure(contentApplicationService, 3);
 
         service.add(publicCommand(null));
@@ -59,7 +60,7 @@ class MingCustomsApplicationServiceImplTest {
                 new MingCustomsApplicationServiceImpl(repository, contentApplicationService, publishSupport, null);
         versionEntryOnEnsure(contentApplicationService, 8);
 
-        service.update(publicCommand(MingCustomsEntryId.of(3009L)));
+        service.update(publicCommand(MingCustomsEntryIdCodec.toDomain(3009L)));
 
         verify(publishSupport).publishUpsertAfterCommit(ClassicsContentType.MING_CUSTOMS, "3009", 8);
     }
@@ -72,12 +73,12 @@ class MingCustomsApplicationServiceImplTest {
         MingCustomsApplicationServiceImpl service =
                 new MingCustomsApplicationServiceImpl(repository, contentApplicationService, publishSupport, null);
         MingCustomsEntry entry = new MingCustomsEntry();
-        entry.setId(MingCustomsEntryId.of(3002L));
+        entry.setId(MingCustomsEntryIdCodec.toDomain(3002L));
         entry.setVisibility(MingCustomsVisibility.PUBLIC);
-        when(repository.getById(MingCustomsEntryId.of(3002L))).thenReturn(entry);
+        when(repository.getById(MingCustomsEntryIdCodec.toDomain(3002L))).thenReturn(entry);
         versionEntryOnEnsure(contentApplicationService, 4);
 
-        service.changeVisibility(MingCustomsEntryId.of(3002L), "PRIVATE");
+        service.changeVisibility(MingCustomsEntryIdCodec.toDomain(3002L), "PRIVATE");
 
         verify(publishSupport).publishDeleteAfterCommit(ClassicsContentType.MING_CUSTOMS, "3002", 4);
     }
@@ -136,14 +137,14 @@ class MingCustomsApplicationServiceImplTest {
         MingCustomsApplicationServiceImpl service =
                 new MingCustomsApplicationServiceImpl(repository, contentApplicationService, publishSupport, null);
         MingCustomsEntry entry = new MingCustomsEntry();
-        entry.setId(MingCustomsEntryId.of(3004L));
+        entry.setId(MingCustomsEntryIdCodec.toDomain(3004L));
         entry.setVisibility(MingCustomsVisibility.PUBLIC);
-        when(repository.getById(MingCustomsEntryId.of(3004L))).thenReturn(entry);
-        when(repository.getById(MingCustomsEntryId.of(3005L))).thenReturn(null);
+        when(repository.getById(MingCustomsEntryIdCodec.toDomain(3004L))).thenReturn(entry);
+        when(repository.getById(MingCustomsEntryIdCodec.toDomain(3005L))).thenReturn(null);
         versionEntryOnEnsure(contentApplicationService, 6);
 
         ClassicsBatchOperationResult result = service.batchChangeVisibility(
-                List.of(MingCustomsEntryId.of(3004L), MingCustomsEntryId.of(3005L)), "PRIVATE");
+                List.of(MingCustomsEntryIdCodec.toDomain(3004L), MingCustomsEntryIdCodec.toDomain(3005L)), "PRIVATE");
 
         assertEquals(1, result.getSuccessCount());
         assertEquals(1, result.getFailureCount());
@@ -162,7 +163,7 @@ class MingCustomsApplicationServiceImplTest {
                 new MingCustomsApplicationServiceImpl(repository, contentApplicationService, publishSupport, null);
 
         ClassicsBatchOperationResult result = service.batchChangeVisibility(
-                List.of(MingCustomsEntryId.of(3006L)), "PRIVATE", Set.of("classics:mingcustoms:view"));
+                List.of(MingCustomsEntryIdCodec.toDomain(3006L)), "PRIVATE", Set.of("classics:mingcustoms:view"));
 
         assertEquals(0, result.getSuccessCount());
         assertEquals(1, result.getFailureCount());
@@ -181,16 +182,16 @@ class MingCustomsApplicationServiceImplTest {
         MingCustomsApplicationServiceImpl service = new MingCustomsApplicationServiceImpl(
                 repository, contentApplicationService, publishSupport, sharingApplicationService);
         MingCustomsEntry entry = new MingCustomsEntry();
-        entry.setId(MingCustomsEntryId.of(3003L));
+        entry.setId(MingCustomsEntryIdCodec.toDomain(3003L));
         entry.setVisibility(MingCustomsVisibility.PUBLIC);
-        when(repository.getById(MingCustomsEntryId.of(3003L))).thenReturn(entry);
+        when(repository.getById(MingCustomsEntryIdCodec.toDomain(3003L))).thenReturn(entry);
         versionEntryOnEnsure(contentApplicationService, 5);
 
-        service.delete(MingCustomsEntryId.of(3003L));
+        service.delete(MingCustomsEntryIdCodec.toDomain(3003L));
 
         verify(sharingApplicationService).syncContentDeleted(ClassicsContentType.MING_CUSTOMS, 3003L);
         verify(publishSupport).publishDeleteAfterCommit(ClassicsContentType.MING_CUSTOMS, "3003", 5);
-        verify(repository).deleteById(MingCustomsEntryId.of(3003L));
+        verify(repository).deleteById(MingCustomsEntryIdCodec.toDomain(3003L));
     }
 
     @Test
@@ -200,10 +201,10 @@ class MingCustomsApplicationServiceImplTest {
         MingCustomsApplicationServiceImpl service =
                 new MingCustomsApplicationServiceImpl(repository, null, publishSupport, null);
         MingCustomsEntry entry = publicEntry(3007L, 9);
-        when(repository.insertKeyword(any())).thenReturn(MingCustomsKeywordId.of(7001L));
-        when(repository.getById(MingCustomsEntryId.of(3007L))).thenReturn(entry);
+        when(repository.insertKeyword(any())).thenReturn(MingCustomsKeywordIdCodec.toDomain(7001L));
+        when(repository.getById(MingCustomsEntryIdCodec.toDomain(3007L))).thenReturn(entry);
 
-        service.addKeyword(new MingCustomsKeywordCommand(MingCustomsEntryId.of(3007L), "元日"));
+        service.addKeyword(new MingCustomsKeywordCommand(MingCustomsEntryIdCodec.toDomain(3007L), "元日"));
 
         verify(publishSupport).publishUpsertAfterCommit(ClassicsContentType.MING_CUSTOMS, "3007", 9);
     }
@@ -214,15 +215,15 @@ class MingCustomsApplicationServiceImplTest {
         ClassicsSearchIndexSyncPublishSupport publishSupport = mock(ClassicsSearchIndexSyncPublishSupport.class);
         MingCustomsApplicationServiceImpl service =
                 new MingCustomsApplicationServiceImpl(repository, null, publishSupport, null);
-        MingCustomsKeyword keyword =
-                new MingCustomsKeyword(MingCustomsKeywordId.of(7002L), MingCustomsEntryId.of(3008L), "岁时", 1);
+        MingCustomsKeyword keyword = new MingCustomsKeyword(
+                MingCustomsKeywordIdCodec.toDomain(7002L), MingCustomsEntryIdCodec.toDomain(3008L), "岁时", 1);
         MingCustomsEntry entry = publicEntry(3008L, 10);
         when(repository.listKeywords(SortDirection.ASC)).thenReturn(List.of(keyword));
-        when(repository.getById(MingCustomsEntryId.of(3008L))).thenReturn(entry);
+        when(repository.getById(MingCustomsEntryIdCodec.toDomain(3008L))).thenReturn(entry);
 
-        service.deleteKeyword(MingCustomsKeywordId.of(7002L));
+        service.deleteKeyword(MingCustomsKeywordIdCodec.toDomain(7002L));
 
-        verify(repository).deleteKeywordById(MingCustomsKeywordId.of(7002L));
+        verify(repository).deleteKeywordById(MingCustomsKeywordIdCodec.toDomain(7002L));
         verify(publishSupport).publishUpsertAfterCommit(ClassicsContentType.MING_CUSTOMS, "3008", 10);
     }
 
@@ -253,7 +254,7 @@ class MingCustomsApplicationServiceImplTest {
 
     private static MingCustomsEntry publicEntry(long id, int versionNo) {
         MingCustomsEntry entry = new MingCustomsEntry();
-        entry.setId(MingCustomsEntryId.of(id));
+        entry.setId(MingCustomsEntryIdCodec.toDomain(id));
         entry.setVisibility(MingCustomsVisibility.PUBLIC);
         entry.setCurrentVersionNo(versionNo);
         return entry;

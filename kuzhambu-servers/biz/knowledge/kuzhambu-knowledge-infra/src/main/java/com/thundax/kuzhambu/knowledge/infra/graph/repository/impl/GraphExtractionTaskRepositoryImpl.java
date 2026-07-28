@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.knowledge.domain.graph.codec.GraphExtractionTaskIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.entity.GraphExtractionTask;
 import com.thundax.kuzhambu.knowledge.domain.graph.model.valueobject.GraphExtractionTaskId;
 import com.thundax.kuzhambu.knowledge.domain.graph.repository.GraphExtractionTaskRepository;
@@ -43,7 +44,7 @@ public class GraphExtractionTaskRepositoryImpl implements GraphExtractionTaskRep
             dataObject.setTaskId(dataObject.getId());
         }
         mapper.insert(dataObject);
-        return GraphExtractionTaskId.of(dataObject.getTaskId());
+        return GraphExtractionTaskIdCodec.toDomain(dataObject.getTaskId());
     }
 
     @Override

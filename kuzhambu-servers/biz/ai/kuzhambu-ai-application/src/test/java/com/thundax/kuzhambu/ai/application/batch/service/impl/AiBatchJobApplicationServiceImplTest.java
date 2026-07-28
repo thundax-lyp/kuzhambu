@@ -4,9 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.thundax.kuzhambu.ai.application.batch.command.AiBatchJobCreateCommand;
 import com.thundax.kuzhambu.ai.application.batch.result.AiBatchJobResult;
+import com.thundax.kuzhambu.ai.domain.batch.codec.AiBatchJobIdCodec;
 import com.thundax.kuzhambu.ai.domain.batch.model.entity.AiBatchJob;
 import com.thundax.kuzhambu.ai.domain.batch.model.enums.AiBatchJobStatus;
-import com.thundax.kuzhambu.ai.domain.batch.model.valueobject.AiBatchJobId;
 import com.thundax.kuzhambu.ai.domain.batch.repository.AiBatchJobRepository;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
 import com.thundax.kuzhambu.ai.domain.split.model.entity.EntrySplitCandidate;
@@ -100,7 +100,7 @@ public class AiBatchJobApplicationServiceImplTest {
 
     private AiBatchJob cancelledJob() {
         AiBatchJob job = new AiBatchJob();
-        job.setId(AiBatchJobId.of(1L));
+        job.setId(AiBatchJobIdCodec.toDomain(1L));
         job.setScope("knowledge");
         job.setCapability(AiBusinessCapability.KNOWLEDGE_GRAPH_EXTRACT);
         job.setContentType("KNOWLEDGE_ENTITY");

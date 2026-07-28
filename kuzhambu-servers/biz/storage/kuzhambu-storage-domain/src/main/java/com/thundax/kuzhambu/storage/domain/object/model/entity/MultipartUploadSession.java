@@ -1,5 +1,6 @@
 package com.thundax.kuzhambu.storage.domain.object.model.entity;
 
+import com.thundax.kuzhambu.storage.domain.object.codec.MultipartUploadIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.MultipartUploadStatus;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.valueobject.MultipartUploadId;
@@ -42,7 +43,7 @@ public class MultipartUploadSession {
     }
 
     public void setUploadId(String uploadId) {
-        this.uploadId = MultipartUploadId.ofNullable(uploadId);
+        this.uploadId = MultipartUploadIdCodec.toDomain(uploadId);
     }
 
     public StorageOwnerType getOwnerType() {

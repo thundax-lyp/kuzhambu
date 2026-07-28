@@ -9,7 +9,7 @@ public final class SynonymIdCodec {
     private SynonymIdCodec() {}
 
     public static SynonymId toDomain(Long value) {
-        return SynonymId.ofNullable(value);
+        return value == null ? null : new SynonymId(value);
     }
 
     public static SynonymId toDomain(String value) {

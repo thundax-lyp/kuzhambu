@@ -9,6 +9,7 @@ import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoverySynon
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoverySynonymMatchResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoverySynonymQueryResult;
 import com.thundax.kuzhambu.knowledge.application.taxonomy.result.DiscoveryTagHintResult;
+import com.thundax.kuzhambu.knowledge.domain.taxonomy.codec.TagIdCodec;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.entity.Tag;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.ContentType;
 import com.thundax.kuzhambu.knowledge.domain.taxonomy.model.enums.TagSource;
@@ -107,11 +108,11 @@ public class KnowledgeFacadeAssembler {
     }
 
     public TagId toTagId(KnowledgeContentTagRefFacadeRequest request) {
-        return request == null || request.getTagId() == null ? null : TagId.of(request.getTagId());
+        return request == null || request.getTagId() == null ? null : TagIdCodec.toDomain(request.getTagId());
     }
 
     public TagId toTagId(KnowledgeRemoveContentTagRefFacadeRequest request) {
-        return request == null || request.getTagId() == null ? null : TagId.of(request.getTagId());
+        return request == null || request.getTagId() == null ? null : TagIdCodec.toDomain(request.getTagId());
     }
 
     public ContentType toContentType(KnowledgeContentTagRefFacadeRequest request) {

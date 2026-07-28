@@ -14,7 +14,7 @@ import com.thundax.kuzhambu.operations.application.backup.result.OperationsBacku
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupExecuteResult;
 import com.thundax.kuzhambu.operations.application.backup.result.OperationsBackupPageResult;
 import com.thundax.kuzhambu.operations.application.backup.service.BackupApplicationService;
-import com.thundax.kuzhambu.operations.domain.backup.model.valueobject.BackupId;
+import com.thundax.kuzhambu.operations.domain.backup.codec.BackupIdCodec;
 import com.thundax.kuzhambu.operations.interfaces.admin.backup.controller.request.OperationsBackupDetailRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.backup.controller.request.OperationsBackupExecuteRequest;
 import com.thundax.kuzhambu.operations.interfaces.admin.backup.controller.request.OperationsBackupPageRequest;
@@ -56,7 +56,7 @@ class OperationsBackupAdminControllerTest {
         OperationsBackupAdminController controller = new OperationsBackupAdminController(service);
         when(service.execute(any()))
                 .thenReturn(new OperationsBackupExecuteResult(
-                        BackupId.of(9001L),
+                        BackupIdCodec.toDomain(9001L),
                         "MANUAL",
                         "SUCCEEDED",
                         "backup_20260629-120000.sql",
@@ -72,7 +72,7 @@ class OperationsBackupAdminControllerTest {
                         10,
                         1L,
                         List.of(new OperationsBackupPageResult(
-                                BackupId.of(9001L),
+                                BackupIdCodec.toDomain(9001L),
                                 "MANUAL",
                                 "SUCCEEDED",
                                 "backup_20260629-120000.sql",
@@ -85,7 +85,7 @@ class OperationsBackupAdminControllerTest {
                                 new Date(1_722_222_400_000L)))));
         when(service.detail(any()))
                 .thenReturn(new OperationsBackupDetailResult(
-                        BackupId.of(9001L),
+                        BackupIdCodec.toDomain(9001L),
                         "MANUAL",
                         "SUCCEEDED",
                         null,

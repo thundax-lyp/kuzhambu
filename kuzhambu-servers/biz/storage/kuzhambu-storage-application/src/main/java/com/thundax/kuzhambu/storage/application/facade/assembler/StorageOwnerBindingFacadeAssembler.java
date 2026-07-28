@@ -3,10 +3,10 @@ package com.thundax.kuzhambu.storage.application.facade.assembler;
 import com.thundax.kuzhambu.storage.application.service.command.AddStorageReferencesCommand;
 import com.thundax.kuzhambu.storage.application.service.command.ChangeStorageReferenceStatusCommand;
 import com.thundax.kuzhambu.storage.application.service.command.RemoveStorageReferencesCommand;
+import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObjectReference;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StorageOwnerType;
 import com.thundax.kuzhambu.storage.domain.object.model.enums.StoredObjectReferenceStatus;
-import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.facade.request.BindStorageOwnerFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.MarkStorageUsageFacadeRequest;
 import com.thundax.kuzhambu.storage.facade.request.UnbindStorageOwnerFacadeRequest;
@@ -27,7 +27,7 @@ public class StorageOwnerBindingFacadeAssembler {
         StorageOwnerType ownerType = toOwnerType(request);
         List<StoredObjectReference> references = storageObjectIds.stream()
                 .map(storageObjectId -> new StoredObjectReference(
-                        storageObjectId == null ? null : StoredObjectId.of(storageObjectId),
+                        storageObjectId == null ? null : StoredObjectIdCodec.toDomain(storageObjectId),
                         request.getOwnerId(),
                         ownerType == null ? null : ownerType.value(),
                         request.getOwnerParams()))
@@ -56,7 +56,9 @@ public class StorageOwnerBindingFacadeAssembler {
             return null;
         }
         return new ChangeStorageReferenceStatusCommand(
-                request.getStorageObjectId() == null ? null : StoredObjectId.of(request.getStorageObjectId()),
+                request.getStorageObjectId() == null
+                        ? null
+                        : StoredObjectIdCodec.toDomain(request.getStorageObjectId()),
                 StoredObjectReferenceStatus.REFERENCED);
     }
 
@@ -65,7 +67,9 @@ public class StorageOwnerBindingFacadeAssembler {
             return null;
         }
         return new ChangeStorageReferenceStatusCommand(
-                request.getStorageObjectId() == null ? null : StoredObjectId.of(request.getStorageObjectId()),
+                request.getStorageObjectId() == null
+                        ? null
+                        : StoredObjectIdCodec.toDomain(request.getStorageObjectId()),
                 StoredObjectReferenceStatus.UNREFERENCED);
     }
 

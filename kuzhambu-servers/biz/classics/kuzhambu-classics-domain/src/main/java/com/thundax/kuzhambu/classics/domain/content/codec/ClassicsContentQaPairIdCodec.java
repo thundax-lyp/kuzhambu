@@ -7,7 +7,7 @@ public final class ClassicsContentQaPairIdCodec {
     private ClassicsContentQaPairIdCodec() {}
 
     public static ClassicsContentQaPairId toDomain(Long value) {
-        return ClassicsContentQaPairId.ofNullable(value);
+        return value == null ? null : new ClassicsContentQaPairId(value);
     }
 
     public static Long toValue(ClassicsContentQaPairId id) {

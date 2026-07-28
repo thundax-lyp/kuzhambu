@@ -7,7 +7,7 @@ public final class SancaiCategoryIdCodec {
     private SancaiCategoryIdCodec() {}
 
     public static SancaiCategoryId toDomain(Long value) {
-        return SancaiCategoryId.ofNullable(value);
+        return value == null ? null : new SancaiCategoryId(value);
     }
 
     public static Long toValue(SancaiCategoryId id) {

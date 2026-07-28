@@ -7,7 +7,7 @@ public final class WangqiDocumentIdCodec {
     private WangqiDocumentIdCodec() {}
 
     public static WangqiDocumentId toDomain(Long value) {
-        return WangqiDocumentId.ofNullable(value);
+        return value == null ? null : new WangqiDocumentId(value);
     }
 
     public static Long toValue(WangqiDocumentId id) {

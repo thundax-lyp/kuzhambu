@@ -14,8 +14,8 @@ import com.thundax.kuzhambu.common.core.exception.BizException;
 import com.thundax.kuzhambu.common.core.exception.ErrorCode;
 import com.thundax.kuzhambu.common.core.sort.SortDirection;
 import com.thundax.kuzhambu.storage.application.service.command.StorageSortCommand;
+import com.thundax.kuzhambu.storage.domain.object.codec.StoredObjectIdCodec;
 import com.thundax.kuzhambu.storage.domain.object.model.entity.StoredObject;
-import com.thundax.kuzhambu.storage.domain.object.model.valueobject.StoredObjectId;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectContentRepository;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectReferenceRepository;
 import com.thundax.kuzhambu.storage.domain.object.repository.StoredObjectRepository;
@@ -34,15 +34,15 @@ class StorageApplicationServiceSortTest {
         when(repository.maxPriority()).thenReturn(30);
         when(repository.updatePriority(any(), anyInt())).thenReturn(1);
 
-        service.sort(
-                new StorageSortCommand(List.of(StoredObjectId.of(3L), StoredObjectId.of(1L), StoredObjectId.of(2L))));
+        service.sort(new StorageSortCommand(List.of(
+                StoredObjectIdCodec.toDomain(3L), StoredObjectIdCodec.toDomain(1L), StoredObjectIdCodec.toDomain(2L))));
 
-        verify(repository).updatePriority(StoredObjectId.of(3L), 31);
-        verify(repository).updatePriority(StoredObjectId.of(1L), 30);
-        verify(repository).updatePriority(StoredObjectId.of(3L), 10);
-        verify(repository).updatePriority(StoredObjectId.of(1L), 32);
-        verify(repository).updatePriority(StoredObjectId.of(2L), 30);
-        verify(repository).updatePriority(StoredObjectId.of(1L), 20);
+        verify(repository).updatePriority(StoredObjectIdCodec.toDomain(3L), 31);
+        verify(repository).updatePriority(StoredObjectIdCodec.toDomain(1L), 30);
+        verify(repository).updatePriority(StoredObjectIdCodec.toDomain(3L), 10);
+        verify(repository).updatePriority(StoredObjectIdCodec.toDomain(1L), 32);
+        verify(repository).updatePriority(StoredObjectIdCodec.toDomain(2L), 30);
+        verify(repository).updatePriority(StoredObjectIdCodec.toDomain(1L), 20);
         verify(repository, times(6)).updatePriority(any(), anyInt());
     }
 
@@ -56,7 +56,8 @@ class StorageApplicationServiceSortTest {
 
         BizException exception = assertThrows(
                 BizException.class,
-                () -> service.sort(new StorageSortCommand(List.of(StoredObjectId.of(3L), StoredObjectId.of(2L)))));
+                () -> service.sort(new StorageSortCommand(
+                        List.of(StoredObjectIdCodec.toDomain(3L), StoredObjectIdCodec.toDomain(2L)))));
 
         assertEquals(ErrorCode.SORT_MISSING_ID.getCode(), exception.getCode());
         verify(repository, never()).updatePriority(any(), anyInt());
@@ -64,7 +65,7 @@ class StorageApplicationServiceSortTest {
 
     private static StoredObject storage(long id, int priority) {
         StoredObject storage = new StoredObject();
-        storage.setId(StoredObjectId.of(id));
+        storage.setId(StoredObjectIdCodec.toDomain(id));
         storage.setPriority(priority);
         return storage;
     }

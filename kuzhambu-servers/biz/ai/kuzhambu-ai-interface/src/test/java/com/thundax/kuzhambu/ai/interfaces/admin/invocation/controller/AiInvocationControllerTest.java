@@ -6,11 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.thundax.kuzhambu.ai.application.batch.service.AiBatchJobApplicationService;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiBusinessCapability;
+import com.thundax.kuzhambu.ai.domain.invocation.codec.AiCandidateIdCodec;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiCandidate;
 import com.thundax.kuzhambu.ai.domain.invocation.model.entity.AiInvocationLog;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiCandidateStatus;
 import com.thundax.kuzhambu.ai.domain.invocation.model.enums.AiInvocationStatus;
-import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiCandidateId;
 import com.thundax.kuzhambu.ai.domain.invocation.model.valueobject.AiUsageSnapshot;
 import com.thundax.kuzhambu.ai.domain.invocation.repository.AiInvocationRepository;
 import com.thundax.kuzhambu.ai.domain.invocation.service.AiCandidateDomainService;
@@ -269,7 +269,7 @@ class AiInvocationControllerTest {
 
     private static AiCandidate currentCandidate() {
         AiCandidate candidate = new AiCandidate();
-        candidate.setId(AiCandidateId.of(22L));
+        candidate.setId(AiCandidateIdCodec.toDomain(22L));
         candidate.setResultFormat("TEXT");
         candidate.setResultPayload("existing");
         candidate.setStatus(AiCandidateStatus.PENDING);
@@ -367,7 +367,7 @@ class AiInvocationControllerTest {
 
     private static AiCandidate rejectedCandidate() {
         AiCandidate candidate = new AiCandidate();
-        candidate.setId(AiCandidateId.of(11L));
+        candidate.setId(AiCandidateIdCodec.toDomain(11L));
         candidate.setStatus(AiCandidateStatus.REJECTED);
         candidate.setErrorType("TIMEOUT");
         candidate.setErrorMessage("执行超时");
@@ -376,7 +376,7 @@ class AiInvocationControllerTest {
 
     private static AiCandidate appliedCandidate() {
         AiCandidate candidate = new AiCandidate();
-        candidate.setId(AiCandidateId.of(22L));
+        candidate.setId(AiCandidateIdCodec.toDomain(22L));
         candidate.setResultFormat("TEXT");
         candidate.setResultPayload("existing");
         candidate.setStatus(AiCandidateStatus.APPLIED);

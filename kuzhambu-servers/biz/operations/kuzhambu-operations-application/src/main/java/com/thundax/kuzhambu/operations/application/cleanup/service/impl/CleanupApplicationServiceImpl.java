@@ -25,16 +25,20 @@ import com.thundax.kuzhambu.operations.application.cleanup.result.OperationsClea
 import com.thundax.kuzhambu.operations.application.cleanup.service.CleanupApplicationService;
 import com.thundax.kuzhambu.operations.application.cleanup.support.OperationsCleanupSupport;
 import com.thundax.kuzhambu.operations.application.health.support.OperationsHealthAlertStrategy;
+import com.thundax.kuzhambu.operations.domain.backup.codec.BackupIdCodec;
 import com.thundax.kuzhambu.operations.domain.backup.model.valueobject.BackupId;
 import com.thundax.kuzhambu.operations.domain.backup.repository.BackupRepository;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.entity.CleanupItem;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.entity.CleanupJob;
 import com.thundax.kuzhambu.operations.domain.cleanup.model.valueobject.CleanupJobId;
 import com.thundax.kuzhambu.operations.domain.cleanup.repository.CleanupJobRepository;
+import com.thundax.kuzhambu.operations.domain.health.codec.HealthCheckIdCodec;
 import com.thundax.kuzhambu.operations.domain.health.model.valueobject.HealthCheckId;
 import com.thundax.kuzhambu.operations.domain.health.repository.HealthCheckRepository;
+import com.thundax.kuzhambu.operations.domain.report.codec.ReportIdCodec;
 import com.thundax.kuzhambu.operations.domain.report.model.valueobject.ReportId;
 import com.thundax.kuzhambu.operations.domain.report.repository.ReportRepository;
+import com.thundax.kuzhambu.operations.domain.task.codec.LongTaskSnapshotIdCodec;
 import com.thundax.kuzhambu.operations.domain.task.model.valueobject.LongTaskSnapshotId;
 import com.thundax.kuzhambu.operations.domain.task.repository.LongTaskSnapshotRepository;
 import java.time.Duration;
@@ -276,19 +280,20 @@ public class CleanupApplicationServiceImpl implements CleanupApplicationService 
 
     private CleanupExecutionResult executeCleanupTarget(CleanupItem item) {
         if (OperationsCleanupSupport.CLEANUP_ITEM_TYPE_BACKUP.equals(item.getTargetType())) {
-            int affectedRows = backupRepository.deleteById(BackupId.ofNullable(item.getTargetId()));
+            int affectedRows = backupRepository.deleteById(BackupIdCodec.toDomain(item.getTargetId()));
             return new CleanupExecutionResult(affectedRows > 0, affectedRows > 0 ? null : "TARGET_NOT_FOUND");
         }
         if (OperationsCleanupSupport.CLEANUP_ITEM_TYPE_REPORT.equals(item.getTargetType())) {
-            int affectedRows = reportRepository.deleteById(ReportId.ofNullable(item.getTargetId()));
+            int affectedRows = reportRepository.deleteById(ReportIdCodec.toDomain(item.getTargetId()));
             return new CleanupExecutionResult(affectedRows > 0, affectedRows > 0 ? null : "TARGET_NOT_FOUND");
         }
         if (OperationsCleanupSupport.CLEANUP_ITEM_TYPE_HEALTH_CHECK.equals(item.getTargetType())) {
-            int affectedRows = healthCheckRepository.deleteById(HealthCheckId.ofNullable(item.getTargetId()));
+            int affectedRows = healthCheckRepository.deleteById(HealthCheckIdCodec.toDomain(item.getTargetId()));
             return new CleanupExecutionResult(affectedRows > 0, affectedRows > 0 ? null : "TARGET_NOT_FOUND");
         }
         if (OperationsCleanupSupport.CLEANUP_ITEM_TYPE_LONG_TASK.equals(item.getTargetType())) {
-            int affectedRows = longTaskSnapshotRepository.deleteById(LongTaskSnapshotId.ofNullable(item.getTargetId()));
+            int affectedRows =
+                    longTaskSnapshotRepository.deleteById(LongTaskSnapshotIdCodec.toDomain(item.getTargetId()));
             return new CleanupExecutionResult(affectedRows > 0, affectedRows > 0 ? null : "TARGET_NOT_FOUND");
         }
         ClassicsCleanupExecutionFacadeResponse response =

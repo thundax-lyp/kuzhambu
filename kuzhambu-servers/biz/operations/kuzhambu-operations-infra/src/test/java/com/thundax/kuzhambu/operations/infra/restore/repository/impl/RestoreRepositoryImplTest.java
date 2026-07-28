@@ -15,10 +15,10 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.TableInfoHelper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.thundax.kuzhambu.common.core.page.PageResult;
+import com.thundax.kuzhambu.operations.domain.restore.codec.RestoreIdCodec;
 import com.thundax.kuzhambu.operations.domain.restore.model.entity.RestoreRecord;
 import com.thundax.kuzhambu.operations.domain.restore.model.enums.RestoreMode;
 import com.thundax.kuzhambu.operations.domain.restore.model.enums.RestoreStatus;
-import com.thundax.kuzhambu.operations.domain.restore.model.valueobject.RestoreId;
 import com.thundax.kuzhambu.operations.infra.restore.persistence.dataobject.RestoreDO;
 import com.thundax.kuzhambu.operations.infra.restore.persistence.mapper.RestoreMapper;
 import java.util.Date;
@@ -41,7 +41,7 @@ class RestoreRepositoryImplTest {
         RestoreRepositoryImpl repository = new RestoreRepositoryImpl(mapper);
         when(mapper.selectOne(any())).thenReturn(dataObject(9101L, RestoreMode.DRILL.value()));
 
-        RestoreRecord result = repository.getById(RestoreId.of(9101L));
+        RestoreRecord result = repository.getById(RestoreIdCodec.toDomain(9101L));
 
         assertNotNull(result);
         assertEquals(9101L, result.getId().value());
@@ -106,7 +106,7 @@ class RestoreRepositoryImplTest {
 
     private static RestoreRecord domainRecord(String restoreMode) {
         return new RestoreRecord(
-                RestoreId.of(9101L),
+                RestoreIdCodec.toDomain(9101L),
                 9001L,
                 9201L,
                 restoreMode,

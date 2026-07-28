@@ -7,7 +7,7 @@ public final class AiInvocationLogIdCodec {
     private AiInvocationLogIdCodec() {}
 
     public static AiInvocationLogId toDomain(Long value) {
-        return AiInvocationLogId.ofNullable(value);
+        return value == null ? null : new AiInvocationLogId(value);
     }
 
     public static AiInvocationLogId toDomain(String value) {

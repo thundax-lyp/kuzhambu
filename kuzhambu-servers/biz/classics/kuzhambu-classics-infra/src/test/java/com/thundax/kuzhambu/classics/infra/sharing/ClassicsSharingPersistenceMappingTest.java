@@ -4,12 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.thundax.kuzhambu.classics.domain.content.model.enums.ClassicsContentType;
+import com.thundax.kuzhambu.classics.domain.sharing.codec.ClassicsShareTargetIdCodec;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareLink;
 import com.thundax.kuzhambu.classics.domain.sharing.model.entity.ClassicsShareTarget;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareLinkStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareTargetStatus;
 import com.thundax.kuzhambu.classics.domain.sharing.model.enums.ClassicsShareVisibility;
-import com.thundax.kuzhambu.classics.domain.sharing.model.valueobject.ClassicsShareTargetId;
 import com.thundax.kuzhambu.classics.infra.sharing.persistence.assembler.ClassicsSharingPersistenceAssembler;
 import com.thundax.kuzhambu.classics.infra.sharing.persistence.dataobject.ClassicsShareLinkDO;
 import com.thundax.kuzhambu.classics.infra.sharing.persistence.dataobject.ClassicsShareTargetDO;
@@ -54,7 +54,7 @@ class ClassicsSharingPersistenceMappingTest {
         ClassicsShareTarget target = ClassicsSharingPersistenceAssembler.toTargetDomain(dataObject);
         ClassicsShareTargetDO mappedDataObject = ClassicsSharingPersistenceAssembler.toTargetObject(target);
 
-        assertEquals(ClassicsShareTargetId.of(20L), target.getId());
+        assertEquals(ClassicsShareTargetIdCodec.toDomain(20L), target.getId());
         assertEquals(ClassicsContentType.SANCAI_ENTRY, target.getContentType());
         assertEquals(ClassicsShareTargetStatus.CONTENT_DELETED, target.getTargetStatus());
         assertEquals("CONTENT_DELETED", mappedDataObject.getTargetStatus());
