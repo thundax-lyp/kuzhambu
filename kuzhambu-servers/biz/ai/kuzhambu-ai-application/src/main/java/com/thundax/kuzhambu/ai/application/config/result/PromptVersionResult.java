@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.ai.application.config.prompt.result;
+package com.thundax.kuzhambu.ai.application.config.result;
 
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptTemplateIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptVersionIdCodec;

@@ -3,7 +3,7 @@ package com.thundax.kuzhambu.ai.application.config.service.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.thundax.kuzhambu.ai.application.config.prompt.command.PromptTemplateSaveCommand;
+import com.thundax.kuzhambu.ai.application.config.command.PromptTemplateSaveCommand;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptTemplateIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptVariable;

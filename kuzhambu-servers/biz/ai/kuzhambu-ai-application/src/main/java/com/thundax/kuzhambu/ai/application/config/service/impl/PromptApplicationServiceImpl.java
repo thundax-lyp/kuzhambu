@@ -1,8 +1,8 @@
 package com.thundax.kuzhambu.ai.application.config.service.impl;
 
-import com.thundax.kuzhambu.ai.application.config.prompt.command.PromptTemplateSaveCommand;
-import com.thundax.kuzhambu.ai.application.config.prompt.query.PromptVersionCompareQuery;
-import com.thundax.kuzhambu.ai.application.config.prompt.result.PromptVersionResult;
+import com.thundax.kuzhambu.ai.application.config.command.PromptTemplateSaveCommand;
+import com.thundax.kuzhambu.ai.application.config.query.PromptVersionCompareQuery;
+import com.thundax.kuzhambu.ai.application.config.result.PromptVersionResult;
 import com.thundax.kuzhambu.ai.application.config.service.PromptApplicationService;
 import com.thundax.kuzhambu.ai.domain.config.codec.PromptTemplateIdCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.PromptTemplate;

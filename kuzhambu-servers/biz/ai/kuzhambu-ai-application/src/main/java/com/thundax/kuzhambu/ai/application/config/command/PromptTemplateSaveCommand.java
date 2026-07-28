@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.ai.application.config.prompt.command;
+package com.thundax.kuzhambu.ai.application.config.command;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.thundax.kuzhambu.ai.application.config.prompt.query;
+package com.thundax.kuzhambu.ai.application.config.query;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
