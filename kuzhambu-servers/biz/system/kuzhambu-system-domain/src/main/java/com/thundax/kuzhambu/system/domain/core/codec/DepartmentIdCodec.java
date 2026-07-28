@@ -9,7 +9,7 @@ public final class DepartmentIdCodec {
     private DepartmentIdCodec() {}
 
     public static DepartmentId toDomain(Long value) {
-        return DepartmentId.ofNullable(value);
+        return value == null ? null : new DepartmentId(value);
     }
 
     public static DepartmentId toDomain(String value) {

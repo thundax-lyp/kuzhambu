@@ -9,7 +9,7 @@ public final class MenuIdCodec {
     private MenuIdCodec() {}
 
     public static MenuId toDomain(Long value) {
-        return MenuId.ofNullable(value);
+        return value == null ? null : new MenuId(value);
     }
 
     public static MenuId toDomain(String value) {

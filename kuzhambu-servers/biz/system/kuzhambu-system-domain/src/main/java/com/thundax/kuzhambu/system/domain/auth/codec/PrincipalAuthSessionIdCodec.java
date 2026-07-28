@@ -8,7 +8,7 @@ public final class PrincipalAuthSessionIdCodec {
     private PrincipalAuthSessionIdCodec() {}
 
     public static PrincipalAuthSessionId toDomain(String value) {
-        return PrincipalAuthSessionId.ofNullable(value);
+        return value == null || value.trim().isEmpty() ? null : new PrincipalAuthSessionId(value);
     }
 
     public static String toValue(PrincipalAuthSessionId id) {

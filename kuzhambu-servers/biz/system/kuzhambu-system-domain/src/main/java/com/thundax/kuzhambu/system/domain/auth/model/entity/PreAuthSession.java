@@ -1,6 +1,7 @@
 package com.thundax.kuzhambu.system.domain.auth.model.entity;
 
 import com.thundax.kuzhambu.common.core.id.SnowflakeIdGenerator;
+import com.thundax.kuzhambu.system.domain.auth.codec.PreAuthSessionIdCodec;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionId;
 import com.thundax.kuzhambu.system.domain.auth.model.valueobject.PreAuthSessionToken;
 import java.util.ArrayList;
@@ -39,7 +40,7 @@ public class PreAuthSession {
         PreAuthSessionToken refreshToken = PreAuthSessionToken.of(nextHexSnowflakeId());
         long expiredAt = expiredAt(expiredSeconds);
         return new PreAuthSession(
-                PreAuthSessionId.of(nextHexSnowflakeId()),
+                PreAuthSessionIdCodec.toDomain(nextHexSnowflakeId()),
                 PreAuthSessionToken.of(nextHexSnowflakeId()),
                 expiredAt,
                 new ArrayList<>(Collections.singleton(new RefreshTokenValue(refreshToken, expiredAt))),

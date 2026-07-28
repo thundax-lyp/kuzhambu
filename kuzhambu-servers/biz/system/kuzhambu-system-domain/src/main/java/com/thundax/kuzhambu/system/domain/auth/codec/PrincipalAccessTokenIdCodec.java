@@ -8,7 +8,7 @@ public final class PrincipalAccessTokenIdCodec {
     private PrincipalAccessTokenIdCodec() {}
 
     public static PrincipalAccessTokenId toDomain(String value) {
-        return PrincipalAccessTokenId.ofNullable(value);
+        return value == null || value.trim().isEmpty() ? null : new PrincipalAccessTokenId(value);
     }
 
     public static String toValue(PrincipalAccessTokenId id) {

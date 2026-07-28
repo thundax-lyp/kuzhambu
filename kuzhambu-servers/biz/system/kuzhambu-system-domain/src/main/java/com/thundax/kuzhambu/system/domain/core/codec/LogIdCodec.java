@@ -9,7 +9,7 @@ public final class LogIdCodec {
     private LogIdCodec() {}
 
     public static LogId toDomain(Long value) {
-        return LogId.ofNullable(value);
+        return value == null ? null : new LogId(value);
     }
 
     public static Long toValue(LogId id) {

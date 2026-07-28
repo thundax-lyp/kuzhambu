@@ -8,7 +8,7 @@ public final class PrincipalLoginEventIdCodec {
     private PrincipalLoginEventIdCodec() {}
 
     public static PrincipalLoginEventId toDomain(String value) {
-        return PrincipalLoginEventId.ofNullable(value);
+        return value == null || value.trim().isEmpty() ? null : new PrincipalLoginEventId(value);
     }
 
     public static String toValue(PrincipalLoginEventId id) {

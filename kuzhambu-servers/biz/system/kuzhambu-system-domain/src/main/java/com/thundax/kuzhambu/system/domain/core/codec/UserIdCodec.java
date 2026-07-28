@@ -9,7 +9,7 @@ public final class UserIdCodec {
     private UserIdCodec() {}
 
     public static UserId toDomain(Long value) {
-        return UserId.ofNullable(value);
+        return value == null ? null : new UserId(value);
     }
 
     public static UserId toDomain(String value) {
