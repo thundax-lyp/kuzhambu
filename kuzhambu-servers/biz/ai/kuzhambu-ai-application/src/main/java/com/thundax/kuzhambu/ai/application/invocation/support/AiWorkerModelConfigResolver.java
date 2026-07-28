@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.thundax.kuzhambu.ai.application.config.service.AiBusinessConfigApplicationService;
 import com.thundax.kuzhambu.ai.application.config.service.AiModelApplicationService;
 import com.thundax.kuzhambu.ai.application.invocation.command.AiInvokeCommand;
-import com.thundax.kuzhambu.ai.domain.config.codec.AiModelNameCodec;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiBusinessConfig;
 import com.thundax.kuzhambu.ai.domain.config.model.entity.AiModel;
 import com.thundax.kuzhambu.ai.domain.config.model.enums.AiModelCapability;
@@ -48,8 +47,8 @@ public class AiWorkerModelConfigResolver {
             throw new IllegalArgumentException("AI model baseUrl is required: " + command.getModelId());
         }
 
-        String modelName = AiModelNameCodec.toValue(model.getModelName());
-        if (!isBlank(command.getModelName()) && !command.getModelName().equals(modelName)) {
+        var modelName = model.getModelName();
+        if (command.getModelName() != null && !command.getModelName().equals(modelName)) {
             throw new IllegalArgumentException("AI model mismatch: modelId=%s, modelName=%s"
                     .formatted(command.getModelId(), command.getModelName()));
         }
@@ -57,7 +56,7 @@ public class AiWorkerModelConfigResolver {
         return new ResolvedModelConfig(
                 command.getServiceId(),
                 resolveServiceRole(command),
-                value(model.getId()),
+                model.getId(),
                 model.getApiSource() == null ? null : model.getApiSource().value(),
                 model.getBaseUrl(),
                 model.getEncryptedApiKey(),
@@ -77,11 +76,11 @@ public class AiWorkerModelConfigResolver {
             if (config == null || config.getModelId() == null) {
                 throw new IllegalArgumentException("AI modelId is required");
             }
-            command.setModelId(value(config.getModelId()));
+            command.setModelId(config.getModelId());
         } else if (!matchesModel(command.getModelId(), config)) {
             config = null;
         }
-        AiModel model = modelService.get(new AiModelId(command.getModelId()));
+        AiModel model = modelService.get(command.getModelId());
         if (model == null) {
             throw new IllegalArgumentException("AI model not found: " + command.getModelId());
         }
@@ -91,8 +90,8 @@ public class AiWorkerModelConfigResolver {
         return new ModelResolution(model, config);
     }
 
-    private boolean matchesModel(Long modelId, AiBusinessConfig config) {
-        return modelId != null && config != null && modelId.equals(value(config.getModelId()));
+    private boolean matchesModel(AiModelId modelId, AiBusinessConfig config) {
+        return modelId != null && config != null && modelId.equals(config.getModelId());
     }
 
     private AiBusinessConfig resolveBusinessConfig(AiInvokeCommand command) {
@@ -139,18 +138,14 @@ public class AiWorkerModelConfigResolver {
         return isBlank(command.getServiceRole()) ? DEFAULT_SERVICE_ROLE : command.getServiceRole();
     }
 
-    private Long value(AiModelId id) {
-        return id == null ? null : id.value();
-    }
-
     public record ResolvedModelConfig(
             Long serviceId,
             String serviceRole,
-            Long modelId,
+            AiModelId modelId,
             String apiSource,
             String baseUrl,
             String apiKey,
-            String modelName,
+            com.thundax.kuzhambu.ai.domain.config.model.valueobject.AiModelName modelName,
             List<String> capabilityTags,
             JsonNode parameters,
             Long timeoutMs) {}

@@ -71,8 +71,8 @@ class AiWorkerModelConfigResolverTest {
 
         AiWorkerModelConfigResolver.ResolvedModelConfig resolved = resolver.resolve(command);
 
-        assertThat(command.getModelId()).isEqualTo(2001L);
-        assertThat(resolved.modelName()).isEqualTo("gpt-4o");
+        assertThat(command.getModelId().value()).isEqualTo(2001L);
+        assertThat(resolved.modelName().value()).isEqualTo("gpt-4o");
     }
 
     @Test
@@ -110,7 +110,7 @@ class AiWorkerModelConfigResolverTest {
         resolver.resolve(command);
         AiWorkerModelConfigResolver.ResolvedModelConfig resolvedAgain = resolver.resolve(command);
 
-        assertThat(command.getModelId()).isEqualTo(2001L);
+        assertThat(command.getModelId().value()).isEqualTo(2001L);
         assertThat(resolvedAgain.parameters().get("temperature").asDouble()).isEqualTo(0.7);
         assertThat(resolvedAgain.parameters().get("max_tokens").asInt()).isEqualTo(4096);
     }
@@ -127,7 +127,7 @@ class AiWorkerModelConfigResolverTest {
     private static AiInvokeCommand command() {
         AiInvokeCommand command = new AiInvokeCommand();
         command.setServiceRole("PRIMARY");
-        command.setModelId(2001L);
+        command.setModelId(new AiModelId(2001L));
         return command;
     }
 

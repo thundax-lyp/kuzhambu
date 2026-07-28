@@ -42,10 +42,10 @@ class AiBusinessInvokeConfigResolverTest {
         JsonNode messages = objectMapper.readTree(command.getPromptMessagesJson());
         JsonNode variables = objectMapper.readTree(command.getPromptVariablesJson());
 
-        assertThat(command.getModelId()).isEqualTo(2001L);
+        assertThat(command.getModelId().value()).isEqualTo(2001L);
         assertThat(command.getServiceRole()).isEqualTo("PRIMARY");
-        assertThat(command.getModelName()).isEqualTo("gpt-4o");
-        assertThat(command.getPromptVersionId()).isEqualTo(940106L);
+        assertThat(command.getModelName().value()).isEqualTo("gpt-4o");
+        assertThat(command.getPromptVersionId().value()).isEqualTo(940106L);
         assertThat(command.getOutputSchemaJson()).isEqualTo("{\"type\":\"text\"}");
         assertThat(messages.get(1).get("content").asText())
                 .contains("SANCAI_ENTRY")
@@ -79,7 +79,8 @@ class AiBusinessInvokeConfigResolverTest {
         AiBusinessInvokeConfigResolver resolver = newResolver(
                 promptRepository(List.of(variable("contentType", true), variable("sourceText", true)), null, false));
         AiInvokeCommand command = command();
-        command.setPromptVersionId(940106L);
+        command.setPromptVersionId(
+                new com.thundax.kuzhambu.ai.domain.config.model.valueobject.PromptVersionId(940106L));
 
         assertThatThrownBy(() -> resolver.validatePromptVersionEnabled(command))
                 .isInstanceOf(BizException.class)
