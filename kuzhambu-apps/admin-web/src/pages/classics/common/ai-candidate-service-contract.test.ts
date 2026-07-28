@@ -121,7 +121,7 @@ describe("AI candidate service request contracts", () => {
 
     it("applies candidate by invoking classics content apply api", async () => {
         const command: AiCandidateApplyCommand = {
-            candidateId: 7001,
+            candidateId: "869897501442834432",
             contentType: "SANCAI_ENTRY",
             contentId: 3001,
             capability: "summary",
@@ -142,7 +142,7 @@ describe("AI candidate service request contracts", () => {
 
     it("rejects candidate with error info", async () => {
         const request: AiCandidateRejectCommand = {
-            candidateId: 7001,
+            candidateId: "869897501442834432",
             errorType: "INVALID",
             errorMessage: "invalid"
         };

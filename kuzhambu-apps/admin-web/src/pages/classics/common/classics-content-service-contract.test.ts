@@ -307,7 +307,7 @@ describe("classics content service request contracts", () => {
         const command: ClassicsAiCandidateBatchApplyCommand = {
             items: [
                 {
-                    candidateId: 7001,
+                    candidateId: "869897501442834432",
                     contentType: "WANGQI_DOCUMENT",
                     contentId: 4001,
                     capability: "summary",
@@ -316,7 +316,7 @@ describe("classics content service request contracts", () => {
                     resultPayload: "new summary"
                 },
                 {
-                    candidateId: 7002,
+                    candidateId: "869897501442834433",
                     contentType: "WANGQI_DOCUMENT",
                     contentId: 4002,
                     capability: "summary",
@@ -356,13 +356,13 @@ describe("classics content service request contracts", () => {
             errorMessage: "用户已批量拒绝该 AI 候选",
             items: [
                 {
-                    candidateId: 8001,
+                    candidateId: "869897501442834434",
                     contentType: "MING_CUSTOMS",
                     contentId: 5001,
                     capability: "tags"
                 },
                 {
-                    candidateId: 8002,
+                    candidateId: "869897501442834435",
                     contentType: "MING_CUSTOMS",
                     contentId: 5002,
                     capability: "qa",

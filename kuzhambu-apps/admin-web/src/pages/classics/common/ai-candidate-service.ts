@@ -14,13 +14,13 @@ export interface AiCandidateListQuery {
 }
 
 export interface AiCandidateGetQuery {
-    candidateId: number | string;
+    candidateId: string;
 }
 
 export type AiCandidateApplyCommand = AiCandidateApplyPayload;
 
 export interface AiCandidateRejectCommand {
-    candidateId: number;
+    candidateId: string;
     errorType: string;
     errorMessage?: string | null;
 }

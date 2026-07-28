@@ -29,7 +29,7 @@ export interface AiCandidateApplyRecord {
 }
 
 export interface AiCandidateApplyPayload {
-    candidateId: number;
+    candidateId: string;
     contentType: string;
     contentId: number;
     capability: AiCandidateCapability | string;
@@ -40,7 +40,7 @@ export interface AiCandidateApplyPayload {
 }
 
 export interface AiCandidateRejectPayload {
-    candidateId: number;
+    candidateId: string;
     errorType: string;
     errorMessage?: string | null;
 }

@@ -441,7 +441,7 @@ describe("sancai service request contracts", () => {
         });
 
         await aiCandidateService.apply({
-            candidateId: 7001,
+            candidateId: "869897501442834432",
             contentType: "SANCAI_ENTRY",
             contentId: 3001,
             capability: "image_analysis",
@@ -451,7 +451,7 @@ describe("sancai service request contracts", () => {
             changeSummary: "AI 应用：图片理解"
         });
         expectLastCall("POST", "/classics/content/ai-candidates/change", {
-            candidateId: 7001,
+            candidateId: "869897501442834432",
             contentType: "SANCAI_ENTRY",
             contentId: 3001,
             capability: "image_analysis",
